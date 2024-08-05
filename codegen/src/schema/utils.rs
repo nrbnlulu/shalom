@@ -3,14 +3,14 @@ use crate::schema::context::SchemaContext;
 
 use super::types::GraphQLType;
 
-pub struct TypeRef{
+pub struct TypeRef<T>{
     ctx: Rc<SchemaContext>,
     name: String,
 
 }
 
-impl TypeRef{
-    pub fn resolve(&self) -> Option<&dyn GraphQLType>{
+impl <T> TypeRef<T>{
+    pub fn resolve(&self) -> Option<&T>{
         return self.ctx.get_type(&self.name);
     }
 }
