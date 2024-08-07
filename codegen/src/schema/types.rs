@@ -1,13 +1,12 @@
-use core::hash;
-use std::{collections::HashSet, hash::{Hash, Hasher}, rc::Rc};
+use std::{
+    collections::HashSet,
+    hash::{Hash, Hasher},
+};
 
-use apollo_compiler::{ast::Value, collections::HashMap};
-use apollo_compiler::schema as appolo_schema;
 use super::{context::SchemaContext, utils::TypeRef};
+use apollo_compiler::{ast::Value, collections::HashMap};
 
-
-
-struct NamedType{
+struct NamedType {
     name: String,
 }
 
@@ -24,13 +23,12 @@ pub enum GraphQLType {
     InputObject(Box<InputObjectType>),
 }
 
-
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum FieldType {
     Named(TypeRef),
     NonNullNamed(TypeRef),
-    List(TypeRef),
-    NonNullList(TypeRef),
+    List(Box<FieldType>),
+    NonNullList(Box<FieldType>),
 }
 
 impl FieldType {
@@ -47,37 +45,20 @@ impl FieldType {
             FieldType::List(_) | FieldType::NonNullList(_) => true,
         }
     }
-    pub fn from_origin(context: Rc<SchemaContext>, origin: appolo_schema::Type) -> FieldType{
-        match origin{
-            appolo_schema::Type::Named(named) => FieldType::Named(TypeRef::new(context, named.name)),
-            appolo_schema::Type::NonNullNamed(non_null) => {
-                return ;
-                }
-            }
-            appolo_schema::Type::ListType(list) => {
-                match *list.ty{
-                    appolo_schema::Type::NamedType(named) => FieldType::List(TypeRef::new(context, named.name)),
-                    _ => panic!("Invalid type")
-                }
-            }
-        }
-    }
 }
-
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarType {
     pub description: Option<String>,
 
-    pub name: String,  
-
+    pub name: String,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ObjectType {
     pub description: Option<String>,
 
-    pub name: String,    
+    pub name: String,
     pub implements_interfaces: HashSet<Box<TypeRef>>,
     pub fields: HashSet<FieldDefinition>,
 }
@@ -92,7 +73,7 @@ impl Hash for ObjectType {
 pub struct InterfaceType {
     pub description: Option<String>,
 
-    pub name: String,    
+    pub name: String,
     pub implements_interfaces: HashSet<TypeRef>,
     pub fields: HashSet<FieldDefinition>,
 }
@@ -113,6 +94,11 @@ pub struct UnionType {
     ///   or `None` for the union type definition.
     pub members: HashSet<TypeRef>,
 }
+impl Hash for UnionType {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EnumType {
@@ -121,7 +107,11 @@ pub struct EnumType {
     pub name: String,
     pub values: HashMap<String, Box<EnumValueDefinition>>,
 }
-
+impl Hash for EnumType {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
+}
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct EnumValueDefinition {
     pub description: Option<String>,
@@ -134,15 +124,18 @@ pub struct InputObjectType {
     pub name: String,
     pub fields: HashMap<String, Box<InputValueDefinition>>,
 }
-
+impl Hash for InputObjectType {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
+}
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct FieldDefinition {
     pub name: String,
     pub ty: FieldType,
-    pub arguments: Vec<Box<InputValueDefinition>>,
+    pub arguments: Vec<InputValueDefinition>,
     pub description: Option<String>,
 }
-
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub struct InputValueDefinition {

@@ -1,25 +1,36 @@
-use std::rc::Rc;
-use crate::schema::context::SchemaContext;
+use super::{context::SharedSchemaContext, types::GraphQLType};
 
-use super::types::GraphQLType;
-
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug)]
 pub struct TypeRef{
-    ctx: Rc<SchemaContext>,
+    ctx: SharedSchemaContext,
     name: String,
 
 }
 
+impl PartialEq for TypeRef {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+    }
+}
+impl Eq for TypeRef {}
+
+impl  std::hash::Hash for TypeRef{
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
+}
 
 impl TypeRef{
-    pub fn resolve(&self) -> Option<&GraphQLType>{
-        return self.ctx.get_type(&self.name);
+    pub fn resolve(&self) -> Option<GraphQLType> {
+        self.ctx.borrow().get_type(&self.name).cloned()
     }
 
-    pub fn new(ctx: Rc<SchemaContext>, name: String) -> TypeRef{
+
+    pub fn new(ctx: SharedSchemaContext, name: String) -> TypeRef{
         TypeRef{
             ctx: ctx,
             name: name
         }
     }
+    
 }
