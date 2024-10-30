@@ -23,6 +23,50 @@ pub enum GraphQLType {
     InputObject(Box<InputObjectType>),
 }
 
+impl GraphQLType {
+    pub fn object(&self) -> Option<&ObjectType> {
+        match self {
+            GraphQLType::Object(obj) => Some(obj),
+            _ => None,
+        }
+    }
+
+    pub fn interface(&self) -> Option<&InterfaceType> {
+        match self {
+            GraphQLType::Interface(interface) => Some(interface),
+            _ => None,
+        }
+    }
+
+    pub fn union(&self) -> Option<&UnionType> {
+        match self {
+            GraphQLType::Union(union) => Some(union),
+            _ => None,
+        }
+    }
+
+    pub fn scalar(&self) -> Option<&ScalarType> {
+        match self {
+            GraphQLType::Scalar(scalar) => Some(scalar),
+            _ => None,
+        }
+    }
+
+    pub fn enum_(&self) -> Option<&EnumType> {
+        match self {
+            GraphQLType::Enum(enum_) => Some(enum_),
+            _ => None,
+        }
+    }
+
+    pub fn input_object(&self) -> Option<&InputObjectType> {
+        match self {
+            GraphQLType::InputObject(input_object) => Some(input_object),
+            _ => None,
+        }
+    }    
+}
+
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 pub enum FieldType {
     Named(TypeRef),
@@ -61,6 +105,12 @@ pub struct ObjectType {
     pub name: String,
     pub implements_interfaces: HashSet<Box<TypeRef>>,
     pub fields: HashSet<FieldDefinition>,
+}
+
+impl ObjectType {
+   pub fn get_field(&self, name: &str) -> Option<&FieldDefinition> {
+        self.fields.iter().find(|f| f.name == name)
+    }
 }
 
 impl Hash for ObjectType {

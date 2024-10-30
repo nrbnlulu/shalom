@@ -9,7 +9,7 @@ use anyhow::Result;
 use apollo_compiler::schema as apollo_schema;
 use apollo_compiler::{self};
 
-pub fn parse(schema: &String) -> Result<SharedSchemaContext> {
+pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
     let ctx = Rc::new(RefCell::new(SchemaContext::new()));
     let schema = match (apollo_compiler::Schema::parse(schema, "schema.graphql")) {
         Ok(schema) => schema,
@@ -81,15 +81,32 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_parse() {
+    fn test_query_type_resolve() {
         let schema = r#"
             type Query{
                 hello: String
             }
         "#.to_string();
-        let parsed = parse(&schema).unwrap();
+        let parsed = resolve(&schema).unwrap();
         let ctx = parsed.borrow();
         let object = ctx.get_type("Query");
         assert_eq!(object.is_some(), true);
     }
+    #[test]
+    fn resolve_simple_field_types() {
+        let schema = r#"
+            type Query{
+                hello: String!
+                world: Int!
+                id: ID!
+            }
+        "#.to_string();
+        let parsed = resolve(&schema).unwrap();
+        let ctx = parsed.borrow();
+        let object = ctx.get_type("Query").unwrap().object().unwrap();
+
+        let hello_field = object.get_field("hello").unwrap();
+        assert_eq!(hello_field.ty.is_nullable(), false);
+        assert_eq!(hello_field.ty.is(), false);
+    }   
 }
