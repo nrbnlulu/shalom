@@ -4,7 +4,11 @@ use std::{
 };
 
 use super::{context::SchemaContext, utils::TypeRef};
-use apollo_compiler::{ast::Value, collections::HashMap};
+use apollo_compiler::{
+    ast::{Field, Value},
+    collections::HashMap,
+};
+use minijinja::value::Object;
 
 struct NamedType {
     name: String,
@@ -64,7 +68,7 @@ impl GraphQLType {
             GraphQLType::InputObject(input_object) => Some(input_object),
             _ => None,
         }
-    }    
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
@@ -83,19 +87,63 @@ impl FieldType {
         }
     }
 
-    pub fn is_list(&self) -> bool {
+    pub fn get_list(&self) -> Option<&FieldType> {
         match self {
-            FieldType::Named(_) | FieldType::NonNullNamed(_) => false,
-            FieldType::List(_) | FieldType::NonNullList(_) => true,
+            FieldType::List(of) | FieldType::NonNullList(of) => Some(of.as_ref()),
+            _ => None,
         }
     }
+
+    pub fn get_scalar(&self) -> Option<ScalarType> {
+        match self {
+            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_scalar(),
+            _ => None,
+        }
+    }
+    
+    pub fn get_object(&self) -> Option<ObjectType> {
+        match self {
+            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_object(),
+            _ => None,
+        }
+    }
+
+
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarType {
     pub description: Option<String>,
-
     pub name: String,
+}
+
+const DEFAULT_SCALARS: &[&str] = &[
+    "String",
+    "Int",
+    "Float",
+    "Boolean",
+    "ID",
+];
+
+impl ScalarType {
+    pub fn is_default_scalar(&self) -> bool {
+        DEFAULT_SCALARS.contains(&self.name.as_str())
+    }
+    pub fn is_string(&self) -> bool {
+        self.name == "String"
+    }
+    pub fn is_int(&self) -> bool {
+        self.name == "Int"
+    }
+    pub fn is_float(&self) -> bool {
+        self.name == "Float"
+    }
+    pub fn is_boolean(&self) -> bool {
+        self.name == "Boolean"
+    }
+    pub fn is_id(&self) -> bool {
+        self.name == "ID"
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -108,7 +156,7 @@ pub struct ObjectType {
 }
 
 impl ObjectType {
-   pub fn get_field(&self, name: &str) -> Option<&FieldDefinition> {
+    pub fn get_field(&self, name: &str) -> Option<&FieldDefinition> {
         self.fields.iter().find(|f| f.name == name)
     }
 }

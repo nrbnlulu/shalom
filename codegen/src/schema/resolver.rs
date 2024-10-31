@@ -106,7 +106,7 @@ mod tests {
         let object = ctx.get_type("Query").unwrap().object().unwrap();
 
         let hello_field = object.get_field("hello").unwrap();
-        assert_eq!(hello_field.ty.is_nullable(), false);
-        assert_eq!(hello_field.ty.is(), false);
+        assert_eq!(hello_field.ty.get_scalar().unwrap().is_string(), true);
+        
     }   
 }
