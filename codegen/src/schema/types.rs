@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use std::{
     collections::HashSet,
     hash::{Hash, Hasher},
@@ -19,53 +20,53 @@ struct NamedType {
 ///
 /// The source location is that of the "main" definition.
 pub enum GraphQLType {
-    Scalar(Box<ScalarType>),
-    Object(Box<ObjectType>),
-    Interface(Box<InterfaceType>),
-    Union(Box<UnionType>),
-    Enum(Box<EnumType>),
-    InputObject(Box<InputObjectType>),
+    Scalar(Rc<ScalarType>),
+    Object(Rc<ObjectType>),
+    Interface(Rc<InterfaceType>),
+    Union(Rc<UnionType>),
+    Enum(Rc<EnumType>),
+    InputObject(Rc<InputObjectType>),
 }
 
 impl GraphQLType {
-    pub fn object(&self) -> Option<&ObjectType> {
+    pub fn object(&self) -> Option<Rc<ObjectType>> {
         match self {
-            GraphQLType::Object(obj) => Some(obj),
+            GraphQLType::Object(obj) => Some(Rc::clone(obj)),
             _ => None,
         }
     }
 
-    pub fn interface(&self) -> Option<&InterfaceType> {
+    pub fn interface(&self) -> Option<Rc<InterfaceType>> {
         match self {
-            GraphQLType::Interface(interface) => Some(interface),
+            GraphQLType::Interface(interface) => Some(Rc::clone(interface)),
             _ => None,
         }
     }
 
-    pub fn union(&self) -> Option<&UnionType> {
+    pub fn union(&self) -> Option<Rc<UnionType>> {
         match self {
-            GraphQLType::Union(union) => Some(union),
+            GraphQLType::Union(union) => Some(Rc::clone(union)),
             _ => None,
         }
     }
 
-    pub fn scalar(&self) -> Option<&ScalarType> {
+    pub fn scalar(&self) -> Option<Rc<ScalarType>> {
         match self {
-            GraphQLType::Scalar(scalar) => Some(scalar),
+            GraphQLType::Scalar(scalar) => Some(Rc::clone(scalar)),
             _ => None,
         }
     }
 
-    pub fn enum_(&self) -> Option<&EnumType> {
+    pub fn enum_(&self) -> Option<Rc<EnumType>> {
         match self {
-            GraphQLType::Enum(enum_) => Some(enum_),
+            GraphQLType::Enum(enum_) => Some(Rc::clone(enum_)),
             _ => None,
         }
     }
 
-    pub fn input_object(&self) -> Option<&InputObjectType> {
+    pub fn input_object(&self) -> Option<Rc<InputObjectType>> {
         match self {
-            GraphQLType::InputObject(input_object) => Some(input_object),
+            GraphQLType::InputObject(input_object) => Some(Rc::clone(input_object)),
             _ => None,
         }
     }
@@ -89,26 +90,24 @@ impl FieldType {
 
     pub fn get_list(&self) -> Option<&FieldType> {
         match self {
-            FieldType::List(of) | FieldType::NonNullList(of) => Some(of.as_ref()),
+            FieldType::List(of) | FieldType::NonNullList(of) => Some(of),
             _ => None,
         }
     }
 
-    pub fn get_scalar(&self) -> Option<ScalarType> {
+    pub fn get_scalar(&self) -> Option<Rc<ScalarType>> {
         match self {
             FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_scalar(),
             _ => None,
         }
     }
-    
-    pub fn get_object(&self) -> Option<ObjectType> {
+
+    pub fn get_object(&self) -> Option<Rc<ObjectType>> {
         match self {
             FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_object(),
             _ => None,
         }
     }
-
-
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -117,13 +116,7 @@ pub struct ScalarType {
     pub name: String,
 }
 
-const DEFAULT_SCALARS: &[&str] = &[
-    "String",
-    "Int",
-    "Float",
-    "Boolean",
-    "ID",
-];
+const DEFAULT_SCALARS: &[&str] = &["String", "Int", "Float", "Boolean", "ID"];
 
 impl ScalarType {
     pub fn is_default_scalar(&self) -> bool {

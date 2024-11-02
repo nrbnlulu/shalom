@@ -49,7 +49,7 @@ fn resolve_object(
         });
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
-    let object = Box::new(GraphQLType::Object(Box::new(ObjectType {
+    let object = Box::new(GraphQLType::Object(Rc::new(ObjectType {
         name: name.clone(),
         description: description,
         fields: fields,
