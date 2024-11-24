@@ -20,7 +20,7 @@ struct TemplateContext {
 }
 
 pub fn generate_dart_code(schema: &str, query: &str) -> Result<String> {
-    let schema_ast = parse_schema::<String>(schema).context("Failed to parse schema")?;
+    let _schema_ast = parse_schema::<String>(schema).context("Failed to parse schema")?;
     let query_ast = parse_query::<String>(query).context("Failed to parse query")?;
 
     let operation = get_operation(&query_ast)?;
