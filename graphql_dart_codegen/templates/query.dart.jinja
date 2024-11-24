@@ -1,0 +1,47 @@
+// Generated code - do not modify by hand
+
+import 'package:json_annotation/json_annotation.dart';
+
+part '{{ query_name | snake_case }}.g.dart';
+
+@JsonSerializable()
+class {{ query_name }}Response {
+  final {{ query_name }}Data? data;
+
+  {{ query_name }}Response({this.data});
+
+  factory {{ query_name }}Response.fromJson(Map<String, dynamic> json) =>
+      _${{ query_name }}ResponseFromJson(json);
+  
+  Map<String, dynamic> toJson() => _${{ query_name }}ResponseToJson(this);
+}
+
+@JsonSerializable()
+class {{ query_name }}Data {
+  final {{ return_type }}? {{ field_name }};
+
+  {{ query_name }}Data({this.{{ field_name }}});
+
+  factory {{ query_name }}Data.fromJson(Map<String, dynamic> json) =>
+      _${{ query_name }}DataFromJson(json);
+  
+  Map<String, dynamic> toJson() => _${{ query_name }}DataToJson(this);
+}
+
+@JsonSerializable()
+class {{ return_type }} {
+  {% for field in fields %}
+  final {{ field.type_name }}{% if not field.required %}?{% endif %} {{ field.name }};
+  {% endfor %}
+
+  {{ return_type }}({
+    {% for field in fields %}
+    {% if field.required %}required {% endif %}this.{{ field.name }},
+    {% endfor %}
+  });
+
+  factory {{ return_type }}.fromJson(Map<String, dynamic> json) =>
+      _${{ return_type }}FromJson(json);
+  
+  Map<String, dynamic> toJson() => _${{ return_type }}ToJson(this);
+}
