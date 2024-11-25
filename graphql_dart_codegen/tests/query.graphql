@@ -1,0 +1,8 @@
+query HelloWorld($id: Int!) {
+    person(id: $id) {
+        name
+        id
+        age
+        dateOfBirth
+    }
+}
