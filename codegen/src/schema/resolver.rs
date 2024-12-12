@@ -109,4 +109,102 @@ mod tests {
         assert_eq!(hello_field.ty.get_scalar().unwrap().is_string(), true);
         
     }   
+
+    #[test]
+    fn test_resolve_nested_object_types() {
+        let schema = r#"
+            type Address {
+                street: String
+                city: String
+            }
+
+            type Person {
+                name: String
+                address: Address
+            }
+
+            type Query {
+                person: Person
+            }
+        "#.to_string();
+        let parsed = resolve(&schema).unwrap();
+        let ctx = parsed.borrow();
+
+        let person_type = ctx.get_type("Person").unwrap().object().unwrap();
+        let address_field = person_type.get_field("address").unwrap();
+        let address_type = address_field.ty.get_object().unwrap();
+
+        assert_eq!(address_type.name, "Address");
+    }
+
+    #[test]
+    fn test_resolve_interface_types() {
+        let schema = r#"
+            interface Character {
+                id: ID!
+                name: String!
+            }
+
+            type Human implements Character {
+                id: ID!
+                name: String!
+                homePlanet: String
+            }
+
+            type Droid implements Character {
+                id: ID!
+                name: String!
+                primaryFunction: String
+            }
+
+            type Query {
+                hero: Character
+            }
+        "#.to_string();
+        let parsed = resolve(&schema).unwrap();
+        let ctx = parsed.borrow();
+
+        let character_type = ctx.get_type("Character").unwrap().interface().unwrap();
+        assert_eq!(character_type.name, "Character");
+
+        let human_type = ctx.get_type("Human").unwrap().object().unwrap();
+        assert!(human_type.implements_interfaces.iter().any(|i| i.name == "Character"));
+
+        let droid_type = ctx.get_type("Droid").unwrap().object().unwrap();
+        assert!(droid_type.implements_interfaces.iter().any(|i| i.name == "Character"));
+    }
+
+    #[test]
+    fn test_resolve_union_types() {
+        let schema = r#"
+            type Human {
+                id: ID!
+                name: String!
+                homePlanet: String
+            }
+
+            type Droid {
+                id: ID!
+                name: String!
+                primaryFunction: String
+            }
+
+            union SearchResult = Human | Droid
+
+            type Query {
+                search: [SearchResult]
+            }
+        "#.to_string();
+        let parsed = resolve(&schema).unwrap();
+        let ctx = parsed.borrow();
+
+        let search_result_type = ctx.get_type("SearchResult").unwrap().union().unwrap();
+        assert_eq!(search_result_type.name, "SearchResult");
+
+        let human_type = ctx.get_type("Human").unwrap().object().unwrap();
+        assert!(search_result_type.members.iter().any(|m| m.name == human_type.name));
+
+        let droid_type = ctx.get_type("Droid").unwrap().object().unwrap();
+        assert!(search_result_type.members.iter().any(|m| m.name == droid_type.name));
+    }
 }
