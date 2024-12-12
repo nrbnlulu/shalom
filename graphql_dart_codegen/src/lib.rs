@@ -250,4 +250,182 @@ mod tests {
         assert!(generated_code.contains("other.age == age"));
         assert!(generated_code.contains("other.dateOfBirth == dateOfBirth"));
     }
+
+    #[test]
+    fn test_generate_dart_code_with_nested_object_types() {
+        let schema = r#"
+            type Address {
+                street: String
+                city: String
+            }
+
+            type Person {
+                name: String
+                address: Address
+            }
+
+            type Query {
+                person(id: Int!): Person
+            }
+        "#;
+
+        let query = r#"
+            query GetPerson($id: Int!) {
+                person(id: $id) {
+                    name
+                    address {
+                        street
+                        city
+                    }
+                }
+            }
+        "#;
+
+        let result = generate_dart_code(schema, query);
+        assert!(result.is_ok(), "Failed to generate code: {:?}", result.err());
+
+        let generated_code = result.unwrap();
+
+        // Check class definitions
+        assert!(generated_code.contains("class GetPersonResponse"));
+        assert!(generated_code.contains("class GetPersonData"));
+        assert!(generated_code.contains("class Person"));
+        assert!(generated_code.contains("class Address"));
+
+        // Check field types
+        assert!(generated_code.contains("final String? name"));
+        assert!(generated_code.contains("final Address? address"));
+        assert!(generated_code.contains("final String? street"));
+        assert!(generated_code.contains("final String? city"));
+
+        // Check JSON serialization
+        assert!(generated_code.contains("factory Address.fromJson(Map<String, dynamic> json)"));
+        assert!(generated_code.contains("Map<String, dynamic> toJson()"));
+    }
+
+    #[test]
+    fn test_generate_dart_code_with_interface_types() {
+        let schema = r#"
+            interface Character {
+                id: ID!
+                name: String!
+            }
+
+            type Human implements Character {
+                id: ID!
+                name: String!
+                homePlanet: String
+            }
+
+            type Droid implements Character {
+                id: ID!
+                name: String!
+                primaryFunction: String
+            }
+
+            type Query {
+                hero: Character
+            }
+        "#;
+
+        let query = r#"
+            query GetHero {
+                hero {
+                    id
+                    name
+                    ... on Human {
+                        homePlanet
+                    }
+                    ... on Droid {
+                        primaryFunction
+                    }
+                }
+            }
+        "#;
+
+        let result = generate_dart_code(schema, query);
+        assert!(result.is_ok(), "Failed to generate code: {:?}", result.err());
+
+        let generated_code = result.unwrap();
+
+        // Check class definitions
+        assert!(generated_code.contains("class GetHeroResponse"));
+        assert!(generated_code.contains("class GetHeroData"));
+        assert!(generated_code.contains("class Character"));
+        assert!(generated_code.contains("class Human"));
+        assert!(generated_code.contains("class Droid"));
+
+        // Check field types
+        assert!(generated_code.contains("final String id"));
+        assert!(generated_code.contains("final String name"));
+        assert!(generated_code.contains("final String? homePlanet"));
+        assert!(generated_code.contains("final String? primaryFunction"));
+
+        // Check JSON serialization
+        assert!(generated_code.contains("factory Human.fromJson(Map<String, dynamic> json)"));
+        assert!(generated_code.contains("factory Droid.fromJson(Map<String, dynamic> json)"));
+        assert!(generated_code.contains("Map<String, dynamic> toJson()"));
+    }
+
+    #[test]
+    fn test_generate_dart_code_with_union_types() {
+        let schema = r#"
+            type Human {
+                id: ID!
+                name: String!
+                homePlanet: String
+            }
+
+            type Droid {
+                id: ID!
+                name: String!
+                primaryFunction: String
+            }
+
+            union SearchResult = Human | Droid
+
+            type Query {
+                search: [SearchResult]
+            }
+        "#;
+
+        let query = r#"
+            query Search {
+                search {
+                    ... on Human {
+                        id
+                        name
+                        homePlanet
+                    }
+                    ... on Droid {
+                        id
+                        name
+                        primaryFunction
+                    }
+                }
+            }
+        "#;
+
+        let result = generate_dart_code(schema, query);
+        assert!(result.is_ok(), "Failed to generate code: {:?}", result.err());
+
+        let generated_code = result.unwrap();
+
+        // Check class definitions
+        assert!(generated_code.contains("class SearchResponse"));
+        assert!(generated_code.contains("class SearchData"));
+        assert!(generated_code.contains("class Human"));
+        assert!(generated_code.contains("class Droid"));
+
+        // Check field types
+        assert!(generated_code.contains("final String id"));
+        assert!(generated_code.contains("final String name"));
+        assert!(generated_code.contains("final String? homePlanet"));
+        assert!(generated_code.contains("final String? primaryFunction"));
+
+        // Check JSON serialization
+        assert!(generated_code.contains("factory Human.fromJson(Map<String, dynamic> json)"));
+        assert!(generated_code.contains("factory Droid.fromJson(Map<String, dynamic> json)"));
+        assert!(generated_code.contains("Map<String, dynamic> toJson()"));
+    }
 }
