@@ -8,19 +8,19 @@ pub struct SchemaContext {
 
 }
 
-impl SchemaContext{
-    pub fn new() -> SchemaContext{
-        SchemaContext{
-            types: HashMap::new()
+impl SchemaContext {
+    pub fn new() -> SchemaContext {
+        SchemaContext {
+            types: HashMap::new(),
         }
     }
 
-    pub fn add_type(&mut self, name: String, type_: Box<GraphQLType>){
+    pub fn add_type(&mut self, name: String, type_: Box<GraphQLType>) {
         self.types.insert(name, type_);
     }
 
-    pub fn get_type(&self, name: &str) -> Option<&GraphQLType>{
-        self.types.get(name).map(|t| t.borrow())
+    pub fn get_type(&self, name: &str) -> Option<&GraphQLType> {
+        self.types.get(name).map(|t| t.as_ref())
     }
 }
 pub type SharedSchemaContext = Rc<RefCell<SchemaContext>>;
