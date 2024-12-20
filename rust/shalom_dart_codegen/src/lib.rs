@@ -1,6 +1,4 @@
 use anyhow::{Context, Result};
-use graphql_parser::schema::{parse_schema, Type, TypeDefinition};
-use graphql_parser::query::{parse_query, Definition, OperationDefinition, Selection, Field as QueryField};
 use minijinja::Environment;
 use serde::Serialize;
 
@@ -20,7 +18,7 @@ struct TemplateContext {
     fields: Vec<Field>,
 }
 
-pub fn generate_dart_code(schema: &str, query: &str) -> Result<String> {
+pub fn generate_dart_code(schema: SharedSchemaContex, query: &str) -> Result<String> {
     let schema_ast = parse_schema::<String>(schema).context("Failed to parse schema")?;
     let query_ast = parse_query::<String>(query).context("Failed to parse query")?;
 
@@ -82,7 +80,7 @@ fn get_type_info(type_ref: &Type<String>) -> (String, bool) {
                 "Boolean" => "bool",
                 "ID" => "String",
                 "DateTime" => "DateTime",
-                other => other,
+                other => panic!("Unsupported type: {}", other),
             };
             (dart_type.to_string(), false)
         }

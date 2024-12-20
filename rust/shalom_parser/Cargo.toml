@@ -1,5 +1,5 @@
 [package]
-name = "codegen"
+name = "shalom_parser"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,3 +7,4 @@ edition = "2021"
 anyhow = "1.0.86"
 apollo-compiler = "=1.0.0-beta.20"
 minijinja = "2.1.1"
+
