@@ -1,32 +1,5 @@
 // Generated code - do not modify by hand
 
-class {{ query_name }}Response {
-  final {{ query_name }}Data? data;
-  
-  {{ query_name }}Response({this.data});
-
-  factory {{ query_name }}Response.fromJson(Map<String, dynamic> json) {
-    return {{ query_name }}Response(
-      data: json['data'] != null ? {{ query_name }}Data.fromJson(json['data'] as Map<String, dynamic>) : null,
-    );
-  }
-  
-  Map<String, dynamic> toJson() {
-    return {
-      'data': data?.toJson(),
-    };
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is {{ query_name }}Response && other.data == data;
-  }
-
-  @override
-  int get hashCode => data.hashCode;
-}
-
 class {{ query_name }}Data {
   final {{ return_type }}? {{ field_name }};
 
