@@ -112,8 +112,8 @@ impl FieldType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ScalarType {
-    pub description: Option<String>,
     pub name: String,
+    pub description: Option<String>,
 }
 
 const DEFAULT_SCALARS: &[&str] = &["String", "Int", "Float", "Boolean", "ID"];

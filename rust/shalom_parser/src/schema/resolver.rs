@@ -1,17 +1,39 @@
 use std::cell::RefCell;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 
 use super::context::SharedSchemaContext;
-use super::types::{FieldDefinition, FieldType, GraphQLType};
+use super::types::{FieldDefinition, FieldType, GraphQLType, ScalarType};
 use super::{context::SchemaContext, types::ObjectType, utils::TypeRef};
 use anyhow::Result;
 use apollo_compiler::schema as apollo_schema;
 use apollo_compiler::{self};
+const DEFAULT_SCALAR_TYPES: [(&str, &str); 8] = [
+    ("String", "A UTF‐8 character sequence."),
+    ("Int", "A signed 32‐bit integer."),
+    ("Float", "A signed double-precision floating-point value."),
+    ("Boolean", "true or false."),
+    ("ID", "A unique identifier."),
+    ("Date", "A date and time."),
+    ("DateTime", "A date and time."),
+    ("Time", "A time."),
+];
 
 pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
-    let ctx = Rc::new(RefCell::new(SchemaContext::new()));
-    let schema = match (apollo_compiler::Schema::parse(schema, "schema.graphql")) {
+    let mut initial_types = HashMap::new();
+    
+    // Add the default scalar types
+    for (name, description) in DEFAULT_SCALAR_TYPES.iter() {
+        initial_types.insert(
+            name.to_string(),
+            Box::new(GraphQLType::Scalar(Rc::new(ScalarType {
+                name: name.to_string(),
+                description: Some(description.to_string()),
+            }))),
+        );
+    }
+    let ctx = Rc::new(RefCell::new(SchemaContext::new(initial_types)));
+    let schema = match apollo_compiler::Schema::parse(schema, "schema.graphql") {
         Ok(schema) => schema,
         Err(e) => return Err(anyhow::anyhow!("Error parsing schema: {}", e)),
     };
