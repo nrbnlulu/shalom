@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use minijinja::Environment;
 use serde::Serialize;
-
+use shalom_parser::schema::context::SharedSchemaContext;
 
 #[derive(Serialize)]
 struct Field {
@@ -18,7 +18,7 @@ struct TemplateContext {
     fields: Vec<Field>,
 }
 
-pub fn generate_dart_code(schema: SharedSchemaContex, query: &str) -> Result<String> {
+pub fn generate_dart_code(schema: SharedSchemaContext, query: &str) -> Result<String> {
     let schema_ast = parse_schema::<String>(schema).context("Failed to parse schema")?;
     let query_ast = parse_query::<String>(query).context("Failed to parse query")?;
 

@@ -9,9 +9,10 @@ pub struct SchemaContext {
 }
 
 impl SchemaContext {
-    pub fn new() -> SchemaContext {
+    pub fn new(initial_types: HashMap<String, Box<GraphQLType>>
+    ) -> SchemaContext {
         SchemaContext {
-            types: HashMap::new(),
+            types: initial_types,
         }
     }
 
