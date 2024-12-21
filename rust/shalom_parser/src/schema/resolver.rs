@@ -32,19 +32,28 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
             }))),
         );
     }
-    let ctx = Rc::new(RefCell::new(SchemaContext::new(initial_types)));
-    let schema = match apollo_compiler::Schema::parse(schema, "schema.graphql") {
+    let schema_raw = match apollo_compiler::Schema::parse(schema, "schema.graphql") {
         Ok(schema) => schema,
         Err(e) => return Err(anyhow::anyhow!("Error parsing schema: {}", e)),
     };
-    for type_ in schema.types {
+    let schema = match schema_raw.validate() {
+        Ok(schema) => Rc::new(schema),
+        Err(e) => return Err(anyhow::anyhow!("Error validating schema: {}", e)),
+    };
+
+    
+    let ctx = Rc::new(RefCell::new(SchemaContext::new(initial_types, schema.clone())));
+
+    for type_ in &schema.types {
         match type_.1 {
             apollo_schema::ExtendedType::Object(object) => {
-                resolve_object(ctx.clone(), type_.0.to_string(), object);
+                resolve_object(ctx.clone(), type_.0.to_string(), object.clone());
             }
             _ => {}
         }
     }
+
+
     Ok(ctx)
 }
 
