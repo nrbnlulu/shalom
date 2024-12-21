@@ -9,7 +9,6 @@ use apollo_compiler::{
     ast::{Field, Value},
     collections::HashMap,
 };
-use minijinja::value::Object;
 
 struct NamedType {
     name: String,
