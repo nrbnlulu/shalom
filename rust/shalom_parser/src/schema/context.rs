@@ -5,13 +5,13 @@ use crate::schema::types::GraphQLType;
 #[derive(Debug)]
 pub struct SchemaContext {
     types: HashMap<String, Box<GraphQLType>>,
-    pub schema: Valid<apollo_compiler::Schema>,
+    pub schema: Rc<Valid<apollo_compiler::Schema>>,
 }
 
 impl SchemaContext {
     pub fn new(
         initial_types: HashMap<String, Box<GraphQLType>>,
-        schema: Valid<apollo_compiler::Schema>,
+        schema: Rc<Valid<apollo_compiler::Schema>>,
     ) -> SchemaContext {
         SchemaContext {
             types: initial_types,
