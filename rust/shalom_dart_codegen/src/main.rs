@@ -1,6 +1,5 @@
 use std::fs;
 use std::path::PathBuf;
-use graphql_dart_codegen::generate_dart_code;
 
 fn main() -> anyhow::Result<()> {
     let args: Vec<String> = std::env::args().collect();
