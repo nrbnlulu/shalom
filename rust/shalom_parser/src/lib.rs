@@ -1,7 +1,7 @@
-use std::{collections::HashMap, sync::Arc};
+use std::{collections::HashMap, hash::Hash, sync::Arc};
 
 use apollo_compiler::{ executable::{Fragment, Operation}, validation::Valid, ExecutableDocument, Node};
-use schema::context::SharedSchemaContext;
+use schema::{context::SharedSchemaContext, types::{EnumType, InputObjectType, ObjectType}};
 
 pub mod schema;
 pub mod operation;
@@ -11,6 +11,7 @@ pub mod operation;
 pub struct GenerationContext {
     fragments: HashMap<String, Node<Fragment>>,
     operations: HashMap<String, Node<Operation>>,
+
     pub schema: SharedSchemaContext,
     pub docs: Vec<Valid<ExecutableDocument>>
 }
@@ -37,8 +38,8 @@ impl GenerationContext{
                 }
                 ops.insert(op_name, op.clone());
             }
-            }
-            
+        }
+
 
         Ok(GenerationContext{
             schema,

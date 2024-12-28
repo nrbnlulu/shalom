@@ -6,7 +6,7 @@ use super::context::SharedSchemaContext;
 use super::types::{FieldDefinition, FieldType, GraphQLType, ScalarType};
 use super::{context::SchemaContext, types::ObjectType, utils::TypeRef};
 use anyhow::Result;
-use apollo_compiler::schema as apollo_schema;
+use apollo_compiler::{schema as apollo_schema, Node};
 use apollo_compiler::{self};
 const DEFAULT_SCALAR_TYPES: [(&str, &str); 8] = [
     ("String", "A UTF‐8 character sequence."),
@@ -26,7 +26,7 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
     for (name, description) in DEFAULT_SCALAR_TYPES.iter() {
         initial_types.insert(
             name.to_string(),
-            Box::new(GraphQLType::Scalar(Rc::new(ScalarType {
+            Box::new(GraphQLType::Scalar(Node::new(ScalarType {
                 name: name.to_string(),
                 description: Some(description.to_string()),
             }))),
@@ -80,13 +80,13 @@ fn resolve_object(
         });
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
-    let object = Box::new(GraphQLType::Object(Rc::new(ObjectType {
+    let object = Node::new(ObjectType {
         name: name.clone(),
         description: description,
         fields: fields,
         implements_interfaces: HashSet::new(),
-    })));
-    ctx.add_type(name.clone(), object);
+    });
+    ctx.add_object(name.clone(), object);
     TypeRef::new(context.clone(), name)
 }
 
