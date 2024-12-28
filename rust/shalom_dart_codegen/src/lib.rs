@@ -13,9 +13,9 @@ fn generate(
 }
 
 
-fn generate_schema(schema: SharedSchemaContext) -> anyhow::Result<()> {
+fn generate_schema(schema: SharedSchemaContext) -> anyhow::Result<String> {
   
-    Ok(())
+    Ok("".to_string())
 }
 
 fn generate_operation(op: Node<Operation>, ctx: Arc<GenerationContext>) -> anyhow::Result<()> {
