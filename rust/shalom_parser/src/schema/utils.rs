@@ -1,10 +1,11 @@
 
 
+use apollo_compiler::Node;
+
 use super::{
     context::SharedSchemaContext,
     types::{GraphQLType, ObjectType, ScalarType, InterfaceType, EnumType, UnionType, InputObjectType},
 };
-use std::rc::Rc;
 
 #[derive(Clone, Debug)]
 pub struct TypeRef {
@@ -36,22 +37,22 @@ impl TypeRef {
             name: name,
         }
     }
-    pub fn get_scalar(&self) -> Option<Rc<ScalarType>> {
+    pub fn get_scalar(&self) -> Option<Node<ScalarType>> {
         self.resolve().map_or(None, |t| t.scalar())
     }
-    pub fn get_object(&self) -> Option<Rc<ObjectType>> {
+    pub fn get_object(&self) -> Option<Node<ObjectType>> {
         self.resolve().map_or(None, |t| t.object())
     }
-    pub fn is_interface(&self) -> Option<Rc<InterfaceType>> {
+    pub fn is_interface(&self) -> Option<Node<InterfaceType>> {
         self.resolve().map_or(None, |t| t.interface())
     }
-    pub fn is_union(&self) -> Option<Rc<UnionType>> {
+    pub fn is_union(&self) -> Option<Node<UnionType>> {
         self.resolve().map_or(None, |t| t.union())
     }
-    pub fn is_enum(&self) -> Option<Rc<EnumType>> {
+    pub fn is_enum(&self) -> Option<Node<EnumType>> {
         self.resolve().map_or(None, |t| t.enum_())
     }
-    pub fn is_input_object(&self) -> Option<Rc<InputObjectType>> {
+    pub fn is_input_object(&self) -> Option<Node<InputObjectType>> {
         self.resolve().map_or(None, |t| t.input_object())
     }
 }

@@ -1,4 +1,3 @@
-use std::rc::Rc;
 use std::{
     collections::HashSet,
     hash::{Hash, Hasher},
@@ -7,7 +6,7 @@ use std::{
 use super::{context::SchemaContext, utils::TypeRef};
 use apollo_compiler::{
     ast::{Field, Value},
-    collections::HashMap,
+    collections::HashMap, Node,
 };
 
 struct NamedType {
@@ -17,55 +16,55 @@ struct NamedType {
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 /// The definition of a named type, with all information from type extensions folded in.
 ///
-/// The source location is that of the "main" definition.
+/// The souNodee location is that of the "main" definition.
 pub enum GraphQLType {
-    Scalar(Rc<ScalarType>),
-    Object(Rc<ObjectType>),
-    Interface(Rc<InterfaceType>),
-    Union(Rc<UnionType>),
-    Enum(Rc<EnumType>),
-    InputObject(Rc<InputObjectType>),
+    Scalar(Node<ScalarType>),
+    Object(Node<ObjectType>),
+    Interface(Node<InterfaceType>),
+    Union(Node<UnionType>),
+    Enum(Node<EnumType>),
+    InputObject(Node<InputObjectType>),
 }
 
 impl GraphQLType {
-    pub fn object(&self) -> Option<Rc<ObjectType>> {
+    pub fn object(&self) -> Option<Node<ObjectType>> {
         match self {
-            GraphQLType::Object(obj) => Some(Rc::clone(obj)),
+            GraphQLType::Object(obj) => Some(Node::clone(obj)),
             _ => None,
         }
     }
 
-    pub fn interface(&self) -> Option<Rc<InterfaceType>> {
+    pub fn interface(&self) -> Option<Node<InterfaceType>> {
         match self {
-            GraphQLType::Interface(interface) => Some(Rc::clone(interface)),
+            GraphQLType::Interface(interface) => Some(Node::clone(interface)),
             _ => None,
         }
     }
 
-    pub fn union(&self) -> Option<Rc<UnionType>> {
+    pub fn union(&self) -> Option<Node<UnionType>> {
         match self {
-            GraphQLType::Union(union) => Some(Rc::clone(union)),
+            GraphQLType::Union(union) => Some(Node::clone(union)),
             _ => None,
         }
     }
 
-    pub fn scalar(&self) -> Option<Rc<ScalarType>> {
+    pub fn scalar(&self) -> Option<Node<ScalarType>> {
         match self {
-            GraphQLType::Scalar(scalar) => Some(Rc::clone(scalar)),
+            GraphQLType::Scalar(scalar) => Some(Node::clone(scalar)),
             _ => None,
         }
     }
 
-    pub fn enum_(&self) -> Option<Rc<EnumType>> {
+    pub fn enum_(&self) -> Option<Node<EnumType>> {
         match self {
-            GraphQLType::Enum(enum_) => Some(Rc::clone(enum_)),
+            GraphQLType::Enum(enum_) => Some(Node::clone(enum_)),
             _ => None,
         }
     }
 
-    pub fn input_object(&self) -> Option<Rc<InputObjectType>> {
+    pub fn input_object(&self) -> Option<Node<InputObjectType>> {
         match self {
-            GraphQLType::InputObject(input_object) => Some(Rc::clone(input_object)),
+            GraphQLType::InputObject(input_object) => Some(Node::clone(input_object)),
             _ => None,
         }
     }
@@ -94,14 +93,14 @@ impl FieldType {
         }
     }
 
-    pub fn get_scalar(&self) -> Option<Rc<ScalarType>> {
+    pub fn get_scalar(&self) -> Option<Node<ScalarType>> {
         match self {
             FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_scalar(),
             _ => None,
         }
     }
 
-    pub fn get_object(&self) -> Option<Rc<ObjectType>> {
+    pub fn get_object(&self) -> Option<Node<ObjectType>> {
         match self {
             FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_object(),
             _ => None,
