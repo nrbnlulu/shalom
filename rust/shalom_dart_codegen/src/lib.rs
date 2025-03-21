@@ -25,7 +25,7 @@ struct TemplateContext {
 
 pub fn generate_dart_code(schema: &str, query: &str) -> Result<String>{
     let schema_obj = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
-    let doc = ExecutableDocument::parse_and_validate(&schema_obj, query, "query.graphql").unwrap();
+    //let doc = ExecutableDocument::parse_and_validate(&schema_obj, query, "query.graphql").unwrap();
     let enums = parse_schema(&schema_obj);
     let context = TemplateContext {
         enums
@@ -80,42 +80,4 @@ fn parse_schema(schema: &Valid<Schema>) -> Vec<Enum_> {
     }
     return enums;
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_generate_dart_code() {
-        let schema = r#"
-            scalar DateTime
-
-            type Person {
-                name: String
-                age: Int!
-                dateOfBirth: DateTime!
-            }
-
-            type Query {
-                person(id: Int!): Person
-            }
-        "#;
-
-        let query = r#"
-            query HelloWorld($id: Int!) {
-                person(id: $id) {
-                    name
-                    age
-                    dateOfBirth
-                }
-            }
-        "#;
-        let result = generate_dart_code(schema, query);
-        println!("{}", result.unwrap()); 
-    }
-}
-
-
-
-
 
