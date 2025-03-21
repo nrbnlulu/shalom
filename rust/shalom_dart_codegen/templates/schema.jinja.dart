@@ -1,5 +1,5 @@
 
-{% for enum_ in context.enums -%}
+{% for enum_ in enums -%}
 
 enum {{ enum_.name }} {
   final String value_;
@@ -22,15 +22,4 @@ enum {{ enum_.name }} {
 }
 
 {% endfor %}
-
-{% for input_type in context.input_type -%}
-
-
-
-
-{% endfor %}
-
-
-{% macro field_from_json(field, assign_to) -%}
-{% if field.type in context.scalars %}
 

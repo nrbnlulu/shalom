@@ -1,23 +1,121 @@
-use std::sync::Arc;
+use anyhow::{Context, Result};
+use minijinja::{Environment};
+use serde::Serialize;
+use apollo_compiler::{Schema, ExecutableDocument, validation::Valid, ast::OperationType, executable::Selection, schema::ExtendedType};
+use apollo_compiler::executable::Operation;
 
-use apollo_compiler::{executable::Operation, Node};
-use shalom_parser::{schema::context::SharedSchemaContext, GenerationContext};
+ 
 
-fn generate(
-    ctx: Arc<GenerationContext>
-) -> anyhow::Result<()> {
-    generate_schema(ctx.schema.clone())?;
-
-
-    Ok(())
+#[derive(Serialize)]
+struct Field {
+    name: String,
 }
 
 
-fn generate_schema(schema: SharedSchemaContext) -> anyhow::Result<String> {
-  
-    Ok("".to_string())
+#[derive(Serialize)]
+struct Enum_ {
+    name: String, 
+    fields: Vec<Field>
 }
 
-fn generate_operation(op: Node<Operation>, ctx: Arc<GenerationContext>) -> anyhow::Result<()> {
-    Ok(())
+#[derive(Serialize)]
+struct TemplateContext {
+    enums: Vec<Enum_>
 }
+
+pub fn generate_dart_code(schema: &str, query: &str) -> Result<String>{
+    let schema_obj = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
+    let doc = ExecutableDocument::parse_and_validate(&schema_obj, query, "query.graphql").unwrap();
+    let enums = parse_schema(&schema_obj);
+    let context = TemplateContext {
+        enums
+    };
+    let mut env = Environment::new();
+    env.add_filter("to_snake_case", |s: String| {
+        s.chars().enumerate().fold(String::new(), |mut acc, (i, c)| {
+             if i > 0 && c.is_uppercase() {
+                acc.push('_');
+             } 
+            acc.extend(c.to_lowercase());
+            acc
+        })
+    });
+    env.add_filter("to_upper_case", |s: String| {
+        let mut uppercase_string = String::new(); 
+        for (i, s_char) in s.chars().enumerate() {
+            if i == 0 {
+                uppercase_string.extend(s_char.to_uppercase()) 
+            } else {
+                uppercase_string.push(s_char);  
+            }
+        } 
+        return uppercase_string;
+    });
+    env.add_template("schema", include_str!("../templates/schema.jinja.dart"))
+        .context("Failed to add template")?;
+
+    let tmpl = env.get_template("schema")
+        .context("Failed to get template")?;
+
+    tmpl.render(&context)
+        .map_err(|e| anyhow::anyhow!("Failed to render template: {}", e))
+}
+
+fn parse_schema(schema: &Valid<Schema>) -> Vec<Enum_> {
+    let mut enums = Vec::new(); 
+    for extend_type in schema.types.values() {
+        if let ExtendedType::Object(obj)  = extend_type {
+            let enum_name = obj.name.to_string(); 
+            if !(enum_name.starts_with("__")) {
+                let fields = obj.fields.values().map(|field| Field {
+                    name: field.node.name.to_string()
+                }).collect();
+                let enum_ = Enum_ {
+                    name: enum_name,
+                    fields
+                };
+                enums.push(enum_);
+           }
+        }
+    }
+    return enums;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_generate_dart_code() {
+        let schema = r#"
+            scalar DateTime
+
+            type Person {
+                name: String
+                age: Int!
+                dateOfBirth: DateTime!
+            }
+
+            type Query {
+                person(id: Int!): Person
+            }
+        "#;
+
+        let query = r#"
+            query HelloWorld($id: Int!) {
+                person(id: $id) {
+                    name
+                    age
+                    dateOfBirth
+                }
+            }
+        "#;
+        let result = generate_dart_code(schema, query);
+        println!("{}", result.unwrap()); 
+    }
+}
+
+
+
+
+
