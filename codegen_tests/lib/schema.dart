@@ -76,19 +76,19 @@ class Person {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     
-    name,
+      name,
     
-    age,
+      age,
     
-    id,
+      id,
     
-    height,
+      height,
     
-    male
+      male
     
-  );
+  ]);
 }
 
 class Query {
@@ -128,9 +128,9 @@ class Query {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     
-    person
+      person
     
-  );
+  ]);
 }

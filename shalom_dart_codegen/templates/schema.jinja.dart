@@ -36,10 +36,10 @@ class {{ object.name }} {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     {% for field in object.fields %}
-    {{ field.name }}{% if not loop.last %},{% endif %}
+      {{ field.name }}{% if not loop.last %},{% endif %}
     {% endfor %}
-  );
+  ]);
 }
 {% endfor %}
