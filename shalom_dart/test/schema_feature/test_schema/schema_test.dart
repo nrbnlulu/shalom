@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:codegen_tests/schema.dart'; 
+import '../__graphql__/schema.dart'; 
 
 void main() {
   group('Person Class', () {
@@ -277,5 +277,3 @@ void main() {
     });
   });
 }
-
-
