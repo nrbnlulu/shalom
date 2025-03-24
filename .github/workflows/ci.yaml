@@ -28,9 +28,9 @@ jobs:
           sdk: stable
 
       - name: Run Rust codegen
-        working-directory: ./shalom_dart_codegen
-        run: cargo run -- ../schema.graphql ../query.graphql ../codegen_tests/lib/schema.dart
+        working-directory: ./shalom_dart
+        run: cargo run -- ../schema.graphql ../query.graphql ../shalom_dart/test/schema_feature/__graphql__/schema.dart
 
       - name: Run Dart tests
-        working-directory: ./codegen_tests
+        working-directory: ./shalom_dart
         run: dart test
