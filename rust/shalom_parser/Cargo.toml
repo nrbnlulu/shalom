@@ -1,9 +1,0 @@
-[package]
-name = "shalom_parser"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-anyhow = "1.0.86"
-apollo-compiler = "=1.0.0-beta.20"
-

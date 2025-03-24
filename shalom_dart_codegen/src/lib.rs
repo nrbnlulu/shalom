@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use minijinja::{Environment};
 use serde::Serialize;
-use apollo_compiler::{Schema, ExecutableDocument, validation::Valid, ast::OperationType, executable::Selection, schema::ExtendedType};
+use apollo_compiler::{Schema, ExecutableDocument, validation::Valid, ast::{OperationType, Type}, executable::Selection, schema::ExtendedType};
 use apollo_compiler::executable::Operation;
 
  
@@ -9,26 +9,28 @@ use apollo_compiler::executable::Operation;
 #[derive(Serialize)]
 struct Field {
     name: String,
+    type_name: String,  
+    required: bool
 }
 
 
 #[derive(Serialize)]
-struct Enum_ {
+struct Object {
     name: String, 
     fields: Vec<Field>
 }
 
 #[derive(Serialize)]
 struct TemplateContext {
-    enums: Vec<Enum_>
+    objects: Vec<Object>
 }
 
 pub fn generate_dart_code(schema: &str, query: &str) -> Result<String>{
     let schema_obj = Schema::parse_and_validate(schema, "schema.graphql").unwrap();
     //let doc = ExecutableDocument::parse_and_validate(&schema_obj, query, "query.graphql").unwrap();
-    let enums = parse_schema(&schema_obj);
+    let objects= parse_schema(&schema_obj);
     let context = TemplateContext {
-        enums
+        objects
     };
     let mut env = Environment::new();
     env.add_filter("to_snake_case", |s: String| {
@@ -61,23 +63,52 @@ pub fn generate_dart_code(schema: &str, query: &str) -> Result<String>{
         .map_err(|e| anyhow::anyhow!("Failed to render template: {}", e))
 }
 
-fn parse_schema(schema: &Valid<Schema>) -> Vec<Enum_> {
-    let mut enums = Vec::new(); 
+fn parse_type(field_type: &Type) -> (String, bool) {
+    match field_type {
+        Type::NonNullNamed(name) => {
+            let (type_name, _) = parse_type(&Type::Named(name.clone()));
+            (type_name, true)
+        }
+        Type::Named(name) => {
+           let dart_type = match name.as_str() {
+                "Int" => "int",
+                "Float" => "double",
+                "String" => "String",
+                "Boolean" => "bool",
+                "ID" => "String",
+                "DateTime" => "DateTime",
+                other => other,
+            };
+            (dart_type.to_string(), false)
+        }
+        _ => todo!("List Types are not supported") 
+    }
+}
+
+fn parse_schema(schema: &Valid<Schema>) -> Vec<Object> {
+    let mut objects= Vec::new(); 
     for extend_type in schema.types.values() {
         if let ExtendedType::Object(obj)  = extend_type {
             let enum_name = obj.name.to_string(); 
             if !(enum_name.starts_with("__")) {
-                let fields = obj.fields.values().map(|field| Field {
-                    name: field.node.name.to_string()
+                let fields = obj.fields.values().map(|field| {
+                    let node = &field.node;
+                    let field_name = node.name.to_string();  
+                    let (field_type , required)= parse_type(&node.ty);
+                    Field {
+                        name: field_name,
+                        type_name: field_type, 
+                        required
+                    }
                 }).collect();
-                let enum_ = Enum_ {
+                let object= Object{
                     name: enum_name,
                     fields
                 };
-                enums.push(enum_);
+                objects.push(object);
            }
         }
     }
-    return enums;
+    return objects;
 }
 
