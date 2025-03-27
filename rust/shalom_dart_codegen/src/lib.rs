@@ -88,8 +88,8 @@ fn parse_schema(schema: &Valid<Schema>) -> Vec<Object> {
     let mut objects= Vec::new(); 
     for extend_type in schema.types.values() {
         if let ExtendedType::Object(obj)  = extend_type {
-            let enum_name = obj.name.to_string(); 
-            if !(enum_name.starts_with("__")) {
+            let obj_name = obj.name.to_string(); 
+            if !(obj_name.starts_with("__")) {
                 let fields = obj.fields.values().map(|field| {
                     let node = &field.node;
                     let field_name = node.name.to_string();  
@@ -101,7 +101,7 @@ fn parse_schema(schema: &Valid<Schema>) -> Vec<Object> {
                     }
                 }).collect();
                 let object= Object{
-                    name: enum_name,
+                    name: obj_name,
                     fields
                 };
                 objects.push(object);
