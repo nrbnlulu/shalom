@@ -2,7 +2,6 @@ use anyhow::{Context, Result};
 use minijinja::{Environment};
 use serde::Serialize;
 use apollo_compiler::{Schema, ExecutableDocument, validation::Valid, ast::{OperationType, Type}, executable::Selection, schema::ExtendedType};
-use apollo_compiler::executable::Operation;
 
  
 
