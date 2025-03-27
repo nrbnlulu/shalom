@@ -1,6 +1,7 @@
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
+use std::sync::{Arc, Mutex};
 
 use super::context::SharedSchemaContext;
 use super::types::{FieldDefinition, FieldType, GraphQLType, ScalarType};
@@ -26,10 +27,10 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
     for (name, description) in DEFAULT_SCALAR_TYPES.iter() {
         initial_types.insert(
             name.to_string(),
-            Box::new(GraphQLType::Scalar(Node::new(ScalarType {
+            GraphQLType::Scalar(Node::new(ScalarType {
                 name: name.to_string(),
                 description: Some(description.to_string()),
-            }))),
+            })),
         );
     }
     let schema_raw = match apollo_compiler::Schema::parse(schema, "schema.graphql") {
@@ -42,7 +43,7 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
     };
 
     
-    let ctx = Rc::new(RefCell::new(SchemaContext::new(initial_types, schema.clone())));
+    let ctx = Arc::new(Mutex::new(SchemaContext::new(initial_types, schema.clone())));
 
     for type_ in &schema.types {
         match type_.1 {
@@ -58,11 +59,11 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
 }
 
 fn resolve_object(
-    context: Rc<RefCell<SchemaContext>>,
+    context: SharedSchemaContext,
     name: String,
     origin: apollo_compiler::Node<apollo_schema::ObjectType>,
 ) -> TypeRef {
-    let mut ctx = context.borrow_mut();
+    let mut ctx = context.lock().unwrap();
     if let Some(_) = ctx.get_type(&name) {
         return TypeRef::new(context.clone(), name);
     }
@@ -73,19 +74,19 @@ fn resolve_object(
         let description = field.description.as_ref().map(|v| v.to_string());
         let arguments = vec![];
         fields.insert(FieldDefinition {
-            name: name,
-            ty: ty,
-            description: description,
-            arguments: arguments,
+            name,
+            ty,
+            description,
+            arguments,
         });
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
-    let object = Node::new(ObjectType {
+    let object = ObjectType {
         name: name.clone(),
         description: description,
         fields: fields,
         implements_interfaces: HashSet::new(),
-    });
+    };
     ctx.add_object(name.clone(), object);
     TypeRef::new(context.clone(), name)
 }
@@ -119,7 +120,7 @@ mod tests {
             }
         "#.to_string();
         let parsed = resolve(&schema).unwrap();
-        let ctx = parsed.borrow();
+        let ctx = parsed.lock().unwrap();
         let object = ctx.get_type("Query");
         assert_eq!(object.is_some(), true);
     }
@@ -133,7 +134,7 @@ mod tests {
             }
         "#.to_string();
         let parsed = resolve(&schema).unwrap();
-        let ctx = parsed.borrow();
+        let ctx = parsed.lock().unwrap();
         let object = ctx.get_type("Query").unwrap().object().unwrap();
 
         let hello_field = object.get_field("hello").unwrap();

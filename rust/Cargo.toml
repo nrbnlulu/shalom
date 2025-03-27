@@ -1,5 +1,11 @@
+
 [workspace]
 members = [
     "./shalom_dart_codegen",
     "./shalom_parser",
 ]
+
+[workspace.dependencies]
+anyhow = "1.0.86"
+simple_logger = "5.0.0"
+log = "0.4.27"
