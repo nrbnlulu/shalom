@@ -91,16 +91,18 @@ fn generate_schema(schema: SharedSchemaContext) -> anyhow::Result<String> {
     let schema_context = schema.borrow();
     let mut objects = Vec::new();
     for (name, _) in &schema_context.schema.types {
-       let type_ =  schema_context.get_type(name.as_str()); 
-       if let Some(type_obj) = type_ {
-          match type_obj {
-            GraphQLType::Object(node) => {
-                objects.push(parse_object_type(&node));      
+       if !name.starts_with("__") {
+        let type_ =  schema_context.get_type(name.as_str()); 
+        if let Some(type_obj) = type_ {
+            match type_obj {
+                GraphQLType::Object(node) => {
+                    objects.push(parse_object_type(&node));      
+                }
+                GraphQLType::Scalar(_) => {}
+                _ => todo!("other types will be implemented soon")
             }
-            GraphQLType::Scalar(_) => {}
-            _ => todo!("other types will be implemented soon")
-          }
-       }
+        }
+      }
     }
     let template_context = SchemaTemplateContext {
            objects 
