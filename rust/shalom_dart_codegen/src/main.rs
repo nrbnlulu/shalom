@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
+use shalom_dart_codegen::generate_dart_code;
 
 fn main() -> anyhow::Result<()> {
     let args: Vec<String> = std::env::args().collect();
@@ -13,7 +14,7 @@ fn main() -> anyhow::Result<()> {
     let output_path = PathBuf::from(&args[3]);
 
     let generated_code = generate_dart_code(&schema, &query)?;
-    fs::write(output_path, generated_code)?;
+    // fs::write(output_path, generated_code)?;
 
     Ok(())
 }
