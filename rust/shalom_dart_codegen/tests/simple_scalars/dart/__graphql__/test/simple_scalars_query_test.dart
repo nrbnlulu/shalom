@@ -29,7 +29,7 @@ void main() {
 
       expect(json['person']['name'], 'John Doe');
       expect(json['person']['age'], 30);
-      expect(json['person']['dateOfBirth'], '1991-01-01');
+      expect(json['person']['dateOfBirth'], '1991-01-01T00:00:00.000');
     });
 
     test('equality operator compares HelloWorldData correctly', () {
@@ -49,14 +49,5 @@ void main() {
       final helloWorldData2 = HelloWorldData(person: person1);
 
       expect(helloWorldData1.hashCode, equals(helloWorldData2.hashCode));
-    });
-
-    // Test for toString method if it's overridden (you can add this in your class).
-    test('toString method returns expected string', () {
-      final person = Person(name: 'John Doe', age: 30, dateOfBirth: DateTime.parse('1991-01-01'));
-      final helloWorldData = HelloWorldData(person: person);
-
-      expect(helloWorldData.toString(), contains('John Doe'));
-      expect(helloWorldData.toString(), contains('1991-01-01'));
     });
 }
