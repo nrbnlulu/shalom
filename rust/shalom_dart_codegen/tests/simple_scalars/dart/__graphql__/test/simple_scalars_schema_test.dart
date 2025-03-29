@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:__graphql__/simple_scalars.dart';
+import 'package:__graphql__/simple_scalars_schema.dart';
 
 void main() {
   group('Person', () {

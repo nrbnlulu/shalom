@@ -1,31 +1,31 @@
 
 class Person {
   
-  final DateTime dateOfBirth;
+  final int age;
   
   final String? name;
   
-  final int age;
+  final DateTime dateOfBirth;
   
 
   Person({
     
-    required this.dateOfBirth,
+    required this.age,
     
     this.name,
     
-    required this.age,
+    required this.dateOfBirth,
     
   });
 
   factory Person.fromJson(Map<String, dynamic> json) {
     return Person(
       
-      dateOfBirth: DateTime.parse(json['dateOfBirth'] as String) ,
+      age: json['age'] as int,
       
       name: json['name'] as String?,
       
-      age: json['age'] as int,
+      dateOfBirth: DateTime.parse(json['dateOfBirth'] as String) ,
       
     );
   }
@@ -33,11 +33,11 @@ class Person {
   Map<String, dynamic> toJson() {
     return {
       
-      'dateOfBirth': dateOfBirth?.toIso8601String(),
+      'age': age,
       
       'name': name,
       
-      'age': age,
+      'dateOfBirth': dateOfBirth?.toIso8601String(),
       
     };
   }
@@ -47,22 +47,22 @@ class Person {
     if (identical(this, other)) return true;
     return other is Person
       
-      && other.dateOfBirth == dateOfBirth
+      && other.age == age
       
       && other.name == name
       
-      && other.age == age
+      && other.dateOfBirth == dateOfBirth
       ;
   }
 
   @override
   int get hashCode => Object.hashAll([
     
-      dateOfBirth,
+      age,
     
       name,
     
-      age
+      dateOfBirth
     
   ]);
 }
