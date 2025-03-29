@@ -28,7 +28,7 @@ impl std::hash::Hash for TypeRef {
 
 impl TypeRef {
     pub fn resolve(&self) -> Option<GraphQLType> {
-        self.ctx.borrow().get_type(&self.name).cloned()
+        self.ctx.read().unwrap().get_type(&self.name).cloned()
     }
 
     pub fn new(ctx: SharedSchemaContext, name: String) -> TypeRef {

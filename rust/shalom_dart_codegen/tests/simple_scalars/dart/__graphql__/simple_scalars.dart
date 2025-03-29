@@ -3,18 +3,18 @@ class Person {
   
   final String? name;
   
-  final DateTime dateOfBirth;
-  
   final int age;
+  
+  final DateTime dateOfBirth;
   
 
   Person({
     
     this.name,
     
-    required this.dateOfBirth,
-    
     required this.age,
+    
+    required this.dateOfBirth,
     
   });
 
@@ -23,9 +23,9 @@ class Person {
       
       name: json['name'] as String?,
       
-      dateOfBirth: json['dateOfBirth'] != null ? DateTime.parse(json['dateOfBirth'] as String) : null,
-      
       age: json['age'] as int,
+      
+      dateOfBirth: json['dateOfBirth'] != null ? DateTime.parse(json['dateOfBirth'] as String) : null,
       
     );
   }
@@ -35,9 +35,9 @@ class Person {
       
       'name': name,
       
-      'dateOfBirth': dateOfBirth?.toIso8601String(),
-      
       'age': age,
+      
+      'dateOfBirth': dateOfBirth?.toIso8601String(),
       
     };
   }
@@ -49,9 +49,9 @@ class Person {
       
       && other.name == name
       
-      && other.dateOfBirth == dateOfBirth
-      
       && other.age == age
+      
+      && other.dateOfBirth == dateOfBirth
       ;
   }
 
@@ -60,9 +60,9 @@ class Person {
     
       name,
     
-      dateOfBirth,
+      age,
     
-      age
+      dateOfBirth
     
   ]);
 }

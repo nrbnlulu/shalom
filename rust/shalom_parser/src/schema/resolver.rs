@@ -1,6 +1,6 @@
-use std::cell::RefCell;
+use std::sync::RwLock;
 use std::collections::{HashMap, HashSet};
-use std::rc::Rc;
+use std::sync::Arc;
 
 use super::context::SharedSchemaContext;
 use super::types::{FieldDefinition, FieldType, GraphQLType, ScalarType};
@@ -37,12 +37,12 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
         Err(e) => return Err(anyhow::anyhow!("Error parsing schema: {}", e)),
     };
     let schema = match schema_raw.validate() {
-        Ok(schema) => Rc::new(schema),
+        Ok(schema) => Arc::new(schema),
         Err(e) => return Err(anyhow::anyhow!("Error validating schema: {}", e)),
     };
 
     
-    let ctx = Rc::new(RefCell::new(SchemaContext::new(initial_types, schema.clone())));
+    let ctx = Arc::new(RwLock::new(SchemaContext::new(initial_types, schema.clone())));
 
     for type_ in &schema.types {
         match type_.1 {
@@ -58,11 +58,11 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
 }
 
 fn resolve_object(
-    context: Rc<RefCell<SchemaContext>>,
+    context: Arc<RwLock<SchemaContext>>,
     name: String,
     origin: apollo_compiler::Node<apollo_schema::ObjectType>,
 ) -> TypeRef {
-    let mut ctx = context.borrow_mut();
+    let mut ctx = context.write().unwrap();
     if let Some(_) = ctx.get_type(&name) {
         return TypeRef::new(context.clone(), name);
     }
@@ -119,7 +119,7 @@ mod tests {
             }
         "#.to_string();
         let parsed = resolve(&schema).unwrap();
-        let ctx = parsed.borrow();
+        let ctx = parsed.read().unwrap();
         let object = ctx.get_type("Query");
         assert_eq!(object.is_some(), true);
     }
@@ -133,7 +133,7 @@ mod tests {
             }
         "#.to_string();
         let parsed = resolve(&schema).unwrap();
-        let ctx = parsed.borrow();
+        let ctx = parsed.read().unwrap();
         let object = ctx.get_type("Query").unwrap().object().unwrap();
 
         let hello_field = object.get_field("hello").unwrap();

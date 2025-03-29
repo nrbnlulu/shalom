@@ -1,4 +1,4 @@
-use std::{borrow::Borrow, cell::RefCell, collections::HashMap, iter::Map, rc::Rc};
+use std::{borrow::Borrow, sync::{Arc,RwLock}, collections::HashMap, iter::Map};
 use apollo_compiler::{validation::Valid, Node};
 use crate::schema::types::GraphQLType;
 
@@ -10,13 +10,13 @@ pub struct SchemaContext {
     inputs: HashMap<String, Node<InputObjectType>>,
     object_types: HashMap<String, Node<ObjectType>>,
     enums: HashMap<String, Node<EnumType>>,
-    pub schema: Rc<Valid<apollo_compiler::Schema>>,
+    pub schema: Arc<Valid<apollo_compiler::Schema>>,
 }
 
 impl SchemaContext {
     pub fn new(
         initial_types: HashMap<String, Box<GraphQLType>>,
-        schema: Rc<Valid<apollo_compiler::Schema>>,
+        schema: Arc<Valid<apollo_compiler::Schema>>,
     ) -> SchemaContext {
         SchemaContext {
             types: initial_types,
@@ -39,5 +39,5 @@ impl SchemaContext {
         self.types.get(name).map(|t| t.as_ref())
     }
 }
-pub type SharedSchemaContext = Rc<RefCell<SchemaContext>>;
+pub type SharedSchemaContext = Arc<RwLock<SchemaContext>>;
 

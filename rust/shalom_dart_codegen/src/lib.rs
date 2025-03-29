@@ -1,5 +1,5 @@
-use std::rc::Rc;
-use std::cell::RefCell;
+use std::sync::Arc;
+use std::sync::RwLock;
 use apollo_compiler::Schema;
 use apollo_compiler::{executable::Operation, Node, ExecutableDocument};
 use shalom_parser::{schema::context::{SharedSchemaContext, SchemaContext}, GenerationContext, schema::resolver::resolve, schema::types::{GraphQLType, ObjectType, FieldType}};
@@ -33,13 +33,13 @@ struct Object {
 pub fn generate_dart_code(schema: &str, query: &str) -> anyhow::Result<String> {
     let schema_context = resolve(&schema.to_string())?;
     //let doc = ExecutableDocument::parse_and_validate(&schema_context.borrow().schema, query, "query.graphql").unwrap();
-    let generation_context = Rc::new(GenerationContext::new(schema_context.clone(), vec![])?);   
+    let generation_context = Arc::new(GenerationContext::new(schema_context.clone(), vec![])?);   
     let dart_code = generate(generation_context.clone())?;
     return Ok(dart_code); 
 }
 
 fn generate(
-    ctx: Rc<GenerationContext>
+    ctx: Arc<GenerationContext>
 ) -> anyhow::Result<String> {
     let schema_content = generate_schema(ctx.schema.clone())?;
     Ok(schema_content)
@@ -87,7 +87,7 @@ fn parse_object_type(object_type: &Node<ObjectType>) -> Object {
     return object
 }
 fn generate_schema(schema: SharedSchemaContext) -> anyhow::Result<String> {
-    let schema_context = schema.borrow();
+    let schema_context = schema.read().unwrap();
     let mut objects = Vec::new();
     for (name, _) in &schema_context.schema.types {
        if !name.starts_with("__") {
@@ -127,6 +127,6 @@ fn read_from_file(path: &str) -> io::Result<String> {
     Ok(contents)
 }
 
-fn generate_operation(op: Node<Operation>, ctx: Rc<GenerationContext>) -> anyhow::Result<()> {
+fn generate_operation(op: Node<Operation>, ctx: Arc<GenerationContext>) -> anyhow::Result<()> {
     Ok(())
 }
