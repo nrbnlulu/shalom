@@ -25,7 +25,7 @@ class Person {
       
       age: json['age'] as int,
       
-      dateOfBirth: json['dateOfBirth'] != null ? DateTime.parse(json['dateOfBirth'] as String) : null,
+      dateOfBirth: DateTime.parse(json['dateOfBirth'] as String) ,
       
     );
   }

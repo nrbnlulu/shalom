@@ -13,7 +13,7 @@ class {{ object.name }} {
   factory {{ object.name }}.fromJson(Map<String, dynamic> json) {
     return {{ object.name }}(
       {% for field in object.fields %}
-      {{ field.name }}: {% if field.type_name == "DateTime" %}json['{{ field.name }}'] != null ? DateTime.parse(json['{{ field.name }}'] as String) : null{% elif field.type_name in ["int", "double", "bool", "String"] %}json['{{ field.name }}'] as {{ field.type_name }}{% if not field.required %}?{% endif %}{% else %}json['{{ field.name }}'] != null ? {{ field.type_name }}.fromJson(json['{{ field.name }}'] as Map<String, dynamic>) : null{% endif %},
+      {{ field.name }}: {% if field.type_name == "DateTime" %}{% if field.required %}DateTime.parse(json['{{ field.name }}'] as String){% else %} json['{{ field.name }}'] != null ? DateTime.parse(json['{{ field.name }}'] as String) : null {% endif %} {% elif field.type_name in ["int", "double", "bool", "String"] %}json['{{ field.name }}'] as {{ field.type_name }}{% if not field.required %}?{% endif %}{% else %}json['{{ field.name }}'] != null ? {{ field.type_name }}.fromJson(json['{{ field.name }}'] as Map<String, dynamic>) : null{% endif %},
       {% endfor %}
     );
   }
