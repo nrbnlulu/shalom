@@ -10,7 +10,7 @@ use super::{
 #[derive(Clone, Debug)]
 pub struct TypeRef {
     ctx: SharedSchemaContext,
-    name: String,
+    pub name: String,
 }
 
 impl PartialEq for TypeRef {

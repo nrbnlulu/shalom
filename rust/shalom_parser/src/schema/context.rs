@@ -6,7 +6,7 @@ use super::types::{EnumType, InputObjectType, ObjectType};
 
 #[derive(Debug)]
 pub struct SchemaContext {
-    types: HashMap<String, GraphQLType>,
+    types: HashMap<String, Box<GraphQLType>>,
     inputs: HashMap<String, Node<InputObjectType>>,
     object_types: HashMap<String, Node<ObjectType>>,
     enums: HashMap<String, Node<EnumType>>,
@@ -21,6 +21,9 @@ impl SchemaContext {
         SchemaContext {
             types: initial_types,
             schema,
+            inputs: HashMap::new(),
+            object_types: HashMap::new(),
+            enums: HashMap::new()
         }
     }
 
@@ -28,7 +31,7 @@ impl SchemaContext {
         if (self.types.contains_key(&name)){
             panic!("")
         }
-        self.types.insert(name.clone(), GraphQLType::Object(type_.clone()));
+        self.types.insert(name.clone(), Box::new(GraphQLType::Object(type_.clone())));
         self.object_types.insert(name, type_);
     }
 

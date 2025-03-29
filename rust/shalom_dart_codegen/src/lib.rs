@@ -30,13 +30,12 @@ struct Object {
     fields: Vec<Field>
 }
 
-pub fn generate_dart_code(schema: &str, query: &str) -> anyhow::Result<()> {
+pub fn generate_dart_code(schema: &str, query: &str) -> anyhow::Result<String> {
     let schema_context = resolve(&schema.to_string())?;
     //let doc = ExecutableDocument::parse_and_validate(&schema_context.borrow().schema, query, "query.graphql").unwrap();
     let generation_context = Rc::new(GenerationContext::new(schema_context.clone(), vec![])?);   
     let dart_code = generate(generation_context.clone())?;
-    println!("{}", dart_code);
-    return Ok(()); 
+    return Ok(dart_code); 
 }
 
 fn generate(
@@ -130,22 +129,4 @@ fn read_from_file(path: &str) -> io::Result<String> {
 
 fn generate_operation(op: Node<Operation>, ctx: Rc<GenerationContext>) -> anyhow::Result<()> {
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::generate_dart_code;
-
-    #[test]
-    fn test_generate_dart_code() {
-        let schema = r#"
-            type Query{
-                hello: String!
-                world: Int!
-                id: ID!
-            }
-        "#.to_string();
-        let query = "".to_string();
-        generate_dart_code(&schema, &query);
-    }
 }

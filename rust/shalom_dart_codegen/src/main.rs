@@ -12,9 +12,13 @@ fn main() -> anyhow::Result<()> {
     let schema = fs::read_to_string(&args[1])?;
     let query = fs::read_to_string(&args[2])?;
     let output_path = PathBuf::from(&args[3]);
+    if !output_path.exists() {
+        fs::File::create(&output_path)?;
+    }
 
     let generated_code = generate_dart_code(&schema, &query)?;
-    // fs::write(output_path, generated_code)?;
+
+    fs::write(output_path, generated_code)?;
 
     Ok(())
 }
