@@ -9,7 +9,7 @@ fn test_simple_scalars() {
     let codegen_output = run_command("cargo", &vec!["run", "--", "tests/schema.graphql", "tests/query.graphql", &output_path], None);
     assert!(codegen_output.status.success(), "Command failed: {:?}", codegen_output);
     let dart_test_output = run_command("dart", &vec!["test"], Some(directory));  
-    assert!(codegen_output.status.success(), "Command failed: {:?}", dart_test_output);
+    assert!(dart_test_output.status.success(), "Command failed: {:?}", dart_test_output);
     assert!(dart_test_output.stderr.is_empty());
     // println!("{:?}", codegen_output.stderr);
     // println!("{:?}", dart_test_output);
