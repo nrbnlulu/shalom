@@ -1,4 +1,4 @@
-use std::{borrow::Borrow, cell::RefCell, collections::HashMap, iter::Map, rc::Rc};
+use std::{borrow::Borrow, sync::{Arc,RwLock}, collections::HashMap, iter::Map};
 use apollo_compiler::{validation::Valid, Node};
 use crate::schema::types::GraphQLType;
 
@@ -6,21 +6,24 @@ use super::types::{EnumType, InputObjectType, ObjectType};
 
 #[derive(Debug)]
 pub struct SchemaContext {
-    types: HashMap<String, GraphQLType>,
+    types: HashMap<String, Box<GraphQLType>>,
     inputs: HashMap<String, Node<InputObjectType>>,
     object_types: HashMap<String, Node<ObjectType>>,
     enums: HashMap<String, Node<EnumType>>,
-    pub schema: Rc<Valid<apollo_compiler::Schema>>,
+    pub schema: Arc<Valid<apollo_compiler::Schema>>,
 }
 
 impl SchemaContext {
     pub fn new(
         initial_types: HashMap<String, Box<GraphQLType>>,
-        schema: Rc<Valid<apollo_compiler::Schema>>,
+        schema: Arc<Valid<apollo_compiler::Schema>>,
     ) -> SchemaContext {
         SchemaContext {
             types: initial_types,
             schema,
+            inputs: HashMap::new(),
+            object_types: HashMap::new(),
+            enums: HashMap::new()
         }
     }
 
@@ -28,7 +31,7 @@ impl SchemaContext {
         if (self.types.contains_key(&name)){
             panic!("")
         }
-        self.types.insert(name.clone(), GraphQLType::Object(type_.clone()));
+        self.types.insert(name.clone(), Box::new(GraphQLType::Object(type_.clone())));
         self.object_types.insert(name, type_);
     }
 
@@ -36,5 +39,5 @@ impl SchemaContext {
         self.types.get(name).map(|t| t.as_ref())
     }
 }
-pub type SharedSchemaContext = Rc<RefCell<SchemaContext>>;
+pub type SharedSchemaContext = Arc<RwLock<SchemaContext>>;
 

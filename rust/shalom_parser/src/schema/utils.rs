@@ -10,7 +10,7 @@ use super::{
 #[derive(Clone, Debug)]
 pub struct TypeRef {
     ctx: SharedSchemaContext,
-    name: String,
+    pub name: String,
 }
 
 impl PartialEq for TypeRef {
@@ -28,7 +28,7 @@ impl std::hash::Hash for TypeRef {
 
 impl TypeRef {
     pub fn resolve(&self) -> Option<GraphQLType> {
-        self.ctx.borrow().get_type(&self.name).cloned()
+        self.ctx.read().unwrap().get_type(&self.name).cloned()
     }
 
     pub fn new(ctx: SharedSchemaContext, name: String) -> TypeRef {

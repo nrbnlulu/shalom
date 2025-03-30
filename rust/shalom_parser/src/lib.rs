@@ -10,7 +10,7 @@ pub mod operation;
 #[derive(Debug)]
 pub struct GenerationContext {
     fragments: HashMap<String, Node<Fragment>>,
-    operations: HashMap<String, Node<Operation>>,
+    pub operations: HashMap<String, Node<Operation>>,
 
     pub schema: SharedSchemaContext,
     pub docs: Vec<Valid<ExecutableDocument>>
