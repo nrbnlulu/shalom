@@ -1,8 +1,10 @@
+use shalom_parser::schema::context::SchemaContext;
+
 
 
 
 fn generate_dart_test(
-    schema: &Schema,
+    schema: &SchemaContext,
     documents: &[Document],
 ) -> anyhow::Result<()> {
     
