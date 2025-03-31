@@ -32,10 +32,7 @@ impl TypeRef {
     }
 
     pub fn new(ctx: SharedSchemaContext, name: String) -> TypeRef {
-        TypeRef {
-            ctx: ctx,
-            name: name,
-        }
+        TypeRef { ctx, name }
     }
     pub fn get_scalar(&self) -> Option<Node<ScalarType>> {
         self.resolve().map_or(None, |t| t.scalar())

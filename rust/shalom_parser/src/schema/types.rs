@@ -4,11 +4,7 @@ use std::{
 };
 
 use super::utils::TypeRef;
-use apollo_compiler::{
-    ast::Value,
-    collections::HashMap,
-    Node,
-};
+use apollo_compiler::{ast::Value, collections::HashMap, Node};
 
 struct NamedType {
     name: String,

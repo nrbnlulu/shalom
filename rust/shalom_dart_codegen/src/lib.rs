@@ -1,9 +1,5 @@
 use anyhow::{Context, Result};
-use apollo_compiler::{
-    ast::Type,
-    schema::ExtendedType,
-    validation::Valid, Schema,
-};
+use apollo_compiler::{ast::Type, schema::ExtendedType, validation::Valid, Schema};
 use minijinja::Environment;
 use serde::Serialize;
 

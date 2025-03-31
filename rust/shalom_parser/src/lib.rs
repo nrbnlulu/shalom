@@ -7,9 +7,9 @@ use apollo_compiler::{
 };
 use schema::context::SharedSchemaContext;
 
+pub(crate) mod context;
 pub mod operation;
 pub mod schema;
-pub(crate) mod context;
 #[derive(Debug)]
 pub struct GenerationContext {
     fragments: HashMap<String, Node<Fragment>>,
