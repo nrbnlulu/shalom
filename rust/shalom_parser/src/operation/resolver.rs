@@ -1,56 +1,104 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use apollo_compiler::validation::Valid;
-use apollo_compiler::ExecutableDocument;
+use apollo_compiler::{executable as apollo_executable, ExecutableDocument, Node};
+use log::info;
 
+use crate::operation::types::ObjectSelection;
 use crate::schema::context::SharedSchemaContext;
 
-pub trait OperationsProvider {
-    fn get_operations(&self) -> anyhow::Result<HashMap<PathBuf, String>>;
-}
-struct FileSystemOperationsProvider {
-    search_path: PathBuf,
-}
+use super::context::{OperationContext, SharedOpCtx, SharedShalomGlobalContext};
+use super::types::{Selection, SharedObjectSelection};
 
-impl FileSystemOperationsProvider {
-    pub fn new(search_path: PathBuf) -> Self {
-        FileSystemOperationsProvider { search_path }
+fn parse_object_selection(
+    parent: Option<Selection>,
+    op_ctx: &SharedOpCtx,
+    schema_ctx: &SharedSchemaContext,
+    selection_orig: &apollo_compiler::executable::SelectionSet,
+    name: String,
+) -> SharedObjectSelection {
+    assert!(
+        !selection_orig.selections.is_empty(),
+        "Object selection must have at least one field"
+    );
+    let obj = ObjectSelection::new(parent, name.clone());
+    let obj_as_selection = Selection::Object(obj.clone());
+
+    for selection in selection_orig.selections.iter() {
+        match selection {
+            apollo_executable::Selection::Field(field) => {
+                let f_name = field.name.clone().to_string();
+                let field_selection = parse_selection_set(
+                    Some(obj_as_selection.clone()),
+                    op_ctx,
+                    schema_ctx,
+                    &field.selection_set,
+                    f_name,
+                );
+                obj.add_selection(field_selection);
+            }
+            _ => todo!("Unsupported selection type {:?}", selection),
+        }
     }
+    obj
 }
 
-impl OperationsProvider for FileSystemOperationsProvider {
-    fn get_operations(&self) -> anyhow::Result<HashMap<PathBuf, String>> {
-        glob::glob(self.search_path.join("**/*.graphql").to_str().unwrap())
-            .map(|paths| {
-                let mut res = HashMap::new();
-                for p in paths {
-                    if let Ok(path) = p {
-                        if path.file_name() == Some("schema.graphql".as_ref()) {
-                            continue;
-                        }
-                        if let Ok(source_text) = std::fs::read_to_string(&path) {
-                            res.insert(path.clone(), source_text);
-                        }
-                    }
-                }
-
-                res
-            })
-            .map_err(|e| anyhow::anyhow!("Error reading operations: {}", e))
+fn parse_selection_set(
+    parent: Option<Selection>,
+    op_ctx: &SharedOpCtx,
+    schema_ctx: &SharedSchemaContext,
+    selection_orig: &apollo_compiler::executable::SelectionSet,
+    name: String,
+) -> Selection {
+    let out;
+    let full_name = match parent.clone() {
+        Some(selection) => selection.combine_full_name(&name),
+        _ => name.clone(),
+    };
+    if let Some(selection) = op_ctx.get_selection(&full_name) {
+        info!("Selection already exists");
+        return selection.clone();
     }
+    // thats a scalar no inner selections
+    if selection_orig.selections.is_empty() {
+        todo!("parse scalar")
+    } else {
+        out = Selection::Object(parse_object_selection(
+            parent,
+            op_ctx,
+            schema_ctx,
+            selection_orig,
+            name.clone(),
+        ));
+    }
+    op_ctx.add_selection(name.clone(), out.clone());
+    out
 }
 
-fn parse_gql_document(
-    ctx: SharedSchemaContext,
-    source_text: &str,
-    path: PathBuf,
-) -> anyhow::Result<Valid<ExecutableDocument>> {
-    let res = apollo_compiler::ExecutableDocument::parse(&ctx.schema, source_text, path)
-        .map_err(|e| anyhow::anyhow!("Error parsing operation: {}", e))
-        .and_then(|doc| {
-            doc.validate(&ctx.schema)
-                .map_err(|e| anyhow::anyhow!("Error validating operation: {:?}", e.errors))
-        });
-    
+fn parse_operation(
+    global_ctx: &SharedShalomGlobalContext,
+    op: Node<apollo_compiler::executable::Operation>,
+    name: String,
+    file_path: PathBuf,
+) -> SharedOpCtx {
+    let selection_set = vec![];
+    let ctx = OperationContext::new(global_ctx.schema_ctx.clone(), file_path);
+    todo!("")
+}
+
+pub(crate) fn parse_document(
+    global_ctx: &SharedShalomGlobalContext,
+    doc_orig: &Valid<ExecutableDocument>,
+) -> HashMap<String, SharedOpCtx> {
+    let mut ret = HashMap::new();
+    if doc_orig.operations.anonymous.is_some() {
+        unimplemented!("Anonymouse operations are not supported")
+    }
+    for (name, op) in doc_orig.operations.named.iter() {
+        let name = name.to_string();
+        ret.insert(name.clone(), parse_operation(global_ctx, op.clone(), name));
+    }
+    ret
 }

@@ -106,13 +106,10 @@ impl SchemaContext {
         self.types.lock().unwrap()
     }
 
-
     pub fn add_scalar(&self, name: String, type_: Node<ScalarType>) -> anyhow::Result<()> {
         let mut types_ctx = self.get_types();
         types_ctx.add_scalar(name, type_);
         Ok(())
     }
-
-
 }
 pub type SharedSchemaContext = Arc<SchemaContext>;

@@ -52,13 +52,17 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
         match type_ {
             apollo_schema::ExtendedType::Object(object) => {
                 resolve_object(ctx.clone(), name.to_string(), object.clone());
-            },
+            }
             apollo_schema::ExtendedType::Scalar(scalar) => {
                 let name = scalar.name.to_string();
                 let description = scalar.description.as_ref().map(|v| v.to_string());
                 ctx.add_scalar(name.clone(), Node::new(ScalarType { name, description }));
             }
-            _ => todo!("Unsupported type in schema {:?}: {:?}", name.to_string(), type_.name()),
+            _ => todo!(
+                "Unsupported type in schema {:?}: {:?}",
+                name.to_string(),
+                type_.name()
+            ),
         }
     }
 
@@ -134,14 +138,13 @@ pub fn resolve_type(context: SharedSchemaContext, origin: apollo_schema::Type) -
 }
 
 fn setup() {
-simple_logger::init().unwrap();
+    simple_logger::init().unwrap();
 }
-
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     #[test]
     fn test_query_type_resolve() {
         setup();
