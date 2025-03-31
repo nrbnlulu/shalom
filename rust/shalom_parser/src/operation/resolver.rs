@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use apollo_compiler::validation::Valid;
@@ -6,7 +7,7 @@ use apollo_compiler::ExecutableDocument;
 use crate::schema::context::SharedSchemaContext;
 
 pub trait OperationsProvider {
-    fn get_operations(&self) -> Vec<String>;
+    fn get_operations(&self) -> anyhow::Result<HashMap<PathBuf, String>>;
 }
 struct FileSystemOperationsProvider {
     search_path: PathBuf,
@@ -19,26 +20,33 @@ impl FileSystemOperationsProvider {
 }
 
 impl OperationsProvider for FileSystemOperationsProvider {
-    fn get_operations(&self) -> Vec<String> {
-        let mut operations = Vec::new();
-        glob::glob(self.search_path.join("**/*.graphql").to_str().unwrap()).unwrap().for_each(|path| {
-            operations.push(path.display().to_string());
-        });
-        operations
+    fn get_operations(&self) -> anyhow::Result<HashMap<PathBuf, String>> {
+        glob::glob(self.search_path.join("**/*.graphql").to_str().unwrap()).map(
+            |paths| {
+                let mut res = HashMap::new();
+                for p in paths{
+                    if let Ok(path) = p {
+                        if path.file_name() == Some("schema.graphql".as_ref()) {
+                            continue;
+                        }
+                        if let Ok(source_text) = std::fs::read_to_string(&path) {
+                            res.insert(path.clone(), source_text);
+                        }
+                    }
+                }
+                
+                res
+            },
+        ).map_err(|e| {
+            anyhow::anyhow!("Error reading operations: {}", e)
+        })
     }
 }
 
-fn parse_operation(ctx: SharedSchemaContext, operation: &str) -> anyhow::Result<Valid<ExecutableDocument>> {
-    apollo_compiler::ExecutableDocument::parse(ctx.lock().unwrap().schema, source_text, path)
-    Ok(Valid::new(document))
-}
-
-pub fn parse_operations(ctx: SharedSchemaContext, operations_provider: &dyn OperationsProvider) -> anyhow::Result<Arc<OperationsContext>> {
-    let operations = operations_provider.get_operations();
-    for operation in operations {
-        if operation == *operation {
-        }
-    }
-    Err(anyhow::anyhow!("Operation not found"))
+fn parse_operation(ctx: SharedSchemaContext, source_text: &str, path: PathBuf) -> anyhow::Result<ExecutableDocument> {
+ apollo_compiler::ExecutableDocument::parse(&ctx.schema, source_text, path)
+        .map_err(|e| {
+            anyhow::anyhow!("Error parsing operation: {}", e)
+        })
 }
 

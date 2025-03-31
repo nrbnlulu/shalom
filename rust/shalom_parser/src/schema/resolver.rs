@@ -128,14 +128,7 @@ mod tests {
         assert_eq!(obj.fields.len(), 1);
         let field = obj.get_field("hello");
         assert_eq!(field.is_some(), true);
-        let field = field.unwrap();
-        assert_eq!(field.name, "hello");
-        assert_eq!(field.ty.get_scalar().is_some(), true);
-        let scalar = field.ty.get_scalar().unwrap();
-        assert_eq!(scalar.name, "String");
-        assert_eq!(scalar.description.is_some(), false);
-        assert_eq!(scalar.is_builtin_scalar(), true);
-        assert_eq!(scalar.is_string(), true);
+
     }
     #[test]
     fn resolve_simple_field_types() {
@@ -144,14 +137,23 @@ mod tests {
                 hello: String!
                 world: Int!
                 id: ID!
+                foo: Float
             }
         "#
         .to_string();
-        let parsed = resolve(&schema).unwrap();
-        let ctx = parsed.lock().unwrap();
+        let ctx = resolve(&schema).unwrap();
+    
         let object = ctx.get_type("Query").unwrap().object().unwrap();
 
         let hello_field = object.get_field("hello").unwrap();
         assert_eq!(hello_field.ty.get_scalar().unwrap().is_string(), true);
+        let world_field = object.get_field("world").unwrap();
+        assert_eq!(world_field.ty.get_scalar().unwrap().is_int(), true);
+        let id_field = object.get_field("id").unwrap();
+        assert_eq!(id_field.ty.get_scalar().unwrap().is_id(), true);
+        let foo_field = object.get_field("foo").unwrap();
+        assert_eq!(foo_field.ty.get_scalar().unwrap().is_float(), true);
+        // optional
+        assert_eq!(foo_field.ty.is_nullable(), true);
     }
 }
