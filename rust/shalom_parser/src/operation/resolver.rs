@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 
 use crate::schema::context::SharedSchemaContext;
@@ -40,11 +41,16 @@ impl OperationsProvider for FileSystemOperationsProvider {
     }
 }
 
-fn parse_operation(
+fn parse_gql_document(
     ctx: SharedSchemaContext,
     source_text: &str,
     path: PathBuf,
-) -> anyhow::Result<ExecutableDocument> {
-    apollo_compiler::ExecutableDocument::parse(&ctx.schema, source_text, path)
+) -> anyhow::Result<Valid<ExecutableDocument>> {
+    let res = apollo_compiler::ExecutableDocument::parse(&ctx.schema, source_text, path)
         .map_err(|e| anyhow::anyhow!("Error parsing operation: {}", e))
+        .and_then(|doc| {
+            doc.validate(&ctx.schema)
+                .map_err(|e| anyhow::anyhow!("Error validating operation: {:?}", e.errors))
+        });
+    
 }
