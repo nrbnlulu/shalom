@@ -2,7 +2,7 @@ use crate::schema::types::GraphQLAny;
 use apollo_compiler::{validation::Valid, Node};
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, MutexGuard},
 };
 
 use super::types::{EnumType, InputObjectType, ObjectType, ScalarType};
@@ -101,5 +101,18 @@ impl SchemaContext {
         types_ctx.add_object(name, type_);
         Ok(())
     }
+
+    fn get_types(&self) -> MutexGuard<'_, SchemaTypesCtx> {
+        self.types.lock().unwrap()
+    }
+
+
+    pub fn add_scalar(&self, name: String, type_: Node<ScalarType>) -> anyhow::Result<()> {
+        let mut types_ctx = self.get_types();
+        types_ctx.add_scalar(name, type_);
+        Ok(())
+    }
+
+
 }
 pub type SharedSchemaContext = Arc<SchemaContext>;
