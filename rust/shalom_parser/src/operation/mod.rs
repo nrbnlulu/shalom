@@ -4,7 +4,7 @@ use apollo_compiler::{validation::Valid, ExecutableDocument};
 use crate::schema::context::SharedSchemaContext;
 
 pub mod resolver;
-
+pub(crate) mod context;
 pub mod types;
 
 struct OperationsContext {
