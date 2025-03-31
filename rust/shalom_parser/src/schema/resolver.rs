@@ -1,14 +1,13 @@
-use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::sync::{Arc, Mutex};
 
-use super::context::SharedSchemaContext;
-use super::types::{FieldDefinition, FieldType, GraphQLType, ScalarType};
-use super::{context::SchemaContext, types::ObjectType, utils::TypeRef};
+use super::context::{SchemaContext, SharedSchemaContext};
+use super::types::{FieldDefinition, FieldType, GraphQLAny, ScalarType};
+use super::{types::ObjectType, utils::TypeRef};
 use anyhow::Result;
-use apollo_compiler::{schema as apollo_schema, Node};
 use apollo_compiler::{self};
+use apollo_compiler::{schema as apollo_schema, Node};
 const DEFAULT_SCALAR_TYPES: [(&str, &str); 8] = [
     ("String", "A UTF‐8 character sequence."),
     ("Int", "A signed 32‐bit integer."),
@@ -22,12 +21,12 @@ const DEFAULT_SCALAR_TYPES: [(&str, &str); 8] = [
 
 pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
     let mut initial_types = HashMap::new();
-    
+
     // Add the default scalar types
     for (name, description) in DEFAULT_SCALAR_TYPES.iter() {
         initial_types.insert(
             name.to_string(),
-            GraphQLType::Scalar(Node::new(ScalarType {
+            GraphQLAny::Scalar(Node::new(ScalarType {
                 name: name.to_string(),
                 description: Some(description.to_string()),
             })),
@@ -38,22 +37,20 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
         Err(e) => return Err(anyhow::anyhow!("Error parsing schema: {}", e)),
     };
     let schema = match schema_raw.validate() {
-        Ok(schema) => Rc::new(schema),
+        Ok(schema) => schema,
         Err(e) => return Err(anyhow::anyhow!("Error validating schema: {}", e)),
     };
 
-    
-    let ctx = Arc::new(Mutex::new(SchemaContext::new(initial_types, schema.clone())));
+    let ctx = Arc::new(SchemaContext::new(initial_types, schema.clone()));
 
-    for type_ in &schema.types {
-        match type_.1 {
+    for (name, type_) in &schema.types {
+        match type_ {
             apollo_schema::ExtendedType::Object(object) => {
-                resolve_object(ctx.clone(), type_.0.to_string(), object.clone());
+                resolve_object(ctx.clone(), name.to_string(), object.clone());
             }
-            _ => {}
+            _ => todo!("Unsupported type"),
         }
     }
-
 
     Ok(ctx)
 }
@@ -63,8 +60,8 @@ fn resolve_object(
     name: String,
     origin: apollo_compiler::Node<apollo_schema::ObjectType>,
 ) -> TypeRef {
-    let mut ctx = context.lock().unwrap();
-    if let Some(_) = ctx.get_type(&name) {
+    // Check if the type is already resolved
+    if let Some(_) = context.get_type(&name) {
         return TypeRef::new(context.clone(), name);
     }
     let mut fields = HashSet::new();
@@ -81,13 +78,13 @@ fn resolve_object(
         });
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
-    let object = ObjectType {
+    let object = Node::new(ObjectType {
         name: name.clone(),
-        description: description,
-        fields: fields,
+        description,
+        fields,
         implements_interfaces: HashSet::new(),
-    };
-    ctx.add_object(name.clone(), object);
+    });
+    context.add_object(name.clone(), object);
     TypeRef::new(context.clone(), name)
 }
 
@@ -118,11 +115,27 @@ mod tests {
             type Query{
                 hello: String
             }
-        "#.to_string();
-        let parsed = resolve(&schema).unwrap();
-        let ctx = parsed.lock().unwrap();
+        "#
+        .to_string();
+        let ctx = resolve(&schema).unwrap();
+
         let object = ctx.get_type("Query");
         assert_eq!(object.is_some(), true);
+        let obj = object.unwrap().object();
+        assert_eq!(obj.is_some(), true);
+        let obj = obj.unwrap();
+        assert_eq!(obj.name, "Query");
+        assert_eq!(obj.fields.len(), 1);
+        let field = obj.get_field("hello");
+        assert_eq!(field.is_some(), true);
+        let field = field.unwrap();
+        assert_eq!(field.name, "hello");
+        assert_eq!(field.ty.get_scalar().is_some(), true);
+        let scalar = field.ty.get_scalar().unwrap();
+        assert_eq!(scalar.name, "String");
+        assert_eq!(scalar.description.is_some(), false);
+        assert_eq!(scalar.is_builtin_scalar(), true);
+        assert_eq!(scalar.is_string(), true);
     }
     #[test]
     fn resolve_simple_field_types() {
@@ -132,13 +145,13 @@ mod tests {
                 world: Int!
                 id: ID!
             }
-        "#.to_string();
+        "#
+        .to_string();
         let parsed = resolve(&schema).unwrap();
         let ctx = parsed.lock().unwrap();
         let object = ctx.get_type("Query").unwrap().object().unwrap();
 
         let hello_field = object.get_field("hello").unwrap();
         assert_eq!(hello_field.ty.get_scalar().unwrap().is_string(), true);
-        
-    }   
+    }
 }

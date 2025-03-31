@@ -6,7 +6,8 @@ use std::{
 use super::{context::SchemaContext, utils::TypeRef};
 use apollo_compiler::{
     ast::{Field, Value},
-    collections::HashMap, Node,
+    collections::HashMap,
+    Node,
 };
 
 struct NamedType {
@@ -17,7 +18,7 @@ struct NamedType {
 /// The definition of a named type, with all information from type extensions folded in.
 ///
 /// The souNodee location is that of the "main" definition.
-pub enum GraphQLType {
+pub enum GraphQLAny {
     Scalar(Node<ScalarType>),
     Object(Node<ObjectType>),
     Interface(Node<InterfaceType>),
@@ -26,45 +27,45 @@ pub enum GraphQLType {
     InputObject(Node<InputObjectType>),
 }
 
-impl GraphQLType {
+impl GraphQLAny {
     pub fn object(&self) -> Option<Node<ObjectType>> {
         match self {
-            GraphQLType::Object(obj) => Some(Node::clone(obj)),
+            GraphQLAny::Object(obj) => Some(Node::clone(obj)),
             _ => None,
         }
     }
 
     pub fn interface(&self) -> Option<Node<InterfaceType>> {
         match self {
-            GraphQLType::Interface(interface) => Some(Node::clone(interface)),
+            GraphQLAny::Interface(interface) => Some(Node::clone(interface)),
             _ => None,
         }
     }
 
     pub fn union(&self) -> Option<Node<UnionType>> {
         match self {
-            GraphQLType::Union(union) => Some(Node::clone(union)),
+            GraphQLAny::Union(union) => Some(Node::clone(union)),
             _ => None,
         }
     }
 
     pub fn scalar(&self) -> Option<Node<ScalarType>> {
         match self {
-            GraphQLType::Scalar(scalar) => Some(Node::clone(scalar)),
+            GraphQLAny::Scalar(scalar) => Some(Node::clone(scalar)),
             _ => None,
         }
     }
 
     pub fn enum_(&self) -> Option<Node<EnumType>> {
         match self {
-            GraphQLType::Enum(enum_) => Some(Node::clone(enum_)),
+            GraphQLAny::Enum(enum_) => Some(Node::clone(enum_)),
             _ => None,
         }
     }
 
     pub fn input_object(&self) -> Option<Node<InputObjectType>> {
         match self {
-            GraphQLType::InputObject(input_object) => Some(Node::clone(input_object)),
+            GraphQLAny::InputObject(input_object) => Some(Node::clone(input_object)),
             _ => None,
         }
     }
@@ -117,7 +118,7 @@ pub struct ScalarType {
 const DEFAULT_SCALARS: &[&str] = &["String", "Int", "Float", "Boolean", "ID"];
 
 impl ScalarType {
-    pub fn is_default_scalar(&self) -> bool {
+    pub fn is_builtin_scalar(&self) -> bool {
         DEFAULT_SCALARS.contains(&self.name.as_str())
     }
     pub fn is_string(&self) -> bool {
