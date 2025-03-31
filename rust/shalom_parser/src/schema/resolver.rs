@@ -7,6 +7,7 @@ use super::{types::ObjectType, utils::TypeRef};
 use anyhow::Result;
 use apollo_compiler::{self};
 use apollo_compiler::{schema as apollo_schema, Node};
+use log::{debug, info};
 const DEFAULT_SCALAR_TYPES: [(&str, &str); 8] = [
     ("String", "A UTF‐8 character sequence."),
     ("Int", "A signed 32‐bit integer."),
@@ -35,6 +36,7 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
         Ok(schema) => schema,
         Err(e) => return Err(anyhow::anyhow!("Error parsing schema: {}", e)),
     };
+    info!("Parsed schema: {:?}", schema_raw.serialize());
     let schema = match schema_raw.validate() {
         Ok(schema) => schema,
         Err(e) => return Err(anyhow::anyhow!("Error validating schema: {}", e)),
@@ -43,15 +45,42 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
     let ctx = Arc::new(SchemaContext::new(initial_types, schema.clone()));
 
     for (name, type_) in &schema.types {
+        if name.starts_with("__") {
+            continue;
+        }
+        debug!("Resolving type: {:?}", name);
         match type_ {
             apollo_schema::ExtendedType::Object(object) => {
                 resolve_object(ctx.clone(), name.to_string(), object.clone());
+            },
+            apollo_schema::ExtendedType::Scalar(scalar) => {
+                let name = scalar.name.to_string();
+                let description = scalar.description.as_ref().map(|v| v.to_string());
+                ctx.add_scalar(name.clone(), Node::new(ScalarType { name, description }));
             }
             _ => todo!("Unsupported type in schema {:?}: {:?}", name.to_string(), type_.name()),
         }
     }
 
     Ok(ctx)
+}
+
+fn resolve_scalar(
+    context: SharedSchemaContext,
+    name: String,
+    origin: Node<apollo_schema::ScalarType>,
+) -> TypeRef {
+    // Check if the type is already resolved
+    if let Some(_) = context.get_type(&name) {
+        return TypeRef::new(context.clone(), name);
+    }
+    let description = origin.description.as_ref().map(|v| v.to_string());
+    let scalar = Node::new(ScalarType {
+        name: name.clone(),
+        description,
+    });
+    context.add_scalar(name.clone(), scalar);
+    TypeRef::new(context.clone(), name)
 }
 
 fn resolve_object(
@@ -104,12 +133,18 @@ pub fn resolve_type(context: SharedSchemaContext, origin: apollo_schema::Type) -
     }
 }
 
+fn setup() {
+simple_logger::init().unwrap();
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    
     #[test]
     fn test_query_type_resolve() {
+        setup();
         let schema = r#"
             type Query{
                 hello: String
