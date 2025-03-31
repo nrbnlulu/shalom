@@ -6,6 +6,7 @@ enum Selection {
 }
 
 struct ObjectDefinition {
+    parent_selection: Option<Selection>,
     type_name: String,
     selections: Vec<Selection>,
 }
