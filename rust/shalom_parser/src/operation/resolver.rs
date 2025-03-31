@@ -28,12 +28,17 @@ impl OperationsProvider for FileSystemOperationsProvider {
     }
 }
 
-pub fn resolve(operation: &String, ctx: SharedSchemaContext, operations_provider: &dyn OperationsProvider) -> anyhow::Result<Valid<ExecutableDocument>> {
+fn parse_operation(ctx: SharedSchemaContext, operation: &str) -> anyhow::Result<Valid<ExecutableDocument>> {
+    apollo_compiler::ExecutableDocument::parse(ctx.lock().unwrap().schema, source_text, path)
+    Ok(Valid::new(document))
+}
+
+pub fn parse_operations(ctx: SharedSchemaContext, operations_provider: &dyn OperationsProvider) -> anyhow::Result<Arc<OperationsContext>> {
     let operations = operations_provider.get_operations();
-    
-    let doc = apollo_compiler::ExecutableDocument::parse_and_validate(
-        &ctx.borrow().schema, operation, "not-used-here.graphql").map_err(|e| anyhow::anyhow!("Error parsing operation: {}", e))?;
-        
-        Ok(doc)
+    for operation in operations {
+        if operation == *operation {
+        }
+    }
+    Err(anyhow::anyhow!("Operation not found"))
 }
 

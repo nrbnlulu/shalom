@@ -8,18 +8,18 @@ pub mod resolver;
 
 pub mod types;
 
-struct OperationContext {
+struct OperationsContext {
     schema: SharedSchemaContext,
     operation: Valid<ExecutableDocument>
 }
 
-impl OperationContext {
+impl OperationsContext {
     pub fn new(schema: SharedSchemaContext, operation: Valid<ExecutableDocument>) -> Self {
         Self { schema, operation }
     }
 }
 
-impl OperationContext {
+impl OperationsContext {
 
     pub fn operation(&self) -> &Valid<ExecutableDocument> {
         &self.operation
