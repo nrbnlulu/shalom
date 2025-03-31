@@ -1,12 +1,7 @@
 use crate::schema::types::GraphQLAny;
 use apollo_compiler::{validation::Valid, Node};
 use std::{
-    borrow::Borrow,
-    cell::RefCell,
     collections::HashMap,
-    iter::Map,
-    ops::Deref,
-    rc::Rc,
     sync::{Arc, Mutex},
 };
 
@@ -98,12 +93,11 @@ impl SchemaContext {
         types_ctx.get_any(name)
     }
 
-    pub fn add_object(
-        &self,
-        name: String,
-        type_: Node<ObjectType>,
-    ) -> anyhow::Result<()> {
-        let mut types_ctx = self.types.lock().map_err(|e| anyhow::anyhow!(e.to_string()))?;
+    pub fn add_object(&self, name: String, type_: Node<ObjectType>) -> anyhow::Result<()> {
+        let mut types_ctx = self
+            .types
+            .lock()
+            .map_err(|e| anyhow::anyhow!(e.to_string()))?;
         types_ctx.add_object(name, type_);
         Ok(())
     }

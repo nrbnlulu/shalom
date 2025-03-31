@@ -1,7 +1,6 @@
 use std::collections::HashMap;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
-use apollo_compiler::validation::Valid;
 use apollo_compiler::ExecutableDocument;
 
 use crate::schema::context::SharedSchemaContext;
@@ -21,10 +20,10 @@ impl FileSystemOperationsProvider {
 
 impl OperationsProvider for FileSystemOperationsProvider {
     fn get_operations(&self) -> anyhow::Result<HashMap<PathBuf, String>> {
-        glob::glob(self.search_path.join("**/*.graphql").to_str().unwrap()).map(
-            |paths| {
+        glob::glob(self.search_path.join("**/*.graphql").to_str().unwrap())
+            .map(|paths| {
                 let mut res = HashMap::new();
-                for p in paths{
+                for p in paths {
                     if let Ok(path) = p {
                         if path.file_name() == Some("schema.graphql".as_ref()) {
                             continue;
@@ -34,19 +33,18 @@ impl OperationsProvider for FileSystemOperationsProvider {
                         }
                     }
                 }
-                
+
                 res
-            },
-        ).map_err(|e| {
-            anyhow::anyhow!("Error reading operations: {}", e)
-        })
+            })
+            .map_err(|e| anyhow::anyhow!("Error reading operations: {}", e))
     }
 }
 
-fn parse_operation(ctx: SharedSchemaContext, source_text: &str, path: PathBuf) -> anyhow::Result<ExecutableDocument> {
- apollo_compiler::ExecutableDocument::parse(&ctx.schema, source_text, path)
-        .map_err(|e| {
-            anyhow::anyhow!("Error parsing operation: {}", e)
-        })
+fn parse_operation(
+    ctx: SharedSchemaContext,
+    source_text: &str,
+    path: PathBuf,
+) -> anyhow::Result<ExecutableDocument> {
+    apollo_compiler::ExecutableDocument::parse(&ctx.schema, source_text, path)
+        .map_err(|e| anyhow::anyhow!("Error parsing operation: {}", e))
 }
-

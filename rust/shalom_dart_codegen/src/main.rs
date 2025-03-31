@@ -1,11 +1,14 @@
+use shalom_dart_codegen::generate_dart_code;
 use std::fs;
 use std::path::PathBuf;
-use shalom_dart_codegen::generate_dart_code; 
 
 fn main() -> anyhow::Result<()> {
     let args: Vec<String> = std::env::args().collect();
     if args.len() != 4 {
-        eprintln!("Usage: {} <schema_file> <query_file> <output_file>", args[0]);
+        eprintln!(
+            "Usage: {} <schema_file> <query_file> <output_file>",
+            args[0]
+        );
         std::process::exit(1);
     }
 
