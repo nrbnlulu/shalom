@@ -1,6 +1,3 @@
-
-
-
 enum Selection {
     Scalar(String),
 }

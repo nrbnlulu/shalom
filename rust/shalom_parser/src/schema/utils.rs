@@ -1,10 +1,10 @@
-
-
 use apollo_compiler::Node;
 
 use super::{
     context::SharedSchemaContext,
-    types::{GraphQLAny, ObjectType, ScalarType, InterfaceType, EnumType, UnionType, InputObjectType},
+    types::{
+        EnumType, GraphQLAny, InputObjectType, InterfaceType, ObjectType, ScalarType, UnionType,
+    },
 };
 
 #[derive(Clone, Debug)]
@@ -28,8 +28,8 @@ impl std::hash::Hash for TypeRef {
 
 impl TypeRef {
     pub fn resolve(&self) -> Option<GraphQLAny> {
-            self.ctx.get_type(&self.name).clone()
-        }
+        self.ctx.get_type(&self.name).clone()
+    }
 
     pub fn new(ctx: SharedSchemaContext, name: String) -> TypeRef {
         TypeRef {

@@ -1,8 +1,7 @@
-use std::sync::Arc;
 
 use apollo_compiler::{validation::Valid, ExecutableDocument};
 
-use crate::schema::context::{SchemaContext, SharedSchemaContext};
+use crate::schema::context::SharedSchemaContext;
 
 pub mod resolver;
 
@@ -10,7 +9,7 @@ pub mod types;
 
 struct OperationsContext {
     schema: SharedSchemaContext,
-    operation: Valid<ExecutableDocument>
+    operation: Valid<ExecutableDocument>,
 }
 
 impl OperationsContext {
@@ -20,9 +19,7 @@ impl OperationsContext {
 }
 
 impl OperationsContext {
-
     pub fn operation(&self) -> &Valid<ExecutableDocument> {
         &self.operation
-        
     }
 }

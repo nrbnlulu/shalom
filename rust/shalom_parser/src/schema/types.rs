@@ -3,9 +3,9 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use super::{context::SchemaContext, utils::TypeRef};
+use super::utils::TypeRef;
 use apollo_compiler::{
-    ast::{Field, Value},
+    ast::Value,
     collections::HashMap,
     Node,
 };

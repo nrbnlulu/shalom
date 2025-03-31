@@ -1,6 +1,5 @@
 use std::collections::{HashMap, HashSet};
-use std::rc::Rc;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{FieldDefinition, FieldType, GraphQLAny, ScalarType};
@@ -48,7 +47,7 @@ pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
             apollo_schema::ExtendedType::Object(object) => {
                 resolve_object(ctx.clone(), name.to_string(), object.clone());
             }
-            _ => todo!("Unsupported type"),
+            _ => todo!("Unsupported type in schema {:?}: {:?}", name.to_string(), type_.name()),
         }
     }
 
@@ -128,7 +127,6 @@ mod tests {
         assert_eq!(obj.fields.len(), 1);
         let field = obj.get_field("hello");
         assert_eq!(field.is_some(), true);
-
     }
     #[test]
     fn resolve_simple_field_types() {
@@ -142,7 +140,7 @@ mod tests {
         "#
         .to_string();
         let ctx = resolve(&schema).unwrap();
-    
+
         let object = ctx.get_type("Query").unwrap().object().unwrap();
 
         let hello_field = object.get_field("hello").unwrap();
