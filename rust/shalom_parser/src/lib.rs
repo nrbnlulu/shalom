@@ -10,6 +10,7 @@ use schema::context::SharedSchemaContext;
 pub(crate) mod context;
 pub mod operation;
 pub mod schema;
+pub mod entrypoint;
 #[derive(Debug)]
 pub struct GenerationContext {
     fragments: HashMap<String, Node<Fragment>>,
