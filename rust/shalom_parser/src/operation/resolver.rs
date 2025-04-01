@@ -14,7 +14,7 @@ use super::types::{Selection, SharedObjectSelection};
 
 fn parse_object_selection(
     parent: Option<Selection>,
-    op_ctx: &SharedOpCtx,
+    op_ctx: &mut OperationContext,
     schema_ctx: &SharedSchemaContext,
     selection_orig: &apollo_compiler::executable::SelectionSet,
     name: String,
@@ -47,7 +47,7 @@ fn parse_object_selection(
 
 fn parse_selection_set(
     parent: Option<Selection>,
-    op_ctx: &SharedOpCtx,
+    op_ctx: &mut OperationContext,
     schema_ctx: &SharedSchemaContext,
     selection_orig: &apollo_compiler::executable::SelectionSet,
     name: String,
@@ -83,13 +83,21 @@ fn parse_operation(
     name: String,
     file_path: PathBuf,
 ) -> SharedOpCtx {
-    let selection_set = vec![];
-    let ctx = OperationContext::new(global_ctx.schema_ctx.clone(), file_path);
-    todo!("")
+    let mut ctx = OperationContext::new(global_ctx.schema_ctx.clone(), file_path);
+    let root_type = parse_object_selection(
+        None,
+        &mut ctx,
+        &global_ctx.schema_ctx,
+        &op.selection_set,
+        name.clone(),
+    );
+    ctx.set_root_type(root_type);
+    Arc::new(ctx)
 }
 
 pub(crate) fn parse_document(
     global_ctx: &SharedShalomGlobalContext,
+    doc_source: &PathBuf,
     doc_orig: &Valid<ExecutableDocument>,
 ) -> HashMap<String, SharedOpCtx> {
     let mut ret = HashMap::new();
@@ -98,7 +106,10 @@ pub(crate) fn parse_document(
     }
     for (name, op) in doc_orig.operations.named.iter() {
         let name = name.to_string();
-        ret.insert(name.clone(), parse_operation(global_ctx, op.clone(), name));
+        ret.insert(
+            name.clone(),
+            parse_operation(global_ctx, op.clone(), name, doc_source.clone()),
+        );
     }
     ret
 }
