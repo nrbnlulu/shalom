@@ -1,3 +1,4 @@
+use std::cell::RefCell;
 use std::path::PathBuf;
 use std::sync::{Mutex, MutexGuard};
 use std::{collections::HashMap, sync::Arc};
@@ -13,39 +14,39 @@ use crate::schema::context::SharedSchemaContext;
 pub struct OperationContext {
     schema: SharedSchemaContext,
     file_path: PathBuf,
-    type_defs: Mutex<HashMap<FullPathName, Selection>>,
-    root_type: Option<ObjectSelection>,
+    type_defs: HashMap<FullPathName, Selection>,
+    root_type: Option<Arc<ObjectSelection>>,
 }
 
 impl OperationContext {
-    pub fn new(schema: SharedSchemaContext, file_path: PathBuf) -> Arc<Self> {
-        Arc::new(OperationContext {
+    pub fn new(schema: SharedSchemaContext, file_path: PathBuf) -> Self {
+        OperationContext {
             schema,
             file_path,
-            type_defs: Mutex::new(HashMap::new()),
+            type_defs: HashMap::new(),
             root_type: None,
-        })
+        }
     }
-    fn get_type_defs(&self) -> MutexGuard<HashMap<FullPathName, Selection>> {
-        self.type_defs.lock().unwrap()
+    pub fn set_root_type(&mut self, root_type: Arc<ObjectSelection>) {
+        self.root_type = Some(root_type);
     }
+
     pub fn get_selection(&self, name: &FullPathName) -> Option<Selection> {
-        let td = self.get_type_defs();
-        td.get(name).cloned()
+        self.type_defs.get(name).cloned()
     }
-    pub fn add_selection(&self, name: String, selection: Selection) {
-        let mut td = self.get_type_defs();
-        if !td.contains_key(&name) {
-            td.insert(name, selection);
+    
+    
+    pub fn add_selection(&mut self, name: String, selection: Selection) {
+        if !self.type_defs.contains_key(&name) {
+            self.type_defs.insert(name, selection);
         } else {
             warn!("Duplicate type definition for {}", name);
         }
     }
 
-    pub fn add_object_selection(&self, name: String, object: Arc<ObjectSelection>) {
-        let mut td = self.get_type_defs();
-        if !td.contains_key(&name) {
-            td.insert(name, Selection::Object(object));
+    pub fn add_object_selection(&mut self, name: String, object: Arc<ObjectSelection>) {
+        if !self.type_defs.contains_key(&name) {
+            self.type_defs.insert(name, Selection::Object(object));
         } else {
             warn!("Duplicate type definition for {}", name);
         }
