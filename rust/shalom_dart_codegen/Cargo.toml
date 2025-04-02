@@ -12,5 +12,4 @@ anyhow = {workspace = true}
 log = {workspace = true}
 simple_logger = {workspace = true}
 shalom_core = { path = "../shalom_core" }
-apollo-compiler = "=1.0.0-beta.20"
 lazy_static = "1.5.0"

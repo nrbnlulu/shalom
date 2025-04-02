@@ -5,7 +5,7 @@ use std::{
 
 use super::utils::TypeRef;
 use apollo_compiler::{ast::Value, collections::HashMap, Node};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 struct NamedType {
     name: String,
@@ -106,7 +106,7 @@ impl FieldType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ScalarType {
     pub name: String,
     pub description: Option<String>,

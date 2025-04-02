@@ -1,7 +1,7 @@
 use std::{cell::RefCell, sync::Arc};
 
 use apollo_compiler::{validation::Valid, Node};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use crate::schema::{context::SharedSchemaContext, types::ScalarType, utils::TypeRef};
 
@@ -10,25 +10,26 @@ use super::context::OperationContext;
 /// the name of i.e object in a graphql query based on the parent fields.
 pub type FullPathName = String;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum Selection {
     Scalar(Arc<ScalarSelection>),
     Object(Arc<ObjectSelection>),
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ScalarSelection {
     parent_selection: Option<Selection>,
-    concrete_type: Node<ScalarType>,
+    pub concrete_type: Node<ScalarType>,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ObjectSelection {
     parent_selection: Option<Selection>,
     type_name: String,
     selections: RefCell<Vec<Selection>>,
 }
+
 pub type SharedObjectSelection = Arc<ObjectSelection>;
 
 impl ObjectSelection {

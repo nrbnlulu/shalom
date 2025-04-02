@@ -1,35 +1,38 @@
-use std::{fs, path::{Path, PathBuf}};
+use std::{collections::HashMap, fs, path::{Path, PathBuf}};
 
 use anyhow::{Context, Result};
-use log::info;
-use minijinja::Environment;
+use log::{debug, info};
+use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use lazy_static::lazy_static;
+use shalom_core::operation::types::Selection;
 
 struct TemplateEnv<'a>{
     env: Environment<'a>,
 }
 
+lazy_static! {
+    static ref DEFAULT_SCALARS_MAP: HashMap<String, String> = HashMap::from([
+        ("ID".to_string(), "String".to_string()),
+        ("String".to_string(), "String".to_string()),
+        ("Int".to_string(), "int".to_string()),
+        ("Float".to_string(), "double".to_string()),
+        ("Boolean".to_string(), "bool".to_string()),
+    ]);
+}
 
-fn type_name_for_field(field_type: &Type) -> (String, bool) {
-    match field_type {
-        Type::NonNullNamed(name) => {
-            let (type_name, _) = parse_type(&Type::Named(name.clone()));
-            (type_name, true)
+fn type_name_for_selection(selection: ViaDeserialize<Selection>, optional: bool) -> String {
+    debug!("selection: {:?}", selection.0);
+    match selection.0 {
+        Selection::Scalar(scalar) => {
+            let resolved = DEFAULT_SCALARS_MAP.get(&scalar.concrete_type.name).unwrap();
+            if optional {
+                format!("{}?", resolved)
+            } else {
+                resolved.to_string()
+            }
         }
-        Type::Named(name) => {
-            let dart_type = match name.as_str() {
-                "Int" => "int",
-                "Float" => "double",
-                "String" => "String",
-                "Boolean" => "bool",
-                "ID" => "String",
-                "DateTime" => "DateTime",
-                other => other,
-            };
-            (dart_type.to_string(), false)
-        }
-        _ => todo!("List Types are not supported"),
+        _ => todo!("unsupported type: {:?}", selection.0),
     }
 }
 impl TemplateEnv<'_> {
@@ -37,13 +40,13 @@ impl TemplateEnv<'_> {
         let mut env = Environment::new();
         env.add_template("operation", include_str!("../templates/operation.dart.jinja"))
             .context("Failed to add template").expect("operation not found");
-        env.add_filter(, f);
+        env.add_function("type_name_for_selection", type_name_for_selection);
         Self { env }
     }
     
     fn render_operation<S: Serialize>(&self, ctx: S) -> String {
         let template = self.env.get_template("operation").unwrap();
-        template.render(ctx).unwrap()
+        template.render(context! {context=>ctx}).unwrap()
     }
 
 

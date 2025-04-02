@@ -19,24 +19,25 @@ fn generate_dart_test(usecase: &str) -> anyhow::Result<()> {
 }
 
 
-pub fn ensure_test_folder_exists(usecase: &str) -> anyhow::Result<()> {
+pub fn ensure_test_folder_exists(usecase: &str) -> anyhow::Result<PathBuf> {
     let usecase_path = tests_path().join(usecase);
     if !usecase_path.exists() {
         generate_dart_test(usecase)?;
     }
-    Ok(())
+    Ok(usecase_path)
 }
 
 fn run_codegen(cwd: &Path) { 
-    todo!()
+    shalom_dart_codegen::codgen_entry_point(&cwd).unwrap()
 }
 
 pub fn run_dart_tests_for_usecase(usecase: &str)  {
-    ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
-    let tests_dir = tests_path().join(usecase);
-    let test_file = tests_dir.clone().join("test.dart").canonicalize().unwrap();
+    let usecase_test_dir = ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
+    run_codegen(&usecase_test_dir);
+    
+    let test_file = usecase_test_dir.clone().join("test.dart").canonicalize().unwrap();
     let mut cmd = std::process::Command::new("dart");
-    cmd.current_dir(&tests_dir);
+    cmd.current_dir(&usecase_test_dir);
     cmd.arg("test").arg(test_file);
     let output = cmd.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
