@@ -6,10 +6,11 @@ use apollo_compiler::validation::Valid;
 use apollo_compiler::{executable as apollo_executable, ExecutableDocument, Node};
 use log::info;
 
+use crate::context::SharedShalomGlobalContext;
 use crate::operation::types::ObjectSelection;
 use crate::schema::context::SharedSchemaContext;
 
-use super::context::{OperationContext, SharedOpCtx, SharedShalomGlobalContext};
+use super::context::{OperationContext, SharedOpCtx};
 use super::types::{Selection, SharedObjectSelection};
 
 fn parse_object_selection(
@@ -97,10 +98,17 @@ fn parse_operation(
 
 pub(crate) fn parse_document(
     global_ctx: &SharedShalomGlobalContext,
-    doc_source: &PathBuf,
-    doc_orig: &Valid<ExecutableDocument>,
-) -> HashMap<String, SharedOpCtx> {
+    source: &str,
+    doc_path: &PathBuf,
+) -> anyhow::Result<HashMap<String, SharedOpCtx>> {
     let mut ret = HashMap::new();
+    let mut parser = apollo_compiler::parser::Parser::new();
+    let schema = global_ctx.schema_ctx.schema.clone();
+    let doc_orig = parser.parse_executable(&schema, source, doc_path).map_err(|e| {
+        anyhow::anyhow!("Failed to parse document: {}", e)
+    })?;
+    let doc_orig = doc_orig.validate(&schema).expect("doc is not valid");
+    
     if doc_orig.operations.anonymous.is_some() {
         unimplemented!("Anonymouse operations are not supported")
     }
@@ -108,8 +116,8 @@ pub(crate) fn parse_document(
         let name = name.to_string();
         ret.insert(
             name.clone(),
-            parse_operation(global_ctx, op.clone(), name, doc_source.clone()),
+            parse_operation(global_ctx, op.clone(), name, doc_path.clone()),
         );
     }
-    ret
+    Ok(ret)
 }

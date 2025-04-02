@@ -66,7 +66,7 @@ impl SchemaTypesCtx {
 }
 
 #[derive(Debug)]
-pub(crate) struct SchemaContext {
+pub struct SchemaContext {
     types: Mutex<SchemaTypesCtx>,
     pub schema: Valid<apollo_compiler::Schema>,
 }

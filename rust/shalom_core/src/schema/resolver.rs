@@ -19,7 +19,7 @@ const DEFAULT_SCALAR_TYPES: [(&str, &str); 8] = [
     ("Time", "A time."),
 ];
 
-pub fn resolve(schema: &String) -> Result<SharedSchemaContext> {
+pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
     let mut initial_types = HashMap::new();
 
     // Add the default scalar types

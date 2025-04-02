@@ -1,3 +1,3 @@
 pub(crate) mod context;
-pub mod resolver;
+pub mod parse;
 pub mod types;

@@ -2,7 +2,7 @@
 [workspace]
 members = [
     "./shalom_dart_codegen",
-    "./shalom_parser",
+    "./shalom_core",
 ]
 
 [workspace.dependencies]
