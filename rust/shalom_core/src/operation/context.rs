@@ -55,13 +55,6 @@ impl OperationContext {
 
 pub type SharedOpCtx = Arc<OperationContext>;
 
-#[derive(Debug)]
-pub(crate) struct ShalomGlobalContext {
-    operations: HashMap<String, Arc<OperationContext>>,
-    pub schema_ctx: SharedSchemaContext,
-}
-
-pub(crate) type SharedShalomGlobalContext = Arc<ShalomGlobalContext>;
 
 pub trait OperationsProvider {
     fn get_operations(&self) -> anyhow::Result<HashMap<PathBuf, String>>;
