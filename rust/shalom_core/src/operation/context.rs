@@ -32,8 +32,7 @@ impl OperationContext {
     pub fn get_selection(&self, name: &FullPathName) -> Option<Selection> {
         self.type_defs.get(name).cloned()
     }
-    
-    
+
     pub fn add_selection(&mut self, name: String, selection: Selection) {
         if !self.type_defs.contains_key(&name) {
             self.type_defs.insert(name, selection);
@@ -52,5 +51,3 @@ impl OperationContext {
 }
 
 pub type SharedOpCtx = Arc<OperationContext>;
-
-

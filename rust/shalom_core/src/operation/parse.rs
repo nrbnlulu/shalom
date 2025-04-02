@@ -2,8 +2,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use apollo_compiler::validation::Valid;
-use apollo_compiler::{executable as apollo_executable, ExecutableDocument, Node};
+use apollo_compiler::{executable as apollo_executable, Node};
 use log::info;
 
 use crate::context::SharedShalomGlobalContext;
@@ -104,11 +103,11 @@ pub(crate) fn parse_document(
     let mut ret = HashMap::new();
     let mut parser = apollo_compiler::parser::Parser::new();
     let schema = global_ctx.schema_ctx.schema.clone();
-    let doc_orig = parser.parse_executable(&schema, source, doc_path).map_err(|e| {
-        anyhow::anyhow!("Failed to parse document: {}", e)
-    })?;
+    let doc_orig = parser
+        .parse_executable(&schema, source, doc_path)
+        .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
     let doc_orig = doc_orig.validate(&schema).expect("doc is not valid");
-    
+
     if doc_orig.operations.anonymous.is_some() {
         unimplemented!("Anonymouse operations are not supported")
     }

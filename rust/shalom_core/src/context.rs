@@ -1,6 +1,9 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
-use crate::{operation::context::{OperationContext, SharedOpCtx}, schema::context::SharedSchemaContext};
+use crate::{operation::context::SharedOpCtx, schema::context::SharedSchemaContext};
 
 #[derive(Debug)]
 pub struct ShalomGlobalContext {
@@ -25,7 +28,10 @@ impl ShalomGlobalContext {
     }
     pub fn operations(&self) -> Vec<(String, SharedOpCtx)> {
         let operations = self.operations.lock().unwrap();
-        operations.iter().map(|(name, op)| (name.clone(), op.clone())).collect()
+        operations
+            .iter()
+            .map(|(name, op)| (name.clone(), op.clone()))
+            .collect()
     }
 }
 pub type SharedShalomGlobalContext = Arc<ShalomGlobalContext>;
