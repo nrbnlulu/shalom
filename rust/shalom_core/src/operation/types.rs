@@ -1,9 +1,9 @@
 use std::{cell::RefCell, sync::Arc};
 
-use apollo_compiler::{validation::Valid, Node};
+use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
-use crate::schema::{context::SharedSchemaContext, types::ScalarType, utils::TypeRef};
+use crate::schema::types::ScalarType;
 
 use super::context::OperationContext;
 
