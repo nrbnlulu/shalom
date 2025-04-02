@@ -1,3 +1,21 @@
+{% macro serde_fields(typename, fields) %}
+
+static {{typename}} FromJson(Map<String, dynamic> data) {
+    {% for field in fields %}
+    {% if field.kind == "Scalar"%}
+        {{ field.name }}_value = data['{{ field.name }}'] as 
+            
+        {% endif %}
+    {% endfor %}
+    
+  return {{typename}}(
+
+  );
+}
+
+{% endmacro %}
+
+
 {% for object in objects %}
   class {{ object.name }} {
     {% for field in object.fields %}
