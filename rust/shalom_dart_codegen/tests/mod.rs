@@ -1,3 +1,8 @@
-use shalom_parser::schema::context::SchemaContext;
+use std::path::PathBuf;
 
-fn generate_dart_test(schema: &SchemaContext, documents: &[Document]) -> anyhow::Result<()> {}
+
+/// creates a test folder specific for the given usecase
+fn generate_dart_test(usecase: &str) -> anyhow::Result<()> {
+    
+    
+}
