@@ -23,5 +23,9 @@ impl ShalomGlobalContext {
         }
         operations.extend(operations_update);
     }
+    pub fn operations(&self) -> Vec<(String, SharedOpCtx)> {
+        let operations = self.operations.lock().unwrap();
+        operations.iter().map(|(name, op)| (name.clone(), op.clone())).collect()
+    }
 }
 pub type SharedShalomGlobalContext = Arc<ShalomGlobalContext>;

@@ -11,6 +11,7 @@ use super::context::OperationContext;
 pub type FullPathName = String;
 
 #[derive(Debug, Clone, Serialize)]
+#[serde(tag = "kind")]
 pub enum Selection {
     Scalar(Arc<ScalarSelection>),
     Object(Arc<ObjectSelection>),
