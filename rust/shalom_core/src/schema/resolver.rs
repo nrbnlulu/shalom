@@ -36,9 +36,11 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
         Ok(schema) => schema,
         Err(e) => return Err(anyhow::anyhow!("Error parsing schema: {}", e)),
     };
-    info!("Parsed schema: {:?}", schema_raw.serialize());
     let schema = match schema_raw.validate() {
-        Ok(schema) => schema,
+        Ok(schema) => {
+            info!("✅ Parsed schema");
+            schema
+        },
         Err(e) => return Err(anyhow::anyhow!("Error validating schema: {}", e)),
     };
 
@@ -56,7 +58,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
             apollo_schema::ExtendedType::Scalar(scalar) => {
                 let name = scalar.name.to_string();
                 let description = scalar.description.as_ref().map(|v| v.to_string());
-                ctx.add_scalar(name.clone(), Node::new(ScalarType { name, description }));
+                ctx.add_scalar(name.clone(), Node::new(ScalarType { name, description })).unwrap();
             }
             _ => todo!(
                 "Unsupported type in schema {:?}: {:?}",
@@ -68,7 +70,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
 
     Ok(ctx)
 }
-
+#[allow(unused)]
 fn resolve_scalar(
     context: SharedSchemaContext,
     name: String,
@@ -83,7 +85,7 @@ fn resolve_scalar(
         name: name.clone(),
         description,
     });
-    context.add_scalar(name.clone(), scalar);
+    context.add_scalar(name.clone(), scalar).unwrap();
     TypeRef::new(context.clone(), name)
 }
 
@@ -116,7 +118,7 @@ fn resolve_object(
         fields,
         implements_interfaces: HashSet::new(),
     });
-    context.add_object(name.clone(), object);
+    context.add_object(name.clone(), object).unwrap();
     TypeRef::new(context.clone(), name)
 }
 

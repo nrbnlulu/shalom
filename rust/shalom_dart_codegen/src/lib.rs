@@ -68,8 +68,10 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
 }
 
 pub fn codgen_entry_point(pwd: &Path) -> Result<()>{
+    info!("codegen started in working directory {}", pwd.display());
     let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
     for (name, operation) in ctx.operations() {
+        info!("rendering operation {}", name);
         let content = TEMPLATE_ENV.render_operation(&operation);
         let generation_target =  get_generation_path_for_operation(&operation.file_path, &name);
         fs::write(&generation_target, content).unwrap();

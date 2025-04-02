@@ -7,9 +7,7 @@ use super::utils::TypeRef;
 use apollo_compiler::{ast::Value, collections::HashMap, Node};
 use serde::{Deserialize, Serialize};
 
-struct NamedType {
-    name: String,
-}
+
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash)]
 /// The definition of a named type, with all information from type extensions folded in.
