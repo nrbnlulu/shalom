@@ -27,6 +27,10 @@ pub fn ensure_test_folder_exists(usecase: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
+fn run_codegen(cwd: &Path) { 
+    todo!()
+}
+
 pub fn run_dart_tests_for_usecase(usecase: &str)  {
     ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
     let tests_dir = tests_path().join(usecase);

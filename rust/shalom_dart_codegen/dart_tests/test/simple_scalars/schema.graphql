@@ -1,0 +1,12 @@
+type Query {
+    string: String!
+    stringOptional: String
+    id: ID!
+    idOptional: ID!
+    float: Float!
+    floatOptional: Float!
+    boolean: Boolean!
+    booleanOptional: Boolean!    
+}
+
+
