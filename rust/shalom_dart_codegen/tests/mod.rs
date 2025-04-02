@@ -1,5 +1,4 @@
-use lazy_static::lazy_static;
-use std::{fs, path::{Path, PathBuf}};
+use std::path::{Path, PathBuf};
 mod usecases;
 
 fn tests_path() -> PathBuf {
@@ -32,6 +31,7 @@ fn run_codegen(cwd: &Path) {
 }
 
 pub fn run_dart_tests_for_usecase(usecase: &str)  {
+     simple_logger::init().unwrap();
     let usecase_test_dir = ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
     run_codegen(&usecase_test_dir);
     
