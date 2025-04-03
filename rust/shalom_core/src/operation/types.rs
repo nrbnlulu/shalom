@@ -1,4 +1,4 @@
-use std::{cell::RefCell, sync::Arc};
+use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
@@ -10,70 +10,73 @@ use super::context::OperationContext;
 /// the name of i.e object in a graphql query based on the parent fields.
 pub type FullPathName = String;
 
+/// common fields for selections
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SelectionCommon {
+    pub selection_name: String,
+    pub is_optional: bool,
+    pub full_name: FullPathName,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum Selection {
-    Scalar(Arc<ScalarSelection>),
-    Object(Arc<ObjectSelection>),
+    Scalar(Rc<ScalarSelection>),
+    Object(Rc<ObjectSelection>),
+}
+
+impl Selection {
+    pub fn self_selection_name(&self) -> String {
+        match self {
+            Selection::Scalar(node) => node.common.selection_name.clone(),
+            Selection::Object(obj) => obj.common.selection_name.clone(),
+        }
+    }
+    pub fn self_full_path_name(&self) -> &FullPathName {
+        match self {
+            Selection::Scalar(node) => &node.common.full_name,
+            Selection::Object(obj) => &obj.common.full_name,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ScalarSelection {
-    parent_selection: Option<Selection>,
+    #[serde(flatten)]
+    common: SelectionCommon,
     pub concrete_type: Node<ScalarType>,
+}
+pub type SharedScalarSelection = Rc<ScalarSelection>;
+
+impl ScalarSelection {
+    pub fn new(common: SelectionCommon, concrete_type: Node<ScalarType>) -> SharedScalarSelection {
+        Rc::new(ScalarSelection {
+            common,
+            concrete_type,
+        })
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ObjectSelection {
-    parent_selection: Option<Selection>,
-    type_name: String,
+    #[serde(flatten)]
+    common: SelectionCommon,
     selections: RefCell<Vec<Selection>>,
 }
 
-pub type SharedObjectSelection = Arc<ObjectSelection>;
+pub type SharedObjectSelection = Rc<ObjectSelection>;
 
 impl ObjectSelection {
-    pub fn new(parent_selection: Option<Selection>, type_name: String) -> SharedObjectSelection {
-        let ret = Arc::new(ObjectSelection {
-            parent_selection,
-            type_name,
+    pub fn new(common: SelectionCommon) -> SharedObjectSelection {
+        let ret = ObjectSelection {
+            common,
             selections: RefCell::new(Vec::new()),
-        });
+        };
 
-        ret
+        Rc::new(ret)
     }
     pub fn add_selection(&self, selection: Selection) {
         self.selections.borrow_mut().push(selection);
-    }
-}
-
-impl Selection {
-    fn parent_selection(&self) -> Option<&Selection> {
-        match self {
-            Selection::Scalar(node) => node.parent_selection.as_ref(),
-            Selection::Object(obj) => obj.parent_selection.as_ref(),
-        }
-    }
-
-    fn self_name(&self) -> String {
-        match self {
-            Selection::Scalar(node) => node.concrete_type.name.clone(),
-            Selection::Object(obj) => obj.type_name.clone(),
-        }
-    }
-
-    fn full_path_name(&self) -> FullPathName {
-        match self.parent_selection() {
-            Some(parent) => format!("{}__{}", parent.full_path_name(), self.self_name()),
-            None => self.self_name(),
-        }
-    }
-
-    pub fn combine_full_name(&self, other: &String) -> FullPathName {
-        match self.parent_selection() {
-            Some(parent) => format!("{}__{}", parent.full_path_name(), other.clone()),
-            None => other.clone(),
-        }
     }
 }
 
@@ -102,6 +105,6 @@ impl OpTypeRef {
         OpTypeRef { name, context }
     }
     pub fn resolve(&self) -> Option<Selection> {
-        self.context.get_selection(&self.name)
+        self.context.get_selection(&self.name).clone()
     }
 }

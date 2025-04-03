@@ -8,34 +8,56 @@ use log::info;
 use crate::context::SharedShalomGlobalContext;
 use crate::operation::types::ObjectSelection;
 use crate::schema::context::SharedSchemaContext;
+use crate::schema::types::{GraphQLAny, ScalarType};
 
 use super::context::{OperationContext, SharedOpCtx};
-use super::types::{Selection, SharedObjectSelection};
+use super::types::{
+    ScalarSelection, Selection, SelectionCommon, SharedObjectSelection, SharedScalarSelection,
+};
+
+fn full_path_name(this_name: &String, parent: &Option<&Selection>) -> String {
+    match parent {
+        Some(parent) => format!("{}__{}", parent.self_full_path_name(), this_name),
+        None => this_name.clone(),
+    }
+}
 
 fn parse_object_selection(
-    parent: Option<Selection>,
+    parent: &Option<&Selection>,
     op_ctx: &mut OperationContext,
     schema_ctx: &SharedSchemaContext,
+    selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
-    name: String,
 ) -> SharedObjectSelection {
     assert!(
         !selection_orig.selections.is_empty(),
         "Object selection must have at least one field"
     );
-    let obj = ObjectSelection::new(parent, name.clone());
+    let obj = ObjectSelection::new(selection_common);
     let obj_as_selection = Selection::Object(obj.clone());
 
     for selection in selection_orig.selections.iter() {
         match selection {
             apollo_executable::Selection::Field(field) => {
                 let f_name = field.name.clone().to_string();
+                let f_type = field.ty();
+                let is_optional = match f_type {
+                    apollo_compiler::ast::Type::List(_) => true,
+                    apollo_compiler::ast::Type::Named(_) => true,
+                    apollo_compiler::ast::Type::NonNullList(_) => false,
+                    apollo_compiler::ast::Type::NonNullNamed(_) => false,
+                };
+                let selection_common = SelectionCommon {
+                    full_name: full_path_name(&f_name, &parent),
+                    selection_name: f_name.clone(),
+                    is_optional,
+                };
                 let field_selection = parse_selection_set(
-                    Some(obj_as_selection.clone()),
+                    Some(&obj_as_selection),
                     op_ctx,
                     schema_ctx,
+                    selection_common,
                     &field.selection_set,
-                    f_name,
                 );
                 obj.add_selection(field_selection);
             }
@@ -45,36 +67,44 @@ fn parse_object_selection(
     obj
 }
 
+fn parse_scalar_selection(
+    selection_common: SelectionCommon,
+    concrete_type: Node<ScalarType>,
+) -> SharedScalarSelection {
+    ScalarSelection::new(selection_common, concrete_type)
+}
+
 fn parse_selection_set(
-    parent: Option<Selection>,
+    parent: Option<&Selection>,
     op_ctx: &mut OperationContext,
     schema_ctx: &SharedSchemaContext,
+    selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
-    name: String,
 ) -> Selection {
-    let out;
-    let full_name = match parent.clone() {
-        Some(selection) => selection.combine_full_name(&name),
-        _ => name.clone(),
-    };
+    let full_name = selection_common.full_name.clone();
     if let Some(selection) = op_ctx.get_selection(&full_name) {
         info!("Selection already exists");
         return selection.clone();
     }
-    // thats a scalar no inner selections
-    if selection_orig.selections.is_empty() {
-        todo!("parse scalar")
-    } else {
-        out = Selection::Object(parse_object_selection(
-            parent,
+    let schema_type = schema_ctx
+        .get_type(selection_orig.ty.to_string().as_str())
+        .unwrap();
+    let selection: Selection = match schema_type {
+        GraphQLAny::Scalar(scalar) => {
+            Selection::Scalar(parse_scalar_selection(selection_common, scalar))
+        }
+        GraphQLAny::Object(_) => Selection::Object(parse_object_selection(
+            &parent,
             op_ctx,
             schema_ctx,
+            selection_common,
             selection_orig,
-            name.clone(),
-        ));
-    }
-    op_ctx.add_selection(name.clone(), out.clone());
-    out
+        )),
+        _ => todo!("Unsupported type {:?}", schema_type),
+    };
+
+    op_ctx.add_selection(full_name, selection.clone());
+    selection
 }
 
 fn parse_operation(
@@ -84,12 +114,17 @@ fn parse_operation(
     file_path: PathBuf,
 ) -> SharedOpCtx {
     let mut ctx = OperationContext::new(global_ctx.schema_ctx.clone(), file_path);
+    let selection_common = SelectionCommon {
+        full_name: name.clone(),
+        is_optional: false,
+        selection_name: name.clone(),
+    };
     let root_type = parse_object_selection(
-        None,
+        &None,
         &mut ctx,
         &global_ctx.schema_ctx,
+        selection_common,
         &op.selection_set,
-        name.clone(),
     );
     ctx.set_root_type(root_type);
     Arc::new(ctx)

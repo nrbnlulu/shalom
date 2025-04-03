@@ -4,16 +4,15 @@ use std::{collections::HashMap, sync::Arc};
 use log::warn;
 use serde::Serialize;
 
-use super::types::{FullPathName, ObjectSelection, Selection};
+use super::types::{FullPathName, Selection, SharedObjectSelection};
 use crate::schema::context::SharedSchemaContext;
-
 #[derive(Debug, Serialize)]
 pub struct OperationContext {
     #[serde(skip_serializing)]
     schema: SharedSchemaContext,
     pub file_path: PathBuf,
     type_defs: HashMap<FullPathName, Selection>,
-    root_type: Option<Arc<ObjectSelection>>,
+    root_type: Option<SharedObjectSelection>,
 }
 
 impl OperationContext {
@@ -25,7 +24,7 @@ impl OperationContext {
             root_type: None,
         }
     }
-    pub fn set_root_type(&mut self, root_type: Arc<ObjectSelection>) {
+    pub fn set_root_type(&mut self, root_type: SharedObjectSelection) {
         self.root_type = Some(root_type);
     }
 
@@ -41,7 +40,7 @@ impl OperationContext {
         }
     }
 
-    pub fn add_object_selection(&mut self, name: String, object: Arc<ObjectSelection>) {
+    pub fn add_object_selection(&mut self, name: String, object: SharedObjectSelection) {
         if !self.type_defs.contains_key(&name) {
             self.type_defs.insert(name, Selection::Object(object));
         } else {

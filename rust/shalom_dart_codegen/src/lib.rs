@@ -1,13 +1,17 @@
-use std::{collections::HashMap, fs, path::{Path, PathBuf}};
+use std::{
+    collections::HashMap,
+    fs,
+    path::{Path, PathBuf},
+};
 
-use anyhow::{Context, Result};
-use log::{debug, info};
+use anyhow::Result;
+use lazy_static::lazy_static;
+use log::{debug, info, trace};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
-use lazy_static::lazy_static;
 use shalom_core::operation::types::Selection;
 
-struct TemplateEnv<'a>{
+struct TemplateEnv<'a> {
     env: Environment<'a>,
 }
 
@@ -38,18 +42,20 @@ fn type_name_for_selection(selection: ViaDeserialize<Selection>, optional: bool)
 impl TemplateEnv<'_> {
     fn new() -> Self {
         let mut env = Environment::new();
-        env.add_template("operation", include_str!("../templates/operation.dart.jinja"))
-            .context("Failed to add template").expect("operation not found");
+        env.add_template(
+            "operation",
+            include_str!("../templates/operation.dart.jinja"),
+        )
+        .unwrap();
         env.add_function("type_name_for_selection", type_name_for_selection);
         Self { env }
     }
-    
+
     fn render_operation<S: Serialize>(&self, ctx: S) -> String {
         let template = self.env.get_template("operation").unwrap();
+        trace!("resolved operation template; rendering...");
         template.render(context! {context=>ctx}).unwrap()
     }
-
-
 }
 
 lazy_static! {
@@ -67,19 +73,15 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
     p.join(format!("{}.dart", operation_name))
 }
 
-pub fn codgen_entry_point(pwd: &Path) -> Result<()>{
+pub fn codgen_entry_point(pwd: &Path) -> Result<()> {
     info!("codegen started in working directory {}", pwd.display());
     let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
     for (name, operation) in ctx.operations() {
         info!("rendering operation {}", name);
         let content = TEMPLATE_ENV.render_operation(&operation);
-        let generation_target =  get_generation_path_for_operation(&operation.file_path, &name);
+        let generation_target = get_generation_path_for_operation(&operation.file_path, &name);
         fs::write(&generation_target, content).unwrap();
         info!("Generated {}", generation_target.display());
     }
     Ok(())
 }
-
-
-
-

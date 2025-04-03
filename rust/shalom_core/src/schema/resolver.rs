@@ -40,7 +40,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
         Ok(schema) => {
             info!("✅ Parsed schema");
             schema
-        },
+        }
         Err(e) => return Err(anyhow::anyhow!("Error validating schema: {}", e)),
     };
 
@@ -58,7 +58,8 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
             apollo_schema::ExtendedType::Scalar(scalar) => {
                 let name = scalar.name.to_string();
                 let description = scalar.description.as_ref().map(|v| v.to_string());
-                ctx.add_scalar(name.clone(), Node::new(ScalarType { name, description })).unwrap();
+                ctx.add_scalar(name.clone(), Node::new(ScalarType { name, description }))
+                    .unwrap();
             }
             _ => todo!(
                 "Unsupported type in schema {:?}: {:?}",
