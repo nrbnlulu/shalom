@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetBooleanOptional {
   /// class memberes
 
@@ -14,7 +16,7 @@ class RequestGetBooleanOptional {
   }
 
   RequestGetBooleanOptional updateWithJson(Map<String, dynamic> data) {
-    final booleanOptional_value;
+    final bool? booleanOptional_value;
     if (data.containsKey('booleanOptional')) {
       booleanOptional_value = data['booleanOptional'] as bool?;
     } else {
@@ -24,6 +26,7 @@ class RequestGetBooleanOptional {
     return RequestGetBooleanOptional(booleanOptional: booleanOptional_value);
   }
 
+  @override
   bool operator ==(Object other) {
     if (other is! RequestGetBooleanOptional) return false;
 
@@ -31,6 +34,9 @@ class RequestGetBooleanOptional {
 
     return true;
   }
+
+  @override
+  int get hashCode => booleanOptional.hashCode;
 
   Map<String, dynamic> toJson() {
     return {'booleanOptional': booleanOptional};

@@ -1,14 +1,14 @@
 import 'package:test/test.dart';
-import "__graphql__/GetBoolean.dart";
-import "__graphql__/GetBooleanOptional.dart";
-import "__graphql__/GetFloat.dart";
-import "__graphql__/GetFloatOptional.dart";
-import "__graphql__/GetInt.dart";
-import "__graphql__/GetIntOptional.dart";
-import "__graphql__/GetString.dart";
-import "__graphql__/GetStringOptional.dart";
-import "__graphql__/GetID.dart";
-import "__graphql__/GetIDOptional.dart";
+import "__graphql__/GetBoolean.shalom.dart";
+import "__graphql__/GetBooleanOptional.shalom.dart";
+import "__graphql__/GetFloat.shalom.dart";
+import "__graphql__/GetFloatOptional.shalom.dart";
+import "__graphql__/GetInt.shalom.dart";
+import "__graphql__/GetIntOptional.shalom.dart";
+import "__graphql__/GetString.shalom.dart";
+import "__graphql__/GetStringOptional.shalom.dart";
+import "__graphql__/GetID.shalom.dart";
+import "__graphql__/GetIDOptional.shalom.dart";
 
 void main() {
   group('Simple Scalars Deserialize', () {
@@ -18,12 +18,16 @@ void main() {
     });
 
     test('StringOptional', () {
-      final result = RequestGetStringOptional.fromJson({'stringOptional': 'testStringOptional'});
+      final result = RequestGetStringOptional.fromJson({
+        'stringOptional': 'testStringOptional',
+      });
       expect(result.stringOptional, 'testStringOptional');
     });
 
     test('StringOptional with null', () {
-      final result = RequestGetStringOptional.fromJson({'stringOptional': null});
+      final result = RequestGetStringOptional.fromJson({
+        'stringOptional': null,
+      });
       expect(result.stringOptional, isNull);
     });
 
@@ -33,7 +37,9 @@ void main() {
     });
 
     test('IDOptional', () {
-      final result = RequestGetIDOptional.fromJson({'idOptional': 'testIDOptional'});
+      final result = RequestGetIDOptional.fromJson({
+        'idOptional': 'testIDOptional',
+      });
       expect(result.idOptional, 'testIDOptional');
     });
 
@@ -63,12 +69,16 @@ void main() {
     });
 
     test('BooleanOptional', () {
-      final result = RequestGetBooleanOptional.fromJson({'booleanOptional': false});
+      final result = RequestGetBooleanOptional.fromJson({
+        'booleanOptional': false,
+      });
       expect(result.booleanOptional, false);
     });
 
     test('BooleanOptional with null', () {
-      final result = RequestGetBooleanOptional.fromJson({'booleanOptional': null});
+      final result = RequestGetBooleanOptional.fromJson({
+        'booleanOptional': null,
+      });
       expect(result.booleanOptional, isNull);
     });
 
@@ -98,7 +108,9 @@ void main() {
 
     test("StringOptional", () {
       final initial = RequestGetStringOptional(stringOptional: "helloOptional");
-      final updated = initial.updateWithJson({'stringOptional': 'worldOptional'});
+      final updated = initial.updateWithJson({
+        'stringOptional': 'worldOptional',
+      });
       expect(updated.stringOptional, 'worldOptional');
       expect(initial, isNot(updated));
     });
@@ -119,7 +131,9 @@ void main() {
 
     test("IDOptional", () {
       final initial = RequestGetIDOptional(idOptional: "initialIDOptional");
-      final updated = initial.updateWithJson({'idOptional': 'updatedIDOptional'});
+      final updated = initial.updateWithJson({
+        'idOptional': 'updatedIDOptional',
+      });
       expect(updated.idOptional, 'updatedIDOptional');
       expect(initial, isNot(updated));
     });

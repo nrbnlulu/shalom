@@ -1,11 +1,9 @@
-use std::{cell::RefCell, rc::Rc, sync::Arc};
+use std::{cell::RefCell, rc::Rc};
 
 use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
 use crate::schema::types::ScalarType;
-
-use super::context::OperationContext;
 
 /// the name of i.e object in a graphql query based on the parent fields.
 pub type FullPathName = String;
@@ -77,34 +75,5 @@ impl ObjectSelection {
     }
     pub fn add_selection(&self, selection: Selection) {
         self.selections.borrow_mut().push(selection);
-    }
-}
-
-#[derive(Debug, Clone)]
-struct OpTypeRef {
-    name: FullPathName,
-    context: Arc<OperationContext>,
-}
-
-impl PartialEq for OpTypeRef {
-    fn eq(&self, other: &OpTypeRef) -> bool {
-        self.name == other.name
-    }
-}
-
-impl Eq for OpTypeRef {}
-
-impl std::hash::Hash for OpTypeRef {
-    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        self.name.hash(state);
-    }
-}
-
-impl OpTypeRef {
-    pub fn new(name: FullPathName, context: Arc<OperationContext>) -> Self {
-        OpTypeRef { name, context }
-    }
-    pub fn resolve(&self) -> Option<Selection> {
-        self.context.get_selection(&self.name).clone()
     }
 }

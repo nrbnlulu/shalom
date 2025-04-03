@@ -9,7 +9,12 @@ repos:
       rev: v1.31.1
       hooks:
           - id: typos
-
+    - repo: https://github.com/doublify/pre-commit-rust
+      rev: master
+      working_dir: rust
+      hooks:
+          - id: fmt
+          - id: cargo-check
     - repo: local
       hooks:
           - id: flutter-format

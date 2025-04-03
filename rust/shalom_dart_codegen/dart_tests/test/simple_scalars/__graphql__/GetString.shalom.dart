@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetString {
   /// class memberes
 
@@ -14,7 +16,7 @@ class RequestGetString {
   }
 
   RequestGetString updateWithJson(Map<String, dynamic> data) {
-    final string_value;
+    final String string_value;
     if (data.containsKey('string')) {
       string_value = data['string'] as String;
     } else {
@@ -24,6 +26,7 @@ class RequestGetString {
     return RequestGetString(string: string_value);
   }
 
+  @override
   bool operator ==(Object other) {
     if (other is! RequestGetString) return false;
 
@@ -31,6 +34,9 @@ class RequestGetString {
 
     return true;
   }
+
+  @override
+  int get hashCode => string.hashCode;
 
   Map<String, dynamic> toJson() {
     return {'string': string};

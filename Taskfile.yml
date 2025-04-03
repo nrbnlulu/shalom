@@ -13,4 +13,11 @@ tasks:
     fmt:
         cmds:
             - cd rust && cargo fmt
-            - cd rust/shalom_dart_codegen/dart_tests && dart format ./test ./src
+            - cd rust/shalom_dart_codegen/dart_tests && dart format ./test ./lib
+    lint:
+        cmds:
+            - cd rust && cargo fmt -- --check
+            - cd rust && cargo clippy -- -D warnings
+            - cd rust/shalom_dart_codegen/dart_tests && dart format ./test ./lib --set-exit-if-changed
+            - cd rust/shalom_dart_codegen/dart_tests && dart analyze ./test ./lib
+            - typos
