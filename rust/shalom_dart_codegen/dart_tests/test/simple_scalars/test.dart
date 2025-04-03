@@ -18,16 +18,12 @@ void main() {
     });
 
     test('StringOptional', () {
-      final result = RequestGetStringOptional.fromJson({
-        'stringOptional': 'testStringOptional',
-      });
+      final result = RequestGetStringOptional.fromJson({'stringOptional': 'testStringOptional'});
       expect(result.stringOptional, 'testStringOptional');
     });
 
     test('StringOptional with null', () {
-      final result = RequestGetStringOptional.fromJson({
-        'stringOptional': null,
-      });
+      final result = RequestGetStringOptional.fromJson({'stringOptional': null});
       expect(result.stringOptional, isNull);
     });
 
@@ -37,9 +33,7 @@ void main() {
     });
 
     test('IDOptional', () {
-      final result = RequestGetIDOptional.fromJson({
-        'idOptional': 'testIDOptional',
-      });
+      final result = RequestGetIDOptional.fromJson({'idOptional': 'testIDOptional'});
       expect(result.idOptional, 'testIDOptional');
     });
 
@@ -69,16 +63,12 @@ void main() {
     });
 
     test('BooleanOptional', () {
-      final result = RequestGetBooleanOptional.fromJson({
-        'booleanOptional': false,
-      });
+      final result = RequestGetBooleanOptional.fromJson({'booleanOptional': false});
       expect(result.booleanOptional, false);
     });
 
     test('BooleanOptional with null', () {
-      final result = RequestGetBooleanOptional.fromJson({
-        'booleanOptional': null,
-      });
+      final result = RequestGetBooleanOptional.fromJson({'booleanOptional': null});
       expect(result.booleanOptional, isNull);
     });
 
@@ -108,9 +98,7 @@ void main() {
 
     test("StringOptional", () {
       final initial = RequestGetStringOptional(stringOptional: "helloOptional");
-      final updated = initial.updateWithJson({
-        'stringOptional': 'worldOptional',
-      });
+      final updated = initial.updateWithJson({'stringOptional': 'worldOptional'});
       expect(updated.stringOptional, 'worldOptional');
       expect(initial, isNot(updated));
     });
@@ -131,9 +119,7 @@ void main() {
 
     test("IDOptional", () {
       final initial = RequestGetIDOptional(idOptional: "initialIDOptional");
-      final updated = initial.updateWithJson({
-        'idOptional': 'updatedIDOptional',
-      });
+      final updated = initial.updateWithJson({'idOptional': 'updatedIDOptional'});
       expect(updated.idOptional, 'updatedIDOptional');
       expect(initial, isNot(updated));
     });
