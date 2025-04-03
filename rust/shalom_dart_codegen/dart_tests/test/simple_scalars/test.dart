@@ -24,6 +24,13 @@ void main() {
       expect(result.stringOptional, 'testStringOptional');
     });
 
+    test('StringOptional with null', () {
+      final result = RequestGetStringOptional.fromJson({
+        'stringOptional': null,
+      });
+      expect(result.stringOptional, isNull);
+    });
+
     test('ID', () {
       final result = RequestGetID.fromJson({'id': 'testID'});
       expect(result.id, 'testID');
@@ -36,6 +43,11 @@ void main() {
       expect(result.idOptional, 'testIDOptional');
     });
 
+    test('IDOptional with null', () {
+      final result = RequestGetIDOptional.fromJson({'idOptional': null});
+      expect(result.idOptional, isNull);
+    });
+
     test('Float', () {
       final result = RequestGetFloat.fromJson({'float': 1.23});
       expect(result.float, 1.23);
@@ -44,6 +56,11 @@ void main() {
     test('FloatOptional', () {
       final result = RequestGetFloatOptional.fromJson({'floatOptional': 4.56});
       expect(result.floatOptional, 4.56);
+    });
+
+    test('FloatOptional with null', () {
+      final result = RequestGetFloatOptional.fromJson({'floatOptional': null});
+      expect(result.floatOptional, isNull);
     });
 
     test('Boolean', () {
@@ -58,6 +75,13 @@ void main() {
       expect(result.booleanOptional, false);
     });
 
+    test('BooleanOptional with null', () {
+      final result = RequestGetBooleanOptional.fromJson({
+        'booleanOptional': null,
+      });
+      expect(result.booleanOptional, isNull);
+    });
+
     test('Int', () {
       final result = RequestGetInt.fromJson({'intField': 123});
       expect(result.intField, 123);
@@ -66,6 +90,11 @@ void main() {
     test('IntOptional', () {
       final result = RequestGetIntOptional.fromJson({'intOptional': 456});
       expect(result.intOptional, 456);
+    });
+
+    test('IntOptional with null', () {
+      final result = RequestGetIntOptional.fromJson({'intOptional': null});
+      expect(result.intOptional, isNull);
     });
   });
 
@@ -86,6 +115,13 @@ void main() {
       expect(initial, isNot(updated));
     });
 
+    test("StringOptional with null", () {
+      final initial = RequestGetStringOptional(stringOptional: "helloOptional");
+      final updated = initial.updateWithJson({'stringOptional': null});
+      expect(updated.stringOptional, isNull);
+      expect(initial, isNot(updated));
+    });
+
     test("ID", () {
       final initial = RequestGetID(id: "initialID");
       final updated = initial.updateWithJson({'id': 'updatedID'});
@@ -99,6 +135,13 @@ void main() {
         'idOptional': 'updatedIDOptional',
       });
       expect(updated.idOptional, 'updatedIDOptional');
+      expect(initial, isNot(updated));
+    });
+
+    test("IDOptional with null", () {
+      final initial = RequestGetIDOptional(idOptional: "initialIDOptional");
+      final updated = initial.updateWithJson({'idOptional': null});
+      expect(updated.idOptional, isNull);
       expect(initial, isNot(updated));
     });
 
@@ -116,6 +159,13 @@ void main() {
       expect(initial, isNot(updated));
     });
 
+    test("FloatOptional with null", () {
+      final initial = RequestGetFloatOptional(floatOptional: 1.23);
+      final updated = initial.updateWithJson({'floatOptional': null});
+      expect(updated.floatOptional, isNull);
+      expect(initial, isNot(updated));
+    });
+
     test("Boolean", () {
       final initial = RequestGetBoolean(boolean: true);
       final updated = initial.updateWithJson({'boolean': false});
@@ -130,6 +180,13 @@ void main() {
       expect(initial, isNot(updated));
     });
 
+    test("BooleanOptional with null", () {
+      final initial = RequestGetBooleanOptional(booleanOptional: true);
+      final updated = initial.updateWithJson({'booleanOptional': null});
+      expect(updated.booleanOptional, isNull);
+      expect(initial, isNot(updated));
+    });
+
     test("Int", () {
       final initial = RequestGetInt(intField: 123);
       final updated = initial.updateWithJson({'intField': 456});
@@ -141,6 +198,13 @@ void main() {
       final initial = RequestGetIntOptional(intOptional: 123);
       final updated = initial.updateWithJson({'intOptional': 456});
       expect(updated.intOptional, 456);
+      expect(initial, isNot(updated));
+    });
+
+    test("IntOptional with null", () {
+      final initial = RequestGetIntOptional(intOptional: 123);
+      final updated = initial.updateWithJson({'intOptional': null});
+      expect(updated.intOptional, isNull);
       expect(initial, isNot(updated));
     });
   });
@@ -160,6 +224,13 @@ void main() {
       expect(json, data);
     });
 
+    test("StringOptional with null", () {
+      final data = {"stringOptional": null};
+      final initial = RequestGetStringOptional.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
     test("ID", () {
       final data = {"id": "fooID"};
       final initial = RequestGetID.fromJson(data);
@@ -169,6 +240,13 @@ void main() {
 
     test("IDOptional", () {
       final data = {"idOptional": "fooIDOptional"};
+      final initial = RequestGetIDOptional.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("IDOptional with null", () {
+      final data = {"idOptional": null};
       final initial = RequestGetIDOptional.fromJson(data);
       final json = initial.toJson();
       expect(json, data);
@@ -188,6 +266,13 @@ void main() {
       expect(json, data);
     });
 
+    test("FloatOptional with null", () {
+      final data = {"floatOptional": null};
+      final initial = RequestGetFloatOptional.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
     test("Boolean", () {
       final data = {"boolean": true};
       final initial = RequestGetBoolean.fromJson(data);
@@ -202,6 +287,13 @@ void main() {
       expect(json, data);
     });
 
+    test("BooleanOptional with null", () {
+      final data = {"booleanOptional": null};
+      final initial = RequestGetBooleanOptional.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
     test("Int", () {
       final data = {"intField": 123};
       final initial = RequestGetInt.fromJson(data);
@@ -211,6 +303,13 @@ void main() {
 
     test("IntOptional", () {
       final data = {"intOptional": 456};
+      final initial = RequestGetIntOptional.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("IntOptional with null", () {
+      final data = {"intOptional": null};
       final initial = RequestGetIntOptional.fromJson(data);
       final json = initial.toJson();
       expect(json, data);

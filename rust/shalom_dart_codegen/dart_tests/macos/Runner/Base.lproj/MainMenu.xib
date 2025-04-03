@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14490.70" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantiationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
         <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14490.70"/>
@@ -32,7 +32,7 @@
                                     <action selector="orderFrontStandardAboutPanel:" target="-1" id="Exp-CZ-Vem"/>
                                 </connections>
                             </menuItem>
-                            <menuItem isSeparatorItem="YES" id="VOq-y0-SEH"/>
+                            <menuItem isSeparatorItem="YES" id="VOq-y0-SHE"/>
                             <menuItem title="Preferences…" keyEquivalent="," id="BOF-NM-1cW"/>
                             <menuItem isSeparatorItem="YES" id="wFC-TO-SCJ"/>
                             <menuItem title="Services" id="NMo-om-nkz">
@@ -42,7 +42,7 @@
                             <menuItem isSeparatorItem="YES" id="4je-JR-u6R"/>
                             <menuItem title="Hide APP_NAME" keyEquivalent="h" id="Olw-nP-bQN">
                                 <connections>
-                                    <action selector="hide:" target="-1" id="PnN-Uc-m68"/>
+                                    <action selector="hide:" target="-1" id="OnN-Uc-m68"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Hide Others" keyEquivalent="h" id="Vdr-fp-XzO">
@@ -60,7 +60,7 @@
                             <menuItem isSeparatorItem="YES" id="kCx-OE-vgT"/>
                             <menuItem title="Quit APP_NAME" keyEquivalent="q" id="4sb-4s-VLi">
                                 <connections>
-                                    <action selector="terminate:" target="-1" id="Te7-pn-YzF"/>
+                                    <action selector="terminate:" target="-1" id="Te7-on-YzF"/>
                                 </connections>
                             </menuItem>
                         </items>
