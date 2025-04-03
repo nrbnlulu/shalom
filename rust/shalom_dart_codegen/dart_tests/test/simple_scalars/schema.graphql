@@ -1,4 +1,6 @@
 type Query {
+    intField: Int!
+    intOptional: Int
     string: String!
     stringOptional: String
     id: ID!
