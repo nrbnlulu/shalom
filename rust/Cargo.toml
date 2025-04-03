@@ -1,5 +1,14 @@
+
 [workspace]
 members = [
     "./shalom_dart_codegen",
-    "./shalom_parser",
+    "./shalom_core",
 ]
+
+[workspace.dependencies]
+anyhow = "1.0.86"
+simple_logger = "5.0.0"
+log = "0.4.27"
+serde = { version = "1.0", features = ["derive", "rc"] }
+serde_json = "1.0"
+minijinja = "2.1.1"

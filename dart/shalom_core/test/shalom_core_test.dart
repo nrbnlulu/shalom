@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 import 'package:test/test.dart';
 
-class MockFromJson  {
+class MockFromJson {
   final String name;
 
   MockFromJson(this.name);
@@ -15,7 +15,6 @@ class MockFromJson  {
 }
 
 void main() {
-
   group('GraphQLResult tests', () {
     test('GraphQLResult fromJson with data', () {
       final json = {
@@ -23,7 +22,8 @@ void main() {
         'errors': null
       };
 
-      final result = GraphQLResult<MockFromJson>.fromJson(json, (json) => MockFromJson.fromJsonObject(json));
+      final result =
+          GraphQLResult<MockFromJson>.fromJson(json, (json) => MockFromJson.fromJsonObject(json));
 
       expect(result.data, isNotNull);
       expect(result.data!.name, 'Test');
@@ -41,7 +41,8 @@ void main() {
         ]
       };
 
-      final result = GraphQLResult<MockFromJson>.fromJson(json, (json) => MockFromJson.fromJsonObject(json));
+      final result =
+          GraphQLResult<MockFromJson>.fromJson(json, (json) => MockFromJson.fromJsonObject(json));
 
       expect(result.data, isNull);
       expect(result.errors, isNotNull);
@@ -61,7 +62,8 @@ void main() {
         ]
       };
 
-      final result = GraphQLResult<MockFromJson>.fromJson(json, (json) => MockFromJson.fromJsonObject(json));
+      final result =
+          GraphQLResult<MockFromJson>.fromJson(json, (json) => MockFromJson.fromJsonObject(json));
 
       expect(result.data, isNotNull);
       expect(result.data!.name, 'Test');

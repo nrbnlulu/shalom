@@ -1,0 +1,15 @@
+[package]
+name = "shalom_core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = {workspace = true}
+apollo-compiler = "=1.0.0-beta.20"
+simple_logger = {workspace = true}
+log = {workspace = true}
+glob = "0.3.2"
+
+serde = {workspace = true}
+serde_json = {workspace = true}
+minijinja = {workspace = true}

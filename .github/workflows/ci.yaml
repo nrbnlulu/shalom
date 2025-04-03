@@ -1,0 +1,54 @@
+name: CI/CD Pipeline
+
+on:
+ push:
+  branches:
+   - main
+ pull_request:
+  branches:
+   - main
+
+jobs:
+ build-and-test:
+  runs-on: ${{ matrix.os }}
+  strategy:
+   matrix:
+    os: [ubuntu-latest, windows-latest]
+
+  steps:
+   - name: Checkout repository
+     uses: actions/checkout@v3
+
+   - name: Set up Rust
+     uses: actions-rs/toolchain@v1
+     with:
+      toolchain: stable
+      override: true
+
+   - name: Setup Flutter SDK
+     uses: flutter-actions/setup-flutter@v4
+     with:
+      channel: stable
+      version: 3.29.2
+      
+   - name: Install Task
+     uses: arduino/setup-task@v2
+     with:
+      version: 3.x
+      repo-token: ${{ secrets.GITHUB_TOKEN }}
+   
+   - name: Install flutter packages
+     run: | 
+        cd rust/shalom_dart_codegen/dart_tests/
+        flutter packages get
+
+   - name: Install typos
+     run: | 
+        cargo install typos-cli
+
+   - name: Lint
+     run: task lint
+
+   - name: Test
+     run: |
+        cd rust
