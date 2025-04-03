@@ -12,10 +12,9 @@ repos:
 
     - repo: local
       hooks:
-          - id: format-dart
-            name: Format dart
-            entry: dart format --set-exit-if-changed
-            
-            language: dart
-            files: \.dart$
-            types: [file]
+          - id: flutter-format
+            name: Run dart format
+            entry: dart format --line-length 100
+            language: system
+            pass_filenames: true
+            types: [dart]
