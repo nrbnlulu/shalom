@@ -1,0 +1,25 @@
+repos:
+    - repo: https://github.com/pre-commit/pre-commit-hooks
+      rev: v2.3.0
+      hooks:
+          - id: check-yaml
+          - id: end-of-file-fixer
+          - id: trailing-whitespace
+    - repo: https://github.com/crate-ci/typos
+      rev: v1.31.1
+      hooks:
+          - id: typos
+    - repo: https://github.com/doublify/pre-commit-rust
+      rev: master
+      working_dir: rust
+      hooks:
+          - id: fmt
+          - id: cargo-check
+    - repo: local
+      hooks:
+          - id: flutter-format
+            name: Run dart format
+            entry: dart format --line-length 100
+            language: system
+            pass_filenames: true
+            types: [dart]

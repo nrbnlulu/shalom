@@ -1,0 +1,39 @@
+query GetString {
+    string
+}
+
+query GetStringOptional {
+    stringOptional
+}
+
+query GetID {
+    id
+}
+
+query GetIDOptional {
+    idOptional
+}
+
+query GetFloat {
+    float
+}
+
+query GetFloatOptional {
+    floatOptional
+}
+
+query GetBoolean {
+    boolean
+}
+
+query GetBooleanOptional {
+    booleanOptional
+}
+
+query GetInt {
+    intField
+}
+
+query GetIntOptional {
+    intOptional
+}
