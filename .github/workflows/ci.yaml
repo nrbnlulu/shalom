@@ -29,12 +29,17 @@ jobs:
      uses: flutter-actions/setup-flutter@v4
      with:
       channel: stable
-      version: latest
+      version: 3.29.2
+      
    - name: Install Task
      uses: arduino/setup-task@v2
      with:
       version: 3.x
       repo-token: ${{ secrets.GITHUB_TOKEN }}
+   - name: Install flutter packages
+     run: | 
+        cd rust/shalom_dart_codegen/dart_tests/
+        flutter packages get
 
    - name: Lint
      run: task lint
