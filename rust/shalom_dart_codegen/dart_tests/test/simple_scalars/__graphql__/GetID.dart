@@ -1,25 +1,15 @@
+class RequestGetID {
+  /// class memberes
 
+  final String id;
 
+  // keywordargs constructor
 
-class RequestGetID{
+  RequestGetID({required this.id});
 
+  static RequestGetID FromJson(Map<String, dynamic> data) {
+    final id_value = data['id'] as String;
 
-/// class memberes
-
-
-// keywordargs constructor
-GetID({
-    
-});
-
-
-static GetID FromJson(Map<String, dynamic> data) {
-    
-    
-  return GetID(
-
-  );
-}
-
-
+    return RequestGetID(id: id_value);
+  }
 }

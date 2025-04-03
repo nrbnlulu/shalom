@@ -1,25 +1,15 @@
+class RequestGetString {
+  /// class memberes
 
+  final String string;
 
+  // keywordargs constructor
 
-class RequestGetString{
+  RequestGetString({required this.string});
 
+  static RequestGetString FromJson(Map<String, dynamic> data) {
+    final string_value = data['string'] as String;
 
-/// class memberes
-
-
-// keywordargs constructor
-GetString({
-    
-});
-
-
-static GetString FromJson(Map<String, dynamic> data) {
-    
-    
-  return GetString(
-
-  );
-}
-
-
+    return RequestGetString(string: string_value);
+  }
 }

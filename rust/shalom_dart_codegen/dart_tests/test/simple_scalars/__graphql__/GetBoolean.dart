@@ -1,25 +1,15 @@
+class RequestGetBoolean {
+  /// class memberes
 
+  final bool boolean;
 
+  // keywordargs constructor
 
-class RequestGetBoolean{
+  RequestGetBoolean({required this.boolean});
 
+  static RequestGetBoolean FromJson(Map<String, dynamic> data) {
+    final boolean_value = data['boolean'] as bool;
 
-/// class memberes
-
-
-// keywordargs constructor
-GetBoolean({
-    
-});
-
-
-static GetBoolean FromJson(Map<String, dynamic> data) {
-    
-    
-  return GetBoolean(
-
-  );
-}
-
-
+    return RequestGetBoolean(boolean: boolean_value);
+  }
 }
