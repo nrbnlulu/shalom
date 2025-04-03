@@ -6,7 +6,7 @@ use std::{
 
 use anyhow::Result;
 use lazy_static::lazy_static;
-use log::{debug, info, trace};
+use log::{info, trace};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use shalom_core::operation::types::Selection;
@@ -65,11 +65,12 @@ fn create_dir_if_not_exists(path: &Path) {
         std::fs::create_dir_all(path).unwrap();
     }
 }
+static END_OF_FILE: &str = "shalom.dart";
 
 fn get_generation_path_for_operation(document_path: &Path, operation_name: &str) -> PathBuf {
     let p = document_path.parent().unwrap().join("__graphql__");
     create_dir_if_not_exists(&p);
-    p.join(format!("{}.dart", operation_name))
+    p.join(format!("{}.{}", operation_name, END_OF_FILE))
 }
 
 pub fn codegen_entry_point(pwd: &Path) -> Result<()> {

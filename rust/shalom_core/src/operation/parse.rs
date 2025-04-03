@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::sync::Arc;
+use std::rc::Rc;
 
 use apollo_compiler::{executable as apollo_executable, Node};
 use log::info;
@@ -48,7 +48,7 @@ fn parse_object_selection(
                     apollo_compiler::ast::Type::NonNullNamed(_) => false,
                 };
                 let selection_common = SelectionCommon {
-                    full_name: full_path_name(&f_name, &parent),
+                    full_name: full_path_name(&f_name, parent),
                     selection_name: f_name.clone(),
                     is_optional,
                 };
@@ -127,7 +127,7 @@ fn parse_operation(
         &op.selection_set,
     );
     ctx.set_root_type(root_type);
-    Arc::new(ctx)
+    Rc::new(ctx)
 }
 
 pub(crate) fn parse_document(

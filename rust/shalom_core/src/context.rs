@@ -10,6 +10,10 @@ pub struct ShalomGlobalContext {
     operations: Mutex<HashMap<String, SharedOpCtx>>,
     pub schema_ctx: SharedSchemaContext,
 }
+
+unsafe impl Send for ShalomGlobalContext {}
+unsafe impl Sync for ShalomGlobalContext {}
+
 impl ShalomGlobalContext {
     pub fn new(schema_ctx: SharedSchemaContext) -> Arc<Self> {
         Arc::new(Self {

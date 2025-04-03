@@ -78,7 +78,7 @@ fn resolve_scalar(
     origin: Node<apollo_schema::ScalarType>,
 ) -> TypeRef {
     // Check if the type is already resolved
-    if let Some(_) = context.get_type(&name) {
+    if context.get_type(&name).is_some() {
         return TypeRef::new(context.clone(), name);
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
@@ -96,22 +96,24 @@ fn resolve_object(
     origin: apollo_compiler::Node<apollo_schema::ObjectType>,
 ) -> TypeRef {
     // Check if the type is already resolved
-    if let Some(_) = context.get_type(&name) {
+    if context.get_type(&name).is_some() {
         return TypeRef::new(context.clone(), name);
     }
-    let mut fields = HashSet::new();
+    let mut fields = Vec::new();
     for (name, field) in origin.fields.iter() {
         let name = name.to_string();
         let ty = resolve_type(context.clone(), field.ty.clone());
         let description = field.description.as_ref().map(|v| v.to_string());
         let arguments = vec![];
-        fields.insert(FieldDefinition {
+        fields.push(FieldDefinition {
             name,
             ty,
             description,
             arguments,
         });
     }
+    #[allow(clippy::mutable_key_type)]
+    let fields: HashSet<_> = fields.into_iter().collect();
     let description = origin.description.as_ref().map(|v| v.to_string());
     let object = Node::new(ObjectType {
         name: name.clone(),
@@ -140,14 +142,12 @@ pub fn resolve_type(context: SharedSchemaContext, origin: apollo_schema::Type) -
     }
 }
 
-fn setup() {
-    simple_logger::init().unwrap();
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    fn setup() {
+        simple_logger::init().unwrap();
+    }
     #[test]
     fn test_query_type_resolve() {
         setup();

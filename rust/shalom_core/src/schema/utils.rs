@@ -35,21 +35,21 @@ impl TypeRef {
         TypeRef { ctx, name }
     }
     pub fn get_scalar(&self) -> Option<Node<ScalarType>> {
-        self.resolve().map_or(None, |t| t.scalar())
+        self.resolve().and_then(|t| t.scalar())
     }
     pub fn get_object(&self) -> Option<Node<ObjectType>> {
-        self.resolve().map_or(None, |t| t.object())
+        self.resolve().and_then(|t| t.object())
     }
     pub fn is_interface(&self) -> Option<Node<InterfaceType>> {
-        self.resolve().map_or(None, |t| t.interface())
+        self.resolve().and_then(|t| t.interface())
     }
     pub fn is_union(&self) -> Option<Node<UnionType>> {
-        self.resolve().map_or(None, |t| t.union())
+        self.resolve().and_then(|t| t.union())
     }
     pub fn is_enum(&self) -> Option<Node<EnumType>> {
-        self.resolve().map_or(None, |t| t.enum_())
+        self.resolve().and_then(|t| t.enum_())
     }
     pub fn is_input_object(&self) -> Option<Node<InputObjectType>> {
-        self.resolve().map_or(None, |t| t.input_object())
+        self.resolve().and_then(|t| t.input_object())
     }
 }

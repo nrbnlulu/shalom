@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetInt {
   /// class memberes
 
@@ -14,7 +16,7 @@ class RequestGetInt {
   }
 
   RequestGetInt updateWithJson(Map<String, dynamic> data) {
-    final intField_value;
+    final int intField_value;
     if (data.containsKey('intField')) {
       intField_value = data['intField'] as int;
     } else {
@@ -24,6 +26,7 @@ class RequestGetInt {
     return RequestGetInt(intField: intField_value);
   }
 
+  @override
   bool operator ==(Object other) {
     if (other is! RequestGetInt) return false;
 
@@ -31,6 +34,9 @@ class RequestGetInt {
 
     return true;
   }
+
+  @override
+  int get hashCode => intField.hashCode;
 
   Map<String, dynamic> toJson() {
     return {'intField': intField};

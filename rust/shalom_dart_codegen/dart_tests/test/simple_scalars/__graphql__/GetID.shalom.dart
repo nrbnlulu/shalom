@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetID {
   /// class memberes
 
@@ -14,7 +16,7 @@ class RequestGetID {
   }
 
   RequestGetID updateWithJson(Map<String, dynamic> data) {
-    final id_value;
+    final String id_value;
     if (data.containsKey('id')) {
       id_value = data['id'] as String;
     } else {
@@ -24,6 +26,7 @@ class RequestGetID {
     return RequestGetID(id: id_value);
   }
 
+  @override
   bool operator ==(Object other) {
     if (other is! RequestGetID) return false;
 
@@ -31,6 +34,9 @@ class RequestGetID {
 
     return true;
   }
+
+  @override
+  int get hashCode => id.hashCode;
 
   Map<String, dynamic> toJson() {
     return {'id': id};

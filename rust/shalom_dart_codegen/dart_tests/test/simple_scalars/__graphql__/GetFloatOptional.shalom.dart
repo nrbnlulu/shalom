@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetFloatOptional {
   /// class memberes
 
@@ -14,7 +16,7 @@ class RequestGetFloatOptional {
   }
 
   RequestGetFloatOptional updateWithJson(Map<String, dynamic> data) {
-    final floatOptional_value;
+    final double? floatOptional_value;
     if (data.containsKey('floatOptional')) {
       floatOptional_value = data['floatOptional'] as double?;
     } else {
@@ -24,6 +26,7 @@ class RequestGetFloatOptional {
     return RequestGetFloatOptional(floatOptional: floatOptional_value);
   }
 
+  @override
   bool operator ==(Object other) {
     if (other is! RequestGetFloatOptional) return false;
 
@@ -31,6 +34,9 @@ class RequestGetFloatOptional {
 
     return true;
   }
+
+  @override
+  int get hashCode => floatOptional.hashCode;
 
   Map<String, dynamic> toJson() {
     return {'floatOptional': floatOptional};

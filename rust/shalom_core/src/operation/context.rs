@@ -1,5 +1,6 @@
+use std::collections::HashMap;
 use std::path::PathBuf;
-use std::{collections::HashMap, sync::Arc};
+use std::rc::Rc;
 
 use log::warn;
 use serde::Serialize;
@@ -9,6 +10,7 @@ use crate::schema::context::SharedSchemaContext;
 #[derive(Debug, Serialize)]
 pub struct OperationContext {
     #[serde(skip_serializing)]
+    #[allow(unused)]
     schema: SharedSchemaContext,
     pub file_path: PathBuf,
     type_defs: HashMap<FullPathName, Selection>,
@@ -33,20 +35,18 @@ impl OperationContext {
     }
 
     pub fn add_selection(&mut self, name: String, selection: Selection) {
-        if !self.type_defs.contains_key(&name) {
-            self.type_defs.insert(name, selection);
-        } else {
+        self.type_defs.entry(name.clone()).or_insert_with(|| {
             warn!("Duplicate type definition for {}", name);
-        }
+            selection
+        });
     }
 
     pub fn add_object_selection(&mut self, name: String, object: SharedObjectSelection) {
-        if !self.type_defs.contains_key(&name) {
-            self.type_defs.insert(name, Selection::Object(object));
-        } else {
+        self.type_defs.entry(name.clone()).or_insert_with(|| {
             warn!("Duplicate type definition for {}", name);
-        }
+            Selection::Object(object)
+        });
     }
 }
 
-pub type SharedOpCtx = Arc<OperationContext>;
+pub type SharedOpCtx = Rc<OperationContext>;

@@ -1,3 +1,5 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetIDOptional {
   /// class memberes
 
@@ -14,7 +16,7 @@ class RequestGetIDOptional {
   }
 
   RequestGetIDOptional updateWithJson(Map<String, dynamic> data) {
-    final idOptional_value;
+    final String? idOptional_value;
     if (data.containsKey('idOptional')) {
       idOptional_value = data['idOptional'] as String?;
     } else {
@@ -24,6 +26,7 @@ class RequestGetIDOptional {
     return RequestGetIDOptional(idOptional: idOptional_value);
   }
 
+  @override
   bool operator ==(Object other) {
     if (other is! RequestGetIDOptional) return false;
 
@@ -31,6 +34,9 @@ class RequestGetIDOptional {
 
     return true;
   }
+
+  @override
+  int get hashCode => idOptional.hashCode;
 
   Map<String, dynamic> toJson() {
     return {'idOptional': idOptional};
