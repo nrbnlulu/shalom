@@ -1,36 +1,44 @@
 name: CI/CD Pipeline
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+ push:
+  branches:
+   - main
+ pull_request:
+  branches:
+   - main
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
+ build-and-test:
+  runs-on: ${{ matrix.os }}
+  strategy:
+   matrix:
+    os: [ubuntu-latest, windows-latest]
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+  steps:
+   - name: Checkout repository
+     uses: actions/checkout@v3
 
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+   - name: Set up Rust
+     uses: actions-rs/toolchain@v1
+     with:
+      toolchain: stable
+      override: true
 
-      - name: Set up Dart
-        uses: dart-lang/setup-dart@v1
-        with:
-          sdk: stable
+   - name: Setup Flutter SDK
+     uses: flutter-actions/setup-flutter@v4
+     with:
+      channel: stable
+      version: latest
+   - name: Install Task
+     uses: arduino/setup-task@v2
+     with:
+      version: 3.x
+      repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run Rust codegen
-        working-directory: ./shalom_dart_codegen
-        run: cargo run -- ../schema.graphql ../query.graphql ../shalom_dart/test/schema_feature/__graphql__/schema.dart
+   - name: Lint
+     run: task lint
 
-      - name: Run Dart tests
-        working-directory: ./shalom_dart
-        run: dart test
+   - name: Test
+     run: |
+        cd rust
