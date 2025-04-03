@@ -1,14 +1,14 @@
 class RequestGetFloatOptional {
   /// class memberes
 
-  final double floatOptional;
+  final double? floatOptional;
 
   // keywordargs constructor
 
   RequestGetFloatOptional({required this.floatOptional});
 
   static RequestGetFloatOptional fromJson(Map<String, dynamic> data) {
-    final floatOptional_value = data['floatOptional'] as double;
+    final floatOptional_value = data['floatOptional'] as double?;
 
     return RequestGetFloatOptional(floatOptional: floatOptional_value);
   }
@@ -16,7 +16,7 @@ class RequestGetFloatOptional {
   RequestGetFloatOptional updateWithJson(Map<String, dynamic> data) {
     final floatOptional_value;
     if (data.containsKey('floatOptional')) {
-      floatOptional_value = data['floatOptional'] as double;
+      floatOptional_value = data['floatOptional'] as double?;
     } else {
       floatOptional_value = floatOptional;
     }

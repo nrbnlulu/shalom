@@ -1,4 +1,5 @@
 */build
+.idea
 */target
 *.rs.bk
 *.d

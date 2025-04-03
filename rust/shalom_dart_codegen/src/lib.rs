@@ -72,7 +72,7 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
     p.join(format!("{}.dart", operation_name))
 }
 
-pub fn codgen_entry_point(pwd: &Path) -> Result<()> {
+pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     info!("codegen started in working directory {}", pwd.display());
     let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
     for (name, operation) in ctx.operations() {

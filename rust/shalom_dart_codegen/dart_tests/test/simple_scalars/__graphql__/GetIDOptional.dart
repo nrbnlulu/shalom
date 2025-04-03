@@ -1,14 +1,14 @@
 class RequestGetIDOptional {
   /// class memberes
 
-  final String idOptional;
+  final String? idOptional;
 
   // keywordargs constructor
 
   RequestGetIDOptional({required this.idOptional});
 
   static RequestGetIDOptional fromJson(Map<String, dynamic> data) {
-    final idOptional_value = data['idOptional'] as String;
+    final idOptional_value = data['idOptional'] as String?;
 
     return RequestGetIDOptional(idOptional: idOptional_value);
   }
@@ -16,7 +16,7 @@ class RequestGetIDOptional {
   RequestGetIDOptional updateWithJson(Map<String, dynamic> data) {
     final idOptional_value;
     if (data.containsKey('idOptional')) {
-      idOptional_value = data['idOptional'] as String;
+      idOptional_value = data['idOptional'] as String?;
     } else {
       idOptional_value = idOptional;
     }

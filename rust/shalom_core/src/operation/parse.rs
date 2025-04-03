@@ -144,7 +144,7 @@ pub(crate) fn parse_document(
     let doc_orig = doc_orig.validate(&schema).expect("doc is not valid");
 
     if doc_orig.operations.anonymous.is_some() {
-        unimplemented!("Anonymouse operations are not supported")
+        unimplemented!("Anonymous operations are not supported")
     }
     for (name, op) in doc_orig.operations.named.iter() {
         let name = name.to_string();
