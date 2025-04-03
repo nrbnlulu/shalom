@@ -1,0 +1,16 @@
+# https://taskfile.dev
+
+version: "3"
+
+vars:
+    GREETING: Hello, World!
+
+tasks:
+    default:
+        cmds:
+            - echo "{{.GREETING}}"
+        silent: true
+    fmt:
+        cmds:
+            - cd rust && cargo fmt
+            - cd rust/shalom_dart_codegen/dart_tests && dart format ./test ./src

@@ -43,7 +43,7 @@ impl Selection {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ScalarSelection {
     #[serde(flatten)]
-    common: SelectionCommon,
+    pub common: SelectionCommon,
     pub concrete_type: Node<ScalarType>,
 }
 pub type SharedScalarSelection = Rc<ScalarSelection>;
@@ -60,7 +60,7 @@ impl ScalarSelection {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ObjectSelection {
     #[serde(flatten)]
-    common: SelectionCommon,
+    pub common: SelectionCommon,
     selections: RefCell<Vec<Selection>>,
 }
 

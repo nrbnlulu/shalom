@@ -6,7 +6,7 @@ type Query {
     float: Float!
     floatOptional: Float!
     boolean: Boolean!
-    booleanOptional: Boolean!    
+    booleanOptional: Boolean  
 }
 
 

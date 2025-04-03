@@ -1,25 +1,15 @@
+class RequestGetBooleanOptional {
+  /// class memberes
 
+  final bool? booleanOptional;
 
+  // keywordargs constructor
 
-class RequestGetBooleanOptional{
+  RequestGetBooleanOptional({required this.booleanOptional});
 
+  static RequestGetBooleanOptional FromJson(Map<String, dynamic> data) {
+    final booleanOptional_value = data['booleanOptional'] as bool?;
 
-/// class memberes
-
-
-// keywordargs constructor
-GetBooleanOptional({
-    
-});
-
-
-static GetBooleanOptional FromJson(Map<String, dynamic> data) {
-    
-    
-  return GetBooleanOptional(
-
-  );
-}
-
-
+    return RequestGetBooleanOptional(booleanOptional: booleanOptional_value);
+  }
 }

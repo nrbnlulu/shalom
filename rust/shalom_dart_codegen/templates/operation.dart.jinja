@@ -2,34 +2,40 @@
 
 /// class memberes
 {% for selection in selections %}
-final {{type_name_for_selection(selection)}} {{selection.name}};
+final {{type_name_for_selection(selection)}} {{selection.selection_name}};
 
 {% endfor %}
 
 // keywordargs constructor
 {{typename}}({
     {% for selection in selections %}
-    required this.{{selection.name}},
+    required this.{{selection.selection_name}},
     {% endfor %}
 });
 
 
 static {{typename}} FromJson(Map<String, dynamic> data) {
-    {% for selection in fields %}
+    {% for selection in selections %}
     {% if selection.kind == "Scalar" %}
-        {{ selection.name }}_value = data['{{ selection.name }}'] as {{ type_name_for_selection(selection) }}
+        final {{ selection.selection_name }}_value = data['{{ selection.selection_name }}'] as {{ type_name_for_selection(selection) }};
             
         {% endif %}
     {% endfor %}
     
   return {{typename}}(
-
-  );
+    {% for selection in selections %}
+    {{selection.selection_name}}: {{selection.selection_name}}_value,
+    {% endfor %}
+    );
 }
 
 {% endmacro %}
 
 
-class Request{{context.root_type.type_name}}{
-{{base_object_impl(context.root_type.type_name, context.root_type.selections)}}
+{% set root_type_name %}
+Request{{context.root_type.selection_name}}
+{% endset %}
+class {{root_type_name}}{
+
+{{base_object_impl(root_type_name, context.root_type.selections)}}
 }

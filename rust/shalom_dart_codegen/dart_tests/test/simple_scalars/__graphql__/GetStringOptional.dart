@@ -1,25 +1,15 @@
+class RequestGetStringOptional {
+  /// class memberes
 
+  final String? stringOptional;
 
+  // keywordargs constructor
 
-class RequestGetStringOptional{
+  RequestGetStringOptional({required this.stringOptional});
 
+  static RequestGetStringOptional FromJson(Map<String, dynamic> data) {
+    final stringOptional_value = data['stringOptional'] as String?;
 
-/// class memberes
-
-
-// keywordargs constructor
-GetStringOptional({
-    
-});
-
-
-static GetStringOptional FromJson(Map<String, dynamic> data) {
-    
-    
-  return GetStringOptional(
-
-  );
-}
-
-
+    return RequestGetStringOptional(stringOptional: stringOptional_value);
+  }
 }

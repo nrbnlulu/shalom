@@ -25,12 +25,11 @@ lazy_static! {
     ]);
 }
 
-fn type_name_for_selection(selection: ViaDeserialize<Selection>, optional: bool) -> String {
-    debug!("selection: {:?}", selection.0);
+fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
     match selection.0 {
         Selection::Scalar(scalar) => {
             let resolved = DEFAULT_SCALARS_MAP.get(&scalar.concrete_type.name).unwrap();
-            if optional {
+            if scalar.common.is_optional {
                 format!("{}?", resolved)
             } else {
                 resolved.to_string()
