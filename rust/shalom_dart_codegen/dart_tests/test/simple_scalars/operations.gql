@@ -29,3 +29,11 @@ query GetBoolean {
 query GetBooleanOptional {
     booleanOptional
 }
+
+query GetInt {
+    intField
+}
+
+query GetIntOptional {
+    intOptional
+}

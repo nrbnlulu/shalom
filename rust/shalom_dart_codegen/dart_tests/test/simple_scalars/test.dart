@@ -1,7 +1,219 @@
 import 'package:test/test.dart';
+import "__graphql__/GetBoolean.dart";
+import "__graphql__/GetBooleanOptional.dart";
+import "__graphql__/GetFloat.dart";
+import "__graphql__/GetFloatOptional.dart";
+import "__graphql__/GetInt.dart";
+import "__graphql__/GetIntOptional.dart";
+import "__graphql__/GetString.dart";
+import "__graphql__/GetStringOptional.dart";
+import "__graphql__/GetID.dart";
+import "__graphql__/GetIDOptional.dart";
 
 void main() {
-  test('test', () {
-    expect(true, true);
+  group('Simple Scalars Deserialize', () {
+    test('String', () {
+      final result = RequestGetString.fromJson({'string': 'testString'});
+      expect(result.string, 'testString');
+    });
+
+    test('StringOptional', () {
+      final result = RequestGetStringOptional.fromJson({
+        'stringOptional': 'testStringOptional',
+      });
+      expect(result.stringOptional, 'testStringOptional');
+    });
+
+    test('ID', () {
+      final result = RequestGetID.fromJson({'id': 'testID'});
+      expect(result.id, 'testID');
+    });
+
+    test('IDOptional', () {
+      final result = RequestGetIDOptional.fromJson({
+        'idOptional': 'testIDOptional',
+      });
+      expect(result.idOptional, 'testIDOptional');
+    });
+
+    test('Float', () {
+      final result = RequestGetFloat.fromJson({'float': 1.23});
+      expect(result.float, 1.23);
+    });
+
+    test('FloatOptional', () {
+      final result = RequestGetFloatOptional.fromJson({'floatOptional': 4.56});
+      expect(result.floatOptional, 4.56);
+    });
+
+    test('Boolean', () {
+      final result = RequestGetBoolean.fromJson({'boolean': true});
+      expect(result.boolean, true);
+    });
+
+    test('BooleanOptional', () {
+      final result = RequestGetBooleanOptional.fromJson({
+        'booleanOptional': false,
+      });
+      expect(result.booleanOptional, false);
+    });
+
+    test('Int', () {
+      final result = RequestGetInt.fromJson({'intField': 123});
+      expect(result.intField, 123);
+    });
+
+    test('IntOptional', () {
+      final result = RequestGetIntOptional.fromJson({'intOptional': 456});
+      expect(result.intOptional, 456);
+    });
+  });
+
+  group("Scalars updateWithJson", () {
+    test("String", () {
+      final initial = RequestGetString(string: "hello");
+      final updated = initial.updateWithJson({'string': 'world'});
+      expect(updated.string, 'world');
+      expect(initial, isNot(updated));
+    });
+
+    test("StringOptional", () {
+      final initial = RequestGetStringOptional(stringOptional: "helloOptional");
+      final updated = initial.updateWithJson({
+        'stringOptional': 'worldOptional',
+      });
+      expect(updated.stringOptional, 'worldOptional');
+      expect(initial, isNot(updated));
+    });
+
+    test("ID", () {
+      final initial = RequestGetID(id: "initialID");
+      final updated = initial.updateWithJson({'id': 'updatedID'});
+      expect(updated.id, 'updatedID');
+      expect(initial, isNot(updated));
+    });
+
+    test("IDOptional", () {
+      final initial = RequestGetIDOptional(idOptional: "initialIDOptional");
+      final updated = initial.updateWithJson({
+        'idOptional': 'updatedIDOptional',
+      });
+      expect(updated.idOptional, 'updatedIDOptional');
+      expect(initial, isNot(updated));
+    });
+
+    test("Float", () {
+      final initial = RequestGetFloat(float: 1.23);
+      final updated = initial.updateWithJson({'float': 4.56});
+      expect(updated.float, 4.56);
+      expect(initial, isNot(updated));
+    });
+
+    test("FloatOptional", () {
+      final initial = RequestGetFloatOptional(floatOptional: 1.23);
+      final updated = initial.updateWithJson({'floatOptional': 4.56});
+      expect(updated.floatOptional, 4.56);
+      expect(initial, isNot(updated));
+    });
+
+    test("Boolean", () {
+      final initial = RequestGetBoolean(boolean: true);
+      final updated = initial.updateWithJson({'boolean': false});
+      expect(updated.boolean, false);
+      expect(initial, isNot(updated));
+    });
+
+    test("BooleanOptional", () {
+      final initial = RequestGetBooleanOptional(booleanOptional: true);
+      final updated = initial.updateWithJson({'booleanOptional': false});
+      expect(updated.booleanOptional, false);
+      expect(initial, isNot(updated));
+    });
+
+    test("Int", () {
+      final initial = RequestGetInt(intField: 123);
+      final updated = initial.updateWithJson({'intField': 456});
+      expect(updated.intField, 456);
+      expect(initial, isNot(updated));
+    });
+
+    test("IntOptional", () {
+      final initial = RequestGetIntOptional(intOptional: 123);
+      final updated = initial.updateWithJson({'intOptional': 456});
+      expect(updated.intOptional, 456);
+      expect(initial, isNot(updated));
+    });
+  });
+
+  group("Scalars toJson", () {
+    test("String", () {
+      final data = {"string": "foo"};
+      final initial = RequestGetString.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("StringOptional", () {
+      final data = {"stringOptional": "fooOptional"};
+      final initial = RequestGetStringOptional.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("ID", () {
+      final data = {"id": "fooID"};
+      final initial = RequestGetID.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("IDOptional", () {
+      final data = {"idOptional": "fooIDOptional"};
+      final initial = RequestGetIDOptional.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("Float", () {
+      final data = {"float": 1.23};
+      final initial = RequestGetFloat.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("FloatOptional", () {
+      final data = {"floatOptional": 4.56};
+      final initial = RequestGetFloatOptional.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("Boolean", () {
+      final data = {"boolean": true};
+      final initial = RequestGetBoolean.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("BooleanOptional", () {
+      final data = {"booleanOptional": false};
+      final initial = RequestGetBooleanOptional.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("Int", () {
+      final data = {"intField": 123};
+      final initial = RequestGetInt.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("IntOptional", () {
+      final data = {"intOptional": 456};
+      final initial = RequestGetIntOptional.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
   });
 }
