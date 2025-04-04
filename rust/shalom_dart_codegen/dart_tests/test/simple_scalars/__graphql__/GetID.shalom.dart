@@ -1,99 +1,45 @@
 import 'Objects.shalom.dart';
 // ignore_for_file: non_constant_identifier_names
 
+class RequestGetID {
+  /// class memberes
 
+  final String id;
 
-class 
-RequestGetID
-{
+  // keywordargs constructor
 
+  RequestGetID({required this.id});
 
+  static RequestGetID fromJson(Map<String, dynamic> data) {
+    final id_value = data['id'] as String;
 
-/// class memberes
+    return RequestGetID(id: id_value);
+  }
 
-final String id;
+  RequestGetID updateWithJson(Map<String, dynamic> data) {
+    final String id_value;
+    if (data.containsKey('id')) {
+      id_value = data['id'] as String;
+    } else {
+      id_value = id;
+    }
 
+    return RequestGetID(id: id_value);
+  }
 
+  @override
+  bool operator ==(Object other) {
+    if (other is! RequestGetID) return false;
 
-// keywordargs constructor
+    if (other.id != id) return false;
 
-RequestGetID
-({
-    
-        required this.id,
-    
-});
-
-
-static 
-RequestGetID
- fromJson(Map<String, dynamic> data) {
-    
-        
-            final id_value = data['id'] as String;
-
-        
-    
-
-  return 
-RequestGetID
-(
-    
-        id: id_value,
-    
-    );
-}
-
-
-
-RequestGetID
- updateWithJson(Map<String, dynamic> data) {
-    
-    
-        final String id_value;
-        if (data.containsKey('id')){
-            id_value = data['id'] as String;
-        } else {
-            id_value = id;
-        }
-        
-    
-
-  return 
-RequestGetID
-(
-    
-    id: id_value,
-    
-    );
-}
-
-@override
-bool operator==(Object other){
-    if (other is! 
-RequestGetID
-) return false;
-    
-    
-        if (other.id != id) return false;
-    
-    
     return true;
-}
+  }
 
-@override
-int get hashCode => 
-    
-        id.hashCode;
-    
+  @override
+  int get hashCode => id.hashCode;
 
-Map<String, dynamic> toJson() {
-    return {
-        
-        'id': id,
-        
-    };
-}
-
-
+  Map<String, dynamic> toJson() {
+    return {'id': id};
+  }
 }

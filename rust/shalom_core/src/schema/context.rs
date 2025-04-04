@@ -1,4 +1,5 @@
 use crate::schema::types::GraphQLAny;
+use crate::schema::type_extractor::{Object};
 use apollo_compiler::{validation::Valid, Node};
 use std::{
     collections::HashMap,
@@ -63,6 +64,11 @@ impl SchemaTypesCtx {
         }
         None
     }
+
+    pub fn get_objects(&self) -> &HashMap<String, Node<ObjectType>> {
+        return &self.objects;
+    }
+
 }
 
 #[derive(Debug)]
@@ -102,8 +108,14 @@ impl SchemaContext {
         Ok(())
     }
 
-    pub fn get_objects(&self) {
-         
+    pub fn get_parsed_objects(&self) -> Vec<Object> {
+         let types_ctx = self.get_types(); 
+         let objects = types_ctx.get_objects();
+         let mut parsed_objects = Vec::new();
+         for (name, object_type) in objects.iter() {
+              parsed_objects.push(Object::new(&object_type));
+         }
+         return parsed_objects;
     }
 
     fn get_types(&self) -> MutexGuard<'_, SchemaTypesCtx> {

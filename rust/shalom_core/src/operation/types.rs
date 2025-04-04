@@ -59,7 +59,7 @@ impl ScalarSelection {
 pub struct ObjectSelection {
     #[serde(flatten)]
     pub common: SelectionCommon,
-    selections: RefCell<Vec<Selection>>,
+    pub selections: RefCell<Vec<Selection>>,
 }
 
 pub type SharedObjectSelection = Rc<ObjectSelection>;

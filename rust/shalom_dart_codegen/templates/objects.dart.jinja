@@ -1,4 +1,38 @@
 {% for object in objects %}
+class {{ object.name }}Selection {
+  {% for field in object.fields %}
+  bool select{{ field.name | capitalize }} = false; 
+  {% endfor %}
+
+  {{ object.name }}Selection({
+    {% for field in object.fields %}
+    this.select{{ field.name | capitalize }} = false,  
+    {% endfor %}
+  });
+
+  // Method to select fields dynamically
+  void selectField(String fieldName) {
+    switch (fieldName) {
+      {% for field in object.fields %}
+      case '{{ field.name }}':
+        select{{ field.name | capitalize }} = true;
+        break;
+      {% endfor %}
+      default:
+        throw Exception('Unknown field: $fieldName');
+    }
+  }
+
+  // Convert the selected fields into a map (optional)
+  Map<String, bool> getSelectedFields() {
+    return {
+      {% for field in object.fields %}
+      '{{ field.name }}': select{{ field.name | capitalize }},
+      {% endfor %}
+    };
+  }
+}
+
 class {{ object.name }} {
   {% for field in object.fields %}
   final {{ field.type_name }}{% if not field.required %}?{% endif %} {{ field.name }};

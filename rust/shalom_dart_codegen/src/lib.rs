@@ -9,7 +9,7 @@ use lazy_static::lazy_static;
 use log::{info, trace};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
-use shalom_core::{operation::types::Selection, schema::{self, types::ObjectType}};
+use shalom_core::{operation::types::Selection, schema::{self, types::ObjectType, type_extractor::Object}};
 
 struct TemplateEnv<'a> {
     env: Environment<'a>,
@@ -36,6 +36,12 @@ fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
                 resolved.to_string()
             }
         }
+        Selection::Object(object) => {
+            let mut name: Vec<char> = object.common.selection_name.clone().chars().collect();
+            name[0] = name[0].to_uppercase().nth(0).unwrap();
+            let selection_name = name.into_iter().collect();
+            return selection_name;
+        }
         _ => todo!("unsupported type: {:?}", selection.0),
     }
 }
@@ -47,6 +53,11 @@ impl TemplateEnv<'_> {
             include_str!("../templates/operation.dart.jinja"),
         )
         .unwrap();
+        env.add_template(
+            "objects",
+            include_str!("../templates/objects.dart.jinja"),
+        )
+        .unwrap();
         env.add_function("type_name_for_selection", type_name_for_selection);
         Self { env }
     }
@@ -55,6 +66,12 @@ impl TemplateEnv<'_> {
         let template = self.env.get_template("operation").unwrap();
         trace!("resolved operation template; rendering...");
         template.render(context! {context=>ctx}).unwrap()
+    }
+
+    fn render_objects<S: Serialize>(&self, ctx: S) -> String {
+        let template = self.env.get_template("objects").unwrap();
+        trace!("resolved objects template; rendering...");
+        template.render(ctx).unwrap()
     }
 }
 
@@ -70,6 +87,11 @@ static END_OF_FILE: &str = "shalom.dart";
 static OBJECTS_FILENAME: &str = "Objects"; 
 static GRAPHQL_DIRECTORY: &str = "__graphql__";
 
+#[derive(Serialize)]
+pub struct ObjectsCtx {
+   objects: Vec<Object>
+} 
+
 
 fn get_generation_path_for_operation(document_path: &Path, operation_name: &str) -> PathBuf {
     let p = document_path.parent().unwrap().join(GRAPHQL_DIRECTORY);
@@ -83,12 +105,15 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     let mut objects_file_path = None; 
     for (name, operation) in ctx.operations() {
         if objects_file_path.is_none() {
-            info!("rendering objects {}", name);
             let schema_ctx = ctx.schema_ctx.clone();
+            let objects = schema_ctx.get_parsed_objects();
+            info!("rendering objects {:?}", objects.iter().map(|object| object.name.clone()).collect::<Vec<String>>());
+            let objects_ctx = ObjectsCtx {
+                objects
+            };
             let generation_target = get_generation_path_for_operation(&operation.file_path, OBJECTS_FILENAME);
-            let content =  TEMPLATE_ENV.render_operation(&schema_ctx);
-            println!("{}", content);
-            fs::write(&generation_target, "").unwrap();
+            let content =  TEMPLATE_ENV.render_objects(&objects_ctx);
+            fs::write(&generation_target, content).unwrap();
             info!("Generated {}", generation_target.display());
             objects_file_path = Some(generation_target);
         }
