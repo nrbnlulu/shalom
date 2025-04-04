@@ -1,17 +1,43 @@
 use crate::schema::types::GraphQLAny;
-use crate::schema::type_extractor::{Object};
 use apollo_compiler::{validation::Valid, Node};
+use serde::Serialize;
+use std::fmt::Debug;
+use std::fmt;
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex, MutexGuard},
 };
 
 use super::types::{EnumType, InputObjectType, ObjectType, ScalarType};
-#[derive(Debug)]
+
+pub struct MutexWrapper<T: ?Sized>(pub Mutex<T>); 
+
+impl<T: ?Sized + Serialize> Serialize for MutexWrapper<T> {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> 
+    where 
+    S: serde::Serializer, 
+    {
+        self.0.lock().unwrap().serialize(serializer)
+    }
+}
+
+impl<T: Debug> Debug for MutexWrapper<T> {
+   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+     match self.0.lock() {
+        Ok(guard) => write!(f, "{:?}", *guard),
+        Err(_) => write!(f, "mutex poisoned")
+     }
+   }
+}
+
+#[derive(Debug, Serialize)]
 pub(crate) struct SchemaTypesCtx {
+    #[serde(skip_serializing)]
     inputs: HashMap<String, Node<InputObjectType>>,
     objects: HashMap<String, Node<ObjectType>>,
+    #[serde(skip_serializing)]
     enums: HashMap<String, Node<EnumType>>,
+    #[serde(skip_serializing)]
     scalars: HashMap<String, Node<ScalarType>>,
 }
 impl SchemaTypesCtx {
@@ -64,16 +90,12 @@ impl SchemaTypesCtx {
         }
         None
     }
-
-    pub fn get_objects(&self) -> &HashMap<String, Node<ObjectType>> {
-        return &self.objects;
-    }
-
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct SchemaContext {
-    types: Mutex<SchemaTypesCtx>,
+    types: MutexWrapper<SchemaTypesCtx>,
+    #[serde(skip_serializing)]
     pub schema: Valid<apollo_compiler::Schema>,
 }
 
@@ -82,9 +104,9 @@ impl SchemaContext {
         initial_types: HashMap<String, GraphQLAny>,
         schema: Valid<apollo_compiler::Schema>,
     ) -> SchemaContext {
-        let types_ctx = Mutex::new(SchemaTypesCtx::new());
+        let types_ctx = MutexWrapper(Mutex::new(SchemaTypesCtx::new()));
         {
-            let mut types_ctx_g = types_ctx.lock().unwrap();
+            let mut types_ctx_g = types_ctx.0.lock().unwrap();
             for (name, type_) in initial_types {
                 types_ctx_g.add_any(name, &type_);
             }
@@ -95,31 +117,21 @@ impl SchemaContext {
         }
     }
     pub fn get_type(&self, name: &str) -> Option<GraphQLAny> {
-        let types_ctx = self.types.lock().unwrap();
+        let types_ctx = self.types.0.lock().unwrap();
         types_ctx.get_any(name)
     }
 
     pub fn add_object(&self, name: String, type_: Node<ObjectType>) -> anyhow::Result<()> {
         let mut types_ctx = self
-            .types
+            .types.0
             .lock()
             .map_err(|e| anyhow::anyhow!(e.to_string()))?;
         types_ctx.add_object(name, type_);
         Ok(())
     }
 
-    pub fn get_parsed_objects(&self) -> Vec<Object> {
-         let types_ctx = self.get_types(); 
-         let objects = types_ctx.get_objects();
-         let mut parsed_objects = Vec::new();
-         for (name, object_type) in objects.iter() {
-              parsed_objects.push(Object::new(&object_type));
-         }
-         return parsed_objects;
-    }
-
     fn get_types(&self) -> MutexGuard<'_, SchemaTypesCtx> {
-        self.types.lock().unwrap()
+        self.types.0.lock().unwrap()
     }
 
     pub fn add_scalar(&self, name: String, type_: Node<ScalarType>) -> anyhow::Result<()> {

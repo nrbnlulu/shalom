@@ -62,5 +62,5 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
     if !out_std.contains("All tests passed!") {
         panic!("Dart tests failed: {}\n{}", out_err, out_std);
     }
-    info!("✔️ Dart tests passed\n {}", out_std)
+    info!("✔️ Dart tests passed\n {}", out_std);
 }

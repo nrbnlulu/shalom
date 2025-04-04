@@ -69,7 +69,9 @@ impl GraphQLAny {
 pub enum FieldType {
     Named(TypeRef),
     NonNullNamed(TypeRef),
+    #[serde(skip_serializing)]
     List(Box<FieldType>),
+    #[serde(skip_serializing)]
     NonNullList(Box<FieldType>),
 }
 
@@ -135,8 +137,8 @@ impl ScalarType {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ObjectType {
     pub description: Option<String>,
-
     pub name: String,
+    #[serde(skip_serializing)]
     pub implements_interfaces: HashSet<Box<TypeRef>>,
     pub fields: HashSet<FieldDefinition>,
 }
@@ -217,6 +219,7 @@ impl Hash for InputObjectType {
 pub struct FieldDefinition {
     pub name: String,
     pub ty: FieldType,
+    #[serde(skip_serializing)]
     pub arguments: Vec<InputValueDefinition>,
     pub description: Option<String>,
 }

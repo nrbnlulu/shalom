@@ -3,13 +3,14 @@ use std::{
     fs,
     path::{Path, PathBuf},
 };
-
+use std::rc::Rc;
 use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{info, trace};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
-use shalom_core::{operation::types::Selection, schema::{self, types::ObjectType, type_extractor::Object}};
+use shalom_core::{operation::{types::Selection, context::OperationContext}, schema::{self, context::SchemaContext, types::ObjectType}};
+use std::sync::Arc;
 
 struct TemplateEnv<'a> {
     env: Environment<'a>,
@@ -71,7 +72,8 @@ impl TemplateEnv<'_> {
     fn render_objects<S: Serialize>(&self, ctx: S) -> String {
         let template = self.env.get_template("objects").unwrap();
         trace!("resolved objects template; rendering...");
-        template.render(ctx).unwrap()
+        println!("{:?}", context! {context=>ctx});
+        template.render(context! {context=>ctx}).unwrap()
     }
 }
 
@@ -87,16 +89,30 @@ static END_OF_FILE: &str = "shalom.dart";
 static OBJECTS_FILENAME: &str = "Objects"; 
 static GRAPHQL_DIRECTORY: &str = "__graphql__";
 
-#[derive(Serialize)]
-pub struct ObjectsCtx {
-   objects: Vec<Object>
-} 
-
 
 fn get_generation_path_for_operation(document_path: &Path, operation_name: &str) -> PathBuf {
     let p = document_path.parent().unwrap().join(GRAPHQL_DIRECTORY);
     create_dir_if_not_exists(&p);
     p.join(format!("{}.{}", operation_name, END_OF_FILE))
+}
+
+fn generate_operations_file(name: &str, operation: Rc<OperationContext>, file_path: &Path) {
+    info!("rendering operation {}", name);
+    let mut file_content = format!("import '{}';", file_path.file_name().unwrap().to_str().unwrap());
+    let rendered_content = TEMPLATE_ENV.render_operation(&operation);
+    file_content.push_str(&rendered_content); 
+    let generation_target = get_generation_path_for_operation(&operation.file_path, &name);
+    fs::write(&generation_target, file_content).unwrap();
+    info!("Generated {}", generation_target.display());
+
+}
+fn generate_objects_file(schema_ctx: Arc<SchemaContext>, file_path: &Path) -> PathBuf {
+    let generation_target = get_generation_path_for_operation(file_path, OBJECTS_FILENAME);
+    let content =  TEMPLATE_ENV.render_objects(&schema_ctx);
+    fs::write(&generation_target, content).unwrap();
+    info!("Generated {}", generation_target.display());
+    return generation_target;
+
 }
 
 pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
@@ -106,25 +122,11 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     for (name, operation) in ctx.operations() {
         if objects_file_path.is_none() {
             let schema_ctx = ctx.schema_ctx.clone();
-            let objects = schema_ctx.get_parsed_objects();
-            info!("rendering objects {:?}", objects.iter().map(|object| object.name.clone()).collect::<Vec<String>>());
-            let objects_ctx = ObjectsCtx {
-                objects
-            };
-            let generation_target = get_generation_path_for_operation(&operation.file_path, OBJECTS_FILENAME);
-            let content =  TEMPLATE_ENV.render_objects(&objects_ctx);
-            fs::write(&generation_target, content).unwrap();
-            info!("Generated {}", generation_target.display());
+            let generation_target = generate_objects_file(schema_ctx, &operation.file_path); 
             objects_file_path = Some(generation_target);
         }
         let objects_file_path = objects_file_path.as_ref().unwrap();
-        info!("rendering operation {}", name);
-        let mut file_content = format!("import '{}';", objects_file_path.file_name().unwrap().to_str().unwrap());
-        let rendered_content = TEMPLATE_ENV.render_operation(&operation);
-        file_content.push_str(&rendered_content); 
-        let generation_target = get_generation_path_for_operation(&operation.file_path, &name);
-        fs::write(&generation_target, file_content).unwrap();
-        info!("Generated {}", generation_target.display());
+        generate_operations_file(&name, operation, objects_file_path); 
     }
     Ok(())
 }
