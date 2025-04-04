@@ -37,3 +37,8 @@ query GetInt {
 query GetIntOptional {
     intOptional
 }
+
+query GetMultipleFields {
+    id,
+    intField
+}

@@ -9,22 +9,22 @@ final {{type_name_for_selection(selection)}} {{selection.selection_name}};
 // keywordargs constructor
 {{typename}}({
     {% for selection in selections %}
-    required this.{{selection.selection_name}},
+        required this.{{selection.selection_name}},
     {% endfor %}
 });
 
 
 static {{typename}} fromJson(Map<String, dynamic> data) {
     {% for selection in selections %}
-    {% if selection.kind == "Scalar" %}
-        final {{ selection.selection_name }}_value = data['{{ selection.selection_name }}'] as {{ type_name_for_selection(selection) }};
+        {% if selection.kind == "Scalar" %}
+            final {{ selection.selection_name }}_value = data['{{ selection.selection_name }}'] as {{ type_name_for_selection(selection) }};
 
         {% endif %}
     {% endfor %}
 
   return {{typename}}(
     {% for selection in selections %}
-    {{selection.selection_name}}: {{selection.selection_name}}_value,
+        {{selection.selection_name}}: {{selection.selection_name}}_value,
     {% endfor %}
     );
 }

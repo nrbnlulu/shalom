@@ -102,6 +102,10 @@ impl SchemaContext {
         Ok(())
     }
 
+    pub fn get_objects(&self) {
+         
+    }
+
     fn get_types(&self) -> MutexGuard<'_, SchemaTypesCtx> {
         self.types.lock().unwrap()
     }

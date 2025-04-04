@@ -6,11 +6,14 @@ use super::{
         EnumType, GraphQLAny, InputObjectType, InterfaceType, ObjectType, ScalarType, UnionType,
     },
 };
+use serde::Serialize;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct TypeRef {
+    #[serde(skip_serializing)]
+    #[allow(unused)]
     ctx: SharedSchemaContext,
-    name: String,
+    pub name: String,
 }
 
 impl PartialEq for TypeRef {

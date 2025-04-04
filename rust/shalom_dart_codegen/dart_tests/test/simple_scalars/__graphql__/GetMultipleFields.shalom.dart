@@ -4,12 +4,15 @@ import 'Objects.shalom.dart';
 
 
 class 
-RequestGetInt
+RequestGetMultipleFields
 {
 
 
 
 /// class memberes
+
+final String id;
+
 
 final int intField;
 
@@ -17,8 +20,10 @@ final int intField;
 
 // keywordargs constructor
 
-RequestGetInt
+RequestGetMultipleFields
 ({
+    
+        required this.id,
     
         required this.intField,
     
@@ -26,8 +31,13 @@ RequestGetInt
 
 
 static 
-RequestGetInt
+RequestGetMultipleFields
  fromJson(Map<String, dynamic> data) {
+    
+        
+            final id_value = data['id'] as String;
+
+        
     
         
             final intField_value = data['intField'] as int;
@@ -36,8 +46,10 @@ RequestGetInt
     
 
   return 
-RequestGetInt
+RequestGetMultipleFields
 (
+    
+        id: id_value,
     
         intField: intField_value,
     
@@ -46,8 +58,17 @@ RequestGetInt
 
 
 
-RequestGetInt
+RequestGetMultipleFields
  updateWithJson(Map<String, dynamic> data) {
+    
+    
+        final String id_value;
+        if (data.containsKey('id')){
+            id_value = data['id'] as String;
+        } else {
+            id_value = id;
+        }
+        
     
     
         final int intField_value;
@@ -60,8 +81,10 @@ RequestGetInt
     
 
   return 
-RequestGetInt
+RequestGetMultipleFields
 (
+    
+    id: id_value,
     
     intField: intField_value,
     
@@ -71,8 +94,12 @@ RequestGetInt
 @override
 bool operator==(Object other){
     if (other is! 
-RequestGetInt
+RequestGetMultipleFields
 ) return false;
+    
+    
+        if (other.id != id) return false;
+    
     
     
         if (other.intField != intField) return false;
@@ -84,11 +111,17 @@ RequestGetInt
 @override
 int get hashCode => 
     
-        intField.hashCode;
+    Object.hash( 
+        id,
+        
+        intField,
+        );
     
 
 Map<String, dynamic> toJson() {
     return {
+        
+        'id': id,
         
         'intField': intField,
         

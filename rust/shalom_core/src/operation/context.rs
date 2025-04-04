@@ -26,6 +26,7 @@ impl OperationContext {
             root_type: None,
         }
     }
+
     pub fn set_root_type(&mut self, root_type: SharedObjectSelection) {
         self.root_type = Some(root_type);
     }

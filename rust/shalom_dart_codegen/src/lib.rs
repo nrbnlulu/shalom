@@ -9,11 +9,12 @@ use lazy_static::lazy_static;
 use log::{info, trace};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
-use shalom_core::operation::types::Selection;
+use shalom_core::{operation::types::Selection, schema::{self, types::ObjectType}};
 
 struct TemplateEnv<'a> {
     env: Environment<'a>,
 }
+
 
 lazy_static! {
     static ref DEFAULT_SCALARS_MAP: HashMap<String, String> = HashMap::from([
@@ -66,9 +67,12 @@ fn create_dir_if_not_exists(path: &Path) {
     }
 }
 static END_OF_FILE: &str = "shalom.dart";
+static OBJECTS_FILENAME: &str = "Objects"; 
+static GRAPHQL_DIRECTORY: &str = "__graphql__";
+
 
 fn get_generation_path_for_operation(document_path: &Path, operation_name: &str) -> PathBuf {
-    let p = document_path.parent().unwrap().join("__graphql__");
+    let p = document_path.parent().unwrap().join(GRAPHQL_DIRECTORY);
     create_dir_if_not_exists(&p);
     p.join(format!("{}.{}", operation_name, END_OF_FILE))
 }
@@ -76,11 +80,25 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
 pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     info!("codegen started in working directory {}", pwd.display());
     let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
+    let mut objects_file_path = None; 
     for (name, operation) in ctx.operations() {
+        if objects_file_path.is_none() {
+            info!("rendering objects {}", name);
+            let schema_ctx = ctx.schema_ctx.clone();
+            let generation_target = get_generation_path_for_operation(&operation.file_path, OBJECTS_FILENAME);
+            let content =  TEMPLATE_ENV.render_operation(&schema_ctx);
+            println!("{}", content);
+            fs::write(&generation_target, "").unwrap();
+            info!("Generated {}", generation_target.display());
+            objects_file_path = Some(generation_target);
+        }
+        let objects_file_path = objects_file_path.as_ref().unwrap();
         info!("rendering operation {}", name);
-        let content = TEMPLATE_ENV.render_operation(&operation);
+        let mut file_content = format!("import '{}';", objects_file_path.file_name().unwrap().to_str().unwrap());
+        let rendered_content = TEMPLATE_ENV.render_operation(&operation);
+        file_content.push_str(&rendered_content); 
         let generation_target = get_generation_path_for_operation(&operation.file_path, &name);
-        fs::write(&generation_target, content).unwrap();
+        fs::write(&generation_target, file_content).unwrap();
         info!("Generated {}", generation_target.display());
     }
     Ok(())
