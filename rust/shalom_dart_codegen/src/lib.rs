@@ -64,7 +64,6 @@ impl TemplateEnv<'_> {
         let mut context = HashMap::new();
         context.insert("schema", context! {context => schema_ctx});
         context.insert("operation", context! {context => operations_ctx});
-        println!("generating context: {:?}", context);
         trace!("resolved operation template; rendering...");
         template.render(context).unwrap()
     }

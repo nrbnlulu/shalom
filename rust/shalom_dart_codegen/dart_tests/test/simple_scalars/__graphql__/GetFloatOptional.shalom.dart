@@ -3,10 +3,10 @@
 
 
 
+// Generate enums first
 
 
 // Then generate classes
-
 
 /// GetFloatOptional class with selected fields from query
 
@@ -41,7 +41,7 @@ class RequestGetFloatOptional {
       floatOptional: 
         data.containsKey('floatOptional') 
           ? data['floatOptional'] as double?
-          : floatOptional
+          : this.floatOptional
       ,
       
     );
@@ -73,8 +73,4 @@ class RequestGetFloatOptional {
   ]);
 }
 
-
-
-
-// Generate enums first
 

@@ -3,10 +3,10 @@
 
 
 
+// Generate enums first
 
 
 // Then generate classes
-
 
 /// GetBoolean class with selected fields from query
 
@@ -41,7 +41,7 @@ class RequestGetBoolean {
       boolean: 
         data.containsKey('boolean') 
           ? data['boolean'] as bool
-          : boolean
+          : this.boolean
       ,
       
     );
@@ -73,8 +73,4 @@ class RequestGetBoolean {
   ]);
 }
 
-
-
-
-// Generate enums first
 

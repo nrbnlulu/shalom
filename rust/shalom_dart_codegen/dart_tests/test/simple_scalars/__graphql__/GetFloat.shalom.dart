@@ -3,10 +3,10 @@
 
 
 
+// Generate enums first
 
 
 // Then generate classes
-
 
 /// GetFloat class with selected fields from query
 
@@ -41,7 +41,7 @@ class RequestGetFloat {
       float: 
         data.containsKey('float') 
           ? data['float'] as double
-          : float
+          : this.float
       ,
       
     );
@@ -73,8 +73,4 @@ class RequestGetFloat {
   ]);
 }
 
-
-
-
-// Generate enums first
 

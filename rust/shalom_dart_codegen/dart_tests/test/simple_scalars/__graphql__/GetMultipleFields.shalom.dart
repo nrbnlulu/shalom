@@ -3,10 +3,10 @@
 
 
 
+// Generate enums first
 
 
 // Then generate classes
-
 
 /// GetMultipleFields class with selected fields from query
 
@@ -51,13 +51,13 @@ class RequestGetMultipleFields {
       id: 
         data.containsKey('id') 
           ? data['id'] as String
-          : id
+          : this.id
       ,
       
       intField: 
         data.containsKey('intField') 
           ? data['intField'] as int
-          : intField
+          : this.intField
       ,
       
     );
@@ -97,8 +97,4 @@ class RequestGetMultipleFields {
   ]);
 }
 
-
-
-
-// Generate enums first
 

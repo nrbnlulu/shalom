@@ -3,10 +3,10 @@
 
 
 
+// Generate enums first
 
 
 // Then generate classes
-
 
 /// GetID class with selected fields from query
 
@@ -41,7 +41,7 @@ class RequestGetID {
       id: 
         data.containsKey('id') 
           ? data['id'] as String
-          : id
+          : this.id
       ,
       
     );
@@ -73,8 +73,4 @@ class RequestGetID {
   ]);
 }
 
-
-
-
-// Generate enums first
 

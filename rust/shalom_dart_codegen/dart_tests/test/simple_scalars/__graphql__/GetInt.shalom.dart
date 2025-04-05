@@ -3,10 +3,10 @@
 
 
 
+// Generate enums first
 
 
 // Then generate classes
-
 
 /// GetInt class with selected fields from query
 
@@ -41,7 +41,7 @@ class RequestGetInt {
       intField: 
         data.containsKey('intField') 
           ? data['intField'] as int
-          : intField
+          : this.intField
       ,
       
     );
@@ -73,8 +73,4 @@ class RequestGetInt {
   ]);
 }
 
-
-
-
-// Generate enums first
 

@@ -3,10 +3,10 @@
 
 
 
+// Generate enums first
 
 
 // Then generate classes
-
 
 /// GetString class with selected fields from query
 
@@ -41,7 +41,7 @@ class RequestGetString {
       string: 
         data.containsKey('string') 
           ? data['string'] as String
-          : string
+          : this.string
       ,
       
     );
@@ -73,8 +73,4 @@ class RequestGetString {
   ]);
 }
 
-
-
-
-// Generate enums first
 

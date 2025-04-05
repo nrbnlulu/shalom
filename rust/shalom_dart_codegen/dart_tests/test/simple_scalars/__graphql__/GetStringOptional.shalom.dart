@@ -3,10 +3,10 @@
 
 
 
+// Generate enums first
 
 
 // Then generate classes
-
 
 /// GetStringOptional class with selected fields from query
 
@@ -41,7 +41,7 @@ class RequestGetStringOptional {
       stringOptional: 
         data.containsKey('stringOptional') 
           ? data['stringOptional'] as String?
-          : stringOptional
+          : this.stringOptional
       ,
       
     );
@@ -73,8 +73,4 @@ class RequestGetStringOptional {
   ]);
 }
 
-
-
-
-// Generate enums first
 

@@ -3,10 +3,37 @@
 
 
 
+// Generate enums first
+
+
+
+
+enum RequestGetTaskStatus {
+  
+  COMPLETED,
+  
+  FAILED,
+  
+  PENDING,
+  
+  PROCESSING,
+  ;
+  
+  static RequestGetTaskStatus fromString(String value) {
+    return RequestGetTaskStatus.values.firstWhere(
+      (e) => e.name.toUpperCase() == value.toUpperCase(),
+      orElse: () => throw ArgumentError('Unknown RequestGetTaskStatus: $value'),
+    );
+  }
+
+  @override
+  String toString() => name.toUpperCase();
+}
+
+
 
 
 // Then generate classes
-
 
 /// GetTask class with selected fields from query
 
@@ -45,7 +72,7 @@ class RequestGetTask {
           ? (data['task'] != null 
               ? RequestGetTaskTask.fromJson(data['task'] as Map<String, dynamic>)
               : null)
-          : task
+          : this.task
       ,
       
     );
@@ -121,7 +148,7 @@ class RequestGetTaskTask {
     ,
     
     status: 
-      RequestGetTaskStatus.fromJson(json['status'] as String)
+      RequestGetTaskStatus.fromString(json['status'] as String)
     ,
     
   );
@@ -133,19 +160,19 @@ class RequestGetTaskTask {
       id: 
         data.containsKey('id') 
           ? data['id'] as String
-          : id
+          : this.id
       ,
       
       name: 
         data.containsKey('name') 
           ? data['name'] as String
-          : name
+          : this.name
       ,
       
       status: 
         data.containsKey('status')
-          ? RequestGetTaskStatus.fromJson(data['status'] as String)
-          : RequestGetTaskstatus
+          ? RequestGetTaskStatus.fromString(data['status'] as String)
+          : this.status
       ,
       
     );
@@ -163,7 +190,7 @@ class RequestGetTaskTask {
     ,
     
     'status': 
-      status.toJson()
+      status.toString()
     ,
     
   };
@@ -192,46 +219,4 @@ class RequestGetTaskTask {
     
   ]);
 }
-
-
-
-// Generate enums first
-
-
-
-/// Status enum type
-
-enum RequestStatus {
-  
-  COMPLETED('COMPLETED'),
-  
-  FAILED('FAILED'),
-  
-  PENDING('PENDING'),
-  
-  PROCESSING('PROCESSING'),
-  
-
-  final String value;
-  const RequestStatus(this.value);
-
-  factory RequestStatus.fromJson(String json) => 
-    values.firstWhere((e) => e.value == json, orElse: () => throw ArgumentError('Unknown RequestStatus value: $json'));
-
-  String toJson() => value;
-
-  static List<RequestStatus> get values => [
-    
-    COMPLETED,
-    
-    FAILED,
-    
-    PENDING,
-    
-    PROCESSING,
-    
-  ];
-}
-
-
 

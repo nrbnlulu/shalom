@@ -3,10 +3,10 @@
 
 
 
+// Generate enums first
 
 
 // Then generate classes
-
 
 /// GetIntOptional class with selected fields from query
 
@@ -41,7 +41,7 @@ class RequestGetIntOptional {
       intOptional: 
         data.containsKey('intOptional') 
           ? data['intOptional'] as int?
-          : intOptional
+          : this.intOptional
       ,
       
     );
@@ -73,8 +73,4 @@ class RequestGetIntOptional {
   ]);
 }
 
-
-
-
-// Generate enums first
 

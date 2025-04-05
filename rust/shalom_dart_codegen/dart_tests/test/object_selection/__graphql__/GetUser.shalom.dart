@@ -3,10 +3,10 @@
 
 
 
+// Generate enums first
 
 
 // Then generate classes
-
 
 /// GetUser class with selected fields from query
 
@@ -45,7 +45,7 @@ class RequestGetUser {
           ? (data['user'] != null 
               ? RequestGetUserUser.fromJson(data['user'] as Map<String, dynamic>)
               : null)
-          : user
+          : this.user
       ,
       
     );
@@ -143,25 +143,25 @@ class RequestGetUserUser {
       id: 
         data.containsKey('id') 
           ? data['id'] as String
-          : id
+          : this.id
       ,
       
       name: 
         data.containsKey('name') 
           ? data['name'] as String
-          : name
+          : this.name
       ,
       
       email: 
         data.containsKey('email') 
           ? data['email'] as String
-          : email
+          : this.email
       ,
       
       age: 
         data.containsKey('age') 
           ? data['age'] as int?
-          : age
+          : this.age
       ,
       
     );
@@ -216,8 +216,4 @@ class RequestGetUserUser {
     
   ]);
 }
-
-
-
-// Generate enums first
 
