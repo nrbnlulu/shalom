@@ -1,99 +1,80 @@
-import 'Objects.shalom.dart';
-// ignore_for_file: non_constant_identifier_names
 
 
 
-class 
-RequestGetIntOptional
-{
 
 
 
-/// class memberes
 
-final int? intOptional;
-
+// Then generate classes
 
 
-// keywordargs constructor
+/// GetIntOptional class with selected fields from query
 
-RequestGetIntOptional
-({
+class RequestGetIntOptional {
+  /// Class fields
+  
+  
+  final int? intOptional;
+  
+  
+
+  /// Constructor
+  RequestGetIntOptional({
     
-        required this.intOptional,
+    this.intOptional,
     
-});
+  });
 
+  /// Creates from JSON
+  factory RequestGetIntOptional.fromJson(Map<String, dynamic> json) => RequestGetIntOptional(
+    
+    intOptional: 
+      json['intOptional'] as int?
+    ,
+    
+  );
 
-static 
-RequestGetIntOptional
- fromJson(Map<String, dynamic> data) {
-    
-        
-            final intOptional_value = data['intOptional'] as int?;
-
-        
-    
-
-  return 
-RequestGetIntOptional
-(
-    
-        intOptional: intOptional_value,
-    
+  /// Updates from JSON
+  RequestGetIntOptional updateWithJson(Map<String, dynamic> data) {
+    return RequestGetIntOptional(
+      
+      intOptional: 
+        data.containsKey('intOptional') 
+          ? data['intOptional'] as int?
+          : intOptional
+      ,
+      
     );
+  }
+
+  /// Converts to JSON
+  Map<String, dynamic> toJson() => {
+    
+    'intOptional': 
+      intOptional
+    ,
+    
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RequestGetIntOptional &&
+          
+          other.intOptional == intOptional &&
+          
+          true);
+
+  @override
+  int get hashCode => Object.hashAll([
+    
+    intOptional,
+    
+  ]);
 }
 
 
 
-RequestGetIntOptional
- updateWithJson(Map<String, dynamic> data) {
-    
-    
-        final int? intOptional_value;
-        if (data.containsKey('intOptional')){
-            intOptional_value = data['intOptional'] as int?;
-        } else {
-            intOptional_value = intOptional;
-        }
-        
-    
 
-  return 
-RequestGetIntOptional
-(
-    
-    intOptional: intOptional_value,
-    
-    );
-}
+// Generate enums first
 
-@override
-bool operator==(Object other){
-    if (other is! 
-RequestGetIntOptional
-) return false;
-    
-    
-        if (other.intOptional != intOptional) return false;
-    
-    
-    return true;
-}
-
-@override
-int get hashCode => 
-    
-        intOptional.hashCode;
-    
-
-Map<String, dynamic> toJson() {
-    return {
-        
-        'intOptional': intOptional,
-        
-    };
-}
-
-
-}

@@ -1,99 +1,80 @@
-import 'Objects.shalom.dart';
-// ignore_for_file: non_constant_identifier_names
 
 
 
-class 
-RequestGetInt
-{
 
 
 
-/// class memberes
 
-final int intField;
-
+// Then generate classes
 
 
-// keywordargs constructor
+/// GetInt class with selected fields from query
 
-RequestGetInt
-({
+class RequestGetInt {
+  /// Class fields
+  
+  
+  final int intField;
+  
+  
+
+  /// Constructor
+  RequestGetInt({
     
-        required this.intField,
+    required this.intField,
     
-});
+  });
 
+  /// Creates from JSON
+  factory RequestGetInt.fromJson(Map<String, dynamic> json) => RequestGetInt(
+    
+    intField: 
+      json['intField'] as int
+    ,
+    
+  );
 
-static 
-RequestGetInt
- fromJson(Map<String, dynamic> data) {
-    
-        
-            final intField_value = data['intField'] as int;
-
-        
-    
-
-  return 
-RequestGetInt
-(
-    
-        intField: intField_value,
-    
+  /// Updates from JSON
+  RequestGetInt updateWithJson(Map<String, dynamic> data) {
+    return RequestGetInt(
+      
+      intField: 
+        data.containsKey('intField') 
+          ? data['intField'] as int
+          : intField
+      ,
+      
     );
+  }
+
+  /// Converts to JSON
+  Map<String, dynamic> toJson() => {
+    
+    'intField': 
+      intField
+    ,
+    
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RequestGetInt &&
+          
+          other.intField == intField &&
+          
+          true);
+
+  @override
+  int get hashCode => Object.hashAll([
+    
+    intField,
+    
+  ]);
 }
 
 
 
-RequestGetInt
- updateWithJson(Map<String, dynamic> data) {
-    
-    
-        final int intField_value;
-        if (data.containsKey('intField')){
-            intField_value = data['intField'] as int;
-        } else {
-            intField_value = intField;
-        }
-        
-    
 
-  return 
-RequestGetInt
-(
-    
-    intField: intField_value,
-    
-    );
-}
+// Generate enums first
 
-@override
-bool operator==(Object other){
-    if (other is! 
-RequestGetInt
-) return false;
-    
-    
-        if (other.intField != intField) return false;
-    
-    
-    return true;
-}
-
-@override
-int get hashCode => 
-    
-        intField.hashCode;
-    
-
-Map<String, dynamic> toJson() {
-    return {
-        
-        'intField': intField,
-        
-    };
-}
-
-
-}

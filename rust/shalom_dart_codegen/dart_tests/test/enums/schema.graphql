@@ -1,0 +1,16 @@
+enum Status {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+type Task {
+  id: ID!
+  name: String!
+  status: Status!
+}
+
+type Query {
+  task(id: ID!): Task
+}

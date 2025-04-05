@@ -1,99 +1,80 @@
-import 'Objects.shalom.dart';
-// ignore_for_file: non_constant_identifier_names
 
 
 
-class 
-RequestGetBoolean
-{
 
 
 
-/// class memberes
 
-final bool boolean;
-
+// Then generate classes
 
 
-// keywordargs constructor
+/// GetBoolean class with selected fields from query
 
-RequestGetBoolean
-({
+class RequestGetBoolean {
+  /// Class fields
+  
+  
+  final bool boolean;
+  
+  
+
+  /// Constructor
+  RequestGetBoolean({
     
-        required this.boolean,
+    required this.boolean,
     
-});
+  });
 
+  /// Creates from JSON
+  factory RequestGetBoolean.fromJson(Map<String, dynamic> json) => RequestGetBoolean(
+    
+    boolean: 
+      json['boolean'] as bool
+    ,
+    
+  );
 
-static 
-RequestGetBoolean
- fromJson(Map<String, dynamic> data) {
-    
-        
-            final boolean_value = data['boolean'] as bool;
-
-        
-    
-
-  return 
-RequestGetBoolean
-(
-    
-        boolean: boolean_value,
-    
+  /// Updates from JSON
+  RequestGetBoolean updateWithJson(Map<String, dynamic> data) {
+    return RequestGetBoolean(
+      
+      boolean: 
+        data.containsKey('boolean') 
+          ? data['boolean'] as bool
+          : boolean
+      ,
+      
     );
+  }
+
+  /// Converts to JSON
+  Map<String, dynamic> toJson() => {
+    
+    'boolean': 
+      boolean
+    ,
+    
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RequestGetBoolean &&
+          
+          other.boolean == boolean &&
+          
+          true);
+
+  @override
+  int get hashCode => Object.hashAll([
+    
+    boolean,
+    
+  ]);
 }
 
 
 
-RequestGetBoolean
- updateWithJson(Map<String, dynamic> data) {
-    
-    
-        final bool boolean_value;
-        if (data.containsKey('boolean')){
-            boolean_value = data['boolean'] as bool;
-        } else {
-            boolean_value = boolean;
-        }
-        
-    
 
-  return 
-RequestGetBoolean
-(
-    
-    boolean: boolean_value,
-    
-    );
-}
+// Generate enums first
 
-@override
-bool operator==(Object other){
-    if (other is! 
-RequestGetBoolean
-) return false;
-    
-    
-        if (other.boolean != boolean) return false;
-    
-    
-    return true;
-}
-
-@override
-int get hashCode => 
-    
-        boolean.hashCode;
-    
-
-Map<String, dynamic> toJson() {
-    return {
-        
-        'boolean': boolean,
-        
-    };
-}
-
-
-}

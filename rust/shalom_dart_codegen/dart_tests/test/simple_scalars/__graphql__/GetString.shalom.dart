@@ -1,99 +1,80 @@
-import 'Objects.shalom.dart';
-// ignore_for_file: non_constant_identifier_names
 
 
 
-class 
-RequestGetString
-{
 
 
 
-/// class memberes
 
-final String string;
-
+// Then generate classes
 
 
-// keywordargs constructor
+/// GetString class with selected fields from query
 
-RequestGetString
-({
+class RequestGetString {
+  /// Class fields
+  
+  
+  final String string;
+  
+  
+
+  /// Constructor
+  RequestGetString({
     
-        required this.string,
+    required this.string,
     
-});
+  });
 
+  /// Creates from JSON
+  factory RequestGetString.fromJson(Map<String, dynamic> json) => RequestGetString(
+    
+    string: 
+      json['string'] as String
+    ,
+    
+  );
 
-static 
-RequestGetString
- fromJson(Map<String, dynamic> data) {
-    
-        
-            final string_value = data['string'] as String;
-
-        
-    
-
-  return 
-RequestGetString
-(
-    
-        string: string_value,
-    
+  /// Updates from JSON
+  RequestGetString updateWithJson(Map<String, dynamic> data) {
+    return RequestGetString(
+      
+      string: 
+        data.containsKey('string') 
+          ? data['string'] as String
+          : string
+      ,
+      
     );
+  }
+
+  /// Converts to JSON
+  Map<String, dynamic> toJson() => {
+    
+    'string': 
+      string
+    ,
+    
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RequestGetString &&
+          
+          other.string == string &&
+          
+          true);
+
+  @override
+  int get hashCode => Object.hashAll([
+    
+    string,
+    
+  ]);
 }
 
 
 
-RequestGetString
- updateWithJson(Map<String, dynamic> data) {
-    
-    
-        final String string_value;
-        if (data.containsKey('string')){
-            string_value = data['string'] as String;
-        } else {
-            string_value = string;
-        }
-        
-    
 
-  return 
-RequestGetString
-(
-    
-    string: string_value,
-    
-    );
-}
+// Generate enums first
 
-@override
-bool operator==(Object other){
-    if (other is! 
-RequestGetString
-) return false;
-    
-    
-        if (other.string != string) return false;
-    
-    
-    return true;
-}
-
-@override
-int get hashCode => 
-    
-        string.hashCode;
-    
-
-Map<String, dynamic> toJson() {
-    return {
-        
-        'string': string,
-        
-    };
-}
-
-
-}

@@ -198,6 +198,7 @@ impl Hash for EnumType {
         self.name.hash(state);
     }
 }
+
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
 pub struct EnumValueDefinition {
     pub description: Option<String>,

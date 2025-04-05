@@ -1,99 +1,80 @@
-import 'Objects.shalom.dart';
-// ignore_for_file: non_constant_identifier_names
 
 
 
-class 
-RequestGetID
-{
 
 
 
-/// class memberes
 
-final String id;
-
+// Then generate classes
 
 
-// keywordargs constructor
+/// GetID class with selected fields from query
 
-RequestGetID
-({
+class RequestGetID {
+  /// Class fields
+  
+  
+  final String id;
+  
+  
+
+  /// Constructor
+  RequestGetID({
     
-        required this.id,
+    required this.id,
     
-});
+  });
 
+  /// Creates from JSON
+  factory RequestGetID.fromJson(Map<String, dynamic> json) => RequestGetID(
+    
+    id: 
+      json['id'] as String
+    ,
+    
+  );
 
-static 
-RequestGetID
- fromJson(Map<String, dynamic> data) {
-    
-        
-            final id_value = data['id'] as String;
-
-        
-    
-
-  return 
-RequestGetID
-(
-    
-        id: id_value,
-    
+  /// Updates from JSON
+  RequestGetID updateWithJson(Map<String, dynamic> data) {
+    return RequestGetID(
+      
+      id: 
+        data.containsKey('id') 
+          ? data['id'] as String
+          : id
+      ,
+      
     );
+  }
+
+  /// Converts to JSON
+  Map<String, dynamic> toJson() => {
+    
+    'id': 
+      id
+    ,
+    
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RequestGetID &&
+          
+          other.id == id &&
+          
+          true);
+
+  @override
+  int get hashCode => Object.hashAll([
+    
+    id,
+    
+  ]);
 }
 
 
 
-RequestGetID
- updateWithJson(Map<String, dynamic> data) {
-    
-    
-        final String id_value;
-        if (data.containsKey('id')){
-            id_value = data['id'] as String;
-        } else {
-            id_value = id;
-        }
-        
-    
 
-  return 
-RequestGetID
-(
-    
-    id: id_value,
-    
-    );
-}
+// Generate enums first
 
-@override
-bool operator==(Object other){
-    if (other is! 
-RequestGetID
-) return false;
-    
-    
-        if (other.id != id) return false;
-    
-    
-    return true;
-}
-
-@override
-int get hashCode => 
-    
-        id.hashCode;
-    
-
-Map<String, dynamic> toJson() {
-    return {
-        
-        'id': id,
-        
-    };
-}
-
-
-}

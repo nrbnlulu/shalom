@@ -6,10 +6,11 @@ edition = "2021"
 [dependencies]
 serde = {workspace = true}
 serde_json = {workspace = true}
-minijinja = {workspace = true}
+minijinja = {workspace = true, features = ["builtins"]}
 
 anyhow = {workspace = true}
 log = {workspace = true}
 simple_logger = {workspace = true}
 shalom_core = { path = "../shalom_core" }
 lazy_static = "1.5.0"
+ahash = "0.8.11"

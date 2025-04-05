@@ -1,99 +1,80 @@
-import 'Objects.shalom.dart';
-// ignore_for_file: non_constant_identifier_names
 
 
 
-class 
-RequestGetStringOptional
-{
 
 
 
-/// class memberes
 
-final String? stringOptional;
-
+// Then generate classes
 
 
-// keywordargs constructor
+/// GetStringOptional class with selected fields from query
 
-RequestGetStringOptional
-({
+class RequestGetStringOptional {
+  /// Class fields
+  
+  
+  final String? stringOptional;
+  
+  
+
+  /// Constructor
+  RequestGetStringOptional({
     
-        required this.stringOptional,
+    this.stringOptional,
     
-});
+  });
 
+  /// Creates from JSON
+  factory RequestGetStringOptional.fromJson(Map<String, dynamic> json) => RequestGetStringOptional(
+    
+    stringOptional: 
+      json['stringOptional'] as String?
+    ,
+    
+  );
 
-static 
-RequestGetStringOptional
- fromJson(Map<String, dynamic> data) {
-    
-        
-            final stringOptional_value = data['stringOptional'] as String?;
-
-        
-    
-
-  return 
-RequestGetStringOptional
-(
-    
-        stringOptional: stringOptional_value,
-    
+  /// Updates from JSON
+  RequestGetStringOptional updateWithJson(Map<String, dynamic> data) {
+    return RequestGetStringOptional(
+      
+      stringOptional: 
+        data.containsKey('stringOptional') 
+          ? data['stringOptional'] as String?
+          : stringOptional
+      ,
+      
     );
+  }
+
+  /// Converts to JSON
+  Map<String, dynamic> toJson() => {
+    
+    'stringOptional': 
+      stringOptional
+    ,
+    
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RequestGetStringOptional &&
+          
+          other.stringOptional == stringOptional &&
+          
+          true);
+
+  @override
+  int get hashCode => Object.hashAll([
+    
+    stringOptional,
+    
+  ]);
 }
 
 
 
-RequestGetStringOptional
- updateWithJson(Map<String, dynamic> data) {
-    
-    
-        final String? stringOptional_value;
-        if (data.containsKey('stringOptional')){
-            stringOptional_value = data['stringOptional'] as String?;
-        } else {
-            stringOptional_value = stringOptional;
-        }
-        
-    
 
-  return 
-RequestGetStringOptional
-(
-    
-    stringOptional: stringOptional_value,
-    
-    );
-}
+// Generate enums first
 
-@override
-bool operator==(Object other){
-    if (other is! 
-RequestGetStringOptional
-) return false;
-    
-    
-        if (other.stringOptional != stringOptional) return false;
-    
-    
-    return true;
-}
-
-@override
-int get hashCode => 
-    
-        stringOptional.hashCode;
-    
-
-Map<String, dynamic> toJson() {
-    return {
-        
-        'stringOptional': stringOptional,
-        
-    };
-}
-
-
-}

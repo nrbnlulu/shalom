@@ -1,99 +1,80 @@
-import 'Objects.shalom.dart';
-// ignore_for_file: non_constant_identifier_names
 
 
 
-class 
-RequestGetBooleanOptional
-{
 
 
 
-/// class memberes
 
-final bool? booleanOptional;
-
+// Then generate classes
 
 
-// keywordargs constructor
+/// GetBooleanOptional class with selected fields from query
 
-RequestGetBooleanOptional
-({
+class RequestGetBooleanOptional {
+  /// Class fields
+  
+  
+  final bool? booleanOptional;
+  
+  
+
+  /// Constructor
+  RequestGetBooleanOptional({
     
-        required this.booleanOptional,
+    this.booleanOptional,
     
-});
+  });
 
+  /// Creates from JSON
+  factory RequestGetBooleanOptional.fromJson(Map<String, dynamic> json) => RequestGetBooleanOptional(
+    
+    booleanOptional: 
+      json['booleanOptional'] as bool?
+    ,
+    
+  );
 
-static 
-RequestGetBooleanOptional
- fromJson(Map<String, dynamic> data) {
-    
-        
-            final booleanOptional_value = data['booleanOptional'] as bool?;
-
-        
-    
-
-  return 
-RequestGetBooleanOptional
-(
-    
-        booleanOptional: booleanOptional_value,
-    
+  /// Updates from JSON
+  RequestGetBooleanOptional updateWithJson(Map<String, dynamic> data) {
+    return RequestGetBooleanOptional(
+      
+      booleanOptional: 
+        data.containsKey('booleanOptional') 
+          ? data['booleanOptional'] as bool?
+          : booleanOptional
+      ,
+      
     );
+  }
+
+  /// Converts to JSON
+  Map<String, dynamic> toJson() => {
+    
+    'booleanOptional': 
+      booleanOptional
+    ,
+    
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RequestGetBooleanOptional &&
+          
+          other.booleanOptional == booleanOptional &&
+          
+          true);
+
+  @override
+  int get hashCode => Object.hashAll([
+    
+    booleanOptional,
+    
+  ]);
 }
 
 
 
-RequestGetBooleanOptional
- updateWithJson(Map<String, dynamic> data) {
-    
-    
-        final bool? booleanOptional_value;
-        if (data.containsKey('booleanOptional')){
-            booleanOptional_value = data['booleanOptional'] as bool?;
-        } else {
-            booleanOptional_value = booleanOptional;
-        }
-        
-    
 
-  return 
-RequestGetBooleanOptional
-(
-    
-    booleanOptional: booleanOptional_value,
-    
-    );
-}
+// Generate enums first
 
-@override
-bool operator==(Object other){
-    if (other is! 
-RequestGetBooleanOptional
-) return false;
-    
-    
-        if (other.booleanOptional != booleanOptional) return false;
-    
-    
-    return true;
-}
-
-@override
-int get hashCode => 
-    
-        booleanOptional.hashCode;
-    
-
-Map<String, dynamic> toJson() {
-    return {
-        
-        'booleanOptional': booleanOptional,
-        
-    };
-}
-
-
-}

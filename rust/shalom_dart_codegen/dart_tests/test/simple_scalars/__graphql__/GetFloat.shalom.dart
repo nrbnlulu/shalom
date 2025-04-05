@@ -1,99 +1,80 @@
-import 'Objects.shalom.dart';
-// ignore_for_file: non_constant_identifier_names
 
 
 
-class 
-RequestGetFloat
-{
 
 
 
-/// class memberes
 
-final double float;
-
+// Then generate classes
 
 
-// keywordargs constructor
+/// GetFloat class with selected fields from query
 
-RequestGetFloat
-({
+class RequestGetFloat {
+  /// Class fields
+  
+  
+  final double float;
+  
+  
+
+  /// Constructor
+  RequestGetFloat({
     
-        required this.float,
+    required this.float,
     
-});
+  });
 
+  /// Creates from JSON
+  factory RequestGetFloat.fromJson(Map<String, dynamic> json) => RequestGetFloat(
+    
+    float: 
+      json['float'] as double
+    ,
+    
+  );
 
-static 
-RequestGetFloat
- fromJson(Map<String, dynamic> data) {
-    
-        
-            final float_value = data['float'] as double;
-
-        
-    
-
-  return 
-RequestGetFloat
-(
-    
-        float: float_value,
-    
+  /// Updates from JSON
+  RequestGetFloat updateWithJson(Map<String, dynamic> data) {
+    return RequestGetFloat(
+      
+      float: 
+        data.containsKey('float') 
+          ? data['float'] as double
+          : float
+      ,
+      
     );
+  }
+
+  /// Converts to JSON
+  Map<String, dynamic> toJson() => {
+    
+    'float': 
+      float
+    ,
+    
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RequestGetFloat &&
+          
+          other.float == float &&
+          
+          true);
+
+  @override
+  int get hashCode => Object.hashAll([
+    
+    float,
+    
+  ]);
 }
 
 
 
-RequestGetFloat
- updateWithJson(Map<String, dynamic> data) {
-    
-    
-        final double float_value;
-        if (data.containsKey('float')){
-            float_value = data['float'] as double;
-        } else {
-            float_value = float;
-        }
-        
-    
 
-  return 
-RequestGetFloat
-(
-    
-    float: float_value,
-    
-    );
-}
+// Generate enums first
 
-@override
-bool operator==(Object other){
-    if (other is! 
-RequestGetFloat
-) return false;
-    
-    
-        if (other.float != float) return false;
-    
-    
-    return true;
-}
-
-@override
-int get hashCode => 
-    
-        float.hashCode;
-    
-
-Map<String, dynamic> toJson() {
-    return {
-        
-        'float': float,
-        
-    };
-}
-
-
-}

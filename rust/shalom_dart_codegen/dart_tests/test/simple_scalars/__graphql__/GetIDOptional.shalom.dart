@@ -1,99 +1,80 @@
-import 'Objects.shalom.dart';
-// ignore_for_file: non_constant_identifier_names
 
 
 
-class 
-RequestGetIDOptional
-{
 
 
 
-/// class memberes
 
-final String? idOptional;
-
+// Then generate classes
 
 
-// keywordargs constructor
+/// GetIDOptional class with selected fields from query
 
-RequestGetIDOptional
-({
+class RequestGetIDOptional {
+  /// Class fields
+  
+  
+  final String? idOptional;
+  
+  
+
+  /// Constructor
+  RequestGetIDOptional({
     
-        required this.idOptional,
+    this.idOptional,
     
-});
+  });
 
+  /// Creates from JSON
+  factory RequestGetIDOptional.fromJson(Map<String, dynamic> json) => RequestGetIDOptional(
+    
+    idOptional: 
+      json['idOptional'] as String?
+    ,
+    
+  );
 
-static 
-RequestGetIDOptional
- fromJson(Map<String, dynamic> data) {
-    
-        
-            final idOptional_value = data['idOptional'] as String?;
-
-        
-    
-
-  return 
-RequestGetIDOptional
-(
-    
-        idOptional: idOptional_value,
-    
+  /// Updates from JSON
+  RequestGetIDOptional updateWithJson(Map<String, dynamic> data) {
+    return RequestGetIDOptional(
+      
+      idOptional: 
+        data.containsKey('idOptional') 
+          ? data['idOptional'] as String?
+          : idOptional
+      ,
+      
     );
+  }
+
+  /// Converts to JSON
+  Map<String, dynamic> toJson() => {
+    
+    'idOptional': 
+      idOptional
+    ,
+    
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RequestGetIDOptional &&
+          
+          other.idOptional == idOptional &&
+          
+          true);
+
+  @override
+  int get hashCode => Object.hashAll([
+    
+    idOptional,
+    
+  ]);
 }
 
 
 
-RequestGetIDOptional
- updateWithJson(Map<String, dynamic> data) {
-    
-    
-        final String? idOptional_value;
-        if (data.containsKey('idOptional')){
-            idOptional_value = data['idOptional'] as String?;
-        } else {
-            idOptional_value = idOptional;
-        }
-        
-    
 
-  return 
-RequestGetIDOptional
-(
-    
-    idOptional: idOptional_value,
-    
-    );
-}
+// Generate enums first
 
-@override
-bool operator==(Object other){
-    if (other is! 
-RequestGetIDOptional
-) return false;
-    
-    
-        if (other.idOptional != idOptional) return false;
-    
-    
-    return true;
-}
-
-@override
-int get hashCode => 
-    
-        idOptional.hashCode;
-    
-
-Map<String, dynamic> toJson() {
-    return {
-        
-        'idOptional': idOptional,
-        
-    };
-}
-
-
-}

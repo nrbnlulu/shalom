@@ -1,99 +1,80 @@
-import 'Objects.shalom.dart';
-// ignore_for_file: non_constant_identifier_names
 
 
 
-class 
-RequestGetFloatOptional
-{
 
 
 
-/// class memberes
 
-final double? floatOptional;
-
+// Then generate classes
 
 
-// keywordargs constructor
+/// GetFloatOptional class with selected fields from query
 
-RequestGetFloatOptional
-({
+class RequestGetFloatOptional {
+  /// Class fields
+  
+  
+  final double? floatOptional;
+  
+  
+
+  /// Constructor
+  RequestGetFloatOptional({
     
-        required this.floatOptional,
+    this.floatOptional,
     
-});
+  });
 
+  /// Creates from JSON
+  factory RequestGetFloatOptional.fromJson(Map<String, dynamic> json) => RequestGetFloatOptional(
+    
+    floatOptional: 
+      json['floatOptional'] as double?
+    ,
+    
+  );
 
-static 
-RequestGetFloatOptional
- fromJson(Map<String, dynamic> data) {
-    
-        
-            final floatOptional_value = data['floatOptional'] as double?;
-
-        
-    
-
-  return 
-RequestGetFloatOptional
-(
-    
-        floatOptional: floatOptional_value,
-    
+  /// Updates from JSON
+  RequestGetFloatOptional updateWithJson(Map<String, dynamic> data) {
+    return RequestGetFloatOptional(
+      
+      floatOptional: 
+        data.containsKey('floatOptional') 
+          ? data['floatOptional'] as double?
+          : floatOptional
+      ,
+      
     );
+  }
+
+  /// Converts to JSON
+  Map<String, dynamic> toJson() => {
+    
+    'floatOptional': 
+      floatOptional
+    ,
+    
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is RequestGetFloatOptional &&
+          
+          other.floatOptional == floatOptional &&
+          
+          true);
+
+  @override
+  int get hashCode => Object.hashAll([
+    
+    floatOptional,
+    
+  ]);
 }
 
 
 
-RequestGetFloatOptional
- updateWithJson(Map<String, dynamic> data) {
-    
-    
-        final double? floatOptional_value;
-        if (data.containsKey('floatOptional')){
-            floatOptional_value = data['floatOptional'] as double?;
-        } else {
-            floatOptional_value = floatOptional;
-        }
-        
-    
 
-  return 
-RequestGetFloatOptional
-(
-    
-    floatOptional: floatOptional_value,
-    
-    );
-}
+// Generate enums first
 
-@override
-bool operator==(Object other){
-    if (other is! 
-RequestGetFloatOptional
-) return false;
-    
-    
-        if (other.floatOptional != floatOptional) return false;
-    
-    
-    return true;
-}
-
-@override
-int get hashCode => 
-    
-        floatOptional.hashCode;
-    
-
-Map<String, dynamic> toJson() {
-    return {
-        
-        'floatOptional': floatOptional,
-        
-    };
-}
-
-
-}

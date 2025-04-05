@@ -32,12 +32,9 @@ impl<T: Debug> Debug for MutexWrapper<T> {
 
 #[derive(Debug, Serialize)]
 pub(crate) struct SchemaTypesCtx {
-    #[serde(skip_serializing)]
     inputs: HashMap<String, Node<InputObjectType>>,
     objects: HashMap<String, Node<ObjectType>>,
-    #[serde(skip_serializing)]
     enums: HashMap<String, Node<EnumType>>,
-    #[serde(skip_serializing)]
     scalars: HashMap<String, Node<ScalarType>>,
 }
 impl SchemaTypesCtx {
@@ -137,6 +134,12 @@ impl SchemaContext {
     pub fn add_scalar(&self, name: String, type_: Node<ScalarType>) -> anyhow::Result<()> {
         let mut types_ctx = self.get_types();
         types_ctx.add_scalar(name, type_);
+        Ok(())
+    }
+
+    pub fn add_enum(&self, name: String, type_: Node<EnumType>) -> anyhow::Result<()> {
+        let mut types_ctx = self.get_types();
+        types_ctx.add_enum(name, type_);
         Ok(())
     }
 }

@@ -1,91 +1,133 @@
-{% macro base_object_impl(typename, selections) %}
+{% macro generate_enum(enum_name, values) %}
+/// {{enum_name}} enum type
+{% set enumname = 'Request' ~ enum_name %}
+enum {{enumname}} {
+  {% for value_name, value_def in values | items %}
+  {{value_name}}('{{value_def.value}}'),
+  {% endfor %}
 
-/// class memberes
-{% for selection in selections %}
-final {{type_name_for_selection(selection)}} {{selection.selection_name}};
+  final String value;
+  const {{enumname}}(this.value);
 
+  factory {{enumname}}.fromJson(String json) => 
+    values.firstWhere((e) => e.value == json, orElse: () => throw ArgumentError('Unknown {{enumname}} value: $json'));
+
+  String toJson() => value;
+
+  static List<{{enumname}}> get values => [
+    {% for value_name, value_def in values | items %}
+    {{value_name}},
+    {% endfor %}
+  ];
+}
+{% endmacro %}
+
+
+{% macro generate_class(typename, selections, root, is_root=false) %}
+/// {{typename}} class with selected fields from query
+{% set classname = 'Request' ~ typename %}
+class {{classname}} {
+  /// Class fields
+  {% for selection in selections %}
+  {% if selection.kind == "Object" %}
+  final Request{{root}}{{selection.selection_name|capitalize}}? {{selection.selection_name}};
+  {% elif selection.kind == "Enum" %}
+  final Request{{root}}{{selection.selection_name|capitalize}} {{selection.selection_name}};
+  {% else %}
+  final {{type_name_for_selection(selection)}} {{selection.selection_name}};
+  {% endif %}
+  {% endfor %}
+
+  /// Constructor
+  {{classname}}({
+    {% for selection in selections %}
+    {% if not selection.is_optional %}required {% endif %}this.{{selection.selection_name}},
+    {% endfor %}
+  });
+
+  /// Creates from JSON
+  factory {{classname}}.fromJson(Map<String, dynamic> json) => {{classname}}(
+    {% for selection in selections %}
+    {{selection.selection_name}}: {% if selection.kind == "Object" %}
+      json['{{selection.selection_name}}'] != null 
+        ? Request{{root}}{{selection.selection_name|capitalize}}.fromJson(json['{{selection.selection_name}}'] as Map<String, dynamic>)
+        : null
+    {% elif selection.kind == "Enum" %}
+      Request{{root}}{{selection.selection_name|capitalize}}.fromJson(json['{{selection.selection_name}}'] as String)
+    {% else %}
+      json['{{selection.selection_name}}'] as {{type_name_for_selection(selection)}}
+    {% endif %},
+    {% endfor %}
+  );
+
+  /// Updates from JSON
+  {{classname}} updateWithJson(Map<String, dynamic> data) {
+    return {{classname}}(
+      {% for selection in selections %}
+      {{selection.selection_name}}: {% if selection.kind == "Object" %}
+        data.containsKey('{{selection.selection_name}}') 
+          ? (data['{{selection.selection_name}}'] != null 
+              ? Request{{root}}{{selection.selection_name|capitalize}}.fromJson(data['{{selection.selection_name}}'] as Map<String, dynamic>)
+              : null)
+          : {{selection.selection_name}}
+      {% elif selection.kind == "Enum" %}
+        data.containsKey('{{selection.selection_name}}')
+          ? Request{{root}}{{selection.selection_name|capitalize}}.fromJson(data['{{selection.selection_name}}'] as String)
+          : Request{{root}}{{selection.selection_name}}
+      {% else %}
+        data.containsKey('{{selection.selection_name}}') 
+          ? data['{{selection.selection_name}}'] as {{type_name_for_selection(selection)}}
+          : {{selection.selection_name}}
+      {% endif %},
+      {% endfor %}
+    );
+  }
+
+  /// Converts to JSON
+  Map<String, dynamic> toJson() => {
+    {% for selection in selections %}
+    '{{selection.selection_name}}': {% if selection.kind == "Object" %}
+      {{selection.selection_name}}?.toJson()
+    {% elif selection.kind == "Enum" %}
+      {{selection.selection_name}}.toJson()
+    {% else %}
+      {{selection.selection_name}}
+    {% endif %},
+    {% endfor %}
+  };
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is {{classname}} &&
+          {% for selection in selections %}
+          other.{{selection.selection_name}} == {{selection.selection_name}} &&
+          {% endfor %}
+          true);
+
+  @override
+  int get hashCode => Object.hashAll([
+    {% for selection in selections %}
+    {{selection.selection_name}},
+    {% endfor %}
+  ]);
+}
+{% endmacro %}
+
+
+
+// Then generate classes
+{% set root_selection = operation.context.root_type.selection_name %}
+{{generate_class(root_selection, operation.context.root_type.selections, root_selection, is_root=true)}}
+
+{% for selection in operation.context.root_type.selections if selection.kind == "Object" %}
+{{generate_class(root_selection ~ selection.selection_name|capitalize, selection.selections, root_selection)}}
 {% endfor %}
 
-// keywordargs constructor
-{{typename}}({
-    {% for selection in selections %}
-        required this.{{selection.selection_name}},
-    {% endfor %}
-});
+// Generate enums first
+{% if schema.context.types.enums %}
+{% for enum_name, enum_def in schema.context.types.enums | items %}
+{{generate_enum(enum_name, enum_def.values)}}
+{% endfor %}
+{% endif %}
 
-
-static {{typename}} fromJson(Map<String, dynamic> data) {
-    {% for selection in selections %}
-        {% if selection.kind == "Scalar" %}
-            final {{ selection.selection_name }}_value = data['{{ selection.selection_name }}'] as {{ type_name_for_selection(selection) }};
-
-        {% endif %}
-    {% endfor %}
-
-  return {{typename}}(
-    {% for selection in selections %}
-        {{selection.selection_name}}: {{selection.selection_name}}_value,
-    {% endfor %}
-    );
-}
-
-
-{{typename}} updateWithJson(Map<String, dynamic> data) {
-    {% for selection in selections %}
-    {% if selection.kind == "Scalar" %}
-        final {{ type_name_for_selection(selection) }} {{ selection.selection_name }}_value;
-        if (data.containsKey('{{ selection.selection_name }}')){
-            {{ selection.selection_name }}_value = data['{{ selection.selection_name }}'] as {{ type_name_for_selection(selection) }};
-        } else {
-            {{ selection.selection_name }}_value = {{ selection.selection_name }};
-        }
-        {% endif %}
-    {% endfor %}
-
-  return {{typename}}(
-    {% for selection in selections %}
-    {{selection.selection_name}}: {{selection.selection_name}}_value,
-    {% endfor %}
-    );
-}
-
-@override
-bool operator==(Object other){
-    if (other is! {{typename}}) return false;
-    {% for selection in selections %}
-    {% if selection.kind == "Scalar" %}
-        if (other.{{selection.selection_name}} != {{selection.selection_name}}) return false;
-    {% endif %}
-    {% endfor %}
-    return true;
-}
-
-@override
-int get hashCode => 
-    {% if selections | length > 1 %}
-    Object.hash( {% for selection in selections %}
-        {{selection.selection_name}},
-        {% endfor %});
-    {% else %}
-        {{(selections | first).selection_name}}.hashCode;
-    {% endif %}
-
-Map<String, dynamic> toJson() {
-    return {
-        {% for selection in selections %}
-        '{{selection.selection_name}}': {{selection.selection_name}},
-        {% endfor %}
-    };
-}
-
-{% endmacro %}
-// ignore_for_file: non_constant_identifier_names
-
-
-{% set root_type_name %}
-Request{{context.root_type.selection_name}}
-{% endset %}
-class {{root_type_name}}{
-
-{{base_object_impl(root_type_name, context.root_type.selections)}}
-}

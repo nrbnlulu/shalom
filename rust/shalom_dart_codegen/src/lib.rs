@@ -9,7 +9,8 @@ use lazy_static::lazy_static;
 use log::{info, trace};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
-use shalom_core::{operation::{types::Selection, context::OperationContext}, schema::{self, context::SchemaContext, types::ObjectType}};
+use minijinja::Value;
+use shalom_core::{operation::{types::Selection, context::OperationContext}, schema::{context::SchemaContext, types::ObjectType}};
 use std::sync::Arc;
 
 struct TemplateEnv<'a> {
@@ -54,26 +55,18 @@ impl TemplateEnv<'_> {
             include_str!("../templates/operation.dart.jinja"),
         )
         .unwrap();
-        env.add_template(
-            "objects",
-            include_str!("../templates/objects.dart.jinja"),
-        )
-        .unwrap();
         env.add_function("type_name_for_selection", type_name_for_selection);
         Self { env }
     }
 
-    fn render_operation<S: Serialize>(&self, ctx: S) -> String {
+    fn render_operation<S: Serialize, T: Serialize>(&self, operations_ctx: S, schema_ctx: T) -> String {
         let template = self.env.get_template("operation").unwrap();
+        let mut context = HashMap::new();
+        context.insert("schema", context! {context => schema_ctx});
+        context.insert("operation", context! {context => operations_ctx});
+        println!("generating context: {:?}", context);
         trace!("resolved operation template; rendering...");
-        template.render(context! {context=>ctx}).unwrap()
-    }
-
-    fn render_objects<S: Serialize>(&self, ctx: S) -> String {
-        let template = self.env.get_template("objects").unwrap();
-        trace!("resolved objects template; rendering...");
-        println!("{:?}", context! {context=>ctx});
-        template.render(context! {context=>ctx}).unwrap()
+        template.render(context).unwrap()
     }
 }
 
@@ -86,7 +79,6 @@ fn create_dir_if_not_exists(path: &Path) {
     }
 }
 static END_OF_FILE: &str = "shalom.dart";
-static OBJECTS_FILENAME: &str = "Objects"; 
 static GRAPHQL_DIRECTORY: &str = "__graphql__";
 
 
@@ -96,37 +88,21 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
     p.join(format!("{}.{}", operation_name, END_OF_FILE))
 }
 
-fn generate_operations_file(name: &str, operation: Rc<OperationContext>, file_path: &Path) {
+fn generate_operations_file(name: &str, operation: Rc<OperationContext>, schema_ctx: Arc<SchemaContext>) {
     info!("rendering operation {}", name);
-    let mut file_content = format!("import '{}';", file_path.file_name().unwrap().to_str().unwrap());
-    let rendered_content = TEMPLATE_ENV.render_operation(&operation);
-    file_content.push_str(&rendered_content); 
-    let generation_target = get_generation_path_for_operation(&operation.file_path, &name);
-    fs::write(&generation_target, file_content).unwrap();
+    let operation_file_path = operation.file_path.clone();
+    let rendered_content = TEMPLATE_ENV.render_operation(operation, schema_ctx);
+    let generation_target = get_generation_path_for_operation(&operation_file_path, &name);
+    fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
-
-}
-fn generate_objects_file(schema_ctx: Arc<SchemaContext>, file_path: &Path) -> PathBuf {
-    let generation_target = get_generation_path_for_operation(file_path, OBJECTS_FILENAME);
-    let content =  TEMPLATE_ENV.render_objects(&schema_ctx);
-    fs::write(&generation_target, content).unwrap();
-    info!("Generated {}", generation_target.display());
-    return generation_target;
 
 }
 
 pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     info!("codegen started in working directory {}", pwd.display());
     let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
-    let mut objects_file_path = None; 
     for (name, operation) in ctx.operations() {
-        if objects_file_path.is_none() {
-            let schema_ctx = ctx.schema_ctx.clone();
-            let generation_target = generate_objects_file(schema_ctx, &operation.file_path); 
-            objects_file_path = Some(generation_target);
-        }
-        let objects_file_path = objects_file_path.as_ref().unwrap();
-        generate_operations_file(&name, operation, objects_file_path); 
+        generate_operations_file(&name, operation, ctx.schema_ctx.clone()); 
     }
     Ok(())
 }
