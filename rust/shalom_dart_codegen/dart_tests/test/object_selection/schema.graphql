@@ -1,5 +1,6 @@
 type Query {
-  user: User
+  user: User,
+  listing: Listing
 }
 
 type User {
@@ -7,4 +8,11 @@ type User {
   name: String!
   email: String!
   age: Int
+}
+
+type Listing {
+  id: ID!  
+  name: String!
+  price: Int
+  user: User
 }

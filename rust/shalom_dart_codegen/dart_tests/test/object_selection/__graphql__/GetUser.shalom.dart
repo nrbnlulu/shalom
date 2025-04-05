@@ -80,6 +80,10 @@ class RequestGetUser {
 
 
 
+
+
+    
+        
 /// GetUserUser class with selected fields from query
 
 class RequestGetUserUser {
@@ -217,3 +221,7 @@ class RequestGetUserUser {
   ]);
 }
 
+        
+    
+
+    

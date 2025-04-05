@@ -107,6 +107,10 @@ class RequestGetTask {
 
 
 
+
+
+    
+        
 /// GetTaskTask class with selected fields from query
 
 class RequestGetTaskTask {
@@ -220,3 +224,7 @@ class RequestGetTaskTask {
   ]);
 }
 
+        
+    
+
+    

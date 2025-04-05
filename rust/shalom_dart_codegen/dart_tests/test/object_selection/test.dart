@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
 import "__graphql__/GetUser.shalom.dart";
+import "__graphql__/GetListing.shalom.dart";
 
 void main() {
   group('Test query object fields', () {
@@ -26,4 +27,72 @@ void main() {
       expect(initial, isNot(updated));
     });
    });
+
+  group('Test query nested object fields', () {
+  test('deserialize', () {
+    final json = {
+      "listing": {
+        "id": "foo",
+        "name": "video games",
+        "price": 100,
+        "user": {
+          "name": "jacob",
+          "email": "jacob@gmail.com",
+        }
+      }
+    };
+    final result = RequestGetListing.fromJson(json);
+    expect(result.listing?.id, "foo");
+    expect(result.listing?.name, "video games");
+    expect(result.listing?.price, 100);
+    expect(result.listing?.user?.name, "jacob");
+    expect(result.listing?.user?.email, "jacob@gmail.com");
+  });
+
+  test('serialize', () {
+    final data = {
+      "listing": {
+        "id": "foo",
+        "name": "video games",
+        "price": 100,
+        "user": {
+          "name": "jacob",
+          "email": "jacob@gmail.com",
+        }
+      }
+    };
+    final initial = RequestGetListing.fromJson(data);
+    final json = initial.toJson();
+    expect(json, data);
+  });
+
+  test("update", () {
+    final initial = RequestGetListing(
+      listing: RequestGetListingListing(
+        id: "foo",
+        name: "video games",
+        price: 100,
+        user: RequestGetListingUser(
+          name: "jacob",
+          email: "jacob@gmail.com",
+        ),
+      ),
+    );
+
+    final userJson = initial.listing?.user?.toJson();
+    userJson?["name"] = "evan";
+
+    final updated = initial.updateWithJson({
+      "listing": {
+        "id": "foo",
+        "name": "video games",
+        "price": 100,
+        "user": userJson,
+      }
+    });
+
+    expect(updated.listing?.user?.name, "evan");
+    expect(initial, isNot(equals(updated)));
+  });
+}); 
 }

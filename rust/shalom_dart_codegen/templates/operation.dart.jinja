@@ -119,6 +119,12 @@ class {{classname}} {
 // Then generate classes
 {{generate_class(root_selection, operation.context.root_type.selections, root_selection, is_root=true)}}
 
-{% for selection in operation.context.root_type.selections if selection.kind == "Object" %}
-{{generate_class(root_selection ~ selection.selection_name|capitalize, selection.selections, root_selection)}}
-{% endfor %}
+{% macro generate_recursive_class(selections) %}
+    {% for selection in selections if selection.kind == "Object" %}
+        {{ generate_class(root_selection ~ selection.selection_name|capitalize, selection.selections, root_selection) }}
+        {{ generate_recursive_class(selection.selections) }}
+    {% endfor %}
+{% endmacro %}
+
+{# Entry point: start with root_type selections #}
+{{ generate_recursive_class(operation.context.root_type.selections) }}
