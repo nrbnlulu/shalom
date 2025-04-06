@@ -12,7 +12,7 @@ use crate::schema::types::{GraphQLAny, ScalarType};
 
 use super::context::{OperationContext, SharedOpCtx};
 use super::types::{
-    EnumSelection, ScalarSelection, Selection, SelectionCommon, SharedEnumSelection, SharedObjectSelection, SharedScalarSelection
+    ScalarSelection, Selection, SelectionCommon, SharedObjectSelection, SharedScalarSelection,
 };
 
 fn full_path_name(this_name: &String, parent: &Option<&Selection>) -> String {
@@ -67,10 +67,6 @@ fn parse_object_selection(
     obj
 }
 
-fn parse_enum_selection(selection_common: SelectionCommon) -> SharedEnumSelection {
-     EnumSelection::new(selection_common) 
-}
-
 fn parse_scalar_selection(
     selection_common: SelectionCommon,
     concrete_type: Node<ScalarType>,
@@ -104,7 +100,6 @@ fn parse_selection_set(
             selection_common,
             selection_orig,
         )),
-        GraphQLAny::Enum(_) => Selection::Enum(parse_enum_selection(selection_common)),
         _ => todo!("Unsupported type {:?}", schema_type),
     };
 

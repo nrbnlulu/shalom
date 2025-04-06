@@ -21,7 +21,6 @@ pub struct SelectionCommon {
 pub enum Selection {
     Scalar(Rc<ScalarSelection>),
     Object(Rc<ObjectSelection>),
-    Enum(Rc<EnumSelection>)
 }
 
 impl Selection {
@@ -29,14 +28,12 @@ impl Selection {
         match self {
             Selection::Scalar(node) => node.common.selection_name.clone(),
             Selection::Object(obj) => obj.common.selection_name.clone(),
-            Selection::Enum(_enum) => _enum.common.selection_name.clone()
         }
     }
     pub fn self_full_path_name(&self) -> &FullPathName {
         match self {
             Selection::Scalar(node) => &node.common.full_name,
             Selection::Object(obj) => &obj.common.full_name,
-            Selection::Enum(_enum) => &_enum.common.full_name
         }
     }
 }
@@ -54,21 +51,6 @@ impl ScalarSelection {
         Rc::new(ScalarSelection {
             common,
             concrete_type,
-        })
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct EnumSelection {
-    #[serde(flatten)]
-    common: SelectionCommon
-}
-pub type SharedEnumSelection = Rc<EnumSelection>;
-
-impl EnumSelection {
-    pub fn new(common: SelectionCommon) -> SharedEnumSelection {
-        Rc::new(EnumSelection {
-            common
         })
     }
 }

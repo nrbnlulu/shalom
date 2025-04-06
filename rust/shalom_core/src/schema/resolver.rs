@@ -1,13 +1,16 @@
-use std::{collections::{HashMap, HashSet,}};
-use std::sync::Arc;
 use super::context::{SchemaContext, SharedSchemaContext};
-use super::types::{FieldDefinition, FieldType, GraphQLAny, ScalarType, EnumValueDefinition, EnumType, InputObjectType, InputValueDefinition};
+use super::types::{
+    EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, InputObjectType,
+    InputValueDefinition, ScalarType,
+};
 use super::{types::ObjectType, utils::TypeRef};
+use ahash::random_state::RandomState;
 use anyhow::Result;
 use apollo_compiler::{self, ast};
 use apollo_compiler::{schema as apollo_schema, Node};
 use log::{debug, info};
-use ahash::random_state::RandomState;
+use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
 
 const DEFAULT_SCALAR_TYPES: [(&str, &str); 8] = [
     ("String", "A UTF‐8 character sequence."),
@@ -61,13 +64,6 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
                 let description = scalar.description.as_ref().map(|v| v.to_string());
                 ctx.add_scalar(name.clone(), Node::new(ScalarType { name, description }))
                     .unwrap();
-            },
-            apollo_schema::ExtendedType::Enum(_enum) => {
-                resolve_enum(ctx.clone(), _enum.name.to_string(), _enum.clone());
-            }
-            apollo_schema::ExtendedType::InputObject(input) =>  {
-                println!("{:?}", input.fields.clone());
-                resolve_input(ctx.clone(), input.name.to_string(), input.clone());
             }
             _ => todo!(
                 "Unsupported type in schema {:?}: {:?}",
@@ -79,93 +75,6 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
 
     Ok(ctx)
 }
-
-#[allow(unused)]
-fn resolve_enum(context: SharedSchemaContext, name: String, origin: Node<apollo_schema::EnumType>) -> TypeRef {
-      if context.get_type(&name).is_some() {
-        return TypeRef::new(context.clone(), name);
-      }
-      let description = origin.description.as_ref().map(|v| v.to_string());
-      let mut enum_values = HashMap::with_hasher(RandomState::new());
-      for (name, definition) in &origin.values {
-        let enum_value_description = if definition.description.is_some() {
-            Some(definition.description.as_ref().unwrap().to_string()) 
-        } else {
-            None
-        };
-        let enum_definition = EnumValueDefinition {
-            description: enum_value_description,
-            value: definition.value.to_string()
-        };
-        enum_values.insert(name.to_string(), Box::new(enum_definition));
-      } 
-        let enum_description = if origin.description.is_some() {
-            Some(origin.description.as_ref().unwrap().to_string()) 
-        } else {
-            None
-        };
-      let _enum = EnumType {
-        description:  enum_description, 
-        name: name.clone(), 
-        values: enum_values
-      };
-      context.add_enum(name.clone(), Node::new(_enum));
-      return TypeRef::new(context.clone(), name);
-}
-
-#[allow(unused)]
-fn resolve_input(
-    context: SharedSchemaContext,
-    name: String,
-    origin: Node<apollo_schema::InputObjectType>,
-) -> TypeRef {
-   if context.get_type(&name).is_some() {
-        return TypeRef::new(context.clone(), name);
-    }
-    let description = if origin.description.is_some() {
-            Some(origin.description.as_ref().unwrap().to_string())
-         } else {
-            None
-         }; 
-    let mut inputs = HashMap::with_hasher(RandomState::new());
-    for (name, input) in origin.fields.iter() {
-        println!("{:?}", input);
-         let input_description = if input.description.is_some() {
-            Some(input.description.as_ref().unwrap().to_string())
-         } else {
-            None
-         }; 
-         let input_name = name.to_string(); 
-         let input_ty = Box::new(resolve_type(context.clone(), input.ty.item_type().clone()));
-         let input_description = if description.is_some() {
-              Some(input.description.as_ref().unwrap().to_string())
-         } else {
-            None
-         };
-         let input_default_value = if input.default_value.is_some() {
-             let default_value = input.default_value.as_ref().unwrap().to_string();
-             Some(default_value)
-         } else {
-            None
-         };
-        let input_definition = Box::new(InputValueDefinition {
-            description: input_description,
-            name: input_name,
-            ty: input_ty,
-            default_value: input_default_value
-        });
-        inputs.insert(name.to_string(), input_definition);
-    }
-    let input_object_type = Node::new(InputObjectType {
-        description, 
-        name: name.clone(),
-        fields: inputs
-    });
-    context.add_input(name.clone(), input_object_type);
-    let type_ref = TypeRef::new(context.clone(), name.clone()); 
-    return type_ref;
-} 
-     
 
 #[allow(unused)]
 fn resolve_scalar(

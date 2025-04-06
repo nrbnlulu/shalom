@@ -1,8 +1,8 @@
 use crate::schema::types::GraphQLAny;
 use apollo_compiler::{validation::Valid, Node};
 use serde::Serialize;
-use std::fmt::Debug;
 use std::fmt;
+use std::fmt::Debug;
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex, MutexGuard},
@@ -10,24 +10,24 @@ use std::{
 
 use super::types::{EnumType, InputObjectType, ObjectType, ScalarType};
 
-pub struct MutexWrapper<T: ?Sized>(pub Mutex<T>); 
+pub struct MutexWrapper<T: ?Sized>(pub Mutex<T>);
 
 impl<T: ?Sized + Serialize> Serialize for MutexWrapper<T> {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error> 
-    where 
-    S: serde::Serializer, 
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
     {
         self.0.lock().unwrap().serialize(serializer)
     }
 }
 
 impl<T: Debug> Debug for MutexWrapper<T> {
-   fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-     match self.0.lock() {
-        Ok(guard) => write!(f, "{:?}", *guard),
-        Err(_) => write!(f, "mutex poisoned")
-     }
-   }
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self.0.lock() {
+            Ok(guard) => write!(f, "{:?}", *guard),
+            Err(_) => write!(f, "mutex poisoned"),
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
@@ -120,7 +120,8 @@ impl SchemaContext {
 
     pub fn add_object(&self, name: String, type_: Node<ObjectType>) -> anyhow::Result<()> {
         let mut types_ctx = self
-            .types.0
+            .types
+            .0
             .lock()
             .map_err(|e| anyhow::anyhow!(e.to_string()))?;
         types_ctx.add_object(name, type_);
@@ -139,12 +140,6 @@ impl SchemaContext {
     pub fn add_input(&self, name: String, type_: Node<InputObjectType>) -> anyhow::Result<()> {
         let mut types_ctx = self.get_types();
         types_ctx.add_input(name, type_);
-        Ok(())
-    }
-
-    pub fn add_enum(&self, name: String, type_: Node<EnumType>) -> anyhow::Result<()> {
-        let mut types_ctx = self.get_types();
-        types_ctx.add_enum(name, type_);
         Ok(())
     }
 }
