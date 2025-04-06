@@ -2,10 +2,6 @@
 
 
 
-
-// Generate enums first
-
-
 // Then generate classes
 
 /// GetListing class with selected fields from query

@@ -2,10 +2,6 @@
 
 
 
-
-// Generate enums first
-
-
 // Then generate classes
 
 /// GetMultipleFields class with selected fields from query

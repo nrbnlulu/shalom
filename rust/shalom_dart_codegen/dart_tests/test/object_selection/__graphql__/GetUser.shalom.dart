@@ -2,10 +2,6 @@
 
 
 
-
-// Generate enums first
-
-
 // Then generate classes
 
 /// GetUser class with selected fields from query

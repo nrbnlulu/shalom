@@ -2,10 +2,6 @@
 
 
 
-
-// Generate enums first
-
-
 // Then generate classes
 
 /// GetInt class with selected fields from query

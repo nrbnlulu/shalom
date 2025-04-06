@@ -1,22 +1,3 @@
-{% macro generate_enum(enum_name, values) %}
-{% set enumname = 'Request' ~ enum_name %}
-enum {{enumname}} {
-  {% for value_name in values %}
-  {{value_name}},
-  {% endfor %};
-  
-  static {{enumname}} fromString(String value) {
-    return {{enumname}}.values.firstWhere(
-      (e) => e.name.toUpperCase() == value.toUpperCase(),
-      orElse: () => throw ArgumentError('Unknown {{enumname}}: $value'),
-    );
-  }
-
-  @override
-  String toString() => name.toUpperCase();
-}
-{% endmacro %}
-
 {% macro generate_class(typename, selections, root, is_root=false) %}
 /// {{typename}} class with selected fields from query
 {% set classname = 'Request' ~ typename %}
@@ -109,12 +90,6 @@ class {{classname}} {
 {% endmacro %}
 
 {% set root_selection = operation.context.root_type.selection_name %}
-// Generate enums first
-{% if schema.context.types.enums %}
-{% for enum_name, enum_def in schema.context.types.enums | items %}
-{{generate_enum(root_selection ~ enum_name, enum_def.values)}}
-{% endfor %}
-{% endif %}
 
 // Then generate classes
 {{generate_class(root_selection, operation.context.root_type.selections, root_selection, is_root=true)}}

@@ -1,7 +1,0 @@
-query GetTask($taskId: ID!) {
-  task(id: $taskId) {
-    id
-    name
-    status
-  }
-}
