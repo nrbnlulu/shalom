@@ -230,5 +230,5 @@ pub struct InputValueDefinition {
     pub description: Option<String>,
     pub name: String,
     pub ty: Box<FieldType>,
-    pub default_value: Option<Box<Value>>,
+    pub default_value: Option<String>,
 }
