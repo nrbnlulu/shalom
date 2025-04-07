@@ -6,8 +6,6 @@ class {{classname}} {
   {% for selection in selections %}
   {% if selection.kind == "Object" %}
   final Request{{root}}{{selection.selection_name|capitalize}}? {{selection.selection_name}};
-  {% elif selection.kind == "Enum" %}
-  final Request{{root}}{{selection.selection_name|capitalize}} {{selection.selection_name}};
   {% else %}
   final {{type_name_for_selection(selection)}} {{selection.selection_name}};
   {% endif %}
@@ -27,8 +25,6 @@ class {{classname}} {
       json['{{selection.selection_name}}'] != null 
         ? Request{{root}}{{selection.selection_name|capitalize}}.fromJson(json['{{selection.selection_name}}'] as Map<String, dynamic>)
         : null
-    {% elif selection.kind == "Enum" %}
-      Request{{root}}{{selection.selection_name|capitalize}}.fromString(json['{{selection.selection_name}}'] as String)
     {% else %}
       json['{{selection.selection_name}}'] as {{type_name_for_selection(selection)}}
     {% endif %},
@@ -45,10 +41,6 @@ class {{classname}} {
               ? Request{{root}}{{selection.selection_name|capitalize}}.fromJson(data['{{selection.selection_name}}'] as Map<String, dynamic>)
               : null)
           : this.{{selection.selection_name}}
-      {% elif selection.kind == "Enum" %}
-        data.containsKey('{{selection.selection_name}}')
-          ? Request{{root}}{{selection.selection_name|capitalize}}.fromString(data['{{selection.selection_name}}'] as String)
-          : this.{{selection.selection_name}}
       {% else %}
         data.containsKey('{{selection.selection_name}}') 
           ? data['{{selection.selection_name}}'] as {{type_name_for_selection(selection)}}
@@ -63,8 +55,6 @@ class {{classname}} {
     {% for selection in selections %}
     '{{selection.selection_name}}': {% if selection.kind == "Object" %}
       {{selection.selection_name}}?.toJson()
-    {% elif selection.kind == "Enum" %}
-      {{selection.selection_name}}.toString()
     {% else %}
       {{selection.selection_name}}
     {% endif %},
