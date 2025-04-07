@@ -1,31 +1,20 @@
-// Then generate classes
-
-/// GetFloatOptional class with selected fields from query
-library;
-
 class RequestGetFloatOptional {
-  /// Class fields
-
   final double? floatOptional;
 
-  /// Constructor
   RequestGetFloatOptional({this.floatOptional});
 
-  /// Creates from JSON
   factory RequestGetFloatOptional.fromJson(Map<String, dynamic> json) =>
       RequestGetFloatOptional(floatOptional: json['floatOptional'] as double?);
 
-  /// Updates from JSON
   RequestGetFloatOptional updateWithJson(Map<String, dynamic> data) {
     return RequestGetFloatOptional(
       floatOptional:
           data.containsKey('floatOptional')
               ? data['floatOptional'] as double?
-              : floatOptional,
+              : this.floatOptional,
     );
   }
 
-  /// Converts to JSON
   Map<String, dynamic> toJson() => {'floatOptional': floatOptional};
 
   @override

@@ -1,42 +1,31 @@
-// Then generate classes
-
-/// GetListing class with selected fields from query
-library;
-
 class RequestGetListing {
-  /// Class fields
+  final GetListingListing? listing;
 
-  final RequestGetListingListing? listing;
-
-  /// Constructor
   RequestGetListing({this.listing});
 
-  /// Creates from JSON
   factory RequestGetListing.fromJson(Map<String, dynamic> json) =>
       RequestGetListing(
         listing:
             json['listing'] != null
-                ? RequestGetListingListing.fromJson(
+                ? GetListingListing.fromJson(
                   json['listing'] as Map<String, dynamic>,
                 )
                 : null,
       );
 
-  /// Updates from JSON
   RequestGetListing updateWithJson(Map<String, dynamic> data) {
     return RequestGetListing(
       listing:
           data.containsKey('listing')
               ? (data['listing'] != null
-                  ? RequestGetListingListing.fromJson(
+                  ? GetListingListing.fromJson(
                     data['listing'] as Map<String, dynamic>,
                   )
                   : null)
-              : listing,
+              : this.listing,
     );
   }
 
-  /// Converts to JSON
   Map<String, dynamic> toJson() => {'listing': listing?.toJson()};
 
   @override
@@ -48,21 +37,16 @@ class RequestGetListing {
   int get hashCode => Object.hashAll([listing]);
 }
 
-/// GetListingListing class with selected fields from query
-
-class RequestGetListingListing {
-  /// Class fields
-
+class GetListingListing {
   final String id;
 
   final String name;
 
   final int? price;
 
-  final RequestGetListingUser? user;
+  final GetListingUser? user;
 
-  /// Constructor
-  RequestGetListingListing({
+  GetListingListing({
     required this.id,
 
     required this.name,
@@ -72,9 +56,8 @@ class RequestGetListingListing {
     this.user,
   });
 
-  /// Creates from JSON
-  factory RequestGetListingListing.fromJson(Map<String, dynamic> json) =>
-      RequestGetListingListing(
+  factory GetListingListing.fromJson(Map<String, dynamic> json) =>
+      GetListingListing(
         id: json['id'] as String,
 
         name: json['name'] as String,
@@ -83,33 +66,29 @@ class RequestGetListingListing {
 
         user:
             json['user'] != null
-                ? RequestGetListingUser.fromJson(
-                  json['user'] as Map<String, dynamic>,
-                )
+                ? GetListingUser.fromJson(json['user'] as Map<String, dynamic>)
                 : null,
       );
 
-  /// Updates from JSON
-  RequestGetListingListing updateWithJson(Map<String, dynamic> data) {
-    return RequestGetListingListing(
-      id: data.containsKey('id') ? data['id'] as String : id,
+  GetListingListing updateWithJson(Map<String, dynamic> data) {
+    return GetListingListing(
+      id: data.containsKey('id') ? data['id'] as String : this.id,
 
-      name: data.containsKey('name') ? data['name'] as String : name,
+      name: data.containsKey('name') ? data['name'] as String : this.name,
 
-      price: data.containsKey('price') ? data['price'] as int? : price,
+      price: data.containsKey('price') ? data['price'] as int? : this.price,
 
       user:
           data.containsKey('user')
               ? (data['user'] != null
-                  ? RequestGetListingUser.fromJson(
+                  ? GetListingUser.fromJson(
                     data['user'] as Map<String, dynamic>,
                   )
                   : null)
-              : user,
+              : this.user,
     );
   }
 
-  /// Converts to JSON
   Map<String, dynamic> toJson() => {
     'id': id,
 
@@ -123,7 +102,7 @@ class RequestGetListingListing {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is RequestGetListingListing &&
+      (other is GetListingListing &&
           other.id == id &&
           other.name == name &&
           other.price == price &&
@@ -134,42 +113,33 @@ class RequestGetListingListing {
   int get hashCode => Object.hashAll([id, name, price, user]);
 }
 
-/// GetListingUser class with selected fields from query
-
-class RequestGetListingUser {
-  /// Class fields
-
+class GetListingUser {
   final String name;
 
   final String email;
 
-  /// Constructor
-  RequestGetListingUser({required this.name, required this.email});
+  GetListingUser({required this.name, required this.email});
 
-  /// Creates from JSON
-  factory RequestGetListingUser.fromJson(Map<String, dynamic> json) =>
-      RequestGetListingUser(
-        name: json['name'] as String,
+  factory GetListingUser.fromJson(Map<String, dynamic> json) => GetListingUser(
+    name: json['name'] as String,
 
-        email: json['email'] as String,
-      );
+    email: json['email'] as String,
+  );
 
-  /// Updates from JSON
-  RequestGetListingUser updateWithJson(Map<String, dynamic> data) {
-    return RequestGetListingUser(
-      name: data.containsKey('name') ? data['name'] as String : name,
+  GetListingUser updateWithJson(Map<String, dynamic> data) {
+    return GetListingUser(
+      name: data.containsKey('name') ? data['name'] as String : this.name,
 
-      email: data.containsKey('email') ? data['email'] as String : email,
+      email: data.containsKey('email') ? data['email'] as String : this.email,
     );
   }
 
-  /// Converts to JSON
   Map<String, dynamic> toJson() => {'name': name, 'email': email};
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is RequestGetListingUser &&
+      (other is GetListingUser &&
           other.name == name &&
           other.email == email &&
           true);

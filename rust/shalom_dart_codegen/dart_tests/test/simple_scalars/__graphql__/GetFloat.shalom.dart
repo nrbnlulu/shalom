@@ -1,28 +1,17 @@
-// Then generate classes
-
-/// GetFloat class with selected fields from query
-library;
-
 class RequestGetFloat {
-  /// Class fields
-
   final double float;
 
-  /// Constructor
   RequestGetFloat({required this.float});
 
-  /// Creates from JSON
   factory RequestGetFloat.fromJson(Map<String, dynamic> json) =>
       RequestGetFloat(float: json['float'] as double);
 
-  /// Updates from JSON
   RequestGetFloat updateWithJson(Map<String, dynamic> data) {
     return RequestGetFloat(
-      float: data.containsKey('float') ? data['float'] as double : float,
+      float: data.containsKey('float') ? data['float'] as double : this.float,
     );
   }
 
-  /// Converts to JSON
   Map<String, dynamic> toJson() => {'float': float};
 
   @override

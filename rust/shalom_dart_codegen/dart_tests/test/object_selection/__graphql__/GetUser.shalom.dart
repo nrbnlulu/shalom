@@ -1,39 +1,26 @@
-// Then generate classes
-
-/// GetUser class with selected fields from query
-library;
-
 class RequestGetUser {
-  /// Class fields
+  final GetUserUser? user;
 
-  final RequestGetUserUser? user;
-
-  /// Constructor
   RequestGetUser({this.user});
 
-  /// Creates from JSON
   factory RequestGetUser.fromJson(Map<String, dynamic> json) => RequestGetUser(
     user:
         json['user'] != null
-            ? RequestGetUserUser.fromJson(json['user'] as Map<String, dynamic>)
+            ? GetUserUser.fromJson(json['user'] as Map<String, dynamic>)
             : null,
   );
 
-  /// Updates from JSON
   RequestGetUser updateWithJson(Map<String, dynamic> data) {
     return RequestGetUser(
       user:
           data.containsKey('user')
               ? (data['user'] != null
-                  ? RequestGetUserUser.fromJson(
-                    data['user'] as Map<String, dynamic>,
-                  )
+                  ? GetUserUser.fromJson(data['user'] as Map<String, dynamic>)
                   : null)
-              : user,
+              : this.user,
     );
   }
 
-  /// Converts to JSON
   Map<String, dynamic> toJson() => {'user': user?.toJson()};
 
   @override
@@ -45,11 +32,7 @@ class RequestGetUser {
   int get hashCode => Object.hashAll([user]);
 }
 
-/// GetUserUser class with selected fields from query
-
-class RequestGetUserUser {
-  /// Class fields
-
+class GetUserUser {
   final String id;
 
   final String name;
@@ -58,8 +41,7 @@ class RequestGetUserUser {
 
   final int? age;
 
-  /// Constructor
-  RequestGetUserUser({
+  GetUserUser({
     required this.id,
 
     required this.name,
@@ -69,32 +51,28 @@ class RequestGetUserUser {
     this.age,
   });
 
-  /// Creates from JSON
-  factory RequestGetUserUser.fromJson(Map<String, dynamic> json) =>
-      RequestGetUserUser(
-        id: json['id'] as String,
+  factory GetUserUser.fromJson(Map<String, dynamic> json) => GetUserUser(
+    id: json['id'] as String,
 
-        name: json['name'] as String,
+    name: json['name'] as String,
 
-        email: json['email'] as String,
+    email: json['email'] as String,
 
-        age: json['age'] as int?,
-      );
+    age: json['age'] as int?,
+  );
 
-  /// Updates from JSON
-  RequestGetUserUser updateWithJson(Map<String, dynamic> data) {
-    return RequestGetUserUser(
-      id: data.containsKey('id') ? data['id'] as String : id,
+  GetUserUser updateWithJson(Map<String, dynamic> data) {
+    return GetUserUser(
+      id: data.containsKey('id') ? data['id'] as String : this.id,
 
-      name: data.containsKey('name') ? data['name'] as String : name,
+      name: data.containsKey('name') ? data['name'] as String : this.name,
 
-      email: data.containsKey('email') ? data['email'] as String : email,
+      email: data.containsKey('email') ? data['email'] as String : this.email,
 
-      age: data.containsKey('age') ? data['age'] as int? : age,
+      age: data.containsKey('age') ? data['age'] as int? : this.age,
     );
   }
 
-  /// Converts to JSON
   Map<String, dynamic> toJson() => {
     'id': id,
 
@@ -108,7 +86,7 @@ class RequestGetUserUser {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is RequestGetUserUser &&
+      (other is GetUserUser &&
           other.id == id &&
           other.name == name &&
           other.email == email &&

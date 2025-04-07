@@ -1,29 +1,24 @@
-{% macro generate_class(typename, selections, root, is_root=false) %}
-/// {{typename}} class with selected fields from query
-{% set classname = 'Request' ~ typename %}
-class {{classname}} {
-  /// Class fields
+{% macro base_object_impl(typename, selections, operation_name) %}
+class {{typename}} {
   {% for selection in selections %}
   {% if selection.kind == "Object" %}
-  final Request{{root}}{{selection.selection_name|capitalize}}? {{selection.selection_name}};
+  final {{operation_name}}{{selection.selection_name|capitalize}}? {{selection.selection_name}};
   {% else %}
   final {{type_name_for_selection(selection)}} {{selection.selection_name}};
   {% endif %}
   {% endfor %}
 
-  /// Constructor
-  {{classname}}({
+  {{typename}}({
     {% for selection in selections %}
     {% if not selection.is_optional %}required {% endif %}this.{{selection.selection_name}},
     {% endfor %}
   });
 
-  /// Creates from JSON
-  factory {{classname}}.fromJson(Map<String, dynamic> json) => {{classname}}(
+  factory {{typename}}.fromJson(Map<String, dynamic> json) => {{typename}}(
     {% for selection in selections %}
     {{selection.selection_name}}: {% if selection.kind == "Object" %}
       json['{{selection.selection_name}}'] != null 
-        ? Request{{root}}{{selection.selection_name|capitalize}}.fromJson(json['{{selection.selection_name}}'] as Map<String, dynamic>)
+        ? {{operation_name}}{{selection.selection_name|capitalize}}.fromJson(json['{{selection.selection_name}}'] as Map<String, dynamic>)
         : null
     {% else %}
       json['{{selection.selection_name}}'] as {{type_name_for_selection(selection)}}
@@ -31,14 +26,13 @@ class {{classname}} {
     {% endfor %}
   );
 
-  /// Updates from JSON
-  {{classname}} updateWithJson(Map<String, dynamic> data) {
-    return {{classname}}(
+  {{typename}} updateWithJson(Map<String, dynamic> data) {
+    return {{typename}}(
       {% for selection in selections %}
       {{selection.selection_name}}: {% if selection.kind == "Object" %}
         data.containsKey('{{selection.selection_name}}') 
           ? (data['{{selection.selection_name}}'] != null 
-              ? Request{{root}}{{selection.selection_name|capitalize}}.fromJson(data['{{selection.selection_name}}'] as Map<String, dynamic>)
+              ? {{operation_name}}{{selection.selection_name|capitalize}}.fromJson(data['{{selection.selection_name}}'] as Map<String, dynamic>)
               : null)
           : this.{{selection.selection_name}}
       {% else %}
@@ -50,7 +44,6 @@ class {{classname}} {
     );
   }
 
-  /// Converts to JSON
   Map<String, dynamic> toJson() => {
     {% for selection in selections %}
     '{{selection.selection_name}}': {% if selection.kind == "Object" %}
@@ -64,7 +57,7 @@ class {{classname}} {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is {{classname}} &&
+      (other is {{typename}} &&
           {% for selection in selections %}
           other.{{selection.selection_name}} == {{selection.selection_name}} &&
           {% endfor %}
@@ -79,17 +72,15 @@ class {{classname}} {
 }
 {% endmacro %}
 
-{% set root_selection = operation.context.root_type.selection_name %}
+{% set operation_name = operation.context.root_type.selection_name %}
 
-// Then generate classes
-{{generate_class(root_selection, operation.context.root_type.selections, root_selection, is_root=true)}}
+{{base_object_impl('Request' ~ operation_name, operation.context.root_type.selections, operation_name)}}
 
-{% macro generate_recursive_class(selections) %}
+{% macro base_object_impl_recursive(selections) %}
     {% for selection in selections if selection.kind == "Object" %}
-        {{ generate_class(root_selection ~ selection.selection_name|capitalize, selection.selections, root_selection) }}
-        {{ generate_recursive_class(selection.selections) }}
+        {{ base_object_impl(operation_name ~ selection.selection_name|capitalize, selection.selections, operation_name)}}
+        {{ base_object_impl_recursive(selection.selections) }}
     {% endfor %}
 {% endmacro %}
 
-{# Entry point: start with root_type selections #}
-{{ generate_recursive_class(operation.context.root_type.selections) }}
+{{ base_object_impl_recursive(operation.context.root_type.selections) }}

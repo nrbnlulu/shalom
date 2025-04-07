@@ -1,33 +1,22 @@
-// Then generate classes
-
-/// GetBooleanOptional class with selected fields from query
-library;
-
 class RequestGetBooleanOptional {
-  /// Class fields
-
   final bool? booleanOptional;
 
-  /// Constructor
   RequestGetBooleanOptional({this.booleanOptional});
 
-  /// Creates from JSON
   factory RequestGetBooleanOptional.fromJson(Map<String, dynamic> json) =>
       RequestGetBooleanOptional(
         booleanOptional: json['booleanOptional'] as bool?,
       );
 
-  /// Updates from JSON
   RequestGetBooleanOptional updateWithJson(Map<String, dynamic> data) {
     return RequestGetBooleanOptional(
       booleanOptional:
           data.containsKey('booleanOptional')
               ? data['booleanOptional'] as bool?
-              : booleanOptional,
+              : this.booleanOptional,
     );
   }
 
-  /// Converts to JSON
   Map<String, dynamic> toJson() => {'booleanOptional': booleanOptional};
 
   @override

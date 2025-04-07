@@ -34,7 +34,7 @@ void main() {
     });
     test("update", () {
       final initial = RequestGetUser(
-        user: RequestGetUserUser(
+        user: GetUserUser(
           id: "foo",
           name: "jacob",
           email: "jacob@gamil.com",
@@ -83,11 +83,11 @@ void main() {
 
     test("update", () {
       final initial = RequestGetListing(
-        listing: RequestGetListingListing(
+        listing: GetListingListing(
           id: "foo",
           name: "video games",
           price: 100,
-          user: RequestGetListingUser(name: "jacob", email: "jacob@gmail.com"),
+          user: GetListingUser(name: "jacob", email: "jacob@gmail.com"),
         ),
       );
 
