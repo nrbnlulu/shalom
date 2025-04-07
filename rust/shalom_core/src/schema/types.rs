@@ -4,7 +4,7 @@ use std::{
 };
 
 use super::utils::TypeRef;
-use apollo_compiler::{ast::Value, collections::HashMap, Node};
+use apollo_compiler::{collections::HashMap, Node};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]

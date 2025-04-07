@@ -1,12 +1,8 @@
 use super::context::{SchemaContext, SharedSchemaContext};
-use super::types::{
-    EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, InputObjectType,
-    InputValueDefinition, ScalarType,
-};
+use super::types::{FieldDefinition, FieldType, GraphQLAny, ScalarType};
 use super::{types::ObjectType, utils::TypeRef};
-use ahash::random_state::RandomState;
 use anyhow::Result;
-use apollo_compiler::{self, ast};
+use apollo_compiler::{self};
 use apollo_compiler::{schema as apollo_schema, Node};
 use log::{debug, info};
 use std::collections::{HashMap, HashSet};
