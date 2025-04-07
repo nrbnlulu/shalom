@@ -39,7 +39,7 @@ pub fn ensure_test_folder_exists(usecase: &str) -> anyhow::Result<PathBuf> {
 }
 
 fn run_codegen(cwd: &Path) {
-    shalom_dart_codegen::codegen_entry_point(&cwd).unwrap()
+    shalom_dart_codegen::codegen_entry_point(cwd).unwrap()
 }
 
 pub fn run_dart_tests_for_usecase(usecase: &str) {

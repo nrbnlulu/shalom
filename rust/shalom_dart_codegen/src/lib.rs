@@ -41,9 +41,9 @@ fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
         }
         Selection::Object(object) => {
             let mut name: Vec<char> = object.common.selection_name.clone().chars().collect();
-            name[0] = name[0].to_uppercase().nth(0).unwrap();
-            let selection_name = name.into_iter().collect();
-            return selection_name;
+            name[0] = name[0].to_uppercase().next().unwrap();
+
+            name.into_iter().collect()
         }
     }
 }
@@ -98,7 +98,7 @@ fn generate_operations_file(
     info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();
     let rendered_content = TEMPLATE_ENV.render_operation(operation, schema_ctx);
-    let generation_target = get_generation_path_for_operation(&operation_file_path, &name);
+    let generation_target = get_generation_path_for_operation(&operation_file_path, name);
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
 }
