@@ -1,12 +1,11 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{info, trace};
-use minijinja::Value;
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use shalom_core::{
     operation::{context::OperationContext, types::Selection},
-    schema::{context::SchemaContext, types::ObjectType},
+    schema::context::SchemaContext,
 };
 use std::rc::Rc;
 use std::sync::Arc;
@@ -46,7 +45,6 @@ fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
             let selection_name = name.into_iter().collect();
             return selection_name;
         }
-        _ => todo!("unsupported type: {:?}", selection.0),
     }
 }
 impl TemplateEnv<'_> {

@@ -43,7 +43,10 @@ fn run_codegen(cwd: &Path) {
 }
 
 pub fn run_dart_tests_for_usecase(usecase: &str) {
-    simple_logger::init();
+    match simple_logger::init() {
+        Ok(_) => println!("Logger initialized"),
+        Err(e) => eprintln!("Error initializing logger: {}", e)
+    }
     let usecase_test_dir =
         ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
     run_codegen(&usecase_test_dir);
