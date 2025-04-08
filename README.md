@@ -1,2 +1,2 @@
 # shalom
-GraphQL client for dart and flutter.
+### (WIP 🚧) GraphQL client for dart and flutter.
