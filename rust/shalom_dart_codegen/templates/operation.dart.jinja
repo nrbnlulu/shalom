@@ -1,39 +1,44 @@
-{% macro base_object_impl(typename, selections, operation_name) %}
-class {{typename}} {
-  {% for selection in selections %}
-  {% if selection.kind == "Object" %}
-  final {{operation_name}}{{selection.selection_name|capitalize}}? {{selection.selection_name}};
+{% set root_selection = operation.context.root_type.selection_name %}
+{% macro base_object_impl(typename, selections) %}
+/// class memberes
+{% for selection in selections %}
+{% if selection.kind == "Object" %}
+  final {{root_selection ~ selection.selection_name|capitalize}}? {{selection.selection_name}};
   {% else %}
   final {{type_name_for_selection(selection)}} {{selection.selection_name}};
   {% endif %}
-  {% endfor %}
+{% endfor %}
 
-  // keywordargs constructor
-  {{typename}}({
-    {% for selection in selections %}
-    {% if not selection.is_optional %}required {% endif %}this.{{selection.selection_name}},
-    {% endfor %}
-  });
+// keywordargs constructor
+{{typename}}({
+   {% for selection in selections %}
+   {% if not selection.is_optional %}required {% endif %}this.{{selection.selection_name}},
+   {% endfor %} 
+});
 
-  factory {{typename}}.fromJson(Map<String, dynamic> json) => {{typename}}(
+
+static {{typename}} fromJson(Map<String, dynamic> data) {
+   return {{typename}} ( 
     {% for selection in selections %}
     {{selection.selection_name}}: {% if selection.kind == "Object" %}
-      json['{{selection.selection_name}}'] != null 
-        ? {{operation_name}}{{selection.selection_name|capitalize}}.fromJson(json['{{selection.selection_name}}'] as Map<String, dynamic>)
+      data['{{selection.selection_name}}'] != null 
+        ? {{root_selection ~ selection.selection_name|capitalize}}.fromJson(data['{{selection.selection_name}}'] as Map<String, dynamic>)
         : null
     {% else %}
-      json['{{selection.selection_name}}'] as {{type_name_for_selection(selection)}}
+      data['{{selection.selection_name}}'] as {{type_name_for_selection(selection)}}
     {% endif %},
-    {% endfor %}
-  );
+    {% endfor %} 
+   );
+}
 
-  {{typename}} updateWithJson(Map<String, dynamic> data) {
-    return {{typename}}(
+
+{{typename}} updateWithJson(Map<String, dynamic> data) {
+     return {{typename}}(
       {% for selection in selections %}
       {{selection.selection_name}}: {% if selection.kind == "Object" %}
         data.containsKey('{{selection.selection_name}}') 
           ? (data['{{selection.selection_name}}'] != null 
-              ? {{operation_name}}{{selection.selection_name|capitalize}}.fromJson(data['{{selection.selection_name}}'] as Map<String, dynamic>)
+              ? {{root_selection ~ selection.selection_name|capitalize}}.fromJson(data['{{selection.selection_name}}'] as Map<String, dynamic>)
               : null)
           : this.{{selection.selection_name}}
       {% else %}
@@ -42,47 +47,56 @@ class {{typename}} {
           : this.{{selection.selection_name}}
       {% endif %},
       {% endfor %}
-    );
-  }
+    ); 
+}
 
-  Map<String, dynamic> toJson() => {
+@override
+bool operator ==(Object other) { 
+    return identical(this, other) ||
+    (other is {{typename}} &&
+        {% for selection in selections %}
+        other.{{selection.selection_name}} == {{selection.selection_name}} &&
+        {% endfor %}
+        true);
+}        
+
+@override
+  int get hashCode => Object.hashAll([
     {% for selection in selections %}
+    {{selection.selection_name}},
+    {% endfor %}
+  ]);
+
+ Map<String, dynamic> toJson() {
+    return { {% for selection in selections %}
     '{{selection.selection_name}}': {% if selection.kind == "Object" %}
       {{selection.selection_name}}?.toJson()
     {% else %}
       {{selection.selection_name}}
     {% endif %},
     {% endfor %}
-  };
+    };
+ }
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is {{typename}} &&
-          {% for selection in selections %}
-          other.{{selection.selection_name}} == {{selection.selection_name}} &&
-          {% endfor %}
-          true);
-
-  @override
-  int get hashCode => Object.hashAll([
-    {% for selection in selections %}
-    {{selection.selection_name}},
-    {% endfor %}
-  ]);
-}
 {% endmacro %}
+// ignore_for_file: non_constant_identifier_names
 
-{% set operation_name = operation.context.root_type.selection_name %}
 
-{{base_object_impl('Request' ~ operation_name, operation.context.root_type.selections, operation_name)}}
+{% set root_type_name %}
+Request{{root_selection}}
+{% endset %}
+class {{root_type_name}}{
 
-/// class memberes
+{{base_object_impl(root_type_name, operation.context.root_type.selections)}}
+}
+
 {% macro base_object_impl_recursive(selections) %}
     {% for selection in selections if selection.kind == "Object" %}
-        {{ base_object_impl(operation_name ~ selection.selection_name|capitalize, selection.selections, operation_name)}}
+        class {{root_selection ~ selection.selection_name|capitalize}}  {
+        {{ base_object_impl(root_selection ~ selection.selection_name|capitalize, selection.selections)}}
+        }
         {{ base_object_impl_recursive(selection.selections) }}
     {% endfor %}
 {% endmacro %}
 
-{{ base_object_impl_recursive(operation.context.root_type.selections) }}
+{{base_object_impl_recursive(operation.context.root_type.selections)}}

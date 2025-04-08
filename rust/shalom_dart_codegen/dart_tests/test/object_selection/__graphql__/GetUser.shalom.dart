@@ -1,15 +1,22 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetUser {
+  /// class memberes
+
   final GetUserUser? user;
 
   // keywordargs constructor
+
   RequestGetUser({this.user});
 
-  factory RequestGetUser.fromJson(Map<String, dynamic> json) => RequestGetUser(
-    user:
-        json['user'] != null
-            ? GetUserUser.fromJson(json['user'] as Map<String, dynamic>)
-            : null,
-  );
+  static RequestGetUser fromJson(Map<String, dynamic> data) {
+    return RequestGetUser(
+      user:
+          data['user'] != null
+              ? GetUserUser.fromJson(data['user'] as Map<String, dynamic>)
+              : null,
+    );
+  }
 
   RequestGetUser updateWithJson(Map<String, dynamic> data) {
     return RequestGetUser(
@@ -22,20 +29,23 @@ class RequestGetUser {
     );
   }
 
-  Map<String, dynamic> toJson() => {'user': user?.toJson()};
-
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is RequestGetUser && other.user == user && true);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is RequestGetUser && other.user == user && true);
+  }
 
   @override
   int get hashCode => Object.hashAll([user]);
+
+  Map<String, dynamic> toJson() {
+    return {'user': user?.toJson()};
+  }
 }
 
-/// class memberes
-
 class GetUserUser {
+  /// class memberes
+
   final String id;
 
   final String name;
@@ -55,15 +65,17 @@ class GetUserUser {
     this.age,
   });
 
-  factory GetUserUser.fromJson(Map<String, dynamic> json) => GetUserUser(
-    id: json['id'] as String,
+  static GetUserUser fromJson(Map<String, dynamic> data) {
+    return GetUserUser(
+      id: data['id'] as String,
 
-    name: json['name'] as String,
+      name: data['name'] as String,
 
-    email: json['email'] as String,
+      email: data['email'] as String,
 
-    age: json['age'] as int?,
-  );
+      age: data['age'] as int?,
+    );
+  }
 
   GetUserUser updateWithJson(Map<String, dynamic> data) {
     return GetUserUser(
@@ -77,26 +89,21 @@ class GetUserUser {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-    'id': id,
-
-    'name': name,
-
-    'email': email,
-
-    'age': age,
-  };
-
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is GetUserUser &&
-          other.id == id &&
-          other.name == name &&
-          other.email == email &&
-          other.age == age &&
-          true);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is GetUserUser &&
+            other.id == id &&
+            other.name == name &&
+            other.email == email &&
+            other.age == age &&
+            true);
+  }
 
   @override
   int get hashCode => Object.hashAll([id, name, email, age]);
+
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'name': name, 'email': email, 'age': age};
+  }
 }

@@ -1,11 +1,17 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetIntOptional {
+  /// class memberes
+
   final int? intOptional;
 
   // keywordargs constructor
+
   RequestGetIntOptional({this.intOptional});
 
-  factory RequestGetIntOptional.fromJson(Map<String, dynamic> json) =>
-      RequestGetIntOptional(intOptional: json['intOptional'] as int?);
+  static RequestGetIntOptional fromJson(Map<String, dynamic> data) {
+    return RequestGetIntOptional(intOptional: data['intOptional'] as int?);
+  }
 
   RequestGetIntOptional updateWithJson(Map<String, dynamic> data) {
     return RequestGetIntOptional(
@@ -16,17 +22,18 @@ class RequestGetIntOptional {
     );
   }
 
-  Map<String, dynamic> toJson() => {'intOptional': intOptional};
-
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is RequestGetIntOptional &&
-          other.intOptional == intOptional &&
-          true);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is RequestGetIntOptional &&
+            other.intOptional == intOptional &&
+            true);
+  }
 
   @override
   int get hashCode => Object.hashAll([intOptional]);
-}
 
-/// class memberes
+  Map<String, dynamic> toJson() {
+    return {'intOptional': intOptional};
+  }
+}

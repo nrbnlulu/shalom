@@ -1,17 +1,23 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetMultipleFields {
+  /// class memberes
+
   final String id;
 
   final int intField;
 
   // keywordargs constructor
+
   RequestGetMultipleFields({required this.id, required this.intField});
 
-  factory RequestGetMultipleFields.fromJson(Map<String, dynamic> json) =>
-      RequestGetMultipleFields(
-        id: json['id'] as String,
+  static RequestGetMultipleFields fromJson(Map<String, dynamic> data) {
+    return RequestGetMultipleFields(
+      id: data['id'] as String,
 
-        intField: json['intField'] as int,
-      );
+      intField: data['intField'] as int,
+    );
+  }
 
   RequestGetMultipleFields updateWithJson(Map<String, dynamic> data) {
     return RequestGetMultipleFields(
@@ -24,18 +30,19 @@ class RequestGetMultipleFields {
     );
   }
 
-  Map<String, dynamic> toJson() => {'id': id, 'intField': intField};
-
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is RequestGetMultipleFields &&
-          other.id == id &&
-          other.intField == intField &&
-          true);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is RequestGetMultipleFields &&
+            other.id == id &&
+            other.intField == intField &&
+            true);
+  }
 
   @override
   int get hashCode => Object.hashAll([id, intField]);
-}
 
-/// class memberes
+  Map<String, dynamic> toJson() {
+    return {'id': id, 'intField': intField};
+  }
+}

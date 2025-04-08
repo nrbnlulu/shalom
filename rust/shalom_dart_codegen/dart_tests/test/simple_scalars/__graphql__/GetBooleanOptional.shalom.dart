@@ -1,13 +1,19 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetBooleanOptional {
+  /// class memberes
+
   final bool? booleanOptional;
 
   // keywordargs constructor
+
   RequestGetBooleanOptional({this.booleanOptional});
 
-  factory RequestGetBooleanOptional.fromJson(Map<String, dynamic> json) =>
-      RequestGetBooleanOptional(
-        booleanOptional: json['booleanOptional'] as bool?,
-      );
+  static RequestGetBooleanOptional fromJson(Map<String, dynamic> data) {
+    return RequestGetBooleanOptional(
+      booleanOptional: data['booleanOptional'] as bool?,
+    );
+  }
 
   RequestGetBooleanOptional updateWithJson(Map<String, dynamic> data) {
     return RequestGetBooleanOptional(
@@ -18,17 +24,18 @@ class RequestGetBooleanOptional {
     );
   }
 
-  Map<String, dynamic> toJson() => {'booleanOptional': booleanOptional};
-
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is RequestGetBooleanOptional &&
-          other.booleanOptional == booleanOptional &&
-          true);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is RequestGetBooleanOptional &&
+            other.booleanOptional == booleanOptional &&
+            true);
+  }
 
   @override
   int get hashCode => Object.hashAll([booleanOptional]);
-}
 
-/// class memberes
+  Map<String, dynamic> toJson() {
+    return {'booleanOptional': booleanOptional};
+  }
+}

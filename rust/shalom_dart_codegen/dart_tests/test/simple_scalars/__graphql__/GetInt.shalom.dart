@@ -1,11 +1,17 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetInt {
+  /// class memberes
+
   final int intField;
 
   // keywordargs constructor
+
   RequestGetInt({required this.intField});
 
-  factory RequestGetInt.fromJson(Map<String, dynamic> json) =>
-      RequestGetInt(intField: json['intField'] as int);
+  static RequestGetInt fromJson(Map<String, dynamic> data) {
+    return RequestGetInt(intField: data['intField'] as int);
+  }
 
   RequestGetInt updateWithJson(Map<String, dynamic> data) {
     return RequestGetInt(
@@ -16,15 +22,16 @@ class RequestGetInt {
     );
   }
 
-  Map<String, dynamic> toJson() => {'intField': intField};
-
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is RequestGetInt && other.intField == intField && true);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is RequestGetInt && other.intField == intField && true);
+  }
 
   @override
   int get hashCode => Object.hashAll([intField]);
-}
 
-/// class memberes
+  Map<String, dynamic> toJson() {
+    return {'intField': intField};
+  }
+}

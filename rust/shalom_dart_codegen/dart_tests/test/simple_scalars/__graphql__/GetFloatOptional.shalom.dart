@@ -1,11 +1,19 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetFloatOptional {
+  /// class memberes
+
   final double? floatOptional;
 
   // keywordargs constructor
+
   RequestGetFloatOptional({this.floatOptional});
 
-  factory RequestGetFloatOptional.fromJson(Map<String, dynamic> json) =>
-      RequestGetFloatOptional(floatOptional: json['floatOptional'] as double?);
+  static RequestGetFloatOptional fromJson(Map<String, dynamic> data) {
+    return RequestGetFloatOptional(
+      floatOptional: data['floatOptional'] as double?,
+    );
+  }
 
   RequestGetFloatOptional updateWithJson(Map<String, dynamic> data) {
     return RequestGetFloatOptional(
@@ -16,17 +24,18 @@ class RequestGetFloatOptional {
     );
   }
 
-  Map<String, dynamic> toJson() => {'floatOptional': floatOptional};
-
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is RequestGetFloatOptional &&
-          other.floatOptional == floatOptional &&
-          true);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is RequestGetFloatOptional &&
+            other.floatOptional == floatOptional &&
+            true);
+  }
 
   @override
   int get hashCode => Object.hashAll([floatOptional]);
-}
 
-/// class memberes
+  Map<String, dynamic> toJson() {
+    return {'floatOptional': floatOptional};
+  }
+}

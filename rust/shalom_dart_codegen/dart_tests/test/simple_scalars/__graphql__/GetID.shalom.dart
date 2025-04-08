@@ -1,11 +1,17 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetID {
+  /// class memberes
+
   final String id;
 
   // keywordargs constructor
+
   RequestGetID({required this.id});
 
-  factory RequestGetID.fromJson(Map<String, dynamic> json) =>
-      RequestGetID(id: json['id'] as String);
+  static RequestGetID fromJson(Map<String, dynamic> data) {
+    return RequestGetID(id: data['id'] as String);
+  }
 
   RequestGetID updateWithJson(Map<String, dynamic> data) {
     return RequestGetID(
@@ -13,15 +19,16 @@ class RequestGetID {
     );
   }
 
-  Map<String, dynamic> toJson() => {'id': id};
-
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is RequestGetID && other.id == id && true);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is RequestGetID && other.id == id && true);
+  }
 
   @override
   int get hashCode => Object.hashAll([id]);
-}
 
-/// class memberes
+  Map<String, dynamic> toJson() {
+    return {'id': id};
+  }
+}

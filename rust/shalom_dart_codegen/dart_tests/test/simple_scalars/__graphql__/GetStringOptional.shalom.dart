@@ -1,13 +1,19 @@
+// ignore_for_file: non_constant_identifier_names
+
 class RequestGetStringOptional {
+  /// class memberes
+
   final String? stringOptional;
 
   // keywordargs constructor
+
   RequestGetStringOptional({this.stringOptional});
 
-  factory RequestGetStringOptional.fromJson(Map<String, dynamic> json) =>
-      RequestGetStringOptional(
-        stringOptional: json['stringOptional'] as String?,
-      );
+  static RequestGetStringOptional fromJson(Map<String, dynamic> data) {
+    return RequestGetStringOptional(
+      stringOptional: data['stringOptional'] as String?,
+    );
+  }
 
   RequestGetStringOptional updateWithJson(Map<String, dynamic> data) {
     return RequestGetStringOptional(
@@ -18,17 +24,18 @@ class RequestGetStringOptional {
     );
   }
 
-  Map<String, dynamic> toJson() => {'stringOptional': stringOptional};
-
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is RequestGetStringOptional &&
-          other.stringOptional == stringOptional &&
-          true);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is RequestGetStringOptional &&
+            other.stringOptional == stringOptional &&
+            true);
+  }
 
   @override
   int get hashCode => Object.hashAll([stringOptional]);
-}
 
-/// class memberes
+  Map<String, dynamic> toJson() {
+    return {'stringOptional': stringOptional};
+  }
+}
