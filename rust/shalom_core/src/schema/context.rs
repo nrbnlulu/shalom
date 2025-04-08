@@ -127,10 +127,5 @@ impl SchemaContext {
         types_ctx.add_scalar(name, type_);
         Ok(())
     }
-    pub fn add_input(&self, name: String, type_: Node<InputObjectType>) -> anyhow::Result<()> {
-        let mut types_ctx = self.get_types();
-        types_ctx.add_input(name, type_);
-        Ok(())
-    }
 }
 pub type SharedSchemaContext = Arc<SchemaContext>;

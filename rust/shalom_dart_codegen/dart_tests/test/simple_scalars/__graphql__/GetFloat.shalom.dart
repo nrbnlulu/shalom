@@ -1,6 +1,7 @@
 class RequestGetFloat {
   final double float;
 
+  // keywordargs constructor
   RequestGetFloat({required this.float});
 
   factory RequestGetFloat.fromJson(Map<String, dynamic> json) =>
@@ -22,3 +23,5 @@ class RequestGetFloat {
   @override
   int get hashCode => Object.hashAll([float]);
 }
+
+/// class memberes

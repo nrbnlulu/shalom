@@ -3,6 +3,7 @@ class RequestGetMultipleFields {
 
   final int intField;
 
+  // keywordargs constructor
   RequestGetMultipleFields({required this.id, required this.intField});
 
   factory RequestGetMultipleFields.fromJson(Map<String, dynamic> json) =>
@@ -36,3 +37,5 @@ class RequestGetMultipleFields {
   @override
   int get hashCode => Object.hashAll([id, intField]);
 }
+
+/// class memberes

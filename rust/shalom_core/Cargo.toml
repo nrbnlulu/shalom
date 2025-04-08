@@ -9,5 +9,4 @@ apollo-compiler = "=1.0.0-beta.20"
 simple_logger = {workspace = true}
 log = {workspace = true}
 glob = "0.3.2"
-ahash = "0.8.11"
 serde = {workspace = true}

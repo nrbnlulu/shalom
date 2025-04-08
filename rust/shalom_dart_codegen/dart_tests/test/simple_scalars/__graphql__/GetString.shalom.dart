@@ -1,6 +1,7 @@
 class RequestGetString {
   final String string;
 
+  // keywordargs constructor
   RequestGetString({required this.string});
 
   factory RequestGetString.fromJson(Map<String, dynamic> json) =>
@@ -23,3 +24,5 @@ class RequestGetString {
   @override
   int get hashCode => Object.hashAll([string]);
 }
+
+/// class memberes

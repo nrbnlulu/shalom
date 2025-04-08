@@ -1,6 +1,7 @@
 class RequestGetInt {
   final int intField;
 
+  // keywordargs constructor
   RequestGetInt({required this.intField});
 
   factory RequestGetInt.fromJson(Map<String, dynamic> json) =>
@@ -25,3 +26,5 @@ class RequestGetInt {
   @override
   int get hashCode => Object.hashAll([intField]);
 }
+
+/// class memberes

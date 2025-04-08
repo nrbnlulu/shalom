@@ -1,6 +1,7 @@
 class RequestGetBooleanOptional {
   final bool? booleanOptional;
 
+  // keywordargs constructor
   RequestGetBooleanOptional({this.booleanOptional});
 
   factory RequestGetBooleanOptional.fromJson(Map<String, dynamic> json) =>
@@ -29,3 +30,5 @@ class RequestGetBooleanOptional {
   @override
   int get hashCode => Object.hashAll([booleanOptional]);
 }
+
+/// class memberes

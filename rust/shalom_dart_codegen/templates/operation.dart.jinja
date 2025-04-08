@@ -8,6 +8,7 @@ class {{typename}} {
   {% endif %}
   {% endfor %}
 
+  // keywordargs constructor
   {{typename}}({
     {% for selection in selections %}
     {% if not selection.is_optional %}required {% endif %}this.{{selection.selection_name}},
@@ -76,6 +77,7 @@ class {{typename}} {
 
 {{base_object_impl('Request' ~ operation_name, operation.context.root_type.selections, operation_name)}}
 
+/// class memberes
 {% macro base_object_impl_recursive(selections) %}
     {% for selection in selections if selection.kind == "Object" %}
         {{ base_object_impl(operation_name ~ selection.selection_name|capitalize, selection.selections, operation_name)}}

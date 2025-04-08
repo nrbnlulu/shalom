@@ -1,6 +1,7 @@
 class RequestGetFloatOptional {
   final double? floatOptional;
 
+  // keywordargs constructor
   RequestGetFloatOptional({this.floatOptional});
 
   factory RequestGetFloatOptional.fromJson(Map<String, dynamic> json) =>
@@ -27,3 +28,5 @@ class RequestGetFloatOptional {
   @override
   int get hashCode => Object.hashAll([floatOptional]);
 }
+
+/// class memberes

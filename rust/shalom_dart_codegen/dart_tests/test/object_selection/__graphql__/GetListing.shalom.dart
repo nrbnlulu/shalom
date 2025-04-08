@@ -1,6 +1,7 @@
 class RequestGetListing {
   final GetListingListing? listing;
 
+  // keywordargs constructor
   RequestGetListing({this.listing});
 
   factory RequestGetListing.fromJson(Map<String, dynamic> json) =>
@@ -37,6 +38,8 @@ class RequestGetListing {
   int get hashCode => Object.hashAll([listing]);
 }
 
+/// class memberes
+
 class GetListingListing {
   final String id;
 
@@ -46,6 +49,7 @@ class GetListingListing {
 
   final GetListingUser? user;
 
+  // keywordargs constructor
   GetListingListing({
     required this.id,
 
@@ -118,6 +122,7 @@ class GetListingUser {
 
   final String email;
 
+  // keywordargs constructor
   GetListingUser({required this.name, required this.email});
 
   factory GetListingUser.fromJson(Map<String, dynamic> json) => GetListingUser(

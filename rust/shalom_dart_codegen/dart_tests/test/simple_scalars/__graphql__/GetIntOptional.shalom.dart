@@ -1,6 +1,7 @@
 class RequestGetIntOptional {
   final int? intOptional;
 
+  // keywordargs constructor
   RequestGetIntOptional({this.intOptional});
 
   factory RequestGetIntOptional.fromJson(Map<String, dynamic> json) =>
@@ -27,3 +28,5 @@ class RequestGetIntOptional {
   @override
   int get hashCode => Object.hashAll([intOptional]);
 }
+
+/// class memberes

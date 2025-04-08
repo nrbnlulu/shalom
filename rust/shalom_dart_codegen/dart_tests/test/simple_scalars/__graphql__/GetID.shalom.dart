@@ -1,6 +1,7 @@
 class RequestGetID {
   final String id;
 
+  // keywordargs constructor
   RequestGetID({required this.id});
 
   factory RequestGetID.fromJson(Map<String, dynamic> json) =>
@@ -22,3 +23,5 @@ class RequestGetID {
   @override
   int get hashCode => Object.hashAll([id]);
 }
+
+/// class memberes

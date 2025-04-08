@@ -1,6 +1,7 @@
 class RequestGetStringOptional {
   final String? stringOptional;
 
+  // keywordargs constructor
   RequestGetStringOptional({this.stringOptional});
 
   factory RequestGetStringOptional.fromJson(Map<String, dynamic> json) =>
@@ -29,3 +30,5 @@ class RequestGetStringOptional {
   @override
   int get hashCode => Object.hashAll([stringOptional]);
 }
+
+/// class memberes

@@ -1,6 +1,7 @@
 class RequestGetUser {
   final GetUserUser? user;
 
+  // keywordargs constructor
   RequestGetUser({this.user});
 
   factory RequestGetUser.fromJson(Map<String, dynamic> json) => RequestGetUser(
@@ -32,6 +33,8 @@ class RequestGetUser {
   int get hashCode => Object.hashAll([user]);
 }
 
+/// class memberes
+
 class GetUserUser {
   final String id;
 
@@ -41,6 +44,7 @@ class GetUserUser {
 
   final int? age;
 
+  // keywordargs constructor
   GetUserUser({
     required this.id,
 
