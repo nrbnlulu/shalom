@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-use log::warn;
+use log::{trace, warn};
 use serde::Serialize;
 
 use super::types::{FullPathName, Selection, SharedObjectSelection};
