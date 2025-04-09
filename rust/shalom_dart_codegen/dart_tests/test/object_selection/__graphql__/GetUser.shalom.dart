@@ -6,6 +6,7 @@ class
     RequestGetUser
 {
 
+<<<<<<< HEAD
     /// class memberes
     
         
@@ -50,6 +51,20 @@ class
         user: user_value,
     
     );
+=======
+  final GetUserUser? user;
+
+  // keywordargs constructor
+
+  RequestGetUser({this.user});
+  static RequestGetUser fromJson(Map<String, dynamic> data) {
+    final GetUserUser? user_value;
+    final Map<String, dynamic>? user_raw = data['user'];
+    if (user_raw != null) {
+      user_value = GetUserUser.fromJson(user_raw);
+    } else {
+      user_value = null;
+>>>>>>> refs/remotes/DanielLacina/objects_selection
     }
     
     RequestGetUser

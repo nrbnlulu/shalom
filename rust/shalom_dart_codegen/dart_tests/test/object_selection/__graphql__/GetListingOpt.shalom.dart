@@ -6,6 +6,7 @@ class
     RequestGetListingOpt
 {
 
+<<<<<<< HEAD
     /// class memberes
     
         
@@ -49,6 +50,104 @@ class
         
         listingOpt: listingOpt_value,
     
+=======
+  final GetListingOptListingOpt? listingOpt;
+
+  // keywordargs constructor
+
+  RequestGetListingOpt({this.listingOpt});
+  static RequestGetListingOpt fromJson(Map<String, dynamic> data) {
+    final GetListingOptListingOpt? listingOpt_value;
+    final Map<String, dynamic>? listingOpt_raw = data['listingOpt'];
+    if (listingOpt_raw != null) {
+      listingOpt_value = GetListingOptListingOpt.fromJson(listingOpt_raw);
+    } else {
+      listingOpt_value = null;
+    }
+
+    return RequestGetListingOpt(listingOpt: listingOpt_value);
+  }
+
+  RequestGetListingOpt updateWithJson(Map<String, dynamic> data) {
+    final GetListingOptListingOpt? listingOpt_value;
+    if (data.containsKey('listingOpt')) {
+      final Map<String, dynamic>? listingOpt_raw = data['listingOpt'];
+      if (listingOpt_raw != null) {
+        listingOpt_value = GetListingOptListingOpt.fromJson(listingOpt_raw);
+      } else {
+        listingOpt_value = null;
+      }
+    } else {
+      listingOpt_value = listingOpt;
+    }
+
+    return RequestGetListingOpt(listingOpt: listingOpt_value);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is RequestGetListingOpt &&
+            other.listingOpt == listingOpt &&
+            true);
+  }
+
+  @override
+  int get hashCode => listingOpt.hashCode;
+
+  Map<String, dynamic> toJson() {
+    return {'listingOpt': listingOpt?.toJson()};
+  }
+}
+
+class GetListingOptListingOpt {
+  /// class memberes
+
+  final String id;
+
+  final String name;
+
+  final int? price;
+
+  final GetListingOptUser? user;
+
+  // keywordargs constructor
+  GetListingOptListingOpt({
+    required this.id,
+
+    required this.name,
+
+    this.price,
+
+    this.user,
+  });
+  static GetListingOptListingOpt fromJson(Map<String, dynamic> data) {
+    final String id_value;
+    id_value = data['id'] as String;
+
+    final String name_value;
+    name_value = data['name'] as String;
+
+    final int? price_value;
+    price_value = data['price'] as int?;
+
+    final GetListingOptUser? user_value;
+    final Map<String, dynamic>? user_raw = data['user'];
+    if (user_raw != null) {
+      user_value = GetListingOptUser.fromJson(user_raw);
+    } else {
+      user_value = null;
+    }
+
+    return GetListingOptListingOpt(
+      id: id_value,
+
+      name: name_value,
+
+      price: price_value,
+
+      user: user_value,
+>>>>>>> refs/remotes/DanielLacina/objects_selection
     );
     }
     
