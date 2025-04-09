@@ -8,7 +8,6 @@ class RequestGetBoolean {
   // keywordargs constructor
 
   RequestGetBoolean({required this.boolean});
-
   static RequestGetBoolean fromJson(Map<String, dynamic> data) {
     final bool boolean_value;
     boolean_value = data['boolean'] as bool;

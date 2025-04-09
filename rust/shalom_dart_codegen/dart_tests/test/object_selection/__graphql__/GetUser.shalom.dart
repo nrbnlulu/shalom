@@ -8,7 +8,6 @@ class RequestGetUser {
   // keywordargs constructor
 
   RequestGetUser({this.user});
-
   static RequestGetUser fromJson(Map<String, dynamic> data) {
     final GetUserUser? user_value;
     if (data['user'] != null) {
@@ -70,7 +69,6 @@ class GetUserUser {
 
     this.age,
   });
-
   static GetUserUser fromJson(Map<String, dynamic> data) {
     final String id_value;
     id_value = data['id'] as String;

@@ -8,7 +8,6 @@ class RequestGetListing {
   // keywordargs constructor
 
   RequestGetListing({required this.listing});
-
   static RequestGetListing fromJson(Map<String, dynamic> data) {
     final GetListingListing listing_value;
     if (data['listing'] != null) {
@@ -74,7 +73,6 @@ class GetListingListing {
 
     this.user,
   });
-
   static GetListingListing fromJson(Map<String, dynamic> data) {
     final String id_value;
     id_value = data['id'] as String;
@@ -179,7 +177,6 @@ class GetListingUser {
 
   // keywordargs constructor
   GetListingUser({required this.name, required this.email});
-
   static GetListingUser fromJson(Map<String, dynamic> data) {
     final String name_value;
     name_value = data['name'] as String;

@@ -8,7 +8,6 @@ class RequestGetIDOptional {
   // keywordargs constructor
 
   RequestGetIDOptional({this.idOptional});
-
   static RequestGetIDOptional fromJson(Map<String, dynamic> data) {
     final String? idOptional_value;
     idOptional_value = data['idOptional'] as String?;

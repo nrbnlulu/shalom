@@ -8,7 +8,6 @@ class RequestGetStringOptional {
   // keywordargs constructor
 
   RequestGetStringOptional({this.stringOptional});
-
   static RequestGetStringOptional fromJson(Map<String, dynamic> data) {
     final String? stringOptional_value;
     stringOptional_value = data['stringOptional'] as String?;

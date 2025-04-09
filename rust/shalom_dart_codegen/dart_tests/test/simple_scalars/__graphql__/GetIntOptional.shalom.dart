@@ -8,7 +8,6 @@ class RequestGetIntOptional {
   // keywordargs constructor
 
   RequestGetIntOptional({this.intOptional});
-
   static RequestGetIntOptional fromJson(Map<String, dynamic> data) {
     final int? intOptional_value;
     intOptional_value = data['intOptional'] as int?;

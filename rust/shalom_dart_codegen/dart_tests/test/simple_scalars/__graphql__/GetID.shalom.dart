@@ -8,7 +8,6 @@ class RequestGetID {
   // keywordargs constructor
 
   RequestGetID({required this.id});
-
   static RequestGetID fromJson(Map<String, dynamic> data) {
     final String id_value;
     id_value = data['id'] as String;

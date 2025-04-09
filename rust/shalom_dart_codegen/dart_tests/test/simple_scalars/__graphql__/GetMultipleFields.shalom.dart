@@ -10,7 +10,6 @@ class RequestGetMultipleFields {
   // keywordargs constructor
 
   RequestGetMultipleFields({required this.id, required this.intField});
-
   static RequestGetMultipleFields fromJson(Map<String, dynamic> data) {
     final String id_value;
     id_value = data['id'] as String;

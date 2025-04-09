@@ -8,7 +8,6 @@ class RequestGetBooleanOptional {
   // keywordargs constructor
 
   RequestGetBooleanOptional({this.booleanOptional});
-
   static RequestGetBooleanOptional fromJson(Map<String, dynamic> data) {
     final bool? booleanOptional_value;
     booleanOptional_value = data['booleanOptional'] as bool?;

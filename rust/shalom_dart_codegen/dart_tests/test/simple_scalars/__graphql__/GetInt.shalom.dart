@@ -8,7 +8,6 @@ class RequestGetInt {
   // keywordargs constructor
 
   RequestGetInt({required this.intField});
-
   static RequestGetInt fromJson(Map<String, dynamic> data) {
     final int intField_value;
     intField_value = data['intField'] as int;

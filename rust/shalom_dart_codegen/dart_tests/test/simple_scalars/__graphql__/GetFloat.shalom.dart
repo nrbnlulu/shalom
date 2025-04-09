@@ -8,7 +8,6 @@ class RequestGetFloat {
   // keywordargs constructor
 
   RequestGetFloat({required this.float});
-
   static RequestGetFloat fromJson(Map<String, dynamic> data) {
     final double float_value;
     float_value = data['float'] as double;

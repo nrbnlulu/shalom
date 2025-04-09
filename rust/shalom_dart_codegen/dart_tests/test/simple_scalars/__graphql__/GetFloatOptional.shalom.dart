@@ -8,7 +8,6 @@ class RequestGetFloatOptional {
   // keywordargs constructor
 
   RequestGetFloatOptional({this.floatOptional});
-
   static RequestGetFloatOptional fromJson(Map<String, dynamic> data) {
     final double? floatOptional_value;
     floatOptional_value = data['floatOptional'] as double?;

@@ -8,7 +8,6 @@ class RequestGetString {
   // keywordargs constructor
 
   RequestGetString({required this.string});
-
   static RequestGetString fromJson(Map<String, dynamic> data) {
     final String string_value;
     string_value = data['string'] as String;

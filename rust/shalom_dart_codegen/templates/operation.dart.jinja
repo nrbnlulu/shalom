@@ -121,9 +121,7 @@
         {% set selection_name = selection.selection_name %}
         '{{ selection_name }}':
         {% if selection.kind == "Object" %}
-            {{ selection_name }}
-            {% if selection.is_optional %}?{% endif %}
-            .toJson()
+            {{ selection_name }}{% if selection.is_optional %}?{% endif %}.toJson()
         {% elif selection.kind == "Scalar" %}
             {{ selection_name }}
         {% else %}

@@ -8,7 +8,6 @@ class RequestGetListingOpt {
   // keywordargs constructor
 
   RequestGetListingOpt({this.listingOpt});
-
   static RequestGetListingOpt fromJson(Map<String, dynamic> data) {
     final GetListingOptListingOpt? listingOpt_value;
     if (data['listingOpt'] != null) {
@@ -76,7 +75,6 @@ class GetListingOptListingOpt {
 
     this.user,
   });
-
   static GetListingOptListingOpt fromJson(Map<String, dynamic> data) {
     final String id_value;
     id_value = data['id'] as String;
@@ -181,7 +179,6 @@ class GetListingOptUser {
 
   // keywordargs constructor
   GetListingOptUser({required this.name, required this.email});
-
   static GetListingOptUser fromJson(Map<String, dynamic> data) {
     final String name_value;
     name_value = data['name'] as String;
