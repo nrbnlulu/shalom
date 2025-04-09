@@ -65,7 +65,7 @@
             {% else %}
                 {% set selection_typename = type_name_for_selection(selection) %}
             {% endif %}
-            {{ selection_name }}_value = {{ root_selection ~ selection_typename }}.fromJson({{ selection_name }}_raw as Map<String , dynamic>);
+            {{ selection_name }}_value = {{ root_selection ~ selection_typename }}.fromJson({{ selection_name }}_raw);
             } else {
             {% if not selection.is_optional %}
                 throw FormatException('{{ selection_name }} cannot be null');
