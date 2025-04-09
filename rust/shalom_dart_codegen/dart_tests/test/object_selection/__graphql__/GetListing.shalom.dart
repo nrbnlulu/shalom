@@ -10,10 +10,9 @@ class RequestGetListing {
   RequestGetListing({required this.listing});
   static RequestGetListing fromJson(Map<String, dynamic> data) {
     final GetListingListing listing_value;
-    if (data['listing'] != null) {
-      listing_value = GetListingListing.fromJson(
-        data['listing'] as Map<String, dynamic>,
-      );
+    final Map<String, dynamic>? listing_raw = data['listing'];
+    if (listing_raw != null) {
+      listing_value = GetListingListing.fromJson(listing_raw);
     } else {
       throw FormatException('listing cannot be null');
     }
@@ -83,10 +82,9 @@ class GetListingListing {
     price_value = data['price'] as int?;
 
     final GetListingUser? user_value;
-    if (data['user'] != null) {
-      user_value = GetListingUser.fromJson(
-        data['user'] as Map<String, dynamic>,
-      );
+    final Map<String, dynamic>? user_raw = data['user'];
+    if (user_raw != null) {
+      user_value = GetListingUser.fromJson(user_raw);
     } else {
       user_value = null;
     }

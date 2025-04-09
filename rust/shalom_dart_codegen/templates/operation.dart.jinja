@@ -7,9 +7,9 @@
             final {{ root_selection ~ type_name_for_selection(selection) }} {{ selection_name }};
         {% elif selection.kind == "Scalar" %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }};
+        {% else %}
+            throw NotImplemented();
         {% endif %}
-    {% else %}
-        throw NotImplemented();
     {% endfor %}
     // keywordargs constructor
     {{ typename }}({
@@ -24,13 +24,14 @@
         {% set selection_name = selection.selection_name %}
         {% if selection.kind == "Object" %}
             final {{ root_selection ~ type_name_for_selection(selection) }} {{ selection_name }}_value;
-            if (data['{{ selection_name }}'] != null) {
+            final Map<String, dynamic>? {{ selection_name }}_raw = data['{{ selection_name }}']; 
+            if ({{ selection_name }}_raw != null) {
             {% if selection.is_optional %}
                 {% set selection_typename = type_name_for_selection(selection)|replace("?", "") %}
             {% else %}
                 {% set selection_typename = type_name_for_selection(selection) %}
             {% endif %}
-            {{ selection_name }}_value = {{ root_selection ~ selection_typename }}.fromJson(data['{{ selection_name }}'] as Map<String , dynamic>);
+            {{ selection_name }}_value = {{ root_selection ~ selection_typename }}.fromJson({{ selection_name }}_raw);
             } else {
             {% if not selection.is_optional %}
                 throw FormatException('{{ selection_name }} cannot be null');
@@ -58,23 +59,23 @@
         {% if selection.kind == "Object" %}
             final {{ root_selection ~ type_name_for_selection(selection) }} {{ selection_name }}_value;
             if (data.containsKey('{{ selection_name }}')) {
-            final Map<String, dynamic>? {{ selection_name }}_raw = data['{{ selection_name }}'];
-            if ({{ selection_name }}_raw != null) {
-            {% if selection.is_optional %}
-                {% set selection_typename = type_name_for_selection(selection)|replace("?", "") %}
-            {% else %}
-                {% set selection_typename = type_name_for_selection(selection) %}
-            {% endif %}
-            {{ selection_name }}_value = {{ root_selection ~ selection_typename }}.fromJson({{ selection_name }}_raw);
+                final Map<String, dynamic>? {{ selection_name }}_raw = data['{{ selection_name }}'];
+                if ({{ selection_name }}_raw != null) {
+                    {% if selection.is_optional %}
+                        {% set selection_typename = type_name_for_selection(selection)|replace("?", "") %}
+                    {% else %}
+                        {% set selection_typename = type_name_for_selection(selection) %}
+                    {% endif %}
+                    {{ selection_name }}_value = {{ root_selection ~ selection_typename }}.fromJson({{ selection_name }}_raw);
+                } else { 
+                    {% if selection.is_optional %}
+                        {{ selection_name }}_value = null;
+                    {% else %}
+                        throw FormatException('{{ selection_name }} cannot be null');
+                    {% endif %}
+                }
             } else {
-            {% if not selection.is_optional %}
-                throw FormatException('{{ selection_name }} cannot be null');
-            {% else %}
-                {{ selection_name }}_value = null;
-            {% endif %}
-            }
-            } else {
-            {{ selection_name }}_value = {{ selection_name }};
+               {{ selection_name }}_value = {{ selection_name }};
             }
         {% elif selection.kind == "Scalar" %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
@@ -114,7 +115,7 @@
         {% endfor %}
         ]);
     {% else %}
-        {{(selections | first).selection_name}}.hashCode;
+        {{ (selections | first).selection_name }}.hashCode;
     {% endif %}
     Map<String , dynamic> toJson() {
     return {

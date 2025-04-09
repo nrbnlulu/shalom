@@ -10,8 +10,9 @@ class RequestGetUser {
   RequestGetUser({this.user});
   static RequestGetUser fromJson(Map<String, dynamic> data) {
     final GetUserUser? user_value;
-    if (data['user'] != null) {
-      user_value = GetUserUser.fromJson(data['user'] as Map<String, dynamic>);
+    final Map<String, dynamic>? user_raw = data['user'];
+    if (user_raw != null) {
+      user_value = GetUserUser.fromJson(user_raw);
     } else {
       user_value = null;
     }

@@ -10,10 +10,9 @@ class RequestGetListingOpt {
   RequestGetListingOpt({this.listingOpt});
   static RequestGetListingOpt fromJson(Map<String, dynamic> data) {
     final GetListingOptListingOpt? listingOpt_value;
-    if (data['listingOpt'] != null) {
-      listingOpt_value = GetListingOptListingOpt.fromJson(
-        data['listingOpt'] as Map<String, dynamic>,
-      );
+    final Map<String, dynamic>? listingOpt_raw = data['listingOpt'];
+    if (listingOpt_raw != null) {
+      listingOpt_value = GetListingOptListingOpt.fromJson(listingOpt_raw);
     } else {
       listingOpt_value = null;
     }
@@ -85,10 +84,9 @@ class GetListingOptListingOpt {
     price_value = data['price'] as int?;
 
     final GetListingOptUser? user_value;
-    if (data['user'] != null) {
-      user_value = GetListingOptUser.fromJson(
-        data['user'] as Map<String, dynamic>,
-      );
+    final Map<String, dynamic>? user_raw = data['user'];
+    if (user_raw != null) {
+      user_value = GetListingOptUser.fromJson(user_raw);
     } else {
       user_value = null;
     }
