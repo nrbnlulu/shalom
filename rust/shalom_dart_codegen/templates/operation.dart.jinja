@@ -58,13 +58,14 @@
         {% if selection.kind == "Object" %}
             final {{ root_selection ~ type_name_for_selection(selection) }} {{ selection_name }}_value;
             if (data.containsKey('{{ selection_name }}')) {
-            if (data['{{ selection_name }}'] != null) {
+            final Map<String, dynamic>? {{ selection_name }}_raw = data['{{ selection_name }}'];
+            if ({{ selection_name }}_raw != null) {
             {% if selection.is_optional %}
                 {% set selection_typename = type_name_for_selection(selection)|replace("?", "") %}
             {% else %}
                 {% set selection_typename = type_name_for_selection(selection) %}
             {% endif %}
-            {{ selection_name }}_value = {{ root_selection ~ selection_typename }}.fromJson(data['{{ selection_name }}'] as Map<String , dynamic>);
+            {{ selection_name }}_value = {{ root_selection ~ selection_typename }}.fromJson({{ selection_name }}_raw as Map<String , dynamic>);
             } else {
             {% if not selection.is_optional %}
                 throw FormatException('{{ selection_name }} cannot be null');
