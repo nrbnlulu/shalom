@@ -9,8 +9,7 @@ class RequestGetBooleanOptional {
 
   RequestGetBooleanOptional({this.booleanOptional});
   static RequestGetBooleanOptional fromJson(Map<String, dynamic> data) {
-    final bool? booleanOptional_value;
-    booleanOptional_value = data['booleanOptional'] as bool?;
+    final bool? booleanOptional_value = data['booleanOptional'];
 
     return RequestGetBooleanOptional(booleanOptional: booleanOptional_value);
   }
@@ -18,7 +17,7 @@ class RequestGetBooleanOptional {
   RequestGetBooleanOptional updateWithJson(Map<String, dynamic> data) {
     final bool? booleanOptional_value;
     if (data.containsKey('booleanOptional')) {
-      booleanOptional_value = data['booleanOptional'] as bool?;
+      booleanOptional_value = data['booleanOptional'];
     } else {
       booleanOptional_value = booleanOptional;
     }

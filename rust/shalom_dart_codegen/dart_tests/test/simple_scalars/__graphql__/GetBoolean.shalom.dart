@@ -9,8 +9,7 @@ class RequestGetBoolean {
 
   RequestGetBoolean({required this.boolean});
   static RequestGetBoolean fromJson(Map<String, dynamic> data) {
-    final bool boolean_value;
-    boolean_value = data['boolean'] as bool;
+    final bool boolean_value = data['boolean'];
 
     return RequestGetBoolean(boolean: boolean_value);
   }
@@ -18,7 +17,7 @@ class RequestGetBoolean {
   RequestGetBoolean updateWithJson(Map<String, dynamic> data) {
     final bool boolean_value;
     if (data.containsKey('boolean')) {
-      boolean_value = data['boolean'] as bool;
+      boolean_value = data['boolean'];
     } else {
       boolean_value = boolean;
     }

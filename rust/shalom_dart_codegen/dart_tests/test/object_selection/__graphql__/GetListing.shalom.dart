@@ -64,7 +64,6 @@ class GetListingListing {
   // keywordargs constructor
   GetListingListing({
     required this.id,
-
     required this.name,
 
     this.price,
@@ -72,14 +71,11 @@ class GetListingListing {
     this.user,
   });
   static GetListingListing fromJson(Map<String, dynamic> data) {
-    final String id_value;
-    id_value = data['id'] as String;
+    final String id_value = data['id'];
 
-    final String name_value;
-    name_value = data['name'] as String;
+    final String name_value = data['name'];
 
-    final int? price_value;
-    price_value = data['price'] as int?;
+    final int? price_value = data['price'];
 
     final GetListingUser? user_value;
     final Map<String, dynamic>? user_raw = data['user'];
@@ -103,21 +99,21 @@ class GetListingListing {
   GetListingListing updateWithJson(Map<String, dynamic> data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data['id'] as String;
+      id_value = data['id'];
     } else {
       id_value = id;
     }
 
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'] as String;
+      name_value = data['name'];
     } else {
       name_value = name;
     }
 
     final int? price_value;
     if (data.containsKey('price')) {
-      price_value = data['price'] as int?;
+      price_value = data['price'];
     } else {
       price_value = price;
     }
@@ -174,11 +170,9 @@ class GetListingUser {
   // keywordargs constructor
   GetListingUser({required this.name, required this.email});
   static GetListingUser fromJson(Map<String, dynamic> data) {
-    final String name_value;
-    name_value = data['name'] as String;
+    final String name_value = data['name'];
 
-    final String email_value;
-    email_value = data['email'] as String;
+    final String email_value = data['email'];
 
     return GetListingUser(name: name_value, email: email_value);
   }
@@ -186,14 +180,14 @@ class GetListingUser {
   GetListingUser updateWithJson(Map<String, dynamic> data) {
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'] as String;
+      name_value = data['name'];
     } else {
       name_value = name;
     }
 
     final String email_value;
     if (data.containsKey('email')) {
-      email_value = data['email'] as String;
+      email_value = data['email'];
     } else {
       email_value = email;
     }

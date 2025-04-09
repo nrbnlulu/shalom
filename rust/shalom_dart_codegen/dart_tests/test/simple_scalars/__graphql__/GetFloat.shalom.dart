@@ -9,8 +9,7 @@ class RequestGetFloat {
 
   RequestGetFloat({required this.float});
   static RequestGetFloat fromJson(Map<String, dynamic> data) {
-    final double float_value;
-    float_value = data['float'] as double;
+    final double float_value = data['float'];
 
     return RequestGetFloat(float: float_value);
   }
@@ -18,7 +17,7 @@ class RequestGetFloat {
   RequestGetFloat updateWithJson(Map<String, dynamic> data) {
     final double float_value;
     if (data.containsKey('float')) {
-      float_value = data['float'] as double;
+      float_value = data['float'];
     } else {
       float_value = float;
     }

@@ -9,8 +9,7 @@ class RequestGetIntOptional {
 
   RequestGetIntOptional({this.intOptional});
   static RequestGetIntOptional fromJson(Map<String, dynamic> data) {
-    final int? intOptional_value;
-    intOptional_value = data['intOptional'] as int?;
+    final int? intOptional_value = data['intOptional'];
 
     return RequestGetIntOptional(intOptional: intOptional_value);
   }
@@ -18,7 +17,7 @@ class RequestGetIntOptional {
   RequestGetIntOptional updateWithJson(Map<String, dynamic> data) {
     final int? intOptional_value;
     if (data.containsKey('intOptional')) {
-      intOptional_value = data['intOptional'] as int?;
+      intOptional_value = data['intOptional'];
     } else {
       intOptional_value = intOptional;
     }

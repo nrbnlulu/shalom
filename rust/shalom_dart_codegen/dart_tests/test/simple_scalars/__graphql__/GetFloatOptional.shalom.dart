@@ -9,8 +9,7 @@ class RequestGetFloatOptional {
 
   RequestGetFloatOptional({this.floatOptional});
   static RequestGetFloatOptional fromJson(Map<String, dynamic> data) {
-    final double? floatOptional_value;
-    floatOptional_value = data['floatOptional'] as double?;
+    final double? floatOptional_value = data['floatOptional'];
 
     return RequestGetFloatOptional(floatOptional: floatOptional_value);
   }
@@ -18,7 +17,7 @@ class RequestGetFloatOptional {
   RequestGetFloatOptional updateWithJson(Map<String, dynamic> data) {
     final double? floatOptional_value;
     if (data.containsKey('floatOptional')) {
-      floatOptional_value = data['floatOptional'] as double?;
+      floatOptional_value = data['floatOptional'];
     } else {
       floatOptional_value = floatOptional;
     }

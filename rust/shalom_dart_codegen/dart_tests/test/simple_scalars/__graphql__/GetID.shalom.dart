@@ -9,8 +9,7 @@ class RequestGetID {
 
   RequestGetID({required this.id});
   static RequestGetID fromJson(Map<String, dynamic> data) {
-    final String id_value;
-    id_value = data['id'] as String;
+    final String id_value = data['id'];
 
     return RequestGetID(id: id_value);
   }
@@ -18,7 +17,7 @@ class RequestGetID {
   RequestGetID updateWithJson(Map<String, dynamic> data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data['id'] as String;
+      id_value = data['id'];
     } else {
       id_value = id;
     }

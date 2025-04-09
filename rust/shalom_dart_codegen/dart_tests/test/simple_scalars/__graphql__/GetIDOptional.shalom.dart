@@ -9,8 +9,7 @@ class RequestGetIDOptional {
 
   RequestGetIDOptional({this.idOptional});
   static RequestGetIDOptional fromJson(Map<String, dynamic> data) {
-    final String? idOptional_value;
-    idOptional_value = data['idOptional'] as String?;
+    final String? idOptional_value = data['idOptional'];
 
     return RequestGetIDOptional(idOptional: idOptional_value);
   }
@@ -18,7 +17,7 @@ class RequestGetIDOptional {
   RequestGetIDOptional updateWithJson(Map<String, dynamic> data) {
     final String? idOptional_value;
     if (data.containsKey('idOptional')) {
-      idOptional_value = data['idOptional'] as String?;
+      idOptional_value = data['idOptional'];
     } else {
       idOptional_value = idOptional;
     }

@@ -9,8 +9,7 @@ class RequestGetString {
 
   RequestGetString({required this.string});
   static RequestGetString fromJson(Map<String, dynamic> data) {
-    final String string_value;
-    string_value = data['string'] as String;
+    final String string_value = data['string'];
 
     return RequestGetString(string: string_value);
   }
@@ -18,7 +17,7 @@ class RequestGetString {
   RequestGetString updateWithJson(Map<String, dynamic> data) {
     final String string_value;
     if (data.containsKey('string')) {
-      string_value = data['string'] as String;
+      string_value = data['string'];
     } else {
       string_value = string;
     }

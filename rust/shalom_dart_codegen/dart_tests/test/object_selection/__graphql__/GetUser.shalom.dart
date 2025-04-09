@@ -64,25 +64,19 @@ class GetUserUser {
   // keywordargs constructor
   GetUserUser({
     required this.id,
-
     required this.name,
-
     required this.email,
 
     this.age,
   });
   static GetUserUser fromJson(Map<String, dynamic> data) {
-    final String id_value;
-    id_value = data['id'] as String;
+    final String id_value = data['id'];
 
-    final String name_value;
-    name_value = data['name'] as String;
+    final String name_value = data['name'];
 
-    final String email_value;
-    email_value = data['email'] as String;
+    final String email_value = data['email'];
 
-    final int? age_value;
-    age_value = data['age'] as int?;
+    final int? age_value = data['age'];
 
     return GetUserUser(
       id: id_value,
@@ -98,28 +92,28 @@ class GetUserUser {
   GetUserUser updateWithJson(Map<String, dynamic> data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data['id'] as String;
+      id_value = data['id'];
     } else {
       id_value = id;
     }
 
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'] as String;
+      name_value = data['name'];
     } else {
       name_value = name;
     }
 
     final String email_value;
     if (data.containsKey('email')) {
-      email_value = data['email'] as String;
+      email_value = data['email'];
     } else {
       email_value = email;
     }
 
     final int? age_value;
     if (data.containsKey('age')) {
-      age_value = data['age'] as int?;
+      age_value = data['age'];
     } else {
       age_value = age;
     }

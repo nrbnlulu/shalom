@@ -11,11 +11,9 @@ class RequestGetMultipleFields {
 
   RequestGetMultipleFields({required this.id, required this.intField});
   static RequestGetMultipleFields fromJson(Map<String, dynamic> data) {
-    final String id_value;
-    id_value = data['id'] as String;
+    final String id_value = data['id'];
 
-    final int intField_value;
-    intField_value = data['intField'] as int;
+    final int intField_value = data['intField'];
 
     return RequestGetMultipleFields(id: id_value, intField: intField_value);
   }
@@ -23,14 +21,14 @@ class RequestGetMultipleFields {
   RequestGetMultipleFields updateWithJson(Map<String, dynamic> data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data['id'] as String;
+      id_value = data['id'];
     } else {
       id_value = id;
     }
 
     final int intField_value;
     if (data.containsKey('intField')) {
-      intField_value = data['intField'] as int;
+      intField_value = data['intField'];
     } else {
       intField_value = intField;
     }

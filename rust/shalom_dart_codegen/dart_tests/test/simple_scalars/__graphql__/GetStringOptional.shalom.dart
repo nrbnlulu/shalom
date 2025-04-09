@@ -9,8 +9,7 @@ class RequestGetStringOptional {
 
   RequestGetStringOptional({this.stringOptional});
   static RequestGetStringOptional fromJson(Map<String, dynamic> data) {
-    final String? stringOptional_value;
-    stringOptional_value = data['stringOptional'] as String?;
+    final String? stringOptional_value = data['stringOptional'];
 
     return RequestGetStringOptional(stringOptional: stringOptional_value);
   }
@@ -18,7 +17,7 @@ class RequestGetStringOptional {
   RequestGetStringOptional updateWithJson(Map<String, dynamic> data) {
     final String? stringOptional_value;
     if (data.containsKey('stringOptional')) {
-      stringOptional_value = data['stringOptional'] as String?;
+      stringOptional_value = data['stringOptional'];
     } else {
       stringOptional_value = stringOptional;
     }

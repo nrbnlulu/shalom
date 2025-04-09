@@ -9,8 +9,7 @@ class RequestGetInt {
 
   RequestGetInt({required this.intField});
   static RequestGetInt fromJson(Map<String, dynamic> data) {
-    final int intField_value;
-    intField_value = data['intField'] as int;
+    final int intField_value = data['intField'];
 
     return RequestGetInt(intField: intField_value);
   }
@@ -18,7 +17,7 @@ class RequestGetInt {
   RequestGetInt updateWithJson(Map<String, dynamic> data) {
     final int intField_value;
     if (data.containsKey('intField')) {
-      intField_value = data['intField'] as int;
+      intField_value = data['intField'];
     } else {
       intField_value = intField;
     }
