@@ -35,7 +35,7 @@ void main() {
     });
     test("update", () {
       final initial = RequestGetUser(
-        user: GetUserUser(
+        user: GetUser_user(
           id: "foo",
           name: "jacob",
           email: "jacob@gamil.com",
@@ -115,11 +115,11 @@ void main() {
 
     test("update - listing required", () {
       final initial = RequestGetListing(
-        listing: GetListingListing(
+        listing: GetListing_listing(
           id: "foo",
           name: "video games",
           price: 100,
-          user: GetListingUser(name: "jacob", email: "jacob@gmail.com"),
+          user: GetListing_listing_user(name: "jacob", email: "jacob@gmail.com"),
         ),
       );
 
@@ -141,11 +141,11 @@ void main() {
 
     test("update - listing optional", () {
       final initial = RequestGetListingOpt(
-        listingOpt: GetListingOptListingOpt(
+        listingOpt: GetListingOpt_listingOpt(
           id: "foo",
           name: "video games",
           price: 100,
-          user: GetListingOptUser(name: "jacob", email: "jacob@gmail.com"),
+          user: GetListingOpt_listingOpt_user(name: "jacob", email: "jacob@gmail.com"),
         ),
       );
 
@@ -202,11 +202,11 @@ void main() {
 
     test("update - listing optional", () {
       final initial = RequestGetListingOpt(
-        listingOpt: GetListingOptListingOpt(
+        listingOpt: GetListingOpt_listingOpt(
           id: "foo",
           name: "video games",
           price: 99,
-          user: GetListingOptUser(name: "jacob", email: "jacob@gmail.com"),
+          user: GetListingOpt_listingOpt_user(name: "jacob", email: "jacob@gmail.com"),
         ),
       );
 
@@ -218,11 +218,11 @@ void main() {
 
     test("update - listing required", () {
       final initial = RequestGetListing(
-        listing: GetListingListing(
+        listing: GetListing_listing(
           id: "foo",
           name: "video games",
           price: 99,
-          user: GetListingUser(name: "jacob", email: "jacob@gmail.com"),
+          user: GetListing_listing_user(name: "jacob", email: "jacob@gmail.com"),
         ),
       );
 

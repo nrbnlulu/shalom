@@ -17,7 +17,7 @@ use super::types::{
 
 fn full_path_name(this_name: &String, parent: &Option<&Selection>) -> String {
     match parent {
-        Some(parent) => format!("{}__{}", parent.self_full_path_name(), this_name),
+        Some(parent) => format!("{}_{}", parent.self_full_path_name(), this_name),
         None => this_name.clone(),
     }
 }

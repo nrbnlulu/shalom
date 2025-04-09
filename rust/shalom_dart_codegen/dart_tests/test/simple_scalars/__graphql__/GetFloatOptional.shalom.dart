@@ -1,4 +1,5 @@
 // ignore_for_file: non_constant_identifier_names
+typedef JsonObject = Map<String, dynamic>;
 
 class RequestGetFloatOptional {
   /// class memberes
