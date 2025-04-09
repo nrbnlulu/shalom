@@ -7,6 +7,19 @@ query GetUser {
   }
 }
 
+query GetListingOpt {
+   listingOpt {
+    id 
+    name
+    price
+    user {
+       name,
+       email
+    }
+   }
+}
+
+
 query GetListing {
    listing {
     id 
@@ -18,4 +31,3 @@ query GetListing {
     }
    }
 }
-

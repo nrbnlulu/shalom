@@ -1,35 +1,112 @@
+
+
 // ignore_for_file: non_constant_identifier_names
 
-class RequestGetBoolean {
-  /// class memberes
 
-  final bool boolean;
 
-  // keywordargs constructor
+class 
+RequestGetBoolean
+{
 
-  RequestGetBoolean({required this.boolean});
 
-  static RequestGetBoolean fromJson(Map<String, dynamic> data) {
-    return RequestGetBoolean(boolean: data['boolean'] as bool);
-  }
+/// class memberes
 
-  RequestGetBoolean updateWithJson(Map<String, dynamic> data) {
-    return RequestGetBoolean(
-      boolean:
-          data.containsKey('boolean') ? data['boolean'] as bool : this.boolean,
+
+
+final bool boolean;
+
+
+
+// keywordargs constructor
+
+RequestGetBoolean
+({
+   
+   
+   required this.boolean,
+    
+});
+
+
+static 
+RequestGetBoolean
+ fromJson(Map<String, dynamic> data) {
+    
+    
+    
+      final bool boolean_value;
+      boolean_value = data['boolean'] as bool;
+    
+     
+    return 
+RequestGetBoolean
+(
+    
+    
+    boolean: boolean_value,
+    
     );
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is RequestGetBoolean && other.boolean == boolean && true);
-  }
-
-  @override
-  int get hashCode => Object.hashAll([boolean]);
-
-  Map<String, dynamic> toJson() {
-    return {'boolean': boolean};
-  }
 }
+
+
+
+RequestGetBoolean
+ updateWithJson(Map<String, dynamic> data) {
+      
+        
+        
+        final bool boolean_value;
+        if (data.containsKey('boolean')) {
+            boolean_value = data['boolean'] as bool;
+        } else {
+            boolean_value = this.boolean;
+        }
+      
+      
+      return 
+RequestGetBoolean
+(
+      
+      
+      boolean: boolean_value,
+      
+      );
+}
+
+@override
+bool operator ==(Object other) { 
+    return identical(this, other) ||
+    (other is 
+RequestGetBoolean
+ &&
+        
+        
+        other.boolean == boolean &&
+        
+        true);
+}        
+
+@override
+  int get hashCode => 
+    
+   boolean.hashCode; 
+  
+
+ Map<String, dynamic> toJson() {
+
+    return { 
+     
+    'boolean': 
+      boolean
+    ,
+    
+    };
+ }
+
+
+}
+
+
+
+
+    

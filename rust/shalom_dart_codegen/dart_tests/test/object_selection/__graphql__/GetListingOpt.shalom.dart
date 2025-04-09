@@ -5,7 +5,7 @@
 
 
 class 
-RequestGetListing
+RequestGetListingOpt
 {
 
 
@@ -13,74 +13,74 @@ RequestGetListing
 
 
 
-  final GetListingListing listing;
+  final GetListingOptListingOpt? listingOpt;
 
 
 
 // keywordargs constructor
 
-RequestGetListing
+RequestGetListingOpt
 ({
    
    
-   required this.listing,
+   this.listingOpt,
     
 });
 
 
 static 
-RequestGetListing
+RequestGetListingOpt
  fromJson(Map<String, dynamic> data) {
     
     
     
-     final GetListingListing listing_value;
-     if (data['listing'] != null) {
-          listing_value = GetListingListing.fromJson(data['listing'] as Map<String, dynamic>);
+     final GetListingOptListingOpt? listingOpt_value;
+     if (data['listingOpt'] != null) {
+          listingOpt_value = GetListingOptListingOpt?.fromJson(data['listingOpt'] as Map<String, dynamic>);
       } else {
         
-        throw FormatException('listing cannot be null');
+        listingOpt_value = null;
         
       }
     
      
     return 
-RequestGetListing
+RequestGetListingOpt
 (
     
     
-    listing: listing_value,
+    listingOpt: listingOpt_value,
     
     );
 }
 
 
 
-RequestGetListing
+RequestGetListingOpt
  updateWithJson(Map<String, dynamic> data) {
       
         
         
-         final GetListingListing listing_value;
-         if (data.containsKey('listing')) {
-             if (data['listing'] != null) {
-                listing_value = GetListingListing.fromJson(data['listing'] as Map<String, dynamic>);
+         final GetListingOptListingOpt? listingOpt_value;
+         if (data.containsKey('listingOpt')) {
+             if (data['listingOpt'] != null) {
+                listingOpt_value = GetListingOptListingOpt?.fromJson(data['listingOpt'] as Map<String, dynamic>);
             } else {
               
-              throw FormatException('listing cannot be null');
+              listingOpt_value = null;
               
             }
         } else {
-            listing_value = this.listing;
+            listingOpt_value = this.listingOpt;
         } 
       
       
       return 
-RequestGetListing
+RequestGetListingOpt
 (
       
       
-      listing: listing_value,
+      listingOpt: listingOpt_value,
       
       );
 }
@@ -89,11 +89,11 @@ RequestGetListing
 bool operator ==(Object other) { 
     return identical(this, other) ||
     (other is 
-RequestGetListing
+RequestGetListingOpt
  &&
         
         
-        other.listing == listing &&
+        other.listingOpt == listingOpt &&
         
         true);
 }        
@@ -101,15 +101,15 @@ RequestGetListing
 @override
   int get hashCode => 
     
-   listing.hashCode; 
+   listingOpt.hashCode; 
   
 
  Map<String, dynamic> toJson() {
 
     return { 
      
-    'listing': 
-      listing?.toJson()
+    'listingOpt': 
+      listingOpt?.toJson()
     ,
     
     };
@@ -122,10 +122,10 @@ RequestGetListing
 
 
     
-          
+        
            
         
-        class GetListingListing  {
+        class GetListingOptListingOpt  {
         
 /// class memberes
 
@@ -146,12 +146,12 @@ final int? price;
 
 
 
-  final GetListingUser? user;
+  final GetListingOptUser? user;
 
 
 
 // keywordargs constructor
-GetListingListing({
+GetListingOptListingOpt({
    
    
    required this.id,
@@ -168,7 +168,7 @@ GetListingListing({
 });
 
 
-static GetListingListing fromJson(Map<String, dynamic> data) {
+static GetListingOptListingOpt fromJson(Map<String, dynamic> data) {
     
     
     
@@ -190,9 +190,9 @@ static GetListingListing fromJson(Map<String, dynamic> data) {
     
     
     
-     final GetListingUser? user_value;
+     final GetListingOptUser? user_value;
      if (data['user'] != null) {
-          user_value = GetListingUser?.fromJson(data['user'] as Map<String, dynamic>);
+          user_value = GetListingOptUser?.fromJson(data['user'] as Map<String, dynamic>);
       } else {
         
         user_value = null;
@@ -200,7 +200,7 @@ static GetListingListing fromJson(Map<String, dynamic> data) {
       }
     
      
-    return GetListingListing(
+    return GetListingOptListingOpt(
     
     
     id: id_value,
@@ -218,7 +218,7 @@ static GetListingListing fromJson(Map<String, dynamic> data) {
 }
 
 
-GetListingListing updateWithJson(Map<String, dynamic> data) {
+GetListingOptListingOpt updateWithJson(Map<String, dynamic> data) {
       
         
         
@@ -252,10 +252,10 @@ GetListingListing updateWithJson(Map<String, dynamic> data) {
       
         
         
-         final GetListingUser? user_value;
+         final GetListingOptUser? user_value;
          if (data.containsKey('user')) {
              if (data['user'] != null) {
-                user_value = GetListingUser?.fromJson(data['user'] as Map<String, dynamic>);
+                user_value = GetListingOptUser?.fromJson(data['user'] as Map<String, dynamic>);
             } else {
               
               user_value = null;
@@ -266,7 +266,7 @@ GetListingListing updateWithJson(Map<String, dynamic> data) {
         } 
       
       
-      return GetListingListing(
+      return GetListingOptListingOpt(
       
       
       id: id_value,
@@ -286,7 +286,7 @@ GetListingListing updateWithJson(Map<String, dynamic> data) {
 @override
 bool operator ==(Object other) { 
     return identical(this, other) ||
-    (other is GetListingListing &&
+    (other is GetListingOptListingOpt &&
         
         
         other.id == id &&
@@ -356,7 +356,7 @@ bool operator ==(Object other) {
         
            
         
-        class GetListingUser  {
+        class GetListingOptUser  {
         
 /// class memberes
 
@@ -372,7 +372,7 @@ final String email;
 
 
 // keywordargs constructor
-GetListingUser({
+GetListingOptUser({
    
    
    required this.name,
@@ -383,7 +383,7 @@ GetListingUser({
 });
 
 
-static GetListingUser fromJson(Map<String, dynamic> data) {
+static GetListingOptUser fromJson(Map<String, dynamic> data) {
     
     
     
@@ -397,7 +397,7 @@ static GetListingUser fromJson(Map<String, dynamic> data) {
       email_value = data['email'] as String;
     
      
-    return GetListingUser(
+    return GetListingOptUser(
     
     
     name: name_value,
@@ -409,7 +409,7 @@ static GetListingUser fromJson(Map<String, dynamic> data) {
 }
 
 
-GetListingUser updateWithJson(Map<String, dynamic> data) {
+GetListingOptUser updateWithJson(Map<String, dynamic> data) {
       
         
         
@@ -431,7 +431,7 @@ GetListingUser updateWithJson(Map<String, dynamic> data) {
         }
       
       
-      return GetListingUser(
+      return GetListingOptUser(
       
       
       name: name_value,
@@ -445,7 +445,7 @@ GetListingUser updateWithJson(Map<String, dynamic> data) {
 @override
 bool operator ==(Object other) { 
     return identical(this, other) ||
-    (other is GetListingUser &&
+    (other is GetListingOptUser &&
         
         
         other.name == name &&

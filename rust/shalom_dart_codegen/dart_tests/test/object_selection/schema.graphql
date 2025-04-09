@@ -1,6 +1,7 @@
 type Query {
   user: User,
-  listing: Listing
+  listing: Listing!,
+  listingOpt: Listing
 }
 
 type User {

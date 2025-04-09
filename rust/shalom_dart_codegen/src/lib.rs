@@ -42,8 +42,13 @@ fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
         Selection::Object(object) => {
             let mut name: Vec<char> = object.common.selection_name.clone().chars().collect();
             name[0] = name[0].to_uppercase().next().unwrap();
+            let name = name.into_iter().collect();
+            if object.common.is_optional {
+                format!("{}?", name)
+            } else {
+                name
+            }
 
-            name.into_iter().collect()
         }
     }
 }
