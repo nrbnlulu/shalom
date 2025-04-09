@@ -48,7 +48,6 @@ fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
             } else {
                 name
             }
-
         }
     }
 }

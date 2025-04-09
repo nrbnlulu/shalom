@@ -113,7 +113,6 @@ void main() {
       expect(json, data);
     });
 
-
     test("update - listing required", () {
       final initial = RequestGetListing(
         listing: GetListingListing(
@@ -165,36 +164,40 @@ void main() {
       expect(updated.listingOpt?.user?.name, "evan");
       expect(initial, isNot(equals(updated)));
     });
- });
+  });
 
   group('Test query nested object fields with null values', () {
-   test('deserialize - listing optional', () {
-      final json = {
-        "listingOpt": null
-      };
-      final result = RequestGetListingOpt.fromJson(json as Map<String, dynamic>);
+    test('deserialize - listing optional', () {
+      final json = {"listingOpt": null};
+      final result = RequestGetListingOpt.fromJson(
+        json as Map<String, dynamic>,
+      );
       expect(result.listingOpt, null);
     });
 
     test('deserialize - listing required', () {
-      final json = {
-        "listing": null 
-      };
-      expect(() => RequestGetListing.fromJson(json as Map<String, dynamic>), throwsA(TypeMatcher<FormatException>()));
+      final json = {"listing": null};
+      expect(
+        () => RequestGetListing.fromJson(json as Map<String, dynamic>),
+        throwsA(TypeMatcher<FormatException>()),
+      );
     });
 
     test('serialize - listing optional', () {
-      final json = {
-          "listingOpt": null
-      };
-      final initial = RequestGetListingOpt.fromJson(json as Map<String, dynamic>);
+      final json = {"listingOpt": null};
+      final initial = RequestGetListingOpt.fromJson(
+        json as Map<String, dynamic>,
+      );
       final result = initial.toJson();
       expect(result, {"listingOpt": null});
     });
 
-     test('serialize - listing required', () {
+    test('serialize - listing required', () {
       final json = {"listing": null};
-      expect(() => RequestGetListing.fromJson(json), throwsA(TypeMatcher<FormatException>()));
+      expect(
+        () => RequestGetListing.fromJson(json),
+        throwsA(TypeMatcher<FormatException>()),
+      );
     });
 
     test("update - listing optional", () {
@@ -207,15 +210,13 @@ void main() {
         ),
       );
 
-      final updated = initial.updateWithJson({
-        "listingOpt": null 
-      });
+      final updated = initial.updateWithJson({"listingOpt": null});
 
       expect(updated.listingOpt, null);
       expect(initial, isNot(equals(updated)));
-  });
+    });
 
-  test("update - listing required", () {
+    test("update - listing required", () {
       final initial = RequestGetListing(
         listing: GetListingListing(
           id: "foo",
@@ -225,9 +226,10 @@ void main() {
         ),
       );
 
-      expect(() => initial.updateWithJson({
-        "listing": null 
-      }), throwsA(TypeMatcher<FormatException>()));
-  });
+      expect(
+        () => initial.updateWithJson({"listing": null}),
+        throwsA(TypeMatcher<FormatException>()),
+      );
+    });
   });
 }

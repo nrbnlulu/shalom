@@ -1,112 +1,44 @@
-
-
 // ignore_for_file: non_constant_identifier_names
 
+class RequestGetFloatOptional {
+  /// class memberes
 
+  final double? floatOptional;
 
-class 
-RequestGetFloatOptional
-{
+  // keywordargs constructor
 
+  RequestGetFloatOptional({this.floatOptional});
 
-/// class memberes
+  static RequestGetFloatOptional fromJson(Map<String, dynamic> data) {
+    final double? floatOptional_value;
+    floatOptional_value = data['floatOptional'] as double?;
 
+    return RequestGetFloatOptional(floatOptional: floatOptional_value);
+  }
 
-
-final double? floatOptional;
-
-
-
-// keywordargs constructor
-
-RequestGetFloatOptional
-({
-   
-   
-   this.floatOptional,
-    
-});
-
-
-static 
-RequestGetFloatOptional
- fromJson(Map<String, dynamic> data) {
-    
-    
-    
-      final double? floatOptional_value;
+  RequestGetFloatOptional updateWithJson(Map<String, dynamic> data) {
+    final double? floatOptional_value;
+    if (data.containsKey('floatOptional')) {
       floatOptional_value = data['floatOptional'] as double?;
-    
-     
-    return 
-RequestGetFloatOptional
-(
-    
-    
-    floatOptional: floatOptional_value,
-    
-    );
-}
+    } else {
+      floatOptional_value = floatOptional;
+    }
 
+    return RequestGetFloatOptional(floatOptional: floatOptional_value);
+  }
 
-
-RequestGetFloatOptional
- updateWithJson(Map<String, dynamic> data) {
-      
-        
-        
-        final double? floatOptional_value;
-        if (data.containsKey('floatOptional')) {
-            floatOptional_value = data['floatOptional'] as double?;
-        } else {
-            floatOptional_value = this.floatOptional;
-        }
-      
-      
-      return 
-RequestGetFloatOptional
-(
-      
-      
-      floatOptional: floatOptional_value,
-      
-      );
-}
-
-@override
-bool operator ==(Object other) { 
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is 
-RequestGetFloatOptional
- &&
-        
-        
-        other.floatOptional == floatOptional &&
-        
-        true);
-}        
+        (other is RequestGetFloatOptional &&
+            other.floatOptional == floatOptional &&
+            true);
+  }
 
-@override
-  int get hashCode => 
-    
-   floatOptional.hashCode; 
-  
+  @override
+  int get hashCode => floatOptional.hashCode;
 
- Map<String, dynamic> toJson() {
-
-    return { 
-     
-    'floatOptional': 
-      floatOptional
-    ,
-    
-    };
- }
-
-
+  Map<String, dynamic> toJson() {
+    return {'floatOptional': floatOptional};
+  }
 }
-
-
-
-
-    
