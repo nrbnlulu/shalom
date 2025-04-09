@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-use log::{trace, warn};
 use serde::Serialize;
 
 use super::types::{FullPathName, Selection, SharedObjectSelection};
@@ -36,17 +35,13 @@ impl OperationContext {
     }
 
     pub fn add_selection(&mut self, name: String, selection: Selection) {
-        self.type_defs.entry(name.clone()).or_insert_with(|| {
-            warn!("Duplicate type definition for {}", name);
-            selection
-        });
+        self.type_defs.entry(name.clone()).or_insert(selection);
     }
 
     pub fn add_object_selection(&mut self, name: String, object: SharedObjectSelection) {
-        self.type_defs.entry(name.clone()).or_insert_with(|| {
-            warn!("Duplicate type definition for {}", name);
-            Selection::Object(object)
-        });
+        self.type_defs
+            .entry(name.clone())
+            .or_insert(Selection::Object(object));
     }
 }
 

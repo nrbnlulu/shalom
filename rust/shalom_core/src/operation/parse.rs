@@ -23,7 +23,7 @@ fn full_path_name(this_name: &String, parent: &Option<&Selection>) -> String {
 }
 
 fn parse_object_selection(
-    parent: &Option<&Selection>,
+    #[allow(unused)] parent: &Option<&Selection>,
     op_ctx: &mut OperationContext,
     schema_ctx: &SharedSchemaContext,
     selection_common: SelectionCommon,
@@ -34,7 +34,8 @@ fn parse_object_selection(
     assert!(
         !selection_orig.selections.is_empty(),
         "Object selection must have at least one field\n \
-         selection was {:?}.", selection_orig
+         selection was {:?}.",
+        selection_orig
     );
     let obj = ObjectSelection::new(selection_common);
     let obj_as_selection = Selection::Object(obj.clone());
