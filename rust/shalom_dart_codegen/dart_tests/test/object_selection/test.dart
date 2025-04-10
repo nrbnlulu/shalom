@@ -83,10 +83,6 @@ void main() {
         expect(initial, isNot(updated));
       });
 
-      test("failthis", () {
-        assert(false, "this should fail");
-      });
-
       test('some to some', () {
         final initial = RequestGetListingOpt(
           listingOpt: GetListingOpt_listingOpt(
