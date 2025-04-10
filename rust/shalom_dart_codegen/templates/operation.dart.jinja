@@ -1,6 +1,6 @@
 {% set root_selection = operation.context.root_type.selection_name %}
 {% macro base_object_impl(typename, selections) %}
-    /// class memberes
+    /// class members
     {% for selection in selections -%}
         {% set selection_name = selection.selection_name %}
         {% if selection.kind == "Object" %}
