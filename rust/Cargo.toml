@@ -4,6 +4,7 @@ members = [
     "./shalom_dart_codegen",
     "./shalom_core",
 ]
+resolver = "2"
 
 [workspace.dependencies]
 anyhow = "1.0.86"
@@ -12,3 +13,4 @@ log = "0.4.27"
 serde = { version = "1.0", features = ["derive", "rc"] }
 serde_json = "1.0"
 minijinja = "2.1.1"
+glob = "0.3.2"

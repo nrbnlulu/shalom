@@ -1,6 +1,3 @@
-use std::collections::{HashMap, HashSet};
-use std::sync::Arc;
-
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{FieldDefinition, FieldType, GraphQLAny, ScalarType};
 use super::{types::ObjectType, utils::TypeRef};
@@ -8,6 +5,9 @@ use anyhow::Result;
 use apollo_compiler::{self};
 use apollo_compiler::{schema as apollo_schema, Node};
 use log::{debug, info};
+use std::collections::{HashMap, HashSet};
+use std::sync::Arc;
+
 const DEFAULT_SCALAR_TYPES: [(&str, &str); 8] = [
     ("String", "A UTF‐8 character sequence."),
     ("Int", "A signed 32‐bit integer."),
@@ -71,6 +71,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
 
     Ok(ctx)
 }
+
 #[allow(unused)]
 fn resolve_scalar(
     context: SharedSchemaContext,
@@ -160,14 +161,14 @@ mod tests {
         let ctx = resolve(&schema).unwrap();
 
         let object = ctx.get_type("Query");
-        assert_eq!(object.is_some(), true);
+        assert!(object.is_some());
         let obj = object.unwrap().object();
-        assert_eq!(obj.is_some(), true);
+        assert!(obj.is_some());
         let obj = obj.unwrap();
         assert_eq!(obj.name, "Query");
         assert_eq!(obj.fields.len(), 1);
         let field = obj.get_field("hello");
-        assert_eq!(field.is_some(), true);
+        assert!(field.is_some());
     }
     #[test]
     fn resolve_simple_field_types() {
@@ -185,14 +186,14 @@ mod tests {
         let object = ctx.get_type("Query").unwrap().object().unwrap();
 
         let hello_field = object.get_field("hello").unwrap();
-        assert_eq!(hello_field.ty.get_scalar().unwrap().is_string(), true);
+        assert!(hello_field.ty.get_scalar().unwrap().is_string());
         let world_field = object.get_field("world").unwrap();
-        assert_eq!(world_field.ty.get_scalar().unwrap().is_int(), true);
+        assert!(world_field.ty.get_scalar().unwrap().is_int());
         let id_field = object.get_field("id").unwrap();
-        assert_eq!(id_field.ty.get_scalar().unwrap().is_id(), true);
+        assert!(id_field.ty.get_scalar().unwrap().is_id());
         let foo_field = object.get_field("foo").unwrap();
-        assert_eq!(foo_field.ty.get_scalar().unwrap().is_float(), true);
+        assert!(foo_field.ty.get_scalar().unwrap().is_float());
         // optional
-        assert_eq!(foo_field.ty.is_nullable(), true);
+        assert!(foo_field.ty.is_nullable());
     }
 }

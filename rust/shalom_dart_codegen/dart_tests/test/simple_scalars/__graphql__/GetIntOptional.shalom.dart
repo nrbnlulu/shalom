@@ -1,24 +1,25 @@
+typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
 
 class RequestGetIntOptional {
-  /// class memberes
+  /// class members
 
   final int? intOptional;
 
   // keywordargs constructor
 
-  RequestGetIntOptional({required this.intOptional});
-
-  static RequestGetIntOptional fromJson(Map<String, dynamic> data) {
-    final intOptional_value = data['intOptional'] as int?;
+  RequestGetIntOptional({this.intOptional});
+  static RequestGetIntOptional fromJson(JsonObject data) {
+    final int? intOptional_value = data['intOptional'];
 
     return RequestGetIntOptional(intOptional: intOptional_value);
   }
 
-  RequestGetIntOptional updateWithJson(Map<String, dynamic> data) {
+  RequestGetIntOptional updateWithJson(JsonObject data) {
     final int? intOptional_value;
     if (data.containsKey('intOptional')) {
-      intOptional_value = data['intOptional'] as int?;
+      intOptional_value = data['intOptional'];
     } else {
       intOptional_value = intOptional;
     }
@@ -28,17 +29,20 @@ class RequestGetIntOptional {
 
   @override
   bool operator ==(Object other) {
-    if (other is! RequestGetIntOptional) return false;
-
-    if (other.intOptional != intOptional) return false;
-
-    return true;
+    return identical(this, other) ||
+        (other is RequestGetIntOptional &&
+            other.intOptional == intOptional &&
+            true);
   }
 
   @override
   int get hashCode => intOptional.hashCode;
 
-  Map<String, dynamic> toJson() {
+  JsonObject toJson() {
     return {'intOptional': intOptional};
   }
 }
+
+// ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------

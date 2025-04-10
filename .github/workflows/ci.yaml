@@ -52,3 +52,4 @@ jobs:
    - name: Test
      run: |
         cd rust
+        cargo test

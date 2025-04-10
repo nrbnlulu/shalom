@@ -1,0 +1,19 @@
+type Query {
+  listing: Listing!,
+  listingOpt: Listing
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  age: Int
+}
+
+type Listing {
+  id: ID!  
+  name: String!
+  price: Int
+  user: User!
+  userOpt: User
+}

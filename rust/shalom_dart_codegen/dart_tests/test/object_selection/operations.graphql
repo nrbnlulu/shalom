@@ -1,0 +1,19 @@
+
+query GetListingOpt {
+   listingOpt {
+    id 
+    name
+    price
+   }
+}
+
+
+query GetListing {
+   listing {
+    id 
+    name
+    price
+   }
+}
+
+

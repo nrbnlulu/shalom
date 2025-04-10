@@ -4,10 +4,10 @@ use std::{
 };
 
 use super::utils::TypeRef;
-use apollo_compiler::{ast::Value, collections::HashMap, Node};
+use apollo_compiler::{collections::HashMap, Node};
 use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
 /// The definition of a named type, with all information from type extensions folded in.
 ///
 /// The souNodee location is that of the "main" definition.
@@ -64,11 +64,14 @@ impl GraphQLAny {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[serde(tag = "kind")]
 pub enum FieldType {
     Named(TypeRef),
     NonNullNamed(TypeRef),
+    #[serde(skip_serializing)]
     List(Box<FieldType>),
+    #[serde(skip_serializing)]
     NonNullList(Box<FieldType>),
 }
 
@@ -131,11 +134,11 @@ impl ScalarType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ObjectType {
     pub description: Option<String>,
-
     pub name: String,
+    #[serde(skip_serializing)]
     pub implements_interfaces: HashSet<Box<TypeRef>>,
     pub fields: HashSet<FieldDefinition>,
 }
@@ -152,7 +155,7 @@ impl Hash for ObjectType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct InterfaceType {
     pub description: Option<String>,
 
@@ -166,7 +169,7 @@ impl Hash for InterfaceType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct UnionType {
     pub description: Option<String>,
 
@@ -183,7 +186,7 @@ impl Hash for UnionType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct EnumType {
     pub description: Option<String>,
 
@@ -195,13 +198,14 @@ impl Hash for EnumType {
         self.name.hash(state);
     }
 }
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
 pub struct EnumValueDefinition {
     pub description: Option<String>,
     pub value: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct InputObjectType {
     pub description: Option<String>,
     pub name: String,
@@ -212,18 +216,19 @@ impl Hash for InputObjectType {
         self.name.hash(state);
     }
 }
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
 pub struct FieldDefinition {
     pub name: String,
     pub ty: FieldType,
+    #[serde(skip_serializing)]
     pub arguments: Vec<InputValueDefinition>,
     pub description: Option<String>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
 pub struct InputValueDefinition {
     pub description: Option<String>,
     pub name: String,
     pub ty: Box<FieldType>,
-    pub default_value: Option<Box<Value>>,
+    pub default_value: Option<String>,
 }

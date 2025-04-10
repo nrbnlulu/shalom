@@ -1,24 +1,25 @@
+typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
 
 class RequestGetFloatOptional {
-  /// class memberes
+  /// class members
 
   final double? floatOptional;
 
   // keywordargs constructor
 
-  RequestGetFloatOptional({required this.floatOptional});
-
-  static RequestGetFloatOptional fromJson(Map<String, dynamic> data) {
-    final floatOptional_value = data['floatOptional'] as double?;
+  RequestGetFloatOptional({this.floatOptional});
+  static RequestGetFloatOptional fromJson(JsonObject data) {
+    final double? floatOptional_value = data['floatOptional'];
 
     return RequestGetFloatOptional(floatOptional: floatOptional_value);
   }
 
-  RequestGetFloatOptional updateWithJson(Map<String, dynamic> data) {
+  RequestGetFloatOptional updateWithJson(JsonObject data) {
     final double? floatOptional_value;
     if (data.containsKey('floatOptional')) {
-      floatOptional_value = data['floatOptional'] as double?;
+      floatOptional_value = data['floatOptional'];
     } else {
       floatOptional_value = floatOptional;
     }
@@ -28,17 +29,20 @@ class RequestGetFloatOptional {
 
   @override
   bool operator ==(Object other) {
-    if (other is! RequestGetFloatOptional) return false;
-
-    if (other.floatOptional != floatOptional) return false;
-
-    return true;
+    return identical(this, other) ||
+        (other is RequestGetFloatOptional &&
+            other.floatOptional == floatOptional &&
+            true);
   }
 
   @override
   int get hashCode => floatOptional.hashCode;
 
-  Map<String, dynamic> toJson() {
+  JsonObject toJson() {
     return {'floatOptional': floatOptional};
   }
 }
+
+// ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------

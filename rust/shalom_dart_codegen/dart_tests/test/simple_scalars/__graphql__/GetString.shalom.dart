@@ -1,24 +1,25 @@
+typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
 
 class RequestGetString {
-  /// class memberes
+  /// class members
 
   final String string;
 
   // keywordargs constructor
 
   RequestGetString({required this.string});
-
-  static RequestGetString fromJson(Map<String, dynamic> data) {
-    final string_value = data['string'] as String;
+  static RequestGetString fromJson(JsonObject data) {
+    final String string_value = data['string'];
 
     return RequestGetString(string: string_value);
   }
 
-  RequestGetString updateWithJson(Map<String, dynamic> data) {
+  RequestGetString updateWithJson(JsonObject data) {
     final String string_value;
     if (data.containsKey('string')) {
-      string_value = data['string'] as String;
+      string_value = data['string'];
     } else {
       string_value = string;
     }
@@ -28,17 +29,18 @@ class RequestGetString {
 
   @override
   bool operator ==(Object other) {
-    if (other is! RequestGetString) return false;
-
-    if (other.string != string) return false;
-
-    return true;
+    return identical(this, other) ||
+        (other is RequestGetString && other.string == string && true);
   }
 
   @override
   int get hashCode => string.hashCode;
 
-  Map<String, dynamic> toJson() {
+  JsonObject toJson() {
     return {'string': string};
   }
 }
+
+// ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------

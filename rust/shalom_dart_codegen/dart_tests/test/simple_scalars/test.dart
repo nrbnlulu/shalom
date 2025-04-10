@@ -9,6 +9,7 @@ import "__graphql__/GetString.shalom.dart";
 import "__graphql__/GetStringOptional.shalom.dart";
 import "__graphql__/GetID.shalom.dart";
 import "__graphql__/GetIDOptional.shalom.dart";
+import "__graphql__/GetMultipleFields.shalom.dart";
 
 void main() {
   group('Simple Scalars Deserialize', () {
@@ -311,6 +312,13 @@ void main() {
     test("IntOptional with null", () {
       final data = {"intOptional": null};
       final initial = RequestGetIntOptional.fromJson(data);
+      final json = initial.toJson();
+      expect(json, data);
+    });
+
+    test("Multiple fields", () {
+      final data = {"id": "fooID", "intField": 123};
+      final initial = RequestGetMultipleFields.fromJson(data);
       final json = initial.toJson();
       expect(json, data);
     });
