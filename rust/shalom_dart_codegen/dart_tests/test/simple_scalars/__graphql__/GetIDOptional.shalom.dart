@@ -3,7 +3,7 @@ typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: camel_case_types
 
 class RequestGetIDOptional {
-  /// class memberes
+  /// class members
 
   final String? idOptional;
 

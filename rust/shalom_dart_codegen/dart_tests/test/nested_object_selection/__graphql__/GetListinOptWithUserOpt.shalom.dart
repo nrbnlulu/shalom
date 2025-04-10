@@ -3,7 +3,7 @@ typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: camel_case_types
 
 class RequestGetListinOptWithUserOpt {
-  /// class memberes
+  /// class members
 
   final GetListinOptWithUserOpt_listingOpt? listingOpt;
 
@@ -62,7 +62,7 @@ class RequestGetListinOptWithUserOpt {
 // ------------ OBJECT DEFINITIONS -------------
 
 class GetListinOptWithUserOpt_listingOpt {
-  /// class memberes
+  /// class members
 
   final String id;
 
@@ -185,7 +185,7 @@ class GetListinOptWithUserOpt_listingOpt {
 }
 
 class GetListinOptWithUserOpt_listingOpt_userOpt {
-  /// class memberes
+  /// class members
 
   final String id;
 

@@ -3,7 +3,7 @@ typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: camel_case_types
 
 class RequestGetListingWithUser {
-  /// class memberes
+  /// class members
 
   final GetListingWithUser_listing listing;
 
@@ -48,7 +48,7 @@ class RequestGetListingWithUser {
 // ------------ OBJECT DEFINITIONS -------------
 
 class GetListingWithUser_listing {
-  /// class memberes
+  /// class members
 
   final String id;
 
@@ -148,7 +148,7 @@ class GetListingWithUser_listing {
 }
 
 class GetListingWithUser_listing_user {
-  /// class memberes
+  /// class members
 
   final String id;
 

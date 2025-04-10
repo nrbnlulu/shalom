@@ -82,7 +82,9 @@ void main() {
         expect(updated.listingOpt?.price, 110);
         expect(initial, isNot(updated));
       });
-
+      test("foo", () {
+        assert(false, "this should fail");
+      });
       test('some to some', () {
         final initial = RequestGetListingOpt(
           listingOpt: GetListingOpt_listingOpt(
