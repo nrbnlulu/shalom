@@ -4,6 +4,7 @@ members = [
     "./shalom_dart_codegen",
     "./shalom_core",
 ]
+resolver = "2"
 
 [workspace.dependencies]
 anyhow = "1.0.86"

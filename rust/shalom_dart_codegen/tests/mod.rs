@@ -51,15 +51,19 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
         ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
     run_codegen(&usecase_test_dir);
 
-    let test_file = usecase_test_dir
-        .clone()
-        .join("test.dart")
-        .canonicalize()
-        .unwrap();
-    let mut cmd = std::process::Command::new("dart");
-    cmd.current_dir(&usecase_test_dir);
-    cmd.arg("test").arg(test_file);
-    info!("Running command: {:?}", cmd);
+    let mut cmd;
+    #[cfg(target_os = "windows")]
+    {
+        cmd = std::process::Command::new("dart.bat");
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        cmd = std::process::Command::new("dart");
+    }
+    let dart_test_root = tests_path().join("..");
+    cmd.current_dir(&dart_test_root);
+    cmd.arg("test").arg(format!("test/{}/test.dart", usecase));
+    info!("Running command: {:?} inside {:?}", cmd, dart_test_root);
     let output = cmd.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
 
