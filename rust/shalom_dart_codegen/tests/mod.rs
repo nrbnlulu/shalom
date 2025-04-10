@@ -59,6 +59,7 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
     let mut cmd = std::process::Command::new("dart");
     cmd.current_dir(&usecase_test_dir);
     cmd.arg("test").arg(test_file);
+    info!("Running command: {:?}", cmd);
     let output = cmd.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
 
