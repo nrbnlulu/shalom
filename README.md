@@ -20,4 +20,4 @@
     - [ ] nested list
     
 - [ ] Node interface real time updates.
-- [ ] deffer / stream
+- [ ] defer / stream
