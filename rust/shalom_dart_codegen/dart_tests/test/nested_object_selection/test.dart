@@ -12,7 +12,12 @@ void main() {
           "id": "foo",
           "name": "video games",
           "price": 100,
-          "user": {"id": "user1", "name": "John Doe"},
+          "user": {
+            "id": "user1",
+            "name": "John Doe",
+            "email": "john.doe@example.com",
+            "age": null,
+          },
         },
       };
       final result = RequestGetListingWithUser.fromJson(json);
@@ -21,6 +26,8 @@ void main() {
       expect(result.listing.price, 100);
       expect(result.listing.user.id, "user1");
       expect(result.listing.user.name, "John Doe");
+      expect(result.listing.user.email, "john.doe@example.com");
+      expect(result.listing.user.age, null);
     });
 
     test('serialize', () {
@@ -33,6 +40,7 @@ void main() {
             "id": "user1",
             "name": "John Doe",
             "email": "john.doe@example.com",
+            "age": null,
           },
         },
       };
@@ -100,7 +108,12 @@ void main() {
             "id": "foo",
             "name": "video games",
             "price": 100,
-            "user": {"id": "user1", "name": "John Doe"},
+            "user": {
+              "id": "user1",
+              "name": "John Doe",
+              "email": "john.doe@example.com",
+              "age": null,
+            },
           },
         };
         final initial = RequestGetListingOptWithUser.fromJson(data);
