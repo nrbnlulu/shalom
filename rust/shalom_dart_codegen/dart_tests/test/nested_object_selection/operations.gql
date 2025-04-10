@@ -1,0 +1,50 @@
+query GetListingWithUser {
+    listing {
+        id
+        name
+        price
+        user {
+            id
+            name
+            email
+            age
+        }
+    }
+}
+query GetListingOptWithUser {
+    listingOpt {
+        id
+        name
+        price
+        user {
+            id
+            name
+            email
+            age
+        }
+    }
+}
+
+query GetListingWithUserOpt {
+    listing {
+        id
+        name
+        price
+        userOpt {
+            id
+            name
+        }
+    }
+}
+
+query GetListinOptWithUserOpt {
+    listingOpt {
+        id
+        name
+        price
+        userOpt {
+            id
+            name
+        }
+    }
+}

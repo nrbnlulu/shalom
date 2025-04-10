@@ -1,4 +1,6 @@
+typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
 
 class RequestGetBooleanOptional {
   /// class memberes
@@ -8,13 +10,13 @@ class RequestGetBooleanOptional {
   // keywordargs constructor
 
   RequestGetBooleanOptional({this.booleanOptional});
-  static RequestGetBooleanOptional fromJson(Map<String, dynamic> data) {
+  static RequestGetBooleanOptional fromJson(JsonObject data) {
     final bool? booleanOptional_value = data['booleanOptional'];
 
     return RequestGetBooleanOptional(booleanOptional: booleanOptional_value);
   }
 
-  RequestGetBooleanOptional updateWithJson(Map<String, dynamic> data) {
+  RequestGetBooleanOptional updateWithJson(JsonObject data) {
     final bool? booleanOptional_value;
     if (data.containsKey('booleanOptional')) {
       booleanOptional_value = data['booleanOptional'];
@@ -36,7 +38,11 @@ class RequestGetBooleanOptional {
   @override
   int get hashCode => booleanOptional.hashCode;
 
-  Map<String, dynamic> toJson() {
+  JsonObject toJson() {
     return {'booleanOptional': booleanOptional};
   }
 }
+
+// ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------

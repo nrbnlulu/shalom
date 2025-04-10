@@ -1,4 +1,6 @@
+typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
 
 class RequestGetID {
   /// class memberes
@@ -8,13 +10,13 @@ class RequestGetID {
   // keywordargs constructor
 
   RequestGetID({required this.id});
-  static RequestGetID fromJson(Map<String, dynamic> data) {
+  static RequestGetID fromJson(JsonObject data) {
     final String id_value = data['id'];
 
     return RequestGetID(id: id_value);
   }
 
-  RequestGetID updateWithJson(Map<String, dynamic> data) {
+  RequestGetID updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
       id_value = data['id'];
@@ -34,7 +36,11 @@ class RequestGetID {
   @override
   int get hashCode => id.hashCode;
 
-  Map<String, dynamic> toJson() {
+  JsonObject toJson() {
     return {'id': id};
   }
 }
+
+// ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------

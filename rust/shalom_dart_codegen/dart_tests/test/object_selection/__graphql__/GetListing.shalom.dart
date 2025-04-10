@@ -1,7 +1,11 @@
+
+
 typedef JsonObject = Map<String, dynamic>;
-
-
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
+
+
+
 
 class 
     RequestGetListing
@@ -116,10 +120,6 @@ class
             final int? price;
         
     
-        
-            final GetListing_listing_user? user;
-        
-    
     // keywordargs constructor
     GetListing_listing({
     required
@@ -128,8 +128,6 @@ class
         this.name,
     
         this.price,
-    
-        this.user,
     
     });
     static GetListing_listing fromJson(JsonObject data) {
@@ -146,18 +144,6 @@ class
             final int? price_value = data['price'];
         
     
-        
-            final GetListing_listing_user? user_value;
-            
-                final JsonObject? user$raw = data['user']; 
-                if (user$raw != null) {
-                    user_value = GetListing_listing_user.fromJson(user$raw);
-                } else {
-                    user_value = null;
-                }
-            
-        
-    
     return GetListing_listing(
     
         
@@ -168,9 +154,6 @@ class
     
         
         price: price_value,
-    
-        
-        user: user_value,
     
     );
     }
@@ -203,22 +186,6 @@ class
             }
         
     
-        
-        final GetListing_listing_user? user_value;
-        if (data.containsKey('user')) {
-            
-                final JsonObject? user$raw = data['user']; 
-                if (user$raw != null) {
-                    user_value = GetListing_listing_user.fromJson(user$raw);
-                } else {
-                    user_value = null;
-                }
-            
-        } else {
-            user_value = user;
-        }
-        
-    
     return GetListing_listing(
     
         
@@ -229,9 +196,6 @@ class
     
         
         price: price_value,
-    
-        
-        user: user_value,
     
     );
     }
@@ -249,9 +213,6 @@ class
         
         other.price == price &&
     
-        
-        other.user == user &&
-    
     true);
     }
     @override
@@ -267,9 +228,6 @@ class
         
             
             price,
-        
-            
-            user,
         
         ]);
     
@@ -294,131 +252,6 @@ class
         'price':
             
                 price
-            
-        ,
-    
-        
-        'user':
-            
-                user?.toJson()
-            
-        ,
-    
-    };
-    }
-
-    }
-
-    class GetListing_listing_user  {
-        
-    /// class memberes
-    
-        
-            final String name;
-        
-    
-        
-            final String email;
-        
-    
-    // keywordargs constructor
-    GetListing_listing_user({
-    required
-        this.name,
-    required
-        this.email,
-    
-    });
-    static GetListing_listing_user fromJson(JsonObject data) {
-    
-        
-            final String name_value = data['name'];
-        
-    
-        
-            final String email_value = data['email'];
-        
-    
-    return GetListing_listing_user(
-    
-        
-        name: name_value,
-    
-        
-        email: email_value,
-    
-    );
-    }
-    GetListing_listing_user updateWithJson(JsonObject data) {
-    
-        
-            final String name_value;
-            if (data.containsKey('name')) {
-            name_value = data['name'];
-            } else {
-            name_value = name;
-            }
-        
-    
-        
-            final String email_value;
-            if (data.containsKey('email')) {
-            email_value = data['email'];
-            } else {
-            email_value = email;
-            }
-        
-    
-    return GetListing_listing_user(
-    
-        
-        name: name_value,
-    
-        
-        email: email_value,
-    
-    );
-    }
-    @override
-    bool operator ==(Object other) {
-    return identical(this, other) ||
-    (other is GetListing_listing_user &&
-    
-        
-        other.name == name &&
-    
-        
-        other.email == email &&
-    
-    true);
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            name,
-        
-            
-            email,
-        
-        ]);
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'name':
-            
-                name
-            
-        ,
-    
-        
-        'email':
-            
-                email
             
         ,
     

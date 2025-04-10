@@ -107,6 +107,27 @@ fn generate_operations_file(
 pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     info!("codegen started in working directory {}", pwd.display());
     let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
+    // find all operation files in the directory
+    // and remove operations that are not included in the current codegen session.
+    let existing_op_names =
+        glob::glob(pwd.join(format!("**/*.{}", END_OF_FILE,)).to_str().unwrap())?;
+    for entry in existing_op_names {
+        let entry = entry?;
+        if entry.is_file() {
+            let resolved_op_name = entry
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .split(format!(".{}", END_OF_FILE).as_str())
+                .next()
+                .unwrap();
+            if !ctx.operation_exists(resolved_op_name) {
+                info!("deleting unused operation {}", resolved_op_name);
+                fs::remove_file(entry)?;
+            }
+        }
+    }
     for (name, operation) in ctx.operations() {
         generate_operations_file(&name, operation, ctx.schema_ctx.clone());
     }

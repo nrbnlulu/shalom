@@ -1,21 +1,9 @@
-query GetUser {
-  user {
-    id
-    name
-    email
-    age
-  }
-}
 
 query GetListingOpt {
    listingOpt {
     id 
     name
     price
-    user {
-       name,
-       email
-    }
    }
 }
 
@@ -25,9 +13,7 @@ query GetListing {
     id 
     name
     price
-    user {
-       name,
-       email
-    }
    }
 }
+
+

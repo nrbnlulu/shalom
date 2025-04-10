@@ -1,4 +1,3 @@
-typedef JsonObject = Map<String, dynamic>;
 {% set root_selection = operation.context.root_type.selection_name %}
 {% macro base_object_impl(typename, selections) %}
     /// class memberes
@@ -123,7 +122,12 @@ typedef JsonObject = Map<String, dynamic>;
     };
     }
 {% endmacro %}
+typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
+
+
+
 {% set root_type_name %}
     Request{{ root_selection }}
 {% endset %}

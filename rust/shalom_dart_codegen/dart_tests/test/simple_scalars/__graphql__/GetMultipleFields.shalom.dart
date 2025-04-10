@@ -1,4 +1,6 @@
+typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
 
 class RequestGetMultipleFields {
   /// class memberes
@@ -10,7 +12,7 @@ class RequestGetMultipleFields {
   // keywordargs constructor
 
   RequestGetMultipleFields({required this.id, required this.intField});
-  static RequestGetMultipleFields fromJson(Map<String, dynamic> data) {
+  static RequestGetMultipleFields fromJson(JsonObject data) {
     final String id_value = data['id'];
 
     final int intField_value = data['intField'];
@@ -18,7 +20,7 @@ class RequestGetMultipleFields {
     return RequestGetMultipleFields(id: id_value, intField: intField_value);
   }
 
-  RequestGetMultipleFields updateWithJson(Map<String, dynamic> data) {
+  RequestGetMultipleFields updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
       id_value = data['id'];
@@ -48,7 +50,11 @@ class RequestGetMultipleFields {
   @override
   int get hashCode => Object.hashAll([id, intField]);
 
-  Map<String, dynamic> toJson() {
+  JsonObject toJson() {
     return {'id': id, 'intField': intField};
   }
 }
+
+// ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------

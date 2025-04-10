@@ -1,4 +1,6 @@
+typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
 
 class RequestGetInt {
   /// class memberes
@@ -8,13 +10,13 @@ class RequestGetInt {
   // keywordargs constructor
 
   RequestGetInt({required this.intField});
-  static RequestGetInt fromJson(Map<String, dynamic> data) {
+  static RequestGetInt fromJson(JsonObject data) {
     final int intField_value = data['intField'];
 
     return RequestGetInt(intField: intField_value);
   }
 
-  RequestGetInt updateWithJson(Map<String, dynamic> data) {
+  RequestGetInt updateWithJson(JsonObject data) {
     final int intField_value;
     if (data.containsKey('intField')) {
       intField_value = data['intField'];
@@ -34,7 +36,11 @@ class RequestGetInt {
   @override
   int get hashCode => intField.hashCode;
 
-  Map<String, dynamic> toJson() {
+  JsonObject toJson() {
     return {'intField': intField};
   }
 }
+
+// ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------

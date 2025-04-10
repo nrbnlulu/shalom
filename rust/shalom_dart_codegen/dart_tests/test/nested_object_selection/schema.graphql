@@ -14,4 +14,6 @@ type Listing {
   id: ID!  
   name: String!
   price: Int
+  user: User!
+  userOpt: User
 }

@@ -1,7 +1,11 @@
+
+
 typedef JsonObject = Map<String, dynamic>;
-
-
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
+
+
+
 
 class 
     RequestGetListingOpt
@@ -126,10 +130,6 @@ class
             final int? price;
         
     
-        
-            final GetListingOpt_listingOpt_user? user;
-        
-    
     // keywordargs constructor
     GetListingOpt_listingOpt({
     required
@@ -138,8 +138,6 @@ class
         this.name,
     
         this.price,
-    
-        this.user,
     
     });
     static GetListingOpt_listingOpt fromJson(JsonObject data) {
@@ -156,18 +154,6 @@ class
             final int? price_value = data['price'];
         
     
-        
-            final GetListingOpt_listingOpt_user? user_value;
-            
-                final JsonObject? user$raw = data['user']; 
-                if (user$raw != null) {
-                    user_value = GetListingOpt_listingOpt_user.fromJson(user$raw);
-                } else {
-                    user_value = null;
-                }
-            
-        
-    
     return GetListingOpt_listingOpt(
     
         
@@ -178,9 +164,6 @@ class
     
         
         price: price_value,
-    
-        
-        user: user_value,
     
     );
     }
@@ -213,22 +196,6 @@ class
             }
         
     
-        
-        final GetListingOpt_listingOpt_user? user_value;
-        if (data.containsKey('user')) {
-            
-                final JsonObject? user$raw = data['user']; 
-                if (user$raw != null) {
-                    user_value = GetListingOpt_listingOpt_user.fromJson(user$raw);
-                } else {
-                    user_value = null;
-                }
-            
-        } else {
-            user_value = user;
-        }
-        
-    
     return GetListingOpt_listingOpt(
     
         
@@ -239,9 +206,6 @@ class
     
         
         price: price_value,
-    
-        
-        user: user_value,
     
     );
     }
@@ -259,9 +223,6 @@ class
         
         other.price == price &&
     
-        
-        other.user == user &&
-    
     true);
     }
     @override
@@ -277,9 +238,6 @@ class
         
             
             price,
-        
-            
-            user,
         
         ]);
     
@@ -304,131 +262,6 @@ class
         'price':
             
                 price
-            
-        ,
-    
-        
-        'user':
-            
-                user?.toJson()
-            
-        ,
-    
-    };
-    }
-
-    }
-
-    class GetListingOpt_listingOpt_user  {
-        
-    /// class memberes
-    
-        
-            final String name;
-        
-    
-        
-            final String email;
-        
-    
-    // keywordargs constructor
-    GetListingOpt_listingOpt_user({
-    required
-        this.name,
-    required
-        this.email,
-    
-    });
-    static GetListingOpt_listingOpt_user fromJson(JsonObject data) {
-    
-        
-            final String name_value = data['name'];
-        
-    
-        
-            final String email_value = data['email'];
-        
-    
-    return GetListingOpt_listingOpt_user(
-    
-        
-        name: name_value,
-    
-        
-        email: email_value,
-    
-    );
-    }
-    GetListingOpt_listingOpt_user updateWithJson(JsonObject data) {
-    
-        
-            final String name_value;
-            if (data.containsKey('name')) {
-            name_value = data['name'];
-            } else {
-            name_value = name;
-            }
-        
-    
-        
-            final String email_value;
-            if (data.containsKey('email')) {
-            email_value = data['email'];
-            } else {
-            email_value = email;
-            }
-        
-    
-    return GetListingOpt_listingOpt_user(
-    
-        
-        name: name_value,
-    
-        
-        email: email_value,
-    
-    );
-    }
-    @override
-    bool operator ==(Object other) {
-    return identical(this, other) ||
-    (other is GetListingOpt_listingOpt_user &&
-    
-        
-        other.name == name &&
-    
-        
-        other.email == email &&
-    
-    true);
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            name,
-        
-            
-            email,
-        
-        ]);
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'name':
-            
-                name
-            
-        ,
-    
-        
-        'email':
-            
-                email
             
         ,
     

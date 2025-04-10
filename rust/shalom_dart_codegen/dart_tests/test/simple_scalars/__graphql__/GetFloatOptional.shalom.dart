@@ -1,5 +1,6 @@
-// ignore_for_file: non_constant_identifier_names
 typedef JsonObject = Map<String, dynamic>;
+// ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
 
 class RequestGetFloatOptional {
   /// class memberes
@@ -9,13 +10,13 @@ class RequestGetFloatOptional {
   // keywordargs constructor
 
   RequestGetFloatOptional({this.floatOptional});
-  static RequestGetFloatOptional fromJson(Map<String, dynamic> data) {
+  static RequestGetFloatOptional fromJson(JsonObject data) {
     final double? floatOptional_value = data['floatOptional'];
 
     return RequestGetFloatOptional(floatOptional: floatOptional_value);
   }
 
-  RequestGetFloatOptional updateWithJson(Map<String, dynamic> data) {
+  RequestGetFloatOptional updateWithJson(JsonObject data) {
     final double? floatOptional_value;
     if (data.containsKey('floatOptional')) {
       floatOptional_value = data['floatOptional'];
@@ -37,7 +38,11 @@ class RequestGetFloatOptional {
   @override
   int get hashCode => floatOptional.hashCode;
 
-  Map<String, dynamic> toJson() {
+  JsonObject toJson() {
     return {'floatOptional': floatOptional};
   }
 }
+
+// ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------
