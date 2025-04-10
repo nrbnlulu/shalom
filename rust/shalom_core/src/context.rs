@@ -37,5 +37,10 @@ impl ShalomGlobalContext {
             .map(|(name, op)| (name.clone(), op.clone()))
             .collect()
     }
+
+    pub fn operation_exists(&self, name: &str) -> bool {
+        let operations = self.operations.lock().unwrap();
+        operations.contains_key(name)
+    }
 }
 pub type SharedShalomGlobalContext = Arc<ShalomGlobalContext>;

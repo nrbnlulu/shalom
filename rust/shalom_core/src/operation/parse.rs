@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use apollo_compiler::{executable as apollo_executable, Node};
-use log::info;
+use log::{info, trace};
 
 use crate::context::SharedShalomGlobalContext;
 use crate::operation::types::ObjectSelection;
@@ -17,21 +17,25 @@ use super::types::{
 
 fn full_path_name(this_name: &String, parent: &Option<&Selection>) -> String {
     match parent {
-        Some(parent) => format!("{}__{}", parent.self_full_path_name(), this_name),
+        Some(parent) => format!("{}_{}", parent.self_full_path_name(), this_name),
         None => this_name.clone(),
     }
 }
 
 fn parse_object_selection(
-    parent: &Option<&Selection>,
+    #[allow(unused)] parent: &Option<&Selection>,
     op_ctx: &mut OperationContext,
     schema_ctx: &SharedSchemaContext,
     selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
 ) -> SharedObjectSelection {
+    trace!("Parsing object selection {:?}", selection_common);
+
     assert!(
         !selection_orig.selections.is_empty(),
-        "Object selection must have at least one field"
+        "Object selection must have at least one field\n \
+         selection was {:?}.",
+        selection_orig
     );
     let obj = ObjectSelection::new(selection_common);
     let obj_as_selection = Selection::Object(obj.clone());
@@ -48,7 +52,7 @@ fn parse_object_selection(
                     apollo_compiler::ast::Type::NonNullNamed(_) => false,
                 };
                 let selection_common = SelectionCommon {
-                    full_name: full_path_name(&f_name, parent),
+                    full_name: full_path_name(&f_name, &Some(&obj_as_selection)),
                     selection_name: f_name.clone(),
                     is_optional,
                 };
@@ -81,6 +85,7 @@ fn parse_selection_set(
     selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
 ) -> Selection {
+    trace!("Parsing selection set {:?}", selection_common);
     let full_name = selection_common.full_name.clone();
     if let Some(selection) = op_ctx.get_selection(&full_name) {
         info!("Selection already exists");

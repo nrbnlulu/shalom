@@ -1,12 +1,26 @@
 use crate::schema::types::GraphQLAny;
 use apollo_compiler::{validation::Valid, Node};
+use serde::{Serialize, Serializer};
+use std::fmt::Debug;
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex, MutexGuard},
 };
 
 use super::types::{EnumType, InputObjectType, ObjectType, ScalarType};
-#[derive(Debug)]
+
+fn serialize_schema_types<S>(
+    schema_types: &Mutex<SchemaTypesCtx>,
+    serializer: S,
+) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+{
+    let schema_types = schema_types.lock().unwrap().clone();
+    schema_types.serialize(serializer)
+}
+
+#[derive(Debug, Serialize, Clone)]
 pub(crate) struct SchemaTypesCtx {
     inputs: HashMap<String, Node<InputObjectType>>,
     objects: HashMap<String, Node<ObjectType>>,
@@ -65,9 +79,11 @@ impl SchemaTypesCtx {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct SchemaContext {
+    #[serde(serialize_with = "serialize_schema_types")]
     types: Mutex<SchemaTypesCtx>,
+    #[serde(skip_serializing)]
     pub schema: Valid<apollo_compiler::Schema>,
 }
 

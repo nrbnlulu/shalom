@@ -1,24 +1,25 @@
+typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
 
 class RequestGetID {
-  /// class memberes
+  /// class members
 
   final String id;
 
   // keywordargs constructor
 
   RequestGetID({required this.id});
-
-  static RequestGetID fromJson(Map<String, dynamic> data) {
-    final id_value = data['id'] as String;
+  static RequestGetID fromJson(JsonObject data) {
+    final String id_value = data['id'];
 
     return RequestGetID(id: id_value);
   }
 
-  RequestGetID updateWithJson(Map<String, dynamic> data) {
+  RequestGetID updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data['id'] as String;
+      id_value = data['id'];
     } else {
       id_value = id;
     }
@@ -28,17 +29,18 @@ class RequestGetID {
 
   @override
   bool operator ==(Object other) {
-    if (other is! RequestGetID) return false;
-
-    if (other.id != id) return false;
-
-    return true;
+    return identical(this, other) ||
+        (other is RequestGetID && other.id == id && true);
   }
 
   @override
   int get hashCode => id.hashCode;
 
-  Map<String, dynamic> toJson() {
+  JsonObject toJson() {
     return {'id': id};
   }
 }
+
+// ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------

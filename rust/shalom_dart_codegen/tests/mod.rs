@@ -39,28 +39,38 @@ pub fn ensure_test_folder_exists(usecase: &str) -> anyhow::Result<PathBuf> {
 }
 
 fn run_codegen(cwd: &Path) {
-    shalom_dart_codegen::codegen_entry_point(&cwd).unwrap()
+    shalom_dart_codegen::codegen_entry_point(cwd).unwrap()
 }
 
 pub fn run_dart_tests_for_usecase(usecase: &str) {
-    simple_logger::init().unwrap();
+    match simple_logger::init() {
+        Ok(_) => println!("Logger initialized"),
+        Err(e) => eprintln!("Error initializing logger: {}", e),
+    }
     let usecase_test_dir =
         ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
     run_codegen(&usecase_test_dir);
 
-    let test_file = usecase_test_dir
-        .clone()
-        .join("test.dart")
-        .canonicalize()
-        .unwrap();
-    let mut cmd = std::process::Command::new("dart");
-    cmd.current_dir(&usecase_test_dir);
-    cmd.arg("test").arg(test_file);
+    let mut cmd;
+    #[cfg(target_os = "windows")]
+    {
+        cmd = std::process::Command::new("dart.bat");
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        cmd = std::process::Command::new("dart");
+    }
+    let dart_test_root = tests_path().join("..");
+    cmd.current_dir(&dart_test_root);
+    cmd.arg("test").arg(format!("test/{}/test.dart", usecase));
+    info!("Running command: {:?} inside {:?}", cmd, dart_test_root);
     let output = cmd.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
-    let out_err = String::from_utf8_lossy(&output.stderr);
-    if !out_std.contains("All tests passed!") {
-        panic!("Dart tests failed: {}\n{}", out_err, out_std);
-    }
-    info!("✔️ Dart tests passed\n {}", out_std)
+
+    assert!(
+        output.status.success(),
+        "❌ Dart tests failed\n {}",
+        out_std
+    );
+    info!("✔️ Dart tests passed\n {}", out_std);
 }

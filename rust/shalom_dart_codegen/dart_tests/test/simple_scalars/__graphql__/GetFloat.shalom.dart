@@ -1,24 +1,25 @@
+typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
+// ignore_for_file: camel_case_types
 
 class RequestGetFloat {
-  /// class memberes
+  /// class members
 
   final double float;
 
   // keywordargs constructor
 
   RequestGetFloat({required this.float});
-
-  static RequestGetFloat fromJson(Map<String, dynamic> data) {
-    final float_value = data['float'] as double;
+  static RequestGetFloat fromJson(JsonObject data) {
+    final double float_value = data['float'];
 
     return RequestGetFloat(float: float_value);
   }
 
-  RequestGetFloat updateWithJson(Map<String, dynamic> data) {
+  RequestGetFloat updateWithJson(JsonObject data) {
     final double float_value;
     if (data.containsKey('float')) {
-      float_value = data['float'] as double;
+      float_value = data['float'];
     } else {
       float_value = float;
     }
@@ -28,17 +29,18 @@ class RequestGetFloat {
 
   @override
   bool operator ==(Object other) {
-    if (other is! RequestGetFloat) return false;
-
-    if (other.float != float) return false;
-
-    return true;
+    return identical(this, other) ||
+        (other is RequestGetFloat && other.float == float && true);
   }
 
   @override
   int get hashCode => float.hashCode;
 
-  Map<String, dynamic> toJson() {
+  JsonObject toJson() {
     return {'float': float};
   }
 }
+
+// ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------
