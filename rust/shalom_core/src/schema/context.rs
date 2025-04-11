@@ -127,5 +127,11 @@ impl SchemaContext {
         types_ctx.add_scalar(name, type_);
         Ok(())
     }
+
+    pub fn add_enum(&self, name: String, type_: Node<EnumType>) -> anyhow::Result<()> {
+        let mut types_ctx = self.get_types();
+        types_ctx.add_enum(name, type_);
+        Ok(())
+    }
 }
 pub type SharedSchemaContext = Arc<SchemaContext>;

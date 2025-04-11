@@ -186,7 +186,7 @@ impl Hash for UnionType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EnumType {
     pub description: Option<String>,
 

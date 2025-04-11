@@ -46,6 +46,13 @@ fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
                 object.common.full_name.clone()
             }
         }
+        Selection::Enum(enum_) => {
+            if enum_.common.is_optional {
+                format!("{}?", enum_.common.full_name)
+            } else {
+                enum_.common.full_name.clone()
+            }
+        }
     }
 }
 impl TemplateEnv<'_> {
