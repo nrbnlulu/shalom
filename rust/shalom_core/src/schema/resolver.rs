@@ -1,6 +1,12 @@
 use super::context::{SchemaContext, SharedSchemaContext};
-use super::types::{EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, ScalarType};
-use super::{types::{ObjectType, EnumType}, utils::TypeRef};
+use super::{
+    types::{
+        EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, ObjectType,
+        ScalarType,
+    },
+    utils::TypeRef,
+};
+use ahash::RandomState;
 use anyhow::Result;
 use apollo_compiler::{self};
 use apollo_compiler::{schema as apollo_schema, Node};
@@ -63,8 +69,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
             }
             apollo_schema::ExtendedType::Enum(enum_) => {
                 resolve_enum(ctx.clone(), name.to_string(), enum_.clone());
-                   
-            },
+            }
             _ => todo!(
                 "Unsupported type in schema {:?}: {:?}",
                 name.to_string(),
@@ -139,25 +144,22 @@ fn resolve_enum(
     if context.get_type(&name).is_some() {
         return TypeRef::new(context.clone(), name);
     }
-    
-   let mut values: HashMap<String, Box<EnumValueDefinition>> = HashMap::new();
-   for (name, value) in origin.values.iter() {
-    let description = value.description.as_ref().map(|v| v.to_string()),
-    let value = value.value.to_string();
-    let enum_value_definition = EnumValueDefinition {
+
+    let mut values = HashMap::with_hasher(RandomState::new());
+    for (name, value) in origin.values.iter() {
+        let description = value.description.as_ref().map(|v| v.to_string());
+        let value = value.value.to_string();
+        let enum_value_definition = EnumValueDefinition { description, value };
+        values.insert(name.to_string(), Box::new(enum_value_definition));
+    }
+    let description = origin.description.as_ref().map(|v| v.to_string());
+    let enum_type = EnumType {
         description,
-        value
+        name: name.clone(),
+        values,
     };
-    values.insert(name.to_string(), Box::new(enum_value_definition));
-  } 
-  let description = origin.description.as_ref().map(|v| v.to_string());
-  let enum_type = EnumType {
-    description,
-    name: name.clone(),
-    values
-  };
-  context.add_enum(name, Node::new(enum_type));
-  return TypeRef::new(context.clone(), name);
+    context.add_enum(name.clone(), Node::new(enum_type));
+    TypeRef::new(context.clone(), name)
 }
 
 pub fn resolve_type(context: SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {

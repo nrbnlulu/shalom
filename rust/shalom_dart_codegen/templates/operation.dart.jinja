@@ -46,6 +46,9 @@
                 } else {
                     {{ selection_name }}_value = null;
                 }
+            {% else %}
+                {{ selection_name }}_value = {{ selection.full_name }}.fromString(data['{{ selection_name }}']);            
+            {% endif %}
         {% else %}
             throw NotImplemented();
         {% endif %}
@@ -83,7 +86,7 @@
             } else {
             {{ selection_name }}_value = {{ selection_name }};
             }
-        {% if selection.kind == "Object" %}
+        {% elif selection.kind == "Enum" %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
             if (data.containsKey('{{ selection_name }}')) {
                 {% if selection.is_optional %}
@@ -177,8 +180,8 @@ class {{ root_type_name }}{
 // ------------ Enum DEFINITIONS -------------
 {% for full_name, selection in operation.context.type_defs | items  if selection.kind == "Enum" %}
      enum {{ full_name }}  {
-         {% for name, value in selection.values | items %}  
-              {{ value }},
+         {% for name, value in selection.concrete_type.values | items %}  
+              {{ value.value }},
          {% endfor %};
          
          static {{ full_name }} fromString(String value) {

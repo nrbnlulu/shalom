@@ -199,7 +199,7 @@ impl Hash for EnumType {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct EnumValueDefinition {
     pub description: Option<String>,
     pub value: String,
