@@ -4,8 +4,9 @@ use std::{
 };
 
 use super::utils::TypeRef;
-use apollo_compiler::{collections::HashMap, Node};
+use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
 /// The definition of a named type, with all information from type extensions folded in.

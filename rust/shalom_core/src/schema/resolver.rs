@@ -6,7 +6,6 @@ use super::{
     },
     utils::TypeRef,
 };
-use ahash::RandomState;
 use anyhow::Result;
 use apollo_compiler::{self};
 use apollo_compiler::{schema as apollo_schema, Node};
@@ -145,7 +144,7 @@ fn resolve_enum(
         return TypeRef::new(context.clone(), name);
     }
 
-    let mut values = HashMap::with_hasher(RandomState::new());
+    let mut values = HashMap::new();
     for (name, value) in origin.values.iter() {
         let description = value.description.as_ref().map(|v| v.to_string());
         let value = value.value.to_string();
