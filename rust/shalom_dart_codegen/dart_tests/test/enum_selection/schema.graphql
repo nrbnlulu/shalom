@@ -11,6 +11,13 @@ type Task {
   status: Status!
 }
 
+type TaskWithUndecisiveStatus {
+  id: ID!  
+  name: String!
+  status: Status
+}
+
 type Query {
-  task(id: ID!): Task
+  task(id: ID!): Task,
+  taskWithUndecisiveStatus(id: ID!): TaskWithUndecisiveStatus 
 }

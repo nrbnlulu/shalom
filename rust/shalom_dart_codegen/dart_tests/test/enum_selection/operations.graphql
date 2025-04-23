@@ -5,3 +5,19 @@ query GetTask($taskId: ID!) {
     status
   }
 }
+
+query GetOptionalTask($taskId: ID!) {
+  task(id: $taskId) {
+    id
+    name
+    status
+  }
+}
+
+query GetTaskWithUndecisiveStatus($taskId: ID!) {
+  taskWithUndecisiveStatus(id: $taskId) {
+    id
+    name
+    status
+  } 
+}  
