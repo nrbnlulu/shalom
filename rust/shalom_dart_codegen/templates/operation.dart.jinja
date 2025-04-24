@@ -1,3 +1,5 @@
+import "GlobalObjects.shalom.dart";
+
 {% set root_selection = operation.context.root_type.selection_name %}
 {% macro base_object_impl(typename, selections) %}
     /// class members
@@ -38,16 +40,17 @@
         {% elif selection.kind == "Scalar" %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }}_value = data['{{ selection_name }}'];
         {% elif selection.kind == "Enum" %}
+            {% set typename = selection.concrete_type.name %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
             {% if selection.is_optional %}
                 final String? {{ selection_name }}$raw = data['{{ selection_name }}']; 
                 if ({{ selection_name }}$raw != null) {
-                    {{ selection_name }}_value = {{ selection.full_name }}.fromString({{ selection_name }}$raw);
+                    {{ selection_name }}_value = {{ typename }}.fromString({{ selection_name }}$raw);
                 } else {
                     {{ selection_name }}_value = null;
                 }
             {% else %}
-                {{ selection_name }}_value = {{ selection.full_name }}.fromString(data['{{ selection_name }}']);            
+                {{ selection_name }}_value = {{ typename }}.fromString(data['{{ selection_name }}']);            
             {% endif %}
         {% else %}
             throw NotImplemented();
@@ -87,17 +90,18 @@
             {{ selection_name }}_value = {{ selection_name }};
             }
         {% elif selection.kind == "Enum" %}
+            {% set typename = selection.concrete_type.name %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
             if (data.containsKey('{{ selection_name }}')) {
                 {% if selection.is_optional %}
                     final String? {{ selection_name }}$raw = data['{{ selection_name }}']; 
                     if ({{ selection_name }}$raw != null) {
-                        {{ selection_name }}_value = {{ selection.full_name }}.fromString({{ selection_name }}$raw);
+                        {{ selection_name }}_value = {{ typename }}.fromString({{ selection_name }}$raw);
                     } else {
                         {{ selection_name }}_value = null;
                     }
                 {% else %}
-                    {{ selection_name }}_value = {{ selection.full_name }}.fromString(data['{{ selection_name }}']);            
+                    {{ selection_name }}_value = {{ typename }}.fromString(data['{{ selection_name }}']);            
                 {% endif %}
             } else {
                 {{ selection_name }}_value = {{ selection_name }};
@@ -145,7 +149,7 @@
             {% elif selection.kind == "Scalar" %}
                 {{ selection_name }}
             {% elif selection.kind == "Enum" %}
-                {{ selection_name }}{% if selection.is_optional %}?{% endif %}.toString()
+                {{ selection_name }}{% if selection.is_optional %}?{% endif %}.name  
             {% else %}
                 throw NotImplemented();
             {% endif %}
@@ -177,22 +181,3 @@ class {{ root_type_name }}{
 
 
 
-// ------------ Enum DEFINITIONS -------------
-{% for full_name, selection in operation.context.type_defs | items  if selection.kind == "Enum" %}
-     enum {{ full_name }}  {
-         {% for name, value in selection.concrete_type.values | items %}  
-              {{ value.value }},
-         {% endfor %};
-         
-         static {{ full_name }} fromString(String value) {
-            return {{ full_name }}.values.firstWhere(
-                (e) => e.name.toUpperCase() == value.toUpperCase(), 
-                orElse: () => throw ArgumentError("Unknown {{ full_name }} $value"),
-            );
-         }
-
-         @override
-         String toString() => name.toUpperCase();
-     }
-{% endfor %}
-// ------------ END Enum DEFINITIONS -------------

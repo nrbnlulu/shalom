@@ -1,0 +1,24 @@
+// ------------ Enum DEFINITIONS -------------
+{% for _, enum in schema.context.types.enums | items %}
+     {% set typename = enum.name %}
+     enum {{ typename }}  {
+          {% for name, _ in enum.values | items %}  
+                {{ name }},
+          {% endfor %};
+          
+          static {{ typename }} fromString(String name) {
+              switch (name) {
+                  {% for name, _ in enum.values | items %}
+                  case '{{ name }}':
+                    return {{ typename }}.{{name}}; 
+                  {% endfor %}
+                  default:  
+                      throw ArgumentError.value(name, 'name', 'No Status enum member with this name');  
+              }
+          }
+
+          @override
+          String toString() => name.toUpperCase();
+      }
+{% endfor %}
+// ------------ END Enum DEFINITIONS -------------

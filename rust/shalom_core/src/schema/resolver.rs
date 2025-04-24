@@ -141,24 +141,23 @@ fn resolve_enum(
     origin: Node<apollo_schema::EnumType>,
 ) -> TypeRef {
     if context.get_type(&name).is_some() {
-        return TypeRef::new(context.clone(), name);
+        return TypeRef::new(context, name);
     }
-
-    let mut values = HashMap::new();
+    let mut enum_values = HashMap::new();
     for (name, value) in origin.values.iter() {
         let description = value.description.as_ref().map(|v| v.to_string());
         let value = value.value.to_string();
         let enum_value_definition = EnumValueDefinition { description, value };
-        values.insert(name.to_string(), Box::new(enum_value_definition));
+        enum_values.insert(name.to_string(), enum_value_definition);
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
     let enum_type = EnumType {
         description,
         name: name.clone(),
-        values,
+        values: enum_values,
     };
     context.add_enum(name.clone(), Node::new(enum_type));
-    TypeRef::new(context.clone(), name)
+    TypeRef::new(context, name)
 }
 
 pub fn resolve_type(context: SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {

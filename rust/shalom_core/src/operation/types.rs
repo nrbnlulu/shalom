@@ -36,7 +36,9 @@ impl Selection {
         match self {
             Selection::Scalar(node) => &node.common.full_name,
             Selection::Object(obj) => &obj.common.full_name,
-            Selection::Enum(enum_) => &enum_.common.full_name,
+            Selection::Enum(_) => {
+                panic!("enums dont have a full name as they are global per schema")
+            }
         }
     }
 }

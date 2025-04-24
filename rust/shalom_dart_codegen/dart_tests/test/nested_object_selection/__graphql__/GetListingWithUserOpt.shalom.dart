@@ -1,3 +1,5 @@
+import "GlobalObjects.shalom.dart";
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
@@ -229,7 +231,3 @@ class GetListingWithUserOpt_listing_userOpt {
     return {'id': id, 'name': name};
   }
 }
-
-// ------------ Enum DEFINITIONS -------------
-
-// ------------ END Enum DEFINITIONS -------------

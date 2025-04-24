@@ -1,3 +1,5 @@
+import "GlobalObjects.shalom.dart";
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
@@ -79,7 +81,7 @@ class GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus {
 
   final String name;
 
-  final GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status? status;
+  final Status? status;
 
   // keywordargs constructor
   GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus({
@@ -95,15 +97,11 @@ class GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus {
 
     final String name_value = data['name'];
 
-    final GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status?
-    status_value;
+    final Status? status_value;
 
     final String? status$raw = data['status'];
     if (status$raw != null) {
-      status_value =
-          GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status.fromString(
-            status$raw,
-          );
+      status_value = Status.fromString(status$raw);
     } else {
       status_value = null;
     }
@@ -134,15 +132,11 @@ class GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus {
       name_value = name;
     }
 
-    final GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status?
-    status_value;
+    final Status? status_value;
     if (data.containsKey('status')) {
       final String? status$raw = data['status'];
       if (status$raw != null) {
-        status_value =
-            GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status.fromString(
-              status$raw,
-            );
+        status_value = Status.fromString(status$raw);
       } else {
         status_value = null;
       }
@@ -173,37 +167,6 @@ class GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus {
   int get hashCode => Object.hashAll([id, name, status]);
 
   JsonObject toJson() {
-    return {'id': id, 'name': name, 'status': status?.toString()};
+    return {'id': id, 'name': name, 'status': status?.name};
   }
 }
-
-// ------------ Enum DEFINITIONS -------------
-
-enum GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status {
-  COMPLETED,
-
-  FAILED,
-
-  PENDING,
-
-  PROCESSING;
-
-  static GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status fromString(
-    String value,
-  ) {
-    return GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status.values
-        .firstWhere(
-          (e) => e.name.toUpperCase() == value.toUpperCase(),
-          orElse:
-              () =>
-                  throw ArgumentError(
-                    "Unknown GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status $value",
-                  ),
-        );
-  }
-
-  @override
-  String toString() => name.toUpperCase();
-}
-
-// ------------ END Enum DEFINITIONS -------------

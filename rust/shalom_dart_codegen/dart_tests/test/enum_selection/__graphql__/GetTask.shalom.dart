@@ -1,3 +1,5 @@
+import "GlobalObjects.shalom.dart";
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
@@ -62,7 +64,7 @@ class GetTask_task {
 
   final String name;
 
-  final GetTask_task_status status;
+  final Status status;
 
   // keywordargs constructor
   GetTask_task({required this.id, required this.name, required this.status});
@@ -71,9 +73,9 @@ class GetTask_task {
 
     final String name_value = data['name'];
 
-    final GetTask_task_status status_value;
+    final Status status_value;
 
-    status_value = GetTask_task_status.fromString(data['status']);
+    status_value = Status.fromString(data['status']);
 
     return GetTask_task(id: id_value, name: name_value, status: status_value);
   }
@@ -93,9 +95,9 @@ class GetTask_task {
       name_value = name;
     }
 
-    final GetTask_task_status status_value;
+    final Status status_value;
     if (data.containsKey('status')) {
-      status_value = GetTask_task_status.fromString(data['status']);
+      status_value = Status.fromString(data['status']);
     } else {
       status_value = status;
     }
@@ -117,30 +119,6 @@ class GetTask_task {
   int get hashCode => Object.hashAll([id, name, status]);
 
   JsonObject toJson() {
-    return {'id': id, 'name': name, 'status': status.toString()};
+    return {'id': id, 'name': name, 'status': status.name};
   }
 }
-
-// ------------ Enum DEFINITIONS -------------
-
-enum GetTask_task_status {
-  COMPLETED,
-
-  FAILED,
-
-  PENDING,
-
-  PROCESSING;
-
-  static GetTask_task_status fromString(String value) {
-    return GetTask_task_status.values.firstWhere(
-      (e) => e.name.toUpperCase() == value.toUpperCase(),
-      orElse: () => throw ArgumentError("Unknown GetTask_task_status $value"),
-    );
-  }
-
-  @override
-  String toString() => name.toUpperCase();
-}
-
-// ------------ END Enum DEFINITIONS -------------

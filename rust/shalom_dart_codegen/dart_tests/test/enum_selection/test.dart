@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+import "__graphql__/GlobalObjects.shalom.dart";
 import "__graphql__/GetTask.shalom.dart";
 import "__graphql__/GetTaskWithUndecisiveStatus.shalom.dart";
 
@@ -11,7 +12,7 @@ void main() {
       final result = RequestGetTask.fromJson(json);
       expect(result.task?.id, "foo");
       expect(result.task?.name, "do nothing");
-      expect(result.task?.status, GetTask_task_status.FAILED);
+      expect(result.task?.status, Status.FAILED);
     });
 
     test('serialize', () {
@@ -28,13 +29,13 @@ void main() {
         task: GetTask_task(
           id: "foo",
           name: "do nothing",
-          status: GetTask_task_status.FAILED,
+          status: Status.FAILED,
         ),
       );
       final taskJson = initial.task?.toJson();
       taskJson?["status"] = "COMPLETED";
       final updated = initial.updateWithJson({'task': taskJson});
-      expect(updated.task?.status, GetTask_task_status.COMPLETED);
+      expect(updated.task?.status, Status.COMPLETED);
       expect(initial, isNot(updated));
     });
   });
@@ -51,10 +52,7 @@ void main() {
         final result = RequestGetTaskWithUndecisiveStatus.fromJson(json);
         expect(result.taskWithUndecisiveStatus?.id, "foo");
         expect(result.taskWithUndecisiveStatus?.name, "do nothing");
-        expect(
-          result.taskWithUndecisiveStatus?.status,
-          GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status.FAILED,
-        );
+        expect(result.taskWithUndecisiveStatus?.status, Status.FAILED);
       });
       test('null value', () {
         final json = {
@@ -111,10 +109,7 @@ void main() {
         final updated = initial.updateWithJson({
           'taskWithUndecisiveStatus': taskJson,
         });
-        expect(
-          updated.taskWithUndecisiveStatus?.status,
-          GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status.COMPLETED,
-        );
+        expect(updated.taskWithUndecisiveStatus?.status, Status.COMPLETED);
         expect(initial, isNot(updated));
       });
 
@@ -124,9 +119,7 @@ void main() {
               GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus(
                 id: "foo",
                 name: "do nothing",
-                status:
-                    GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status
-                        .FAILED,
+                status: Status.FAILED,
               ),
         );
         final taskJson = initial.taskWithUndecisiveStatus?.toJson();
@@ -134,10 +127,7 @@ void main() {
         final updated = initial.updateWithJson({
           'taskWithUndecisiveStatus': taskJson,
         });
-        expect(
-          updated.taskWithUndecisiveStatus?.status,
-          GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status.COMPLETED,
-        );
+        expect(updated.taskWithUndecisiveStatus?.status, Status.COMPLETED);
         expect(initial, isNot(updated));
       });
       test("some to null", () {
@@ -146,9 +136,7 @@ void main() {
               GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus(
                 id: "foo",
                 name: "do nothing",
-                status:
-                    GetTaskWithUndecisiveStatus_taskWithUndecisiveStatus_status
-                        .FAILED,
+                status: Status.FAILED,
               ),
         );
         final taskJson = initial.taskWithUndecisiveStatus?.toJson();

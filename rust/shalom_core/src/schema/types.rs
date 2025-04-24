@@ -192,7 +192,7 @@ pub struct EnumType {
     pub description: Option<String>,
 
     pub name: String,
-    pub values: HashMap<String, Box<EnumValueDefinition>>,
+    pub values: HashMap<String, EnumValueDefinition>,
 }
 impl Hash for EnumType {
     fn hash<H: Hasher>(&self, state: &mut H) {
