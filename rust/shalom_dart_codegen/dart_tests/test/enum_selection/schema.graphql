@@ -9,15 +9,9 @@ type Task {
   id: ID!
   name: String!
   status: Status!
-}
-
-type TaskWithUndecisiveStatus {
-  id: ID!  
-  name: String!
-  status: Status
+  statusOpt: Status
 }
 
 type Query {
-  task(id: ID!): Task,
-  taskWithUndecisiveStatus(id: ID!): TaskWithUndecisiveStatus 
+  task: Task!,
 }

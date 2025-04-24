@@ -7,33 +7,23 @@ typedef JsonObject = Map<String, dynamic>;
 class RequestGetTask {
   /// class members
 
-  final GetTask_task? task;
+  final GetTask_task task;
 
   // keywordargs constructor
 
-  RequestGetTask({this.task});
+  RequestGetTask({required this.task});
   static RequestGetTask fromJson(JsonObject data) {
-    final GetTask_task? task_value;
+    final GetTask_task task_value;
 
-    final JsonObject? task$raw = data['task'];
-    if (task$raw != null) {
-      task_value = GetTask_task.fromJson(task$raw);
-    } else {
-      task_value = null;
-    }
+    task_value = GetTask_task.fromJson(data['task']);
 
     return RequestGetTask(task: task_value);
   }
 
   RequestGetTask updateWithJson(JsonObject data) {
-    final GetTask_task? task_value;
+    final GetTask_task task_value;
     if (data.containsKey('task')) {
-      final JsonObject? task$raw = data['task'];
-      if (task$raw != null) {
-        task_value = GetTask_task.fromJson(task$raw);
-      } else {
-        task_value = null;
-      }
+      task_value = GetTask_task.fromJson(data['task']);
     } else {
       task_value = task;
     }
@@ -51,7 +41,7 @@ class RequestGetTask {
   int get hashCode => task.hashCode;
 
   JsonObject toJson() {
-    return {'task': task?.toJson()};
+    return {'task': task.toJson()};
   }
 }
 

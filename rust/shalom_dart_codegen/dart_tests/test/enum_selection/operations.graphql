@@ -1,15 +1,17 @@
-query GetTask($taskId: ID!) {
-  task(id: $taskId) {
+query GetTask {
+  task {
     id
     name
     status
   }
 }
 
-query GetTaskWithUndecisiveStatus($taskId: ID!) {
-  taskWithUndecisiveStatus(id: $taskId) {
+query GetTaskStatusOpt {
+  task {
     id
     name
-    status
-  } 
-}  
+    statusOpt
+  }
+}
+
+
