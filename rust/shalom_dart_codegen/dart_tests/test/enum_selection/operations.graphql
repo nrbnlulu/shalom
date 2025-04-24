@@ -1,0 +1,17 @@
+query GetTask {
+  task {
+    id
+    name
+    status
+  }
+}
+
+query GetTaskStatusOpt {
+  task {
+    id
+    name
+    statusOpt
+  }
+}
+
+

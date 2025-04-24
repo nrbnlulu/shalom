@@ -1,0 +1,38 @@
+"""
+Represents the various states of a process or operation.
+foo bar
+"""
+enum Status {
+  """
+  The process is awaiting action or has not started yet.
+  baz
+  """
+  PENDING
+
+  """
+  The process is currently in progress.
+  bezus
+  """
+  PROCESSING
+
+  """
+  The process has been successfully completed.
+  """
+  COMPLETED
+
+  """
+  The process has failed to complete successfully.
+  """
+  FAILED
+}
+
+type Task {
+  id: ID!
+  name: String!
+  status: Status!
+  statusOpt: Status
+}
+
+type Query {
+  task: Task!,
+}

@@ -4,8 +4,9 @@ use std::{
 };
 
 use super::utils::TypeRef;
-use apollo_compiler::{collections::HashMap, Node};
+use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
 /// The definition of a named type, with all information from type extensions folded in.
@@ -186,12 +187,12 @@ impl Hash for UnionType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EnumType {
     pub description: Option<String>,
 
     pub name: String,
-    pub values: HashMap<String, Box<EnumValueDefinition>>,
+    pub members: HashMap<String, EnumValueDefinition>,
 }
 impl Hash for EnumType {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -199,7 +200,7 @@ impl Hash for EnumType {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct EnumValueDefinition {
     pub description: Option<String>,
     pub value: String,

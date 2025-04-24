@@ -1,3 +1,7 @@
+{% if schema.context.types.enums | length > 0 %}
+import "schema.shalom.dart";
+{% endif %}
+
 {% set root_selection = operation.context.root_type.selection_name %}
 {% macro base_object_impl(typename, selections) %}
     /// class members
@@ -6,6 +10,8 @@
         {% if selection.kind == "Object" %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }};
         {% elif selection.kind == "Scalar" %}
+            final {{ type_name_for_selection(selection) }} {{ selection_name }};
+        {% elif selection.kind == "Enum" %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }};
         {% else %}
             throw NotImplemented();
@@ -35,6 +41,19 @@
             {% endif %}
         {% elif selection.kind == "Scalar" %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }}_value = data['{{ selection_name }}'];
+        {% elif selection.kind == "Enum" %}
+            {% set typename = selection.concrete_type.name %}
+            final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
+            {% if selection.is_optional %}
+                final String? {{ selection_name }}$raw = data['{{ selection_name }}']; 
+                if ({{ selection_name }}$raw != null) {
+                    {{ selection_name }}_value = {{ typename }}.fromString({{ selection_name }}$raw);
+                } else {
+                    {{ selection_name }}_value = null;
+                }
+            {% else %}
+                {{ selection_name }}_value = {{ typename }}.fromString(data['{{ selection_name }}']);            
+            {% endif %}
         {% else %}
             throw NotImplemented();
         {% endif %}
@@ -72,6 +91,23 @@
             } else {
             {{ selection_name }}_value = {{ selection_name }};
             }
+        {% elif selection.kind == "Enum" %}
+            {% set typename = selection.concrete_type.name %}
+            final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
+            if (data.containsKey('{{ selection_name }}')) {
+                {% if selection.is_optional %}
+                    final String? {{ selection_name }}$raw = data['{{ selection_name }}']; 
+                    if ({{ selection_name }}$raw != null) {
+                        {{ selection_name }}_value = {{ typename }}.fromString({{ selection_name }}$raw);
+                    } else {
+                        {{ selection_name }}_value = null;
+                    }
+                {% else %}
+                    {{ selection_name }}_value = {{ typename }}.fromString(data['{{ selection_name }}']);            
+                {% endif %}
+            } else {
+                {{ selection_name }}_value = {{ selection_name }};
+            }
         {% else %}
             throw NotImplemented();
         {% endif %}
@@ -87,11 +123,11 @@
     bool operator ==(Object other) {
     return identical(this, other) ||
     (other is {{ typename }} &&
-    {% for selection in selections %}
+    {% for selection in selections -%}
         {% set selection_name = selection.selection_name %}
-        other.{{ selection_name }} == {{ selection_name }} &&
+        other.{{ selection_name }} == {{ selection_name }} {{ "&&"|if_not_last(loop.last) }}
     {% endfor %}
-    true);
+    );
     }
     @override
     int get hashCode =>
@@ -114,6 +150,8 @@
                 {{ selection_name }}{% if selection.is_optional %}?{% endif %}.toJson()
             {% elif selection.kind == "Scalar" %}
                 {{ selection_name }}
+            {% elif selection.kind == "Enum" %}
+                {{ selection_name }}{% if selection.is_optional %}?{% endif %}.name  
             {% else %}
                 throw NotImplemented();
             {% endif %}
@@ -143,4 +181,5 @@ class {{ root_type_name }}{
     }
 {% endfor %}
 
-// ------------ END OBJECT DEFINITIONS -------------
+
+

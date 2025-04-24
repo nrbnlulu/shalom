@@ -30,7 +30,7 @@ class RequestGetString {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetString && other.string == string && true);
+        (other is RequestGetString && other.string == string);
   }
 
   @override
@@ -42,5 +42,3 @@ class RequestGetString {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
-
-// ------------ END OBJECT DEFINITIONS -------------
