@@ -124,7 +124,7 @@ fn generate_operations_file(
 fn generate_schema_file(path: &Path, schema_ctx: Arc<SchemaContext>) {
     info!("rendering schema file");
     let rendered_content = TEMPLATE_ENV.render_schema(schema_ctx);
-    let name = "Schema";
+    let name = "schema";
     let generation_target = path
         .join(GRAPHQL_DIRECTORY)
         .join(format!("{}.{}", name, END_OF_FILE));
