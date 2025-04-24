@@ -64,8 +64,8 @@ impl TemplateEnv<'_> {
         )
         .unwrap();
         env.add_template(
-            "global_objects",
-            include_str!("../templates/global_objects.dart.jinja"),
+            "schema",
+            include_str!("../templates/schema.dart.jinja"),
         )
         .unwrap();
         env.add_function("type_name_for_selection", type_name_for_selection);
@@ -85,11 +85,11 @@ impl TemplateEnv<'_> {
         template.render(&context).unwrap()
     }
 
-    fn render_global_objects<T: Serialize>(&self, schema_ctx: T) -> String {
-        let template = self.env.get_template("global_objects").unwrap();
+    fn render_schema<T: Serialize>(&self, schema_ctx: T) -> String {
+        let template = self.env.get_template("schema").unwrap();
         let mut context = HashMap::new();
         context.insert("schema", context! {context => schema_ctx});
-        trace!("resolved global_objects template; rendering...");
+        trace!("resolved schema template; rendering...");
         template.render(&context).unwrap()
     }
 }
@@ -124,10 +124,10 @@ fn generate_operations_file(
     info!("Generated {}", generation_target.display());
 }
 
-fn generate_global_objects_file(path: &Path, schema_ctx: Arc<SchemaContext>) {
+fn generate_schema_file(path: &Path, schema_ctx: Arc<SchemaContext>) {
     info!("rendering global objects file");
-    let rendered_content = TEMPLATE_ENV.render_global_objects(schema_ctx);
-    let name = "GlobalObjects";
+    let rendered_content = TEMPLATE_ENV.render_schema(schema_ctx);
+    let name = "Schema";
     let generation_target = path
         .join(GRAPHQL_DIRECTORY)
         .join(format!("{}.{}", name, END_OF_FILE));
@@ -162,6 +162,6 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     for (name, operation) in ctx.operations() {
         generate_operations_file(&name, operation, ctx.schema_ctx.clone());
     }
-    generate_global_objects_file(pwd, ctx.schema_ctx.clone());
+    generate_schema_file(pwd, ctx.schema_ctx.clone());
     Ok(())
 }

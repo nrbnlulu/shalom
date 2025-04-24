@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import "__graphql__/GlobalObjects.shalom.dart";
+import "__graphql__/Schema.shalom.dart";
 import "__graphql__/GetTask.shalom.dart";
 import "__graphql__/GetTaskWithUndecisiveStatus.shalom.dart";
 
