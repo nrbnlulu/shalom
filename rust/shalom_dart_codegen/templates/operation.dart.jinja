@@ -1,4 +1,6 @@
+{% if schema.context.types.enums | length > 0 %}
 import "GlobalObjects.shalom.dart";
+{% endif %}
 
 {% set root_selection = operation.context.root_type.selection_name %}
 {% macro base_object_impl(typename, selections) %}
