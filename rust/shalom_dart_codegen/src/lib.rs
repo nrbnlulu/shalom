@@ -118,7 +118,6 @@ fn generate_operations_file(
 ) {
     info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();
-    println!("{:?}", operation_file_path);
     let rendered_content = TEMPLATE_ENV.render_operation(operation, schema_ctx);
     let generation_target = get_generation_path_for_operation(&operation_file_path, name);
     fs::write(&generation_target, rendered_content).unwrap();
