@@ -47,8 +47,7 @@ class RequestGetListinOptWithUserOpt {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is RequestGetListinOptWithUserOpt &&
-            other.listingOpt == listingOpt &&
-            true);
+            other.listingOpt == listingOpt);
   }
 
   @override
@@ -164,8 +163,7 @@ class GetListinOptWithUserOpt_listingOpt {
             other.id == id &&
             other.name == name &&
             other.price == price &&
-            other.userOpt == userOpt &&
-            true);
+            other.userOpt == userOpt);
   }
 
   @override
@@ -235,8 +233,7 @@ class GetListinOptWithUserOpt_listingOpt_userOpt {
     return identical(this, other) ||
         (other is GetListinOptWithUserOpt_listingOpt_userOpt &&
             other.id == id &&
-            other.name == name &&
-            true);
+            other.name == name);
   }
 
   @override
@@ -246,5 +243,3 @@ class GetListinOptWithUserOpt_listingOpt_userOpt {
     return {'id': id, 'name': name};
   }
 }
-
-// ------------ END OBJECT DEFINITIONS -------------

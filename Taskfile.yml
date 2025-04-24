@@ -21,3 +21,6 @@ tasks:
             - cd rust/shalom_dart_codegen/dart_tests && dart format ./test ./lib --set-exit-if-changed
             - cd rust/shalom_dart_codegen/dart_tests && dart analyze ./test ./lib
             - typos
+    test:
+        cmds:
+            - cd rust && cargo test

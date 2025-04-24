@@ -43,8 +43,7 @@ class RequestGetMultipleFields {
     return identical(this, other) ||
         (other is RequestGetMultipleFields &&
             other.id == id &&
-            other.intField == intField &&
-            true);
+            other.intField == intField);
   }
 
   @override
@@ -56,5 +55,3 @@ class RequestGetMultipleFields {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
-
-// ------------ END OBJECT DEFINITIONS -------------

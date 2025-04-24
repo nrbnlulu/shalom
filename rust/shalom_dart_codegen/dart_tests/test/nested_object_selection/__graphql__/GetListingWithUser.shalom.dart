@@ -32,9 +32,7 @@ class RequestGetListingWithUser {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetListingWithUser &&
-            other.listing == listing &&
-            true);
+        (other is RequestGetListingWithUser && other.listing == listing);
   }
 
   @override
@@ -135,8 +133,7 @@ class GetListingWithUser_listing {
             other.id == id &&
             other.name == name &&
             other.price == price &&
-            other.user == user &&
-            true);
+            other.user == user);
   }
 
   @override
@@ -233,8 +230,7 @@ class GetListingWithUser_listing_user {
             other.id == id &&
             other.name == name &&
             other.email == email &&
-            other.age == age &&
-            true);
+            other.age == age);
   }
 
   @override
@@ -244,5 +240,3 @@ class GetListingWithUser_listing_user {
     return {'id': id, 'name': name, 'email': email, 'age': age};
   }
 }
-
-// ------------ END OBJECT DEFINITIONS -------------

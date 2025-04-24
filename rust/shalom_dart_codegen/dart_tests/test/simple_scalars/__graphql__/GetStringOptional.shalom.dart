@@ -31,8 +31,7 @@ class RequestGetStringOptional {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is RequestGetStringOptional &&
-            other.stringOptional == stringOptional &&
-            true);
+            other.stringOptional == stringOptional);
   }
 
   @override
@@ -44,5 +43,3 @@ class RequestGetStringOptional {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
-
-// ------------ END OBJECT DEFINITIONS -------------

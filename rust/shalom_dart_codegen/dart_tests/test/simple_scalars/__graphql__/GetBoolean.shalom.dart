@@ -30,7 +30,7 @@ class RequestGetBoolean {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetBoolean && other.boolean == boolean && true);
+        (other is RequestGetBoolean && other.boolean == boolean);
   }
 
   @override
@@ -42,5 +42,3 @@ class RequestGetBoolean {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
-
-// ------------ END OBJECT DEFINITIONS -------------
