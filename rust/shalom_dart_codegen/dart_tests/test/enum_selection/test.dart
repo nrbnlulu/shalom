@@ -38,7 +38,29 @@ void main() {
       expect(updated.task.status, Status.COMPLETED);
       expect(initial, isNot(updated));
     });
+
+    test("equality", () {
+      final foo = GetTask_task(
+        id: "foo",
+        name: "do nothing",
+        status: Status.FAILED,
+      );
+      final bar = GetTask_task(
+        id: "foo",
+        name: "do nothing",
+        status: Status.FAILED,
+      );
+      expect(foo, bar);
+      expect(foo.hashCode, bar.hashCode);
+      final baz = GetTask_task(
+        id: "foo",
+        name: "do nothing",
+        status: Status.PENDING,
+      );
+      expect(foo, isNot(baz));
+    });
   });
+
   group('test optional enum selection', () {
     group("deserialize", () {
       test('with value', () {
@@ -122,6 +144,27 @@ void main() {
         expect(updated.task.statusOpt, null);
         expect(initial, isNot(updated));
       });
+    });
+
+    test("equality", () {
+      final foo = GetTaskStatusOpt_task(
+        id: "foo",
+        name: "do nothing",
+        statusOpt: null,
+      );
+      final bar = GetTaskStatusOpt_task(
+        id: "foo",
+        name: "do nothing",
+        statusOpt: null,
+      );
+      expect(foo, bar);
+      expect(foo.hashCode, bar.hashCode);
+      final baz = GetTaskStatusOpt_task(
+        id: "foo",
+        name: "do nothing",
+        statusOpt: Status.PENDING,
+      );
+      expect(foo, isNot(baz));
     });
   });
 }
