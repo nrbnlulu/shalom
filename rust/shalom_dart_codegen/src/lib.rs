@@ -7,13 +7,13 @@ use shalom_core::{
     operation::{context::OperationContext, types::Selection},
     schema::context::SchemaContext,
 };
-use std::rc::Rc;
 use std::sync::Arc;
 use std::{
     collections::HashMap,
     fs,
     path::{Path, PathBuf},
 };
+use std::{ops::Deref, rc::Rc};
 
 struct TemplateEnv<'a> {
     env: Environment<'a>,
@@ -28,33 +28,71 @@ lazy_static! {
         ("Boolean".to_string(), "bool".to_string()),
     ]);
 }
+#[cfg(windows)]
+const LINE_ENDING: &str = "\r\n";
+#[cfg(not(windows))]
+const LINE_ENDING: &str = "\n";
 
-fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
-    match selection.0 {
-        Selection::Scalar(scalar) => {
-            let resolved = DEFAULT_SCALARS_MAP.get(&scalar.concrete_type.name).unwrap();
-            if scalar.common.is_optional {
-                format!("{}?", resolved)
-            } else {
-                resolved.clone()
+mod ext_jinja_fns {
+    use super::*;
+
+    pub fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
+        match selection.0 {
+            Selection::Scalar(scalar) => {
+                let resolved = DEFAULT_SCALARS_MAP.get(&scalar.concrete_type.name).unwrap();
+                if scalar.common.is_optional {
+                    format!("{}?", resolved)
+                } else {
+                    resolved.clone()
+                }
             }
-        }
-        Selection::Object(object) => {
-            if object.common.is_optional {
-                format!("{}?", object.common.full_name)
-            } else {
-                object.common.full_name.clone()
+            Selection::Object(object) => {
+                if object.common.is_optional {
+                    format!("{}?", object.common.full_name)
+                } else {
+                    object.common.full_name.clone()
+                }
             }
-        }
-        Selection::Enum(enum_) => {
-            if enum_.common.is_optional {
-                format!("{}?", enum_.concrete_type.name)
-            } else {
-                enum_.concrete_type.name.clone()
+            Selection::Enum(enum_) => {
+                if enum_.common.is_optional {
+                    format!("{}?", enum_.concrete_type.name)
+                } else {
+                    enum_.concrete_type.name.clone()
+                }
             }
         }
     }
+
+    pub fn docstring(value: Option<String>) -> String {
+        match value {
+            Some(doc) => {
+                let mut out = String::new();
+                for (i, line) in doc.lines().enumerate() {
+                    let trimmed = line.trim();
+                    if trimmed.is_empty() {
+                        continue;
+                    }
+                    if i > 0 {
+                        out.push_str(LINE_ENDING);
+                    }
+                    out.push_str("/// ");
+                    out.push_str(trimmed);
+                }
+                out
+            }
+            None => String::new(),
+        }
+    }
+
+    pub fn value_or_last(value: String, last: String, is_last: bool) -> String {
+        if is_last {
+            last
+        } else {
+            value
+        }
+    }
 }
+
 impl TemplateEnv<'_> {
     fn new() -> Self {
         let mut env = Environment::new();
@@ -65,7 +103,13 @@ impl TemplateEnv<'_> {
         .unwrap();
         env.add_template("schema", include_str!("../templates/schema.dart.jinja"))
             .unwrap();
-        env.add_function("type_name_for_selection", type_name_for_selection);
+        env.add_function(
+            "type_name_for_selection",
+            ext_jinja_fns::type_name_for_selection,
+        );
+        env.add_function("docstring", ext_jinja_fns::docstring);
+        env.add_function("value_or_last", ext_jinja_fns::value_or_last);
+
         Self { env }
     }
 
@@ -121,13 +165,12 @@ fn generate_operations_file(
     info!("Generated {}", generation_target.display());
 }
 
-fn generate_schema_file(path: &Path, schema_ctx: Arc<SchemaContext>) {
+fn generate_schema_file(path: &Path, schema_ctx: &SchemaContext) {
     info!("rendering schema file");
     let rendered_content = TEMPLATE_ENV.render_schema(schema_ctx);
-    let name = "schema";
     let generation_target = path
         .join(GRAPHQL_DIRECTORY)
-        .join(format!("{}.{}", name, END_OF_FILE));
+        .join(format!("schema.{}", END_OF_FILE));
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
 }
@@ -156,9 +199,9 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
             }
         }
     }
+    generate_schema_file(pwd, ctx.schema_ctx.deref());
     for (name, operation) in ctx.operations() {
         generate_operations_file(&name, operation, ctx.schema_ctx.clone());
     }
-    generate_schema_file(pwd, ctx.schema_ctx.clone());
     Ok(())
 }

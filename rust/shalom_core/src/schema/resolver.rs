@@ -143,18 +143,18 @@ fn resolve_enum(
     if context.get_type(&name).is_some() {
         return TypeRef::new(context, name);
     }
-    let mut enum_values = HashMap::new();
+    let mut members = HashMap::new();
     for (name, value) in origin.values.iter() {
         let description = value.description.as_ref().map(|v| v.to_string());
         let value = value.value.to_string();
         let enum_value_definition = EnumValueDefinition { description, value };
-        enum_values.insert(name.to_string(), enum_value_definition);
+        members.insert(name.to_string(), enum_value_definition);
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
     let enum_type = EnumType {
         description,
         name: name.clone(),
-        values: enum_values,
+        members,
     };
     context.add_enum(name.clone(), Node::new(enum_type));
     TypeRef::new(context, name)
