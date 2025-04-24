@@ -32,7 +32,7 @@ class RequestGetListing {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetListing && other.listing == listing && true);
+        (other is RequestGetListing && other.listing == listing);
   }
 
   @override
@@ -109,8 +109,7 @@ class GetListing_listing {
         (other is GetListing_listing &&
             other.id == id &&
             other.name == name &&
-            other.price == price &&
-            true);
+            other.price == price);
   }
 
   @override

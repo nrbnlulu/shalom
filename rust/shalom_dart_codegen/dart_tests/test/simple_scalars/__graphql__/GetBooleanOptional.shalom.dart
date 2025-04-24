@@ -31,8 +31,7 @@ class RequestGetBooleanOptional {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is RequestGetBooleanOptional &&
-            other.booleanOptional == booleanOptional &&
-            true);
+            other.booleanOptional == booleanOptional);
   }
 
   @override

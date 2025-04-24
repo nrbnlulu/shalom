@@ -30,7 +30,7 @@ class RequestGetInt {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetInt && other.intField == intField && true);
+        (other is RequestGetInt && other.intField == intField);
   }
 
   @override

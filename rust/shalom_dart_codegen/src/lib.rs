@@ -91,6 +91,14 @@ mod ext_jinja_fns {
             value
         }
     }
+
+    pub fn if_not_last(value: String, is_last: bool) -> String {
+        if is_last {
+            String::new()
+        } else {
+            value
+        }
+    }
 }
 
 impl TemplateEnv<'_> {
@@ -109,6 +117,7 @@ impl TemplateEnv<'_> {
         );
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
+        env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
 
         Self { env }
     }

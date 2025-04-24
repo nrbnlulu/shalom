@@ -34,7 +34,7 @@ class RequestGetTask {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetTask && other.task == task && true);
+        (other is RequestGetTask && other.task == task);
   }
 
   @override
@@ -101,8 +101,7 @@ class GetTask_task {
         (other is GetTask_task &&
             other.id == id &&
             other.name == name &&
-            other.status == status &&
-            true);
+            other.status == status);
   }
 
   @override

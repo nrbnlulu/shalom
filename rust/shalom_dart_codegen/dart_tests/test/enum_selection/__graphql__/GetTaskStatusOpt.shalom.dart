@@ -34,7 +34,7 @@ class RequestGetTaskStatusOpt {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetTaskStatusOpt && other.task == task && true);
+        (other is RequestGetTaskStatusOpt && other.task == task);
   }
 
   @override
@@ -123,8 +123,7 @@ class GetTaskStatusOpt_task {
         (other is GetTaskStatusOpt_task &&
             other.id == id &&
             other.name == name &&
-            other.statusOpt == statusOpt &&
-            true);
+            other.statusOpt == statusOpt);
   }
 
   @override

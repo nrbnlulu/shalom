@@ -123,11 +123,11 @@ import "schema.shalom.dart";
     bool operator ==(Object other) {
     return identical(this, other) ||
     (other is {{ typename }} &&
-    {% for selection in selections %}
+    {% for selection in selections -%}
         {% set selection_name = selection.selection_name %}
-        other.{{ selection_name }} == {{ selection_name }} &&
+        other.{{ selection_name }} == {{ selection_name }} {{ "&&"|if_not_last(loop.last) }}
     {% endfor %}
-    true);
+    );
     }
     @override
     int get hashCode =>

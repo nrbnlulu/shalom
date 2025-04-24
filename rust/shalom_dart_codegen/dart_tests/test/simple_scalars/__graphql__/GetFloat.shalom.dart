@@ -30,7 +30,7 @@ class RequestGetFloat {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetFloat && other.float == float && true);
+        (other is RequestGetFloat && other.float == float);
   }
 
   @override

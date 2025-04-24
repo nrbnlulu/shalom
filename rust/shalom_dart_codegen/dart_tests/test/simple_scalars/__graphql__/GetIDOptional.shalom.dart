@@ -30,9 +30,7 @@ class RequestGetIDOptional {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetIDOptional &&
-            other.idOptional == idOptional &&
-            true);
+        (other is RequestGetIDOptional && other.idOptional == idOptional);
   }
 
   @override

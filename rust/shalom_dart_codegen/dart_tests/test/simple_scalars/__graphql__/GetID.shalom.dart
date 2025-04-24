@@ -29,8 +29,7 @@ class RequestGetID {
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is RequestGetID && other.id == id && true);
+    return identical(this, other) || (other is RequestGetID && other.id == id);
   }
 
   @override

@@ -31,8 +31,7 @@ class RequestGetFloatOptional {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is RequestGetFloatOptional &&
-            other.floatOptional == floatOptional &&
-            true);
+            other.floatOptional == floatOptional);
   }
 
   @override
