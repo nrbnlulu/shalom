@@ -125,7 +125,7 @@ fn generate_operations_file(
 }
 
 fn generate_schema_file(path: &Path, schema_ctx: Arc<SchemaContext>) {
-    info!("rendering global objects file");
+    info!("rendering schema file");
     let rendered_content = TEMPLATE_ENV.render_schema(schema_ctx);
     let name = "Schema";
     let generation_target = path
