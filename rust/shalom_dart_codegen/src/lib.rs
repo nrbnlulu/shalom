@@ -63,11 +63,8 @@ impl TemplateEnv<'_> {
             include_str!("../templates/operation.dart.jinja"),
         )
         .unwrap();
-        env.add_template(
-            "schema",
-            include_str!("../templates/schema.dart.jinja"),
-        )
-        .unwrap();
+        env.add_template("schema", include_str!("../templates/schema.dart.jinja"))
+            .unwrap();
         env.add_function("type_name_for_selection", type_name_for_selection);
         Self { env }
     }
