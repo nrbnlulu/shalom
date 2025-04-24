@@ -31,9 +31,6 @@ enum Status {
         );
     }
   }
-
-  @override
-  String toString() => name.toUpperCase();
 }
 
 // ------------ END Enum DEFINITIONS -------------
