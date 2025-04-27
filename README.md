@@ -5,7 +5,7 @@
 ### Roadmap
 - [x] builtin scalars
 - [ ] custom scalars
-- [ ] enums
+- [x] enums
 - [x] object selection
 - [x] nested objects
 - [ ] unions
@@ -18,6 +18,15 @@
     - [ ] unions
     - [ ] fragments
     - [ ] nested list
-    
 - [ ] Node interface real time updates.
 - [ ] defer / stream
+- [ ] input
+    - [ ] scalar
+    - [ ] object
+    - [ ] enum
+    - [ ] oneOf
+    - [ ] list of
+        - [ ] scalar
+        - [ ] object
+        - [ ] enum
+        - [ ] oneOf  
