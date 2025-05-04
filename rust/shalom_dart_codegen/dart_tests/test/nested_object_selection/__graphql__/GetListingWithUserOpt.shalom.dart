@@ -426,14 +426,33 @@ class RequestGetListingWithUserOpt extends Requestable {
         required this.variables,
     });
 
+    String selectionsJsonToQuery(JsonObject selection) {
+        List<String> selectionItems = [];
+        for (var entry in selection.entries) {
+            if (entry.value is JsonObject) {
+                String subSelections = selectionsJsonToQuery(entry.value);
+                selectionItems.add("${entry.key} $subSelections");
+            } else {
+                selectionItems.add(entry.key);   
+            }
+        } 
+        String selectionItemsString = selectionItems.join(" ");
+        return "{$selectionItemsString}";
+    }  
+
+    String queryString() {
+        String selectionString = this.selectionsJsonToQuery(operation.toJson()); 
+        String variablesString = variables.toTypes().entries.map((entry) => '\$${entry.key}: ${entry.value}').join(", "); 
+        String queryString = "query GetListingWithUserOpt($variablesString) $selectionString";
+        return queryString;
+    } 
+
     Request toRequest() {
-        final jsonEncoder = JsonEncoder();
-        String queryString = jsonEncoder.convert(operation.toJson()); 
         return Request(
-            query: queryString, 
+            query: this.queryString(), 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
-            StringopName: "GetListingWithUserOpt"
+            StringopName: 'GetListingWithUserOpt'
         );
     }
 }
@@ -446,11 +465,15 @@ class GetListingWithUserOptVariables {
         
     );
 
+    JsonObject toTypes() {
+        return {
+              
+        };
+    }  
+
     JsonObject toJson() {
         return {
               
         };
     } 
 }
-
-

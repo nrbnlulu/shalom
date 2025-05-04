@@ -40,8 +40,7 @@ class Request {
       return {
           "query": query,
           "variables": variables,
-          "operation_type": opType.toString(), 
-          "op_name": StringopName 
+          "op": StringopName 
       };
     }
     
@@ -55,7 +54,15 @@ class Response {
         required this.data,
         required this.opName
     });
+
+    JsonObject toJson() {
+      return {
+        "data": data,
+        "opName": opName
+      };
+    }
 } 
+
 
 abstract class Requestable {
     Request toRequest();
