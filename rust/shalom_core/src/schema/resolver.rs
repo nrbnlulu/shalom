@@ -88,7 +88,7 @@ fn resolve_scalar(
 ) -> TypeRef {
     // Check if the type is already resolved
     if context.get_type(&name).is_some() {
-        return TypeRef::new(context.clone(), name);
+        return TypeRef::new(name);
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
     let scalar = Node::new(ScalarType {
@@ -96,7 +96,7 @@ fn resolve_scalar(
         description,
     });
     context.add_scalar(name.clone(), scalar).unwrap();
-    TypeRef::new(context.clone(), name)
+    TypeRef::new(name)
 }
 
 fn resolve_object(
@@ -106,7 +106,7 @@ fn resolve_object(
 ) -> TypeRef {
     // Check if the type is already resolved
     if context.get_type(&name).is_some() {
-        return TypeRef::new(context.clone(), name);
+        return TypeRef::new(name);
     }
     let mut fields = Vec::new();
     for (name, field) in origin.fields.iter() {
@@ -131,7 +131,7 @@ fn resolve_object(
         implements_interfaces: HashSet::new(),
     });
     context.add_object(name.clone(), object).unwrap();
-    TypeRef::new(context.clone(), name)
+    TypeRef::new( name)
 }
 
 #[allow(unused)]
@@ -141,7 +141,7 @@ fn resolve_enum(
     origin: Node<apollo_schema::EnumType>,
 ) -> TypeRef {
     if context.get_type(&name).is_some() {
-        return TypeRef::new(context, name);
+        return TypeRef::new(name);
     }
     let mut members = HashMap::new();
     for (name, value) in origin.values.iter() {
@@ -157,22 +157,22 @@ fn resolve_enum(
         members,
     };
     context.add_enum(name.clone(), Node::new(enum_type));
-    TypeRef::new(context, name)
+    TypeRef::new( name)
 }
 
 pub fn resolve_type(context: SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {
     match origin {
         apollo_schema::Type::Named(named) => {
-            FieldType::Named(TypeRef::new(context, named.to_string()))
+            FieldType::Named(TypeRef::new( named.to_string()))
         }
         apollo_schema::Type::NonNullNamed(non_null) => {
-            FieldType::NonNullNamed(TypeRef::new(context, non_null.as_str().to_string()))
+            FieldType::NonNullNamed(TypeRef::new( non_null.as_str().to_string()))
         }
         apollo_schema::Type::List(of_type) => {
-            FieldType::List(Box::new(resolve_type(context, *of_type)))
+            FieldType::List(Box::new(resolve_type( context, *of_type)))
         }
         apollo_schema::Type::NonNullList(of_type) => {
-            FieldType::NonNullList(Box::new(resolve_type(context, *of_type)))
+            FieldType::NonNullList(Box::new(resolve_type( context, *of_type)))
         }
     }
 }
@@ -220,13 +220,13 @@ mod tests {
         let object = ctx.get_type("Query").unwrap().object().unwrap();
 
         let hello_field = object.get_field("hello").unwrap();
-        assert!(hello_field.ty.get_scalar().unwrap().is_string());
+        assert!(hello_field.ty.get_scalar(&ctx).unwrap().is_string());
         let world_field = object.get_field("world").unwrap();
-        assert!(world_field.ty.get_scalar().unwrap().is_int());
+        assert!(world_field.ty.get_scalar(&ctx).unwrap().is_int());
         let id_field = object.get_field("id").unwrap();
-        assert!(id_field.ty.get_scalar().unwrap().is_id());
+        assert!(id_field.ty.get_scalar(&ctx).unwrap().is_id());
         let foo_field = object.get_field("foo").unwrap();
-        assert!(foo_field.ty.get_scalar().unwrap().is_float());
+        assert!(foo_field.ty.get_scalar(&ctx).unwrap().is_float());
         // optional
         assert!(foo_field.ty.is_nullable());
     }

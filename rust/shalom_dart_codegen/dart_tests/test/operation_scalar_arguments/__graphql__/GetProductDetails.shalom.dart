@@ -11,77 +11,87 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetListing{
+class GetProductDetails{
 
     /// class members
     
         
-            final GetListing_listing listing;
+            final GetProductDetails_product? product;
         
     
     // keywordargs constructor
-    GetListing({
-    required
-        this.listing,
+    GetProductDetails({
+    
+        this.product,
     
     });
-    static GetListing fromJson(JsonObject data) {
+    static GetProductDetails fromJson(JsonObject data) {
     
         
-            final GetListing_listing listing_value;
+            final GetProductDetails_product? product_value;
             
-                listing_value = GetListing_listing.fromJson(data['listing']);            
+                final JsonObject? product$raw = data['product']; 
+                if (product$raw != null) {
+                    product_value = GetProductDetails_product.fromJson(product$raw);
+                } else {
+                    product_value = null;
+                }
             
         
     
-    return GetListing(
+    return GetProductDetails(
     
         
-        listing: listing_value,
+        product: product_value,
     
     );
     }
-    GetListing updateWithJson(JsonObject data) {
+    GetProductDetails updateWithJson(JsonObject data) {
     
         
-        final GetListing_listing listing_value;
-        if (data.containsKey('listing')) {
+        final GetProductDetails_product? product_value;
+        if (data.containsKey('product')) {
             
-                listing_value = GetListing_listing.fromJson(data['listing']);            
+                final JsonObject? product$raw = data['product']; 
+                if (product$raw != null) {
+                    product_value = GetProductDetails_product.fromJson(product$raw);
+                } else {
+                    product_value = null;
+                }
             
         } else {
-            listing_value = listing;
+            product_value = product;
         }
         
     
-    return GetListing(
+    return GetProductDetails(
     
         
-        listing: listing_value,
+        product: product_value,
     
     );
     }
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetListing &&
+    (other is GetProductDetails &&
     
-        other.listing == listing 
+        other.product == product 
     
     );
     }
     @override
     int get hashCode =>
     
-        listing.hashCode;
+        product.hashCode;
     
     JsonObject toJson() {
     return {
     
         
-        'listing':
+        'product':
             
-                listing.toJson()
+                product?.toJson()
             
         ,
     
@@ -93,7 +103,7 @@ class GetListing{
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class GetListing_listing  {
+    class GetProductDetails_product  {
         
     /// class members
     
@@ -106,20 +116,26 @@ class GetListing{
         
     
         
-            final int? price;
+            final double price;
+        
+    
+        
+            final double? discountedPrice;
         
     
     // keywordargs constructor
-    GetListing_listing({
+    GetProductDetails_product({
     required
         this.id,
     required
         this.name,
-    
+    required
         this.price,
     
+        this.discountedPrice,
+    
     });
-    static GetListing_listing fromJson(JsonObject data) {
+    static GetProductDetails_product fromJson(JsonObject data) {
     
         
             final String id_value = data['id'];
@@ -130,10 +146,14 @@ class GetListing{
         
     
         
-            final int? price_value = data['price'];
+            final double price_value = data['price'];
         
     
-    return GetListing_listing(
+        
+            final double? discountedPrice_value = data['discountedPrice'];
+        
+    
+    return GetProductDetails_product(
     
         
         id: id_value,
@@ -144,9 +164,12 @@ class GetListing{
         
         price: price_value,
     
+        
+        discountedPrice: discountedPrice_value,
+    
     );
     }
-    GetListing_listing updateWithJson(JsonObject data) {
+    GetProductDetails_product updateWithJson(JsonObject data) {
     
         
             final String id_value;
@@ -167,7 +190,7 @@ class GetListing{
         
     
         
-            final int? price_value;
+            final double price_value;
             if (data.containsKey('price')) {
             price_value = data['price'];
             } else {
@@ -175,7 +198,16 @@ class GetListing{
             }
         
     
-    return GetListing_listing(
+        
+            final double? discountedPrice_value;
+            if (data.containsKey('discountedPrice')) {
+            discountedPrice_value = data['discountedPrice'];
+            } else {
+            discountedPrice_value = discountedPrice;
+            }
+        
+    
+    return GetProductDetails_product(
     
         
         id: id_value,
@@ -186,18 +218,23 @@ class GetListing{
         
         price: price_value,
     
+        
+        discountedPrice: discountedPrice_value,
+    
     );
     }
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetListing_listing &&
+    (other is GetProductDetails_product &&
     
         other.id == id &&
     
         other.name == name &&
     
-        other.price == price 
+        other.price == price &&
+    
+        other.discountedPrice == discountedPrice 
     
     );
     }
@@ -214,6 +251,9 @@ class GetListing{
         
             
             price,
+        
+            
+            discountedPrice,
         
         ]);
     
@@ -241,6 +281,13 @@ class GetListing{
             
         ,
     
+        
+        'discountedPrice':
+            
+                discountedPrice
+            
+        ,
+    
     };
     }
 
@@ -249,11 +296,11 @@ class GetListing{
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-class RequestGetListing extends Requestable {
-    final GetListing operation;
-    final GetListingVariables variables;
+class RequestGetProductDetails extends Requestable {
+    final GetProductDetails operation;
+    final GetProductDetailsVariables variables;
 
-    RequestGetListing({
+    RequestGetProductDetails({
         required this.operation,  
         required this.variables,
     });
@@ -265,21 +312,43 @@ class RequestGetListing extends Requestable {
             query: queryString, 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
-            StringopName: "GetListing"
+            StringopName: "GetProductDetails"
         );
     }
 }
 
 
-class GetListingVariables {
+class GetProductDetailsVariables {
+    
+    final bool calculateDiscount;
+    
+    final String productId;
+    
+    final double userDiscount;
     
 
-    GetListingVariables(
+    GetProductDetailsVariables(
+        
+            {
+            
+                required this.calculateDiscount,
+            
+                required this.productId,
+            
+                required this.userDiscount,
+            
+            }
         
     );
 
     JsonObject toJson() {
         return {
+            
+            'calculateDiscount': calculateDiscount,
+            
+            'productId': productId,
+            
+            'userDiscount': userDiscount,
               
         };
     } 

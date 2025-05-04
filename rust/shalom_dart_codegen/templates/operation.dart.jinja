@@ -1,6 +1,8 @@
 {% if schema.context.types.enums | length > 0 %}
 import "schema.shalom.dart";
 {% endif %}
+import 'dart:convert';
+import 'package:shalom_core/shalom_core.dart';
 
 {% set root_selection = operation.context.root_type.selection_name %}
 {% macro base_object_impl(typename, selections) %}
@@ -166,9 +168,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-{% set root_type_name %}
-    Request{{ root_selection }}
-{% endset %}
+{% set root_type_name = root_selection %}
 class {{ root_type_name }}{
 {{ base_object_impl(root_type_name, operation.context.root_type.selections) }}
 }
@@ -180,6 +180,54 @@ class {{ root_type_name }}{
         {{ base_object_impl(full_name, selection.selections) }}
     }
 {% endfor %}
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class Request{{ root_selection }} extends Requestable {
+    final {{ root_type_name }} operation;
+    final {{ root_selection }}Variables variables;
+
+    Request{{ root_selection }}({
+        required this.operation,  
+        required this.variables,
+    });
+
+    Request toRequest() {
+        final jsonEncoder = JsonEncoder();
+        String queryString = jsonEncoder.convert(operation.toJson()); 
+        return Request(
+            query: queryString, 
+            variables: variables.toJson(), 
+            opType: OperationType.{{ operation.context.op_ty.name }}, 
+            StringopName: "{{ root_selection }}"
+        );
+    }
+}
+
+{% set variables = operation.context.variables %}
+class {{ root_selection }}Variables {
+    {% for name, variable in variables | items %}
+    final {{ type_name_for_variable(variable) }} {{ name }};
+    {% endfor %}
+
+    {{ root_selection }}Variables(
+        {% if variables | length > 0 %}
+            {
+            {% for name, variable in variables | items %}
+                required this.{{ name }},
+            {% endfor %}
+            }
+        {% endif %}
+    );
+
+    JsonObject toJson() {
+        return {
+            {%  for name, variable in variables | items %}
+            '{{ name }}': {{ name }},
+            {% endfor %}  
+        };
+    } 
+}
 
 
 

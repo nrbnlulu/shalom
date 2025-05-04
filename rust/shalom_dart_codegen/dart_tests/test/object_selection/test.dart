@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+import 'package:shalom_core/shalom_core.dart';
 import "__graphql__/GetListing.shalom.dart";
 import "__graphql__/GetListingOpt.shalom.dart";
 
@@ -8,7 +9,7 @@ void main() {
       final json = {
         "listing": {"id": "foo", "name": "video games", "price": 100},
       };
-      final result = RequestGetListing.fromJson(json);
+      final result = GetListing.fromJson(json);
       expect(result.listing.id, "foo");
       expect(result.listing.name, "video games");
       expect(result.listing.price, 100);
@@ -18,13 +19,13 @@ void main() {
       final data = {
         "listing": {"id": "foo", "name": "video games", "price": 100},
       };
-      final initial = RequestGetListing.fromJson(data);
+      final initial = GetListing.fromJson(data);
       final json = initial.toJson();
       expect(json, data);
     });
 
     test("update", () {
-      final initial = RequestGetListing(
+      final initial = GetListing(
         listing: GetListing_listing(id: "foo", name: "video games", price: 100),
       );
       final listingJson = initial.listing.toJson();
@@ -41,7 +42,7 @@ void main() {
         final json = {
           "listingOpt": {"id": "foo", "name": "video games", "price": 100},
         };
-        final result = RequestGetListingOpt.fromJson(json);
+        final result = GetListingOpt.fromJson(json);
         expect(result.listingOpt?.id, "foo");
         expect(result.listingOpt?.name, "video games");
         expect(result.listingOpt?.price, 100);
@@ -49,7 +50,7 @@ void main() {
 
       test('null value', () {
         final json = {"listingOpt": null};
-        final result = RequestGetListingOpt.fromJson(json);
+        final result = GetListingOpt.fromJson(json);
         expect(result.listingOpt, null);
       });
     });
@@ -59,14 +60,14 @@ void main() {
         final data = {
           "listingOpt": {"id": "foo", "name": "video games", "price": 100},
         };
-        final initial = RequestGetListingOpt.fromJson(data);
+        final initial = GetListingOpt.fromJson(data);
         final json = initial.toJson();
         expect(json, data);
       });
 
       test('null value', () {
         final data = {"listingOpt": null};
-        final initial = RequestGetListingOpt.fromJson(data);
+        final initial = GetListingOpt.fromJson(data);
         final json = initial.toJson();
         expect(json, data);
       });
@@ -74,7 +75,7 @@ void main() {
 
     group('updateWithJson', () {
       test('null to some', () {
-        final initial = RequestGetListingOpt(listingOpt: null);
+        final initial = GetListingOpt(listingOpt: null);
 
         final listingJson = {"id": "foo", "name": "video games", "price": 110};
 
@@ -84,7 +85,7 @@ void main() {
       });
 
       test('some to some', () {
-        final initial = RequestGetListingOpt(
+        final initial = GetListingOpt(
           listingOpt: GetListingOpt_listingOpt(
             id: "foo",
             name: "video games",
@@ -101,7 +102,7 @@ void main() {
       });
 
       test('some to null', () {
-        final initial = RequestGetListingOpt(
+        final initial = GetListingOpt(
           listingOpt: GetListingOpt_listingOpt(
             id: "foo",
             name: "video games",

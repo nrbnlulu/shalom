@@ -1,0 +1,8 @@
+query GetProductDetails($productId: ID!, $userDiscount: Float, $calculateDiscount: Boolean) {
+  product(id: $productId, discount: $userDiscount) {
+    id
+    name
+    price
+    discountedPrice(applyDiscount: $calculateDiscount)
+  }
+}

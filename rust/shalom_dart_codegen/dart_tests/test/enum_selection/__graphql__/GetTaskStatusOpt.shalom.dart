@@ -1,135 +1,307 @@
+
 import "schema.shalom.dart";
+
+import 'dart:convert';
+import 'package:shalom_core/shalom_core.dart';
+
+
 
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetTaskStatusOpt {
-  /// class members
 
-  final GetTaskStatusOpt_task task;
 
-  // keywordargs constructor
 
-  RequestGetTaskStatusOpt({required this.task});
-  static RequestGetTaskStatusOpt fromJson(JsonObject data) {
-    final GetTaskStatusOpt_task task_value;
+class GetTaskStatusOpt{
 
-    task_value = GetTaskStatusOpt_task.fromJson(data['task']);
-
-    return RequestGetTaskStatusOpt(task: task_value);
-  }
-
-  RequestGetTaskStatusOpt updateWithJson(JsonObject data) {
-    final GetTaskStatusOpt_task task_value;
-    if (data.containsKey('task')) {
-      task_value = GetTaskStatusOpt_task.fromJson(data['task']);
-    } else {
-      task_value = task;
+    /// class members
+    
+        
+            final GetTaskStatusOpt_task task;
+        
+    
+    // keywordargs constructor
+    GetTaskStatusOpt({
+    required
+        this.task,
+    
+    });
+    static GetTaskStatusOpt fromJson(JsonObject data) {
+    
+        
+            final GetTaskStatusOpt_task task_value;
+            
+                task_value = GetTaskStatusOpt_task.fromJson(data['task']);            
+            
+        
+    
+    return GetTaskStatusOpt(
+    
+        
+        task: task_value,
+    
+    );
+    }
+    GetTaskStatusOpt updateWithJson(JsonObject data) {
+    
+        
+        final GetTaskStatusOpt_task task_value;
+        if (data.containsKey('task')) {
+            
+                task_value = GetTaskStatusOpt_task.fromJson(data['task']);            
+            
+        } else {
+            task_value = task;
+        }
+        
+    
+    return GetTaskStatusOpt(
+    
+        
+        task: task_value,
+    
+    );
+    }
+    @override
+    bool operator ==(Object other) {
+    return identical(this, other) ||
+    (other is GetTaskStatusOpt &&
+    
+        other.task == task 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        task.hashCode;
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'task':
+            
+                task.toJson()
+            
+        ,
+    
+    };
     }
 
-    return RequestGetTaskStatusOpt(task: task_value);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is RequestGetTaskStatusOpt && other.task == task);
-  }
-
-  @override
-  int get hashCode => task.hashCode;
-
-  JsonObject toJson() {
-    return {'task': task.toJson()};
-  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class GetTaskStatusOpt_task {
-  /// class members
 
-  final String id;
-
-  final String name;
-
-  final Status? statusOpt;
-
-  // keywordargs constructor
-  GetTaskStatusOpt_task({required this.id, required this.name, this.statusOpt});
-  static GetTaskStatusOpt_task fromJson(JsonObject data) {
-    final String id_value = data['id'];
-
-    final String name_value = data['name'];
-
-    final Status? statusOpt_value;
-
-    final String? statusOpt$raw = data['statusOpt'];
-    if (statusOpt$raw != null) {
-      statusOpt_value = Status.fromString(statusOpt$raw);
-    } else {
-      statusOpt_value = null;
-    }
-
+    class GetTaskStatusOpt_task  {
+        
+    /// class members
+    
+        
+            final String id;
+        
+    
+        
+            final String name;
+        
+    
+        
+            final Status? statusOpt;
+        
+    
+    // keywordargs constructor
+    GetTaskStatusOpt_task({
+    required
+        this.id,
+    required
+        this.name,
+    
+        this.statusOpt,
+    
+    });
+    static GetTaskStatusOpt_task fromJson(JsonObject data) {
+    
+        
+            final String id_value = data['id'];
+        
+    
+        
+            final String name_value = data['name'];
+        
+    
+        
+            
+            final Status? statusOpt_value;
+            
+                final String? statusOpt$raw = data['statusOpt']; 
+                if (statusOpt$raw != null) {
+                    statusOpt_value = Status.fromString(statusOpt$raw);
+                } else {
+                    statusOpt_value = null;
+                }
+            
+        
+    
     return GetTaskStatusOpt_task(
-      id: id_value,
-
-      name: name_value,
-
-      statusOpt: statusOpt_value,
+    
+        
+        id: id_value,
+    
+        
+        name: name_value,
+    
+        
+        statusOpt: statusOpt_value,
+    
     );
-  }
-
-  GetTaskStatusOpt_task updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      id_value = data['id'];
-    } else {
-      id_value = id;
     }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      name_value = data['name'];
-    } else {
-      name_value = name;
-    }
-
-    final Status? statusOpt_value;
-    if (data.containsKey('statusOpt')) {
-      final String? statusOpt$raw = data['statusOpt'];
-      if (statusOpt$raw != null) {
-        statusOpt_value = Status.fromString(statusOpt$raw);
-      } else {
-        statusOpt_value = null;
-      }
-    } else {
-      statusOpt_value = statusOpt;
-    }
-
+    GetTaskStatusOpt_task updateWithJson(JsonObject data) {
+    
+        
+            final String id_value;
+            if (data.containsKey('id')) {
+            id_value = data['id'];
+            } else {
+            id_value = id;
+            }
+        
+    
+        
+            final String name_value;
+            if (data.containsKey('name')) {
+            name_value = data['name'];
+            } else {
+            name_value = name;
+            }
+        
+    
+        
+            
+            final Status? statusOpt_value;
+            if (data.containsKey('statusOpt')) {
+                
+                    final String? statusOpt$raw = data['statusOpt']; 
+                    if (statusOpt$raw != null) {
+                        statusOpt_value = Status.fromString(statusOpt$raw);
+                    } else {
+                        statusOpt_value = null;
+                    }
+                
+            } else {
+                statusOpt_value = statusOpt;
+            }
+        
+    
     return GetTaskStatusOpt_task(
-      id: id_value,
-
-      name: name_value,
-
-      statusOpt: statusOpt_value,
+    
+        
+        id: id_value,
+    
+        
+        name: name_value,
+    
+        
+        statusOpt: statusOpt_value,
+    
     );
-  }
-
-  @override
-  bool operator ==(Object other) {
+    }
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is GetTaskStatusOpt_task &&
-            other.id == id &&
-            other.name == name &&
-            other.statusOpt == statusOpt);
-  }
+    (other is GetTaskStatusOpt_task &&
+    
+        other.id == id &&
+    
+        other.name == name &&
+    
+        other.statusOpt == statusOpt 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        Object.hashAll([
+        
+            
+            id,
+        
+            
+            name,
+        
+            
+            statusOpt,
+        
+        ]);
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'id':
+            
+                id
+            
+        ,
+    
+        
+        'name':
+            
+                name
+            
+        ,
+    
+        
+        'statusOpt':
+            
+                statusOpt?.name  
+            
+        ,
+    
+    };
+    }
 
-  @override
-  int get hashCode => Object.hashAll([id, name, statusOpt]);
+    }
 
-  JsonObject toJson() {
-    return {'id': id, 'name': name, 'statusOpt': statusOpt?.name};
-  }
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetTaskStatusOpt extends Requestable {
+    final GetTaskStatusOpt operation;
+    final GetTaskStatusOptVariables variables;
+
+    RequestGetTaskStatusOpt({
+        required this.operation,  
+        required this.variables,
+    });
+
+    Request toRequest() {
+        final jsonEncoder = JsonEncoder();
+        String queryString = jsonEncoder.convert(operation.toJson()); 
+        return Request(
+            query: queryString, 
+            variables: variables.toJson(), 
+            opType: OperationType.Query, 
+            StringopName: "GetTaskStatusOpt"
+        );
+    }
 }
+
+
+class GetTaskStatusOptVariables {
+    
+
+    GetTaskStatusOptVariables(
+        
+    );
+
+    JsonObject toJson() {
+        return {
+              
+        };
+    } 
+}
+
+

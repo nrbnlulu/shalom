@@ -1,0 +1,10 @@
+type Query {
+  product(id: ID!, discount: Float): Product
+}
+
+type Product {
+  id: ID!
+  name: String!
+  price: Float!
+  discountedPrice(applyDiscount: Boolean): Float
+}

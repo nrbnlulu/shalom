@@ -1,18 +1,15 @@
 use apollo_compiler::Node;
 
 use super::{
-    context::SharedSchemaContext,
+    context::SchemaContext,
     types::{
         EnumType, GraphQLAny, InputObjectType, InterfaceType, ObjectType, ScalarType, UnionType,
     },
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TypeRef {
-    #[serde(skip_serializing)]
-    #[allow(unused)]
-    ctx: SharedSchemaContext,
     pub name: String,
 }
 
@@ -30,29 +27,30 @@ impl std::hash::Hash for TypeRef {
 }
 
 impl TypeRef {
-    pub fn resolve(&self) -> Option<GraphQLAny> {
-        self.ctx.get_type(&self.name).clone()
+    pub fn resolve(&self, ctx: &SchemaContext) -> Option<GraphQLAny> {
+        ctx.get_type(&self.name).clone()
     }
 
-    pub fn new(ctx: SharedSchemaContext, name: String) -> TypeRef {
-        TypeRef { ctx, name }
+    pub fn new(name: String) -> TypeRef {
+        TypeRef { name }
     }
-    pub fn get_scalar(&self) -> Option<Node<ScalarType>> {
-        self.resolve().and_then(|t| t.scalar())
+
+    pub fn get_scalar(&self,ctx: &SchemaContext) -> Option<Node<ScalarType>> {
+        self.resolve(ctx).and_then(|t| t.scalar())
     }
-    pub fn get_object(&self) -> Option<Node<ObjectType>> {
-        self.resolve().and_then(|t| t.object())
+    pub fn get_object(&self,ctx: &SchemaContext) -> Option<Node<ObjectType>> {
+        self.resolve(ctx).and_then(|t| t.object())
     }
-    pub fn is_interface(&self) -> Option<Node<InterfaceType>> {
-        self.resolve().and_then(|t| t.interface())
+    pub fn is_interface(&self,ctx: &SchemaContext) -> Option<Node<InterfaceType>> {
+        self.resolve(ctx).and_then(|t| t.interface())
     }
-    pub fn is_union(&self) -> Option<Node<UnionType>> {
-        self.resolve().and_then(|t| t.union())
+    pub fn is_union(&self,ctx: &SchemaContext) -> Option<Node<UnionType>> {
+        self.resolve(ctx).and_then(|t| t.union())
     }
-    pub fn is_enum(&self) -> Option<Node<EnumType>> {
-        self.resolve().and_then(|t| t.enum_())
+    pub fn is_enum(&self,ctx: &SchemaContext) -> Option<Node<EnumType>> {
+        self.resolve(ctx).and_then(|t| t.enum_())
     }
-    pub fn is_input_object(&self) -> Option<Node<InputObjectType>> {
-        self.resolve().and_then(|t| t.input_object())
+    pub fn is_input_object(&self, ctx: &SchemaContext) -> Option<Node<InputObjectType>> {
+        self.resolve(ctx).and_then(|t| t.input_object())
     }
 }
