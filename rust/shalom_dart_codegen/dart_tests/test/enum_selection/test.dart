@@ -10,7 +10,7 @@ void main() {
       final json = {
         "task": {"id": "foo", "name": "do nothing", "status": "FAILED"},
       };
-      final result = GetTask.fromJson(json);
+      final result = GetTaskResponse.fromJson(json);
       expect(result.task.id, "foo");
       expect(result.task.name, "do nothing");
       expect(result.task.status, Status.FAILED);
@@ -20,13 +20,13 @@ void main() {
       final data = {
         "task": {"id": "foo", "name": "do nothing", "status": "FAILED"},
       };
-      final initial = GetTask.fromJson(data);
+      final initial = GetTaskResponse.fromJson(data);
       final json = initial.toJson();
       expect(json, data);
     });
 
     test("update", () {
-      final initial = GetTask(
+      final initial = GetTaskResponse(
         task: GetTask_task(
           id: "foo",
           name: "do nothing",
@@ -68,7 +68,7 @@ void main() {
         final json = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": "FAILED"},
         };
-        final result = GetTaskStatusOpt.fromJson(json);
+        final result = GetTaskStatusOptResponse.fromJson(json);
         expect(result.task.id, "foo");
         expect(result.task.name, "do nothing");
         expect(result.task.statusOpt, Status.FAILED);
@@ -77,7 +77,7 @@ void main() {
         final json = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": null},
         };
-        final result = GetTaskStatusOpt.fromJson(json);
+        final result = GetTaskStatusOptResponse.fromJson(json);
         expect(result.task.id, "foo");
         expect(result.task.name, "do nothing");
         expect(result.task.statusOpt, null);
@@ -88,7 +88,7 @@ void main() {
         final data = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": "FAILED"},
         };
-        final initial = GetTaskStatusOpt.fromJson(data);
+        final initial = GetTaskStatusOptResponse.fromJson(data);
         final json = initial.toJson();
         expect(json, data);
       });
@@ -96,14 +96,14 @@ void main() {
         final data = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": null},
         };
-        final initial = GetTaskStatusOpt.fromJson(data);
+        final initial = GetTaskStatusOptResponse.fromJson(data);
         final json = initial.toJson();
         expect(json, data);
       });
     });
     group("update", () {
       test("null to some", () {
-        final initial = GetTaskStatusOpt(
+        final initial = GetTaskStatusOptResponse(
           task: GetTaskStatusOpt_task(
             id: "foo",
             name: "do nothing",
@@ -118,7 +118,7 @@ void main() {
       });
 
       test("some to some", () {
-        final initial = GetTaskStatusOpt(
+        final initial = GetTaskStatusOptResponse(
           task: GetTaskStatusOpt_task(
             id: "foo",
             name: "do nothing",
@@ -132,7 +132,7 @@ void main() {
         expect(initial, isNot(updated));
       });
       test("some to null", () {
-        final initial = GetTaskStatusOpt(
+        final initial = GetTaskStatusOptResponse(
           task: GetTaskStatusOpt_task(
             id: "foo",
             name: "do nothing",

@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetListingOptWithUser{
+class GetListingOptWithUserResponse{
 
     /// class members
     
@@ -20,12 +20,12 @@ class GetListingOptWithUser{
         
     
     // keywordargs constructor
-    GetListingOptWithUser({
+    GetListingOptWithUserResponse({
     
         this.listingOpt,
     
     });
-    static GetListingOptWithUser fromJson(JsonObject data) {
+    static GetListingOptWithUserResponse fromJson(JsonObject data) {
     
         
             final GetListingOptWithUser_listingOpt? listingOpt_value;
@@ -39,14 +39,14 @@ class GetListingOptWithUser{
             
         
     
-    return GetListingOptWithUser(
+    return GetListingOptWithUserResponse(
     
         
         listingOpt: listingOpt_value,
     
     );
     }
-    GetListingOptWithUser updateWithJson(JsonObject data) {
+    GetListingOptWithUserResponse updateWithJson(JsonObject data) {
     
         
         final GetListingOptWithUser_listingOpt? listingOpt_value;
@@ -64,7 +64,7 @@ class GetListingOptWithUser{
         }
         
     
-    return GetListingOptWithUser(
+    return GetListingOptWithUserResponse(
     
         
         listingOpt: listingOpt_value,
@@ -74,7 +74,7 @@ class GetListingOptWithUser{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetListingOptWithUser &&
+    (other is GetListingOptWithUserResponse &&
     
         other.listingOpt == listingOpt 
     
@@ -492,7 +492,7 @@ class GetListingOptWithUser{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetListingOptWithUser extends Requestable {
-    final GetListingOptWithUser operation;
+    final GetListingOptWithUserResponse operation;
     final GetListingOptWithUserVariables variables;
 
     RequestGetListingOptWithUser({

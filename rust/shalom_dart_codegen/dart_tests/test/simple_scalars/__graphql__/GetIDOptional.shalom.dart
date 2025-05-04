@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetIDOptional{
+class GetIDOptionalResponse{
 
     /// class members
     
@@ -20,25 +20,25 @@ class GetIDOptional{
         
     
     // keywordargs constructor
-    GetIDOptional({
+    GetIDOptionalResponse({
     
         this.idOptional,
     
     });
-    static GetIDOptional fromJson(JsonObject data) {
+    static GetIDOptionalResponse fromJson(JsonObject data) {
     
         
             final String? idOptional_value = data['idOptional'];
         
     
-    return GetIDOptional(
+    return GetIDOptionalResponse(
     
         
         idOptional: idOptional_value,
     
     );
     }
-    GetIDOptional updateWithJson(JsonObject data) {
+    GetIDOptionalResponse updateWithJson(JsonObject data) {
     
         
             final String? idOptional_value;
@@ -49,7 +49,7 @@ class GetIDOptional{
             }
         
     
-    return GetIDOptional(
+    return GetIDOptionalResponse(
     
         
         idOptional: idOptional_value,
@@ -59,7 +59,7 @@ class GetIDOptional{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetIDOptional &&
+    (other is GetIDOptionalResponse &&
     
         other.idOptional == idOptional 
     
@@ -92,7 +92,7 @@ class GetIDOptional{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetIDOptional extends Requestable {
-    final GetIDOptional operation;
+    final GetIDOptionalResponse operation;
     final GetIDOptionalVariables variables;
 
     RequestGetIDOptional({

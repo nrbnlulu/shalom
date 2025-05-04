@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetListinOptWithUserOpt{
+class GetListinOptWithUserOptResponse{
 
     /// class members
     
@@ -20,12 +20,12 @@ class GetListinOptWithUserOpt{
         
     
     // keywordargs constructor
-    GetListinOptWithUserOpt({
+    GetListinOptWithUserOptResponse({
     
         this.listingOpt,
     
     });
-    static GetListinOptWithUserOpt fromJson(JsonObject data) {
+    static GetListinOptWithUserOptResponse fromJson(JsonObject data) {
     
         
             final GetListinOptWithUserOpt_listingOpt? listingOpt_value;
@@ -39,14 +39,14 @@ class GetListinOptWithUserOpt{
             
         
     
-    return GetListinOptWithUserOpt(
+    return GetListinOptWithUserOptResponse(
     
         
         listingOpt: listingOpt_value,
     
     );
     }
-    GetListinOptWithUserOpt updateWithJson(JsonObject data) {
+    GetListinOptWithUserOptResponse updateWithJson(JsonObject data) {
     
         
         final GetListinOptWithUserOpt_listingOpt? listingOpt_value;
@@ -64,7 +64,7 @@ class GetListinOptWithUserOpt{
         }
         
     
-    return GetListinOptWithUserOpt(
+    return GetListinOptWithUserOptResponse(
     
         
         listingOpt: listingOpt_value,
@@ -74,7 +74,7 @@ class GetListinOptWithUserOpt{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetListinOptWithUserOpt &&
+    (other is GetListinOptWithUserOptResponse &&
     
         other.listingOpt == listingOpt 
     
@@ -428,7 +428,7 @@ class GetListinOptWithUserOpt{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetListinOptWithUserOpt extends Requestable {
-    final GetListinOptWithUserOpt operation;
+    final GetListinOptWithUserOptResponse operation;
     final GetListinOptWithUserOptVariables variables;
 
     RequestGetListinOptWithUserOpt({

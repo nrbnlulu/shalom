@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetListingOpt{
+class GetListingOptResponse{
 
     /// class members
     
@@ -20,12 +20,12 @@ class GetListingOpt{
         
     
     // keywordargs constructor
-    GetListingOpt({
+    GetListingOptResponse({
     
         this.listingOpt,
     
     });
-    static GetListingOpt fromJson(JsonObject data) {
+    static GetListingOptResponse fromJson(JsonObject data) {
     
         
             final GetListingOpt_listingOpt? listingOpt_value;
@@ -39,14 +39,14 @@ class GetListingOpt{
             
         
     
-    return GetListingOpt(
+    return GetListingOptResponse(
     
         
         listingOpt: listingOpt_value,
     
     );
     }
-    GetListingOpt updateWithJson(JsonObject data) {
+    GetListingOptResponse updateWithJson(JsonObject data) {
     
         
         final GetListingOpt_listingOpt? listingOpt_value;
@@ -64,7 +64,7 @@ class GetListingOpt{
         }
         
     
-    return GetListingOpt(
+    return GetListingOptResponse(
     
         
         listingOpt: listingOpt_value,
@@ -74,7 +74,7 @@ class GetListingOpt{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetListingOpt &&
+    (other is GetListingOptResponse &&
     
         other.listingOpt == listingOpt 
     
@@ -260,7 +260,7 @@ class GetListingOpt{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetListingOpt extends Requestable {
-    final GetListingOpt operation;
+    final GetListingOptResponse operation;
     final GetListingOptVariables variables;
 
     RequestGetListingOpt({

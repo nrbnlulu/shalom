@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetIntOptional{
+class GetIntOptionalResponse{
 
     /// class members
     
@@ -20,25 +20,25 @@ class GetIntOptional{
         
     
     // keywordargs constructor
-    GetIntOptional({
+    GetIntOptionalResponse({
     
         this.intOptional,
     
     });
-    static GetIntOptional fromJson(JsonObject data) {
+    static GetIntOptionalResponse fromJson(JsonObject data) {
     
         
             final int? intOptional_value = data['intOptional'];
         
     
-    return GetIntOptional(
+    return GetIntOptionalResponse(
     
         
         intOptional: intOptional_value,
     
     );
     }
-    GetIntOptional updateWithJson(JsonObject data) {
+    GetIntOptionalResponse updateWithJson(JsonObject data) {
     
         
             final int? intOptional_value;
@@ -49,7 +49,7 @@ class GetIntOptional{
             }
         
     
-    return GetIntOptional(
+    return GetIntOptionalResponse(
     
         
         intOptional: intOptional_value,
@@ -59,7 +59,7 @@ class GetIntOptional{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetIntOptional &&
+    (other is GetIntOptionalResponse &&
     
         other.intOptional == intOptional 
     
@@ -92,7 +92,7 @@ class GetIntOptional{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetIntOptional extends Requestable {
-    final GetIntOptional operation;
+    final GetIntOptionalResponse operation;
     final GetIntOptionalVariables variables;
 
     RequestGetIntOptional({

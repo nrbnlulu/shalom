@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetListingWithUser{
+class GetListingWithUserResponse{
 
     /// class members
     
@@ -20,12 +20,12 @@ class GetListingWithUser{
         
     
     // keywordargs constructor
-    GetListingWithUser({
+    GetListingWithUserResponse({
     required
         this.listing,
     
     });
-    static GetListingWithUser fromJson(JsonObject data) {
+    static GetListingWithUserResponse fromJson(JsonObject data) {
     
         
             final GetListingWithUser_listing listing_value;
@@ -34,14 +34,14 @@ class GetListingWithUser{
             
         
     
-    return GetListingWithUser(
+    return GetListingWithUserResponse(
     
         
         listing: listing_value,
     
     );
     }
-    GetListingWithUser updateWithJson(JsonObject data) {
+    GetListingWithUserResponse updateWithJson(JsonObject data) {
     
         
         final GetListingWithUser_listing listing_value;
@@ -54,7 +54,7 @@ class GetListingWithUser{
         }
         
     
-    return GetListingWithUser(
+    return GetListingWithUserResponse(
     
         
         listing: listing_value,
@@ -64,7 +64,7 @@ class GetListingWithUser{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetListingWithUser &&
+    (other is GetListingWithUserResponse &&
     
         other.listing == listing 
     
@@ -482,7 +482,7 @@ class GetListingWithUser{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetListingWithUser extends Requestable {
-    final GetListingWithUser operation;
+    final GetListingWithUserResponse operation;
     final GetListingWithUserVariables variables;
 
     RequestGetListingWithUser({

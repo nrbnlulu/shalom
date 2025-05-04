@@ -168,7 +168,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-{% set root_type_name = root_selection %}
+{% set root_type_name = root_selection ~ "Response" %}
 class {{ root_type_name }}{
 {{ base_object_impl(root_type_name, operation.context.root_type.selections) }}
 }

@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetBoolean{
+class GetBooleanResponse{
 
     /// class members
     
@@ -20,25 +20,25 @@ class GetBoolean{
         
     
     // keywordargs constructor
-    GetBoolean({
+    GetBooleanResponse({
     required
         this.boolean,
     
     });
-    static GetBoolean fromJson(JsonObject data) {
+    static GetBooleanResponse fromJson(JsonObject data) {
     
         
             final bool boolean_value = data['boolean'];
         
     
-    return GetBoolean(
+    return GetBooleanResponse(
     
         
         boolean: boolean_value,
     
     );
     }
-    GetBoolean updateWithJson(JsonObject data) {
+    GetBooleanResponse updateWithJson(JsonObject data) {
     
         
             final bool boolean_value;
@@ -49,7 +49,7 @@ class GetBoolean{
             }
         
     
-    return GetBoolean(
+    return GetBooleanResponse(
     
         
         boolean: boolean_value,
@@ -59,7 +59,7 @@ class GetBoolean{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetBoolean &&
+    (other is GetBooleanResponse &&
     
         other.boolean == boolean 
     
@@ -92,7 +92,7 @@ class GetBoolean{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetBoolean extends Requestable {
-    final GetBoolean operation;
+    final GetBooleanResponse operation;
     final GetBooleanVariables variables;
 
     RequestGetBoolean({

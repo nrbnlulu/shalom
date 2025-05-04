@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetInt{
+class GetIntResponse{
 
     /// class members
     
@@ -20,25 +20,25 @@ class GetInt{
         
     
     // keywordargs constructor
-    GetInt({
+    GetIntResponse({
     required
         this.intField,
     
     });
-    static GetInt fromJson(JsonObject data) {
+    static GetIntResponse fromJson(JsonObject data) {
     
         
             final int intField_value = data['intField'];
         
     
-    return GetInt(
+    return GetIntResponse(
     
         
         intField: intField_value,
     
     );
     }
-    GetInt updateWithJson(JsonObject data) {
+    GetIntResponse updateWithJson(JsonObject data) {
     
         
             final int intField_value;
@@ -49,7 +49,7 @@ class GetInt{
             }
         
     
-    return GetInt(
+    return GetIntResponse(
     
         
         intField: intField_value,
@@ -59,7 +59,7 @@ class GetInt{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetInt &&
+    (other is GetIntResponse &&
     
         other.intField == intField 
     
@@ -92,7 +92,7 @@ class GetInt{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetInt extends Requestable {
-    final GetInt operation;
+    final GetIntResponse operation;
     final GetIntVariables variables;
 
     RequestGetInt({

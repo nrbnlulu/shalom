@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetMultipleFields{
+class GetMultipleFieldsResponse{
 
     /// class members
     
@@ -24,14 +24,14 @@ class GetMultipleFields{
         
     
     // keywordargs constructor
-    GetMultipleFields({
+    GetMultipleFieldsResponse({
     required
         this.id,
     required
         this.intField,
     
     });
-    static GetMultipleFields fromJson(JsonObject data) {
+    static GetMultipleFieldsResponse fromJson(JsonObject data) {
     
         
             final String id_value = data['id'];
@@ -41,7 +41,7 @@ class GetMultipleFields{
             final int intField_value = data['intField'];
         
     
-    return GetMultipleFields(
+    return GetMultipleFieldsResponse(
     
         
         id: id_value,
@@ -51,7 +51,7 @@ class GetMultipleFields{
     
     );
     }
-    GetMultipleFields updateWithJson(JsonObject data) {
+    GetMultipleFieldsResponse updateWithJson(JsonObject data) {
     
         
             final String id_value;
@@ -71,7 +71,7 @@ class GetMultipleFields{
             }
         
     
-    return GetMultipleFields(
+    return GetMultipleFieldsResponse(
     
         
         id: id_value,
@@ -84,7 +84,7 @@ class GetMultipleFields{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetMultipleFields &&
+    (other is GetMultipleFieldsResponse &&
     
         other.id == id &&
     
@@ -134,7 +134,7 @@ class GetMultipleFields{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetMultipleFields extends Requestable {
-    final GetMultipleFields operation;
+    final GetMultipleFieldsResponse operation;
     final GetMultipleFieldsVariables variables;
 
     RequestGetMultipleFields({

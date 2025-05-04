@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetID{
+class GetIDResponse{
 
     /// class members
     
@@ -20,25 +20,25 @@ class GetID{
         
     
     // keywordargs constructor
-    GetID({
+    GetIDResponse({
     required
         this.id,
     
     });
-    static GetID fromJson(JsonObject data) {
+    static GetIDResponse fromJson(JsonObject data) {
     
         
             final String id_value = data['id'];
         
     
-    return GetID(
+    return GetIDResponse(
     
         
         id: id_value,
     
     );
     }
-    GetID updateWithJson(JsonObject data) {
+    GetIDResponse updateWithJson(JsonObject data) {
     
         
             final String id_value;
@@ -49,7 +49,7 @@ class GetID{
             }
         
     
-    return GetID(
+    return GetIDResponse(
     
         
         id: id_value,
@@ -59,7 +59,7 @@ class GetID{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetID &&
+    (other is GetIDResponse &&
     
         other.id == id 
     
@@ -92,7 +92,7 @@ class GetID{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetID extends Requestable {
-    final GetID operation;
+    final GetIDResponse operation;
     final GetIDVariables variables;
 
     RequestGetID({

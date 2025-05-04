@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetProductDetails{
+class GetProductDetailsResponse{
 
     /// class members
     
@@ -20,12 +20,12 @@ class GetProductDetails{
         
     
     // keywordargs constructor
-    GetProductDetails({
+    GetProductDetailsResponse({
     
         this.product,
     
     });
-    static GetProductDetails fromJson(JsonObject data) {
+    static GetProductDetailsResponse fromJson(JsonObject data) {
     
         
             final GetProductDetails_product? product_value;
@@ -39,14 +39,14 @@ class GetProductDetails{
             
         
     
-    return GetProductDetails(
+    return GetProductDetailsResponse(
     
         
         product: product_value,
     
     );
     }
-    GetProductDetails updateWithJson(JsonObject data) {
+    GetProductDetailsResponse updateWithJson(JsonObject data) {
     
         
         final GetProductDetails_product? product_value;
@@ -64,7 +64,7 @@ class GetProductDetails{
         }
         
     
-    return GetProductDetails(
+    return GetProductDetailsResponse(
     
         
         product: product_value,
@@ -74,7 +74,7 @@ class GetProductDetails{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetProductDetails &&
+    (other is GetProductDetailsResponse &&
     
         other.product == product 
     
@@ -297,7 +297,7 @@ class GetProductDetails{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetProductDetails extends Requestable {
-    final GetProductDetails operation;
+    final GetProductDetailsResponse operation;
     final GetProductDetailsVariables variables;
 
     RequestGetProductDetails({

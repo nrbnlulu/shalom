@@ -13,7 +13,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetTaskStatusOpt{
+class GetTaskStatusOptResponse{
 
     /// class members
     
@@ -22,12 +22,12 @@ class GetTaskStatusOpt{
         
     
     // keywordargs constructor
-    GetTaskStatusOpt({
+    GetTaskStatusOptResponse({
     required
         this.task,
     
     });
-    static GetTaskStatusOpt fromJson(JsonObject data) {
+    static GetTaskStatusOptResponse fromJson(JsonObject data) {
     
         
             final GetTaskStatusOpt_task task_value;
@@ -36,14 +36,14 @@ class GetTaskStatusOpt{
             
         
     
-    return GetTaskStatusOpt(
+    return GetTaskStatusOptResponse(
     
         
         task: task_value,
     
     );
     }
-    GetTaskStatusOpt updateWithJson(JsonObject data) {
+    GetTaskStatusOptResponse updateWithJson(JsonObject data) {
     
         
         final GetTaskStatusOpt_task task_value;
@@ -56,7 +56,7 @@ class GetTaskStatusOpt{
         }
         
     
-    return GetTaskStatusOpt(
+    return GetTaskStatusOptResponse(
     
         
         task: task_value,
@@ -66,7 +66,7 @@ class GetTaskStatusOpt{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetTaskStatusOpt &&
+    (other is GetTaskStatusOptResponse &&
     
         other.task == task 
     
@@ -269,7 +269,7 @@ class GetTaskStatusOpt{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetTaskStatusOpt extends Requestable {
-    final GetTaskStatusOpt operation;
+    final GetTaskStatusOptResponse operation;
     final GetTaskStatusOptVariables variables;
 
     RequestGetTaskStatusOpt({

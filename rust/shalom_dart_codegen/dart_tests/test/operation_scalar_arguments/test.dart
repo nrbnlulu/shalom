@@ -13,7 +13,7 @@ void main() {
                   "discountedPrice": 30.0 
                 } 
             };
-            final productDetails = GetProductDetails.fromJson(json); 
+            final productDetails = GetProductDetailsResponse.fromJson(json); 
             final productDetailsVariables = GetProductDetailsVariables(calculateDiscount: false, productId: "foo", userDiscount: 20.0); 
             final productDetailsRequest = RequestGetProductDetails(operation: productDetails, variables: productDetailsVariables); 
             final request = productDetailsRequest.toRequest();

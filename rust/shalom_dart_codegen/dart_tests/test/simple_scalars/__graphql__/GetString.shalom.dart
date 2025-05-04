@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetString{
+class GetStringResponse{
 
     /// class members
     
@@ -20,25 +20,25 @@ class GetString{
         
     
     // keywordargs constructor
-    GetString({
+    GetStringResponse({
     required
         this.string,
     
     });
-    static GetString fromJson(JsonObject data) {
+    static GetStringResponse fromJson(JsonObject data) {
     
         
             final String string_value = data['string'];
         
     
-    return GetString(
+    return GetStringResponse(
     
         
         string: string_value,
     
     );
     }
-    GetString updateWithJson(JsonObject data) {
+    GetStringResponse updateWithJson(JsonObject data) {
     
         
             final String string_value;
@@ -49,7 +49,7 @@ class GetString{
             }
         
     
-    return GetString(
+    return GetStringResponse(
     
         
         string: string_value,
@@ -59,7 +59,7 @@ class GetString{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetString &&
+    (other is GetStringResponse &&
     
         other.string == string 
     
@@ -92,7 +92,7 @@ class GetString{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetString extends Requestable {
-    final GetString operation;
+    final GetStringResponse operation;
     final GetStringVariables variables;
 
     RequestGetString({

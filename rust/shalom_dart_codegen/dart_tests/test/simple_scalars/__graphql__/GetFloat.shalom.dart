@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetFloat{
+class GetFloatResponse{
 
     /// class members
     
@@ -20,25 +20,25 @@ class GetFloat{
         
     
     // keywordargs constructor
-    GetFloat({
+    GetFloatResponse({
     required
         this.float,
     
     });
-    static GetFloat fromJson(JsonObject data) {
+    static GetFloatResponse fromJson(JsonObject data) {
     
         
             final double float_value = data['float'];
         
     
-    return GetFloat(
+    return GetFloatResponse(
     
         
         float: float_value,
     
     );
     }
-    GetFloat updateWithJson(JsonObject data) {
+    GetFloatResponse updateWithJson(JsonObject data) {
     
         
             final double float_value;
@@ -49,7 +49,7 @@ class GetFloat{
             }
         
     
-    return GetFloat(
+    return GetFloatResponse(
     
         
         float: float_value,
@@ -59,7 +59,7 @@ class GetFloat{
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetFloat &&
+    (other is GetFloatResponse &&
     
         other.float == float 
     
@@ -92,7 +92,7 @@ class GetFloat{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetFloat extends Requestable {
-    final GetFloat operation;
+    final GetFloatResponse operation;
     final GetFloatVariables variables;
 
     RequestGetFloat({
