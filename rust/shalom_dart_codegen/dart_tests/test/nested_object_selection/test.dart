@@ -1,11 +1,9 @@
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
-
 import "__graphql__/GetListinOptWithUserOpt.shalom.dart";
 import "__graphql__/GetListingOptWithUser.shalom.dart";
 import "__graphql__/GetListingWithUser.shalom.dart";
 import "__graphql__/GetListingWithUserOpt.shalom.dart";
-import "package:shalom_core/shalom_core.dart";
 
 void main() {
   group('Nested Object Selection', () {
