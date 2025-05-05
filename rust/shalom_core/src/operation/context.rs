@@ -1,7 +1,7 @@
+use super::types::VariableDefinition;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
-use super::types::{VariableDefinition};
 
 use serde::Serialize;
 
@@ -16,7 +16,7 @@ pub struct OperationContext {
     variables: HashMap<String, VariableDefinition>,
     type_defs: HashMap<FullPathName, Selection>,
     root_type: Option<SharedObjectSelection>,
-    op_ty: OperationType
+    op_ty: OperationType,
 }
 
 impl OperationContext {
@@ -27,7 +27,7 @@ impl OperationContext {
             variables: HashMap::new(),
             type_defs: HashMap::new(),
             root_type: None,
-            op_ty
+            op_ty,
         }
     }
 

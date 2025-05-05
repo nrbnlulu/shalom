@@ -4,9 +4,12 @@ use log::{info, trace};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use shalom_core::{
-    operation::{context::OperationContext, types::{Selection, VariableDefinition}},
-    schema::types::FieldType,
+    operation::{
+        context::OperationContext,
+        types::{Selection, VariableDefinition},
+    },
     schema::context::SchemaContext,
+    schema::types::FieldType,
 };
 use std::sync::Arc;
 use std::{
@@ -68,7 +71,7 @@ mod ext_jinja_fns {
         let type_ref = match variable.0.ty {
             FieldType::Named(type_ref) => type_ref,
             FieldType::NonNullNamed(type_ref) => type_ref,
-            _ => unimplemented!("lists not implemented")
+            _ => unimplemented!("lists not implemented"),
         };
         let resolved = DEFAULT_SCALARS_MAP.get(&type_ref.name).unwrap();
         resolved.clone()
@@ -126,7 +129,10 @@ impl TemplateEnv<'_> {
             "type_name_for_selection",
             ext_jinja_fns::type_name_for_selection,
         );
-        env.add_function("type_name_for_variable",ext_jinja_fns::type_name_for_variable);
+        env.add_function(
+            "type_name_for_variable",
+            ext_jinja_fns::type_name_for_variable,
+        );
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
         env.add_filter("if_not_last", ext_jinja_fns::if_not_last);

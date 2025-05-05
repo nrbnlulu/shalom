@@ -1,5 +1,4 @@
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
 import "__graphql__/GetBoolean.shalom.dart";
 import "__graphql__/GetBooleanOptional.shalom.dart";
 import "__graphql__/GetFloat.shalom.dart";
@@ -109,7 +108,9 @@ void main() {
     });
 
     test("StringOptional", () {
-      final initial = GetStringOptionalResponse(stringOptional: "helloOptional");
+      final initial = GetStringOptionalResponse(
+        stringOptional: "helloOptional",
+      );
       final updated = initial.updateWithJson({
         'stringOptional': 'worldOptional',
       });
@@ -118,7 +119,9 @@ void main() {
     });
 
     test("StringOptional with null", () {
-      final initial = GetStringOptionalResponse(stringOptional: "helloOptional");
+      final initial = GetStringOptionalResponse(
+        stringOptional: "helloOptional",
+      );
       final updated = initial.updateWithJson({'stringOptional': null});
       expect(updated.stringOptional, isNull);
       expect(initial, isNot(updated));

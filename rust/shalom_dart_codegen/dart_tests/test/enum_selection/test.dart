@@ -1,5 +1,4 @@
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
 import "__graphql__/schema.shalom.dart";
 import "__graphql__/GetTask.shalom.dart";
 import "__graphql__/GetTaskStatusOpt.shalom.dart";

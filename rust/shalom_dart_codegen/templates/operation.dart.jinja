@@ -1,7 +1,6 @@
 {% if schema.context.types.enums | length > 0 %}
 import "schema.shalom.dart";
 {% endif %}
-import 'dart:convert';
 import 'package:shalom_core/shalom_core.dart';
 
 {% set root_selection = operation.context.root_type.selection_name %}
@@ -207,15 +206,16 @@ class Request{{ root_selection }} extends Requestable {
     }  
 
     String queryString() {
-        String selectionString = this.selectionsJsonToQuery(operation.toJson()); 
+        String selectionString = selectionsJsonToQuery(operation.toJson()); 
         String variablesString = variables.toTypes().entries.map((entry) => '\$${entry.key}: ${entry.value}').join(", "); 
         String queryString = "query {{root_selection}}($variablesString) $selectionString";
         return queryString;
     } 
 
+    @override
     Request toRequest() {
         return Request(
-            query: this.queryString(), 
+            query: queryString(), 
             variables: variables.toJson(), 
             opType: OperationType.{{ operation.context.op_ty.name }}, 
             StringopName: '{{ root_selection }}'

@@ -131,7 +131,7 @@ fn resolve_object(
         implements_interfaces: HashSet::new(),
     });
     context.add_object(name.clone(), object).unwrap();
-    TypeRef::new( name)
+    TypeRef::new(name)
 }
 
 #[allow(unused)]
@@ -157,22 +157,20 @@ fn resolve_enum(
         members,
     };
     context.add_enum(name.clone(), Node::new(enum_type));
-    TypeRef::new( name)
+    TypeRef::new(name)
 }
 
-pub fn resolve_type(context: SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {
+pub fn resolve_type(_context: SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {
     match origin {
-        apollo_schema::Type::Named(named) => {
-            FieldType::Named(TypeRef::new( named.to_string()))
-        }
+        apollo_schema::Type::Named(named) => FieldType::Named(TypeRef::new(named.to_string())),
         apollo_schema::Type::NonNullNamed(non_null) => {
-            FieldType::NonNullNamed(TypeRef::new( non_null.as_str().to_string()))
+            FieldType::NonNullNamed(TypeRef::new(non_null.as_str().to_string()))
         }
         apollo_schema::Type::List(of_type) => {
-            FieldType::List(Box::new(resolve_type( context, *of_type)))
+            FieldType::List(Box::new(resolve_type(_context, *of_type)))
         }
         apollo_schema::Type::NonNullList(of_type) => {
-            FieldType::NonNullList(Box::new(resolve_type( context, *of_type)))
+            FieldType::NonNullList(Box::new(resolve_type(_context, *of_type)))
         }
     }
 }

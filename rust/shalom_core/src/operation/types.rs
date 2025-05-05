@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
-use crate::schema::types::{EnumType, ScalarType, FieldType};
+use crate::schema::types::{EnumType, FieldType, ScalarType};
 
 /// the name of i.e object in a graphql query based on the parent fields.
 pub type FullPathName = String;
@@ -13,9 +13,8 @@ pub type FullPathName = String;
 pub enum OperationType {
     Query,
     Mutation,
-    Subscription
+    Subscription,
 }
-
 
 /// common fields for selections
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -114,5 +113,5 @@ impl EnumSelection {
 pub struct VariableDefinition {
     pub name: String,
     pub ty: FieldType,
-    pub default_value: Option<String>
+    pub default_value: Option<String>,
 }

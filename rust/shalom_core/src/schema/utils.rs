@@ -35,19 +35,19 @@ impl TypeRef {
         TypeRef { name }
     }
 
-    pub fn get_scalar(&self,ctx: &SchemaContext) -> Option<Node<ScalarType>> {
+    pub fn get_scalar(&self, ctx: &SchemaContext) -> Option<Node<ScalarType>> {
         self.resolve(ctx).and_then(|t| t.scalar())
     }
-    pub fn get_object(&self,ctx: &SchemaContext) -> Option<Node<ObjectType>> {
+    pub fn get_object(&self, ctx: &SchemaContext) -> Option<Node<ObjectType>> {
         self.resolve(ctx).and_then(|t| t.object())
     }
-    pub fn is_interface(&self,ctx: &SchemaContext) -> Option<Node<InterfaceType>> {
+    pub fn is_interface(&self, ctx: &SchemaContext) -> Option<Node<InterfaceType>> {
         self.resolve(ctx).and_then(|t| t.interface())
     }
-    pub fn is_union(&self,ctx: &SchemaContext) -> Option<Node<UnionType>> {
+    pub fn is_union(&self, ctx: &SchemaContext) -> Option<Node<UnionType>> {
         self.resolve(ctx).and_then(|t| t.union())
     }
-    pub fn is_enum(&self,ctx: &SchemaContext) -> Option<Node<EnumType>> {
+    pub fn is_enum(&self, ctx: &SchemaContext) -> Option<Node<EnumType>> {
         self.resolve(ctx).and_then(|t| t.enum_())
     }
     pub fn is_input_object(&self, ctx: &SchemaContext) -> Option<Node<InputObjectType>> {

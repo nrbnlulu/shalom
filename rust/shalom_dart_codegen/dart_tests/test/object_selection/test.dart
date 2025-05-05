@@ -1,5 +1,4 @@
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
 import "__graphql__/GetListing.shalom.dart";
 import "__graphql__/GetListingOpt.shalom.dart";
 

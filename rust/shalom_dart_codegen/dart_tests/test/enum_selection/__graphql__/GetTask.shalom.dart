@@ -1,320 +1,170 @@
-
 import "schema.shalom.dart";
 
-import 'dart:convert';
 import 'package:shalom_core/shalom_core.dart';
-
-
 
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
+class GetTaskResponse {
+  /// class members
 
+  final GetTask_task task;
 
+  // keywordargs constructor
+  GetTaskResponse({required this.task});
+  static GetTaskResponse fromJson(JsonObject data) {
+    final GetTask_task task_value;
 
-class GetTaskResponse{
+    task_value = GetTask_task.fromJson(data['task']);
 
-    /// class members
-    
-        
-            final GetTask_task task;
-        
-    
-    // keywordargs constructor
-    GetTaskResponse({
-    required
-        this.task,
-    
-    });
-    static GetTaskResponse fromJson(JsonObject data) {
-    
-        
-            final GetTask_task task_value;
-            
-                task_value = GetTask_task.fromJson(data['task']);            
-            
-        
-    
-    return GetTaskResponse(
-    
-        
-        task: task_value,
-    
-    );
+    return GetTaskResponse(task: task_value);
+  }
+
+  GetTaskResponse updateWithJson(JsonObject data) {
+    final GetTask_task task_value;
+    if (data.containsKey('task')) {
+      task_value = GetTask_task.fromJson(data['task']);
+    } else {
+      task_value = task;
     }
-    GetTaskResponse updateWithJson(JsonObject data) {
-    
-        
-        final GetTask_task task_value;
-        if (data.containsKey('task')) {
-            
-                task_value = GetTask_task.fromJson(data['task']);            
-            
-        } else {
-            task_value = task;
-        }
-        
-    
-    return GetTaskResponse(
-    
-        
-        task: task_value,
-    
-    );
-    }
-    @override
-    bool operator ==(Object other) {
+
+    return GetTaskResponse(task: task_value);
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetTaskResponse &&
-    
-        other.task == task 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        task.hashCode;
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'task':
-            
-                task.toJson()
-            
-        ,
-    
-    };
-    }
+        (other is GetTaskResponse && other.task == task);
+  }
 
+  @override
+  int get hashCode => task.hashCode;
+
+  JsonObject toJson() {
+    return {'task': task.toJson()};
+  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
+class GetTask_task {
+  /// class members
 
-    class GetTask_task  {
-        
-    /// class members
-    
-        
-            final String id;
-        
-    
-        
-            final String name;
-        
-    
-        
-            final Status status;
-        
-    
-    // keywordargs constructor
-    GetTask_task({
-    required
-        this.id,
-    required
-        this.name,
-    required
-        this.status,
-    
-    });
-    static GetTask_task fromJson(JsonObject data) {
-    
-        
-            final String id_value = data['id'];
-        
-    
-        
-            final String name_value = data['name'];
-        
-    
-        
-            
-            final Status status_value;
-            
-                status_value = Status.fromString(data['status']);            
-            
-        
-    
-    return GetTask_task(
-    
-        
-        id: id_value,
-    
-        
-        name: name_value,
-    
-        
-        status: status_value,
-    
-    );
+  final String id;
+
+  final String name;
+
+  final Status status;
+
+  // keywordargs constructor
+  GetTask_task({required this.id, required this.name, required this.status});
+  static GetTask_task fromJson(JsonObject data) {
+    final String id_value = data['id'];
+
+    final String name_value = data['name'];
+
+    final Status status_value;
+
+    status_value = Status.fromString(data['status']);
+
+    return GetTask_task(id: id_value, name: name_value, status: status_value);
+  }
+
+  GetTask_task updateWithJson(JsonObject data) {
+    final String id_value;
+    if (data.containsKey('id')) {
+      id_value = data['id'];
+    } else {
+      id_value = id;
     }
-    GetTask_task updateWithJson(JsonObject data) {
-    
-        
-            final String id_value;
-            if (data.containsKey('id')) {
-            id_value = data['id'];
-            } else {
-            id_value = id;
-            }
-        
-    
-        
-            final String name_value;
-            if (data.containsKey('name')) {
-            name_value = data['name'];
-            } else {
-            name_value = name;
-            }
-        
-    
-        
-            
-            final Status status_value;
-            if (data.containsKey('status')) {
-                
-                    status_value = Status.fromString(data['status']);            
-                
-            } else {
-                status_value = status;
-            }
-        
-    
-    return GetTask_task(
-    
-        
-        id: id_value,
-    
-        
-        name: name_value,
-    
-        
-        status: status_value,
-    
-    );
+
+    final String name_value;
+    if (data.containsKey('name')) {
+      name_value = data['name'];
+    } else {
+      name_value = name;
     }
-    @override
-    bool operator ==(Object other) {
+
+    final Status status_value;
+    if (data.containsKey('status')) {
+      status_value = Status.fromString(data['status']);
+    } else {
+      status_value = status;
+    }
+
+    return GetTask_task(id: id_value, name: name_value, status: status_value);
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetTask_task &&
-    
-        other.id == id &&
-    
-        other.name == name &&
-    
-        other.status == status 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            id,
-        
-            
-            name,
-        
-            
-            status,
-        
-        ]);
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'id':
-            
-                id
-            
-        ,
-    
-        
-        'name':
-            
-                name
-            
-        ,
-    
-        
-        'status':
-            
-                status.name  
-            
-        ,
-    
-    };
-    }
+        (other is GetTask_task &&
+            other.id == id &&
+            other.name == name &&
+            other.status == status);
+  }
 
-    }
+  @override
+  int get hashCode => Object.hashAll([id, name, status]);
 
+  JsonObject toJson() {
+    return {'id': id, 'name': name, 'status': status.name};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetTask extends Requestable {
-    final GetTaskResponse operation;
-    final GetTaskVariables variables;
+  final GetTaskResponse operation;
+  final GetTaskVariables variables;
 
-    RequestGetTask({
-        required this.operation,  
-        required this.variables,
-    });
+  RequestGetTask({required this.operation, required this.variables});
 
-    String selectionsJsonToQuery(JsonObject selection) {
-        List<String> selectionItems = [];
-        for (var entry in selection.entries) {
-            if (entry.value is JsonObject) {
-                String subSelections = selectionsJsonToQuery(entry.value);
-                selectionItems.add("${entry.key} $subSelections");
-            } else {
-                selectionItems.add(entry.key);   
-            }
-        } 
-        String selectionItemsString = selectionItems.join(" ");
-        return "{$selectionItemsString}";
-    }  
-
-    String queryString() {
-        String selectionString = this.selectionsJsonToQuery(operation.toJson()); 
-        String variablesString = variables.toTypes().entries.map((entry) => '\$${entry.key}: ${entry.value}').join(", "); 
-        String queryString = "query GetTask($variablesString) $selectionString";
-        return queryString;
-    } 
-
-    Request toRequest() {
-        return Request(
-            query: this.queryString(), 
-            variables: variables.toJson(), 
-            opType: OperationType.Query, 
-            StringopName: 'GetTask'
-        );
+  String selectionsJsonToQuery(JsonObject selection) {
+    List<String> selectionItems = [];
+    for (var entry in selection.entries) {
+      if (entry.value is JsonObject) {
+        String subSelections = selectionsJsonToQuery(entry.value);
+        selectionItems.add("${entry.key} $subSelections");
+      } else {
+        selectionItems.add(entry.key);
+      }
     }
+    String selectionItemsString = selectionItems.join(" ");
+    return "{$selectionItemsString}";
+  }
+
+  String queryString() {
+    String selectionString = selectionsJsonToQuery(operation.toJson());
+    String variablesString = variables
+        .toTypes()
+        .entries
+        .map((entry) => '\$${entry.key}: ${entry.value}')
+        .join(", ");
+    String queryString = "query GetTask($variablesString) $selectionString";
+    return queryString;
+  }
+
+  @override
+  Request toRequest() {
+    return Request(
+      query: queryString(),
+      variables: variables.toJson(),
+      opType: OperationType.Query,
+      StringopName: 'GetTask',
+    );
+  }
 }
 
-
 class GetTaskVariables {
-    
+  GetTaskVariables();
 
-    GetTaskVariables(
-        
-    );
+  JsonObject toTypes() {
+    return {};
+  }
 
-    JsonObject toTypes() {
-        return {
-              
-        };
-    }  
-
-    JsonObject toJson() {
-        return {
-              
-        };
-    } 
+  JsonObject toJson() {
+    return {};
+  }
 }
