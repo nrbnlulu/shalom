@@ -1,6 +1,7 @@
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 import "__graphql__/GetProductDetails.shalom.dart";
+import 'dart:convert';
 
 void main() {
   group("test scalar arguments", () {
@@ -18,7 +19,8 @@ void main() {
             final productDetailsRequest = RequestGetProductDetails(operation: productDetails, variables: productDetailsVariables); 
             final request = productDetailsRequest.toRequest();
             final requestJson = request.toJson(); 
-            print(requestJson);
+            final expectedJson = {"query":"query GetProductDetails(\$calculateDiscount: Boolean, \$productId: ID, \$userDiscount: Float) {product {id name price discountedPrice}}","variables":{"calculateDiscount":false,"productId":"foo","userDiscount":20.0},"operationName":"GetProductDetails"};
+            expect(requestJson, expectedJson); 
       });
   }); 
 }

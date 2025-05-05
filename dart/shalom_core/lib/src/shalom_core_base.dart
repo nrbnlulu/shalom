@@ -40,7 +40,7 @@ class Request {
       return {
           "query": query,
           "variables": variables,
-          "op": StringopName 
+          "operationName": StringopName 
       };
     }
     
@@ -58,7 +58,7 @@ class Response {
     JsonObject toJson() {
       return {
         "data": data,
-        "opName": opName
+        "operationName": opName
       };
     }
 } 
