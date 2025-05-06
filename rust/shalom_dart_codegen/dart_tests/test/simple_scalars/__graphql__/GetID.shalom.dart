@@ -100,7 +100,11 @@ class RequestGetID extends Requestable {
     @override
     Request toRequest() {
         return Request(
-            query: , 
+            query: r"""query GetID {
+    id
+}
+
+""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetID'
@@ -115,12 +119,6 @@ class GetIDVariables {
     GetIDVariables(
         
     );
-
-    JsonObject toTypes() {
-        return {
-              
-        };
-    }  
 
     JsonObject toJson() {
         return {

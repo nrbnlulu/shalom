@@ -1,18 +1,10 @@
 import 'package:test/test.dart';
 import "__graphql__/GetProductDetails.shalom.dart";
+import "dart:convert";
 
 void main() {
   group("test scalar arguments", () {
     test("test_scalar_arguments", () {
-      // final json = {
-      //   "product": {
-      //     "id": "foo",
-      //     "name": "laptop",
-      //     "price": 50.0,
-      //     "discountedPrice": 30.0,
-      //   },
-      // };
-      // final productDetails = GetProductDetailsResponse.fromJson(json);
       final productDetailsVariables = GetProductDetailsVariables(
         calculateDiscount: false,
         productId: "foo",
@@ -22,19 +14,9 @@ void main() {
         variables: productDetailsVariables,
       );
       final request = productDetailsRequest.toRequest();
-      final requestJson = request.toJson();
-      print(requestJson);
-      // final expectedJson = {
-      //   "query":
-      //       "query GetProductDetails(\$calculateDiscount: Boolean, \$productId: ID, \$userDiscount: Float) {product {id name price discountedPrice}}",
-      //   "variables": {
-      //     "calculateDiscount": false,
-      //     "productId": "foo",
-      //     "userDiscount": 20.0,
-      //   },
-      //   "operationName": "GetProductDetails",
-      // };
-      // expect(requestJson, expectedJson);
+      final requestJson = JsonEncoder().convert(request.toJson());
+      final expectedJson = r"""{"query":"query GetProductDetails($productId: ID!, $userDiscount: Float, $calculateDiscount: Boolean) {\n  product(id: $productId, discount: $userDiscount) {\n    id\n    name\n    price\n    discountedPrice(applyDiscount: $calculateDiscount)\n  }\n}","variables":{"calculateDiscount":false,"productId":"foo","userDiscount":20.0},"operationName":"GetProductDetails"}""";
+      expect(requestJson, expectedJson);
     });
   });
 }

@@ -305,14 +305,14 @@ class RequestGetProductDetails extends Requestable {
     @override
     Request toRequest() {
         return Request(
-            query: "query GetProductDetails(\$productId: ID!, \$userDiscount: Float, \$calculateDiscount: Boolean) {
-  product(id: \$productId, discount: \$userDiscount) {
+            query: r"""query GetProductDetails($productId: ID!, $userDiscount: Float, $calculateDiscount: Boolean) {
+  product(id: $productId, discount: $userDiscount) {
     id
     name
     price
-    discountedPrice(applyDiscount: \$calculateDiscount)
+    discountedPrice(applyDiscount: $calculateDiscount)
   }
-}", 
+}""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetProductDetails'

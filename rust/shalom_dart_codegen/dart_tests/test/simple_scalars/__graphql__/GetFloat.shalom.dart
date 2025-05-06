@@ -100,7 +100,11 @@ class RequestGetFloat extends Requestable {
     @override
     Request toRequest() {
         return Request(
-            query: , 
+            query: r"""query GetFloat {
+    float
+}
+
+""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetFloat'
@@ -115,12 +119,6 @@ class GetFloatVariables {
     GetFloatVariables(
         
     );
-
-    JsonObject toTypes() {
-        return {
-              
-        };
-    }  
 
     JsonObject toJson() {
         return {

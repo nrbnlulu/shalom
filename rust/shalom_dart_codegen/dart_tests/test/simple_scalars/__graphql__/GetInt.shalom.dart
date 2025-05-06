@@ -100,7 +100,11 @@ class RequestGetInt extends Requestable {
     @override
     Request toRequest() {
         return Request(
-            query: , 
+            query: r"""query GetInt {
+    intField
+}
+
+""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetInt'
@@ -115,12 +119,6 @@ class GetIntVariables {
     GetIntVariables(
         
     );
-
-    JsonObject toTypes() {
-        return {
-              
-        };
-    }  
 
     JsonObject toJson() {
         return {

@@ -100,7 +100,11 @@ class RequestGetIntOptional extends Requestable {
     @override
     Request toRequest() {
         return Request(
-            query: , 
+            query: r"""query GetIntOptional {
+    intOptional
+}
+
+""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetIntOptional'
@@ -115,12 +119,6 @@ class GetIntOptionalVariables {
     GetIntOptionalVariables(
         
     );
-
-    JsonObject toTypes() {
-        return {
-              
-        };
-    }  
 
     JsonObject toJson() {
         return {
