@@ -1,103 +1,130 @@
+
 import 'package:shalom_core/shalom_core.dart';
+
+
 
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class GetStringOptionalResponse {
-  /// class members
 
-  final String? stringOptional;
 
-  // keywordargs constructor
-  GetStringOptionalResponse({this.stringOptional});
-  static GetStringOptionalResponse fromJson(JsonObject data) {
-    final String? stringOptional_value = data['stringOptional'];
 
-    return GetStringOptionalResponse(stringOptional: stringOptional_value);
-  }
+class GetStringOptionalResponse{
 
-  GetStringOptionalResponse updateWithJson(JsonObject data) {
-    final String? stringOptional_value;
-    if (data.containsKey('stringOptional')) {
-      stringOptional_value = data['stringOptional'];
-    } else {
-      stringOptional_value = stringOptional;
+    /// class members
+    
+        
+            final String? stringOptional;
+        
+    
+    // keywordargs constructor
+    GetStringOptionalResponse({
+    
+        this.stringOptional,
+    
+    });
+    static GetStringOptionalResponse fromJson(JsonObject data) {
+    
+        
+            final String? stringOptional_value = data['stringOptional'];
+        
+    
+    return GetStringOptionalResponse(
+    
+        
+        stringOptional: stringOptional_value,
+    
+    );
+    }
+    GetStringOptionalResponse updateWithJson(JsonObject data) {
+    
+        
+            final String? stringOptional_value;
+            if (data.containsKey('stringOptional')) {
+            stringOptional_value = data['stringOptional'];
+            } else {
+            stringOptional_value = stringOptional;
+            }
+        
+    
+    return GetStringOptionalResponse(
+    
+        
+        stringOptional: stringOptional_value,
+    
+    );
+    }
+    @override
+    bool operator ==(Object other) {
+    return identical(this, other) ||
+    (other is GetStringOptionalResponse &&
+    
+        other.stringOptional == stringOptional 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        stringOptional.hashCode;
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'stringOptional':
+            
+                stringOptional
+            
+        ,
+    
+    };
     }
 
-    return GetStringOptionalResponse(stringOptional: stringOptional_value);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is GetStringOptionalResponse &&
-            other.stringOptional == stringOptional);
-  }
-
-  @override
-  int get hashCode => stringOptional.hashCode;
-
-  JsonObject toJson() {
-    return {'stringOptional': stringOptional};
-  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
+
+
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetStringOptional extends Requestable {
-  final GetStringOptionalResponse operation;
-  final GetStringOptionalVariables variables;
+    final GetStringOptionalVariables variables;
 
-  RequestGetStringOptional({required this.operation, required this.variables});
+    RequestGetStringOptional({
+        required this.variables,
+    });
 
-  String selectionsJsonToQuery(JsonObject selection) {
-    List<String> selectionItems = [];
-    for (var entry in selection.entries) {
-      if (entry.value is JsonObject) {
-        String subSelections = selectionsJsonToQuery(entry.value);
-        selectionItems.add("${entry.key} $subSelections");
-      } else {
-        selectionItems.add(entry.key);
-      }
+    @override
+    Request toRequest() {
+        return Request(
+            query: , 
+            variables: variables.toJson(), 
+            opType: OperationType.Query, 
+            StringopName: 'GetStringOptional'
+        );
     }
-    String selectionItemsString = selectionItems.join(" ");
-    return "{$selectionItemsString}";
-  }
-
-  String queryString() {
-    String selectionString = selectionsJsonToQuery(operation.toJson());
-    String variablesString = variables
-        .toTypes()
-        .entries
-        .map((entry) => '\$${entry.key}: ${entry.value}')
-        .join(", ");
-    String queryString =
-        "query GetStringOptional($variablesString) $selectionString";
-    return queryString;
-  }
-
-  @override
-  Request toRequest() {
-    return Request(
-      query: queryString(),
-      variables: variables.toJson(),
-      opType: OperationType.Query,
-      StringopName: 'GetStringOptional',
-    );
-  }
 }
 
+
 class GetStringOptionalVariables {
-  GetStringOptionalVariables();
+    
 
-  JsonObject toTypes() {
-    return {};
-  }
+    GetStringOptionalVariables(
+        
+    );
 
-  JsonObject toJson() {
-    return {};
-  }
+    JsonObject toTypes() {
+        return {
+              
+        };
+    }  
+
+    JsonObject toJson() {
+        return {
+              
+        };
+    } 
 }

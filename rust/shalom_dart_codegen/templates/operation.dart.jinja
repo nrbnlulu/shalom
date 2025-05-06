@@ -183,39 +183,16 @@ class {{ root_type_name }}{
 // ------------ END OBJECT DEFINITIONS -------------
 
 class Request{{ root_selection }} extends Requestable {
-    final {{ root_type_name }} operation;
     final {{ root_selection }}Variables variables;
 
     Request{{ root_selection }}({
-        required this.operation,  
         required this.variables,
     });
-
-    String selectionsJsonToQuery(JsonObject selection) {
-        List<String> selectionItems = [];
-        for (var entry in selection.entries) {
-            if (entry.value is JsonObject) {
-                String subSelections = selectionsJsonToQuery(entry.value);
-                selectionItems.add("${entry.key} $subSelections");
-            } else {
-                selectionItems.add(entry.key);   
-            }
-        } 
-        String selectionItemsString = selectionItems.join(" ");
-        return "{$selectionItemsString}";
-    }  
-
-    String queryString() {
-        String selectionString = selectionsJsonToQuery(operation.toJson()); 
-        String variablesString = variables.toTypes().entries.map((entry) => '\$${entry.key}: ${entry.value}').join(", "); 
-        String queryString = "query {{root_selection}}($variablesString) $selectionString";
-        return queryString;
-    } 
 
     @override
     Request toRequest() {
         return Request(
-            query: queryString(), 
+            query: "{{ operation.context.query }}", 
             variables: variables.toJson(), 
             opType: OperationType.{{ operation.context.op_ty.name }}, 
             StringopName: '{{ root_selection }}'

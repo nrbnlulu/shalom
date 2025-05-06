@@ -1,100 +1,130 @@
+
 import 'package:shalom_core/shalom_core.dart';
+
+
 
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class GetIDResponse {
-  /// class members
 
-  final String id;
 
-  // keywordargs constructor
-  GetIDResponse({required this.id});
-  static GetIDResponse fromJson(JsonObject data) {
-    final String id_value = data['id'];
 
-    return GetIDResponse(id: id_value);
-  }
+class GetIDResponse{
 
-  GetIDResponse updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      id_value = data['id'];
-    } else {
-      id_value = id;
+    /// class members
+    
+        
+            final String id;
+        
+    
+    // keywordargs constructor
+    GetIDResponse({
+    required
+        this.id,
+    
+    });
+    static GetIDResponse fromJson(JsonObject data) {
+    
+        
+            final String id_value = data['id'];
+        
+    
+    return GetIDResponse(
+    
+        
+        id: id_value,
+    
+    );
+    }
+    GetIDResponse updateWithJson(JsonObject data) {
+    
+        
+            final String id_value;
+            if (data.containsKey('id')) {
+            id_value = data['id'];
+            } else {
+            id_value = id;
+            }
+        
+    
+    return GetIDResponse(
+    
+        
+        id: id_value,
+    
+    );
+    }
+    @override
+    bool operator ==(Object other) {
+    return identical(this, other) ||
+    (other is GetIDResponse &&
+    
+        other.id == id 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        id.hashCode;
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'id':
+            
+                id
+            
+        ,
+    
+    };
     }
 
-    return GetIDResponse(id: id_value);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) || (other is GetIDResponse && other.id == id);
-  }
-
-  @override
-  int get hashCode => id.hashCode;
-
-  JsonObject toJson() {
-    return {'id': id};
-  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
+
+
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetID extends Requestable {
-  final GetIDResponse operation;
-  final GetIDVariables variables;
+    final GetIDVariables variables;
 
-  RequestGetID({required this.operation, required this.variables});
+    RequestGetID({
+        required this.variables,
+    });
 
-  String selectionsJsonToQuery(JsonObject selection) {
-    List<String> selectionItems = [];
-    for (var entry in selection.entries) {
-      if (entry.value is JsonObject) {
-        String subSelections = selectionsJsonToQuery(entry.value);
-        selectionItems.add("${entry.key} $subSelections");
-      } else {
-        selectionItems.add(entry.key);
-      }
+    @override
+    Request toRequest() {
+        return Request(
+            query: , 
+            variables: variables.toJson(), 
+            opType: OperationType.Query, 
+            StringopName: 'GetID'
+        );
     }
-    String selectionItemsString = selectionItems.join(" ");
-    return "{$selectionItemsString}";
-  }
-
-  String queryString() {
-    String selectionString = selectionsJsonToQuery(operation.toJson());
-    String variablesString = variables
-        .toTypes()
-        .entries
-        .map((entry) => '\$${entry.key}: ${entry.value}')
-        .join(", ");
-    String queryString = "query GetID($variablesString) $selectionString";
-    return queryString;
-  }
-
-  @override
-  Request toRequest() {
-    return Request(
-      query: queryString(),
-      variables: variables.toJson(),
-      opType: OperationType.Query,
-      StringopName: 'GetID',
-    );
-  }
 }
 
+
 class GetIDVariables {
-  GetIDVariables();
+    
 
-  JsonObject toTypes() {
-    return {};
-  }
+    GetIDVariables(
+        
+    );
 
-  JsonObject toJson() {
-    return {};
-  }
+    JsonObject toTypes() {
+        return {
+              
+        };
+    }  
+
+    JsonObject toJson() {
+        return {
+              
+        };
+    } 
 }
