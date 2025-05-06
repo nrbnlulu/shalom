@@ -305,12 +305,12 @@ class RequestGetProductDetails extends Requestable {
     @override
     Request toRequest() {
         return Request(
-            query: "query GetProductDetails($productId: ID!, $userDiscount: Float, $calculateDiscount: Boolean) {
-  product(id: $productId, discount: $userDiscount) {
+            query: "query GetProductDetails(\$productId: ID!, \$userDiscount: Float, \$calculateDiscount: Boolean) {
+  product(id: \$productId, discount: \$userDiscount) {
     id
     name
     price
-    discountedPrice(applyDiscount: $calculateDiscount)
+    discountedPrice(applyDiscount: \$calculateDiscount)
   }
 }", 
             variables: variables.toJson(), 
@@ -323,11 +323,11 @@ class RequestGetProductDetails extends Requestable {
 
 class GetProductDetailsVariables {
     
-    final bool calculateDiscount;
+    final bool? calculateDiscount;
     
     final String productId;
     
-    final double userDiscount;
+    final double? userDiscount;
     
 
     GetProductDetailsVariables(
@@ -343,18 +343,6 @@ class GetProductDetailsVariables {
             }
         
     );
-
-    JsonObject toTypes() {
-        return {
-            
-            'calculateDiscount': 'Boolean',
-            
-            'productId': 'ID',
-            
-            'userDiscount': 'Float',
-              
-        };
-    }  
 
     JsonObject toJson() {
         return {

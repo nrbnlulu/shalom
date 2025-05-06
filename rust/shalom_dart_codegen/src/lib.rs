@@ -8,8 +8,7 @@ use shalom_core::{
         context::OperationContext,
         types::{Selection, VariableDefinition},
     },
-    schema::context::SchemaContext,
-    schema::types::FieldType,
+    schema::context::SchemaContext
 };
 use std::sync::Arc;
 use std::{
@@ -38,6 +37,8 @@ const LINE_ENDING: &str = "\r\n";
 const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
+    use std::env::var;
+
     use super::*;
 
     pub fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
@@ -68,13 +69,28 @@ mod ext_jinja_fns {
     }
 
     pub fn type_name_for_variable(variable: ViaDeserialize<VariableDefinition>) -> String {
-        let type_ref = match variable.0.ty {
-            FieldType::Named(type_ref) => type_ref,
-            FieldType::NonNullNamed(type_ref) => type_ref,
-            _ => unimplemented!("lists not implemented"),
-        };
-        let resolved = DEFAULT_SCALARS_MAP.get(&type_ref.name).unwrap();
-        resolved.clone()
+       let resolved = DEFAULT_SCALARS_MAP.get(&variable.ty_name).unwrap(); 
+        if variable.is_optional {
+            format!("{}?", resolved)
+        } else {
+            resolved.clone()
+        }
+    }
+
+    pub fn formatted_query(query: String) -> String {
+        let mut formatted_query =  String::new();  
+        for c in query.chars() {
+            match c {
+                '$' => {
+                    formatted_query.push('\\' as char);
+                    formatted_query.push(c);
+                },
+                _ => {
+                    formatted_query.push(c);
+                }
+            }
+        }; 
+        formatted_query 
     }
 
     pub fn docstring(value: Option<String>) -> String {
@@ -132,6 +148,10 @@ impl TemplateEnv<'_> {
         env.add_function(
             "type_name_for_variable",
             ext_jinja_fns::type_name_for_variable,
+        );
+       env.add_function(
+            "formatted_query",
+            ext_jinja_fns::formatted_query,
         );
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
