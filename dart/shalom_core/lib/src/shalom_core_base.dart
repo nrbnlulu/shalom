@@ -68,3 +68,26 @@ abstract class Requestable {
     Request toRequest();
 }
 
+sealed class Option<T> {
+  T? some();
+  bool isSome();
+  void inspect(void Function(T));
+}
+
+class None<T> implements Option<T> {
+  const None();
+  T? some() => null;
+  isSome() => false;
+  inspect(void Function(T)) => null;
+}
+
+class Some<T> implements Option<T> {
+  final T value;
+
+  const Some(this.value);
+
+  T? some() => value;
+  isSome() => true;
+  inspect(void Function(T) fn) => fn(value);
+}
+
