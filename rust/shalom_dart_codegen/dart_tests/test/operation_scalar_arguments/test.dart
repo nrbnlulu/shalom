@@ -7,10 +7,10 @@ import "dart:convert";
 void main() {
   group("test query", () {
     test("test request json", () {
-      final productDetailsVariables = GetProductDetailsVariables (
-        calculateDiscount: Some(false), 
-        productId: "foo", 
-        userDiscount: Some(20.0) 
+      final productDetailsVariables = GetProductDetailsVariables(
+        calculateDiscount: Some(false),
+        productId: "foo",
+        userDiscount: Some(20.0),
       );
       final productDetailsRequest = RequestGetProductDetails(
         variables: productDetailsVariables,
@@ -25,7 +25,7 @@ void main() {
   });
   group("test mutation", () {
     test("test request json", () {
-      final updateUserVariables = UpdateUserVariables (phone: Some("911"));
+      final updateUserVariables = UpdateUserVariables(phone: Some("911"));
       final updateUserRequest = RequestUpdateUser(
         variables: updateUserVariables,
       );
@@ -57,7 +57,7 @@ void main() {
       expect(requestVariables, {"phone": null});
     });
     test("test optional variable as some", () {
-      final updateUserVariables = UpdateUserVariables (phone: Some("911"));
+      final updateUserVariables = UpdateUserVariables(phone: Some("911"));
       final updateUserRequest = RequestUpdateUser(
         variables: updateUserVariables,
       );
