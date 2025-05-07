@@ -204,22 +204,18 @@ class Request{{ root_selection }} extends Requestable {
 class {{ root_selection }}Variables {
     {% for name, variable in variables | items %}
         final {{ type_name_for_variable(variable) }} {{ name }};
-        {% if variable.is_optional %}
-        final bool {{ name }}IsIncluded;  
-        {% endif %}
     {% endfor %}
 
     {{ root_selection }}Variables(
         {% if variables | length > 0 %}
             {
             {% for name, variable in variables | items %}
-                {% if variable.is_optional%}
-                   this.{{ name }},
-                   required this.{{ name }}IsIncluded,
+                {% if variable.is_optional %}
+                    this.{{name}} {% if variable.default_value is not none %} = Some(value: {{ variable.default_value}}) {% else %} = const None() {% endif %},
                 {% else %}
-                   required this.{{ name }}, 
-                {% endif %} 
-            {% endfor %}
+                    required this.{{name}} {% if variable.default_value is not none %} = {{ variable.default_value}} {% endif %},
+                {% endif %}
+            {% endfor %}  
             }
         {% endif %}
     );
@@ -228,40 +224,14 @@ class {{ root_selection }}Variables {
         JsonObject data = {};
         {% for name, variable in variables | items %}
            {% if variable.is_optional %}  
-              if ({{ name }}IsIncluded) {
-                 data["{{ name }}"] = {{ name }};
-              }  
+               if ({{ name }}.isSome()) {
+                  data["{{ name }}"] = {{ name }}.some();
+               } 
            {% else %}
               data["{{ name }}"] = {{ name }}; 
            {% endif %}
         {% endfor %}
         return data;
     } 
-
-    static {{ root_selection }}Variables fromJson(JsonObject data) {
-        {% for name, variable in variables | items %}
-            final {{ type_name_for_variable(variable) }} {{ name }}_value;
-            {% if variable.is_optional %}
-                final bool {{ name }}IsIncludedValue;
-                if (data.containsKey('{{ name }}')) {
-                    {{ name }}_value = data['{{ name }}'];
-                    {{ name }}IsIncludedValue = true;
-                } else {
-                    {{ name }}_value = null;
-                    {{ name }}IsIncludedValue = false;
-                }
-            {% else %}
-                {{ name }}_value = data['{{ name }}'];
-            {% endif %}
-        {% endfor %}
-        return {{root_selection}}Variables (
-            {% for name, variable in variables | items %}
-               {% if variable.is_optional %}
-                  {{ name }}IsIncluded: {{ name }}IsIncludedValue,  
-               {% endif %}
-               {{ name }}: {{ name }}_value,
-            {% endfor %}
-        );
-    }
 }
 

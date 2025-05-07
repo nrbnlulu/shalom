@@ -1,80 +1,126 @@
+
 import 'package:shalom_core/shalom_core.dart';
+
+
 
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class GetStringOptionalResponse {
-  /// class members
 
-  final String? stringOptional;
 
-  // keywordargs constructor
-  GetStringOptionalResponse({this.stringOptional});
-  static GetStringOptionalResponse fromJson(JsonObject data) {
-    final String? stringOptional_value = data['stringOptional'];
 
-    return GetStringOptionalResponse(stringOptional: stringOptional_value);
-  }
+class GetStringOptionalResponse{
 
-  GetStringOptionalResponse updateWithJson(JsonObject data) {
-    final String? stringOptional_value;
-    if (data.containsKey('stringOptional')) {
-      stringOptional_value = data['stringOptional'];
-    } else {
-      stringOptional_value = stringOptional;
+    /// class members
+    
+        
+            final String? stringOptional;
+        
+    
+    // keywordargs constructor
+    GetStringOptionalResponse({
+    
+        this.stringOptional,
+    
+    });
+    static GetStringOptionalResponse fromJson(JsonObject data) {
+    
+        
+            final String? stringOptional_value = data['stringOptional'];
+        
+    
+    return GetStringOptionalResponse(
+    
+        
+        stringOptional: stringOptional_value,
+    
+    );
+    }
+    GetStringOptionalResponse updateWithJson(JsonObject data) {
+    
+        
+            final String? stringOptional_value;
+            if (data.containsKey('stringOptional')) {
+            stringOptional_value = data['stringOptional'];
+            } else {
+            stringOptional_value = stringOptional;
+            }
+        
+    
+    return GetStringOptionalResponse(
+    
+        
+        stringOptional: stringOptional_value,
+    
+    );
+    }
+    @override
+    bool operator ==(Object other) {
+    return identical(this, other) ||
+    (other is GetStringOptionalResponse &&
+    
+        other.stringOptional == stringOptional 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        stringOptional.hashCode;
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'stringOptional':
+            
+                stringOptional
+            
+        ,
+    
+    };
     }
 
-    return GetStringOptionalResponse(stringOptional: stringOptional_value);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is GetStringOptionalResponse &&
-            other.stringOptional == stringOptional);
-  }
-
-  @override
-  int get hashCode => stringOptional.hashCode;
-
-  JsonObject toJson() {
-    return {'stringOptional': stringOptional};
-  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
+
+
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetStringOptional extends Requestable {
-  final GetStringOptionalVariables variables;
+    final GetStringOptionalVariables variables;
 
-  RequestGetStringOptional({required this.variables});
+    RequestGetStringOptional({
+        required this.variables,
+    });
 
-  @override
-  Request toRequest() {
-    return Request(
-      query: r"""query GetStringOptional {
+    @override
+    Request toRequest() {
+        return Request(
+            query: r"""query GetStringOptional {
   stringOptional
-}""",
-      variables: variables.toJson(),
-      opType: OperationType.Query,
-      StringopName: 'GetStringOptional',
-    );
-  }
+}""", 
+            variables: variables.toJson(), 
+            opType: OperationType.Query, 
+            StringopName: 'GetStringOptional'
+        );
+    }
 }
 
+
 class GetStringOptionalVariables {
-  GetStringOptionalVariables();
+    
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    GetStringOptionalVariables(
+        
+    );
 
-    return data;
-  }
-
-  static GetStringOptionalVariables fromJson(JsonObject data) {
-    return GetStringOptionalVariables();
-  }
+    JsonObject toJson() {
+        JsonObject data = {};
+        
+        return data;
+    } 
 }

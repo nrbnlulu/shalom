@@ -77,7 +77,7 @@ mod ext_jinja_fns {
     ) -> String {
         let resolved = DEFAULT_SCALARS_MAP.get(&variable.ty_name).unwrap();
         if variable.is_optional {
-            format!("{}?", resolved)
+            format!("Option<{}?>", resolved)
         } else {
             resolved.clone()
         }
