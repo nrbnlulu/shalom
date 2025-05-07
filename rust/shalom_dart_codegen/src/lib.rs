@@ -8,9 +8,8 @@ use shalom_core::{
         context::OperationContext,
         types::{Selection, VariableDefinition},
     },
-    schema::context::{SchemaContext, SharedSchemaContext}
+    schema::context::{SchemaContext, SharedSchemaContext},
 };
-use std::sync::Arc;
 use std::{
     collections::HashMap,
     fs,
@@ -37,13 +36,14 @@ const LINE_ENDING: &str = "\r\n";
 const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
-    use std::env::var;
-
-    use shalom_core::schema::types::GraphQLAny;
 
     use super::*;
 
-    pub fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
+    #[allow(unused_variables)]
+    pub fn type_name_for_selection(
+        schema_ctx: &SchemaContext,
+        selection: ViaDeserialize<Selection>,
+    ) -> String {
         match selection.0 {
             Selection::Scalar(scalar) => {
                 let resolved = DEFAULT_SCALARS_MAP.get(&scalar.concrete_type.name).unwrap();
@@ -70,23 +70,12 @@ mod ext_jinja_fns {
         }
     }
 
-    // pub fn type_name_for_variable(schema_ctx: SharedSchemaContext, variable: ViaDeserialize<VariableDefinition>) -> String {
-    //     let ty = schema_ctx.get_type(&variable.ty_name).unwrap(); 
-    //     let resolved =  match ty {
-    //         GraphQLAny::Scalar(scalar) => {
-    //             scalar.name.clone()
-    //         },
-    //         _ => todo!("implement arguments that are not scalar") 
-    //     };
-    //     if variable.is_optional {
-    //         format!("{}?", resolved)
-    //     } else {
-    //         resolved.clone()
-    //     }
-    // }
-
-    pub fn type_name_for_variable(variable: ViaDeserialize<VariableDefinition>) -> String {
-       let resolved = DEFAULT_SCALARS_MAP.get(&variable.ty_name).unwrap(); 
+    #[allow(unused_variables)]
+    pub fn type_name_for_variable(
+        schema_ctx: &SchemaContext,
+        variable: ViaDeserialize<VariableDefinition>,
+    ) -> String {
+        let resolved = DEFAULT_SCALARS_MAP.get(&variable.ty_name).unwrap();
         if variable.is_optional {
             format!("{}?", resolved)
         } else {
@@ -142,19 +131,14 @@ impl TemplateEnv<'_> {
         .unwrap();
         env.add_template("schema", include_str!("../templates/schema.dart.jinja"))
             .unwrap();
-        env.add_function(
-            "type_name_for_selection",
-            ext_jinja_fns::type_name_for_selection
-        );
-        // env.add_function(
-        //     "type_name_for_variable", move |arg| {
-        //     ext_jinja_fns::type_name_for_variable(schema_ctx.clone(), arg)
-        // }
-        // );
-        env.add_function(
-            "type_name_for_variable", 
-            ext_jinja_fns::type_name_for_variable
-        );
+        let schema_ctx_clone = schema_ctx.clone();
+        env.add_function("type_name_for_selection", move |a: _| {
+            ext_jinja_fns::type_name_for_selection(&schema_ctx_clone, a)
+        });
+        let schema_ctx_clone = schema_ctx.clone();
+        env.add_function("type_name_for_variable", move |a: _| {
+            ext_jinja_fns::type_name_for_variable(&schema_ctx_clone, a)
+        });
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
         env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
@@ -202,7 +186,7 @@ fn generate_operations_file(
     template_env: &TemplateEnv,
     name: &str,
     operation: Rc<OperationContext>,
-    schema_ctx: Arc<SchemaContext>,
+    schema_ctx: SharedSchemaContext,
 ) {
     info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();

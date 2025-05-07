@@ -13,7 +13,7 @@ pub struct OperationContext {
     #[allow(unused)]
     schema: SharedSchemaContext,
     pub file_path: PathBuf,
-    query: String, 
+    query: String,
     variables: HashMap<String, VariableDefinition>,
     type_defs: HashMap<FullPathName, Selection>,
     root_type: Option<SharedObjectSelection>,
@@ -21,7 +21,12 @@ pub struct OperationContext {
 }
 
 impl OperationContext {
-    pub fn new(schema: SharedSchemaContext, query: String, file_path: PathBuf, op_ty: OperationType) -> Self {
+    pub fn new(
+        schema: SharedSchemaContext,
+        query: String,
+        file_path: PathBuf,
+        op_ty: OperationType,
+    ) -> Self {
         OperationContext {
             schema,
             file_path,

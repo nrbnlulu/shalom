@@ -7,62 +7,70 @@ import "dart:convert";
 void main() {
   group("test query", () {
     test("test request json", () {
-      final variableJson = {"calculateDiscount": false, "productId": "foo", "userDiscount": 20.0};
-      final productDetailsVariables = GetProductDetailsVariables.fromJson(variableJson);
+      final variableJson = {
+        "calculateDiscount": false,
+        "productId": "foo",
+        "userDiscount": 20.0,
+      };
+      final productDetailsVariables = GetProductDetailsVariables.fromJson(
+        variableJson,
+      );
       final productDetailsRequest = RequestGetProductDetails(
         variables: productDetailsVariables,
       );
       final request = productDetailsRequest.toRequest();
       expect(request.opType, OperationType.Query);
       final requestJson = JsonEncoder().convert(request.toJson());
-      final expectedJson = r"""{"query":"query GetProductDetails($productId: ID!, $userDiscount: Float, $calculateDiscount: Boolean) {\n  product(id: $productId, discount: $userDiscount) {\n    id\n    name\n    price\n    discountedPrice(applyDiscount: $calculateDiscount)\n  }\n}","variables":{"calculateDiscount":false,"productId":"foo","userDiscount":20.0},"operationName":"GetProductDetails"}""";
+      final expectedJson =
+          r"""{"query":"query GetProductDetails($productId: ID!, $userDiscount: Float, $calculateDiscount: Boolean) {\n  product(id: $productId, discount: $userDiscount) {\n    id\n    name\n    price\n    discountedPrice(applyDiscount: $calculateDiscount)\n  }\n}","variables":{"calculateDiscount":false,"productId":"foo","userDiscount":20.0},"operationName":"GetProductDetails"}""";
       expect(requestJson, expectedJson);
     });
+  });
+  group("test mutation", () {
+    test("test request json", () {
+      final variableJson = {"phone": "911"};
+      final updateUserVariables = UpdateUserVariables.fromJson(variableJson);
+      final updateUserRequest = RequestUpdateUser(
+        variables: updateUserVariables,
+      );
+      final request = updateUserRequest.toRequest();
+      expect(request.opType, OperationType.Mutation);
+      final requestJson = JsonEncoder().convert(request.toJson());
+      final expectedJson =
+          r"""{"query":"mutation UpdateUser($phone: String) {\n  updateUser(phone: $phone) {\n    email\n    name\n    phone\n  }\n}","variables":{"phone":"911"},"operationName":"UpdateUser"}""";
+      expect(requestJson, expectedJson);
     });
-    group("test mutation", () {
-      test("test request json", () {
-        final variableJson = {"phone": "911"};
-        final updateUserVariables = UpdateUserVariables.fromJson(variableJson);
-        final updateUserRequest = RequestUpdateUser(
-          variables: updateUserVariables
-        );
-        final request = updateUserRequest.toRequest(); 
-        expect(request.opType, OperationType.Mutation);
-        final requestJson = JsonEncoder().convert(request.toJson());
-        final expectedJson = r"""{"query":"mutation UpdateUser($phone: String) {\n  updateUser(phone: $phone) {\n    email\n    name\n    phone\n  }\n}","variables":{"phone":"911"},"operationName":"UpdateUser"}""";
-        expect(requestJson, expectedJson);
-      });
-      test("test optional variable not selected", () {
-        final updateUserVariables = UpdateUserVariables.fromJson({});
-        final updateUserRequest = RequestUpdateUser(
-          variables: updateUserVariables
-        );
-        final request = updateUserRequest.toRequest(); 
-        final requestJson = request.toJson();
-        final requestVariables = requestJson["variables"];
-        expect(requestVariables, {});
-      });
-      test("test optional variable as null", () {
-        final variableJson = {"phone": null};
-        final updateUserVariables = UpdateUserVariables.fromJson(variableJson);
-        final updateUserRequest = RequestUpdateUser(
-          variables: updateUserVariables
-        );
-        final request = updateUserRequest.toRequest(); 
-        final requestJson = request.toJson();
-        final requestVariables = requestJson["variables"];
-        expect(requestVariables, variableJson);
-      });
-      test("test optional variable as some", () {
-        final variableJson = {"phone": "911"};
-        final updateUserVariables = UpdateUserVariables.fromJson(variableJson);
-        final updateUserRequest = RequestUpdateUser(
-          variables: updateUserVariables
-        );
-        final request = updateUserRequest.toRequest(); 
-        final requestJson = request.toJson();
-        final requestVariables = requestJson["variables"];
-        expect(requestVariables, variableJson);
-      });
+    test("test optional variable not selected", () {
+      final updateUserVariables = UpdateUserVariables.fromJson({});
+      final updateUserRequest = RequestUpdateUser(
+        variables: updateUserVariables,
+      );
+      final request = updateUserRequest.toRequest();
+      final requestJson = request.toJson();
+      final requestVariables = requestJson["variables"];
+      expect(requestVariables, {});
     });
+    test("test optional variable as null", () {
+      final variableJson = {"phone": null};
+      final updateUserVariables = UpdateUserVariables.fromJson(variableJson);
+      final updateUserRequest = RequestUpdateUser(
+        variables: updateUserVariables,
+      );
+      final request = updateUserRequest.toRequest();
+      final requestJson = request.toJson();
+      final requestVariables = requestJson["variables"];
+      expect(requestVariables, variableJson);
+    });
+    test("test optional variable as some", () {
+      final variableJson = {"phone": "911"};
+      final updateUserVariables = UpdateUserVariables.fromJson(variableJson);
+      final updateUserRequest = RequestUpdateUser(
+        variables: updateUserVariables,
+      );
+      final request = updateUserRequest.toRequest();
+      final requestJson = request.toJson();
+      final requestVariables = requestJson["variables"];
+      expect(requestVariables, variableJson);
+    });
+  });
 }
