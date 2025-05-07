@@ -283,10 +283,7 @@ class RequestGetTaskStatusOpt extends Requestable {
     name
     statusOpt
   }
-}
-
-
-""", 
+}""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetTaskStatusOpt'
@@ -303,8 +300,15 @@ class GetTaskStatusOptVariables {
     );
 
     JsonObject toJson() {
-        return {
-              
-        };
+        JsonObject data = {};
+        
+        return data;
     } 
+
+    static GetTaskStatusOptVariables fromJson(JsonObject data) {
+        
+        return GetTaskStatusOptVariables (
+            
+        );
+    }
 }

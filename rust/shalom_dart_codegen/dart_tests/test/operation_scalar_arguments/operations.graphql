@@ -6,3 +6,11 @@ query GetProductDetails($productId: ID!, $userDiscount: Float, $calculateDiscoun
     discountedPrice(applyDiscount: $calculateDiscount)
   }
 }
+
+mutation UpdateUser($phone: String) {
+  updateUser(phone: $phone) {
+    email
+    name
+    phone
+  }
+}

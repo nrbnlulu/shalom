@@ -101,10 +101,8 @@ class RequestGetString extends Requestable {
     Request toRequest() {
         return Request(
             query: r"""query GetString {
-    string
-}
-
-""", 
+  string
+}""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetString'
@@ -121,8 +119,15 @@ class GetStringVariables {
     );
 
     JsonObject toJson() {
-        return {
-              
-        };
+        JsonObject data = {};
+        
+        return data;
     } 
+
+    static GetStringVariables fromJson(JsonObject data) {
+        
+        return GetStringVariables (
+            
+        );
+    }
 }

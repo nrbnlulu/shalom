@@ -192,7 +192,7 @@ class Request{{ root_selection }} extends Requestable {
     @override
     Request toRequest() {
         return Request(
-            query: "{{ formatted_query(operation.context.query) }}", 
+            query: r"""{{ operation.context.query }}""", 
             variables: variables.toJson(), 
             opType: OperationType.{{ operation.context.op_ty.name }}, 
             StringopName: '{{ root_selection }}'
@@ -203,25 +203,65 @@ class Request{{ root_selection }} extends Requestable {
 {% set variables = operation.context.variables %}
 class {{ root_selection }}Variables {
     {% for name, variable in variables | items %}
-    final {{ type_name_for_variable(variable) }} {{ name }};
+        final {{ type_name_for_variable(variable) }} {{ name }};
+        {% if variable.is_optional %}
+        final bool {{ name }}IsIncluded;  
+        {% endif %}
     {% endfor %}
 
     {{ root_selection }}Variables(
         {% if variables | length > 0 %}
             {
             {% for name, variable in variables | items %}
-                required this.{{ name }},
+                {% if variable.is_optional%}
+                   this.{{ name }},
+                   required this.{{ name }}IsIncluded,
+                {% else %}
+                   required this.{{ name }}, 
+                {% endif %} 
             {% endfor %}
             }
         {% endif %}
     );
 
     JsonObject toJson() {
-        return {
-            {%  for name, variable in variables | items %}
-            '{{ name }}': {{ name }},
-            {% endfor %}  
-        };
+        JsonObject data = {};
+        {% for name, variable in variables | items %}
+           {% if variable.is_optional %}  
+              if ({{ name }}IsIncluded) {
+                 data["{{ name }}"] = {{ name }};
+              }  
+           {% else %}
+              data["{{ name }}"] = {{ name }}; 
+           {% endif %}
+        {% endfor %}
+        return data;
     } 
+
+    static {{ root_selection }}Variables fromJson(JsonObject data) {
+        {% for name, variable in variables | items %}
+            final {{ type_name_for_variable(variable) }} {{ name }}_value;
+            {% if variable.is_optional %}
+                final bool {{ name }}IsIncludedValue;
+                if (data.containsKey('{{ name }}')) {
+                    {{ name }}_value = data['{{ name }}'];
+                    {{ name }}IsIncludedValue = true;
+                } else {
+                    {{ name }}_value = null;
+                    {{ name }}IsIncludedValue = false;
+                }
+            {% else %}
+                {{ name }}_value = data['{{ name }}'];
+            {% endif %}
+        {% endfor %}
+        return {{root_selection}}Variables (
+            {% for name, variable in variables | items %}
+               {% if variable.is_optional %}
+                  {{ name }}IsIncluded: {{ name }}IsIncludedValue,  
+               {% endif %}
+               {{ name }}: {{ name }}_value,
+            {% endfor %}
+        );
+    }
 }
 

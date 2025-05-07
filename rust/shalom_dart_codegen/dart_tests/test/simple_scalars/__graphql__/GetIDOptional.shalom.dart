@@ -101,10 +101,8 @@ class RequestGetIDOptional extends Requestable {
     Request toRequest() {
         return Request(
             query: r"""query GetIDOptional {
-    idOptional
-}
-
-""", 
+  idOptional
+}""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetIDOptional'
@@ -121,8 +119,15 @@ class GetIDOptionalVariables {
     );
 
     JsonObject toJson() {
-        return {
-              
-        };
+        JsonObject data = {};
+        
+        return data;
     } 
+
+    static GetIDOptionalVariables fromJson(JsonObject data) {
+        
+        return GetIDOptionalVariables (
+            
+        );
+    }
 }

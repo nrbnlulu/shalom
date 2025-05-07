@@ -8,7 +8,8 @@ use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(tag = "kind")]
 /// The definition of a named type, with all information from type extensions folded in.
 ///
 /// The souNodee location is that of the "main" definition.
@@ -135,7 +136,7 @@ impl ScalarType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ObjectType {
     pub description: Option<String>,
     pub name: String,
@@ -156,7 +157,7 @@ impl Hash for ObjectType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InterfaceType {
     pub description: Option<String>,
 
@@ -170,7 +171,7 @@ impl Hash for InterfaceType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UnionType {
     pub description: Option<String>,
 
@@ -206,7 +207,7 @@ pub struct EnumValueDefinition {
     pub value: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InputObjectType {
     pub description: Option<String>,
     pub name: String,
@@ -217,7 +218,7 @@ impl Hash for InputObjectType {
         self.name.hash(state);
     }
 }
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct FieldDefinition {
     pub name: String,
     pub ty: FieldType,
@@ -226,7 +227,7 @@ pub struct FieldDefinition {
     pub description: Option<String>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct InputValueDefinition {
     pub description: Option<String>,
     pub name: String,

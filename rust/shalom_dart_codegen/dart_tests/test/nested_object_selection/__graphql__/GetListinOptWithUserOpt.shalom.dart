@@ -437,17 +437,16 @@ class RequestGetListinOptWithUserOpt extends Requestable {
     Request toRequest() {
         return Request(
             query: r"""query GetListinOptWithUserOpt {
-    listingOpt {
-        id
-        name
-        price
-        userOpt {
-            id
-            name
-        }
+  listingOpt {
+    id
+    name
+    price
+    userOpt {
+      id
+      name
     }
-}
-""", 
+  }
+}""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetListinOptWithUserOpt'
@@ -464,8 +463,15 @@ class GetListinOptWithUserOptVariables {
     );
 
     JsonObject toJson() {
-        return {
-              
-        };
+        JsonObject data = {};
+        
+        return data;
     } 
+
+    static GetListinOptWithUserOptVariables fromJson(JsonObject data) {
+        
+        return GetListinOptWithUserOptVariables (
+            
+        );
+    }
 }

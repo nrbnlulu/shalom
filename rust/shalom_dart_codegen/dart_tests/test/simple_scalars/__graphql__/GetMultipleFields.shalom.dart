@@ -143,10 +143,9 @@ class RequestGetMultipleFields extends Requestable {
     Request toRequest() {
         return Request(
             query: r"""query GetMultipleFields {
-    id,
-    intField
-}
-""", 
+  id
+  intField
+}""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetMultipleFields'
@@ -163,8 +162,15 @@ class GetMultipleFieldsVariables {
     );
 
     JsonObject toJson() {
-        return {
-              
-        };
+        JsonObject data = {};
+        
+        return data;
     } 
+
+    static GetMultipleFieldsVariables fromJson(JsonObject data) {
+        
+        return GetMultipleFieldsVariables (
+            
+        );
+    }
 }

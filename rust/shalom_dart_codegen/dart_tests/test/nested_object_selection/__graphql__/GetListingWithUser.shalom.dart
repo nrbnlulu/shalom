@@ -491,19 +491,18 @@ class RequestGetListingWithUser extends Requestable {
     Request toRequest() {
         return Request(
             query: r"""query GetListingWithUser {
-    listing {
-        id
-        name
-        price
-        user {
-            id
-            name
-            email
-            age
-        }
+  listing {
+    id
+    name
+    price
+    user {
+      id
+      name
+      email
+      age
     }
-}
-""", 
+  }
+}""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetListingWithUser'
@@ -520,8 +519,15 @@ class GetListingWithUserVariables {
     );
 
     JsonObject toJson() {
-        return {
-              
-        };
+        JsonObject data = {};
+        
+        return data;
     } 
+
+    static GetListingWithUserVariables fromJson(JsonObject data) {
+        
+        return GetListingWithUserVariables (
+            
+        );
+    }
 }

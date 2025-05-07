@@ -10,7 +10,6 @@ use log::{info, trace};
 use crate::context::SharedShalomGlobalContext;
 use crate::operation::types::{ObjectSelection, VariableDefinition};
 use crate::schema::context::SharedSchemaContext;
-use crate::schema::resolver::resolve_type;
 use crate::schema::types::{EnumType, GraphQLAny, ScalarType};
 
 use super::context::{OperationContext, SharedOpCtx};
@@ -138,21 +137,22 @@ fn parse_operation(
     name: String,
     file_path: PathBuf,
 ) -> SharedOpCtx {
+    let query = op.to_string();
     let mut ctx = OperationContext::new(
         global_ctx.schema_ctx.clone(),
+        query,
         file_path,
         parse_operation_type(op.operation_type),
     );
     for variable in op.variables.iter() {
         let name = variable.name.to_string();
         let default_value = variable.default_value.as_ref().map(|v| v.to_string());
-        let ty = resolve_type(
-            global_ctx.schema_ctx.clone(),
-            variable.ty.item_type().clone(),
-        );
+        let is_optional = !variable.ty.is_non_null();
+        let ty_name = variable.ty.inner_named_type().to_string();
         let variable_definition = VariableDefinition {
             name: name.clone(),
-            ty,
+            ty_name,
+            is_optional,
             default_value,
         };
         ctx.add_variable(name, variable_definition);
@@ -185,7 +185,6 @@ pub(crate) fn parse_document(
         .parse_executable(&schema, source, doc_path)
         .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
     let doc_orig = doc_orig.validate(&schema).expect("doc is not valid");
-
     if doc_orig.operations.anonymous.is_some() {
         unimplemented!("Anonymous operations are not supported")
     }

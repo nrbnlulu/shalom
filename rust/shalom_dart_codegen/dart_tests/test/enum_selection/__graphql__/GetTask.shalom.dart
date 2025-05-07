@@ -273,9 +273,7 @@ class RequestGetTask extends Requestable {
     name
     status
   }
-}
-
-""", 
+}""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetTask'
@@ -292,8 +290,15 @@ class GetTaskVariables {
     );
 
     JsonObject toJson() {
-        return {
-              
-        };
+        JsonObject data = {};
+        
+        return data;
     } 
+
+    static GetTaskVariables fromJson(JsonObject data) {
+        
+        return GetTaskVariables (
+            
+        );
+    }
 }

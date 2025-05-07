@@ -323,36 +323,110 @@ class RequestGetProductDetails extends Requestable {
 
 class GetProductDetailsVariables {
     
-    final bool? calculateDiscount;
+        final bool? calculateDiscount;
+        
+        final bool calculateDiscountIsIncluded;  
+        
     
-    final String productId;
+        final String productId;
+        
     
-    final double? userDiscount;
+        final double? userDiscount;
+        
+        final bool userDiscountIsIncluded;  
+        
     
 
     GetProductDetailsVariables(
         
             {
             
-                required this.calculateDiscount,
+                
+                   this.calculateDiscount,
+                   required this.calculateDiscountIsIncluded,
+                 
             
-                required this.productId,
+                
+                   required this.productId, 
+                 
             
-                required this.userDiscount,
+                
+                   this.userDiscount,
+                   required this.userDiscountIsIncluded,
+                 
             
             }
         
     );
 
     JsonObject toJson() {
-        return {
-            
-            'calculateDiscount': calculateDiscount,
-            
-            'productId': productId,
-            
-            'userDiscount': userDiscount,
-              
-        };
+        JsonObject data = {};
+        
+             
+              if (calculateDiscountIsIncluded) {
+                 data["calculateDiscount"] = calculateDiscount;
+              }  
+           
+        
+           
+              data["productId"] = productId; 
+           
+        
+             
+              if (userDiscountIsIncluded) {
+                 data["userDiscount"] = userDiscount;
+              }  
+           
+        
+        return data;
     } 
+
+    static GetProductDetailsVariables fromJson(JsonObject data) {
+        
+            final bool? calculateDiscount_value;
+            
+                final bool calculateDiscountIsIncludedValue;
+                if (data.containsKey('calculateDiscount')) {
+                    calculateDiscount_value = data['calculateDiscount'];
+                    calculateDiscountIsIncludedValue = true;
+                } else {
+                    calculateDiscount_value = null;
+                    calculateDiscountIsIncludedValue = false;
+                }
+            
+        
+            final String productId_value;
+            
+                productId_value = data['productId'];
+            
+        
+            final double? userDiscount_value;
+            
+                final bool userDiscountIsIncludedValue;
+                if (data.containsKey('userDiscount')) {
+                    userDiscount_value = data['userDiscount'];
+                    userDiscountIsIncludedValue = true;
+                } else {
+                    userDiscount_value = null;
+                    userDiscountIsIncludedValue = false;
+                }
+            
+        
+        return GetProductDetailsVariables (
+            
+               
+                  calculateDiscountIsIncluded: calculateDiscountIsIncludedValue,  
+               
+               calculateDiscount: calculateDiscount_value,
+            
+               
+               productId: productId_value,
+            
+               
+                  userDiscountIsIncluded: userDiscountIsIncludedValue,  
+               
+               userDiscount: userDiscount_value,
+            
+        );
+    }
 }

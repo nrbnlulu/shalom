@@ -101,10 +101,8 @@ class RequestGetBoolean extends Requestable {
     Request toRequest() {
         return Request(
             query: r"""query GetBoolean {
-    boolean
-}
-
-""", 
+  boolean
+}""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetBoolean'
@@ -121,8 +119,15 @@ class GetBooleanVariables {
     );
 
     JsonObject toJson() {
-        return {
-              
-        };
+        JsonObject data = {};
+        
+        return data;
     } 
+
+    static GetBooleanVariables fromJson(JsonObject data) {
+        
+        return GetBooleanVariables (
+            
+        );
+    }
 }

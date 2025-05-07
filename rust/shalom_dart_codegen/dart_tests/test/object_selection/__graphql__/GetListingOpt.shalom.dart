@@ -268,8 +268,13 @@ class RequestGetListingOpt extends Requestable {
     @override
     Request toRequest() {
         return Request(
-            query: r"""query
-""", 
+            query: r"""query GetListingOpt {
+  listingOpt {
+    id
+    name
+    price
+  }
+}""", 
             variables: variables.toJson(), 
             opType: OperationType.Query, 
             StringopName: 'GetListingOpt'
@@ -286,8 +291,15 @@ class GetListingOptVariables {
     );
 
     JsonObject toJson() {
-        return {
-              
-        };
+        JsonObject data = {};
+        
+        return data;
     } 
+
+    static GetListingOptVariables fromJson(JsonObject data) {
+        
+        return GetListingOptVariables (
+            
+        );
+    }
 }
