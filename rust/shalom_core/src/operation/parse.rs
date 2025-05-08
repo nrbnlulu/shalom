@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use apollo_compiler::{
-    ast::OperationType as ApolloOperationType, executable as apollo_executable, Node, 
+    ast::OperationType as ApolloOperationType, executable as apollo_executable, Node,
 };
 use log::{info, trace};
 
@@ -140,20 +140,16 @@ fn parse_string_to_value(value: Option<String>, type_: &GraphQLAny) -> Value {
         GraphQLAny::Scalar(scalar) => {
             if scalar.is_boolean() {
                 Value::Boolean(value.into())
-            } 
-            else if scalar.is_int() {
+            } else if scalar.is_int() {
                 Value::Int(value.into())
-            }
-            else if scalar.is_string() {
+            } else if scalar.is_string() {
                 Value::String(value.into())
-            }
-            else {
+            } else {
                 panic!("invalid scalar type")
             }
-        },
-        _ => todo!("implement non scalar default values")
+        }
+        _ => todo!("implement non scalar default values"),
     }
-
 }
 
 fn parse_operation(
@@ -176,13 +172,17 @@ fn parse_operation(
             .schema_ctx
             .get_type(variable.ty.inner_named_type().as_str())
             .unwrap();
-        assert!(matches!(ty, GraphQLAny::Scalar(_)), "non scalar arguments have not been implemented");
-        let default_value = parse_string_to_value(variable.default_value.as_ref().map(|v| v.to_string()), &ty);
+        assert!(
+            matches!(ty, GraphQLAny::Scalar(_)),
+            "non scalar arguments have not been implemented"
+        );
+        let default_value =
+            parse_string_to_value(variable.default_value.as_ref().map(|v| v.to_string()), &ty);
         let variable_definition = VariableDefinition {
             name: name.clone(),
             ty,
             is_optional,
-            default_value
+            default_value,
         };
         ctx.add_variable(name, variable_definition);
     }

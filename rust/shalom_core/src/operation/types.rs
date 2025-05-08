@@ -1,6 +1,6 @@
 use std::{cell::RefCell, rc::Rc};
 
-use apollo_compiler::{Node};
+use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
 use crate::schema::types::{EnumType, GraphQLAny, ScalarType, Value};

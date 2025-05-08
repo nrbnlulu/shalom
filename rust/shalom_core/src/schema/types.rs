@@ -1,3 +1,4 @@
+use std::fmt;
 use std::{
     collections::HashSet,
     hash::{Hash, Hasher},
@@ -74,7 +75,6 @@ impl GraphQLAny {
             _ => todo!("Unsupported type"),
         }
     }
-
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -83,83 +83,74 @@ pub enum Value {
     Null,
     String(StringValue),
     Int(IntValue),
-    Boolean(BoolValue)
+    Boolean(BoolValue),
 }
 
-impl ToString for Value {
-    fn to_string(&self) -> String {
+impl fmt::Display for Value {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-           Value::Null => "null".to_string(), 
-           Value::String(string) => string.to_string(),
-           Value::Int(int) => int.to_string(),
-           Value::Boolean(bool_) => bool_.to_string()
+            Self::Null => write!(f, "null"),
+            Self::String(string) => write!(f, "{}", string),
+            Self::Int(int) => write!(f, "{}", int),
+            Self::Boolean(bool_) => write!(f, "{}", bool_),
         }
     }
 }
 
-
-
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct StringValue {
-    value: String
-} 
+    value: String,
+}
 
-impl ToString for StringValue {
-    fn to_string(&self) -> String {
-       self.value.to_string() 
+impl fmt::Display for StringValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value)
     }
 }
 
 impl From<String> for StringValue {
     fn from(value: String) -> Self {
-        Self {
-            value 
-        }
+        Self { value }
     }
 }
 
-
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct IntValue {
-    value: i32 
-} 
+    value: i32,
+}
 
-impl ToString for IntValue {
-    fn to_string(&self) -> String {
-       self.value.to_string() 
+impl fmt::Display for IntValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value)
     }
 }
 
 impl From<String> for IntValue {
     fn from(value: String) -> Self {
         let int: i32 = value.parse().unwrap();
-        Self {
-            value: int
-        }
+        Self { value: int }
     }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct BoolValue {
-    value: bool 
-} 
+    value: bool,
+}
 
-impl ToString for BoolValue {
-    fn to_string(&self) -> String {
-       self.value.to_string() 
+impl fmt::Display for BoolValue {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.value)
     }
 }
 
 impl From<String> for BoolValue {
     fn from(value: String) -> Self {
         let bool = match value.as_str() {
-                    "true" => true,
-                    "false" => false,
-                    _ => panic!("value is not valid bool")
+            "true" => true,
+            "false" => false,
+            _ => panic!("value is not valid bool"),
         };
-        Self {
-             value: bool
-        }
+        Self { value: bool }
     }
 }
 
