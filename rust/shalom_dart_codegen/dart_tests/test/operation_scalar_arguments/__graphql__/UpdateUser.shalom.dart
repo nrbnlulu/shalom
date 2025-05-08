@@ -140,6 +140,7 @@ class RequestUpdateUser extends Requestable {
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = variables.toJson();
     return Request(
       query: r"""mutation UpdateUser($phone: String) {
   updateUser(phone: $phone) {
@@ -148,7 +149,7 @@ class RequestUpdateUser extends Requestable {
     phone
   }
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Mutation,
       StringopName: 'UpdateUser',
     );

@@ -47,29 +47,18 @@ class GetBooleanResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetBoolean extends Requestable {
-  final GetBooleanVariables variables;
-
-  RequestGetBoolean({required this.variables});
+  RequestGetBoolean();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetBoolean {
   boolean
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetBoolean',
     );
-  }
-}
-
-class GetBooleanVariables {
-  GetBooleanVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

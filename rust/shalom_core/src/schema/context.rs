@@ -47,6 +47,16 @@ impl SchemaTypesCtx {
         };
     }
 
+    pub fn get_any_name(&self, type_: &GraphQLAny) -> String {
+        match type_ {
+            GraphQLAny::InputObject(v) => v.name.clone(),
+            GraphQLAny::Object(v) => v.name.clone(),
+            GraphQLAny::Enum(v) => v.name.clone(),
+            GraphQLAny::Scalar(v) => v.name.clone(),
+            _ => todo!("Unsupported type"),
+        }
+    }
+
     pub fn add_input(&mut self, name: String, type_: Node<InputObjectType>) {
         self.inputs.insert(name, type_);
     }
@@ -107,6 +117,11 @@ impl SchemaContext {
     pub fn get_type(&self, name: &str) -> Option<GraphQLAny> {
         let types_ctx = self.types.lock().unwrap();
         types_ctx.get_any(name)
+    }
+
+    pub fn get_type_name(&self, type_: &GraphQLAny) -> String {
+        let types_ctx = self.types.lock().unwrap();
+        types_ctx.get_any_name(type_)
     }
 
     pub fn add_object(&self, name: String, type_: Node<ObjectType>) -> anyhow::Result<()> {

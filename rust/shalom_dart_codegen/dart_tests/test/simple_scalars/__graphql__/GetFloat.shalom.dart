@@ -47,29 +47,18 @@ class GetFloatResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetFloat extends Requestable {
-  final GetFloatVariables variables;
-
-  RequestGetFloat({required this.variables});
+  RequestGetFloat();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetFloat {
   float
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetFloat',
     );
-  }
-}
-
-class GetFloatVariables {
-  GetFloatVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

@@ -124,12 +124,11 @@ class GetListing_listing {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetListing extends Requestable {
-  final GetListingVariables variables;
-
-  RequestGetListing({required this.variables});
+  RequestGetListing();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetListing {
   listing {
@@ -138,19 +137,9 @@ class RequestGetListing extends Requestable {
     price
   }
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetListing',
     );
-  }
-}
-
-class GetListingVariables {
-  GetListingVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

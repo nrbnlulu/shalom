@@ -75,9 +75,12 @@ mod ext_jinja_fns {
         schema_ctx: &SchemaContext,
         variable: ViaDeserialize<VariableDefinition>,
     ) -> String {
-        let resolved = DEFAULT_SCALARS_MAP.get(&variable.ty_name).unwrap();
-        if variable.is_optional {
+        let ty_name = schema_ctx.get_type_name(&variable.0.ty);
+        let resolved = DEFAULT_SCALARS_MAP.get(&ty_name).unwrap();
+        if variable.is_optional && variable.default_value.is_none() {
             format!("Option<{}?>", resolved)
+        } else if variable.is_optional {
+            format!("{}?", resolved)
         } else {
             resolved.clone()
         }

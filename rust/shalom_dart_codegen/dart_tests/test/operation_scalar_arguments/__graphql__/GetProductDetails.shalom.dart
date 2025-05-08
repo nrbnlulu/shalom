@@ -170,6 +170,7 @@ class RequestGetProductDetails extends Requestable {
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = variables.toJson();
     return Request(
       query:
           r"""query GetProductDetails($productId: ID!, $userDiscount: Float, $calculateDiscount: Boolean) {
@@ -180,7 +181,7 @@ class RequestGetProductDetails extends Requestable {
     discountedPrice(applyDiscount: $calculateDiscount)
   }
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetProductDetails',
     );

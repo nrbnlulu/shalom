@@ -116,12 +116,11 @@ class GetTask_task {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetTask extends Requestable {
-  final GetTaskVariables variables;
-
-  RequestGetTask({required this.variables});
+  RequestGetTask();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetTask {
   task {
@@ -130,19 +129,9 @@ class RequestGetTask extends Requestable {
     status
   }
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetTask',
     );
-  }
-}
-
-class GetTaskVariables {
-  GetTaskVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

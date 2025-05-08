@@ -46,29 +46,18 @@ class GetIDResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetID extends Requestable {
-  final GetIDVariables variables;
-
-  RequestGetID({required this.variables});
+  RequestGetID();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetID {
   id
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetID',
     );
-  }
-}
-
-class GetIDVariables {
-  GetIDVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

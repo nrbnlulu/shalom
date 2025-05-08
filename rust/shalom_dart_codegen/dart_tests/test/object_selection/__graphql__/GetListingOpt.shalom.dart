@@ -134,12 +134,11 @@ class GetListingOpt_listingOpt {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetListingOpt extends Requestable {
-  final GetListingOptVariables variables;
-
-  RequestGetListingOpt({required this.variables});
+  RequestGetListingOpt();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetListingOpt {
   listingOpt {
@@ -148,19 +147,9 @@ class RequestGetListingOpt extends Requestable {
     price
   }
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetListingOpt',
     );
-  }
-}
-
-class GetListingOptVariables {
-  GetListingOptVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

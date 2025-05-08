@@ -48,29 +48,18 @@ class GetStringOptionalResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetStringOptional extends Requestable {
-  final GetStringOptionalVariables variables;
-
-  RequestGetStringOptional({required this.variables});
+  RequestGetStringOptional();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetStringOptional {
   stringOptional
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetStringOptional',
     );
-  }
-}
-
-class GetStringOptionalVariables {
-  GetStringOptionalVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

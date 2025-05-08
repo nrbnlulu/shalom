@@ -47,29 +47,18 @@ class GetIntResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetInt extends Requestable {
-  final GetIntVariables variables;
-
-  RequestGetInt({required this.variables});
+  RequestGetInt();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetInt {
   intField
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetInt',
     );
-  }
-}
-
-class GetIntVariables {
-  GetIntVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

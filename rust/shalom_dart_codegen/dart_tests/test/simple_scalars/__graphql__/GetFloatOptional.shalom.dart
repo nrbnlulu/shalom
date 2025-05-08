@@ -48,29 +48,18 @@ class GetFloatOptionalResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetFloatOptional extends Requestable {
-  final GetFloatOptionalVariables variables;
-
-  RequestGetFloatOptional({required this.variables});
+  RequestGetFloatOptional();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetFloatOptional {
   floatOptional
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetFloatOptional',
     );
-  }
-}
-
-class GetFloatOptionalVariables {
-  GetFloatOptionalVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

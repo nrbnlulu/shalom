@@ -48,29 +48,18 @@ class GetBooleanOptionalResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetBooleanOptional extends Requestable {
-  final GetBooleanOptionalVariables variables;
-
-  RequestGetBooleanOptional({required this.variables});
+  RequestGetBooleanOptional();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetBooleanOptional {
   booleanOptional
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetBooleanOptional',
     );
-  }
-}
-
-class GetBooleanOptionalVariables {
-  GetBooleanOptionalVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

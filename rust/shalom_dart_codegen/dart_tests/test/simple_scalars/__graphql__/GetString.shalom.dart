@@ -47,29 +47,18 @@ class GetStringResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetString extends Requestable {
-  final GetStringVariables variables;
-
-  RequestGetString({required this.variables});
+  RequestGetString();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetString {
   string
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetString',
     );
-  }
-}
-
-class GetStringVariables {
-  GetStringVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

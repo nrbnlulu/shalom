@@ -60,30 +60,19 @@ class GetMultipleFieldsResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetMultipleFields extends Requestable {
-  final GetMultipleFieldsVariables variables;
-
-  RequestGetMultipleFields({required this.variables});
+  RequestGetMultipleFields();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetMultipleFields {
   id
   intField
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetMultipleFields',
     );
-  }
-}
-
-class GetMultipleFieldsVariables {
-  GetMultipleFieldsVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

@@ -245,12 +245,11 @@ class GetListingWithUser_listing_user {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetListingWithUser extends Requestable {
-  final GetListingWithUserVariables variables;
-
-  RequestGetListingWithUser({required this.variables});
+  RequestGetListingWithUser();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetListingWithUser {
   listing {
@@ -265,19 +264,9 @@ class RequestGetListingWithUser extends Requestable {
     }
   }
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetListingWithUser',
     );
-  }
-}
-
-class GetListingWithUserVariables {
-  GetListingWithUserVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

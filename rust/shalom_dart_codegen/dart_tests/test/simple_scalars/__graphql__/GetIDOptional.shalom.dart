@@ -47,29 +47,18 @@ class GetIDOptionalResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetIDOptional extends Requestable {
-  final GetIDOptionalVariables variables;
-
-  RequestGetIDOptional({required this.variables});
+  RequestGetIDOptional();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetIDOptional {
   idOptional
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetIDOptional',
     );
-  }
-}
-
-class GetIDOptionalVariables {
-  GetIDOptionalVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

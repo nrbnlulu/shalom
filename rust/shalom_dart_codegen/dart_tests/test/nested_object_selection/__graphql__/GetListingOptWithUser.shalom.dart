@@ -260,12 +260,11 @@ class GetListingOptWithUser_listingOpt_user {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetListingOptWithUser extends Requestable {
-  final GetListingOptWithUserVariables variables;
-
-  RequestGetListingOptWithUser({required this.variables});
+  RequestGetListingOptWithUser();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetListingOptWithUser {
   listingOpt {
@@ -280,19 +279,9 @@ class RequestGetListingOptWithUser extends Requestable {
     }
   }
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetListingOptWithUser',
     );
-  }
-}
-
-class GetListingOptWithUserVariables {
-  GetListingOptWithUserVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

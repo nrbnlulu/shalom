@@ -14,3 +14,12 @@ mutation UpdateUser($phone: String) {
     phone
   }
 }
+
+query GetTask($name: String = "shalom", $duration: Int = 2, $is_easy: Boolean = false) {
+  task(name: $name, duration: $duration, is_easy: $is_easy) {
+    name,
+    duration,
+    is_easy
+  }
+}
+

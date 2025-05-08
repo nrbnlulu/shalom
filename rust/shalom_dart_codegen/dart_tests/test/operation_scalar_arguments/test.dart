@@ -2,6 +2,7 @@ import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
 import "__graphql__/GetProductDetails.shalom.dart";
 import "__graphql__/UpdateUser.shalom.dart";
+import "__graphql__/GetTask.shalom.dart";
 import "dart:convert";
 
 void main() {
@@ -65,6 +66,52 @@ void main() {
       final requestJson = request.toJson();
       final requestVariables = requestJson["variables"];
       expect(requestVariables, {"phone": "911"});
+    });
+  });
+  group("test default values", () {
+    test("default values", () {
+      final getTaskVariables = GetTaskVariables();
+      final getTaskRequest = RequestGetTask(variables: getTaskVariables);
+      final request = getTaskRequest.toRequest();
+      final requestJson = request.toJson();
+      final requestVariables = requestJson["variables"];
+      expect(requestVariables, {
+        "duration": 2,
+        "is_easy": false,
+        "name": "shalom",
+      });
+    });
+    test("default values overridden by some", () {
+      final getTaskVariables = GetTaskVariables(
+        duration: 4,
+        is_easy: true,
+        name: "shalom",
+      );
+      final getTaskRequest = RequestGetTask(variables: getTaskVariables);
+      final request = getTaskRequest.toRequest();
+      final requestJson = request.toJson();
+      final requestVariables = requestJson["variables"];
+      expect(requestVariables, {
+        "duration": 4,
+        "is_easy": true,
+        "name": "shalom",
+      });
+    });
+    test("default values overridden by null", () {
+      final getTaskVariables = GetTaskVariables(
+        duration: null,
+        is_easy: null,
+        name: null,
+      );
+      final getTaskRequest = RequestGetTask(variables: getTaskVariables);
+      final request = getTaskRequest.toRequest();
+      final requestJson = request.toJson();
+      final requestVariables = requestJson["variables"];
+      expect(requestVariables, {
+        "duration": null,
+        "is_easy": null,
+        "name": null,
+      });
     });
   });
 }

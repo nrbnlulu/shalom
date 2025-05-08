@@ -47,29 +47,18 @@ class GetIntOptionalResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetIntOptional extends Requestable {
-  final GetIntOptionalVariables variables;
-
-  RequestGetIntOptional({required this.variables});
+  RequestGetIntOptional();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetIntOptional {
   intOptional
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetIntOptional',
     );
-  }
-}
-
-class GetIntOptionalVariables {
-  GetIntOptionalVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

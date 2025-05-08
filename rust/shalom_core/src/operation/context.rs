@@ -51,7 +51,7 @@ impl OperationContext {
     }
 
     pub fn add_variable(&mut self, name: String, variable: VariableDefinition) {
-        self.variables.entry(name.clone()).or_insert(variable);
+        self.variables.entry(name).or_insert(variable);
     }
 
     pub fn add_object_selection(&mut self, name: String, object: SharedObjectSelection) {

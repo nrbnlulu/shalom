@@ -3,7 +3,7 @@ import "schema.shalom.dart";
 {% endif %}
 import 'package:shalom_core/shalom_core.dart';
 
-{% set root_selection = operation.context.root_type.selection_name %}
+{% set operation_name = operation.context.root_type.selection_name %}
 {% macro base_object_impl(typename, selections) %}
     /// class members
     {% for selection in selections -%}
@@ -167,7 +167,7 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-{% set root_type_name = root_selection ~ "Response" %}
+{% set root_type_name = operation_name ~ "Response" %}
 class {{ root_type_name }}{
 {{ base_object_impl(root_type_name, operation.context.root_type.selections) }}
 }
@@ -182,38 +182,46 @@ class {{ root_type_name }}{
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-class Request{{ root_selection }} extends Requestable {
-    final {{ root_selection }}Variables variables;
+{% set op_variables = operation.context.variables %}
+class Request{{ operation_name }} extends Requestable {
+    {% if op_variables | length > 0 %}
+    final {{ operation_name }}Variables variables;
+    {% endif %}
 
-    Request{{ root_selection }}({
-        required this.variables,
-    });
+    Request{{ operation_name }}(
+        {% if op_variables | length > 0 %}
+        {
+            required this.variables,
+        } 
+        {% endif %}
+    );
 
     @override
     Request toRequest() {
+        JsonObject variablesJson = {% if op_variables | length > 0 %} variables.toJson() {% else %} {}  {% endif %};
         return Request(
             query: r"""{{ operation.context.query }}""", 
-            variables: variables.toJson(), 
+            variables: variablesJson, 
             opType: OperationType.{{ operation.context.op_ty.name }}, 
-            StringopName: '{{ root_selection }}'
+            StringopName: '{{ operation_name }}'
         );
     }
 }
 
-{% set variables = operation.context.variables %}
-class {{ root_selection }}Variables {
-    {% for name, variable in variables | items %}
+{% if op_variables | length > 0 %}
+class {{ operation_name }}Variables {
+    {% for name, variable in op_variables | items %}
         final {{ type_name_for_variable(variable) }} {{ name }};
     {% endfor %}
 
-    {{ root_selection }}Variables(
-        {% if variables | length > 0 %}
+    {{ operation_name }}Variables(
+        {% if op_variables | length > 0 %}
             {
-            {% for name, variable in variables | items %}
-                {% if variable.is_optional %}
-                    this.{{name}} {% if variable.default_value is not none %} = Some(value: {{ variable.default_value}}) {% else %} = const None() {% endif %},
-                {% else %}
+            {% for name, variable in op_variables | items %}
+                {% if not variable.is_optional %}
                     required this.{{name}} {% if variable.default_value is not none %} = {{ variable.default_value}} {% endif %},
+                {% else %}
+                    this.{{name}} {% if variable.default_value is not none %} = {{ variable.default_value}} {% else %} = const None() {% endif %},
                 {% endif %}
             {% endfor %}  
             }
@@ -222,8 +230,8 @@ class {{ root_selection }}Variables {
 
     JsonObject toJson() {
         JsonObject data = {};
-        {% for name, variable in variables | items %}
-           {% if variable.is_optional %}  
+        {% for name, variable in op_variables | items %}
+           {% if variable.is_optional and variable.default_value is none %}  
                if ({{ name }}.isSome()) {
                   data["{{ name }}"] = {{ name }}.some();
                } 
@@ -234,4 +242,4 @@ class {{ root_selection }}Variables {
         return data;
     } 
 }
-
+{% endif %}

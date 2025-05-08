@@ -148,10 +148,17 @@ fn parse_operation(
         let name = variable.name.to_string();
         let default_value = variable.default_value.as_ref().map(|v| v.to_string());
         let is_optional = !variable.ty.is_non_null();
-        let ty_name = variable.ty.inner_named_type().to_string();
+        let ty = global_ctx
+            .schema_ctx
+            .get_type(variable.ty.inner_named_type().as_str())
+            .unwrap();
+        match ty {
+            GraphQLAny::Scalar(_) => {}
+            _ => todo!("implement non scalar arguments"),
+        }
         let variable_definition = VariableDefinition {
             name: name.clone(),
-            ty_name,
+            ty,
             is_optional,
             default_value,
         };

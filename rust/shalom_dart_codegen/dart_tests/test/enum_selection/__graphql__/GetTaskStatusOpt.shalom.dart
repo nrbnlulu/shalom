@@ -138,12 +138,11 @@ class GetTaskStatusOpt_task {
 // ------------ END OBJECT DEFINITIONS -------------
 
 class RequestGetTaskStatusOpt extends Requestable {
-  final GetTaskStatusOptVariables variables;
-
-  RequestGetTaskStatusOpt({required this.variables});
+  RequestGetTaskStatusOpt();
 
   @override
   Request toRequest() {
+    JsonObject variablesJson = {};
     return Request(
       query: r"""query GetTaskStatusOpt {
   task {
@@ -152,19 +151,9 @@ class RequestGetTaskStatusOpt extends Requestable {
     statusOpt
   }
 }""",
-      variables: variables.toJson(),
+      variables: variablesJson,
       opType: OperationType.Query,
       StringopName: 'GetTaskStatusOpt',
     );
-  }
-}
-
-class GetTaskStatusOptVariables {
-  GetTaskStatusOptVariables();
-
-  JsonObject toJson() {
-    JsonObject data = {};
-
-    return data;
   }
 }

@@ -1,5 +1,6 @@
 type Query {
-  product(id: ID!, discount: Float): Product
+  product(id: ID!, discount: Float): Product,
+  task(name: String, duration: Int, is_easy: Boolean): Task,
 }
 
 type Mutation {
@@ -17,4 +18,10 @@ type Product {
   name: String!
   price: Float!
   discountedPrice(applyDiscount: Boolean): Float
+}
+
+type Task {
+  name: String,
+  duration: Int,
+  is_easy: Boolean,
 }
