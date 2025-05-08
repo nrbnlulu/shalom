@@ -219,9 +219,17 @@ class {{ operation_name }}Variables {
             {
             {% for name, variable in op_variables | items %}
                 {% if not variable.is_optional %}
-                    required this.{{name}} {% if variable.default_value.kind != "Null"  %} = {{ parse_default_value(variable.default_value) }} {% endif %},
+                    {% if variable.default_value.kind != "Null"  %} 
+                        required this.{{ name }} = {{ parse_default_value(variable.default_value) }}
+                    {% else %}
+                        required this.{{name}}  
+                    {% endif %},
                 {% else %}
-                    this.{{name}} {% if variable.default_value.kind != "Null" %} = {{ parse_default_value(variable.default_value) }} {% else %} = const None() {% endif %},
+                    {% if variable.default_value.kind != "Null" %} 
+                        this.{{ name }} = {{ parse_default_value(variable.default_value) }} 
+                    {% else %} 
+                        this.{{ name }} = const None() 
+                    {% endif %},
                 {% endif %}
             {% endfor %}  
             }
