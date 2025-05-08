@@ -37,6 +37,8 @@ const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
 
+    use shalom_core::schema::types::Value;
+
     use super::*;
 
     #[allow(unused_variables)]
@@ -75,15 +77,19 @@ mod ext_jinja_fns {
         schema_ctx: &SchemaContext,
         variable: ViaDeserialize<VariableDefinition>,
     ) -> String {
-        let ty_name = schema_ctx.get_type_name(&variable.0.ty);
+        let ty_name = variable.0.ty.name();
         let resolved = DEFAULT_SCALARS_MAP.get(&ty_name).unwrap();
-        if variable.is_optional && variable.default_value.is_none() {
+        if variable.is_optional && matches!(variable.default_value, Value::Null) {
             format!("Option<{}?>", resolved)
         } else if variable.is_optional {
             format!("{}?", resolved)
         } else {
             resolved.clone()
         }
+    }
+
+    pub fn parse_default_value(value: ViaDeserialize<Value>) -> String {
+        value.to_string()
     }
 
     pub fn docstring(value: Option<String>) -> String {
@@ -142,6 +148,7 @@ impl TemplateEnv<'_> {
         env.add_function("type_name_for_variable", move |a: _| {
             ext_jinja_fns::type_name_for_variable(&schema_ctx_clone, a)
         });
+        env.add_function("parse_default_value", ext_jinja_fns::parse_default_value);
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
         env.add_filter("if_not_last", ext_jinja_fns::if_not_last);

@@ -64,6 +64,103 @@ impl GraphQLAny {
             _ => None,
         }
     }
+
+    pub fn name(&self) -> String {
+        match self {
+            Self::InputObject(v) => v.name.clone(),
+            Self::Object(v) => v.name.clone(),
+            Self::Enum(v) => v.name.clone(),
+            Self::Scalar(v) => v.name.clone(),
+            _ => todo!("Unsupported type"),
+        }
+    }
+
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum Value {
+    Null,
+    String(StringValue),
+    Int(IntValue),
+    Boolean(BoolValue)
+}
+
+impl ToString for Value {
+    fn to_string(&self) -> String {
+        match self {
+           Value::Null => "null".to_string(), 
+           Value::String(string) => string.to_string(),
+           Value::Int(int) => int.to_string(),
+           Value::Boolean(bool_) => bool_.to_string()
+        }
+    }
+}
+
+
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct StringValue {
+    value: String
+} 
+
+impl ToString for StringValue {
+    fn to_string(&self) -> String {
+       self.value.to_string() 
+    }
+}
+
+impl From<String> for StringValue {
+    fn from(value: String) -> Self {
+        Self {
+            value 
+        }
+    }
+}
+
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct IntValue {
+    value: i32 
+} 
+
+impl ToString for IntValue {
+    fn to_string(&self) -> String {
+       self.value.to_string() 
+    }
+}
+
+impl From<String> for IntValue {
+    fn from(value: String) -> Self {
+        let int: i32 = value.parse().unwrap();
+        Self {
+            value: int
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct BoolValue {
+    value: bool 
+} 
+
+impl ToString for BoolValue {
+    fn to_string(&self) -> String {
+       self.value.to_string() 
+    }
+}
+
+impl From<String> for BoolValue {
+    fn from(value: String) -> Self {
+        let bool = match value.as_str() {
+                    "true" => true,
+                    "false" => false,
+                    _ => panic!("value is not valid bool")
+        };
+        Self {
+             value: bool
+        }
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]

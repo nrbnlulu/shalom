@@ -219,9 +219,9 @@ class {{ operation_name }}Variables {
             {
             {% for name, variable in op_variables | items %}
                 {% if not variable.is_optional %}
-                    required this.{{name}} {% if variable.default_value is not none %} = {{ variable.default_value}} {% endif %},
+                    required this.{{name}} {% if variable.default_value.kind != "Null"  %} = {{ parse_default_value(variable.default_value) }} {% endif %},
                 {% else %}
-                    this.{{name}} {% if variable.default_value is not none %} = {{ variable.default_value}} {% else %} = const None() {% endif %},
+                    this.{{name}} {% if variable.default_value.kind != "Null" %} = {{ parse_default_value(variable.default_value) }} {% else %} = const None() {% endif %},
                 {% endif %}
             {% endfor %}  
             }
@@ -231,7 +231,7 @@ class {{ operation_name }}Variables {
     JsonObject toJson() {
         JsonObject data = {};
         {% for name, variable in op_variables | items %}
-           {% if variable.is_optional and variable.default_value is none %}  
+           {% if variable.is_optional and variable.default_value.kind == "Null" %}  
                if ({{ name }}.isSome()) {
                   data["{{ name }}"] = {{ name }}.some();
                } 
