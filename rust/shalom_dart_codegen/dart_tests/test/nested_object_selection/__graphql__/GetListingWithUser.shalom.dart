@@ -1,24 +1,25 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetListingWithUser {
+class GetListingWithUserResponse {
   /// class members
 
   final GetListingWithUser_listing listing;
 
   // keywordargs constructor
-
-  RequestGetListingWithUser({required this.listing});
-  static RequestGetListingWithUser fromJson(JsonObject data) {
+  GetListingWithUserResponse({required this.listing});
+  static GetListingWithUserResponse fromJson(JsonObject data) {
     final GetListingWithUser_listing listing_value;
 
     listing_value = GetListingWithUser_listing.fromJson(data['listing']);
 
-    return RequestGetListingWithUser(listing: listing_value);
+    return GetListingWithUserResponse(listing: listing_value);
   }
 
-  RequestGetListingWithUser updateWithJson(JsonObject data) {
+  GetListingWithUserResponse updateWithJson(JsonObject data) {
     final GetListingWithUser_listing listing_value;
     if (data.containsKey('listing')) {
       listing_value = GetListingWithUser_listing.fromJson(data['listing']);
@@ -26,13 +27,13 @@ class RequestGetListingWithUser {
       listing_value = listing;
     }
 
-    return RequestGetListingWithUser(listing: listing_value);
+    return GetListingWithUserResponse(listing: listing_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetListingWithUser && other.listing == listing);
+        (other is GetListingWithUserResponse && other.listing == listing);
   }
 
   @override
@@ -238,5 +239,34 @@ class GetListingWithUser_listing_user {
 
   JsonObject toJson() {
     return {'id': id, 'name': name, 'email': email, 'age': age};
+  }
+}
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetListingWithUser extends Requestable {
+  RequestGetListingWithUser();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetListingWithUser {
+  listing {
+    id
+    name
+    price
+    user {
+      id
+      name
+      email
+      age
+    }
+  }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetListingWithUser',
+    );
   }
 }

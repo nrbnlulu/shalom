@@ -1,22 +1,23 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetIntOptional {
+class GetIntOptionalResponse {
   /// class members
 
   final int? intOptional;
 
   // keywordargs constructor
-
-  RequestGetIntOptional({this.intOptional});
-  static RequestGetIntOptional fromJson(JsonObject data) {
+  GetIntOptionalResponse({this.intOptional});
+  static GetIntOptionalResponse fromJson(JsonObject data) {
     final int? intOptional_value = data['intOptional'];
 
-    return RequestGetIntOptional(intOptional: intOptional_value);
+    return GetIntOptionalResponse(intOptional: intOptional_value);
   }
 
-  RequestGetIntOptional updateWithJson(JsonObject data) {
+  GetIntOptionalResponse updateWithJson(JsonObject data) {
     final int? intOptional_value;
     if (data.containsKey('intOptional')) {
       intOptional_value = data['intOptional'];
@@ -24,13 +25,13 @@ class RequestGetIntOptional {
       intOptional_value = intOptional;
     }
 
-    return RequestGetIntOptional(intOptional: intOptional_value);
+    return GetIntOptionalResponse(intOptional: intOptional_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetIntOptional && other.intOptional == intOptional);
+        (other is GetIntOptionalResponse && other.intOptional == intOptional);
   }
 
   @override
@@ -42,3 +43,22 @@ class RequestGetIntOptional {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetIntOptional extends Requestable {
+  RequestGetIntOptional();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetIntOptional {
+  intOptional
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetIntOptional',
+    );
+  }
+}

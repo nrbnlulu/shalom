@@ -1,22 +1,23 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetString {
+class GetStringResponse {
   /// class members
 
   final String string;
 
   // keywordargs constructor
-
-  RequestGetString({required this.string});
-  static RequestGetString fromJson(JsonObject data) {
+  GetStringResponse({required this.string});
+  static GetStringResponse fromJson(JsonObject data) {
     final String string_value = data['string'];
 
-    return RequestGetString(string: string_value);
+    return GetStringResponse(string: string_value);
   }
 
-  RequestGetString updateWithJson(JsonObject data) {
+  GetStringResponse updateWithJson(JsonObject data) {
     final String string_value;
     if (data.containsKey('string')) {
       string_value = data['string'];
@@ -24,13 +25,13 @@ class RequestGetString {
       string_value = string;
     }
 
-    return RequestGetString(string: string_value);
+    return GetStringResponse(string: string_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetString && other.string == string);
+        (other is GetStringResponse && other.string == string);
   }
 
   @override
@@ -42,3 +43,22 @@ class RequestGetString {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetString extends Requestable {
+  RequestGetString();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetString {
+  string
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetString',
+    );
+  }
+}

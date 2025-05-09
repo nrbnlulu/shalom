@@ -16,3 +16,78 @@ class GraphQLResult<T> {
             : null);
   }
 }
+
+enum OperationType {
+    Query,
+    Mutation,
+    Subscription
+}
+
+class Request {
+    final String query;
+    final JsonObject variables;
+    final OperationType opType;
+    final String StringopName;
+
+    Request ({
+        required this.query,
+        required this.variables,
+        required this.opType,
+        required this.StringopName
+    });
+
+    JsonObject toJson() {
+      return {
+          "query": query,
+          "variables": variables,
+          "operationName": StringopName 
+      };
+    }
+    
+}
+
+class Response {
+    final JsonObject data;
+    final String opName;
+
+    Response({
+        required this.data,
+        required this.opName
+    });
+
+    JsonObject toJson() {
+      return {
+        "data": data,
+        "operationName": opName
+      };
+    }
+} 
+
+
+abstract class Requestable {
+    Request toRequest();
+}
+
+sealed class Option<T> {
+  T? some();
+  bool isSome();
+  void inspect(void Function(T));
+}
+
+class None<T> implements Option<T> {
+  const None();
+  T? some() => null;
+  isSome() => false;
+  inspect(void Function(T)) => null;
+}
+
+class Some<T> implements Option<T> {
+  final T value;
+
+  const Some(this.value);
+
+  T? some() => value;
+  isSome() => true;
+  inspect(void Function(T) fn) => fn(value);
+}
+

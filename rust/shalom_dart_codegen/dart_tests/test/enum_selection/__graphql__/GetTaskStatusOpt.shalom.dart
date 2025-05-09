@@ -1,26 +1,27 @@
 import "schema.shalom.dart";
 
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetTaskStatusOpt {
+class GetTaskStatusOptResponse {
   /// class members
 
   final GetTaskStatusOpt_task task;
 
   // keywordargs constructor
-
-  RequestGetTaskStatusOpt({required this.task});
-  static RequestGetTaskStatusOpt fromJson(JsonObject data) {
+  GetTaskStatusOptResponse({required this.task});
+  static GetTaskStatusOptResponse fromJson(JsonObject data) {
     final GetTaskStatusOpt_task task_value;
 
     task_value = GetTaskStatusOpt_task.fromJson(data['task']);
 
-    return RequestGetTaskStatusOpt(task: task_value);
+    return GetTaskStatusOptResponse(task: task_value);
   }
 
-  RequestGetTaskStatusOpt updateWithJson(JsonObject data) {
+  GetTaskStatusOptResponse updateWithJson(JsonObject data) {
     final GetTaskStatusOpt_task task_value;
     if (data.containsKey('task')) {
       task_value = GetTaskStatusOpt_task.fromJson(data['task']);
@@ -28,13 +29,13 @@ class RequestGetTaskStatusOpt {
       task_value = task;
     }
 
-    return RequestGetTaskStatusOpt(task: task_value);
+    return GetTaskStatusOptResponse(task: task_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetTaskStatusOpt && other.task == task);
+        (other is GetTaskStatusOptResponse && other.task == task);
   }
 
   @override
@@ -131,5 +132,28 @@ class GetTaskStatusOpt_task {
 
   JsonObject toJson() {
     return {'id': id, 'name': name, 'statusOpt': statusOpt?.name};
+  }
+}
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetTaskStatusOpt extends Requestable {
+  RequestGetTaskStatusOpt();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetTaskStatusOpt {
+  task {
+    id
+    name
+    statusOpt
+  }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetTaskStatusOpt',
+    );
   }
 }

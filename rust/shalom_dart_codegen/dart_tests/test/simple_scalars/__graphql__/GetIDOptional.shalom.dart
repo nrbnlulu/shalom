@@ -1,22 +1,23 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetIDOptional {
+class GetIDOptionalResponse {
   /// class members
 
   final String? idOptional;
 
   // keywordargs constructor
-
-  RequestGetIDOptional({this.idOptional});
-  static RequestGetIDOptional fromJson(JsonObject data) {
+  GetIDOptionalResponse({this.idOptional});
+  static GetIDOptionalResponse fromJson(JsonObject data) {
     final String? idOptional_value = data['idOptional'];
 
-    return RequestGetIDOptional(idOptional: idOptional_value);
+    return GetIDOptionalResponse(idOptional: idOptional_value);
   }
 
-  RequestGetIDOptional updateWithJson(JsonObject data) {
+  GetIDOptionalResponse updateWithJson(JsonObject data) {
     final String? idOptional_value;
     if (data.containsKey('idOptional')) {
       idOptional_value = data['idOptional'];
@@ -24,13 +25,13 @@ class RequestGetIDOptional {
       idOptional_value = idOptional;
     }
 
-    return RequestGetIDOptional(idOptional: idOptional_value);
+    return GetIDOptionalResponse(idOptional: idOptional_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetIDOptional && other.idOptional == idOptional);
+        (other is GetIDOptionalResponse && other.idOptional == idOptional);
   }
 
   @override
@@ -42,3 +43,22 @@ class RequestGetIDOptional {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetIDOptional extends Requestable {
+  RequestGetIDOptional();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetIDOptional {
+  idOptional
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetIDOptional',
+    );
+  }
+}

@@ -3,12 +3,13 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use super::utils::TypeRef;
+use super::{context::SchemaContext, utils::TypeRef};
 use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+#[serde(tag = "kind")]
 /// The definition of a named type, with all information from type extensions folded in.
 ///
 /// The souNodee location is that of the "main" definition.
@@ -63,9 +64,19 @@ impl GraphQLAny {
             _ => None,
         }
     }
+
+    pub fn name(&self) -> String {
+        match self {
+            Self::InputObject(v) => v.name.clone(),
+            Self::Object(v) => v.name.clone(),
+            Self::Enum(v) => v.name.clone(),
+            Self::Scalar(v) => v.name.clone(),
+            _ => todo!("Unsupported type"),
+        }
+    }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum FieldType {
     Named(TypeRef),
@@ -91,16 +102,16 @@ impl FieldType {
         }
     }
 
-    pub fn get_scalar(&self) -> Option<Node<ScalarType>> {
+    pub fn get_scalar(&self, ctx: &SchemaContext) -> Option<Node<ScalarType>> {
         match self {
-            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_scalar(),
+            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_scalar(ctx),
             _ => None,
         }
     }
 
-    pub fn get_object(&self) -> Option<Node<ObjectType>> {
+    pub fn get_object(&self, ctx: &SchemaContext) -> Option<Node<ObjectType>> {
         match self {
-            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_object(),
+            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_object(ctx),
             _ => None,
         }
     }
@@ -135,7 +146,7 @@ impl ScalarType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ObjectType {
     pub description: Option<String>,
     pub name: String,
@@ -156,7 +167,7 @@ impl Hash for ObjectType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InterfaceType {
     pub description: Option<String>,
 
@@ -170,7 +181,7 @@ impl Hash for InterfaceType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct UnionType {
     pub description: Option<String>,
 
@@ -206,7 +217,7 @@ pub struct EnumValueDefinition {
     pub value: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InputObjectType {
     pub description: Option<String>,
     pub name: String,
@@ -217,7 +228,7 @@ impl Hash for InputObjectType {
         self.name.hash(state);
     }
 }
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct FieldDefinition {
     pub name: String,
     pub ty: FieldType,
@@ -226,7 +237,7 @@ pub struct FieldDefinition {
     pub description: Option<String>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct InputValueDefinition {
     pub description: Option<String>,
     pub name: String,

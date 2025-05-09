@@ -1,16 +1,17 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetListingOpt {
+class GetListingOptResponse {
   /// class members
 
   final GetListingOpt_listingOpt? listingOpt;
 
   // keywordargs constructor
-
-  RequestGetListingOpt({this.listingOpt});
-  static RequestGetListingOpt fromJson(JsonObject data) {
+  GetListingOptResponse({this.listingOpt});
+  static GetListingOptResponse fromJson(JsonObject data) {
     final GetListingOpt_listingOpt? listingOpt_value;
 
     final JsonObject? listingOpt$raw = data['listingOpt'];
@@ -20,10 +21,10 @@ class RequestGetListingOpt {
       listingOpt_value = null;
     }
 
-    return RequestGetListingOpt(listingOpt: listingOpt_value);
+    return GetListingOptResponse(listingOpt: listingOpt_value);
   }
 
-  RequestGetListingOpt updateWithJson(JsonObject data) {
+  GetListingOptResponse updateWithJson(JsonObject data) {
     final GetListingOpt_listingOpt? listingOpt_value;
     if (data.containsKey('listingOpt')) {
       final JsonObject? listingOpt$raw = data['listingOpt'];
@@ -36,13 +37,13 @@ class RequestGetListingOpt {
       listingOpt_value = listingOpt;
     }
 
-    return RequestGetListingOpt(listingOpt: listingOpt_value);
+    return GetListingOptResponse(listingOpt: listingOpt_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetListingOpt && other.listingOpt == listingOpt);
+        (other is GetListingOptResponse && other.listingOpt == listingOpt);
   }
 
   @override
@@ -127,5 +128,28 @@ class GetListingOpt_listingOpt {
 
   JsonObject toJson() {
     return {'id': id, 'name': name, 'price': price};
+  }
+}
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetListingOpt extends Requestable {
+  RequestGetListingOpt();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetListingOpt {
+  listingOpt {
+    id
+    name
+    price
+  }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetListingOpt',
+    );
   }
 }

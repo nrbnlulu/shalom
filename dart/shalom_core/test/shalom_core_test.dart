@@ -1,8 +1,6 @@
 import 'package:shalom_core/shalom_core.dart';
 import 'package:test/test.dart';
 
-import 'package:shalom_core/shalom_core.dart';
-import 'package:test/test.dart';
 
 class MockFromJson {
   final String name;
