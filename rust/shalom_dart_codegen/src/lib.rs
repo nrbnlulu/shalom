@@ -168,7 +168,6 @@ impl TemplateEnv<'_> {
         context.insert("schema", context! {context => schema_ctx});
         context.insert("operation", context! {context => operations_ctx});
         trace!("resolved operation template; rendering...");
-        println!("{:?}", context);
         template.render(&context).unwrap()
     }
 
