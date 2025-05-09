@@ -3,14 +3,14 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use apollo_compiler::{
-    ast::OperationType as ApolloOperationType, executable as apollo_executable, Node,
+    ast::{OperationType as ApolloOperationType, Value}, executable as apollo_executable, Node 
 };
 use log::{info, trace};
 
-use crate::context::SharedShalomGlobalContext;
+use crate::{context::SharedShalomGlobalContext};
 use crate::operation::types::{ObjectSelection, VariableDefinition};
 use crate::schema::context::SharedSchemaContext;
-use crate::schema::types::{EnumType, GraphQLAny, ScalarType, Value};
+use crate::schema::types::{EnumType, GraphQLAny, ScalarType};
 
 use super::context::{OperationContext, SharedOpCtx};
 use super::types::{
@@ -131,27 +131,6 @@ fn parse_operation_type(operation_type: ApolloOperationType) -> OperationType {
     }
 }
 
-fn parse_string_to_value(value: Option<String>, type_: &GraphQLAny) -> Value {
-    if value.is_none() {
-        return Value::Null;
-    }
-    let value = value.unwrap();
-    match type_ {
-        GraphQLAny::Scalar(scalar) => {
-            if scalar.is_boolean() {
-                Value::Boolean(value.into())
-            } else if scalar.is_int() {
-                Value::Int(value.into())
-            } else if scalar.is_string() {
-                Value::String(value.into())
-            } else {
-                panic!("invalid scalar type")
-            }
-        }
-        _ => todo!("implement non scalar default values"),
-    }
-}
-
 fn parse_operation(
     global_ctx: &SharedShalomGlobalContext,
     op: Node<apollo_compiler::executable::Operation>,
@@ -176,8 +155,11 @@ fn parse_operation(
             matches!(ty, GraphQLAny::Scalar(_)),
             "non scalar arguments have not been implemented"
         );
-        let default_value =
-            parse_string_to_value(variable.default_value.as_ref().map(|v| v.to_string()), &ty);
+        let default_value = if let Some(value) = variable.default_value.as_ref() {
+            Some(value.clone()) 
+        }  else {
+            None
+        }; 
         let variable_definition = VariableDefinition {
             name: name.clone(),
             ty,

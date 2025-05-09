@@ -36,9 +36,6 @@ const LINE_ENDING: &str = "\r\n";
 const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
-
-    use shalom_core::schema::types::Value;
-
     use super::*;
 
     #[allow(unused_variables)]
@@ -79,7 +76,7 @@ mod ext_jinja_fns {
     ) -> String {
         let ty_name = variable.0.ty.name();
         let resolved = DEFAULT_SCALARS_MAP.get(&ty_name).unwrap();
-        if variable.is_optional && matches!(variable.default_value, Value::Null) {
+        if variable.is_optional && variable.default_value.is_none() {
             format!("Option<{}?>", resolved)
         } else if variable.is_optional {
             format!("{}?", resolved)
@@ -88,9 +85,15 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn parse_default_value(value: ViaDeserialize<Value>) -> String {
-        value.to_string()
+    pub fn parse_default_value(variable: ViaDeserialize<VariableDefinition>) -> String  {
+        let default_value = variable.0.default_value;
+        if default_value.is_none() {
+            panic!("cannot parse default value that does not exist")
+        }
+        let default_value = default_value.unwrap();
+        default_value.to_string()
     }
+
 
     pub fn docstring(value: Option<String>) -> String {
         match value {
@@ -166,6 +169,7 @@ impl TemplateEnv<'_> {
         context.insert("schema", context! {context => schema_ctx});
         context.insert("operation", context! {context => operations_ctx});
         trace!("resolved operation template; rendering...");
+        println!("{:?}", context);
         template.render(&context).unwrap()
     }
 
