@@ -3,11 +3,11 @@ use std::path::PathBuf;
 use std::rc::Rc;
 
 use apollo_compiler::{
-    ast::{OperationType as ApolloOperationType, Value}, executable as apollo_executable, Node 
+    ast::OperationType as ApolloOperationType, executable as apollo_executable, Node,
 };
 use log::{info, trace};
 
-use crate::{context::SharedShalomGlobalContext};
+use crate::context::SharedShalomGlobalContext;
 use crate::operation::types::{ObjectSelection, VariableDefinition};
 use crate::schema::context::SharedSchemaContext;
 use crate::schema::types::{EnumType, GraphQLAny, ScalarType};
@@ -155,16 +155,11 @@ fn parse_operation(
             matches!(ty, GraphQLAny::Scalar(_)),
             "non scalar arguments have not been implemented"
         );
-        let default_value = if let Some(value) = variable.default_value.as_ref() {
-            Some(value.clone()) 
-        }  else {
-            None
-        }; 
         let variable_definition = VariableDefinition {
             name: name.clone(),
             ty,
             is_optional,
-            default_value,
+            default_value: variable.default_value.clone(),
         };
         ctx.add_variable(name, variable_definition);
     }

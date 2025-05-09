@@ -85,7 +85,7 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn parse_default_value(variable: ViaDeserialize<VariableDefinition>) -> String  {
+    pub fn parse_default_value(variable: ViaDeserialize<VariableDefinition>) -> String {
         let default_value = variable.0.default_value;
         if default_value.is_none() {
             panic!("cannot parse default value that does not exist")
@@ -93,7 +93,6 @@ mod ext_jinja_fns {
         let default_value = default_value.unwrap();
         default_value.to_string()
     }
-
 
     pub fn docstring(value: Option<String>) -> String {
         match value {

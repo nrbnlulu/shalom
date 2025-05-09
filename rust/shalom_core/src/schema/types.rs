@@ -1,4 +1,3 @@
-use std::fmt;
 use std::{
     collections::HashSet,
     hash::{Hash, Hasher},
@@ -76,7 +75,6 @@ impl GraphQLAny {
         }
     }
 }
-
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(tag = "kind")]
