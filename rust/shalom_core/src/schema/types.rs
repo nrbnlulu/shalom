@@ -3,10 +3,11 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use super::{context::SchemaContext, utils::TypeRef};
 use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+pub type GlobalName = String;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(tag = "kind")]
@@ -79,8 +80,8 @@ impl GraphQLAny {
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum FieldType {
-    Named(TypeRef),
-    NonNullNamed(TypeRef),
+    Named(GlobalName),
+    NonNullNamed(GlobalName),
     #[serde(skip_serializing)]
     List(Box<FieldType>),
     #[serde(skip_serializing)]
@@ -98,20 +99,6 @@ impl FieldType {
     pub fn get_list(&self) -> Option<&FieldType> {
         match self {
             FieldType::List(of) | FieldType::NonNullList(of) => Some(of),
-            _ => None,
-        }
-    }
-
-    pub fn get_scalar(&self, ctx: &SchemaContext) -> Option<Node<ScalarType>> {
-        match self {
-            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_scalar(ctx),
-            _ => None,
-        }
-    }
-
-    pub fn get_object(&self, ctx: &SchemaContext) -> Option<Node<ObjectType>> {
-        match self {
-            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => ty.get_object(ctx),
             _ => None,
         }
     }
@@ -151,7 +138,7 @@ pub struct ObjectType {
     pub description: Option<String>,
     pub name: String,
     #[serde(skip_serializing)]
-    pub implements_interfaces: HashSet<Box<TypeRef>>,
+    pub implements_interfaces: HashSet<Box<GlobalName>>,
     pub fields: HashSet<FieldDefinition>,
 }
 
@@ -172,7 +159,7 @@ pub struct InterfaceType {
     pub description: Option<String>,
 
     pub name: String,
-    pub implements_interfaces: HashSet<TypeRef>,
+    pub implements_interfaces: HashSet<GlobalName>,
     pub fields: HashSet<FieldDefinition>,
 }
 impl Hash for InterfaceType {
@@ -190,7 +177,7 @@ pub struct UnionType {
     /// * Key: name of a member object type
     /// * Value: which union type extension defined this implementation,
     ///   or `None` for the union type definition.
-    pub members: HashSet<TypeRef>,
+    pub members: HashSet<GlobalName>,
 }
 impl Hash for UnionType {
     fn hash<H: Hasher>(&self, state: &mut H) {
