@@ -7,6 +7,8 @@ use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
+use super::context::SchemaContext;
+
 pub type GlobalName = String;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -99,6 +101,24 @@ impl FieldType {
     pub fn get_list(&self) -> Option<&FieldType> {
         match self {
             FieldType::List(of) | FieldType::NonNullList(of) => Some(of),
+            _ => None,
+        }
+    }
+
+    pub fn get_scalar(&self, ctx: &SchemaContext) -> Option<Node<ScalarType>> {
+        match self {
+            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => {
+                ctx.get_type(ty).and_then(|t| t.scalar())
+            }
+            _ => None,
+        }
+    }
+
+    pub fn get_object(&self, ctx: &SchemaContext) -> Option<Node<ObjectType>> {
+        match self {
+            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => {
+                ctx.get_type(ty).and_then(|t| t.object())
+            }
             _ => None,
         }
     }
