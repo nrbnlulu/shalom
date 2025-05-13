@@ -12,6 +12,7 @@ pub struct OperationContext {
     #[serde(skip_serializing)]
     #[allow(unused)]
     schema: SharedSchemaContext,
+    operation_name: String,
     pub file_path: PathBuf,
     query: String,
     variables: HashMap<String, VariableDefinition>,
@@ -23,12 +24,14 @@ pub struct OperationContext {
 impl OperationContext {
     pub fn new(
         schema: SharedSchemaContext,
+        operation_name: String,
         query: String,
         file_path: PathBuf,
         op_ty: OperationType,
     ) -> Self {
         OperationContext {
             schema,
+            operation_name,
             file_path,
             query,
             variables: HashMap::new(),

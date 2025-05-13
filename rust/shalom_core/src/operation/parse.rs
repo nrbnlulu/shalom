@@ -138,8 +138,14 @@ fn parse_operation(
     file_path: PathBuf,
 ) -> SharedOpCtx {
     let query = op.to_string();
+    let operation_name = op
+        .name
+        .as_ref()
+        .unwrap_or_else(|| unimplemented!("Anonymous operations are not supported"))
+        .to_string();
     let mut ctx = OperationContext::new(
         global_ctx.schema_ctx.clone(),
+        operation_name,
         query,
         file_path,
         parse_operation_type(op.operation_type),

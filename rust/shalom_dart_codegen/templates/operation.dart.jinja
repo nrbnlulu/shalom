@@ -3,7 +3,7 @@ import "schema.shalom.dart";
 {% endif %}
 import 'package:shalom_core/shalom_core.dart';
 
-{% set operation_name = operation.context.root_type.selection_name %}
+{% set operation_name = operation.context.operation_name %}
 {% macro base_object_impl(typename, selections) %}
     /// class members
     {% for selection in selections -%}
