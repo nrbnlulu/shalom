@@ -6,66 +6,59 @@ class GraphQLResult<T> {
 
   GraphQLResult._({this.data, this.errors});
 
-  factory GraphQLResult.fromJson(JsonObject json, T Function(JsonObject) fromJson) {
+  factory GraphQLResult.fromJson(
+    JsonObject json,
+    T Function(JsonObject) fromJson,
+  ) {
     return GraphQLResult._(
-        data: json['data'] != null ? fromJson(json['data']) : null,
-        errors: json['errors'] != null
-            ? (json['errors'] as List)
-                .map((e) => (e as List).map((e) => e as JsonObject).toList())
-                .toList()
-            : null);
+      data: json['data'] != null ? fromJson(json['data']) : null,
+      errors:
+          json['errors'] != null
+              ? (json['errors'] as List)
+                  .map((e) => (e as List).map((e) => e as JsonObject).toList())
+                  .toList()
+              : null,
+    );
   }
 }
 
-enum OperationType {
-    Query,
-    Mutation,
-    Subscription
-}
+enum OperationType { Query, Mutation, Subscription }
 
 class Request {
-    final String query;
-    final JsonObject variables;
-    final OperationType opType;
-    final String StringopName;
+  final String query;
+  final JsonObject variables;
+  final OperationType opType;
+  final String StringopName;
 
-    Request ({
-        required this.query,
-        required this.variables,
-        required this.opType,
-        required this.StringopName
-    });
+  Request({
+    required this.query,
+    required this.variables,
+    required this.opType,
+    required this.StringopName,
+  });
 
-    JsonObject toJson() {
-      return {
-          "query": query,
-          "variables": variables,
-          "operationName": StringopName 
-      };
-    }
-    
+  JsonObject toJson() {
+    return {
+      "query": query,
+      "variables": variables,
+      "operationName": StringopName,
+    };
+  }
 }
 
 class Response {
-    final JsonObject data;
-    final String opName;
+  final JsonObject data;
+  final String opName;
 
-    Response({
-        required this.data,
-        required this.opName
-    });
+  Response({required this.data, required this.opName});
 
-    JsonObject toJson() {
-      return {
-        "data": data,
-        "operationName": opName
-      };
-    }
-} 
-
+  JsonObject toJson() {
+    return {"data": data, "operationName": opName};
+  }
+}
 
 abstract class Requestable {
-    Request toRequest();
+  Request toRequest();
 }
 
 sealed class Option<T> {
@@ -90,4 +83,3 @@ class Some<T> implements Option<T> {
   isSome() => true;
   inspect(void Function(T) fn) => fn(value);
 }
-

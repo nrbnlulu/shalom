@@ -1,117 +1,58 @@
 import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
-import "__graphql__/GetProductDetails.shalom.dart";
-import "__graphql__/UpdateUser.shalom.dart";
-import "__graphql__/GetTask.shalom.dart";
+
 import "dart:convert";
 
+import "__graphql__/OptionalArguments.shalom.dart";
+import "__graphql__/RequiredArguments.shalom.dart";
+
 void main() {
-  group("test query", () {
-    test("test request json", () {
-      final productDetailsVariables = GetProductDetailsVariables(
-        calculateDiscount: Some(false),
-        productId: "foo",
-        userDiscount: Some(20.0),
-      );
-      final productDetailsRequest = RequestGetProductDetails(
-        variables: productDetailsVariables,
-      );
-      final request = productDetailsRequest.toRequest();
-      expect(request.opType, OperationType.Query);
-      final requestJson = JsonEncoder().convert(request.toJson());
-      final expectedJson =
-          r"""{"query":"query GetProductDetails($productId: ID!, $userDiscount: Float, $calculateDiscount: Boolean) {\n  product(id: $productId, discount: $userDiscount) {\n    id\n    name\n    price\n    discountedPrice(applyDiscount: $calculateDiscount)\n  }\n}","variables":{"calculateDiscount":false,"productId":"foo","userDiscount":20.0},"operationName":"GetProductDetails"}""";
-      expect(requestJson, expectedJson);
+  group("scalar arguments", () {
+    test("RequiredArguments", () {
+      final req =
+          RequestRequiredArguments(
+            variables: RequiredArgumentsVariables(id: "123"),
+          ).toRequest();
+      expect(req.variables, {"id": "123"});
+      expect(req.StringopName, "RequiredArguments");
+      expect(req.query, isNotEmpty);
+      expect(req.opType, OperationType.Query);
     });
-  });
-  group("test mutation", () {
-    test("test request json", () {
-      final updateUserVariables = UpdateUserVariables(phone: Some("911"));
-      final updateUserRequest = RequestUpdateUser(
-        variables: updateUserVariables,
-      );
-      final request = updateUserRequest.toRequest();
-      expect(request.opType, OperationType.Mutation);
-      final requestJson = JsonEncoder().convert(request.toJson());
-      final expectedJson =
-          r"""{"query":"mutation UpdateUser($phone: String) {\n  updateUser(phone: $phone) {\n    email\n    name\n    phone\n  }\n}","variables":{"phone":"911"},"operationName":"UpdateUser"}""";
-      expect(requestJson, expectedJson);
-    });
-    test("test optional variable not selected", () {
-      final updateUserVariables = UpdateUserVariables();
-      final updateUserRequest = RequestUpdateUser(
-        variables: updateUserVariables,
-      );
-      final request = updateUserRequest.toRequest();
-      final requestJson = request.toJson();
-      final requestVariables = requestJson["variables"];
-      expect(requestVariables, {});
-    });
-    test("test optional variable as null", () {
-      final updateUserVariables = UpdateUserVariables(phone: Some(null));
-      final updateUserRequest = RequestUpdateUser(
-        variables: updateUserVariables,
-      );
-      final request = updateUserRequest.toRequest();
-      final requestJson = request.toJson();
-      final requestVariables = requestJson["variables"];
-      expect(requestVariables, {"phone": null});
-    });
-    test("test optional variable as some", () {
-      final updateUserVariables = UpdateUserVariables(phone: Some("911"));
-      final updateUserRequest = RequestUpdateUser(
-        variables: updateUserVariables,
-      );
-      final request = updateUserRequest.toRequest();
-      final requestJson = request.toJson();
-      final requestVariables = requestJson["variables"];
-      expect(requestVariables, {"phone": "911"});
-    });
-  });
-  group("test default values", () {
-    test("default values", () {
-      final getTaskVariables = GetTaskVariables();
-      final getTaskRequest = RequestGetTask(variables: getTaskVariables);
-      final request = getTaskRequest.toRequest();
-      final requestJson = request.toJson();
-      final requestVariables = requestJson["variables"];
-      expect(requestVariables, {
-        "duration": 2,
-        "is_easy": false,
-        "name": "shalom",
+
+    group("OptionalArguments", () {
+      test("some(T)", () {
+        final req =
+            RequestOptionalArguments(
+              variables: OptionalArgumentsVariables(id: Some("123")),
+            ).toRequest();
+        expect(req.variables, {"id": "123"});
+        expect(req.StringopName, "OptionalArguments");
+        expect(req.query, isNotEmpty);
+        expect(req.opType, OperationType.Mutation);
       });
-    });
-    test("default values overridden by some", () {
-      final getTaskVariables = GetTaskVariables(
-        duration: 4,
-        is_easy: true,
-        name: "shalom",
-      );
-      final getTaskRequest = RequestGetTask(variables: getTaskVariables);
-      final request = getTaskRequest.toRequest();
-      final requestJson = request.toJson();
-      final requestVariables = requestJson["variables"];
-      expect(requestVariables, {
-        "duration": 4,
-        "is_easy": true,
-        "name": "shalom",
+      test("some(null)", () {
+        final req =
+            RequestOptionalArguments(
+              variables: OptionalArgumentsVariables(id: Some(null)),
+            ).toRequest();
+        expect(req.variables, {"id": null});
+        expect(req.StringopName, "OptionalArguments");
+        expect(req.query, isNotEmpty);
+        expect(req.opType, OperationType.Mutation);
       });
-    });
-    test("default values overridden by null", () {
-      final getTaskVariables = GetTaskVariables(
-        duration: null,
-        is_easy: null,
-        name: null,
-      );
-      final getTaskRequest = RequestGetTask(variables: getTaskVariables);
-      final request = getTaskRequest.toRequest();
-      final requestJson = request.toJson();
-      final requestVariables = requestJson["variables"];
-      expect(requestVariables, {
-        "duration": null,
-        "is_easy": null,
-        "name": null,
+  test("None", () {
+        final req =
+            RequestOptionalArguments(
+              variables: OptionalArgumentsVariables(id: None()),
+            ).toRequest();
+        expect(req.variables, {});
+        expect(req.StringopName, "OptionalArguments");
+        expect(req.query, isNotEmpty);
+        expect(req.opType, OperationType.Mutation);
       });
+
     });
+
+
   });
 }

@@ -95,7 +95,6 @@ fn parse_selection_set(
     selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
 ) -> Selection {
-    trace!("Parsing selection set {:?}", selection_common);
     let full_name = selection_common.full_name.clone();
     if let Some(selection) = op_ctx.get_selection(&full_name) {
         info!("Selection already exists");

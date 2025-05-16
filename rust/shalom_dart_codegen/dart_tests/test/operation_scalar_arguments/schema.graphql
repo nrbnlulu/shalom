@@ -4,10 +4,11 @@ type Query {
 }
 
 type Mutation {
-  updateUser(name: String, phone: String): User
+  updateUser(id: ID, phone: String): User
 }
 
 type User {
+  id: ID!,
   email: String,
   name: String,
   phone: String
