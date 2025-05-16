@@ -1,0 +1,28 @@
+type Query {
+  product(id: ID!, discount: Float): Product,
+  task(name: String, duration: Int, is_easy: Boolean): Task,
+}
+
+type Mutation {
+  updateUser(id: ID, phone: String): User
+}
+
+type User {
+  id: ID!,
+  email: String,
+  name: String,
+  phone: String
+}
+
+type Product {
+  id: ID!
+  name: String!
+  price: Float!
+  discountedPrice(applyDiscount: Boolean): Float
+}
+
+type Task {
+  name: String,
+  duration: Int,
+  is_easy: Boolean,
+}

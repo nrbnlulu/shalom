@@ -1,22 +1,23 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetInt {
+class GetIntResponse {
   /// class members
 
   final int intField;
 
   // keywordargs constructor
-
-  RequestGetInt({required this.intField});
-  static RequestGetInt fromJson(JsonObject data) {
+  GetIntResponse({required this.intField});
+  static GetIntResponse fromJson(JsonObject data) {
     final int intField_value = data['intField'];
 
-    return RequestGetInt(intField: intField_value);
+    return GetIntResponse(intField: intField_value);
   }
 
-  RequestGetInt updateWithJson(JsonObject data) {
+  GetIntResponse updateWithJson(JsonObject data) {
     final int intField_value;
     if (data.containsKey('intField')) {
       intField_value = data['intField'];
@@ -24,13 +25,13 @@ class RequestGetInt {
       intField_value = intField;
     }
 
-    return RequestGetInt(intField: intField_value);
+    return GetIntResponse(intField: intField_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetInt && other.intField == intField);
+        (other is GetIntResponse && other.intField == intField);
   }
 
   @override
@@ -42,3 +43,22 @@ class RequestGetInt {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetInt extends Requestable {
+  RequestGetInt();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetInt {
+  intField
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetInt',
+    );
+  }
+}

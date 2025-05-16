@@ -1,10 +1,6 @@
 use super::context::{SchemaContext, SharedSchemaContext};
-use super::{
-    types::{
-        EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, ObjectType,
-        ScalarType,
-    },
-    utils::TypeRef,
+use super::types::{
+    EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, ObjectType, ScalarType,
 };
 use anyhow::Result;
 use apollo_compiler::{self};
@@ -85,10 +81,10 @@ fn resolve_scalar(
     context: SharedSchemaContext,
     name: String,
     origin: Node<apollo_schema::ScalarType>,
-) -> TypeRef {
+) {
     // Check if the type is already resolved
     if context.get_type(&name).is_some() {
-        return TypeRef::new(context.clone(), name);
+        return;
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
     let scalar = Node::new(ScalarType {
@@ -96,17 +92,16 @@ fn resolve_scalar(
         description,
     });
     context.add_scalar(name.clone(), scalar).unwrap();
-    TypeRef::new(context.clone(), name)
 }
 
 fn resolve_object(
     context: SharedSchemaContext,
     name: String,
     origin: apollo_compiler::Node<apollo_schema::ObjectType>,
-) -> TypeRef {
+) {
     // Check if the type is already resolved
     if context.get_type(&name).is_some() {
-        return TypeRef::new(context.clone(), name);
+        return;
     }
     let mut fields = Vec::new();
     for (name, field) in origin.fields.iter() {
@@ -131,17 +126,12 @@ fn resolve_object(
         implements_interfaces: HashSet::new(),
     });
     context.add_object(name.clone(), object).unwrap();
-    TypeRef::new(context.clone(), name)
 }
 
 #[allow(unused)]
-fn resolve_enum(
-    context: SharedSchemaContext,
-    name: String,
-    origin: Node<apollo_schema::EnumType>,
-) -> TypeRef {
+fn resolve_enum(context: SharedSchemaContext, name: String, origin: Node<apollo_schema::EnumType>) {
     if context.get_type(&name).is_some() {
-        return TypeRef::new(context, name);
+        return;
     }
     let mut members = HashMap::new();
     for (name, value) in origin.values.iter() {
@@ -157,22 +147,19 @@ fn resolve_enum(
         members,
     };
     context.add_enum(name.clone(), Node::new(enum_type));
-    TypeRef::new(context, name)
 }
 
-pub fn resolve_type(context: SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {
+pub fn resolve_type(_context: SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {
     match origin {
-        apollo_schema::Type::Named(named) => {
-            FieldType::Named(TypeRef::new(context, named.to_string()))
-        }
+        apollo_schema::Type::Named(named) => FieldType::Named(named.to_string()),
         apollo_schema::Type::NonNullNamed(non_null) => {
-            FieldType::NonNullNamed(TypeRef::new(context, non_null.as_str().to_string()))
+            FieldType::NonNullNamed(non_null.as_str().to_string())
         }
         apollo_schema::Type::List(of_type) => {
-            FieldType::List(Box::new(resolve_type(context, *of_type)))
+            FieldType::List(Box::new(resolve_type(_context, *of_type)))
         }
         apollo_schema::Type::NonNullList(of_type) => {
-            FieldType::NonNullList(Box::new(resolve_type(context, *of_type)))
+            FieldType::NonNullList(Box::new(resolve_type(_context, *of_type)))
         }
     }
 }
@@ -220,13 +207,13 @@ mod tests {
         let object = ctx.get_type("Query").unwrap().object().unwrap();
 
         let hello_field = object.get_field("hello").unwrap();
-        assert!(hello_field.ty.get_scalar().unwrap().is_string());
+        assert!(hello_field.ty.get_scalar(&ctx).unwrap().is_string());
         let world_field = object.get_field("world").unwrap();
-        assert!(world_field.ty.get_scalar().unwrap().is_int());
+        assert!(world_field.ty.get_scalar(&ctx).unwrap().is_int());
         let id_field = object.get_field("id").unwrap();
-        assert!(id_field.ty.get_scalar().unwrap().is_id());
+        assert!(id_field.ty.get_scalar(&ctx).unwrap().is_id());
         let foo_field = object.get_field("foo").unwrap();
-        assert!(foo_field.ty.get_scalar().unwrap().is_float());
+        assert!(foo_field.ty.get_scalar(&ctx).unwrap().is_float());
         // optional
         assert!(foo_field.ty.is_nullable());
     }

@@ -4,10 +4,12 @@ use log::{info, trace};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use shalom_core::{
-    operation::{context::OperationContext, types::Selection},
-    schema::context::SchemaContext,
+    operation::{
+        context::OperationContext,
+        types::{Selection, VariableDefinition},
+    },
+    schema::context::{SchemaContext, SharedSchemaContext},
 };
-use std::sync::Arc;
 use std::{
     collections::HashMap,
     fs,
@@ -36,7 +38,11 @@ const LINE_ENDING: &str = "\n";
 mod ext_jinja_fns {
     use super::*;
 
-    pub fn type_name_for_selection(selection: ViaDeserialize<Selection>) -> String {
+    #[allow(unused_variables)]
+    pub fn type_name_for_selection(
+        schema_ctx: &SchemaContext,
+        selection: ViaDeserialize<Selection>,
+    ) -> String {
         match selection.0 {
             Selection::Scalar(scalar) => {
                 let resolved = DEFAULT_SCALARS_MAP.get(&scalar.concrete_type.name).unwrap();
@@ -61,6 +67,31 @@ mod ext_jinja_fns {
                 }
             }
         }
+    }
+
+    #[allow(unused_variables)]
+    pub fn type_name_for_variable(
+        schema_ctx: &SchemaContext,
+        variable: ViaDeserialize<VariableDefinition>,
+    ) -> String {
+        let ty_name = variable.0.ty.name();
+        let resolved = DEFAULT_SCALARS_MAP.get(&ty_name).unwrap();
+        if variable.is_optional && variable.default_value.is_none() {
+            format!("Option<{}?>", resolved)
+        } else if variable.is_optional {
+            format!("{}?", resolved)
+        } else {
+            resolved.clone()
+        }
+    }
+
+    pub fn parse_default_value(variable: ViaDeserialize<VariableDefinition>) -> String {
+        let default_value = variable.0.default_value;
+        if default_value.is_none() {
+            panic!("cannot parse default value that does not exist")
+        }
+        let default_value = default_value.unwrap();
+        default_value.to_string()
     }
 
     pub fn docstring(value: Option<String>) -> String {
@@ -102,7 +133,7 @@ mod ext_jinja_fns {
 }
 
 impl TemplateEnv<'_> {
-    fn new() -> Self {
+    fn new(schema_ctx: SharedSchemaContext) -> Self {
         let mut env = Environment::new();
         env.add_template(
             "operation",
@@ -111,10 +142,15 @@ impl TemplateEnv<'_> {
         .unwrap();
         env.add_template("schema", include_str!("../templates/schema.dart.jinja"))
             .unwrap();
-        env.add_function(
-            "type_name_for_selection",
-            ext_jinja_fns::type_name_for_selection,
-        );
+        let schema_ctx_clone = schema_ctx.clone();
+        env.add_function("type_name_for_selection", move |a: _| {
+            ext_jinja_fns::type_name_for_selection(&schema_ctx_clone, a)
+        });
+        let schema_ctx_clone = schema_ctx.clone();
+        env.add_function("type_name_for_variable", move |a: _| {
+            ext_jinja_fns::type_name_for_variable(&schema_ctx_clone, a)
+        });
+        env.add_function("parse_default_value", ext_jinja_fns::parse_default_value);
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
         env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
@@ -144,9 +180,6 @@ impl TemplateEnv<'_> {
     }
 }
 
-lazy_static! {
-    static ref TEMPLATE_ENV: TemplateEnv<'static> = TemplateEnv::new();
-}
 fn create_dir_if_not_exists(path: &Path) {
     if !path.exists() {
         std::fs::create_dir_all(path).unwrap();
@@ -162,21 +195,22 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
 }
 
 fn generate_operations_file(
+    template_env: &TemplateEnv,
     name: &str,
     operation: Rc<OperationContext>,
-    schema_ctx: Arc<SchemaContext>,
+    schema_ctx: SharedSchemaContext,
 ) {
     info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();
-    let rendered_content = TEMPLATE_ENV.render_operation(operation, schema_ctx);
+    let rendered_content = template_env.render_operation(operation, schema_ctx);
     let generation_target = get_generation_path_for_operation(&operation_file_path, name);
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
 }
 
-fn generate_schema_file(path: &Path, schema_ctx: &SchemaContext) {
+fn generate_schema_file(template_env: &TemplateEnv, path: &Path, schema_ctx: &SchemaContext) {
     info!("rendering schema file");
-    let rendered_content = TEMPLATE_ENV.render_schema(schema_ctx);
+    let rendered_content = template_env.render_schema(schema_ctx);
     let generation_target = path
         .join(GRAPHQL_DIRECTORY)
         .join(format!("schema.{}", END_OF_FILE));
@@ -187,6 +221,7 @@ fn generate_schema_file(path: &Path, schema_ctx: &SchemaContext) {
 pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     info!("codegen started in working directory {}", pwd.display());
     let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
+    let template_env = TemplateEnv::new(ctx.schema_ctx.clone());
     // find all operation files in the directory
     // and remove operations that are not included in the current codegen session.
     let existing_op_names =
@@ -208,9 +243,9 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
             }
         }
     }
-    generate_schema_file(pwd, ctx.schema_ctx.deref());
+    generate_schema_file(&template_env, pwd, ctx.schema_ctx.deref());
     for (name, operation) in ctx.operations() {
-        generate_operations_file(&name, operation, ctx.schema_ctx.clone());
+        generate_operations_file(&template_env, &name, operation, ctx.schema_ctx.clone());
     }
     Ok(())
 }

@@ -23,7 +23,7 @@ fn generate_dart_test(usecase: &str) -> anyhow::Result<()> {
     let dart_test_file = usecase_path.join("test.dart");
     std::fs::write(
         &dart_test_file,
-        "import 'package:test/test.dart';\n\nvoid main() {}",
+        "import 'package:test/test.dart';\nimport 'package:shalom_core/shalom_core.dart';\n\n\nvoid main() {}",
     )?;
     let gql_folder = usecase_path.join("__graphql__");
     std::fs::create_dir_all(&gql_folder)?;

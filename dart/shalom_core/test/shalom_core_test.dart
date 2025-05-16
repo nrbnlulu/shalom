@@ -1,9 +1,6 @@
 import 'package:shalom_core/shalom_core.dart';
 import 'package:test/test.dart';
 
-import 'package:shalom_core/shalom_core.dart';
-import 'package:test/test.dart';
-
 class MockFromJson {
   final String name;
 
@@ -19,11 +16,13 @@ void main() {
     test('GraphQLResult fromJson with data', () {
       final json = {
         'data': {'name': 'Test'},
-        'errors': null
+        'errors': null,
       };
 
-      final result =
-          GraphQLResult<MockFromJson>.fromJson(json, (json) => MockFromJson.fromJsonObject(json));
+      final result = GraphQLResult<MockFromJson>.fromJson(
+        json,
+        (json) => MockFromJson.fromJsonObject(json),
+      );
 
       expect(result.data, isNotNull);
       expect(result.data!.name, 'Test');
@@ -36,13 +35,15 @@ void main() {
         'errors': [
           [
             {'message': 'Error 1'},
-            {'message': 'Error 2'}
-          ]
-        ]
+            {'message': 'Error 2'},
+          ],
+        ],
       };
 
-      final result =
-          GraphQLResult<MockFromJson>.fromJson(json, (json) => MockFromJson.fromJsonObject(json));
+      final result = GraphQLResult<MockFromJson>.fromJson(
+        json,
+        (json) => MockFromJson.fromJsonObject(json),
+      );
 
       expect(result.data, isNull);
       expect(result.errors, isNotNull);
@@ -57,13 +58,15 @@ void main() {
         'data': {'name': 'Test'},
         'errors': [
           [
-            {'message': 'Error 1'}
-          ]
-        ]
+            {'message': 'Error 1'},
+          ],
+        ],
       };
 
-      final result =
-          GraphQLResult<MockFromJson>.fromJson(json, (json) => MockFromJson.fromJsonObject(json));
+      final result = GraphQLResult<MockFromJson>.fromJson(
+        json,
+        (json) => MockFromJson.fromJsonObject(json),
+      );
 
       expect(result.data, isNotNull);
       expect(result.data!.name, 'Test');

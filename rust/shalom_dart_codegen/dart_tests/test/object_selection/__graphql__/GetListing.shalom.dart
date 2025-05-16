@@ -1,24 +1,25 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetListing {
+class GetListingResponse {
   /// class members
 
   final GetListing_listing listing;
 
   // keywordargs constructor
-
-  RequestGetListing({required this.listing});
-  static RequestGetListing fromJson(JsonObject data) {
+  GetListingResponse({required this.listing});
+  static GetListingResponse fromJson(JsonObject data) {
     final GetListing_listing listing_value;
 
     listing_value = GetListing_listing.fromJson(data['listing']);
 
-    return RequestGetListing(listing: listing_value);
+    return GetListingResponse(listing: listing_value);
   }
 
-  RequestGetListing updateWithJson(JsonObject data) {
+  GetListingResponse updateWithJson(JsonObject data) {
     final GetListing_listing listing_value;
     if (data.containsKey('listing')) {
       listing_value = GetListing_listing.fromJson(data['listing']);
@@ -26,13 +27,13 @@ class RequestGetListing {
       listing_value = listing;
     }
 
-    return RequestGetListing(listing: listing_value);
+    return GetListingResponse(listing: listing_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetListing && other.listing == listing);
+        (other is GetListingResponse && other.listing == listing);
   }
 
   @override
@@ -117,5 +118,28 @@ class GetListing_listing {
 
   JsonObject toJson() {
     return {'id': id, 'name': name, 'price': price};
+  }
+}
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetListing extends Requestable {
+  RequestGetListing();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetListing {
+  listing {
+    id
+    name
+    price
+  }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetListing',
+    );
   }
 }
