@@ -226,7 +226,12 @@ class {{ operation_name }}Variables {
                     {% endif %},
                 {% else %}
                     {% if variable.default_value is not none %} 
-                        this.{{ name }} = {{ parse_default_value(variable) }}
+                        {% set default_value = parse_default_value(variable) %}
+                        {% if default_value == "null" %}
+                            this.{{ name }} 
+                        {% else %}
+                            this.{{ name }} = {{ default_value }}
+                        {% endif %}
                     {% else %} 
                         this.{{ name }} = const None() 
                     {% endif %},
