@@ -21,7 +21,7 @@
 - [ ] Node interface real time updates.
 - [ ] defer / stream
 - [ ] input
-    - [ ] scalar
+    - [x] scalar
     - [ ] object
     - [ ] enum
     - [ ] oneOf
