@@ -1,0 +1,32 @@
+query RequiredArguments($id: ID!) {
+  product(id: $id) {
+    id
+    name
+  }
+}
+
+mutation OptionalArguments($id: ID, $phone: String) {
+  updateUser(id: $id, phone: $phone) {
+    name
+  }
+}
+
+query OptionalWithSomeDefault(
+  $name: String = "shalom"
+  $duration: Int = 2
+  $is_easy: Boolean = false
+) {
+  task(name: $name, duration: $duration, is_easy: $is_easy) {
+    name
+    duration
+    is_easy
+  }
+}
+
+mutation OptionalWithNullDefault($phone: String = null) {
+  updateUser(phone: $phone) {
+    email
+    name
+    phone
+  }
+}

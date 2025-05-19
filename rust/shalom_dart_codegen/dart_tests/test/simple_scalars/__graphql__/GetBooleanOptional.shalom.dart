@@ -1,22 +1,23 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetBooleanOptional {
+class GetBooleanOptionalResponse {
   /// class members
 
   final bool? booleanOptional;
 
   // keywordargs constructor
-
-  RequestGetBooleanOptional({this.booleanOptional});
-  static RequestGetBooleanOptional fromJson(JsonObject data) {
+  GetBooleanOptionalResponse({this.booleanOptional});
+  static GetBooleanOptionalResponse fromJson(JsonObject data) {
     final bool? booleanOptional_value = data['booleanOptional'];
 
-    return RequestGetBooleanOptional(booleanOptional: booleanOptional_value);
+    return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);
   }
 
-  RequestGetBooleanOptional updateWithJson(JsonObject data) {
+  GetBooleanOptionalResponse updateWithJson(JsonObject data) {
     final bool? booleanOptional_value;
     if (data.containsKey('booleanOptional')) {
       booleanOptional_value = data['booleanOptional'];
@@ -24,13 +25,13 @@ class RequestGetBooleanOptional {
       booleanOptional_value = booleanOptional;
     }
 
-    return RequestGetBooleanOptional(booleanOptional: booleanOptional_value);
+    return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetBooleanOptional &&
+        (other is GetBooleanOptionalResponse &&
             other.booleanOptional == booleanOptional);
   }
 
@@ -43,3 +44,22 @@ class RequestGetBooleanOptional {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetBooleanOptional extends Requestable {
+  RequestGetBooleanOptional();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetBooleanOptional {
+  booleanOptional
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetBooleanOptional',
+    );
+  }
+}

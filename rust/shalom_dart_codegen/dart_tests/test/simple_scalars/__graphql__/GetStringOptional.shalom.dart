@@ -1,22 +1,23 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetStringOptional {
+class GetStringOptionalResponse {
   /// class members
 
   final String? stringOptional;
 
   // keywordargs constructor
-
-  RequestGetStringOptional({this.stringOptional});
-  static RequestGetStringOptional fromJson(JsonObject data) {
+  GetStringOptionalResponse({this.stringOptional});
+  static GetStringOptionalResponse fromJson(JsonObject data) {
     final String? stringOptional_value = data['stringOptional'];
 
-    return RequestGetStringOptional(stringOptional: stringOptional_value);
+    return GetStringOptionalResponse(stringOptional: stringOptional_value);
   }
 
-  RequestGetStringOptional updateWithJson(JsonObject data) {
+  GetStringOptionalResponse updateWithJson(JsonObject data) {
     final String? stringOptional_value;
     if (data.containsKey('stringOptional')) {
       stringOptional_value = data['stringOptional'];
@@ -24,13 +25,13 @@ class RequestGetStringOptional {
       stringOptional_value = stringOptional;
     }
 
-    return RequestGetStringOptional(stringOptional: stringOptional_value);
+    return GetStringOptionalResponse(stringOptional: stringOptional_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetStringOptional &&
+        (other is GetStringOptionalResponse &&
             other.stringOptional == stringOptional);
   }
 
@@ -43,3 +44,22 @@ class RequestGetStringOptional {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetStringOptional extends Requestable {
+  RequestGetStringOptional();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetStringOptional {
+  stringOptional
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetStringOptional',
+    );
+  }
+}

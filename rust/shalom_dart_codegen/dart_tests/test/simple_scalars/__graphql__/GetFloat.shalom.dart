@@ -1,22 +1,23 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetFloat {
+class GetFloatResponse {
   /// class members
 
   final double float;
 
   // keywordargs constructor
-
-  RequestGetFloat({required this.float});
-  static RequestGetFloat fromJson(JsonObject data) {
+  GetFloatResponse({required this.float});
+  static GetFloatResponse fromJson(JsonObject data) {
     final double float_value = data['float'];
 
-    return RequestGetFloat(float: float_value);
+    return GetFloatResponse(float: float_value);
   }
 
-  RequestGetFloat updateWithJson(JsonObject data) {
+  GetFloatResponse updateWithJson(JsonObject data) {
     final double float_value;
     if (data.containsKey('float')) {
       float_value = data['float'];
@@ -24,13 +25,13 @@ class RequestGetFloat {
       float_value = float;
     }
 
-    return RequestGetFloat(float: float_value);
+    return GetFloatResponse(float: float_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetFloat && other.float == float);
+        (other is GetFloatResponse && other.float == float);
   }
 
   @override
@@ -42,3 +43,22 @@ class RequestGetFloat {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetFloat extends Requestable {
+  RequestGetFloat();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetFloat {
+  float
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetFloat',
+    );
+  }
+}

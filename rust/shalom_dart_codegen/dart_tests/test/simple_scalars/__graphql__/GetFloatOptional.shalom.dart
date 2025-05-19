@@ -1,22 +1,23 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetFloatOptional {
+class GetFloatOptionalResponse {
   /// class members
 
   final double? floatOptional;
 
   // keywordargs constructor
-
-  RequestGetFloatOptional({this.floatOptional});
-  static RequestGetFloatOptional fromJson(JsonObject data) {
+  GetFloatOptionalResponse({this.floatOptional});
+  static GetFloatOptionalResponse fromJson(JsonObject data) {
     final double? floatOptional_value = data['floatOptional'];
 
-    return RequestGetFloatOptional(floatOptional: floatOptional_value);
+    return GetFloatOptionalResponse(floatOptional: floatOptional_value);
   }
 
-  RequestGetFloatOptional updateWithJson(JsonObject data) {
+  GetFloatOptionalResponse updateWithJson(JsonObject data) {
     final double? floatOptional_value;
     if (data.containsKey('floatOptional')) {
       floatOptional_value = data['floatOptional'];
@@ -24,13 +25,13 @@ class RequestGetFloatOptional {
       floatOptional_value = floatOptional;
     }
 
-    return RequestGetFloatOptional(floatOptional: floatOptional_value);
+    return GetFloatOptionalResponse(floatOptional: floatOptional_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetFloatOptional &&
+        (other is GetFloatOptionalResponse &&
             other.floatOptional == floatOptional);
   }
 
@@ -43,3 +44,22 @@ class RequestGetFloatOptional {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetFloatOptional extends Requestable {
+  RequestGetFloatOptional();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetFloatOptional {
+  floatOptional
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetFloatOptional',
+    );
+  }
+}

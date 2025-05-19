@@ -1,16 +1,17 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetListinOptWithUserOpt {
+class GetListinOptWithUserOptResponse {
   /// class members
 
   final GetListinOptWithUserOpt_listingOpt? listingOpt;
 
   // keywordargs constructor
-
-  RequestGetListinOptWithUserOpt({this.listingOpt});
-  static RequestGetListinOptWithUserOpt fromJson(JsonObject data) {
+  GetListinOptWithUserOptResponse({this.listingOpt});
+  static GetListinOptWithUserOptResponse fromJson(JsonObject data) {
     final GetListinOptWithUserOpt_listingOpt? listingOpt_value;
 
     final JsonObject? listingOpt$raw = data['listingOpt'];
@@ -22,10 +23,10 @@ class RequestGetListinOptWithUserOpt {
       listingOpt_value = null;
     }
 
-    return RequestGetListinOptWithUserOpt(listingOpt: listingOpt_value);
+    return GetListinOptWithUserOptResponse(listingOpt: listingOpt_value);
   }
 
-  RequestGetListinOptWithUserOpt updateWithJson(JsonObject data) {
+  GetListinOptWithUserOptResponse updateWithJson(JsonObject data) {
     final GetListinOptWithUserOpt_listingOpt? listingOpt_value;
     if (data.containsKey('listingOpt')) {
       final JsonObject? listingOpt$raw = data['listingOpt'];
@@ -40,13 +41,13 @@ class RequestGetListinOptWithUserOpt {
       listingOpt_value = listingOpt;
     }
 
-    return RequestGetListinOptWithUserOpt(listingOpt: listingOpt_value);
+    return GetListinOptWithUserOptResponse(listingOpt: listingOpt_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetListinOptWithUserOpt &&
+        (other is GetListinOptWithUserOptResponse &&
             other.listingOpt == listingOpt);
   }
 
@@ -241,5 +242,32 @@ class GetListinOptWithUserOpt_listingOpt_userOpt {
 
   JsonObject toJson() {
     return {'id': id, 'name': name};
+  }
+}
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetListinOptWithUserOpt extends Requestable {
+  RequestGetListinOptWithUserOpt();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetListinOptWithUserOpt {
+  listingOpt {
+    id
+    name
+    price
+    userOpt {
+      id
+      name
+    }
+  }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetListinOptWithUserOpt',
+    );
   }
 }
