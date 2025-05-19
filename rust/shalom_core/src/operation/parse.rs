@@ -2,17 +2,19 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
 
-use apollo_compiler::{executable as apollo_executable, Node};
+use apollo_compiler::{
+    ast::OperationType as ApolloOperationType, executable as apollo_executable, Node,
+};
 use log::{info, trace};
 
 use crate::context::SharedShalomGlobalContext;
-use crate::operation::types::ObjectSelection;
+use crate::operation::types::{ObjectSelection, VariableDefinition};
 use crate::schema::context::SharedSchemaContext;
 use crate::schema::types::{EnumType, GraphQLAny, ScalarType};
 
 use super::context::{OperationContext, SharedOpCtx};
 use super::types::{
-    EnumSelection, ScalarSelection, Selection, SelectionCommon, SharedEnumSelection,
+    EnumSelection, OperationType, ScalarSelection, Selection, SelectionCommon, SharedEnumSelection,
     SharedObjectSelection, SharedScalarSelection,
 };
 
@@ -93,7 +95,6 @@ fn parse_selection_set(
     selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
 ) -> Selection {
-    trace!("Parsing selection set {:?}", selection_common);
     let full_name = selection_common.full_name.clone();
     if let Some(selection) = op_ctx.get_selection(&full_name) {
         info!("Selection already exists");
@@ -121,13 +122,52 @@ fn parse_selection_set(
     selection
 }
 
+fn parse_operation_type(operation_type: ApolloOperationType) -> OperationType {
+    match operation_type {
+        ApolloOperationType::Query => OperationType::Query,
+        ApolloOperationType::Mutation => OperationType::Mutation,
+        ApolloOperationType::Subscription => OperationType::Subscription,
+    }
+}
+
 fn parse_operation(
     global_ctx: &SharedShalomGlobalContext,
     op: Node<apollo_compiler::executable::Operation>,
     name: String,
     file_path: PathBuf,
 ) -> SharedOpCtx {
-    let mut ctx = OperationContext::new(global_ctx.schema_ctx.clone(), file_path);
+    let query = op.to_string();
+    let operation_name = op
+        .name
+        .as_ref()
+        .unwrap_or_else(|| unimplemented!("Anonymous operations are not supported"))
+        .to_string();
+    let mut ctx = OperationContext::new(
+        global_ctx.schema_ctx.clone(),
+        operation_name,
+        query,
+        file_path,
+        parse_operation_type(op.operation_type),
+    );
+    for variable in op.variables.iter() {
+        let name = variable.name.to_string();
+        let is_optional = !variable.ty.is_non_null();
+        let ty = global_ctx
+            .schema_ctx
+            .get_type(variable.ty.inner_named_type().as_str())
+            .unwrap();
+        assert!(
+            matches!(ty, GraphQLAny::Scalar(_)),
+            "non scalar arguments have not been implemented"
+        );
+        let variable_definition = VariableDefinition {
+            name: name.clone(),
+            ty,
+            is_optional,
+            default_value: variable.default_value.clone(),
+        };
+        ctx.add_variable(name, variable_definition);
+    }
     let selection_common = SelectionCommon {
         full_name: name.clone(),
         is_optional: false,
@@ -156,9 +196,8 @@ pub(crate) fn parse_document(
         .parse_executable(&schema, source, doc_path)
         .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
     let doc_orig = doc_orig.validate(&schema).expect("doc is not valid");
-
     if doc_orig.operations.anonymous.is_some() {
-        unimplemented!("Anonymous operations are not supported")
+        unimplemented!("Anoinymous operations are not supported")
     }
     for (name, op) in doc_orig.operations.named.iter() {
         let name = name.to_string();

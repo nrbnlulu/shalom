@@ -1,8 +1,10 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetMultipleFields {
+class GetMultipleFieldsResponse {
   /// class members
 
   final String id;
@@ -10,17 +12,16 @@ class RequestGetMultipleFields {
   final int intField;
 
   // keywordargs constructor
-
-  RequestGetMultipleFields({required this.id, required this.intField});
-  static RequestGetMultipleFields fromJson(JsonObject data) {
+  GetMultipleFieldsResponse({required this.id, required this.intField});
+  static GetMultipleFieldsResponse fromJson(JsonObject data) {
     final String id_value = data['id'];
 
     final int intField_value = data['intField'];
 
-    return RequestGetMultipleFields(id: id_value, intField: intField_value);
+    return GetMultipleFieldsResponse(id: id_value, intField: intField_value);
   }
 
-  RequestGetMultipleFields updateWithJson(JsonObject data) {
+  GetMultipleFieldsResponse updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
       id_value = data['id'];
@@ -35,13 +36,13 @@ class RequestGetMultipleFields {
       intField_value = intField;
     }
 
-    return RequestGetMultipleFields(id: id_value, intField: intField_value);
+    return GetMultipleFieldsResponse(id: id_value, intField: intField_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetMultipleFields &&
+        (other is GetMultipleFieldsResponse &&
             other.id == id &&
             other.intField == intField);
   }
@@ -55,3 +56,23 @@ class RequestGetMultipleFields {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetMultipleFields extends Requestable {
+  RequestGetMultipleFields();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetMultipleFields {
+  id
+  intField
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetMultipleFields',
+    );
+  }
+}

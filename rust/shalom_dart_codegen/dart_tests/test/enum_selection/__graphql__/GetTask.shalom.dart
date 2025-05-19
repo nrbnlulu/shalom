@@ -1,26 +1,27 @@
 import "schema.shalom.dart";
 
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetTask {
+class GetTaskResponse {
   /// class members
 
   final GetTask_task task;
 
   // keywordargs constructor
-
-  RequestGetTask({required this.task});
-  static RequestGetTask fromJson(JsonObject data) {
+  GetTaskResponse({required this.task});
+  static GetTaskResponse fromJson(JsonObject data) {
     final GetTask_task task_value;
 
     task_value = GetTask_task.fromJson(data['task']);
 
-    return RequestGetTask(task: task_value);
+    return GetTaskResponse(task: task_value);
   }
 
-  RequestGetTask updateWithJson(JsonObject data) {
+  GetTaskResponse updateWithJson(JsonObject data) {
     final GetTask_task task_value;
     if (data.containsKey('task')) {
       task_value = GetTask_task.fromJson(data['task']);
@@ -28,13 +29,13 @@ class RequestGetTask {
       task_value = task;
     }
 
-    return RequestGetTask(task: task_value);
+    return GetTaskResponse(task: task_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetTask && other.task == task);
+        (other is GetTaskResponse && other.task == task);
   }
 
   @override
@@ -109,5 +110,28 @@ class GetTask_task {
 
   JsonObject toJson() {
     return {'id': id, 'name': name, 'status': status.name};
+  }
+}
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetTask extends Requestable {
+  RequestGetTask();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetTask {
+  task {
+    id
+    name
+    status
+  }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetTask',
+    );
   }
 }

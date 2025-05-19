@@ -1,24 +1,25 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetListingWithUserOpt {
+class GetListingWithUserOptResponse {
   /// class members
 
   final GetListingWithUserOpt_listing listing;
 
   // keywordargs constructor
-
-  RequestGetListingWithUserOpt({required this.listing});
-  static RequestGetListingWithUserOpt fromJson(JsonObject data) {
+  GetListingWithUserOptResponse({required this.listing});
+  static GetListingWithUserOptResponse fromJson(JsonObject data) {
     final GetListingWithUserOpt_listing listing_value;
 
     listing_value = GetListingWithUserOpt_listing.fromJson(data['listing']);
 
-    return RequestGetListingWithUserOpt(listing: listing_value);
+    return GetListingWithUserOptResponse(listing: listing_value);
   }
 
-  RequestGetListingWithUserOpt updateWithJson(JsonObject data) {
+  GetListingWithUserOptResponse updateWithJson(JsonObject data) {
     final GetListingWithUserOpt_listing listing_value;
     if (data.containsKey('listing')) {
       listing_value = GetListingWithUserOpt_listing.fromJson(data['listing']);
@@ -26,13 +27,13 @@ class RequestGetListingWithUserOpt {
       listing_value = listing;
     }
 
-    return RequestGetListingWithUserOpt(listing: listing_value);
+    return GetListingWithUserOptResponse(listing: listing_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetListingWithUserOpt && other.listing == listing);
+        (other is GetListingWithUserOptResponse && other.listing == listing);
   }
 
   @override
@@ -223,5 +224,32 @@ class GetListingWithUserOpt_listing_userOpt {
 
   JsonObject toJson() {
     return {'id': id, 'name': name};
+  }
+}
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetListingWithUserOpt extends Requestable {
+  RequestGetListingWithUserOpt();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetListingWithUserOpt {
+  listing {
+    id
+    name
+    price
+    userOpt {
+      id
+      name
+    }
+  }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetListingWithUserOpt',
+    );
   }
 }

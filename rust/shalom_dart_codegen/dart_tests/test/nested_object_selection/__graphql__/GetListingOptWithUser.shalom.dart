@@ -1,16 +1,17 @@
+import 'package:shalom_core/shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class RequestGetListingOptWithUser {
+class GetListingOptWithUserResponse {
   /// class members
 
   final GetListingOptWithUser_listingOpt? listingOpt;
 
   // keywordargs constructor
-
-  RequestGetListingOptWithUser({this.listingOpt});
-  static RequestGetListingOptWithUser fromJson(JsonObject data) {
+  GetListingOptWithUserResponse({this.listingOpt});
+  static GetListingOptWithUserResponse fromJson(JsonObject data) {
     final GetListingOptWithUser_listingOpt? listingOpt_value;
 
     final JsonObject? listingOpt$raw = data['listingOpt'];
@@ -22,10 +23,10 @@ class RequestGetListingOptWithUser {
       listingOpt_value = null;
     }
 
-    return RequestGetListingOptWithUser(listingOpt: listingOpt_value);
+    return GetListingOptWithUserResponse(listingOpt: listingOpt_value);
   }
 
-  RequestGetListingOptWithUser updateWithJson(JsonObject data) {
+  GetListingOptWithUserResponse updateWithJson(JsonObject data) {
     final GetListingOptWithUser_listingOpt? listingOpt_value;
     if (data.containsKey('listingOpt')) {
       final JsonObject? listingOpt$raw = data['listingOpt'];
@@ -40,13 +41,13 @@ class RequestGetListingOptWithUser {
       listingOpt_value = listingOpt;
     }
 
-    return RequestGetListingOptWithUser(listingOpt: listingOpt_value);
+    return GetListingOptWithUserResponse(listingOpt: listingOpt_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequestGetListingOptWithUser &&
+        (other is GetListingOptWithUserResponse &&
             other.listingOpt == listingOpt);
   }
 
@@ -253,5 +254,34 @@ class GetListingOptWithUser_listingOpt_user {
 
   JsonObject toJson() {
     return {'id': id, 'name': name, 'email': email, 'age': age};
+  }
+}
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+class RequestGetListingOptWithUser extends Requestable {
+  RequestGetListingOptWithUser();
+
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetListingOptWithUser {
+  listingOpt {
+    id
+    name
+    price
+    user {
+      id
+      name
+      email
+      age
+    }
+  }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetListingOptWithUser',
+    );
   }
 }
