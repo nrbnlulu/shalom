@@ -114,5 +114,6 @@ pub struct VariableDefinition {
     pub name: String,
     pub ty: GraphQLAny,
     pub is_optional: bool,
+    pub is_input_object: bool,
     pub default_value: Option<Node<Value>>,
 }

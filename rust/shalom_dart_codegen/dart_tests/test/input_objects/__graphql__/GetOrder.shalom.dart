@@ -6,61 +6,59 @@ typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class OrderRequestResponse {
+class GetOrderResponse {
   /// class members
 
-  final OrderRequest_orderRequest? orderRequest;
+  final GetOrder_getOrder? getOrder;
 
   // keywordargs constructor
-  OrderRequestResponse({this.orderRequest});
-  static OrderRequestResponse fromJson(JsonObject data) {
-    final OrderRequest_orderRequest? orderRequest_value;
+  GetOrderResponse({this.getOrder});
+  static GetOrderResponse fromJson(JsonObject data) {
+    final GetOrder_getOrder? getOrder_value;
 
-    final JsonObject? orderRequest$raw = data['orderRequest'];
-    if (orderRequest$raw != null) {
-      orderRequest_value = OrderRequest_orderRequest.fromJson(orderRequest$raw);
+    final JsonObject? getOrder$raw = data['getOrder'];
+    if (getOrder$raw != null) {
+      getOrder_value = GetOrder_getOrder.fromJson(getOrder$raw);
     } else {
-      orderRequest_value = null;
+      getOrder_value = null;
     }
 
-    return OrderRequestResponse(orderRequest: orderRequest_value);
+    return GetOrderResponse(getOrder: getOrder_value);
   }
 
-  OrderRequestResponse updateWithJson(JsonObject data) {
-    final OrderRequest_orderRequest? orderRequest_value;
-    if (data.containsKey('orderRequest')) {
-      final JsonObject? orderRequest$raw = data['orderRequest'];
-      if (orderRequest$raw != null) {
-        orderRequest_value = OrderRequest_orderRequest.fromJson(
-          orderRequest$raw,
-        );
+  GetOrderResponse updateWithJson(JsonObject data) {
+    final GetOrder_getOrder? getOrder_value;
+    if (data.containsKey('getOrder')) {
+      final JsonObject? getOrder$raw = data['getOrder'];
+      if (getOrder$raw != null) {
+        getOrder_value = GetOrder_getOrder.fromJson(getOrder$raw);
       } else {
-        orderRequest_value = null;
+        getOrder_value = null;
       }
     } else {
-      orderRequest_value = orderRequest;
+      getOrder_value = getOrder;
     }
 
-    return OrderRequestResponse(orderRequest: orderRequest_value);
+    return GetOrderResponse(getOrder: getOrder_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is OrderRequestResponse && other.orderRequest == orderRequest);
+        (other is GetOrderResponse && other.getOrder == getOrder);
   }
 
   @override
-  int get hashCode => orderRequest.hashCode;
+  int get hashCode => getOrder.hashCode;
 
   JsonObject toJson() {
-    return {'orderRequest': orderRequest?.toJson()};
+    return {'getOrder': getOrder?.toJson()};
   }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class OrderRequest_orderRequest {
+class GetOrder_getOrder {
   /// class members
 
   final int? quantity;
@@ -70,15 +68,15 @@ class OrderRequest_orderRequest {
   final double? price;
 
   // keywordargs constructor
-  OrderRequest_orderRequest({this.quantity, this.name, this.price});
-  static OrderRequest_orderRequest fromJson(JsonObject data) {
+  GetOrder_getOrder({this.quantity, this.name, this.price});
+  static GetOrder_getOrder fromJson(JsonObject data) {
     final int? quantity_value = data['quantity'];
 
     final String? name_value = data['name'];
 
     final double? price_value = data['price'];
 
-    return OrderRequest_orderRequest(
+    return GetOrder_getOrder(
       quantity: quantity_value,
 
       name: name_value,
@@ -87,7 +85,7 @@ class OrderRequest_orderRequest {
     );
   }
 
-  OrderRequest_orderRequest updateWithJson(JsonObject data) {
+  GetOrder_getOrder updateWithJson(JsonObject data) {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
       quantity_value = data['quantity'];
@@ -109,7 +107,7 @@ class OrderRequest_orderRequest {
       price_value = price;
     }
 
-    return OrderRequest_orderRequest(
+    return GetOrder_getOrder(
       quantity: quantity_value,
 
       name: name_value,
@@ -121,7 +119,7 @@ class OrderRequest_orderRequest {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is OrderRequest_orderRequest &&
+        (other is GetOrder_getOrder &&
             other.quantity == quantity &&
             other.name == name &&
             other.price == price);
@@ -137,38 +135,44 @@ class OrderRequest_orderRequest {
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-class RequestOrderRequest extends Requestable {
-  final OrderRequestVariables variables;
+class RequestGetOrder extends Requestable {
+  final GetOrderVariables variables;
 
-  RequestOrderRequest({required this.variables});
+  RequestGetOrder({required this.variables});
 
   @override
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query: r"""mutation OrderRequest($order: Order!) {
-  orderRequest(order: $order) {
+      query: r"""query GetOrder($id: ID!, $order: Order) {
+  getOrder(id: $id, order: $order) {
     quantity
     name
     price
   }
 }""",
       variables: variablesJson,
-      opType: OperationType.Mutation,
-      StringopName: 'OrderRequest',
+      opType: OperationType.Query,
+      StringopName: 'GetOrder',
     );
   }
 }
 
-class OrderRequestVariables {
-  final Order order;
+class GetOrderVariables {
+  final String id;
 
-  OrderRequestVariables({required this.order});
+  final Option<Order?> order;
+
+  GetOrderVariables({required this.id, this.order = const None()});
 
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["order"] = order.toJson();
+    data["id"] = id;
+
+    if (order.isSome()) {
+      data["order"] = order.some()?.toJson();
+    }
 
     return data;
   }

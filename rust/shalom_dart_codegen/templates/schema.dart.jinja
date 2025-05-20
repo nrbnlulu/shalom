@@ -62,14 +62,14 @@ class {{ typename }} {
         {% for name, input in inputs | items %}
            {% if input.is_optional and input.default_value is none %}  
                if ({{ name }}.isSome()) {
-                  {% if input.is_input_object %}
+                  {% if input_field_is_input_object(input) %}
                      data["{{ name }}"] = {{ name }}.some()?.toJson();   
                   {% else %}
                     data["{{ name }}"] = {{ name }}.some();
                   {% endif %}
                } 
            {% else %}
-              {% if input.is_input_object %}
+              {% if input_field_is_input_object(input) %}
                 data["{{ name }}"] = {{ name }}.toJson();
               {% else %}
                 data["{{ name }}"] = {{ name }}; 

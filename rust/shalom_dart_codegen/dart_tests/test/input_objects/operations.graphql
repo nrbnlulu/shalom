@@ -38,5 +38,13 @@ mutation OrderOptWithSomeDefaultsRequest($order: OrderOptWithSomeDefaults!) {
   }
 }
 
+query GetOrder($id: ID!, $order: Order) {
+  getOrder(id: $id, order: $order) {
+    quantity,
+    name,
+    price
+  }
+}
+
 
 

@@ -1,6 +1,7 @@
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{
-    EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, ObjectType, ScalarType,
+    EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, InputObjectType,
+    InputValueDefinition, ObjectType, ScalarType,
 };
 use anyhow::Result;
 use apollo_compiler::{self};
@@ -46,7 +47,6 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
     };
 
     let ctx = Arc::new(SchemaContext::new(initial_types, schema.clone()));
-
     for (name, type_) in &schema.types {
         if name.starts_with("__") {
             continue;
@@ -65,6 +65,9 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
             apollo_schema::ExtendedType::Enum(enum_) => {
                 resolve_enum(ctx.clone(), name.to_string(), enum_.clone());
             }
+            apollo_schema::ExtendedType::InputObject(input) => {
+                resolve_input(ctx.clone(), name.to_string(), input.clone());
+            }
             _ => todo!(
                 "Unsupported type in schema {:?}: {:?}",
                 name.to_string(),
@@ -72,7 +75,6 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
             ),
         }
     }
-
     Ok(ctx)
 }
 
@@ -147,6 +149,39 @@ fn resolve_enum(context: SharedSchemaContext, name: String, origin: Node<apollo_
         members,
     };
     context.add_enum(name.clone(), Node::new(enum_type));
+}
+
+#[allow(unused)]
+fn resolve_input(
+    context: SharedSchemaContext,
+    name: String,
+    origin: Node<apollo_schema::InputObjectType>,
+) {
+    if context.get_type(&name).is_some() {
+        return;
+    }
+    let mut inputs = HashMap::new();
+    for (name, field) in origin.fields.iter() {
+        let description = field.description.as_ref().map(|v| v.to_string());
+        let ty = resolve_type(context.clone(), field.ty.item_type().clone());
+        let is_optional = !field.ty.is_non_null();
+        let default_value = field.default_value.clone();
+        let input_value_definition = InputValueDefinition {
+            name: name.to_string(),
+            description,
+            ty,
+            is_optional,
+            default_value,
+        };
+        inputs.insert(name.to_string(), input_value_definition);
+    }
+    let description = origin.description.as_ref().map(|v| v.to_string());
+    let input_object = InputObjectType {
+        description,
+        name: name.clone(),
+        fields: inputs,
+    };
+    context.add_input(name, Node::new(input_object));
 }
 
 pub fn resolve_type(_context: SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {

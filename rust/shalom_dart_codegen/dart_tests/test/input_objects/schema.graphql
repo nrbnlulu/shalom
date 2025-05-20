@@ -29,6 +29,10 @@ type OrderRequest {
 } 
 
 type Query {
+  getOrder(id: ID!, order: Order) : OrderRequest 
+}
+
+type Mutation {
   optOrderRequest(order: Order) : OrderRequest,
   orderRequest(order: Order!) : OrderRequest,
   orderOptRequest(order: OrderOpt!) : OrderRequest,

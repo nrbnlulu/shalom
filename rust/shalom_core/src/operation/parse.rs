@@ -157,13 +157,15 @@ fn parse_operation(
             .get_type(variable.ty.inner_named_type().as_str())
             .unwrap();
         assert!(
-            matches!(ty, GraphQLAny::Scalar(_)),
+            matches!(ty, GraphQLAny::Scalar(_)) || matches!(ty, GraphQLAny::InputObject(_)),
             "non scalar arguments have not been implemented"
         );
+        let is_input_object = matches!(ty, GraphQLAny::InputObject(_));
         let variable_definition = VariableDefinition {
             name: name.clone(),
             ty,
             is_optional,
+            is_input_object,
             default_value: variable.default_value.clone(),
         };
         ctx.add_variable(name, variable_definition);

@@ -3,7 +3,7 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use apollo_compiler::Node;
+use apollo_compiler::{ast::Value, Node};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -80,7 +80,7 @@ impl GraphQLAny {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-#[serde(tag = "kind")]
+#[serde(untagged)]
 pub enum FieldType {
     Named(GlobalName),
     NonNullNamed(GlobalName),
@@ -120,6 +120,14 @@ impl FieldType {
                 ctx.get_type(ty).and_then(|t| t.object())
             }
             _ => None,
+        }
+    }
+
+    pub fn name(&self) -> String {
+        match self {
+            FieldType::Named(ty) => ty.to_string(),
+            FieldType::NonNullNamed(ty) => ty.to_string(),
+            _ => unimplemented!("lists have not been implemented"),
         }
     }
 }
@@ -228,7 +236,7 @@ pub struct EnumValueDefinition {
 pub struct InputObjectType {
     pub description: Option<String>,
     pub name: String,
-    pub fields: HashMap<String, Box<InputValueDefinition>>,
+    pub fields: HashMap<String, InputValueDefinition>,
 }
 impl Hash for InputObjectType {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -248,6 +256,7 @@ pub struct FieldDefinition {
 pub struct InputValueDefinition {
     pub description: Option<String>,
     pub name: String,
-    pub ty: Box<FieldType>,
-    pub default_value: Option<String>,
+    pub ty: FieldType,
+    pub is_optional: bool,
+    pub default_value: Option<Node<Value>>,
 }
