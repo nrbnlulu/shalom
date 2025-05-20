@@ -8,7 +8,7 @@ use shalom_core::{
         context::OperationContext,
         types::{Selection, VariableDefinition},
     },
-    schema::context::{SchemaContext, SharedSchemaContext},
+    schema::{context::{SchemaContext, SharedSchemaContext}, types::{GraphQLAny}},
 };
 use std::{
     collections::HashMap,
@@ -36,6 +36,8 @@ const LINE_ENDING: &str = "\r\n";
 const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
+    use shalom_core::schema::types::{InputObjectType, InputValueDefinition};
+
     use super::*;
 
     #[allow(unused_variables)]
@@ -75,17 +77,56 @@ mod ext_jinja_fns {
         variable: ViaDeserialize<VariableDefinition>,
     ) -> String {
         let ty_name = variable.0.ty.name();
-        let resolved = DEFAULT_SCALARS_MAP.get(&ty_name).unwrap();
+        let resolved = match variable.0.ty {
+            GraphQLAny::Scalar(_) => {
+                 DEFAULT_SCALARS_MAP.get(&ty_name).unwrap().clone()
+             },
+            GraphQLAny::InputObject(_) => {
+                ty_name
+            },
+            _ => unimplemented!("input type not supported")
+        }; 
         if variable.is_optional && variable.default_value.is_none() {
             format!("Option<{}?>", resolved)
         } else if variable.is_optional {
             format!("{}?", resolved)
         } else {
-            resolved.clone()
+            resolved
+        }
+
+    }
+
+    #[allow(unused_variables)]
+    pub fn type_name_for_input(schema_ctx: &SchemaContext, input: ViaDeserialize<InputValueDefinition>) -> String {
+       let ty_name = input.0.ty.name();
+        let resolved = match input.0.ty {
+            GraphQLAny::Scalar(_) => {
+                 DEFAULT_SCALARS_MAP.get(&ty_name).unwrap().clone()
+             },
+            GraphQLAny::InputObject(_) => {
+                ty_name
+            },
+            _ => unimplemented!("input type not supported")
+        }; 
+        if input.is_optional && input.default_value.is_none() {
+            format!("Option<{}?>", resolved)
+        } else if input.is_optional {
+            format!("{}?", resolved)
+        } else {
+            resolved
         }
     }
 
-    pub fn parse_default_value(variable: ViaDeserialize<VariableDefinition>) -> String {
+    pub fn parse_variable_default_value(variable: ViaDeserialize<VariableDefinition>) -> String {
+        let default_value = variable.0.default_value;
+        if default_value.is_none() {
+            panic!("cannot parse default value that does not exist")
+        }
+        let default_value = default_value.unwrap();
+        default_value.to_string()
+    }
+
+    pub fn parse_input_default_value(variable: ViaDeserialize<InputValueDefinition>) -> String {
         let default_value = variable.0.default_value;
         if default_value.is_none() {
             panic!("cannot parse default value that does not exist")
@@ -150,7 +191,12 @@ impl TemplateEnv<'_> {
         env.add_function("type_name_for_variable", move |a: _| {
             ext_jinja_fns::type_name_for_variable(&schema_ctx_clone, a)
         });
-        env.add_function("parse_default_value", ext_jinja_fns::parse_default_value);
+        let schema_ctx_clone = schema_ctx.clone();
+        env.add_function("type_name_for_input", move |a: _| {
+            ext_jinja_fns::type_name_for_input(&schema_ctx_clone, a)
+        });
+        env.add_function("parse_variable_default_value", ext_jinja_fns::parse_variable_default_value);
+        env.add_function("parse_input_default_value", ext_jinja_fns::parse_input_default_value);
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
         env.add_filter("if_not_last", ext_jinja_fns::if_not_last);

@@ -1,4 +1,4 @@
-{% if schema.context.types.enums | length > 0 %}
+{% if schema.context.types.enums | length > 0 or schema.context.types.inputs | length > 0%}
 import "schema.shalom.dart";
 {% endif %}
 import 'package:shalom_core/shalom_core.dart';
@@ -220,13 +220,13 @@ class {{ operation_name }}Variables {
             {% for name, variable in op_variables | items %}
                 {% if not variable.is_optional %}
                     {% if variable.default_value is not none  %} 
-                        required this.{{ name }} = {{ parse_default_value(variable) }}
+                        required this.{{ name }} = {{ parse_variable_default_value(variable) }}
                     {% else %}
                         required this.{{name}}  
                     {% endif %},
                 {% else %}
                     {% if variable.default_value is not none %} 
-                        {% set default_value = parse_default_value(variable) %}
+                        {% set default_value = parse_variable_default_value(variable) %}
                         {% if default_value == "null" %}
                             this.{{ name }} 
                         {% else %}
@@ -246,10 +246,18 @@ class {{ operation_name }}Variables {
         {% for name, variable in op_variables | items %}
            {% if variable.is_optional and variable.default_value is none %}  
                if ({{ name }}.isSome()) {
-                  data["{{ name }}"] = {{ name }}.some();
+                  {% if variable.is_input_object %}
+                     data["{{ name }}"] = {{ name }}.some()?.toJson();   
+                  {% else %}
+                    data["{{ name }}"] = {{ name }}.some();
+                  {% endif %}
                } 
            {% else %}
-              data["{{ name }}"] = {{ name }}; 
+              {% if variable.is_input_object %}
+                data["{{ name }}"] = {{ name }}.toJson();
+              {% else %}
+                data["{{ name }}"] = {{ name }}; 
+              {% endif %}
            {% endif %}
         {% endfor %}
         return data;

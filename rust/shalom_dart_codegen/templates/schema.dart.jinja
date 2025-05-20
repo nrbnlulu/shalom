@@ -1,4 +1,5 @@
 // ignore_for_file: constant_identifier_names
+import 'package:shalom_core/shalom_core.dart';
 
 // ------------ Enum DEFINITIONS -------------
 {% for _, enum in schema.context.types.enums | items %}
@@ -23,3 +24,61 @@
       }
 {% endfor %}
 // ------------ END Enum DEFINITIONS -------------
+// ------------ Input DEFINITIONS -------------
+{% for _, input_object in schema.context.types.inputs | items %}
+{% set typename = input_object.name %}
+class {{ typename }} {
+    {% set inputs = input_object.fields %}
+    {% for name, input in inputs | items %}
+        final {{ type_name_for_input(input) }} {{ name }}; 
+    {% endfor %}
+    {{ typename }}(
+        {
+        {% for name, input in inputs | items %}
+            {% if not input.is_optional %}
+                {% if input.default_value is not none  %} 
+                    required this.{{ name }} = {{ parse_input_default_value(input) }}
+                {% else %}
+                    required this.{{name}}  
+                {% endif %},
+            {% else %}
+                {% if input.default_value is not none %} 
+                    {% set default_value = parse_input_default_value(input) %}
+                    {% if default_value == "null" %}
+                        this.{{ name }} 
+                    {% else %}
+                        this.{{ name }} = {{ default_value }}
+                    {% endif %}
+                {% else %} 
+                    this.{{ name }} = const None() 
+                {% endif %},
+            {% endif %}
+        {% endfor %}  
+        }
+    );
+
+    JsonObject toJson() {
+        JsonObject data = {};
+        {% for name, input in inputs | items %}
+           {% if input.is_optional and input.default_value is none %}  
+               if ({{ name }}.isSome()) {
+                  {% if input.is_input_object %}
+                     data["{{ name }}"] = {{ name }}.some()?.toJson();   
+                  {% else %}
+                    data["{{ name }}"] = {{ name }}.some();
+                  {% endif %}
+               } 
+           {% else %}
+              {% if input.is_input_object %}
+                data["{{ name }}"] = {{ name }}.toJson();
+              {% else %}
+                data["{{ name }}"] = {{ name }}; 
+              {% endif %}
+           {% endif %}
+        {% endfor %}
+        return data;
+    } 
+}
+     
+{% endfor %}
+// ------------ END Input DEFINITIONS -------------

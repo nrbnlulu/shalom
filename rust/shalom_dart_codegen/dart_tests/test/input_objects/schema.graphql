@@ -1,0 +1,37 @@
+input Order {
+  quantity: Int!, 
+  name: String!,
+  price: Float!       
+} 
+
+input OrderOpt {
+  quantity: Int, 
+  name: String,
+  price: Float       
+} 
+
+input OrderOptWithNullDefaults {
+  quantity: Int = null, 
+  name: String = null,
+  price: Float = null       
+} 
+
+input OrderOptWithSomeDefaults {
+  quantity: Int = 2, 
+  name: String = "burgers",
+  price: Float = 10.0      
+} 
+
+type OrderRequest {
+  quantity: Int, 
+  name: String,
+  price: Float
+} 
+
+type Query {
+  optOrderRequest(order: Order) : OrderRequest,
+  orderRequest(order: Order!) : OrderRequest,
+  orderOptRequest(order: OrderOpt!) : OrderRequest,
+  orderOptWithNullDefaultsRequest(order: OrderOptWithNullDefaults!) : OrderRequest,
+  orderOptWithSomeDefaultsRequest(order: OrderOptWithSomeDefaults!) : OrderRequest,
+}
