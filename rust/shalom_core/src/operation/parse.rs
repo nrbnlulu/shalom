@@ -158,7 +158,7 @@ fn parse_operation(
             .unwrap();
         assert!(
             matches!(ty, GraphQLAny::Scalar(_)) || matches!(ty, GraphQLAny::InputObject(_)),
-            "non scalar arguments have not been implemented"
+            "other argument types have not been implemented"
         );
         let is_input_object = matches!(ty, GraphQLAny::InputObject(_));
         let variable_definition = VariableDefinition {
