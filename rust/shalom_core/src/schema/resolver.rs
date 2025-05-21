@@ -66,7 +66,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
                 resolve_enum(ctx.clone(), name.to_string(), enum_.clone());
             }
             apollo_schema::ExtendedType::InputObject(input) => {
-                resolve_input(ctx.clone(), name.to_string(), input.clone());
+                resolve_input(&ctx, name.to_string(), input.clone());
             }
             _ => todo!(
                 "Unsupported type in schema {:?}: {:?}",
@@ -108,7 +108,7 @@ fn resolve_object(
     let mut fields = Vec::new();
     for (name, field) in origin.fields.iter() {
         let name = name.to_string();
-        let ty = resolve_type(context.clone(), field.ty.clone());
+        let ty = resolve_type(&context, field.ty.clone());
         let description = field.description.as_ref().map(|v| v.to_string());
         let arguments = vec![];
         fields.push(FieldDefinition {
@@ -153,7 +153,7 @@ fn resolve_enum(context: SharedSchemaContext, name: String, origin: Node<apollo_
 
 #[allow(unused)]
 fn resolve_input(
-    context: SharedSchemaContext,
+    context: &SharedSchemaContext,
     name: String,
     origin: Node<apollo_schema::InputObjectType>,
 ) {
@@ -163,7 +163,7 @@ fn resolve_input(
     let mut inputs = HashMap::new();
     for (name, field) in origin.fields.iter() {
         let description = field.description.as_ref().map(|v| v.to_string());
-        let ty = resolve_type(context.clone(), field.ty.item_type().clone());
+        let ty = resolve_type(context, field.ty.item_type().clone());
         let gpl_ty = context.get_type(&ty.name()).unwrap();
         assert!(
             matches!(gpl_ty, GraphQLAny::Scalar(_)) | matches!(gpl_ty, GraphQLAny::InputObject(_)),
@@ -189,7 +189,7 @@ fn resolve_input(
     context.add_input(name, Node::new(input_object));
 }
 
-pub fn resolve_type(_context: SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {
+pub fn resolve_type(_context: &SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {
     match origin {
         apollo_schema::Type::Named(named) => FieldType::Named(named.to_string()),
         apollo_schema::Type::NonNullNamed(non_null) => {

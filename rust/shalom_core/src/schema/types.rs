@@ -80,7 +80,7 @@ impl GraphQLAny {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-#[serde(untagged)]
+#[serde(tag = "kind", content = "value")]
 pub enum FieldType {
     Named(GlobalName),
     NonNullNamed(GlobalName),
