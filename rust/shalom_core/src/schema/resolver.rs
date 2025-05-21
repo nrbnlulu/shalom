@@ -3,7 +3,7 @@ use super::types::{
     EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, InputObjectType,
     InputValueDefinition, ObjectType, ScalarType,
 };
-use anyhow::{Context, Result};
+use anyhow::Result;
 use apollo_compiler::{self};
 use apollo_compiler::{schema as apollo_schema, Node};
 use log::{debug, info};
@@ -164,7 +164,7 @@ fn resolve_input(
     for (name, field) in origin.fields.iter() {
         let description = field.description.as_ref().map(|v| v.to_string());
         let ty = resolve_type(context.clone(), field.ty.item_type().clone());
-        let gpl_ty =  context.get_type(&ty.name()).unwrap(); 
+        let gpl_ty = context.get_type(&ty.name()).unwrap();
         assert!(
             matches!(gpl_ty, GraphQLAny::Scalar(_)) | matches!(gpl_ty, GraphQLAny::InputObject(_)),
             "other input types have not been implemented"
