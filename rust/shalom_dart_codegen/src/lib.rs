@@ -4,10 +4,7 @@ use log::{info, trace};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use shalom_core::{
-    operation::{
-        context::OperationContext,
-        types::{Selection, VariableDefinition},
-    },
+    operation::{context::OperationContext, types::Selection},
     schema::{
         context::{SchemaContext, SharedSchemaContext},
         types::{GraphQLAny, InputValueDefinition},
@@ -74,26 +71,6 @@ mod ext_jinja_fns {
     }
 
     #[allow(unused_variables)]
-    pub fn type_name_for_variable(
-        schema_ctx: &SchemaContext,
-        variable: ViaDeserialize<VariableDefinition>,
-    ) -> String {
-        let ty_name = variable.0.ty.name();
-        let resolved = match variable.0.ty {
-            GraphQLAny::Scalar(_) => DEFAULT_SCALARS_MAP.get(&ty_name).unwrap().clone(),
-            GraphQLAny::InputObject(_) => ty_name,
-            _ => unimplemented!("input type not supported"),
-        };
-        if variable.is_optional && variable.default_value.is_none() {
-            format!("Option<{}?>", resolved)
-        } else if variable.is_optional {
-            format!("{}?", resolved)
-        } else {
-            resolved
-        }
-    }
-
-    #[allow(unused_variables)]
     pub fn type_name_for_input(
         schema_ctx: &SchemaContext,
         input: ViaDeserialize<InputValueDefinition>,
@@ -114,8 +91,8 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn parse_variable_default_value(variable: ViaDeserialize<VariableDefinition>) -> String {
-        let default_value = variable.0.default_value;
+    pub fn parse_input_default_value(input: ViaDeserialize<InputValueDefinition>) -> String {
+        let default_value = input.0.default_value;
         if default_value.is_none() {
             panic!("cannot parse default value that does not exist")
         }
@@ -123,20 +100,11 @@ mod ext_jinja_fns {
         default_value.to_string()
     }
 
-    pub fn parse_input_default_value(variable: ViaDeserialize<InputValueDefinition>) -> String {
-        let default_value = variable.0.default_value;
-        if default_value.is_none() {
-            panic!("cannot parse default value that does not exist")
-        }
-        let default_value = default_value.unwrap();
-        default_value.to_string()
-    }
-
-    pub fn input_field_is_input_object(
+    pub fn is_input_object(
         schema_ctx: &SchemaContext,
         input: ViaDeserialize<InputValueDefinition>,
     ) -> bool {
-        let ty = schema_ctx.get_type(&input.ty.name()).unwrap();
+        let ty = schema_ctx.get_type(&input.0.ty.name()).unwrap();
         matches!(ty, GraphQLAny::InputObject(_))
     }
 
@@ -188,26 +156,20 @@ impl TemplateEnv<'_> {
         .unwrap();
         env.add_template("schema", include_str!("../templates/schema.dart.jinja"))
             .unwrap();
+        env.add_template("macros", include_str!("../templates/macros.dart.jinja"))
+            .unwrap();
         let schema_ctx_clone = schema_ctx.clone();
         env.add_function("type_name_for_selection", move |a: _| {
             ext_jinja_fns::type_name_for_selection(&schema_ctx_clone, a)
         });
         let schema_ctx_clone = schema_ctx.clone();
-        env.add_function("type_name_for_variable", move |a: _| {
-            ext_jinja_fns::type_name_for_variable(&schema_ctx_clone, a)
-        });
-        let schema_ctx_clone = schema_ctx.clone();
-        env.add_function("input_field_is_input_object", move |a: _| {
-            ext_jinja_fns::input_field_is_input_object(&schema_ctx_clone, a)
-        });
-        let schema_ctx_clone = schema_ctx.clone();
         env.add_function("type_name_for_input", move |a: _| {
             ext_jinja_fns::type_name_for_input(&schema_ctx_clone, a)
         });
-        env.add_function(
-            "parse_variable_default_value",
-            ext_jinja_fns::parse_variable_default_value,
-        );
+        let schema_ctx_clone = schema_ctx.clone();
+        env.add_function("is_input_object", move |a: _| {
+            ext_jinja_fns::is_input_object(&schema_ctx_clone, a)
+        });
         env.add_function(
             "parse_input_default_value",
             ext_jinja_fns::parse_input_default_value,
@@ -236,6 +198,7 @@ impl TemplateEnv<'_> {
         let template = self.env.get_template("schema").unwrap();
         let mut context = HashMap::new();
         context.insert("schema", context! {context => schema_ctx});
+        println!("{:?}", context);
         trace!("resolved schema template; rendering...");
         template.render(&context).unwrap()
     }

@@ -1,4 +1,5 @@
 // ignore_for_file: constant_identifier_names
+
 import 'package:shalom_core/shalom_core.dart';
 
 // ------------ Enum DEFINITIONS -------------

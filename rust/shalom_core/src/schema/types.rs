@@ -254,8 +254,8 @@ pub struct FieldDefinition {
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct InputValueDefinition {
-    pub description: Option<String>,
     pub name: String,
+    pub description: Option<String>,
     pub ty: FieldType,
     pub is_optional: bool,
     pub default_value: Option<Node<Value>>,

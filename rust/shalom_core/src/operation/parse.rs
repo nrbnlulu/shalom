@@ -8,9 +8,9 @@ use apollo_compiler::{
 use log::{info, trace};
 
 use crate::context::SharedShalomGlobalContext;
-use crate::operation::types::{ObjectSelection, VariableDefinition};
+use crate::operation::types::ObjectSelection;
 use crate::schema::context::SharedSchemaContext;
-use crate::schema::types::{EnumType, GraphQLAny, ScalarType};
+use crate::schema::types::{EnumType, FieldType, GraphQLAny, InputValueDefinition, ScalarType};
 
 use super::context::{OperationContext, SharedOpCtx};
 use super::types::{
@@ -152,23 +152,19 @@ fn parse_operation(
     for variable in op.variables.iter() {
         let name = variable.name.to_string();
         let is_optional = !variable.ty.is_non_null();
-        let ty = global_ctx
-            .schema_ctx
-            .get_type(variable.ty.inner_named_type().as_str())
-            .unwrap();
-        assert!(
-            matches!(ty, GraphQLAny::Scalar(_)) || matches!(ty, GraphQLAny::InputObject(_)),
-            "other argument types have not been implemented"
-        );
-        let is_input_object = matches!(ty, GraphQLAny::InputObject(_));
-        let variable_definition = VariableDefinition {
+        let ty = FieldType::Named(variable.ty.inner_named_type().to_string());
+        // assert!(
+        //     matches!(ty, GraphQLAny::Scalar(_)) || matches!(ty, GraphQLAny::InputObject(_)),
+        //     "other argument types have not been implemented"
+        // );
+        let input_definition = InputValueDefinition {
+            description: None,
             name: name.clone(),
             ty,
             is_optional,
-            is_input_object,
             default_value: variable.default_value.clone(),
         };
-        ctx.add_variable(name, variable_definition);
+        ctx.add_variable(name, input_definition);
     }
     let selection_common = SelectionCommon {
         full_name: name.clone(),

@@ -1,0 +1,43 @@
+
+{% macro input_to_json_logic(inputs) %}
+{% for name, input in inputs | items %}
+    {% if input.is_optional and input.default_value is none %}  
+        if ({{ name }}.isSome()) {
+            {% if is_input_object(input) %} 
+                data["{{ name }}"] = {{ name }}.some()?.toJson();   
+            {% else %}
+                data["{{ name }}"] = {{ name }}.some();
+            {% endif %}
+        } 
+    {% else %}
+        {% if is_input_object(input) %}
+            data["{{ name }}"] = {{ name }}.toJson();
+        {% else %}
+            data["{{ name }}"] = {{ name }}; 
+        {% endif %}
+    {% endif %}
+{% endfor %}
+{% endmacro %}
+
+{% macro input_initialization_logic(inputs) %}
+{% for name, input in inputs | items %}
+    {% if not input.is_optional %}
+        {% if input.default_value is not none  %} 
+            required this.{{ name }} = {{ parse_input_default_value(input) }}
+        {% else %}
+            required this.{{name}}  
+        {% endif %},
+    {% else %}
+        {% if input.default_value is not none %} 
+            {% set default_value = parse_input_default_value(input) %}
+            {% if default_value == "null" %}
+                this.{{ name }} 
+            {% else %}
+                this.{{ name }} = {{ default_value }}
+            {% endif %}
+        {% else %} 
+            this.{{ name }} = const None() 
+        {% endif %},
+    {% endif %}
+    {% endfor %}  
+{% endmacro %}
