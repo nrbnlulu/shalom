@@ -62,6 +62,7 @@ impl SchemaTypesCtx {
     pub fn add_scalar(&mut self, name: String, type_: Node<ScalarType>) {
         self.scalars.insert(name, type_);
     }
+
     pub fn get_any(&self, name: &str) -> Option<GraphQLAny> {
         if let Some(v) = self.inputs.get(name) {
             return Some(GraphQLAny::InputObject(v.clone()));
@@ -131,6 +132,12 @@ impl SchemaContext {
     pub fn add_enum(&self, name: String, type_: Node<EnumType>) -> anyhow::Result<()> {
         let mut types_ctx = self.get_types();
         types_ctx.add_enum(name, type_);
+        Ok(())
+    }
+
+    pub fn add_input(&self, name: String, type_: Node<InputObjectType>) -> anyhow::Result<()> {
+        let mut types_ctx = self.get_types();
+        types_ctx.add_input(name, type_);
         Ok(())
     }
 }

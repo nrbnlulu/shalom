@@ -1,0 +1,8 @@
+
+query GetSpecificOrder($id: ID!, $specificOrder: SpecificOrder!) {
+  getSpecificOrder(id: $id, specificOrder: $specificOrder) {
+    quantity, 
+    price,
+    name
+  }
+}
