@@ -236,7 +236,7 @@ pub struct EnumValueDefinition {
 pub struct InputObjectType {
     pub description: Option<String>,
     pub name: String,
-    pub fields: HashMap<String, InputValueDefinition>,
+    pub fields: HashMap<String, InputFieldDefinition>,
 }
 impl Hash for InputObjectType {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -248,12 +248,12 @@ pub struct FieldDefinition {
     pub name: String,
     pub ty: FieldType,
     #[serde(skip_serializing)]
-    pub arguments: Vec<InputValueDefinition>,
+    pub arguments: Vec<InputFieldDefinition>,
     pub description: Option<String>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct InputValueDefinition {
+pub struct InputFieldDefinition {
     pub name: String,
     pub description: Option<String>,
     pub ty: FieldType,

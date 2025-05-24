@@ -1,7 +1,7 @@
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{
-    EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, InputObjectType,
-    InputValueDefinition, ObjectType, ScalarType,
+    EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, InputFieldDefinition,
+    InputObjectType, ObjectType, ScalarType,
 };
 use anyhow::Result;
 use apollo_compiler::{self};
@@ -171,7 +171,7 @@ fn resolve_input(
         );
         let is_optional = !field.ty.is_non_null();
         let default_value = field.default_value.clone();
-        let input_value_definition = InputValueDefinition {
+        let input_value_definition = InputFieldDefinition {
             name: name.to_string(),
             description,
             ty,

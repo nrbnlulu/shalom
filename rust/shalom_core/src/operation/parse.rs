@@ -10,7 +10,7 @@ use log::{info, trace};
 use crate::context::SharedShalomGlobalContext;
 use crate::operation::types::ObjectSelection;
 use crate::schema::context::SharedSchemaContext;
-use crate::schema::types::{EnumType, FieldType, GraphQLAny, InputValueDefinition, ScalarType};
+use crate::schema::types::{EnumType, FieldType, GraphQLAny, InputFieldDefinition, ScalarType};
 
 use super::context::{OperationContext, SharedOpCtx};
 use super::types::{
@@ -158,7 +158,7 @@ fn parse_operation(
             matches!(gpl_ty, GraphQLAny::Scalar(_)) | matches!(gpl_ty, GraphQLAny::InputObject(_)),
             "other argument types have not been implemented"
         );
-        let input_definition = InputValueDefinition {
+        let input_definition = InputFieldDefinition {
             description: None,
             name: name.clone(),
             ty,

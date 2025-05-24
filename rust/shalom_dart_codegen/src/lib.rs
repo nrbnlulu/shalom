@@ -7,7 +7,7 @@ use shalom_core::{
     operation::{context::OperationContext, types::Selection},
     schema::{
         context::{SchemaContext, SharedSchemaContext},
-        types::{GraphQLAny, InputValueDefinition},
+        types::{GraphQLAny, InputFieldDefinition},
     },
 };
 use std::{
@@ -73,7 +73,7 @@ mod ext_jinja_fns {
     #[allow(unused_variables)]
     pub fn type_name_for_input(
         schema_ctx: &SchemaContext,
-        input: ViaDeserialize<InputValueDefinition>,
+        input: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
         let ty_name = input.0.ty.name();
         let ty = schema_ctx.get_type(&ty_name).unwrap();
@@ -91,7 +91,7 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn parse_input_default_value(input: ViaDeserialize<InputValueDefinition>) -> String {
+    pub fn parse_input_default_value(input: ViaDeserialize<InputFieldDefinition>) -> String {
         let default_value = input.0.default_value;
         if default_value.is_none() {
             panic!("cannot parse default value that does not exist")
@@ -102,7 +102,7 @@ mod ext_jinja_fns {
 
     pub fn is_input_object(
         schema_ctx: &SchemaContext,
-        input: ViaDeserialize<InputValueDefinition>,
+        input: ViaDeserialize<InputFieldDefinition>,
     ) -> bool {
         let ty = schema_ctx.get_type(&input.0.ty.name()).unwrap();
         matches!(ty, GraphQLAny::InputObject(_))
