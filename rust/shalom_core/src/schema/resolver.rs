@@ -151,7 +151,6 @@ fn resolve_enum(context: SharedSchemaContext, name: String, origin: Node<apollo_
     context.add_enum(name.clone(), Node::new(enum_type));
 }
 
-#[allow(unused)]
 fn resolve_input(
     context: &SharedSchemaContext,
     name: String,
@@ -186,7 +185,7 @@ fn resolve_input(
         name: name.clone(),
         fields: inputs,
     };
-    context.add_input(name, Node::new(input_object));
+    context.add_input(name, Node::new(input_object)).unwrap();
 }
 
 pub fn resolve_type(_context: &SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {
