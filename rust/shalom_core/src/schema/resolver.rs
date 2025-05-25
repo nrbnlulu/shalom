@@ -164,9 +164,9 @@ fn resolve_input(
     for (name, field) in origin.fields.iter() {
         let description = field.description.as_ref().map(|v| v.to_string());
         let ty = resolve_type(context, field.ty.item_type().clone());
-        let gpl_ty = context.get_type(&ty.name()).unwrap();
+        let gql_ty = context.get_type(&ty.name()).unwrap();
         assert!(
-            matches!(gpl_ty, GraphQLAny::Scalar(_)) | matches!(gpl_ty, GraphQLAny::InputObject(_)),
+            matches!(gql_ty, GraphQLAny::Scalar(_)) | matches!(gql_ty, GraphQLAny::InputObject(_)),
             "other input types have not been implemented"
         );
         let is_optional = !field.ty.is_non_null();

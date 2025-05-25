@@ -153,9 +153,9 @@ fn parse_operation(
         let name = variable.name.to_string();
         let is_optional = !variable.ty.is_non_null();
         let ty = FieldType::Named(variable.ty.inner_named_type().to_string());
-        let gpl_ty = global_ctx.schema_ctx.get_type(&ty.name()).unwrap();
+        let gql_ty = global_ctx.schema_ctx.get_type(&ty.name()).unwrap();
         assert!(
-            matches!(gpl_ty, GraphQLAny::Scalar(_)) | matches!(gpl_ty, GraphQLAny::InputObject(_)),
+            matches!(gql_ty, GraphQLAny::Scalar(_)) | matches!(gql_ty, GraphQLAny::InputObject(_)),
             "other argument types have not been implemented"
         );
         let input_definition = InputValueDefinition {
