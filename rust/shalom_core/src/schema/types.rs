@@ -79,6 +79,7 @@ impl GraphQLAny {
     }
 }
 
+
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(tag = "kind", content = "value")]
 pub enum FieldType {
