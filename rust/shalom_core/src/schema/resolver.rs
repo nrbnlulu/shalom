@@ -66,7 +66,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
                 resolve_enum(ctx.clone(), name.to_string(), enum_.clone());
             }
             apollo_schema::ExtendedType::InputObject(input) => {
-                resolve_input(&ctx, name.to_string(), input.clone());
+                resolve_input(&ctx, name.to_string(), &input);
             }
             _ => todo!(
                 "Unsupported type in schema {:?}: {:?}",
@@ -108,7 +108,7 @@ fn resolve_object(
     let mut fields = Vec::new();
     for (name, field) in origin.fields.iter() {
         let name = name.to_string();
-        let ty = resolve_type(&context, field.ty.clone());
+        let ty = resolve_type(&context, &field.ty);
         let description = field.description.as_ref().map(|v| v.to_string());
         let arguments = vec![];
         fields.push(FieldDefinition {
@@ -154,15 +154,15 @@ fn resolve_enum(context: SharedSchemaContext, name: String, origin: Node<apollo_
 fn resolve_input(
     context: &SharedSchemaContext,
     name: String,
-    origin: Node<apollo_schema::InputObjectType>,
+    origin: &apollo_schema::InputObjectType,
 ) {
     if context.get_type(&name).is_some() {
         return;
     }
-    let mut inputs = HashMap::new();
+    let mut fields = HashMap::new();
     for (name, field) in origin.fields.iter() {
         let description = field.description.as_ref().map(|v| v.to_string());
-        let ty = resolve_type(context, field.ty.item_type().clone());
+        let ty = resolve_type(context, &field.ty);
         let gql_ty = context.get_type(&ty.name()).unwrap();
         assert!(
             matches!(gql_ty, GraphQLAny::Scalar(_)) | matches!(gql_ty, GraphQLAny::InputObject(_)),
@@ -177,28 +177,28 @@ fn resolve_input(
             is_optional,
             default_value,
         };
-        inputs.insert(name.to_string(), input_value_definition);
+        fields.insert(name.to_string(), input_value_definition);
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
     let input_object = InputObjectType {
         description,
         name: name.clone(),
-        fields: inputs,
+        fields,
     };
     context.add_input(name, Node::new(input_object)).unwrap();
 }
 
-pub fn resolve_type(_context: &SharedSchemaContext, origin: apollo_schema::Type) -> FieldType {
+pub fn resolve_type(_context: &SharedSchemaContext, origin: &apollo_schema::Type) -> FieldType {
     match origin {
         apollo_schema::Type::Named(named) => FieldType::Named(named.to_string()),
         apollo_schema::Type::NonNullNamed(non_null) => {
             FieldType::NonNullNamed(non_null.as_str().to_string())
         }
         apollo_schema::Type::List(of_type) => {
-            FieldType::List(Box::new(resolve_type(_context, *of_type)))
+            FieldType::List(Box::new(resolve_type(_context, &of_type)))
         }
         apollo_schema::Type::NonNullList(of_type) => {
-            FieldType::NonNullList(Box::new(resolve_type(_context, *of_type)))
+            FieldType::NonNullList(Box::new(resolve_type(_context, &of_type)))
         }
     }
 }
