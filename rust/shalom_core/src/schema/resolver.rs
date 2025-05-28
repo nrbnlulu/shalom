@@ -170,14 +170,15 @@ fn resolve_input(
         );
         let is_optional = !field.ty.is_non_null();
         let default_value = field.default_value.clone();
-        let input_value_definition = InputFieldDefinition {
-            name: name.to_string(),
+        let name = name.to_string();
+        let input_field_definition = InputFieldDefinition {
+            name: name.clone(),
             description,
             ty,
             is_optional,
             default_value,
         };
-        fields.insert(name.to_string(), input_value_definition);
+        fields.insert(name, input_field_definition);
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
     let input_object = InputObjectType {
@@ -188,17 +189,17 @@ fn resolve_input(
     context.add_input(name, Node::new(input_object)).unwrap();
 }
 
-pub fn resolve_type(_context: &SharedSchemaContext, origin: &apollo_schema::Type) -> FieldType {
+pub fn resolve_type(context: &SharedSchemaContext, origin: &apollo_schema::Type) -> FieldType {
     match origin {
         apollo_schema::Type::Named(named) => FieldType::Named(named.to_string()),
         apollo_schema::Type::NonNullNamed(non_null) => {
             FieldType::NonNullNamed(non_null.as_str().to_string())
         }
         apollo_schema::Type::List(of_type) => {
-            FieldType::List(Box::new(resolve_type(_context, &of_type)))
+            FieldType::List(Box::new(resolve_type(context, &of_type)))
         }
         apollo_schema::Type::NonNullList(of_type) => {
-            FieldType::NonNullList(Box::new(resolve_type(_context, &of_type)))
+            FieldType::NonNullList(Box::new(resolve_type(context, &of_type)))
         }
     }
 }
