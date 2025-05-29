@@ -76,7 +76,7 @@ mod ext_jinja_fns {
         input: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
         let ty_name = input.0.ty.name();
-        let ty = schema_ctx.get_type(&ty_name).unwrap();
+        let ty = input.resolve_type(schema_ctx);
         let resolved = match ty {
             GraphQLAny::Scalar(_) => DEFAULT_SCALARS_MAP.get(&ty_name).unwrap().clone(),
             GraphQLAny::InputObject(_) => ty_name,
@@ -100,11 +100,11 @@ mod ext_jinja_fns {
         default_value.to_string()
     }
 
-    pub fn is_input_object(
+    pub fn is_field_object(
         schema_ctx: &SchemaContext,
         input: ViaDeserialize<InputFieldDefinition>,
     ) -> bool {
-        let ty = schema_ctx.get_type(&input.0.ty.name()).unwrap();
+        let ty = input.resolve_type(schema_ctx);
         matches!(ty, GraphQLAny::InputObject(_))
     }
 
@@ -167,8 +167,8 @@ impl TemplateEnv<'_> {
             ext_jinja_fns::type_name_for_input(&schema_ctx_clone, a)
         });
         let schema_ctx_clone = schema_ctx.clone();
-        env.add_function("is_input_object", move |a: _| {
-            ext_jinja_fns::is_input_object(&schema_ctx_clone, a)
+        env.add_function("is_field_object", move |a: _| {
+            ext_jinja_fns::is_field_object(&schema_ctx_clone, a)
         });
         env.add_function(
             "parse_input_default_value",

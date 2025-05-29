@@ -218,14 +218,14 @@ class {{ operation_name }}Variables {
     {{ operation_name }}Variables(
         {% if op_variables | length > 0 %}
             {
-            {{ input_initialization_logic(op_variables) }} 
+            {{ field_initialization_logic(op_variables) }} 
             }
         {% endif %}
     );
 
     JsonObject toJson() {
         JsonObject data = {};
-        {{ input_to_json_logic(op_variables) }}    
+        {{ field_to_json_logic(op_variables) }}    
         return data;
     } 
 }

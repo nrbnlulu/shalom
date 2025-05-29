@@ -37,13 +37,13 @@ class {{ typename }} {
     {% endfor %}
     {{ typename }}(
         {
-        {{ input_initialization_logic(fields) }} 
+        {{ field_initialization_logic(fields) }} 
         }
     );
 
     JsonObject toJson() {
         JsonObject data = {};
-        {{ input_to_json_logic(fields) }}    
+        {{ field_to_json_logic(fields) }}    
         return data;
     } 
 }

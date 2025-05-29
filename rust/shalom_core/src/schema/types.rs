@@ -261,3 +261,10 @@ pub struct InputFieldDefinition {
     pub is_optional: bool,
     pub default_value: Option<Node<Value>>,
 }
+
+impl InputFieldDefinition {
+    pub fn resolve_type(&self, schema_ctx: &SchemaContext) -> GraphQLAny {
+        let ty = schema_ctx.get_type(&self.name).unwrap(); 
+        return ty
+    }
+}
