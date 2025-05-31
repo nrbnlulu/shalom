@@ -37,6 +37,8 @@ const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
 
+    use shalom_core::schema::types::FieldType;
+
     use super::*;
 
     #[allow(unused_variables)]
@@ -100,11 +102,8 @@ mod ext_jinja_fns {
         default_value.to_string()
     }
 
-    pub fn is_input_type(
-        schema_ctx: &SchemaContext,
-        input: ViaDeserialize<InputFieldDefinition>,
-    ) -> bool {
-        let ty = input.resolve_type(schema_ctx);
+    pub fn is_input_type(schema_ctx: &SchemaContext, ty: ViaDeserialize<FieldType>) -> bool {
+        let ty = schema_ctx.get_type(&ty.0.name()).unwrap();
         matches!(ty, GraphQLAny::InputObject(_))
     }
 
