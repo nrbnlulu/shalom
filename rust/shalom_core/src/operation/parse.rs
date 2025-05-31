@@ -158,11 +158,6 @@ fn parse_operation(
             Type::NonNullNamed(name) => FieldType::NonNullNamed(name.to_string()),
             _ => unimplemented!("list types have not been implemented"),
         };
-        let gql_ty = global_ctx.schema_ctx.get_type(&ty.name()).unwrap();
-        assert!(
-            matches!(gql_ty, GraphQLAny::Scalar(_)) | matches!(gql_ty, GraphQLAny::InputObject(_)),
-            "other argument types have not been implemented"
-        );
         let input_definition = InputFieldDefinition {
             description: None,
             name: name.clone(),
