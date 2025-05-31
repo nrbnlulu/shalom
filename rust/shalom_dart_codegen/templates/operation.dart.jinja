@@ -212,7 +212,7 @@ class Request{{ operation_name }} extends Requestable {
 {% if op_variables | length > 0 %}
 class {{ operation_name }}Variables {
     {% for name, variable in op_variables | items %}
-        final {{ type_name_for_input(variable) }} {{ name }};
+        final {{ type_name_for_field(variable) }} {{ name }};
     {% endfor %}
 
     {{ operation_name }}Variables(

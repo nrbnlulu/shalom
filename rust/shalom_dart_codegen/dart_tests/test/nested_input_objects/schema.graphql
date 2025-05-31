@@ -9,6 +9,10 @@ input SpecificOrder {
     notes: String!
 }
 
+input OrderRecursive {
+  order: OrderRecursive, 
+} 
+
 type OrderRequest {
   quantity: Int, 
   name: String,
@@ -17,6 +21,10 @@ type OrderRequest {
 
 type Query {
   getSpecificOrder(id: ID!, specificOrder: SpecificOrder!) : OrderRequest 
+}
+
+type Mutation {
+  orderRecursive(order: OrderRecursive) : OrderRequest,
 }
 
 

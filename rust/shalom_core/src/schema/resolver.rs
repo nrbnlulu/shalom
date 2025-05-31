@@ -66,7 +66,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
                 resolve_enum(ctx.clone(), name.to_string(), enum_.clone());
             }
             apollo_schema::ExtendedType::InputObject(input) => {
-                resolve_input(&ctx, name.to_string(), &input);
+                resolve_input(&ctx, name.to_string(), input);
             }
             _ => todo!(
                 "Unsupported type in schema {:?}: {:?}",
@@ -163,11 +163,6 @@ fn resolve_input(
     for (name, field) in origin.fields.iter() {
         let description = field.description.as_ref().map(|v| v.to_string());
         let ty = resolve_type(context, &field.ty);
-        let gql_ty = context.get_type(&ty.name()).unwrap();
-        assert!(
-            matches!(gql_ty, GraphQLAny::Scalar(_)) | matches!(gql_ty, GraphQLAny::InputObject(_)),
-            "other input types have not been implemented"
-        );
         let is_optional = !field.ty.is_non_null();
         let default_value = field.default_value.clone();
         let name = name.to_string();
@@ -189,17 +184,17 @@ fn resolve_input(
     context.add_input(name, Node::new(input_object)).unwrap();
 }
 
-pub fn resolve_type(context: &SharedSchemaContext, origin: &apollo_schema::Type) -> FieldType {
+pub fn resolve_type(_context: &SharedSchemaContext, origin: &apollo_schema::Type) -> FieldType {
     match origin {
         apollo_schema::Type::Named(named) => FieldType::Named(named.to_string()),
         apollo_schema::Type::NonNullNamed(non_null) => {
             FieldType::NonNullNamed(non_null.as_str().to_string())
         }
         apollo_schema::Type::List(of_type) => {
-            FieldType::List(Box::new(resolve_type(context, &of_type)))
+            FieldType::List(Box::new(resolve_type(_context, of_type)))
         }
         apollo_schema::Type::NonNullList(of_type) => {
-            FieldType::NonNullList(Box::new(resolve_type(context, &of_type)))
+            FieldType::NonNullList(Box::new(resolve_type(_context, of_type)))
         }
     }
 }

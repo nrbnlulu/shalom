@@ -71,7 +71,7 @@ mod ext_jinja_fns {
     }
 
     #[allow(unused_variables)]
-    pub fn type_name_for_input(
+    pub fn type_name_for_field(
         schema_ctx: &SchemaContext,
         input: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
@@ -91,7 +91,7 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn parse_input_default_value(input: ViaDeserialize<InputFieldDefinition>) -> String {
+    pub fn parse_field_default_value(input: ViaDeserialize<InputFieldDefinition>) -> String {
         let default_value = input.0.default_value;
         if default_value.is_none() {
             panic!("cannot parse default value that does not exist")
@@ -100,7 +100,7 @@ mod ext_jinja_fns {
         default_value.to_string()
     }
 
-    pub fn is_field_object(
+    pub fn is_input_type(
         schema_ctx: &SchemaContext,
         input: ViaDeserialize<InputFieldDefinition>,
     ) -> bool {
@@ -163,16 +163,16 @@ impl TemplateEnv<'_> {
             ext_jinja_fns::type_name_for_selection(&schema_ctx_clone, a)
         });
         let schema_ctx_clone = schema_ctx.clone();
-        env.add_function("type_name_for_input", move |a: _| {
-            ext_jinja_fns::type_name_for_input(&schema_ctx_clone, a)
+        env.add_function("type_name_for_field", move |a: _| {
+            ext_jinja_fns::type_name_for_field(&schema_ctx_clone, a)
         });
         let schema_ctx_clone = schema_ctx.clone();
-        env.add_function("is_field_object", move |a: _| {
-            ext_jinja_fns::is_field_object(&schema_ctx_clone, a)
+        env.add_function("is_input_type", move |a: _| {
+            ext_jinja_fns::is_input_type(&schema_ctx_clone, a)
         });
         env.add_function(
-            "parse_input_default_value",
-            ext_jinja_fns::parse_input_default_value,
+            "parse_field_default_value",
+            ext_jinja_fns::parse_field_default_value,
         );
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
@@ -198,7 +198,6 @@ impl TemplateEnv<'_> {
         let template = self.env.get_template("schema").unwrap();
         let mut context = HashMap::new();
         context.insert("schema", context! {context => schema_ctx});
-        println!("{:?}", context);
         trace!("resolved schema template; rendering...");
         template.render(&context).unwrap()
     }

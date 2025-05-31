@@ -154,13 +154,9 @@ fn parse_operation(
         let name = variable.name.to_string();
         let is_optional = !variable.ty.is_non_null();
         let ty = match variable.ty.item_type() {
-            Type::Named(name)  => {
-                FieldType::Named(name.to_string()) 
-            }, 
-            Type::NonNullNamed(name) => {
-                FieldType::NonNullNamed(name.to_string())
-            },
-            _ => unimplemented!("list types have not been implemented")
+            Type::Named(name) => FieldType::Named(name.to_string()),
+            Type::NonNullNamed(name) => FieldType::NonNullNamed(name.to_string()),
+            _ => unimplemented!("list types have not been implemented"),
         };
         let gql_ty = global_ctx.schema_ctx.get_type(&ty.name()).unwrap();
         assert!(

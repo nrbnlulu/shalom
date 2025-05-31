@@ -33,7 +33,7 @@ import 'package:shalom_core/shalom_core.dart';
 class {{ typename }} {
     {% set fields = input_object.fields %}
     {% for name, field in fields | items %}
-        final {{ type_name_for_input(field) }} {{ name }}; 
+        final {{ type_name_for_field(field) }} {{ name }}; 
     {% endfor %}
     {{ typename }}(
         {

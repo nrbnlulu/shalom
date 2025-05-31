@@ -6,3 +6,13 @@ query GetSpecificOrder($id: ID!, $specificOrder: SpecificOrder!) {
     name
   }
 }
+
+mutation OrderRecursive($order: OrderRecursive) {
+  orderRecursive(order: $order) {
+    quantity,
+    name,
+    price
+  }
+} 
+
+

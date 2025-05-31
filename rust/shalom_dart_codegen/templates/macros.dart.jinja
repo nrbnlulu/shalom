@@ -3,14 +3,14 @@
 {% for name, field in fields | items %}
     {% if field.is_optional and field.default_value is none %}  
         if ({{ name }}.isSome()) {
-            {% if is_field_object(field) %} 
+            {% if is_input_type(field) %} 
                 data["{{ name }}"] = {{ name }}.some()?.toJson();   
             {% else %}
                 data["{{ name }}"] = {{ name }}.some();
             {% endif %}
         } 
     {% else %}
-        {% if is_field_object(field) %}
+        {% if is_input_type(field) %}
             data["{{ name }}"] = {{ name }}.toJson();
         {% else %}
             data["{{ name }}"] = {{ name }}; 

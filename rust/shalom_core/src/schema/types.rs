@@ -79,7 +79,6 @@ impl GraphQLAny {
     }
 }
 
-
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(tag = "kind", content = "value")]
 pub enum FieldType {
@@ -264,7 +263,6 @@ pub struct InputFieldDefinition {
 
 impl InputFieldDefinition {
     pub fn resolve_type(&self, schema_ctx: &SchemaContext) -> GraphQLAny {
-        let ty = schema_ctx.get_type(&self.name).unwrap(); 
-        return ty
+        schema_ctx.get_type(&self.ty.name()).unwrap()
     }
 }
