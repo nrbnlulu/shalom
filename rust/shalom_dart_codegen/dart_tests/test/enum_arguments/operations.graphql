@@ -1,0 +1,49 @@
+
+
+mutation UpdateOrderStatus($status: Status!) {
+    updateOrderStatus(status: $status) {
+        status,
+        quantity,
+        name, 
+        price
+    } 
+}
+
+mutation UpdateOrderStatusOpt($status: Status) {
+    updateOrderStatusOpt(status: $status) {
+        status,
+        quantity,
+        name, 
+        price
+    } 
+}
+
+mutation UpdateOrder($order: OrderUpdate!) {
+    updateOrder(order: $order) {
+        status,
+        quantity,
+        name, 
+        price
+    } 
+}
+
+mutation UpdateOrderWithStatusOpt($order: OrderUpdateStatusOpt!) {
+    updateOrderWithStatusOpt(order: $order) {
+        status,
+        quantity,
+        name, 
+        price
+    } 
+}
+
+query GetOrderByStatus($status: Status = SENT) {
+    getOrderByStatus(status: $status) {
+        status,
+        quantity,
+        name, 
+        price
+    } 
+}
+  
+  
+
