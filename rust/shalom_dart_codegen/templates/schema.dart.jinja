@@ -1,4 +1,8 @@
 // ignore_for_file: constant_identifier_names
+{% include "macros" %}
+{% if schema.context.types.inputs | length > 0 %}
+import 'package:shalom_core/shalom_core.dart';
+{% endif %}
 
 // ------------ Enum DEFINITIONS -------------
 {% for _, enum in schema.context.types.enums | items %}
@@ -23,3 +27,26 @@
       }
 {% endfor %}
 // ------------ END Enum DEFINITIONS -------------
+// ------------ Input DEFINITIONS -------------
+{% for _, input_object in schema.context.types.inputs | items %}
+{% set typename = input_object.name %}
+class {{ typename }} {
+    {% set fields = input_object.fields %}
+    {% for name, field in fields | items %}
+        final {{ type_name_for_field(field) }} {{ name }}; 
+    {% endfor %}
+    {{ typename }}(
+        {
+        {{ field_initialization_logic(fields) }} 
+        }
+    );
+
+    JsonObject toJson() {
+        JsonObject data = {};
+        {{ field_to_json_logic(fields) }}    
+        return data;
+    } 
+}
+     
+{% endfor %}
+// ------------ END Input DEFINITIONS -------------

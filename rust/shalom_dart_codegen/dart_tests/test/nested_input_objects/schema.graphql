@@ -1,0 +1,30 @@
+input Order {
+  quantity: Int!, 
+  name: String!,
+  price: Float!       
+} 
+
+input SpecificOrder {
+    order: Order!,
+    notes: String!
+}
+
+input OrderRecursive {
+  order: OrderRecursive, 
+} 
+
+type OrderRequest {
+  quantity: Int, 
+  name: String,
+  price: Float
+}
+
+type Query {
+  getSpecificOrder(id: ID!, specificOrder: SpecificOrder!) : OrderRequest 
+}
+
+type Mutation {
+  orderRecursive(order: OrderRecursive) : OrderRequest,
+}
+
+

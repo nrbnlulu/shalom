@@ -1,0 +1,43 @@
+
+{% macro field_to_json_logic(fields) %}
+{% for name, field in fields | items %}
+    {% if field.is_optional and field.default_value is none %}  
+        if ({{ name }}.isSome()) {
+            {% if is_input_type(field.ty) %} 
+                data["{{ name }}"] = {{ name }}.some()?.toJson();   
+            {% else %}
+                data["{{ name }}"] = {{ name }}.some();
+            {% endif %}
+        } 
+    {% else %}
+        {% if is_input_type(field.ty) %}
+            data["{{ name }}"] = {{ name }}.toJson();
+        {% else %}
+            data["{{ name }}"] = {{ name }}; 
+        {% endif %}
+    {% endif %}
+{% endfor %}
+{% endmacro %}
+
+{% macro field_initialization_logic(fields) %}
+{% for name, field in fields | items %}
+    {% if not field.is_optional %}
+        {% if field.default_value is not none  %} 
+            required this.{{ name }} = {{ parse_field_default_value(field) }}
+        {% else %}
+            required this.{{name}}  
+        {% endif %},
+    {% else %}
+        {% if field.default_value is not none %} 
+            {% set default_value = parse_field_default_value(field) %}
+            {% if default_value == "null" %}
+                this.{{ name }} 
+            {% else %}
+                this.{{ name }} = {{ default_value }}
+            {% endif %}
+        {% else %} 
+            this.{{ name }} = const None() 
+        {% endif %},
+    {% endif %}
+    {% endfor %}  
+{% endmacro %}

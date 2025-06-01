@@ -40,3 +40,6 @@ enum Status {
 }
 
 // ------------ END Enum DEFINITIONS -------------
+// ------------ Input DEFINITIONS -------------
+
+// ------------ END Input DEFINITIONS -------------

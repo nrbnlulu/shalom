@@ -1,4 +1,5 @@
-{% if schema.context.types.enums | length > 0 %}
+{% include "macros" %}
+{% if schema.context.types.enums | length > 0 or schema.context.types.inputs | length > 0%}
 import "schema.shalom.dart";
 {% endif %}
 import 'package:shalom_core/shalom_core.dart';
@@ -211,47 +212,20 @@ class Request{{ operation_name }} extends Requestable {
 {% if op_variables | length > 0 %}
 class {{ operation_name }}Variables {
     {% for name, variable in op_variables | items %}
-        final {{ type_name_for_variable(variable) }} {{ name }};
+        final {{ type_name_for_field(variable) }} {{ name }};
     {% endfor %}
 
     {{ operation_name }}Variables(
         {% if op_variables | length > 0 %}
             {
-            {% for name, variable in op_variables | items %}
-                {% if not variable.is_optional %}
-                    {% if variable.default_value is not none  %} 
-                        required this.{{ name }} = {{ parse_default_value(variable) }}
-                    {% else %}
-                        required this.{{name}}  
-                    {% endif %},
-                {% else %}
-                    {% if variable.default_value is not none %} 
-                        {% set default_value = parse_default_value(variable) %}
-                        {% if default_value == "null" %}
-                            this.{{ name }} 
-                        {% else %}
-                            this.{{ name }} = {{ default_value }}
-                        {% endif %}
-                    {% else %} 
-                        this.{{ name }} = const None() 
-                    {% endif %},
-                {% endif %}
-            {% endfor %}  
+            {{ field_initialization_logic(op_variables) }} 
             }
         {% endif %}
     );
 
     JsonObject toJson() {
         JsonObject data = {};
-        {% for name, variable in op_variables | items %}
-           {% if variable.is_optional and variable.default_value is none %}  
-               if ({{ name }}.isSome()) {
-                  data["{{ name }}"] = {{ name }}.some();
-               } 
-           {% else %}
-              data["{{ name }}"] = {{ name }}; 
-           {% endif %}
-        {% endfor %}
+        {{ field_to_json_logic(op_variables) }}    
         return data;
     } 
 }
