@@ -1,4 +1,3 @@
-use super::types::VariableDefinition;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
@@ -6,7 +5,7 @@ use std::rc::Rc;
 use serde::Serialize;
 
 use super::types::{FullPathName, OperationType, Selection, SharedObjectSelection};
-use crate::schema::context::SharedSchemaContext;
+use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 #[derive(Debug, Serialize)]
 pub struct OperationContext {
     #[serde(skip_serializing)]
@@ -15,7 +14,7 @@ pub struct OperationContext {
     operation_name: String,
     pub file_path: PathBuf,
     query: String,
-    variables: HashMap<String, VariableDefinition>,
+    variables: HashMap<String, InputFieldDefinition>,
     type_defs: HashMap<FullPathName, Selection>,
     root_type: Option<SharedObjectSelection>,
     op_ty: OperationType,
@@ -53,7 +52,7 @@ impl OperationContext {
         self.type_defs.entry(name.clone()).or_insert(selection);
     }
 
-    pub fn add_variable(&mut self, name: String, variable: VariableDefinition) {
+    pub fn add_variable(&mut self, name: String, variable: InputFieldDefinition) {
         self.variables.entry(name).or_insert(variable);
     }
 

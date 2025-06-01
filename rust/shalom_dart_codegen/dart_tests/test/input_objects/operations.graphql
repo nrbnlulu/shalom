@@ -1,0 +1,50 @@
+mutation OrderRequest($order: Order!) {
+   orderRequest(order: $order) {
+      quantity,
+      name,
+      price
+   }
+} 
+
+mutation OrderOptRequest($order: OrderOpt!) {
+  orderOptRequest(order: $order) {
+    quantity,
+    name,
+    price
+  }
+}
+
+mutation OptOrderRequest($order: Order) {
+  optOrderRequest(order: $order) {
+    quantity,
+    name,
+    price
+  }
+}
+
+mutation OrderOptWithNullDefaultsRequest($order: OrderOptWithNullDefaults!) {
+  orderOptWithNullDefaultsRequest(order: $order) {
+    quantity,
+    name,
+    price
+  }
+}
+
+mutation OrderOptWithSomeDefaultsRequest($order: OrderOptWithSomeDefaults!) {
+  orderOptWithSomeDefaultsRequest(order: $order) {
+    quantity,
+    name,
+    price
+  }
+}
+
+query GetOrder($id: ID!, $order: Order) {
+  getOrder(id: $id, order: $order) {
+    quantity,
+    name,
+    price
+  }
+}
+
+
+

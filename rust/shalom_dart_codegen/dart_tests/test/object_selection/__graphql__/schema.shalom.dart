@@ -3,3 +3,6 @@
 // ------------ Enum DEFINITIONS -------------
 
 // ------------ END Enum DEFINITIONS -------------
+// ------------ Input DEFINITIONS -------------
+
+// ------------ END Input DEFINITIONS -------------
