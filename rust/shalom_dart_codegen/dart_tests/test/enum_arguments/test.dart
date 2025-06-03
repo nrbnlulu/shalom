@@ -1,31 +1,31 @@
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
-import "__graphql__/GetOrderByStatus.shalom.dart";
-import "__graphql__/UpdateOrder.shalom.dart";
-import "__graphql__/UpdateOrderStatus.shalom.dart";
-import "__graphql__/UpdateOrderStatusOpt.shalom.dart";
-import "__graphql__/UpdateOrderWithStatusOpt.shalom.dart";
+import "__graphql__/EnumRequired.shalom.dart";
+import "__graphql__/EnumOptional.shalom.dart";
+import "__graphql__/EnumInputObjectOptional.shalom.dart";
+import "__graphql__/EnumInputObjectRequired.shalom.dart";
+import "__graphql__/EnumWithDefaultValue.shalom.dart";
 import "__graphql__/schema.shalom.dart";
 
 void main() {
   test("required enum argument", () {
     final req =
-        RequestUpdateOrderStatus(
-          variables: UpdateOrderStatusVariables(status: Status.COMPLETED),
+        RequestEnumRequired(
+          variables: EnumRequiredVariables(status: Status.COMPLETED),
         ).toRequest();
     expect(req.variables, {"status": "COMPLETED"});
   });
   test("optional enum argument", () {
     final req =
-        RequestUpdateOrderStatusOpt(
-          variables: UpdateOrderStatusOptVariables(status: Some(null)),
+        RequestEnumOptional(
+          variables: EnumOptionalVariables(status: Some(null)),
         ).toRequest();
     expect(req.variables, {"status": null});
   });
   test("required enum argument in InputObject", () {
     final req =
-        RequestUpdateOrder(
-          variables: UpdateOrderVariables(
+        RequestEnumInputObjectRequired(
+          variables: EnumInputObjectRequiredVariables(
             order: OrderUpdate(status: Status.PROCESSING, timeLeft: 2),
           ),
         ).toRequest();
@@ -35,8 +35,8 @@ void main() {
   });
   test("optional enum argument in InputObject", () {
     final req =
-        RequestUpdateOrderWithStatusOpt(
-          variables: UpdateOrderWithStatusOptVariables(
+        RequestEnumInputObjectOptional(
+          variables: EnumInputObjectOptionalVariables(
             order: OrderUpdateStatusOpt(timeLeft: 2, status: Some(null)),
           ),
         ).toRequest();
@@ -46,8 +46,8 @@ void main() {
   });
   test("optional enum argument with default value", () {
     final req =
-        RequestGetOrderByStatus(
-          variables: GetOrderByStatusVariables(),
+        RequestEnumWithDefaultValue(
+          variables: EnumWithDefaultValueVariables(),
         ).toRequest();
     expect(req.variables, {"status": "SENT"});
   });

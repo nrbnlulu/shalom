@@ -6,59 +6,68 @@ typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class UpdateOrderResponse {
+class EnumWithDefaultValueResponse {
   /// class members
 
-  final UpdateOrder_updateOrder? updateOrder;
+  final EnumWithDefaultValue_getOrderByStatus? getOrderByStatus;
 
   // keywordargs constructor
-  UpdateOrderResponse({this.updateOrder});
-  static UpdateOrderResponse fromJson(JsonObject data) {
-    final UpdateOrder_updateOrder? updateOrder_value;
+  EnumWithDefaultValueResponse({this.getOrderByStatus});
+  static EnumWithDefaultValueResponse fromJson(JsonObject data) {
+    final EnumWithDefaultValue_getOrderByStatus? getOrderByStatus_value;
 
-    final JsonObject? updateOrder$raw = data['updateOrder'];
-    if (updateOrder$raw != null) {
-      updateOrder_value = UpdateOrder_updateOrder.fromJson(updateOrder$raw);
+    final JsonObject? getOrderByStatus$raw = data['getOrderByStatus'];
+    if (getOrderByStatus$raw != null) {
+      getOrderByStatus_value = EnumWithDefaultValue_getOrderByStatus.fromJson(
+        getOrderByStatus$raw,
+      );
     } else {
-      updateOrder_value = null;
+      getOrderByStatus_value = null;
     }
 
-    return UpdateOrderResponse(updateOrder: updateOrder_value);
+    return EnumWithDefaultValueResponse(
+      getOrderByStatus: getOrderByStatus_value,
+    );
   }
 
-  UpdateOrderResponse updateWithJson(JsonObject data) {
-    final UpdateOrder_updateOrder? updateOrder_value;
-    if (data.containsKey('updateOrder')) {
-      final JsonObject? updateOrder$raw = data['updateOrder'];
-      if (updateOrder$raw != null) {
-        updateOrder_value = UpdateOrder_updateOrder.fromJson(updateOrder$raw);
+  EnumWithDefaultValueResponse updateWithJson(JsonObject data) {
+    final EnumWithDefaultValue_getOrderByStatus? getOrderByStatus_value;
+    if (data.containsKey('getOrderByStatus')) {
+      final JsonObject? getOrderByStatus$raw = data['getOrderByStatus'];
+      if (getOrderByStatus$raw != null) {
+        getOrderByStatus_value = EnumWithDefaultValue_getOrderByStatus.fromJson(
+          getOrderByStatus$raw,
+        );
       } else {
-        updateOrder_value = null;
+        getOrderByStatus_value = null;
       }
     } else {
-      updateOrder_value = updateOrder;
+      getOrderByStatus_value = getOrderByStatus;
     }
 
-    return UpdateOrderResponse(updateOrder: updateOrder_value);
+    return EnumWithDefaultValueResponse(
+      getOrderByStatus: getOrderByStatus_value,
+    );
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UpdateOrderResponse && other.updateOrder == updateOrder);
+        (other is EnumWithDefaultValueResponse &&
+            other.getOrderByStatus == getOrderByStatus);
   }
 
   @override
-  int get hashCode => updateOrder.hashCode;
+  int get hashCode => getOrderByStatus.hashCode;
 
   JsonObject toJson() {
-    return {'updateOrder': updateOrder?.toJson()};
+    return {'getOrderByStatus': getOrderByStatus?.toJson()};
   }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class UpdateOrder_updateOrder {
+class EnumWithDefaultValue_getOrderByStatus {
   /// class members
 
   final Status? status;
@@ -70,13 +79,13 @@ class UpdateOrder_updateOrder {
   final double price;
 
   // keywordargs constructor
-  UpdateOrder_updateOrder({
+  EnumWithDefaultValue_getOrderByStatus({
     this.status,
     required this.quantity,
     required this.name,
     required this.price,
   });
-  static UpdateOrder_updateOrder fromJson(JsonObject data) {
+  static EnumWithDefaultValue_getOrderByStatus fromJson(JsonObject data) {
     final Status? status_value;
 
     final String? status$raw = data['status'];
@@ -92,7 +101,7 @@ class UpdateOrder_updateOrder {
 
     final double price_value = data['price'];
 
-    return UpdateOrder_updateOrder(
+    return EnumWithDefaultValue_getOrderByStatus(
       status: status_value,
 
       quantity: quantity_value,
@@ -103,7 +112,7 @@ class UpdateOrder_updateOrder {
     );
   }
 
-  UpdateOrder_updateOrder updateWithJson(JsonObject data) {
+  EnumWithDefaultValue_getOrderByStatus updateWithJson(JsonObject data) {
     final Status? status_value;
     if (data.containsKey('status')) {
       final String? status$raw = data['status'];
@@ -137,7 +146,7 @@ class UpdateOrder_updateOrder {
       price_value = price;
     }
 
-    return UpdateOrder_updateOrder(
+    return EnumWithDefaultValue_getOrderByStatus(
       status: status_value,
 
       quantity: quantity_value,
@@ -151,7 +160,7 @@ class UpdateOrder_updateOrder {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UpdateOrder_updateOrder &&
+        (other is EnumWithDefaultValue_getOrderByStatus &&
             other.status == status &&
             other.quantity == quantity &&
             other.name == name &&
@@ -176,17 +185,17 @@ class UpdateOrder_updateOrder {
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-class RequestUpdateOrder extends Requestable {
-  final UpdateOrderVariables variables;
+class RequestEnumWithDefaultValue extends Requestable {
+  final EnumWithDefaultValueVariables variables;
 
-  RequestUpdateOrder({required this.variables});
+  RequestEnumWithDefaultValue({required this.variables});
 
   @override
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query: r"""mutation UpdateOrder($order: OrderUpdate!) {
-  updateOrder(order: $order) {
+      query: r"""query EnumWithDefaultValue($status: Status = SENT) {
+  getOrderByStatus(status: $status) {
     status
     quantity
     name
@@ -194,21 +203,21 @@ class RequestUpdateOrder extends Requestable {
   }
 }""",
       variables: variablesJson,
-      opType: OperationType.Mutation,
-      StringopName: 'UpdateOrder',
+      opType: OperationType.Query,
+      StringopName: 'EnumWithDefaultValue',
     );
   }
 }
 
-class UpdateOrderVariables {
-  final OrderUpdate order;
+class EnumWithDefaultValueVariables {
+  final Status? status;
 
-  UpdateOrderVariables({required this.order});
+  EnumWithDefaultValueVariables({this.status = Status.SENT});
 
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["order"] = order.toJson();
+    data["status"] = status?.name;
 
     return data;
   }

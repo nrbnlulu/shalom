@@ -1,6 +1,6 @@
 
 
-mutation UpdateOrderStatus($status: Status!) {
+mutation EnumRequired($status: Status!) {
     updateOrderStatus(status: $status) {
         status,
         quantity,
@@ -9,7 +9,7 @@ mutation UpdateOrderStatus($status: Status!) {
     } 
 }
 
-mutation UpdateOrderStatusOpt($status: Status) {
+mutation EnumOptional($status: Status) {
     updateOrderStatusOpt(status: $status) {
         status,
         quantity,
@@ -18,7 +18,7 @@ mutation UpdateOrderStatusOpt($status: Status) {
     } 
 }
 
-mutation UpdateOrder($order: OrderUpdate!) {
+mutation EnumInputObjectRequired($order: OrderUpdate!) {
     updateOrder(order: $order) {
         status,
         quantity,
@@ -27,7 +27,7 @@ mutation UpdateOrder($order: OrderUpdate!) {
     } 
 }
 
-mutation UpdateOrderWithStatusOpt($order: OrderUpdateStatusOpt!) {
+mutation EnumInputObjectOptional($order: OrderUpdateStatusOpt!) {
     updateOrderWithStatusOpt(order: $order) {
         status,
         quantity,
@@ -36,7 +36,7 @@ mutation UpdateOrderWithStatusOpt($order: OrderUpdateStatusOpt!) {
     } 
 }
 
-query GetOrderByStatus($status: Status = SENT) {
+query EnumWithDefaultValue($status: Status = SENT) {
     getOrderByStatus(status: $status) {
         status,
         quantity,

@@ -6,43 +6,43 @@ typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class UpdateOrderWithStatusOptResponse {
+class EnumInputObjectOptionalResponse {
   /// class members
 
-  final UpdateOrderWithStatusOpt_updateOrderWithStatusOpt?
+  final EnumInputObjectOptional_updateOrderWithStatusOpt?
   updateOrderWithStatusOpt;
 
   // keywordargs constructor
-  UpdateOrderWithStatusOptResponse({this.updateOrderWithStatusOpt});
-  static UpdateOrderWithStatusOptResponse fromJson(JsonObject data) {
-    final UpdateOrderWithStatusOpt_updateOrderWithStatusOpt?
+  EnumInputObjectOptionalResponse({this.updateOrderWithStatusOpt});
+  static EnumInputObjectOptionalResponse fromJson(JsonObject data) {
+    final EnumInputObjectOptional_updateOrderWithStatusOpt?
     updateOrderWithStatusOpt_value;
 
     final JsonObject? updateOrderWithStatusOpt$raw =
         data['updateOrderWithStatusOpt'];
     if (updateOrderWithStatusOpt$raw != null) {
       updateOrderWithStatusOpt_value =
-          UpdateOrderWithStatusOpt_updateOrderWithStatusOpt.fromJson(
+          EnumInputObjectOptional_updateOrderWithStatusOpt.fromJson(
             updateOrderWithStatusOpt$raw,
           );
     } else {
       updateOrderWithStatusOpt_value = null;
     }
 
-    return UpdateOrderWithStatusOptResponse(
+    return EnumInputObjectOptionalResponse(
       updateOrderWithStatusOpt: updateOrderWithStatusOpt_value,
     );
   }
 
-  UpdateOrderWithStatusOptResponse updateWithJson(JsonObject data) {
-    final UpdateOrderWithStatusOpt_updateOrderWithStatusOpt?
+  EnumInputObjectOptionalResponse updateWithJson(JsonObject data) {
+    final EnumInputObjectOptional_updateOrderWithStatusOpt?
     updateOrderWithStatusOpt_value;
     if (data.containsKey('updateOrderWithStatusOpt')) {
       final JsonObject? updateOrderWithStatusOpt$raw =
           data['updateOrderWithStatusOpt'];
       if (updateOrderWithStatusOpt$raw != null) {
         updateOrderWithStatusOpt_value =
-            UpdateOrderWithStatusOpt_updateOrderWithStatusOpt.fromJson(
+            EnumInputObjectOptional_updateOrderWithStatusOpt.fromJson(
               updateOrderWithStatusOpt$raw,
             );
       } else {
@@ -52,7 +52,7 @@ class UpdateOrderWithStatusOptResponse {
       updateOrderWithStatusOpt_value = updateOrderWithStatusOpt;
     }
 
-    return UpdateOrderWithStatusOptResponse(
+    return EnumInputObjectOptionalResponse(
       updateOrderWithStatusOpt: updateOrderWithStatusOpt_value,
     );
   }
@@ -60,7 +60,7 @@ class UpdateOrderWithStatusOptResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UpdateOrderWithStatusOptResponse &&
+        (other is EnumInputObjectOptionalResponse &&
             other.updateOrderWithStatusOpt == updateOrderWithStatusOpt);
   }
 
@@ -74,7 +74,7 @@ class UpdateOrderWithStatusOptResponse {
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class UpdateOrderWithStatusOpt_updateOrderWithStatusOpt {
+class EnumInputObjectOptional_updateOrderWithStatusOpt {
   /// class members
 
   final Status? status;
@@ -86,13 +86,13 @@ class UpdateOrderWithStatusOpt_updateOrderWithStatusOpt {
   final double price;
 
   // keywordargs constructor
-  UpdateOrderWithStatusOpt_updateOrderWithStatusOpt({
+  EnumInputObjectOptional_updateOrderWithStatusOpt({
     this.status,
     required this.quantity,
     required this.name,
     required this.price,
   });
-  static UpdateOrderWithStatusOpt_updateOrderWithStatusOpt fromJson(
+  static EnumInputObjectOptional_updateOrderWithStatusOpt fromJson(
     JsonObject data,
   ) {
     final Status? status_value;
@@ -110,7 +110,7 @@ class UpdateOrderWithStatusOpt_updateOrderWithStatusOpt {
 
     final double price_value = data['price'];
 
-    return UpdateOrderWithStatusOpt_updateOrderWithStatusOpt(
+    return EnumInputObjectOptional_updateOrderWithStatusOpt(
       status: status_value,
 
       quantity: quantity_value,
@@ -121,7 +121,7 @@ class UpdateOrderWithStatusOpt_updateOrderWithStatusOpt {
     );
   }
 
-  UpdateOrderWithStatusOpt_updateOrderWithStatusOpt updateWithJson(
+  EnumInputObjectOptional_updateOrderWithStatusOpt updateWithJson(
     JsonObject data,
   ) {
     final Status? status_value;
@@ -157,7 +157,7 @@ class UpdateOrderWithStatusOpt_updateOrderWithStatusOpt {
       price_value = price;
     }
 
-    return UpdateOrderWithStatusOpt_updateOrderWithStatusOpt(
+    return EnumInputObjectOptional_updateOrderWithStatusOpt(
       status: status_value,
 
       quantity: quantity_value,
@@ -171,7 +171,7 @@ class UpdateOrderWithStatusOpt_updateOrderWithStatusOpt {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UpdateOrderWithStatusOpt_updateOrderWithStatusOpt &&
+        (other is EnumInputObjectOptional_updateOrderWithStatusOpt &&
             other.status == status &&
             other.quantity == quantity &&
             other.name == name &&
@@ -196,17 +196,17 @@ class UpdateOrderWithStatusOpt_updateOrderWithStatusOpt {
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-class RequestUpdateOrderWithStatusOpt extends Requestable {
-  final UpdateOrderWithStatusOptVariables variables;
+class RequestEnumInputObjectOptional extends Requestable {
+  final EnumInputObjectOptionalVariables variables;
 
-  RequestUpdateOrderWithStatusOpt({required this.variables});
+  RequestEnumInputObjectOptional({required this.variables});
 
   @override
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
       query:
-          r"""mutation UpdateOrderWithStatusOpt($order: OrderUpdateStatusOpt!) {
+          r"""mutation EnumInputObjectOptional($order: OrderUpdateStatusOpt!) {
   updateOrderWithStatusOpt(order: $order) {
     status
     quantity
@@ -216,15 +216,15 @@ class RequestUpdateOrderWithStatusOpt extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'UpdateOrderWithStatusOpt',
+      StringopName: 'EnumInputObjectOptional',
     );
   }
 }
 
-class UpdateOrderWithStatusOptVariables {
+class EnumInputObjectOptionalVariables {
   final OrderUpdateStatusOpt order;
 
-  UpdateOrderWithStatusOptVariables({required this.order});
+  EnumInputObjectOptionalVariables({required this.order});
 
   JsonObject toJson() {
     JsonObject data = {};

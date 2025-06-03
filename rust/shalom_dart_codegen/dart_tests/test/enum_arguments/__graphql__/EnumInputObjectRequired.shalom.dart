@@ -6,70 +6,64 @@ typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
-class UpdateOrderStatusOptResponse {
+class EnumInputObjectRequiredResponse {
   /// class members
 
-  final UpdateOrderStatusOpt_updateOrderStatusOpt? updateOrderStatusOpt;
+  final EnumInputObjectRequired_updateOrder? updateOrder;
 
   // keywordargs constructor
-  UpdateOrderStatusOptResponse({this.updateOrderStatusOpt});
-  static UpdateOrderStatusOptResponse fromJson(JsonObject data) {
-    final UpdateOrderStatusOpt_updateOrderStatusOpt? updateOrderStatusOpt_value;
+  EnumInputObjectRequiredResponse({this.updateOrder});
+  static EnumInputObjectRequiredResponse fromJson(JsonObject data) {
+    final EnumInputObjectRequired_updateOrder? updateOrder_value;
 
-    final JsonObject? updateOrderStatusOpt$raw = data['updateOrderStatusOpt'];
-    if (updateOrderStatusOpt$raw != null) {
-      updateOrderStatusOpt_value =
-          UpdateOrderStatusOpt_updateOrderStatusOpt.fromJson(
-            updateOrderStatusOpt$raw,
-          );
+    final JsonObject? updateOrder$raw = data['updateOrder'];
+    if (updateOrder$raw != null) {
+      updateOrder_value = EnumInputObjectRequired_updateOrder.fromJson(
+        updateOrder$raw,
+      );
     } else {
-      updateOrderStatusOpt_value = null;
+      updateOrder_value = null;
     }
 
-    return UpdateOrderStatusOptResponse(
-      updateOrderStatusOpt: updateOrderStatusOpt_value,
-    );
+    return EnumInputObjectRequiredResponse(updateOrder: updateOrder_value);
   }
 
-  UpdateOrderStatusOptResponse updateWithJson(JsonObject data) {
-    final UpdateOrderStatusOpt_updateOrderStatusOpt? updateOrderStatusOpt_value;
-    if (data.containsKey('updateOrderStatusOpt')) {
-      final JsonObject? updateOrderStatusOpt$raw = data['updateOrderStatusOpt'];
-      if (updateOrderStatusOpt$raw != null) {
-        updateOrderStatusOpt_value =
-            UpdateOrderStatusOpt_updateOrderStatusOpt.fromJson(
-              updateOrderStatusOpt$raw,
-            );
+  EnumInputObjectRequiredResponse updateWithJson(JsonObject data) {
+    final EnumInputObjectRequired_updateOrder? updateOrder_value;
+    if (data.containsKey('updateOrder')) {
+      final JsonObject? updateOrder$raw = data['updateOrder'];
+      if (updateOrder$raw != null) {
+        updateOrder_value = EnumInputObjectRequired_updateOrder.fromJson(
+          updateOrder$raw,
+        );
       } else {
-        updateOrderStatusOpt_value = null;
+        updateOrder_value = null;
       }
     } else {
-      updateOrderStatusOpt_value = updateOrderStatusOpt;
+      updateOrder_value = updateOrder;
     }
 
-    return UpdateOrderStatusOptResponse(
-      updateOrderStatusOpt: updateOrderStatusOpt_value,
-    );
+    return EnumInputObjectRequiredResponse(updateOrder: updateOrder_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UpdateOrderStatusOptResponse &&
-            other.updateOrderStatusOpt == updateOrderStatusOpt);
+        (other is EnumInputObjectRequiredResponse &&
+            other.updateOrder == updateOrder);
   }
 
   @override
-  int get hashCode => updateOrderStatusOpt.hashCode;
+  int get hashCode => updateOrder.hashCode;
 
   JsonObject toJson() {
-    return {'updateOrderStatusOpt': updateOrderStatusOpt?.toJson()};
+    return {'updateOrder': updateOrder?.toJson()};
   }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class UpdateOrderStatusOpt_updateOrderStatusOpt {
+class EnumInputObjectRequired_updateOrder {
   /// class members
 
   final Status? status;
@@ -81,13 +75,13 @@ class UpdateOrderStatusOpt_updateOrderStatusOpt {
   final double price;
 
   // keywordargs constructor
-  UpdateOrderStatusOpt_updateOrderStatusOpt({
+  EnumInputObjectRequired_updateOrder({
     this.status,
     required this.quantity,
     required this.name,
     required this.price,
   });
-  static UpdateOrderStatusOpt_updateOrderStatusOpt fromJson(JsonObject data) {
+  static EnumInputObjectRequired_updateOrder fromJson(JsonObject data) {
     final Status? status_value;
 
     final String? status$raw = data['status'];
@@ -103,7 +97,7 @@ class UpdateOrderStatusOpt_updateOrderStatusOpt {
 
     final double price_value = data['price'];
 
-    return UpdateOrderStatusOpt_updateOrderStatusOpt(
+    return EnumInputObjectRequired_updateOrder(
       status: status_value,
 
       quantity: quantity_value,
@@ -114,7 +108,7 @@ class UpdateOrderStatusOpt_updateOrderStatusOpt {
     );
   }
 
-  UpdateOrderStatusOpt_updateOrderStatusOpt updateWithJson(JsonObject data) {
+  EnumInputObjectRequired_updateOrder updateWithJson(JsonObject data) {
     final Status? status_value;
     if (data.containsKey('status')) {
       final String? status$raw = data['status'];
@@ -148,7 +142,7 @@ class UpdateOrderStatusOpt_updateOrderStatusOpt {
       price_value = price;
     }
 
-    return UpdateOrderStatusOpt_updateOrderStatusOpt(
+    return EnumInputObjectRequired_updateOrder(
       status: status_value,
 
       quantity: quantity_value,
@@ -162,7 +156,7 @@ class UpdateOrderStatusOpt_updateOrderStatusOpt {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UpdateOrderStatusOpt_updateOrderStatusOpt &&
+        (other is EnumInputObjectRequired_updateOrder &&
             other.status == status &&
             other.quantity == quantity &&
             other.name == name &&
@@ -187,17 +181,17 @@ class UpdateOrderStatusOpt_updateOrderStatusOpt {
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-class RequestUpdateOrderStatusOpt extends Requestable {
-  final UpdateOrderStatusOptVariables variables;
+class RequestEnumInputObjectRequired extends Requestable {
+  final EnumInputObjectRequiredVariables variables;
 
-  RequestUpdateOrderStatusOpt({required this.variables});
+  RequestEnumInputObjectRequired({required this.variables});
 
   @override
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query: r"""mutation UpdateOrderStatusOpt($status: Status) {
-  updateOrderStatusOpt(status: $status) {
+      query: r"""mutation EnumInputObjectRequired($order: OrderUpdate!) {
+  updateOrder(order: $order) {
     status
     quantity
     name
@@ -206,22 +200,20 @@ class RequestUpdateOrderStatusOpt extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'UpdateOrderStatusOpt',
+      StringopName: 'EnumInputObjectRequired',
     );
   }
 }
 
-class UpdateOrderStatusOptVariables {
-  final Option<Status?> status;
+class EnumInputObjectRequiredVariables {
+  final OrderUpdate order;
 
-  UpdateOrderStatusOptVariables({this.status = const None()});
+  EnumInputObjectRequiredVariables({required this.order});
 
   JsonObject toJson() {
     JsonObject data = {};
 
-    if (status.isSome()) {
-      data["status"] = status.some()?.name;
-    }
+    data["order"] = order.toJson();
 
     return data;
   }
