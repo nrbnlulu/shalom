@@ -1,6 +1,8 @@
+use crate::schema::types::SelectionFieldDefinition;
+
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{
-    EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, InputFieldDefinition,
+    EnumType, EnumValueDefinition, FieldDefinition, GraphQLAny, InputFieldDefinition,
     InputObjectType, ObjectType, ScalarType,
 };
 use anyhow::Result;
@@ -108,13 +110,12 @@ fn resolve_object(
     let mut fields = Vec::new();
     for (name, field) in origin.fields.iter() {
         let name = name.to_string();
-        let ty = resolve_type(&context, &field.ty);
         let description = field.description.as_ref().map(|v| v.to_string());
+        let raw_type = field.ty.clone();
         let arguments = vec![];
-        fields.push(FieldDefinition {
-            name,
-            ty,
-            description,
+        let field_definition = FieldDefinition::new(&context, name, Node::new(raw_type), description);
+        fields.push(SelectionFieldDefinition {
+            field: field_definition,
             arguments,
         });
     }
@@ -161,15 +162,14 @@ fn resolve_input(
     }
     let mut fields = HashMap::new();
     for (name, field) in origin.fields.iter() {
+        let raw_type = field.ty.clone();
         let description = field.description.as_ref().map(|v| v.to_string());
-        let ty = resolve_type(context, &field.ty);
         let is_optional = !field.ty.is_non_null();
         let default_value = field.default_value.clone();
         let name = name.to_string();
+        let field_definition =  FieldDefinition::new(context, name.clone(), raw_type, description);
         let input_field_definition = InputFieldDefinition {
-            name: name.clone(),
-            description,
-            ty,
+            field: field_definition,
             is_optional,
             default_value,
         };
@@ -182,21 +182,6 @@ fn resolve_input(
         fields,
     };
     context.add_input(name, Node::new(input_object)).unwrap();
-}
-
-pub fn resolve_type(_context: &SharedSchemaContext, origin: &apollo_schema::Type) -> FieldType {
-    match origin {
-        apollo_schema::Type::Named(named) => FieldType::Named(named.to_string()),
-        apollo_schema::Type::NonNullNamed(non_null) => {
-            FieldType::NonNullNamed(non_null.as_str().to_string())
-        }
-        apollo_schema::Type::List(of_type) => {
-            FieldType::List(Box::new(resolve_type(_context, of_type)))
-        }
-        apollo_schema::Type::NonNullList(of_type) => {
-            FieldType::NonNullList(Box::new(resolve_type(_context, of_type)))
-        }
-    }
 }
 
 #[cfg(test)]
@@ -225,31 +210,5 @@ mod tests {
         assert_eq!(obj.fields.len(), 1);
         let field = obj.get_field("hello");
         assert!(field.is_some());
-    }
-    #[test]
-    fn resolve_simple_field_types() {
-        let schema = r#"
-            type Query{
-                hello: String!
-                world: Int!
-                id: ID!
-                foo: Float
-            }
-        "#
-        .to_string();
-        let ctx = resolve(&schema).unwrap();
-
-        let object = ctx.get_type("Query").unwrap().object().unwrap();
-
-        let hello_field = object.get_field("hello").unwrap();
-        assert!(hello_field.ty.get_scalar(&ctx).unwrap().is_string());
-        let world_field = object.get_field("world").unwrap();
-        assert!(world_field.ty.get_scalar(&ctx).unwrap().is_int());
-        let id_field = object.get_field("id").unwrap();
-        assert!(id_field.ty.get_scalar(&ctx).unwrap().is_id());
-        let foo_field = object.get_field("foo").unwrap();
-        assert!(foo_field.ty.get_scalar(&ctx).unwrap().is_float());
-        // optional
-        assert!(foo_field.ty.is_nullable());
     }
 }
