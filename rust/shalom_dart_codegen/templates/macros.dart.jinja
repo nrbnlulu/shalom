@@ -1,21 +1,21 @@
 
 {% macro field_to_json_logic(fields) %}
 {% for name, field in fields | items %}
-    {% set input_ty = input_type(field.ty) %}
+    {% set field_ty = field_type(field.ty).ty %}
     {% if field.is_optional and field.default_value is none %}  
         if ({{ name }}.isSome()) {
-            {% if input_ty == "InputObject" %} 
+            {% if field_ty.kind == "InputObject" %} 
                 data["{{ name }}"] = {{ name }}.some()?.toJson();   
-            {% elif input_ty == "Enum" %}
+            {% elif field_ty.kind == "Enum" %}
                 data["{{ name }}"] = {{ name }}.some()?.name;
             {% else %}
                 data["{{ name }}"] = {{ name }}.some();
             {% endif %}
         } 
     {% else %}
-        {% if input_ty == "InputObject" %}
+        {% if field_ty.kind == "InputObject" %}
             data["{{ name }}"] = {{ name }}.toJson();
-        {% elif input_ty == "Enum" %}
+        {% elif field_ty.kind == "Enum" %}
             {% if field.is_optional %}
                 data["{{ name }}"] = {{ name }}?.name;
             {% else %}

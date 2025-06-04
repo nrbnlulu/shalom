@@ -1,7 +1,11 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{info, trace};
-use minijinja::{context, value::ViaDeserialize, Environment};
+use minijinja::{
+    context,
+    value::{Value, ViaDeserialize},
+    Environment,
+};
 use serde::Serialize;
 use shalom_core::{
     operation::{context::OperationContext, types::Selection},
@@ -99,12 +103,10 @@ mod ext_jinja_fns {
         input: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
         let input = input.0;
-        let default_value = &input.default_value.as_ref();
-
-        if default_value.is_none() {
-            panic!("cannot parse default value that does not exist")
-        }
-        let default_value = default_value.unwrap();
+        let default_value = input
+            .default_value
+            .as_ref()
+            .expect("cannot parse default value that does not exist");
         let ty = input.resolve_type(schema_ctx);
         if let GraphQLAny::Enum(enum_) = ty {
             format!("{}.{}", enum_.name, default_value)
@@ -113,14 +115,9 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn input_type(schema_ctx: &SchemaContext, ty: ViaDeserialize<FieldType>) -> String {
+    pub fn field_type(schema_ctx: &SchemaContext, ty: ViaDeserialize<FieldType>) -> Value {
         let ty = schema_ctx.get_type(&ty.0.name()).unwrap();
-        match ty {
-            GraphQLAny::Scalar(_) => "Scalar".to_string(),
-            GraphQLAny::InputObject(_) => "InputObject".to_string(),
-            GraphQLAny::Enum(_) => "Enum".to_string(),
-            _ => unimplemented!("input type not supported"),
-        }
+        context! {ty}
     }
 
     pub fn docstring(value: Option<String>) -> String {
@@ -182,8 +179,8 @@ impl TemplateEnv<'_> {
             ext_jinja_fns::type_name_for_field(&schema_ctx_clone, a)
         });
         let schema_ctx_clone = schema_ctx.clone();
-        env.add_function("input_type", move |a: _| {
-            ext_jinja_fns::input_type(&schema_ctx_clone, a)
+        env.add_function("field_type", move |a: _| {
+            ext_jinja_fns::field_type(&schema_ctx_clone, a)
         });
         let schema_ctx_clone = schema_ctx.clone();
         env.add_function("parse_field_default_value", move |a: _| {
