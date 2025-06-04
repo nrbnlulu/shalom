@@ -15,13 +15,29 @@ void main() {
         ).toRequest();
     expect(req.variables, {"status": "COMPLETED"});
   });
+
   test("optional enum argument", () {
-    final req =
-        RequestEnumOptional(
-          variables: EnumOptionalVariables(status: Some(null)),
-        ).toRequest();
-    expect(req.variables, {"status": null});
+    expect(
+      RequestEnumOptional(
+        variables: EnumOptionalVariables(status: Some(null)),
+      ).toRequest().variables,
+      {"status": null},
+    );
+
+    expect(
+      RequestEnumOptional(
+        variables: EnumOptionalVariables(status: Some(Status.SENT)),
+      ).toRequest().variables,
+      {"status": "SENT"},
+    );
+    expect(
+      RequestEnumOptional(
+        variables: EnumOptionalVariables(status: None()),
+      ).toRequest().variables,
+      {},
+    );
   });
+
   test("required enum argument in InputObject", () {
     final req =
         RequestEnumInputObjectRequired(
@@ -44,6 +60,7 @@ void main() {
       "order": {"status": null, "timeLeft": 2},
     });
   });
+
   test("optional enum argument with default value", () {
     final req =
         RequestEnumWithDefaultValue(
