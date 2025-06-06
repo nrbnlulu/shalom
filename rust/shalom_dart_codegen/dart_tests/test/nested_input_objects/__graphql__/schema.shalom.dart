@@ -29,10 +29,42 @@ class Order {
   }
 }
 
+class OrderDetails {
+  final Option<Review?> first_review;
+
+  OrderDetails({this.first_review = const None()});
+
+  JsonObject toJson() {
+    JsonObject data = {};
+
+    if (first_review.isSome()) {
+      data["first_review"] = first_review.some()?.toJson();
+    }
+
+    return data;
+  }
+}
+
 class OrderRecursive {
   final Option<OrderRecursive?> order;
 
   OrderRecursive({this.order = const None()});
+
+  JsonObject toJson() {
+    JsonObject data = {};
+
+    if (order.isSome()) {
+      data["order"] = order.some()?.toJson();
+    }
+
+    return data;
+  }
+}
+
+class Review {
+  final Option<OrderDetails?> order;
+
+  Review({this.order = const None()});
 
   JsonObject toJson() {
     JsonObject data = {};

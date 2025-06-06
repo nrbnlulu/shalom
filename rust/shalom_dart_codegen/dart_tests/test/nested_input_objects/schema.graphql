@@ -9,6 +9,14 @@ input SpecificOrder {
     notes: String!
 }
 
+input Review {
+    order: OrderDetails
+}
+
+input OrderDetails {
+    first_review: Review 
+}
+
 input OrderRecursive {
   order: OrderRecursive, 
 } 
@@ -25,6 +33,7 @@ type Query {
 
 type Mutation {
   orderRecursive(order: OrderRecursive) : OrderRequest,
+  submitReview(review: Review): ID
 }
 
 

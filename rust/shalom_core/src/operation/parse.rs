@@ -10,8 +10,9 @@ use log::{info, trace};
 use crate::context::SharedShalomGlobalContext;
 use crate::operation::types::ObjectSelection;
 use crate::schema::context::SharedSchemaContext;
-use crate::schema::resolver::resolve_type;
-use crate::schema::types::{EnumType, GraphQLAny, InputFieldDefinition, ScalarType};
+use crate::schema::types::{
+    EnumType, FieldDefinition as InputField, GraphQLAny, InputFieldDefinition, ScalarType,
+};
 
 use super::context::{OperationContext, SharedOpCtx};
 use super::types::{
@@ -153,11 +154,14 @@ fn parse_operation(
     for variable in op.variables.iter() {
         let name = variable.name.to_string();
         let is_optional = !variable.ty.is_non_null();
-        let ty = resolve_type(&global_ctx.schema_ctx, variable.ty.item_type());
+        let field_definition = InputField::new(
+            global_ctx.schema_ctx.clone(),
+            name.clone(),
+            variable.ty.clone(),
+            None,
+        );
         let input_definition = InputFieldDefinition {
-            description: None,
-            name: name.clone(),
-            ty,
+            field: field_definition,
             is_optional,
             default_value: variable.default_value.clone(),
         };

@@ -1,15 +1,18 @@
 use std::{
     collections::HashSet,
     hash::{Hash, Hasher},
+    sync::Arc,
 };
 
 use apollo_compiler::{ast::Value, Node};
+use serde::ser::{SerializeStruct, Serializer};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::context::SchemaContext;
+use std::sync;
 
-pub type GlobalName = String;
+type GlobalName = String;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(tag = "kind")]
@@ -79,59 +82,6 @@ impl GraphQLAny {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-#[serde(tag = "kind", content = "value")]
-pub enum FieldType {
-    Named(GlobalName),
-    NonNullNamed(GlobalName),
-    #[serde(skip_serializing)]
-    List(Box<FieldType>),
-    #[serde(skip_serializing)]
-    NonNullList(Box<FieldType>),
-}
-
-impl FieldType {
-    pub fn is_nullable(&self) -> bool {
-        match self {
-            FieldType::Named(_) | FieldType::List(_) => true,
-            FieldType::NonNullNamed(_) | FieldType::NonNullList(_) => false,
-        }
-    }
-
-    pub fn get_list(&self) -> Option<&FieldType> {
-        match self {
-            FieldType::List(of) | FieldType::NonNullList(of) => Some(of),
-            _ => None,
-        }
-    }
-
-    pub fn get_scalar(&self, ctx: &SchemaContext) -> Option<Node<ScalarType>> {
-        match self {
-            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => {
-                ctx.get_type(ty).and_then(|t| t.scalar())
-            }
-            _ => None,
-        }
-    }
-
-    pub fn get_object(&self, ctx: &SchemaContext) -> Option<Node<ObjectType>> {
-        match self {
-            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => {
-                ctx.get_type(ty).and_then(|t| t.object())
-            }
-            _ => None,
-        }
-    }
-
-    pub fn name(&self) -> String {
-        match self {
-            FieldType::Named(ty) => ty.to_string(),
-            FieldType::NonNullNamed(ty) => ty.to_string(),
-            _ => unimplemented!("lists have not been implemented"),
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ScalarType {
     pub name: String,
@@ -167,12 +117,12 @@ pub struct ObjectType {
     pub name: String,
     #[serde(skip_serializing)]
     pub implements_interfaces: HashSet<Box<GlobalName>>,
-    pub fields: HashSet<FieldDefinition>,
+    pub fields: HashSet<SelectionFieldDefinition>,
 }
 
 impl ObjectType {
-    pub fn get_field(&self, name: &str) -> Option<&FieldDefinition> {
-        self.fields.iter().find(|f| f.name == name)
+    pub fn get_field(&self, name: &str) -> Option<&SelectionFieldDefinition> {
+        self.fields.iter().find(|f| f.field.name == name)
     }
 }
 
@@ -238,31 +188,103 @@ pub struct InputObjectType {
     pub name: String,
     pub fields: HashMap<String, InputFieldDefinition>,
 }
+
 impl Hash for InputObjectType {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.name.hash(state);
     }
 }
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct FieldDefinition {
     pub name: String,
-    pub ty: FieldType,
+    pub raw_type: Node<apollo_compiler::schema::Type>,
+    pub description: Option<String>,
+    #[serde(skip)]
+    ctx: sync::Weak<SchemaContext>,
+}
+
+impl FieldDefinition {
+    pub fn new(
+        context: Arc<SchemaContext>,
+        name: String,
+        raw_type: Node<apollo_compiler::schema::Type>,
+        description: Option<String>,
+    ) -> Self {
+        FieldDefinition {
+            name,
+            raw_type,
+            description,
+            ctx: Arc::downgrade(&context),
+        }
+    }
+}
+
+impl FieldDefinition {
+    pub fn resolve_type(&self, ctx: &SchemaContext) -> GraphQLAny {
+        let gql_ty = ctx
+            .get_type(self.raw_type.inner_named_type().as_str())
+            .unwrap();
+        gql_ty
+    }
+}
+
+impl Serialize for FieldDefinition {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        let mut s = serializer.serialize_struct("FieldDefinition", 3)?;
+        s.serialize_field("name", &self.name)?;
+        let gql_ty = self
+            .ctx
+            .upgrade()
+            .unwrap()
+            .get_type(self.raw_type.inner_named_type().as_str())
+            .unwrap();
+        // avoids recursion
+        if let GraphQLAny::InputObject(input) = gql_ty {
+            let mut input = input.clone();
+            input.make_mut().fields = HashMap::new();
+            let gql_ty = GraphQLAny::InputObject(input);
+            s.serialize_field("ty", &gql_ty)?;
+        } else {
+            s.serialize_field("ty", &gql_ty)?;
+        }
+        s.serialize_field("raw_type", &self.raw_type)?;
+        s.serialize_field("description", &self.description)?;
+        s.end()
+    }
+}
+
+impl Hash for FieldDefinition {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
+}
+
+impl PartialEq for FieldDefinition {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+            && self.raw_type == other.raw_type
+            && self.description == other.description
+    }
+}
+
+impl Eq for FieldDefinition {}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct SelectionFieldDefinition {
     #[serde(skip_serializing)]
     pub arguments: Vec<InputFieldDefinition>,
-    pub description: Option<String>,
+    #[serde(flatten)]
+    pub field: FieldDefinition,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct InputFieldDefinition {
-    pub name: String,
-    pub description: Option<String>,
-    pub ty: FieldType,
     pub is_optional: bool,
     pub default_value: Option<Node<Value>>,
-}
-
-impl InputFieldDefinition {
-    pub fn resolve_type(&self, schema_ctx: &SchemaContext) -> GraphQLAny {
-        schema_ctx.get_type(&self.ty.name()).unwrap()
-    }
+    #[serde(flatten)]
+    pub field: FieldDefinition,
 }

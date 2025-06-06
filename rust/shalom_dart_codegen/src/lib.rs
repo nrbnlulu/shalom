@@ -37,8 +37,6 @@ const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
 
-    use shalom_core::schema::types::FieldType;
-
     use super::*;
 
     #[allow(unused_variables)]
@@ -77,11 +75,12 @@ mod ext_jinja_fns {
         schema_ctx: &SchemaContext,
         input: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
-        let ty_name = input.0.ty.name();
-        let ty = input.resolve_type(schema_ctx);
+        let ty = input.field.resolve_type(schema_ctx);
+        let ty_name = ty.name();
         let resolved = match ty {
             GraphQLAny::Scalar(_) => DEFAULT_SCALARS_MAP.get(&ty_name).unwrap().clone(),
             GraphQLAny::InputObject(_) => ty_name,
+            GraphQLAny::Enum(enum_) => enum_.name.clone(),
             _ => unimplemented!("input type not supported"),
         };
         if input.is_optional && input.default_value.is_none() {
@@ -93,18 +92,22 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn parse_field_default_value(input: ViaDeserialize<InputFieldDefinition>) -> String {
-        let default_value = input.0.default_value;
-        if default_value.is_none() {
-            panic!("cannot parse default value that does not exist")
+    pub fn parse_field_default_value(
+        schema_ctx: &SchemaContext,
+        input: ViaDeserialize<InputFieldDefinition>,
+    ) -> String {
+        let input = input.0;
+        let default_value = input
+            .default_value
+            .as_ref()
+            .expect("cannot parse default value that does not exist")
+            .to_string();
+        let ty = input.field.resolve_type(schema_ctx);
+        if let GraphQLAny::Enum(enum_) = ty {
+            format!("{}.{}", enum_.name, default_value)
+        } else {
+            default_value.to_string()
         }
-        let default_value = default_value.unwrap();
-        default_value.to_string()
-    }
-
-    pub fn is_input_type(schema_ctx: &SchemaContext, ty: ViaDeserialize<FieldType>) -> bool {
-        let ty = schema_ctx.get_type(&ty.0.name()).unwrap();
-        matches!(ty, GraphQLAny::InputObject(_))
     }
 
     pub fn docstring(value: Option<String>) -> String {
@@ -166,13 +169,9 @@ impl TemplateEnv<'_> {
             ext_jinja_fns::type_name_for_field(&schema_ctx_clone, a)
         });
         let schema_ctx_clone = schema_ctx.clone();
-        env.add_function("is_input_type", move |a: _| {
-            ext_jinja_fns::is_input_type(&schema_ctx_clone, a)
+        env.add_function("parse_field_default_value", move |a: _| {
+            ext_jinja_fns::parse_field_default_value(&schema_ctx_clone, a)
         });
-        env.add_function(
-            "parse_field_default_value",
-            ext_jinja_fns::parse_field_default_value,
-        );
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
         env.add_filter("if_not_last", ext_jinja_fns::if_not_last);

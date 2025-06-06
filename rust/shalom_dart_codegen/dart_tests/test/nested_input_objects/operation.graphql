@@ -15,4 +15,8 @@ mutation OrderRecursive($order: OrderRecursive) {
   }
 } 
 
+mutation SubmitReview($review: Review) {
+  submitReview(review: $review) 
+}
+
 
