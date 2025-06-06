@@ -113,7 +113,8 @@ fn resolve_object(
         let description = field.description.as_ref().map(|v| v.to_string());
         let raw_type = field.ty.clone();
         let arguments = vec![];
-        let field_definition = FieldDefinition::new(&context, name, Node::new(raw_type), description);
+        let field_definition =
+            FieldDefinition::new(context.clone(), name, Node::new(raw_type), description);
         fields.push(SelectionFieldDefinition {
             field: field_definition,
             arguments,
@@ -167,7 +168,8 @@ fn resolve_input(
         let is_optional = !field.ty.is_non_null();
         let default_value = field.default_value.clone();
         let name = name.to_string();
-        let field_definition =  FieldDefinition::new(context, name.clone(), raw_type, description);
+        let field_definition =
+            FieldDefinition::new(context.clone(), name.clone(), raw_type, description);
         let input_field_definition = InputFieldDefinition {
             field: field_definition,
             is_optional,

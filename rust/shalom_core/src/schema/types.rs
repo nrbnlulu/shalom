@@ -1,10 +1,11 @@
 use std::{
     collections::HashSet,
-    hash::{Hash, Hasher}, sync::Arc,
+    hash::{Hash, Hasher},
+    sync::Arc,
 };
 
 use apollo_compiler::{ast::Value, Node};
-use serde::ser::{Serializer, SerializeStruct};
+use serde::ser::{SerializeStruct, Serializer};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
@@ -80,8 +81,6 @@ impl GraphQLAny {
         }
     }
 }
-
-
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ScalarType {
@@ -189,6 +188,7 @@ pub struct InputObjectType {
     pub name: String,
     pub fields: HashMap<String, InputFieldDefinition>,
 }
+
 impl Hash for InputObjectType {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.name.hash(state);
@@ -205,31 +205,53 @@ pub struct FieldDefinition {
 }
 
 impl FieldDefinition {
-    pub fn new(context: &Arc<SchemaContext>, name: String, raw_type: Node<apollo_compiler::schema::Type>, description: Option<String>) -> Self {
+    pub fn new(
+        context: Arc<SchemaContext>,
+        name: String,
+        raw_type: Node<apollo_compiler::schema::Type>,
+        description: Option<String>,
+    ) -> Self {
         FieldDefinition {
             name,
             raw_type,
             description,
-            ctx: Arc::downgrade(&context)
+            ctx: Arc::downgrade(&context),
         }
     }
 }
 
 impl FieldDefinition {
-    pub fn resolve_type(&self) -> GraphQLAny {
-        self.ctx.upgrade().unwrap().get_type(self.raw_type.inner_named_type().as_str()).unwrap()
+    pub fn resolve_type(&self, ctx: &SchemaContext) -> GraphQLAny {
+        let gql_ty = ctx
+            .get_type(self.raw_type.inner_named_type().as_str())
+            .unwrap();
+        gql_ty
     }
 }
 
 impl Serialize for FieldDefinition {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
-        S: Serializer
+        S: Serializer,
     {
         let mut s = serializer.serialize_struct("FieldDefinition", 3)?;
         s.serialize_field("name", &self.name)?;
-        let gql_ty = self.ctx.upgrade().unwrap().get_type(self.raw_type.inner_named_type().as_str()).unwrap();
-        s.serialize_field("ty", &gql_ty)?;
+        let gql_ty = self
+            .ctx
+            .upgrade()
+            .unwrap()
+            .get_type(self.raw_type.inner_named_type().as_str())
+            .unwrap();
+        // avoids recursion
+        if let GraphQLAny::InputObject(input) = gql_ty {
+            let mut input = input.clone();
+            input.make_mut().fields = HashMap::new();
+            let gql_ty = GraphQLAny::InputObject(input);
+            s.serialize_field("ty", &gql_ty)?;
+        } else {
+            s.serialize_field("ty", &gql_ty)?;
+        }
+        s.serialize_field("raw_type", &self.raw_type)?;
         s.serialize_field("description", &self.description)?;
         s.end()
     }
@@ -243,7 +265,9 @@ impl Hash for FieldDefinition {
 
 impl PartialEq for FieldDefinition {
     fn eq(&self, other: &Self) -> bool {
-        self.name == other.name && self.raw_type == other.raw_type && self.description == other.description 
+        self.name == other.name
+            && self.raw_type == other.raw_type
+            && self.description == other.description
     }
 }
 
@@ -254,7 +278,7 @@ pub struct SelectionFieldDefinition {
     #[serde(skip_serializing)]
     pub arguments: Vec<InputFieldDefinition>,
     #[serde(flatten)]
-    pub field: FieldDefinition
+    pub field: FieldDefinition,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -262,8 +286,5 @@ pub struct InputFieldDefinition {
     pub is_optional: bool,
     pub default_value: Option<Node<Value>>,
     #[serde(flatten)]
-    pub field: FieldDefinition
+    pub field: FieldDefinition,
 }
-
-
-
