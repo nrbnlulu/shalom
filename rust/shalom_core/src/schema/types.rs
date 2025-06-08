@@ -117,11 +117,11 @@ pub struct ObjectType {
     pub name: String,
     #[serde(skip_serializing)]
     pub implements_interfaces: HashSet<Box<GlobalName>>,
-    pub fields: HashSet<SelectionFieldDefinition>,
+    pub fields: HashSet<SchemaObjectField>,
 }
 
 impl ObjectType {
-    pub fn get_field(&self, name: &str) -> Option<&SelectionFieldDefinition> {
+    pub fn get_field(&self, name: &str) -> Option<&SchemaObjectField> {
         self.fields.iter().find(|f| f.field.name == name)
     }
 }
@@ -274,7 +274,7 @@ impl PartialEq for FieldDefinition {
 impl Eq for FieldDefinition {}
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct SelectionFieldDefinition {
+pub struct SchemaObjectField {
     #[serde(skip_serializing)]
     pub arguments: Vec<InputFieldDefinition>,
     #[serde(flatten)]

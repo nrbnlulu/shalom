@@ -1,4 +1,4 @@
-use crate::schema::types::SelectionFieldDefinition;
+use crate::schema::types::SchemaObjectField;
 
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{
@@ -115,7 +115,7 @@ fn resolve_object(
         let arguments = vec![];
         let field_definition =
             FieldDefinition::new(context.clone(), name, Node::new(raw_type), description);
-        fields.push(SelectionFieldDefinition {
+        fields.push(SchemaObjectField {
             field: field_definition,
             arguments,
         });
