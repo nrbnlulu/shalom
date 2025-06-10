@@ -117,11 +117,11 @@ pub struct ObjectType {
     pub name: String,
     #[serde(skip_serializing)]
     pub implements_interfaces: HashSet<Box<GlobalName>>,
-    pub fields: HashSet<SchemaObjectField>,
+    pub fields: HashSet<SchemaObjectFieldDefinition>,
 }
 
 impl ObjectType {
-    pub fn get_field(&self, name: &str) -> Option<&SchemaObjectField> {
+    pub fn get_field(&self, name: &str) -> Option<&SchemaObjectFieldDefinition> {
         self.fields.iter().find(|f| f.field.name == name)
     }
 }
@@ -138,7 +138,7 @@ pub struct InterfaceType {
 
     pub name: String,
     pub implements_interfaces: HashSet<GlobalName>,
-    pub fields: HashSet<FieldDefinition>,
+    pub fields: HashSet<SchemaFieldCommon>,
 }
 impl Hash for InterfaceType {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -196,7 +196,7 @@ impl Hash for InputObjectType {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct FieldDefinition {
+pub struct SchemaFieldCommon {
     pub name: String,
     pub raw_type: Node<apollo_compiler::schema::Type>,
     pub description: Option<String>,
@@ -204,14 +204,14 @@ pub struct FieldDefinition {
     ctx: sync::Weak<SchemaContext>,
 }
 
-impl FieldDefinition {
+impl SchemaFieldCommon {
     pub fn new(
         context: Arc<SchemaContext>,
         name: String,
         raw_type: Node<apollo_compiler::schema::Type>,
         description: Option<String>,
     ) -> Self {
-        FieldDefinition {
+        SchemaFieldCommon {
             name,
             raw_type,
             description,
@@ -220,7 +220,7 @@ impl FieldDefinition {
     }
 }
 
-impl FieldDefinition {
+impl SchemaFieldCommon {
     pub fn resolve_type(&self, ctx: &SchemaContext) -> GraphQLAny {
         let gql_ty = ctx
             .get_type(self.raw_type.inner_named_type().as_str())
@@ -229,7 +229,7 @@ impl FieldDefinition {
     }
 }
 
-impl Serialize for FieldDefinition {
+impl Serialize for SchemaFieldCommon {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
@@ -257,13 +257,13 @@ impl Serialize for FieldDefinition {
     }
 }
 
-impl Hash for FieldDefinition {
+impl Hash for SchemaFieldCommon {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.name.hash(state);
     }
 }
 
-impl PartialEq for FieldDefinition {
+impl PartialEq for SchemaFieldCommon {
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name
             && self.raw_type == other.raw_type
@@ -271,14 +271,14 @@ impl PartialEq for FieldDefinition {
     }
 }
 
-impl Eq for FieldDefinition {}
+impl Eq for SchemaFieldCommon {}
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct SchemaObjectField {
+pub struct SchemaObjectFieldDefinition {
     #[serde(skip_serializing)]
     pub arguments: Vec<InputFieldDefinition>,
     #[serde(flatten)]
-    pub field: FieldDefinition,
+    pub field: SchemaFieldCommon,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -286,5 +286,5 @@ pub struct InputFieldDefinition {
     pub is_optional: bool,
     pub default_value: Option<Node<Value>>,
     #[serde(flatten)]
-    pub field: FieldDefinition,
+    pub field: SchemaFieldCommon,
 }
