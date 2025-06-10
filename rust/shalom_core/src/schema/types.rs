@@ -198,7 +198,7 @@ impl Hash for InputObjectType {
 #[derive(Clone, Debug, Deserialize)]
 pub struct SchemaFieldCommon {
     pub name: String,
-    pub raw_type: Node<apollo_compiler::schema::Type>,
+    pub raw_type: apollo_compiler::schema::Type,
     pub description: Option<String>,
     #[serde(skip)]
     ctx: sync::Weak<SchemaContext>,
@@ -208,7 +208,7 @@ impl SchemaFieldCommon {
     pub fn new(
         context: Arc<SchemaContext>,
         name: String,
-        raw_type: Node<apollo_compiler::schema::Type>,
+        raw_type: apollo_compiler::schema::Type,
         description: Option<String>,
     ) -> Self {
         SchemaFieldCommon {

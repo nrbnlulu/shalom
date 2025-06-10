@@ -114,7 +114,7 @@ fn resolve_object(
         let raw_type = field.ty.clone();
         let arguments = vec![];
         let field_definition =
-            SchemaFieldCommon::new(context.clone(), name, Node::new(raw_type), description);
+            SchemaFieldCommon::new(context.clone(), name, raw_type, description);
         fields.push(SchemaObjectFieldDefinition {
             field: field_definition,
             arguments,
@@ -163,13 +163,12 @@ fn resolve_input(
     }
     let mut fields = HashMap::new();
     for (name, field) in origin.fields.iter() {
-        let raw_type = field.ty.clone();
         let description = field.description.as_ref().map(|v| v.to_string());
         let is_optional = !field.ty.is_non_null();
         let default_value = field.default_value.clone();
         let name = name.to_string();
         let field_definition =
-            SchemaFieldCommon::new(context.clone(), name.clone(), raw_type, description);
+            SchemaFieldCommon::new(context.clone(), name.clone(), (*field.ty).clone(), description);
         let input_field_definition = InputFieldDefinition {
             field: field_definition,
             is_optional,

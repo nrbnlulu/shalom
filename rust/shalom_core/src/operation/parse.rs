@@ -153,11 +153,12 @@ fn parse_operation(
     );
     for variable in op.variables.iter() {
         let name = variable.name.to_string();
-        let is_optional = !variable.ty.is_non_null();
+        let raw_type = (*variable.ty).clone();
+        let is_optional = !raw_type.is_non_null();
         let field_definition = SchemaFieldCommon::new(
             global_ctx.schema_ctx.clone(),
             name.clone(),
-            variable.ty.clone(),
+            raw_type,
             None,
         );
         let input_definition = InputFieldDefinition {
