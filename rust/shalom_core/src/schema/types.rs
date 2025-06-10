@@ -196,19 +196,47 @@ impl Hash for InputObjectType {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+enum UnresolvedTypeKind {
+    Scalar { name: String },
+    Object { name: String },
+    Interface { name: String },
+    Union { name: String },
+    Enum { name: String },
+    InputObject { name: String },
+    List { of_type: Box<UnresolvedType> },
+}
+
+
+
+#[derive(Clone, Debug, Deserialize)]
+struct UnresolvedType {
+    is_optional: bool,
+    ty: UnresolvedTypeKind,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+struct ResolvedType{
+    is_optional: bool,
+    ty: GraphQLAny,
+}
+
+
+#[derive(Clone, Debug, Deserialize)]
 pub struct SchemaFieldCommon {
     pub name: String,
-    pub raw_type: apollo_compiler::schema::Type,
+    pub raw_type: UnresolvedType,
     pub description: Option<String>,
     #[serde(skip)]
     ctx: sync::Weak<SchemaContext>,
 }
 
+
+
 impl SchemaFieldCommon {
     pub fn new(
         context: Arc<SchemaContext>,
         name: String,
-        raw_type: apollo_compiler::schema::Type,
+        raw_type: UnresolvedType,
         description: Option<String>,
     ) -> Self {
         SchemaFieldCommon {
@@ -220,12 +248,29 @@ impl SchemaFieldCommon {
     }
 }
 
+
 impl SchemaFieldCommon {
-    pub fn resolve_type(&self, ctx: &SchemaContext) -> GraphQLAny {
-        let gql_ty = ctx
-            .get_type(self.raw_type.inner_named_type().as_str())
-            .unwrap();
-        gql_ty
+    pub fn resolve_type(&self, ctx: &SchemaContext) -> Option<ResolvedType> {
+        type URTK = UnresolvedTypeKind;
+        let is_optional = self.raw_type.is_optional;
+        let resolved_kind = match &self.raw_type.ty {
+            URTK::Scalar { name }
+            | URTK::Object { name }
+            | URTK::Interface { name }
+            | URTK::Union { name }
+            | URTK::Enum { name }
+            | URTK::InputObject { name } => {
+            let gql_type = ctx.get_type(name)?;
+            gql_type
+            }
+            URTK::List { of_type: _ } => {
+            todo!("List type resolution is not implemented yet");
+            }
+        };
+        Some(ResolvedType {
+            is_optional,
+            ty: resolved_kind,
+        })
     }
 }
 
