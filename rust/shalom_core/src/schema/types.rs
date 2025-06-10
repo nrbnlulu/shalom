@@ -117,12 +117,12 @@ pub struct ObjectType {
     pub name: String,
     #[serde(skip_serializing)]
     pub implements_interfaces: HashSet<Box<GlobalName>>,
-    pub fields: HashSet<SchemaObjectFieldDefinition>,
+    pub fields: HashMap<String, SchemaObjectFieldDefinition>,
 }
 
 impl ObjectType {
     pub fn get_field(&self, name: &str) -> Option<&SchemaObjectFieldDefinition> {
-        self.fields.iter().find(|f| f.field.name == name)
+        self.fields.get(name)
     }
 }
 

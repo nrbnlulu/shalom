@@ -107,21 +107,22 @@ fn resolve_object(
     if context.get_type(&name).is_some() {
         return;
     }
-    let mut fields = Vec::new();
+    let mut fields = HashMap::new();
     for (name, field) in origin.fields.iter() {
         let name = name.to_string();
         let description = field.description.as_ref().map(|v| v.to_string());
         let raw_type = field.ty.clone();
         let arguments = vec![];
         let field_definition =
-            SchemaFieldCommon::new(context.clone(), name, raw_type, description);
-        fields.push(SchemaObjectFieldDefinition {
+            SchemaFieldCommon::new(context.clone(), name.clone(), raw_type, description);
+        fields.insert(
+                name,
+            SchemaObjectFieldDefinition {
             field: field_definition,
             arguments,
         });
     }
     #[allow(clippy::mutable_key_type)]
-    let fields: HashSet<_> = fields.into_iter().collect();
     let description = origin.description.as_ref().map(|v| v.to_string());
     let object = Node::new(ObjectType {
         name: name.clone(),
