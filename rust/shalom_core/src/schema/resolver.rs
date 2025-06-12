@@ -1,9 +1,9 @@
-use crate::schema::types::SchemaObjectFieldDefinition;
+use crate::schema::types::{SchemaObjectFieldDefinition};
 
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{
     EnumType, EnumValueDefinition, GraphQLAny, InputFieldDefinition, InputObjectType, ObjectType,
-    ScalarType, SchemaFieldCommon,
+    ScalarType, SchemaFieldCommon
 };
 use anyhow::Result;
 use apollo_compiler::{self};
@@ -111,10 +111,9 @@ fn resolve_object(
     for (name, field) in origin.fields.iter() {
         let name = name.to_string();
         let description = field.description.as_ref().map(|v| v.to_string());
-        let raw_type = field.ty.clone();
         let arguments = vec![];
         let field_definition =
-            SchemaFieldCommon::new(context.clone(), name.clone(), raw_type, description);
+            SchemaFieldCommon::new(context.clone(), name.clone(), &field.ty, description);
         fields.insert(
                 name,
             SchemaObjectFieldDefinition {
@@ -169,7 +168,7 @@ fn resolve_input(
         let default_value = field.default_value.clone();
         let name = name.to_string();
         let field_definition =
-            SchemaFieldCommon::new(context.clone(), name.clone(), (*field.ty).clone(), description);
+            SchemaFieldCommon::new(context.clone(), name.clone(), &field.ty, description);
         let input_field_definition = InputFieldDefinition {
             field: field_definition,
             is_optional,

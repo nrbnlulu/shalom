@@ -1,7 +1,7 @@
 
 {% macro field_to_json_logic(fields) %}
 {% for name, field in fields | items %}
-    {% set field_ty = field.ty %}
+    {% set field_ty = field.ty.ty %}
     {% if field.is_optional and field.default_value is none %}  
         if ({{ name }}.isSome()) {
             {% if field_ty.kind == "InputObject" %} 

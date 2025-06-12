@@ -4,10 +4,12 @@ use std::{
     sync::Arc,
 };
 
-use apollo_compiler::{ast::Value, Node};
+use apollo_compiler::{ast::{Value, Type as RawType}, Node};
 use serde::ser::{SerializeStruct, Serializer};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+
+use crate::schema::context::SharedSchemaContext;
 
 use super::context::SchemaContext;
 use std::sync;
@@ -195,83 +197,88 @@ impl Hash for InputObjectType {
     }
 }
 
-#[derive(Clone, Debug, Deserialize)]
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 enum UnresolvedTypeKind {
-    Scalar { name: String },
-    Object { name: String },
-    Interface { name: String },
-    Union { name: String },
-    Enum { name: String },
-    InputObject { name: String },
-    List { of_type: Box<UnresolvedType> },
+  Named{ name: String},
+  List { of_type: Box<UnresolvedType> },
 }
 
 
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct UnresolvedType {
     is_optional: bool,
     ty: UnresolvedTypeKind,
 }
 
-#[derive(Clone, Debug, Deserialize)]
-struct ResolvedType{
-    is_optional: bool,
-    ty: GraphQLAny,
+impl UnresolvedType {
+    pub fn ty_name(&self) -> String {
+        match &self.ty {
+           UnresolvedTypeKind::Named { name } => name.clone(),
+           UnresolvedTypeKind::List { of_type } => unimplemented!("lists have not been implemented")
+        }
+    }
+
+    pub fn unresolved_ty(ty: &RawType) -> Self {
+         let is_optional = !ty.is_non_null();
+         let unresolved_kind = match ty {
+            RawType::Named(name) => UnresolvedTypeKind::Named { name: name.to_string() },
+            RawType::NonNullNamed(name) => UnresolvedTypeKind::Named { name: name.to_string() },
+            _ => unimplemented!("lists have not been implemented")
+         };
+         Self {
+            is_optional,
+            ty: unresolved_kind  
+         }
+    }
+} 
+
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ResolvedType{
+    pub is_optional: bool,
+    pub ty: GraphQLAny,
 }
 
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct SchemaFieldCommon {
     pub name: String,
-    pub raw_type: UnresolvedType,
+    unresolved_type: UnresolvedType,
     pub description: Option<String>,
     #[serde(skip)]
     ctx: sync::Weak<SchemaContext>,
 }
 
-
-
 impl SchemaFieldCommon {
     pub fn new(
         context: Arc<SchemaContext>,
         name: String,
-        raw_type: UnresolvedType,
+        raw_type: &RawType,
         description: Option<String>,
     ) -> Self {
+        let unresolved_type = UnresolvedType::unresolved_ty(raw_type);
         SchemaFieldCommon {
             name,
-            raw_type,
+            unresolved_type,
             description,
             ctx: Arc::downgrade(&context),
         }
     }
-}
 
 
-impl SchemaFieldCommon {
-    pub fn resolve_type(&self, ctx: &SchemaContext) -> Option<ResolvedType> {
-        type URTK = UnresolvedTypeKind;
-        let is_optional = self.raw_type.is_optional;
-        let resolved_kind = match &self.raw_type.ty {
-            URTK::Scalar { name }
-            | URTK::Object { name }
-            | URTK::Interface { name }
-            | URTK::Union { name }
-            | URTK::Enum { name }
-            | URTK::InputObject { name } => {
-            let gql_type = ctx.get_type(name)?;
-            gql_type
-            }
-            URTK::List { of_type: _ } => {
-            todo!("List type resolution is not implemented yet");
-            }
+    pub fn resolve_type(&self, ctx: &SchemaContext) -> ResolvedType {
+        let gql_ty = 
+            ctx
+            .get_type(self.unresolved_type.ty_name().as_str())
+            .unwrap();
+        let resolved_ty = ResolvedType {
+                is_optional: self.unresolved_type.is_optional, 
+                ty: gql_ty
         };
-        Some(ResolvedType {
-            is_optional,
-            ty: resolved_kind,
-        })
-    }
+        resolved_ty
+    } 
 }
 
 impl Serialize for SchemaFieldCommon {
@@ -281,22 +288,19 @@ impl Serialize for SchemaFieldCommon {
     {
         let mut s = serializer.serialize_struct("FieldDefinition", 3)?;
         s.serialize_field("name", &self.name)?;
-        let gql_ty = self
-            .ctx
-            .upgrade()
-            .unwrap()
-            .get_type(self.raw_type.inner_named_type().as_str())
-            .unwrap();
+        let ctx = self.ctx.upgrade().unwrap();
+        let mut resolved_ty = self.resolve_type(&ctx);
         // avoids recursion
-        if let GraphQLAny::InputObject(input) = gql_ty {
+        if let GraphQLAny::InputObject(input) = resolved_ty.ty {
             let mut input = input.clone();
             input.make_mut().fields = HashMap::new();
             let gql_ty = GraphQLAny::InputObject(input);
-            s.serialize_field("ty", &gql_ty)?;
+            resolved_ty.ty = gql_ty;
+            s.serialize_field("ty", &resolved_ty)?;
         } else {
-            s.serialize_field("ty", &gql_ty)?;
+            s.serialize_field("ty", &resolved_ty)?;
         }
-        s.serialize_field("raw_type", &self.raw_type)?;
+        s.serialize_field("unresolved_type", &self.unresolved_type)?;
         s.serialize_field("description", &self.description)?;
         s.end()
     }
@@ -311,7 +315,7 @@ impl Hash for SchemaFieldCommon {
 impl PartialEq for SchemaFieldCommon {
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name
-            && self.raw_type == other.raw_type
+            && self.unresolved_type == other.unresolved_type
             && self.description == other.description
     }
 }

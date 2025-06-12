@@ -158,7 +158,7 @@ fn parse_operation(
         let field_definition = SchemaFieldCommon::new(
             global_ctx.schema_ctx.clone(),
             name.clone(),
-            raw_type,
+            &raw_type,
             None,
         );
         let input_definition = InputFieldDefinition {

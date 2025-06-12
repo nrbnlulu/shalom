@@ -7,7 +7,7 @@ use shalom_core::{
     operation::{context::OperationContext, types::Selection},
     schema::{
         context::{SchemaContext, SharedSchemaContext},
-        types::{GraphQLAny, InputFieldDefinition},
+        types::{GraphQLAny, InputFieldDefinition, ResolvedType},
     },
 };
 use std::{
@@ -75,9 +75,9 @@ mod ext_jinja_fns {
         schema_ctx: &SchemaContext,
         input: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
-        let ty = input.field.resolve_type(schema_ctx);
-        let ty_name = ty.name();
-        let resolved = match ty {
+        let gql_ty = input.field.resolve_type(schema_ctx).ty;
+        let ty_name = gql_ty.name();
+        let resolved = match gql_ty {
             GraphQLAny::Scalar(_) => DEFAULT_SCALARS_MAP.get(&ty_name).unwrap().clone(),
             GraphQLAny::InputObject(_) => ty_name,
             GraphQLAny::Enum(enum_) => enum_.name.clone(),
@@ -103,7 +103,7 @@ mod ext_jinja_fns {
             .expect("cannot parse default value that does not exist")
             .to_string();
         let ty = input.field.resolve_type(schema_ctx);
-        if let GraphQLAny::Enum(enum_) = ty {
+        if let GraphQLAny::Enum(enum_) = ty.ty {
             format!("{}.{}", enum_.name, default_value)
         } else {
             default_value.to_string()
