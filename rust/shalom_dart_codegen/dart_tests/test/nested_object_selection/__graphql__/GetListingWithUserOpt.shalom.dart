@@ -67,11 +67,17 @@ class GetListingWithUserOpt_listing {
     this.userOpt,
   });
   static GetListingWithUserOpt_listing fromJson(JsonObject data) {
-    final String id_value = data['id'];
+    final String id_value;
 
-    final String name_value = data['name'];
+    id_value = data['id'];
 
-    final int? price_value = data['price'];
+    final String name_value;
+
+    name_value = data['name'];
+
+    final int? price_value;
+
+    price_value = data['price'];
 
     final GetListingWithUserOpt_listing_userOpt? userOpt_value;
 
@@ -178,9 +184,13 @@ class GetListingWithUserOpt_listing_userOpt {
   // keywordargs constructor
   GetListingWithUserOpt_listing_userOpt({required this.id, required this.name});
   static GetListingWithUserOpt_listing_userOpt fromJson(JsonObject data) {
-    final String id_value = data['id'];
+    final String id_value;
 
-    final String name_value = data['name'];
+    id_value = data['id'];
+
+    final String name_value;
+
+    name_value = data['name'];
 
     return GetListingWithUserOpt_listing_userOpt(
       id: id_value,

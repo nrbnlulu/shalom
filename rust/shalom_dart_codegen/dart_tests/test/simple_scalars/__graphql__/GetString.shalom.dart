@@ -12,7 +12,9 @@ class GetStringResponse {
   // keywordargs constructor
   GetStringResponse({required this.string});
   static GetStringResponse fromJson(JsonObject data) {
-    final String string_value = data['string'];
+    final String string_value;
+
+    string_value = data['string'];
 
     return GetStringResponse(string: string_value);
   }

@@ -73,11 +73,17 @@ class OptionalWithNullDefault_updateUser {
   // keywordargs constructor
   OptionalWithNullDefault_updateUser({this.email, this.name, this.phone});
   static OptionalWithNullDefault_updateUser fromJson(JsonObject data) {
-    final String? email_value = data['email'];
+    final String? email_value;
 
-    final String? name_value = data['name'];
+    email_value = data['email'];
 
-    final String? phone_value = data['phone'];
+    final String? name_value;
+
+    name_value = data['name'];
+
+    final String? phone_value;
+
+    phone_value = data['phone'];
 
     return OptionalWithNullDefault_updateUser(
       email: email_value,

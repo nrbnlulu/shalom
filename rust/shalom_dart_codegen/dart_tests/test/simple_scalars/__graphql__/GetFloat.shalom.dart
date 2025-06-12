@@ -12,7 +12,9 @@ class GetFloatResponse {
   // keywordargs constructor
   GetFloatResponse({required this.float});
   static GetFloatResponse fromJson(JsonObject data) {
-    final double float_value = data['float'];
+    final double float_value;
+
+    float_value = data['float'];
 
     return GetFloatResponse(float: float_value);
   }

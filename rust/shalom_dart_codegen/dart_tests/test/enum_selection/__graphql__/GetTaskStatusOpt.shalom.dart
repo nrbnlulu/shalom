@@ -60,9 +60,13 @@ class GetTaskStatusOpt_task {
   // keywordargs constructor
   GetTaskStatusOpt_task({required this.id, required this.name, this.statusOpt});
   static GetTaskStatusOpt_task fromJson(JsonObject data) {
-    final String id_value = data['id'];
+    final String id_value;
 
-    final String name_value = data['name'];
+    id_value = data['id'];
+
+    final String name_value;
+
+    name_value = data['name'];
 
     final Status? statusOpt_value;
 

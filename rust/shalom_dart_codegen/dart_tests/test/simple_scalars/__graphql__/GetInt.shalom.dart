@@ -12,7 +12,9 @@ class GetIntResponse {
   // keywordargs constructor
   GetIntResponse({required this.intField});
   static GetIntResponse fromJson(JsonObject data) {
-    final int intField_value = data['intField'];
+    final int intField_value;
+
+    intField_value = data['intField'];
 
     return GetIntResponse(intField: intField_value);
   }

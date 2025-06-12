@@ -1,3 +1,5 @@
+// Export scalar infra
+
 typedef JsonObject = Map<String, dynamic>;
 
 class GraphQLResult<T> {
@@ -12,12 +14,11 @@ class GraphQLResult<T> {
   ) {
     return GraphQLResult._(
       data: json['data'] != null ? fromJson(json['data']) : null,
-      errors:
-          json['errors'] != null
-              ? (json['errors'] as List)
-                  .map((e) => (e as List).map((e) => e as JsonObject).toList())
-                  .toList()
-              : null,
+      errors: json['errors'] != null
+          ? (json['errors'] as List)
+              .map((e) => (e as List).map((e) => e as JsonObject).toList())
+              .toList()
+          : null,
     );
   }
 }
@@ -69,9 +70,14 @@ sealed class Option<T> {
 
 class None<T> implements Option<T> {
   const None();
+  @override
   T? some() => null;
-  isSome() => false;
-  inspect(void Function(T)) => null;
+
+  @override
+  bool isSome() => false;
+
+  @override
+  void inspect(void Function(T)) => null;
 }
 
 class Some<T> implements Option<T> {
@@ -79,7 +85,12 @@ class Some<T> implements Option<T> {
 
   const Some(this.value);
 
+  @override
   T? some() => value;
-  isSome() => true;
-  inspect(void Function(T) fn) => fn(value);
+
+  @override
+  bool isSome() => true;
+
+  @override
+  void inspect(void Function(T) fn) => fn(value);
 }

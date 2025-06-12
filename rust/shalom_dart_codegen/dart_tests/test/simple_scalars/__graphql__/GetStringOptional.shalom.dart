@@ -12,7 +12,9 @@ class GetStringOptionalResponse {
   // keywordargs constructor
   GetStringOptionalResponse({this.stringOptional});
   static GetStringOptionalResponse fromJson(JsonObject data) {
-    final String? stringOptional_value = data['stringOptional'];
+    final String? stringOptional_value;
+
+    stringOptional_value = data['stringOptional'];
 
     return GetStringOptionalResponse(stringOptional: stringOptional_value);
   }

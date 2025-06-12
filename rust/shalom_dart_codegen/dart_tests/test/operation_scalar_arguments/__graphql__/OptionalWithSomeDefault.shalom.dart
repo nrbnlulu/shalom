@@ -68,11 +68,17 @@ class OptionalWithSomeDefault_task {
   // keywordargs constructor
   OptionalWithSomeDefault_task({this.name, this.duration, this.is_easy});
   static OptionalWithSomeDefault_task fromJson(JsonObject data) {
-    final String? name_value = data['name'];
+    final String? name_value;
 
-    final int? duration_value = data['duration'];
+    name_value = data['name'];
 
-    final bool? is_easy_value = data['is_easy'];
+    final int? duration_value;
+
+    duration_value = data['duration'];
+
+    final bool? is_easy_value;
+
+    is_easy_value = data['is_easy'];
 
     return OptionalWithSomeDefault_task(
       name: name_value,

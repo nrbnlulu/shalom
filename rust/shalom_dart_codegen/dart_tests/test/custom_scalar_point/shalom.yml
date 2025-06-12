@@ -1,0 +1,7 @@
+custom_scalars:
+  Point:
+    graphql_name: "Point"
+    scalar_dart_type: "Point"
+    impl_symbol:
+      import_path: "import '../point.dart';"
+      symbol_name: "Point"
