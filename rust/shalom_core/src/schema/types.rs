@@ -4,12 +4,13 @@ use std::{
     sync::Arc,
 };
 
-use apollo_compiler::{ast::{Value, Type as RawType}, Node};
+use apollo_compiler::{
+    ast::{Type as RawType, Value},
+    Node,
+};
 use serde::ser::{SerializeStruct, Serializer};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-
-use crate::schema::context::SharedSchemaContext;
 
 use super::context::SchemaContext;
 use std::sync;
@@ -197,14 +198,11 @@ impl Hash for InputObjectType {
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 enum UnresolvedTypeKind {
-  Named{ name: String},
-  List { of_type: Box<UnresolvedType> },
+    Named { name: String },
+    List { of_type: Box<UnresolvedType> },
 }
-
-
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct UnresolvedType {
@@ -215,32 +213,36 @@ struct UnresolvedType {
 impl UnresolvedType {
     pub fn ty_name(&self) -> String {
         match &self.ty {
-           UnresolvedTypeKind::Named { name } => name.clone(),
-           UnresolvedTypeKind::List { of_type } => unimplemented!("lists have not been implemented")
+            UnresolvedTypeKind::Named { name } => name.clone(),
+            _ => {
+                unimplemented!("lists have not been implemented")
+            }
         }
     }
 
     pub fn unresolved_ty(ty: &RawType) -> Self {
-         let is_optional = !ty.is_non_null();
-         let unresolved_kind = match ty {
-            RawType::Named(name) => UnresolvedTypeKind::Named { name: name.to_string() },
-            RawType::NonNullNamed(name) => UnresolvedTypeKind::Named { name: name.to_string() },
-            _ => unimplemented!("lists have not been implemented")
-         };
-         Self {
+        let is_optional = !ty.is_non_null();
+        let unresolved_kind = match ty {
+            RawType::Named(name) => UnresolvedTypeKind::Named {
+                name: name.to_string(),
+            },
+            RawType::NonNullNamed(name) => UnresolvedTypeKind::Named {
+                name: name.to_string(),
+            },
+            _ => unimplemented!("lists have not been implemented"),
+        };
+        Self {
             is_optional,
-            ty: unresolved_kind  
-         }
+            ty: unresolved_kind,
+        }
     }
-} 
-
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct ResolvedType{
+pub struct ResolvedType {
     pub is_optional: bool,
     pub ty: GraphQLAny,
 }
-
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct SchemaFieldCommon {
@@ -267,18 +269,15 @@ impl SchemaFieldCommon {
         }
     }
 
-
     pub fn resolve_type(&self, ctx: &SchemaContext) -> ResolvedType {
-        let gql_ty = 
-            ctx
+        let gql_ty = ctx
             .get_type(self.unresolved_type.ty_name().as_str())
             .unwrap();
-        let resolved_ty = ResolvedType {
-                is_optional: self.unresolved_type.is_optional, 
-                ty: gql_ty
-        };
-        resolved_ty
-    } 
+        ResolvedType {
+            is_optional: self.unresolved_type.is_optional,
+            ty: gql_ty,
+        }
+    }
 }
 
 impl Serialize for SchemaFieldCommon {

@@ -11,7 +11,7 @@ use crate::context::SharedShalomGlobalContext;
 use crate::operation::types::ObjectSelection;
 use crate::schema::context::SharedSchemaContext;
 use crate::schema::types::{
-    EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon
+    EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
 };
 
 use super::context::{OperationContext, SharedOpCtx};
@@ -155,12 +155,8 @@ fn parse_operation(
         let name = variable.name.to_string();
         let raw_type = (*variable.ty).clone();
         let is_optional = !raw_type.is_non_null();
-        let field_definition = SchemaFieldCommon::new(
-            global_ctx.schema_ctx.clone(),
-            name.clone(),
-            &raw_type,
-            None,
-        );
+        let field_definition =
+            SchemaFieldCommon::new(global_ctx.schema_ctx.clone(), name.clone(), &raw_type, None);
         let input_definition = InputFieldDefinition {
             field: field_definition,
             is_optional,

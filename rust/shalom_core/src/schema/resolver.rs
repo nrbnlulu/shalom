@@ -1,9 +1,9 @@
-use crate::schema::types::{SchemaObjectFieldDefinition};
+use crate::schema::types::SchemaObjectFieldDefinition;
 
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{
     EnumType, EnumValueDefinition, GraphQLAny, InputFieldDefinition, InputObjectType, ObjectType,
-    ScalarType, SchemaFieldCommon
+    ScalarType, SchemaFieldCommon,
 };
 use anyhow::Result;
 use apollo_compiler::{self};
@@ -115,11 +115,12 @@ fn resolve_object(
         let field_definition =
             SchemaFieldCommon::new(context.clone(), name.clone(), &field.ty, description);
         fields.insert(
-                name,
+            name,
             SchemaObjectFieldDefinition {
-            field: field_definition,
-            arguments,
-        });
+                field: field_definition,
+                arguments,
+            },
+        );
     }
     #[allow(clippy::mutable_key_type)]
     let description = origin.description.as_ref().map(|v| v.to_string());

@@ -14,7 +14,7 @@ input Review {
 }
 
 input OrderDetails {
-    first_review: Review 
+    firstReview: Review 
 }
 
 input OrderRecursive {

@@ -7,7 +7,7 @@ use shalom_core::{
     operation::{context::OperationContext, types::Selection},
     schema::{
         context::{SchemaContext, SharedSchemaContext},
-        types::{GraphQLAny, InputFieldDefinition, ResolvedType},
+        types::{GraphQLAny, InputFieldDefinition},
     },
 };
 use std::{

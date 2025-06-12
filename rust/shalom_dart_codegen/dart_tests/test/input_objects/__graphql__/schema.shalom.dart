@@ -1,307 +1,116 @@
 // ignore_for_file: constant_identifier_names
 
-
-
-
-
 import 'package:shalom_core/shalom_core.dart';
-
 
 // ------------ Enum DEFINITIONS -------------
 
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
 
-
 class Order {
-    
-    
-        final String name; 
-    
-        final double price; 
-    
-        final int quantity; 
-    
-    Order(
-        {
-        
+  final String name;
 
-    
-        
-            required this.name  
-        ,
-    
-    
-    
-        
-            required this.price  
-        ,
-    
-    
-    
-        
-            required this.quantity  
-        ,
-    
-      
- 
-        }
-    );
+  final double price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final int quantity;
 
-    
-    
-        
-            data["name"] = name; 
-        
-    
+  Order({required this.name, required this.price, required this.quantity});
 
-    
-    
-        
-            data["price"] = price; 
-        
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-    
-        
-            data["quantity"] = quantity; 
-        
-    
+    data["name"] = name;
 
-    
-        return data;
-    } 
+    data["price"] = price;
+
+    data["quantity"] = quantity;
+
+    return data;
+  }
 }
-     
-
 
 class OrderOpt {
-    
-    
-        final Option<String?> name; 
-    
-        final Option<double?> price; 
-    
-        final Option<int?> quantity; 
-    
-    OrderOpt(
-        {
-        
+  final Option<String?> name;
 
-    
-         
-            this.name = const None() 
-        ,
-    
-    
-    
-         
-            this.price = const None() 
-        ,
-    
-    
-    
-         
-            this.quantity = const None() 
-        ,
-    
-      
- 
-        }
-    );
+  final Option<double?> price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final Option<int?> quantity;
 
-    
-      
-        if (name.isSome()) {
-            
-                data["name"] = name.some();
-            
-        } 
-    
+  OrderOpt({
+    this.name = const None(),
 
-    
-      
-        if (price.isSome()) {
-            
-                data["price"] = price.some();
-            
-        } 
-    
+    this.price = const None(),
 
-    
-      
-        if (quantity.isSome()) {
-            
-                data["quantity"] = quantity.some();
-            
-        } 
-    
+    this.quantity = const None(),
+  });
 
-    
-        return data;
-    } 
+  JsonObject toJson() {
+    JsonObject data = {};
+
+    if (name.isSome()) {
+      data["name"] = name.some();
+    }
+
+    if (price.isSome()) {
+      data["price"] = price.some();
+    }
+
+    if (quantity.isSome()) {
+      data["quantity"] = quantity.some();
+    }
+
+    return data;
+  }
 }
-     
-
 
 class OrderOptWithNullDefaults {
-    
-    
-        final String? name; 
-    
-        final double? price; 
-    
-        final int? quantity; 
-    
-    OrderOptWithNullDefaults(
-        {
-        
+  final String? name;
 
-    
-         
-            
-            
-                this.name 
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.price 
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.quantity 
-            
-        ,
-    
-      
- 
-        }
-    );
+  final double? price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final int? quantity;
 
-    
-    
-        
-            data["name"] = name; 
-        
-    
+  OrderOptWithNullDefaults({this.name, this.price, this.quantity});
 
-    
-    
-        
-            data["price"] = price; 
-        
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-    
-        
-            data["quantity"] = quantity; 
-        
-    
+    data["name"] = name;
 
-    
-        return data;
-    } 
+    data["price"] = price;
+
+    data["quantity"] = quantity;
+
+    return data;
+  }
 }
-     
-
 
 class OrderOptWithSomeDefaults {
-    
-    
-        final String? name; 
-    
-        final double? price; 
-    
-        final int? quantity; 
-    
-    OrderOptWithSomeDefaults(
-        {
-        
+  final String? name;
 
-    
-         
-            
-            
-                this.name = "burgers"
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.price = 10.0
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.quantity = 2
-            
-        ,
-    
-      
- 
-        }
-    );
+  final double? price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final int? quantity;
 
-    
-    
-        
-            data["name"] = name; 
-        
-    
+  OrderOptWithSomeDefaults({
+    this.name = "burgers",
 
-    
-    
-        
-            data["price"] = price; 
-        
-    
+    this.price = 10.0,
 
-    
-    
-        
-            data["quantity"] = quantity; 
-        
-    
+    this.quantity = 2,
+  });
 
-    
-        return data;
-    } 
+  JsonObject toJson() {
+    JsonObject data = {};
+
+    data["name"] = name;
+
+    data["price"] = price;
+
+    data["quantity"] = quantity;
+
+    return data;
+  }
 }
-     
 
 // ------------ END Input DEFINITIONS -------------

@@ -1,251 +1,98 @@
 // ignore_for_file: constant_identifier_names
 
-
-
-
-
 import 'package:shalom_core/shalom_core.dart';
-
 
 // ------------ Enum DEFINITIONS -------------
 
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
 
-
 class Order {
-    
-    
-        final String name; 
-    
-        final double price; 
-    
-        final int quantity; 
-    
-    Order(
-        {
-        
+  final String name;
 
-    
-        
-            required this.name  
-        ,
-    
-    
-    
-        
-            required this.price  
-        ,
-    
-    
-    
-        
-            required this.quantity  
-        ,
-    
-      
- 
-        }
-    );
+  final double price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final int quantity;
 
-    
-    
-        
-            data["name"] = name; 
-        
-    
+  Order({required this.name, required this.price, required this.quantity});
 
-    
-    
-        
-            data["price"] = price; 
-        
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-    
-        
-            data["quantity"] = quantity; 
-        
-    
+    data["name"] = name;
 
-    
-        return data;
-    } 
+    data["price"] = price;
+
+    data["quantity"] = quantity;
+
+    return data;
+  }
 }
-     
-
 
 class OrderDetails {
-    
-    
-        final Option<Review?> first_review; 
-    
-    OrderDetails(
-        {
-        
+  final Option<Review?> firstReview;
 
-    
-         
-            this.first_review = const None() 
-        ,
-    
-      
- 
-        }
-    );
+  OrderDetails({this.firstReview = const None()});
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-      
-        if (first_review.isSome()) {
-             
-                data["first_review"] = first_review.some()?.toJson();   
-            
-        } 
-    
+    if (firstReview.isSome()) {
+      data["firstReview"] = firstReview.some()?.toJson();
+    }
 
-    
-        return data;
-    } 
+    return data;
+  }
 }
-     
-
 
 class OrderRecursive {
-    
-    
-        final Option<OrderRecursive?> order; 
-    
-    OrderRecursive(
-        {
-        
+  final Option<OrderRecursive?> order;
 
-    
-         
-            this.order = const None() 
-        ,
-    
-      
- 
-        }
-    );
+  OrderRecursive({this.order = const None()});
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-      
-        if (order.isSome()) {
-             
-                data["order"] = order.some()?.toJson();   
-            
-        } 
-    
+    if (order.isSome()) {
+      data["order"] = order.some()?.toJson();
+    }
 
-    
-        return data;
-    } 
+    return data;
+  }
 }
-     
-
 
 class Review {
-    
-    
-        final Option<OrderDetails?> order; 
-    
-    Review(
-        {
-        
+  final Option<OrderDetails?> order;
 
-    
-         
-            this.order = const None() 
-        ,
-    
-      
- 
-        }
-    );
+  Review({this.order = const None()});
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-      
-        if (order.isSome()) {
-             
-                data["order"] = order.some()?.toJson();   
-            
-        } 
-    
+    if (order.isSome()) {
+      data["order"] = order.some()?.toJson();
+    }
 
-    
-        return data;
-    } 
+    return data;
+  }
 }
-     
-
 
 class SpecificOrder {
-    
-    
-        final String notes; 
-    
-        final Order order; 
-    
-    SpecificOrder(
-        {
-        
+  final String notes;
 
-    
-        
-            required this.notes  
-        ,
-    
-    
-    
-        
-            required this.order  
-        ,
-    
-      
- 
-        }
-    );
+  final Order order;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  SpecificOrder({required this.notes, required this.order});
 
-    
-    
-        
-            data["notes"] = notes; 
-        
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-    
-        
-            data["order"] = order.toJson();
-        
-    
+    data["notes"] = notes;
 
-    
-        return data;
-    } 
+    data["order"] = order.toJson();
+
+    return data;
+  }
 }
-     
 
 // ------------ END Input DEFINITIONS -------------
