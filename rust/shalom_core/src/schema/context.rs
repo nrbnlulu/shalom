@@ -88,6 +88,9 @@ pub struct SchemaContext {
     pub schema: Valid<apollo_compiler::Schema>,
 }
 
+
+impl Eq for SchemaContext {}
+
 impl SchemaContext {
     pub fn new(
         initial_types: HashMap<String, GraphQLAny>,
