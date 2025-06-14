@@ -89,7 +89,6 @@ pub struct SchemaContext {
 }
 
 
-impl Eq for SchemaContext {}
 
 impl SchemaContext {
     pub fn new(

@@ -70,12 +70,11 @@ mod ext_jinja_fns {
         }
     }
 
-    #[allow(unused_variables)]
     pub fn type_name_for_field(
         schema_ctx: &SchemaContext,
-        input: ViaDeserialize<InputFieldDefinition>,
+        field: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
-        let gql_ty = input.field.resolve_type(schema_ctx).ty;
+        let gql_ty = field.field.resolve_type(schema_ctx).ty;
         let ty_name = gql_ty.name();
         let resolved = match gql_ty {
             GraphQLAny::Scalar(_) => DEFAULT_SCALARS_MAP.get(&ty_name).unwrap().clone(),
@@ -83,9 +82,9 @@ mod ext_jinja_fns {
             GraphQLAny::Enum(enum_) => enum_.name.clone(),
             _ => unimplemented!("input type not supported"),
         };
-        if input.is_optional && input.default_value.is_none() {
+        if field.is_optional && field.default_value.is_none() {
             format!("Option<{}?>", resolved)
-        } else if input.is_optional {
+        } else if field.is_optional {
             format!("{}?", resolved)
         } else {
             resolved

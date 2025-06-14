@@ -17,7 +17,7 @@ use std::sync;
 
 type GlobalName = String;
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 /// The definition of a named type, with all information from type extensions folded in.
 ///
@@ -114,7 +114,7 @@ impl ScalarType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ObjectType {
     pub description: Option<String>,
     pub name: String,
@@ -135,7 +135,7 @@ impl Hash for ObjectType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InterfaceType {
     pub description: Option<String>,
 
@@ -185,7 +185,7 @@ pub struct EnumValueDefinition {
     pub value: String,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InputObjectType {
     pub description: Option<String>,
     pub name: String,
@@ -198,55 +198,20 @@ impl Hash for InputObjectType {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 enum UnresolvedTypeKind {
     Named { name: String },
     List { of_type: Box<UnresolvedType> },
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct UnresolvedType {
     is_optional: bool,
     ty: UnresolvedTypeKind,
 
-    schema_context: sync::Weak<SchemaContext>,
-}
-impl PartialEq for UnresolvedType {
-    fn eq(&self, other: &Self) -> bool {
-        self.is_optional == other.is_optional && self.ty == other.ty
-    }
-}
-impl Eq for UnresolvedType {}
-
-
-
-fn serialize_unresolved_type<S: Serializer>(schema_context: &SchemaContext, ty: &UnresolvedType, serializer: S) -> Result<S::Ok, S::Error> {
-    let mut s = serializer.serialize_struct("UnresolvedType", 3)?;
-    s.serialize_field("is_optional", &ty.is_optional)?;
-    match &ty.ty {
-        UnresolvedTypeKind::Named { name } => {
-            s.serialize_field("kind", "named")?;
-            s.serialize_field("resolved", &schema_context.get_type(name.as_str()))?;
-        }
-        UnresolvedTypeKind::List { of_type } => {
-            s.serialize_field("kind", "list")?;
-            s.serialize_field("of_type", of_type)?;
-        }
-    }
-    s.end()
 }
 
 
-impl serde::Serialize for UnresolvedType {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        let ctx = self.schema_context.upgrade().unwrap();
-        serialize_unresolved_type(&ctx, self, serializer)
-
-    }
-}
 
 impl UnresolvedType {
     pub fn ty_name(&self) -> String {
@@ -258,7 +223,7 @@ impl UnresolvedType {
         }
     }
 
-    pub fn new(ty: &RawType, schema_context: &SharedSchemaContext) -> Self {
+    pub fn new(ty: &RawType) -> Self {
         let is_optional = !ty.is_non_null();
         let unresolved_kind = match ty {
             RawType::Named(name) =>
@@ -273,7 +238,6 @@ impl UnresolvedType {
         Self {
             is_optional,
             ty: unresolved_kind,
-            schema_context: Arc::downgrade(&schema_context),
         }
     }
 }
@@ -281,13 +245,13 @@ impl UnresolvedType {
 
 
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ResolvedType {
     pub is_optional: bool,
     pub ty: GraphQLAny,
 }
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SchemaFieldCommon {
     pub name: String,
     #[serde(rename = "type")]
@@ -299,12 +263,11 @@ pub struct SchemaFieldCommon {
 
 impl SchemaFieldCommon {
     pub fn new(
-        context: &SharedSchemaContext,
         name: String,
         raw_type: &RawType,
         description: Option<String>,
     ) -> Self {
-        let unresolved_type = UnresolvedType::new(raw_type, context);
+        let unresolved_type = UnresolvedType::new(raw_type);
         SchemaFieldCommon {
             name,
             unresolved_type,
@@ -341,7 +304,7 @@ impl PartialEq for SchemaFieldCommon {
 
 impl Eq for SchemaFieldCommon {}
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct SchemaObjectFieldDefinition {
     #[serde(skip_serializing)]
     pub arguments: Vec<InputFieldDefinition>,
@@ -349,7 +312,7 @@ pub struct SchemaObjectFieldDefinition {
     pub field: SchemaFieldCommon,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct InputFieldDefinition {
     pub is_optional: bool,
     pub default_value: Option<Node<Value>>,

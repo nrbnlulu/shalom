@@ -156,7 +156,7 @@ fn parse_operation(
         let raw_type = (*variable.ty).clone();
         let is_optional = !raw_type.is_non_null();
         let field_definition =
-            SchemaFieldCommon::new(global_ctx.schema_ctx.clone(), name.clone(), &raw_type, None);
+            SchemaFieldCommon::new( name.clone(), &raw_type, None);
         let input_definition = InputFieldDefinition {
             field: field_definition,
             is_optional,
