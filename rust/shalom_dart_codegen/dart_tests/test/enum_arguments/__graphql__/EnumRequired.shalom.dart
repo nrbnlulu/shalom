@@ -12,6 +12,12 @@
 
 
 
+
+
+
+
+
+
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
@@ -420,27 +426,34 @@ class EnumRequiredVariables {
 
     }
 
-    EnumRequiredVariables updateWith(JsonObject data) {
+    
+EnumRequiredVariables updateWith(
+    {
         
-
-    
-    
-        final Status status_value;
-        if (data.containsKey('status')) {
             
-                status_value = Status.fromString(data['status']);            
+                Status? status
             
-        } else {
-            status_value = status;
-        }
-    
-
-    return EnumRequiredVariables (
+            
         
-           status: status_value,
+    }
+) {
+    
+        final Status status$next;
+        
+            if (status != null) {
+                status$next = status;
+            } else {
+                status$next = this.status;
+            }
+        
+    
+    return EnumRequiredVariables(
+        
+            status: status$next
+            
         
     );
+}
 
 
-    }
 }

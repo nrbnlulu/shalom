@@ -12,6 +12,12 @@
 
 
 
+
+
+
+
+
+
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
@@ -432,32 +438,36 @@ class EnumWithDefaultValueVariables {
 
     }
 
-    EnumWithDefaultValueVariables updateWith(JsonObject data) {
+    
+EnumWithDefaultValueVariables updateWith(
+    {
         
-
-    
-    
-        final Status? status_value;
-        if (data.containsKey('status')) {
             
-                final String? status$raw = data['status']; 
-                if (status$raw != null) {
-                    status_value = Status.fromString(status$raw);
-                } else {
-                    status_value = null;
-                }
+                Option<Status?> status = const None()
             
-        } else {
-            status_value = status;
-        }
-    
-
-    return EnumWithDefaultValueVariables (
+            
         
-           status: status_value,
+    }
+) {
+    
+        final Status? status$next;
+        
+            switch (status) {
+                
+                case Some(value: final data):
+                    status$next = data;
+                case None():
+                    status$next = this.status;
+            }
+        
+    
+    return EnumWithDefaultValueVariables(
+        
+            status: status$next
+            
         
     );
+}
 
 
-    }
 }

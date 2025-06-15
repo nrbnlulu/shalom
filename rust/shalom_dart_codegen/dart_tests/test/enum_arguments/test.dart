@@ -9,8 +9,10 @@ import "__graphql__/schema.shalom.dart";
 
 void main() {
   test("required enum argument", () {
-    final variables = EnumRequiredVariables(status: Status.SENT);
-    variables.updateWithJson(data)
+    var variables = EnumRequiredVariables(status: Status.SENT);
+    var variablesUpdated = variables.updateWith(status: Status.COMPLETED);
+    expect(variablesUpdated.status, Status.COMPLETED);
+    expect(variables.toJson(), {"status": "SENT"});
     final req =
         RequestEnumRequired(
           variables: EnumRequiredVariables(status: Status.COMPLETED),
@@ -19,6 +21,11 @@ void main() {
   });
 
   test("optional enum argument", () {
+    var variables = EnumOptionalVariables(status: Some(Status.SENT));
+    var variablesUpdated = variables.updateWith(
+      status: Some(Some(Status.COMPLETED)),
+    );
+    expect(variablesUpdated.status.some(), Status.COMPLETED);
     expect(
       RequestEnumOptional(
         variables: EnumOptionalVariables(status: Some(null)),
@@ -41,6 +48,14 @@ void main() {
   });
 
   test("required enum argument in InputObject", () {
+    final variables = EnumInputObjectRequiredVariables(
+      order: OrderUpdate(status: Status.SENT, timeLeft: 2),
+    );
+    final variablesUpdated = variables.updateWith(
+      order: OrderUpdate(status: Status.COMPLETED, timeLeft: 3),
+    );
+    expect(variablesUpdated.order.status, Status.COMPLETED);
+
     final req =
         RequestEnumInputObjectRequired(
           variables: EnumInputObjectRequiredVariables(
@@ -51,13 +66,17 @@ void main() {
       "order": {"status": "PROCESSING", "timeLeft": 2},
     });
   });
+
   test("optional enum argument in InputObject", () {
+    final variables = EnumInputObjectOptionalVariables(
+      order: OrderUpdateStatusOpt(status: Some(null), timeLeft: 2),
+    );
+    final variablesUpdated = variables.updateWith(
+      order: OrderUpdateStatusOpt(status: Some(Status.COMPLETED), timeLeft: 3),
+    );
+    expect(variablesUpdated.order.status, Some<Status?>(Status.COMPLETED));
     final req =
-        RequestEnumInputObjectOptional(
-          variables: EnumInputObjectOptionalVariables(
-            order: OrderUpdateStatusOpt(timeLeft: 2, status: Some(null)),
-          ),
-        ).toRequest();
+        RequestEnumInputObjectOptional(variables: variables).toRequest();
     expect(req.variables, {
       "order": {"status": null, "timeLeft": 2},
     });

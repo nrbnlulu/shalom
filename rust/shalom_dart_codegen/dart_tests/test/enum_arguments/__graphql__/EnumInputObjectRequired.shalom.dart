@@ -12,6 +12,12 @@
 
 
 
+
+
+
+
+
+
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
@@ -418,27 +424,34 @@ class EnumInputObjectRequiredVariables {
 
     }
 
-    EnumInputObjectRequiredVariables updateWith(JsonObject data) {
-        
-
     
-     
-        final OrderUpdate order_value;
-        if (data.containsKey('order')) {
-            
-                order_value = OrderUpdate.fromJson(data['order']);            
-            
-        } else {
-            order_value = order;
-        }
-    
-
-    return EnumInputObjectRequiredVariables (
+EnumInputObjectRequiredVariables updateWith(
+    {
         
-           order: order_value,
+            
+                OrderUpdate? order
+            
+            
+        
+    }
+) {
+    
+        final OrderUpdate order$next;
+        
+            if (order != null) {
+                order$next = order;
+            } else {
+                order$next = this.order;
+            }
+        
+    
+    return EnumInputObjectRequiredVariables(
+        
+            order: order$next
+            
         
     );
+}
 
 
-    }
 }

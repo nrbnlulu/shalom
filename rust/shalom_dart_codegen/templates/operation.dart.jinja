@@ -234,8 +234,7 @@ class {{ operation_name }}Variables {
         {{ fromJson_macro(op_variables, typename) }}
     }
 
-    {{ typename }} updateWith(JsonObject data) {
-        {{ updateWith_macro(op_variables, typename) }}
-    }
+    {{ updateWith_macro(op_variables, typename) }}
+
 }
 {% endif %}
