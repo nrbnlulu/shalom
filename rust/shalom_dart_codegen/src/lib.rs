@@ -72,7 +72,10 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn resolve_field_type_name(schema_ctx: &SchemaContext, field: &InputFieldDefinition) -> String {
+    pub fn resolve_field_type_name(
+        schema_ctx: &SchemaContext,
+        field: &InputFieldDefinition,
+    ) -> String {
         let gql_ty = field.common.resolve_type(schema_ctx).ty;
         let ty_name = gql_ty.name();
         match gql_ty {
@@ -80,12 +83,14 @@ mod ext_jinja_fns {
             GraphQLAny::InputObject(_) => ty_name,
             GraphQLAny::Enum(enum_) => enum_.name.clone(),
             _ => unimplemented!("input type not supported"),
-        } 
+        }
     }
 
-    pub fn concrete_typename_of_field(schema_ctx: &SchemaContext, field: ViaDeserialize<InputFieldDefinition>) -> String {
+    pub fn concrete_typename_of_field(
+        schema_ctx: &SchemaContext,
+        field: ViaDeserialize<InputFieldDefinition>,
+    ) -> String {
         resolve_field_type_name(schema_ctx, &field.0)
-        
     }
 
     pub fn type_name_for_field(

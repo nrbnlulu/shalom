@@ -101,44 +101,64 @@
     );
 {% endmacro %}
 
-
-{# {% macro update_with_json_logic(fields) %}
+{% macro field_update_with_json_logic(fields, typename) %}
 {% for name, field in fields | items %}
     {% set field_ty = resolve_field_type(field.common).ty %}
+    {% set concrete_typename = concrete_typename_of_field(field) %}
     {% if field_ty.kind == "InputObject" %} 
         final {{ type_name_for_field(field) }} {{ name }}_value;
-        final JsonObject? {{ name }}$raw = data['{{ name }}'];
-        {% if field.is_optional and field.default_value is none %}  
-            if ({{ name }}$raw != null) {   
-                {{ name }}_value = Some(;   
+        {% if field.is_optional %}  
+            if (data.containsKey('{{ name }}')) {   
+                {% if field.default_value is none %}
+                    {{ name }}_value = Some({{ concrete_typename }}.fromJson(data['{{ name }}']));   
+                {% else %}
+                    {{ name }}_value = {{ concrete_typename }}.fromJson(data['{{ name }}']);   
+                {% endif %}
             } else {
-                {{ name }}_value = null;
+                {{ name }}_value = {{ name }};
             }
         {% else %}
-            data["{{ name }}"] = {{ name }}.toJson();
+            {{ name }}_value = {{ concrete_typename }}.fromJson(data['{{ name }}']);   
         {% endif %}
     {% elif field_ty.kind == "Enum" %}
-        {% if field.is_optional and field.default_value is none %}  
-            data["{{ name }}"] = {{ name }}.some()?.name;
+        final {{ type_name_for_field(field) }} {{ name }}_value;
+        {% if field.is_optional %}  
+            if (data.containsKey('{{ name }}')) {
+                {% if field.default_value is none %}
+                    {{ name }}_value = Some({{ concrete_typename }}.fromString(data['{{ name }}']));
+                {% else %}
+                    {{ name }}_value = {{ concrete_typename }}.fromString(data['{{ name}}']);
+                {% endif %}
+            } else {
+                {{ name }}_value = {{ name }};
+            }
         {% else %}
-            {% if field.is_optional %}
-                data["{{ name }}"] = {{ name }}?.name;
-            {% else %}
-                data["{{ name }}"] = {{ name }}.name;
+                {{ name }}_value = {{ concrete_typename }}.fromString(data['{{ name }}']);
         {% endif %}
     {% else %}
-        {% if field.is_optional and field.default_value is none %}  
-            data["{{ name }}"] = {{ name }}.some(); 
+        final {{ type_name_for_field(field) }} {{ name }}_value;
+        {% if field.is_optional %}  
+            if (data.containsKey({{ name }})) {
+                {% if field.default_value is none %}
+                    {{ name }}_value = Some(data['{{ name }}']);
+                {% else %}
+                    {{ name }}_value = data['{{ name }}'];
+                {% endif %}
+            } else {
+                {{ name }}_value = {{ name }};
+            }
         {% else %} 
-            {% if field.is_optional %} 
-                data["{{ name }}"] == {{ name }};
-            {% else %}
-                data["{{ name }}"] == {{ name }};
-            {% endif %}
+                {{ name }}_value = data['{{ name }}'];
         {% endif %}
     {% endif %}
 {% endfor %}
-{% endmacro %} #}
+    return {{ typename }} (
+        {% for name, field in fields | items %}
+           {{ name }}: {{ name }}_value,
+        {% endfor %}
+    );
+{% endmacro %}
+
 
 
 {% macro field_initialization_logic(fields) %}

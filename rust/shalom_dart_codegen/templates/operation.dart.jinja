@@ -211,11 +211,12 @@ class Request{{ operation_name }} extends Requestable {
 
 {% if op_variables | length > 0 %}
 class {{ operation_name }}Variables {
+    {% set typename = operation_name ~ 'Variables' %}
     {% for name, variable in op_variables | items %}
         final {{ type_name_for_field(variable) }} {{ name }};
     {% endfor %}
 
-    {{ operation_name }}Variables(
+    {{ typename }} (
         {% if op_variables | length > 0 %}
             {
             {{ field_initialization_logic(op_variables) }} 
@@ -230,7 +231,11 @@ class {{ operation_name }}Variables {
     } 
 
     static fromJson(JsonObject data) {
-        {{ field_from_json_logic(op_variables,  operation_name ~ "Variables") }}
+        {{ field_from_json_logic(op_variables, typename) }}
+    }
+
+    {{ typename }} updateWithJson(JsonObject data) {
+        {{ field_update_with_json_logic(op_variables, typename) }}
     }
 }
 {% endif %}

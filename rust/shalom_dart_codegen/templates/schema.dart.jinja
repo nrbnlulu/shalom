@@ -50,6 +50,10 @@ class {{ typename }} {
     static fromJson(JsonObject data) {
         {{ field_from_json_logic(fields, typename) }}
     }
+
+    {{ typename }} updateWithJson(JsonObject data) {
+        {{ field_update_with_json_logic(fields, typename) }}
+    }
 }
      
 {% endfor %}

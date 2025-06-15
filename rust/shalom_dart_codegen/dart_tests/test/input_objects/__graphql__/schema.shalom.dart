@@ -1,562 +1,373 @@
 // ignore_for_file: constant_identifier_names
 
-
-
-
-
-
-
-
-
-
-
 import 'package:shalom_core/shalom_core.dart';
-
 
 // ------------ Enum DEFINITIONS -------------
 
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
 
-
 class Order {
-    
-    
-        final String name; 
-    
-        final double price; 
-    
-        final int quantity; 
-    
-    Order(
-        {
-        
+  final String name;
 
-    
-        
-            required this.name  
-        ,
-    
-    
-    
-        
-            required this.price  
-        ,
-    
-    
-    
-        
-            required this.quantity  
-        ,
-    
-      
- 
-        }
+  final double price;
+
+  final int quantity;
+
+  Order({required this.name, required this.price, required this.quantity});
+
+  JsonObject toJson() {
+    JsonObject data = {};
+
+    data["name"] = name;
+
+    data["price"] = price;
+
+    data["quantity"] = quantity;
+
+    return data;
+  }
+
+  static fromJson(JsonObject data) {
+    final String name_value;
+
+    name_value = data['name'];
+
+    final double price_value;
+
+    price_value = data['price'];
+
+    final int quantity_value;
+
+    quantity_value = data['quantity'];
+
+    return Order(
+      name: name_value,
+
+      price: price_value,
+
+      quantity: quantity_value,
     );
+  }
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  Order updateWithJson(JsonObject data) {
+    final String name_value;
 
-    
-    
-        
-            data["name"] = name; 
-        
-    
+    name_value = data['name'];
 
-    
-    
-        
-            data["price"] = price; 
-        
-    
+    final double price_value;
 
-    
-    
-        
-            data["quantity"] = quantity; 
-        
-    
+    price_value = data['price'];
 
-    
-        return data;
-    } 
+    final int quantity_value;
 
-    static fromJson(JsonObject data) {
-        
+    quantity_value = data['quantity'];
 
-    
-    
-    
-        final String name_value;
-         
-                name_value = data['name'];
-        
-    
+    return Order(
+      name: name_value,
 
-    
-    
-    
-        final double price_value;
-         
-                price_value = data['price'];
-        
-    
+      price: price_value,
 
-    
-    
-    
-        final int quantity_value;
-         
-                quantity_value = data['quantity'];
-        
-    
-
-    return Order (
-        
-           name: name_value,
-        
-           price: price_value,
-        
-           quantity: quantity_value,
-        
+      quantity: quantity_value,
     );
-
-    }
+  }
 }
-     
-
 
 class OrderOpt {
-    
-    
-        final Option<String?> name; 
-    
-        final Option<double?> price; 
-    
-        final Option<int?> quantity; 
-    
-    OrderOpt(
-        {
-        
+  final Option<String?> name;
 
-    
-         
-            this.name = const None() 
-        ,
-    
-    
-    
-         
-            this.price = const None() 
-        ,
-    
-    
-    
-         
-            this.quantity = const None() 
-        ,
-    
-      
- 
-        }
-    );
+  final Option<double?> price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final Option<int?> quantity;
 
-    
-      
-        if (name.isSome()) {
-            
-                data["name"] = name.some();
-            
-        } 
-    
+  OrderOpt({
+    this.name = const None(),
 
-    
-      
-        if (price.isSome()) {
-            
-                data["price"] = price.some();
-            
-        } 
-    
+    this.price = const None(),
 
-    
-      
-        if (quantity.isSome()) {
-            
-                data["quantity"] = quantity.some();
-            
-        } 
-    
+    this.quantity = const None(),
+  });
 
-    
-        return data;
-    } 
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    static fromJson(JsonObject data) {
-        
-
-    
-    
-    
-        final Option<String?> name_value;
-          
-            final String? name$raw = data['name'];
-            if (name$raw != null) {
-                
-                    name_value = Some(name$raw);
-                
-            } else {
-                
-                    name_value = None();
-                
-            }
-        
-    
-
-    
-    
-    
-        final Option<double?> price_value;
-          
-            final double? price$raw = data['price'];
-            if (price$raw != null) {
-                
-                    price_value = Some(price$raw);
-                
-            } else {
-                
-                    price_value = None();
-                
-            }
-        
-    
-
-    
-    
-    
-        final Option<int?> quantity_value;
-          
-            final int? quantity$raw = data['quantity'];
-            if (quantity$raw != null) {
-                
-                    quantity_value = Some(quantity$raw);
-                
-            } else {
-                
-                    quantity_value = None();
-                
-            }
-        
-    
-
-    return OrderOpt (
-        
-           name: name_value,
-        
-           price: price_value,
-        
-           quantity: quantity_value,
-        
-    );
-
+    if (name.isSome()) {
+      data["name"] = name.some();
     }
-}
-     
 
+    if (price.isSome()) {
+      data["price"] = price.some();
+    }
+
+    if (quantity.isSome()) {
+      data["quantity"] = quantity.some();
+    }
+
+    return data;
+  }
+
+  static fromJson(JsonObject data) {
+    final Option<String?> name_value;
+
+    final String? name$raw = data['name'];
+    if (name$raw != null) {
+      name_value = Some(name$raw);
+    } else {
+      name_value = None();
+    }
+
+    final Option<double?> price_value;
+
+    final double? price$raw = data['price'];
+    if (price$raw != null) {
+      price_value = Some(price$raw);
+    } else {
+      price_value = None();
+    }
+
+    final Option<int?> quantity_value;
+
+    final int? quantity$raw = data['quantity'];
+    if (quantity$raw != null) {
+      quantity_value = Some(quantity$raw);
+    } else {
+      quantity_value = None();
+    }
+
+    return OrderOpt(
+      name: name_value,
+
+      price: price_value,
+
+      quantity: quantity_value,
+    );
+  }
+
+  OrderOpt updateWithJson(JsonObject data) {
+    final Option<String?> name_value;
+
+    if (data.containsKey(name)) {
+      name_value = Some(data['name']);
+    } else {
+      name_value = name;
+    }
+
+    final Option<double?> price_value;
+
+    if (data.containsKey(price)) {
+      price_value = Some(data['price']);
+    } else {
+      price_value = price;
+    }
+
+    final Option<int?> quantity_value;
+
+    if (data.containsKey(quantity)) {
+      quantity_value = Some(data['quantity']);
+    } else {
+      quantity_value = quantity;
+    }
+
+    return OrderOpt(
+      name: name_value,
+
+      price: price_value,
+
+      quantity: quantity_value,
+    );
+  }
+}
 
 class OrderOptWithNullDefaults {
-    
-    
-        final String? name; 
-    
-        final double? price; 
-    
-        final int? quantity; 
-    
-    OrderOptWithNullDefaults(
-        {
-        
+  final String? name;
 
-    
-         
-            
-            
-                this.name 
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.price 
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.quantity 
-            
-        ,
-    
-      
- 
-        }
-    );
+  final double? price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final int? quantity;
 
-    
-    
-        
-            data["name"] = name; 
-        
-    
+  OrderOptWithNullDefaults({this.name, this.price, this.quantity});
 
-    
-    
-        
-            data["price"] = price; 
-        
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-    
-        
-            data["quantity"] = quantity; 
-        
-    
+    data["name"] = name;
 
-    
-        return data;
-    } 
+    data["price"] = price;
 
-    static fromJson(JsonObject data) {
-        
+    data["quantity"] = quantity;
 
-    
-    
-    
-        final String? name_value;
-          
-            final String? name$raw = data['name'];
-            if (name$raw != null) {
-                
-                    name_value = name$raw;
-                
-            } else {
-                 
-                    name_value = null;
-                
-            }
-        
-    
+    return data;
+  }
 
-    
-    
-    
-        final double? price_value;
-          
-            final double? price$raw = data['price'];
-            if (price$raw != null) {
-                
-                    price_value = price$raw;
-                
-            } else {
-                 
-                    price_value = null;
-                
-            }
-        
-    
+  static fromJson(JsonObject data) {
+    final String? name_value;
 
-    
-    
-    
-        final int? quantity_value;
-          
-            final int? quantity$raw = data['quantity'];
-            if (quantity$raw != null) {
-                
-                    quantity_value = quantity$raw;
-                
-            } else {
-                 
-                    quantity_value = null;
-                
-            }
-        
-    
-
-    return OrderOptWithNullDefaults (
-        
-           name: name_value,
-        
-           price: price_value,
-        
-           quantity: quantity_value,
-        
-    );
-
+    final String? name$raw = data['name'];
+    if (name$raw != null) {
+      name_value = name$raw;
+    } else {
+      name_value = null;
     }
-}
-     
 
+    final double? price_value;
+
+    final double? price$raw = data['price'];
+    if (price$raw != null) {
+      price_value = price$raw;
+    } else {
+      price_value = null;
+    }
+
+    final int? quantity_value;
+
+    final int? quantity$raw = data['quantity'];
+    if (quantity$raw != null) {
+      quantity_value = quantity$raw;
+    } else {
+      quantity_value = null;
+    }
+
+    return OrderOptWithNullDefaults(
+      name: name_value,
+
+      price: price_value,
+
+      quantity: quantity_value,
+    );
+  }
+
+  OrderOptWithNullDefaults updateWithJson(JsonObject data) {
+    final String? name_value;
+
+    if (data.containsKey(name)) {
+      name_value = data['name'];
+    } else {
+      name_value = name;
+    }
+
+    final double? price_value;
+
+    if (data.containsKey(price)) {
+      price_value = data['price'];
+    } else {
+      price_value = price;
+    }
+
+    final int? quantity_value;
+
+    if (data.containsKey(quantity)) {
+      quantity_value = data['quantity'];
+    } else {
+      quantity_value = quantity;
+    }
+
+    return OrderOptWithNullDefaults(
+      name: name_value,
+
+      price: price_value,
+
+      quantity: quantity_value,
+    );
+  }
+}
 
 class OrderOptWithSomeDefaults {
-    
-    
-        final String? name; 
-    
-        final double? price; 
-    
-        final int? quantity; 
-    
-    OrderOptWithSomeDefaults(
-        {
-        
+  final String? name;
 
-    
-         
-            
-            
-                this.name = "burgers"
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.price = 10.0
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.quantity = 2
-            
-        ,
-    
-      
- 
-        }
-    );
+  final double? price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final int? quantity;
 
-    
-    
-        
-            data["name"] = name; 
-        
-    
+  OrderOptWithSomeDefaults({
+    this.name = "burgers",
 
-    
-    
-        
-            data["price"] = price; 
-        
-    
+    this.price = 10.0,
 
-    
-    
-        
-            data["quantity"] = quantity; 
-        
-    
+    this.quantity = 2,
+  });
 
-    
-        return data;
-    } 
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    static fromJson(JsonObject data) {
-        
+    data["name"] = name;
 
-    
-    
-    
-        final String? name_value;
-          
-            final String? name$raw = data['name'];
-            if (name$raw != null) {
-                
-                    name_value = name$raw;
-                
-            } else {
-                 
-                    name_value = null;
-                
-            }
-        
-    
+    data["price"] = price;
 
-    
-    
-    
-        final double? price_value;
-          
-            final double? price$raw = data['price'];
-            if (price$raw != null) {
-                
-                    price_value = price$raw;
-                
-            } else {
-                 
-                    price_value = null;
-                
-            }
-        
-    
+    data["quantity"] = quantity;
 
-    
-    
-    
-        final int? quantity_value;
-          
-            final int? quantity$raw = data['quantity'];
-            if (quantity$raw != null) {
-                
-                    quantity_value = quantity$raw;
-                
-            } else {
-                 
-                    quantity_value = null;
-                
-            }
-        
-    
+    return data;
+  }
 
-    return OrderOptWithSomeDefaults (
-        
-           name: name_value,
-        
-           price: price_value,
-        
-           quantity: quantity_value,
-        
-    );
+  static fromJson(JsonObject data) {
+    final String? name_value;
 
+    final String? name$raw = data['name'];
+    if (name$raw != null) {
+      name_value = name$raw;
+    } else {
+      name_value = null;
     }
+
+    final double? price_value;
+
+    final double? price$raw = data['price'];
+    if (price$raw != null) {
+      price_value = price$raw;
+    } else {
+      price_value = null;
+    }
+
+    final int? quantity_value;
+
+    final int? quantity$raw = data['quantity'];
+    if (quantity$raw != null) {
+      quantity_value = quantity$raw;
+    } else {
+      quantity_value = null;
+    }
+
+    return OrderOptWithSomeDefaults(
+      name: name_value,
+
+      price: price_value,
+
+      quantity: quantity_value,
+    );
+  }
+
+  OrderOptWithSomeDefaults updateWithJson(JsonObject data) {
+    final String? name_value;
+
+    if (data.containsKey(name)) {
+      name_value = data['name'];
+    } else {
+      name_value = name;
+    }
+
+    final double? price_value;
+
+    if (data.containsKey(price)) {
+      price_value = data['price'];
+    } else {
+      price_value = price;
+    }
+
+    final int? quantity_value;
+
+    if (data.containsKey(quantity)) {
+      quantity_value = data['quantity'];
+    } else {
+      quantity_value = quantity;
+    }
+
+    return OrderOptWithSomeDefaults(
+      name: name_value,
+
+      price: price_value,
+
+      quantity: quantity_value,
+    );
+  }
 }
-     
 
 // ------------ END Input DEFINITIONS -------------

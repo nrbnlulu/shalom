@@ -1,417 +1,241 @@
 // ignore_for_file: constant_identifier_names
 
-
-
-
-
-
-
-
-
-
-
 import 'package:shalom_core/shalom_core.dart';
-
 
 // ------------ Enum DEFINITIONS -------------
 
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
 
-
 class Order {
-    
-    
-        final String name; 
-    
-        final double price; 
-    
-        final int quantity; 
-    
-    Order(
-        {
-        
+  final String name;
 
-    
-        
-            required this.name  
-        ,
-    
-    
-    
-        
-            required this.price  
-        ,
-    
-    
-    
-        
-            required this.quantity  
-        ,
-    
-      
- 
-        }
+  final double price;
+
+  final int quantity;
+
+  Order({required this.name, required this.price, required this.quantity});
+
+  JsonObject toJson() {
+    JsonObject data = {};
+
+    data["name"] = name;
+
+    data["price"] = price;
+
+    data["quantity"] = quantity;
+
+    return data;
+  }
+
+  static fromJson(JsonObject data) {
+    final String name_value;
+
+    name_value = data['name'];
+
+    final double price_value;
+
+    price_value = data['price'];
+
+    final int quantity_value;
+
+    quantity_value = data['quantity'];
+
+    return Order(
+      name: name_value,
+
+      price: price_value,
+
+      quantity: quantity_value,
     );
+  }
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  Order updateWithJson(JsonObject data) {
+    final String name_value;
 
-    
-    
-        
-            data["name"] = name; 
-        
-    
+    name_value = data['name'];
 
-    
-    
-        
-            data["price"] = price; 
-        
-    
+    final double price_value;
 
-    
-    
-        
-            data["quantity"] = quantity; 
-        
-    
+    price_value = data['price'];
 
-    
-        return data;
-    } 
+    final int quantity_value;
 
-    static fromJson(JsonObject data) {
-        
+    quantity_value = data['quantity'];
 
-    
-    
-    
-        final String name_value;
-         
-                name_value = data['name'];
-        
-    
+    return Order(
+      name: name_value,
 
-    
-    
-    
-        final double price_value;
-         
-                price_value = data['price'];
-        
-    
+      price: price_value,
 
-    
-    
-    
-        final int quantity_value;
-         
-                quantity_value = data['quantity'];
-        
-    
-
-    return Order (
-        
-           name: name_value,
-        
-           price: price_value,
-        
-           quantity: quantity_value,
-        
+      quantity: quantity_value,
     );
-
-    }
+  }
 }
-     
-
 
 class OrderDetails {
-    
-    
-        final Option<Review?> firstReview; 
-    
-    OrderDetails(
-        {
-        
+  final Option<Review?> firstReview;
 
-    
-         
-            this.firstReview = const None() 
-        ,
-    
-      
- 
-        }
-    );
+  OrderDetails({this.firstReview = const None()});
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-      
-        if (firstReview.isSome()) {
-             
-                data["firstReview"] = firstReview.some()?.toJson();   
-            
-        } 
-    
-
-    
-        return data;
-    } 
-
-    static fromJson(JsonObject data) {
-        
-
-    
-    
-     
-        final Option<Review?> firstReview_value;
-          
-            final JsonObject? firstReview$raw = data['firstReview'];
-            if (firstReview$raw != null) {   
-                
-                    firstReview_value = Some(Review.fromJson(firstReview$raw));   
-                
-            } else {
-                
-                    firstReview_value = None();
-                
-            }
-        
-    
-
-    return OrderDetails (
-        
-           firstReview: firstReview_value,
-        
-    );
-
+    if (firstReview.isSome()) {
+      data["firstReview"] = firstReview.some()?.toJson();
     }
-}
-     
 
+    return data;
+  }
+
+  static fromJson(JsonObject data) {
+    final Option<Review?> firstReview_value;
+
+    final JsonObject? firstReview$raw = data['firstReview'];
+    if (firstReview$raw != null) {
+      firstReview_value = Some(Review.fromJson(firstReview$raw));
+    } else {
+      firstReview_value = None();
+    }
+
+    return OrderDetails(firstReview: firstReview_value);
+  }
+
+  OrderDetails updateWithJson(JsonObject data) {
+    final Option<Review?> firstReview_value;
+
+    if (data.containsKey('firstReview')) {
+      firstReview_value = Some(Review.fromJson(data['firstReview']));
+    } else {
+      firstReview_value = firstReview;
+    }
+
+    return OrderDetails(firstReview: firstReview_value);
+  }
+}
 
 class OrderRecursive {
-    
-    
-        final Option<OrderRecursive?> order; 
-    
-    OrderRecursive(
-        {
-        
+  final Option<OrderRecursive?> order;
 
-    
-         
-            this.order = const None() 
-        ,
-    
-      
- 
-        }
-    );
+  OrderRecursive({this.order = const None()});
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-      
-        if (order.isSome()) {
-             
-                data["order"] = order.some()?.toJson();   
-            
-        } 
-    
-
-    
-        return data;
-    } 
-
-    static fromJson(JsonObject data) {
-        
-
-    
-    
-     
-        final Option<OrderRecursive?> order_value;
-          
-            final JsonObject? order$raw = data['order'];
-            if (order$raw != null) {   
-                
-                    order_value = Some(OrderRecursive.fromJson(order$raw));   
-                
-            } else {
-                
-                    order_value = None();
-                
-            }
-        
-    
-
-    return OrderRecursive (
-        
-           order: order_value,
-        
-    );
-
+    if (order.isSome()) {
+      data["order"] = order.some()?.toJson();
     }
-}
-     
 
+    return data;
+  }
+
+  static fromJson(JsonObject data) {
+    final Option<OrderRecursive?> order_value;
+
+    final JsonObject? order$raw = data['order'];
+    if (order$raw != null) {
+      order_value = Some(OrderRecursive.fromJson(order$raw));
+    } else {
+      order_value = None();
+    }
+
+    return OrderRecursive(order: order_value);
+  }
+
+  OrderRecursive updateWithJson(JsonObject data) {
+    final Option<OrderRecursive?> order_value;
+
+    if (data.containsKey('order')) {
+      order_value = Some(OrderRecursive.fromJson(data['order']));
+    } else {
+      order_value = order;
+    }
+
+    return OrderRecursive(order: order_value);
+  }
+}
 
 class Review {
-    
-    
-        final Option<OrderDetails?> order; 
-    
-    Review(
-        {
-        
+  final Option<OrderDetails?> order;
 
-    
-         
-            this.order = const None() 
-        ,
-    
-      
- 
-        }
-    );
+  Review({this.order = const None()});
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-      
-        if (order.isSome()) {
-             
-                data["order"] = order.some()?.toJson();   
-            
-        } 
-    
-
-    
-        return data;
-    } 
-
-    static fromJson(JsonObject data) {
-        
-
-    
-    
-     
-        final Option<OrderDetails?> order_value;
-          
-            final JsonObject? order$raw = data['order'];
-            if (order$raw != null) {   
-                
-                    order_value = Some(OrderDetails.fromJson(order$raw));   
-                
-            } else {
-                
-                    order_value = None();
-                
-            }
-        
-    
-
-    return Review (
-        
-           order: order_value,
-        
-    );
-
+    if (order.isSome()) {
+      data["order"] = order.some()?.toJson();
     }
-}
-     
 
+    return data;
+  }
+
+  static fromJson(JsonObject data) {
+    final Option<OrderDetails?> order_value;
+
+    final JsonObject? order$raw = data['order'];
+    if (order$raw != null) {
+      order_value = Some(OrderDetails.fromJson(order$raw));
+    } else {
+      order_value = None();
+    }
+
+    return Review(order: order_value);
+  }
+
+  Review updateWithJson(JsonObject data) {
+    final Option<OrderDetails?> order_value;
+
+    if (data.containsKey('order')) {
+      order_value = Some(OrderDetails.fromJson(data['order']));
+    } else {
+      order_value = order;
+    }
+
+    return Review(order: order_value);
+  }
+}
 
 class SpecificOrder {
-    
-    
-        final String notes; 
-    
-        final Order order; 
-    
-    SpecificOrder(
-        {
-        
+  final String notes;
 
-    
-        
-            required this.notes  
-        ,
-    
-    
-    
-        
-            required this.order  
-        ,
-    
-      
- 
-        }
-    );
+  final Order order;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  SpecificOrder({required this.notes, required this.order});
 
-    
-    
-        
-            data["notes"] = notes; 
-        
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-    
-        
-            data["order"] = order.toJson();
-        
-    
+    data["notes"] = notes;
 
-    
-        return data;
-    } 
+    data["order"] = order.toJson();
 
-    static fromJson(JsonObject data) {
-        
+    return data;
+  }
 
-    
-    
-    
-        final String notes_value;
-         
-                notes_value = data['notes'];
-        
-    
+  static fromJson(JsonObject data) {
+    final String notes_value;
 
-    
-    
-     
-        final Order order_value;
-        
-            order_value = Order.fromJson(data['order']);   
-        
-    
+    notes_value = data['notes'];
 
-    return SpecificOrder (
-        
-           notes: notes_value,
-        
-           order: order_value,
-        
-    );
+    final Order order_value;
 
-    }
+    order_value = Order.fromJson(data['order']);
+
+    return SpecificOrder(notes: notes_value, order: order_value);
+  }
+
+  SpecificOrder updateWithJson(JsonObject data) {
+    final String notes_value;
+
+    notes_value = data['notes'];
+
+    final Order order_value;
+
+    order_value = Order.fromJson(data['order']);
+
+    return SpecificOrder(notes: notes_value, order: order_value);
+  }
 }
-     
 
 // ------------ END Input DEFINITIONS -------------
