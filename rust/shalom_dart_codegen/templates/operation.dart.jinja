@@ -228,5 +228,9 @@ class {{ operation_name }}Variables {
         {{ field_to_json_logic(op_variables) }}    
         return data;
     } 
+
+    static fromJson(JsonObject data) {
+        {{ field_from_json_logic(op_variables,  operation_name ~ "Variables") }}
+    }
 }
 {% endif %}

@@ -1,116 +1,562 @@
 // ignore_for_file: constant_identifier_names
 
+
+
+
+
+
+
+
+
+
+
 import 'package:shalom_core/shalom_core.dart';
+
 
 // ------------ Enum DEFINITIONS -------------
 
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
 
+
 class Order {
-  final String name;
+    
+    
+        final String name; 
+    
+        final double price; 
+    
+        final int quantity; 
+    
+    Order(
+        {
+        
 
-  final double price;
+    
+        
+            required this.name  
+        ,
+    
+    
+    
+        
+            required this.price  
+        ,
+    
+    
+    
+        
+            required this.quantity  
+        ,
+    
+      
+ 
+        }
+    );
 
-  final int quantity;
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  Order({required this.name, required this.price, required this.quantity});
+    
+    
+        
+            data["name"] = name; 
+        
+    
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
+    
+        
+            data["price"] = price; 
+        
+    
 
-    data["name"] = name;
+    
+    
+        
+            data["quantity"] = quantity; 
+        
+    
 
-    data["price"] = price;
+    
+        return data;
+    } 
 
-    data["quantity"] = quantity;
+    static fromJson(JsonObject data) {
+        
 
-    return data;
-  }
+    
+    
+    
+        final String name_value;
+         
+                name_value = data['name'];
+        
+    
+
+    
+    
+    
+        final double price_value;
+         
+                price_value = data['price'];
+        
+    
+
+    
+    
+    
+        final int quantity_value;
+         
+                quantity_value = data['quantity'];
+        
+    
+
+    return Order (
+        
+           name: name_value,
+        
+           price: price_value,
+        
+           quantity: quantity_value,
+        
+    );
+
+    }
 }
+     
+
 
 class OrderOpt {
-  final Option<String?> name;
+    
+    
+        final Option<String?> name; 
+    
+        final Option<double?> price; 
+    
+        final Option<int?> quantity; 
+    
+    OrderOpt(
+        {
+        
 
-  final Option<double?> price;
+    
+         
+            this.name = const None() 
+        ,
+    
+    
+    
+         
+            this.price = const None() 
+        ,
+    
+    
+    
+         
+            this.quantity = const None() 
+        ,
+    
+      
+ 
+        }
+    );
 
-  final Option<int?> quantity;
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  OrderOpt({
-    this.name = const None(),
+    
+      
+        if (name.isSome()) {
+            
+                data["name"] = name.some();
+            
+        } 
+    
 
-    this.price = const None(),
+    
+      
+        if (price.isSome()) {
+            
+                data["price"] = price.some();
+            
+        } 
+    
 
-    this.quantity = const None(),
-  });
+    
+      
+        if (quantity.isSome()) {
+            
+                data["quantity"] = quantity.some();
+            
+        } 
+    
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
+        return data;
+    } 
 
-    if (name.isSome()) {
-      data["name"] = name.some();
+    static fromJson(JsonObject data) {
+        
+
+    
+    
+    
+        final Option<String?> name_value;
+          
+            final String? name$raw = data['name'];
+            if (name$raw != null) {
+                
+                    name_value = Some(name$raw);
+                
+            } else {
+                
+                    name_value = None();
+                
+            }
+        
+    
+
+    
+    
+    
+        final Option<double?> price_value;
+          
+            final double? price$raw = data['price'];
+            if (price$raw != null) {
+                
+                    price_value = Some(price$raw);
+                
+            } else {
+                
+                    price_value = None();
+                
+            }
+        
+    
+
+    
+    
+    
+        final Option<int?> quantity_value;
+          
+            final int? quantity$raw = data['quantity'];
+            if (quantity$raw != null) {
+                
+                    quantity_value = Some(quantity$raw);
+                
+            } else {
+                
+                    quantity_value = None();
+                
+            }
+        
+    
+
+    return OrderOpt (
+        
+           name: name_value,
+        
+           price: price_value,
+        
+           quantity: quantity_value,
+        
+    );
+
     }
-
-    if (price.isSome()) {
-      data["price"] = price.some();
-    }
-
-    if (quantity.isSome()) {
-      data["quantity"] = quantity.some();
-    }
-
-    return data;
-  }
 }
+     
+
 
 class OrderOptWithNullDefaults {
-  final String? name;
+    
+    
+        final String? name; 
+    
+        final double? price; 
+    
+        final int? quantity; 
+    
+    OrderOptWithNullDefaults(
+        {
+        
 
-  final double? price;
+    
+         
+            
+            
+                this.name 
+            
+        ,
+    
+    
+    
+         
+            
+            
+                this.price 
+            
+        ,
+    
+    
+    
+         
+            
+            
+                this.quantity 
+            
+        ,
+    
+      
+ 
+        }
+    );
 
-  final int? quantity;
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  OrderOptWithNullDefaults({this.name, this.price, this.quantity});
+    
+    
+        
+            data["name"] = name; 
+        
+    
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
+    
+        
+            data["price"] = price; 
+        
+    
 
-    data["name"] = name;
+    
+    
+        
+            data["quantity"] = quantity; 
+        
+    
 
-    data["price"] = price;
+    
+        return data;
+    } 
 
-    data["quantity"] = quantity;
+    static fromJson(JsonObject data) {
+        
 
-    return data;
-  }
+    
+    
+    
+        final String? name_value;
+          
+            final String? name$raw = data['name'];
+            if (name$raw != null) {
+                
+                    name_value = name$raw;
+                
+            } else {
+                 
+                    name_value = null;
+                
+            }
+        
+    
+
+    
+    
+    
+        final double? price_value;
+          
+            final double? price$raw = data['price'];
+            if (price$raw != null) {
+                
+                    price_value = price$raw;
+                
+            } else {
+                 
+                    price_value = null;
+                
+            }
+        
+    
+
+    
+    
+    
+        final int? quantity_value;
+          
+            final int? quantity$raw = data['quantity'];
+            if (quantity$raw != null) {
+                
+                    quantity_value = quantity$raw;
+                
+            } else {
+                 
+                    quantity_value = null;
+                
+            }
+        
+    
+
+    return OrderOptWithNullDefaults (
+        
+           name: name_value,
+        
+           price: price_value,
+        
+           quantity: quantity_value,
+        
+    );
+
+    }
 }
+     
+
 
 class OrderOptWithSomeDefaults {
-  final String? name;
+    
+    
+        final String? name; 
+    
+        final double? price; 
+    
+        final int? quantity; 
+    
+    OrderOptWithSomeDefaults(
+        {
+        
 
-  final double? price;
+    
+         
+            
+            
+                this.name = "burgers"
+            
+        ,
+    
+    
+    
+         
+            
+            
+                this.price = 10.0
+            
+        ,
+    
+    
+    
+         
+            
+            
+                this.quantity = 2
+            
+        ,
+    
+      
+ 
+        }
+    );
 
-  final int? quantity;
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  OrderOptWithSomeDefaults({
-    this.name = "burgers",
+    
+    
+        
+            data["name"] = name; 
+        
+    
 
-    this.price = 10.0,
+    
+    
+        
+            data["price"] = price; 
+        
+    
 
-    this.quantity = 2,
-  });
+    
+    
+        
+            data["quantity"] = quantity; 
+        
+    
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
+        return data;
+    } 
 
-    data["name"] = name;
+    static fromJson(JsonObject data) {
+        
 
-    data["price"] = price;
+    
+    
+    
+        final String? name_value;
+          
+            final String? name$raw = data['name'];
+            if (name$raw != null) {
+                
+                    name_value = name$raw;
+                
+            } else {
+                 
+                    name_value = null;
+                
+            }
+        
+    
 
-    data["quantity"] = quantity;
+    
+    
+    
+        final double? price_value;
+          
+            final double? price$raw = data['price'];
+            if (price$raw != null) {
+                
+                    price_value = price$raw;
+                
+            } else {
+                 
+                    price_value = null;
+                
+            }
+        
+    
 
-    return data;
-  }
+    
+    
+    
+        final int? quantity_value;
+          
+            final int? quantity$raw = data['quantity'];
+            if (quantity$raw != null) {
+                
+                    quantity_value = quantity$raw;
+                
+            } else {
+                 
+                    quantity_value = null;
+                
+            }
+        
+    
+
+    return OrderOptWithSomeDefaults (
+        
+           name: name_value,
+        
+           price: price_value,
+        
+           quantity: quantity_value,
+        
+    );
+
+    }
 }
+     
 
 // ------------ END Input DEFINITIONS -------------

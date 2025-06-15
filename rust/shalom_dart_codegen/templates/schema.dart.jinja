@@ -46,6 +46,10 @@ class {{ typename }} {
         {{ field_to_json_logic(fields) }}    
         return data;
     } 
+
+    static fromJson(JsonObject data) {
+        {{ field_from_json_logic(fields, typename) }}
+    }
 }
      
 {% endfor %}

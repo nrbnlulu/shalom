@@ -72,18 +72,28 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn type_name_for_field(
-        schema_ctx: &SchemaContext,
-        field: ViaDeserialize<InputFieldDefinition>,
-    ) -> String {
+    pub fn resolve_field_type_name(schema_ctx: &SchemaContext, field: &InputFieldDefinition) -> String {
         let gql_ty = field.common.resolve_type(schema_ctx).ty;
         let ty_name = gql_ty.name();
-        let resolved = match gql_ty {
+        match gql_ty {
             GraphQLAny::Scalar(_) => DEFAULT_SCALARS_MAP.get(&ty_name).unwrap().clone(),
             GraphQLAny::InputObject(_) => ty_name,
             GraphQLAny::Enum(enum_) => enum_.name.clone(),
             _ => unimplemented!("input type not supported"),
-        };
+        } 
+    }
+
+    pub fn concrete_typename_of_field(schema_ctx: &SchemaContext, field: ViaDeserialize<InputFieldDefinition>) -> String {
+        resolve_field_type_name(schema_ctx, &field.0)
+        
+    }
+
+    pub fn type_name_for_field(
+        schema_ctx: &SchemaContext,
+        field: ViaDeserialize<InputFieldDefinition>,
+    ) -> String {
+        let field = field.0;
+        let resolved = resolve_field_type_name(schema_ctx, &field);
         if field.is_optional && field.default_value.is_none() {
             format!("Option<{}?>", resolved)
         } else if field.is_optional {
@@ -174,6 +184,10 @@ impl TemplateEnv<'_> {
         let schema_ctx_clone = schema_ctx.clone();
         env.add_function("type_name_for_selection", move |a: _| {
             ext_jinja_fns::type_name_for_selection(&schema_ctx_clone, a)
+        });
+        let schema_ctx_clone = schema_ctx.clone();
+        env.add_function("concrete_typename_of_field", move |a: _| {
+            ext_jinja_fns::concrete_typename_of_field(&schema_ctx_clone, a)
         });
         let schema_ctx_clone = schema_ctx.clone();
         env.add_function("type_name_for_field", move |a: _| {
