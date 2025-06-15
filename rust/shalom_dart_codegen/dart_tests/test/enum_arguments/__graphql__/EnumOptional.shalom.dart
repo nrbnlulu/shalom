@@ -218,7 +218,7 @@ class EnumOptionalVariables {
     JsonObject data = {};
 
     if (status.isSome()) {
-      data["status"] = status.some();
+      data["status"] = status.some()?.name;
     }
 
     return data;

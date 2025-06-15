@@ -213,7 +213,7 @@ class EnumRequiredVariables {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["status"] = status;
+    data["status"] = status.name;
 
     return data;
   }

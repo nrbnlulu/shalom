@@ -213,7 +213,7 @@ class EnumInputObjectRequiredVariables {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["order"] = order;
+    data["order"] = order.toJson();
 
     return data;
   }

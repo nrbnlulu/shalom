@@ -1,21 +1,16 @@
 use std::{
     collections::HashSet,
     hash::{Hash, Hasher},
-    sync::Arc,
 };
 
 use apollo_compiler::{
     ast::{Type as RawType, Value},
     Node,
 };
-use serde::ser::{SerializeStruct, Serializer};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::schema::context::SharedSchemaContext;
-
 use super::context::SchemaContext;
-use std::sync;
 
 type GlobalName = String;
 
@@ -244,12 +239,10 @@ impl UnresolvedType {
     }
     pub fn resolve(&self, ctx: &SchemaContext) -> ResolvedType {
         match &self.kind {
-            UnresolvedTypeKind::Named { name } => {
-                return ResolvedType {
-                    is_optional: self.is_optional,
-                    ty: ctx.get_type(name).unwrap(),
-                }
-            }
+            UnresolvedTypeKind::Named { name } => ResolvedType {
+                is_optional: self.is_optional,
+                ty: ctx.get_type(name).unwrap(),
+            },
             UnresolvedTypeKind::List { of_type: _ } => {
                 unimplemented!("lists are not supported yet")
             }

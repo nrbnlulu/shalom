@@ -42,7 +42,7 @@ class OrderUpdate {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["status"] = status;
+    data["status"] = status.name;
 
     data["timeLeft"] = timeLeft;
 
@@ -61,7 +61,7 @@ class OrderUpdateStatusOpt {
     JsonObject data = {};
 
     if (status.isSome()) {
-      data["status"] = status.some();
+      data["status"] = status.some()?.name;
     }
 
     data["timeLeft"] = timeLeft;

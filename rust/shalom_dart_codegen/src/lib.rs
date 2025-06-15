@@ -37,9 +37,7 @@ const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
 
-    use shalom_core::schema::types::{
-        ResolvedType, SchemaFieldCommon, UnresolvedType, UnresolvedTypeKind,
-    };
+    use shalom_core::schema::types::SchemaFieldCommon;
 
     use super::*;
 
@@ -154,7 +152,7 @@ mod ext_jinja_fns {
         schema_ctx: &SchemaContext,
         schema_field: ViaDeserialize<SchemaFieldCommon>,
     ) -> minijinja::value::Value {
-        let serialized = serde_json::to_value(&schema_field.0.unresolved_type.resolve(&schema_ctx))
+        let serialized = serde_json::to_value(schema_field.0.unresolved_type.resolve(schema_ctx))
             .map_err(|e| format!("Failed to serialize field type: {}", e))
             .unwrap();
         minijinja::value::Value::from_serialize(serialized)
