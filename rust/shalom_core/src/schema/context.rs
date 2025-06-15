@@ -110,6 +110,11 @@ impl SchemaContext {
         types_ctx.get_any(name)
     }
 
+    pub fn get_scalar(&self, name: &str) -> Option<Node<ScalarType>> {
+        let types_ctx = self.types.lock().unwrap();
+        types_ctx.scalars.get(name).cloned()
+    }
+
     pub fn add_object(&self, name: String, type_: Node<ObjectType>) -> anyhow::Result<()> {
         let mut types_ctx = self
             .types
