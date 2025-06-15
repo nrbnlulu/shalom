@@ -37,7 +37,7 @@ const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
 
-    use shalom_core::schema::types::FieldType;
+    use shalom_core::schema::types::SchemaFieldCommon;
 
     use super::*;
 
@@ -72,39 +72,58 @@ mod ext_jinja_fns {
         }
     }
 
-    #[allow(unused_variables)]
-    pub fn type_name_for_field(
+    pub fn resolve_field_type_name(
         schema_ctx: &SchemaContext,
-        input: ViaDeserialize<InputFieldDefinition>,
+        field: &InputFieldDefinition,
     ) -> String {
-        let ty_name = input.0.ty.name();
-        let ty = input.resolve_type(schema_ctx);
-        let resolved = match ty {
+        let gql_ty = field.common.resolve_type(schema_ctx).ty;
+        let ty_name = gql_ty.name();
+        match gql_ty {
             GraphQLAny::Scalar(_) => DEFAULT_SCALARS_MAP.get(&ty_name).unwrap().clone(),
             GraphQLAny::InputObject(_) => ty_name,
+            GraphQLAny::Enum(enum_) => enum_.name.clone(),
             _ => unimplemented!("input type not supported"),
-        };
-        if input.is_optional && input.default_value.is_none() {
+        }
+    }
+
+    pub fn concrete_typename_of_field(
+        schema_ctx: &SchemaContext,
+        field: ViaDeserialize<InputFieldDefinition>,
+    ) -> String {
+        resolve_field_type_name(schema_ctx, &field.0)
+    }
+
+    pub fn type_name_for_field(
+        schema_ctx: &SchemaContext,
+        field: ViaDeserialize<InputFieldDefinition>,
+    ) -> String {
+        let field = field.0;
+        let resolved = resolve_field_type_name(schema_ctx, &field);
+        if field.is_optional && field.default_value.is_none() {
             format!("Option<{}?>", resolved)
-        } else if input.is_optional {
+        } else if field.is_optional {
             format!("{}?", resolved)
         } else {
             resolved
         }
     }
 
-    pub fn parse_field_default_value(input: ViaDeserialize<InputFieldDefinition>) -> String {
-        let default_value = input.0.default_value;
-        if default_value.is_none() {
-            panic!("cannot parse default value that does not exist")
+    pub fn parse_field_default_value(
+        schema_ctx: &SchemaContext,
+        field: ViaDeserialize<InputFieldDefinition>,
+    ) -> String {
+        let field = field.0;
+        let default_value = field
+            .default_value
+            .as_ref()
+            .expect("cannot parse default value that does not exist")
+            .to_string();
+        let ty = field.common.resolve_type(schema_ctx);
+        if let GraphQLAny::Enum(enum_) = ty.ty {
+            format!("{}.{}", enum_.name, default_value)
+        } else {
+            default_value.to_string()
         }
-        let default_value = default_value.unwrap();
-        default_value.to_string()
-    }
-
-    pub fn is_input_type(schema_ctx: &SchemaContext, ty: ViaDeserialize<FieldType>) -> bool {
-        let ty = schema_ctx.get_type(&ty.0.name()).unwrap();
-        matches!(ty, GraphQLAny::InputObject(_))
     }
 
     pub fn docstring(value: Option<String>) -> String {
@@ -143,6 +162,16 @@ mod ext_jinja_fns {
             value
         }
     }
+
+    pub fn resolve_field_type(
+        schema_ctx: &SchemaContext,
+        schema_field: ViaDeserialize<SchemaFieldCommon>,
+    ) -> minijinja::value::Value {
+        let serialized = serde_json::to_value(schema_field.0.unresolved_type.resolve(schema_ctx))
+            .map_err(|e| format!("Failed to serialize field type: {}", e))
+            .unwrap();
+        minijinja::value::Value::from_serialize(serialized)
+    }
 }
 
 impl TemplateEnv<'_> {
@@ -162,19 +191,23 @@ impl TemplateEnv<'_> {
             ext_jinja_fns::type_name_for_selection(&schema_ctx_clone, a)
         });
         let schema_ctx_clone = schema_ctx.clone();
+        env.add_function("concrete_typename_of_field", move |a: _| {
+            ext_jinja_fns::concrete_typename_of_field(&schema_ctx_clone, a)
+        });
+        let schema_ctx_clone = schema_ctx.clone();
         env.add_function("type_name_for_field", move |a: _| {
             ext_jinja_fns::type_name_for_field(&schema_ctx_clone, a)
         });
         let schema_ctx_clone = schema_ctx.clone();
-        env.add_function("is_input_type", move |a: _| {
-            ext_jinja_fns::is_input_type(&schema_ctx_clone, a)
+        env.add_function("parse_field_default_value", move |a: _| {
+            ext_jinja_fns::parse_field_default_value(&schema_ctx_clone, a)
         });
-        env.add_function(
-            "parse_field_default_value",
-            ext_jinja_fns::parse_field_default_value,
-        );
+        env.add_function("resolve_field_type", move |a: _| {
+            ext_jinja_fns::resolve_field_type(&schema_ctx, a)
+        });
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
+
         env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
 
         Self { env }

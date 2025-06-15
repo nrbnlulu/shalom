@@ -177,4 +177,19 @@ class OptOrderRequestVariables {
 
     return data;
   }
+
+  OptOrderRequestVariables updateWith({
+    Option<Option<Order?>> order = const None(),
+  }) {
+    final Option<Order?> order$next;
+
+    switch (order) {
+      case Some(value: final data):
+        order$next = data;
+      case None():
+        order$next = this.order;
+    }
+
+    return OptOrderRequestVariables(order: order$next);
+  }
 }

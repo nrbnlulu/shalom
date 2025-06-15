@@ -177,4 +177,19 @@ class OrderRecursiveVariables {
 
     return data;
   }
+
+  OrderRecursiveVariables updateWith({
+    Option<Option<OrderRecursive?>> order = const None(),
+  }) {
+    final Option<OrderRecursive?> order$next;
+
+    switch (order) {
+      case Some(value: final data):
+        order$next = data;
+      case None():
+        order$next = this.order;
+    }
+
+    return OrderRecursiveVariables(order: order$next);
+  }
 }

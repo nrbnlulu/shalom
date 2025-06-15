@@ -3,13 +3,16 @@ use std::{
     hash::{Hash, Hasher},
 };
 
-use apollo_compiler::{ast::Value, Node};
+use apollo_compiler::{
+    ast::{Type as RawType, Value},
+    Node,
+};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 use super::context::SchemaContext;
 
-pub type GlobalName = String;
+type GlobalName = String;
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 #[serde(tag = "kind")]
@@ -23,6 +26,10 @@ pub enum GraphQLAny {
     Union(Node<UnionType>),
     Enum(Node<EnumType>),
     InputObject(Node<InputObjectType>),
+    List {
+        of_type: Box<GraphQLAny>,
+        is_optional: bool,
+    },
 }
 
 impl GraphQLAny {
@@ -79,59 +86,6 @@ impl GraphQLAny {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-#[serde(tag = "kind", content = "value")]
-pub enum FieldType {
-    Named(GlobalName),
-    NonNullNamed(GlobalName),
-    #[serde(skip_serializing)]
-    List(Box<FieldType>),
-    #[serde(skip_serializing)]
-    NonNullList(Box<FieldType>),
-}
-
-impl FieldType {
-    pub fn is_nullable(&self) -> bool {
-        match self {
-            FieldType::Named(_) | FieldType::List(_) => true,
-            FieldType::NonNullNamed(_) | FieldType::NonNullList(_) => false,
-        }
-    }
-
-    pub fn get_list(&self) -> Option<&FieldType> {
-        match self {
-            FieldType::List(of) | FieldType::NonNullList(of) => Some(of),
-            _ => None,
-        }
-    }
-
-    pub fn get_scalar(&self, ctx: &SchemaContext) -> Option<Node<ScalarType>> {
-        match self {
-            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => {
-                ctx.get_type(ty).and_then(|t| t.scalar())
-            }
-            _ => None,
-        }
-    }
-
-    pub fn get_object(&self, ctx: &SchemaContext) -> Option<Node<ObjectType>> {
-        match self {
-            FieldType::Named(ty) | FieldType::NonNullNamed(ty) => {
-                ctx.get_type(ty).and_then(|t| t.object())
-            }
-            _ => None,
-        }
-    }
-
-    pub fn name(&self) -> String {
-        match self {
-            FieldType::Named(ty) => ty.to_string(),
-            FieldType::NonNullNamed(ty) => ty.to_string(),
-            _ => unimplemented!("lists have not been implemented"),
-        }
-    }
-}
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct ScalarType {
     pub name: String,
@@ -167,12 +121,12 @@ pub struct ObjectType {
     pub name: String,
     #[serde(skip_serializing)]
     pub implements_interfaces: HashSet<Box<GlobalName>>,
-    pub fields: HashSet<FieldDefinition>,
+    pub fields: HashMap<String, SchemaObjectFieldDefinition>,
 }
 
 impl ObjectType {
-    pub fn get_field(&self, name: &str) -> Option<&FieldDefinition> {
-        self.fields.iter().find(|f| f.name == name)
+    pub fn get_field(&self, name: &str) -> Option<&SchemaObjectFieldDefinition> {
+        self.fields.get(name)
     }
 }
 
@@ -188,7 +142,7 @@ pub struct InterfaceType {
 
     pub name: String,
     pub implements_interfaces: HashSet<GlobalName>,
-    pub fields: HashSet<FieldDefinition>,
+    pub fields: HashSet<SchemaFieldCommon>,
 }
 impl Hash for InterfaceType {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -238,31 +192,119 @@ pub struct InputObjectType {
     pub name: String,
     pub fields: HashMap<String, InputFieldDefinition>,
 }
+
 impl Hash for InputObjectType {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.name.hash(state);
     }
 }
-#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
-pub struct FieldDefinition {
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub enum UnresolvedTypeKind {
+    Named { name: String },
+    List { of_type: Box<UnresolvedType> },
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UnresolvedType {
+    pub is_optional: bool,
+    pub kind: UnresolvedTypeKind,
+}
+
+impl UnresolvedType {
+    pub fn ty_name(&self) -> String {
+        match &self.kind {
+            UnresolvedTypeKind::Named { name } => name.clone(),
+            _ => {
+                unimplemented!("lists have not been implemented")
+            }
+        }
+    }
+
+    pub fn new(ty: &RawType) -> Self {
+        let is_optional = !ty.is_non_null();
+        let unresolved_kind = match ty {
+            RawType::Named(name) => UnresolvedTypeKind::Named {
+                name: name.to_string(),
+            },
+            RawType::NonNullNamed(name) => UnresolvedTypeKind::Named {
+                name: name.to_string(),
+            },
+            _ => unimplemented!("lists have not been implemented"),
+        };
+        Self {
+            is_optional,
+            kind: unresolved_kind,
+        }
+    }
+    pub fn resolve(&self, ctx: &SchemaContext) -> ResolvedType {
+        match &self.kind {
+            UnresolvedTypeKind::Named { name } => ResolvedType {
+                is_optional: self.is_optional,
+                ty: ctx.get_type(name).unwrap(),
+            },
+            UnresolvedTypeKind::List { of_type: _ } => {
+                unimplemented!("lists are not supported yet")
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+pub struct ResolvedType {
+    pub is_optional: bool,
+    pub ty: GraphQLAny,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SchemaFieldCommon {
     pub name: String,
-    pub ty: FieldType,
+    #[serde(rename = "type")]
+    pub unresolved_type: UnresolvedType,
+    pub description: Option<String>,
+}
+
+impl SchemaFieldCommon {
+    pub fn new(name: String, raw_type: &RawType, description: Option<String>) -> Self {
+        let unresolved_type = UnresolvedType::new(raw_type);
+        SchemaFieldCommon {
+            name,
+            unresolved_type,
+            description,
+        }
+    }
+
+    pub fn resolve_type(&self, ctx: &SchemaContext) -> ResolvedType {
+        self.unresolved_type.resolve(ctx)
+    }
+}
+
+impl Hash for SchemaFieldCommon {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
+}
+
+impl PartialEq for SchemaFieldCommon {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
+            && self.unresolved_type == other.unresolved_type
+            && self.description == other.description
+    }
+}
+
+impl Eq for SchemaFieldCommon {}
+
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct SchemaObjectFieldDefinition {
     #[serde(skip_serializing)]
     pub arguments: Vec<InputFieldDefinition>,
-    pub description: Option<String>,
+    pub field: SchemaFieldCommon,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct InputFieldDefinition {
-    pub name: String,
-    pub description: Option<String>,
-    pub ty: FieldType,
     pub is_optional: bool,
     pub default_value: Option<Node<Value>>,
-}
-
-impl InputFieldDefinition {
-    pub fn resolve_type(&self, schema_ctx: &SchemaContext) -> GraphQLAny {
-        schema_ctx.get_type(&self.ty.name()).unwrap()
-    }
+    pub common: SchemaFieldCommon,
 }

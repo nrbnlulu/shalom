@@ -176,4 +176,29 @@ class GetOrderVariables {
 
     return data;
   }
+
+  GetOrderVariables updateWith({
+    String? id,
+
+    Option<Option<Order?>> order = const None(),
+  }) {
+    final String id$next;
+
+    if (id != null) {
+      id$next = id;
+    } else {
+      id$next = this.id;
+    }
+
+    final Option<Order?> order$next;
+
+    switch (order) {
+      case Some(value: final data):
+        order$next = data;
+      case None():
+        order$next = this.order;
+    }
+
+    return GetOrderVariables(id: id$next, order: order$next);
+  }
 }

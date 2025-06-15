@@ -173,4 +173,19 @@ class OptionalWithNullDefaultVariables {
 
     return data;
   }
+
+  OptionalWithNullDefaultVariables updateWith({
+    Option<String?> phone = const None(),
+  }) {
+    final String? phone$next;
+
+    switch (phone) {
+      case Some(value: final data):
+        phone$next = data;
+      case None():
+        phone$next = this.phone;
+    }
+
+    return OptionalWithNullDefaultVariables(phone: phone$next);
+  }
 }

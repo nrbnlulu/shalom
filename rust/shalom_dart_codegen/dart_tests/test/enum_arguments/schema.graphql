@@ -1,0 +1,36 @@
+
+enum Status {
+    SENT,
+    PROCESSING,
+    COMPLETED
+}
+
+input OrderUpdate {
+    status: Status!,
+    timeLeft: Int!
+}
+
+input OrderUpdateStatusOpt {
+    status: Status,
+    timeLeft: Int!
+}
+
+type OrderRequest {
+    status: Status,
+    price: Float!,
+    name: String!,
+    quantity: Int! 
+}
+
+type Query {
+    getOrderByStatus(status: Status) : OrderRequest
+}
+
+type Mutation {
+    updateOrderStatus(status: Status!) : OrderRequest,     
+    updateOrderStatusOpt(status: Status) : OrderRequest,     
+    updateOrder(order: OrderUpdate!) : OrderRequest,
+    updateOrderWithStatusOpt(order: OrderUpdateStatusOpt!) : OrderRequest
+} 
+
+

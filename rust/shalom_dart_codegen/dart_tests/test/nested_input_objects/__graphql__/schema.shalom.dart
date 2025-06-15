@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -29,10 +29,42 @@ class Order {
   }
 }
 
+class OrderDetails {
+  final Option<Review?> firstReview;
+
+  OrderDetails({this.firstReview = const None()});
+
+  JsonObject toJson() {
+    JsonObject data = {};
+
+    if (firstReview.isSome()) {
+      data["firstReview"] = firstReview.some()?.toJson();
+    }
+
+    return data;
+  }
+}
+
 class OrderRecursive {
   final Option<OrderRecursive?> order;
 
   OrderRecursive({this.order = const None()});
+
+  JsonObject toJson() {
+    JsonObject data = {};
+
+    if (order.isSome()) {
+      data["order"] = order.some()?.toJson();
+    }
+
+    return data;
+  }
+}
+
+class Review {
+  final Option<OrderDetails?> order;
+
+  Review({this.order = const None()});
 
   JsonObject toJson() {
     JsonObject data = {};

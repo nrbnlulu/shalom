@@ -172,4 +172,16 @@ class OrderRequestVariables {
 
     return data;
   }
+
+  OrderRequestVariables updateWith({Order? order}) {
+    final Order order$next;
+
+    if (order != null) {
+      order$next = order;
+    } else {
+      order$next = this.order;
+    }
+
+    return OrderRequestVariables(order: order$next);
+  }
 }
