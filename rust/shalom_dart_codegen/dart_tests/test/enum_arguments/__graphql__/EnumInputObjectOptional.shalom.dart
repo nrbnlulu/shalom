@@ -229,7 +229,7 @@ class EnumInputObjectOptionalVariables {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["order"] = order.toJson();
+    data["order"] = order;
 
     return data;
   }
