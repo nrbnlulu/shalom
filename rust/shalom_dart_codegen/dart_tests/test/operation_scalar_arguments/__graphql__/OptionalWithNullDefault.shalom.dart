@@ -174,28 +174,18 @@ class OptionalWithNullDefaultVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final String? phone_value;
+  OptionalWithNullDefaultVariables updateWith({
+    Option<String?> phone = const None(),
+  }) {
+    final String? phone$next;
 
-    final String? phone$raw = data['phone'];
-    if (phone$raw != null) {
-      phone_value = phone$raw;
-    } else {
-      phone_value = null;
+    switch (phone) {
+      case Some(value: final data):
+        phone$next = data;
+      case None():
+        phone$next = this.phone;
     }
 
-    return OptionalWithNullDefaultVariables(phone: phone_value);
-  }
-
-  OptionalWithNullDefaultVariables updateWithJson(JsonObject data) {
-    final String? phone_value;
-
-    if (data.containsKey(phone)) {
-      phone_value = data['phone'];
-    } else {
-      phone_value = phone;
-    }
-
-    return OptionalWithNullDefaultVariables(phone: phone_value);
+    return OptionalWithNullDefaultVariables(phone: phone$next);
   }
 }

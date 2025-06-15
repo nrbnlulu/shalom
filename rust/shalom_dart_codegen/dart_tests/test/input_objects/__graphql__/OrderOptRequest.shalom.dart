@@ -176,19 +176,15 @@ class OrderOptRequestVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final OrderOpt order_value;
+  OrderOptRequestVariables updateWith({OrderOpt? order}) {
+    final OrderOpt order$next;
 
-    order_value = OrderOpt.fromJson(data['order']);
+    if (order != null) {
+      order$next = order;
+    } else {
+      order$next = this.order;
+    }
 
-    return OrderOptRequestVariables(order: order_value);
-  }
-
-  OrderOptRequestVariables updateWithJson(JsonObject data) {
-    final OrderOpt order_value;
-
-    order_value = OrderOpt.fromJson(data['order']);
-
-    return OrderOptRequestVariables(order: order_value);
+    return OrderOptRequestVariables(order: order$next);
   }
 }

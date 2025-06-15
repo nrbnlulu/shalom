@@ -144,45 +144,29 @@ class OptionalArgumentsVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final Option<String?> id_value;
+  OptionalArgumentsVariables updateWith({
+    Option<Option<String?>> id = const None(),
 
-    final String? id$raw = data['id'];
-    if (id$raw != null) {
-      id_value = Some(id$raw);
-    } else {
-      id_value = None();
+    Option<Option<String?>> phone = const None(),
+  }) {
+    final Option<String?> id$next;
+
+    switch (id) {
+      case Some(value: final data):
+        id$next = data;
+      case None():
+        id$next = this.id;
     }
 
-    final Option<String?> phone_value;
+    final Option<String?> phone$next;
 
-    final String? phone$raw = data['phone'];
-    if (phone$raw != null) {
-      phone_value = Some(phone$raw);
-    } else {
-      phone_value = None();
+    switch (phone) {
+      case Some(value: final data):
+        phone$next = data;
+      case None():
+        phone$next = this.phone;
     }
 
-    return OptionalArgumentsVariables(id: id_value, phone: phone_value);
-  }
-
-  OptionalArgumentsVariables updateWithJson(JsonObject data) {
-    final Option<String?> id_value;
-
-    if (data.containsKey(id)) {
-      id_value = Some(data['id']);
-    } else {
-      id_value = id;
-    }
-
-    final Option<String?> phone_value;
-
-    if (data.containsKey(phone)) {
-      phone_value = Some(data['phone']);
-    } else {
-      phone_value = phone;
-    }
-
-    return OptionalArgumentsVariables(id: id_value, phone: phone_value);
+    return OptionalArgumentsVariables(id: id$next, phone: phone$next);
   }
 }

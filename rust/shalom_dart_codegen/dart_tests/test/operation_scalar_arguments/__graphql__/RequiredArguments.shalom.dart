@@ -144,19 +144,15 @@ class RequiredArgumentsVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final String id_value;
+  RequiredArgumentsVariables updateWith({String? id}) {
+    final String id$next;
 
-    id_value = data['id'];
+    if (id != null) {
+      id$next = id;
+    } else {
+      id$next = this.id;
+    }
 
-    return RequiredArgumentsVariables(id: id_value);
-  }
-
-  RequiredArgumentsVariables updateWithJson(JsonObject data) {
-    final String id_value;
-
-    id_value = data['id'];
-
-    return RequiredArgumentsVariables(id: id_value);
+    return RequiredArgumentsVariables(id: id$next);
   }
 }

@@ -1,304 +1,73 @@
-// ignore_for_file: constant_identifier_names
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
 import 'package:shalom_core/shalom_core.dart';
 
-
 // ------------ Enum DEFINITIONS -------------
 
-     
-     
-     enum Status  {
-          
-                COMPLETED ,
-          
-                PROCESSING ,
-          
-                SENT ;
-          
-          
-          static Status fromString(String name) {
-              switch (name) {
-                  
-                  case 'COMPLETED':
-                    return Status.COMPLETED;                   
-                  case 'PROCESSING':
-                    return Status.PROCESSING;                   
-                  case 'SENT':
-                    return Status.SENT;                   
-                  default:  
-                      throw ArgumentError.value(name, 'name', 'No Status enum member with this name');  
-              }
-          }
+enum Status {
+  COMPLETED,
 
-      }
+  PROCESSING,
+
+  SENT;
+
+  static Status fromString(String name) {
+    switch (name) {
+      case 'COMPLETED':
+        return Status.COMPLETED;
+      case 'PROCESSING':
+        return Status.PROCESSING;
+      case 'SENT':
+        return Status.SENT;
+      default:
+        throw ArgumentError.value(
+          name,
+          'name',
+          'No Status enum member with this name',
+        );
+    }
+  }
+}
 
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
 
-
 class OrderUpdate {
-    
-    
-        final Status status; 
-    
-        final int timeLeft; 
-    
-    OrderUpdate(
-        {
-        
+  final Status status;
 
-    
-        
-            required this.status  
-        ,
-    
-    
-    
-        
-            required this.timeLeft  
-        ,
-    
-      
- 
-        }
-    );
+  final int timeLeft;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  OrderUpdate({required this.status, required this.timeLeft});
 
-    
-    
-        
-            
-                data["status"] = status.name;
-            
-        
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-    
-        
-            data["timeLeft"] = timeLeft; 
-        
-    
+    data["status"] = status.name;
 
-    
-        return data;
-    } 
+    data["timeLeft"] = timeLeft;
 
-    static fromJson(JsonObject data) {
-        
-
-    
-    
-    
-        final Status status_value;
-        
-                status_value = Status.fromString(data['status']);
-        
-    
-
-    
-    
-    
-        final int timeLeft_value;
-         
-                timeLeft_value = data['timeLeft'];
-        
-    
-
-    return OrderUpdate (
-        
-           status: status_value,
-        
-           timeLeft: timeLeft_value,
-        
-    );
-
-    }
-
-    OrderUpdate updateWithJson(JsonObject data) {
-        
-
-    
-    
-    
-        final Status status_value;
-        
-                status_value = Status.fromString(data['status']);
-        
-    
-
-    
-    
-    
-        final int timeLeft_value;
-         
-                timeLeft_value = data['timeLeft'];
-        
-    
-
-    return OrderUpdate (
-        
-           status: status_value,
-        
-           timeLeft: timeLeft_value,
-        
-    );
-
-    }
+    return data;
+  }
 }
-     
-
 
 class OrderUpdateStatusOpt {
-    
-    
-        final Option<Status?> status; 
-    
-        final int timeLeft; 
-    
-    OrderUpdateStatusOpt(
-        {
-        
+  final Option<Status?> status;
 
-    
-         
-            this.status = const None() 
-        ,
-    
-    
-    
-        
-            required this.timeLeft  
-        ,
-    
-      
- 
-        }
-    );
+  final int timeLeft;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  OrderUpdateStatusOpt({this.status = const None(), required this.timeLeft});
 
-    
-      
-        if (status.isSome()) {
-            
-                data["status"] = status.some()?.name;
-            
-        } 
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-    
-        
-            data["timeLeft"] = timeLeft; 
-        
-    
-
-    
-        return data;
-    } 
-
-    static fromJson(JsonObject data) {
-        
-
-    
-    
-    
-        final Option<Status?> status_value;
-          
-            final String? status$raw = data['status'];
-            if (status$raw != null) {
-                
-                    status_value = Some(Status.fromString(status$raw));
-                
-            } else {
-                
-                    status_value = None();
-                
-            }
-        
-    
-
-    
-    
-    
-        final int timeLeft_value;
-         
-                timeLeft_value = data['timeLeft'];
-        
-    
-
-    return OrderUpdateStatusOpt (
-        
-           status: status_value,
-        
-           timeLeft: timeLeft_value,
-        
-    );
-
+    if (status.isSome()) {
+      data["status"] = status.some()?.name;
     }
 
-    OrderUpdateStatusOpt updateWithJson(JsonObject data) {
-        
+    data["timeLeft"] = timeLeft;
 
-    
-    
-    
-        final Option<Status?> status_value;
-          
-            if (data.containsKey('status')) {
-                
-                    status_value = Some(Status.fromString(data['status']));
-                
-            } else {
-                status_value = status;
-            }
-        
-    
-
-    
-    
-    
-        final int timeLeft_value;
-         
-                timeLeft_value = data['timeLeft'];
-        
-    
-
-    return OrderUpdateStatusOpt (
-        
-           status: status_value,
-        
-           timeLeft: timeLeft_value,
-        
-    );
-
-    }
+    return data;
+  }
 }
-     
 
 // ------------ END Input DEFINITIONS -------------

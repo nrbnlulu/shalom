@@ -181,35 +181,31 @@ class GetSpecificOrderVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final String id_value;
+  GetSpecificOrderVariables updateWith({
+    String? id,
 
-    id_value = data['id'];
+    SpecificOrder? specificOrder,
+  }) {
+    final String id$next;
 
-    final SpecificOrder specificOrder_value;
+    if (id != null) {
+      id$next = id;
+    } else {
+      id$next = this.id;
+    }
 
-    specificOrder_value = SpecificOrder.fromJson(data['specificOrder']);
+    final SpecificOrder specificOrder$next;
 
-    return GetSpecificOrderVariables(
-      id: id_value,
-
-      specificOrder: specificOrder_value,
-    );
-  }
-
-  GetSpecificOrderVariables updateWithJson(JsonObject data) {
-    final String id_value;
-
-    id_value = data['id'];
-
-    final SpecificOrder specificOrder_value;
-
-    specificOrder_value = SpecificOrder.fromJson(data['specificOrder']);
+    if (specificOrder != null) {
+      specificOrder$next = specificOrder;
+    } else {
+      specificOrder$next = this.specificOrder;
+    }
 
     return GetSpecificOrderVariables(
-      id: id_value,
+      id: id$next,
 
-      specificOrder: specificOrder_value,
+      specificOrder: specificOrder$next,
     );
   }
 }

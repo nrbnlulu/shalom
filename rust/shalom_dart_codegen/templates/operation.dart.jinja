@@ -230,10 +230,6 @@ class {{ operation_name }}Variables {
         return data;
     } 
 
-    static fromJson(JsonObject data) {
-        {{ fromJson_macro(op_variables, typename) }}
-    }
-
     {{ updateWith_macro(op_variables, typename) }}
 
 }

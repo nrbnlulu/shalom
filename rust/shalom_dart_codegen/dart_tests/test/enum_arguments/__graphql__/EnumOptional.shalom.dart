@@ -1,470 +1,241 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
-
-
 
 typedef JsonObject = Map<String, dynamic>;
 // ignore_for_file: non_constant_identifier_names
 // ignore_for_file: camel_case_types
 
+class EnumOptionalResponse {
+  /// class members
 
+  final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt;
 
+  // keywordargs constructor
+  EnumOptionalResponse({this.updateOrderStatusOpt});
+  static EnumOptionalResponse fromJson(JsonObject data) {
+    final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt_value;
 
-class EnumOptionalResponse{
-
-    /// class members
-    
-        
-            final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt;
-        
-    
-    // keywordargs constructor
-    EnumOptionalResponse({
-    
-        this.updateOrderStatusOpt,
-    
-    });
-    static EnumOptionalResponse fromJson(JsonObject data) {
-    
-        
-            final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt_value;
-            
-                final JsonObject? updateOrderStatusOpt$raw = data['updateOrderStatusOpt']; 
-                if (updateOrderStatusOpt$raw != null) {
-                    updateOrderStatusOpt_value = EnumOptional_updateOrderStatusOpt.fromJson(updateOrderStatusOpt$raw);
-                } else {
-                    updateOrderStatusOpt_value = null;
-                }
-            
-        
-    
-    return EnumOptionalResponse(
-    
-        
-        updateOrderStatusOpt: updateOrderStatusOpt_value,
-    
-    );
+    final JsonObject? updateOrderStatusOpt$raw = data['updateOrderStatusOpt'];
+    if (updateOrderStatusOpt$raw != null) {
+      updateOrderStatusOpt_value = EnumOptional_updateOrderStatusOpt.fromJson(
+        updateOrderStatusOpt$raw,
+      );
+    } else {
+      updateOrderStatusOpt_value = null;
     }
-    EnumOptionalResponse updateWithJson(JsonObject data) {
-    
-        
-        final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt_value;
-        if (data.containsKey('updateOrderStatusOpt')) {
-            
-                final JsonObject? updateOrderStatusOpt$raw = data['updateOrderStatusOpt']; 
-                if (updateOrderStatusOpt$raw != null) {
-                    updateOrderStatusOpt_value = EnumOptional_updateOrderStatusOpt.fromJson(updateOrderStatusOpt$raw);
-                } else {
-                    updateOrderStatusOpt_value = null;
-                }
-            
-        } else {
-            updateOrderStatusOpt_value = updateOrderStatusOpt;
-        }
-        
-    
+
     return EnumOptionalResponse(
-    
-        
-        updateOrderStatusOpt: updateOrderStatusOpt_value,
-    
+      updateOrderStatusOpt: updateOrderStatusOpt_value,
     );
+  }
+
+  EnumOptionalResponse updateWithJson(JsonObject data) {
+    final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt_value;
+    if (data.containsKey('updateOrderStatusOpt')) {
+      final JsonObject? updateOrderStatusOpt$raw = data['updateOrderStatusOpt'];
+      if (updateOrderStatusOpt$raw != null) {
+        updateOrderStatusOpt_value = EnumOptional_updateOrderStatusOpt.fromJson(
+          updateOrderStatusOpt$raw,
+        );
+      } else {
+        updateOrderStatusOpt_value = null;
+      }
+    } else {
+      updateOrderStatusOpt_value = updateOrderStatusOpt;
     }
-    @override
-    bool operator ==(Object other) {
+
+    return EnumOptionalResponse(
+      updateOrderStatusOpt: updateOrderStatusOpt_value,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is EnumOptionalResponse &&
-    
-        other.updateOrderStatusOpt == updateOrderStatusOpt 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        updateOrderStatusOpt.hashCode;
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'updateOrderStatusOpt':
-            
-                updateOrderStatusOpt?.toJson()
-            
-        ,
-    
-    };
-    }
+        (other is EnumOptionalResponse &&
+            other.updateOrderStatusOpt == updateOrderStatusOpt);
+  }
 
+  @override
+  int get hashCode => updateOrderStatusOpt.hashCode;
+
+  JsonObject toJson() {
+    return {'updateOrderStatusOpt': updateOrderStatusOpt?.toJson()};
+  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
+class EnumOptional_updateOrderStatusOpt {
+  /// class members
 
-    class EnumOptional_updateOrderStatusOpt  {
-        
-    /// class members
-    
-        
-            final Status? status;
-        
-    
-        
-            final int quantity;
-        
-    
-        
-            final String name;
-        
-    
-        
-            final double price;
-        
-    
-    // keywordargs constructor
-    EnumOptional_updateOrderStatusOpt({
-    
-        this.status,
-    required
-        this.quantity,
-    required
-        this.name,
-    required
-        this.price,
-    
-    });
-    static EnumOptional_updateOrderStatusOpt fromJson(JsonObject data) {
-    
-        
-            
-            final Status? status_value;
-            
-                final String? status$raw = data['status']; 
-                if (status$raw != null) {
-                    status_value = Status.fromString(status$raw);
-                } else {
-                    status_value = null;
-                }
-            
-        
-    
-        
-            final int quantity_value = data['quantity'];
-        
-    
-        
-            final String name_value = data['name'];
-        
-    
-        
-            final double price_value = data['price'];
-        
-    
-    return EnumOptional_updateOrderStatusOpt(
-    
-        
-        status: status_value,
-    
-        
-        quantity: quantity_value,
-    
-        
-        name: name_value,
-    
-        
-        price: price_value,
-    
-    );
+  final Status? status;
+
+  final int quantity;
+
+  final String name;
+
+  final double price;
+
+  // keywordargs constructor
+  EnumOptional_updateOrderStatusOpt({
+    this.status,
+    required this.quantity,
+    required this.name,
+    required this.price,
+  });
+  static EnumOptional_updateOrderStatusOpt fromJson(JsonObject data) {
+    final Status? status_value;
+
+    final String? status$raw = data['status'];
+    if (status$raw != null) {
+      status_value = Status.fromString(status$raw);
+    } else {
+      status_value = null;
     }
-    EnumOptional_updateOrderStatusOpt updateWithJson(JsonObject data) {
-    
-        
-            
-            final Status? status_value;
-            if (data.containsKey('status')) {
-                
-                    final String? status$raw = data['status']; 
-                    if (status$raw != null) {
-                        status_value = Status.fromString(status$raw);
-                    } else {
-                        status_value = null;
-                    }
-                
-            } else {
-                status_value = status;
-            }
-        
-    
-        
-            final int quantity_value;
-            if (data.containsKey('quantity')) {
-            quantity_value = data['quantity'];
-            } else {
-            quantity_value = quantity;
-            }
-        
-    
-        
-            final String name_value;
-            if (data.containsKey('name')) {
-            name_value = data['name'];
-            } else {
-            name_value = name;
-            }
-        
-    
-        
-            final double price_value;
-            if (data.containsKey('price')) {
-            price_value = data['price'];
-            } else {
-            price_value = price;
-            }
-        
-    
+
+    final int quantity_value = data['quantity'];
+
+    final String name_value = data['name'];
+
+    final double price_value = data['price'];
+
     return EnumOptional_updateOrderStatusOpt(
-    
-        
-        status: status_value,
-    
-        
-        quantity: quantity_value,
-    
-        
-        name: name_value,
-    
-        
-        price: price_value,
-    
+      status: status_value,
+
+      quantity: quantity_value,
+
+      name: name_value,
+
+      price: price_value,
     );
+  }
+
+  EnumOptional_updateOrderStatusOpt updateWithJson(JsonObject data) {
+    final Status? status_value;
+    if (data.containsKey('status')) {
+      final String? status$raw = data['status'];
+      if (status$raw != null) {
+        status_value = Status.fromString(status$raw);
+      } else {
+        status_value = null;
+      }
+    } else {
+      status_value = status;
     }
-    @override
-    bool operator ==(Object other) {
+
+    final int quantity_value;
+    if (data.containsKey('quantity')) {
+      quantity_value = data['quantity'];
+    } else {
+      quantity_value = quantity;
+    }
+
+    final String name_value;
+    if (data.containsKey('name')) {
+      name_value = data['name'];
+    } else {
+      name_value = name;
+    }
+
+    final double price_value;
+    if (data.containsKey('price')) {
+      price_value = data['price'];
+    } else {
+      price_value = price;
+    }
+
+    return EnumOptional_updateOrderStatusOpt(
+      status: status_value,
+
+      quantity: quantity_value,
+
+      name: name_value,
+
+      price: price_value,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is EnumOptional_updateOrderStatusOpt &&
-    
-        other.status == status &&
-    
-        other.quantity == quantity &&
-    
-        other.name == name &&
-    
-        other.price == price 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            status,
-        
-            
-            quantity,
-        
-            
-            name,
-        
-            
-            price,
-        
-        ]);
-    
-    JsonObject toJson() {
+        (other is EnumOptional_updateOrderStatusOpt &&
+            other.status == status &&
+            other.quantity == quantity &&
+            other.name == name &&
+            other.price == price);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([status, quantity, name, price]);
+
+  JsonObject toJson() {
     return {
-    
-        
-        'status':
-            
-                status?.name  
-            
-        ,
-    
-        
-        'quantity':
-            
-                quantity
-            
-        ,
-    
-        
-        'name':
-            
-                name
-            
-        ,
-    
-        
-        'price':
-            
-                price
-            
-        ,
-    
+      'status': status?.name,
+
+      'quantity': quantity,
+
+      'name': name,
+
+      'price': price,
     };
-    }
-
-    }
-
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-
 class RequestEnumOptional extends Requestable {
-    
-    final EnumOptionalVariables variables;
-    
+  final EnumOptionalVariables variables;
 
-    RequestEnumOptional(
-        
-        {
-            required this.variables,
-        } 
-        
-    );
+  RequestEnumOptional({required this.variables});
 
-    @override
-    Request toRequest() {
-        JsonObject variablesJson =  variables.toJson() ;
-        return Request(
-            query: r"""mutation EnumOptional($status: Status) {
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = variables.toJson();
+    return Request(
+      query: r"""mutation EnumOptional($status: Status) {
   updateOrderStatusOpt(status: $status) {
     status
     quantity
     name
     price
   }
-}""", 
-            variables: variablesJson, 
-            opType: OperationType.Mutation, 
-            StringopName: 'EnumOptional'
-        );
-    }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Mutation,
+      StringopName: 'EnumOptional',
+    );
+  }
 }
-
 
 class EnumOptionalVariables {
-    
-    
-        final Option<Status?> status;
-    
+  final Option<Status?> status;
 
-    EnumOptionalVariables (
-        
-            {
-            
+  EnumOptionalVariables({this.status = const None()});
 
-    
-         
-            this.status = const None() 
-        ,
-    
-      
- 
-            }
-        
-    );
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
-
-    
-      
-        if (status.isSome()) {
-            
-                data["status"] = status.some()?.name;
-            
-        } 
-    
-
-    
-        return data;
-    } 
-
-    static fromJson(JsonObject data) {
-        
-
-    
-    
-    
-        final Option<Status?> status_value;
-          
-            final String? status$raw = data['status'];
-            if (status$raw != null) {
-                
-                    status_value = Some(Status.fromString(status$raw));
-                
-            } else {
-                
-                    status_value = None();
-                
-            }
-        
-    
-
-    return EnumOptionalVariables (
-        
-           status: status_value,
-        
-    );
-
+    if (status.isSome()) {
+      data["status"] = status.some()?.name;
     }
 
-    
-EnumOptionalVariables updateWith(
-    {
-        
-            
-                Option<Option<Status?>> status = const None()
-            
-            
-        
+    return data;
+  }
+
+  EnumOptionalVariables updateWith({
+    Option<Option<Status?>> status = const None(),
+  }) {
+    final Option<Status?> status$next;
+
+    switch (status) {
+      case Some(value: final data):
+        status$next = data;
+      case None():
+        status$next = this.status;
     }
-) {
-    
-        final Option<Status?> status$next;
-        
-            switch (status) {
-                
-                case Some(value: final data):
-                    status$next = data;
-                case None():
-                    status$next = this.status;
-            }
-        
-    
-    return EnumOptionalVariables(
-        
-            status: status$next
-            
-        
-    );
-}
 
-
+    return EnumOptionalVariables(status: status$next);
+  }
 }

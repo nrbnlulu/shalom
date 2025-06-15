@@ -173,19 +173,15 @@ class OrderRequestVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final Order order_value;
+  OrderRequestVariables updateWith({Order? order}) {
+    final Order order$next;
 
-    order_value = Order.fromJson(data['order']);
+    if (order != null) {
+      order$next = order;
+    } else {
+      order$next = this.order;
+    }
 
-    return OrderRequestVariables(order: order_value);
-  }
-
-  OrderRequestVariables updateWithJson(JsonObject data) {
-    final Order order_value;
-
-    order_value = Order.fromJson(data['order']);
-
-    return OrderRequestVariables(order: order_value);
+    return OrderRequestVariables(order: order$next);
   }
 }

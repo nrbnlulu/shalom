@@ -178,28 +178,18 @@ class OptOrderRequestVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final Option<Order?> order_value;
+  OptOrderRequestVariables updateWith({
+    Option<Option<Order?>> order = const None(),
+  }) {
+    final Option<Order?> order$next;
 
-    final JsonObject? order$raw = data['order'];
-    if (order$raw != null) {
-      order_value = Some(Order.fromJson(order$raw));
-    } else {
-      order_value = None();
+    switch (order) {
+      case Some(value: final data):
+        order$next = data;
+      case None():
+        order$next = this.order;
     }
 
-    return OptOrderRequestVariables(order: order_value);
-  }
-
-  OptOrderRequestVariables updateWithJson(JsonObject data) {
-    final Option<Order?> order_value;
-
-    if (data.containsKey('order')) {
-      order_value = Some(Order.fromJson(data['order']));
-    } else {
-      order_value = order;
-    }
-
-    return OptOrderRequestVariables(order: order_value);
+    return OptOrderRequestVariables(order: order$next);
   }
 }

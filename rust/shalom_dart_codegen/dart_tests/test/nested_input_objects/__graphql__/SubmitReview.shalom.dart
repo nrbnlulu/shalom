@@ -82,28 +82,18 @@ class SubmitReviewVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final Option<Review?> review_value;
+  SubmitReviewVariables updateWith({
+    Option<Option<Review?>> review = const None(),
+  }) {
+    final Option<Review?> review$next;
 
-    final JsonObject? review$raw = data['review'];
-    if (review$raw != null) {
-      review_value = Some(Review.fromJson(review$raw));
-    } else {
-      review_value = None();
+    switch (review) {
+      case Some(value: final data):
+        review$next = data;
+      case None():
+        review$next = this.review;
     }
 
-    return SubmitReviewVariables(review: review_value);
-  }
-
-  SubmitReviewVariables updateWithJson(JsonObject data) {
-    final Option<Review?> review_value;
-
-    if (data.containsKey('review')) {
-      review_value = Some(Review.fromJson(data['review']));
-    } else {
-      review_value = review;
-    }
-
-    return SubmitReviewVariables(review: review_value);
+    return SubmitReviewVariables(review: review$next);
   }
 }

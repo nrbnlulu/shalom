@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -27,50 +27,6 @@ class Order {
 
     return data;
   }
-
-  static fromJson(JsonObject data) {
-    final String name_value;
-
-    name_value = data['name'];
-
-    final double price_value;
-
-    price_value = data['price'];
-
-    final int quantity_value;
-
-    quantity_value = data['quantity'];
-
-    return Order(
-      name: name_value,
-
-      price: price_value,
-
-      quantity: quantity_value,
-    );
-  }
-
-  Order updateWithJson(JsonObject data) {
-    final String name_value;
-
-    name_value = data['name'];
-
-    final double price_value;
-
-    price_value = data['price'];
-
-    final int quantity_value;
-
-    quantity_value = data['quantity'];
-
-    return Order(
-      name: name_value,
-
-      price: price_value,
-
-      quantity: quantity_value,
-    );
-  }
 }
 
 class OrderDetails {
@@ -86,31 +42,6 @@ class OrderDetails {
     }
 
     return data;
-  }
-
-  static fromJson(JsonObject data) {
-    final Option<Review?> firstReview_value;
-
-    final JsonObject? firstReview$raw = data['firstReview'];
-    if (firstReview$raw != null) {
-      firstReview_value = Some(Review.fromJson(firstReview$raw));
-    } else {
-      firstReview_value = None();
-    }
-
-    return OrderDetails(firstReview: firstReview_value);
-  }
-
-  OrderDetails updateWithJson(JsonObject data) {
-    final Option<Review?> firstReview_value;
-
-    if (data.containsKey('firstReview')) {
-      firstReview_value = Some(Review.fromJson(data['firstReview']));
-    } else {
-      firstReview_value = firstReview;
-    }
-
-    return OrderDetails(firstReview: firstReview_value);
   }
 }
 
@@ -128,31 +59,6 @@ class OrderRecursive {
 
     return data;
   }
-
-  static fromJson(JsonObject data) {
-    final Option<OrderRecursive?> order_value;
-
-    final JsonObject? order$raw = data['order'];
-    if (order$raw != null) {
-      order_value = Some(OrderRecursive.fromJson(order$raw));
-    } else {
-      order_value = None();
-    }
-
-    return OrderRecursive(order: order_value);
-  }
-
-  OrderRecursive updateWithJson(JsonObject data) {
-    final Option<OrderRecursive?> order_value;
-
-    if (data.containsKey('order')) {
-      order_value = Some(OrderRecursive.fromJson(data['order']));
-    } else {
-      order_value = order;
-    }
-
-    return OrderRecursive(order: order_value);
-  }
 }
 
 class Review {
@@ -168,31 +74,6 @@ class Review {
     }
 
     return data;
-  }
-
-  static fromJson(JsonObject data) {
-    final Option<OrderDetails?> order_value;
-
-    final JsonObject? order$raw = data['order'];
-    if (order$raw != null) {
-      order_value = Some(OrderDetails.fromJson(order$raw));
-    } else {
-      order_value = None();
-    }
-
-    return Review(order: order_value);
-  }
-
-  Review updateWithJson(JsonObject data) {
-    final Option<OrderDetails?> order_value;
-
-    if (data.containsKey('order')) {
-      order_value = Some(OrderDetails.fromJson(data['order']));
-    } else {
-      order_value = order;
-    }
-
-    return Review(order: order_value);
   }
 }
 
@@ -211,30 +92,6 @@ class SpecificOrder {
     data["order"] = order.toJson();
 
     return data;
-  }
-
-  static fromJson(JsonObject data) {
-    final String notes_value;
-
-    notes_value = data['notes'];
-
-    final Order order_value;
-
-    order_value = Order.fromJson(data['order']);
-
-    return SpecificOrder(notes: notes_value, order: order_value);
-  }
-
-  SpecificOrder updateWithJson(JsonObject data) {
-    final String notes_value;
-
-    notes_value = data['notes'];
-
-    final Order order_value;
-
-    order_value = Order.fromJson(data['order']);
-
-    return SpecificOrder(notes: notes_value, order: order_value);
   }
 }
 

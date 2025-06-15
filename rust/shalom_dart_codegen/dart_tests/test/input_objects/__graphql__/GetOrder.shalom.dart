@@ -177,36 +177,28 @@ class GetOrderVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final String id_value;
+  GetOrderVariables updateWith({
+    String? id,
 
-    id_value = data['id'];
+    Option<Option<Order?>> order = const None(),
+  }) {
+    final String id$next;
 
-    final Option<Order?> order_value;
-
-    final JsonObject? order$raw = data['order'];
-    if (order$raw != null) {
-      order_value = Some(Order.fromJson(order$raw));
+    if (id != null) {
+      id$next = id;
     } else {
-      order_value = None();
+      id$next = this.id;
     }
 
-    return GetOrderVariables(id: id_value, order: order_value);
-  }
+    final Option<Order?> order$next;
 
-  GetOrderVariables updateWithJson(JsonObject data) {
-    final String id_value;
-
-    id_value = data['id'];
-
-    final Option<Order?> order_value;
-
-    if (data.containsKey('order')) {
-      order_value = Some(Order.fromJson(data['order']));
-    } else {
-      order_value = order;
+    switch (order) {
+      case Some(value: final data):
+        order$next = data;
+      case None():
+        order$next = this.order;
     }
 
-    return GetOrderVariables(id: id_value, order: order_value);
+    return GetOrderVariables(id: id$next, order: order$next);
   }
 }

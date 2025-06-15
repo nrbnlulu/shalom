@@ -184,74 +184,46 @@ class OptionalWithSomeDefaultVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final int? duration_value;
+  OptionalWithSomeDefaultVariables updateWith({
+    Option<int?> duration = const None(),
 
-    final int? duration$raw = data['duration'];
-    if (duration$raw != null) {
-      duration_value = duration$raw;
-    } else {
-      duration_value = null;
+    Option<bool?> is_easy = const None(),
+
+    Option<String?> name = const None(),
+  }) {
+    final int? duration$next;
+
+    switch (duration) {
+      case Some(value: final data):
+        duration$next = data;
+      case None():
+        duration$next = this.duration;
     }
 
-    final bool? is_easy_value;
+    final bool? is_easy$next;
 
-    final bool? is_easy$raw = data['is_easy'];
-    if (is_easy$raw != null) {
-      is_easy_value = is_easy$raw;
-    } else {
-      is_easy_value = null;
+    switch (is_easy) {
+      case Some(value: final data):
+        is_easy$next = data;
+      case None():
+        is_easy$next = this.is_easy;
     }
 
-    final String? name_value;
+    final String? name$next;
 
-    final String? name$raw = data['name'];
-    if (name$raw != null) {
-      name_value = name$raw;
-    } else {
-      name_value = null;
-    }
-
-    return OptionalWithSomeDefaultVariables(
-      duration: duration_value,
-
-      is_easy: is_easy_value,
-
-      name: name_value,
-    );
-  }
-
-  OptionalWithSomeDefaultVariables updateWithJson(JsonObject data) {
-    final int? duration_value;
-
-    if (data.containsKey(duration)) {
-      duration_value = data['duration'];
-    } else {
-      duration_value = duration;
-    }
-
-    final bool? is_easy_value;
-
-    if (data.containsKey(is_easy)) {
-      is_easy_value = data['is_easy'];
-    } else {
-      is_easy_value = is_easy;
-    }
-
-    final String? name_value;
-
-    if (data.containsKey(name)) {
-      name_value = data['name'];
-    } else {
-      name_value = name;
+    switch (name) {
+      case Some(value: final data):
+        name$next = data;
+      case None():
+        name$next = this.name;
     }
 
     return OptionalWithSomeDefaultVariables(
-      duration: duration_value,
+      duration: duration$next,
 
-      is_easy: is_easy_value,
+      is_easy: is_easy$next,
 
-      name: name_value,
+      name: name$next,
     );
   }
 }

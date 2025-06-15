@@ -178,28 +178,18 @@ class OrderRecursiveVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final Option<OrderRecursive?> order_value;
+  OrderRecursiveVariables updateWith({
+    Option<Option<OrderRecursive?>> order = const None(),
+  }) {
+    final Option<OrderRecursive?> order$next;
 
-    final JsonObject? order$raw = data['order'];
-    if (order$raw != null) {
-      order_value = Some(OrderRecursive.fromJson(order$raw));
-    } else {
-      order_value = None();
+    switch (order) {
+      case Some(value: final data):
+        order$next = data;
+      case None():
+        order$next = this.order;
     }
 
-    return OrderRecursiveVariables(order: order_value);
-  }
-
-  OrderRecursiveVariables updateWithJson(JsonObject data) {
-    final Option<OrderRecursive?> order_value;
-
-    if (data.containsKey('order')) {
-      order_value = Some(OrderRecursive.fromJson(data['order']));
-    } else {
-      order_value = order;
-    }
-
-    return OrderRecursiveVariables(order: order_value);
+    return OrderRecursiveVariables(order: order$next);
   }
 }

@@ -202,19 +202,17 @@ class OrderOptWithNullDefaultsRequestVariables {
     return data;
   }
 
-  static fromJson(JsonObject data) {
-    final OrderOptWithNullDefaults order_value;
+  OrderOptWithNullDefaultsRequestVariables updateWith({
+    OrderOptWithNullDefaults? order,
+  }) {
+    final OrderOptWithNullDefaults order$next;
 
-    order_value = OrderOptWithNullDefaults.fromJson(data['order']);
+    if (order != null) {
+      order$next = order;
+    } else {
+      order$next = this.order;
+    }
 
-    return OrderOptWithNullDefaultsRequestVariables(order: order_value);
-  }
-
-  OrderOptWithNullDefaultsRequestVariables updateWithJson(JsonObject data) {
-    final OrderOptWithNullDefaults order_value;
-
-    order_value = OrderOptWithNullDefaults.fromJson(data['order']);
-
-    return OrderOptWithNullDefaultsRequestVariables(order: order_value);
+    return OrderOptWithNullDefaultsRequestVariables(order: order$next);
   }
 }
