@@ -60,9 +60,13 @@ class GetTask_task {
   // keywordargs constructor
   GetTask_task({required this.id, required this.name, required this.status});
   static GetTask_task fromJson(JsonObject data) {
-    final String id_value = data['id'];
+    final String id_value;
 
-    final String name_value = data['name'];
+    id_value = data['id'];
+
+    final String name_value;
+
+    name_value = data['name'];
 
     final Status status_value;
 

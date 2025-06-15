@@ -12,7 +12,9 @@ class GetBooleanOptionalResponse {
   // keywordargs constructor
   GetBooleanOptionalResponse({this.booleanOptional});
   static GetBooleanOptionalResponse fromJson(JsonObject data) {
-    final bool? booleanOptional_value = data['booleanOptional'];
+    final bool? booleanOptional_value;
+
+    booleanOptional_value = data['booleanOptional'];
 
     return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);
   }

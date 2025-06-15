@@ -75,11 +75,17 @@ class GetSpecificOrder_getSpecificOrder {
   // keywordargs constructor
   GetSpecificOrder_getSpecificOrder({this.quantity, this.price, this.name});
   static GetSpecificOrder_getSpecificOrder fromJson(JsonObject data) {
-    final int? quantity_value = data['quantity'];
+    final int? quantity_value;
 
-    final double? price_value = data['price'];
+    quantity_value = data['quantity'];
 
-    final String? name_value = data['name'];
+    final double? price_value;
+
+    price_value = data['price'];
+
+    final String? name_value;
+
+    name_value = data['name'];
 
     return GetSpecificOrder_getSpecificOrder(
       quantity: quantity_value,

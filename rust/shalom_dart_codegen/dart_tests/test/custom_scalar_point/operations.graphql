@@ -1,0 +1,6 @@
+query GetLocation {
+    getLocation {
+        id
+        coords
+    }
+}

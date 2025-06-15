@@ -66,7 +66,9 @@ class OptionalArguments_updateUser {
   // keywordargs constructor
   OptionalArguments_updateUser({this.name});
   static OptionalArguments_updateUser fromJson(JsonObject data) {
-    final String? name_value = data['name'];
+    final String? name_value;
+
+    name_value = data['name'];
 
     return OptionalArguments_updateUser(name: name_value);
   }

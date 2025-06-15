@@ -66,9 +66,13 @@ class RequiredArguments_product {
   // keywordargs constructor
   RequiredArguments_product({required this.id, required this.name});
   static RequiredArguments_product fromJson(JsonObject data) {
-    final String id_value = data['id'];
+    final String id_value;
 
-    final String name_value = data['name'];
+    id_value = data['id'];
+
+    final String name_value;
+
+    name_value = data['name'];
 
     return RequiredArguments_product(id: id_value, name: name_value);
   }

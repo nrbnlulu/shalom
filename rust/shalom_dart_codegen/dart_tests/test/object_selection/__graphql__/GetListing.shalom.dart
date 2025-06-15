@@ -58,11 +58,17 @@ class GetListing_listing {
   // keywordargs constructor
   GetListing_listing({required this.id, required this.name, this.price});
   static GetListing_listing fromJson(JsonObject data) {
-    final String id_value = data['id'];
+    final String id_value;
 
-    final String name_value = data['name'];
+    id_value = data['id'];
 
-    final int? price_value = data['price'];
+    final String name_value;
+
+    name_value = data['name'];
+
+    final int? price_value;
+
+    price_value = data['price'];
 
     return GetListing_listing(
       id: id_value,

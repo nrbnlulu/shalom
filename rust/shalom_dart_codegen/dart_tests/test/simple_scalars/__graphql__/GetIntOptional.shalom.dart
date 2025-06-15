@@ -12,7 +12,9 @@ class GetIntOptionalResponse {
   // keywordargs constructor
   GetIntOptionalResponse({this.intOptional});
   static GetIntOptionalResponse fromJson(JsonObject data) {
-    final int? intOptional_value = data['intOptional'];
+    final int? intOptional_value;
+
+    intOptional_value = data['intOptional'];
 
     return GetIntOptionalResponse(intOptional: intOptional_value);
   }

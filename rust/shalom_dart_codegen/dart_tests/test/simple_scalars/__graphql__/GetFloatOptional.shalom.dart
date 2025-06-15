@@ -12,7 +12,9 @@ class GetFloatOptionalResponse {
   // keywordargs constructor
   GetFloatOptionalResponse({this.floatOptional});
   static GetFloatOptionalResponse fromJson(JsonObject data) {
-    final double? floatOptional_value = data['floatOptional'];
+    final double? floatOptional_value;
+
+    floatOptional_value = data['floatOptional'];
 
     return GetFloatOptionalResponse(floatOptional: floatOptional_value);
   }

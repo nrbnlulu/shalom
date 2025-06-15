@@ -12,7 +12,9 @@ class GetIDOptionalResponse {
   // keywordargs constructor
   GetIDOptionalResponse({this.idOptional});
   static GetIDOptionalResponse fromJson(JsonObject data) {
-    final String? idOptional_value = data['idOptional'];
+    final String? idOptional_value;
+
+    idOptional_value = data['idOptional'];
 
     return GetIDOptionalResponse(idOptional: idOptional_value);
   }

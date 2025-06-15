@@ -12,7 +12,9 @@ class GetIDResponse {
   // keywordargs constructor
   GetIDResponse({required this.id});
   static GetIDResponse fromJson(JsonObject data) {
-    final String id_value = data['id'];
+    final String id_value;
+
+    id_value = data['id'];
 
     return GetIDResponse(id: id_value);
   }

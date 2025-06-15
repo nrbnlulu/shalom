@@ -12,7 +12,9 @@ class GetBooleanResponse {
   // keywordargs constructor
   GetBooleanResponse({required this.boolean});
   static GetBooleanResponse fromJson(JsonObject data) {
-    final bool boolean_value = data['boolean'];
+    final bool boolean_value;
+
+    boolean_value = data['boolean'];
 
     return GetBooleanResponse(boolean: boolean_value);
   }

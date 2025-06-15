@@ -99,11 +99,17 @@ class OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest {
   });
   static OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest
   fromJson(JsonObject data) {
-    final int? quantity_value = data['quantity'];
+    final int? quantity_value;
 
-    final String? name_value = data['name'];
+    quantity_value = data['quantity'];
 
-    final double? price_value = data['price'];
+    final String? name_value;
+
+    name_value = data['name'];
+
+    final double? price_value;
+
+    price_value = data['price'];
 
     return OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest(
       quantity: quantity_value,
