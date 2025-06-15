@@ -155,7 +155,8 @@ mod ext_jinja_fns {
         schema_field: ViaDeserialize<SchemaFieldCommon>,
     ) -> minijinja::value::Value {
         let serialized = serde_json::to_value(&schema_field.0.unresolved_type.resolve(&schema_ctx))
-            .map_err(|e| format!("Failed to serialize field type: {}", e)).unwrap();
+            .map_err(|e| format!("Failed to serialize field type: {}", e))
+            .unwrap();
         minijinja::value::Value::from_serialize(serialized)
     }
 }
@@ -189,7 +190,6 @@ impl TemplateEnv<'_> {
         });
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
-
 
         env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
 
