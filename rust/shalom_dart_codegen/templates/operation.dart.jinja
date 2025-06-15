@@ -226,16 +226,16 @@ class {{ operation_name }}Variables {
 
     JsonObject toJson() {
         JsonObject data = {};
-        {{ field_to_json_logic(op_variables) }}    
+        {{ toJson_macro(op_variables) }}    
         return data;
     } 
 
     static fromJson(JsonObject data) {
-        {{ field_from_json_logic(op_variables, typename) }}
+        {{ fromJson_macro(op_variables, typename) }}
     }
 
-    {{ typename }} updateWithJson(JsonObject data) {
-        {{ field_update_with_json_logic(op_variables, typename) }}
+    {{ typename }} updateWith(JsonObject data) {
+        {{ updateWith_macro(op_variables, typename) }}
     }
 }
 {% endif %}

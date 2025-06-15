@@ -9,6 +9,8 @@ import "__graphql__/schema.shalom.dart";
 
 void main() {
   test("required enum argument", () {
+    final variables = EnumRequiredVariables(status: Status.SENT);
+    variables.updateWithJson(data)
     final req =
         RequestEnumRequired(
           variables: EnumRequiredVariables(status: Status.COMPLETED),

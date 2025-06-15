@@ -43,12 +43,12 @@ class {{ typename }} {
 
     JsonObject toJson() {
         JsonObject data = {};
-        {{ field_to_json_logic(fields) }}    
+        {{ toJson_macro(fields) }}    
         return data;
     } 
 
     static fromJson(JsonObject data) {
-        {{ field_from_json_logic(fields, typename) }}
+        {{ fromJson_macro(fields, typename) }}
     }
 
     {{ typename }} updateWithJson(JsonObject data) {
