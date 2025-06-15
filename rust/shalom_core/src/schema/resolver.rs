@@ -112,8 +112,7 @@ fn resolve_object(
         let name = name.to_string();
         let description = field.description.as_ref().map(|v| v.to_string());
         let arguments = vec![];
-        let field_definition =
-            SchemaFieldCommon::new(name.clone(), &field.ty, description);
+        let field_definition = SchemaFieldCommon::new(name.clone(), &field.ty, description);
         fields.insert(
             name,
             SchemaObjectFieldDefinition {
@@ -168,10 +167,9 @@ fn resolve_input(
         let is_optional = !field.ty.is_non_null();
         let default_value = field.default_value.clone();
         let name = name.to_string();
-        let field_definition =
-            SchemaFieldCommon::new( name.clone(), &field.ty, description);
+        let field_definition = SchemaFieldCommon::new(name.clone(), &field.ty, description);
         let input_field_definition = InputFieldDefinition {
-            field: field_definition,
+            common: field_definition,
             is_optional,
             default_value,
         };

@@ -155,10 +155,9 @@ fn parse_operation(
         let name = variable.name.to_string();
         let raw_type = (*variable.ty).clone();
         let is_optional = !raw_type.is_non_null();
-        let field_definition =
-            SchemaFieldCommon::new( name.clone(), &raw_type, None);
+        let field_definition = SchemaFieldCommon::new(name.clone(), &raw_type, None);
         let input_definition = InputFieldDefinition {
-            field: field_definition,
+            common: field_definition,
             is_optional,
             default_value: variable.default_value.clone(),
         };

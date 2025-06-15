@@ -1,5 +1,7 @@
 use std::{
-    collections::HashSet,  hash::{Hash, Hasher}, sync::Arc
+    collections::HashSet,
+    hash::{Hash, Hasher},
+    sync::Arc,
 };
 
 use apollo_compiler::{
@@ -29,6 +31,10 @@ pub enum GraphQLAny {
     Union(Node<UnionType>),
     Enum(Node<EnumType>),
     InputObject(Node<InputObjectType>),
+    List {
+        of_type: Box<GraphQLAny>,
+        is_optional: bool,
+    },
 }
 
 impl GraphQLAny {
@@ -199,23 +205,20 @@ impl Hash for InputObjectType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-enum UnresolvedTypeKind {
+pub enum UnresolvedTypeKind {
     Named { name: String },
     List { of_type: Box<UnresolvedType> },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct UnresolvedType {
-    is_optional: bool,
-    ty: UnresolvedTypeKind,
-
+pub struct UnresolvedType {
+    pub is_optional: bool,
+    pub kind: UnresolvedTypeKind,
 }
-
-
 
 impl UnresolvedType {
     pub fn ty_name(&self) -> String {
-        match &self.ty {
+        match &self.kind {
             UnresolvedTypeKind::Named { name } => name.clone(),
             _ => {
                 unimplemented!("lists have not been implemented")
@@ -226,8 +229,7 @@ impl UnresolvedType {
     pub fn new(ty: &RawType) -> Self {
         let is_optional = !ty.is_non_null();
         let unresolved_kind = match ty {
-            RawType::Named(name) =>
-             UnresolvedTypeKind::Named {
+            RawType::Named(name) => UnresolvedTypeKind::Named {
                 name: name.to_string(),
             },
             RawType::NonNullNamed(name) => UnresolvedTypeKind::Named {
@@ -237,13 +239,23 @@ impl UnresolvedType {
         };
         Self {
             is_optional,
-            ty: unresolved_kind,
+            kind: unresolved_kind,
+        }
+    }
+    pub fn resolve(&self, ctx: &SchemaContext) -> ResolvedType {
+        match &self.kind {
+            UnresolvedTypeKind::Named { name } => {
+                return ResolvedType {
+                    is_optional: self.is_optional,
+                    ty: ctx.get_type(name).unwrap(),
+                }
+            }
+            UnresolvedTypeKind::List { of_type: _ } => {
+                unimplemented!("lists are not supported yet")
+            }
         }
     }
 }
-
-
-
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct ResolvedType {
@@ -255,18 +267,12 @@ pub struct ResolvedType {
 pub struct SchemaFieldCommon {
     pub name: String,
     #[serde(rename = "type")]
-    unresolved_type: UnresolvedType,
+    pub unresolved_type: UnresolvedType,
     pub description: Option<String>,
 }
 
-
-
 impl SchemaFieldCommon {
-    pub fn new(
-        name: String,
-        raw_type: &RawType,
-        description: Option<String>,
-    ) -> Self {
+    pub fn new(name: String, raw_type: &RawType, description: Option<String>) -> Self {
         let unresolved_type = UnresolvedType::new(raw_type);
         SchemaFieldCommon {
             name,
@@ -276,17 +282,9 @@ impl SchemaFieldCommon {
     }
 
     pub fn resolve_type(&self, ctx: &SchemaContext) -> ResolvedType {
-        let gql_ty = ctx
-            .get_type(self.unresolved_type.ty_name().as_str())
-            .unwrap();
-        ResolvedType {
-            is_optional: self.unresolved_type.is_optional,
-            ty: gql_ty,
-        }
+        self.unresolved_type.resolve(ctx)
     }
 }
-
-
 
 impl Hash for SchemaFieldCommon {
     fn hash<H: Hasher>(&self, state: &mut H) {
@@ -308,7 +306,6 @@ impl Eq for SchemaFieldCommon {}
 pub struct SchemaObjectFieldDefinition {
     #[serde(skip_serializing)]
     pub arguments: Vec<InputFieldDefinition>,
-    #[serde(flatten)]
     pub field: SchemaFieldCommon,
 }
 
@@ -316,6 +313,5 @@ pub struct SchemaObjectFieldDefinition {
 pub struct InputFieldDefinition {
     pub is_optional: bool,
     pub default_value: Option<Node<Value>>,
-    #[serde(flatten)]
-    pub field: SchemaFieldCommon,
+    pub common: SchemaFieldCommon,
 }

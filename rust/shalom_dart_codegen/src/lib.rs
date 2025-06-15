@@ -37,6 +37,10 @@ const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
 
+    use shalom_core::schema::types::{
+        ResolvedType, SchemaFieldCommon, UnresolvedType, UnresolvedTypeKind,
+    };
+
     use super::*;
 
     #[allow(unused_variables)]
@@ -74,7 +78,7 @@ mod ext_jinja_fns {
         schema_ctx: &SchemaContext,
         field: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
-        let gql_ty = field.field.resolve_type(schema_ctx).ty;
+        let gql_ty = field.common.resolve_type(schema_ctx).ty;
         let ty_name = gql_ty.name();
         let resolved = match gql_ty {
             GraphQLAny::Scalar(_) => DEFAULT_SCALARS_MAP.get(&ty_name).unwrap().clone(),
@@ -93,15 +97,15 @@ mod ext_jinja_fns {
 
     pub fn parse_field_default_value(
         schema_ctx: &SchemaContext,
-        input: ViaDeserialize<InputFieldDefinition>,
+        field: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
-        let input = input.0;
-        let default_value = input
+        let field = field.0;
+        let default_value = field
             .default_value
             .as_ref()
             .expect("cannot parse default value that does not exist")
             .to_string();
-        let ty = input.field.resolve_type(schema_ctx);
+        let ty = field.common.resolve_type(schema_ctx);
         if let GraphQLAny::Enum(enum_) = ty.ty {
             format!("{}.{}", enum_.name, default_value)
         } else {
@@ -144,6 +148,13 @@ mod ext_jinja_fns {
         } else {
             value
         }
+    }
+
+    pub fn type_kind_for_field(
+        schema_ctx: &SchemaContext,
+        schema_field: ViaDeserialize<SchemaFieldCommon>,
+    ) -> ResolvedType {
+        schema_field.0.unresolved_type.resolve(schema_ctx)
     }
 }
 
