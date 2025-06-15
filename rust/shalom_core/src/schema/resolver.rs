@@ -1,7 +1,9 @@
+use crate::schema::types::SchemaObjectFieldDefinition;
+
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{
-    EnumType, EnumValueDefinition, FieldDefinition, FieldType, GraphQLAny, InputFieldDefinition,
-    InputObjectType, ObjectType, ScalarType,
+    EnumType, EnumValueDefinition, GraphQLAny, InputFieldDefinition, InputObjectType, ObjectType,
+    ScalarType, SchemaFieldCommon,
 };
 use anyhow::Result;
 use apollo_compiler::{self};
@@ -105,21 +107,21 @@ fn resolve_object(
     if context.get_type(&name).is_some() {
         return;
     }
-    let mut fields = Vec::new();
+    let mut fields = HashMap::new();
     for (name, field) in origin.fields.iter() {
         let name = name.to_string();
-        let ty = resolve_type(&context, &field.ty);
         let description = field.description.as_ref().map(|v| v.to_string());
         let arguments = vec![];
-        fields.push(FieldDefinition {
+        let field_definition = SchemaFieldCommon::new(name.clone(), &field.ty, description);
+        fields.insert(
             name,
-            ty,
-            description,
-            arguments,
-        });
+            SchemaObjectFieldDefinition {
+                field: field_definition,
+                arguments,
+            },
+        );
     }
     #[allow(clippy::mutable_key_type)]
-    let fields: HashSet<_> = fields.into_iter().collect();
     let description = origin.description.as_ref().map(|v| v.to_string());
     let object = Node::new(ObjectType {
         name: name.clone(),
@@ -162,14 +164,12 @@ fn resolve_input(
     let mut fields = HashMap::new();
     for (name, field) in origin.fields.iter() {
         let description = field.description.as_ref().map(|v| v.to_string());
-        let ty = resolve_type(context, &field.ty);
         let is_optional = !field.ty.is_non_null();
         let default_value = field.default_value.clone();
         let name = name.to_string();
+        let field_definition = SchemaFieldCommon::new(name.clone(), &field.ty, description);
         let input_field_definition = InputFieldDefinition {
-            name: name.clone(),
-            description,
-            ty,
+            common: field_definition,
             is_optional,
             default_value,
         };
@@ -182,21 +182,6 @@ fn resolve_input(
         fields,
     };
     context.add_input(name, Node::new(input_object)).unwrap();
-}
-
-pub fn resolve_type(_context: &SharedSchemaContext, origin: &apollo_schema::Type) -> FieldType {
-    match origin {
-        apollo_schema::Type::Named(named) => FieldType::Named(named.to_string()),
-        apollo_schema::Type::NonNullNamed(non_null) => {
-            FieldType::NonNullNamed(non_null.as_str().to_string())
-        }
-        apollo_schema::Type::List(of_type) => {
-            FieldType::List(Box::new(resolve_type(_context, of_type)))
-        }
-        apollo_schema::Type::NonNullList(of_type) => {
-            FieldType::NonNullList(Box::new(resolve_type(_context, of_type)))
-        }
-    }
 }
 
 #[cfg(test)]
@@ -225,31 +210,5 @@ mod tests {
         assert_eq!(obj.fields.len(), 1);
         let field = obj.get_field("hello");
         assert!(field.is_some());
-    }
-    #[test]
-    fn resolve_simple_field_types() {
-        let schema = r#"
-            type Query{
-                hello: String!
-                world: Int!
-                id: ID!
-                foo: Float
-            }
-        "#
-        .to_string();
-        let ctx = resolve(&schema).unwrap();
-
-        let object = ctx.get_type("Query").unwrap().object().unwrap();
-
-        let hello_field = object.get_field("hello").unwrap();
-        assert!(hello_field.ty.get_scalar(&ctx).unwrap().is_string());
-        let world_field = object.get_field("world").unwrap();
-        assert!(world_field.ty.get_scalar(&ctx).unwrap().is_int());
-        let id_field = object.get_field("id").unwrap();
-        assert!(id_field.ty.get_scalar(&ctx).unwrap().is_id());
-        let foo_field = object.get_field("foo").unwrap();
-        assert!(foo_field.ty.get_scalar(&ctx).unwrap().is_float());
-        // optional
-        assert!(foo_field.ty.is_nullable());
     }
 }

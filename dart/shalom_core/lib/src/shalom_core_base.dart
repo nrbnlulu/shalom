@@ -72,6 +72,10 @@ class None<T> implements Option<T> {
   T? some() => null;
   isSome() => false;
   inspect(void Function(T)) => null;
+  @override
+  bool operator==(Object other) {
+    return other is None<T>;
+  }
 }
 
 class Some<T> implements Option<T> {
@@ -82,4 +86,12 @@ class Some<T> implements Option<T> {
   T? some() => value;
   isSome() => true;
   inspect(void Function(T) fn) => fn(value);
+
+  @override
+  bool operator==(Object other) {
+    if (other is Some<T>) {
+      return value == other.value;
+    }
+    return false;
+}
 }

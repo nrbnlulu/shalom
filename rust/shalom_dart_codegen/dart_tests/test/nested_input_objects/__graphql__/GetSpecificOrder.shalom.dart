@@ -180,4 +180,32 @@ class GetSpecificOrderVariables {
 
     return data;
   }
+
+  GetSpecificOrderVariables updateWith({
+    String? id,
+
+    SpecificOrder? specificOrder,
+  }) {
+    final String id$next;
+
+    if (id != null) {
+      id$next = id;
+    } else {
+      id$next = this.id;
+    }
+
+    final SpecificOrder specificOrder$next;
+
+    if (specificOrder != null) {
+      specificOrder$next = specificOrder;
+    } else {
+      specificOrder$next = this.specificOrder;
+    }
+
+    return GetSpecificOrderVariables(
+      id: id$next,
+
+      specificOrder: specificOrder$next,
+    );
+  }
 }

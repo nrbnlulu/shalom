@@ -201,4 +201,18 @@ class OrderOptWithNullDefaultsRequestVariables {
 
     return data;
   }
+
+  OrderOptWithNullDefaultsRequestVariables updateWith({
+    OrderOptWithNullDefaults? order,
+  }) {
+    final OrderOptWithNullDefaults order$next;
+
+    if (order != null) {
+      order$next = order;
+    } else {
+      order$next = this.order;
+    }
+
+    return OrderOptWithNullDefaultsRequestVariables(order: order$next);
+  }
 }

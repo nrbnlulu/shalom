@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names
 {% include "macros" %}
 {% if schema.context.types.inputs | length > 0 %}
 import 'package:shalom_core/shalom_core.dart';
@@ -43,9 +43,10 @@ class {{ typename }} {
 
     JsonObject toJson() {
         JsonObject data = {};
-        {{ field_to_json_logic(fields) }}    
+        {{ toJson_macro(fields) }}    
         return data;
     } 
+
 }
      
 {% endfor %}

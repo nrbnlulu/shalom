@@ -183,4 +183,47 @@ class OptionalWithSomeDefaultVariables {
 
     return data;
   }
+
+  OptionalWithSomeDefaultVariables updateWith({
+    Option<int?> duration = const None(),
+
+    Option<bool?> is_easy = const None(),
+
+    Option<String?> name = const None(),
+  }) {
+    final int? duration$next;
+
+    switch (duration) {
+      case Some(value: final data):
+        duration$next = data;
+      case None():
+        duration$next = this.duration;
+    }
+
+    final bool? is_easy$next;
+
+    switch (is_easy) {
+      case Some(value: final data):
+        is_easy$next = data;
+      case None():
+        is_easy$next = this.is_easy;
+    }
+
+    final String? name$next;
+
+    switch (name) {
+      case Some(value: final data):
+        name$next = data;
+      case None():
+        name$next = this.name;
+    }
+
+    return OptionalWithSomeDefaultVariables(
+      duration: duration$next,
+
+      is_easy: is_easy$next,
+
+      name: name$next,
+    );
+  }
 }

@@ -1,0 +1,49 @@
+
+
+mutation EnumRequired($status: Status!) {
+    updateOrderStatus(status: $status) {
+        status,
+        quantity,
+        name, 
+        price
+    } 
+}
+
+mutation EnumOptional($status: Status) {
+    updateOrderStatusOpt(status: $status) {
+        status,
+        quantity,
+        name, 
+        price
+    } 
+}
+
+mutation EnumInputObjectRequired($order: OrderUpdate!) {
+    updateOrder(order: $order) {
+        status,
+        quantity,
+        name, 
+        price
+    } 
+}
+
+mutation EnumInputObjectOptional($order: OrderUpdateStatusOpt!) {
+    updateOrderWithStatusOpt(order: $order) {
+        status,
+        quantity,
+        name, 
+        price
+    } 
+}
+
+query EnumWithDefaultValue($status: Status = SENT) {
+    getOrderByStatus(status: $status) {
+        status,
+        quantity,
+        name, 
+        price
+    } 
+}
+  
+  
+

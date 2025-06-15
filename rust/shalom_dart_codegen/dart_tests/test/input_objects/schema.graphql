@@ -41,3 +41,4 @@ type Mutation {
   orderOptWithNullDefaultsRequest(order: OrderOptWithNullDefaults!) : OrderRequest,
   orderOptWithSomeDefaultsRequest(order: OrderOptWithSomeDefaults!) : OrderRequest,
 }
+

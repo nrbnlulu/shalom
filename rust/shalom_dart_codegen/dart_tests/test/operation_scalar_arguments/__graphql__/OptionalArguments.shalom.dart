@@ -143,4 +143,30 @@ class OptionalArgumentsVariables {
 
     return data;
   }
+
+  OptionalArgumentsVariables updateWith({
+    Option<Option<String?>> id = const None(),
+
+    Option<Option<String?>> phone = const None(),
+  }) {
+    final Option<String?> id$next;
+
+    switch (id) {
+      case Some(value: final data):
+        id$next = data;
+      case None():
+        id$next = this.id;
+    }
+
+    final Option<String?> phone$next;
+
+    switch (phone) {
+      case Some(value: final data):
+        phone$next = data;
+      case None():
+        phone$next = this.phone;
+    }
+
+    return OptionalArgumentsVariables(id: id$next, phone: phone$next);
+  }
 }

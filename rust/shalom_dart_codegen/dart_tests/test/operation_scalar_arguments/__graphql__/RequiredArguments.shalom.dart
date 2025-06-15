@@ -143,4 +143,16 @@ class RequiredArgumentsVariables {
 
     return data;
   }
+
+  RequiredArgumentsVariables updateWith({String? id}) {
+    final String id$next;
+
+    if (id != null) {
+      id$next = id;
+    } else {
+      id$next = this.id;
+    }
+
+    return RequiredArgumentsVariables(id: id$next);
+  }
 }
