@@ -22,8 +22,9 @@
 - [ ] defer / stream
 - [ ] input
     - [x] scalar
+    - [ ] custom scalar
     - [x] object
-    - [ ] enum
+    - [x] enum
     - [ ] oneOf
     - [ ] list of
         - [ ] scalar
