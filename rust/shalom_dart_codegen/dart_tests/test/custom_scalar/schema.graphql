@@ -1,0 +1,18 @@
+scalar Point
+
+type Query {
+    getLocation: Location
+    task: Task
+}
+
+type Location {
+    id: ID!
+    coords: Point
+}
+
+type Task {
+    id: ID!
+    name: String
+    status: String
+    statusOpt: String
+}

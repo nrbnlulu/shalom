@@ -1,8 +1,10 @@
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+
+import "schema.shalom.dart";
+
 import 'package:shalom_core/shalom_core.dart';
 
 typedef JsonObject = Map<String, dynamic>;
-// ignore_for_file: non_constant_identifier_names
-// ignore_for_file: camel_case_types
 
 class OptionalArgumentsResponse {
   /// class members
@@ -66,7 +68,9 @@ class OptionalArguments_updateUser {
   // keywordargs constructor
   OptionalArguments_updateUser({this.name});
   static OptionalArguments_updateUser fromJson(JsonObject data) {
-    final String? name_value = data['name'];
+    final String? name_value;
+
+    name_value = data['name'];
 
     return OptionalArguments_updateUser(name: name_value);
   }

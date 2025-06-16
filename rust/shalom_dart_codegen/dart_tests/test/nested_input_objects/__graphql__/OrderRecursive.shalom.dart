@@ -1,10 +1,10 @@
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
 
 typedef JsonObject = Map<String, dynamic>;
-// ignore_for_file: non_constant_identifier_names
-// ignore_for_file: camel_case_types
 
 class OrderRecursiveResponse {
   /// class members
@@ -75,11 +75,17 @@ class OrderRecursive_orderRecursive {
   // keywordargs constructor
   OrderRecursive_orderRecursive({this.quantity, this.name, this.price});
   static OrderRecursive_orderRecursive fromJson(JsonObject data) {
-    final int? quantity_value = data['quantity'];
+    final int? quantity_value;
 
-    final String? name_value = data['name'];
+    quantity_value = data['quantity'];
 
-    final double? price_value = data['price'];
+    final String? name_value;
+
+    name_value = data['name'];
+
+    final double? price_value;
+
+    price_value = data['price'];
 
     return OrderRecursive_orderRecursive(
       quantity: quantity_value,

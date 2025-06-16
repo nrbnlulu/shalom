@@ -69,13 +69,23 @@ sealed class Option<T> {
 
 class None<T> implements Option<T> {
   const None();
-  T? some() => null;
-  isSome() => false;
-  inspect(void Function(T)) => null;
+
   @override
-  bool operator==(Object other) {
+  T? some() => null;
+
+  @override
+  bool isSome() => false;
+
+  @override
+  void inspect(void Function(T) _) => null;
+
+  @override
+  bool operator ==(Object other) {
     return other is None<T>;
   }
+
+  @override
+  int get hashCode => runtimeType.hashCode;
 }
 
 class Some<T> implements Option<T> {
@@ -83,15 +93,23 @@ class Some<T> implements Option<T> {
 
   const Some(this.value);
 
+  @override
   T? some() => value;
-  isSome() => true;
-  inspect(void Function(T) fn) => fn(value);
 
   @override
-  bool operator==(Object other) {
+  bool isSome() => true;
+
+  @override
+  void inspect(void Function(T) fn) => fn(value);
+
+  @override
+  bool operator ==(Object other) {
     if (other is Some<T>) {
       return value == other.value;
     }
     return false;
-}
+  }
+
+  @override
+  int get hashCode => runtimeType.hashCode ^ value.hashCode;
 }

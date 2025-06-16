@@ -1,8 +1,13 @@
 {% include "macros" %}
-{% if schema.context.types.enums | length > 0 or schema.context.types.inputs | length > 0%}
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+
 import "schema.shalom.dart";
-{% endif %}
+{% for path, namespace_alias in extra_imports | items -%}
+import '{{path}}' as {{ namespace_alias }};
+{% endfor %}
+
 import 'package:shalom_core/shalom_core.dart';
+
 
 {% set operation_name = operation.context.operation_name %}
 {% macro base_object_impl(typename, selections) %}
@@ -42,19 +47,28 @@ import 'package:shalom_core/shalom_core.dart';
                 {{ selection_name }}_value = {{ selection.full_name }}.fromJson(data['{{ selection_name }}']);            
             {% endif %}
         {% elif selection.kind == "Scalar" %}
-            final {{ type_name_for_selection(selection) }} {{ selection_name }}_value = data['{{ selection_name }}'];
+            final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
+            {% if selection.is_custom_scalar %}
+                {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
+                {{ selection_name }}_value = data['{{ selection_name }}'] == null
+                  ? null
+                  : {{ scalar_impl }}.deserialize(data['{{ selection_name }}']);
+            {% else %}
+                {{ selection_name }}_value = data['{{ selection_name }}'];
+            {% endif %}
+
         {% elif selection.kind == "Enum" %}
             {% set typename = selection.concrete_type.name %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
             {% if selection.is_optional %}
-                final String? {{ selection_name }}$raw = data['{{ selection_name }}']; 
+                final String? {{ selection_name }}$raw = data['{{ selection_name }}'];
                 if ({{ selection_name }}$raw != null) {
                     {{ selection_name }}_value = {{ typename }}.fromString({{ selection_name }}$raw);
                 } else {
                     {{ selection_name }}_value = null;
                 }
             {% else %}
-                {{ selection_name }}_value = {{ typename }}.fromString(data['{{ selection_name }}']);            
+                {{ selection_name }}_value = {{ typename }}.fromString(data['{{ selection_name }}']);
             {% endif %}
         {% else %}
             throw NotImplemented();
@@ -74,38 +88,47 @@ import 'package:shalom_core/shalom_core.dart';
         final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
         if (data.containsKey('{{ selection_name }}')) {
             {% if selection.is_optional %}
-                final JsonObject? {{ selection_name }}$raw = data['{{ selection_name }}']; 
+                final JsonObject? {{ selection_name }}$raw = data['{{ selection_name }}'];
                 if ({{ selection_name }}$raw != null) {
                     {{ selection_name }}_value = {{ selection.full_name }}.fromJson({{ selection_name }}$raw);
                 } else {
                     {{ selection_name }}_value = null;
                 }
             {% else %}
-                {{ selection_name }}_value = {{ selection.full_name }}.fromJson(data['{{ selection_name }}']);            
+                {{ selection_name }}_value = {{ selection.full_name }}.fromJson(data['{{ selection_name }}']);
             {% endif %}
         } else {
             {{ selection_name }}_value = {{ selection_name }};
         }
-        {% elif selection.kind == "Scalar" %}
-            final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
-            if (data.containsKey('{{ selection_name }}')) {
+
+    {% elif selection.kind == "Scalar" %}
+    final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
+    if (data.containsKey('{{ selection_name }}')) {
+        {% if selection.is_custom_scalar %}
+            {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
+            {{ selection_name }}_value = data['{{ selection_name }}'] == null
+                ? null
+                : {{ scalar_impl }}.deserialize(data['{{ selection_name }}']);
+        {% else %}
             {{ selection_name }}_value = data['{{ selection_name }}'];
-            } else {
-            {{ selection_name }}_value = {{ selection_name }};
-            }
+        {% endif %}
+    } else {
+        {{ selection_name }}_value = {{ selection_name }};
+    }
+
         {% elif selection.kind == "Enum" %}
             {% set typename = selection.concrete_type.name %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
             if (data.containsKey('{{ selection_name }}')) {
                 {% if selection.is_optional %}
-                    final String? {{ selection_name }}$raw = data['{{ selection_name }}']; 
+                    final String? {{ selection_name }}$raw = data['{{ selection_name }}'];
                     if ({{ selection_name }}$raw != null) {
                         {{ selection_name }}_value = {{ typename }}.fromString({{ selection_name }}$raw);
                     } else {
                         {{ selection_name }}_value = null;
                     }
                 {% else %}
-                    {{ selection_name }}_value = {{ typename }}.fromString(data['{{ selection_name }}']);            
+                    {{ selection_name }}_value = {{ typename }}.fromString(data['{{ selection_name }}']);
                 {% endif %}
             } else {
                 {{ selection_name }}_value = {{ selection_name }};
@@ -151,9 +174,14 @@ import 'package:shalom_core/shalom_core.dart';
             {% if selection.kind == "Object" %}
                 {{ selection_name }}{% if selection.is_optional %}?{% endif %}.toJson()
             {% elif selection.kind == "Scalar" %}
-                {{ selection_name }}
+                {% if selection.is_custom_scalar %}
+                    {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
+                    {{ selection_name }} == null ? null : {{ scalar_impl }}.serialize({{ selection_name }}!)
+                {% else %}
+                    {{ selection_name }}
+                {% endif %}
             {% elif selection.kind == "Enum" %}
-                {{ selection_name }}{% if selection.is_optional %}?{% endif %}.name  
+                {{ selection_name }}{% if selection.is_optional %}?{% endif %}.name
             {% else %}
                 throw NotImplemented();
             {% endif %}
@@ -163,8 +191,6 @@ import 'package:shalom_core/shalom_core.dart';
     }
 {% endmacro %}
 typedef JsonObject = Map<String, dynamic>;
-// ignore_for_file: non_constant_identifier_names
-// ignore_for_file: camel_case_types
 
 
 
@@ -213,7 +239,7 @@ class Request{{ operation_name }} extends Requestable {
 class {{ operation_name }}Variables {
     {% set typename = operation_name ~ 'Variables' %}
     {% for name, variable in op_variables | items %}
-        final {{ type_name_for_field(variable) }} {{ name }};
+        final {{ type_name_for_input_field(variable) }} {{ name }};
     {% endfor %}
 
     {{ typename }} (

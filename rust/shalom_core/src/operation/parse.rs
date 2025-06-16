@@ -9,7 +9,6 @@ use log::{info, trace};
 
 use crate::context::SharedShalomGlobalContext;
 use crate::operation::types::ObjectSelection;
-use crate::schema::context::SharedSchemaContext;
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
 };
@@ -35,9 +34,9 @@ fn parse_enum_selection(
 }
 
 fn parse_object_selection(
-    #[allow(unused)] parent: &Option<&Selection>,
+    _parent: &Option<&Selection>,
     op_ctx: &mut OperationContext,
-    schema_ctx: &SharedSchemaContext,
+    global_ctx: &SharedShalomGlobalContext,
     selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
 ) -> SharedObjectSelection {
@@ -71,7 +70,7 @@ fn parse_object_selection(
                 let field_selection = parse_selection_set(
                     Some(&obj_as_selection),
                     op_ctx,
-                    schema_ctx,
+                    global_ctx,
                     selection_common,
                     &field.selection_set,
                 );
@@ -84,16 +83,19 @@ fn parse_object_selection(
 }
 
 fn parse_scalar_selection(
+    ctx: &SharedShalomGlobalContext,
     selection_common: SelectionCommon,
     concrete_type: Node<ScalarType>,
 ) -> SharedScalarSelection {
-    ScalarSelection::new(selection_common, concrete_type)
+    let scalar_name = concrete_type.name.to_string();
+    let is_custom_scalar = ctx.find_custom_scalar(&scalar_name).is_some();
+    ScalarSelection::new(selection_common, concrete_type, is_custom_scalar)
 }
 
 fn parse_selection_set(
     parent: Option<&Selection>,
     op_ctx: &mut OperationContext,
-    schema_ctx: &SharedSchemaContext,
+    global_ctx: &SharedShalomGlobalContext,
     selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
 ) -> Selection {
@@ -102,17 +104,18 @@ fn parse_selection_set(
         info!("Selection already exists");
         return selection.clone();
     }
-    let schema_type = schema_ctx
-        .get_type(selection_orig.ty.to_string().as_str())
+    let schema_type = global_ctx
+        .schema_ctx
+        .get_type(&selection_orig.ty.to_string())
         .unwrap();
     let selection: Selection = match schema_type {
         GraphQLAny::Scalar(scalar) => {
-            Selection::Scalar(parse_scalar_selection(selection_common, scalar))
+            Selection::Scalar(parse_scalar_selection(global_ctx, selection_common, scalar))
         }
         GraphQLAny::Object(_) => Selection::Object(parse_object_selection(
             &parent,
             op_ctx,
-            schema_ctx,
+            global_ctx,
             selection_common,
             selection_orig,
         )),
@@ -171,7 +174,7 @@ fn parse_operation(
     let root_type = parse_object_selection(
         &None,
         &mut ctx,
-        &global_ctx.schema_ctx,
+        global_ctx,
         selection_common,
         &op.selection_set,
     );
