@@ -1,8 +1,10 @@
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+
+import "schema.shalom.dart";
+
 import 'package:shalom_core/shalom_core.dart';
 
 typedef JsonObject = Map<String, dynamic>;
-// ignore_for_file: non_constant_identifier_names
-// ignore_for_file: camel_case_types
 
 class GetFloatOptionalResponse {
   /// class members
@@ -12,7 +14,9 @@ class GetFloatOptionalResponse {
   // keywordargs constructor
   GetFloatOptionalResponse({this.floatOptional});
   static GetFloatOptionalResponse fromJson(JsonObject data) {
-    final double? floatOptional_value = data['floatOptional'];
+    final double? floatOptional_value;
+
+    floatOptional_value = data['floatOptional'];
 
     return GetFloatOptionalResponse(floatOptional: floatOptional_value);
   }

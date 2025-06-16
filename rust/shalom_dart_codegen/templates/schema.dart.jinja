@@ -1,8 +1,12 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import
 {% include "macros" %}
 {% if schema.context.types.inputs | length > 0 %}
 import 'package:shalom_core/shalom_core.dart';
 {% endif %}
+
+
+
+
 
 // ------------ Enum DEFINITIONS -------------
 {% for _, enum in schema.context.types.enums | items %}
@@ -33,7 +37,7 @@ import 'package:shalom_core/shalom_core.dart';
 class {{ typename }} {
     {% set fields = input_object.fields %}
     {% for name, field in fields | items %}
-        final {{ type_name_for_field(field) }} {{ name }}; 
+        final {{ type_name_for_input_field(field) }} {{ name }}; 
     {% endfor %}
     {{ typename }}(
         {

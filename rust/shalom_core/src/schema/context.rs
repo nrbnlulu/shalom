@@ -63,7 +63,7 @@ impl SchemaTypesCtx {
         self.scalars.insert(name, type_);
     }
 
-    pub fn get_any(&self, name: &str) -> Option<GraphQLAny> {
+    pub fn get_any(&self, name: &String) -> Option<GraphQLAny> {
         if let Some(v) = self.inputs.get(name) {
             return Some(GraphQLAny::InputObject(v.clone()));
         }
@@ -105,7 +105,7 @@ impl SchemaContext {
             schema,
         }
     }
-    pub fn get_type(&self, name: &str) -> Option<GraphQLAny> {
+    pub fn get_type(&self, name: &String) -> Option<GraphQLAny> {
         let types_ctx = self.types.lock().unwrap();
         types_ctx.get_any(name)
     }

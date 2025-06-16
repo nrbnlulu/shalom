@@ -1,8 +1,10 @@
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+
+import "schema.shalom.dart";
+
 import 'package:shalom_core/shalom_core.dart';
 
 typedef JsonObject = Map<String, dynamic>;
-// ignore_for_file: non_constant_identifier_names
-// ignore_for_file: camel_case_types
 
 class GetListingResponse {
   /// class members
@@ -58,11 +60,17 @@ class GetListing_listing {
   // keywordargs constructor
   GetListing_listing({required this.id, required this.name, this.price});
   static GetListing_listing fromJson(JsonObject data) {
-    final String id_value = data['id'];
+    final String id_value;
 
-    final String name_value = data['name'];
+    id_value = data['id'];
 
-    final int? price_value = data['price'];
+    final String name_value;
+
+    name_value = data['name'];
+
+    final int? price_value;
+
+    price_value = data['price'];
 
     return GetListing_listing(
       id: id_value,

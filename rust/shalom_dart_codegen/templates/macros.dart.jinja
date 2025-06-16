@@ -33,7 +33,7 @@
 {% for name, field in fields | items %}
     {% set field_ty = resolve_field_type(field.common).ty %}
     {% if field_ty.kind == "InputObject" %} 
-        final {{ type_name_for_field(field) }} {{ name }}_value;
+        final {{ type_name_for_input_field(field) }} {{ name }}_value;
         if (data.containsKey('{{ name }}')) {
             {% if field.is_optional %}
                 final JsonObject? {{ name }}$raw = data['{{ name }}']; 
@@ -49,7 +49,7 @@
             {{ name }}_value = {{ name }};
         }
     {% elif field_ty.kind == "Enum" %}
-        final {{ type_name_for_field(field) }} {{ name }}_value;
+        final {{ type_name_for_input_field(field) }} {{ name }}_value;
         if (data.containsKey('{{ name }}')) {
             {% if field.is_optional %}
                 final String? {{ name }}$raw = data['{{ name }}']; 
@@ -65,7 +65,7 @@
             {{ name }}_value = {{ name }};
         }
     {% else %}
-        final {{ type_name_for_field(field) }} {{ name }}_value;
+        final {{ type_name_for_input_field(field) }} {{ name }}_value;
         if (data.containsKey('{{ name }}')) {
             {% if field.is_optional %}
                 final {{ concrete_typename_of_field(field) }}? {{ name }}$raw = data['{{ name }}'];
@@ -95,7 +95,7 @@
 {% for name, field in fields | items %}
     {% set field_ty = resolve_field_type(field.common).ty %}
     {% if field_ty.kind == "InputObject" %} 
-        final {{ type_name_for_field(field) }} {{ name }}_value;
+        final {{ type_name_for_input_field(field) }} {{ name }}_value;
         if (data.containsKey('{{ name }}')) {
             {% if field.is_optional %}
                 final JsonObject? {{ name }}$raw = data['{{ name }}']; 
@@ -111,7 +111,7 @@
             {{ name }}_value = {{ name }};
         }
     {% elif field_ty.kind == "Enum" %}
-        final {{ type_name_for_field(field) }} {{ name }}_value;
+        final {{ type_name_for_input_field(field) }} {{ name }}_value;
         if (data.containsKey('{{ name }}')) {
             {% if field.is_optional %}
                 final String? {{ name }}$raw = data['{{ name }}']; 
@@ -127,7 +127,7 @@
             {{ name }}_value = {{ name }};
         }
     {% else %}
-        final {{ type_name_for_field(field) }} {{ name }}_value;
+        final {{ type_name_for_input_field(field) }} {{ name }}_value;
         if (data.containsKey('{{ name }}')) {
             {% if field.is_optional %}
                 final {{ concrete_typename_of_field(field) }}? {{ name }}$raw = data['{{ name }}'];
@@ -157,16 +157,16 @@
     {
         {% for name, field in fields | items %}
             {% if field.is_optional %}
-                Option<{{type_name_for_field(field)}}> {{name}} = const None()
+                Option<{{type_name_for_input_field(field)}}> {{name}} = const None()
             {% else %}
-                {{type_name_for_field(field)}}? {{name}}
+                {{type_name_for_input_field(field)}}? {{name}}
             {% endif %}
             {% if not loop.last %},{% endif %}
         {% endfor %}
     }
 ) {
     {% for name, field in fields | items %}
-        final {{ type_name_for_field(field) }} {{ name }}$next;
+        final {{ type_name_for_input_field(field) }} {{ name }}$next;
         {% if field.is_optional %}
             switch ({{name}}) {
                 {# if this is a "maybe" field #}

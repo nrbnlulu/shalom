@@ -42,7 +42,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
     };
     let schema = match schema_raw.validate() {
         Ok(schema) => {
-            info!("✅ Parsed schema");
+            info!(" Parsed schema");
             schema
         }
         Err(e) => return Err(anyhow::anyhow!("Error validating schema: {}", e)),
@@ -201,7 +201,7 @@ mod tests {
         .to_string();
         let ctx = resolve(&schema).unwrap();
 
-        let object = ctx.get_type("Query");
+        let object = ctx.get_type(&"Query".to_string());
         assert!(object.is_some());
         let obj = object.unwrap().object();
         assert!(obj.is_some());

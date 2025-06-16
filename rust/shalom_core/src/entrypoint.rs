@@ -1,11 +1,14 @@
 use std::{
     collections::HashMap,
     fs,
+    io::ErrorKind,
     path::{Path, PathBuf},
 };
 
 use crate::{
-    context::{ShalomGlobalContext, SharedShalomGlobalContext},
+    context::{
+        default_config, load_config_from_yaml_str, ShalomGlobalContext, SharedShalomGlobalContext,
+    },
     operation::context::SharedOpCtx,
     schema::{self, context::SharedSchemaContext},
 };
@@ -58,14 +61,36 @@ pub fn parse_document(
 
 pub fn parse_directory(pwd: &Path) -> anyhow::Result<SharedShalomGlobalContext> {
     let files = find_graphql_files(pwd);
-    let schema_raw = fs::read_to_string(files.schema)?;
+    let schema_raw = fs::read_to_string(&files.schema)?;
     let schema_parsed = parse_schema(&schema_raw)?;
-    let global_ctx = ShalomGlobalContext::new(schema_parsed);
+
+    let config_path = pwd.join("shalom.yml");
+
+    let config = match fs::read_to_string(&config_path) {
+        Ok(yaml) => load_config_from_yaml_str(&yaml)?,
+        Err(e) if e.kind() == ErrorKind::NotFound => {
+            log::info!(
+                "⚠️  No shalom.yml found in {}. Using default config.",
+                config_path.display()
+            );
+            default_config()
+        }
+        Err(e) => {
+            return Err(anyhow::anyhow!(
+                "Failed to read config at {}: {}",
+                config_path.display(),
+                e
+            ))
+        }
+    };
+
+    let global_ctx = ShalomGlobalContext::new(schema_parsed, config);
 
     for operation in files.operations {
-        let content = fs::read_to_string(&operation).unwrap();
-        let parsed = parse_document(&global_ctx, &content, &operation);
-        global_ctx.register_operations(parsed.unwrap());
+        let content = fs::read_to_string(&operation)?;
+        let parsed = parse_document(&global_ctx, &content, &operation)?;
+        global_ctx.register_operations(parsed);
     }
+
     Ok(global_ctx)
 }

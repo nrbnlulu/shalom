@@ -1,8 +1,10 @@
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+
+import "schema.shalom.dart";
+
 import 'package:shalom_core/shalom_core.dart';
 
 typedef JsonObject = Map<String, dynamic>;
-// ignore_for_file: non_constant_identifier_names
-// ignore_for_file: camel_case_types
 
 class GetListingOptWithUserResponse {
   /// class members
@@ -81,11 +83,17 @@ class GetListingOptWithUser_listingOpt {
     required this.user,
   });
   static GetListingOptWithUser_listingOpt fromJson(JsonObject data) {
-    final String id_value = data['id'];
+    final String id_value;
 
-    final String name_value = data['name'];
+    id_value = data['id'];
 
-    final int? price_value = data['price'];
+    final String name_value;
+
+    name_value = data['name'];
+
+    final int? price_value;
+
+    price_value = data['price'];
 
     final GetListingOptWithUser_listingOpt_user user_value;
 
@@ -180,13 +188,21 @@ class GetListingOptWithUser_listingOpt_user {
     this.age,
   });
   static GetListingOptWithUser_listingOpt_user fromJson(JsonObject data) {
-    final String id_value = data['id'];
+    final String id_value;
 
-    final String name_value = data['name'];
+    id_value = data['id'];
 
-    final String email_value = data['email'];
+    final String name_value;
 
-    final int? age_value = data['age'];
+    name_value = data['name'];
+
+    final String email_value;
+
+    email_value = data['email'];
+
+    final int? age_value;
+
+    age_value = data['age'];
 
     return GetListingOptWithUser_listingOpt_user(
       id: id_value,

@@ -1,3 +1,4 @@
+mod test_custom_scalar;
 mod test_enum_arguments;
 mod test_enum_selection;
 mod test_input_objects;

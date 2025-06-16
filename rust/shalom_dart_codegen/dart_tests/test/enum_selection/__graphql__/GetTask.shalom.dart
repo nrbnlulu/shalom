@@ -1,10 +1,10 @@
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
 
 typedef JsonObject = Map<String, dynamic>;
-// ignore_for_file: non_constant_identifier_names
-// ignore_for_file: camel_case_types
 
 class GetTaskResponse {
   /// class members
@@ -60,9 +60,13 @@ class GetTask_task {
   // keywordargs constructor
   GetTask_task({required this.id, required this.name, required this.status});
   static GetTask_task fromJson(JsonObject data) {
-    final String id_value = data['id'];
+    final String id_value;
 
-    final String name_value = data['name'];
+    id_value = data['id'];
+
+    final String name_value;
+
+    name_value = data['name'];
 
     final Status status_value;
 

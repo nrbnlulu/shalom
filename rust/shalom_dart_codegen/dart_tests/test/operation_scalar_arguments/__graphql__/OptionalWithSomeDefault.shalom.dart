@@ -1,8 +1,10 @@
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+
+import "schema.shalom.dart";
+
 import 'package:shalom_core/shalom_core.dart';
 
 typedef JsonObject = Map<String, dynamic>;
-// ignore_for_file: non_constant_identifier_names
-// ignore_for_file: camel_case_types
 
 class OptionalWithSomeDefaultResponse {
   /// class members
@@ -68,11 +70,17 @@ class OptionalWithSomeDefault_task {
   // keywordargs constructor
   OptionalWithSomeDefault_task({this.name, this.duration, this.is_easy});
   static OptionalWithSomeDefault_task fromJson(JsonObject data) {
-    final String? name_value = data['name'];
+    final String? name_value;
 
-    final int? duration_value = data['duration'];
+    name_value = data['name'];
 
-    final bool? is_easy_value = data['is_easy'];
+    final int? duration_value;
+
+    duration_value = data['duration'];
+
+    final bool? is_easy_value;
+
+    is_easy_value = data['is_easy'];
 
     return OptionalWithSomeDefault_task(
       name: name_value,

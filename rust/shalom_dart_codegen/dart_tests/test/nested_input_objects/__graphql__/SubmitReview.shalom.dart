@@ -1,10 +1,10 @@
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
 
 typedef JsonObject = Map<String, dynamic>;
-// ignore_for_file: non_constant_identifier_names
-// ignore_for_file: camel_case_types
 
 class SubmitReviewResponse {
   /// class members
@@ -14,7 +14,9 @@ class SubmitReviewResponse {
   // keywordargs constructor
   SubmitReviewResponse({this.submitReview});
   static SubmitReviewResponse fromJson(JsonObject data) {
-    final String? submitReview_value = data['submitReview'];
+    final String? submitReview_value;
+
+    submitReview_value = data['submitReview'];
 
     return SubmitReviewResponse(submitReview: submitReview_value);
   }
