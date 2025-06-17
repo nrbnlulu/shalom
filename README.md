@@ -4,7 +4,7 @@
 
 ### Roadmap
 - [x] builtin scalars
-- [ ] custom scalars
+- [x] custom scalars
 - [x] enums
 - [x] object selection
 - [x] nested objects
