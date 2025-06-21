@@ -12,12 +12,11 @@ class GraphQLResult<T> {
   ) {
     return GraphQLResult._(
       data: json['data'] != null ? fromJson(json['data']) : null,
-      errors:
-          json['errors'] != null
-              ? (json['errors'] as List)
-                  .map((e) => (e as List).map((e) => e as JsonObject).toList())
-                  .toList()
-              : null,
+      errors: json['errors'] != null
+          ? (json['errors'] as List)
+              .map((e) => (e as List).map((e) => e as JsonObject).toList())
+              .toList()
+          : null,
     );
   }
 }

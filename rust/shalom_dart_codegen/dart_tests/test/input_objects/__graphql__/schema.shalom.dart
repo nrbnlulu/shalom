@@ -27,6 +27,34 @@ class Order {
 
     return data;
   }
+
+  Order updateWith({String? name, double? price, int? quantity}) {
+    final String name$next;
+
+    if (name != null) {
+      name$next = name;
+    } else {
+      name$next = this.name;
+    }
+
+    final double price$next;
+
+    if (price != null) {
+      price$next = price;
+    } else {
+      price$next = this.price;
+    }
+
+    final int quantity$next;
+
+    if (quantity != null) {
+      quantity$next = quantity;
+    } else {
+      quantity$next = this.quantity;
+    }
+
+    return Order(name: name$next, price: price$next, quantity: quantity$next);
+  }
 }
 
 class OrderOpt {
@@ -61,6 +89,49 @@ class OrderOpt {
 
     return data;
   }
+
+  OrderOpt updateWith({
+    Option<Option<String?>> name = const None(),
+
+    Option<Option<double?>> price = const None(),
+
+    Option<Option<int?>> quantity = const None(),
+  }) {
+    final Option<String?> name$next;
+
+    switch (name) {
+      case Some(value: final data):
+        name$next = data;
+      case None():
+        name$next = this.name;
+    }
+
+    final Option<double?> price$next;
+
+    switch (price) {
+      case Some(value: final data):
+        price$next = data;
+      case None():
+        price$next = this.price;
+    }
+
+    final Option<int?> quantity$next;
+
+    switch (quantity) {
+      case Some(value: final data):
+        quantity$next = data;
+      case None():
+        quantity$next = this.quantity;
+    }
+
+    return OrderOpt(
+      name: name$next,
+
+      price: price$next,
+
+      quantity: quantity$next,
+    );
+  }
 }
 
 class OrderOptWithNullDefaults {
@@ -82,6 +153,49 @@ class OrderOptWithNullDefaults {
     data["quantity"] = quantity;
 
     return data;
+  }
+
+  OrderOptWithNullDefaults updateWith({
+    Option<String?> name = const None(),
+
+    Option<double?> price = const None(),
+
+    Option<int?> quantity = const None(),
+  }) {
+    final String? name$next;
+
+    switch (name) {
+      case Some(value: final data):
+        name$next = data;
+      case None():
+        name$next = this.name;
+    }
+
+    final double? price$next;
+
+    switch (price) {
+      case Some(value: final data):
+        price$next = data;
+      case None():
+        price$next = this.price;
+    }
+
+    final int? quantity$next;
+
+    switch (quantity) {
+      case Some(value: final data):
+        quantity$next = data;
+      case None():
+        quantity$next = this.quantity;
+    }
+
+    return OrderOptWithNullDefaults(
+      name: name$next,
+
+      price: price$next,
+
+      quantity: quantity$next,
+    );
   }
 }
 
@@ -110,6 +224,49 @@ class OrderOptWithSomeDefaults {
     data["quantity"] = quantity;
 
     return data;
+  }
+
+  OrderOptWithSomeDefaults updateWith({
+    Option<String?> name = const None(),
+
+    Option<double?> price = const None(),
+
+    Option<int?> quantity = const None(),
+  }) {
+    final String? name$next;
+
+    switch (name) {
+      case Some(value: final data):
+        name$next = data;
+      case None():
+        name$next = this.name;
+    }
+
+    final double? price$next;
+
+    switch (price) {
+      case Some(value: final data):
+        price$next = data;
+      case None():
+        price$next = this.price;
+    }
+
+    final int? quantity$next;
+
+    switch (quantity) {
+      case Some(value: final data):
+        quantity$next = data;
+      case None():
+        quantity$next = this.quantity;
+    }
+
+    return OrderOptWithSomeDefaults(
+      name: name$next,
+
+      price: price$next,
+
+      quantity: quantity$next,
+    );
   }
 }
 

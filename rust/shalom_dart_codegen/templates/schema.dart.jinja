@@ -3,6 +3,12 @@
 {% if schema.context.types.inputs | length > 0 %}
 import 'package:shalom_core/shalom_core.dart';
 {% endif %}
+{% if extra_imports is defined and extra_imports | length > 0 %}
+  {% for path, namespace_alias in extra_imports | items %}
+import '{{ path }}' as {{ namespace_alias }};
+  {% endfor %}
+{% endif %}
+
 
 
 
@@ -50,7 +56,7 @@ class {{ typename }} {
         {{ toJson_macro(fields) }}    
         return data;
     } 
-
+  {{ updateWith_macro(fields, typename) }}
 }
      
 {% endfor %}
