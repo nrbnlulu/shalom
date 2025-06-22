@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
+import '__graphql__/GetPointWithDefaultCoords.shalom.dart';
 import '__graphql__/UpdatePointCoordsNonNull.shalom.dart';
 import '__graphql__/UpdatePointCoordsOpt.shalom.dart';
 import '__graphql__/UpdatePointCoordsMaybe.shalom.dart';
@@ -140,6 +141,26 @@ void main() {
         ).toRequest();
     expect(req.variables, {
       "pointData": {"coords": null, "name": "Location H"},
+    });
+  });
+
+  test("optional custom scalar argument with default value", () {
+    final req =
+        RequestGetPointWithDefaultCoords(
+          variables: GetPointWithDefaultCoordsVariables(id: "test-id-1"),
+        ).toRequest();
+    expect(req.variables, {"id": "test-id-1", "coords": null});
+
+    final reqWithExplicit =
+        RequestGetPointWithDefaultCoords(
+          variables: GetPointWithDefaultCoordsVariables(
+            id: "test-id-2",
+            coords: Point(x: 15, y: 25),
+          ),
+        ).toRequest();
+    expect(reqWithExplicit.variables, {
+      "id": "test-id-2",
+      "coords": "POINT (15, 25)",
     });
   });
 }
