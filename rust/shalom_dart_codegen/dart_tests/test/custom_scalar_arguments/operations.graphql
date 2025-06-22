@@ -15,6 +15,22 @@ mutation UpdatePointCoordsOpt($coords: Point) {
     }
 }
 
+mutation UpdatePointCoordsMaybe($coords: Point) {
+    updatePointCoordsMaybe(coords: $coords) {
+        coords
+        name
+        id
+    }
+}
+
+mutation UpdatePointWithInputCoordsMaybe($pointData: PointUpdateCoordsMaybe!) {
+    updatePointWithInputCoordsMaybe(pointData: $pointData) {
+        coords
+        name
+        id
+    }
+}
+
 mutation UpdatePointWithInputNonNull($pointData: PointDataInput!) {
     updatePointWithInput(pointData: $pointData) {
         coords,

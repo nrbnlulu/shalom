@@ -47,6 +47,55 @@ class PointDataInput {
   }
 }
 
+class PointUpdateCoordsMaybe {
+  final Option<rmhlxei.Point?> coords;
+
+  final String name;
+
+  PointUpdateCoordsMaybe({this.coords = const None(), required this.name});
+
+  JsonObject toJson() {
+    JsonObject data = {};
+
+    if (coords.isSome()) {
+      if (coords.some() == null) {
+        data["coords"] = null;
+      } else {
+        data["coords"] = rmhlxei.pointScalarImpl.serialize(coords.some()!);
+      }
+    }
+
+    data["name"] = name;
+
+    return data;
+  }
+
+  PointUpdateCoordsMaybe updateWith({
+    Option<Option<rmhlxei.Point?>> coords = const None(),
+
+    String? name,
+  }) {
+    final Option<rmhlxei.Point?> coords$next;
+
+    switch (coords) {
+      case Some(value: final data):
+        coords$next = data;
+      case None():
+        coords$next = this.coords;
+    }
+
+    final String name$next;
+
+    if (name != null) {
+      name$next = name;
+    } else {
+      name$next = this.name;
+    }
+
+    return PointUpdateCoordsMaybe(coords: coords$next, name: name$next);
+  }
+}
+
 class PointUpdateCoordsOpt {
   final Option<rmhlxei.Point?> coords;
 

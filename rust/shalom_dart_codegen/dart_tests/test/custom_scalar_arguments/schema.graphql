@@ -1,7 +1,6 @@
-# Define the custom scalar type
+
 scalar Point
 
-# Define an input object that uses the custom scalar
 input PointDataInput {
     coords: Point!
     name: String!
@@ -18,21 +17,25 @@ type PointResponse {
     id: ID!
 }
 
+input PointUpdateCoordsMaybe {
+    coords: Point
+    name: String!
+}
+
 type Query {
-    # Example for custom scalar default value if needed later (similar to EnumWithDefaultValue)
     getPointById(id: ID!, coords: Point = "POINT (0,0)"): PointResponse
 }
 
 type Mutation {
-    # Corresponds to CustomScalarInputNonNull
     updatePointCoords(coords: Point!): PointResponse
 
-    # Corresponds to CustomScalarInputOpt and CustomScalarInputMaybe
+    updatePointCoordsMaybe(coords: Point): PointResponse
+
+    updatePointWithInputCoordsMaybe(pointData: PointUpdateCoordsMaybe!): PointResponse
+
     updatePointCoordsOpt(coords: Point): PointResponse
 
-    # Corresponds to CustomScalarInputObjectNonNull
     updatePointWithInput(pointData: PointDataInput!): PointResponse
 
-    # Corresponds to CustomScalarInputObjectOpt
     updatePointWithInputCoordsOpt(pointData: PointUpdateCoordsOpt!): PointResponse
 }

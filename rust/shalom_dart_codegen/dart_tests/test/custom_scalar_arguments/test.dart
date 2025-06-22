@@ -2,8 +2,10 @@ import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 import '__graphql__/UpdatePointCoordsNonNull.shalom.dart';
 import '__graphql__/UpdatePointCoordsOpt.shalom.dart';
-import '__graphql__/UpdatePointWithInputCoordsOpt.shalom.dart';
+import '__graphql__/UpdatePointCoordsMaybe.shalom.dart';
 import '__graphql__/UpdatePointWithInputNonNull.shalom.dart';
+import '__graphql__/UpdatePointWithInputCoordsOpt.shalom.dart';
+import '__graphql__/UpdatePointWithInputCoordsMaybe.shalom.dart';
 import '__graphql__/schema.shalom.dart';
 import '../custom_scalar/point.dart';
 
@@ -16,9 +18,9 @@ void main() {
 
   test("required custom scalar argument", () {
     var variables = UpdatePointCoordsNonNullVariables(coords: samplePoint);
+    expect(variables.toJson(), {"coords": samplePointRaw});
     var variablesUpdated = variables.updateWith(coords: updatedPoint);
     expect(variablesUpdated.coords, updatedPoint);
-    expect(variables.toJson(), {"coords": samplePointRaw});
     final req =
         RequestUpdatePointCoordsNonNull(
           variables: UpdatePointCoordsNonNullVariables(coords: updatedPoint),
@@ -32,7 +34,6 @@ void main() {
       coords: Some(Some(updatedPoint)),
     );
     expect(variablesUpdated.coords.some(), updatedPoint);
-
     expect(
       RequestUpdatePointCoordsOpt(
         variables: UpdatePointCoordsOptVariables(coords: Some(null)),
@@ -46,10 +47,36 @@ void main() {
       ).toRequest().variables,
       {"coords": samplePointRaw},
     );
-
     expect(
       RequestUpdatePointCoordsOpt(
         variables: UpdatePointCoordsOptVariables(coords: None()),
+      ).toRequest().variables,
+      {},
+    );
+  });
+
+  test("maybe custom scalar argument", () {
+    var variables = UpdatePointCoordsMaybeVariables(coords: Some(samplePoint));
+    var variablesUpdated = variables.updateWith(
+      coords: Some(Some(updatedPoint)),
+    );
+    expect(variablesUpdated.coords.some(), updatedPoint);
+    expect(
+      RequestUpdatePointCoordsMaybe(
+        variables: UpdatePointCoordsMaybeVariables(coords: Some(null)),
+      ).toRequest().variables,
+      {"coords": null},
+    );
+
+    expect(
+      RequestUpdatePointCoordsMaybe(
+        variables: UpdatePointCoordsMaybeVariables(coords: Some(samplePoint)),
+      ).toRequest().variables,
+      {"coords": samplePointRaw},
+    );
+    expect(
+      RequestUpdatePointCoordsMaybe(
+        variables: UpdatePointCoordsMaybeVariables(coords: None()),
       ).toRequest().variables,
       {},
     );
@@ -59,11 +86,9 @@ void main() {
     final variables = UpdatePointWithInputNonNullVariables(
       pointData: PointDataInput(coords: samplePoint, name: "Location A"),
     );
-    final updatedPointData = PointDataInput(
-      coords: updatedPoint,
-      name: "Location B",
+    final variablesUpdated = variables.updateWith(
+      pointData: PointDataInput(coords: updatedPoint, name: "Location B"),
     );
-    final variablesUpdated = variables.updateWith(pointData: updatedPointData);
     expect(variablesUpdated.pointData.coords, updatedPoint);
 
     final req =
@@ -91,36 +116,30 @@ void main() {
       ),
     );
     expect(variablesUpdated.pointData.coords, Some<Point?>(updatedPoint));
-
     final req =
         RequestUpdatePointWithInputCoordsOpt(variables: variables).toRequest();
     expect(req.variables, {
       "pointData": {"coords": null, "name": "Location D"},
     });
+  });
 
-    final variablesWithValue = UpdatePointWithInputCoordsOptVariables(
-      pointData: PointUpdateCoordsOpt(
-        coords: Some(samplePoint),
-        name: "Location F",
+  test("maybe custom scalar argument in InputObject", () {
+    final variables = UpdatePointWithInputCoordsMaybeVariables(
+      pointData: PointUpdateCoordsMaybe(coords: Some(null), name: "Location H"),
+    );
+    final variablesUpdated = variables.updateWith(
+      pointData: PointUpdateCoordsMaybe(
+        coords: Some(updatedPoint),
+        name: "Location I",
       ),
     );
-    final reqWithValue =
-        RequestUpdatePointWithInputCoordsOpt(
-          variables: variablesWithValue,
+    expect(variablesUpdated.pointData.coords, Some<Point?>(updatedPoint));
+    final req =
+        RequestUpdatePointWithInputCoordsMaybe(
+          variables: variables,
         ).toRequest();
-    expect(reqWithValue.variables, {
-      "pointData": {"coords": samplePointRaw, "name": "Location F"},
-    });
-
-    final variablesOmitted = UpdatePointWithInputCoordsOptVariables(
-      pointData: PointUpdateCoordsOpt(coords: None(), name: "Location G"),
-    );
-    final reqOmitted =
-        RequestUpdatePointWithInputCoordsOpt(
-          variables: variablesOmitted,
-        ).toRequest();
-    expect(reqOmitted.variables, {
-      "pointData": {"name": "Location G"},
+    expect(req.variables, {
+      "pointData": {"coords": null, "name": "Location H"},
     });
   });
 }
