@@ -39,13 +39,6 @@ mutation UpdatePointWithInputNonNull($pointData: PointDataInput!) {
     }
 }
 
-mutation UpdatePointWithInputCoordsOpt($pointData: PointUpdateCoordsOpt!) {
-    updatePointWithInputCoordsOpt(pointData: $pointData) {
-        coords,
-        name,
-        id
-    }
-}
 mutation UpdatePointWithInputDefault($pointData: PointDataInputWithDefault!) {
     updatePointWithInputDefault(pointData: $pointData) {
         coords

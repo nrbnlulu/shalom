@@ -10,11 +10,6 @@ input PointUpdateCoordsMaybe {
     name: String!
 }
 
-input PointUpdateCoordsOpt {
-    coords: Point
-    name: String!
-}
-
 type PointResponse {
     coords: Point
     name: String!
@@ -36,6 +31,5 @@ type Mutation {
     updatePointCoordsMaybe(coords: Point): PointResponse
     updatePointWithInput(pointData: PointDataInput!): PointResponse
     updatePointWithInputCoordsMaybe(pointData: PointUpdateCoordsMaybe!): PointResponse
-    updatePointWithInputCoordsOpt(pointData: PointUpdateCoordsOpt!): PointResponse
     updatePointWithInputDefault(pointData: PointDataInputWithDefault!): PointResponse
 }
