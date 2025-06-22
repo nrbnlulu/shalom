@@ -131,7 +131,13 @@ mod ext_jinja_fns {
             }
             GraphQLAny::Scalar(scalar) => match scalar.name.as_str() {
                 "ID" | "String" | "Int" | "Float" | "Boolean" => default_value,
-                _ => "null".to_string(),
+                _ => {
+                    log::warn!(
+                        "Unknown scalar type encountered: '{}'. Returning 'null' as default value.",
+                        scalar.name
+                    );
+                    "null".to_string()
+                }
             },
             _ => default_value,
         }
@@ -185,8 +191,8 @@ mod ext_jinja_fns {
         scalar.impl_symbol.symbol_fullname()
     }
 
-    pub fn is_custom_scalar(ctx: &SharedShalomGlobalContext, scalar_name: String) -> bool {
-        ctx.find_custom_scalar(&scalar_name).is_some()
+    pub fn is_custom_scalar(ctx: &SharedShalomGlobalContext, scalar_name: &str) -> bool {
+        ctx.find_custom_scalar(scalar_name).is_some()
     }
 }
 
@@ -266,7 +272,7 @@ impl TemplateEnv<'_> {
         });
 
         let ctx_clone = ctx.clone();
-        env.add_function("is_custom_scalar", move |name: String| {
+        env.add_function("is_custom_scalar", move |name: &str| {
             ext_jinja_fns::is_custom_scalar(&ctx_clone, name)
         });
 

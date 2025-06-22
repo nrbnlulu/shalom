@@ -7,8 +7,8 @@ mutation UpdatePointCoordsNonNull($coords: Point!) {
     }
 }
 
-mutation UpdatePointCoordsOpt($coords: Point) {
-    updatePointCoordsOpt(coords: $coords) {
+query UpdatePointCoordsOpt($id: ID!, $coords: Point = "POINT (0,0)") {
+    getPointById(id: $id, coords: $coords) {
         coords,
         name,
         id
@@ -46,11 +46,11 @@ mutation UpdatePointWithInputCoordsOpt($pointData: PointUpdateCoordsOpt!) {
         id
     }
 }
-
-query GetPointWithDefaultCoords($id: ID!, $coords: Point = "POINT (0,0)") {
-    getPointById(id: $id, coords: $coords) {
-        coords,
-        name,
+mutation UpdatePointWithInputDefault($pointData: PointDataInputWithDefault!) {
+    updatePointWithInputDefault(pointData: $pointData) {
+        coords
+        name
         id
     }
 }
+

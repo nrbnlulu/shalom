@@ -47,6 +47,50 @@ class PointDataInput {
   }
 }
 
+class PointDataInputWithDefault {
+  final rmhlxei.Point? coords;
+
+  final String name;
+
+  PointDataInputWithDefault({this.coords, required this.name});
+
+  JsonObject toJson() {
+    JsonObject data = {};
+
+    data["coords"] =
+        coords == null ? null : rmhlxei.pointScalarImpl.serialize(coords!);
+
+    data["name"] = name;
+
+    return data;
+  }
+
+  PointDataInputWithDefault updateWith({
+    Option<rmhlxei.Point?> coords = const None(),
+
+    String? name,
+  }) {
+    final rmhlxei.Point? coords$next;
+
+    switch (coords) {
+      case Some(value: final data):
+        coords$next = data;
+      case None():
+        coords$next = this.coords;
+    }
+
+    final String name$next;
+
+    if (name != null) {
+      name$next = name;
+    } else {
+      name$next = this.name;
+    }
+
+    return PointDataInputWithDefault(coords: coords$next, name: name$next);
+  }
+}
+
 class PointUpdateCoordsMaybe {
   final Option<rmhlxei.Point?> coords;
 

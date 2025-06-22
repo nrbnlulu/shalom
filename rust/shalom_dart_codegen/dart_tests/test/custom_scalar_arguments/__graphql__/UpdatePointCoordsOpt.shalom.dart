@@ -10,67 +10,61 @@ typedef JsonObject = Map<String, dynamic>;
 class UpdatePointCoordsOptResponse {
   /// class members
 
-  final UpdatePointCoordsOpt_updatePointCoordsOpt? updatePointCoordsOpt;
+  final UpdatePointCoordsOpt_getPointById? getPointById;
 
   // keywordargs constructor
-  UpdatePointCoordsOptResponse({this.updatePointCoordsOpt});
+  UpdatePointCoordsOptResponse({this.getPointById});
   static UpdatePointCoordsOptResponse fromJson(JsonObject data) {
-    final UpdatePointCoordsOpt_updatePointCoordsOpt? updatePointCoordsOpt_value;
+    final UpdatePointCoordsOpt_getPointById? getPointById_value;
 
-    final JsonObject? updatePointCoordsOpt$raw = data['updatePointCoordsOpt'];
-    if (updatePointCoordsOpt$raw != null) {
-      updatePointCoordsOpt_value =
-          UpdatePointCoordsOpt_updatePointCoordsOpt.fromJson(
-            updatePointCoordsOpt$raw,
-          );
+    final JsonObject? getPointById$raw = data['getPointById'];
+    if (getPointById$raw != null) {
+      getPointById_value = UpdatePointCoordsOpt_getPointById.fromJson(
+        getPointById$raw,
+      );
     } else {
-      updatePointCoordsOpt_value = null;
+      getPointById_value = null;
     }
 
-    return UpdatePointCoordsOptResponse(
-      updatePointCoordsOpt: updatePointCoordsOpt_value,
-    );
+    return UpdatePointCoordsOptResponse(getPointById: getPointById_value);
   }
 
   UpdatePointCoordsOptResponse updateWithJson(JsonObject data) {
-    final UpdatePointCoordsOpt_updatePointCoordsOpt? updatePointCoordsOpt_value;
-    if (data.containsKey('updatePointCoordsOpt')) {
-      final JsonObject? updatePointCoordsOpt$raw = data['updatePointCoordsOpt'];
-      if (updatePointCoordsOpt$raw != null) {
-        updatePointCoordsOpt_value =
-            UpdatePointCoordsOpt_updatePointCoordsOpt.fromJson(
-              updatePointCoordsOpt$raw,
-            );
+    final UpdatePointCoordsOpt_getPointById? getPointById_value;
+    if (data.containsKey('getPointById')) {
+      final JsonObject? getPointById$raw = data['getPointById'];
+      if (getPointById$raw != null) {
+        getPointById_value = UpdatePointCoordsOpt_getPointById.fromJson(
+          getPointById$raw,
+        );
       } else {
-        updatePointCoordsOpt_value = null;
+        getPointById_value = null;
       }
     } else {
-      updatePointCoordsOpt_value = updatePointCoordsOpt;
+      getPointById_value = getPointById;
     }
 
-    return UpdatePointCoordsOptResponse(
-      updatePointCoordsOpt: updatePointCoordsOpt_value,
-    );
+    return UpdatePointCoordsOptResponse(getPointById: getPointById_value);
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is UpdatePointCoordsOptResponse &&
-            other.updatePointCoordsOpt == updatePointCoordsOpt);
+            other.getPointById == getPointById);
   }
 
   @override
-  int get hashCode => updatePointCoordsOpt.hashCode;
+  int get hashCode => getPointById.hashCode;
 
   JsonObject toJson() {
-    return {'updatePointCoordsOpt': updatePointCoordsOpt?.toJson()};
+    return {'getPointById': getPointById?.toJson()};
   }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class UpdatePointCoordsOpt_updatePointCoordsOpt {
+class UpdatePointCoordsOpt_getPointById {
   /// class members
 
   final rmhlxei.Point? coords;
@@ -80,12 +74,12 @@ class UpdatePointCoordsOpt_updatePointCoordsOpt {
   final String id;
 
   // keywordargs constructor
-  UpdatePointCoordsOpt_updatePointCoordsOpt({
+  UpdatePointCoordsOpt_getPointById({
     this.coords,
     required this.name,
     required this.id,
   });
-  static UpdatePointCoordsOpt_updatePointCoordsOpt fromJson(JsonObject data) {
+  static UpdatePointCoordsOpt_getPointById fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
 
     coords_value =
@@ -101,7 +95,7 @@ class UpdatePointCoordsOpt_updatePointCoordsOpt {
 
     id_value = data['id'];
 
-    return UpdatePointCoordsOpt_updatePointCoordsOpt(
+    return UpdatePointCoordsOpt_getPointById(
       coords: coords_value,
 
       name: name_value,
@@ -110,7 +104,7 @@ class UpdatePointCoordsOpt_updatePointCoordsOpt {
     );
   }
 
-  UpdatePointCoordsOpt_updatePointCoordsOpt updateWithJson(JsonObject data) {
+  UpdatePointCoordsOpt_getPointById updateWithJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     if (data.containsKey('coords')) {
       coords_value =
@@ -135,7 +129,7 @@ class UpdatePointCoordsOpt_updatePointCoordsOpt {
       id_value = id;
     }
 
-    return UpdatePointCoordsOpt_updatePointCoordsOpt(
+    return UpdatePointCoordsOpt_getPointById(
       coords: coords_value,
 
       name: name_value,
@@ -147,7 +141,7 @@ class UpdatePointCoordsOpt_updatePointCoordsOpt {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UpdatePointCoordsOpt_updatePointCoordsOpt &&
+        (other is UpdatePointCoordsOpt_getPointById &&
             other.coords == coords &&
             other.name == name &&
             other.id == id);
@@ -179,43 +173,45 @@ class RequestUpdatePointCoordsOpt extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query: r"""mutation UpdatePointCoordsOpt($coords: Point) {
-  updatePointCoordsOpt(coords: $coords) {
+      query:
+          r"""query UpdatePointCoordsOpt($id: ID!, $coords: Point = "POINT (0,0)") {
+  getPointById(id: $id, coords: $coords) {
     coords
     name
     id
   }
 }""",
       variables: variablesJson,
-      opType: OperationType.Mutation,
+      opType: OperationType.Query,
       StringopName: 'UpdatePointCoordsOpt',
     );
   }
 }
 
 class UpdatePointCoordsOptVariables {
-  final Option<rmhlxei.Point?> coords;
+  final rmhlxei.Point? coords;
 
-  UpdatePointCoordsOptVariables({this.coords = const None()});
+  final String id;
+
+  UpdatePointCoordsOptVariables({this.coords, required this.id});
 
   JsonObject toJson() {
     JsonObject data = {};
 
-    if (coords.isSome()) {
-      if (coords.some() == null) {
-        data["coords"] = null;
-      } else {
-        data["coords"] = rmhlxei.pointScalarImpl.serialize(coords.some()!);
-      }
-    }
+    data["coords"] =
+        coords == null ? null : rmhlxei.pointScalarImpl.serialize(coords!);
+
+    data["id"] = id;
 
     return data;
   }
 
   UpdatePointCoordsOptVariables updateWith({
-    Option<Option<rmhlxei.Point?>> coords = const None(),
+    Option<rmhlxei.Point?> coords = const None(),
+
+    String? id,
   }) {
-    final Option<rmhlxei.Point?> coords$next;
+    final rmhlxei.Point? coords$next;
 
     switch (coords) {
       case Some(value: final data):
@@ -224,6 +220,14 @@ class UpdatePointCoordsOptVariables {
         coords$next = this.coords;
     }
 
-    return UpdatePointCoordsOptVariables(coords: coords$next);
+    final String id$next;
+
+    if (id != null) {
+      id$next = id;
+    } else {
+      id$next = this.id;
+    }
+
+    return UpdatePointCoordsOptVariables(coords: coords$next, id: id$next);
   }
 }
