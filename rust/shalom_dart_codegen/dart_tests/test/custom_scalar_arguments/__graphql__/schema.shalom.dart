@@ -47,12 +47,12 @@ class PointDataInput {
   }
 }
 
-class PointDataInputWithDefault {
+class PointDataOptCoordsInput {
   final rmhlxei.Point? coords;
 
   final String name;
 
-  PointDataInputWithDefault({this.coords, required this.name});
+  PointDataOptCoordsInput({this.coords, required this.name});
 
   JsonObject toJson() {
     JsonObject data = {};
@@ -65,7 +65,7 @@ class PointDataInputWithDefault {
     return data;
   }
 
-  PointDataInputWithDefault updateWith({
+  PointDataOptCoordsInput updateWith({
     Option<rmhlxei.Point?> coords = const None(),
 
     String? name,
@@ -87,7 +87,7 @@ class PointDataInputWithDefault {
       name$next = this.name;
     }
 
-    return PointDataInputWithDefault(coords: coords$next, name: name$next);
+    return PointDataOptCoordsInput(coords: coords$next, name: name$next);
   }
 }
 
