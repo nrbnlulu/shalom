@@ -2,16 +2,36 @@
 {% macro toJson_macro(fields) %}
 {% for name, field in fields | items %}
     {% set field_ty = resolve_field_type(field.common).ty %}
-    {% if field.is_optional and field.default_value is none %}  
+
+    {% if field_ty.kind == "Scalar" and is_custom_scalar(field_ty.name) %}
+        {% set scalar_impl = custom_scalar_impl_fullname(field_ty.name) %}
+        {% if field.is_optional and field.default_value is none %}
+            if ({{ name }}.isSome()) {
+                if ({{ name }}.some() == null) {
+                    data["{{ name }}"] = null;
+                } else {
+                    data["{{ name }}"] = {{ scalar_impl }}.serialize({{ name }}.some()!);
+                }
+            }
+        {% else %}
+
+            {% if field.is_optional %}
+                data["{{ name }}"] = {{ name }} == null ? null : {{ scalar_impl }}.serialize({{ name }}!);
+            {% else %}
+                data["{{ name }}"] = {{ scalar_impl }}.serialize({{ name }});
+            {% endif %}
+        {% endif %}
+
+    {% elif field.is_optional and field.default_value is none %}
         if ({{ name }}.isSome()) {
-            {% if field_ty.kind == "InputObject" %} 
-                data["{{ name }}"] = {{ name }}.some()?.toJson();   
+            {% if field_ty.kind == "InputObject" %}
+                data["{{ name }}"] = {{ name }}.some()?.toJson();
             {% elif field_ty.kind == "Enum" %}
                 data["{{ name }}"] = {{ name }}.some()?.name;
             {% else %}
                 data["{{ name }}"] = {{ name }}.some();
             {% endif %}
-        } 
+        }
     {% else %}
         {% if field_ty.kind == "InputObject" %}
             data["{{ name }}"] = {{ name }}.toJson();
@@ -169,7 +189,7 @@
         final {{ type_name_for_input_field(field) }} {{ name }}$next;
         {% if field.is_optional %}
             switch ({{name}}) {
-                {# if this is a "maybe" field #}
+{# if this is a "maybe" field #}
                 case Some(value: final data):
                     {{ name }}$next = data;
                 case None():

@@ -1,6 +1,6 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
-use log::{info, trace};
+use log::info;
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use shalom_core::{
@@ -122,11 +122,24 @@ mod ext_jinja_fns {
             .as_ref()
             .expect("cannot parse default value that does not exist")
             .to_string();
+
         let ty = field.common.resolve_type(schema_ctx);
-        if let GraphQLAny::Enum(enum_) = ty.ty {
-            format!("{}.{}", enum_.name, default_value)
-        } else {
-            default_value.to_string()
+
+        match ty.ty {
+            GraphQLAny::Enum(enum_) => {
+                format!("{}.{}", enum_.name, default_value)
+            }
+            GraphQLAny::Scalar(scalar) => match scalar.name.as_str() {
+                "ID" | "String" | "Int" | "Float" | "Boolean" => default_value,
+                _ => {
+                    log::warn!(
+                        "Unknown scalar type encountered: '{}'. Returning 'null' as default value.",
+                        scalar.name
+                    );
+                    "null".to_string()
+                }
+            },
+            _ => default_value,
         }
     }
 
@@ -176,6 +189,10 @@ mod ext_jinja_fns {
             .find_custom_scalar(&scalar_name)
             .expect("Custom scalar not found");
         scalar.impl_symbol.symbol_fullname()
+    }
+
+    pub fn is_custom_scalar(ctx: &SharedShalomGlobalContext, scalar_name: &str) -> bool {
+        ctx.find_custom_scalar(scalar_name).is_some()
     }
 }
 
@@ -254,6 +271,11 @@ impl TemplateEnv<'_> {
             ext_jinja_fns::custom_scalar_impl_fullname(&ctx_clone, a)
         });
 
+        let ctx_clone = ctx.clone();
+        env.add_function("is_custom_scalar", move |name: &str| {
+            ext_jinja_fns::is_custom_scalar(&ctx_clone, name)
+        });
+
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
         env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
@@ -276,14 +298,29 @@ impl TemplateEnv<'_> {
 
         template.render(&context).unwrap()
     }
-
     fn render_schema(&self, ctx: &SharedShalomGlobalContext) -> String {
         let template = self.env.get_template("schema").unwrap();
+
+        let mut extra_imports: HashMap<String, String> = HashMap::new();
+
+        for custom_scalar in ctx.get_custom_scalars().values() {
+            for symbol in [&custom_scalar.impl_symbol, &custom_scalar.output_type] {
+                if let Some(import_path) = &symbol.import_path {
+                    let import_path_str = import_path.to_string_lossy().to_string();
+
+                    extra_imports.entry(import_path_str).or_insert_with(|| {
+                        let mut hasher: DefaultHasher = DefaultHasher::new();
+                        import_path.hash(&mut hasher);
+                        number_to_abc(hasher.finish() as u32)
+                    });
+                }
+            }
+        }
+
         let mut context = HashMap::new();
-
         context.insert("schema", context! { context => &ctx.schema_ctx });
+        context.insert("extra_imports", minijinja::Value::from(extra_imports));
 
-        trace!("resolved schema template; rendering...");
         template.render(&context).unwrap()
     }
 }
