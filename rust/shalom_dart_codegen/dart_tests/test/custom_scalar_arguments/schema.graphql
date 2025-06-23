@@ -1,0 +1,36 @@
+scalar Point
+
+input PointDataInput {
+    coords: Point!
+    name: String!
+}
+
+input PointUpdateCoordsMaybe {
+    coords: Point
+    name: String!
+}
+
+
+type PointResponse {
+    coords: Point
+    name: String!
+    id: ID!
+}
+
+input PointDataOptCoordsInput {
+    coords: Point = "POINT (0, 0)"
+    name: String!
+}
+
+
+type Query {
+    getPointById(id: ID!, coords: Point = "POINT (0,0)"): PointResponse
+}
+
+type Mutation {
+    updatePointCoords(coords: Point!): PointResponse
+    updatePointCoordsMaybe(coords: Point): PointResponse
+    updatePointWithInput(pointData: PointDataInput!): PointResponse
+    updatePointWithInputCoordsMaybe(pointData: PointUpdateCoordsMaybe!): PointResponse
+    updatePointWithOptCoords(pointData: PointDataOptCoordsInput!): PointResponse
+}
