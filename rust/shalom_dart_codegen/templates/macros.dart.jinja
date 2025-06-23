@@ -189,7 +189,7 @@
         final {{ type_name_for_input_field(field) }} {{ name }}$next;
         {% if field.is_optional %}
             switch ({{name}}) {
-
+{# if this is a "maybe" field #}
                 case Some(value: final data):
                     {{ name }}$next = data;
                 case None():
