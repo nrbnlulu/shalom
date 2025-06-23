@@ -48,6 +48,26 @@ class OrderUpdate {
 
     return data;
   }
+
+  OrderUpdate updateWith({Status? status, int? timeLeft}) {
+    final Status status$next;
+
+    if (status != null) {
+      status$next = status;
+    } else {
+      status$next = this.status;
+    }
+
+    final int timeLeft$next;
+
+    if (timeLeft != null) {
+      timeLeft$next = timeLeft;
+    } else {
+      timeLeft$next = this.timeLeft;
+    }
+
+    return OrderUpdate(status: status$next, timeLeft: timeLeft$next);
+  }
 }
 
 class OrderUpdateStatusOpt {
@@ -67,6 +87,31 @@ class OrderUpdateStatusOpt {
     data["timeLeft"] = timeLeft;
 
     return data;
+  }
+
+  OrderUpdateStatusOpt updateWith({
+    Option<Option<Status?>> status = const None(),
+
+    int? timeLeft,
+  }) {
+    final Option<Status?> status$next;
+
+    switch (status) {
+      case Some(value: final data):
+        status$next = data;
+      case None():
+        status$next = this.status;
+    }
+
+    final int timeLeft$next;
+
+    if (timeLeft != null) {
+      timeLeft$next = timeLeft;
+    } else {
+      timeLeft$next = this.timeLeft;
+    }
+
+    return OrderUpdateStatusOpt(status: status$next, timeLeft: timeLeft$next);
   }
 }
 

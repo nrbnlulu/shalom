@@ -1,0 +1,49 @@
+
+mutation UpdatePointCoordsNonNull($coords: Point!) {
+    updatePointCoords(coords: $coords) {
+        coords,
+        name,
+        id
+    }
+}
+
+query UpdatePointCoordsOpt($id: ID!, $coords: Point = "POINT (0,0)") {
+    getPointById(id: $id, coords: $coords) {
+        coords,
+        name,
+        id
+    }
+}
+
+mutation UpdatePointCoordsMaybe($coords: Point) {
+    updatePointCoordsMaybe(coords: $coords) {
+        coords
+        name
+        id
+    }
+}
+
+mutation UpdatePointWithInputCoordsMaybe($pointData: PointUpdateCoordsMaybe!) {
+    updatePointWithInputCoordsMaybe(pointData: $pointData) {
+        coords
+        name
+        id
+    }
+}
+
+mutation UpdatePointWithInputNonNull($pointData: PointDataInput!) {
+    updatePointWithInput(pointData: $pointData) {
+        coords,
+        name,
+        id
+    }
+}
+
+mutation updatePointWithOptCoords($pointData: PointDataOptCoordsInput!) {
+    updatePointWithOptCoords(pointData: $pointData) {
+        coords
+        name
+        id
+    }
+}
+

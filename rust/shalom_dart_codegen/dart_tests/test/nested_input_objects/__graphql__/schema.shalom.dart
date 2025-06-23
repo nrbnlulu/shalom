@@ -27,6 +27,34 @@ class Order {
 
     return data;
   }
+
+  Order updateWith({String? name, double? price, int? quantity}) {
+    final String name$next;
+
+    if (name != null) {
+      name$next = name;
+    } else {
+      name$next = this.name;
+    }
+
+    final double price$next;
+
+    if (price != null) {
+      price$next = price;
+    } else {
+      price$next = this.price;
+    }
+
+    final int quantity$next;
+
+    if (quantity != null) {
+      quantity$next = quantity;
+    } else {
+      quantity$next = this.quantity;
+    }
+
+    return Order(name: name$next, price: price$next, quantity: quantity$next);
+  }
 }
 
 class OrderDetails {
@@ -42,6 +70,21 @@ class OrderDetails {
     }
 
     return data;
+  }
+
+  OrderDetails updateWith({
+    Option<Option<Review?>> firstReview = const None(),
+  }) {
+    final Option<Review?> firstReview$next;
+
+    switch (firstReview) {
+      case Some(value: final data):
+        firstReview$next = data;
+      case None():
+        firstReview$next = this.firstReview;
+    }
+
+    return OrderDetails(firstReview: firstReview$next);
   }
 }
 
@@ -59,6 +102,21 @@ class OrderRecursive {
 
     return data;
   }
+
+  OrderRecursive updateWith({
+    Option<Option<OrderRecursive?>> order = const None(),
+  }) {
+    final Option<OrderRecursive?> order$next;
+
+    switch (order) {
+      case Some(value: final data):
+        order$next = data;
+      case None():
+        order$next = this.order;
+    }
+
+    return OrderRecursive(order: order$next);
+  }
 }
 
 class Review {
@@ -74,6 +132,19 @@ class Review {
     }
 
     return data;
+  }
+
+  Review updateWith({Option<Option<OrderDetails?>> order = const None()}) {
+    final Option<OrderDetails?> order$next;
+
+    switch (order) {
+      case Some(value: final data):
+        order$next = data;
+      case None():
+        order$next = this.order;
+    }
+
+    return Review(order: order$next);
   }
 }
 
@@ -92,6 +163,26 @@ class SpecificOrder {
     data["order"] = order.toJson();
 
     return data;
+  }
+
+  SpecificOrder updateWith({String? notes, Order? order}) {
+    final String notes$next;
+
+    if (notes != null) {
+      notes$next = notes;
+    } else {
+      notes$next = this.notes;
+    }
+
+    final Order order$next;
+
+    if (order != null) {
+      order$next = order;
+    } else {
+      order$next = this.order;
+    }
+
+    return SpecificOrder(notes: notes$next, order: order$next);
   }
 }
 
