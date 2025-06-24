@@ -101,6 +101,21 @@ mod ext_jinja_fns {
             }
             GraphQLAny::InputObject(obj) => obj.name.clone(),
             GraphQLAny::Enum(enum_) => enum_.name.clone(),
+            GraphQLAny::List { of_type, .. } => {
+                let inner_type = match *of_type {
+                    GraphQLAny::Scalar(ref scalar) => {
+                        if let Some(custom_scalar) = ctx.find_custom_scalar(&scalar.name) {
+                            custom_scalar.output_type.symbol_fullname()
+                        } else {
+                            dart_type_for_scalar(&scalar.name)
+                        }
+                    }
+                    GraphQLAny::InputObject(ref obj) => obj.name.clone(),
+                    GraphQLAny::Enum(ref enum_) => enum_.name.clone(),
+                    _ => unimplemented!("list inner type not supported"),
+                };
+                format!("List<{}>", inner_type)
+            }
             _ => unimplemented!("input type not supported"),
         };
         if field.is_optional && field.default_value.is_none() {

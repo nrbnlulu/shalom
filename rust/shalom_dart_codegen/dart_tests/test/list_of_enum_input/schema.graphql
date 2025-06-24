@@ -1,0 +1,20 @@
+enum Color {
+  RED
+  GREEN
+  BLUE
+}
+
+input ListOfEnumInput {
+  colorsRequired: [Color!]!
+  colorsOptional: [Color]
+  colorsMaybe: [Color]
+}
+
+type Mutation {
+  setColors(input: ListOfEnumInput!): Boolean!
+  setColorsRoot(colors: [Color!]!): Boolean!
+}
+
+type Query {
+  dummy: Boolean
+}
