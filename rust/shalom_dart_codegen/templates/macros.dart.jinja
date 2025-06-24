@@ -1,15 +1,30 @@
+{% macro serialize_list(name, field_ty, is_optional=false) %}
+    {% if field_ty.kind == "List" %}
+        {% set inner = field_ty.of_type %}
+        {% if inner.kind == "Enum" %}
+            {{ name }}{% if is_optional %}?{% endif %}.map((e) => e.name).toList()
+        {% elif inner.kind == "InputObject" %}
+            {{ name }}{% if is_optional %}?{% endif %}.map((e) => e.toJson()).toList()
+        {% elif inner.kind == "List" %}
+            {{ name }}{% if is_optional %}?{% endif %}.map((e) => {{ serialize_list('e', inner, true) }}).toList()
+        {% else %}
+            {{ name }}
+        {% endif %}
+    {% else %}
+        {{ name }}
+    {% endif %}
+{% endmacro %}
+
 {% macro toJson_macro(fields) %}
 {% for name, field in fields | items %}
     {% set field_ty = resolve_field_type(field.common).ty %}
-
-    {# Robust enum list detection #}
-    {% if field_ty.kind == "List" and field_ty.of_type.kind == "Enum" %}
+    {% if field_ty.kind == "List" %}
         {% if field.is_optional and field.default_value is none %}
             if ({{ name }}.isSome()) {
-                data["{{ name }}"] = {{ name }}.some()?.map((e) => e.name).toList();
+                data["{{ name }}"] = {{ serialize_list(name + '.some()', field_ty, true) }};
             }
         {% else %}
-            data["{{ name }}"] = {{ name }}.map((e) => e.name).toList();
+            data["{{ name }}"] = {{ serialize_list(name, field_ty) }};
         {% endif %}
     {% elif field_ty.kind == "Scalar" and is_custom_scalar(field_ty.name) %}
         {% set scalar_impl = custom_scalar_impl_fullname(field_ty.name) %}

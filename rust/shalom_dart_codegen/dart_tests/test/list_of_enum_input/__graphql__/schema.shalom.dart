@@ -14,6 +14,8 @@
 
 
 
+
+
 import 'package:shalom_core/shalom_core.dart';
 
 
@@ -96,33 +98,48 @@ class ListOfEnumInput {
         
 
     
-
-    
     
         
             if (colorsMaybe.isSome()) {
-                data["colorsMaybe"] = colorsMaybe.some()?.map((e) => e.name).toList();
-            }
+                data["colorsMaybe"] = 
+    
+        
+        
+            colorsMaybe.some().map((e) => e.name).toList()
         
     
-
+;
+            }
+        
     
 
     
     
         
             if (colorsOptional.isSome()) {
-                data["colorsOptional"] = colorsOptional.some()?.map((e) => e.name).toList();
+                data["colorsOptional"] = 
+    
+        
+        
+            colorsOptional.some().map((e) => e.name).toList()
+        
+    
+;
             }
         
     
 
     
-
-    
     
         
-            data["colorsRequired"] = colorsRequired.map((e) => e.name).toList();
+            data["colorsRequired"] = 
+    
+        
+        
+            colorsRequired.map((e) => e.name).toList()
+        
+    
+;
         
     
 

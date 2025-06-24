@@ -12,6 +12,8 @@
 
 
 
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
 
 import "schema.shalom.dart";
@@ -170,8 +172,6 @@ class setColorsVariables {
     JsonObject toJson() {
         JsonObject data = {};
         
-
-    
 
     
     

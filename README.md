@@ -33,18 +33,16 @@
         - [ ] oneOf  
  
 ### Development
-add a testcase for your usecase under `rust/shalom_dart_codegen/tests/usecases/` and run this test, after the first run it will generate a minimal dart project under `rust/shalom_dart_codegen/dart_tests/` there in `tests.dart` \ `operations.graphql` and `schema.graphql` you add tests specific for your usecase. to run the test run the rust test again (it won't overwrite the dart project).
+Add a test case for your use case under `rust/shalom_dart_codegen/tests/usecases/` and run this test. After the first run, it will generate a minimal Dart project under `rust/shalom_dart_codegen/dart_tests/`. In `tests.dart`, `operations.graphql`, and `schema.graphql`, you can add tests specific for your use case. To run the test, run the Rust test again (it won't overwrite the Dart project).
 
-every testcase should include the following:
+Every test case should include the following:
 
 - `xRequired` 
 - `xOptional`
-where `x` is the kind of usecase you are testing, for example `objectRequired`, `objectOptional`, `scalarRequired`, `scalarOptional`, etc.
-on each test you should test that `fromJson` works, `updateWithJson` works, `toJson` works, and `==` works.
+where `x` is the kind of use case you are testing, for example `objectRequired`, `objectOptional`, `scalarRequired`, `scalarOptional`, etc.
+For each test, you should verify that `fromJson` works, `updateWithJson` works, `toJson` works, and `==` works.
 
-for input related testcases you should also add a `Maybe` test which means
-that for fields that are optional but **has no default value** they should be wrapped in a `Maybe`
-type (Some | None).
+For input-related test cases, you should also add a `Maybe` test. This means that for fields that are optional but **have no default value**, they should be wrapped in a `Maybe` type (`Some` | `None`).
 
-when you done make sure all test pass using `task test` and also make sure all lints pass using `task lint`.
+when you are done, make sure all tests pass using `task test` and all lints pass using `task lint`.
 
