@@ -1,0 +1,7 @@
+mutation setColors($input: ListOfEnumInput!) {
+  setColors(input: $input)
+}
+
+mutation setColorsRoot($colors: [Color!]!) {
+  setColorsRoot(colors: $colors)
+}

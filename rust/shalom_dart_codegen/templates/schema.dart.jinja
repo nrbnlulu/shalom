@@ -57,6 +57,20 @@ class {{ typename }} {
         return data;
     } 
   {{ updateWith_macro(fields, typename) }}
+
+    @override
+    bool operator ==(Object other) =>
+        identical(this, other) ||
+        other is {{ typename }} &&
+        {% for name, field in fields | items -%}
+          this.{{ name }} == other.{{ name }}{% if not loop.last %} && {% endif %}
+        {% endfor %};
+
+    @override
+    int get hashCode =>
+        {% for name, field in fields | items -%}
+          {{ name }}.hashCode{% if not loop.last %} ^ {% endif %}
+        {% endfor %};
 }
      
 {% endfor %}

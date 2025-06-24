@@ -215,26 +215,42 @@ impl UnresolvedType {
     pub fn ty_name(&self) -> String {
         match &self.kind {
             UnresolvedTypeKind::Named { name } => name.clone(),
-            _ => {
-                unimplemented!("lists have not been implemented")
-            }
+            UnresolvedTypeKind::List { of_type } => format!("List<{}>", of_type.ty_name()),
         }
     }
 
     pub fn new(ty: &RawType) -> Self {
-        let is_optional = !ty.is_non_null();
-        let unresolved_kind = match ty {
-            RawType::Named(name) => UnresolvedTypeKind::Named {
-                name: name.to_string(),
+        match ty {
+            RawType::List(inner) => {
+                let inner_type = UnresolvedType::new(inner);
+                Self {
+                    is_optional: !ty.is_non_null(),
+                    kind: UnresolvedTypeKind::List {
+                        of_type: Box::new(inner_type),
+                    },
+                }
+            }
+            RawType::NonNullList(inner) => {
+                let inner_type = UnresolvedType::new(inner);
+                Self {
+                    is_optional: false,
+                    kind: UnresolvedTypeKind::List {
+                        of_type: Box::new(inner_type),
+                    },
+                }
+            }
+            RawType::Named(name) => Self {
+                is_optional: !ty.is_non_null(),
+                kind: UnresolvedTypeKind::Named {
+                    name: name.to_string(),
+                },
             },
-            RawType::NonNullNamed(name) => UnresolvedTypeKind::Named {
-                name: name.to_string(),
+            RawType::NonNullNamed(name) => Self {
+                is_optional: false,
+                kind: UnresolvedTypeKind::Named {
+                    name: name.to_string(),
+                },
             },
-            _ => unimplemented!("lists have not been implemented"),
-        };
-        Self {
-            is_optional,
-            kind: unresolved_kind,
         }
     }
     pub fn resolve(&self, ctx: &SchemaContext) -> ResolvedType {
@@ -243,8 +259,15 @@ impl UnresolvedType {
                 is_optional: self.is_optional,
                 ty: ctx.get_type(name).unwrap(),
             },
-            UnresolvedTypeKind::List { of_type: _ } => {
-                unimplemented!("lists are not supported yet")
+            UnresolvedTypeKind::List { of_type } => {
+                let inner = of_type.resolve(ctx);
+                ResolvedType {
+                    is_optional: self.is_optional,
+                    ty: GraphQLAny::List {
+                        of_type: Box::new(inner.ty),
+                        is_optional: inner.is_optional,
+                    },
+                }
             }
         }
     }
