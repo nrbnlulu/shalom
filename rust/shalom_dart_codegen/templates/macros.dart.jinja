@@ -1,9 +1,17 @@
-
 {% macro toJson_macro(fields) %}
 {% for name, field in fields | items %}
     {% set field_ty = resolve_field_type(field.common).ty %}
 
-    {% if field_ty.kind == "Scalar" and is_custom_scalar(field_ty.name) %}
+    {# Robust enum list detection #}
+    {% if field_ty.kind == "List" and field_ty.of_type.kind == "Enum" %}
+        {% if field.is_optional and field.default_value is none %}
+            if ({{ name }}.isSome()) {
+                data["{{ name }}"] = {{ name }}.some()?.map((e) => e.name).toList();
+            }
+        {% else %}
+            data["{{ name }}"] = {{ name }}.map((e) => e.name).toList();
+        {% endif %}
+    {% elif field_ty.kind == "Scalar" and is_custom_scalar(field_ty.name) %}
         {% set scalar_impl = custom_scalar_impl_fullname(field_ty.name) %}
         {% if field.is_optional and field.default_value is none %}
             if ({{ name }}.isSome()) {
@@ -14,14 +22,12 @@
                 }
             }
         {% else %}
-
             {% if field.is_optional %}
                 data["{{ name }}"] = {{ name }} == null ? null : {{ scalar_impl }}.serialize({{ name }}!);
             {% else %}
                 data["{{ name }}"] = {{ scalar_impl }}.serialize({{ name }});
             {% endif %}
         {% endif %}
-
     {% elif field.is_optional and field.default_value is none %}
         if ({{ name }}.isSome()) {
             {% if field_ty.kind == "InputObject" %}

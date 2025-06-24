@@ -14,7 +14,6 @@
 
 
 
-
 import 'package:shalom_core/shalom_core.dart';
 
 
@@ -99,28 +98,31 @@ class ListOfEnumInput {
     
 
     
-        if (colorsMaybe.isSome()) {
-            
-                data["colorsMaybe"] = colorsMaybe.some();
-            
-        }
-    
-
-    
-
-    
-        if (colorsOptional.isSome()) {
-            
-                data["colorsOptional"] = colorsOptional.some();
-            
-        }
-    
-
-    
-
     
         
-            data["colorsRequired"] = colorsRequired; 
+            if (colorsMaybe.isSome()) {
+                data["colorsMaybe"] = colorsMaybe.some()?.map((e) => e.name).toList();
+            }
+        
+    
+
+    
+
+    
+    
+        
+            if (colorsOptional.isSome()) {
+                data["colorsOptional"] = colorsOptional.some()?.map((e) => e.name).toList();
+            }
+        
+    
+
+    
+
+    
+    
+        
+            data["colorsRequired"] = colorsRequired.map((e) => e.name).toList();
         
     
 
@@ -194,6 +196,22 @@ ListOfEnumInput updateWith(
     );
 }
 
+
+    @override
+    bool operator ==(Object other) =>
+        identical(this, other) ||
+        other is ListOfEnumInput &&
+        this.colorsMaybe == other.colorsMaybe && 
+        this.colorsOptional == other.colorsOptional && 
+        this.colorsRequired == other.colorsRequired
+        ;
+
+    @override
+    int get hashCode =>
+        colorsMaybe.hashCode ^ 
+        colorsOptional.hashCode ^ 
+        colorsRequired.hashCode
+        ;
 }
      
 
