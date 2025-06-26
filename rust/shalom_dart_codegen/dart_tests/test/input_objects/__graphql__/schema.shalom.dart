@@ -76,15 +76,27 @@ class OrderOpt {
     JsonObject data = {};
 
     if (name.isSome()) {
-      data["name"] = name.some();
+      final value = name.some();
+
+      data["name"] = value;
+    } else {
+      // This is not a list type. Omit the field.
     }
 
     if (price.isSome()) {
-      data["price"] = price.some();
+      final value = price.some();
+
+      data["price"] = value;
+    } else {
+      // This is not a list type. Omit the field.
     }
 
     if (quantity.isSome()) {
-      data["quantity"] = quantity.some();
+      final value = quantity.some();
+
+      data["quantity"] = value;
+    } else {
+      // This is not a list type. Omit the field.
     }
 
     return data;

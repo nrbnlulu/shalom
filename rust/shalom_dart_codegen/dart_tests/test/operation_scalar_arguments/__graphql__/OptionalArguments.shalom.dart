@@ -138,11 +138,19 @@ class OptionalArgumentsVariables {
     JsonObject data = {};
 
     if (id.isSome()) {
-      data["id"] = id.some();
+      final value = id.some();
+
+      data["id"] = value;
+    } else {
+      // This is not a list type. Omit the field.
     }
 
     if (phone.isSome()) {
-      data["phone"] = phone.some();
+      final value = phone.some();
+
+      data["phone"] = value;
+    } else {
+      // This is not a list type. Omit the field.
     }
 
     return data;

@@ -57,6 +57,7 @@ pub struct ScalarSelection {
     pub common: SelectionCommon,
     pub concrete_type: Node<ScalarType>,
     pub is_custom_scalar: bool,
+    pub raw_field_type: Option<String>,
 }
 pub type SharedScalarSelection = Rc<ScalarSelection>;
 
@@ -70,6 +71,7 @@ impl ScalarSelection {
             common,
             concrete_type,
             is_custom_scalar,
+            raw_field_type: None,
         })
     }
 }

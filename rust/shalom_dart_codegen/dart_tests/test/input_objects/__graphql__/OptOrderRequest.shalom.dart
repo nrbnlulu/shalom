@@ -178,7 +178,11 @@ class OptOrderRequestVariables {
     JsonObject data = {};
 
     if (order.isSome()) {
-      data["order"] = order.some()?.toJson();
+      final value = order.some();
+
+      data["order"] = value?.toJson();
+    } else {
+      // This is not a list type. Omit the field.
     }
 
     return data;

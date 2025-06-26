@@ -56,6 +56,9 @@ fn parse_object_selection(
             apollo_executable::Selection::Field(field) => {
                 let f_name = field.name.clone().to_string();
                 let f_type = field.ty();
+
+                let raw_type_str = f_type.to_string();
+
                 let is_optional = match f_type {
                     apollo_compiler::ast::Type::List(_) => true,
                     apollo_compiler::ast::Type::Named(_) => true,
@@ -67,13 +70,16 @@ fn parse_object_selection(
                     selection_name: f_name.clone(),
                     is_optional,
                 };
-                let field_selection = parse_selection_set(
+
+                let field_selection = parse_selection_set_with_type(
                     Some(&obj_as_selection),
                     op_ctx,
                     global_ctx,
                     selection_common,
                     &field.selection_set,
+                    Some(raw_type_str),
                 );
+
                 obj.add_selection(field_selection);
             }
             _ => todo!("Unsupported selection type {:?}", selection),
@@ -82,36 +88,38 @@ fn parse_object_selection(
     obj
 }
 
-fn parse_scalar_selection(
-    ctx: &SharedShalomGlobalContext,
-    selection_common: SelectionCommon,
-    concrete_type: Node<ScalarType>,
-) -> SharedScalarSelection {
-    let scalar_name = concrete_type.name.to_string();
-    let is_custom_scalar = ctx.find_custom_scalar(&scalar_name).is_some();
-    ScalarSelection::new(selection_common, concrete_type, is_custom_scalar)
-}
-
-fn parse_selection_set(
+fn parse_selection_set_with_type(
     parent: Option<&Selection>,
     op_ctx: &mut OperationContext,
     global_ctx: &SharedShalomGlobalContext,
     selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
+    raw_type: Option<String>,
 ) -> Selection {
     let full_name = selection_common.full_name.clone();
     if let Some(selection) = op_ctx.get_selection(&full_name) {
         info!("Selection already exists");
         return selection.clone();
     }
-    let schema_type = global_ctx
-        .schema_ctx
-        .get_type(&selection_orig.ty.to_string())
-        .unwrap();
+
+    let base_type_name = selection_orig
+        .ty
+        .to_string()
+        .trim_start_matches('[')
+        .trim_end_matches(']')
+        .trim_end_matches('!')
+        .trim_end_matches('?')
+        .to_string();
+
+    let schema_type = global_ctx.schema_ctx.get_type(&base_type_name).unwrap();
+
     let selection: Selection = match schema_type {
-        GraphQLAny::Scalar(scalar) => {
-            Selection::Scalar(parse_scalar_selection(global_ctx, selection_common, scalar))
-        }
+        GraphQLAny::Scalar(scalar) => Selection::Scalar(parse_scalar_selection_with_type(
+            global_ctx,
+            selection_common,
+            scalar,
+            raw_type,
+        )),
         GraphQLAny::Object(_) => Selection::Object(parse_object_selection(
             &parent,
             op_ctx,
@@ -125,6 +133,23 @@ fn parse_selection_set(
 
     op_ctx.add_selection(full_name, selection.clone());
     selection
+}
+
+fn parse_scalar_selection_with_type(
+    ctx: &SharedShalomGlobalContext,
+    selection_common: SelectionCommon,
+    concrete_type: Node<ScalarType>,
+    raw_type: Option<String>,
+) -> SharedScalarSelection {
+    let scalar_name = concrete_type.name.to_string();
+    let is_custom_scalar = ctx.find_custom_scalar(&scalar_name).is_some();
+
+    Rc::new(ScalarSelection {
+        common: selection_common,
+        concrete_type,
+        is_custom_scalar,
+        raw_field_type: raw_type,
+    })
 }
 
 fn parse_operation_type(operation_type: ApolloOperationType) -> OperationType {

@@ -224,7 +224,11 @@ class EnumOptionalVariables {
     JsonObject data = {};
 
     if (status.isSome()) {
-      data["status"] = status.some()?.name;
+      final value = status.some();
+
+      data["status"] = value?.name;
+    } else {
+      // This is not a list type. Omit the field.
     }
 
     return data;

@@ -210,11 +210,15 @@ class UpdatePointCoordsMaybeVariables {
     JsonObject data = {};
 
     if (coords.isSome()) {
-      if (coords.some() == null) {
+      final value = coords.some();
+
+      if (value == null) {
         data["coords"] = null;
       } else {
-        data["coords"] = rmhlxei.pointScalarImpl.serialize(coords.some()!);
+        data["coords"] = rmhlxei.pointScalarImpl.serialize(value);
       }
+    } else {
+      // This is not a list type. Omit the field.
     }
 
     return data;

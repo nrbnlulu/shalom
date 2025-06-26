@@ -78,7 +78,11 @@ class SubmitReviewVariables {
     JsonObject data = {};
 
     if (review.isSome()) {
-      data["review"] = review.some()?.toJson();
+      final value = review.some();
+
+      data["review"] = value?.toJson();
+    } else {
+      // This is not a list type. Omit the field.
     }
 
     return data;

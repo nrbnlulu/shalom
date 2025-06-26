@@ -11,7 +11,7 @@ use shalom_core::{
     },
     schema::{
         context::SchemaContext,
-        types::{GraphQLAny, InputFieldDefinition, SchemaFieldCommon},
+        types::{GraphQLAny, InputFieldDefinition, SchemaFieldCommon, UnresolvedType},
     },
     shalom_config::RuntimeSymbolDefinition,
 };
@@ -53,6 +53,11 @@ mod ext_jinja_fns {
     ) -> String {
         match selection.0 {
             Selection::Scalar(scalar) => {
+                if let Some(raw_type) = &scalar.raw_field_type {
+                    let unresolved = UnresolvedType::new(&parse_raw_type_string(raw_type));
+                    return generate_dart_type_from_unresolved(&unresolved, ctx);
+                }
+
                 let scalar_name = &scalar.concrete_type.name;
                 if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
                     // the symbol name should be available globally at runtime
@@ -86,32 +91,127 @@ mod ext_jinja_fns {
         }
     }
 
+    fn generate_dart_type_from_unresolved(
+        unresolved: &UnresolvedType,
+        ctx: &SharedShalomGlobalContext,
+    ) -> String {
+        use shalom_core::schema::types::UnresolvedTypeKind;
+
+        match &unresolved.kind {
+            UnresolvedTypeKind::Named { name } => {
+                let type_string = name.to_string();
+                let base = if let Some(ty) = ctx.schema_ctx.get_type(&type_string) {
+                    match ty {
+                        GraphQLAny::Scalar(scalar) => {
+                            if let Some(custom_scalar) = ctx.find_custom_scalar(&scalar.name) {
+                                custom_scalar.output_type.symbol_fullname()
+                            } else {
+                                dart_type_for_scalar(&scalar.name)
+                            }
+                        }
+                        GraphQLAny::Enum(enum_) => enum_.name.clone(),
+                        _ => panic!("Unexpected type in list: {}", name),
+                    }
+                } else {
+                    panic!("Type not found: {}", name)
+                };
+
+                if unresolved.is_optional {
+                    format!("{}?", base)
+                } else {
+                    base
+                }
+            }
+            UnresolvedTypeKind::List { of_type } => {
+                let inner_type = generate_dart_type_from_unresolved(of_type, ctx);
+                if unresolved.is_optional {
+                    format!("List<{}>?", inner_type)
+                } else {
+                    format!("List<{}>", inner_type)
+                }
+            }
+        }
+    }
+
+    fn parse_raw_type_string(type_str: &str) -> apollo_compiler::ast::Type {
+        use apollo_compiler::ast::Type;
+
+        if type_str.ends_with("!") {
+            let inner = type_str.trim_end_matches('!');
+            if inner.starts_with('[') && inner.ends_with(']') {
+                let inner_type = inner.trim_start_matches('[').trim_end_matches(']');
+                Type::NonNullList(Box::new(parse_raw_type_string(inner_type)))
+            } else {
+                Type::NonNullNamed(apollo_compiler::Name::new(inner).unwrap())
+            }
+        } else if type_str.starts_with('[') && type_str.ends_with(']') {
+            let inner_type = type_str.trim_start_matches('[').trim_end_matches(']');
+            Type::List(Box::new(parse_raw_type_string(inner_type)))
+        } else {
+            Type::Named(apollo_compiler::Name::new(type_str).unwrap())
+        }
+    }
+
     pub fn type_name_for_input_field(
         ctx: &SharedShalomGlobalContext,
         field: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
         let field = field.0;
-        let resolved = match field.common.resolve_type(&ctx.schema_ctx).ty {
-            GraphQLAny::Scalar(scalar) => {
-                if let Some(custom_scalar) = ctx.find_custom_scalar(&scalar.name) {
-                    custom_scalar.output_type.symbol_fullname()
-                } else {
-                    dart_type_for_scalar(&scalar.name)
+
+        let get_base_type = |type_name: &str| -> String {
+            let type_string = type_name.to_string();
+            if let Some(ty) = ctx.schema_ctx.get_type(&type_string) {
+                match ty {
+                    GraphQLAny::Scalar(scalar) => {
+                        if let Some(custom_scalar) = ctx.find_custom_scalar(&scalar.name) {
+                            custom_scalar.output_type.symbol_fullname()
+                        } else {
+                            dart_type_for_scalar(&scalar.name)
+                        }
+                    }
+                    GraphQLAny::InputObject(obj) => obj.name.clone(),
+                    GraphQLAny::Enum(enum_) => enum_.name.clone(),
+                    _ => panic!("Unsupported type: {}", type_name),
+                }
+            } else {
+                panic!("Type not found: {}", type_name)
+            }
+        };
+
+        use shalom_core::schema::types::UnresolvedTypeKind;
+
+        fn process_unresolved_type(
+            unresolved: &shalom_core::schema::types::UnresolvedType,
+            get_base_type: &dyn Fn(&str) -> String,
+        ) -> String {
+            match &unresolved.kind {
+                UnresolvedTypeKind::Named { name } => {
+                    let base = get_base_type(name);
+                    if unresolved.is_optional {
+                        format!("{}?", base)
+                    } else {
+                        base
+                    }
+                }
+                UnresolvedTypeKind::List { of_type } => {
+                    let inner_type = process_unresolved_type(of_type, get_base_type);
+                    if unresolved.is_optional {
+                        format!("List<{}>?", inner_type)
+                    } else {
+                        format!("List<{}>", inner_type)
+                    }
                 }
             }
-            GraphQLAny::InputObject(obj) => obj.name.clone(),
-            GraphQLAny::Enum(enum_) => enum_.name.clone(),
-            _ => unimplemented!("input type not supported"),
-        };
+        }
+
+        let dart_type = process_unresolved_type(&field.common.unresolved_type, &get_base_type);
+
         if field.is_optional && field.default_value.is_none() {
-            format!("Option<{}?>", resolved)
-        } else if field.is_optional {
-            format!("{}?", resolved)
+            format!("Option<{}>", dart_type)
         } else {
-            resolved
+            dart_type
         }
     }
-
     pub fn parse_field_default_value(
         schema_ctx: &SchemaContext,
         field: ViaDeserialize<InputFieldDefinition>,
@@ -140,6 +240,60 @@ mod ext_jinja_fns {
                 }
             },
             _ => default_value,
+        }
+    }
+    pub fn get_list_cast_type(
+        _ctx: &SharedShalomGlobalContext,
+        selection: ViaDeserialize<Selection>,
+    ) -> String {
+        match selection.0 {
+            Selection::Scalar(scalar) => {
+                if let Some(raw_type) = &scalar.raw_field_type {
+                    if raw_type.starts_with('[') || raw_type.contains("List") {
+                        let inner_type = if raw_type.contains("String") || raw_type.contains("ID") {
+                            "String"
+                        } else if raw_type.contains("Int") {
+                            "int"
+                        } else if raw_type.contains("Float") {
+                            "double"
+                        } else if raw_type.contains("Boolean") {
+                            "bool"
+                        } else {
+                            "dynamic"
+                        };
+
+                        let inner_content = raw_type
+                            .trim_start_matches('[')
+                            .split(']')
+                            .next()
+                            .unwrap_or("");
+
+                        let is_element_non_null = inner_content.ends_with('!');
+
+                        if is_element_non_null {
+                            inner_type.to_string()
+                        } else {
+                            format!("{inner_type}?")
+                        }
+                    } else {
+                        "".to_string()
+                    }
+                } else {
+                    "".to_string()
+                }
+            }
+            _ => "".to_string(),
+        }
+    }
+
+    pub fn is_list_type(selection: ViaDeserialize<Selection>) -> bool {
+        match selection.0 {
+            Selection::Scalar(scalar) => scalar
+                .raw_field_type
+                .as_ref()
+                .map(|rt| rt.starts_with('[') || rt.contains("List"))
+                .unwrap_or(false),
+            _ => false,
         }
     }
 
@@ -250,6 +404,12 @@ impl TemplateEnv<'_> {
         env.add_function("type_name_for_selection", move |a: _| {
             ext_jinja_fns::type_name_for_selection(&ctx_clone, a)
         });
+        let ctx_clone = ctx.clone();
+        env.add_function("get_list_cast_type", move |a: _| {
+            ext_jinja_fns::get_list_cast_type(&ctx_clone, a)
+        });
+
+        env.add_function("is_list_type", ext_jinja_fns::is_list_type);
 
         let ctx_clone = ctx.clone();
         env.add_function("type_name_for_input_field", move |a: _| {
