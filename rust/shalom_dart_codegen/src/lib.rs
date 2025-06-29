@@ -66,16 +66,16 @@ mod ext_jinja_fns {
 
                         let list_type = if let Some(item_optional) = type_path.list_item_optional {
                             if item_optional {
-                                format!("List<{}?>", base_type)
+                                format!("List<{base_type}?>")
                             } else {
-                                format!("List<{}>", base_type)
+                                format!("List<{base_type}>")
                             }
                         } else {
-                            format!("List<{}>", base_type)
+                            format!("List<{base_type}>")
                         };
 
                         if scalar.common.is_optional {
-                            format!("{}?", list_type)
+                            format!("{list_type}?")
                         } else {
                             list_type
                         }
@@ -142,10 +142,10 @@ mod ext_jinja_fns {
                     }
                     GraphQLAny::InputObject(obj) => obj.name.clone(),
                     GraphQLAny::Enum(enum_) => enum_.name.clone(),
-                    _ => panic!("Unsupported type: {}", type_name),
+                    _ => panic!("Unsupported type: {type_name}"),
                 }
             } else {
-                panic!("Type not found: {}", type_name)
+                panic!("Type not found: {type_name}")
             }
         };
 
@@ -159,7 +159,7 @@ mod ext_jinja_fns {
                 UnresolvedTypeKind::Named { name } => {
                     let base = get_base_type(name);
                     if unresolved.is_optional {
-                        format!("{}?", base)
+                        format!("{base}?")
                     } else {
                         base
                     }
@@ -167,9 +167,9 @@ mod ext_jinja_fns {
                 UnresolvedTypeKind::List { of_type } => {
                     let inner_type = process_unresolved_type(of_type, get_base_type);
                     if unresolved.is_optional {
-                        format!("List<{}>?", inner_type)
+                        format!("List<{inner_type}>?")
                     } else {
-                        format!("List<{}>", inner_type)
+                        format!("List<{inner_type}>")
                     }
                 }
             }
@@ -178,7 +178,7 @@ mod ext_jinja_fns {
         let dart_type = process_unresolved_type(&field.common.unresolved_type, &get_base_type);
 
         if field.is_optional && field.default_value.is_none() {
-            format!("Option<{}>", dart_type)
+            format!("Option<{dart_type}>")
         } else {
             dart_type
         }
@@ -233,7 +233,7 @@ mod ext_jinja_fns {
 
                         if let Some(item_optional) = type_path.list_item_optional {
                             if item_optional {
-                                format!("{}?", base_type)
+                                format!("{base_type}?")
                             } else {
                                 base_type.to_string()
                             }
@@ -268,7 +268,7 @@ mod ext_jinja_fns {
         schema_field: ViaDeserialize<SchemaFieldCommon>,
     ) -> minijinja::value::Value {
         let serialized = serde_json::to_value(schema_field.0.unresolved_type.resolve(schema_ctx))
-            .map_err(|e| format!("Failed to serialize field type: {}", e))
+            .map_err(|e| format!("Failed to serialize field type: {e}"))
             .unwrap();
         minijinja::value::Value::from_serialize(serialized)
     }
@@ -480,7 +480,7 @@ static GRAPHQL_DIRECTORY: &str = "__graphql__";
 fn get_generation_path_for_operation(document_path: &Path, operation_name: &str) -> PathBuf {
     let p = document_path.parent().unwrap().join(GRAPHQL_DIRECTORY);
     create_dir_if_not_exists(&p);
-    p.join(format!("{}.{}", operation_name, END_OF_FILE))
+    p.join(format!("{operation_name}.{END_OF_FILE}"))
 }
 
 fn generate_operations_file(
@@ -490,7 +490,7 @@ fn generate_operations_file(
     operation: Rc<OperationContext>,
     additional_imports: HashMap<String, String>,
 ) {
-    info!("rendering operation {}", name);
+    info!("rendering operation {name}");
     let operation_file_path = operation.file_path.clone();
 
     let rendered_content =
@@ -506,7 +506,7 @@ fn generate_schema_file(template_env: &TemplateEnv, ctx: &SharedShalomGlobalCont
     let rendered_content = template_env.render_schema(ctx);
     let output_dir = path.join(GRAPHQL_DIRECTORY);
     create_dir_if_not_exists(&output_dir);
-    let generation_target = output_dir.join(format!("schema.{}", END_OF_FILE));
+    let generation_target = output_dir.join(format!("schema.{END_OF_FILE}"));
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
 }
@@ -517,7 +517,7 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     let template_env = TemplateEnv::new(&ctx);
 
     let existing_op_names =
-        glob::glob(pwd.join(format!("**/*.{}", END_OF_FILE)).to_str().unwrap())?;
+        glob::glob(pwd.join(format!("**/*.{END_OF_FILE}")).to_str().unwrap())?;
     for entry in existing_op_names {
         let entry = entry?;
         if entry.is_file() {
@@ -526,11 +526,11 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
                 .unwrap()
                 .to_str()
                 .unwrap()
-                .split(format!(".{}", END_OF_FILE).as_str())
+                .split(format!(".{END_OF_FILE}").as_str())
                 .next()
                 .unwrap();
             if !ctx.operation_exists(resolved_op_name) {
-                info!("deleting unused operation {}", resolved_op_name);
+                info!("deleting unused operation {resolved_op_name}");
                 fs::remove_file(entry)?;
             }
         }
