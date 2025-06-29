@@ -46,16 +46,26 @@ import 'package:shalom_core/shalom_core.dart';
             {% else %}
                 {{ selection_name }}_value = {{ selection.full_name }}.fromJson(data['{{ selection_name }}']);            
             {% endif %}
-        {% elif selection.kind == "Scalar" %}
-            final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
-            {% if selection.is_custom_scalar %}
-                {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
-                {{ selection_name }}_value = data['{{ selection_name }}'] == null
-                  ? null
-                  : {{ scalar_impl }}.deserialize(data['{{ selection_name }}']);
-            {% else %}
-                {{ selection_name }}_value = data['{{ selection_name }}'];
-            {% endif %}
+       {% elif selection.kind == "Scalar" %}
+           final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
+           {% if selection.is_custom_scalar %}
+               {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
+               {{ selection_name }}_value = data['{{ selection_name }}'] == null
+                 ? null
+                 : {{ scalar_impl }}.deserialize(data['{{ selection_name }}']);
+           {% else %}
+               {% if is_list_type(selection) %}
+                   {% if selection.is_optional %}
+                       {{ selection_name }}_value = data['{{ selection_name }}'] == null
+                           ? null
+                           : (data['{{ selection_name }}'] as List).cast<{{ get_list_cast_type(selection) }}>();
+                   {% else %}
+                       {{ selection_name }}_value = (data['{{ selection_name }}'] as List).cast<{{ get_list_cast_type(selection) }}>();
+                   {% endif %}
+               {% else %}
+                   {{ selection_name }}_value = data['{{ selection_name }}'];
+               {% endif %}
+           {% endif %}
 
         {% elif selection.kind == "Enum" %}
             {% set typename = selection.concrete_type.name %}

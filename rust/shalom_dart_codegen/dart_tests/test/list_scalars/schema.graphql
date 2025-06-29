@@ -1,0 +1,36 @@
+type Query {
+
+    stringList: [String!]!
+    stringListOptional: [String!]
+    stringListWithNulls: [String]!
+    stringListFullyOptional: [String]
+
+
+    intList: [Int!]!
+    floatList: [Float!]!
+    booleanList: [Boolean!]!
+    idList: [ID!]!
+
+
+    intListOptional: [Int]
+    floatListWithNulls: [Float]!
+}
+
+type Mutation {
+    updateStringList(strings: [String!]!): Response
+    updateIntList(ints: [Int]): Response
+    updateFloatList(floats: [Float!]!): Response
+    updateBooleanList(booleans: [Boolean!]!): Response
+    updateIDList(ids: [ID!]!): Response
+    createUser(user: UserInput!): Response
+}
+
+input UserInput {
+    tags: [String!]!
+    scores: [Int]
+    ids: [ID!]
+}
+
+type Response {
+    success: Boolean!
+}
