@@ -53,7 +53,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
         if name.starts_with("__") {
             continue;
         }
-        debug!("Resolving type: {:?}", name);
+        debug!("Resolving type: {name:?}");
         match type_ {
             apollo_schema::ExtendedType::Object(object) => {
                 resolve_object(ctx.clone(), name.to_string(), object.clone());

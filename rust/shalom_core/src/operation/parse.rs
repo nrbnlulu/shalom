@@ -40,13 +40,12 @@ fn parse_object_selection(
     selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
 ) -> SharedObjectSelection {
-    trace!("Parsing object selection {:?}", selection_common);
+    trace!("Parsing object selection {selection_common:?}");
 
     assert!(
         !selection_orig.selections.is_empty(),
         "Object selection must have at least one field\n \
-         selection was {:?}.",
-        selection_orig
+         selection was {selection_orig:?}."
     );
     let obj = ObjectSelection::new(selection_common);
     let obj_as_selection = Selection::Object(obj.clone());
