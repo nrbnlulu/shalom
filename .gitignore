@@ -16,7 +16,6 @@ Cargo.lock
 target/
 debug/
 release/
-.DS_Store
 # Dart package-specific files
 .dart_tool/
 .packages
