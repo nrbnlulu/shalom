@@ -109,9 +109,7 @@ class PointUpdateCoordsMaybe {
       } else {
         data["coords"] = rmhlxei.pointScalarImpl.serialize(value);
       }
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     data["name"] = name;
 

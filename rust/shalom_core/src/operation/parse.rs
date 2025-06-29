@@ -16,7 +16,7 @@ use crate::schema::types::{
 use super::context::{OperationContext, SharedOpCtx};
 use super::types::{
     EnumSelection, OperationType, ScalarSelection, Selection, SelectionCommon, SharedEnumSelection,
-    SharedObjectSelection, SharedScalarSelection,
+    SharedObjectSelection, SharedScalarSelection, TypePath,
 };
 
 fn full_path_name(this_name: &String, parent: &Option<&Selection>) -> String {
@@ -57,18 +57,12 @@ fn parse_object_selection(
                 let f_name = field.name.clone().to_string();
                 let f_type = field.ty();
 
-                let raw_type_str = f_type.to_string();
-
-                let is_optional = match f_type {
-                    apollo_compiler::ast::Type::List(_) => true,
-                    apollo_compiler::ast::Type::Named(_) => true,
-                    apollo_compiler::ast::Type::NonNullList(_) => false,
-                    apollo_compiler::ast::Type::NonNullNamed(_) => false,
-                };
+                let is_optional = !f_type.is_non_null();
                 let selection_common = SelectionCommon {
                     full_name: full_path_name(&f_name, &Some(&obj_as_selection)),
                     selection_name: f_name.clone(),
                     is_optional,
+                    type_path: None, // Will be set in parse_selection_set_with_type
                 };
 
                 let field_selection = parse_selection_set_with_type(
@@ -77,7 +71,7 @@ fn parse_object_selection(
                     global_ctx,
                     selection_common,
                     &field.selection_set,
-                    Some(raw_type_str),
+                    f_type,
                 );
 
                 obj.add_selection(field_selection);
@@ -88,13 +82,22 @@ fn parse_object_selection(
     obj
 }
 
+fn get_base_type_name(ty: &apollo_compiler::ast::Type) -> &str {
+    match ty {
+        apollo_compiler::ast::Type::Named(name) => name,
+        apollo_compiler::ast::Type::NonNullNamed(name) => name,
+        apollo_compiler::ast::Type::List(inner_ty) => get_base_type_name(inner_ty),
+        apollo_compiler::ast::Type::NonNullList(inner_ty) => get_base_type_name(inner_ty),
+    }
+}
+
 fn parse_selection_set_with_type(
     parent: Option<&Selection>,
     op_ctx: &mut OperationContext,
     global_ctx: &SharedShalomGlobalContext,
-    selection_common: SelectionCommon,
+    mut selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
-    raw_type: Option<String>,
+    ty: &apollo_compiler::ast::Type,
 ) -> Selection {
     let full_name = selection_common.full_name.clone();
     if let Some(selection) = op_ctx.get_selection(&full_name) {
@@ -102,24 +105,20 @@ fn parse_selection_set_with_type(
         return selection.clone();
     }
 
-    let base_type_name = selection_orig
-        .ty
-        .to_string()
-        .trim_start_matches('[')
-        .trim_end_matches(']')
-        .trim_end_matches('!')
-        .trim_end_matches('?')
-        .to_string();
+    // Add type path information
+    selection_common.type_path = extract_type_path(ty);
 
-    let schema_type = global_ctx.schema_ctx.get_type(&base_type_name).unwrap();
+    let base_type_name = get_base_type_name(ty);
+
+    let schema_type = global_ctx
+        .schema_ctx
+        .get_type(&base_type_name.to_string())
+        .unwrap();
 
     let selection: Selection = match schema_type {
-        GraphQLAny::Scalar(scalar) => Selection::Scalar(parse_scalar_selection_with_type(
-            global_ctx,
-            selection_common,
-            scalar,
-            raw_type,
-        )),
+        GraphQLAny::Scalar(scalar) => {
+            Selection::Scalar(parse_scalar_selection(global_ctx, selection_common, scalar))
+        }
         GraphQLAny::Object(_) => Selection::Object(parse_object_selection(
             &parent,
             op_ctx,
@@ -135,21 +134,37 @@ fn parse_selection_set_with_type(
     selection
 }
 
-fn parse_scalar_selection_with_type(
+fn parse_scalar_selection(
     ctx: &SharedShalomGlobalContext,
     selection_common: SelectionCommon,
     concrete_type: Node<ScalarType>,
-    raw_type: Option<String>,
 ) -> SharedScalarSelection {
     let scalar_name = concrete_type.name.to_string();
     let is_custom_scalar = ctx.find_custom_scalar(&scalar_name).is_some();
 
-    Rc::new(ScalarSelection {
-        common: selection_common,
-        concrete_type,
-        is_custom_scalar,
-        raw_field_type: raw_type,
-    })
+    ScalarSelection::new(selection_common, concrete_type, is_custom_scalar)
+}
+
+fn extract_type_path(ty: &apollo_compiler::ast::Type) -> Option<TypePath> {
+    match ty {
+        apollo_compiler::ast::Type::List(inner)
+        | apollo_compiler::ast::Type::NonNullList(inner) => {
+            let item_optional = match inner.as_ref() {
+                apollo_compiler::ast::Type::Named(_) => true,
+                apollo_compiler::ast::Type::NonNullNamed(_) => false,
+                apollo_compiler::ast::Type::List(_)
+                | apollo_compiler::ast::Type::NonNullList(_) => {
+
+                    return extract_type_path(inner);
+                }
+            };
+            Some(TypePath {
+                is_list: true,
+                list_item_optional: Some(item_optional),
+            })
+        }
+        _ => None,
+    }
 }
 
 fn parse_operation_type(operation_type: ApolloOperationType) -> OperationType {
@@ -195,6 +210,7 @@ fn parse_operation(
         full_name: name.clone(),
         is_optional: false,
         selection_name: name.clone(),
+        type_path: None,
     };
     let root_type = parse_object_selection(
         &None,
@@ -220,7 +236,7 @@ pub(crate) fn parse_document(
         .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
     let doc_orig = doc_orig.validate(&schema).expect("doc is not valid");
     if doc_orig.operations.anonymous.is_some() {
-        unimplemented!("Anoinymous operations are not supported")
+        unimplemented!("Anonymous operations are not supported")
     }
     for (name, op) in doc_orig.operations.named.iter() {
         let name = name.to_string();

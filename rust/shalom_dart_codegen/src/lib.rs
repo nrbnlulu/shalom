@@ -53,25 +53,67 @@ mod ext_jinja_fns {
     ) -> String {
         match selection.0 {
             Selection::Scalar(scalar) => {
-                if let Some(raw_type) = &scalar.raw_field_type {
-                    let unresolved = UnresolvedType::new(&parse_raw_type_string(raw_type));
-                    return generate_dart_type_from_unresolved(&unresolved, ctx);
-                }
-
                 let scalar_name = &scalar.concrete_type.name;
-                if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
-                    // the symbol name should be available globally at runtime
-                    let mut output_typename = custom_scalar.output_type.symbol_fullname();
-                    if scalar.common.is_optional {
-                        output_typename.push('?');
+
+
+                if let Some(type_path) = &scalar.common.type_path {
+                    if type_path.is_list {
+
+                        let base_type =
+                            if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
+                                custom_scalar.output_type.symbol_fullname()
+                            } else {
+                                dart_type_for_scalar(scalar_name)
+                            };
+
+
+                        let list_type = if let Some(item_optional) = type_path.list_item_optional {
+                            if item_optional {
+                                format!("List<{}?>", base_type)
+                            } else {
+                                format!("List<{}>", base_type)
+                            }
+                        } else {
+                            format!("List<{}>", base_type)
+                        };
+
+
+                        if scalar.common.is_optional {
+                            format!("{}?", list_type)
+                        } else {
+                            list_type
+                        }
+                    } else {
+
+                        if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
+                            let mut output_typename = custom_scalar.output_type.symbol_fullname();
+                            if scalar.common.is_optional {
+                                output_typename.push('?');
+                            }
+                            output_typename
+                        } else {
+                            let mut resolved = dart_type_for_scalar(scalar_name);
+                            if scalar.common.is_optional {
+                                resolved.push('?');
+                            }
+                            resolved
+                        }
                     }
-                    output_typename
                 } else {
-                    let mut resolved = dart_type_for_scalar(scalar_name);
-                    if scalar.common.is_optional {
-                        resolved.push('?');
+
+                    if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
+                        let mut output_typename = custom_scalar.output_type.symbol_fullname();
+                        if scalar.common.is_optional {
+                            output_typename.push('?');
+                        }
+                        output_typename
+                    } else {
+                        let mut resolved = dart_type_for_scalar(scalar_name);
+                        if scalar.common.is_optional {
+                            resolved.push('?');
+                        }
+                        resolved
                     }
-                    resolved
                 }
             }
             Selection::Object(object) => {
@@ -88,67 +130,6 @@ mod ext_jinja_fns {
                     enum_.concrete_type.name.clone()
                 }
             }
-        }
-    }
-
-    fn generate_dart_type_from_unresolved(
-        unresolved: &UnresolvedType,
-        ctx: &SharedShalomGlobalContext,
-    ) -> String {
-        use shalom_core::schema::types::UnresolvedTypeKind;
-
-        match &unresolved.kind {
-            UnresolvedTypeKind::Named { name } => {
-                let type_string = name.to_string();
-                let base = if let Some(ty) = ctx.schema_ctx.get_type(&type_string) {
-                    match ty {
-                        GraphQLAny::Scalar(scalar) => {
-                            if let Some(custom_scalar) = ctx.find_custom_scalar(&scalar.name) {
-                                custom_scalar.output_type.symbol_fullname()
-                            } else {
-                                dart_type_for_scalar(&scalar.name)
-                            }
-                        }
-                        GraphQLAny::Enum(enum_) => enum_.name.clone(),
-                        _ => panic!("Unexpected type in list: {}", name),
-                    }
-                } else {
-                    panic!("Type not found: {}", name)
-                };
-
-                if unresolved.is_optional {
-                    format!("{}?", base)
-                } else {
-                    base
-                }
-            }
-            UnresolvedTypeKind::List { of_type } => {
-                let inner_type = generate_dart_type_from_unresolved(of_type, ctx);
-                if unresolved.is_optional {
-                    format!("List<{}>?", inner_type)
-                } else {
-                    format!("List<{}>", inner_type)
-                }
-            }
-        }
-    }
-
-    fn parse_raw_type_string(type_str: &str) -> apollo_compiler::ast::Type {
-        use apollo_compiler::ast::Type;
-
-        if type_str.ends_with("!") {
-            let inner = type_str.trim_end_matches('!');
-            if inner.starts_with('[') && inner.ends_with(']') {
-                let inner_type = inner.trim_start_matches('[').trim_end_matches(']');
-                Type::NonNullList(Box::new(parse_raw_type_string(inner_type)))
-            } else {
-                Type::NonNullNamed(apollo_compiler::Name::new(inner).unwrap())
-            }
-        } else if type_str.starts_with('[') && type_str.ends_with(']') {
-            let inner_type = type_str.trim_start_matches('[').trim_end_matches(']');
-            Type::List(Box::new(parse_raw_type_string(inner_type)))
-        } else {
-            Type::Named(apollo_compiler::Name::new(type_str).unwrap())
         }
     }
 
@@ -212,6 +193,7 @@ mod ext_jinja_fns {
             dart_type
         }
     }
+
     pub fn parse_field_default_value(
         schema_ctx: &SchemaContext,
         field: ViaDeserialize<InputFieldDefinition>,
@@ -242,38 +224,32 @@ mod ext_jinja_fns {
             _ => default_value,
         }
     }
+
+
     pub fn get_list_cast_type(
         _ctx: &SharedShalomGlobalContext,
         selection: ViaDeserialize<Selection>,
     ) -> String {
         match selection.0 {
             Selection::Scalar(scalar) => {
-                if let Some(raw_type) = &scalar.raw_field_type {
-                    if raw_type.starts_with('[') || raw_type.contains("List") {
-                        let inner_type = if raw_type.contains("String") || raw_type.contains("ID") {
-                            "String"
-                        } else if raw_type.contains("Int") {
-                            "int"
-                        } else if raw_type.contains("Float") {
-                            "double"
-                        } else if raw_type.contains("Boolean") {
-                            "bool"
-                        } else {
-                            "dynamic"
+                if let Some(type_path) = &scalar.common.type_path {
+                    if type_path.is_list {
+                        let base_type = match scalar.concrete_type.name.as_str() {
+                            "String" | "ID" => "String",
+                            "Int" => "int",
+                            "Float" => "double",
+                            "Boolean" => "bool",
+                            _ => "dynamic",
                         };
 
-                        let inner_content = raw_type
-                            .trim_start_matches('[')
-                            .split(']')
-                            .next()
-                            .unwrap_or("");
-
-                        let is_element_non_null = inner_content.ends_with('!');
-
-                        if is_element_non_null {
-                            inner_type.to_string()
+                        if let Some(item_optional) = type_path.list_item_optional {
+                            if item_optional {
+                                format!("{}?", base_type)
+                            } else {
+                                base_type.to_string()
+                            }
                         } else {
-                            format!("{inner_type}?")
+                            base_type.to_string()
                         }
                     } else {
                         "".to_string()
@@ -289,9 +265,10 @@ mod ext_jinja_fns {
     pub fn is_list_type(selection: ViaDeserialize<Selection>) -> bool {
         match selection.0 {
             Selection::Scalar(scalar) => scalar
-                .raw_field_type
+                .common
+                .type_path
                 .as_ref()
-                .map(|rt| rt.starts_with('[') || rt.contains("List"))
+                .map(|tp| tp.is_list)
                 .unwrap_or(false),
             _ => false,
         }
@@ -348,6 +325,20 @@ mod ext_jinja_fns {
     pub fn is_custom_scalar(ctx: &SharedShalomGlobalContext, scalar_name: &str) -> bool {
         ctx.find_custom_scalar(scalar_name).is_some()
     }
+
+    pub fn concrete_typename_of_field(field: ViaDeserialize<InputFieldDefinition>) -> String {
+        let field = field.0;
+        use shalom_core::schema::types::UnresolvedTypeKind;
+
+        fn get_base_type_name(unresolved: &UnresolvedType) -> String {
+            match &unresolved.kind {
+                UnresolvedTypeKind::Named { name } => name.clone(),
+                UnresolvedTypeKind::List { of_type } => get_base_type_name(of_type),
+            }
+        }
+
+        get_base_type_name(&field.common.unresolved_type)
+    }
 }
 
 /// takes a number and returns itself as if the abc was 123, i.e 143 would be "adc"
@@ -376,11 +367,11 @@ impl SymbolName for RuntimeSymbolDefinition {
     }
 
     fn symbol_fullname(&self) -> String {
-        // we export it in schema.shalom.dart
+
         if let Some(namespace) = self.namespace() {
             format!("{}.{}", namespace, self.symbol_name)
         } else {
-            // it is a global symbol, so we just return the name
+
             self.symbol_name.clone()
         }
     }
@@ -435,6 +426,11 @@ impl TemplateEnv<'_> {
         env.add_function("is_custom_scalar", move |name: &str| {
             ext_jinja_fns::is_custom_scalar(&ctx_clone, name)
         });
+
+        env.add_function(
+            "concrete_typename_of_field",
+            ext_jinja_fns::concrete_typename_of_field,
+        );
 
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);

@@ -217,9 +217,7 @@ class UpdatePointCoordsMaybeVariables {
       } else {
         data["coords"] = rmhlxei.pointScalarImpl.serialize(value);
       }
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     return data;
   }

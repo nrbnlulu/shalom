@@ -69,9 +69,7 @@ class OrderDetails {
       final value = firstReview.some();
 
       data["firstReview"] = value?.toJson();
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     return data;
   }
@@ -104,9 +102,7 @@ class OrderRecursive {
       final value = order.some();
 
       data["order"] = value?.toJson();
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     return data;
   }
@@ -139,9 +135,7 @@ class Review {
       final value = order.some();
 
       data["order"] = value?.toJson();
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     return data;
   }

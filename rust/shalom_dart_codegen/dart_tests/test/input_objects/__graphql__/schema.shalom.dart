@@ -79,25 +79,19 @@ class OrderOpt {
       final value = name.some();
 
       data["name"] = value;
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     if (price.isSome()) {
       final value = price.some();
 
       data["price"] = value;
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     if (quantity.isSome()) {
       final value = quantity.some();
 
       data["quantity"] = value;
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     return data;
   }

@@ -180,9 +180,7 @@ class GetOrderVariables {
       final value = order.some();
 
       data["order"] = value?.toJson();
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     return data;
   }

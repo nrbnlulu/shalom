@@ -84,9 +84,7 @@ class OrderUpdateStatusOpt {
       final value = status.some();
 
       data["status"] = value?.name;
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     data["timeLeft"] = timeLeft;
 

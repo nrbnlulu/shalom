@@ -141,17 +141,13 @@ class OptionalArgumentsVariables {
       final value = id.some();
 
       data["id"] = value;
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     if (phone.isSome()) {
       final value = phone.some();
 
       data["phone"] = value;
-    } else {
-      // This is not a list type. Omit the field.
-    }
+    } else {}
 
     return data;
   }

@@ -26,8 +26,7 @@
             {% if field.common.type.kind.List %}
                 // This is a list type. Serialize None() to null.
                 data["{{ name }}"] = null;
-            {% else %}
-                // This is not a list type. Omit the field.
+
             {% endif %}
         }
 
@@ -63,18 +62,18 @@
 {% macro updateWith_macro(fields, typename) %}
 {% for name, field in fields | items %}
     {% set field_ty = resolve_field_type(field.common).ty %}
-    {% if field_ty.kind == "InputObject" %} 
+    {% if field_ty.kind == "InputObject" %}
         final {{ type_name_for_input_field(field) }} {{ name }}_value;
         if (data.containsKey('{{ name }}')) {
             {% if field.is_optional %}
-                final JsonObject? {{ name }}$raw = data['{{ name }}']; 
+                final JsonObject? {{ name }}$raw = data['{{ name }}'];
                 if ({{ name }}$raw != null) {
                     {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromJson({{ name }}$raw);
                 } else {
                     {{ name }}_value = null;
                 }
             {% else %}
-                {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromJson(data['{{ name }}']);            
+                {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromJson(data['{{ name }}']);
             {% endif %}
         } else {
             {{ name }}_value = {{ name }};
@@ -83,14 +82,14 @@
         final {{ type_name_for_input_field(field) }} {{ name }}_value;
         if (data.containsKey('{{ name }}')) {
             {% if field.is_optional %}
-                final String? {{ name }}$raw = data['{{ name }}']; 
+                final String? {{ name }}$raw = data['{{ name }}'];
                 if ({{ name }}$raw != null) {
                     {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromString({{ name}}$raw);
                 } else {
                     {{ name }}_value = null;
                 }
             {% else %}
-                {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromString(data['{{ name }}']);            
+                {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromString(data['{{ name }}']);
             {% endif %}
         } else {
             {{ name }}_value = {{ name }};
@@ -105,7 +104,7 @@
                 } else {
                     {{ name }}_value = null;
                 }
-            {% else %} 
+            {% else %}
                 {{ name }}_value = data['{{ name }}'];
             {% endif %}
         } else {
@@ -125,18 +124,18 @@
 {% macro updateWith_macro(fields, typename) %}
 {% for name, field in fields | items %}
     {% set field_ty = resolve_field_type(field.common).ty %}
-    {% if field_ty.kind == "InputObject" %} 
+    {% if field_ty.kind == "InputObject" %}
         final {{ type_name_for_input_field(field) }} {{ name }}_value;
         if (data.containsKey('{{ name }}')) {
             {% if field.is_optional %}
-                final JsonObject? {{ name }}$raw = data['{{ name }}']; 
+                final JsonObject? {{ name }}$raw = data['{{ name }}'];
                 if ({{ name }}$raw != null) {
                     {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromJson({{ name }}$raw);
                 } else {
                     {{ name }}_value = null;
                 }
             {% else %}
-                {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromJson(data['{{ name }}']);            
+                {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromJson(data['{{ name }}']);
             {% endif %}
         } else {
             {{ name }}_value = {{ name }};
@@ -145,14 +144,14 @@
         final {{ type_name_for_input_field(field) }} {{ name }}_value;
         if (data.containsKey('{{ name }}')) {
             {% if field.is_optional %}
-                final String? {{ name }}$raw = data['{{ name }}']; 
+                final String? {{ name }}$raw = data['{{ name }}'];
                 if ({{ name }}$raw != null) {
                     {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromString({{ name}}$raw);
                 } else {
                     {{ name }}_value = null;
                 }
             {% else %}
-                {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromString(data['{{ name }}']);            
+                {{ name }}_value = {{ concrete_typename_of_field(field) }}.fromString(data['{{ name }}']);
             {% endif %}
         } else {
             {{ name }}_value = {{ name }};
@@ -167,7 +166,7 @@
                 } else {
                     {{ name }}_value = null;
                 }
-            {% else %} 
+            {% else %}
                 {{ name }}_value = data['{{ name }}'];
             {% endif %}
         } else {
@@ -228,22 +227,22 @@
 {% macro field_initialization_logic(fields) %}
 {% for name, field in fields | items %}
     {% if not field.is_optional %}
-        {% if field.default_value is not none  %} 
+        {% if field.default_value is not none  %}
             required this.{{ name }} = {{ parse_field_default_value(field) }}
         {% else %}
-            required this.{{name}}  
+            required this.{{name}}
         {% endif %},
     {% else %}
-        {% if field.default_value is not none %} 
+        {% if field.default_value is not none %}
             {% set default_value = parse_field_default_value(field) %}
             {% if default_value == "null" %}
-                this.{{ name }} 
+                this.{{ name }}
             {% else %}
                 this.{{ name }} = {{ default_value }}
             {% endif %}
-        {% else %} 
-            this.{{ name }} = const None() 
+        {% else %}
+            this.{{ name }} = const None()
         {% endif %},
     {% endif %}
-    {% endfor %}  
+    {% endfor %}
 {% endmacro %}
