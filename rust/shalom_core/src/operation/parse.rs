@@ -10,13 +10,13 @@ use log::{info, trace};
 use crate::context::SharedShalomGlobalContext;
 use crate::operation::types::ObjectSelection;
 use crate::schema::types::{
-    EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
+    EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon, UnresolvedType,
 };
 
 use super::context::{OperationContext, SharedOpCtx};
 use super::types::{
     EnumSelection, OperationType, ScalarSelection, Selection, SelectionCommon, SharedEnumSelection,
-    SharedObjectSelection, SharedScalarSelection, TypePath,
+    SharedObjectSelection, SharedScalarSelection,
 };
 
 fn full_path_name(this_name: &String, parent: &Option<&Selection>) -> String {
@@ -61,7 +61,6 @@ fn parse_object_selection(
                     full_name: full_path_name(&f_name, &Some(&obj_as_selection)),
                     selection_name: f_name.clone(),
                     is_optional,
-                    type_path: None, // Will be set in parse_selection_set_with_type
                 };
 
                 let field_selection = parse_selection_set_with_type(
@@ -81,20 +80,28 @@ fn parse_object_selection(
     obj
 }
 
-fn get_base_type_name(ty: &apollo_compiler::ast::Type) -> &str {
-    match ty {
-        apollo_compiler::ast::Type::Named(name) => name,
-        apollo_compiler::ast::Type::NonNullNamed(name) => name,
-        apollo_compiler::ast::Type::List(inner_ty) => get_base_type_name(inner_ty),
-        apollo_compiler::ast::Type::NonNullList(inner_ty) => get_base_type_name(inner_ty),
-    }
+fn parse_scalar_selection(
+    ctx: &SharedShalomGlobalContext,
+    selection_common: SelectionCommon,
+    concrete_type: Node<ScalarType>,
+    field_type: UnresolvedType,
+) -> SharedScalarSelection {
+    let scalar_name = concrete_type.name.to_string();
+    let is_custom_scalar = ctx.find_custom_scalar(&scalar_name).is_some();
+
+    ScalarSelection::new(
+        selection_common,
+        concrete_type,
+        is_custom_scalar,
+        field_type,
+    )
 }
 
 fn parse_selection_set_with_type(
     parent: Option<&Selection>,
     op_ctx: &mut OperationContext,
     global_ctx: &SharedShalomGlobalContext,
-    mut selection_common: SelectionCommon,
+    selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
     ty: &apollo_compiler::ast::Type,
 ) -> Selection {
@@ -103,9 +110,6 @@ fn parse_selection_set_with_type(
         info!("Selection already exists");
         return selection.clone();
     }
-
-    // Add type path information
-    selection_common.type_path = extract_type_path(ty);
 
     let base_type_name = get_base_type_name(ty);
 
@@ -116,7 +120,13 @@ fn parse_selection_set_with_type(
 
     let selection: Selection = match schema_type {
         GraphQLAny::Scalar(scalar) => {
-            Selection::Scalar(parse_scalar_selection(global_ctx, selection_common, scalar))
+            let unresolved_type = UnresolvedType::new(ty);
+            Selection::Scalar(parse_scalar_selection(
+                global_ctx,
+                selection_common,
+                scalar,
+                unresolved_type,
+            ))
         }
         GraphQLAny::Object(_) => Selection::Object(parse_object_selection(
             &parent,
@@ -133,35 +143,12 @@ fn parse_selection_set_with_type(
     selection
 }
 
-fn parse_scalar_selection(
-    ctx: &SharedShalomGlobalContext,
-    selection_common: SelectionCommon,
-    concrete_type: Node<ScalarType>,
-) -> SharedScalarSelection {
-    let scalar_name = concrete_type.name.to_string();
-    let is_custom_scalar = ctx.find_custom_scalar(&scalar_name).is_some();
-
-    ScalarSelection::new(selection_common, concrete_type, is_custom_scalar)
-}
-
-fn extract_type_path(ty: &apollo_compiler::ast::Type) -> Option<TypePath> {
+fn get_base_type_name(ty: &apollo_compiler::ast::Type) -> &str {
     match ty {
-        apollo_compiler::ast::Type::List(inner)
-        | apollo_compiler::ast::Type::NonNullList(inner) => {
-            let item_optional = match inner.as_ref() {
-                apollo_compiler::ast::Type::Named(_) => true,
-                apollo_compiler::ast::Type::NonNullNamed(_) => false,
-                apollo_compiler::ast::Type::List(_)
-                | apollo_compiler::ast::Type::NonNullList(_) => {
-                    return extract_type_path(inner);
-                }
-            };
-            Some(TypePath {
-                is_list: true,
-                list_item_optional: Some(item_optional),
-            })
-        }
-        _ => None,
+        apollo_compiler::ast::Type::Named(name) => name,
+        apollo_compiler::ast::Type::NonNullNamed(name) => name,
+        apollo_compiler::ast::Type::List(inner_ty) => get_base_type_name(inner_ty),
+        apollo_compiler::ast::Type::NonNullList(inner_ty) => get_base_type_name(inner_ty),
     }
 }
 
@@ -208,7 +195,6 @@ fn parse_operation(
         full_name: name.clone(),
         is_optional: false,
         selection_name: name.clone(),
-        type_path: None,
     };
     let root_type = parse_object_selection(
         &None,

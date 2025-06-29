@@ -3,7 +3,7 @@ use std::{cell::RefCell, rc::Rc};
 use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
-use crate::schema::types::{EnumType, ScalarType};
+use crate::schema::types::{EnumType, ScalarType, UnresolvedType};
 
 /// the name of i.e object in a graphql query based on the parent fields.
 pub type FullPathName = String;
@@ -22,8 +22,6 @@ pub struct SelectionCommon {
     pub selection_name: String,
     pub is_optional: bool,
     pub full_name: FullPathName,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub type_path: Option<TypePath>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -32,12 +30,6 @@ pub enum Selection {
     Scalar(Rc<ScalarSelection>),
     Object(Rc<ObjectSelection>),
     Enum(Rc<EnumSelection>),
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TypePath {
-    pub is_list: bool,
-    pub list_item_optional: Option<bool>,
 }
 
 impl Selection {
@@ -65,6 +57,7 @@ pub struct ScalarSelection {
     pub common: SelectionCommon,
     pub concrete_type: Node<ScalarType>,
     pub is_custom_scalar: bool,
+    pub field_type: UnresolvedType,
 }
 pub type SharedScalarSelection = Rc<ScalarSelection>;
 
@@ -73,11 +66,13 @@ impl ScalarSelection {
         common: SelectionCommon,
         concrete_type: Node<ScalarType>,
         is_custom_scalar: bool,
+        field_type: UnresolvedType,
     ) -> SharedScalarSelection {
         Rc::new(ScalarSelection {
             common,
             concrete_type,
             is_custom_scalar,
+            field_type,
         })
     }
 }
