@@ -154,7 +154,6 @@ fn extract_type_path(ty: &apollo_compiler::ast::Type) -> Option<TypePath> {
                 apollo_compiler::ast::Type::NonNullNamed(_) => false,
                 apollo_compiler::ast::Type::List(_)
                 | apollo_compiler::ast::Type::NonNullList(_) => {
-
                     return extract_type_path(inner);
                 }
             };

@@ -55,17 +55,14 @@ mod ext_jinja_fns {
             Selection::Scalar(scalar) => {
                 let scalar_name = &scalar.concrete_type.name;
 
-
                 if let Some(type_path) = &scalar.common.type_path {
                     if type_path.is_list {
-
                         let base_type =
                             if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
                                 custom_scalar.output_type.symbol_fullname()
                             } else {
                                 dart_type_for_scalar(scalar_name)
                             };
-
 
                         let list_type = if let Some(item_optional) = type_path.list_item_optional {
                             if item_optional {
@@ -77,31 +74,12 @@ mod ext_jinja_fns {
                             format!("List<{}>", base_type)
                         };
 
-
                         if scalar.common.is_optional {
                             format!("{}?", list_type)
                         } else {
                             list_type
                         }
-                    } else {
-
-                        if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
-                            let mut output_typename = custom_scalar.output_type.symbol_fullname();
-                            if scalar.common.is_optional {
-                                output_typename.push('?');
-                            }
-                            output_typename
-                        } else {
-                            let mut resolved = dart_type_for_scalar(scalar_name);
-                            if scalar.common.is_optional {
-                                resolved.push('?');
-                            }
-                            resolved
-                        }
-                    }
-                } else {
-
-                    if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
+                    } else if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
                         let mut output_typename = custom_scalar.output_type.symbol_fullname();
                         if scalar.common.is_optional {
                             output_typename.push('?');
@@ -114,6 +92,18 @@ mod ext_jinja_fns {
                         }
                         resolved
                     }
+                } else if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
+                    let mut output_typename = custom_scalar.output_type.symbol_fullname();
+                    if scalar.common.is_optional {
+                        output_typename.push('?');
+                    }
+                    output_typename
+                } else {
+                    let mut resolved = dart_type_for_scalar(scalar_name);
+                    if scalar.common.is_optional {
+                        resolved.push('?');
+                    }
+                    resolved
                 }
             }
             Selection::Object(object) => {
@@ -224,7 +214,6 @@ mod ext_jinja_fns {
             _ => default_value,
         }
     }
-
 
     pub fn get_list_cast_type(
         _ctx: &SharedShalomGlobalContext,
@@ -367,11 +356,9 @@ impl SymbolName for RuntimeSymbolDefinition {
     }
 
     fn symbol_fullname(&self) -> String {
-
         if let Some(namespace) = self.namespace() {
             format!("{}.{}", namespace, self.symbol_name)
         } else {
-
             self.symbol_name.clone()
         }
     }
