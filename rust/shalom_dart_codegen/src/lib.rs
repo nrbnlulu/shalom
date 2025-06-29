@@ -516,8 +516,7 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
     let template_env = TemplateEnv::new(&ctx);
 
-    let existing_op_names =
-        glob::glob(pwd.join(format!("**/*.{END_OF_FILE}")).to_str().unwrap())?;
+    let existing_op_names = glob::glob(pwd.join(format!("**/*.{END_OF_FILE}")).to_str().unwrap())?;
     for entry in existing_op_names {
         let entry = entry?;
         if entry.is_file() {
