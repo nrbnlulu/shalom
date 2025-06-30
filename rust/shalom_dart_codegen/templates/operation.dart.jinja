@@ -15,7 +15,7 @@ import 'package:shalom_core/shalom_core.dart';
     {% for selection in selections -%}
         {% set selection_name = selection.selection_name %}
         {% if selection.kind == "Object" %}
-            final {{ type_name_for_selection(selection) }} {{ selection_name }};
+            final String {{ selection_name }}_id;   
         {% elif selection.kind == "Scalar" %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }};
         {% elif selection.kind == "Enum" %}
@@ -198,6 +198,7 @@ typedef JsonObject = Map<String, dynamic>;
 class {{ root_type_name }}{
 {{ base_object_impl(root_type_name, operation.context.root_type.selections) }}
 }
+
 
 // ------------ OBJECT DEFINITIONS -------------
 

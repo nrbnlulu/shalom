@@ -10,77 +10,13 @@ class Node extends ChangeNotifier {
   Node({required this.id, required this.data});
   
   void updateWithJson(JsonObject newData) {
-      data = newData;
       notifyListeners();
   }
 }
 
-class NodeSubscriber {
-  final ID subscriberId;
-  final WeakReference<Node> nodeRef;
-  final List<String> subscribedFields;
-
-  NodeSubscriber({
-    required this.subscriberId,
-    required this.nodeRef,
-    required this.subscribedFields
-  });
-}
-
-class NodeManager {
-  final Map<ID, JsonObject> _rawStore = {};
-  final Map<ID, List<NodeSubscriber>> _subscriberStore = {}; 
-  late final Finalizer<({ID nodeId, ID subscriberId})> _finalizer;
-
-  NodeManager() {
-    _finalizer = Finalizer((ids) => _cleanupSubscribers(ids.nodeId, ids.subscriberId));
-  }
-
-  void _cleanupSubscribers(ID nodeId, ID subscriberId) {
-    final subscribers = _subscriberStore[nodeId];
-    if (subscribers == null) return;
-    subscribers.removeWhere((s) => s.subscriberId == subscriberId);
-    if (subscribers.isEmpty) {
-        _subscriberStore.remove(nodeId);
-        _rawStore.remove(nodeId);
-    }
-  }
 
 
-  void processData(ID id, JsonObject newData) {
-      final oldData = _rawStore[id];   
-      if (oldData != null) {
-        if (oldData != newData) {
-          _rawStore[id] = newData;
-          List<NodeSubscriber>? subscribers = _subscriberStore[id]; 
-          if (subscribers != null) {
-            for (final subscriber in subscribers) {
-               Node? node = subscriber.nodeRef.target;
-               if (node != null) {
-                  node.updateWithJson(newData);
-               }
-            }
-          }
-        }
-      } else {
-        _rawStore[id] = newData;
-      }
-  }
 
-  Node subscribeToNode(ID id) {
-     final data = _rawStore[id]; 
-     if (data != null) {
-        final node = Node(id: id, data: data);  
-        final subscriberId = "foo";
-        final subscriber = NodeSubscriber(subscriberId: subscriberId, nodeRef : WeakReference(node), subscribedFields: []);
-        _subscriberStore.putIfAbsent(id, () => []).add(subscriber);
-        _finalizer.attach(node, (nodeId: id, subscriberId: subscriberId), detach: node);
-        return node;
-     } else {
-      throw Exception();
-     }
-  }
-}
 
 // ------------------------------------------------------------------
 // 2. FLUTTER UI (Using a Singleton)
