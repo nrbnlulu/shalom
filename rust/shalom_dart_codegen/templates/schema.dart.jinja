@@ -1,7 +1,5 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import
 {% include "macros" %}
-{% set operation_name = operation.context.operation_name %}
-import {{ operation_name }}.shalom.dart;
 {% if schema.context.types.inputs | length > 0 %}
 import 'package:shalom_core/shalom_core.dart';
 {% endif %}
@@ -64,40 +62,3 @@ class {{ typename }} {
 {% endfor %}
 
 // ------------ END Input DEFINITIONS -------------
-// ------------ Node DEFINITIONS -------------
-{% set node_name = operation_name ~ "Node" %}
-class {{ node_name }}Node extends Node {
-  {{ operation_name }}Response? obj = null;
-  {{ node_name }}({required super.id});
-
-  @override 
-  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
-     if (obj != null) {
-      obj = {{ node_name }}.fromJson(raw);
-      manager.addOrUpdateNode(this);
-     } else {
-      throw Exception("must subscribe to node through manager");
-     }
-  }
-
-  @override
-  void updateWithJson(JsonObject newData) {
-    if (obj != null) {
-      obj.updateWithJson(newData);
-      notifyListeners();
-    } else {
-      throw Exception("must subscribe to node through manager");
-    }
-  }
-
-  @override
-  void convertToObjAndSet(JsonObject data) {
-     obj = {{ node_name }}.fromJson(data);
-  }
-  
-  @override
-  JsonObject data() {
-    return obj.toJson();
-  }
-} 
-// ------------ END Node DEFINITIONS -------------

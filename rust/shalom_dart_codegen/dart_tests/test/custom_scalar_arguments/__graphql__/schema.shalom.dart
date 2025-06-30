@@ -1,143 +1,362 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import 'package:shalom_core/shalom_core.dart';
 
+
+  
 import '../../custom_scalar/point.dart' as rmhlxei;
+  
+
+
+
+
+
+
 
 // ------------ Enum DEFINITIONS -------------
 
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
 
+
 class PointDataInput {
-  final rmhlxei.Point coords;
+    
+    
+        final rmhlxei.Point coords; 
+    
+        final String name; 
+    
+    PointDataInput(
+        {
+        
 
-  final String name;
+    
+        
+            required this.coords  
+        ,
+    
+    
+    
+        
+            required this.name  
+        ,
+    
+      
+ 
+        }
+    );
 
-  PointDataInput({required this.coords, required this.name});
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
 
-    data["coords"] = rmhlxei.pointScalarImpl.serialize(coords);
+    
+        
+        
 
-    data["name"] = name;
+            
+                data["coords"] = rmhlxei.pointScalarImpl.serialize(coords);
+            
+        
 
-    return data;
-  }
+    
 
-  PointDataInput updateWith({rmhlxei.Point? coords, String? name}) {
-    final rmhlxei.Point coords$next;
+    
 
-    if (coords != null) {
-      coords$next = coords;
-    } else {
-      coords$next = this.coords;
+    
+        
+            data["name"] = name; 
+        
+    
+
+    
+        return data;
+    } 
+  
+PointDataInput updateWith(
+    {
+        
+            
+                rmhlxei.Point? coords
+            
+            ,
+        
+            
+                String? name
+            
+            
+        
     }
-
-    final String name$next;
-
-    if (name != null) {
-      name$next = name;
-    } else {
-      name$next = this.name;
-    }
-
-    return PointDataInput(coords: coords$next, name: name$next);
-  }
+) {
+    
+        final rmhlxei.Point coords$next;
+        
+            if (coords != null) {
+                coords$next = coords;
+            } else {
+                coords$next = this.coords;
+            }
+        
+    
+        final String name$next;
+        
+            if (name != null) {
+                name$next = name;
+            } else {
+                name$next = this.name;
+            }
+        
+    
+    return PointDataInput(
+        
+            coords: coords$next
+            ,
+        
+            name: name$next
+            
+        
+    );
 }
+
+}
+     
+
 
 class PointDataOptCoordsInput {
-  final rmhlxei.Point? coords;
+    
+    
+        final rmhlxei.Point? coords; 
+    
+        final String name; 
+    
+    PointDataOptCoordsInput(
+        {
+        
 
-  final String name;
+    
+         
+            
+            
+                this.coords 
+            
+        ,
+    
+    
+    
+        
+            required this.name  
+        ,
+    
+      
+ 
+        }
+    );
 
-  PointDataOptCoordsInput({this.coords, required this.name});
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
 
-    data["coords"] =
-        coords == null ? null : rmhlxei.pointScalarImpl.serialize(coords!);
+    
+        
+        
 
-    data["name"] = name;
+            
+                data["coords"] = coords == null ? null : rmhlxei.pointScalarImpl.serialize(coords!);
+            
+        
 
-    return data;
-  }
+    
 
-  PointDataOptCoordsInput updateWith({
-    Option<rmhlxei.Point?> coords = const None(),
+    
 
-    String? name,
-  }) {
-    final rmhlxei.Point? coords$next;
+    
+        
+            data["name"] = name; 
+        
+    
 
-    switch (coords) {
-      case Some(value: final data):
-        coords$next = data;
-      case None():
-        coords$next = this.coords;
+    
+        return data;
+    } 
+  
+PointDataOptCoordsInput updateWith(
+    {
+        
+            
+                Option<rmhlxei.Point?> coords = const None()
+            
+            ,
+        
+            
+                String? name
+            
+            
+        
     }
+) {
+    
+        final rmhlxei.Point? coords$next;
+        
+            switch (coords) {
 
-    final String name$next;
-
-    if (name != null) {
-      name$next = name;
-    } else {
-      name$next = this.name;
-    }
-
-    return PointDataOptCoordsInput(coords: coords$next, name: name$next);
-  }
+                case Some(value: final data):
+                    coords$next = data;
+                case None():
+                    coords$next = this.coords;
+            }
+        
+    
+        final String name$next;
+        
+            if (name != null) {
+                name$next = name;
+            } else {
+                name$next = this.name;
+            }
+        
+    
+    return PointDataOptCoordsInput(
+        
+            coords: coords$next
+            ,
+        
+            name: name$next
+            
+        
+    );
 }
+
+}
+     
+
 
 class PointUpdateCoordsMaybe {
-  final Option<rmhlxei.Point?> coords;
+    
+    
+        final Option<rmhlxei.Point?> coords; 
+    
+        final String name; 
+    
+    PointUpdateCoordsMaybe(
+        {
+        
 
-  final String name;
+    
+         
+            this.coords = const None() 
+        ,
+    
+    
+    
+        
+            required this.name  
+        ,
+    
+      
+ 
+        }
+    );
 
-  PointUpdateCoordsMaybe({this.coords = const None(), required this.name});
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
 
-    if (coords.isSome()) {
-      if (coords.some() == null) {
-        data["coords"] = null;
-      } else {
-        data["coords"] = rmhlxei.pointScalarImpl.serialize(coords.some()!);
-      }
+    
+        
+        
+            if (coords.isSome()) {
+                if (coords.some() == null) {
+                    data["coords"] = null;
+                } else {
+                    data["coords"] = rmhlxei.pointScalarImpl.serialize(coords.some()!);
+                }
+            }
+        
+
+    
+
+    
+
+    
+        
+            data["name"] = name; 
+        
+    
+
+    
+        return data;
+    } 
+  
+PointUpdateCoordsMaybe updateWith(
+    {
+        
+            
+                Option<Option<rmhlxei.Point?>> coords = const None()
+            
+            ,
+        
+            
+                String? name
+            
+            
+        
     }
+) {
+    
+        final Option<rmhlxei.Point?> coords$next;
+        
+            switch (coords) {
 
-    data["name"] = name;
-
-    return data;
-  }
-
-  PointUpdateCoordsMaybe updateWith({
-    Option<Option<rmhlxei.Point?>> coords = const None(),
-
-    String? name,
-  }) {
-    final Option<rmhlxei.Point?> coords$next;
-
-    switch (coords) {
-      case Some(value: final data):
-        coords$next = data;
-      case None():
-        coords$next = this.coords;
-    }
-
-    final String name$next;
-
-    if (name != null) {
-      name$next = name;
-    } else {
-      name$next = this.name;
-    }
-
-    return PointUpdateCoordsMaybe(coords: coords$next, name: name$next);
-  }
+                case Some(value: final data):
+                    coords$next = data;
+                case None():
+                    coords$next = this.coords;
+            }
+        
+    
+        final String name$next;
+        
+            if (name != null) {
+                name$next = name;
+            } else {
+                name$next = this.name;
+            }
+        
+    
+    return PointUpdateCoordsMaybe(
+        
+            coords: coords$next
+            ,
+        
+            name: name$next
+            
+        
+    );
 }
+
+}
+     
+
 
 // ------------ END Input DEFINITIONS -------------

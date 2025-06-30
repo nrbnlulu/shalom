@@ -1,189 +1,479 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 import 'package:shalom_core/shalom_core.dart';
+
+
+
+
+
+
+
 
 // ------------ Enum DEFINITIONS -------------
 
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
 
+
 class Order {
-  final String name;
+    
+    
+        final String name; 
+    
+        final double price; 
+    
+        final int quantity; 
+    
+    Order(
+        {
+        
 
-  final double price;
+    
+        
+            required this.name  
+        ,
+    
+    
+    
+        
+            required this.price  
+        ,
+    
+    
+    
+        
+            required this.quantity  
+        ,
+    
+      
+ 
+        }
+    );
 
-  final int quantity;
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  Order({required this.name, required this.price, required this.quantity});
+    
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
+        
+            data["name"] = name; 
+        
+    
 
-    data["name"] = name;
+    
 
-    data["price"] = price;
+    
+        
+            data["price"] = price; 
+        
+    
 
-    data["quantity"] = quantity;
+    
 
-    return data;
-  }
+    
+        
+            data["quantity"] = quantity; 
+        
+    
 
-  Order updateWith({String? name, double? price, int? quantity}) {
-    final String name$next;
-
-    if (name != null) {
-      name$next = name;
-    } else {
-      name$next = this.name;
+    
+        return data;
+    } 
+  
+Order updateWith(
+    {
+        
+            
+                String? name
+            
+            ,
+        
+            
+                double? price
+            
+            ,
+        
+            
+                int? quantity
+            
+            
+        
     }
-
-    final double price$next;
-
-    if (price != null) {
-      price$next = price;
-    } else {
-      price$next = this.price;
-    }
-
-    final int quantity$next;
-
-    if (quantity != null) {
-      quantity$next = quantity;
-    } else {
-      quantity$next = this.quantity;
-    }
-
-    return Order(name: name$next, price: price$next, quantity: quantity$next);
-  }
+) {
+    
+        final String name$next;
+        
+            if (name != null) {
+                name$next = name;
+            } else {
+                name$next = this.name;
+            }
+        
+    
+        final double price$next;
+        
+            if (price != null) {
+                price$next = price;
+            } else {
+                price$next = this.price;
+            }
+        
+    
+        final int quantity$next;
+        
+            if (quantity != null) {
+                quantity$next = quantity;
+            } else {
+                quantity$next = this.quantity;
+            }
+        
+    
+    return Order(
+        
+            name: name$next
+            ,
+        
+            price: price$next
+            ,
+        
+            quantity: quantity$next
+            
+        
+    );
 }
+
+}
+     
+
 
 class OrderDetails {
-  final Option<Review?> firstReview;
+    
+    
+        final Option<Review?> firstReview; 
+    
+    OrderDetails(
+        {
+        
 
-  OrderDetails({this.firstReview = const None()});
+    
+         
+            this.firstReview = const None() 
+        ,
+    
+      
+ 
+        }
+    );
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-    if (firstReview.isSome()) {
-      data["firstReview"] = firstReview.some()?.toJson();
+    
+
+    
+        if (firstReview.isSome()) {
+            
+                data["firstReview"] = firstReview.some()?.toJson();
+            
+        }
+    
+
+    
+        return data;
+    } 
+  
+OrderDetails updateWith(
+    {
+        
+            
+                Option<Option<Review?>> firstReview = const None()
+            
+            
+        
     }
+) {
+    
+        final Option<Review?> firstReview$next;
+        
+            switch (firstReview) {
 
-    return data;
-  }
-
-  OrderDetails updateWith({
-    Option<Option<Review?>> firstReview = const None(),
-  }) {
-    final Option<Review?> firstReview$next;
-
-    switch (firstReview) {
-      case Some(value: final data):
-        firstReview$next = data;
-      case None():
-        firstReview$next = this.firstReview;
-    }
-
-    return OrderDetails(firstReview: firstReview$next);
-  }
+                case Some(value: final data):
+                    firstReview$next = data;
+                case None():
+                    firstReview$next = this.firstReview;
+            }
+        
+    
+    return OrderDetails(
+        
+            firstReview: firstReview$next
+            
+        
+    );
 }
+
+}
+     
+
 
 class OrderRecursive {
-  final Option<OrderRecursive?> order;
+    
+    
+        final Option<OrderRecursive?> order; 
+    
+    OrderRecursive(
+        {
+        
 
-  OrderRecursive({this.order = const None()});
+    
+         
+            this.order = const None() 
+        ,
+    
+      
+ 
+        }
+    );
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-    if (order.isSome()) {
-      data["order"] = order.some()?.toJson();
+    
+
+    
+        if (order.isSome()) {
+            
+                data["order"] = order.some()?.toJson();
+            
+        }
+    
+
+    
+        return data;
+    } 
+  
+OrderRecursive updateWith(
+    {
+        
+            
+                Option<Option<OrderRecursive?>> order = const None()
+            
+            
+        
     }
+) {
+    
+        final Option<OrderRecursive?> order$next;
+        
+            switch (order) {
 
-    return data;
-  }
-
-  OrderRecursive updateWith({
-    Option<Option<OrderRecursive?>> order = const None(),
-  }) {
-    final Option<OrderRecursive?> order$next;
-
-    switch (order) {
-      case Some(value: final data):
-        order$next = data;
-      case None():
-        order$next = this.order;
-    }
-
-    return OrderRecursive(order: order$next);
-  }
+                case Some(value: final data):
+                    order$next = data;
+                case None():
+                    order$next = this.order;
+            }
+        
+    
+    return OrderRecursive(
+        
+            order: order$next
+            
+        
+    );
 }
+
+}
+     
+
 
 class Review {
-  final Option<OrderDetails?> order;
+    
+    
+        final Option<OrderDetails?> order; 
+    
+    Review(
+        {
+        
 
-  Review({this.order = const None()});
+    
+         
+            this.order = const None() 
+        ,
+    
+      
+ 
+        }
+    );
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-    if (order.isSome()) {
-      data["order"] = order.some()?.toJson();
+    
+
+    
+        if (order.isSome()) {
+            
+                data["order"] = order.some()?.toJson();
+            
+        }
+    
+
+    
+        return data;
+    } 
+  
+Review updateWith(
+    {
+        
+            
+                Option<Option<OrderDetails?>> order = const None()
+            
+            
+        
     }
+) {
+    
+        final Option<OrderDetails?> order$next;
+        
+            switch (order) {
 
-    return data;
-  }
-
-  Review updateWith({Option<Option<OrderDetails?>> order = const None()}) {
-    final Option<OrderDetails?> order$next;
-
-    switch (order) {
-      case Some(value: final data):
-        order$next = data;
-      case None():
-        order$next = this.order;
-    }
-
-    return Review(order: order$next);
-  }
+                case Some(value: final data):
+                    order$next = data;
+                case None():
+                    order$next = this.order;
+            }
+        
+    
+    return Review(
+        
+            order: order$next
+            
+        
+    );
 }
+
+}
+     
+
 
 class SpecificOrder {
-  final String notes;
+    
+    
+        final String notes; 
+    
+        final Order order; 
+    
+    SpecificOrder(
+        {
+        
 
-  final Order order;
+    
+        
+            required this.notes  
+        ,
+    
+    
+    
+        
+            required this.order  
+        ,
+    
+      
+ 
+        }
+    );
 
-  SpecificOrder({required this.notes, required this.order});
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
 
-    data["notes"] = notes;
+    
+        
+            data["notes"] = notes; 
+        
+    
 
-    data["order"] = order.toJson();
+    
 
-    return data;
-  }
+    
+        
+            data["order"] = order.toJson();
+        
+    
 
-  SpecificOrder updateWith({String? notes, Order? order}) {
-    final String notes$next;
-
-    if (notes != null) {
-      notes$next = notes;
-    } else {
-      notes$next = this.notes;
+    
+        return data;
+    } 
+  
+SpecificOrder updateWith(
+    {
+        
+            
+                String? notes
+            
+            ,
+        
+            
+                Order? order
+            
+            
+        
     }
-
-    final Order order$next;
-
-    if (order != null) {
-      order$next = order;
-    } else {
-      order$next = this.order;
-    }
-
-    return SpecificOrder(notes: notes$next, order: order$next);
-  }
+) {
+    
+        final String notes$next;
+        
+            if (notes != null) {
+                notes$next = notes;
+            } else {
+                notes$next = this.notes;
+            }
+        
+    
+        final Order order$next;
+        
+            if (order != null) {
+                order$next = order;
+            } else {
+                order$next = this.order;
+            }
+        
+    
+    return SpecificOrder(
+        
+            notes: notes$next
+            ,
+        
+            order: order$next
+            
+        
+    );
 }
+
+}
+     
+
 
 // ------------ END Input DEFINITIONS -------------

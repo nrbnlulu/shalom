@@ -261,3 +261,47 @@ class {{ operation_name }}Variables {
 
 }
 {% endif %}
+
+// ------------ Node DEFINITIONS -------------
+{% set node_name = operation_name ~ "Node" %}
+class {{ node_name }} extends Node {
+  {{ operation_name }}Response? obj = null;
+  {{ node_name }}({required super.id});
+
+  @override 
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+     if (obj != null) {
+      obj = {{ operation_name }}Response.fromJson(raw);
+      manager.addOrUpdateNode(this);
+     } else {
+      throw Exception("must subscribe to node through manager");
+     }
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    final newObj = obj?.updateWithJson(newData);
+    if (newObj != null) {
+      obj = newObj;
+      notifyListeners();
+    } else {
+      throw Exception("must subscribe to node through manager");
+    }
+  }
+
+  @override
+  void convertToObjAndSet(JsonObject data) {
+     obj = {{ operation_name }}Response.fromJson(data);
+  }
+  
+  @override
+  JsonObject data() {
+    final data = obj?.toJson();
+    if (data != null) {
+        return data;
+    } else {
+      throw Exception("must subscribe to node through manager");
+    }
+  }
+} 
+// ------------ END Node DEFINITIONS -------------
