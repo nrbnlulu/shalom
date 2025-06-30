@@ -215,7 +215,9 @@ impl UnresolvedType {
     pub fn ty_name(&self) -> String {
         match &self.kind {
             UnresolvedTypeKind::Named { name } => name.clone(),
-            _ => unimplemented!("lists have no name"),
+            _ => {
+                unimplemented!("lists have not been implemented")
+            }
         }
     }
 
