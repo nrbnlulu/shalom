@@ -29,7 +29,7 @@ impl ShalomGlobalContext {
         let mut operations = self.operations.lock().unwrap();
         for (name, _) in operations_update.iter() {
             if operations.contains_key(name) {
-                panic!("Operation with name {name} already exists");
+                panic!("Operation with name {} already exists", name);
             }
         }
         operations.extend(operations_update);
