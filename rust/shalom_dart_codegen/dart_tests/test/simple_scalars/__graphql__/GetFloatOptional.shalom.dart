@@ -1,187 +1,119 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
 
 import "schema.shalom.dart";
 
-
 import 'package:shalom_core/shalom_core.dart';
-
-
-
 
 typedef JsonObject = Map<String, dynamic>;
 
+class GetFloatOptionalResponse {
+  /// class members
 
+  final double? floatOptional;
 
+  // keywordargs constructor
+  GetFloatOptionalResponse({this.floatOptional});
+  static GetFloatOptionalResponse fromJson(JsonObject data) {
+    final double? floatOptional_value;
 
-class GetFloatOptionalResponse{
+    floatOptional_value = data['floatOptional'];
 
-    /// class members
-    
-        
-            final double? floatOptional;
-        
-    
-    // keywordargs constructor
-    GetFloatOptionalResponse({
-    
-        this.floatOptional,
-    
-    });
-    static GetFloatOptionalResponse fromJson(JsonObject data) {
-    
-        
-            final double? floatOptional_value;
-            
-                floatOptional_value = data['floatOptional'];
-            
+    return GetFloatOptionalResponse(floatOptional: floatOptional_value);
+  }
 
-        
-    
-    return GetFloatOptionalResponse(
-    
-        
-        floatOptional: floatOptional_value,
-    
-    );
-    }
-    GetFloatOptionalResponse updateWithJson(JsonObject data) {
-    
-        
+  GetFloatOptionalResponse updateWithJson(JsonObject data) {
     final double? floatOptional_value;
     if (data.containsKey('floatOptional')) {
-        
-            floatOptional_value = data['floatOptional'];
-        
+      floatOptional_value = data['floatOptional'];
     } else {
-        floatOptional_value = floatOptional;
+      floatOptional_value = floatOptional;
     }
 
-        
-    
-    return GetFloatOptionalResponse(
-    
-        
-        floatOptional: floatOptional_value,
-    
-    );
-    }
-    @override
-    bool operator ==(Object other) {
+    return GetFloatOptionalResponse(floatOptional: floatOptional_value);
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetFloatOptionalResponse &&
-    
-        other.floatOptional == floatOptional 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        floatOptional.hashCode;
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'floatOptional':
-            
-                
-                    floatOptional
-                
-            
-        ,
-    
-    };
-    }
+        (other is GetFloatOptionalResponse &&
+            other.floatOptional == floatOptional);
+  }
 
+  @override
+  int get hashCode => floatOptional.hashCode;
+
+  JsonObject toJson() {
+    return {'floatOptional': floatOptional};
+  }
 }
-
 
 // ------------ OBJECT DEFINITIONS -------------
 
-
-
 // ------------ END OBJECT DEFINITIONS -------------
 
-
 class RequestGetFloatOptional extends Requestable {
-    
+  RequestGetFloatOptional();
 
-    RequestGetFloatOptional(
-        
-    );
-
-    @override
-    Request toRequest() {
-        JsonObject variablesJson =  {}  ;
-        return Request(
-            query: r"""query GetFloatOptional {
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetFloatOptional {
   floatOptional
-}""", 
-            variables: variablesJson, 
-            opType: OperationType.Query, 
-            StringopName: 'GetFloatOptional'
-        );
-    }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetFloatOptional',
+    );
+  }
 }
-
-
 
 // ------------ Node DEFINITIONS -------------
 
 class GetFloatOptionalNode extends Node {
-  GetFloatOptionalResponse? obj = null;
+  GetFloatOptionalResponse? _obj;
+  bool isSubscribed = false;
   GetFloatOptionalNode({required super.id});
 
-  @override 
+  @override
   void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
-     if (obj != null) {
-      obj = GetFloatOptionalResponse.fromJson(raw);
-      manager.addOrUpdateNode(this);
-     } else {
-      throw Exception("must subscribe to node through manager");
-     }
+    if (!isSubscribed) {
+      throw Exception("manager must be subscribed to node");
+    }
+    _obj = GetFloatOptionalResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
   }
 
   @override
   void updateWithJson(JsonObject newData) {
-    final newObj = obj?.updateWithJson(newData);
-    if (newObj != null) {
-      obj = newObj;
-      notifyListeners();
-    } else {
+    if (!isSubscribed) {
       throw Exception("must subscribe to node through manager");
     }
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = GetFloatOptionalResponse.fromJson(newData);
+    }
+    notifyListeners();
   }
 
   @override
-  void convertToObjAndSet(JsonObject data) {
-     obj = GetFloatOptionalResponse.fromJson(data);
-  }
-  
-  @override
-  JsonObject data() {
-    final data = obj?.toJson();
+  void setSubscription(JsonObject? data) {
     if (data != null) {
-        return data;
-    } else {
-      throw Exception("must subscribe to node through manager");
+      _obj = GetFloatOptionalResponse.fromJson(data);
     }
+    isSubscribed = true;
   }
-} 
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  GetFloatOptionalResponse? get obj {
+    return _obj;
+  }
+}
+
 // ------------ END Node DEFINITIONS -------------

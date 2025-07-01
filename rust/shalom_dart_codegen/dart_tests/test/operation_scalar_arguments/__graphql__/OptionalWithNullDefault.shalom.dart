@@ -1,459 +1,249 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
 
 import "schema.shalom.dart";
 
-
 import 'package:shalom_core/shalom_core.dart';
-
-
-
 
 typedef JsonObject = Map<String, dynamic>;
 
+class OptionalWithNullDefaultResponse {
+  /// class members
 
+  final OptionalWithNullDefault_updateUser? updateUser;
 
+  // keywordargs constructor
+  OptionalWithNullDefaultResponse({this.updateUser});
+  static OptionalWithNullDefaultResponse fromJson(JsonObject data) {
+    final OptionalWithNullDefault_updateUser? updateUser_value;
 
-class OptionalWithNullDefaultResponse{
-
-    /// class members
-    
-        
-            final String updateUser_id;   
-        
-    
-    // keywordargs constructor
-    OptionalWithNullDefaultResponse({
-    
-        this.updateUser,
-    
-    });
-    static OptionalWithNullDefaultResponse fromJson(JsonObject data) {
-    
-        
-            final OptionalWithNullDefault_updateUser? updateUser_value;
-            
-                final JsonObject? updateUser$raw = data['updateUser']; 
-                if (updateUser$raw != null) {
-                    updateUser_value = OptionalWithNullDefault_updateUser.fromJson(updateUser$raw);
-                } else {
-                    updateUser_value = null;
-                }
-            
-        
-    
-    return OptionalWithNullDefaultResponse(
-    
-        
-        updateUser: updateUser_value,
-    
-    );
+    final JsonObject? updateUser$raw = data['updateUser'];
+    if (updateUser$raw != null) {
+      updateUser_value = OptionalWithNullDefault_updateUser.fromJson(
+        updateUser$raw,
+      );
+    } else {
+      updateUser_value = null;
     }
-    OptionalWithNullDefaultResponse updateWithJson(JsonObject data) {
-    
-        
-        final OptionalWithNullDefault_updateUser? updateUser_value;
-        if (data.containsKey('updateUser')) {
-            
-                final JsonObject? updateUser$raw = data['updateUser'];
-                if (updateUser$raw != null) {
-                    updateUser_value = OptionalWithNullDefault_updateUser.fromJson(updateUser$raw);
-                } else {
-                    updateUser_value = null;
-                }
-            
-        } else {
-            updateUser_value = updateUser;
-        }
 
-    
-    
-    return OptionalWithNullDefaultResponse(
-    
-        
-        updateUser: updateUser_value,
-    
-    );
+    return OptionalWithNullDefaultResponse(updateUser: updateUser_value);
+  }
+
+  OptionalWithNullDefaultResponse updateWithJson(JsonObject data) {
+    final OptionalWithNullDefault_updateUser? updateUser_value;
+    if (data.containsKey('updateUser')) {
+      final JsonObject? updateUser$raw = data['updateUser'];
+      if (updateUser$raw != null) {
+        updateUser_value = OptionalWithNullDefault_updateUser.fromJson(
+          updateUser$raw,
+        );
+      } else {
+        updateUser_value = null;
+      }
+    } else {
+      updateUser_value = updateUser;
     }
-    @override
-    bool operator ==(Object other) {
+
+    return OptionalWithNullDefaultResponse(updateUser: updateUser_value);
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is OptionalWithNullDefaultResponse &&
-    
-        other.updateUser == updateUser 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        updateUser.hashCode;
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'updateUser':
-            
-                updateUser?.toJson()
-            
-        ,
-    
-    };
-    }
+        (other is OptionalWithNullDefaultResponse &&
+            other.updateUser == updateUser);
+  }
 
+  @override
+  int get hashCode => updateUser.hashCode;
+
+  JsonObject toJson() {
+    return {'updateUser': updateUser?.toJson()};
+  }
 }
-
 
 // ------------ OBJECT DEFINITIONS -------------
 
+class OptionalWithNullDefault_updateUser {
+  /// class members
 
-    class OptionalWithNullDefault_updateUser  {
-        
-    /// class members
-    
-        
-            final String? email;
-        
-    
-        
-            final String? name;
-        
-    
-        
-            final String? phone;
-        
-    
-    // keywordargs constructor
-    OptionalWithNullDefault_updateUser({
-    
-        this.email,
-    
-        this.name,
-    
-        this.phone,
-    
-    });
-    static OptionalWithNullDefault_updateUser fromJson(JsonObject data) {
-    
-        
-            final String? email_value;
-            
-                email_value = data['email'];
-            
+  final String? email;
 
-        
-    
-        
-            final String? name_value;
-            
-                name_value = data['name'];
-            
+  final String? name;
 
-        
-    
-        
-            final String? phone_value;
-            
-                phone_value = data['phone'];
-            
+  final String? phone;
 
-        
-    
+  // keywordargs constructor
+  OptionalWithNullDefault_updateUser({this.email, this.name, this.phone});
+  static OptionalWithNullDefault_updateUser fromJson(JsonObject data) {
+    final String? email_value;
+
+    email_value = data['email'];
+
+    final String? name_value;
+
+    name_value = data['name'];
+
+    final String? phone_value;
+
+    phone_value = data['phone'];
+
     return OptionalWithNullDefault_updateUser(
-    
-        
-        email: email_value,
-    
-        
-        name: name_value,
-    
-        
-        phone: phone_value,
-    
+      email: email_value,
+
+      name: name_value,
+
+      phone: phone_value,
     );
-    }
-    OptionalWithNullDefault_updateUser updateWithJson(JsonObject data) {
-    
-        
+  }
+
+  OptionalWithNullDefault_updateUser updateWithJson(JsonObject data) {
     final String? email_value;
     if (data.containsKey('email')) {
-        
-            email_value = data['email'];
-        
+      email_value = data['email'];
     } else {
-        email_value = email;
+      email_value = email;
     }
 
-        
-    
-        
     final String? name_value;
     if (data.containsKey('name')) {
-        
-            name_value = data['name'];
-        
+      name_value = data['name'];
     } else {
-        name_value = name;
+      name_value = name;
     }
 
-        
-    
-        
     final String? phone_value;
     if (data.containsKey('phone')) {
-        
-            phone_value = data['phone'];
-        
+      phone_value = data['phone'];
     } else {
-        phone_value = phone;
+      phone_value = phone;
     }
 
-        
-    
     return OptionalWithNullDefault_updateUser(
-    
-        
-        email: email_value,
-    
-        
-        name: name_value,
-    
-        
-        phone: phone_value,
-    
+      email: email_value,
+
+      name: name_value,
+
+      phone: phone_value,
     );
-    }
-    @override
-    bool operator ==(Object other) {
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is OptionalWithNullDefault_updateUser &&
-    
-        other.email == email &&
-    
-        other.name == name &&
-    
-        other.phone == phone 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            email,
-        
-            
-            name,
-        
-            
-            phone,
-        
-        ]);
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'email':
-            
-                
-                    email
-                
-            
-        ,
-    
-        
-        'name':
-            
-                
-                    name
-                
-            
-        ,
-    
-        
-        'phone':
-            
-                
-                    phone
-                
-            
-        ,
-    
-    };
-    }
+        (other is OptionalWithNullDefault_updateUser &&
+            other.email == email &&
+            other.name == name &&
+            other.phone == phone);
+  }
 
-    }
+  @override
+  int get hashCode => Object.hashAll([email, name, phone]);
 
+  JsonObject toJson() {
+    return {'email': email, 'name': name, 'phone': phone};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-
 class RequestOptionalWithNullDefault extends Requestable {
-    
-    final OptionalWithNullDefaultVariables variables;
-    
+  final OptionalWithNullDefaultVariables variables;
 
-    RequestOptionalWithNullDefault(
-        
-        {
-            required this.variables,
-        } 
-        
-    );
+  RequestOptionalWithNullDefault({required this.variables});
 
-    @override
-    Request toRequest() {
-        JsonObject variablesJson =  variables.toJson() ;
-        return Request(
-            query: r"""mutation OptionalWithNullDefault($phone: String = null) {
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = variables.toJson();
+    return Request(
+      query: r"""mutation OptionalWithNullDefault($phone: String = null) {
   updateUser(phone: $phone) {
     email
     name
     phone
   }
-}""", 
-            variables: variablesJson, 
-            opType: OperationType.Mutation, 
-            StringopName: 'OptionalWithNullDefault'
-        );
-    }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Mutation,
+      StringopName: 'OptionalWithNullDefault',
+    );
+  }
 }
-
 
 class OptionalWithNullDefaultVariables {
-    
-    
-        final String? phone;
-    
+  final String? phone;
 
-    OptionalWithNullDefaultVariables (
-        
-            {
-            
+  OptionalWithNullDefaultVariables({this.phone});
 
-    
-         
-            
-            
-                this.phone 
-            
-        ,
-    
-      
- 
-            }
-        
-    );
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+    data["phone"] = phone;
 
-    
+    return data;
+  }
 
-    
-        
-            data["phone"] = phone; 
-        
-    
+  OptionalWithNullDefaultVariables updateWith({
+    Option<String?> phone = const None(),
+  }) {
+    final String? phone$next;
 
-    
-        return data;
-    } 
-
-    
-OptionalWithNullDefaultVariables updateWith(
-    {
-        
-            
-                Option<String?> phone = const None()
-            
-            
-        
+    switch (phone) {
+      case Some(value: final data):
+        phone$next = data;
+      case None():
+        phone$next = this.phone;
     }
-) {
-    
-        final String? phone$next;
-        
-            switch (phone) {
 
-                case Some(value: final data):
-                    phone$next = data;
-                case None():
-                    phone$next = this.phone;
-            }
-        
-    
-    return OptionalWithNullDefaultVariables(
-        
-            phone: phone$next
-            
-        
-    );
+    return OptionalWithNullDefaultVariables(phone: phone$next);
+  }
 }
-
-
-}
-
 
 // ------------ Node DEFINITIONS -------------
 
 class OptionalWithNullDefaultNode extends Node {
-  OptionalWithNullDefaultResponse? obj = null;
+  OptionalWithNullDefaultResponse? _obj;
+  bool isSubscribed = false;
   OptionalWithNullDefaultNode({required super.id});
 
-  @override 
+  @override
   void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
-     if (obj != null) {
-      obj = OptionalWithNullDefaultResponse.fromJson(raw);
-      manager.addOrUpdateNode(this);
-     } else {
-      throw Exception("must subscribe to node through manager");
-     }
+    if (!isSubscribed) {
+      throw Exception("manager must be subscribed to node");
+    }
+    _obj = OptionalWithNullDefaultResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
   }
 
   @override
   void updateWithJson(JsonObject newData) {
-    final newObj = obj?.updateWithJson(newData);
-    if (newObj != null) {
-      obj = newObj;
-      notifyListeners();
-    } else {
+    if (!isSubscribed) {
       throw Exception("must subscribe to node through manager");
     }
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = OptionalWithNullDefaultResponse.fromJson(newData);
+    }
+    notifyListeners();
   }
 
   @override
-  void convertToObjAndSet(JsonObject data) {
-     obj = OptionalWithNullDefaultResponse.fromJson(data);
-  }
-  
-  @override
-  JsonObject data() {
-    final data = obj?.toJson();
+  void setSubscription(JsonObject? data) {
     if (data != null) {
-        return data;
-    } else {
-      throw Exception("must subscribe to node through manager");
+      _obj = OptionalWithNullDefaultResponse.fromJson(data);
     }
+    isSubscribed = true;
   }
-} 
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  OptionalWithNullDefaultResponse? get obj {
+    return _obj;
+  }
+}
+
 // ------------ END Node DEFINITIONS -------------

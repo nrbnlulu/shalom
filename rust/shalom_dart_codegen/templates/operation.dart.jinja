@@ -15,7 +15,7 @@ import 'package:shalom_core/shalom_core.dart';
     {% for selection in selections -%}
         {% set selection_name = selection.selection_name %}
         {% if selection.kind == "Object" %}
-            final String {{ selection_name }}_id;   
+            final {{ type_name_for_selection(selection) }} {{ selection_name }};   
         {% elif selection.kind == "Scalar" %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }};
         {% elif selection.kind == "Enum" %}
@@ -265,43 +265,48 @@ class {{ operation_name }}Variables {
 // ------------ Node DEFINITIONS -------------
 {% set node_name = operation_name ~ "Node" %}
 class {{ node_name }} extends Node {
-  {{ operation_name }}Response? obj = null;
+  {{ operation_name }}Response? _obj;
+  bool isSubscribed = false; 
   {{ node_name }}({required super.id});
 
   @override 
   void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
-     if (obj != null) {
-      obj = {{ operation_name }}Response.fromJson(raw);
-      manager.addOrUpdateNode(this);
-     } else {
-      throw Exception("must subscribe to node through manager");
-     }
+    if (!isSubscribed) {
+      throw Exception("manager must be subscribed to node");
+    }
+    _obj = {{ operation_name }}Response.fromJson(raw);
+    manager.addOrUpdateNode(this);
   }
 
   @override
   void updateWithJson(JsonObject newData) {
-    final newObj = obj?.updateWithJson(newData);
-    if (newObj != null) {
-      obj = newObj;
-      notifyListeners();
-    } else {
-      throw Exception("must subscribe to node through manager");
+    if (!isSubscribed) {
+        throw Exception("must subscribe to node through manager");
     }
+    if (_obj != null) {
+        _obj = _obj?.updateWithJson(newData);
+    } else {
+        _obj = {{ operation_name }}Response.fromJson(newData);
+    }
+    notifyListeners();
   }
 
   @override
-  void convertToObjAndSet(JsonObject data) {
-     obj = {{ operation_name }}Response.fromJson(data);
+  void setSubscription(JsonObject? data) {
+     if (data != null) {
+        _obj = {{ operation_name }}Response.fromJson(data);
+     }
+     isSubscribed = true;
   }
   
   @override
-  JsonObject data() {
-    final data = obj?.toJson();
-    if (data != null) {
-        return data;
-    } else {
-      throw Exception("must subscribe to node through manager");
-    }
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  {{ operation_name }}Response? get obj {
+    return _obj;
   }
 } 
 // ------------ END Node DEFINITIONS -------------

@@ -1,472 +1,287 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
 
-
 import 'package:shalom_core/shalom_core.dart';
-
-
-
 
 typedef JsonObject = Map<String, dynamic>;
 
+class UpdatePointCoordsMaybeResponse {
+  /// class members
 
+  final UpdatePointCoordsMaybe_updatePointCoordsMaybe? updatePointCoordsMaybe;
 
+  // keywordargs constructor
+  UpdatePointCoordsMaybeResponse({this.updatePointCoordsMaybe});
+  static UpdatePointCoordsMaybeResponse fromJson(JsonObject data) {
+    final UpdatePointCoordsMaybe_updatePointCoordsMaybe?
+    updatePointCoordsMaybe_value;
 
-class UpdatePointCoordsMaybeResponse{
-
-    /// class members
-    
-        
-            final String updatePointCoordsMaybe_id;   
-        
-    
-    // keywordargs constructor
-    UpdatePointCoordsMaybeResponse({
-    
-        this.updatePointCoordsMaybe,
-    
-    });
-    static UpdatePointCoordsMaybeResponse fromJson(JsonObject data) {
-    
-        
-            final UpdatePointCoordsMaybe_updatePointCoordsMaybe? updatePointCoordsMaybe_value;
-            
-                final JsonObject? updatePointCoordsMaybe$raw = data['updatePointCoordsMaybe']; 
-                if (updatePointCoordsMaybe$raw != null) {
-                    updatePointCoordsMaybe_value = UpdatePointCoordsMaybe_updatePointCoordsMaybe.fromJson(updatePointCoordsMaybe$raw);
-                } else {
-                    updatePointCoordsMaybe_value = null;
-                }
-            
-        
-    
-    return UpdatePointCoordsMaybeResponse(
-    
-        
-        updatePointCoordsMaybe: updatePointCoordsMaybe_value,
-    
-    );
+    final JsonObject? updatePointCoordsMaybe$raw =
+        data['updatePointCoordsMaybe'];
+    if (updatePointCoordsMaybe$raw != null) {
+      updatePointCoordsMaybe_value =
+          UpdatePointCoordsMaybe_updatePointCoordsMaybe.fromJson(
+            updatePointCoordsMaybe$raw,
+          );
+    } else {
+      updatePointCoordsMaybe_value = null;
     }
-    UpdatePointCoordsMaybeResponse updateWithJson(JsonObject data) {
-    
-        
-        final UpdatePointCoordsMaybe_updatePointCoordsMaybe? updatePointCoordsMaybe_value;
-        if (data.containsKey('updatePointCoordsMaybe')) {
-            
-                final JsonObject? updatePointCoordsMaybe$raw = data['updatePointCoordsMaybe'];
-                if (updatePointCoordsMaybe$raw != null) {
-                    updatePointCoordsMaybe_value = UpdatePointCoordsMaybe_updatePointCoordsMaybe.fromJson(updatePointCoordsMaybe$raw);
-                } else {
-                    updatePointCoordsMaybe_value = null;
-                }
-            
-        } else {
-            updatePointCoordsMaybe_value = updatePointCoordsMaybe;
-        }
 
-    
-    
     return UpdatePointCoordsMaybeResponse(
-    
-        
-        updatePointCoordsMaybe: updatePointCoordsMaybe_value,
-    
+      updatePointCoordsMaybe: updatePointCoordsMaybe_value,
     );
+  }
+
+  UpdatePointCoordsMaybeResponse updateWithJson(JsonObject data) {
+    final UpdatePointCoordsMaybe_updatePointCoordsMaybe?
+    updatePointCoordsMaybe_value;
+    if (data.containsKey('updatePointCoordsMaybe')) {
+      final JsonObject? updatePointCoordsMaybe$raw =
+          data['updatePointCoordsMaybe'];
+      if (updatePointCoordsMaybe$raw != null) {
+        updatePointCoordsMaybe_value =
+            UpdatePointCoordsMaybe_updatePointCoordsMaybe.fromJson(
+              updatePointCoordsMaybe$raw,
+            );
+      } else {
+        updatePointCoordsMaybe_value = null;
+      }
+    } else {
+      updatePointCoordsMaybe_value = updatePointCoordsMaybe;
     }
-    @override
-    bool operator ==(Object other) {
+
+    return UpdatePointCoordsMaybeResponse(
+      updatePointCoordsMaybe: updatePointCoordsMaybe_value,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is UpdatePointCoordsMaybeResponse &&
-    
-        other.updatePointCoordsMaybe == updatePointCoordsMaybe 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        updatePointCoordsMaybe.hashCode;
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'updatePointCoordsMaybe':
-            
-                updatePointCoordsMaybe?.toJson()
-            
-        ,
-    
-    };
-    }
+        (other is UpdatePointCoordsMaybeResponse &&
+            other.updatePointCoordsMaybe == updatePointCoordsMaybe);
+  }
 
+  @override
+  int get hashCode => updatePointCoordsMaybe.hashCode;
+
+  JsonObject toJson() {
+    return {'updatePointCoordsMaybe': updatePointCoordsMaybe?.toJson()};
+  }
 }
-
 
 // ------------ OBJECT DEFINITIONS -------------
 
+class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
+  /// class members
 
-    class UpdatePointCoordsMaybe_updatePointCoordsMaybe  {
-        
-    /// class members
-    
-        
-            final rmhlxei.Point? coords;
-        
-    
-        
-            final String name;
-        
-    
-        
-            final String id;
-        
-    
-    // keywordargs constructor
-    UpdatePointCoordsMaybe_updatePointCoordsMaybe({
-    
-        this.coords,
-    required
-        this.name,
-    required
-        this.id,
-    
-    });
-    static UpdatePointCoordsMaybe_updatePointCoordsMaybe fromJson(JsonObject data) {
-    
-        
-            final rmhlxei.Point? coords_value;
-            
-                
-                coords_value = data['coords'] == null
-                  ? null
-                  : rmhlxei.pointScalarImpl.deserialize(data['coords']);
-            
+  final rmhlxei.Point? coords;
 
-        
-    
-        
-            final String name_value;
-            
-                name_value = data['name'];
-            
+  final String name;
 
-        
-    
-        
-            final String id_value;
-            
-                id_value = data['id'];
-            
+  final String id;
 
-        
-    
+  // keywordargs constructor
+  UpdatePointCoordsMaybe_updatePointCoordsMaybe({
+    this.coords,
+    required this.name,
+    required this.id,
+  });
+  static UpdatePointCoordsMaybe_updatePointCoordsMaybe fromJson(
+    JsonObject data,
+  ) {
+    final rmhlxei.Point? coords_value;
+
+    coords_value =
+        data['coords'] == null
+            ? null
+            : rmhlxei.pointScalarImpl.deserialize(data['coords']);
+
+    final String name_value;
+
+    name_value = data['name'];
+
+    final String id_value;
+
+    id_value = data['id'];
+
     return UpdatePointCoordsMaybe_updatePointCoordsMaybe(
-    
-        
-        coords: coords_value,
-    
-        
-        name: name_value,
-    
-        
-        id: id_value,
-    
+      coords: coords_value,
+
+      name: name_value,
+
+      id: id_value,
     );
-    }
-    UpdatePointCoordsMaybe_updatePointCoordsMaybe updateWithJson(JsonObject data) {
-    
-        
+  }
+
+  UpdatePointCoordsMaybe_updatePointCoordsMaybe updateWithJson(
+    JsonObject data,
+  ) {
     final rmhlxei.Point? coords_value;
     if (data.containsKey('coords')) {
-        
-            
-            coords_value = data['coords'] == null
-                ? null
-                : rmhlxei.pointScalarImpl.deserialize(data['coords']);
-        
+      coords_value =
+          data['coords'] == null
+              ? null
+              : rmhlxei.pointScalarImpl.deserialize(data['coords']);
     } else {
-        coords_value = coords;
+      coords_value = coords;
     }
 
-        
-    
-        
     final String name_value;
     if (data.containsKey('name')) {
-        
-            name_value = data['name'];
-        
+      name_value = data['name'];
     } else {
-        name_value = name;
+      name_value = name;
     }
 
-        
-    
-        
     final String id_value;
     if (data.containsKey('id')) {
-        
-            id_value = data['id'];
-        
+      id_value = data['id'];
     } else {
-        id_value = id;
+      id_value = id;
     }
 
-        
-    
     return UpdatePointCoordsMaybe_updatePointCoordsMaybe(
-    
-        
-        coords: coords_value,
-    
-        
-        name: name_value,
-    
-        
-        id: id_value,
-    
+      coords: coords_value,
+
+      name: name_value,
+
+      id: id_value,
     );
-    }
-    @override
-    bool operator ==(Object other) {
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is UpdatePointCoordsMaybe_updatePointCoordsMaybe &&
-    
-        other.coords == coords &&
-    
-        other.name == name &&
-    
-        other.id == id 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            coords,
-        
-            
-            name,
-        
-            
-            id,
-        
-        ]);
-    
-    JsonObject toJson() {
+        (other is UpdatePointCoordsMaybe_updatePointCoordsMaybe &&
+            other.coords == coords &&
+            other.name == name &&
+            other.id == id);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([coords, name, id]);
+
+  JsonObject toJson() {
     return {
-    
-        
-        'coords':
-            
-                
-                    
-                    coords == null ? null : rmhlxei.pointScalarImpl.serialize(coords!)
-                
-            
-        ,
-    
-        
-        'name':
-            
-                
-                    name
-                
-            
-        ,
-    
-        
-        'id':
-            
-                
-                    id
-                
-            
-        ,
-    
+      'coords':
+          coords == null ? null : rmhlxei.pointScalarImpl.serialize(coords!),
+
+      'name': name,
+
+      'id': id,
     };
-    }
-
-    }
-
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-
 class RequestUpdatePointCoordsMaybe extends Requestable {
-    
-    final UpdatePointCoordsMaybeVariables variables;
-    
+  final UpdatePointCoordsMaybeVariables variables;
 
-    RequestUpdatePointCoordsMaybe(
-        
-        {
-            required this.variables,
-        } 
-        
-    );
+  RequestUpdatePointCoordsMaybe({required this.variables});
 
-    @override
-    Request toRequest() {
-        JsonObject variablesJson =  variables.toJson() ;
-        return Request(
-            query: r"""mutation UpdatePointCoordsMaybe($coords: Point) {
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = variables.toJson();
+    return Request(
+      query: r"""mutation UpdatePointCoordsMaybe($coords: Point) {
   updatePointCoordsMaybe(coords: $coords) {
     coords
     name
     id
   }
-}""", 
-            variables: variablesJson, 
-            opType: OperationType.Mutation, 
-            StringopName: 'UpdatePointCoordsMaybe'
-        );
-    }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Mutation,
+      StringopName: 'UpdatePointCoordsMaybe',
+    );
+  }
 }
-
 
 class UpdatePointCoordsMaybeVariables {
-    
-    
-        final Option<rmhlxei.Point?> coords;
-    
+  final Option<rmhlxei.Point?> coords;
 
-    UpdatePointCoordsMaybeVariables (
-        
-            {
-            
+  UpdatePointCoordsMaybeVariables({this.coords = const None()});
 
-    
-         
-            this.coords = const None() 
-        ,
-    
-      
- 
-            }
-        
-    );
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
-
-    
-
-    
-        
-        
-            if (coords.isSome()) {
-                if (coords.some() == null) {
-                    data["coords"] = null;
-                } else {
-                    data["coords"] = rmhlxei.pointScalarImpl.serialize(coords.some()!);
-                }
-            }
-        
-
-    
-
-    
-        return data;
-    } 
-
-    
-UpdatePointCoordsMaybeVariables updateWith(
-    {
-        
-            
-                Option<Option<rmhlxei.Point?>> coords = const None()
-            
-            
-        
+    if (coords.isSome()) {
+      if (coords.some() == null) {
+        data["coords"] = null;
+      } else {
+        data["coords"] = rmhlxei.pointScalarImpl.serialize(coords.some()!);
+      }
     }
-) {
-    
-        final Option<rmhlxei.Point?> coords$next;
-        
-            switch (coords) {
 
-                case Some(value: final data):
-                    coords$next = data;
-                case None():
-                    coords$next = this.coords;
-            }
-        
-    
-    return UpdatePointCoordsMaybeVariables(
-        
-            coords: coords$next
-            
-        
-    );
+    return data;
+  }
+
+  UpdatePointCoordsMaybeVariables updateWith({
+    Option<Option<rmhlxei.Point?>> coords = const None(),
+  }) {
+    final Option<rmhlxei.Point?> coords$next;
+
+    switch (coords) {
+      case Some(value: final data):
+        coords$next = data;
+      case None():
+        coords$next = this.coords;
+    }
+
+    return UpdatePointCoordsMaybeVariables(coords: coords$next);
+  }
 }
-
-
-}
-
 
 // ------------ Node DEFINITIONS -------------
 
 class UpdatePointCoordsMaybeNode extends Node {
-  UpdatePointCoordsMaybeResponse? obj = null;
+  UpdatePointCoordsMaybeResponse? _obj;
+  bool isSubscribed = false;
   UpdatePointCoordsMaybeNode({required super.id});
 
-  @override 
+  @override
   void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
-     if (obj != null) {
-      obj = UpdatePointCoordsMaybeResponse.fromJson(raw);
-      manager.addOrUpdateNode(this);
-     } else {
-      throw Exception("must subscribe to node through manager");
-     }
+    if (!isSubscribed) {
+      throw Exception("manager must be subscribed to node");
+    }
+    _obj = UpdatePointCoordsMaybeResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
   }
 
   @override
   void updateWithJson(JsonObject newData) {
-    final newObj = obj?.updateWithJson(newData);
-    if (newObj != null) {
-      obj = newObj;
-      notifyListeners();
-    } else {
+    if (!isSubscribed) {
       throw Exception("must subscribe to node through manager");
     }
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = UpdatePointCoordsMaybeResponse.fromJson(newData);
+    }
+    notifyListeners();
   }
 
   @override
-  void convertToObjAndSet(JsonObject data) {
-     obj = UpdatePointCoordsMaybeResponse.fromJson(data);
-  }
-  
-  @override
-  JsonObject data() {
-    final data = obj?.toJson();
+  void setSubscription(JsonObject? data) {
     if (data != null) {
-        return data;
-    } else {
-      throw Exception("must subscribe to node through manager");
+      _obj = UpdatePointCoordsMaybeResponse.fromJson(data);
     }
+    isSubscribed = true;
   }
-} 
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  UpdatePointCoordsMaybeResponse? get obj {
+    return _obj;
+  }
+}
+
 // ------------ END Node DEFINITIONS -------------
