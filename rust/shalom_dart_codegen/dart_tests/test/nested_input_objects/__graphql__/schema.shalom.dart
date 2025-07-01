@@ -66,7 +66,9 @@ class OrderDetails {
     JsonObject data = {};
 
     if (firstReview.isSome()) {
-      data["firstReview"] = firstReview.some()?.toJson();
+      final value = firstReview.some();
+
+      data["firstReview"] = value?.toJson();
     }
 
     return data;
@@ -97,7 +99,9 @@ class OrderRecursive {
     JsonObject data = {};
 
     if (order.isSome()) {
-      data["order"] = order.some()?.toJson();
+      final value = order.some();
+
+      data["order"] = value?.toJson();
     }
 
     return data;
@@ -128,7 +132,9 @@ class Review {
     JsonObject data = {};
 
     if (order.isSome()) {
-      data["order"] = order.some()?.toJson();
+      final value = order.some();
+
+      data["order"] = value?.toJson();
     }
 
     return data;

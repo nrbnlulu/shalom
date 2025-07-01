@@ -30,6 +30,30 @@ pub enum Selection {
     Scalar(Rc<ScalarSelection>),
     Object(Rc<ObjectSelection>),
     Enum(Rc<EnumSelection>),
+    List(Rc<ListSelection>),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ListSelection {
+    #[serde(flatten)]
+    pub common: SelectionCommon,
+    pub of_type: Box<Selection>,
+    pub item_optional: bool,
+}
+
+pub type SharedListSelection = Rc<ListSelection>;
+impl ListSelection {
+    pub fn new(
+        common: SelectionCommon,
+        of_type: Selection,
+        item_optional: bool,
+    ) -> SharedListSelection {
+        Rc::new(ListSelection {
+            common,
+            of_type: Box::new(of_type),
+            item_optional,
+        })
+    }
 }
 
 impl Selection {
@@ -38,12 +62,14 @@ impl Selection {
             Selection::Scalar(node) => node.common.selection_name.clone(),
             Selection::Object(obj) => obj.common.selection_name.clone(),
             Selection::Enum(enum_) => enum_.common.selection_name.clone(),
+            Selection::List(list) => list.common.selection_name.clone(),
         }
     }
     pub fn self_full_path_name(&self) -> &FullPathName {
         match self {
             Selection::Scalar(node) => &node.common.full_name,
             Selection::Object(obj) => &obj.common.full_name,
+            Selection::List(list) => &list.common.full_name,
             Selection::Enum(_) => {
                 panic!("enums dont have a full name as they are global per schema")
             }

@@ -11,7 +11,7 @@ use shalom_core::{
     },
     schema::{
         context::SchemaContext,
-        types::{GraphQLAny, InputFieldDefinition, SchemaFieldCommon},
+        types::{GraphQLAny, InputFieldDefinition, SchemaFieldCommon, UnresolvedType},
     },
     shalom_config::RuntimeSymbolDefinition,
 };
@@ -46,16 +46,32 @@ const LINE_ENDING: &str = "\n";
 mod ext_jinja_fns {
     use super::*;
 
-    #[allow(unused_variables)]
     pub fn type_name_for_selection(
         ctx: &SharedShalomGlobalContext,
         selection: ViaDeserialize<Selection>,
     ) -> String {
         match selection.0 {
+            Selection::List(list) => {
+                let inner_type_name =
+                    type_name_for_selection(ctx, ViaDeserialize(list.of_type.as_ref().clone()));
+
+                let inner_type = inner_type_name.trim_end_matches('?');
+
+                let list_type = if list.item_optional {
+                    format!("List<{}?>", inner_type)
+                } else {
+                    format!("List<{}>", inner_type)
+                };
+
+                if list.common.is_optional {
+                    format!("{}?", list_type)
+                } else {
+                    list_type
+                }
+            }
             Selection::Scalar(scalar) => {
                 let scalar_name = &scalar.concrete_type.name;
                 if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
-                    // the symbol name should be available globally at runtime
                     let mut output_typename = custom_scalar.output_type.symbol_fullname();
                     if scalar.common.is_optional {
                         output_typename.push('?');
@@ -91,24 +107,59 @@ mod ext_jinja_fns {
         field: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
         let field = field.0;
-        let resolved = match field.common.resolve_type(&ctx.schema_ctx).ty {
-            GraphQLAny::Scalar(scalar) => {
-                if let Some(custom_scalar) = ctx.find_custom_scalar(&scalar.name) {
-                    custom_scalar.output_type.symbol_fullname()
-                } else {
-                    dart_type_for_scalar(&scalar.name)
+
+        let get_base_type = |type_name: &str| -> String {
+            let type_string = type_name.to_string();
+            if let Some(ty) = ctx.schema_ctx.get_type(&type_string) {
+                match ty {
+                    GraphQLAny::Scalar(scalar) => {
+                        if let Some(custom_scalar) = ctx.find_custom_scalar(&scalar.name) {
+                            custom_scalar.output_type.symbol_fullname()
+                        } else {
+                            dart_type_for_scalar(&scalar.name)
+                        }
+                    }
+                    GraphQLAny::InputObject(obj) => obj.name.clone(),
+                    GraphQLAny::Enum(enum_) => enum_.name.clone(),
+                    _ => panic!("Unsupported type: {type_name}"),
+                }
+            } else {
+                panic!("Type not found: {type_name}")
+            }
+        };
+
+        use shalom_core::schema::types::UnresolvedTypeKind;
+
+        fn process_unresolved_type(
+            unresolved: &shalom_core::schema::types::UnresolvedType,
+            get_base_type: &dyn Fn(&str) -> String,
+        ) -> String {
+            match &unresolved.kind {
+                UnresolvedTypeKind::Named { name } => {
+                    let base = get_base_type(name);
+                    if unresolved.is_optional {
+                        format!("{}?", base)
+                    } else {
+                        base
+                    }
+                }
+                UnresolvedTypeKind::List { of_type } => {
+                    let inner_type = process_unresolved_type(of_type, get_base_type);
+                    if unresolved.is_optional {
+                        format!("List<{}>?", inner_type)
+                    } else {
+                        format!("List<{}>", inner_type)
+                    }
                 }
             }
-            GraphQLAny::InputObject(obj) => obj.name.clone(),
-            GraphQLAny::Enum(enum_) => enum_.name.clone(),
-            _ => unimplemented!("input type not supported"),
-        };
+        }
+
+        let dart_type = process_unresolved_type(&field.common.unresolved_type, &get_base_type);
+
         if field.is_optional && field.default_value.is_none() {
-            format!("Option<{}?>", resolved)
-        } else if field.is_optional {
-            format!("{}?", resolved)
+            format!("Option<{}>", dart_type)
         } else {
-            resolved
+            dart_type
         }
     }
 
@@ -141,6 +192,38 @@ mod ext_jinja_fns {
             },
             _ => default_value,
         }
+    }
+
+    pub fn get_list_cast_type(
+        _ctx: &SharedShalomGlobalContext,
+        selection: ViaDeserialize<Selection>,
+    ) -> String {
+        match selection.0 {
+            Selection::List(list) => match list.of_type.as_ref() {
+                Selection::Scalar(scalar) => {
+                    let base_type = match scalar.concrete_type.name.as_str() {
+                        "String" | "ID" => "String",
+                        "Int" => "int",
+                        "Float" => "double",
+                        "Boolean" => "bool",
+                        _ => "dynamic",
+                    };
+
+                    if list.item_optional {
+                        format!("{}?", base_type)
+                    } else {
+                        base_type.to_string()
+                    }
+                }
+                Selection::List(_) => "dynamic".to_string(),
+                _ => "dynamic".to_string(),
+            },
+            _ => "".to_string(),
+        }
+    }
+
+    pub fn is_list_type(selection: ViaDeserialize<Selection>) -> bool {
+        matches!(selection.0, Selection::List(_))
     }
 
     pub fn resolve_field_type(
@@ -194,6 +277,20 @@ mod ext_jinja_fns {
     pub fn is_custom_scalar(ctx: &SharedShalomGlobalContext, scalar_name: &str) -> bool {
         ctx.find_custom_scalar(scalar_name).is_some()
     }
+
+    pub fn concrete_typename_of_field(field: ViaDeserialize<InputFieldDefinition>) -> String {
+        let field = field.0;
+        use shalom_core::schema::types::UnresolvedTypeKind;
+
+        fn get_base_type_name(unresolved: &UnresolvedType) -> String {
+            match &unresolved.kind {
+                UnresolvedTypeKind::Named { name } => name.clone(),
+                UnresolvedTypeKind::List { of_type } => get_base_type_name(of_type),
+            }
+        }
+
+        get_base_type_name(&field.common.unresolved_type)
+    }
 }
 
 /// takes a number and returns itself as if the abc was 123, i.e 143 would be "adc"
@@ -222,11 +319,9 @@ impl SymbolName for RuntimeSymbolDefinition {
     }
 
     fn symbol_fullname(&self) -> String {
-        // we export it in schema.shalom.dart
         if let Some(namespace) = self.namespace() {
             format!("{}.{}", namespace, self.symbol_name)
         } else {
-            // it is a global symbol, so we just return the name
             self.symbol_name.clone()
         }
     }
@@ -250,6 +345,12 @@ impl TemplateEnv<'_> {
         env.add_function("type_name_for_selection", move |a: _| {
             ext_jinja_fns::type_name_for_selection(&ctx_clone, a)
         });
+        let ctx_clone = ctx.clone();
+        env.add_function("get_list_cast_type", move |a: _| {
+            ext_jinja_fns::get_list_cast_type(&ctx_clone, a)
+        });
+
+        env.add_function("is_list_type", ext_jinja_fns::is_list_type);
 
         let ctx_clone = ctx.clone();
         env.add_function("type_name_for_input_field", move |a: _| {
@@ -275,6 +376,11 @@ impl TemplateEnv<'_> {
         env.add_function("is_custom_scalar", move |name: &str| {
             ext_jinja_fns::is_custom_scalar(&ctx_clone, name)
         });
+
+        env.add_function(
+            "concrete_typename_of_field",
+            ext_jinja_fns::concrete_typename_of_field,
+        );
 
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
