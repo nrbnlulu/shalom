@@ -92,7 +92,6 @@ fn parse_scalar_selection(
     ScalarSelection::new(selection_common, concrete_type, is_custom_scalar)
 }
 
-// Fix Bug 2 & 3 in parser
 fn parse_selection_set_with_type(
     parent: Option<&Selection>,
     op_ctx: &mut OperationContext,
@@ -110,13 +109,10 @@ fn parse_selection_set_with_type(
     let selection = match ty {
         apollo_compiler::ast::Type::List(inner_ty)
         | apollo_compiler::ast::Type::NonNullList(inner_ty) => {
-            // Fix: Correct nullability check
             let item_optional = !inner_ty.is_non_null();
 
-            // Fix: Don't pass selection_orig for scalars, handle properly
             let inner_selection =
                 match inner_ty.as_ref() {
-                    // If inner type is scalar/enum, create simple selection
                     apollo_compiler::ast::Type::Named(_)
                     | apollo_compiler::ast::Type::NonNullNamed(_) => {
                         let base_type_name = get_base_type_name(inner_ty);
@@ -141,7 +137,7 @@ fn parse_selection_set_with_type(
                             _ => todo!("Unsupported inner type for list"),
                         }
                     }
-                    // If inner type is also a list, recurse
+
                     _ => {
                         let inner_selection_common = SelectionCommon {
                             full_name: format!("{}_item", selection_common.full_name),
@@ -166,7 +162,6 @@ fn parse_selection_set_with_type(
             ))
         }
         _ => {
-            // Handle non-list types as before
             let base_type_name = get_base_type_name(ty);
             let schema_type = global_ctx
                 .schema_ctx
