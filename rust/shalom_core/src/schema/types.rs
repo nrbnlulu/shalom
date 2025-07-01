@@ -224,19 +224,18 @@ impl UnresolvedType {
     pub fn new(ty: &RawType) -> Self {
         let is_optional = !ty.is_non_null();
 
-        match ty {
-            RawType::Named(name) | RawType::NonNullNamed(name) => Self {
-                is_optional,
-                kind: UnresolvedTypeKind::Named {
-                    name: name.to_string(),
-                },
+        let unresolved_kind = match ty {
+            RawType::Named(name) | RawType::NonNullNamed(name) => UnresolvedTypeKind::Named {
+                name: name.to_string(),
             },
-            RawType::List(inner) | RawType::NonNullList(inner) => Self {
-                is_optional,
-                kind: UnresolvedTypeKind::List {
-                    of_type: Box::new(UnresolvedType::new(inner)),
-                },
+            RawType::List(inner) | RawType::NonNullList(inner) => UnresolvedTypeKind::List {
+                of_type: Box::new(UnresolvedType::new(inner)),
             },
+        };
+
+        Self {
+            is_optional,
+            kind: unresolved_kind,
         }
     }
 
