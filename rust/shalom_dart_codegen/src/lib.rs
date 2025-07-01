@@ -11,9 +11,7 @@ use shalom_core::{
     },
     schema::{
         context::SchemaContext,
-        types::{
-            GraphQLAny, InputFieldDefinition, SchemaFieldCommon, UnresolvedType, UnresolvedTypeKind,
-        },
+        types::{GraphQLAny, InputFieldDefinition, SchemaFieldCommon, UnresolvedType},
     },
     shalom_config::RuntimeSymbolDefinition,
 };
@@ -53,48 +51,44 @@ mod ext_jinja_fns {
         selection: ViaDeserialize<Selection>,
     ) -> String {
         match selection.0 {
-            Selection::Scalar(scalar) => match &scalar.field_type.kind {
-                UnresolvedTypeKind::List { of_type } => {
-                    let inner_type = match &of_type.kind {
-                        UnresolvedTypeKind::Named { name } => {
-                            if let Some(custom_scalar) = ctx.find_custom_scalar(name) {
-                                custom_scalar.output_type.symbol_fullname()
-                            } else {
-                                dart_type_for_scalar(name)
-                            }
-                        }
-                        UnresolvedTypeKind::List { .. } => "dynamic".to_string(),
-                    };
+            Selection::List(list) => {
+                // Get the inner type from of_type recursively
+                let inner_type_name =
+                    type_name_for_selection(ctx, ViaDeserialize(list.of_type.as_ref().clone()));
 
-                    let list_type = if of_type.is_optional {
-                        format!("List<{inner_type}?>")
-                    } else {
-                        format!("List<{inner_type}>")
-                    };
+                // Remove trailing ? from inner type if present (we'll handle nullability ourselves)
+                let inner_type = inner_type_name.trim_end_matches('?');
 
-                    if scalar.field_type.is_optional {
-                        format!("{list_type}?")
-                    } else {
-                        list_type
-                    }
+                // Build the list type with proper nullability
+                let list_type = if list.item_optional {
+                    format!("List<{}?>", inner_type)
+                } else {
+                    format!("List<{}>", inner_type)
+                };
+
+                // Add outer optional if the list itself is optional
+                if list.common.is_optional {
+                    format!("{}?", list_type)
+                } else {
+                    list_type
                 }
-                UnresolvedTypeKind::Named { .. } => {
-                    let scalar_name = &scalar.concrete_type.name;
-                    if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
-                        let mut output_typename = custom_scalar.output_type.symbol_fullname();
-                        if scalar.common.is_optional {
-                            output_typename.push('?');
-                        }
-                        output_typename
-                    } else {
-                        let mut resolved = dart_type_for_scalar(scalar_name);
-                        if scalar.common.is_optional {
-                            resolved.push('?');
-                        }
-                        resolved
+            }
+            Selection::Scalar(scalar) => {
+                let scalar_name = &scalar.concrete_type.name;
+                if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
+                    let mut output_typename = custom_scalar.output_type.symbol_fullname();
+                    if scalar.common.is_optional {
+                        output_typename.push('?');
                     }
+                    output_typename
+                } else {
+                    let mut resolved = dart_type_for_scalar(scalar_name);
+                    if scalar.common.is_optional {
+                        resolved.push('?');
+                    }
+                    resolved
                 }
-            },
+            }
             Selection::Object(object) => {
                 if object.common.is_optional {
                     format!("{}?", object.common.full_name)
@@ -209,10 +203,11 @@ mod ext_jinja_fns {
         selection: ViaDeserialize<Selection>,
     ) -> String {
         match selection.0 {
-            Selection::Scalar(scalar) => match &scalar.field_type.kind {
-                UnresolvedTypeKind::List { of_type } => match &of_type.kind {
-                    UnresolvedTypeKind::Named { name } => {
-                        let base_type = match name.as_str() {
+            Selection::List(list) => {
+                // Get the inner type recursively
+                match list.of_type.as_ref() {
+                    Selection::Scalar(scalar) => {
+                        let base_type = match scalar.concrete_type.name.as_str() {
                             "String" | "ID" => "String",
                             "Int" => "int",
                             "Float" => "double",
@@ -220,27 +215,22 @@ mod ext_jinja_fns {
                             _ => "dynamic",
                         };
 
-                        if of_type.is_optional {
+                        if list.item_optional {
                             format!("{}?", base_type)
                         } else {
                             base_type.to_string()
                         }
                     }
-                    UnresolvedTypeKind::List { .. } => "dynamic".to_string(),
-                },
-                _ => "".to_string(),
-            },
+                    Selection::List(_) => "dynamic".to_string(), // Nested lists
+                    _ => "dynamic".to_string(),
+                }
+            }
             _ => "".to_string(),
         }
     }
 
     pub fn is_list_type(selection: ViaDeserialize<Selection>) -> bool {
-        match selection.0 {
-            Selection::Scalar(scalar) => {
-                matches!(scalar.field_type.kind, UnresolvedTypeKind::List { .. })
-            }
-            _ => false,
-        }
+        matches!(selection.0, Selection::List(_))
     }
 
     pub fn resolve_field_type(

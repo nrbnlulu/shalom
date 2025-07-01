@@ -4,7 +4,7 @@ import '../input_list_scalars/__graphql__/schema.shalom.dart';
 import '__graphql__/InputScalarInsideInputType.shalom.dart';
 import '__graphql__/InputScalarListMaybe.shalom.dart';
 import '__graphql__/InputScalarListRequired.shalom.dart';
-import '__graphql__/InputScalarOptional.shalom.dart';
+import '__graphql__/InputScalarListOptional.shalom.dart';
 
 void main() {
   group('List of scalars - Mutation variables', () {
@@ -73,13 +73,13 @@ void main() {
   });
 
   group('Optional scalars', () {
-    test('InputScalarOptional with value', () {
-      final variables = InputScalarOptionalVariables(name: Some('John'));
+    test('InputScalarListOptional with value', () {
+      final variables = InputScalarListOptionalVariables(name: Some('John'));
       expect(variables.toJson(), {'name': 'John'});
     });
 
-    test('InputScalarOptional with None', () {
-      final variables = InputScalarOptionalVariables(name: None());
+    test('InputScalarListOptional with None', () {
+      final variables = InputScalarListOptionalVariables(name: None());
       expect(variables.toJson(), {});
     });
   });

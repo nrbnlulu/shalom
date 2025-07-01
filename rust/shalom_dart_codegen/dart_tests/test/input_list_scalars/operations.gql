@@ -17,8 +17,8 @@ mutation InputScalarInsideInputType($user: UserInput!) {
     }
 }
 
-mutation InputScalarOptional($name: String) {
-    inputScalarOptional(name: $name) {
+mutation InputScalarListOptional($name: String) {
+    InputScalarListOptional(name: $name) {
         success
     }
 }

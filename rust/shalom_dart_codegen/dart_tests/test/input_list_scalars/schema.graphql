@@ -11,7 +11,7 @@ type Mutation {
     InputScalarListRequired(strings: [String!]!): Response
     InputScalarListMaybe(ints: [Int]): Response
     InputScalarInsideInputType(user: UserInput!): Response
-    inputScalarOptional(name: String): Response
+    InputScalarListOptional(name: String): Response
 }
 
 input UserInput {

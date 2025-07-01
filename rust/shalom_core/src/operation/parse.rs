@@ -10,13 +10,13 @@ use log::{info, trace};
 use crate::context::SharedShalomGlobalContext;
 use crate::operation::types::ObjectSelection;
 use crate::schema::types::{
-    EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon, UnresolvedType,
+    EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
 };
 
 use super::context::{OperationContext, SharedOpCtx};
 use super::types::{
-    EnumSelection, OperationType, ScalarSelection, Selection, SelectionCommon, SharedEnumSelection,
-    SharedObjectSelection, SharedScalarSelection,
+    EnumSelection, ListSelection, OperationType, ScalarSelection, Selection, SelectionCommon,
+    SharedEnumSelection, SharedObjectSelection, SharedScalarSelection,
 };
 
 fn full_path_name(this_name: &String, parent: &Option<&Selection>) -> String {
@@ -85,19 +85,14 @@ fn parse_scalar_selection(
     ctx: &SharedShalomGlobalContext,
     selection_common: SelectionCommon,
     concrete_type: Node<ScalarType>,
-    field_type: UnresolvedType,
 ) -> SharedScalarSelection {
     let scalar_name = concrete_type.name.to_string();
     let is_custom_scalar = ctx.find_custom_scalar(&scalar_name).is_some();
 
-    ScalarSelection::new(
-        selection_common,
-        concrete_type,
-        is_custom_scalar,
-        field_type,
-    )
+    ScalarSelection::new(selection_common, concrete_type, is_custom_scalar)
 }
 
+// Fix Bug 2 & 3 in parser
 fn parse_selection_set_with_type(
     parent: Option<&Selection>,
     op_ctx: &mut OperationContext,
@@ -112,32 +107,89 @@ fn parse_selection_set_with_type(
         return selection.clone();
     }
 
-    let base_type_name = get_base_type_name(ty);
+    let selection = match ty {
+        apollo_compiler::ast::Type::List(inner_ty)
+        | apollo_compiler::ast::Type::NonNullList(inner_ty) => {
+            // Fix: Correct nullability check
+            let item_optional = !inner_ty.is_non_null();
 
-    let schema_type = global_ctx
-        .schema_ctx
-        .get_type(&base_type_name.to_string())
-        .unwrap();
+            // Fix: Don't pass selection_orig for scalars, handle properly
+            let inner_selection =
+                match inner_ty.as_ref() {
+                    // If inner type is scalar/enum, create simple selection
+                    apollo_compiler::ast::Type::Named(_)
+                    | apollo_compiler::ast::Type::NonNullNamed(_) => {
+                        let base_type_name = get_base_type_name(inner_ty);
+                        let schema_type = global_ctx
+                            .schema_ctx
+                            .get_type(&base_type_name.to_string())
+                            .unwrap();
 
-    let selection: Selection = match schema_type {
-        GraphQLAny::Scalar(scalar) => {
-            let unresolved_type = UnresolvedType::new(ty);
-            Selection::Scalar(parse_scalar_selection(
-                global_ctx,
+                        let inner_selection_common = SelectionCommon {
+                            full_name: format!("{}_item", selection_common.full_name),
+                            selection_name: format!("{}_item", selection_common.selection_name),
+                            is_optional: item_optional,
+                        };
+
+                        match schema_type {
+                            GraphQLAny::Scalar(scalar) => Selection::Scalar(
+                                parse_scalar_selection(global_ctx, inner_selection_common, scalar),
+                            ),
+                            GraphQLAny::Enum(enum_) => {
+                                Selection::Enum(parse_enum_selection(inner_selection_common, enum_))
+                            }
+                            _ => todo!("Unsupported inner type for list"),
+                        }
+                    }
+                    // If inner type is also a list, recurse
+                    _ => {
+                        let inner_selection_common = SelectionCommon {
+                            full_name: format!("{}_item", selection_common.full_name),
+                            selection_name: format!("{}_item", selection_common.selection_name),
+                            is_optional: item_optional,
+                        };
+                        parse_selection_set_with_type(
+                            parent,
+                            op_ctx,
+                            global_ctx,
+                            inner_selection_common,
+                            selection_orig,
+                            inner_ty,
+                        )
+                    }
+                };
+
+            Selection::List(ListSelection::new(
                 selection_common,
-                scalar,
-                unresolved_type,
+                inner_selection,
+                item_optional,
             ))
         }
-        GraphQLAny::Object(_) => Selection::Object(parse_object_selection(
-            &parent,
-            op_ctx,
-            global_ctx,
-            selection_common,
-            selection_orig,
-        )),
-        GraphQLAny::Enum(_enum) => Selection::Enum(parse_enum_selection(selection_common, _enum)),
-        _ => todo!("Unsupported type {:?}", schema_type),
+        _ => {
+            // Handle non-list types as before
+            let base_type_name = get_base_type_name(ty);
+            let schema_type = global_ctx
+                .schema_ctx
+                .get_type(&base_type_name.to_string())
+                .unwrap();
+
+            match schema_type {
+                GraphQLAny::Scalar(scalar) => {
+                    Selection::Scalar(parse_scalar_selection(global_ctx, selection_common, scalar))
+                }
+                GraphQLAny::Object(_) => Selection::Object(parse_object_selection(
+                    &parent,
+                    op_ctx,
+                    global_ctx,
+                    selection_common,
+                    selection_orig,
+                )),
+                GraphQLAny::Enum(_enum) => {
+                    Selection::Enum(parse_enum_selection(selection_common, _enum))
+                }
+                _ => todo!("Unsupported type {:?}", schema_type),
+            }
+        }
     };
 
     op_ctx.add_selection(full_name, selection.clone());
