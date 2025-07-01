@@ -72,15 +72,24 @@ void main() {
     });
   });
 
-  group('Optional scalars', () {
+  group('Optional list scalars', () {
     test('InputScalarListOptional with value', () {
-      final variables = InputScalarListOptionalVariables(name: Some('John'));
-      expect(variables.toJson(), {'name': 'John'});
+      final variables = InputScalarListOptionalVariables(
+        names: Some(['John', 'Jane']),
+      );
+      expect(variables.toJson(), {
+        'names': ['John', 'Jane'],
+      });
     });
 
     test('InputScalarListOptional with None', () {
-      final variables = InputScalarListOptionalVariables(name: None());
+      final variables = InputScalarListOptionalVariables(names: None());
       expect(variables.toJson(), {});
+    });
+
+    test('InputScalarListOptional with empty list', () {
+      final variables = InputScalarListOptionalVariables(names: Some([]));
+      expect(variables.toJson(), {'names': []});
     });
   });
 }
