@@ -24,6 +24,7 @@ jobs:
               with:
                   toolchain: 1.86.0
                   override: true
+                  components: rustfmt, clippy
 
             - name: Setup Flutter SDK
               uses: flutter-actions/setup-flutter@v4
