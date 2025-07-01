@@ -1,254 +1,500 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
 
 import "schema.shalom.dart";
 
+
 import 'package:shalom_core/shalom_core.dart';
+
+
+
 
 typedef JsonObject = Map<String, dynamic>;
 
-class GetListingWithUserOptResponse {
-  /// class members
 
-  final GetListingWithUserOpt_listing listing;
 
-  // keywordargs constructor
-  GetListingWithUserOptResponse({required this.listing});
-  static GetListingWithUserOptResponse fromJson(JsonObject data) {
-    final GetListingWithUserOpt_listing listing_value;
 
-    listing_value = GetListingWithUserOpt_listing.fromJson(data['listing']);
+class GetListingWithUserOptResponse{
 
-    return GetListingWithUserOptResponse(listing: listing_value);
-  }
+    /// class members
+    
+        
+            final GetListingWithUserOpt_listing listing;   
+        
+    
+    // keywordargs constructor
+    GetListingWithUserOptResponse({
+    required
+        this.listing,
+    
+    });
+    static GetListingWithUserOptResponse fromJson(JsonObject data) {
+    
+        
+            final GetListingWithUserOpt_listing listing_value;
+            
+                listing_value = GetListingWithUserOpt_listing.fromJson(data['listing']);            
+            
+        
+    
+    return GetListingWithUserOptResponse(
+    
+        
+        listing: listing_value,
+    
+    );
+    }
+    GetListingWithUserOptResponse updateWithJson(JsonObject data) {
+    
+        
+        final GetListingWithUserOpt_listing listing_value;
+        if (data.containsKey('listing')) {
+            
+                listing_value = GetListingWithUserOpt_listing.fromJson(data['listing']);
+            
+        } else {
+            listing_value = listing;
+        }
 
-  GetListingWithUserOptResponse updateWithJson(JsonObject data) {
-    final GetListingWithUserOpt_listing listing_value;
-    if (data.containsKey('listing')) {
-      listing_value = GetListingWithUserOpt_listing.fromJson(data['listing']);
-    } else {
-      listing_value = listing;
+    
+    
+    return GetListingWithUserOptResponse(
+    
+        
+        listing: listing_value,
+    
+    );
+    }
+    @override
+    bool operator ==(Object other) {
+    return identical(this, other) ||
+    (other is GetListingWithUserOptResponse &&
+    
+        other.listing == listing 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        listing.hashCode;
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'listing':
+            
+                listing.toJson()
+            
+        ,
+    
+    };
     }
 
-    return GetListingWithUserOptResponse(listing: listing_value);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is GetListingWithUserOptResponse && other.listing == listing);
-  }
-
-  @override
-  int get hashCode => listing.hashCode;
-
-  JsonObject toJson() {
-    return {'listing': listing.toJson()};
-  }
 }
+
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class GetListingWithUserOpt_listing {
-  /// class members
 
-  final String id;
+    class GetListingWithUserOpt_listing  {
+        
+    /// class members
+    
+        
+            final String id;
+        
+    
+        
+            final String name;
+        
+    
+        
+            final int? price;
+        
+    
+        
+            final GetListingWithUserOpt_listing_userOpt? userOpt;   
+        
+    
+    // keywordargs constructor
+    GetListingWithUserOpt_listing({
+    required
+        this.id,
+    required
+        this.name,
+    
+        this.price,
+    
+        this.userOpt,
+    
+    });
+    static GetListingWithUserOpt_listing fromJson(JsonObject data) {
+    
+        
+            final String id_value;
+            
+                id_value = data['id'];
+            
 
-  final String name;
+        
+    
+        
+            final String name_value;
+            
+                name_value = data['name'];
+            
 
-  final int? price;
+        
+    
+        
+            final int? price_value;
+            
+                price_value = data['price'];
+            
 
-  final GetListingWithUserOpt_listing_userOpt? userOpt;
-
-  // keywordargs constructor
-  GetListingWithUserOpt_listing({
-    required this.id,
-    required this.name,
-
-    this.price,
-
-    this.userOpt,
-  });
-  static GetListingWithUserOpt_listing fromJson(JsonObject data) {
-    final String id_value;
-
-    id_value = data['id'];
-
-    final String name_value;
-
-    name_value = data['name'];
-
-    final int? price_value;
-
-    price_value = data['price'];
-
-    final GetListingWithUserOpt_listing_userOpt? userOpt_value;
-
-    final JsonObject? userOpt$raw = data['userOpt'];
-    if (userOpt$raw != null) {
-      userOpt_value = GetListingWithUserOpt_listing_userOpt.fromJson(
-        userOpt$raw,
-      );
-    } else {
-      userOpt_value = null;
-    }
-
+        
+    
+        
+            final GetListingWithUserOpt_listing_userOpt? userOpt_value;
+            
+                final JsonObject? userOpt$raw = data['userOpt']; 
+                if (userOpt$raw != null) {
+                    userOpt_value = GetListingWithUserOpt_listing_userOpt.fromJson(userOpt$raw);
+                } else {
+                    userOpt_value = null;
+                }
+            
+        
+    
     return GetListingWithUserOpt_listing(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-
-      userOpt: userOpt_value,
+    
+        
+        id: id_value,
+    
+        
+        name: name_value,
+    
+        
+        price: price_value,
+    
+        
+        userOpt: userOpt_value,
+    
     );
-  }
-
-  GetListingWithUserOpt_listing updateWithJson(JsonObject data) {
+    }
+    GetListingWithUserOpt_listing updateWithJson(JsonObject data) {
+    
+        
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data['id'];
+        
+            id_value = data['id'];
+        
     } else {
-      id_value = id;
+        id_value = id;
     }
 
+        
+    
+        
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+        
+            name_value = data['name'];
+        
     } else {
-      name_value = name;
+        name_value = name;
     }
 
+        
+    
+        
     final int? price_value;
     if (data.containsKey('price')) {
-      price_value = data['price'];
+        
+            price_value = data['price'];
+        
     } else {
-      price_value = price;
+        price_value = price;
     }
 
-    final GetListingWithUserOpt_listing_userOpt? userOpt_value;
-    if (data.containsKey('userOpt')) {
-      final JsonObject? userOpt$raw = data['userOpt'];
-      if (userOpt$raw != null) {
-        userOpt_value = GetListingWithUserOpt_listing_userOpt.fromJson(
-          userOpt$raw,
-        );
-      } else {
-        userOpt_value = null;
-      }
-    } else {
-      userOpt_value = userOpt;
-    }
+        
+    
+        
+        final GetListingWithUserOpt_listing_userOpt? userOpt_value;
+        if (data.containsKey('userOpt')) {
+            
+                final JsonObject? userOpt$raw = data['userOpt'];
+                if (userOpt$raw != null) {
+                    userOpt_value = GetListingWithUserOpt_listing_userOpt.fromJson(userOpt$raw);
+                } else {
+                    userOpt_value = null;
+                }
+            
+        } else {
+            userOpt_value = userOpt;
+        }
 
+    
+    
     return GetListingWithUserOpt_listing(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-
-      userOpt: userOpt_value,
+    
+        
+        id: id_value,
+    
+        
+        name: name_value,
+    
+        
+        price: price_value,
+    
+        
+        userOpt: userOpt_value,
+    
     );
-  }
-
-  @override
-  bool operator ==(Object other) {
+    }
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is GetListingWithUserOpt_listing &&
-            other.id == id &&
-            other.name == name &&
-            other.price == price &&
-            other.userOpt == userOpt);
-  }
-
-  @override
-  int get hashCode => Object.hashAll([id, name, price, userOpt]);
-
-  JsonObject toJson() {
-    return {
-      'id': id,
-
-      'name': name,
-
-      'price': price,
-
-      'userOpt': userOpt?.toJson(),
-    };
-  }
-}
-
-class GetListingWithUserOpt_listing_userOpt {
-  /// class members
-
-  final String id;
-
-  final String name;
-
-  // keywordargs constructor
-  GetListingWithUserOpt_listing_userOpt({required this.id, required this.name});
-  static GetListingWithUserOpt_listing_userOpt fromJson(JsonObject data) {
-    final String id_value;
-
-    id_value = data['id'];
-
-    final String name_value;
-
-    name_value = data['name'];
-
-    return GetListingWithUserOpt_listing_userOpt(
-      id: id_value,
-
-      name: name_value,
+    (other is GetListingWithUserOpt_listing &&
+    
+        other.id == id &&
+    
+        other.name == name &&
+    
+        other.price == price &&
+    
+        other.userOpt == userOpt 
+    
     );
-  }
+    }
+    @override
+    int get hashCode =>
+    
+        Object.hashAll([
+        
+            
+            id,
+        
+            
+            name,
+        
+            
+            price,
+        
+            
+            userOpt,
+        
+        ]);
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'id':
+            
+                
+                    id
+                
+            
+        ,
+    
+        
+        'name':
+            
+                
+                    name
+                
+            
+        ,
+    
+        
+        'price':
+            
+                
+                    price
+                
+            
+        ,
+    
+        
+        'userOpt':
+            
+                userOpt?.toJson()
+            
+        ,
+    
+    };
+    }
 
-  GetListingWithUserOpt_listing_userOpt updateWithJson(JsonObject data) {
+    }
+
+    class GetListingWithUserOpt_listing_userOpt  {
+        
+    /// class members
+    
+        
+            final String id;
+        
+    
+        
+            final String name;
+        
+    
+    // keywordargs constructor
+    GetListingWithUserOpt_listing_userOpt({
+    required
+        this.id,
+    required
+        this.name,
+    
+    });
+    static GetListingWithUserOpt_listing_userOpt fromJson(JsonObject data) {
+    
+        
+            final String id_value;
+            
+                id_value = data['id'];
+            
+
+        
+    
+        
+            final String name_value;
+            
+                name_value = data['name'];
+            
+
+        
+    
+    return GetListingWithUserOpt_listing_userOpt(
+    
+        
+        id: id_value,
+    
+        
+        name: name_value,
+    
+    );
+    }
+    GetListingWithUserOpt_listing_userOpt updateWithJson(JsonObject data) {
+    
+        
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data['id'];
+        
+            id_value = data['id'];
+        
     } else {
-      id_value = id;
+        id_value = id;
     }
 
+        
+    
+        
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+        
+            name_value = data['name'];
+        
     } else {
-      name_value = name;
+        name_value = name;
     }
 
+        
+    
     return GetListingWithUserOpt_listing_userOpt(
-      id: id_value,
-
-      name: name_value,
+    
+        
+        id: id_value,
+    
+        
+        name: name_value,
+    
     );
-  }
-
-  @override
-  bool operator ==(Object other) {
+    }
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is GetListingWithUserOpt_listing_userOpt &&
-            other.id == id &&
-            other.name == name);
-  }
+    (other is GetListingWithUserOpt_listing_userOpt &&
+    
+        other.id == id &&
+    
+        other.name == name 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        Object.hashAll([
+        
+            
+            id,
+        
+            
+            name,
+        
+        ]);
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'id':
+            
+                
+                    id
+                
+            
+        ,
+    
+        
+        'name':
+            
+                
+                    name
+                
+            
+        ,
+    
+    };
+    }
 
-  @override
-  int get hashCode => Object.hashAll([id, name]);
+    }
 
-  JsonObject toJson() {
-    return {'id': id, 'name': name};
-  }
-}
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-class RequestGetListingWithUserOpt extends Requestable {
-  RequestGetListingWithUserOpt();
 
-  @override
-  Request toRequest() {
-    JsonObject variablesJson = {};
-    return Request(
-      query: r"""query GetListingWithUserOpt {
+class RequestGetListingWithUserOpt extends Requestable {
+    
+
+    RequestGetListingWithUserOpt(
+        
+    );
+
+    @override
+    Request toRequest() {
+        JsonObject variablesJson =  {}  ;
+        return Request(
+            query: r"""query GetListingWithUserOpt {
   listing {
     id
     name
@@ -258,51 +504,45 @@ class RequestGetListingWithUserOpt extends Requestable {
       name
     }
   }
-}""",
-      variables: variablesJson,
-      opType: OperationType.Query,
-      StringopName: 'GetListingWithUserOpt',
-    );
-  }
+}""", 
+            variables: variablesJson, 
+            opType: OperationType.Query, 
+            StringopName: 'GetListingWithUserOpt'
+        );
+    }
 }
+
+
 
 // ------------ Node DEFINITIONS -------------
 
 class GetListingWithUserOptNode extends Node {
   GetListingWithUserOptResponse? _obj;
-  bool isSubscribed = false;
   GetListingWithUserOptNode({required super.id});
 
-  @override
+  @override 
   void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
-    if (!isSubscribed) {
-      throw Exception("manager must be subscribed to node");
-    }
     _obj = GetListingWithUserOptResponse.fromJson(raw);
     manager.addOrUpdateNode(this);
   }
 
   @override
   void updateWithJson(JsonObject newData) {
-    if (!isSubscribed) {
-      throw Exception("must subscribe to node through manager");
-    }
     if (_obj != null) {
-      _obj = _obj?.updateWithJson(newData);
+        _obj = _obj?.updateWithJson(newData);
     } else {
-      _obj = GetListingWithUserOptResponse.fromJson(newData);
+        _obj = GetListingWithUserOptResponse.fromJson(newData);
     }
     notifyListeners();
   }
 
   @override
-  void setSubscription(JsonObject? data) {
-    if (data != null) {
-      _obj = GetListingWithUserOptResponse.fromJson(data);
-    }
-    isSubscribed = true;
+  void setObj(JsonObject? data) {
+     if (data != null) {
+        _obj = GetListingWithUserOptResponse.fromJson(data);
+     }
   }
-
+  
   @override
   JsonObject? data() {
     final data = _obj?.toJson();
@@ -312,6 +552,5 @@ class GetListingWithUserOptNode extends Node {
   GetListingWithUserOptResponse? get obj {
     return _obj;
   }
-}
-
+} 
 // ------------ END Node DEFINITIONS -------------

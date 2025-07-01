@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-typedef ID = String; 
+typedef ID = String;
 typedef JsonObject = Map<String, dynamic>;
-
 
 abstract class Node extends ChangeNotifier {
   final ID id;
+  bool managerSubscribed = false;
   Node({required this.id});
   void updateStoreWithRaw(JsonObject raw, NodeManager nodeManager);
   void updateWithJson(JsonObject newData);
-  void setSubscription(JsonObject? data);
-  JsonObject data();
+  void setObj(JsonObject? data);
+  JsonObject? data();
 }
 
 class NodeSubscriber {
@@ -48,45 +48,52 @@ class NodeManager {
   }
 
   void addOrUpdateNode(Node node) {
-    final nodeId = node.id; 
+    if (!node.managerSubscribed) {
+      subscribeToNode(node);
+    }
+    final nodeId = node.id;
     final newData = node.data();
-    final oldData = _rawStore[nodeId];
-    if (oldData != null) {
-      if (oldData != newData) {
-        _rawStore[nodeId] = newData;
-        List<NodeSubscriber>? subscribers = _subscriberStore[nodeId];
-        if (subscribers != null) {
-          for (final subscriber in subscribers) {
-            Node? node = subscriber.nodeRef.target;
-            if (node != null) {
-              node.updateWithJson(newData);
+    if (newData != null) {
+      final oldData = _rawStore[nodeId];
+      if (oldData != null) {
+        if (oldData != newData) {
+          _rawStore[nodeId] = newData;
+          List<NodeSubscriber>? subscribers = _subscriberStore[nodeId];
+          if (subscribers != null) {
+            for (final subscriber in subscribers) {
+              Node? node = subscriber.nodeRef.target;
+              if (node != null) {
+                node.updateWithJson(newData);
+              }
             }
           }
         }
+      } else {
+        _rawStore[nodeId] = newData;
       }
     } else {
-      _rawStore[nodeId] = newData;
+      throw Exception("cannot add null data");
     }
   }
 
-   void subscribeToNode(Node node) {
+  void subscribeToNode(Node node) {
     final nodeId = node.id;
     JsonObject? data = _rawStore[nodeId];
-      node.setSubscription(data);
-      final subscriberId = "foo";
-      final subscriber = NodeSubscriber(
-        subscriberId: subscriberId,
-        nodeRef: WeakReference(node),
-        subscribedFields: [],
-      );
-      _subscriberStore.putIfAbsent(nodeId, () => []).add(subscriber);
-      _finalizer.attach(node, (
-        nodeId: nodeId,
-        subscriberId: subscriberId,
-      ), detach: node);
-    }
+    node.managerSubscribed = true;
+    node.setObj(data);
+    final subscriberId = "foo";
+    final subscriber = NodeSubscriber(
+      subscriberId: subscriberId,
+      nodeRef: WeakReference(node),
+      subscribedFields: [],
+    );
+    _subscriberStore.putIfAbsent(nodeId, () => []).add(subscriber);
+    _finalizer.attach(node, (
+      nodeId: nodeId,
+      subscriberId: subscriberId,
+    ), detach: node);
   }
-
+}
 
 class GetListingResponse {
   /// class members
@@ -127,8 +134,6 @@ class GetListingResponse {
     return {'listing': listing.toJson()};
   }
 }
-
-
 
 // ------------ OBJECT DEFINITIONS -------------
 
@@ -217,56 +222,41 @@ class GetListing_listing {
 
 class GetListingNode extends Node {
   GetListingResponse? _obj;
-  bool isSubscribed = false; 
   GetListingNode({required super.id});
 
-  @override 
+  @override
   void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
-    if (!isSubscribed) {
-      throw Exception("manager must be subscribed to node");
-    }
     _obj = GetListingResponse.fromJson(raw);
     manager.addOrUpdateNode(this);
   }
 
   @override
   void updateWithJson(JsonObject newData) {
-    if (!isSubscribed) {
-        throw Exception("must subscribe to node through manager");
-    }
     if (_obj != null) {
-        _obj = _obj?.updateWithJson(newData);
+      _obj = _obj?.updateWithJson(newData);
     } else {
-        _obj = GetListingResponse.fromJson(newData);
+      _obj = GetListingResponse.fromJson(newData);
     }
     notifyListeners();
   }
 
   @override
-  void setSubscription(JsonObject? data) {
+  void setObj(JsonObject? data) {
     if (data != null) {
-     _obj = GetListingResponse.fromJson(data);
+      _obj = GetListingResponse.fromJson(data);
     }
-     isSubscribed = true;
   }
-  
+
   @override
-  JsonObject data() {
+  JsonObject? data() {
     final data = _obj?.toJson();
-    if (data != null) {
-      return data;
-    } else {
-      throw Exception("Node has no data");
-    }
+    return data;
   }
 
   GetListingResponse? get obj {
     return _obj;
   }
-} 
-
-
-
+}
 
 void main() {
   runApp(const MyApp());
@@ -313,7 +303,9 @@ class _ListingScreenState extends State<ListingScreen> {
     _node = GetListingNode(id: listingId);
 
     _manager.subscribeToNode(_node);
-    _node.updateStoreWithRaw({"listing": {"id": listingId, "name": "shalom", "price": 27000}}, _manager);
+    _node.updateStoreWithRaw({
+      "listing": {"id": listingId, "name": "shalom", "price": 27000},
+    }, _manager);
     _node.addListener(_onNodeUpdate);
   }
 
@@ -347,10 +339,7 @@ class _ListingScreenState extends State<ListingScreen> {
     // According to your `updateStoreWithRaw` implementation, it expects a
     // complete JSON object that can be parsed from scratch. So, we merge
     // the current data with the new data to create a full payload.
-    final newListingJson = {
-      ...currentListing.toJson(),
-      ...updatedListingData,
-    };
+    final newListingJson = {...currentListing.toJson(), ...updatedListingData};
 
     final fullUpdatePayload = {'listing': newListingJson};
 
@@ -413,13 +402,14 @@ class _ListingScreenState extends State<ListingScreen> {
                   icon: const Icon(Icons.text_fields),
                   label: const Text('Change Name'),
                   onPressed: () {
-                    final newName = "Sunny Seaside Villa ${Random().nextInt(100)}";
+                    final newName =
+                        "Sunny Seaside Villa ${Random().nextInt(100)}";
                     _performUpdate({'name': newName});
                   },
                 ),
               ] else ...[
                 const Text('Error: Listing data is not available.'),
-              ]
+              ],
             ],
           ),
         ),

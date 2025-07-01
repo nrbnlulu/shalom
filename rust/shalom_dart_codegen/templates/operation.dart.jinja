@@ -266,23 +266,16 @@ class {{ operation_name }}Variables {
 {% set node_name = operation_name ~ "Node" %}
 class {{ node_name }} extends Node {
   {{ operation_name }}Response? _obj;
-  bool isSubscribed = false; 
   {{ node_name }}({required super.id});
 
   @override 
   void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
-    if (!isSubscribed) {
-      throw Exception("manager must be subscribed to node");
-    }
     _obj = {{ operation_name }}Response.fromJson(raw);
     manager.addOrUpdateNode(this);
   }
 
   @override
   void updateWithJson(JsonObject newData) {
-    if (!isSubscribed) {
-        throw Exception("must subscribe to node through manager");
-    }
     if (_obj != null) {
         _obj = _obj?.updateWithJson(newData);
     } else {
@@ -292,11 +285,10 @@ class {{ node_name }} extends Node {
   }
 
   @override
-  void setSubscription(JsonObject? data) {
+  void setObj(JsonObject? data) {
      if (data != null) {
         _obj = {{ operation_name }}Response.fromJson(data);
      }
-     isSubscribed = true;
   }
   
   @override
