@@ -52,21 +52,17 @@ mod ext_jinja_fns {
     ) -> String {
         match selection.0 {
             Selection::List(list) => {
-                // Get the inner type from of_type recursively
                 let inner_type_name =
                     type_name_for_selection(ctx, ViaDeserialize(list.of_type.as_ref().clone()));
 
-                // Remove trailing ? from inner type if present (we'll handle nullability ourselves)
                 let inner_type = inner_type_name.trim_end_matches('?');
 
-                // Build the list type with proper nullability
                 let list_type = if list.item_optional {
                     format!("List<{}?>", inner_type)
                 } else {
                     format!("List<{}>", inner_type)
                 };
 
-                // Add outer optional if the list itself is optional
                 if list.common.is_optional {
                     format!("{}?", list_type)
                 } else {
@@ -203,28 +199,25 @@ mod ext_jinja_fns {
         selection: ViaDeserialize<Selection>,
     ) -> String {
         match selection.0 {
-            Selection::List(list) => {
-                // Get the inner type recursively
-                match list.of_type.as_ref() {
-                    Selection::Scalar(scalar) => {
-                        let base_type = match scalar.concrete_type.name.as_str() {
-                            "String" | "ID" => "String",
-                            "Int" => "int",
-                            "Float" => "double",
-                            "Boolean" => "bool",
-                            _ => "dynamic",
-                        };
+            Selection::List(list) => match list.of_type.as_ref() {
+                Selection::Scalar(scalar) => {
+                    let base_type = match scalar.concrete_type.name.as_str() {
+                        "String" | "ID" => "String",
+                        "Int" => "int",
+                        "Float" => "double",
+                        "Boolean" => "bool",
+                        _ => "dynamic",
+                    };
 
-                        if list.item_optional {
-                            format!("{}?", base_type)
-                        } else {
-                            base_type.to_string()
-                        }
+                    if list.item_optional {
+                        format!("{}?", base_type)
+                    } else {
+                        base_type.to_string()
                     }
-                    Selection::List(_) => "dynamic".to_string(), // Nested lists
-                    _ => "dynamic".to_string(),
                 }
-            }
+                Selection::List(_) => "dynamic".to_string(),
+                _ => "dynamic".to_string(),
+            },
             _ => "".to_string(),
         }
     }
