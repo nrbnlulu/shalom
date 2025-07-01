@@ -180,7 +180,7 @@ class GetOrderVariables {
       final value = order.some();
 
       data["order"] = value?.toJson();
-    } else {}
+    }
 
     return data;
   }

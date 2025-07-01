@@ -29,18 +29,12 @@ class UserInput {
       final value = ids.some();
 
       data["ids"] = value;
-    } else {
-      // This is a list type. Serialize None() to null.
-      data["ids"] = null;
     }
 
     if (scores.isSome()) {
       final value = scores.some();
 
       data["scores"] = value;
-    } else {
-      // This is a list type. Serialize None() to null.
-      data["scores"] = null;
     }
 
     data["tags"] = tags;

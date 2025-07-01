@@ -109,7 +109,7 @@ class PointUpdateCoordsMaybe {
       } else {
         data["coords"] = rmhlxei.pointScalarImpl.serialize(value);
       }
-    } else {}
+    }
 
     data["name"] = name;
 

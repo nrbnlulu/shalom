@@ -21,15 +21,8 @@
             {% else %}
                 data["{{ name }}"] = value;
             {% endif %}
-        } else {
-
-
-            {% if field.common.type.kind.List %}
-                // This is a list type. Serialize None() to null.
-                data["{{ name }}"] = null;
-
-            {% endif %}
         }
+
 
 
     {% else %}

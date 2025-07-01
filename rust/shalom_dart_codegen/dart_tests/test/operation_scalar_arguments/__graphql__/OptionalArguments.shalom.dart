@@ -141,13 +141,13 @@ class OptionalArgumentsVariables {
       final value = id.some();
 
       data["id"] = value;
-    } else {}
+    }
 
     if (phone.isSome()) {
       final value = phone.some();
 
       data["phone"] = value;
-    } else {}
+    }
 
     return data;
   }

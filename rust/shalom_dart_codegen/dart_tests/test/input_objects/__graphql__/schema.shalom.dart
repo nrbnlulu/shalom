@@ -79,19 +79,19 @@ class OrderOpt {
       final value = name.some();
 
       data["name"] = value;
-    } else {}
+    }
 
     if (price.isSome()) {
       final value = price.some();
 
       data["price"] = value;
-    } else {}
+    }
 
     if (quantity.isSome()) {
       final value = quantity.some();
 
       data["quantity"] = value;
-    } else {}
+    }
 
     return data;
   }

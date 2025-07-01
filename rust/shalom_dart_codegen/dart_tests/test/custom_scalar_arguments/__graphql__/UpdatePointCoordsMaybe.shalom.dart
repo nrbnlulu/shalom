@@ -217,7 +217,7 @@ class UpdatePointCoordsMaybeVariables {
       } else {
         data["coords"] = rmhlxei.pointScalarImpl.serialize(value);
       }
-    } else {}
+    }
 
     return data;
   }

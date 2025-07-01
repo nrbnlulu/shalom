@@ -81,7 +81,7 @@ class SubmitReviewVariables {
       final value = review.some();
 
       data["review"] = value?.toJson();
-    } else {}
+    }
 
     return data;
   }

@@ -227,7 +227,7 @@ class EnumOptionalVariables {
       final value = status.some();
 
       data["status"] = value?.name;
-    } else {}
+    }
 
     return data;
   }

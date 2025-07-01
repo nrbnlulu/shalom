@@ -1,6 +1,6 @@
 use crate::run_dart_tests_for_usecase;
 
-static USE_CASE_NAME: &str = "list_scalars";
+static USE_CASE_NAME: &str = "input_list_scalars";
 
 #[test]
 fn test_list_scalars_dart() {

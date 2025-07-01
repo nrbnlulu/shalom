@@ -1,0 +1,25 @@
+type Query {
+
+    stringList: [String!]!
+    stringListOptional: [String!]
+    stringListWithNulls: [String]!
+    stringListFullyOptional: [String]
+    intListOptional: [Int]
+}
+
+type Mutation {
+    InputScalarListRequired(strings: [String!]!): Response
+    InputScalarListMaybe(ints: [Int]): Response
+    InputScalarInsideInputType(user: UserInput!): Response
+    inputScalarOptional(name: String): Response
+}
+
+input UserInput {
+    tags: [String!]!
+    scores: [Int]
+    ids: [ID!]
+}
+
+type Response {
+    success: Boolean!
+}

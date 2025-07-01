@@ -69,7 +69,7 @@ class OrderDetails {
       final value = firstReview.some();
 
       data["firstReview"] = value?.toJson();
-    } else {}
+    }
 
     return data;
   }
@@ -102,7 +102,7 @@ class OrderRecursive {
       final value = order.some();
 
       data["order"] = value?.toJson();
-    } else {}
+    }
 
     return data;
   }
@@ -135,7 +135,7 @@ class Review {
       final value = order.some();
 
       data["order"] = value?.toJson();
-    } else {}
+    }
 
     return data;
   }
