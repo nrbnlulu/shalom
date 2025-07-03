@@ -49,7 +49,7 @@ mod ext_jinja_fns {
 
     use super::*;
     fn type_name_for_kind_impl(ctx: &SharedShalomGlobalContext, kind: &SelectionKind) -> String {
-        match kind.0 {
+        match kind {
             SelectionKind::List(list) => {
                 let inner_type_name =
                     type_name_for_kind_impl(ctx, &list.of_kind);
@@ -80,13 +80,13 @@ mod ext_jinja_fns {
             }
             SelectionKind::Object(object) => {
                 if object.is_optional {
-                    format!("{}?", object.common.full_name)
+                    format!("{}?", object.full_name)
                 } else {
-                    object.common.full_name.clone()
+                    object.full_name.clone()
                 }
             }
-            Selection::Enum(enum_) => {
-                if enum_.common.is_optional {
+            SelectionKind::Enum(enum_) => {
+                if enum_.is_optional {
                     format!("{}?", enum_.concrete_type.name)
                 } else {
                     enum_.concrete_type.name.clone()
@@ -99,7 +99,7 @@ mod ext_jinja_fns {
         ctx: &SharedShalomGlobalContext,
         kind: ViaDeserialize<SelectionKind>,
     ) -> String {
-        type_name_for_kind_impl(ctx, kind)
+        type_name_for_kind_impl(ctx, &kind.0)
     }
 
     pub fn type_name_for_input_field(
@@ -194,37 +194,6 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn get_list_cast_type(
-        _ctx: &SharedShalomGlobalContext,
-        selection: ViaDeserialize<Selection>,
-    ) -> String {
-        match selection.0 {
-            Selection::List(list) => match list.of_type.as_ref() {
-                Selection::Scalar(scalar) => {
-                    let base_type = match scalar.concrete_type.name.as_str() {
-                        "String" | "ID" => "String",
-                        "Int" => "int",
-                        "Float" => "double",
-                        "Boolean" => "bool",
-                        _ => "dynamic",
-                    };
-
-                    if list.item_optional {
-                        format!("{}?", base_type)
-                    } else {
-                        base_type.to_string()
-                    }
-                }
-                Selection::List(_) => "dynamic".to_string(),
-                _ => "dynamic".to_string(),
-            },
-            _ => "".to_string(),
-        }
-    }
-
-    pub fn is_list_type(selection: ViaDeserialize<Selection>) -> bool {
-        matches!(selection.0, Selection::List(_))
-    }
 
     pub fn resolve_field_type(
         schema_ctx: &SchemaContext,
@@ -345,12 +314,7 @@ impl TemplateEnv<'_> {
         env.add_function("type_name_for_selection", move |a: _| {
             ext_jinja_fns::type_name_for_selection(&ctx_clone, a)
         });
-        let ctx_clone = ctx.clone();
-        env.add_function("get_list_cast_type", move |a: _| {
-            ext_jinja_fns::get_list_cast_type(&ctx_clone, a)
-        });
 
-        env.add_function("is_list_type", ext_jinja_fns::is_list_type);
 
         let ctx_clone = ctx.clone();
         env.add_function("type_name_for_input_field", move |a: _| {

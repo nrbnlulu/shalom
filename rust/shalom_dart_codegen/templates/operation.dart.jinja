@@ -54,7 +54,7 @@ import 'package:shalom_core/shalom_core.dart';
                  ? null
                  : {{ scalar_impl }}.deserialize(data['{{ selection_name }}']);
            {% else %}
-               {% if is_list_type(selection) %}
+               {% if selection.kind == "List" %}
                    {% if selection.is_optional %}
                        {{ selection_name }}_value = data['{{ selection_name }}'] == null
                            ? null

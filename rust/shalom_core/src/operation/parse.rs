@@ -45,7 +45,7 @@ fn parse_object_selection(
          selection was {:?}.",
         selection_orig
     );
-    let obj = ObjectSelection::new(is_optional);
+    let obj = ObjectSelection::new(is_optional, path.clone().unwrap_or("why????".to_string()));
 
     for selection in selection_orig.selections.iter() {
         match selection {
@@ -203,14 +203,14 @@ fn parse_operation(
         name: name.clone(),
         description: None,
     };
-    let kind = parse_object_selection(
+    let root_type = parse_object_selection(
      &mut ctx,
      global_ctx,
      &None,
      false,
     &op.selection_set,
     );
-    ctx.set_root_type(Selection::new(selection_common, kind));
+    ctx.set_root_type(Selection::new(selection_common, SelectionKind::Object(root_type)));
     Rc::new(ctx)
 }
 
