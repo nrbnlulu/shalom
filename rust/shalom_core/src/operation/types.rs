@@ -17,7 +17,7 @@ pub enum OperationType {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct SelectionCommon{
+pub struct SelectionCommon {
     pub name: String,
     pub full_name: FullPathName,
     pub description: Option<String>,
@@ -32,8 +32,6 @@ pub struct Selection {
 }
 
 impl Selection {
-
-    
     pub fn new(selection_common: SelectionCommon, kind: SelectionKind) -> Self {
         Selection {
             selection_common,
@@ -41,7 +39,6 @@ impl Selection {
         }
     }
 
-    
     pub fn self_selection_name(&self) -> &String {
         &self.selection_common.name
     }
@@ -60,7 +57,7 @@ pub enum SelectionKind {
     List(Rc<ListSelection>),
 }
 impl SelectionKind {
-    pub fn new_list(is_optional: bool, of_kind: SelectionKind) -> Self{
+    pub fn new_list(is_optional: bool, of_kind: SelectionKind) -> Self {
         SelectionKind::List(Rc::new(ListSelection {
             is_optional,
             of_kind,
@@ -138,9 +135,6 @@ pub struct ListSelection {
 }
 
 pub type SharedListSelection = Rc<ListSelection>;
-
-
-
 
 pub fn dart_type_for_scalar(scalar_name: &str) -> String {
     match scalar_name {

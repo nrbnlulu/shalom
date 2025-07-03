@@ -2,8 +2,8 @@ use anyhow::Result;
 use lazy_static::lazy_static;
 use log::info;
 use minijinja::{context, value::ViaDeserialize, Environment};
-use shalom_core::operation::types::SelectionKind;
 use serde::Serialize;
+use shalom_core::operation::types::SelectionKind;
 use shalom_core::{
     context::SharedShalomGlobalContext,
     operation::{
@@ -46,13 +46,11 @@ const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
 
-
     use super::*;
     fn type_name_for_kind_impl(ctx: &SharedShalomGlobalContext, kind: &SelectionKind) -> String {
         match kind {
             SelectionKind::List(list) => {
-                let inner_type_name =
-                    type_name_for_kind_impl(ctx, &list.of_kind);
+                let inner_type_name = type_name_for_kind_impl(ctx, &list.of_kind);
 
                 let inner_type = inner_type_name.trim_end_matches('?');
 
@@ -97,9 +95,9 @@ mod ext_jinja_fns {
 
     pub fn type_name_for_selection(
         ctx: &SharedShalomGlobalContext,
-        kind: ViaDeserialize<SelectionKind>,
+        selection: ViaDeserialize<Selection>,
     ) -> String {
-        type_name_for_kind_impl(ctx, &kind.0)
+        type_name_for_kind_impl(ctx, &selection.0.kind)
     }
 
     pub fn type_name_for_input_field(
@@ -193,7 +191,6 @@ mod ext_jinja_fns {
             _ => default_value,
         }
     }
-
 
     pub fn resolve_field_type(
         schema_ctx: &SchemaContext,
@@ -299,7 +296,7 @@ impl SymbolName for RuntimeSymbolDefinition {
 impl TemplateEnv<'_> {
     fn new(ctx: &SharedShalomGlobalContext) -> Self {
         let mut env = Environment::new();
-
+        env.set_undefined_behavior(minijinja::UndefinedBehavior::Strict);
         env.add_template(
             "operation",
             include_str!("../templates/operation.dart.jinja"),
@@ -314,7 +311,6 @@ impl TemplateEnv<'_> {
         env.add_function("type_name_for_selection", move |a: _| {
             ext_jinja_fns::type_name_for_selection(&ctx_clone, a)
         });
-
 
         let ctx_clone = ctx.clone();
         env.add_function("type_name_for_input_field", move |a: _| {

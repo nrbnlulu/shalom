@@ -20,11 +20,8 @@ use super::types::{
     SharedObjectSelection, SharedScalarSelection,
 };
 
-fn full_path_name(this_name: &String, parent_path: &Option<String>) -> String {
-    match parent_path {
-        Some(parent) => format!("{}_{}", parent, this_name),
-        None => this_name.clone(),
-    }
+fn full_path_name(this_name: &String, parent_path: &String) -> String {
+    format!("{}_{}", parent_path, this_name)
 }
 
 fn parse_enum_selection(is_optional: bool, concrete_type: Node<EnumType>) -> SharedEnumSelection {
@@ -34,18 +31,19 @@ fn parse_enum_selection(is_optional: bool, concrete_type: Node<EnumType>) -> Sha
 fn parse_object_selection(
     op_ctx: &mut OperationContext,
     global_ctx: &SharedShalomGlobalContext,
-    path: &Option<String>,
+    path: &String,
     is_optional: bool,
     selection_orig: &apollo_compiler::executable::SelectionSet,
 ) -> SharedObjectSelection {
-    trace!("Parsing object selection {:?}", selection_orig);
+    trace!("Parsing object selection {:?}", selection_orig.ty);
+    trace!("Path is {:?}", path);
     assert!(
         !selection_orig.selections.is_empty(),
         "Object selection must have at least one field\n \
          selection was {:?}.",
         selection_orig
     );
-    let obj = ObjectSelection::new(is_optional, path.clone().unwrap_or("why????".to_string()));
+    let obj = ObjectSelection::new(is_optional, path.clone());
 
     for selection in selection_orig.selections.iter() {
         match selection {
@@ -57,14 +55,15 @@ fn parse_object_selection(
                     .description
                     .as_deref()
                     .map(|s| s.to_string());
+                let field_path = full_path_name(&f_name, path);
                 let selection_common = SelectionCommon {
-                    full_name: full_path_name(&f_name, path),
+                    full_name: field_path.clone(),
                     name: f_name.clone(),
                     description,
                 };
 
                 let field_selection = parse_selection_set(
-                    path,
+                    &field_path,
                     op_ctx,
                     global_ctx,
                     selection_common,
@@ -96,7 +95,7 @@ type FieldTypeOrig = apollo_compiler::ast::Type;
 pub fn parse_selection_kind(
     op_ctx: &mut OperationContext,
     global_ctx: &SharedShalomGlobalContext,
-    path: &Option<String>,
+    path: &String,
     selection_set: &apollo_executable::SelectionSet,
     field_type_orig: &FieldTypeOrig,
 ) -> SelectionKind {
@@ -124,14 +123,14 @@ pub fn parse_selection_kind(
             }
         }
         FieldTypeOrig::NonNullList(of_type) | FieldTypeOrig::List(of_type) => {
-            let of_kind = parse_selection_kind(op_ctx, global_ctx, path, selection_set, &of_type);
+            let of_kind = parse_selection_kind(op_ctx, global_ctx, path, selection_set, of_type);
             SelectionKind::new_list(is_optional, of_kind)
         }
     }
 }
 
 fn parse_selection_set(
-    path: &Option<String>,
+    path: &String,
     op_ctx: &mut OperationContext,
     global_ctx: &SharedShalomGlobalContext,
     selection_common: SelectionCommon,
@@ -197,20 +196,17 @@ fn parse_operation(
         };
         ctx.add_variable(name, input_definition);
     }
-    
+
     let selection_common = SelectionCommon {
         full_name: name.clone(),
         name: name.clone(),
         description: None,
     };
-    let root_type = parse_object_selection(
-     &mut ctx,
-     global_ctx,
-     &None,
-     false,
-    &op.selection_set,
-    );
-    ctx.set_root_type(Selection::new(selection_common, SelectionKind::Object(root_type)));
+    let root_type = parse_object_selection(&mut ctx, global_ctx, &name, false, &op.selection_set);
+    ctx.set_root_type(Selection::new(
+        selection_common,
+        SelectionKind::Object(root_type),
+    ));
     Rc::new(ctx)
 }
 
