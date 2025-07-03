@@ -1,607 +1,273 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 import 'package:shalom_core/shalom_core.dart';
-
-
-
-
-
-
-
 
 // ------------ Enum DEFINITIONS -------------
 
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
 
-
 class Order {
-    
-    
-        final String name; 
-    
-        final double price; 
-    
-        final int quantity; 
-    
-    Order(
-        {
-        
+  final String name;
 
-    
-        
-            required this.name  
-        ,
-    
-    
-    
-        
-            required this.price  
-        ,
-    
-    
-    
-        
-            required this.quantity  
-        ,
-    
-      
- 
-        }
-    );
+  final double price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final int quantity;
 
-    
+  Order({required this.name, required this.price, required this.quantity});
 
-    
-        
-            data["name"] = name; 
-        
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
+    data["name"] = name;
 
-    
-        
-            data["price"] = price; 
-        
-    
+    data["price"] = price;
 
-    
+    data["quantity"] = quantity;
 
-    
-        
-            data["quantity"] = quantity; 
-        
-    
+    return data;
+  }
 
-    
-        return data;
-    } 
-  
-Order updateWith(
-    {
-        
-            
-                String? name
-            
-            ,
-        
-            
-                double? price
-            
-            ,
-        
-            
-                int? quantity
-            
-            
-        
+  Order updateWith({String? name, double? price, int? quantity}) {
+    final String name$next;
+
+    if (name != null) {
+      name$next = name;
+    } else {
+      name$next = this.name;
     }
-) {
-    
-        final String name$next;
-        
-            if (name != null) {
-                name$next = name;
-            } else {
-                name$next = this.name;
-            }
-        
-    
-        final double price$next;
-        
-            if (price != null) {
-                price$next = price;
-            } else {
-                price$next = this.price;
-            }
-        
-    
-        final int quantity$next;
-        
-            if (quantity != null) {
-                quantity$next = quantity;
-            } else {
-                quantity$next = this.quantity;
-            }
-        
-    
-    return Order(
-        
-            name: name$next
-            ,
-        
-            price: price$next
-            ,
-        
-            quantity: quantity$next
-            
-        
-    );
-}
 
-}
-     
+    final double price$next;
 
+    if (price != null) {
+      price$next = price;
+    } else {
+      price$next = this.price;
+    }
+
+    final int quantity$next;
+
+    if (quantity != null) {
+      quantity$next = quantity;
+    } else {
+      quantity$next = this.quantity;
+    }
+
+    return Order(name: name$next, price: price$next, quantity: quantity$next);
+  }
+}
 
 class OrderOpt {
-    
-    
-        final Option<String?> name; 
-    
-        final Option<double?> price; 
-    
-        final Option<int?> quantity; 
-    
-    OrderOpt(
-        {
-        
+  final Option<String?> name;
 
-    
-         
-            this.name = const None() 
-        ,
-    
-    
-    
-         
-            this.price = const None() 
-        ,
-    
-    
-    
-         
-            this.quantity = const None() 
-        ,
-    
-      
- 
-        }
-    );
+  final Option<double?> price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final Option<int?> quantity;
 
-    
+  OrderOpt({
+    this.name = const None(),
 
-    
-        if (name.isSome()) {
-            
-                data["name"] = name.some();
-            
-        }
-    
+    this.price = const None(),
 
-    
+    this.quantity = const None(),
+  });
 
-    
-        if (price.isSome()) {
-            
-                data["price"] = price.some();
-            
-        }
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-
-    
-        if (quantity.isSome()) {
-            
-                data["quantity"] = quantity.some();
-            
-        }
-    
-
-    
-        return data;
-    } 
-  
-OrderOpt updateWith(
-    {
-        
-            
-                Option<Option<String?>> name = const None()
-            
-            ,
-        
-            
-                Option<Option<double?>> price = const None()
-            
-            ,
-        
-            
-                Option<Option<int?>> quantity = const None()
-            
-            
-        
+    if (name.isSome()) {
+      data["name"] = name.some();
     }
-) {
-    
-        final Option<String?> name$next;
-        
-            switch (name) {
 
-                case Some(value: final data):
-                    name$next = data;
-                case None():
-                    name$next = this.name;
-            }
-        
-    
-        final Option<double?> price$next;
-        
-            switch (price) {
+    if (price.isSome()) {
+      data["price"] = price.some();
+    }
 
-                case Some(value: final data):
-                    price$next = data;
-                case None():
-                    price$next = this.price;
-            }
-        
-    
-        final Option<int?> quantity$next;
-        
-            switch (quantity) {
+    if (quantity.isSome()) {
+      data["quantity"] = quantity.some();
+    }
 
-                case Some(value: final data):
-                    quantity$next = data;
-                case None():
-                    quantity$next = this.quantity;
-            }
-        
-    
+    return data;
+  }
+
+  OrderOpt updateWith({
+    Option<Option<String?>> name = const None(),
+
+    Option<Option<double?>> price = const None(),
+
+    Option<Option<int?>> quantity = const None(),
+  }) {
+    final Option<String?> name$next;
+
+    switch (name) {
+      case Some(value: final data):
+        name$next = data;
+      case None():
+        name$next = this.name;
+    }
+
+    final Option<double?> price$next;
+
+    switch (price) {
+      case Some(value: final data):
+        price$next = data;
+      case None():
+        price$next = this.price;
+    }
+
+    final Option<int?> quantity$next;
+
+    switch (quantity) {
+      case Some(value: final data):
+        quantity$next = data;
+      case None():
+        quantity$next = this.quantity;
+    }
+
     return OrderOpt(
-        
-            name: name$next
-            ,
-        
-            price: price$next
-            ,
-        
-            quantity: quantity$next
-            
-        
+      name: name$next,
+
+      price: price$next,
+
+      quantity: quantity$next,
     );
+  }
 }
-
-}
-     
-
 
 class OrderOptWithNullDefaults {
-    
-    
-        final String? name; 
-    
-        final double? price; 
-    
-        final int? quantity; 
-    
-    OrderOptWithNullDefaults(
-        {
-        
+  final String? name;
 
-    
-         
-            
-            
-                this.name 
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.price 
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.quantity 
-            
-        ,
-    
-      
- 
-        }
-    );
+  final double? price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final int? quantity;
 
-    
+  OrderOptWithNullDefaults({this.name, this.price, this.quantity});
 
-    
-        
-            data["name"] = name; 
-        
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
+    data["name"] = name;
 
-    
-        
-            data["price"] = price; 
-        
-    
+    data["price"] = price;
 
-    
+    data["quantity"] = quantity;
 
-    
-        
-            data["quantity"] = quantity; 
-        
-    
+    return data;
+  }
 
-    
-        return data;
-    } 
-  
-OrderOptWithNullDefaults updateWith(
-    {
-        
-            
-                Option<String?> name = const None()
-            
-            ,
-        
-            
-                Option<double?> price = const None()
-            
-            ,
-        
-            
-                Option<int?> quantity = const None()
-            
-            
-        
+  OrderOptWithNullDefaults updateWith({
+    Option<String?> name = const None(),
+
+    Option<double?> price = const None(),
+
+    Option<int?> quantity = const None(),
+  }) {
+    final String? name$next;
+
+    switch (name) {
+      case Some(value: final data):
+        name$next = data;
+      case None():
+        name$next = this.name;
     }
-) {
-    
-        final String? name$next;
-        
-            switch (name) {
 
-                case Some(value: final data):
-                    name$next = data;
-                case None():
-                    name$next = this.name;
-            }
-        
-    
-        final double? price$next;
-        
-            switch (price) {
+    final double? price$next;
 
-                case Some(value: final data):
-                    price$next = data;
-                case None():
-                    price$next = this.price;
-            }
-        
-    
-        final int? quantity$next;
-        
-            switch (quantity) {
+    switch (price) {
+      case Some(value: final data):
+        price$next = data;
+      case None():
+        price$next = this.price;
+    }
 
-                case Some(value: final data):
-                    quantity$next = data;
-                case None():
-                    quantity$next = this.quantity;
-            }
-        
-    
+    final int? quantity$next;
+
+    switch (quantity) {
+      case Some(value: final data):
+        quantity$next = data;
+      case None():
+        quantity$next = this.quantity;
+    }
+
     return OrderOptWithNullDefaults(
-        
-            name: name$next
-            ,
-        
-            price: price$next
-            ,
-        
-            quantity: quantity$next
-            
-        
+      name: name$next,
+
+      price: price$next,
+
+      quantity: quantity$next,
     );
+  }
 }
-
-}
-     
-
 
 class OrderOptWithSomeDefaults {
-    
-    
-        final String? name; 
-    
-        final double? price; 
-    
-        final int? quantity; 
-    
-    OrderOptWithSomeDefaults(
-        {
-        
+  final String? name;
 
-    
-         
-            
-            
-                this.name = "burgers"
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.price = 10.0
-            
-        ,
-    
-    
-    
-         
-            
-            
-                this.quantity = 2
-            
-        ,
-    
-      
- 
-        }
-    );
+  final double? price;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final int? quantity;
 
-    
+  OrderOptWithSomeDefaults({
+    this.name = "burgers",
 
-    
-        
-            data["name"] = name; 
-        
-    
+    this.price = 10.0,
 
-    
+    this.quantity = 2,
+  });
 
-    
-        
-            data["price"] = price; 
-        
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
+    data["name"] = name;
 
-    
-        
-            data["quantity"] = quantity; 
-        
-    
+    data["price"] = price;
 
-    
-        return data;
-    } 
-  
-OrderOptWithSomeDefaults updateWith(
-    {
-        
-            
-                Option<String?> name = const None()
-            
-            ,
-        
-            
-                Option<double?> price = const None()
-            
-            ,
-        
-            
-                Option<int?> quantity = const None()
-            
-            
-        
+    data["quantity"] = quantity;
+
+    return data;
+  }
+
+  OrderOptWithSomeDefaults updateWith({
+    Option<String?> name = const None(),
+
+    Option<double?> price = const None(),
+
+    Option<int?> quantity = const None(),
+  }) {
+    final String? name$next;
+
+    switch (name) {
+      case Some(value: final data):
+        name$next = data;
+      case None():
+        name$next = this.name;
     }
-) {
-    
-        final String? name$next;
-        
-            switch (name) {
 
-                case Some(value: final data):
-                    name$next = data;
-                case None():
-                    name$next = this.name;
-            }
-        
-    
-        final double? price$next;
-        
-            switch (price) {
+    final double? price$next;
 
-                case Some(value: final data):
-                    price$next = data;
-                case None():
-                    price$next = this.price;
-            }
-        
-    
-        final int? quantity$next;
-        
-            switch (quantity) {
+    switch (price) {
+      case Some(value: final data):
+        price$next = data;
+      case None():
+        price$next = this.price;
+    }
 
-                case Some(value: final data):
-                    quantity$next = data;
-                case None():
-                    quantity$next = this.quantity;
-            }
-        
-    
+    final int? quantity$next;
+
+    switch (quantity) {
+      case Some(value: final data):
+        quantity$next = data;
+      case None():
+        quantity$next = this.quantity;
+    }
+
     return OrderOptWithSomeDefaults(
-        
-            name: name$next
-            ,
-        
-            price: price$next
-            ,
-        
-            quantity: quantity$next
-            
-        
+      name: name$next,
+
+      price: price$next,
+
+      quantity: quantity$next,
     );
+  }
 }
-
-}
-     
-
 
 // ------------ END Input DEFINITIONS -------------

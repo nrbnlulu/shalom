@@ -1,146 +1,71 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
 
 import "schema.shalom.dart";
 
-
 import 'package:shalom_core/shalom_core.dart';
-
-
-
 
 typedef JsonObject = Map<String, dynamic>;
 
+class GetIntOptionalResponse {
+  /// class members
 
+  final int? intOptional;
 
+  // keywordargs constructor
+  GetIntOptionalResponse({this.intOptional});
+  static GetIntOptionalResponse fromJson(JsonObject data) {
+    final int? intOptional_value;
 
-class GetIntOptionalResponse{
+    intOptional_value = data['intOptional'];
 
-    /// class members
-    
-        
-            final int? intOptional;
-        
-    
-    // keywordargs constructor
-    GetIntOptionalResponse({
-    
-        this.intOptional,
-    
-    });
-    static GetIntOptionalResponse fromJson(JsonObject data) {
-    
-        
-            final int? intOptional_value;
-            
-                intOptional_value = data['intOptional'];
-            
+    return GetIntOptionalResponse(intOptional: intOptional_value);
+  }
 
-        
-    
-    return GetIntOptionalResponse(
-    
-        
-        intOptional: intOptional_value,
-    
-    );
-    }
-    GetIntOptionalResponse updateWithJson(JsonObject data) {
-    
-        
+  GetIntOptionalResponse updateWithJson(JsonObject data) {
     final int? intOptional_value;
     if (data.containsKey('intOptional')) {
-        
-            intOptional_value = data['intOptional'];
-        
+      intOptional_value = data['intOptional'];
     } else {
-        intOptional_value = intOptional;
+      intOptional_value = intOptional;
     }
 
-        
-    
-    return GetIntOptionalResponse(
-    
-        
-        intOptional: intOptional_value,
-    
-    );
-    }
-    @override
-    bool operator ==(Object other) {
+    return GetIntOptionalResponse(intOptional: intOptional_value);
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetIntOptionalResponse &&
-    
-        other.intOptional == intOptional 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        intOptional.hashCode;
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'intOptional':
-            
-                
-                    intOptional
-                
-            
-        ,
-    
-    };
-    }
+        (other is GetIntOptionalResponse && other.intOptional == intOptional);
+  }
 
+  @override
+  int get hashCode => intOptional.hashCode;
+
+  JsonObject toJson() {
+    return {'intOptional': intOptional};
+  }
 }
-
 
 // ------------ OBJECT DEFINITIONS -------------
 
-
-
 // ------------ END OBJECT DEFINITIONS -------------
 
-
 class RequestGetIntOptional extends Requestable {
-    
+  RequestGetIntOptional();
 
-    RequestGetIntOptional(
-        
-    );
-
-    @override
-    Request toRequest() {
-        JsonObject variablesJson =  {}  ;
-        return Request(
-            query: r"""query GetIntOptional {
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetIntOptional {
   intOptional
-}""", 
-            variables: variablesJson, 
-            opType: OperationType.Query, 
-            StringopName: 'GetIntOptional'
-        );
-    }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetIntOptional',
+    );
+  }
 }
-
-
 
 // ------------ Node DEFINITIONS -------------
 
@@ -148,7 +73,7 @@ class GetIntOptionalNode extends Node {
   GetIntOptionalResponse? _obj;
   GetIntOptionalNode({required super.id});
 
-  @override 
+  @override
   void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
     _obj = GetIntOptionalResponse.fromJson(raw);
     manager.addOrUpdateNode(this);
@@ -157,20 +82,20 @@ class GetIntOptionalNode extends Node {
   @override
   void updateWithJson(JsonObject newData) {
     if (_obj != null) {
-        _obj = _obj?.updateWithJson(newData);
+      _obj = _obj?.updateWithJson(newData);
     } else {
-        _obj = GetIntOptionalResponse.fromJson(newData);
+      _obj = GetIntOptionalResponse.fromJson(newData);
     }
     notifyListeners();
   }
 
   @override
   void setObj(JsonObject? data) {
-     if (data != null) {
-        _obj = GetIntOptionalResponse.fromJson(data);
-     }
+    if (data != null) {
+      _obj = GetIntOptionalResponse.fromJson(data);
+    }
   }
-  
+
   @override
   JsonObject? data() {
     final data = _obj?.toJson();
@@ -180,5 +105,6 @@ class GetIntOptionalNode extends Node {
   GetIntOptionalResponse? get obj {
     return _obj;
   }
-} 
+}
+
 // ------------ END Node DEFINITIONS -------------

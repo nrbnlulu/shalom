@@ -6,44 +6,48 @@ import 'dart:math';
 typedef ID = String;
 typedef JsonObject = Map<String, dynamic>;
 
-abstract class Node extends ChangeNotifier {
-  final ID id;
-  Node({required this.id});
-  void updateWithJson(JsonObject rawData, List<String> changedFields);
-  JsonObject toJson();
-  StreamSubscription<JsonObject> subscribeToChanges(ShalomContext context);
-}
-
-
 class NodeManager {
-  Map<String, JsonObject> _rawStore = {};
-  Map<String, StreamController<JsonObject>> _controllers = {};  
+  Map<ID, JsonObject> _rawStore = {};
+  Map<ID, List<NodeSubscriber>> _subscriberStore = {};
 
-  void parseNodeData<T extends Node>(T node) {
-    final nodeId = node.id;
-    final controller = _controllers[nodeId];
-    final nodeJson = node.toJson();
-    _rawStore[nodeId] = nodeJson;
-    if (controller != null) {
-        controller.sink.add(nodeJson);  
+  List<String> _getChangedFields(JsonObject currentData, JsonObject newData) {
+    List<String> changedFields = [];
+    for (final field in newData.keys) {
+      if (currentData[field] != newData[field]) {
+        changedFields.add(field);
+      }
+    }
+    return changedFields;
+  }
+
+  void parseNodeData(JsonObject newData) {
+    final nodeId = newData["id"];
+    final currentData = _rawStore[nodeId];
+    if (currentData != null) {
+      final changedFields = _getChangedFields(currentData, newData);
+      _rawStore[nodeId] = newData;
+      final subscribers = _subscriberStore[nodeId];
+      if (subscribers != null) {
+        for (final subscriber in subscribers) {
+          final node = subscriber.nodeRef.target;
+          if (node != null) {
+            node.updateWithJson(newData, changedFields);
+          }
+        }
+      }
+    } else {
+      _rawStore[nodeId] = newData;
     }
   }
 
-  StreamSubscription<JsonObject> register<T extends Node>(T node, List<String> subscribedFields) {
+  void register(Node node, List<String> subscribedFields) {
     final nodeId = node.id;
-    final StreamController<JsonObject> controller;
-    final controllerFromMap = _controllers[nodeId];
-    if (controllerFromMap != null) {
-      controller = controllerFromMap;
-    } else {
-      controller = StreamController<JsonObject>.broadcast();
-      _controllers[nodeId] = controller;
-    }
-    final stream = controller.stream;
-    return stream.listen((data) => 
-        node.updateWithJson(data["rawData"], data["changedFields"])
+    final nodeSubscriber = NodeSubscriber(
+      nodeRef: WeakReference(node),
+      subscribedFields: subscribedFields,
     );
-  } 
+    _subscriberStore.putIfAbsent(nodeId, () => []).add(nodeSubscriber);
+  }
 }
 
 class ShalomContext {
@@ -51,96 +55,102 @@ class ShalomContext {
   ShalomContext({required this.manager});
 }
 
-// someOp.dart
-class SomeNode with ChangeNotifier implements Node {
-  ID id;
-  String myOwnField;
-  String ect;
-  SomeNode({required this.id, required this.myOwnField, required this.ect});
-
-  static SomeNode deserialize(JsonObject data, ShalomContext context){
-    final self = SomeNode.fromJson(data);
-    context.manager.parseNodeData<SomeNode>(self);
-    return self;
-  }
-
-  @override
-  StreamSubscription<JsonObject> subscribeToChanges(ShalomContext context) {
-    return context.manager.register<SomeNode>(this, ["myOwnField", "etc"]);
-  }
-  
-  @override
-  JsonObject toJson() {
-    return {
-      "myOwnField": myOwnField,
-      "ect": ect,
-      "id": id
-    };
-  } 
-  
-  @override
-  void updateWithJson(JsonObject rawData, List<String> changedFields){
-    for (final f_name in changedFields){
-      switch (f_name){
-        case 'myOwnField':
-          myOwnField = rawData['myOwnField'];
-          break;
-        case 'ect':
-          ect = rawData['ect'];
-          break;
-      }
-    }
-    notifyListeners();
-  }
-
-  static SomeNode fromJson(JsonObject data) {
-    return SomeNode(id: data["id"], myOwnField: data["myOwnField"], ect: data["ect"]);
-  }
+abstract class Node extends ChangeNotifier {
+  final ID id;
+  Node({required this.id});
+  void updateWithJson(JsonObject rawData, List<String> changedFields);
+  JsonObject toJson();
+  subscribeToChanges(ShalomContext context);
 }
 
-class NodeWidget<T extends Node> extends StatefulWidget {
-  final T node; 
+class NodeSubscriber {
+  final WeakReference<Node> nodeRef;
+  final List<String> subscribedFields;
+  NodeSubscriber({required this.nodeRef, required this.subscribedFields});
+}
+
+class NodeWidget extends StatefulWidget {
+  final Node node;
   final Widget Function(BuildContext context, Node node) builder;
   final ShalomContext context;
 
   NodeWidget({
     super.key,
     required this.node,
-    required this.builder, 
-    required this.context
-  }); 
+    required this.builder,
+    required this.context,
+  });
 
   @override
-  State<NodeWidget> createState() => _NodeWidgetState(); 
+  State<NodeWidget> createState() => _NodeWidgetState();
 }
 
-class _NodeWidgetState<T extends Node> extends State<NodeWidget<T>> {
-    StreamSubscription<JsonObject>? _subscription;
+class _NodeWidgetState extends State<NodeWidget> {
+  @override
+  void initState() {
+    super.initState();
+    final node = widget.node;
+    node.subscribeToChanges(widget.context);
+  }
 
-    @override
-    void initState() {
-      super.initState();
-      final node = widget.node; 
-      _subscription = node.subscribeToChanges(widget.context);
-    }
-
-    @override
-    void dispose() {
-      _subscription?.cancel();
-      super.dispose();
-    }
-
-    @override
-    Widget build(BuildContext context) {
-      return ListenableBuilder(listenable: widget.node,
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: widget.node,
       builder: (context, child) {
         return widget.builder(context, widget.node);
-      });
-    }
+      },
+    );
+  }
 }
 
+// --- UI Implementation and Concrete Node Class ---
 
-// ai generated code
+/// A concrete implementation of the [Node] class representing a user.
+class UserNode extends Node {
+  String name;
+  String email;
+
+  UserNode({required super.id, required this.name, required this.email});
+
+  static UserNode deserialize(JsonObject data, ShalomContext context) {
+    final self = UserNode(
+      id: data["id"],
+      name: data["name"],
+      email: data["email"],
+    );
+    context.manager.parseNodeData(data);
+    return self;
+  }
+
+  @override
+  void subscribeToChanges(ShalomContext context) {
+    context.manager.register(this, ["myOwnField", "etc"]);
+  }
+
+  @override
+  void updateWithJson(JsonObject rawData, List<String> changedFields) {
+    bool hasChanged = false;
+    if (changedFields.contains('name') && rawData['name'] != name) {
+      name = rawData['name'];
+      hasChanged = true;
+    }
+    if (changedFields.contains('email') && rawData['email'] != email) {
+      email = rawData['email'];
+      hasChanged = true;
+    }
+    if (hasChanged) {
+      notifyListeners();
+    }
+  }
+
+  @override
+  JsonObject toJson() {
+    return {'id': id, 'name': name, 'email': email};
+  }
+}
+
+// --- Main Application ---
 
 void main() {
   runApp(const MyApp());
@@ -152,103 +162,133 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Node Demo',
-      theme: ThemeData.dark(useMaterial3: true),
-      home: const HomeScreen(),
+      title: 'Node Framework Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        cardColor: const Color(0xFF1E1E1E),
+        useMaterial3: true,
+      ),
+      home: const UserProfileScreen(),
     );
   }
 }
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+class UserProfileScreen extends StatefulWidget {
+  const UserProfileScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<UserProfileScreen> createState() => _UserProfileScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  // 1. Initialize your state management system
-  final NodeManager _manager = NodeManager();
+class _UserProfileScreenState extends State<UserProfileScreen> {
   late final ShalomContext _shalomContext;
-  late final SomeNode _node;
+  late UserNode _userNode;
 
   @override
   void initState() {
     super.initState();
-    _shalomContext = ShalomContext(manager: _manager);
-    _node = SomeNode(
-      id: "node_777",
-      myOwnField: "Welcome!",
-      ect: "Press the button to update.",
-    );
-    // Initialize the manager's store with the node's starting data
-    _manager.parseNodeData(_node);
-  }
+    // 1. Initialize the manager and context
+    final nodeManager = NodeManager();
+    _shalomContext = ShalomContext(manager: nodeManager);
 
-  void _simulateServerUpdate() {
-    // This simulates receiving new data from an external source
-    final randomValue = Random().nextInt(1000);
-    final updatedJson = {
-      "id": "node_777", // Must match the ID of the node being displayed
-      "myOwnField": "Data updated",
-      "ect": "Your new random number is $randomValue",
+    // 2. Define the initial data for our user node
+    final initialUserData = {
+      'id': 'user-123',
+      'name': 'John Doe',
+      'email': 'john.doe@example.com',
     };
 
-    // The manager processes the new data, which triggers the stream for the widget
-    _manager.parseNodeData(SomeNode.fromJson(updatedJson));
+    // 3. Create the UserNode instance from the data
+
+    // 4. Add the initial data to the node manager's store
+    _userNode = UserNode.deserialize(initialUserData, _shalomContext);
+    _userNode.subscribeToChanges(_shalomContext);
+  }
+
+  void _simulateDataChange() {
+    // This simulates receiving new data from a server or other external source.
+    final updatedUserData = {
+      'id': 'user-123', // Same ID
+      'name': 'Jacob Doe', // Changed name
+      'email': 'Jabob.doe.new@example.com', // Changed email
+    };
+    print("Simulating data change...");
+    _userNode = UserNode.deserialize(updatedUserData, _shalomContext);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Reactive Node UI')),
+      appBar: AppBar(
+        title: const Text('User Profile'),
+        backgroundColor: Colors.black26,
+      ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // 2. Use your NodeWidget to display the reactive data
-              NodeWidget<SomeNode>(
-                node: _node,
-                context: _shalomContext,
-                builder: (context, node) {
-                  // This builder automatically runs when the node changes
-                  return Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('ID: ${node.id}', style: const TextStyle(color: Colors.grey)),
-                          const Divider(height: 20),
-                          Text(
-                            (node as SomeNode).myOwnField,
-                            style: Theme.of(context).textTheme.headlineSmall,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            (node as SomeNode).ect,
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 30),
-              ElevatedButton.icon(
-                icon: const Icon(Icons.sync),
-                label: const Text('Simulate Data Update'),
-                onPressed: _simulateServerUpdate,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                ),
-              ),
-            ],
+          padding: const EdgeInsets.all(16.0),
+          // 5. Use NodeWidget to listen for changes and rebuild the UI
+          child: NodeWidget(
+            context: _shalomContext,
+            node: _userNode,
+            builder: (context, node) {
+              // The builder provides the most up-to-date version of the node.
+              // We can safely cast it to UserNode.
+              final user = node as UserNode;
+              return UserCard(name: user.name, email: user.email);
+            },
           ),
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _simulateDataChange,
+        tooltip: 'Change Data',
+        child: const Icon(Icons.sync),
+      ),
+    );
+  }
+}
+
+// A simple widget to display the user's information
+class UserCard extends StatelessWidget {
+  final String name;
+  final String email;
+
+  const UserCard({super.key, required this.name, required this.email});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              name,
+              style: Theme.of(
+                context,
+              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.email, size: 16, color: Colors.white70),
+                const SizedBox(width: 8),
+                Text(
+                  email,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleMedium?.copyWith(color: Colors.white70),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );

@@ -262,43 +262,4 @@ class {{ operation_name }}Variables {
 }
 {% endif %}
 
-// ------------ Node DEFINITIONS -------------
-{% set node_name = operation_name ~ "Node" %}
-class {{ node_name }} extends Node {
-  {{ operation_name }}Response? _obj;
-  {{ node_name }}({required super.id});
 
-  @override 
-  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
-    _obj = {{ operation_name }}Response.fromJson(raw);
-    manager.addOrUpdateNode(this);
-  }
-
-  @override
-  void updateWithJson(JsonObject newData) {
-    if (_obj != null) {
-        _obj = _obj?.updateWithJson(newData);
-    } else {
-        _obj = {{ operation_name }}Response.fromJson(newData);
-    }
-    notifyListeners();
-  }
-
-  @override
-  void setObj(JsonObject? data) {
-     if (data != null) {
-        _obj = {{ operation_name }}Response.fromJson(data);
-     }
-  }
-  
-  @override
-  JsonObject? data() {
-    final data = _obj?.toJson();
-    return data;
-  }
-
-  {{ operation_name }}Response? get obj {
-    return _obj;
-  }
-} 
-// ------------ END Node DEFINITIONS -------------
