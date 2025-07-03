@@ -2,6 +2,7 @@ use anyhow::Result;
 use lazy_static::lazy_static;
 use log::info;
 use minijinja::{context, value::ViaDeserialize, Environment};
+use shalom_core::operation::types::SelectionKind;
 use serde::Serialize;
 use shalom_core::{
     context::SharedShalomGlobalContext,
@@ -44,49 +45,41 @@ const LINE_ENDING: &str = "\r\n";
 const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
-    use super::*;
 
-    pub fn type_name_for_selection(
-        ctx: &SharedShalomGlobalContext,
-        selection: ViaDeserialize<Selection>,
-    ) -> String {
-        match selection.0 {
-            Selection::List(list) => {
+
+    use super::*;
+    fn type_name_for_kind_impl(ctx: &SharedShalomGlobalContext, kind: &SelectionKind) -> String {
+        match kind.0 {
+            SelectionKind::List(list) => {
                 let inner_type_name =
-                    type_name_for_selection(ctx, ViaDeserialize(list.of_type.as_ref().clone()));
+                    type_name_for_kind_impl(ctx, &list.of_kind);
 
                 let inner_type = inner_type_name.trim_end_matches('?');
 
-                let list_type = if list.item_optional {
-                    format!("List<{}?>", inner_type)
+                if list.is_optional {
+                    format!("List<{}>?", inner_type)
                 } else {
                     format!("List<{}>", inner_type)
-                };
-
-                if list.common.is_optional {
-                    format!("{}?", list_type)
-                } else {
-                    list_type
                 }
             }
-            Selection::Scalar(scalar) => {
+            SelectionKind::Scalar(scalar) => {
                 let scalar_name = &scalar.concrete_type.name;
                 if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
                     let mut output_typename = custom_scalar.output_type.symbol_fullname();
-                    if scalar.common.is_optional {
+                    if scalar.is_optional {
                         output_typename.push('?');
                     }
                     output_typename
                 } else {
                     let mut resolved = dart_type_for_scalar(scalar_name);
-                    if scalar.common.is_optional {
+                    if scalar.is_optional {
                         resolved.push('?');
                     }
                     resolved
                 }
             }
-            Selection::Object(object) => {
-                if object.common.is_optional {
+            SelectionKind::Object(object) => {
+                if object.is_optional {
                     format!("{}?", object.common.full_name)
                 } else {
                     object.common.full_name.clone()
@@ -100,6 +93,13 @@ mod ext_jinja_fns {
                 }
             }
         }
+    }
+
+    pub fn type_name_for_selection(
+        ctx: &SharedShalomGlobalContext,
+        kind: ViaDeserialize<SelectionKind>,
+    ) -> String {
+        type_name_for_kind_impl(ctx, kind)
     }
 
     pub fn type_name_for_input_field(
