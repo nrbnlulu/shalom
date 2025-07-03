@@ -8,7 +8,6 @@ use apollo_compiler::{
 use log::{info, trace};
 
 use crate::context::SharedShalomGlobalContext;
-use crate::operation;
 use crate::operation::types::{ObjectSelection, SelectionCommon, SelectionKind};
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
@@ -146,15 +145,6 @@ fn parse_selection_set(
     let selection = Selection::new(selection_common, kind);
     op_ctx.add_selection(full_name, selection.clone());
     selection
-}
-
-fn get_base_type_name(ty: &apollo_compiler::ast::Type) -> &str {
-    match ty {
-        apollo_compiler::ast::Type::Named(name) => name,
-        apollo_compiler::ast::Type::NonNullNamed(name) => name,
-        apollo_compiler::ast::Type::List(inner_ty) => get_base_type_name(inner_ty),
-        apollo_compiler::ast::Type::NonNullList(inner_ty) => get_base_type_name(inner_ty),
-    }
 }
 
 fn parse_operation_type(operation_type: ApolloOperationType) -> OperationType {

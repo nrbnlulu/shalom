@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use serde::Serialize;
 
-use super::types::{FullPathName, OperationType, Selection, SharedObjectSelection};
+use super::types::{FullPathName, OperationType, Selection};
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 #[derive(Debug, Serialize)]
 pub struct OperationContext {
