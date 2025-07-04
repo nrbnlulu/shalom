@@ -12,7 +12,7 @@ use shalom_core::{
     },
     schema::{
         context::SchemaContext,
-        types::{GraphQLAny, InputFieldDefinition, SchemaFieldCommon, UnresolvedType},
+        types::{GraphQLAny, InputFieldDefinition, SchemaFieldCommon},
     },
     shalom_config::RuntimeSymbolDefinition,
 };
@@ -232,20 +232,6 @@ mod ext_jinja_fns {
     pub fn is_custom_scalar(ctx: &SharedShalomGlobalContext, scalar_name: &str) -> bool {
         ctx.find_custom_scalar(scalar_name).is_some()
     }
-
-    pub fn concrete_typename_of_field(field: ViaDeserialize<InputFieldDefinition>) -> String {
-        let field = field.0;
-        use shalom_core::schema::types::UnresolvedTypeKind;
-
-        fn get_base_type_name(unresolved: &UnresolvedType) -> String {
-            match &unresolved.kind {
-                UnresolvedTypeKind::Named { name } => name.clone(),
-                UnresolvedTypeKind::List { of_type } => get_base_type_name(of_type),
-            }
-        }
-
-        get_base_type_name(&field.common.unresolved_type)
-    }
 }
 
 /// takes a number and returns itself as if the abc was 123, i.e 143 would be "adc"
@@ -326,11 +312,6 @@ impl TemplateEnv<'_> {
         env.add_function("is_custom_scalar", move |name: &str| {
             ext_jinja_fns::is_custom_scalar(&ctx_clone, name)
         });
-
-        env.add_function(
-            "concrete_typename_of_field",
-            ext_jinja_fns::concrete_typename_of_field,
-        );
 
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
