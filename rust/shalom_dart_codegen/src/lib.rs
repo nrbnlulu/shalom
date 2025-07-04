@@ -3,6 +3,7 @@ use lazy_static::lazy_static;
 use log::info;
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
+use shalom_core::operation::types::SelectionKind;
 use shalom_core::{
     context::SharedShalomGlobalContext,
     operation::{
@@ -44,40 +45,56 @@ const LINE_ENDING: &str = "\r\n";
 const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
-    use super::*;
 
-    #[allow(unused_variables)]
-    pub fn type_name_for_selection(
-        ctx: &SharedShalomGlobalContext,
-        selection: ViaDeserialize<Selection>,
+    use shalom_core::context::ShalomGlobalContext;
+
+    use super::*;
+    fn resolve_scalar_typename(
+        scalar_name: &str,
+        ctx: &ShalomGlobalContext,
+        is_optional: bool,
     ) -> String {
-        match selection.0 {
-            Selection::Scalar(scalar) => {
-                let scalar_name = &scalar.concrete_type.name;
-                if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
-                    // the symbol name should be available globally at runtime
-                    let mut output_typename = custom_scalar.output_type.symbol_fullname();
-                    if scalar.common.is_optional {
-                        output_typename.push('?');
-                    }
-                    output_typename
+        if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
+            let mut output_typename = custom_scalar.output_type.symbol_fullname();
+            if is_optional {
+                output_typename.push('?');
+            }
+            output_typename
+        } else {
+            let mut resolved = dart_type_for_scalar(scalar_name);
+            if is_optional {
+                resolved.push('?');
+            }
+            resolved
+        }
+    }
+
+    fn type_name_for_kind_impl(ctx: &SharedShalomGlobalContext, kind: &SelectionKind) -> String {
+        match kind {
+            SelectionKind::List(list) => {
+                let inner_type_name = type_name_for_kind_impl(ctx, &list.of_kind);
+
+                let inner_type = inner_type_name.trim_end_matches('?');
+
+                if list.is_optional {
+                    format!("List<{}>?", inner_type)
                 } else {
-                    let mut resolved = dart_type_for_scalar(scalar_name);
-                    if scalar.common.is_optional {
-                        resolved.push('?');
-                    }
-                    resolved
+                    format!("List<{}>", inner_type)
                 }
             }
-            Selection::Object(object) => {
-                if object.common.is_optional {
-                    format!("{}?", object.common.full_name)
+            SelectionKind::Scalar(scalar) => {
+                resolve_scalar_typename(&scalar.concrete_type.name, ctx, scalar.is_optional)
+            }
+
+            SelectionKind::Object(object) => {
+                if object.is_optional {
+                    format!("{}?", object.full_name)
                 } else {
-                    object.common.full_name.clone()
+                    object.full_name.clone()
                 }
             }
-            Selection::Enum(enum_) => {
-                if enum_.common.is_optional {
+            SelectionKind::Enum(enum_) => {
+                if enum_.is_optional {
                     format!("{}?", enum_.concrete_type.name)
                 } else {
                     enum_.concrete_type.name.clone()
@@ -86,29 +103,50 @@ mod ext_jinja_fns {
         }
     }
 
+    pub fn type_name_for_selection(
+        ctx: &SharedShalomGlobalContext,
+        selection: ViaDeserialize<Selection>,
+    ) -> String {
+        type_name_for_kind_impl(ctx, &selection.0.kind)
+    }
+
+    fn resolve_schema_typename(
+        ty: &GraphQLAny,
+        is_optional: bool,
+        ctx: &ShalomGlobalContext,
+    ) -> String {
+        let mut typename = match &ty {
+            GraphQLAny::Scalar(scalar) => resolve_scalar_typename(&scalar.name, ctx, is_optional),
+            GraphQLAny::InputObject(obj) => obj.name.clone(),
+            GraphQLAny::Enum(enum_) => enum_.name.clone(),
+            GraphQLAny::List {
+                of_type,
+                is_optional,
+            } => {
+                let inner = resolve_schema_typename(of_type, *is_optional, ctx);
+                format!("List<{inner}>")
+            }
+            _ => panic!("Unsupported type: {:?}", ty),
+        };
+        // scalars optionals are handled in `resolve_scalar_typename`
+        if is_optional && ty.scalar().is_none() {
+            typename.push('?')
+        }
+        typename
+    }
+
     pub fn type_name_for_input_field(
         ctx: &SharedShalomGlobalContext,
         field: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
         let field = field.0;
-        let resolved = match field.common.resolve_type(&ctx.schema_ctx).ty {
-            GraphQLAny::Scalar(scalar) => {
-                if let Some(custom_scalar) = ctx.find_custom_scalar(&scalar.name) {
-                    custom_scalar.output_type.symbol_fullname()
-                } else {
-                    dart_type_for_scalar(&scalar.name)
-                }
-            }
-            GraphQLAny::InputObject(obj) => obj.name.clone(),
-            GraphQLAny::Enum(enum_) => enum_.name.clone(),
-            _ => unimplemented!("input type not supported"),
-        };
-        if field.is_optional && field.default_value.is_none() {
-            format!("Option<{}?>", resolved)
-        } else if field.is_optional {
-            format!("{}?", resolved)
+        let resolved_type = field.common.unresolved_type.resolve(&ctx.schema_ctx);
+        let is_optional = resolved_type.is_optional;
+        let res = resolve_schema_typename(&resolved_type.ty, is_optional, ctx);
+        if is_optional && field.default_value.is_none() {
+            format!("Option<{res}>")
         } else {
-            resolved
+            res
         }
     }
 
@@ -222,11 +260,9 @@ impl SymbolName for RuntimeSymbolDefinition {
     }
 
     fn symbol_fullname(&self) -> String {
-        // we export it in schema.shalom.dart
         if let Some(namespace) = self.namespace() {
             format!("{}.{}", namespace, self.symbol_name)
         } else {
-            // it is a global symbol, so we just return the name
             self.symbol_name.clone()
         }
     }
@@ -235,7 +271,8 @@ impl SymbolName for RuntimeSymbolDefinition {
 impl TemplateEnv<'_> {
     fn new(ctx: &SharedShalomGlobalContext) -> Self {
         let mut env = Environment::new();
-
+        env.set_undefined_behavior(minijinja::UndefinedBehavior::Strict);
+        env.set_debug(true);
         env.add_template(
             "operation",
             include_str!("../templates/operation.dart.jinja"),

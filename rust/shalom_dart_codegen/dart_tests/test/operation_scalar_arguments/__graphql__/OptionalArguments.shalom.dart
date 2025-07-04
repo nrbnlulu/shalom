@@ -138,11 +138,15 @@ class OptionalArgumentsVariables {
     JsonObject data = {};
 
     if (id.isSome()) {
-      data["id"] = id.some();
+      final value = id.some();
+
+      data["id"] = value;
     }
 
     if (phone.isSome()) {
-      data["phone"] = phone.some();
+      final value = phone.some();
+
+      data["phone"] = value;
     }
 
     return data;
