@@ -178,7 +178,9 @@ class OrderRecursiveVariables {
     JsonObject data = {};
 
     if (order.isSome()) {
-      data["order"] = order.some()?.toJson();
+      final value = order.some();
+
+      data["order"] = value?.toJson();
     }
 
     return data;

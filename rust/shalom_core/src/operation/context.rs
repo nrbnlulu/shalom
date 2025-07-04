@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use serde::Serialize;
 
-use super::types::{FullPathName, OperationType, Selection, SharedObjectSelection};
+use super::types::{FullPathName, OperationType, Selection};
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 #[derive(Debug, Serialize)]
 pub struct OperationContext {
@@ -16,7 +16,7 @@ pub struct OperationContext {
     query: String,
     variables: HashMap<String, InputFieldDefinition>,
     type_defs: HashMap<FullPathName, Selection>,
-    root_type: Option<SharedObjectSelection>,
+    root_type: Option<Selection>,
     op_ty: OperationType,
 }
 
@@ -40,7 +40,7 @@ impl OperationContext {
         }
     }
 
-    pub fn set_root_type(&mut self, root_type: SharedObjectSelection) {
+    pub fn set_root_type(&mut self, root_type: Selection) {
         self.root_type = Some(root_type);
     }
 
@@ -54,12 +54,6 @@ impl OperationContext {
 
     pub fn add_variable(&mut self, name: String, variable: InputFieldDefinition) {
         self.variables.entry(name).or_insert(variable);
-    }
-
-    pub fn add_object_selection(&mut self, name: String, object: SharedObjectSelection) {
-        self.type_defs
-            .entry(name.clone())
-            .or_insert(Selection::Object(object));
     }
 }
 

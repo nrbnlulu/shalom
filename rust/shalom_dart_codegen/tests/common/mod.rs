@@ -1,11 +1,12 @@
 use std::path::{Path, PathBuf};
 
 use log::info;
-mod usecases;
 
 fn tests_path() -> PathBuf {
     let f = file!();
     PathBuf::from(f)
+        .parent()
+        .unwrap()
         .parent()
         .unwrap()
         .parent()
@@ -45,7 +46,7 @@ fn run_codegen(cwd: &Path) {
 pub fn run_dart_tests_for_usecase(usecase: &str) {
     match simple_logger::init() {
         Ok(_) => println!("Logger initialized"),
-        Err(e) => eprintln!("Error initializing logger: {}", e),
+        Err(e) => eprintln!("Error initializing logger: {e}"),
     }
     let usecase_test_dir =
         ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
@@ -62,15 +63,11 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
     }
     let dart_test_root = tests_path().join("..");
     cmd.current_dir(&dart_test_root);
-    cmd.arg("test").arg(format!("test/{}/test.dart", usecase));
-    info!("Running command: {:?} inside {:?}", cmd, dart_test_root);
+    cmd.arg("test").arg(format!("test/{usecase}/test.dart"));
+    info!("Running command: {cmd:?} inside {dart_test_root:?}");
     let output = cmd.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
 
-    assert!(
-        output.status.success(),
-        "❌ Dart tests failed\n {}",
-        out_std
-    );
-    info!("✔️ Dart tests passed\n {}", out_std);
+    assert!(output.status.success(), "❌ Dart tests failed\n {out_std}");
+    info!("✔️ Dart tests passed\n {out_std}");
 }
