@@ -56,7 +56,6 @@ fn parse_object_selection(
                     .map(|s| s.to_string());
                 let field_path = full_path_name(&f_name, path);
                 let selection_common = SelectionCommon {
-                    full_name: field_path.clone(),
                     name: f_name.clone(),
                     description,
                 };
@@ -136,7 +135,7 @@ fn parse_selection_set(
     selection_orig: &apollo_compiler::executable::SelectionSet,
     field_type_orig: &FieldTypeOrig,
 ) -> Selection {
-    let full_name = selection_common.full_name.clone();
+    let full_name = path.clone();
     if let Some(selection) = op_ctx.get_selection(&full_name) {
         info!("Selection already exists");
         return selection.clone();
@@ -188,7 +187,6 @@ fn parse_operation(
     }
 
     let selection_common = SelectionCommon {
-        full_name: name.clone(),
         name: name.clone(),
         description: None,
     };

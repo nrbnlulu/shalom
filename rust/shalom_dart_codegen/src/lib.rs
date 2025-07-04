@@ -297,6 +297,7 @@ impl TemplateEnv<'_> {
     fn new(ctx: &SharedShalomGlobalContext) -> Self {
         let mut env = Environment::new();
         env.set_undefined_behavior(minijinja::UndefinedBehavior::Strict);
+        env.set_debug(true);
         env.add_template(
             "operation",
             include_str!("../templates/operation.dart.jinja"),

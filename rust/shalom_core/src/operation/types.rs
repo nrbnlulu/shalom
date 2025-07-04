@@ -19,7 +19,6 @@ pub enum OperationType {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SelectionCommon {
     pub name: String,
-    pub full_name: FullPathName,
     pub description: Option<String>,
 }
 
@@ -41,9 +40,6 @@ impl Selection {
 
     pub fn self_selection_name(&self) -> &String {
         &self.selection_common.name
-    }
-    pub fn self_full_path_name(&self) -> &FullPathName {
-        &self.selection_common.full_name
     }
 }
 pub type SharedSelection = Rc<Selection>;
