@@ -27,7 +27,7 @@
     - [x] enum
     - [ ] oneOf
     - [ ] list of
-        - [ ] scalar
+        - [x] scalar
         - [ ] object
         - [ ] enum
         - [ ] oneOf  
