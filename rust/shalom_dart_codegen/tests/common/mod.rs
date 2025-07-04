@@ -1,11 +1,12 @@
 use std::path::{Path, PathBuf};
 
 use log::info;
-mod usecases;
 
 fn tests_path() -> PathBuf {
     let f = file!();
     PathBuf::from(f)
+        .parent()
+        .unwrap()
         .parent()
         .unwrap()
         .parent()
