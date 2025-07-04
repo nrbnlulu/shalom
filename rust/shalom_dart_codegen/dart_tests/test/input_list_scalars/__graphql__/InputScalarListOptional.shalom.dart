@@ -134,7 +134,7 @@ class RequestInputScalarListOptional extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query: r"""mutation InputScalarListOptional($names: [String]) {
+      query: r"""mutation InputScalarListOptional($names: [String] = null) {
   InputScalarListOptional(names: $names) {
     success
   }
@@ -147,26 +147,22 @@ class RequestInputScalarListOptional extends Requestable {
 }
 
 class InputScalarListOptionalVariables {
-  final Option<List<String?>?> names;
+  final List<String?>? names;
 
-  InputScalarListOptionalVariables({this.names = const None()});
+  InputScalarListOptionalVariables({this.names});
 
   JsonObject toJson() {
     JsonObject data = {};
 
-    if (names.isSome()) {
-      final value = names.some();
-
-      data["names"] = value;
-    }
+    data["names"] = names;
 
     return data;
   }
 
   InputScalarListOptionalVariables updateWith({
-    Option<Option<List<String?>?>> names = const None(),
+    Option<List<String?>?> names = const None(),
   }) {
-    final Option<List<String?>?> names$next;
+    final List<String?>? names$next;
 
     switch (names) {
       case Some(value: final data):

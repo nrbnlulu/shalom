@@ -46,7 +46,29 @@ const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
 
+    use shalom_core::context::ShalomGlobalContext;
+
     use super::*;
+    fn resolve_scalar_typename(
+        scalar_name: &str,
+        ctx: &ShalomGlobalContext,
+        is_optional: bool,
+    ) -> String {
+        if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
+            let mut output_typename = custom_scalar.output_type.symbol_fullname();
+            if is_optional {
+                output_typename.push('?');
+            }
+            output_typename
+        } else {
+            let mut resolved = dart_type_for_scalar(scalar_name);
+            if is_optional {
+                resolved.push('?');
+            }
+            resolved
+        }
+    }
+
     fn type_name_for_kind_impl(ctx: &SharedShalomGlobalContext, kind: &SelectionKind) -> String {
         match kind {
             SelectionKind::List(list) => {
@@ -61,21 +83,9 @@ mod ext_jinja_fns {
                 }
             }
             SelectionKind::Scalar(scalar) => {
-                let scalar_name = &scalar.concrete_type.name;
-                if let Some(custom_scalar) = ctx.find_custom_scalar(scalar_name) {
-                    let mut output_typename = custom_scalar.output_type.symbol_fullname();
-                    if scalar.is_optional {
-                        output_typename.push('?');
-                    }
-                    output_typename
-                } else {
-                    let mut resolved = dart_type_for_scalar(scalar_name);
-                    if scalar.is_optional {
-                        resolved.push('?');
-                    }
-                    resolved
-                }
+                resolve_scalar_typename(&scalar.concrete_type.name, ctx, scalar.is_optional)
             }
+
             SelectionKind::Object(object) => {
                 if object.is_optional {
                     format!("{}?", object.full_name)
@@ -100,64 +110,43 @@ mod ext_jinja_fns {
         type_name_for_kind_impl(ctx, &selection.0.kind)
     }
 
+    fn resolve_schema_typename(
+        ty: &GraphQLAny,
+        is_optional: bool,
+        ctx: &ShalomGlobalContext,
+    ) -> String {
+        let mut typename = match &ty {
+            GraphQLAny::Scalar(scalar) => resolve_scalar_typename(&scalar.name, ctx, is_optional),
+            GraphQLAny::InputObject(obj) => obj.name.clone(),
+            GraphQLAny::Enum(enum_) => enum_.name.clone(),
+            GraphQLAny::List {
+                of_type,
+                is_optional,
+            } => {
+                let inner = resolve_schema_typename(of_type, *is_optional, ctx);
+                format!("List<{inner}>")
+            }
+            _ => panic!("Unsupported type: {:?}", ty),
+        };
+        // scalars optionals are handled in `resolve_scalar_typename`
+        if is_optional && ty.scalar().is_none() {
+            typename.push('?')
+        }
+        typename
+    }
+
     pub fn type_name_for_input_field(
         ctx: &SharedShalomGlobalContext,
         field: ViaDeserialize<InputFieldDefinition>,
     ) -> String {
         let field = field.0;
-
-        let get_base_type = |type_name: &str| -> String {
-            let type_string = type_name.to_string();
-            if let Some(ty) = ctx.schema_ctx.get_type(&type_string) {
-                match ty {
-                    GraphQLAny::Scalar(scalar) => {
-                        if let Some(custom_scalar) = ctx.find_custom_scalar(&scalar.name) {
-                            custom_scalar.output_type.symbol_fullname()
-                        } else {
-                            dart_type_for_scalar(&scalar.name)
-                        }
-                    }
-                    GraphQLAny::InputObject(obj) => obj.name.clone(),
-                    GraphQLAny::Enum(enum_) => enum_.name.clone(),
-                    _ => panic!("Unsupported type: {type_name}"),
-                }
-            } else {
-                panic!("Type not found: {type_name}")
-            }
-        };
-
-        use shalom_core::schema::types::UnresolvedTypeKind;
-
-        fn process_unresolved_type(
-            unresolved: &shalom_core::schema::types::UnresolvedType,
-            get_base_type: &dyn Fn(&str) -> String,
-        ) -> String {
-            match &unresolved.kind {
-                UnresolvedTypeKind::Named { name } => {
-                    let base = get_base_type(name);
-                    if unresolved.is_optional {
-                        format!("{}?", base)
-                    } else {
-                        base
-                    }
-                }
-                UnresolvedTypeKind::List { of_type } => {
-                    let inner_type = process_unresolved_type(of_type, get_base_type);
-                    if unresolved.is_optional {
-                        format!("List<{}>?", inner_type)
-                    } else {
-                        format!("List<{}>", inner_type)
-                    }
-                }
-            }
-        }
-
-        let dart_type = process_unresolved_type(&field.common.unresolved_type, &get_base_type);
-
-        if field.is_optional && field.default_value.is_none() {
-            format!("Option<{}>", dart_type)
+        let resolved_type = field.common.unresolved_type.resolve(&ctx.schema_ctx);
+        let is_optional = resolved_type.is_optional;
+        let res = resolve_schema_typename(&resolved_type.ty, is_optional, ctx);
+        if is_optional && field.default_value.is_none() {
+            format!("Option<{res}>")
         } else {
-            dart_type
+            res
         }
     }
 

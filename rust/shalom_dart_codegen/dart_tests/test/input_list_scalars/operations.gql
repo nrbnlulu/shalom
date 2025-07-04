@@ -10,6 +10,11 @@ mutation InputScalarListMaybe($ints: [Int]) {
         success
     }
 }
+mutation InputScalarListOptional($names: [String] = null) {
+    InputScalarListOptional(names: $names) {
+        success
+    }
+}
 
 mutation InputScalarInsideInputType($user: UserInput!) {
     InputScalarInsideInputType(user: $user) {
@@ -17,8 +22,3 @@ mutation InputScalarInsideInputType($user: UserInput!) {
     }
 }
 
-mutation InputScalarListOptional($names: [String]) {
-    InputScalarListOptional(names: $names) {
-        success
-    }
-}

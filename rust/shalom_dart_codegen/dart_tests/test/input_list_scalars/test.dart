@@ -7,89 +7,69 @@ import '__graphql__/InputScalarListRequired.shalom.dart';
 import '__graphql__/InputScalarListOptional.shalom.dart';
 
 void main() {
-  group('List of scalars - Mutation variables', () {
-    test('UpdateStringList variables', () {
+  group('List of input scalars', () {
+    test('required', () {
       final variables = InputScalarListRequiredVariables(
         strings: ['tag1', 'tag2', 'tag3'],
       );
       expect(variables.toJson(), {
         'strings': ['tag1', 'tag2', 'tag3'],
       });
+      final newVariables = variables.updateWith(strings: ['tag4', 'tag5']);
+      expect(newVariables.toJson(), {
+        'strings': ['tag4', 'tag5'],
+      });
     });
 
-    test('UpdateIntList variables with null list', () {
+    test('maybe', () {
       final variables = InputScalarListMaybeVariables(ints: None());
       expect(variables.toJson(), {});
+      final some = variables.updateWith(ints: Some(Some([1, 2, 3])));
+      expect(some.toJson(), {
+        'ints': [1, 2, 3],
+      });
+      final someWithNullValue = some.updateWith(ints: Some(Some(null)));
+      expect(someWithNullValue.toJson(), {'ints': null});
     });
 
-    test('UpdateIntList variables with values and nulls', () {
-      final variables = InputScalarListMaybeVariables(
-        ints: Some([1, null, 3, null, 5]),
-      );
-      expect(variables.toJson(), {
-        'ints': [1, null, 3, null, 5],
+    test("optional", () {
+      final vars = InputScalarListOptionalVariables();
+      expect(vars.toJson(), {"names": null});
+      final varsWithValues = vars.updateWith(names: Some(['Alice', 'Bob']));
+      expect(varsWithValues.toJson(), {
+        "names": ['Alice', 'Bob'],
       });
     });
   });
 
-  group('List of scalars - Input objects', () {
-    test('UserInput with all list fields', () {
-      final user = UserInput(
-        tags: ['programming', 'dart', 'graphql'],
-        scores: Some([95, 87, null, 100]),
-        ids: Some(['user1', 'user2']),
-      );
-
-      expect(user.toJson(), {
-        'tags': ['programming', 'dart', 'graphql'],
-        'scores': [95, 87, null, 100],
-        'ids': ['user1', 'user2'],
-      });
+  test('List of input scalars inside input object', () {
+    final vars = InputScalarInsideInputTypeVariables(
+      user: UserInput(
+        tags: ['tag1', 'tag2', 'tag3'],
+        ids: Some(null),
+        scores: None(),
+      ),
+    );
+    expect(vars.toJson(), {
+      'user': {
+        'tags': ['tag1', 'tag2', 'tag3'],
+        'ids': null,
+      },
     });
 
-    test('UserInput with empty lists', () {
-      final user = UserInput(tags: [], scores: None(), ids: Some([]));
-
-      expect(user.toJson(), {'tags': [], 'ids': []});
-    });
-
-    test('CreateUser mutation with UserInput', () {
-      final variables = InputScalarInsideInputTypeVariables(
-        user: UserInput(
-          tags: ['tag1', 'tag2'],
-          scores: Some([100, 200, null]),
-          ids: Some(['id1', 'id2', 'id3']),
-        ),
-      );
-
-      expect(variables.toJson(), {
-        'user': {
-          'tags': ['tag1', 'tag2'],
-          'scores': [100, 200, null],
-          'ids': ['id1', 'id2', 'id3'],
-        },
-      });
-    });
-  });
-
-  group('Optional list scalars', () {
-    test('InputScalarListOptional with value', () {
-      final variables = InputScalarListOptionalVariables(
-        names: Some(['John', 'Jane']),
-      );
-      expect(variables.toJson(), {
-        'names': ['John', 'Jane'],
-      });
-    });
-
-    test('InputScalarListOptional with None', () {
-      final variables = InputScalarListOptionalVariables(names: None());
-      expect(variables.toJson(), {});
-    });
-
-    test('InputScalarListOptional with empty list', () {
-      final variables = InputScalarListOptionalVariables(names: Some([]));
-      expect(variables.toJson(), {'names': []});
+    final varsUpdated = vars.updateWith(
+      user: vars.user.updateWith(
+        tags: ['1'],
+        ids: Some(Some(["12", "3", "5"])),
+        scores: Some(Some([0])),
+      ),
+    );
+    expect(varsUpdated.toJson(), {
+      'user': {
+        'tags': ['1'],
+        'ids': ['12', '3', '5'],
+        'scores': [0],
+      },
     });
   });
 }
