@@ -32,7 +32,7 @@ fn test_input_objects_dart() {
 }
 
 #[test]
-fn test_list_scalars_dart() {
+fn test_input_list_scalars_dart() {
     run_dart_tests_for_usecase("input_list_scalars");
 }
 
