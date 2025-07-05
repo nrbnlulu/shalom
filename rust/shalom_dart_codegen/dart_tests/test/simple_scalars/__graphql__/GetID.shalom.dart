@@ -65,3 +65,45 @@ class RequestGetID extends Requestable {
     );
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class GetIDNode extends Node {
+  GetIDResponse? _obj;
+  GetIDNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = GetIDResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = GetIDResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = GetIDResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  GetIDResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

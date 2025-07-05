@@ -67,3 +67,45 @@ class RequestGetStringOptional extends Requestable {
     );
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class GetStringOptionalNode extends Node {
+  GetStringOptionalResponse? _obj;
+  GetStringOptionalNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = GetStringOptionalResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = GetStringOptionalResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = GetStringOptionalResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  GetStringOptionalResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

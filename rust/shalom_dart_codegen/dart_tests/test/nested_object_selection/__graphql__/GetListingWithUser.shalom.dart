@@ -286,3 +286,45 @@ class RequestGetListingWithUser extends Requestable {
     );
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class GetListingWithUserNode extends Node {
+  GetListingWithUserResponse? _obj;
+  GetListingWithUserNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = GetListingWithUserResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = GetListingWithUserResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = GetListingWithUserResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  GetListingWithUserResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

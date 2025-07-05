@@ -243,3 +243,45 @@ class EnumWithDefaultValueVariables {
     return EnumWithDefaultValueVariables(status: status$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class EnumWithDefaultValueNode extends Node {
+  EnumWithDefaultValueResponse? _obj;
+  EnumWithDefaultValueNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = EnumWithDefaultValueResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = EnumWithDefaultValueResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = EnumWithDefaultValueResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  EnumWithDefaultValueResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

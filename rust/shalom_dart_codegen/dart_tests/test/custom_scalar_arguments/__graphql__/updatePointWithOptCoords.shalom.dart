@@ -230,3 +230,45 @@ class updatePointWithOptCoordsVariables {
     return updatePointWithOptCoordsVariables(pointData: pointData$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class updatePointWithOptCoordsNode extends Node {
+  updatePointWithOptCoordsResponse? _obj;
+  updatePointWithOptCoordsNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = updatePointWithOptCoordsResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = updatePointWithOptCoordsResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = updatePointWithOptCoordsResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  updatePointWithOptCoordsResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

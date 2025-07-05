@@ -225,3 +225,45 @@ class UpdatePointWithInputNonNullVariables {
     return UpdatePointWithInputNonNullVariables(pointData: pointData$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class UpdatePointWithInputNonNullNode extends Node {
+  UpdatePointWithInputNonNullResponse? _obj;
+  UpdatePointWithInputNonNullNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = UpdatePointWithInputNonNullResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = UpdatePointWithInputNonNullResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = UpdatePointWithInputNonNullResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  UpdatePointWithInputNonNullResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

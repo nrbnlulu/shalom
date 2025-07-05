@@ -252,3 +252,45 @@ class EnumInputObjectOptionalVariables {
     return EnumInputObjectOptionalVariables(order: order$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class EnumInputObjectOptionalNode extends Node {
+  EnumInputObjectOptionalResponse? _obj;
+  EnumInputObjectOptionalNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = EnumInputObjectOptionalResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = EnumInputObjectOptionalResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = EnumInputObjectOptionalResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  EnumInputObjectOptionalResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

@@ -178,3 +178,45 @@ class OptionalArgumentsVariables {
     return OptionalArgumentsVariables(id: id$next, phone: phone$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class OptionalArgumentsNode extends Node {
+  OptionalArgumentsResponse? _obj;
+  OptionalArgumentsNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = OptionalArgumentsResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = OptionalArgumentsResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = OptionalArgumentsResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  OptionalArgumentsResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

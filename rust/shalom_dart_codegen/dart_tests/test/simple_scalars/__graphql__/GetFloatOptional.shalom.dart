@@ -67,3 +67,45 @@ class RequestGetFloatOptional extends Requestable {
     );
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class GetFloatOptionalNode extends Node {
+  GetFloatOptionalResponse? _obj;
+  GetFloatOptionalNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = GetFloatOptionalResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = GetFloatOptionalResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = GetFloatOptionalResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  GetFloatOptionalResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

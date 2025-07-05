@@ -197,3 +197,45 @@ class OptionalWithNullDefaultVariables {
     return OptionalWithNullDefaultVariables(phone: phone$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class OptionalWithNullDefaultNode extends Node {
+  OptionalWithNullDefaultResponse? _obj;
+  OptionalWithNullDefaultNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = OptionalWithNullDefaultResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = OptionalWithNullDefaultResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = OptionalWithNullDefaultResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  OptionalWithNullDefaultResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

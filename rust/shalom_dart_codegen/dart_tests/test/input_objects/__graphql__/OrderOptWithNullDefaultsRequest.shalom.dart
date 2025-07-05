@@ -222,3 +222,45 @@ class OrderOptWithNullDefaultsRequestVariables {
     return OrderOptWithNullDefaultsRequestVariables(order: order$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class OrderOptWithNullDefaultsRequestNode extends Node {
+  OrderOptWithNullDefaultsRequestResponse? _obj;
+  OrderOptWithNullDefaultsRequestNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = OrderOptWithNullDefaultsRequestResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = OrderOptWithNullDefaultsRequestResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = OrderOptWithNullDefaultsRequestResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  OrderOptWithNullDefaultsRequestResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

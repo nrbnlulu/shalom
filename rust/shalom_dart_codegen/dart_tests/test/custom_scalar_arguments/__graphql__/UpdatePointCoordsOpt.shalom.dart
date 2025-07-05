@@ -231,3 +231,45 @@ class UpdatePointCoordsOptVariables {
     return UpdatePointCoordsOptVariables(coords: coords$next, id: id$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class UpdatePointCoordsOptNode extends Node {
+  UpdatePointCoordsOptResponse? _obj;
+  UpdatePointCoordsOptNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = UpdatePointCoordsOptResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = UpdatePointCoordsOptResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = UpdatePointCoordsOptResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  UpdatePointCoordsOptResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

@@ -234,3 +234,45 @@ class UpdatePointWithInputCoordsMaybeVariables {
     return UpdatePointWithInputCoordsMaybeVariables(pointData: pointData$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class UpdatePointWithInputCoordsMaybeNode extends Node {
+  UpdatePointWithInputCoordsMaybeResponse? _obj;
+  UpdatePointWithInputCoordsMaybeNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = UpdatePointWithInputCoordsMaybeResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = UpdatePointWithInputCoordsMaybeResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = UpdatePointWithInputCoordsMaybeResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  UpdatePointWithInputCoordsMaybeResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

@@ -101,3 +101,45 @@ class SubmitReviewVariables {
     return SubmitReviewVariables(review: review$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class SubmitReviewNode extends Node {
+  SubmitReviewResponse? _obj;
+  SubmitReviewNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = SubmitReviewResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = SubmitReviewResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = SubmitReviewResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  SubmitReviewResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

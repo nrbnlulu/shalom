@@ -201,3 +201,45 @@ class OptOrderRequestVariables {
     return OptOrderRequestVariables(order: order$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class OptOrderRequestNode extends Node {
+  OptOrderRequestResponse? _obj;
+  OptOrderRequestNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = OptOrderRequestResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = OptOrderRequestResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = OptOrderRequestResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  OptOrderRequestResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------

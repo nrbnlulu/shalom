@@ -201,3 +201,45 @@ class OrderRecursiveVariables {
     return OrderRecursiveVariables(order: order$next);
   }
 }
+
+// ------------ Node DEFINITIONS -------------
+
+class OrderRecursiveNode extends Node {
+  OrderRecursiveResponse? _obj;
+  OrderRecursiveNode({required super.id});
+
+  @override
+  void updateStoreWithRaw(JsonObject raw, NodeManager manager) {
+    _obj = OrderRecursiveResponse.fromJson(raw);
+    manager.addOrUpdateNode(this);
+  }
+
+  @override
+  void updateWithJson(JsonObject newData) {
+    if (_obj != null) {
+      _obj = _obj?.updateWithJson(newData);
+    } else {
+      _obj = OrderRecursiveResponse.fromJson(newData);
+    }
+    notifyListeners();
+  }
+
+  @override
+  void setObj(JsonObject? data) {
+    if (data != null) {
+      _obj = OrderRecursiveResponse.fromJson(data);
+    }
+  }
+
+  @override
+  JsonObject? data() {
+    final data = _obj?.toJson();
+    return data;
+  }
+
+  OrderRecursiveResponse? get obj {
+    return _obj;
+  }
+}
+
+// ------------ END Node DEFINITIONS -------------
