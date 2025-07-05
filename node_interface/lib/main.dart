@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'dart:math';
 
@@ -10,8 +9,8 @@ class NodeManager {
   Map<ID, JsonObject> _rawStore = {};
   Map<ID, List<NodeSubscriber>> _subscriberStore = {};
 
-  List<String> _getChangedFields(JsonObject currentData, JsonObject newData) {
-    List<String> changedFields = [];
+  Set<String> _getChangedFields(JsonObject currentData, JsonObject newData) {
+    Set<String> changedFields = Set();
     for (final field in newData.keys) {
       if (currentData[field] != newData[field]) {
         changedFields.add(field);
@@ -31,7 +30,16 @@ class NodeManager {
         for (final subscriber in subscribers) {
           final node = subscriber.nodeRef.target;
           if (node != null) {
-            node.updateWithJson(newData, changedFields);
+            bool hasChanged = false;
+            for (final field in subscriber.subscribedFields) {
+              if (changedFields.contains(field)) {
+                 hasChanged = true;
+                 break;
+              }
+            }
+            if (hasChanged) {
+              node.updateWithJson(newData, changedFields);
+            }
           }
         }
       }
@@ -58,7 +66,7 @@ class ShalomContext {
 abstract class Node extends ChangeNotifier {
   final ID id;
   Node({required this.id});
-  void updateWithJson(JsonObject rawData, List<String> changedFields);
+  void updateWithJson(JsonObject rawData, Set<String> changedFields);
   JsonObject toJson();
   subscribeToChanges(ShalomContext context);
 }
@@ -125,23 +133,22 @@ class UserNode extends Node {
 
   @override
   void subscribeToChanges(ShalomContext context) {
-    context.manager.register(this, ["myOwnField", "etc"]);
+    context.manager.register(this, ["email", "name"]);
   }
 
   @override
-  void updateWithJson(JsonObject rawData, List<String> changedFields) {
-    bool hasChanged = false;
-    if (changedFields.contains('name') && rawData['name'] != name) {
-      name = rawData['name'];
-      hasChanged = true;
+  void updateWithJson(JsonObject rawData, Set<String> changedFields) {
+    for (final f_name in changedFields) {
+      switch (f_name) {
+        case 'name': 
+           name = rawData["name"];
+           break;
+        case 'email':
+           email = rawData["email"];
+           break;
+      }
     }
-    if (changedFields.contains('email') && rawData['email'] != email) {
-      email = rawData['email'];
-      hasChanged = true;
-    }
-    if (hasChanged) {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   @override
@@ -214,7 +221,6 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       'name': 'Jacob Doe', // Changed name
       'email': 'Jabob.doe.new@example.com', // Changed email
     };
-    print("Simulating data change...");
     _userNode = UserNode.deserialize(updatedUserData, _shalomContext);
   }
 
