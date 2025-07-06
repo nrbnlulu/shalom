@@ -76,21 +76,21 @@ class OrderOpt {
     JsonObject data = {};
 
     if (name.isSome()) {
-      final $value = this.name.some();
+      final value = this.name.some();
 
-      data["name"] = $value;
+      data["name"] = value;
     }
 
     if (price.isSome()) {
-      final $value = this.price.some();
+      final value = this.price.some();
 
-      data["price"] = $value;
+      data["price"] = value;
     }
 
     if (quantity.isSome()) {
-      final $value = this.quantity.some();
+      final value = this.quantity.some();
 
-      data["quantity"] = $value;
+      data["quantity"] = value;
     }
 
     return data;

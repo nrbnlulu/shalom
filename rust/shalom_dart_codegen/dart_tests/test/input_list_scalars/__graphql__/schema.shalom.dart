@@ -26,15 +26,15 @@ class UserInput {
     JsonObject data = {};
 
     if (ids.isSome()) {
-      final $value = this.ids.some();
+      final value = this.ids.some();
 
-      data["ids"] = $value;
+      data["ids"] = value;
     }
 
     if (scores.isSome()) {
-      final $value = this.scores.some();
+      final value = this.scores.some();
 
-      data["scores"] = $value;
+      data["scores"] = value;
     }
 
     data["tags"] = this.tags;

@@ -142,9 +142,9 @@ class InputScalarListMaybeVariables {
     JsonObject data = {};
 
     if (ints.isSome()) {
-      final $value = this.ints.some();
+      final value = this.ints.some();
 
-      data["ints"] = $value;
+      data["ints"] = value;
     }
 
     return data;

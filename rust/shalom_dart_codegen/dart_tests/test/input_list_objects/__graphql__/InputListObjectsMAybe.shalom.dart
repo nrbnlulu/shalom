@@ -172,9 +172,9 @@ class InputListObjectsMAybeVariables {
     JsonObject data = {};
 
     if (items.isSome()) {
-      final $value = this.items.some();
+      final value = this.items.some();
 
-      data["items"] = $value?.map((e) => e.toJson()).toList();
+      data["items"] = value?.map((e) => e.toJson()).toList();
     }
 
     return data;

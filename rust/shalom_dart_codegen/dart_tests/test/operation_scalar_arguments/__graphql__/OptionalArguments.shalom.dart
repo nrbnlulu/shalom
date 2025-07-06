@@ -138,15 +138,15 @@ class OptionalArgumentsVariables {
     JsonObject data = {};
 
     if (id.isSome()) {
-      final $value = this.id.some();
+      final value = this.id.some();
 
-      data["id"] = $value;
+      data["id"] = value;
     }
 
     if (phone.isSome()) {
-      final $value = this.phone.some();
+      final value = this.phone.some();
 
-      data["phone"] = $value;
+      data["phone"] = value;
     }
 
     return data;

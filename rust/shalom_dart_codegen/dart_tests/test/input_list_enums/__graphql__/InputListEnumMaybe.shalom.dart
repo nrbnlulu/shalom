@@ -83,9 +83,9 @@ class InputListEnumMaybeVariables {
     JsonObject data = {};
 
     if (foo.isSome()) {
-      final $value = this.foo.some();
+      final value = this.foo.some();
 
-      data["foo"] = $value?.map((e) => e.name).toList();
+      data["foo"] = value?.map((e) => e.name).toList();
     }
 
     return data;

@@ -81,9 +81,9 @@ class OrderUpdateStatusOpt {
     JsonObject data = {};
 
     if (status.isSome()) {
-      final $value = this.status.some();
+      final value = this.status.some();
 
-      data["status"] = $value?.name;
+      data["status"] = value?.name;
     }
 
     data["timeLeft"] = this.timeLeft;

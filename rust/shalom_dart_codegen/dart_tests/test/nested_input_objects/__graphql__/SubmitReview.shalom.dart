@@ -78,9 +78,9 @@ class SubmitReviewVariables {
     JsonObject data = {};
 
     if (review.isSome()) {
-      final $value = this.review.some();
+      final value = this.review.some();
 
-      data["review"] = $value?.toJson();
+      data["review"] = value?.toJson();
     }
 
     return data;

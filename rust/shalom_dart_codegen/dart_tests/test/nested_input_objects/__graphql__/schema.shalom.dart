@@ -66,9 +66,9 @@ class OrderDetails {
     JsonObject data = {};
 
     if (firstReview.isSome()) {
-      final $value = this.firstReview.some();
+      final value = this.firstReview.some();
 
-      data["firstReview"] = $value?.toJson();
+      data["firstReview"] = value?.toJson();
     }
 
     return data;
@@ -99,9 +99,9 @@ class OrderRecursive {
     JsonObject data = {};
 
     if (order.isSome()) {
-      final $value = this.order.some();
+      final value = this.order.some();
 
-      data["order"] = $value?.toJson();
+      data["order"] = value?.toJson();
     }
 
     return data;
@@ -132,9 +132,9 @@ class Review {
     JsonObject data = {};
 
     if (order.isSome()) {
-      final $value = this.order.some();
+      final value = this.order.some();
 
-      data["order"] = $value?.toJson();
+      data["order"] = value?.toJson();
     }
 
     return data;

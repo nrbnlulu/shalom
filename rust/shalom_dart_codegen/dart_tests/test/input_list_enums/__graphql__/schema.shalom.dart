@@ -49,9 +49,9 @@ class ObjectWithListOfInput {
     data["genders"] = this.genders.map((e) => e.name).toList();
 
     if (optionalGenders.isSome()) {
-      final $value = this.optionalGenders.some();
+      final value = this.optionalGenders.some();
 
-      data["optionalGenders"] = $value?.map((e) => e.name).toList();
+      data["optionalGenders"] = value?.map((e) => e.name).toList();
     }
 
     return data;

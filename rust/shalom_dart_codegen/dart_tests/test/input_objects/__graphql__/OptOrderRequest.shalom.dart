@@ -178,9 +178,9 @@ class OptOrderRequestVariables {
     JsonObject data = {};
 
     if (order.isSome()) {
-      final $value = this.order.some();
+      final value = this.order.some();
 
-      data["order"] = $value?.toJson();
+      data["order"] = value?.toJson();
     }
 
     return data;
