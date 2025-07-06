@@ -47,7 +47,6 @@ class NodeManager {
   }
 
   void register(Node node, Set<String> subscribedFields) {
-    print(_subscriberStore[node.id]?.length);
     final nodeId = node.id;
     final nodeSubscriber = NodeSubscriber(
       nodeRef: WeakReference(node),
@@ -63,7 +62,6 @@ class NodeManager {
       subscribers.removeWhere(
         (subscriber) => subscriber.nodeRef.target == node,
       );
-      print(subscribers.length);
     }
   }
 }
@@ -74,6 +72,7 @@ class ShalomContext {
 }
 
 abstract class Node extends ChangeNotifier {
+  int widgetsSubscribed = 0;
   final ID id;
   Node({required this.id});
   void updateWithJson(JsonObject rawData, Set<String> changedFields);
@@ -177,24 +176,28 @@ class UserNode extends Node {
 
   @override
   void subscribeToChanges(ShalomContext context) {
-    context.manager.register(this, {
-      "first_name",
-      "last_name",
-      "email",
-      "avatar",
-    });
+    if (widgetsSubscribed == 0) {
+      context.manager.register(this, {
+        "first_name",
+        "last_name",
+        "email",
+        "avatar",
+      });
+    }
+    widgetsSubscribed += 1;
   }
 
   @override
   void unSubscribeToChanges(ShalomContext context) {
-    context.manager.unRegister(this);
+    if (widgetsSubscribed < 2) {
+      context.manager.unRegister(this);
+    }
+    widgetsSubscribed -= 1;
   }
 
   @override
   void updateWithJson(JsonObject rawData, Set<String> changedFields) {
-    bool hasChanged = false;
     for (final fieldName in changedFields) {
-      hasChanged = true;
       switch (fieldName) {
         case 'first_name':
           firstName = rawData["first_name"];
@@ -210,9 +213,7 @@ class UserNode extends Node {
           break;
       }
     }
-    if (hasChanged) {
-      notifyListeners();
-    }
+    notifyListeners();
   }
 
   @override
