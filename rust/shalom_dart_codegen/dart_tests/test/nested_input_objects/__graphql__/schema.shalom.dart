@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -19,11 +19,11 @@ class Order {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["name"] = name;
+    data["name"] = this.name;
 
-    data["price"] = price;
+    data["price"] = this.price;
 
-    data["quantity"] = quantity;
+    data["quantity"] = this.quantity;
 
     return data;
   }
@@ -66,9 +66,9 @@ class OrderDetails {
     JsonObject data = {};
 
     if (firstReview.isSome()) {
-      final value = firstReview.some();
+      final $value = this.firstReview.some();
 
-      data["firstReview"] = value?.toJson();
+      data["firstReview"] = $value?.toJson();
     }
 
     return data;
@@ -80,8 +80,8 @@ class OrderDetails {
     final Option<Review?> firstReview$next;
 
     switch (firstReview) {
-      case Some(value: final data):
-        firstReview$next = data;
+      case Some(value: final updateData):
+        firstReview$next = updateData;
       case None():
         firstReview$next = this.firstReview;
     }
@@ -99,9 +99,9 @@ class OrderRecursive {
     JsonObject data = {};
 
     if (order.isSome()) {
-      final value = order.some();
+      final $value = this.order.some();
 
-      data["order"] = value?.toJson();
+      data["order"] = $value?.toJson();
     }
 
     return data;
@@ -113,8 +113,8 @@ class OrderRecursive {
     final Option<OrderRecursive?> order$next;
 
     switch (order) {
-      case Some(value: final data):
-        order$next = data;
+      case Some(value: final updateData):
+        order$next = updateData;
       case None():
         order$next = this.order;
     }
@@ -132,9 +132,9 @@ class Review {
     JsonObject data = {};
 
     if (order.isSome()) {
-      final value = order.some();
+      final $value = this.order.some();
 
-      data["order"] = value?.toJson();
+      data["order"] = $value?.toJson();
     }
 
     return data;
@@ -144,8 +144,8 @@ class Review {
     final Option<OrderDetails?> order$next;
 
     switch (order) {
-      case Some(value: final data):
-        order$next = data;
+      case Some(value: final updateData):
+        order$next = updateData;
       case None():
         order$next = this.order;
     }
@@ -164,9 +164,9 @@ class SpecificOrder {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["notes"] = notes;
+    data["notes"] = this.notes;
 
-    data["order"] = order.toJson();
+    data["order"] = this.order.toJson();
 
     return data;
   }

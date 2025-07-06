@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this
 
 import "schema.shalom.dart";
 
@@ -138,15 +138,15 @@ class OptionalArgumentsVariables {
     JsonObject data = {};
 
     if (id.isSome()) {
-      final value = id.some();
+      final $value = this.id.some();
 
-      data["id"] = value;
+      data["id"] = $value;
     }
 
     if (phone.isSome()) {
-      final value = phone.some();
+      final $value = this.phone.some();
 
-      data["phone"] = value;
+      data["phone"] = $value;
     }
 
     return data;
@@ -160,8 +160,8 @@ class OptionalArgumentsVariables {
     final Option<String?> id$next;
 
     switch (id) {
-      case Some(value: final data):
-        id$next = data;
+      case Some(value: final updateData):
+        id$next = updateData;
       case None():
         id$next = this.id;
     }
@@ -169,8 +169,8 @@ class OptionalArgumentsVariables {
     final Option<String?> phone$next;
 
     switch (phone) {
-      case Some(value: final data):
-        phone$next = data;
+      case Some(value: final updateData):
+        phone$next = updateData;
       case None():
         phone$next = this.phone;
     }

@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this
 
 import "schema.shalom.dart";
 
@@ -177,7 +177,7 @@ class OptionalWithNullDefaultVariables {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["phone"] = phone;
+    data["phone"] = this.phone;
 
     return data;
   }
@@ -188,8 +188,8 @@ class OptionalWithNullDefaultVariables {
     final String? phone$next;
 
     switch (phone) {
-      case Some(value: final data):
-        phone$next = data;
+      case Some(value: final updateData):
+        phone$next = updateData;
       case None():
         phone$next = this.phone;
     }

@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this
 
 import "schema.shalom.dart";
 
@@ -154,7 +154,7 @@ class InputScalarListOptionalVariables {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["names"] = names;
+    data["names"] = this.names;
 
     return data;
   }
@@ -165,8 +165,8 @@ class InputScalarListOptionalVariables {
     final List<String?>? names$next;
 
     switch (names) {
-      case Some(value: final data):
-        names$next = data;
+      case Some(value: final updateData):
+        names$next = updateData;
       case None():
         names$next = this.names;
     }

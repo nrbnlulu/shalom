@@ -1,411 +1,196 @@
-
-
-
-
-
-
-
-
-
-
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this
 
 import "schema.shalom.dart";
 
-
 import 'package:shalom_core/shalom_core.dart';
-
-
-
 
 typedef JsonObject = Map<String, dynamic>;
 
+class OrderOptRequestResponse {
+  /// class members
 
+  final OrderOptRequest_orderOptRequest? orderOptRequest;
 
+  // keywordargs constructor
+  OrderOptRequestResponse({this.orderOptRequest});
+  static OrderOptRequestResponse fromJson(JsonObject data) {
+    final OrderOptRequest_orderOptRequest? orderOptRequest_value;
 
-class OrderOptRequestResponse{
-
-    /// class members
-    
-        
-            final OrderOptRequest_orderOptRequest? orderOptRequest;
-        
-    
-    // keywordargs constructor
-    OrderOptRequestResponse({
-    
-        this.orderOptRequest,
-    
-    });
-    static OrderOptRequestResponse fromJson(JsonObject data) {
-    
-        
-            final OrderOptRequest_orderOptRequest? orderOptRequest_value;
-            
-                final JsonObject? orderOptRequest$raw = data['orderOptRequest']; 
-                if (orderOptRequest$raw != null) {
-                    orderOptRequest_value = OrderOptRequest_orderOptRequest.fromJson(orderOptRequest$raw);
-                } else {
-                    orderOptRequest_value = null;
-                }
-            
-       
-    
-    return OrderOptRequestResponse(
-    
-        
-        orderOptRequest: orderOptRequest_value,
-    
-    );
+    final JsonObject? orderOptRequest$raw = data['orderOptRequest'];
+    if (orderOptRequest$raw != null) {
+      orderOptRequest_value = OrderOptRequest_orderOptRequest.fromJson(
+        orderOptRequest$raw,
+      );
+    } else {
+      orderOptRequest_value = null;
     }
-    OrderOptRequestResponse updateWithJson(JsonObject data) {
-    
-        
-        final OrderOptRequest_orderOptRequest? orderOptRequest_value;
-        if (data.containsKey('orderOptRequest')) {
-            
-                final JsonObject? orderOptRequest$raw = data['orderOptRequest'];
-                if (orderOptRequest$raw != null) {
-                    orderOptRequest_value = OrderOptRequest_orderOptRequest.fromJson(orderOptRequest$raw);
-                } else {
-                    orderOptRequest_value = null;
-                }
-            
-        } else {
-            orderOptRequest_value = orderOptRequest;
-        }
 
-    
-    
-    return OrderOptRequestResponse(
-    
-        
-        orderOptRequest: orderOptRequest_value,
-    
-    );
+    return OrderOptRequestResponse(orderOptRequest: orderOptRequest_value);
+  }
+
+  OrderOptRequestResponse updateWithJson(JsonObject data) {
+    final OrderOptRequest_orderOptRequest? orderOptRequest_value;
+    if (data.containsKey('orderOptRequest')) {
+      final JsonObject? orderOptRequest$raw = data['orderOptRequest'];
+      if (orderOptRequest$raw != null) {
+        orderOptRequest_value = OrderOptRequest_orderOptRequest.fromJson(
+          orderOptRequest$raw,
+        );
+      } else {
+        orderOptRequest_value = null;
+      }
+    } else {
+      orderOptRequest_value = orderOptRequest;
     }
-    @override
-    bool operator ==(Object other) {
+
+    return OrderOptRequestResponse(orderOptRequest: orderOptRequest_value);
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is OrderOptRequestResponse &&
-    
-        other.orderOptRequest == orderOptRequest 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        orderOptRequest.hashCode;
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'orderOptRequest':
-            
-                orderOptRequest?.toJson()
-            
-        ,
-    
-    };
-    }
+        (other is OrderOptRequestResponse &&
+            other.orderOptRequest == orderOptRequest);
+  }
 
+  @override
+  int get hashCode => orderOptRequest.hashCode;
+
+  JsonObject toJson() {
+    return {'orderOptRequest': orderOptRequest?.toJson()};
+  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
+class OrderOptRequest_orderOptRequest {
+  /// class members
 
-    class OrderOptRequest_orderOptRequest  {
-        
-    /// class members
-    
-        
-            final int? quantity;
-        
-    
-        
-            final String? name;
-        
-    
-        
-            final double? price;
-        
-    
-    // keywordargs constructor
-    OrderOptRequest_orderOptRequest({
-    
-        this.quantity,
-    
-        this.name,
-    
-        this.price,
-    
-    });
-    static OrderOptRequest_orderOptRequest fromJson(JsonObject data) {
-    
-        
-           final int? quantity_value;
-           
-               
-                   quantity_value = data['quantity'];
-               
-           
+  final int? quantity;
 
-        
-    
-        
-           final String? name_value;
-           
-               
-                   name_value = data['name'];
-               
-           
+  final String? name;
 
-        
-    
-        
-           final double? price_value;
-           
-               
-                   price_value = data['price'];
-               
-           
+  final double? price;
 
-        
-    
+  // keywordargs constructor
+  OrderOptRequest_orderOptRequest({this.quantity, this.name, this.price});
+  static OrderOptRequest_orderOptRequest fromJson(JsonObject data) {
+    final int? quantity_value;
+
+    quantity_value = data['quantity'];
+
+    final String? name_value;
+
+    name_value = data['name'];
+
+    final double? price_value;
+
+    price_value = data['price'];
+
     return OrderOptRequest_orderOptRequest(
-    
-        
-        quantity: quantity_value,
-    
-        
-        name: name_value,
-    
-        
-        price: price_value,
-    
+      quantity: quantity_value,
+
+      name: name_value,
+
+      price: price_value,
     );
-    }
-    OrderOptRequest_orderOptRequest updateWithJson(JsonObject data) {
-    
-        
+  }
+
+  OrderOptRequest_orderOptRequest updateWithJson(JsonObject data) {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
-        
-            quantity_value = data['quantity'];
-        
+      quantity_value = data['quantity'];
     } else {
-        quantity_value = quantity;
+      quantity_value = quantity;
     }
 
-        
-    
-        
     final String? name_value;
     if (data.containsKey('name')) {
-        
-            name_value = data['name'];
-        
+      name_value = data['name'];
     } else {
-        name_value = name;
+      name_value = name;
     }
 
-        
-    
-        
     final double? price_value;
     if (data.containsKey('price')) {
-        
-            price_value = data['price'];
-        
+      price_value = data['price'];
     } else {
-        price_value = price;
+      price_value = price;
     }
 
-        
-    
     return OrderOptRequest_orderOptRequest(
-    
-        
-        quantity: quantity_value,
-    
-        
-        name: name_value,
-    
-        
-        price: price_value,
-    
+      quantity: quantity_value,
+
+      name: name_value,
+
+      price: price_value,
     );
-    }
-    @override
-    bool operator ==(Object other) {
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is OrderOptRequest_orderOptRequest &&
-    
-        other.quantity == quantity &&
-    
-        other.name == name &&
-    
-        other.price == price 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            quantity,
-        
-            
-            name,
-        
-            
-            price,
-        
-        ]);
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'quantity':
-            
-                
-                    quantity
-                
-            
-        ,
-    
-        
-        'name':
-            
-                
-                    name
-                
-            
-        ,
-    
-        
-        'price':
-            
-                
-                    price
-                
-            
-        ,
-    
-    };
-    }
+        (other is OrderOptRequest_orderOptRequest &&
+            other.quantity == quantity &&
+            other.name == name &&
+            other.price == price);
+  }
 
-    }
+  @override
+  int get hashCode => Object.hashAll([quantity, name, price]);
 
+  JsonObject toJson() {
+    return {'quantity': quantity, 'name': name, 'price': price};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-
 class RequestOrderOptRequest extends Requestable {
-    
-    final OrderOptRequestVariables variables;
-    
+  final OrderOptRequestVariables variables;
 
-    RequestOrderOptRequest(
-        
-        {
-            required this.variables,
-        } 
-        
-    );
+  RequestOrderOptRequest({required this.variables});
 
-    @override
-    Request toRequest() {
-        JsonObject variablesJson =  variables.toJson() ;
-        return Request(
-            query: r"""mutation OrderOptRequest($order: OrderOpt!) {
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = variables.toJson();
+    return Request(
+      query: r"""mutation OrderOptRequest($order: OrderOpt!) {
   orderOptRequest(order: $order) {
     quantity
     name
     price
   }
-}""", 
-            variables: variablesJson, 
-            opType: OperationType.Mutation, 
-            StringopName: 'OrderOptRequest'
-        );
-    }
+}""",
+      variables: variablesJson,
+      opType: OperationType.Mutation,
+      StringopName: 'OrderOptRequest',
+    );
+  }
 }
-
 
 class OrderOptRequestVariables {
-    
-    
-        final OrderOpt order;
-    
+  final OrderOpt order;
 
-    OrderOptRequestVariables (
-        
-            {
-            
+  OrderOptRequestVariables({required this.order});
 
-    
-        
-            required this.order
-        ,
-    
-    
- 
-            }
-        
-    );
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+    data["order"] = this.order.toJson();
 
-    
+    return data;
+  }
 
-    
-        
-            
-                 data["order"] = this.order.toJson();
-            
-        
-    
+  OrderOptRequestVariables updateWith({OrderOpt? order}) {
+    final OrderOpt order$next;
 
-    
-        return data;
-    } 
-
-    
-OrderOptRequestVariables updateWith(
-    {
-        
-            
-                OrderOpt? order
-            
-            
-        
+    if (order != null) {
+      order$next = order;
+    } else {
+      order$next = this.order;
     }
-) {
-    
-        final OrderOpt order$next;
-        
-            if (order != null) {
-                order$next = order;
-            } else {
-                order$next = this.order;
-            }
-        
-    
-    return OrderOptRequestVariables(
-        
-            order: order$next
-            
-        
-    );
-}
 
-
+    return OrderOptRequestVariables(order: order$next);
+  }
 }

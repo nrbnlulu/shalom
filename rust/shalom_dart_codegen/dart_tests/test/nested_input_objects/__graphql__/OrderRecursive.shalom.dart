@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this
 
 import "schema.shalom.dart";
 
@@ -178,9 +178,9 @@ class OrderRecursiveVariables {
     JsonObject data = {};
 
     if (order.isSome()) {
-      final value = order.some();
+      final $value = this.order.some();
 
-      data["order"] = value?.toJson();
+      data["order"] = $value?.toJson();
     }
 
     return data;
@@ -192,8 +192,8 @@ class OrderRecursiveVariables {
     final Option<OrderRecursive?> order$next;
 
     switch (order) {
-      case Some(value: final data):
-        order$next = data;
+      case Some(value: final updateData):
+        order$next = updateData;
       case None():
         order$next = this.order;
     }

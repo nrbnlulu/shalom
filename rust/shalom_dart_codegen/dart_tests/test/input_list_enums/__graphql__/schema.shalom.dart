@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -46,12 +46,12 @@ class ObjectWithListOfInput {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["genders"] = genders.map((e) => e.name).toList();
+    data["genders"] = this.genders.map((e) => e.name).toList();
 
     if (optionalGenders.isSome()) {
-      final value = optionalGenders.some();
+      final $value = this.optionalGenders.some();
 
-      data["optionalGenders"] = value?.map((e) => e.name).toList();
+      data["optionalGenders"] = $value?.map((e) => e.name).toList();
     }
 
     return data;
@@ -73,8 +73,8 @@ class ObjectWithListOfInput {
     final Option<List<Gender>?> optionalGenders$next;
 
     switch (optionalGenders) {
-      case Some(value: final data):
-        optionalGenders$next = data;
+      case Some(value: final updateData):
+        optionalGenders$next = updateData;
       case None():
         optionalGenders$next = this.optionalGenders;
     }

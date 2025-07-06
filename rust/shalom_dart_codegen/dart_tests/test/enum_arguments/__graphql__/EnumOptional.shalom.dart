@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this
 
 import "schema.shalom.dart";
 
@@ -224,9 +224,9 @@ class EnumOptionalVariables {
     JsonObject data = {};
 
     if (status.isSome()) {
-      final value = status.some();
+      final $value = this.status.some();
 
-      data["status"] = value?.name;
+      data["status"] = $value?.name;
     }
 
     return data;
@@ -238,8 +238,8 @@ class EnumOptionalVariables {
     final Option<Status?> status$next;
 
     switch (status) {
-      case Some(value: final data):
-        status$next = data;
+      case Some(value: final updateData):
+        status$next = updateData;
       case None():
         status$next = this.status;
     }

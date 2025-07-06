@@ -26,9 +26,7 @@ pub enum GraphQLAny {
     Union(Node<UnionType>),
     Enum(Node<EnumType>),
     InputObject(Node<InputObjectType>),
-    List {
-        of_type: ListInnerTypeWrapper,
-    },
+    List { of_type: ListInnerTypeWrapper },
 }
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct ListInnerTypeWrapper {

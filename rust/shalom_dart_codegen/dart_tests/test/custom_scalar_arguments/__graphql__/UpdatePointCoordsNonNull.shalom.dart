@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
@@ -201,7 +201,7 @@ class UpdatePointCoordsNonNullVariables {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["coords"] = rmhlxei.pointScalarImpl.serialize(coords);
+    data["coords"] = rmhlxei.pointScalarImpl.serialize(this.coords);
 
     return data;
   }
