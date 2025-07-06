@@ -2,8 +2,7 @@
 {% macro toJson_macro(fields) %}
 {% for name, field in fields | items %}
     {% set field_ty = resolve_field_type(field.common).ty %}
-
-
+        
     {% if field.is_optional and field.default_value is none %}
         if ({{ name }}.isSome()) {
             final value = {{ name }}.some();
@@ -18,13 +17,22 @@
                 data["{{ name }}"] = value?.toJson();
             {% elif field_ty.kind == "Enum" %}
                 data["{{ name }}"] = value?.name;
+            {% elif field_ty.kind == "List" %}
+                {% set inner_type = field_ty.of_type %}
+                {% if inner_type.kind == "Enum" %}
+                    data["{{ name }}"] = value?.map((e) => e.name).toList();
+                {% elif inner_type.kind == "Scalar" and is_custom_scalar(inner_type.name) %}
+                    {% set scalar_impl = custom_scalar_impl_fullname(inner_type.name) %}
+                    data["{{ name }}"] = value?.map((e) => {{ scalar_impl }}.serialize(e)).toList();
+                {% elif inner_type.kind == "InputObject" %}
+                    data["{{ name }}"] = value?.map((e) => e.toJson()).toList();
+                {% else %}
+                    data["{{ name }}"] = value;
+                {% endif %}
             {% else %}
                 data["{{ name }}"] = value;
             {% endif %}
         }
-
-
-
     {% else %}
         {% if field_ty.kind == "Scalar" and is_custom_scalar(field_ty.name) %}
             {% set scalar_impl = custom_scalar_impl_fullname(field_ty.name) %}
@@ -44,6 +52,30 @@
                 data["{{ name }}"] = {{ name }}?.name;
             {% else %}
                 data["{{ name }}"] = {{ name }}.name;
+            {% endif %}
+        {% elif field_ty.kind == "List" %}
+            {% set inner_type = field_ty.of_type %}
+            {% if inner_type.kind == "Enum" %}
+                {% if field.is_optional %}
+                    data["{{ name }}"] = {{ name }}?.map((e) => e.name).toList();
+                {% else %}
+                    data["{{ name }}"] = {{ name }}.map((e) => e.name).toList();
+                {% endif %}
+            {% elif inner_type.kind == "Scalar" and is_custom_scalar(inner_type.name) %}
+                {% set scalar_impl = custom_scalar_impl_fullname(inner_type.name) %}
+                {% if field.is_optional %}
+                    data["{{ name }}"] = {{ name }}?.map((e) => {{ scalar_impl }}.serialize(e)).toList();
+                {% else %}
+                    data["{{ name }}"] = {{ name }}.map((e) => {{ scalar_impl }}.serialize(e)).toList();
+                {% endif %}
+            {% elif inner_type.kind == "InputObject" %}
+                {% if field.is_optional %}
+                    data["{{ name }}"] = {{ name }}?.map((e) => e.toJson()).toList();
+                {% else %}
+                    data["{{ name }}"] = {{ name }}.map((e) => e.toJson()).toList();
+                {% endif %}
+            {% else %}
+                data["{{ name }}"] = {{ name }};
             {% endif %}
         {% else %}
             data["{{ name }}"] = {{ name }};
@@ -77,7 +109,7 @@
                 case None():
                     {{ name }}$next = this.{{name}};
             }
-        
+
         {% else %}
             if ({{name}} != null) {
                 {{ name }}$next = {{name}};
