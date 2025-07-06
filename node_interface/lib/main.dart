@@ -56,6 +56,14 @@ class NodeManager {
     );
     _subscriberStore.putIfAbsent(nodeId, () => []).add(nodeSubscriber);
   }
+
+  void unRegister(Node node) {
+    final nodeId = node.id;
+    final subscribers = _subscriberStore[nodeId];
+    if (subscribers != null) {
+       subscribers.removeWhere((subscriber) => subscriber.nodeRef.target == node);
+    }
+  }
 }
 
 class ShalomContext {
@@ -69,6 +77,7 @@ abstract class Node extends ChangeNotifier {
   void updateWithJson(JsonObject rawData, Set<String> changedFields);
   JsonObject toJson();
   subscribeToChanges(ShalomContext context);
+  unSubscribeToChanges(ShalomContext context);
 }
 
 class NodeSubscriber {
@@ -77,9 +86,9 @@ class NodeSubscriber {
   NodeSubscriber({required this.nodeRef, required this.subscribedFields});
 }
 
-class NodeWidget extends StatefulWidget {
-  final Node node;
-  final Widget Function(BuildContext context, Node node) builder;
+class NodeWidget<T extends Node> extends StatefulWidget {
+  final T node;
+  final Widget Function(BuildContext context, T node) builder;
   final ShalomContext context;
 
   NodeWidget({
@@ -90,10 +99,10 @@ class NodeWidget extends StatefulWidget {
   });
 
   @override
-  State<NodeWidget> createState() => _NodeWidgetState();
+  State<NodeWidget<T>> createState() => _NodeWidgetState<T>();
 }
 
-class _NodeWidgetState extends State<NodeWidget> {
+class _NodeWidgetState<T extends Node> extends State<NodeWidget<T>> {
   @override
   void initState() {
     super.initState();
@@ -109,6 +118,13 @@ class _NodeWidgetState extends State<NodeWidget> {
         return widget.builder(context, widget.node);
       },
     );
+  }
+
+  @override
+  void dispose() {
+    widget.node.unSubscribeToChanges(widget.context);
+    super.dispose();
+
   }
 }
 
@@ -137,6 +153,11 @@ class UserNode extends Node {
   }
 
   @override
+  void unSubscribeToChanges(ShalomContext context) {
+    context.manager.unRegister(this);
+  }
+
+  @override
   void updateWithJson(JsonObject rawData, Set<String> changedFields) {
     for (final f_name in changedFields) {
       switch (f_name) {
@@ -157,8 +178,7 @@ class UserNode extends Node {
   }
 }
 
-// --- Main Application ---
-
+// --- Main Application --- (No changes here, included for context)
 void main() {
   runApp(const MyApp());
 }
@@ -182,6 +202,10 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
+
+// --- MODIFIED: UserProfileScreen ---
+
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
 
@@ -191,62 +215,85 @@ class UserProfileScreen extends StatefulWidget {
 
 class _UserProfileScreenState extends State<UserProfileScreen> {
   late final ShalomContext _shalomContext;
-  late UserNode _userNode;
+  // Changed to a regular list from final to allow removal
+  late List<UserNode> _userNodes;
+  int _updateCounter = 0;
 
   @override
   void initState() {
     super.initState();
-    // 1. Initialize the manager and context
     final nodeManager = NodeManager();
     _shalomContext = ShalomContext(manager: nodeManager);
 
-    // 2. Define the initial data for our user node
-    final initialUserData = {
-      'id': 'user-123',
-      'name': 'John Doe',
-      'email': 'john.doe@example.com',
-    };
-
-    // 3. Create the UserNode instance from the data
-
-    // 4. Add the initial data to the node manager's store
-    _userNode = UserNode.deserialize(initialUserData, _shalomContext);
-    _userNode.subscribeToChanges(_shalomContext);
+    // Initialize with two distinct users
+    _userNodes = [
+      UserNode.deserialize({
+        'id': 'user-123',
+        'name': 'John Doe',
+        'email': 'john.doe@example.com',
+      }, _shalomContext),
+      UserNode.deserialize({
+        'id': 'user-123',
+        'name': 'Jane Smith',
+        'email': 'jane.smith@example.com',
+      }, _shalomContext),
+    ];
   }
 
   void _simulateDataChange() {
-    // This simulates receiving new data from a server or other external source.
+    final targetIndex = _updateCounter % _userNodes.length;
+    final targetNode = _userNodes[targetIndex];
+
     final updatedUserData = {
-      'id': 'user-123', // Same ID
-      'name': 'Jacob Doe', // Changed name
-      'email': 'Jabob.doe.new@example.com', // Changed email
+      'id': targetNode.id,
+      'name': '${targetNode.name.split(" ").first} Updated',
+      'email': '${targetNode.id}@example-updated.com',
     };
-    _userNode = UserNode.deserialize(updatedUserData, _shalomContext);
+
+    _shalomContext.manager.parseNodeData(updatedUserData);
+
+    setState(() {
+      _updateCounter++;
+    });
   }
+
+  // --- NEW: Method to handle removing a node ---
+  void _removeUser(UserNode nodeToRemove) {
+    setState(() {
+      _userNodes.removeWhere((node) => node.id == nodeToRemove.id);
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Profile'),
+        title: const Text('Removable User Cards'),
         backgroundColor: Colors.black26,
       ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          // 5. Use NodeWidget to listen for changes and rebuild the UI
-          child: NodeWidget(
-            context: _shalomContext,
-            node: _userNode,
-            builder: (context, node) {
-              // The builder provides the most up-to-date version of the node.
-              // We can safely cast it to UserNode.
-              final user = node as UserNode;
-              return UserCard(name: user.name, email: user.email);
-            },
-          ),
-        ),
-      ),
+      body: _userNodes.isEmpty
+          ? const Center(child: Text("No users left. Add functionality to add them back!"))
+          : ListView.separated(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: _userNodes.length,
+              itemBuilder: (context, index) {
+                final userNode = _userNodes[index];
+                return NodeWidget<UserNode>(
+                  context: _shalomContext,
+                  node: userNode,
+                  builder: (context, user) {
+                    // Pass the removal handler to the UserCard
+                    return UserCard(
+                      name: user.name,
+                      email: user.email,
+                      onRemove: () => _removeUser(user),
+                    );
+                  },
+                );
+              },
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
+            ),
       floatingActionButton: FloatingActionButton(
         onPressed: _simulateDataChange,
         tooltip: 'Change Data',
@@ -256,12 +303,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   }
 }
 
+// --- MODIFIED: UserCard ---
 // A simple widget to display the user's information
 class UserCard extends StatelessWidget {
   final String name;
   final String email;
+  final VoidCallback? onRemove; // Callback for the remove button
 
-  const UserCard({super.key, required this.name, required this.email});
+  const UserCard({
+    super.key,
+    required this.name,
+    required this.email,
+    this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -274,11 +328,22 @@ class UserCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              name,
-              style: Theme.of(
-                context,
-              ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    name,
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ),
+                if (onRemove != null)
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                    onPressed: onRemove,
+                    tooltip: 'Remove User',
+                  ),
+              ],
             ),
             const SizedBox(height: 8),
             Row(
@@ -288,9 +353,7 @@ class UserCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Text(
                   email,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(color: Colors.white70),
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white70),
                 ),
               ],
             ),
