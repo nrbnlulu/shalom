@@ -1,84 +1,95 @@
-
 {% macro toJson_macro(fields) %}
 {% for name, field in fields | items %}
     {% set field_ty = resolve_field_type(field.common).ty %}
-        
+
     {% if field.is_optional and field.default_value is none %}
         if ({{ name }}.isSome()) {
-            final value = {{ name }}.some();
+            final $value = this.{{ name }}.some();
             {% if field_ty.kind == "Scalar" and is_custom_scalar(field_ty.name) %}
                 {% set scalar_impl = custom_scalar_impl_fullname(field_ty.name) %}
-                if (value == null) {
+                if ($value == null) {
                     data["{{ name }}"] = null;
                 } else {
-                    data["{{ name }}"] = {{ scalar_impl }}.serialize(value);
+                    data["{{ name }}"] = {{ scalar_impl }}.serialize($value);
                 }
             {% elif field_ty.kind == "InputObject" %}
-                data["{{ name }}"] = value?.toJson();
+                data["{{ name }}"] = $value?.toJson();
             {% elif field_ty.kind == "Enum" %}
-                data["{{ name }}"] = value?.name;
+                data["{{ name }}"] = $value?.name;
             {% elif field_ty.kind == "List" %}
-                {% set inner_type = field_ty.of_type %}
+                {% set inner_type = field_ty.of_type.ty %}
                 {% if inner_type.kind == "Enum" %}
-                    data["{{ name }}"] = value?.map((e) => e.name).toList();
+                    data["{{ name }}"] = $value?.map((e) => e.name).toList();
                 {% elif inner_type.kind == "Scalar" and is_custom_scalar(inner_type.name) %}
                     {% set scalar_impl = custom_scalar_impl_fullname(inner_type.name) %}
-                    data["{{ name }}"] = value?.map((e) => {{ scalar_impl }}.serialize(e)).toList();
+                    data["{{ name }}"] = $value?.map((e) => {{ scalar_impl }}.serialize(e)).toList();
                 {% elif inner_type.kind == "InputObject" %}
-                    data["{{ name }}"] = value?.map((e) => e.toJson()).toList();
+                    {% if field_ty.of_type.is_optional %}
+                        data["{{ name }}"] = $value?.map((e) => e?.toJson()).toList();
+                    {% else %}
+                        data["{{ name }}"] = $value?.map((e) => e.toJson()).toList();
+                    {% endif %}
                 {% else %}
-                    data["{{ name }}"] = value;
+                    data["{{ name }}"] = $value;
                 {% endif %}
             {% else %}
-                data["{{ name }}"] = value;
+                data["{{ name }}"] = $value;
             {% endif %}
         }
     {% else %}
         {% if field_ty.kind == "Scalar" and is_custom_scalar(field_ty.name) %}
             {% set scalar_impl = custom_scalar_impl_fullname(field_ty.name) %}
             {% if field.is_optional %}
-                data["{{ name }}"] = {{ name }} == null ? null : {{ scalar_impl }}.serialize({{ name }}!);
+                data["{{ name }}"] = this.{{ name }} == null ? null : {{ scalar_impl }}.serialize(this.{{ name }}!);
             {% else %}
-                data["{{ name }}"] = {{ scalar_impl }}.serialize({{ name }});
+                data["{{ name }}"] = {{ scalar_impl }}.serialize(this.{{ name }});
             {% endif %}
         {% elif field_ty.kind == "InputObject" %}
             {% if field.is_optional %}
-                 data["{{ name }}"] = {{ name }}?.toJson();
+                 data["{{ name }}"] = this.{{ name }}?.toJson();
             {% else %}
-                 data["{{ name }}"] = {{ name }}.toJson();
+                 data["{{ name }}"] = this.{{ name }}.toJson();
             {% endif %}
         {% elif field_ty.kind == "Enum" %}
             {% if field.is_optional %}
-                data["{{ name }}"] = {{ name }}?.name;
+                data["{{ name }}"] = this.{{ name }}?.name;
             {% else %}
-                data["{{ name }}"] = {{ name }}.name;
+                data["{{ name }}"] = this.{{ name }}.name;
             {% endif %}
         {% elif field_ty.kind == "List" %}
-            {% set inner_type = field_ty.of_type %}
+            {% set inner_type = field_ty.of_type.ty %}
             {% if inner_type.kind == "Enum" %}
                 {% if field.is_optional %}
-                    data["{{ name }}"] = {{ name }}?.map((e) => e.name).toList();
+                    data["{{ name }}"] = this.{{ name }}?.map((e) => e.name).toList();
                 {% else %}
-                    data["{{ name }}"] = {{ name }}.map((e) => e.name).toList();
+                    data["{{ name }}"] = this.{{ name }}.map((e) => e.name).toList();
                 {% endif %}
             {% elif inner_type.kind == "Scalar" and is_custom_scalar(inner_type.name) %}
                 {% set scalar_impl = custom_scalar_impl_fullname(inner_type.name) %}
                 {% if field.is_optional %}
-                    data["{{ name }}"] = {{ name }}?.map((e) => {{ scalar_impl }}.serialize(e)).toList();
+                    data["{{ name }}"] = this.{{ name }}?.map((e) => {{ scalar_impl }}.serialize(e)).toList();
                 {% else %}
-                    data["{{ name }}"] = {{ name }}.map((e) => {{ scalar_impl }}.serialize(e)).toList();
+                    data["{{ name }}"] = this.{{ name }}.map((e) => {{ scalar_impl }}.serialize(e)).toList();
                 {% endif %}
             {% elif inner_type.kind == "InputObject" %}
                 {% if field.is_optional %}
-                    data["{{ name }}"] = {{ name }}?.map((e) => e.toJson()).toList();
+                    {% if field_ty.of_type.is_optional %}
+                        data["{{ name }}"] = this.{{ name }}?.map((e) => e?.toJson()).toList();
+                    {% else %}
+                        data["{{ name }}"] = this.{{ name }}?.map((e) => e.toJson()).toList();
+                    {% endif %}
                 {% else %}
-                    data["{{ name }}"] = {{ name }}.map((e) => e.toJson()).toList();
+                    {% if field_ty.of_type.is_optional %}
+                        data["{{ name }}"] = this.{{ name }}.map((e) => e?.toJson()).toList();
+                    {% else %}
+                        data["{{ name }}"] = this.{{ name }}.map((e) => e.toJson()).toList();
+                    {% endif %}
                 {% endif %}
             {% else %}
-                data["{{ name }}"] = {{ name }};
+                data["{{ name }}"] = this.{{ name }};
             {% endif %}
         {% else %}
-            data["{{ name }}"] = {{ name }};
+            data["{{ name }}"] = this.{{ name }};
         {% endif %}
     {% endif %}
 {% endfor %}
@@ -104,8 +115,8 @@
         {% if field.is_optional %}
             switch ({{name}}) {
 {# if this is a "maybe" field #}
-                case Some(value: final data):
-                    {{ name }}$next = data;
+                case Some(value: final updateData):
+                    {{ name }}$next = updateData;
                 case None():
                     {{ name }}$next = this.{{name}};
             }

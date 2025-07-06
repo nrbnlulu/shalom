@@ -121,9 +121,8 @@ mod ext_jinja_fns {
             GraphQLAny::Enum(enum_) => enum_.name.clone(),
             GraphQLAny::List {
                 of_type,
-                is_optional,
             } => {
-                let inner = resolve_schema_typename(of_type, *is_optional, ctx);
+                let inner = resolve_schema_typename(&of_type.ty, of_type.is_optional, ctx);
                 format!("List<{inner}>")
             }
             _ => panic!("Unsupported type: {:?}", ty),
