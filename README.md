@@ -29,7 +29,7 @@
     - [ ] list of
         - [x] scalar
         - [ ] object
-        - [ ] enum
+        - [x] enum
         - [ ] oneOf  
  
 ### Development
