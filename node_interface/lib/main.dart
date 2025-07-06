@@ -1,6 +1,9 @@
-import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'dart:math';
+import 'dart:core';
+import 'package:http/http.dart' as http;
 
 typedef ID = String;
 typedef JsonObject = Map<String, dynamic>;
@@ -30,14 +33,9 @@ class NodeManager {
         for (final subscriber in subscribers) {
           final node = subscriber.nodeRef.target;
           if (node != null) {
-            bool hasChanged = false;
-            for (final field in subscriber.subscribedFields) {
-              if (changedFields.contains(field)) {
-                 hasChanged = true;
-                 break;
-              }
-            }
-            if (hasChanged) {
+            if (changedFields
+                .intersection(subscriber.subscribedFields)
+                .isNotEmpty) {
               node.updateWithJson(newData, changedFields);
             }
           }
@@ -48,7 +46,8 @@ class NodeManager {
     }
   }
 
-  void register(Node node, List<String> subscribedFields) {
+  void register(Node node, Set<String> subscribedFields) {
+    print(_subscriberStore[node.id]?.length);
     final nodeId = node.id;
     final nodeSubscriber = NodeSubscriber(
       nodeRef: WeakReference(node),
@@ -61,7 +60,10 @@ class NodeManager {
     final nodeId = node.id;
     final subscribers = _subscriberStore[nodeId];
     if (subscribers != null) {
-       subscribers.removeWhere((subscriber) => subscriber.nodeRef.target == node);
+      subscribers.removeWhere(
+        (subscriber) => subscriber.nodeRef.target == node,
+      );
+      print(subscribers.length);
     }
   }
 }
@@ -82,7 +84,7 @@ abstract class Node extends ChangeNotifier {
 
 class NodeSubscriber {
   final WeakReference<Node> nodeRef;
-  final List<String> subscribedFields;
+  final Set<String> subscribedFields;
   NodeSubscriber({required this.nodeRef, required this.subscribedFields});
 }
 
@@ -124,32 +126,63 @@ class _NodeWidgetState<T extends Node> extends State<NodeWidget<T>> {
   void dispose() {
     widget.node.unSubscribeToChanges(widget.context);
     super.dispose();
-
   }
 }
 
-// --- UI Implementation and Concrete Node Class ---
+class ApiService {
+  static Future<List<JsonObject>> fetchUsers() async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://reqres.in/api/users?delay=1'),
+        headers: {"x-api-key": "reqres-free-v1"},
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return List<JsonObject>.from(data['data']);
+      }
+    } catch (e) {
+      print("Error fetching users: $e");
+    }
+    return [];
+  }
+}
 
-/// A concrete implementation of the [Node] class representing a user.
 class UserNode extends Node {
-  String name;
+  String firstName;
+  String lastName;
   String email;
+  String avatarUrl;
 
-  UserNode({required super.id, required this.name, required this.email});
+  UserNode({
+    required super.id,
+    required this.firstName,
+    required this.lastName,
+    required this.email,
+    required this.avatarUrl,
+  });
+
+  String get fullName => '$firstName $lastName';
 
   static UserNode deserialize(JsonObject data, ShalomContext context) {
     final self = UserNode(
-      id: data["id"],
-      name: data["name"],
-      email: data["email"],
+      id: data["id"]?.toString() ?? '',
+      firstName: data["first_name"] ?? '',
+      lastName: data["last_name"] ?? '',
+      email: data["email"] ?? '',
+      avatarUrl: data["avatar"] ?? '',
     );
-    context.manager.parseNodeData(data);
+    context.manager.parseNodeData(self.toJson());
     return self;
   }
 
   @override
   void subscribeToChanges(ShalomContext context) {
-    context.manager.register(this, ["email", "name"]);
+    context.manager.register(this, {
+      "first_name",
+      "last_name",
+      "email",
+      "avatar",
+    });
   }
 
   @override
@@ -159,26 +192,45 @@ class UserNode extends Node {
 
   @override
   void updateWithJson(JsonObject rawData, Set<String> changedFields) {
-    for (final f_name in changedFields) {
-      switch (f_name) {
-        case 'name': 
-           name = rawData["name"];
-           break;
+    bool hasChanged = false;
+    for (final fieldName in changedFields) {
+      hasChanged = true;
+      switch (fieldName) {
+        case 'first_name':
+          firstName = rawData["first_name"];
+          break;
+        case 'last_name':
+          lastName = rawData["last_name"];
+          break;
         case 'email':
-           email = rawData["email"];
-           break;
+          email = rawData["email"];
+          break;
+        case 'avatar':
+          avatarUrl = rawData["avatar"];
+          break;
       }
     }
-    notifyListeners();
+    if (hasChanged) {
+      notifyListeners();
+    }
   }
 
   @override
   JsonObject toJson() {
-    return {'id': id, 'name': name, 'email': email};
+    return {
+      'id': id,
+      'first_name': firstName,
+      'last_name': lastName,
+      'email': email,
+      'avatar': avatarUrl,
+    };
   }
 }
 
-// --- Main Application --- (No changes here, included for context)
+// =========================================================================
+// SECTION 3: MAIN APPLICATION & UI
+// =========================================================================
+
 void main() {
   runApp(const MyApp());
 }
@@ -189,174 +241,206 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Node Framework Demo',
+      title: 'Node Framework Demo (No Provider)',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
         brightness: Brightness.dark,
+        primarySwatch: Colors.teal,
         scaffoldBackgroundColor: const Color(0xFF121212),
         cardColor: const Color(0xFF1E1E1E),
         useMaterial3: true,
       ),
-      home: const UserProfileScreen(),
+      home: const UserListScreen(),
     );
   }
 }
 
-
-
-// --- MODIFIED: UserProfileScreen ---
-
-class UserProfileScreen extends StatefulWidget {
-  const UserProfileScreen({super.key});
+// --- User List Screen ---
+class UserListScreen extends StatefulWidget {
+  const UserListScreen({super.key});
 
   @override
-  State<UserProfileScreen> createState() => _UserProfileScreenState();
+  State<UserListScreen> createState() => _UserListScreenState();
 }
 
-class _UserProfileScreenState extends State<UserProfileScreen> {
+class _UserListScreenState extends State<UserListScreen> {
   late final ShalomContext _shalomContext;
-  // Changed to a regular list from final to allow removal
-  late List<UserNode> _userNodes;
-  int _updateCounter = 0;
+  final Map<ID, UserNode> _userNodes = {};
+  bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    final nodeManager = NodeManager();
-    _shalomContext = ShalomContext(manager: nodeManager);
-
-    // Initialize with two distinct users
-    _userNodes = [
-      UserNode.deserialize({
-        'id': 'user-123',
-        'name': 'John Doe',
-        'email': 'john.doe@example.com',
-      }, _shalomContext),
-      UserNode.deserialize({
-        'id': 'user-123',
-        'name': 'Jane Smith',
-        'email': 'jane.smith@example.com',
-      }, _shalomContext),
-    ];
+    // The ShalomContext is created and owned by this screen.
+    _shalomContext = ShalomContext(manager: NodeManager());
+    _loadUsers();
   }
 
-  void _simulateDataChange() {
-    final targetIndex = _updateCounter % _userNodes.length;
-    final targetNode = _userNodes[targetIndex];
-
-    final updatedUserData = {
-      'id': targetNode.id,
-      'name': '${targetNode.name.split(" ").first} Updated',
-      'email': '${targetNode.id}@example-updated.com',
-    };
-
-    _shalomContext.manager.parseNodeData(updatedUserData);
+  Future<void> _loadUsers() async {
+    final userData = await ApiService.fetchUsers();
+    if (!mounted) return;
 
     setState(() {
-      _updateCounter++;
+      for (final json in userData) {
+        // Pass the context to the deserializer.
+        final node = UserNode.deserialize(json, _shalomContext);
+        _userNodes[node.id] = node;
+      }
+      _isLoading = false;
     });
   }
 
-  // --- NEW: Method to handle removing a node ---
-  void _removeUser(UserNode nodeToRemove) {
+  void _deleteUser(UserNode nodeToDelete) {
+    // Remove the node from the state map and rebuild the UI.
     setState(() {
-      _userNodes.removeWhere((node) => node.id == nodeToRemove.id);
+      _userNodes.remove(nodeToDelete.id);
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Removable User Cards'),
-        backgroundColor: Colors.black26,
-      ),
-      body: _userNodes.isEmpty
-          ? const Center(child: Text("No users left. Add functionality to add them back!"))
-          : ListView.separated(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: _userNodes.length,
-              itemBuilder: (context, index) {
-                final userNode = _userNodes[index];
-                return NodeWidget<UserNode>(
-                  context: _shalomContext,
-                  node: userNode,
-                  builder: (context, user) {
-                    // Pass the removal handler to the UserCard
-                    return UserCard(
-                      name: user.name,
-                      email: user.email,
-                      onRemove: () => _removeUser(user),
-                    );
-                  },
-                );
-              },
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
+      appBar: AppBar(title: const Text('Users')),
+      body:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : ListView.builder(
+                itemCount: _userNodes.length,
+                itemBuilder: (context, index) {
+                  final node = _userNodes.values.elementAt(index);
+                  return NodeWidget<UserNode>(
+                    node: node,
+                    builder:
+                        (_, node) => ListTile(
+                          leading: CircleAvatar(
+                            backgroundImage: NetworkImage(node.avatarUrl),
+                          ),
+                          title: Text(node.fullName),
+                          subtitle: Text(node.email),
+                          trailing: IconButton(
+                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
+                            tooltip: 'Delete User',
+                            onPressed: () => _deleteUser(node),
+                          ),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                // Pass both the node and the context to the next screen.
+                                builder:
+                                    (_) => UserProfileScreen(
+                                      userNode: node,
+                                      context: _shalomContext,
+                                    ),
+                              ),
+                            );
+                          },
+                        ),
+                    context: _shalomContext,
+                  );
+                },
+              ),
+    );
+  }
+}
+
+// --- User Profile Screen ---
+class UserProfileScreen extends StatelessWidget {
+  final UserNode userNode;
+  final ShalomContext context; // Receives the context via constructor.
+
+  const UserProfileScreen({
+    super.key,
+    required this.userNode,
+    required this.context,
+  });
+
+  void _simulateUpdate() {
+    final updatedData = userNode.toJson();
+    final randomLastName = "Manual #${Random().nextInt(100)}";
+    updatedData['last_name'] = randomLastName;
+
+    print(
+      "Simulating update for ${userNode.id}: new last name '$randomLastName'",
+    );
+    // Use the passed-in context.
+    context.manager.parseNodeData(updatedData);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('User Profile')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            NodeWidget<UserNode>(
+              node: userNode,
+              // Pass the ShalomContext down to the NodeWidget.
+              // Use `this.context` to avoid conflict with the BuildContext.
+              context: this.context,
+              builder:
+                  (_, node) => ProfileHeader(
+                    avatarUrl: node.avatarUrl,
+                    fullName: node.fullName,
+                  ),
             ),
+            const SizedBox(height: 24),
+            NodeWidget<UserNode>(
+              node: userNode,
+              context: this.context,
+              builder: (_, node) => ContactInfoCard(email: node.email),
+            ),
+          ],
+        ),
+      ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _simulateDataChange,
-        tooltip: 'Change Data',
+        onPressed: _simulateUpdate,
+        tooltip: 'Simulate Last Name Change',
         child: const Icon(Icons.sync),
       ),
     );
   }
 }
 
-// --- MODIFIED: UserCard ---
-// A simple widget to display the user's information
-class UserCard extends StatelessWidget {
-  final String name;
-  final String email;
-  final VoidCallback? onRemove; // Callback for the remove button
-
-  const UserCard({
+// --- Individual UI Components (Unchanged) ---
+class ProfileHeader extends StatelessWidget {
+  final String avatarUrl;
+  final String fullName;
+  const ProfileHeader({
     super.key,
-    required this.name,
-    required this.email,
-    this.onRemove,
+    required this.avatarUrl,
+    required this.fullName,
   });
 
   @override
   Widget build(BuildContext context) {
+    print("Building ProfileHeader for $fullName");
+    return Column(
+      children: [
+        CircleAvatar(radius: 50, backgroundImage: NetworkImage(avatarUrl)),
+        const SizedBox(height: 16),
+        Text(fullName, style: Theme.of(context).textTheme.headlineMedium),
+      ],
+    );
+  }
+}
+
+class ContactInfoCard extends StatelessWidget {
+  final String email;
+  const ContactInfoCard({super.key, required this.email});
+
+  @override
+  Widget build(BuildContext context) {
+    print("Building ContactInfoCard for $email");
     return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    name,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                if (onRemove != null)
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                    onPressed: onRemove,
-                    tooltip: 'Remove User',
-                  ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.email, size: 16, color: Colors.white70),
-                const SizedBox(width: 8),
-                Text(
-                  email,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white70),
-                ),
-              ],
-            ),
+            const Icon(Icons.email, color: Colors.tealAccent),
+            const SizedBox(width: 16),
+            Text(email, style: Theme.of(context).textTheme.titleMedium),
           ],
         ),
       ),
