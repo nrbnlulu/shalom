@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -27,17 +27,15 @@ class UserInput {
 
     if (ids.isSome()) {
       final value = this.ids.some();
-
-      data["ids"] = value;
+      data["ids"] = value?.map((e) => e).toList();
     }
 
     if (scores.isSome()) {
       final value = this.scores.some();
-
-      data["scores"] = value;
+      data["scores"] = value?.map((e) => e).toList();
     }
 
-    data["tags"] = this.tags;
+    data["tags"] = this.tags.map((e) => e).toList();
 
     return data;
   }

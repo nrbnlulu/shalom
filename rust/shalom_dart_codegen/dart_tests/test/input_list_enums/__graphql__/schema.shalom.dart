@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -50,7 +50,6 @@ class ObjectWithListOfInput {
 
     if (optionalGenders.isSome()) {
       final value = this.optionalGenders.some();
-
       data["optionalGenders"] = value?.map((e) => e.name).toList();
     }
 

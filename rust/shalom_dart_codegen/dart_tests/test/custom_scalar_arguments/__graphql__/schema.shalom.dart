@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -105,12 +105,8 @@ class PointUpdateCoordsMaybe {
 
     if (coords.isSome()) {
       final value = this.coords.some();
-
-      if (value == null) {
-        data["coords"] = null;
-      } else {
-        data["coords"] = rmhlxei.pointScalarImpl.serialize(value);
-      }
+      data["coords"] =
+          value == null ? null : rmhlxei.pointScalarImpl.serialize(value!);
     }
 
     data["name"] = this.name;

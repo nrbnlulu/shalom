@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 
@@ -139,13 +139,11 @@ class OptionalArgumentsVariables {
 
     if (id.isSome()) {
       final value = this.id.some();
-
       data["id"] = value;
     }
 
     if (phone.isSome()) {
       final value = this.phone.some();
-
       data["phone"] = value;
     }
 

@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
@@ -211,12 +211,8 @@ class UpdatePointCoordsMaybeVariables {
 
     if (coords.isSome()) {
       final value = this.coords.some();
-
-      if (value == null) {
-        data["coords"] = null;
-      } else {
-        data["coords"] = rmhlxei.pointScalarImpl.serialize(value);
-      }
+      data["coords"] =
+          value == null ? null : rmhlxei.pointScalarImpl.serialize(value!);
     }
 
     return data;

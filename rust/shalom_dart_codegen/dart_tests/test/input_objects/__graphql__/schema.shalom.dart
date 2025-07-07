@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -77,19 +77,16 @@ class OrderOpt {
 
     if (name.isSome()) {
       final value = this.name.some();
-
       data["name"] = value;
     }
 
     if (price.isSome()) {
       final value = this.price.some();
-
       data["price"] = value;
     }
 
     if (quantity.isSome()) {
       final value = this.quantity.some();
-
       data["quantity"] = value;
     }
 

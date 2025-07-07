@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -67,7 +67,6 @@ class OrderDetails {
 
     if (firstReview.isSome()) {
       final value = this.firstReview.some();
-
       data["firstReview"] = value?.toJson();
     }
 
@@ -100,7 +99,6 @@ class OrderRecursive {
 
     if (order.isSome()) {
       final value = this.order.some();
-
       data["order"] = value?.toJson();
     }
 
@@ -133,7 +131,6 @@ class Review {
 
     if (order.isSome()) {
       final value = this.order.some();
-
       data["order"] = value?.toJson();
     }
 

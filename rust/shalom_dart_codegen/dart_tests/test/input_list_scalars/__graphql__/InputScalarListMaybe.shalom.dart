@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 
@@ -143,8 +143,7 @@ class InputScalarListMaybeVariables {
 
     if (ints.isSome()) {
       final value = this.ints.some();
-
-      data["ints"] = value;
+      data["ints"] = value?.map((e) => e).toList();
     }
 
     return data;
