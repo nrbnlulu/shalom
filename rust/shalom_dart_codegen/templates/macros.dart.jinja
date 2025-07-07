@@ -64,7 +64,6 @@
     {% endif %}
 {% endmacro %}
 
-{# Deserialize field macro as requested in code review #}
 {% macro _deserialize_field_macro(field_name, field, hashmap_sym) %}
     {% set field_ty = resolve_field_type(field.common).ty %}
     {% if field.is_optional and field.default_value is none %}
@@ -84,7 +83,6 @@
     {% endif %}
 {% endmacro %}
 
-{# Simplified toJson macro using recursive helpers #}
 {% macro toJson_macro(fields) %}
 {% for name, field in fields | items %}
     {% set field_ty = resolve_field_type(field.common).ty %}
@@ -99,7 +97,6 @@
 {% endfor %}
 {% endmacro %}
 
-{# Updated updateWith macro (unchanged for compatibility) #}
 {% macro updateWith_macro(fields, typename) %}
 {{typename}} updateWith(
     {
@@ -141,7 +138,6 @@
 }
 {% endmacro %}
 
-{# Field initialization logic macro (unchanged for compatibility) #}
 {% macro field_initialization_logic(fields) %}
 {% for name, field in fields | items %}
     {% if not field.is_optional %}
