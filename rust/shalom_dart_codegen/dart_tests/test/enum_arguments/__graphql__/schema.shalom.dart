@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -42,9 +42,9 @@ class OrderUpdate {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["status"] = status.name;
+    data["status"] = this.status.name;
 
-    data["timeLeft"] = timeLeft;
+    data["timeLeft"] = this.timeLeft;
 
     return data;
   }
@@ -81,12 +81,11 @@ class OrderUpdateStatusOpt {
     JsonObject data = {};
 
     if (status.isSome()) {
-      final value = status.some();
-
+      final value = this.status.some();
       data["status"] = value?.name;
     }
 
-    data["timeLeft"] = timeLeft;
+    data["timeLeft"] = this.timeLeft;
 
     return data;
   }
@@ -99,8 +98,8 @@ class OrderUpdateStatusOpt {
     final Option<Status?> status$next;
 
     switch (status) {
-      case Some(value: final data):
-        status$next = data;
+      case Some(value: final updateData):
+        status$next = updateData;
       case None():
         status$next = this.status;
     }

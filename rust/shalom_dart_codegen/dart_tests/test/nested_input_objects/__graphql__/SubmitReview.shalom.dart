@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 
@@ -78,8 +78,7 @@ class SubmitReviewVariables {
     JsonObject data = {};
 
     if (review.isSome()) {
-      final value = review.some();
-
+      final value = this.review.some();
       data["review"] = value?.toJson();
     }
 
@@ -92,8 +91,8 @@ class SubmitReviewVariables {
     final Option<Review?> review$next;
 
     switch (review) {
-      case Some(value: final data):
-        review$next = data;
+      case Some(value: final updateData):
+        review$next = updateData;
       case None():
         review$next = this.review;
     }

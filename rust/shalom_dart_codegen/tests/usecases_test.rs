@@ -40,6 +40,10 @@ fn test_input_list_scalars_dart() {
 fn test_input_list_enums_dart() {
     run_dart_tests_for_usecase("input_list_enums");
 }
+#[test]
+fn test_input_list_objects_dart() {
+    run_dart_tests_for_usecase("input_list_objects");
+}
 
 #[test]
 fn test_nested_input_objects_dart() {

@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -26,18 +26,16 @@ class UserInput {
     JsonObject data = {};
 
     if (ids.isSome()) {
-      final value = ids.some();
-
-      data["ids"] = value;
+      final value = this.ids.some();
+      data["ids"] = value?.map((e) => e).toList();
     }
 
     if (scores.isSome()) {
-      final value = scores.some();
-
-      data["scores"] = value;
+      final value = this.scores.some();
+      data["scores"] = value?.map((e) => e).toList();
     }
 
-    data["tags"] = tags;
+    data["tags"] = this.tags.map((e) => e).toList();
 
     return data;
   }
@@ -52,8 +50,8 @@ class UserInput {
     final Option<List<String>?> ids$next;
 
     switch (ids) {
-      case Some(value: final data):
-        ids$next = data;
+      case Some(value: final updateData):
+        ids$next = updateData;
       case None():
         ids$next = this.ids;
     }
@@ -61,8 +59,8 @@ class UserInput {
     final Option<List<int?>?> scores$next;
 
     switch (scores) {
-      case Some(value: final data):
-        scores$next = data;
+      case Some(value: final updateData):
+        scores$next = updateData;
       case None():
         scores$next = this.scores;
     }

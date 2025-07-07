@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -19,9 +19,9 @@ class PointDataInput {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["coords"] = rmhlxei.pointScalarImpl.serialize(coords);
+    data["coords"] = rmhlxei.pointScalarImpl.serialize(this.coords);
 
-    data["name"] = name;
+    data["name"] = this.name;
 
     return data;
   }
@@ -58,9 +58,11 @@ class PointDataOptCoordsInput {
     JsonObject data = {};
 
     data["coords"] =
-        coords == null ? null : rmhlxei.pointScalarImpl.serialize(coords!);
+        this.coords == null
+            ? null
+            : rmhlxei.pointScalarImpl.serialize(this.coords!);
 
-    data["name"] = name;
+    data["name"] = this.name;
 
     return data;
   }
@@ -73,8 +75,8 @@ class PointDataOptCoordsInput {
     final rmhlxei.Point? coords$next;
 
     switch (coords) {
-      case Some(value: final data):
-        coords$next = data;
+      case Some(value: final updateData):
+        coords$next = updateData;
       case None():
         coords$next = this.coords;
     }
@@ -102,16 +104,12 @@ class PointUpdateCoordsMaybe {
     JsonObject data = {};
 
     if (coords.isSome()) {
-      final value = coords.some();
-
-      if (value == null) {
-        data["coords"] = null;
-      } else {
-        data["coords"] = rmhlxei.pointScalarImpl.serialize(value);
-      }
+      final value = this.coords.some();
+      data["coords"] =
+          value == null ? null : rmhlxei.pointScalarImpl.serialize(value!);
     }
 
-    data["name"] = name;
+    data["name"] = this.name;
 
     return data;
   }
@@ -124,8 +122,8 @@ class PointUpdateCoordsMaybe {
     final Option<rmhlxei.Point?> coords$next;
 
     switch (coords) {
-      case Some(value: final data):
-        coords$next = data;
+      case Some(value: final updateData):
+        coords$next = updateData;
       case None():
         coords$next = this.coords;
     }
