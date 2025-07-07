@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 
@@ -183,11 +183,11 @@ class OptionalWithSomeDefaultVariables {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["duration"] = duration;
+    data["duration"] = this.duration;
 
-    data["is_easy"] = is_easy;
+    data["is_easy"] = this.is_easy;
 
-    data["name"] = name;
+    data["name"] = this.name;
 
     return data;
   }
@@ -202,8 +202,8 @@ class OptionalWithSomeDefaultVariables {
     final int? duration$next;
 
     switch (duration) {
-      case Some(value: final data):
-        duration$next = data;
+      case Some(value: final updateData):
+        duration$next = updateData;
       case None():
         duration$next = this.duration;
     }
@@ -211,8 +211,8 @@ class OptionalWithSomeDefaultVariables {
     final bool? is_easy$next;
 
     switch (is_easy) {
-      case Some(value: final data):
-        is_easy$next = data;
+      case Some(value: final updateData):
+        is_easy$next = updateData;
       case None():
         is_easy$next = this.is_easy;
     }
@@ -220,8 +220,8 @@ class OptionalWithSomeDefaultVariables {
     final String? name$next;
 
     switch (name) {
-      case Some(value: final data):
-        name$next = data;
+      case Some(value: final updateData):
+        name$next = updateData;
       case None():
         name$next = this.name;
     }

@@ -1,0 +1,28 @@
+input MyInputObject {
+    id: ID!
+    name: String!
+    value: Int!
+}
+
+input ContainerInput {
+    title: String!
+    nestedItems: [MyInputObject!]!
+}
+
+type Response {
+    success: Boolean!
+    message: String
+}
+
+type Query {
+    test: String
+}
+
+type Mutation {
+    InputListOfRequiredObjects(items: [MyInputObject!]!): Response
+    InputListObjectsMAybe(items: [MyInputObject!]): Response
+    InputListOfOptionalObjectsWithNullDefault(
+        items: [MyInputObject!] = null
+    ): Response
+    InputObjectContainingListOfObjects(data: ContainerInput!): Response
+}

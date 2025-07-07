@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
@@ -199,9 +199,11 @@ class UpdatePointCoordsOptVariables {
     JsonObject data = {};
 
     data["coords"] =
-        coords == null ? null : rmhlxei.pointScalarImpl.serialize(coords!);
+        this.coords == null
+            ? null
+            : rmhlxei.pointScalarImpl.serialize(this.coords!);
 
-    data["id"] = id;
+    data["id"] = this.id;
 
     return data;
   }
@@ -214,8 +216,8 @@ class UpdatePointCoordsOptVariables {
     final rmhlxei.Point? coords$next;
 
     switch (coords) {
-      case Some(value: final data):
-        coords$next = data;
+      case Some(value: final updateData):
+        coords$next = updateData;
       case None():
         coords$next = this.coords;
     }

@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -19,11 +19,11 @@ class Order {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["name"] = name;
+    data["name"] = this.name;
 
-    data["price"] = price;
+    data["price"] = this.price;
 
-    data["quantity"] = quantity;
+    data["quantity"] = this.quantity;
 
     return data;
   }
@@ -76,20 +76,17 @@ class OrderOpt {
     JsonObject data = {};
 
     if (name.isSome()) {
-      final value = name.some();
-
+      final value = this.name.some();
       data["name"] = value;
     }
 
     if (price.isSome()) {
-      final value = price.some();
-
+      final value = this.price.some();
       data["price"] = value;
     }
 
     if (quantity.isSome()) {
-      final value = quantity.some();
-
+      final value = this.quantity.some();
       data["quantity"] = value;
     }
 
@@ -106,8 +103,8 @@ class OrderOpt {
     final Option<String?> name$next;
 
     switch (name) {
-      case Some(value: final data):
-        name$next = data;
+      case Some(value: final updateData):
+        name$next = updateData;
       case None():
         name$next = this.name;
     }
@@ -115,8 +112,8 @@ class OrderOpt {
     final Option<double?> price$next;
 
     switch (price) {
-      case Some(value: final data):
-        price$next = data;
+      case Some(value: final updateData):
+        price$next = updateData;
       case None():
         price$next = this.price;
     }
@@ -124,8 +121,8 @@ class OrderOpt {
     final Option<int?> quantity$next;
 
     switch (quantity) {
-      case Some(value: final data):
-        quantity$next = data;
+      case Some(value: final updateData):
+        quantity$next = updateData;
       case None():
         quantity$next = this.quantity;
     }
@@ -152,11 +149,11 @@ class OrderOptWithNullDefaults {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["name"] = name;
+    data["name"] = this.name;
 
-    data["price"] = price;
+    data["price"] = this.price;
 
-    data["quantity"] = quantity;
+    data["quantity"] = this.quantity;
 
     return data;
   }
@@ -171,8 +168,8 @@ class OrderOptWithNullDefaults {
     final String? name$next;
 
     switch (name) {
-      case Some(value: final data):
-        name$next = data;
+      case Some(value: final updateData):
+        name$next = updateData;
       case None():
         name$next = this.name;
     }
@@ -180,8 +177,8 @@ class OrderOptWithNullDefaults {
     final double? price$next;
 
     switch (price) {
-      case Some(value: final data):
-        price$next = data;
+      case Some(value: final updateData):
+        price$next = updateData;
       case None():
         price$next = this.price;
     }
@@ -189,8 +186,8 @@ class OrderOptWithNullDefaults {
     final int? quantity$next;
 
     switch (quantity) {
-      case Some(value: final data):
-        quantity$next = data;
+      case Some(value: final updateData):
+        quantity$next = updateData;
       case None():
         quantity$next = this.quantity;
     }
@@ -223,11 +220,11 @@ class OrderOptWithSomeDefaults {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["name"] = name;
+    data["name"] = this.name;
 
-    data["price"] = price;
+    data["price"] = this.price;
 
-    data["quantity"] = quantity;
+    data["quantity"] = this.quantity;
 
     return data;
   }
@@ -242,8 +239,8 @@ class OrderOptWithSomeDefaults {
     final String? name$next;
 
     switch (name) {
-      case Some(value: final data):
-        name$next = data;
+      case Some(value: final updateData):
+        name$next = updateData;
       case None():
         name$next = this.name;
     }
@@ -251,8 +248,8 @@ class OrderOptWithSomeDefaults {
     final double? price$next;
 
     switch (price) {
-      case Some(value: final data):
-        price$next = data;
+      case Some(value: final updateData):
+        price$next = updateData;
       case None():
         price$next = this.price;
     }
@@ -260,8 +257,8 @@ class OrderOptWithSomeDefaults {
     final int? quantity$next;
 
     switch (quantity) {
-      case Some(value: final data):
-        quantity$next = data;
+      case Some(value: final updateData):
+        quantity$next = updateData;
       case None():
         quantity$next = this.quantity;
     }
