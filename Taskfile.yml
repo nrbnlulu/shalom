@@ -24,4 +24,5 @@ tasks:
             - typos
     test:
         cmds:
-            - cd rust && cargo test
+            # 2 threads, won't kill my pc
+            - cd rust && cargo test -- --test-threads=2

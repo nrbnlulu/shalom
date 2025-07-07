@@ -1,9 +1,10 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -16,15 +17,11 @@ class UpdatePointCoordsOptResponse {
   UpdatePointCoordsOptResponse({this.getPointById});
   static UpdatePointCoordsOptResponse fromJson(JsonObject data) {
     final UpdatePointCoordsOpt_getPointById? getPointById_value;
-
-    final JsonObject? getPointById$raw = data['getPointById'];
-    if (getPointById$raw != null) {
-      getPointById_value = UpdatePointCoordsOpt_getPointById.fromJson(
-        getPointById$raw,
-      );
-    } else {
-      getPointById_value = null;
-    }
+    final getPointById$raw = data["getPointById"];
+    getPointById_value =
+        getPointById$raw == null
+            ? null
+            : UpdatePointCoordsOpt_getPointById.fromJson(getPointById$raw);
 
     return UpdatePointCoordsOptResponse(getPointById: getPointById_value);
   }
@@ -32,14 +29,11 @@ class UpdatePointCoordsOptResponse {
   UpdatePointCoordsOptResponse updateWithJson(JsonObject data) {
     final UpdatePointCoordsOpt_getPointById? getPointById_value;
     if (data.containsKey('getPointById')) {
-      final JsonObject? getPointById$raw = data['getPointById'];
-      if (getPointById$raw != null) {
-        getPointById_value = UpdatePointCoordsOpt_getPointById.fromJson(
-          getPointById$raw,
-        );
-      } else {
-        getPointById_value = null;
-      }
+      final getPointById$raw = data["getPointById"];
+      getPointById_value =
+          getPointById$raw == null
+              ? null
+              : UpdatePointCoordsOpt_getPointById.fromJson(getPointById$raw);
     } else {
       getPointById_value = getPointById;
     }
@@ -58,7 +52,7 @@ class UpdatePointCoordsOptResponse {
   int get hashCode => getPointById.hashCode;
 
   JsonObject toJson() {
-    return {'getPointById': getPointById?.toJson()};
+    return {'getPointById': this.getPointById?.toJson()};
   }
 }
 
@@ -81,19 +75,19 @@ class UpdatePointCoordsOpt_getPointById {
   });
   static UpdatePointCoordsOpt_getPointById fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
-
+    final coords$raw = data["coords"];
     coords_value =
-        data['coords'] == null
+        coords$raw == null
             ? null
-            : rmhlxei.pointScalarImpl.deserialize(data['coords']);
+            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
 
     final String name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String;
 
     final String id_value;
-
-    id_value = data['id'];
+    final id$raw = data["id"];
+    id_value = id$raw as String;
 
     return UpdatePointCoordsOpt_getPointById(
       coords: coords_value,
@@ -107,24 +101,27 @@ class UpdatePointCoordsOpt_getPointById {
   UpdatePointCoordsOpt_getPointById updateWithJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     if (data.containsKey('coords')) {
+      final coords$raw = data["coords"];
       coords_value =
-          data['coords'] == null
+          coords$raw == null
               ? null
-              : rmhlxei.pointScalarImpl.deserialize(data['coords']);
+              : rmhlxei.pointScalarImpl.deserialize(coords$raw);
     } else {
       coords_value = coords;
     }
 
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String;
     } else {
       name_value = name;
     }
 
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data['id'];
+      final id$raw = data["id"];
+      id_value = id$raw as String;
     } else {
       id_value = id;
     }
@@ -153,11 +150,13 @@ class UpdatePointCoordsOpt_getPointById {
   JsonObject toJson() {
     return {
       'coords':
-          coords == null ? null : rmhlxei.pointScalarImpl.serialize(coords!),
+          this.coords == null
+              ? null
+              : rmhlxei.pointScalarImpl.serialize(this.coords!),
 
-      'name': name,
+      'name': this.name,
 
-      'id': id,
+      'id': this.id,
     };
   }
 }
@@ -183,7 +182,7 @@ class RequestUpdatePointCoordsOpt extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'UpdatePointCoordsOpt',
+      opName: 'UpdatePointCoordsOpt',
     );
   }
 }

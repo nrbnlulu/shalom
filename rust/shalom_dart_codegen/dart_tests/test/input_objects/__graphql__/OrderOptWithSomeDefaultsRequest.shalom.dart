@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -19,17 +20,14 @@ class OrderOptWithSomeDefaultsRequestResponse {
   static OrderOptWithSomeDefaultsRequestResponse fromJson(JsonObject data) {
     final OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest?
     orderOptWithSomeDefaultsRequest_value;
-
-    final JsonObject? orderOptWithSomeDefaultsRequest$raw =
-        data['orderOptWithSomeDefaultsRequest'];
-    if (orderOptWithSomeDefaultsRequest$raw != null) {
-      orderOptWithSomeDefaultsRequest_value =
-          OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest.fromJson(
-            orderOptWithSomeDefaultsRequest$raw,
-          );
-    } else {
-      orderOptWithSomeDefaultsRequest_value = null;
-    }
+    final orderOptWithSomeDefaultsRequest$raw =
+        data["orderOptWithSomeDefaultsRequest"];
+    orderOptWithSomeDefaultsRequest_value =
+        orderOptWithSomeDefaultsRequest$raw == null
+            ? null
+            : OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest.fromJson(
+              orderOptWithSomeDefaultsRequest$raw,
+            );
 
     return OrderOptWithSomeDefaultsRequestResponse(
       orderOptWithSomeDefaultsRequest: orderOptWithSomeDefaultsRequest_value,
@@ -40,16 +38,14 @@ class OrderOptWithSomeDefaultsRequestResponse {
     final OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest?
     orderOptWithSomeDefaultsRequest_value;
     if (data.containsKey('orderOptWithSomeDefaultsRequest')) {
-      final JsonObject? orderOptWithSomeDefaultsRequest$raw =
-          data['orderOptWithSomeDefaultsRequest'];
-      if (orderOptWithSomeDefaultsRequest$raw != null) {
-        orderOptWithSomeDefaultsRequest_value =
-            OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest.fromJson(
-              orderOptWithSomeDefaultsRequest$raw,
-            );
-      } else {
-        orderOptWithSomeDefaultsRequest_value = null;
-      }
+      final orderOptWithSomeDefaultsRequest$raw =
+          data["orderOptWithSomeDefaultsRequest"];
+      orderOptWithSomeDefaultsRequest_value =
+          orderOptWithSomeDefaultsRequest$raw == null
+              ? null
+              : OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest.fromJson(
+                orderOptWithSomeDefaultsRequest$raw,
+              );
     } else {
       orderOptWithSomeDefaultsRequest_value = orderOptWithSomeDefaultsRequest;
     }
@@ -73,7 +69,7 @@ class OrderOptWithSomeDefaultsRequestResponse {
   JsonObject toJson() {
     return {
       'orderOptWithSomeDefaultsRequest':
-          orderOptWithSomeDefaultsRequest?.toJson(),
+          this.orderOptWithSomeDefaultsRequest?.toJson(),
     };
   }
 }
@@ -100,16 +96,16 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
   static OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest
   fromJson(JsonObject data) {
     final int? quantity_value;
-
-    quantity_value = data['quantity'];
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int?;
 
     final String? name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
 
     final double? price_value;
-
-    price_value = data['price'];
+    final price$raw = data["price"];
+    price_value = price$raw as double?;
 
     return OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest(
       quantity: quantity_value,
@@ -124,21 +120,24 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
   updateWithJson(JsonObject data) {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
-      quantity_value = data['quantity'];
+      final quantity$raw = data["quantity"];
+      quantity_value = quantity$raw as int?;
     } else {
       quantity_value = quantity;
     }
 
     final String? name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String?;
     } else {
       name_value = name;
     }
 
     final double? price_value;
     if (data.containsKey('price')) {
-      price_value = data['price'];
+      final price$raw = data["price"];
+      price_value = price$raw as double?;
     } else {
       price_value = price;
     }
@@ -165,7 +164,7 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
   int get hashCode => Object.hashAll([quantity, name, price]);
 
   JsonObject toJson() {
-    return {'quantity': quantity, 'name': name, 'price': price};
+    return {'quantity': this.quantity, 'name': this.name, 'price': this.price};
   }
 }
 
@@ -190,7 +189,7 @@ class RequestOrderOptWithSomeDefaultsRequest extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'OrderOptWithSomeDefaultsRequest',
+      opName: 'OrderOptWithSomeDefaultsRequest',
     );
   }
 }

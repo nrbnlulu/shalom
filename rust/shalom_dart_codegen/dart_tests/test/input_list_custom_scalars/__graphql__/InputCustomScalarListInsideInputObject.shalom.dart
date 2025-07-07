@@ -1,9 +1,10 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -22,17 +23,14 @@ class InputCustomScalarListInsideInputObjectResponse {
   ) {
     final InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject?
     InputCustomScalarListInsideInputObject_value;
-
-    final JsonObject? InputCustomScalarListInsideInputObject$raw =
-        data['InputCustomScalarListInsideInputObject'];
-    if (InputCustomScalarListInsideInputObject$raw != null) {
-      InputCustomScalarListInsideInputObject_value =
-          InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject.fromJson(
-            InputCustomScalarListInsideInputObject$raw,
-          );
-    } else {
-      InputCustomScalarListInsideInputObject_value = null;
-    }
+    final InputCustomScalarListInsideInputObject$raw =
+        data["InputCustomScalarListInsideInputObject"];
+    InputCustomScalarListInsideInputObject_value =
+        InputCustomScalarListInsideInputObject$raw == null
+            ? null
+            : InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject.fromJson(
+              InputCustomScalarListInsideInputObject$raw,
+            );
 
     return InputCustomScalarListInsideInputObjectResponse(
       InputCustomScalarListInsideInputObject:
@@ -46,16 +44,14 @@ class InputCustomScalarListInsideInputObjectResponse {
     final InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject?
     InputCustomScalarListInsideInputObject_value;
     if (data.containsKey('InputCustomScalarListInsideInputObject')) {
-      final JsonObject? InputCustomScalarListInsideInputObject$raw =
-          data['InputCustomScalarListInsideInputObject'];
-      if (InputCustomScalarListInsideInputObject$raw != null) {
-        InputCustomScalarListInsideInputObject_value =
-            InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject.fromJson(
-              InputCustomScalarListInsideInputObject$raw,
-            );
-      } else {
-        InputCustomScalarListInsideInputObject_value = null;
-      }
+      final InputCustomScalarListInsideInputObject$raw =
+          data["InputCustomScalarListInsideInputObject"];
+      InputCustomScalarListInsideInputObject_value =
+          InputCustomScalarListInsideInputObject$raw == null
+              ? null
+              : InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject.fromJson(
+                InputCustomScalarListInsideInputObject$raw,
+              );
     } else {
       InputCustomScalarListInsideInputObject_value =
           InputCustomScalarListInsideInputObject;
@@ -81,7 +77,7 @@ class InputCustomScalarListInsideInputObjectResponse {
   JsonObject toJson() {
     return {
       'InputCustomScalarListInsideInputObject':
-          InputCustomScalarListInsideInputObject?.toJson(),
+          this.InputCustomScalarListInsideInputObject?.toJson(),
     };
   }
 }
@@ -104,12 +100,12 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
   static InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject
   fromJson(JsonObject data) {
     final bool success_value;
-
-    success_value = data['success'];
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
 
     final String? message_value;
-
-    message_value = data['message'];
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
 
     return InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject(
       success: success_value,
@@ -122,14 +118,16 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
   updateWithJson(JsonObject data) {
     final bool success_value;
     if (data.containsKey('success')) {
-      success_value = data['success'];
+      final success$raw = data["success"];
+      success_value = success$raw as bool;
     } else {
       success_value = success;
     }
 
     final String? message_value;
     if (data.containsKey('message')) {
-      message_value = data['message'];
+      final message$raw = data["message"];
+      message_value = message$raw as String?;
     } else {
       message_value = message;
     }
@@ -154,7 +152,7 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
   int get hashCode => Object.hashAll([success, message]);
 
   JsonObject toJson() {
-    return {'success': success, 'message': message};
+    return {'success': this.success, 'message': this.message};
   }
 }
 
@@ -178,7 +176,7 @@ class RequestInputCustomScalarListInsideInputObject extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputCustomScalarListInsideInputObject',
+      opName: 'InputCustomScalarListInsideInputObject',
     );
   }
 }

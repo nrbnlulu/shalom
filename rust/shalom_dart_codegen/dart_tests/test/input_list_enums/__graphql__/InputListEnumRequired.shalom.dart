@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,8 +16,8 @@ class InputListEnumRequiredResponse {
   InputListEnumRequiredResponse({this.InputListEnumRequired});
   static InputListEnumRequiredResponse fromJson(JsonObject data) {
     final String? InputListEnumRequired_value;
-
-    InputListEnumRequired_value = data['InputListEnumRequired'];
+    final InputListEnumRequired$raw = data["InputListEnumRequired"];
+    InputListEnumRequired_value = InputListEnumRequired$raw as String?;
 
     return InputListEnumRequiredResponse(
       InputListEnumRequired: InputListEnumRequired_value,
@@ -26,7 +27,8 @@ class InputListEnumRequiredResponse {
   InputListEnumRequiredResponse updateWithJson(JsonObject data) {
     final String? InputListEnumRequired_value;
     if (data.containsKey('InputListEnumRequired')) {
-      InputListEnumRequired_value = data['InputListEnumRequired'];
+      final InputListEnumRequired$raw = data["InputListEnumRequired"];
+      InputListEnumRequired_value = InputListEnumRequired$raw as String?;
     } else {
       InputListEnumRequired_value = InputListEnumRequired;
     }
@@ -47,7 +49,7 @@ class InputListEnumRequiredResponse {
   int get hashCode => InputListEnumRequired.hashCode;
 
   JsonObject toJson() {
-    return {'InputListEnumRequired': InputListEnumRequired};
+    return {'InputListEnumRequired': this.InputListEnumRequired};
   }
 }
 
@@ -69,7 +71,7 @@ class RequestInputListEnumRequired extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputListEnumRequired',
+      opName: 'InputListEnumRequired',
     );
   }
 }

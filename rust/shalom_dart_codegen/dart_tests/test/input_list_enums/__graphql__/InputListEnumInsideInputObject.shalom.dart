@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,9 +16,10 @@ class InputListEnumInsideInputObjectResponse {
   InputListEnumInsideInputObjectResponse({this.InputListEnumInsideInputObject});
   static InputListEnumInsideInputObjectResponse fromJson(JsonObject data) {
     final String? InputListEnumInsideInputObject_value;
-
+    final InputListEnumInsideInputObject$raw =
+        data["InputListEnumInsideInputObject"];
     InputListEnumInsideInputObject_value =
-        data['InputListEnumInsideInputObject'];
+        InputListEnumInsideInputObject$raw as String?;
 
     return InputListEnumInsideInputObjectResponse(
       InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,
@@ -27,8 +29,10 @@ class InputListEnumInsideInputObjectResponse {
   InputListEnumInsideInputObjectResponse updateWithJson(JsonObject data) {
     final String? InputListEnumInsideInputObject_value;
     if (data.containsKey('InputListEnumInsideInputObject')) {
+      final InputListEnumInsideInputObject$raw =
+          data["InputListEnumInsideInputObject"];
       InputListEnumInsideInputObject_value =
-          data['InputListEnumInsideInputObject'];
+          InputListEnumInsideInputObject$raw as String?;
     } else {
       InputListEnumInsideInputObject_value = InputListEnumInsideInputObject;
     }
@@ -50,7 +54,9 @@ class InputListEnumInsideInputObjectResponse {
   int get hashCode => InputListEnumInsideInputObject.hashCode;
 
   JsonObject toJson() {
-    return {'InputListEnumInsideInputObject': InputListEnumInsideInputObject};
+    return {
+      'InputListEnumInsideInputObject': this.InputListEnumInsideInputObject,
+    };
   }
 }
 
@@ -73,7 +79,7 @@ class RequestInputListEnumInsideInputObject extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputListEnumInsideInputObject',
+      opName: 'InputListEnumInsideInputObject',
     );
   }
 }

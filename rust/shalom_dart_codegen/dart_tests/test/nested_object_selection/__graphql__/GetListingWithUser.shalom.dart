@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,8 +16,8 @@ class GetListingWithUserResponse {
   GetListingWithUserResponse({required this.listing});
   static GetListingWithUserResponse fromJson(JsonObject data) {
     final GetListingWithUser_listing listing_value;
-
-    listing_value = GetListingWithUser_listing.fromJson(data['listing']);
+    final listing$raw = data["listing"];
+    listing_value = GetListingWithUser_listing.fromJson(listing$raw);
 
     return GetListingWithUserResponse(listing: listing_value);
   }
@@ -24,7 +25,8 @@ class GetListingWithUserResponse {
   GetListingWithUserResponse updateWithJson(JsonObject data) {
     final GetListingWithUser_listing listing_value;
     if (data.containsKey('listing')) {
-      listing_value = GetListingWithUser_listing.fromJson(data['listing']);
+      final listing$raw = data["listing"];
+      listing_value = GetListingWithUser_listing.fromJson(listing$raw);
     } else {
       listing_value = listing;
     }
@@ -42,7 +44,7 @@ class GetListingWithUserResponse {
   int get hashCode => listing.hashCode;
 
   JsonObject toJson() {
-    return {'listing': listing.toJson()};
+    return {'listing': this.listing.toJson()};
   }
 }
 
@@ -69,20 +71,20 @@ class GetListingWithUser_listing {
   });
   static GetListingWithUser_listing fromJson(JsonObject data) {
     final String id_value;
-
-    id_value = data['id'];
+    final id$raw = data["id"];
+    id_value = id$raw as String;
 
     final String name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String;
 
     final int? price_value;
-
-    price_value = data['price'];
+    final price$raw = data["price"];
+    price_value = price$raw as int?;
 
     final GetListingWithUser_listing_user user_value;
-
-    user_value = GetListingWithUser_listing_user.fromJson(data['user']);
+    final user$raw = data["user"];
+    user_value = GetListingWithUser_listing_user.fromJson(user$raw);
 
     return GetListingWithUser_listing(
       id: id_value,
@@ -98,28 +100,32 @@ class GetListingWithUser_listing {
   GetListingWithUser_listing updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data['id'];
+      final id$raw = data["id"];
+      id_value = id$raw as String;
     } else {
       id_value = id;
     }
 
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String;
     } else {
       name_value = name;
     }
 
     final int? price_value;
     if (data.containsKey('price')) {
-      price_value = data['price'];
+      final price$raw = data["price"];
+      price_value = price$raw as int?;
     } else {
       price_value = price;
     }
 
     final GetListingWithUser_listing_user user_value;
     if (data.containsKey('user')) {
-      user_value = GetListingWithUser_listing_user.fromJson(data['user']);
+      final user$raw = data["user"];
+      user_value = GetListingWithUser_listing_user.fromJson(user$raw);
     } else {
       user_value = user;
     }
@@ -149,7 +155,15 @@ class GetListingWithUser_listing {
   int get hashCode => Object.hashAll([id, name, price, user]);
 
   JsonObject toJson() {
-    return {'id': id, 'name': name, 'price': price, 'user': user.toJson()};
+    return {
+      'id': this.id,
+
+      'name': this.name,
+
+      'price': this.price,
+
+      'user': this.user.toJson(),
+    };
   }
 }
 
@@ -174,20 +188,20 @@ class GetListingWithUser_listing_user {
   });
   static GetListingWithUser_listing_user fromJson(JsonObject data) {
     final String id_value;
-
-    id_value = data['id'];
+    final id$raw = data["id"];
+    id_value = id$raw as String;
 
     final String name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String;
 
     final String email_value;
-
-    email_value = data['email'];
+    final email$raw = data["email"];
+    email_value = email$raw as String;
 
     final int? age_value;
-
-    age_value = data['age'];
+    final age$raw = data["age"];
+    age_value = age$raw as int?;
 
     return GetListingWithUser_listing_user(
       id: id_value,
@@ -203,28 +217,32 @@ class GetListingWithUser_listing_user {
   GetListingWithUser_listing_user updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data['id'];
+      final id$raw = data["id"];
+      id_value = id$raw as String;
     } else {
       id_value = id;
     }
 
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String;
     } else {
       name_value = name;
     }
 
     final String email_value;
     if (data.containsKey('email')) {
-      email_value = data['email'];
+      final email$raw = data["email"];
+      email_value = email$raw as String;
     } else {
       email_value = email;
     }
 
     final int? age_value;
     if (data.containsKey('age')) {
-      age_value = data['age'];
+      final age$raw = data["age"];
+      age_value = age$raw as int?;
     } else {
       age_value = age;
     }
@@ -254,7 +272,15 @@ class GetListingWithUser_listing_user {
   int get hashCode => Object.hashAll([id, name, email, age]);
 
   JsonObject toJson() {
-    return {'id': id, 'name': name, 'email': email, 'age': age};
+    return {
+      'id': this.id,
+
+      'name': this.name,
+
+      'email': this.email,
+
+      'age': this.age,
+    };
   }
 }
 
@@ -282,7 +308,7 @@ class RequestGetListingWithUser extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetListingWithUser',
+      opName: 'GetListingWithUser',
     );
   }
 }

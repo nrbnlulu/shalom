@@ -229,6 +229,10 @@ mod ext_jinja_fns {
     pub fn is_custom_scalar(ctx: &SharedShalomGlobalContext, scalar_name: &str) -> bool {
         ctx.find_custom_scalar(scalar_name).is_some()
     }
+
+    pub fn dart_type_for_scalar_name(scalar_name: &str) -> String {
+        dart_type_for_scalar(scalar_name)
+    }
 }
 
 /// takes a number and returns itself as if the abc was 123, i.e 143 would be "adc"
@@ -309,6 +313,11 @@ impl TemplateEnv<'_> {
         env.add_function("is_custom_scalar", move |name: &str| {
             ext_jinja_fns::is_custom_scalar(&ctx_clone, name)
         });
+
+        env.add_function(
+            "dart_type_for_scalar_name",
+            ext_jinja_fns::dart_type_for_scalar_name,
+        );
 
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);

@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -17,9 +18,10 @@ class InputListEnumOptionalWithDefaultResponse {
   });
   static InputListEnumOptionalWithDefaultResponse fromJson(JsonObject data) {
     final String? InputListEnumOptionalWithDefault_value;
-
+    final InputListEnumOptionalWithDefault$raw =
+        data["InputListEnumOptionalWithDefault"];
     InputListEnumOptionalWithDefault_value =
-        data['InputListEnumOptionalWithDefault'];
+        InputListEnumOptionalWithDefault$raw as String?;
 
     return InputListEnumOptionalWithDefaultResponse(
       InputListEnumOptionalWithDefault: InputListEnumOptionalWithDefault_value,
@@ -29,8 +31,10 @@ class InputListEnumOptionalWithDefaultResponse {
   InputListEnumOptionalWithDefaultResponse updateWithJson(JsonObject data) {
     final String? InputListEnumOptionalWithDefault_value;
     if (data.containsKey('InputListEnumOptionalWithDefault')) {
+      final InputListEnumOptionalWithDefault$raw =
+          data["InputListEnumOptionalWithDefault"];
       InputListEnumOptionalWithDefault_value =
-          data['InputListEnumOptionalWithDefault'];
+          InputListEnumOptionalWithDefault$raw as String?;
     } else {
       InputListEnumOptionalWithDefault_value = InputListEnumOptionalWithDefault;
     }
@@ -53,7 +57,7 @@ class InputListEnumOptionalWithDefaultResponse {
 
   JsonObject toJson() {
     return {
-      'InputListEnumOptionalWithDefault': InputListEnumOptionalWithDefault,
+      'InputListEnumOptionalWithDefault': this.InputListEnumOptionalWithDefault,
     };
   }
 }
@@ -77,7 +81,7 @@ class RequestInputListEnumOptionalWithDefault extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputListEnumOptionalWithDefault',
+      opName: 'InputListEnumOptionalWithDefault',
     );
   }
 }

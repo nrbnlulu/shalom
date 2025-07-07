@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,15 +16,11 @@ class GetSpecificOrderResponse {
   GetSpecificOrderResponse({this.getSpecificOrder});
   static GetSpecificOrderResponse fromJson(JsonObject data) {
     final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
-
-    final JsonObject? getSpecificOrder$raw = data['getSpecificOrder'];
-    if (getSpecificOrder$raw != null) {
-      getSpecificOrder_value = GetSpecificOrder_getSpecificOrder.fromJson(
-        getSpecificOrder$raw,
-      );
-    } else {
-      getSpecificOrder_value = null;
-    }
+    final getSpecificOrder$raw = data["getSpecificOrder"];
+    getSpecificOrder_value =
+        getSpecificOrder$raw == null
+            ? null
+            : GetSpecificOrder_getSpecificOrder.fromJson(getSpecificOrder$raw);
 
     return GetSpecificOrderResponse(getSpecificOrder: getSpecificOrder_value);
   }
@@ -31,14 +28,13 @@ class GetSpecificOrderResponse {
   GetSpecificOrderResponse updateWithJson(JsonObject data) {
     final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
     if (data.containsKey('getSpecificOrder')) {
-      final JsonObject? getSpecificOrder$raw = data['getSpecificOrder'];
-      if (getSpecificOrder$raw != null) {
-        getSpecificOrder_value = GetSpecificOrder_getSpecificOrder.fromJson(
-          getSpecificOrder$raw,
-        );
-      } else {
-        getSpecificOrder_value = null;
-      }
+      final getSpecificOrder$raw = data["getSpecificOrder"];
+      getSpecificOrder_value =
+          getSpecificOrder$raw == null
+              ? null
+              : GetSpecificOrder_getSpecificOrder.fromJson(
+                getSpecificOrder$raw,
+              );
     } else {
       getSpecificOrder_value = getSpecificOrder;
     }
@@ -57,7 +53,7 @@ class GetSpecificOrderResponse {
   int get hashCode => getSpecificOrder.hashCode;
 
   JsonObject toJson() {
-    return {'getSpecificOrder': getSpecificOrder?.toJson()};
+    return {'getSpecificOrder': this.getSpecificOrder?.toJson()};
   }
 }
 
@@ -76,16 +72,16 @@ class GetSpecificOrder_getSpecificOrder {
   GetSpecificOrder_getSpecificOrder({this.quantity, this.price, this.name});
   static GetSpecificOrder_getSpecificOrder fromJson(JsonObject data) {
     final int? quantity_value;
-
-    quantity_value = data['quantity'];
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int?;
 
     final double? price_value;
-
-    price_value = data['price'];
+    final price$raw = data["price"];
+    price_value = price$raw as double?;
 
     final String? name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
 
     return GetSpecificOrder_getSpecificOrder(
       quantity: quantity_value,
@@ -99,21 +95,24 @@ class GetSpecificOrder_getSpecificOrder {
   GetSpecificOrder_getSpecificOrder updateWithJson(JsonObject data) {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
-      quantity_value = data['quantity'];
+      final quantity$raw = data["quantity"];
+      quantity_value = quantity$raw as int?;
     } else {
       quantity_value = quantity;
     }
 
     final double? price_value;
     if (data.containsKey('price')) {
-      price_value = data['price'];
+      final price$raw = data["price"];
+      price_value = price$raw as double?;
     } else {
       price_value = price;
     }
 
     final String? name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String?;
     } else {
       name_value = name;
     }
@@ -140,7 +139,7 @@ class GetSpecificOrder_getSpecificOrder {
   int get hashCode => Object.hashAll([quantity, price, name]);
 
   JsonObject toJson() {
-    return {'quantity': quantity, 'price': price, 'name': name};
+    return {'quantity': this.quantity, 'price': this.price, 'name': this.name};
   }
 }
 
@@ -165,7 +164,7 @@ class RequestGetSpecificOrder extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetSpecificOrder',
+      opName: 'GetSpecificOrder',
     );
   }
 }

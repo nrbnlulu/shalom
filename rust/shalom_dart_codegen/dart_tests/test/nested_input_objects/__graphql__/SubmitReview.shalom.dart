@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,8 +16,8 @@ class SubmitReviewResponse {
   SubmitReviewResponse({this.submitReview});
   static SubmitReviewResponse fromJson(JsonObject data) {
     final String? submitReview_value;
-
-    submitReview_value = data['submitReview'];
+    final submitReview$raw = data["submitReview"];
+    submitReview_value = submitReview$raw as String?;
 
     return SubmitReviewResponse(submitReview: submitReview_value);
   }
@@ -24,7 +25,8 @@ class SubmitReviewResponse {
   SubmitReviewResponse updateWithJson(JsonObject data) {
     final String? submitReview_value;
     if (data.containsKey('submitReview')) {
-      submitReview_value = data['submitReview'];
+      final submitReview$raw = data["submitReview"];
+      submitReview_value = submitReview$raw as String?;
     } else {
       submitReview_value = submitReview;
     }
@@ -42,7 +44,7 @@ class SubmitReviewResponse {
   int get hashCode => submitReview.hashCode;
 
   JsonObject toJson() {
-    return {'submitReview': submitReview};
+    return {'submitReview': this.submitReview};
   }
 }
 
@@ -64,7 +66,7 @@ class RequestSubmitReview extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'SubmitReview',
+      opName: 'SubmitReview',
     );
   }
 }

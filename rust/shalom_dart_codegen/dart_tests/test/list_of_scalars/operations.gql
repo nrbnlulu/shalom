@@ -1,0 +1,12 @@
+
+query ListofScalarsRequired{
+    listOfScalarsRequired
+}
+
+query ListOfScalarsOptional{
+    listOfScalarsOptional
+}
+
+query ListOfOptionalScalarsOptional{
+    listOfOptionalScalarsOptional
+}

@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,13 +16,11 @@ class RequiredArgumentsResponse {
   RequiredArgumentsResponse({this.product});
   static RequiredArgumentsResponse fromJson(JsonObject data) {
     final RequiredArguments_product? product_value;
-
-    final JsonObject? product$raw = data['product'];
-    if (product$raw != null) {
-      product_value = RequiredArguments_product.fromJson(product$raw);
-    } else {
-      product_value = null;
-    }
+    final product$raw = data["product"];
+    product_value =
+        product$raw == null
+            ? null
+            : RequiredArguments_product.fromJson(product$raw);
 
     return RequiredArgumentsResponse(product: product_value);
   }
@@ -29,12 +28,11 @@ class RequiredArgumentsResponse {
   RequiredArgumentsResponse updateWithJson(JsonObject data) {
     final RequiredArguments_product? product_value;
     if (data.containsKey('product')) {
-      final JsonObject? product$raw = data['product'];
-      if (product$raw != null) {
-        product_value = RequiredArguments_product.fromJson(product$raw);
-      } else {
-        product_value = null;
-      }
+      final product$raw = data["product"];
+      product_value =
+          product$raw == null
+              ? null
+              : RequiredArguments_product.fromJson(product$raw);
     } else {
       product_value = product;
     }
@@ -52,7 +50,7 @@ class RequiredArgumentsResponse {
   int get hashCode => product.hashCode;
 
   JsonObject toJson() {
-    return {'product': product?.toJson()};
+    return {'product': this.product?.toJson()};
   }
 }
 
@@ -69,12 +67,12 @@ class RequiredArguments_product {
   RequiredArguments_product({required this.id, required this.name});
   static RequiredArguments_product fromJson(JsonObject data) {
     final String id_value;
-
-    id_value = data['id'];
+    final id$raw = data["id"];
+    id_value = id$raw as String;
 
     final String name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String;
 
     return RequiredArguments_product(id: id_value, name: name_value);
   }
@@ -82,14 +80,16 @@ class RequiredArguments_product {
   RequiredArguments_product updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data['id'];
+      final id$raw = data["id"];
+      id_value = id$raw as String;
     } else {
       id_value = id;
     }
 
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String;
     } else {
       name_value = name;
     }
@@ -109,7 +109,7 @@ class RequiredArguments_product {
   int get hashCode => Object.hashAll([id, name]);
 
   JsonObject toJson() {
-    return {'id': id, 'name': name};
+    return {'id': this.id, 'name': this.name};
   }
 }
 
@@ -132,7 +132,7 @@ class RequestRequiredArguments extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'RequiredArguments',
+      opName: 'RequiredArguments',
     );
   }
 }

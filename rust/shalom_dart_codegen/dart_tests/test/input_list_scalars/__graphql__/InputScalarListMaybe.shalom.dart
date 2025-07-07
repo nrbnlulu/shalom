@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,16 +16,13 @@ class InputScalarListMaybeResponse {
   InputScalarListMaybeResponse({this.InputScalarListMaybe});
   static InputScalarListMaybeResponse fromJson(JsonObject data) {
     final InputScalarListMaybe_InputScalarListMaybe? InputScalarListMaybe_value;
-
-    final JsonObject? InputScalarListMaybe$raw = data['InputScalarListMaybe'];
-    if (InputScalarListMaybe$raw != null) {
-      InputScalarListMaybe_value =
-          InputScalarListMaybe_InputScalarListMaybe.fromJson(
-            InputScalarListMaybe$raw,
-          );
-    } else {
-      InputScalarListMaybe_value = null;
-    }
+    final InputScalarListMaybe$raw = data["InputScalarListMaybe"];
+    InputScalarListMaybe_value =
+        InputScalarListMaybe$raw == null
+            ? null
+            : InputScalarListMaybe_InputScalarListMaybe.fromJson(
+              InputScalarListMaybe$raw,
+            );
 
     return InputScalarListMaybeResponse(
       InputScalarListMaybe: InputScalarListMaybe_value,
@@ -34,15 +32,13 @@ class InputScalarListMaybeResponse {
   InputScalarListMaybeResponse updateWithJson(JsonObject data) {
     final InputScalarListMaybe_InputScalarListMaybe? InputScalarListMaybe_value;
     if (data.containsKey('InputScalarListMaybe')) {
-      final JsonObject? InputScalarListMaybe$raw = data['InputScalarListMaybe'];
-      if (InputScalarListMaybe$raw != null) {
-        InputScalarListMaybe_value =
-            InputScalarListMaybe_InputScalarListMaybe.fromJson(
-              InputScalarListMaybe$raw,
-            );
-      } else {
-        InputScalarListMaybe_value = null;
-      }
+      final InputScalarListMaybe$raw = data["InputScalarListMaybe"];
+      InputScalarListMaybe_value =
+          InputScalarListMaybe$raw == null
+              ? null
+              : InputScalarListMaybe_InputScalarListMaybe.fromJson(
+                InputScalarListMaybe$raw,
+              );
     } else {
       InputScalarListMaybe_value = InputScalarListMaybe;
     }
@@ -63,7 +59,7 @@ class InputScalarListMaybeResponse {
   int get hashCode => InputScalarListMaybe.hashCode;
 
   JsonObject toJson() {
-    return {'InputScalarListMaybe': InputScalarListMaybe?.toJson()};
+    return {'InputScalarListMaybe': this.InputScalarListMaybe?.toJson()};
   }
 }
 
@@ -78,8 +74,8 @@ class InputScalarListMaybe_InputScalarListMaybe {
   InputScalarListMaybe_InputScalarListMaybe({required this.success});
   static InputScalarListMaybe_InputScalarListMaybe fromJson(JsonObject data) {
     final bool success_value;
-
-    success_value = data['success'];
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
 
     return InputScalarListMaybe_InputScalarListMaybe(success: success_value);
   }
@@ -87,7 +83,8 @@ class InputScalarListMaybe_InputScalarListMaybe {
   InputScalarListMaybe_InputScalarListMaybe updateWithJson(JsonObject data) {
     final bool success_value;
     if (data.containsKey('success')) {
-      success_value = data['success'];
+      final success$raw = data["success"];
+      success_value = success$raw as bool;
     } else {
       success_value = success;
     }
@@ -106,7 +103,7 @@ class InputScalarListMaybe_InputScalarListMaybe {
   int get hashCode => success.hashCode;
 
   JsonObject toJson() {
-    return {'success': success};
+    return {'success': this.success};
   }
 }
 
@@ -128,7 +125,7 @@ class RequestInputScalarListMaybe extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputScalarListMaybe',
+      opName: 'InputScalarListMaybe',
     );
   }
 }

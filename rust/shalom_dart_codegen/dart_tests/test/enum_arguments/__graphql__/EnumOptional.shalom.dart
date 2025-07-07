@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,15 +16,13 @@ class EnumOptionalResponse {
   EnumOptionalResponse({this.updateOrderStatusOpt});
   static EnumOptionalResponse fromJson(JsonObject data) {
     final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt_value;
-
-    final JsonObject? updateOrderStatusOpt$raw = data['updateOrderStatusOpt'];
-    if (updateOrderStatusOpt$raw != null) {
-      updateOrderStatusOpt_value = EnumOptional_updateOrderStatusOpt.fromJson(
-        updateOrderStatusOpt$raw,
-      );
-    } else {
-      updateOrderStatusOpt_value = null;
-    }
+    final updateOrderStatusOpt$raw = data["updateOrderStatusOpt"];
+    updateOrderStatusOpt_value =
+        updateOrderStatusOpt$raw == null
+            ? null
+            : EnumOptional_updateOrderStatusOpt.fromJson(
+              updateOrderStatusOpt$raw,
+            );
 
     return EnumOptionalResponse(
       updateOrderStatusOpt: updateOrderStatusOpt_value,
@@ -33,14 +32,13 @@ class EnumOptionalResponse {
   EnumOptionalResponse updateWithJson(JsonObject data) {
     final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt_value;
     if (data.containsKey('updateOrderStatusOpt')) {
-      final JsonObject? updateOrderStatusOpt$raw = data['updateOrderStatusOpt'];
-      if (updateOrderStatusOpt$raw != null) {
-        updateOrderStatusOpt_value = EnumOptional_updateOrderStatusOpt.fromJson(
-          updateOrderStatusOpt$raw,
-        );
-      } else {
-        updateOrderStatusOpt_value = null;
-      }
+      final updateOrderStatusOpt$raw = data["updateOrderStatusOpt"];
+      updateOrderStatusOpt_value =
+          updateOrderStatusOpt$raw == null
+              ? null
+              : EnumOptional_updateOrderStatusOpt.fromJson(
+                updateOrderStatusOpt$raw,
+              );
     } else {
       updateOrderStatusOpt_value = updateOrderStatusOpt;
     }
@@ -61,7 +59,7 @@ class EnumOptionalResponse {
   int get hashCode => updateOrderStatusOpt.hashCode;
 
   JsonObject toJson() {
-    return {'updateOrderStatusOpt': updateOrderStatusOpt?.toJson()};
+    return {'updateOrderStatusOpt': this.updateOrderStatusOpt?.toJson()};
   }
 }
 
@@ -87,25 +85,20 @@ class EnumOptional_updateOrderStatusOpt {
   });
   static EnumOptional_updateOrderStatusOpt fromJson(JsonObject data) {
     final Status? status_value;
-
-    final String? status$raw = data['status'];
-    if (status$raw != null) {
-      status_value = Status.fromString(status$raw);
-    } else {
-      status_value = null;
-    }
+    final status$raw = data["status"];
+    status_value = status$raw == null ? null : Status.fromString(status$raw);
 
     final int quantity_value;
-
-    quantity_value = data['quantity'];
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int;
 
     final String name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String;
 
     final double price_value;
-
-    price_value = data['price'];
+    final price$raw = data["price"];
+    price_value = price$raw as double;
 
     return EnumOptional_updateOrderStatusOpt(
       status: status_value,
@@ -121,33 +114,32 @@ class EnumOptional_updateOrderStatusOpt {
   EnumOptional_updateOrderStatusOpt updateWithJson(JsonObject data) {
     final Status? status_value;
     if (data.containsKey('status')) {
-      final String? status$raw = data['status'];
-      if (status$raw != null) {
-        status_value = Status.fromString(status$raw);
-      } else {
-        status_value = null;
-      }
+      final status$raw = data["status"];
+      status_value = status$raw == null ? null : Status.fromString(status$raw);
     } else {
       status_value = status;
     }
 
     final int quantity_value;
     if (data.containsKey('quantity')) {
-      quantity_value = data['quantity'];
+      final quantity$raw = data["quantity"];
+      quantity_value = quantity$raw as int;
     } else {
       quantity_value = quantity;
     }
 
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String;
     } else {
       name_value = name;
     }
 
     final double price_value;
     if (data.containsKey('price')) {
-      price_value = data['price'];
+      final price$raw = data["price"];
+      price_value = price$raw as double;
     } else {
       price_value = price;
     }
@@ -178,13 +170,13 @@ class EnumOptional_updateOrderStatusOpt {
 
   JsonObject toJson() {
     return {
-      'status': status?.name,
+      'status': this.status?.name,
 
-      'quantity': quantity,
+      'quantity': this.quantity,
 
-      'name': name,
+      'name': this.name,
 
-      'price': price,
+      'price': this.price,
     };
   }
 }
@@ -210,7 +202,7 @@ class RequestEnumOptional extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'EnumOptional',
+      opName: 'EnumOptional',
     );
   }
 }

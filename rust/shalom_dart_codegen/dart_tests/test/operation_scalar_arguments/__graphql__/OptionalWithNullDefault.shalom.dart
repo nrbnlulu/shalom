@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,15 +16,11 @@ class OptionalWithNullDefaultResponse {
   OptionalWithNullDefaultResponse({this.updateUser});
   static OptionalWithNullDefaultResponse fromJson(JsonObject data) {
     final OptionalWithNullDefault_updateUser? updateUser_value;
-
-    final JsonObject? updateUser$raw = data['updateUser'];
-    if (updateUser$raw != null) {
-      updateUser_value = OptionalWithNullDefault_updateUser.fromJson(
-        updateUser$raw,
-      );
-    } else {
-      updateUser_value = null;
-    }
+    final updateUser$raw = data["updateUser"];
+    updateUser_value =
+        updateUser$raw == null
+            ? null
+            : OptionalWithNullDefault_updateUser.fromJson(updateUser$raw);
 
     return OptionalWithNullDefaultResponse(updateUser: updateUser_value);
   }
@@ -31,14 +28,11 @@ class OptionalWithNullDefaultResponse {
   OptionalWithNullDefaultResponse updateWithJson(JsonObject data) {
     final OptionalWithNullDefault_updateUser? updateUser_value;
     if (data.containsKey('updateUser')) {
-      final JsonObject? updateUser$raw = data['updateUser'];
-      if (updateUser$raw != null) {
-        updateUser_value = OptionalWithNullDefault_updateUser.fromJson(
-          updateUser$raw,
-        );
-      } else {
-        updateUser_value = null;
-      }
+      final updateUser$raw = data["updateUser"];
+      updateUser_value =
+          updateUser$raw == null
+              ? null
+              : OptionalWithNullDefault_updateUser.fromJson(updateUser$raw);
     } else {
       updateUser_value = updateUser;
     }
@@ -57,7 +51,7 @@ class OptionalWithNullDefaultResponse {
   int get hashCode => updateUser.hashCode;
 
   JsonObject toJson() {
-    return {'updateUser': updateUser?.toJson()};
+    return {'updateUser': this.updateUser?.toJson()};
   }
 }
 
@@ -76,16 +70,16 @@ class OptionalWithNullDefault_updateUser {
   OptionalWithNullDefault_updateUser({this.email, this.name, this.phone});
   static OptionalWithNullDefault_updateUser fromJson(JsonObject data) {
     final String? email_value;
-
-    email_value = data['email'];
+    final email$raw = data["email"];
+    email_value = email$raw as String?;
 
     final String? name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
 
     final String? phone_value;
-
-    phone_value = data['phone'];
+    final phone$raw = data["phone"];
+    phone_value = phone$raw as String?;
 
     return OptionalWithNullDefault_updateUser(
       email: email_value,
@@ -99,21 +93,24 @@ class OptionalWithNullDefault_updateUser {
   OptionalWithNullDefault_updateUser updateWithJson(JsonObject data) {
     final String? email_value;
     if (data.containsKey('email')) {
-      email_value = data['email'];
+      final email$raw = data["email"];
+      email_value = email$raw as String?;
     } else {
       email_value = email;
     }
 
     final String? name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String?;
     } else {
       name_value = name;
     }
 
     final String? phone_value;
     if (data.containsKey('phone')) {
-      phone_value = data['phone'];
+      final phone$raw = data["phone"];
+      phone_value = phone$raw as String?;
     } else {
       phone_value = phone;
     }
@@ -140,7 +137,7 @@ class OptionalWithNullDefault_updateUser {
   int get hashCode => Object.hashAll([email, name, phone]);
 
   JsonObject toJson() {
-    return {'email': email, 'name': name, 'phone': phone};
+    return {'email': this.email, 'name': this.name, 'phone': this.phone};
   }
 }
 
@@ -164,7 +161,7 @@ class RequestOptionalWithNullDefault extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'OptionalWithNullDefault',
+      opName: 'OptionalWithNullDefault',
     );
   }
 }

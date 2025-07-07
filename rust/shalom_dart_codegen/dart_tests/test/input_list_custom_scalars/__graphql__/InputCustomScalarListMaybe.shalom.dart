@@ -1,9 +1,10 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -18,17 +19,13 @@ class InputCustomScalarListMaybeResponse {
   static InputCustomScalarListMaybeResponse fromJson(JsonObject data) {
     final InputCustomScalarListMaybe_InputCustomScalarListMaybe?
     InputCustomScalarListMaybe_value;
-
-    final JsonObject? InputCustomScalarListMaybe$raw =
-        data['InputCustomScalarListMaybe'];
-    if (InputCustomScalarListMaybe$raw != null) {
-      InputCustomScalarListMaybe_value =
-          InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(
-            InputCustomScalarListMaybe$raw,
-          );
-    } else {
-      InputCustomScalarListMaybe_value = null;
-    }
+    final InputCustomScalarListMaybe$raw = data["InputCustomScalarListMaybe"];
+    InputCustomScalarListMaybe_value =
+        InputCustomScalarListMaybe$raw == null
+            ? null
+            : InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(
+              InputCustomScalarListMaybe$raw,
+            );
 
     return InputCustomScalarListMaybeResponse(
       InputCustomScalarListMaybe: InputCustomScalarListMaybe_value,
@@ -39,16 +36,13 @@ class InputCustomScalarListMaybeResponse {
     final InputCustomScalarListMaybe_InputCustomScalarListMaybe?
     InputCustomScalarListMaybe_value;
     if (data.containsKey('InputCustomScalarListMaybe')) {
-      final JsonObject? InputCustomScalarListMaybe$raw =
-          data['InputCustomScalarListMaybe'];
-      if (InputCustomScalarListMaybe$raw != null) {
-        InputCustomScalarListMaybe_value =
-            InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(
-              InputCustomScalarListMaybe$raw,
-            );
-      } else {
-        InputCustomScalarListMaybe_value = null;
-      }
+      final InputCustomScalarListMaybe$raw = data["InputCustomScalarListMaybe"];
+      InputCustomScalarListMaybe_value =
+          InputCustomScalarListMaybe$raw == null
+              ? null
+              : InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(
+                InputCustomScalarListMaybe$raw,
+              );
     } else {
       InputCustomScalarListMaybe_value = InputCustomScalarListMaybe;
     }
@@ -69,7 +63,9 @@ class InputCustomScalarListMaybeResponse {
   int get hashCode => InputCustomScalarListMaybe.hashCode;
 
   JsonObject toJson() {
-    return {'InputCustomScalarListMaybe': InputCustomScalarListMaybe?.toJson()};
+    return {
+      'InputCustomScalarListMaybe': this.InputCustomScalarListMaybe?.toJson(),
+    };
   }
 }
 
@@ -92,12 +88,12 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
     JsonObject data,
   ) {
     final bool success_value;
-
-    success_value = data['success'];
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
 
     final String? message_value;
-
-    message_value = data['message'];
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
 
     return InputCustomScalarListMaybe_InputCustomScalarListMaybe(
       success: success_value,
@@ -111,14 +107,16 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
   ) {
     final bool success_value;
     if (data.containsKey('success')) {
-      success_value = data['success'];
+      final success$raw = data["success"];
+      success_value = success$raw as bool;
     } else {
       success_value = success;
     }
 
     final String? message_value;
     if (data.containsKey('message')) {
-      message_value = data['message'];
+      final message$raw = data["message"];
+      message_value = message$raw as String?;
     } else {
       message_value = message;
     }
@@ -142,7 +140,7 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
   int get hashCode => Object.hashAll([success, message]);
 
   JsonObject toJson() {
-    return {'success': success, 'message': message};
+    return {'success': this.success, 'message': this.message};
   }
 }
 
@@ -165,7 +163,7 @@ class RequestInputCustomScalarListMaybe extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputCustomScalarListMaybe',
+      opName: 'InputCustomScalarListMaybe',
     );
   }
 }
