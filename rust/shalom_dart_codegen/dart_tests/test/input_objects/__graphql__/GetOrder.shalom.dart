@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 
@@ -174,11 +174,10 @@ class GetOrderVariables {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["id"] = id;
+    data["id"] = this.id;
 
     if (order.isSome()) {
-      final value = order.some();
-
+      final value = this.order.some();
       data["order"] = value?.toJson();
     }
 
@@ -201,8 +200,8 @@ class GetOrderVariables {
     final Option<Order?> order$next;
 
     switch (order) {
-      case Some(value: final data):
-        order$next = data;
+      case Some(value: final updateData):
+        order$next = updateData;
       case None():
         order$next = this.order;
     }

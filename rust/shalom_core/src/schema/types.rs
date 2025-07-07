@@ -26,10 +26,12 @@ pub enum GraphQLAny {
     Union(Node<UnionType>),
     Enum(Node<EnumType>),
     InputObject(Node<InputObjectType>),
-    List {
-        of_type: Box<GraphQLAny>,
-        is_optional: bool,
-    },
+    List { of_type: ListInnerTypeWrapper },
+}
+#[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub struct ListInnerTypeWrapper {
+    pub is_optional: bool,
+    pub ty: Box<GraphQLAny>,
 }
 
 impl GraphQLAny {
@@ -250,8 +252,10 @@ impl UnresolvedType {
                 ResolvedType {
                     is_optional: self.is_optional,
                     ty: GraphQLAny::List {
-                        of_type: Box::new(inner_resolved.ty),
-                        is_optional: inner_resolved.is_optional,
+                        of_type: ListInnerTypeWrapper {
+                            ty: Box::new(inner_resolved.ty),
+                            is_optional: inner_resolved.is_optional,
+                        },
                     },
                 }
             }

@@ -119,11 +119,8 @@ mod ext_jinja_fns {
             GraphQLAny::Scalar(scalar) => resolve_scalar_typename(&scalar.name, ctx, is_optional),
             GraphQLAny::InputObject(obj) => obj.name.clone(),
             GraphQLAny::Enum(enum_) => enum_.name.clone(),
-            GraphQLAny::List {
-                of_type,
-                is_optional,
-            } => {
-                let inner = resolve_schema_typename(of_type, *is_optional, ctx);
+            GraphQLAny::List { of_type } => {
+                let inner = resolve_schema_typename(&of_type.ty, of_type.is_optional, ctx);
                 format!("List<{inner}>")
             }
             _ => panic!("Unsupported type: {:?}", ty),

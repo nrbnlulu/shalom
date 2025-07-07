@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 
@@ -223,7 +223,7 @@ class EnumWithDefaultValueVariables {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["status"] = status?.name;
+    data["status"] = this.status?.name;
 
     return data;
   }
@@ -234,8 +234,8 @@ class EnumWithDefaultValueVariables {
     final Status? status$next;
 
     switch (status) {
-      case Some(value: final data):
-        status$next = data;
+      case Some(value: final updateData):
+        status$next = updateData;
       case None():
         status$next = this.status;
     }

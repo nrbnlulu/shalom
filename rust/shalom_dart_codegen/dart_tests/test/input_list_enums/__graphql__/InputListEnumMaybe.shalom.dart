@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 
@@ -83,8 +83,7 @@ class InputListEnumMaybeVariables {
     JsonObject data = {};
 
     if (foo.isSome()) {
-      final value = foo.some();
-
+      final value = this.foo.some();
       data["foo"] = value?.map((e) => e.name).toList();
     }
 
@@ -97,8 +96,8 @@ class InputListEnumMaybeVariables {
     final Option<List<Gender>?> foo$next;
 
     switch (foo) {
-      case Some(value: final data):
-        foo$next = data;
+      case Some(value: final updateData):
+        foo$next = updateData;
       case None():
         foo$next = this.foo;
     }
