@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
@@ -19,13 +19,13 @@ class InputCustomScalarListMaybeResponse {
   static InputCustomScalarListMaybeResponse fromJson(JsonObject data) {
     final InputCustomScalarListMaybe_InputCustomScalarListMaybe?
     InputCustomScalarListMaybe_value;
-    final selection$raw = data["InputCustomScalarListMaybe"];
+    final InputCustomScalarListMaybe$raw = data["InputCustomScalarListMaybe"];
 
     InputCustomScalarListMaybe_value =
-        selection$raw == null
+        InputCustomScalarListMaybe$raw == null
             ? null
             : InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(
-              selection$raw,
+              InputCustomScalarListMaybe$raw,
             );
 
     return InputCustomScalarListMaybeResponse(
@@ -90,14 +90,14 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
     JsonObject data,
   ) {
     final bool success_value;
-    final selection$raw = data["success"];
+    final success$raw = data["success"];
 
-    success_value = selection$raw as bool;
+    success_value = success$raw as bool;
 
     final String? message_value;
-    final selection$raw = data["message"];
+    final message$raw = data["message"];
 
-    message_value = selection$raw as String?;
+    message_value = message$raw as String?;
 
     return InputCustomScalarListMaybe_InputCustomScalarListMaybe(
       success: success_value,

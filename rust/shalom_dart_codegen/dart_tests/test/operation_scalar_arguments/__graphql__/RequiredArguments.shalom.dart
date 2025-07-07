@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,12 +16,12 @@ class RequiredArgumentsResponse {
   RequiredArgumentsResponse({this.product});
   static RequiredArgumentsResponse fromJson(JsonObject data) {
     final RequiredArguments_product? product_value;
-    final selection$raw = data["product"];
+    final product$raw = data["product"];
 
     product_value =
-        selection$raw == null
+        product$raw == null
             ? null
-            : RequiredArguments_product.fromJson(selection$raw);
+            : RequiredArguments_product.fromJson(product$raw);
 
     return RequiredArgumentsResponse(product: product_value);
   }
@@ -69,14 +69,14 @@ class RequiredArguments_product {
   RequiredArguments_product({required this.id, required this.name});
   static RequiredArguments_product fromJson(JsonObject data) {
     final String id_value;
-    final selection$raw = data["id"];
+    final id$raw = data["id"];
 
-    id_value = selection$raw as String;
+    id_value = id$raw as String;
 
     final String name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String;
+    name_value = name$raw as String;
 
     return RequiredArguments_product(id: id_value, name: name_value);
   }

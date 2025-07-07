@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
@@ -17,12 +17,12 @@ class UpdatePointCoordsOptResponse {
   UpdatePointCoordsOptResponse({this.getPointById});
   static UpdatePointCoordsOptResponse fromJson(JsonObject data) {
     final UpdatePointCoordsOpt_getPointById? getPointById_value;
-    final selection$raw = data["getPointById"];
+    final getPointById$raw = data["getPointById"];
 
     getPointById_value =
-        selection$raw == null
+        getPointById$raw == null
             ? null
-            : UpdatePointCoordsOpt_getPointById.fromJson(selection$raw);
+            : UpdatePointCoordsOpt_getPointById.fromJson(getPointById$raw);
 
     return UpdatePointCoordsOptResponse(getPointById: getPointById_value);
   }
@@ -77,22 +77,22 @@ class UpdatePointCoordsOpt_getPointById {
   });
   static UpdatePointCoordsOpt_getPointById fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
-    final selection$raw = data["coords"];
+    final coords$raw = data["coords"];
 
     coords_value =
-        selection$raw == null
+        coords$raw == null
             ? null
-            : rmhlxei.pointScalarImpl.deserialize(selection$raw);
+            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
 
     final String name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String;
+    name_value = name$raw as String;
 
     final String id_value;
-    final selection$raw = data["id"];
+    final id$raw = data["id"];
 
-    id_value = selection$raw as String;
+    id_value = id$raw as String;
 
     return UpdatePointCoordsOpt_getPointById(
       coords: coords_value,

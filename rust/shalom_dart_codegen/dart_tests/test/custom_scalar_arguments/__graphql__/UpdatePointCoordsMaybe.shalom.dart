@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
@@ -18,13 +18,13 @@ class UpdatePointCoordsMaybeResponse {
   static UpdatePointCoordsMaybeResponse fromJson(JsonObject data) {
     final UpdatePointCoordsMaybe_updatePointCoordsMaybe?
     updatePointCoordsMaybe_value;
-    final selection$raw = data["updatePointCoordsMaybe"];
+    final updatePointCoordsMaybe$raw = data["updatePointCoordsMaybe"];
 
     updatePointCoordsMaybe_value =
-        selection$raw == null
+        updatePointCoordsMaybe$raw == null
             ? null
             : UpdatePointCoordsMaybe_updatePointCoordsMaybe.fromJson(
-              selection$raw,
+              updatePointCoordsMaybe$raw,
             );
 
     return UpdatePointCoordsMaybeResponse(
@@ -89,22 +89,22 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
     JsonObject data,
   ) {
     final rmhlxei.Point? coords_value;
-    final selection$raw = data["coords"];
+    final coords$raw = data["coords"];
 
     coords_value =
-        selection$raw == null
+        coords$raw == null
             ? null
-            : rmhlxei.pointScalarImpl.deserialize(selection$raw);
+            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
 
     final String name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String;
+    name_value = name$raw as String;
 
     final String id_value;
-    final selection$raw = data["id"];
+    final id$raw = data["id"];
 
-    id_value = selection$raw as String;
+    id_value = id$raw as String;
 
     return UpdatePointCoordsMaybe_updatePointCoordsMaybe(
       coords: coords_value,

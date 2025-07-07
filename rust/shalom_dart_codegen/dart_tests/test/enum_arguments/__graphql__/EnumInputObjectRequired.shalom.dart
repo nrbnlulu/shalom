@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,12 +16,12 @@ class EnumInputObjectRequiredResponse {
   EnumInputObjectRequiredResponse({this.updateOrder});
   static EnumInputObjectRequiredResponse fromJson(JsonObject data) {
     final EnumInputObjectRequired_updateOrder? updateOrder_value;
-    final selection$raw = data["updateOrder"];
+    final updateOrder$raw = data["updateOrder"];
 
     updateOrder_value =
-        selection$raw == null
+        updateOrder$raw == null
             ? null
-            : EnumInputObjectRequired_updateOrder.fromJson(selection$raw);
+            : EnumInputObjectRequired_updateOrder.fromJson(updateOrder$raw);
 
     return EnumInputObjectRequiredResponse(updateOrder: updateOrder_value);
   }
@@ -79,25 +79,24 @@ class EnumInputObjectRequired_updateOrder {
   });
   static EnumInputObjectRequired_updateOrder fromJson(JsonObject data) {
     final Status? status_value;
-    final selection$raw = data["status"];
+    final status$raw = data["status"];
 
-    status_value =
-        selection$raw == null ? null : Status.fromString(selection$raw);
+    status_value = status$raw == null ? null : Status.fromString(status$raw);
 
     final int quantity_value;
-    final selection$raw = data["quantity"];
+    final quantity$raw = data["quantity"];
 
-    quantity_value = selection$raw as int;
+    quantity_value = quantity$raw as int;
 
     final String name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String;
+    name_value = name$raw as String;
 
     final double price_value;
-    final selection$raw = data["price"];
+    final price$raw = data["price"];
 
-    price_value = selection$raw as double;
+    price_value = price$raw as double;
 
     return EnumInputObjectRequired_updateOrder(
       status: status_value,

@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,12 +16,12 @@ class OrderRecursiveResponse {
   OrderRecursiveResponse({this.orderRecursive});
   static OrderRecursiveResponse fromJson(JsonObject data) {
     final OrderRecursive_orderRecursive? orderRecursive_value;
-    final selection$raw = data["orderRecursive"];
+    final orderRecursive$raw = data["orderRecursive"];
 
     orderRecursive_value =
-        selection$raw == null
+        orderRecursive$raw == null
             ? null
-            : OrderRecursive_orderRecursive.fromJson(selection$raw);
+            : OrderRecursive_orderRecursive.fromJson(orderRecursive$raw);
 
     return OrderRecursiveResponse(orderRecursive: orderRecursive_value);
   }
@@ -72,19 +72,19 @@ class OrderRecursive_orderRecursive {
   OrderRecursive_orderRecursive({this.quantity, this.name, this.price});
   static OrderRecursive_orderRecursive fromJson(JsonObject data) {
     final int? quantity_value;
-    final selection$raw = data["quantity"];
+    final quantity$raw = data["quantity"];
 
-    quantity_value = selection$raw as int?;
+    quantity_value = quantity$raw as int?;
 
     final String? name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String?;
+    name_value = name$raw as String?;
 
     final double? price_value;
-    final selection$raw = data["price"];
+    final price$raw = data["price"];
 
-    price_value = selection$raw as double?;
+    price_value = price$raw as double?;
 
     return OrderRecursive_orderRecursive(
       quantity: quantity_value,

@@ -16,10 +16,12 @@ class ListofScalarsRequiredResponse {
   ListofScalarsRequiredResponse({required this.listOfScalarsRequired});
   static ListofScalarsRequiredResponse fromJson(JsonObject data) {
     final List<String> listOfScalarsRequired_value;
-    final selection$raw = data["listOfScalarsRequired"];
+    final listOfScalarsRequired$raw = data["listOfScalarsRequired"];
 
     listOfScalarsRequired_value =
-        (selection$raw as List<dynamic>).map((e) => e as String).toList();
+        (listOfScalarsRequired$raw as List<dynamic>)
+            .map((e) => e as String)
+            .toList();
 
     return ListofScalarsRequiredResponse(
       listOfScalarsRequired: listOfScalarsRequired_value,

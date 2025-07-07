@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,9 +16,9 @@ class InputListEnumRequiredResponse {
   InputListEnumRequiredResponse({this.InputListEnumRequired});
   static InputListEnumRequiredResponse fromJson(JsonObject data) {
     final String? InputListEnumRequired_value;
-    final selection$raw = data["InputListEnumRequired"];
+    final InputListEnumRequired$raw = data["InputListEnumRequired"];
 
-    InputListEnumRequired_value = selection$raw as String?;
+    InputListEnumRequired_value = InputListEnumRequired$raw as String?;
 
     return InputListEnumRequiredResponse(
       InputListEnumRequired: InputListEnumRequired_value,

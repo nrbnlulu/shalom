@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -22,13 +22,14 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
   ) {
     final InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault?
     InputListOfOptionalObjectsWithNullDefault_value;
-    final selection$raw = data["InputListOfOptionalObjectsWithNullDefault"];
+    final InputListOfOptionalObjectsWithNullDefault$raw =
+        data["InputListOfOptionalObjectsWithNullDefault"];
 
     InputListOfOptionalObjectsWithNullDefault_value =
-        selection$raw == null
+        InputListOfOptionalObjectsWithNullDefault$raw == null
             ? null
             : InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault.fromJson(
-              selection$raw,
+              InputListOfOptionalObjectsWithNullDefault$raw,
             );
 
     return InputListOfOptionalObjectsWithNullDefaultResponse(
@@ -100,14 +101,14 @@ class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNu
   static InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault
   fromJson(JsonObject data) {
     final bool success_value;
-    final selection$raw = data["success"];
+    final success$raw = data["success"];
 
-    success_value = selection$raw as bool;
+    success_value = success$raw as bool;
 
     final String? message_value;
-    final selection$raw = data["message"];
+    final message$raw = data["message"];
 
-    message_value = selection$raw as String?;
+    message_value = message$raw as String?;
 
     return InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault(
       success: success_value,

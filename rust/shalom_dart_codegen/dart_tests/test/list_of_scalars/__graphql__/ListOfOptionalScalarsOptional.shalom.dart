@@ -16,12 +16,15 @@ class ListOfOptionalScalarsOptionalResponse {
   ListOfOptionalScalarsOptionalResponse({this.listOfOptionalScalarsOptional});
   static ListOfOptionalScalarsOptionalResponse fromJson(JsonObject data) {
     final List<int>? listOfOptionalScalarsOptional_value;
-    final selection$raw = data["listOfOptionalScalarsOptional"];
+    final listOfOptionalScalarsOptional$raw =
+        data["listOfOptionalScalarsOptional"];
 
     listOfOptionalScalarsOptional_value =
-        selection$raw == null
+        listOfOptionalScalarsOptional$raw == null
             ? null
-            : (selection$raw as List<dynamic>).map((e) => e as int).toList();
+            : (listOfOptionalScalarsOptional$raw as List<dynamic>)
+                .map((e) => e as int)
+                .toList();
 
     return ListOfOptionalScalarsOptionalResponse(
       listOfOptionalScalarsOptional: listOfOptionalScalarsOptional_value,

@@ -91,7 +91,7 @@
         {{ other_symbol }}.{{ field_symbol }} == {{ field_symbol }}
     {% endif %}
 {% endmacro %}
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 {% for path, namespace_alias in extra_imports | items -%}
@@ -121,11 +121,11 @@ import 'package:collection/collection.dart';
         {% set selection_name = selection.name %}
         {% set selection_typename = type_name_for_selection(selection) %}
         final {{ selection_typename }} {{ selection_name }}_value;
-        final selection$raw = data["{{ selection_name }}"];
+        final {{selection_name}}$raw = data["{{ selection_name }}"];
         {% if selection.is_optional %}
-            {{ selection_name }}_value = {{ _deserialize_selection_value_macro('selection$raw', selection, true) }};
+            {{ selection_name }}_value = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, true) }};
         {% else %}
-            {{ selection_name }}_value = {{ _deserialize_selection_value_macro('selection$raw', selection, false) }};
+            {{ selection_name }}_value = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, false) }};
         {% endif %}
     {% endfor %}
     return {{ typename }}(

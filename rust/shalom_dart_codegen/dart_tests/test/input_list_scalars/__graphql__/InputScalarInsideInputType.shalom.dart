@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -18,13 +18,13 @@ class InputScalarInsideInputTypeResponse {
   static InputScalarInsideInputTypeResponse fromJson(JsonObject data) {
     final InputScalarInsideInputType_InputScalarInsideInputType?
     InputScalarInsideInputType_value;
-    final selection$raw = data["InputScalarInsideInputType"];
+    final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
 
     InputScalarInsideInputType_value =
-        selection$raw == null
+        InputScalarInsideInputType$raw == null
             ? null
             : InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
-              selection$raw,
+              InputScalarInsideInputType$raw,
             );
 
     return InputScalarInsideInputTypeResponse(
@@ -85,9 +85,9 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
     JsonObject data,
   ) {
     final bool success_value;
-    final selection$raw = data["success"];
+    final success$raw = data["success"];
 
-    success_value = selection$raw as bool;
+    success_value = success$raw as bool;
 
     return InputScalarInsideInputType_InputScalarInsideInputType(
       success: success_value,

@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -18,13 +18,13 @@ class InputScalarListOptionalResponse {
   static InputScalarListOptionalResponse fromJson(JsonObject data) {
     final InputScalarListOptional_InputScalarListOptional?
     InputScalarListOptional_value;
-    final selection$raw = data["InputScalarListOptional"];
+    final InputScalarListOptional$raw = data["InputScalarListOptional"];
 
     InputScalarListOptional_value =
-        selection$raw == null
+        InputScalarListOptional$raw == null
             ? null
             : InputScalarListOptional_InputScalarListOptional.fromJson(
-              selection$raw,
+              InputScalarListOptional$raw,
             );
 
     return InputScalarListOptionalResponse(
@@ -81,9 +81,9 @@ class InputScalarListOptional_InputScalarListOptional {
     JsonObject data,
   ) {
     final bool success_value;
-    final selection$raw = data["success"];
+    final success$raw = data["success"];
 
-    success_value = selection$raw as bool;
+    success_value = success$raw as bool;
 
     return InputScalarListOptional_InputScalarListOptional(
       success: success_value,

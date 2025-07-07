@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,12 +16,12 @@ class GetSpecificOrderResponse {
   GetSpecificOrderResponse({this.getSpecificOrder});
   static GetSpecificOrderResponse fromJson(JsonObject data) {
     final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
-    final selection$raw = data["getSpecificOrder"];
+    final getSpecificOrder$raw = data["getSpecificOrder"];
 
     getSpecificOrder_value =
-        selection$raw == null
+        getSpecificOrder$raw == null
             ? null
-            : GetSpecificOrder_getSpecificOrder.fromJson(selection$raw);
+            : GetSpecificOrder_getSpecificOrder.fromJson(getSpecificOrder$raw);
 
     return GetSpecificOrderResponse(getSpecificOrder: getSpecificOrder_value);
   }
@@ -74,19 +74,19 @@ class GetSpecificOrder_getSpecificOrder {
   GetSpecificOrder_getSpecificOrder({this.quantity, this.price, this.name});
   static GetSpecificOrder_getSpecificOrder fromJson(JsonObject data) {
     final int? quantity_value;
-    final selection$raw = data["quantity"];
+    final quantity$raw = data["quantity"];
 
-    quantity_value = selection$raw as int?;
+    quantity_value = quantity$raw as int?;
 
     final double? price_value;
-    final selection$raw = data["price"];
+    final price$raw = data["price"];
 
-    price_value = selection$raw as double?;
+    price_value = price$raw as double?;
 
     final String? name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String?;
+    name_value = name$raw as String?;
 
     return GetSpecificOrder_getSpecificOrder(
       quantity: quantity_value,

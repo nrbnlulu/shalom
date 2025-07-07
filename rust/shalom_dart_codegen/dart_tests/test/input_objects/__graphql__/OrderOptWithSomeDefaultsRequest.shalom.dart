@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -20,13 +20,14 @@ class OrderOptWithSomeDefaultsRequestResponse {
   static OrderOptWithSomeDefaultsRequestResponse fromJson(JsonObject data) {
     final OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest?
     orderOptWithSomeDefaultsRequest_value;
-    final selection$raw = data["orderOptWithSomeDefaultsRequest"];
+    final orderOptWithSomeDefaultsRequest$raw =
+        data["orderOptWithSomeDefaultsRequest"];
 
     orderOptWithSomeDefaultsRequest_value =
-        selection$raw == null
+        orderOptWithSomeDefaultsRequest$raw == null
             ? null
             : OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest.fromJson(
-              selection$raw,
+              orderOptWithSomeDefaultsRequest$raw,
             );
 
     return OrderOptWithSomeDefaultsRequestResponse(
@@ -97,19 +98,19 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
   static OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest
   fromJson(JsonObject data) {
     final int? quantity_value;
-    final selection$raw = data["quantity"];
+    final quantity$raw = data["quantity"];
 
-    quantity_value = selection$raw as int?;
+    quantity_value = quantity$raw as int?;
 
     final String? name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String?;
+    name_value = name$raw as String?;
 
     final double? price_value;
-    final selection$raw = data["price"];
+    final price$raw = data["price"];
 
-    price_value = selection$raw as double?;
+    price_value = price$raw as double?;
 
     return OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest(
       quantity: quantity_value,

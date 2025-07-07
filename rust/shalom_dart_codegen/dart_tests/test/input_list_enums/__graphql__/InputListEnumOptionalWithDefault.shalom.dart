@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -18,9 +18,11 @@ class InputListEnumOptionalWithDefaultResponse {
   });
   static InputListEnumOptionalWithDefaultResponse fromJson(JsonObject data) {
     final String? InputListEnumOptionalWithDefault_value;
-    final selection$raw = data["InputListEnumOptionalWithDefault"];
+    final InputListEnumOptionalWithDefault$raw =
+        data["InputListEnumOptionalWithDefault"];
 
-    InputListEnumOptionalWithDefault_value = selection$raw as String?;
+    InputListEnumOptionalWithDefault_value =
+        InputListEnumOptionalWithDefault$raw as String?;
 
     return InputListEnumOptionalWithDefaultResponse(
       InputListEnumOptionalWithDefault: InputListEnumOptionalWithDefault_value,

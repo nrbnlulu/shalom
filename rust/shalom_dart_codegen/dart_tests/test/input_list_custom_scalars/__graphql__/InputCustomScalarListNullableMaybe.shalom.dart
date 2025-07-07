@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
@@ -21,13 +21,14 @@ class InputCustomScalarListNullableMaybeResponse {
   static InputCustomScalarListNullableMaybeResponse fromJson(JsonObject data) {
     final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
     InputCustomScalarListNullableMaybe_value;
-    final selection$raw = data["InputCustomScalarListNullableMaybe"];
+    final InputCustomScalarListNullableMaybe$raw =
+        data["InputCustomScalarListNullableMaybe"];
 
     InputCustomScalarListNullableMaybe_value =
-        selection$raw == null
+        InputCustomScalarListNullableMaybe$raw == null
             ? null
             : InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
-              selection$raw,
+              InputCustomScalarListNullableMaybe$raw,
             );
 
     return InputCustomScalarListNullableMaybeResponse(
@@ -97,14 +98,14 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
   static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
   fromJson(JsonObject data) {
     final bool success_value;
-    final selection$raw = data["success"];
+    final success$raw = data["success"];
 
-    success_value = selection$raw as bool;
+    success_value = success$raw as bool;
 
     final String? message_value;
-    final selection$raw = data["message"];
+    final message$raw = data["message"];
 
-    message_value = selection$raw as String?;
+    message_value = message$raw as String?;
 
     return InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe(
       success: success_value,

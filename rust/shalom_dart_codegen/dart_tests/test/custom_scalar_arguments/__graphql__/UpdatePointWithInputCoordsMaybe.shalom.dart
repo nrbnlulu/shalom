@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
@@ -21,13 +21,14 @@ class UpdatePointWithInputCoordsMaybeResponse {
   static UpdatePointWithInputCoordsMaybeResponse fromJson(JsonObject data) {
     final UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
     updatePointWithInputCoordsMaybe_value;
-    final selection$raw = data["updatePointWithInputCoordsMaybe"];
+    final updatePointWithInputCoordsMaybe$raw =
+        data["updatePointWithInputCoordsMaybe"];
 
     updatePointWithInputCoordsMaybe_value =
-        selection$raw == null
+        updatePointWithInputCoordsMaybe$raw == null
             ? null
             : UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe.fromJson(
-              selection$raw,
+              updatePointWithInputCoordsMaybe$raw,
             );
 
     return UpdatePointWithInputCoordsMaybeResponse(
@@ -96,22 +97,22 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
   static UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
   fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
-    final selection$raw = data["coords"];
+    final coords$raw = data["coords"];
 
     coords_value =
-        selection$raw == null
+        coords$raw == null
             ? null
-            : rmhlxei.pointScalarImpl.deserialize(selection$raw);
+            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
 
     final String name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String;
+    name_value = name$raw as String;
 
     final String id_value;
-    final selection$raw = data["id"];
+    final id$raw = data["id"];
 
-    id_value = selection$raw as String;
+    id_value = id$raw as String;
 
     return UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe(
       coords: coords_value,

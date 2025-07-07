@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,12 +16,14 @@ class InputScalarListMaybeResponse {
   InputScalarListMaybeResponse({this.InputScalarListMaybe});
   static InputScalarListMaybeResponse fromJson(JsonObject data) {
     final InputScalarListMaybe_InputScalarListMaybe? InputScalarListMaybe_value;
-    final selection$raw = data["InputScalarListMaybe"];
+    final InputScalarListMaybe$raw = data["InputScalarListMaybe"];
 
     InputScalarListMaybe_value =
-        selection$raw == null
+        InputScalarListMaybe$raw == null
             ? null
-            : InputScalarListMaybe_InputScalarListMaybe.fromJson(selection$raw);
+            : InputScalarListMaybe_InputScalarListMaybe.fromJson(
+              InputScalarListMaybe$raw,
+            );
 
     return InputScalarListMaybeResponse(
       InputScalarListMaybe: InputScalarListMaybe_value,
@@ -74,9 +76,9 @@ class InputScalarListMaybe_InputScalarListMaybe {
   InputScalarListMaybe_InputScalarListMaybe({required this.success});
   static InputScalarListMaybe_InputScalarListMaybe fromJson(JsonObject data) {
     final bool success_value;
-    final selection$raw = data["success"];
+    final success$raw = data["success"];
 
-    success_value = selection$raw as bool;
+    success_value = success$raw as bool;
 
     return InputScalarListMaybe_InputScalarListMaybe(success: success_value);
   }

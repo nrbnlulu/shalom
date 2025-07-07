@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -18,13 +18,13 @@ class InputListOfRequiredObjectsResponse {
   static InputListOfRequiredObjectsResponse fromJson(JsonObject data) {
     final InputListOfRequiredObjects_InputListOfRequiredObjects?
     InputListOfRequiredObjects_value;
-    final selection$raw = data["InputListOfRequiredObjects"];
+    final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
 
     InputListOfRequiredObjects_value =
-        selection$raw == null
+        InputListOfRequiredObjects$raw == null
             ? null
             : InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
-              selection$raw,
+              InputListOfRequiredObjects$raw,
             );
 
     return InputListOfRequiredObjectsResponse(
@@ -89,14 +89,14 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
     JsonObject data,
   ) {
     final bool success_value;
-    final selection$raw = data["success"];
+    final success$raw = data["success"];
 
-    success_value = selection$raw as bool;
+    success_value = success$raw as bool;
 
     final String? message_value;
-    final selection$raw = data["message"];
+    final message$raw = data["message"];
 
-    message_value = selection$raw as String?;
+    message_value = message$raw as String?;
 
     return InputListOfRequiredObjects_InputListOfRequiredObjects(
       success: success_value,

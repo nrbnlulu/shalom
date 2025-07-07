@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,9 +16,11 @@ class InputListEnumInsideInputObjectResponse {
   InputListEnumInsideInputObjectResponse({this.InputListEnumInsideInputObject});
   static InputListEnumInsideInputObjectResponse fromJson(JsonObject data) {
     final String? InputListEnumInsideInputObject_value;
-    final selection$raw = data["InputListEnumInsideInputObject"];
+    final InputListEnumInsideInputObject$raw =
+        data["InputListEnumInsideInputObject"];
 
-    InputListEnumInsideInputObject_value = selection$raw as String?;
+    InputListEnumInsideInputObject_value =
+        InputListEnumInsideInputObject$raw as String?;
 
     return InputListEnumInsideInputObjectResponse(
       InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,

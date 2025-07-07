@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,12 +16,12 @@ class OptionalArgumentsResponse {
   OptionalArgumentsResponse({this.updateUser});
   static OptionalArgumentsResponse fromJson(JsonObject data) {
     final OptionalArguments_updateUser? updateUser_value;
-    final selection$raw = data["updateUser"];
+    final updateUser$raw = data["updateUser"];
 
     updateUser_value =
-        selection$raw == null
+        updateUser$raw == null
             ? null
-            : OptionalArguments_updateUser.fromJson(selection$raw);
+            : OptionalArguments_updateUser.fromJson(updateUser$raw);
 
     return OptionalArgumentsResponse(updateUser: updateUser_value);
   }
@@ -67,9 +67,9 @@ class OptionalArguments_updateUser {
   OptionalArguments_updateUser({this.name});
   static OptionalArguments_updateUser fromJson(JsonObject data) {
     final String? name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String?;
+    name_value = name$raw as String?;
 
     return OptionalArguments_updateUser(name: name_value);
   }

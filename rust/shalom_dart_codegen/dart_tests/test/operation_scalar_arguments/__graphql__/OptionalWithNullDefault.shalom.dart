@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,12 +16,12 @@ class OptionalWithNullDefaultResponse {
   OptionalWithNullDefaultResponse({this.updateUser});
   static OptionalWithNullDefaultResponse fromJson(JsonObject data) {
     final OptionalWithNullDefault_updateUser? updateUser_value;
-    final selection$raw = data["updateUser"];
+    final updateUser$raw = data["updateUser"];
 
     updateUser_value =
-        selection$raw == null
+        updateUser$raw == null
             ? null
-            : OptionalWithNullDefault_updateUser.fromJson(selection$raw);
+            : OptionalWithNullDefault_updateUser.fromJson(updateUser$raw);
 
     return OptionalWithNullDefaultResponse(updateUser: updateUser_value);
   }
@@ -72,19 +72,19 @@ class OptionalWithNullDefault_updateUser {
   OptionalWithNullDefault_updateUser({this.email, this.name, this.phone});
   static OptionalWithNullDefault_updateUser fromJson(JsonObject data) {
     final String? email_value;
-    final selection$raw = data["email"];
+    final email$raw = data["email"];
 
-    email_value = selection$raw as String?;
+    email_value = email$raw as String?;
 
     final String? name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String?;
+    name_value = name$raw as String?;
 
     final String? phone_value;
-    final selection$raw = data["phone"];
+    final phone$raw = data["phone"];
 
-    phone_value = selection$raw as String?;
+    phone_value = phone$raw as String?;
 
     return OptionalWithNullDefault_updateUser(
       email: email_value,

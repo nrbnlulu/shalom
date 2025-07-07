@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -20,13 +20,14 @@ class OrderOptWithNullDefaultsRequestResponse {
   static OrderOptWithNullDefaultsRequestResponse fromJson(JsonObject data) {
     final OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest?
     orderOptWithNullDefaultsRequest_value;
-    final selection$raw = data["orderOptWithNullDefaultsRequest"];
+    final orderOptWithNullDefaultsRequest$raw =
+        data["orderOptWithNullDefaultsRequest"];
 
     orderOptWithNullDefaultsRequest_value =
-        selection$raw == null
+        orderOptWithNullDefaultsRequest$raw == null
             ? null
             : OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest.fromJson(
-              selection$raw,
+              orderOptWithNullDefaultsRequest$raw,
             );
 
     return OrderOptWithNullDefaultsRequestResponse(
@@ -97,19 +98,19 @@ class OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest {
   static OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest
   fromJson(JsonObject data) {
     final int? quantity_value;
-    final selection$raw = data["quantity"];
+    final quantity$raw = data["quantity"];
 
-    quantity_value = selection$raw as int?;
+    quantity_value = quantity$raw as int?;
 
     final String? name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String?;
+    name_value = name$raw as String?;
 
     final double? price_value;
-    final selection$raw = data["price"];
+    final price$raw = data["price"];
 
-    price_value = selection$raw as double?;
+    price_value = price$raw as double?;
 
     return OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest(
       quantity: quantity_value,

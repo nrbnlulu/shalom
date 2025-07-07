@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,12 +16,12 @@ class OptionalWithSomeDefaultResponse {
   OptionalWithSomeDefaultResponse({this.task});
   static OptionalWithSomeDefaultResponse fromJson(JsonObject data) {
     final OptionalWithSomeDefault_task? task_value;
-    final selection$raw = data["task"];
+    final task$raw = data["task"];
 
     task_value =
-        selection$raw == null
+        task$raw == null
             ? null
-            : OptionalWithSomeDefault_task.fromJson(selection$raw);
+            : OptionalWithSomeDefault_task.fromJson(task$raw);
 
     return OptionalWithSomeDefaultResponse(task: task_value);
   }
@@ -71,19 +71,19 @@ class OptionalWithSomeDefault_task {
   OptionalWithSomeDefault_task({this.name, this.duration, this.is_easy});
   static OptionalWithSomeDefault_task fromJson(JsonObject data) {
     final String? name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String?;
+    name_value = name$raw as String?;
 
     final int? duration_value;
-    final selection$raw = data["duration"];
+    final duration$raw = data["duration"];
 
-    duration_value = selection$raw as int?;
+    duration_value = duration$raw as int?;
 
     final bool? is_easy_value;
-    final selection$raw = data["is_easy"];
+    final is_easy$raw = data["is_easy"];
 
-    is_easy_value = selection$raw as bool?;
+    is_easy_value = is_easy$raw as bool?;
 
     return OptionalWithSomeDefault_task(
       name: name_value,

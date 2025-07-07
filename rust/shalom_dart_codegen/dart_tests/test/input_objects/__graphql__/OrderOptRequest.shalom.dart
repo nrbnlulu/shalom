@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,12 +16,12 @@ class OrderOptRequestResponse {
   OrderOptRequestResponse({this.orderOptRequest});
   static OrderOptRequestResponse fromJson(JsonObject data) {
     final OrderOptRequest_orderOptRequest? orderOptRequest_value;
-    final selection$raw = data["orderOptRequest"];
+    final orderOptRequest$raw = data["orderOptRequest"];
 
     orderOptRequest_value =
-        selection$raw == null
+        orderOptRequest$raw == null
             ? null
-            : OrderOptRequest_orderOptRequest.fromJson(selection$raw);
+            : OrderOptRequest_orderOptRequest.fromJson(orderOptRequest$raw);
 
     return OrderOptRequestResponse(orderOptRequest: orderOptRequest_value);
   }
@@ -72,19 +72,19 @@ class OrderOptRequest_orderOptRequest {
   OrderOptRequest_orderOptRequest({this.quantity, this.name, this.price});
   static OrderOptRequest_orderOptRequest fromJson(JsonObject data) {
     final int? quantity_value;
-    final selection$raw = data["quantity"];
+    final quantity$raw = data["quantity"];
 
-    quantity_value = selection$raw as int?;
+    quantity_value = quantity$raw as int?;
 
     final String? name_value;
-    final selection$raw = data["name"];
+    final name$raw = data["name"];
 
-    name_value = selection$raw as String?;
+    name_value = name$raw as String?;
 
     final double? price_value;
-    final selection$raw = data["price"];
+    final price$raw = data["price"];
 
-    price_value = selection$raw as double?;
+    price_value = price$raw as double?;
 
     return OrderOptRequest_orderOptRequest(
       quantity: quantity_value,
