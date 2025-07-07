@@ -46,6 +46,11 @@ fn test_input_list_objects_dart() {
 }
 
 #[test]
+fn test_input_list_custom_scalars_dart() {
+    run_dart_tests_for_usecase("input_list_custom_scalars");
+}
+
+#[test]
 fn test_nested_input_objects_dart() {
     run_dart_tests_for_usecase("nested_input_objects");
 }

@@ -1,0 +1,34 @@
+mutation InputCustomScalarListRequired($requiredItems: [Point!]!) {
+    InputCustomScalarListRequired(requiredItems: $requiredItems) {
+        success
+        message
+    }
+}
+
+mutation InputCustomScalarListMaybe($optionalItems: [Point!]) {
+    InputCustomScalarListMaybe(optionalItems: $optionalItems) {
+        success
+        message
+    }
+}
+
+mutation InputCustomScalarListNullableMaybe($sparseData: [Point]) {
+    InputCustomScalarListNullableMaybe(sparseData: $sparseData) {
+        success
+        message
+    }
+}
+
+mutation InputCustomScalarListOptionalWithDefault($defaultItems: [Point!] = null) {
+    InputCustomScalarListOptionalWithDefault(defaultItems: $defaultItems) {
+        success
+        message
+    }
+}
+
+mutation InputCustomScalarListInsideInputObject($newContainer: ItemContainerInput!) {
+    InputCustomScalarListInsideInputObject(newContainer: $newContainer) {
+        success
+        message
+    }
+}

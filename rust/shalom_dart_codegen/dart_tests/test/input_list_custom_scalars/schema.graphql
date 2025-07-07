@@ -1,0 +1,43 @@
+scalar Point
+
+type Query {
+    # Output field tests - lists of custom scalars
+    pointListRequired: [Point!]!
+    pointListOptional: [Point!]
+    pointListWithNulls: [Point]!
+    pointListFullyOptional: [Point]
+}
+
+type Mutation {
+    # Input List Use Cases
+
+    # 1. Required List of Required Elements: [Point!]!
+    InputCustomScalarListRequired(requiredItems: [Point!]!): Response
+
+    # 2. Maybe List of Required Elements: [Point!]
+    InputCustomScalarListMaybe(optionalItems: [Point!]): Response
+
+    # 3. Maybe List of Optional Elements: [Point]
+    InputCustomScalarListNullableMaybe(sparseData: [Point]): Response
+
+    # 4. Maybe List of Required Elements with Null Default: [Point!] = null
+    InputCustomScalarListOptionalWithDefault(defaultItems: [Point!] = null): Response
+
+    # 5. Custom Scalar Lists Inside Input Objects
+    InputCustomScalarListInsideInputObject(newContainer: ItemContainerInput!): Response
+}
+
+input ItemContainerInput {
+    name: String!
+    # List of required elements (the list is required, elements are required)
+    requiredItems: [Point!]!
+    # List of optional elements (the list can be null, elements can be null)
+    optionalItems: [Point]
+    # List required, but elements optional (list is required, elements can be null)
+    flexibleItems: [Point]!
+}
+
+type Response {
+    success: Boolean!
+    message: String
+}
