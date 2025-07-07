@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,8 +16,8 @@ class GetIntOptionalResponse {
   GetIntOptionalResponse({this.intOptional});
   static GetIntOptionalResponse fromJson(JsonObject data) {
     final int? intOptional_value;
-
-    intOptional_value = data['intOptional'];
+    final intOptional$raw = data["intOptional"];
+    intOptional_value = intOptional$raw as int?;
 
     return GetIntOptionalResponse(intOptional: intOptional_value);
   }
@@ -24,7 +25,8 @@ class GetIntOptionalResponse {
   GetIntOptionalResponse updateWithJson(JsonObject data) {
     final int? intOptional_value;
     if (data.containsKey('intOptional')) {
-      intOptional_value = data['intOptional'];
+      final intOptional$raw = data["intOptional"];
+      intOptional_value = intOptional$raw as int?;
     } else {
       intOptional_value = intOptional;
     }
@@ -42,7 +44,7 @@ class GetIntOptionalResponse {
   int get hashCode => intOptional.hashCode;
 
   JsonObject toJson() {
-    return {'intOptional': intOptional};
+    return {'intOptional': this.intOptional};
   }
 }
 
@@ -62,7 +64,7 @@ class RequestGetIntOptional extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetIntOptional',
+      opName: 'GetIntOptional',
     );
   }
 }

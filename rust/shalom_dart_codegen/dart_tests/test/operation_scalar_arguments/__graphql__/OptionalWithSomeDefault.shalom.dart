@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,13 +16,11 @@ class OptionalWithSomeDefaultResponse {
   OptionalWithSomeDefaultResponse({this.task});
   static OptionalWithSomeDefaultResponse fromJson(JsonObject data) {
     final OptionalWithSomeDefault_task? task_value;
-
-    final JsonObject? task$raw = data['task'];
-    if (task$raw != null) {
-      task_value = OptionalWithSomeDefault_task.fromJson(task$raw);
-    } else {
-      task_value = null;
-    }
+    final task$raw = data["task"];
+    task_value =
+        task$raw == null
+            ? null
+            : OptionalWithSomeDefault_task.fromJson(task$raw);
 
     return OptionalWithSomeDefaultResponse(task: task_value);
   }
@@ -29,12 +28,11 @@ class OptionalWithSomeDefaultResponse {
   OptionalWithSomeDefaultResponse updateWithJson(JsonObject data) {
     final OptionalWithSomeDefault_task? task_value;
     if (data.containsKey('task')) {
-      final JsonObject? task$raw = data['task'];
-      if (task$raw != null) {
-        task_value = OptionalWithSomeDefault_task.fromJson(task$raw);
-      } else {
-        task_value = null;
-      }
+      final task$raw = data["task"];
+      task_value =
+          task$raw == null
+              ? null
+              : OptionalWithSomeDefault_task.fromJson(task$raw);
     } else {
       task_value = task;
     }
@@ -52,7 +50,7 @@ class OptionalWithSomeDefaultResponse {
   int get hashCode => task.hashCode;
 
   JsonObject toJson() {
-    return {'task': task?.toJson()};
+    return {'task': this.task?.toJson()};
   }
 }
 
@@ -71,16 +69,16 @@ class OptionalWithSomeDefault_task {
   OptionalWithSomeDefault_task({this.name, this.duration, this.is_easy});
   static OptionalWithSomeDefault_task fromJson(JsonObject data) {
     final String? name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
 
     final int? duration_value;
-
-    duration_value = data['duration'];
+    final duration$raw = data["duration"];
+    duration_value = duration$raw as int?;
 
     final bool? is_easy_value;
-
-    is_easy_value = data['is_easy'];
+    final is_easy$raw = data["is_easy"];
+    is_easy_value = is_easy$raw as bool?;
 
     return OptionalWithSomeDefault_task(
       name: name_value,
@@ -94,21 +92,24 @@ class OptionalWithSomeDefault_task {
   OptionalWithSomeDefault_task updateWithJson(JsonObject data) {
     final String? name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String?;
     } else {
       name_value = name;
     }
 
     final int? duration_value;
     if (data.containsKey('duration')) {
-      duration_value = data['duration'];
+      final duration$raw = data["duration"];
+      duration_value = duration$raw as int?;
     } else {
       duration_value = duration;
     }
 
     final bool? is_easy_value;
     if (data.containsKey('is_easy')) {
-      is_easy_value = data['is_easy'];
+      final is_easy$raw = data["is_easy"];
+      is_easy_value = is_easy$raw as bool?;
     } else {
       is_easy_value = is_easy;
     }
@@ -135,7 +136,13 @@ class OptionalWithSomeDefault_task {
   int get hashCode => Object.hashAll([name, duration, is_easy]);
 
   JsonObject toJson() {
-    return {'name': name, 'duration': duration, 'is_easy': is_easy};
+    return {
+      'name': this.name,
+
+      'duration': this.duration,
+
+      'is_easy': this.is_easy,
+    };
   }
 }
 
@@ -160,7 +167,7 @@ class RequestOptionalWithSomeDefault extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'OptionalWithSomeDefault',
+      opName: 'OptionalWithSomeDefault',
     );
   }
 }

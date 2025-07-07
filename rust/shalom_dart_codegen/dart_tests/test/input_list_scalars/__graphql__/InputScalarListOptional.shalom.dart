@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -17,17 +18,13 @@ class InputScalarListOptionalResponse {
   static InputScalarListOptionalResponse fromJson(JsonObject data) {
     final InputScalarListOptional_InputScalarListOptional?
     InputScalarListOptional_value;
-
-    final JsonObject? InputScalarListOptional$raw =
-        data['InputScalarListOptional'];
-    if (InputScalarListOptional$raw != null) {
-      InputScalarListOptional_value =
-          InputScalarListOptional_InputScalarListOptional.fromJson(
-            InputScalarListOptional$raw,
-          );
-    } else {
-      InputScalarListOptional_value = null;
-    }
+    final InputScalarListOptional$raw = data["InputScalarListOptional"];
+    InputScalarListOptional_value =
+        InputScalarListOptional$raw == null
+            ? null
+            : InputScalarListOptional_InputScalarListOptional.fromJson(
+              InputScalarListOptional$raw,
+            );
 
     return InputScalarListOptionalResponse(
       InputScalarListOptional: InputScalarListOptional_value,
@@ -38,16 +35,13 @@ class InputScalarListOptionalResponse {
     final InputScalarListOptional_InputScalarListOptional?
     InputScalarListOptional_value;
     if (data.containsKey('InputScalarListOptional')) {
-      final JsonObject? InputScalarListOptional$raw =
-          data['InputScalarListOptional'];
-      if (InputScalarListOptional$raw != null) {
-        InputScalarListOptional_value =
-            InputScalarListOptional_InputScalarListOptional.fromJson(
-              InputScalarListOptional$raw,
-            );
-      } else {
-        InputScalarListOptional_value = null;
-      }
+      final InputScalarListOptional$raw = data["InputScalarListOptional"];
+      InputScalarListOptional_value =
+          InputScalarListOptional$raw == null
+              ? null
+              : InputScalarListOptional_InputScalarListOptional.fromJson(
+                InputScalarListOptional$raw,
+              );
     } else {
       InputScalarListOptional_value = InputScalarListOptional;
     }
@@ -68,7 +62,7 @@ class InputScalarListOptionalResponse {
   int get hashCode => InputScalarListOptional.hashCode;
 
   JsonObject toJson() {
-    return {'InputScalarListOptional': InputScalarListOptional?.toJson()};
+    return {'InputScalarListOptional': this.InputScalarListOptional?.toJson()};
   }
 }
 
@@ -85,8 +79,8 @@ class InputScalarListOptional_InputScalarListOptional {
     JsonObject data,
   ) {
     final bool success_value;
-
-    success_value = data['success'];
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
 
     return InputScalarListOptional_InputScalarListOptional(
       success: success_value,
@@ -98,7 +92,8 @@ class InputScalarListOptional_InputScalarListOptional {
   ) {
     final bool success_value;
     if (data.containsKey('success')) {
-      success_value = data['success'];
+      final success$raw = data["success"];
+      success_value = success$raw as bool;
     } else {
       success_value = success;
     }
@@ -119,7 +114,7 @@ class InputScalarListOptional_InputScalarListOptional {
   int get hashCode => success.hashCode;
 
   JsonObject toJson() {
-    return {'success': success};
+    return {'success': this.success};
   }
 }
 
@@ -141,7 +136,7 @@ class RequestInputScalarListOptional extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputScalarListOptional',
+      opName: 'InputScalarListOptional',
     );
   }
 }
