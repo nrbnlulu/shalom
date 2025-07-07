@@ -1,277 +1,98 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 import 'package:shalom_core/shalom_core.dart';
-
-
-
-
-
-
-
 
 // ------------ Enum DEFINITIONS -------------
 
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
 
-
 class ContainerInput {
-    
-    
-        final List<MyInputObject> nestedItems; 
-    
-        final String title; 
-    
-    ContainerInput(
-        {
-        
+  final List<MyInputObject> nestedItems;
 
-    
-        
-            required this.nestedItems
-        ,
-    
-    
-    
-        
-            required this.title
-        ,
-    
-    
- 
-        }
-    );
+  final String title;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  ContainerInput({required this.nestedItems, required this.title});
 
-    
-    
-        data["nestedItems"] = 
-    
-        
-        
-            this.nestedItems.map((e) => 
-    
-        
-            e.toJson()
-        
-    
-).toList()
-        
-    
-;
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-    
-        data["title"] = 
-    
-        this.title
-    
-;
-    
+    data["nestedItems"] = this.nestedItems.map((e) => e.toJson()).toList();
 
-    
-        return data;
-    } 
-  
-ContainerInput updateWith(
-    {
-        
-            
-                List<MyInputObject>? nestedItems
-            
-            ,
-        
-            
-                String? title
-            
-            
-        
+    data["title"] = this.title;
+
+    return data;
+  }
+
+  ContainerInput updateWith({List<MyInputObject>? nestedItems, String? title}) {
+    final List<MyInputObject> nestedItems$next;
+
+    if (nestedItems != null) {
+      nestedItems$next = nestedItems;
+    } else {
+      nestedItems$next = this.nestedItems;
     }
-) {
-    
-        final List<MyInputObject> nestedItems$next;
-        
-            if (nestedItems != null) {
-                nestedItems$next = nestedItems;
-            } else {
-                nestedItems$next = this.nestedItems;
-            }
-        
-    
-        final String title$next;
-        
-            if (title != null) {
-                title$next = title;
-            } else {
-                title$next = this.title;
-            }
-        
-    
-    return ContainerInput(
-        
-            nestedItems: nestedItems$next
-            ,
-        
-            title: title$next
-            
-        
-    );
-}
 
-}
-     
+    final String title$next;
 
+    if (title != null) {
+      title$next = title;
+    } else {
+      title$next = this.title;
+    }
+
+    return ContainerInput(nestedItems: nestedItems$next, title: title$next);
+  }
+}
 
 class MyInputObject {
-    
-    
-        final String id; 
-    
-        final String name; 
-    
-        final int value; 
-    
-    MyInputObject(
-        {
-        
+  final String id;
 
-    
-        
-            required this.id
-        ,
-    
-    
-    
-        
-            required this.name
-        ,
-    
-    
-    
-        
-            required this.value
-        ,
-    
-    
- 
-        }
-    );
+  final String name;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  final int value;
 
-    
-    
-        data["id"] = 
-    
-        this.id
-    
-;
-    
+  MyInputObject({required this.id, required this.name, required this.value});
 
-    
-    
-        data["name"] = 
-    
-        this.name
-    
-;
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-    
-        data["value"] = 
-    
-        this.value
-    
-;
-    
+    data["id"] = this.id;
 
-    
-        return data;
-    } 
-  
-MyInputObject updateWith(
-    {
-        
-            
-                String? id
-            
-            ,
-        
-            
-                String? name
-            
-            ,
-        
-            
-                int? value
-            
-            
-        
+    data["name"] = this.name;
+
+    data["value"] = this.value;
+
+    return data;
+  }
+
+  MyInputObject updateWith({String? id, String? name, int? value}) {
+    final String id$next;
+
+    if (id != null) {
+      id$next = id;
+    } else {
+      id$next = this.id;
     }
-) {
-    
-        final String id$next;
-        
-            if (id != null) {
-                id$next = id;
-            } else {
-                id$next = this.id;
-            }
-        
-    
-        final String name$next;
-        
-            if (name != null) {
-                name$next = name;
-            } else {
-                name$next = this.name;
-            }
-        
-    
-        final int value$next;
-        
-            if (value != null) {
-                value$next = value;
-            } else {
-                value$next = this.value;
-            }
-        
-    
-    return MyInputObject(
-        
-            id: id$next
-            ,
-        
-            name: name$next
-            ,
-        
-            value: value$next
-            
-        
-    );
-}
 
+    final String name$next;
+
+    if (name != null) {
+      name$next = name;
+    } else {
+      name$next = this.name;
+    }
+
+    final int value$next;
+
+    if (value != null) {
+      value$next = value;
+    } else {
+      value$next = this.value;
+    }
+
+    return MyInputObject(id: id$next, name: name$next, value: value$next);
+  }
 }
-     
 
 // ------------ END Input DEFINITIONS -------------

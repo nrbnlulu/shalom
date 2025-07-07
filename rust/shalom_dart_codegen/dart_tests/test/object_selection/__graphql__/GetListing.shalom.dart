@@ -1,416 +1,154 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 
-
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 
-
-
-
 typedef JsonObject = Map<String, dynamic>;
 
+class GetListingResponse {
+  /// class members
 
+  final GetListing_listing listing;
 
+  // keywordargs constructor
+  GetListingResponse({required this.listing});
+  static GetListingResponse fromJson(JsonObject data) {
+    final GetListing_listing listing_value;
 
-class GetListingResponse{
+    listing_value = GetListing_listing.fromJson(data["listing"]);
 
-    /// class members
-    
-        final GetListing_listing listing;
-    
-    // keywordargs constructor
-    GetListingResponse({
-    required
-        this.listing,
-    
-    });
-    static GetListingResponse fromJson(JsonObject data) {
-    
-        
-        final GetListing_listing listing_value;
-        
-            listing_value = 
-    
-        
-            GetListing_listing.fromJson(data["listing"])
-        
-    
-;
-        
-    
-    return GetListingResponse(
-    
-        
-        listing: listing_value,
-    
-    );
+    return GetListingResponse(listing: listing_value);
+  }
+
+  GetListingResponse updateWithJson(JsonObject data) {
+    final GetListing_listing listing_value;
+    if (data.containsKey('listing')) {
+      listing_value = GetListing_listing.fromJson(data["listing"]);
+    } else {
+      listing_value = listing;
     }
-    GetListingResponse updateWithJson(JsonObject data) {
-    
-        
-        final GetListing_listing listing_value;
-        if (data.containsKey('listing')) {
-            
-                listing_value = 
-    
-        
-            GetListing_listing.fromJson(data["listing"])
-        
-    
-;
-            
-        } else {
-            listing_value = listing;
-        }
-    
-    return GetListingResponse(
-    
-        
-        listing: listing_value,
-    
-    );
-    }
-    @override
-    bool operator ==(Object other) {
+
+    return GetListingResponse(listing: listing_value);
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetListingResponse &&
-    
-        
-    
-        other.listing == listing
-    
- 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        listing.hashCode;
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'listing':
-            
-                
-    
-        
-            this.listing.toJson()
-        
-    
+        (other is GetListingResponse && other.listing == listing);
+  }
 
-            
-        ,
-    
-    };
-    }
+  @override
+  int get hashCode => listing.hashCode;
 
+  JsonObject toJson() {
+    return {'listing': this.listing.toJson()};
+  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
+class GetListing_listing {
+  /// class members
 
-    class GetListing_listing  {
-        
-    /// class members
-    
-        final String id;
-    
-        final String name;
-    
-        final int? price;
-    
-    // keywordargs constructor
-    GetListing_listing({
-    required
-        this.id,
-    required
-        this.name,
-    
-        this.price,
-    
-    });
-    static GetListing_listing fromJson(JsonObject data) {
-    
-        
-        final String id_value;
-        
-            id_value = 
-    
-        
-            
-                data["id"] as 
-    String
+  final String id;
 
-            
-        
-    
-;
-        
-    
-        
-        final String name_value;
-        
-            name_value = 
-    
-        
-            
-                data["name"] as 
-    String
+  final String name;
 
-            
-        
-    
-;
-        
-    
-        
-        final int? price_value;
-        
-            price_value = 
-    
-        
-            
-                data["price"] as 
-    int
-?
-            
-        
-    
-;
-        
-    
+  final int? price;
+
+  // keywordargs constructor
+  GetListing_listing({required this.id, required this.name, this.price});
+  static GetListing_listing fromJson(JsonObject data) {
+    final String id_value;
+
+    id_value = data["id"] as String;
+
+    final String name_value;
+
+    name_value = data["name"] as String;
+
+    final int? price_value;
+
+    price_value = data["price"] as int?;
+
     return GetListing_listing(
-    
-        
-        id: id_value,
-    
-        
-        name: name_value,
-    
-        
-        price: price_value,
-    
+      id: id_value,
+
+      name: name_value,
+
+      price: price_value,
     );
+  }
+
+  GetListing_listing updateWithJson(JsonObject data) {
+    final String id_value;
+    if (data.containsKey('id')) {
+      id_value = data["id"] as String;
+    } else {
+      id_value = id;
     }
-    GetListing_listing updateWithJson(JsonObject data) {
-    
-        
-        final String id_value;
-        if (data.containsKey('id')) {
-            
-                id_value = 
-    
-        
-            
-                data["id"] as 
-    String
 
-            
-        
-    
-;
-            
-        } else {
-            id_value = id;
-        }
-    
-        
-        final String name_value;
-        if (data.containsKey('name')) {
-            
-                name_value = 
-    
-        
-            
-                data["name"] as 
-    String
+    final String name_value;
+    if (data.containsKey('name')) {
+      name_value = data["name"] as String;
+    } else {
+      name_value = name;
+    }
 
-            
-        
-    
-;
-            
-        } else {
-            name_value = name;
-        }
-    
-        
-        final int? price_value;
-        if (data.containsKey('price')) {
-            
-                price_value = 
-    
-        
-            
-                data["price"] as 
-    int
-?
-            
-        
-    
-;
-            
-        } else {
-            price_value = price;
-        }
-    
+    final int? price_value;
+    if (data.containsKey('price')) {
+      price_value = data["price"] as int?;
+    } else {
+      price_value = price;
+    }
+
     return GetListing_listing(
-    
-        
-        id: id_value,
-    
-        
-        name: name_value,
-    
-        
-        price: price_value,
-    
+      id: id_value,
+
+      name: name_value,
+
+      price: price_value,
     );
-    }
-    @override
-    bool operator ==(Object other) {
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetListing_listing &&
-    
-        
-    
-        other.id == id
-    
- &&
-    
-        
-    
-        other.name == name
-    
- &&
-    
-        
-    
-        other.price == price
-    
- 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            id,
-        
-            
-            name,
-        
-            
-            price,
-        
-        ]);
-    
-    JsonObject toJson() {
-    return {
-    
-        
-        'id':
-            
-                
-    
-        
-            this.id
-        
-    
+        (other is GetListing_listing &&
+            other.id == id &&
+            other.name == name &&
+            other.price == price);
+  }
 
-            
-        ,
-    
-        
-        'name':
-            
-                
-    
-        
-            this.name
-        
-    
+  @override
+  int get hashCode => Object.hashAll([id, name, price]);
 
-            
-        ,
-    
-        
-        'price':
-            
-                
-    
-        
-            this.price
-        
-    
-
-            
-        ,
-    
-    };
-    }
-
-    }
-
+  JsonObject toJson() {
+    return {'id': this.id, 'name': this.name, 'price': this.price};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-
 class RequestGetListing extends Requestable {
-    
+  RequestGetListing();
 
-    RequestGetListing(
-        
-    );
-
-    @override
-    Request toRequest() {
-        JsonObject variablesJson =  {}  ;
-        return Request(
-            query: r"""query GetListing {
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetListing {
   listing {
     id
     name
     price
   }
 }""",
-            variables: variablesJson,
-            opType: OperationType.Query,
-            StringopName: 'GetListing'
-        );
-    }
+      variables: variablesJson,
+      opType: OperationType.Query,
+      StringopName: 'GetListing',
+    );
+  }
 }
-
