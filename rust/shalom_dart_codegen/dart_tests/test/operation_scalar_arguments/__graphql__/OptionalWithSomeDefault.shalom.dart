@@ -175,7 +175,7 @@ class RequestOptionalWithSomeDefault extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'OptionalWithSomeDefault',
+      opName: 'OptionalWithSomeDefault',
     );
   }
 }

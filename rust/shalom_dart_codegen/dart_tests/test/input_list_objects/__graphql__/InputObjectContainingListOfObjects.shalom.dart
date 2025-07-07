@@ -177,7 +177,7 @@ class RequestInputObjectContainingListOfObjects extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputObjectContainingListOfObjects',
+      opName: 'InputObjectContainingListOfObjects',
     );
   }
 }

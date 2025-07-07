@@ -235,7 +235,7 @@ class Request{{ operation_name }} extends Requestable {
             query: r"""{{ operation.context.query }}""",
             variables: variablesJson,
             opType: OperationType.{{ operation.context.op_ty.name }},
-            StringopName: '{{ operation_name }}'
+            opName: '{{ operation_name }}'
         );
     }
 }

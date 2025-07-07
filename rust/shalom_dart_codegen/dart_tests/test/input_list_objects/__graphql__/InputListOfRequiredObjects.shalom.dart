@@ -169,7 +169,7 @@ class RequestInputListOfRequiredObjects extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputListOfRequiredObjects',
+      opName: 'InputListOfRequiredObjects',
     );
   }
 }

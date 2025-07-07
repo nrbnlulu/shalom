@@ -204,7 +204,7 @@ class RequestUpdatePointWithInputNonNull extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'UpdatePointWithInputNonNull',
+      opName: 'UpdatePointWithInputNonNull',
     );
   }
 }

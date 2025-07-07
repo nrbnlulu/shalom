@@ -211,7 +211,7 @@ class RequestUpdatePointWithInputCoordsMaybe extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'UpdatePointWithInputCoordsMaybe',
+      opName: 'UpdatePointWithInputCoordsMaybe',
     );
   }
 }

@@ -181,7 +181,7 @@ class RequestInputListOfOptionalObjectsWithNullDefault extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputListOfOptionalObjectsWithNullDefault',
+      opName: 'InputListOfOptionalObjectsWithNullDefault',
     );
   }
 }

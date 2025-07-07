@@ -141,7 +141,7 @@ class RequestGetLocation extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetLocation',
+      opName: 'GetLocation',
     );
   }
 }

@@ -73,7 +73,7 @@ class RequestInputListEnumMaybe extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputListEnumMaybe',
+      opName: 'InputListEnumMaybe',
     );
   }
 }

@@ -63,7 +63,7 @@ class RequestGetIDOptional extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetIDOptional',
+      opName: 'GetIDOptional',
     );
   }
 }

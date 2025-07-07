@@ -197,7 +197,7 @@ class RequestUpdatePointCoordsNonNull extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'UpdatePointCoordsNonNull',
+      opName: 'UpdatePointCoordsNonNull',
     );
   }
 }

@@ -182,7 +182,7 @@ class RequestInputCustomScalarListInsideInputObject extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputCustomScalarListInsideInputObject',
+      opName: 'InputCustomScalarListInsideInputObject',
     );
   }
 }

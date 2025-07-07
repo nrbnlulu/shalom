@@ -63,7 +63,7 @@ class RequestGetFloat extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetFloat',
+      opName: 'GetFloat',
     );
   }
 }

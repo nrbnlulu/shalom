@@ -197,7 +197,7 @@ class RequestOrderOptWithNullDefaultsRequest extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'OrderOptWithNullDefaultsRequest',
+      opName: 'OrderOptWithNullDefaultsRequest',
     );
   }
 }

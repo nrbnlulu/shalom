@@ -119,7 +119,7 @@ class RequestOptionalArguments extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'OptionalArguments',
+      opName: 'OptionalArguments',
     );
   }
 }

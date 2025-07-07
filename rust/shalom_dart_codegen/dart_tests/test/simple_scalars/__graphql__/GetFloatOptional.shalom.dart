@@ -64,7 +64,7 @@ class RequestGetFloatOptional extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetFloatOptional',
+      opName: 'GetFloatOptional',
     );
   }
 }

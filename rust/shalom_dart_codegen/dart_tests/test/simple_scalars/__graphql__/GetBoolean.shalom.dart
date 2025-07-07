@@ -63,7 +63,7 @@ class RequestGetBoolean extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetBoolean',
+      opName: 'GetBoolean',
     );
   }
 }

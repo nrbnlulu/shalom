@@ -158,7 +158,7 @@ class RequestGetTaskStatusOpt extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetTaskStatusOpt',
+      opName: 'GetTaskStatusOpt',
     );
   }
 }

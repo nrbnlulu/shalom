@@ -207,7 +207,7 @@ class RequestupdatePointWithOptCoords extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'updatePointWithOptCoords',
+      opName: 'updatePointWithOptCoords',
     );
   }
 }

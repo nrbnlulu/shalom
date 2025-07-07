@@ -81,7 +81,7 @@ class RequestInputListEnumInsideInputObject extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputListEnumInsideInputObject',
+      opName: 'InputListEnumInsideInputObject',
     );
   }
 }

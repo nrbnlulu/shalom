@@ -212,7 +212,7 @@ class RequestEnumWithDefaultValue extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'EnumWithDefaultValue',
+      opName: 'EnumWithDefaultValue',
     );
   }
 }

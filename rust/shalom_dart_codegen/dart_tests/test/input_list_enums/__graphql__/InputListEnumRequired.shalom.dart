@@ -73,7 +73,7 @@ class RequestInputListEnumRequired extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputListEnumRequired',
+      opName: 'InputListEnumRequired',
     );
   }
 }

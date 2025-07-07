@@ -169,7 +169,7 @@ class RequestOrderRecursive extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'OrderRecursive',
+      opName: 'OrderRecursive',
     );
   }
 }

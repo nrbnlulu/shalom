@@ -63,7 +63,7 @@ class RequestGetInt extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetInt',
+      opName: 'GetInt',
     );
   }
 }

@@ -172,7 +172,7 @@ class RequestGetSpecificOrder extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetSpecificOrder',
+      opName: 'GetSpecificOrder',
     );
   }
 }

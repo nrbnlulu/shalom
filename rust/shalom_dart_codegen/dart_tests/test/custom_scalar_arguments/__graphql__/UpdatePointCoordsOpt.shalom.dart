@@ -190,7 +190,7 @@ class RequestUpdatePointCoordsOpt extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'UpdatePointCoordsOpt',
+      opName: 'UpdatePointCoordsOpt',
     );
   }
 }

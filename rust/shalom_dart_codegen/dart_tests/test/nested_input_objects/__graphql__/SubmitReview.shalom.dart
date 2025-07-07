@@ -68,7 +68,7 @@ class RequestSubmitReview extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'SubmitReview',
+      opName: 'SubmitReview',
     );
   }
 }

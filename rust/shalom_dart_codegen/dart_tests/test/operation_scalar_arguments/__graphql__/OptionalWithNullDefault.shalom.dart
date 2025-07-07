@@ -169,7 +169,7 @@ class RequestOptionalWithNullDefault extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'OptionalWithNullDefault',
+      opName: 'OptionalWithNullDefault',
     );
   }
 }

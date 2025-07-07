@@ -161,7 +161,7 @@ class RequestInputListObjectsMAybe extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputListObjectsMAybe',
+      opName: 'InputListObjectsMAybe',
     );
   }
 }

@@ -178,7 +178,7 @@ class RequestInputCustomScalarListNullableMaybe extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputCustomScalarListNullableMaybe',
+      opName: 'InputCustomScalarListNullableMaybe',
     );
   }
 }

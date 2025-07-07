@@ -89,7 +89,7 @@ class RequestListOfOptionalScalarsOptional extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'ListOfOptionalScalarsOptional',
+      opName: 'ListOfOptionalScalarsOptional',
     );
   }
 }

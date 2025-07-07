@@ -204,7 +204,7 @@ class RequestEnumRequired extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'EnumRequired',
+      opName: 'EnumRequired',
     );
   }
 }

@@ -169,7 +169,7 @@ class RequestOrderOptRequest extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'OrderOptRequest',
+      opName: 'OrderOptRequest',
     );
   }
 }

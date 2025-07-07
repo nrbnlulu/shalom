@@ -166,7 +166,7 @@ class RequestGetOrder extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetOrder',
+      opName: 'GetOrder',
     );
   }
 }

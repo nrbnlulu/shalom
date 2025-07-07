@@ -138,7 +138,7 @@ class RequestRequiredArguments extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'RequiredArguments',
+      opName: 'RequiredArguments',
     );
   }
 }

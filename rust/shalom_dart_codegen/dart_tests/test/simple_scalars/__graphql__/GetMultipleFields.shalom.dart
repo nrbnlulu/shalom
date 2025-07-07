@@ -79,7 +79,7 @@ class RequestGetMultipleFields extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetMultipleFields',
+      opName: 'GetMultipleFields',
     );
   }
 }

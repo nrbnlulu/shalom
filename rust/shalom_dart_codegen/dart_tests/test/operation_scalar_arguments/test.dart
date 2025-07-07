@@ -13,7 +13,7 @@ void main() {
             variables: RequiredArgumentsVariables(id: "123"),
           ).toRequest();
       expect(req.variables, {"id": "123"});
-      expect(req.StringopName, "RequiredArguments");
+      expect(req.opName, "RequiredArguments");
       expect(req.query, isNotEmpty);
       expect(req.opType, OperationType.Query);
     });
@@ -25,7 +25,7 @@ void main() {
               variables: OptionalArgumentsVariables(id: Some("123")),
             ).toRequest();
         expect(req.variables, {"id": "123"});
-        expect(req.StringopName, "OptionalArguments");
+        expect(req.opName, "OptionalArguments");
         expect(req.query, isNotEmpty);
         expect(req.opType, OperationType.Mutation);
       });
@@ -35,7 +35,7 @@ void main() {
               variables: OptionalArgumentsVariables(id: Some(null)),
             ).toRequest();
         expect(req.variables, {"id": null});
-        expect(req.StringopName, "OptionalArguments");
+        expect(req.opName, "OptionalArguments");
         expect(req.query, isNotEmpty);
         expect(req.opType, OperationType.Mutation);
       });
@@ -45,7 +45,7 @@ void main() {
               variables: OptionalArgumentsVariables(id: None()),
             ).toRequest();
         expect(req.variables, {});
-        expect(req.StringopName, "OptionalArguments");
+        expect(req.opName, "OptionalArguments");
         expect(req.query, isNotEmpty);
         expect(req.opType, OperationType.Mutation);
       });
@@ -58,7 +58,7 @@ void main() {
               variables: OptionalWithNullDefaultVariables(),
             ).toRequest();
         expect(req.variables, {"phone": null});
-        expect(req.StringopName, "OptionalWithNullDefault");
+        expect(req.opName, "OptionalWithNullDefault");
         expect(req.query, isNotEmpty);
         expect(req.opType, OperationType.Mutation);
       });
@@ -68,7 +68,7 @@ void main() {
               variables: OptionalWithNullDefaultVariables(phone: "911"),
             ).toRequest();
         expect(req.variables, {"phone": "911"});
-        expect(req.StringopName, "OptionalWithNullDefault");
+        expect(req.opName, "OptionalWithNullDefault");
         expect(req.query, isNotEmpty);
         expect(req.opType, OperationType.Mutation);
       });
@@ -85,7 +85,7 @@ void main() {
           "is_easy": false,
           "name": "shalom",
         });
-        expect(req.StringopName, "OptionalWithSomeDefault");
+        expect(req.opName, "OptionalWithSomeDefault");
         expect(req.query, isNotEmpty);
         expect(req.opType, OperationType.Query);
       });
@@ -103,7 +103,7 @@ void main() {
           "is_easy": false,
           "name": "shalom",
         });
-        expect(req.StringopName, "OptionalWithSomeDefault");
+        expect(req.opName, "OptionalWithSomeDefault");
         expect(req.query, isNotEmpty);
         expect(req.opType, OperationType.Query);
       });
@@ -121,7 +121,7 @@ void main() {
           "is_easy": null,
           "name": null,
         });
-        expect(req.StringopName, "OptionalWithSomeDefault");
+        expect(req.opName, "OptionalWithSomeDefault");
         expect(req.query, isNotEmpty);
         expect(req.opType, OperationType.Query);
       });

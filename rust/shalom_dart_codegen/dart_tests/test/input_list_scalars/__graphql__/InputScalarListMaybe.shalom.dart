@@ -129,7 +129,7 @@ class RequestInputScalarListMaybe extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputScalarListMaybe',
+      opName: 'InputScalarListMaybe',
     );
   }
 }

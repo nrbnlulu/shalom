@@ -144,7 +144,7 @@ class RequestInputScalarInsideInputType extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputScalarInsideInputType',
+      opName: 'InputScalarInsideInputType',
     );
   }
 }

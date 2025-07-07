@@ -62,7 +62,7 @@ class RequestGetID extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetID',
+      opName: 'GetID',
     );
   }
 }

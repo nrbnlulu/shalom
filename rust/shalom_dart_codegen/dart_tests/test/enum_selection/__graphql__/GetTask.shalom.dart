@@ -136,7 +136,7 @@ class RequestGetTask extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetTask',
+      opName: 'GetTask',
     );
   }
 }

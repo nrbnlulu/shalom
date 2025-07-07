@@ -254,7 +254,7 @@ class RequestGetListingWithUserOpt extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetListingWithUserOpt',
+      opName: 'GetListingWithUserOpt',
     );
   }
 }

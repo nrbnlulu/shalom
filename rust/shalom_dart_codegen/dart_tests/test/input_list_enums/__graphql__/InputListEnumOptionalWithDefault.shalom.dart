@@ -83,7 +83,7 @@ class RequestInputListEnumOptionalWithDefault extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputListEnumOptionalWithDefault',
+      opName: 'InputListEnumOptionalWithDefault',
     );
   }
 }
