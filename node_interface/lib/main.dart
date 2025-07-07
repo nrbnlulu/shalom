@@ -53,6 +53,9 @@ class NodeManager {
       subscribedFields: subscribedFields,
     );
     _subscriberStore.putIfAbsent(nodeId, () => []).add(nodeSubscriber);
+    print(
+      "Number of subscribers for node $nodeId after addition: ${_subscriberStore[nodeId]?.length}",
+    );
   }
 
   void unRegister(Node node) {
@@ -61,6 +64,9 @@ class NodeManager {
     if (subscribers != null) {
       subscribers.removeWhere(
         (subscriber) => subscriber.nodeRef.target == node,
+      );
+      print(
+        "Number of subscribers for node $nodeId after removal: ${subscribers.length}",
       );
     }
   }
@@ -143,6 +149,21 @@ class ApiService {
       print("Error fetching users: $e");
     }
     return [];
+  }
+  static Future<JsonObject> fetchUserById(ID id) async {
+    try {
+      final response = await http.get(
+        Uri.parse('https://reqres.in/api/users/${id}'),
+        headers: {"x-api-key": "reqres-free-v1"},
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return JsonObject.from(data['data']);
+      }
+    } catch (e) {
+      print("Error fetching users: $e");
+    }
+    return {};
   }
 }
 
@@ -228,10 +249,6 @@ class UserNode extends Node {
   }
 }
 
-// =========================================================================
-// SECTION 3: MAIN APPLICATION & UI
-// =========================================================================
-
 void main() {
   runApp(const MyApp());
 }
@@ -242,36 +259,38 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Node Framework Demo (No Provider)',
+      title: 'Node Framework Demo (Master-Detail)',
       theme: ThemeData(
         brightness: Brightness.dark,
         primarySwatch: Colors.teal,
         scaffoldBackgroundColor: const Color(0xFF121212),
         cardColor: const Color(0xFF1E1E1E),
+        dividerColor: Colors.white24,
         useMaterial3: true,
       ),
-      home: const UserListScreen(),
+      // The home is now the new dashboard screen.
+      home: const UserDashboardScreen(),
     );
   }
 }
 
-// --- User List Screen ---
-class UserListScreen extends StatefulWidget {
-  const UserListScreen({super.key});
+/// A screen that holds both the user list (sidebar) and the profile details.
+class UserDashboardScreen extends StatefulWidget {
+  const UserDashboardScreen({super.key});
 
   @override
-  State<UserListScreen> createState() => _UserListScreenState();
+  State<UserDashboardScreen> createState() => _UserDashboardScreenState();
 }
 
-class _UserListScreenState extends State<UserListScreen> {
+class _UserDashboardScreenState extends State<UserDashboardScreen> {
   late final ShalomContext _shalomContext;
   final Map<ID, UserNode> _userNodes = {};
   bool _isLoading = true;
+  UserNode? _selectedUser; // Holds the currently selected user.
 
   @override
   void initState() {
     super.initState();
-    // The ShalomContext is created and owned by this screen.
     _shalomContext = ShalomContext(manager: NodeManager());
     _loadUsers();
   }
@@ -282,123 +301,181 @@ class _UserListScreenState extends State<UserListScreen> {
 
     setState(() {
       for (final json in userData) {
-        // Pass the context to the deserializer.
         final node = UserNode.deserialize(json, _shalomContext);
         _userNodes[node.id] = node;
       }
       _isLoading = false;
+      // Optionally, select the first user by default.
+      if (_userNodes.isNotEmpty) {
+        _selectedUser = _userNodes.values.first;
+      }
     });
   }
 
   void _deleteUser(UserNode nodeToDelete) {
-    // Remove the node from the state map and rebuild the UI.
     setState(() {
       _userNodes.remove(nodeToDelete.id);
+      // If the deleted user was the selected one, clear the selection.
+      if (_selectedUser?.id == nodeToDelete.id) {
+        _selectedUser = null;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Users')),
-      body:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : ListView.builder(
-                itemCount: _userNodes.length,
-                itemBuilder: (context, index) {
-                  final node = _userNodes.values.elementAt(index);
-                  return NodeWidget<UserNode>(
-                    node: node,
-                    builder:
-                        (_, node) => ListTile(
-                          leading: CircleAvatar(
-                            backgroundImage: NetworkImage(node.avatarUrl),
-                          ),
-                          title: Text(node.fullName),
-                          subtitle: Text(node.email),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline, color: Colors.redAccent),
-                            tooltip: 'Delete User',
-                            onPressed: () => _deleteUser(node),
-                          ),
-                          onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                // Pass both the node and the context to the next screen.
-                                builder:
-                                    (_) => UserProfileScreen(
-                                      userNode: node,
-                                      context: _shalomContext,
-                                    ),
-                              ),
-                            );
-                          },
+      appBar: AppBar(title: const Text('User Dashboard')),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : Row(
+              children: [
+                // --- Sidebar (Master View) ---
+                SizedBox(
+                  width: 280,
+                  child: ListView.builder(
+                    itemCount: _userNodes.length,
+                    itemBuilder: (context, index) {
+                      final node = _userNodes.values.elementAt(index);
+                      // Corrected NodeWidget instantiation
+                      return NodeWidget<UserNode>(
+                        node: node,
+                        context: _shalomContext,
+                        builder: (context, node) {
+                          return ListTile(
+                            selected: _selectedUser?.id == node.id,
+                            selectedTileColor: Colors.teal.withOpacity(0.2),
+                            leading: CircleAvatar(
+                              backgroundImage: NetworkImage(node.avatarUrl),
+                            ),
+                            title: Text(node.fullName),
+                            subtitle: Text(node.email),
+                            onTap: () {
+                              setState(() {
+                                _selectedUser = node;
+                              });
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                const VerticalDivider(width: 1),
+
+                // --- Main Content (Detail View) ---
+                Expanded(
+                  child: _selectedUser == null
+                      ? const Center(
+                          child: Text('Select a user from the list'),
+                        )
+                      // Corrected UserProfileDetail instantiation
+                      : UserProfileDetail(
+                          key: ValueKey(_selectedUser!.id),
+                          id: _selectedUser!.id, // Use userNode instead of id
+                          context: _shalomContext,
+                          onDelete: () => _deleteUser(_selectedUser!),
                         ),
-                    context: _shalomContext,
-                  );
-                },
-              ),
+                ),
+              ],
+            ),
     );
-  }
+  } 
 }
 
-// --- User Profile Screen ---
-class UserProfileScreen extends StatelessWidget {
-  final UserNode userNode;
-  final ShalomContext context; // Receives the context via constructor.
+class UserProfileDetail extends StatefulWidget {
+  final ShalomContext context;
+  final VoidCallback onDelete;
+  final ID id;
 
-  const UserProfileScreen({
+  const UserProfileDetail({
     super.key,
-    required this.userNode,
+    required this.id,
     required this.context,
+    required this.onDelete,
   });
+
+  @override
+  State<UserProfileDetail> createState() => _UserProfileDetailState();
+}
+
+
+class _UserProfileDetailState extends State<UserProfileDetail> {
+  late final UserNode userNode;
+  bool _isLoading = true; // State to manage loading
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUser();
+  }
+
+  Future<void> _loadUser() async {
+    // Fetch data using the ID from the widget
+    final userData = await ApiService.fetchUserById(widget.id);
+    if (!mounted) return;
+
+    setState(() {
+      userNode = UserNode.deserialize(userData, widget.context);
+      _isLoading = false; // Turn off loading indicator
+    });
+  }
 
   void _simulateUpdate() {
     final updatedData = userNode.toJson();
-    final randomLastName = "Manual #${Random().nextInt(100)}";
+    final randomLastName = "Updated #${Random().nextInt(100)}";
     updatedData['last_name'] = randomLastName;
 
-    print(
-      "Simulating update for ${userNode.id}: new last name '$randomLastName'",
-    );
-    // Use the passed-in context.
-    context.manager.parseNodeData(updatedData);
+    print("Simulating update for ${userNode.id}: new last name '$randomLastName'");
+    widget.context.manager.parseNodeData(updatedData);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('User Profile')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            NodeWidget<UserNode>(
-              node: userNode,
-              // Pass the ShalomContext down to the NodeWidget.
-              // Use `this.context` to avoid conflict with the BuildContext.
-              context: this.context,
-              builder:
-                  (_, node) => ProfileHeader(
-                    avatarUrl: node.avatarUrl,
-                    fullName: node.fullName,
-                  ),
+    // Show a loading indicator while data is being fetched
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // Once loaded, build the profile UI
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NodeWidget<UserNode>(
+            node: userNode,
+            context: widget.context,
+            builder: (_, node) => ProfileHeader(
+              avatarUrl: node.avatarUrl,
+              fullName: node.fullName,
             ),
-            const SizedBox(height: 24),
-            NodeWidget<UserNode>(
-              node: userNode,
-              context: this.context,
-              builder: (_, node) => ContactInfoCard(email: node.email),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _simulateUpdate,
-        tooltip: 'Simulate Last Name Change',
-        child: const Icon(Icons.sync),
+          ),
+          const SizedBox(height: 24),
+          NodeWidget<UserNode>(
+            node: userNode,
+            context: widget.context,
+            builder: (_, node) => ContactInfoCard(email: node.email),
+          ),
+          const Spacer(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TextButton.icon(
+                icon: const Icon(Icons.sync),
+                label: const Text('Simulate Update'),
+                onPressed: _simulateUpdate,
+              ),
+              const SizedBox(width: 16),
+              TextButton.icon(
+                style: TextButton.styleFrom(foregroundColor: Colors.redAccent),
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Delete User'),
+                onPressed: widget.onDelete,
+              ),
+            ],
+          )
+        ],
       ),
     );
   }
@@ -418,6 +495,7 @@ class ProfileHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     print("Building ProfileHeader for $fullName");
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         CircleAvatar(radius: 50, backgroundImage: NetworkImage(avatarUrl)),
         const SizedBox(height: 16),
