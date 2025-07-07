@@ -28,6 +28,7 @@
     - [ ] oneOf
     - [ ] list of
         - [x] scalar
+        - [ ] custom scalar
         - [x] object
         - [x] enum
         - [ ] oneOf  
