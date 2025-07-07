@@ -8,6 +8,15 @@ class Point {
 
   @override
   String toString() => 'Point(x: $x, y: $y)';
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is Point && other.x == x && other.y == y);
+  }
+
+  @override
+  int get hashCode => Object.hash(x, y);
 }
 
 class _PointScalarImpl implements CustomScalarImpl<Point> {
