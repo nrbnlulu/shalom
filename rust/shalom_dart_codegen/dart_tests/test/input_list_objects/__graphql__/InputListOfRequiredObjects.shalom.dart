@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -17,17 +18,13 @@ class InputListOfRequiredObjectsResponse {
   static InputListOfRequiredObjectsResponse fromJson(JsonObject data) {
     final InputListOfRequiredObjects_InputListOfRequiredObjects?
     InputListOfRequiredObjects_value;
-
-    final JsonObject? InputListOfRequiredObjects$raw =
-        data['InputListOfRequiredObjects'];
-    if (InputListOfRequiredObjects$raw != null) {
-      InputListOfRequiredObjects_value =
-          InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
-            InputListOfRequiredObjects$raw,
-          );
-    } else {
-      InputListOfRequiredObjects_value = null;
-    }
+    final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
+    InputListOfRequiredObjects_value =
+        InputListOfRequiredObjects$raw == null
+            ? null
+            : InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
+              InputListOfRequiredObjects$raw,
+            );
 
     return InputListOfRequiredObjectsResponse(
       InputListOfRequiredObjects: InputListOfRequiredObjects_value,
@@ -38,16 +35,13 @@ class InputListOfRequiredObjectsResponse {
     final InputListOfRequiredObjects_InputListOfRequiredObjects?
     InputListOfRequiredObjects_value;
     if (data.containsKey('InputListOfRequiredObjects')) {
-      final JsonObject? InputListOfRequiredObjects$raw =
-          data['InputListOfRequiredObjects'];
-      if (InputListOfRequiredObjects$raw != null) {
-        InputListOfRequiredObjects_value =
-            InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
-              InputListOfRequiredObjects$raw,
-            );
-      } else {
-        InputListOfRequiredObjects_value = null;
-      }
+      final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
+      InputListOfRequiredObjects_value =
+          InputListOfRequiredObjects$raw == null
+              ? null
+              : InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
+                InputListOfRequiredObjects$raw,
+              );
     } else {
       InputListOfRequiredObjects_value = InputListOfRequiredObjects;
     }
@@ -68,7 +62,9 @@ class InputListOfRequiredObjectsResponse {
   int get hashCode => InputListOfRequiredObjects.hashCode;
 
   JsonObject toJson() {
-    return {'InputListOfRequiredObjects': InputListOfRequiredObjects?.toJson()};
+    return {
+      'InputListOfRequiredObjects': this.InputListOfRequiredObjects?.toJson(),
+    };
   }
 }
 
@@ -91,12 +87,12 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
     JsonObject data,
   ) {
     final bool success_value;
-
-    success_value = data['success'];
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
 
     final String? message_value;
-
-    message_value = data['message'];
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
 
     return InputListOfRequiredObjects_InputListOfRequiredObjects(
       success: success_value,
@@ -110,14 +106,16 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
   ) {
     final bool success_value;
     if (data.containsKey('success')) {
-      success_value = data['success'];
+      final success$raw = data["success"];
+      success_value = success$raw as bool;
     } else {
       success_value = success;
     }
 
     final String? message_value;
     if (data.containsKey('message')) {
-      message_value = data['message'];
+      final message$raw = data["message"];
+      message_value = message$raw as String?;
     } else {
       message_value = message;
     }
@@ -141,7 +139,7 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
   int get hashCode => Object.hashAll([success, message]);
 
   JsonObject toJson() {
-    return {'success': success, 'message': message};
+    return {'success': this.success, 'message': this.message};
   }
 }
 
@@ -165,7 +163,7 @@ class RequestInputListOfRequiredObjects extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputListOfRequiredObjects',
+      opName: 'InputListOfRequiredObjects',
     );
   }
 }

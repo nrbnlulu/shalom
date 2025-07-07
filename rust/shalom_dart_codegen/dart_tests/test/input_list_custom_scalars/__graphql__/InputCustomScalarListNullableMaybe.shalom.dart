@@ -1,9 +1,10 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -20,17 +21,14 @@ class InputCustomScalarListNullableMaybeResponse {
   static InputCustomScalarListNullableMaybeResponse fromJson(JsonObject data) {
     final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
     InputCustomScalarListNullableMaybe_value;
-
-    final JsonObject? InputCustomScalarListNullableMaybe$raw =
-        data['InputCustomScalarListNullableMaybe'];
-    if (InputCustomScalarListNullableMaybe$raw != null) {
-      InputCustomScalarListNullableMaybe_value =
-          InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
-            InputCustomScalarListNullableMaybe$raw,
-          );
-    } else {
-      InputCustomScalarListNullableMaybe_value = null;
-    }
+    final InputCustomScalarListNullableMaybe$raw =
+        data["InputCustomScalarListNullableMaybe"];
+    InputCustomScalarListNullableMaybe_value =
+        InputCustomScalarListNullableMaybe$raw == null
+            ? null
+            : InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
+              InputCustomScalarListNullableMaybe$raw,
+            );
 
     return InputCustomScalarListNullableMaybeResponse(
       InputCustomScalarListNullableMaybe:
@@ -42,16 +40,14 @@ class InputCustomScalarListNullableMaybeResponse {
     final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
     InputCustomScalarListNullableMaybe_value;
     if (data.containsKey('InputCustomScalarListNullableMaybe')) {
-      final JsonObject? InputCustomScalarListNullableMaybe$raw =
-          data['InputCustomScalarListNullableMaybe'];
-      if (InputCustomScalarListNullableMaybe$raw != null) {
-        InputCustomScalarListNullableMaybe_value =
-            InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
-              InputCustomScalarListNullableMaybe$raw,
-            );
-      } else {
-        InputCustomScalarListNullableMaybe_value = null;
-      }
+      final InputCustomScalarListNullableMaybe$raw =
+          data["InputCustomScalarListNullableMaybe"];
+      InputCustomScalarListNullableMaybe_value =
+          InputCustomScalarListNullableMaybe$raw == null
+              ? null
+              : InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
+                InputCustomScalarListNullableMaybe$raw,
+              );
     } else {
       InputCustomScalarListNullableMaybe_value =
           InputCustomScalarListNullableMaybe;
@@ -77,7 +73,7 @@ class InputCustomScalarListNullableMaybeResponse {
   JsonObject toJson() {
     return {
       'InputCustomScalarListNullableMaybe':
-          InputCustomScalarListNullableMaybe?.toJson(),
+          this.InputCustomScalarListNullableMaybe?.toJson(),
     };
   }
 }
@@ -100,12 +96,12 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
   static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
   fromJson(JsonObject data) {
     final bool success_value;
-
-    success_value = data['success'];
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
 
     final String? message_value;
-
-    message_value = data['message'];
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
 
     return InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe(
       success: success_value,
@@ -118,14 +114,16 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
   updateWithJson(JsonObject data) {
     final bool success_value;
     if (data.containsKey('success')) {
-      success_value = data['success'];
+      final success$raw = data["success"];
+      success_value = success$raw as bool;
     } else {
       success_value = success;
     }
 
     final String? message_value;
     if (data.containsKey('message')) {
-      message_value = data['message'];
+      final message$raw = data["message"];
+      message_value = message$raw as String?;
     } else {
       message_value = message;
     }
@@ -150,7 +148,7 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
   int get hashCode => Object.hashAll([success, message]);
 
   JsonObject toJson() {
-    return {'success': success, 'message': message};
+    return {'success': this.success, 'message': this.message};
   }
 }
 
@@ -174,7 +172,7 @@ class RequestInputCustomScalarListNullableMaybe extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputCustomScalarListNullableMaybe',
+      opName: 'InputCustomScalarListNullableMaybe',
     );
   }
 }

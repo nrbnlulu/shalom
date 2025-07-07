@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -17,17 +18,13 @@ class InputScalarInsideInputTypeResponse {
   static InputScalarInsideInputTypeResponse fromJson(JsonObject data) {
     final InputScalarInsideInputType_InputScalarInsideInputType?
     InputScalarInsideInputType_value;
-
-    final JsonObject? InputScalarInsideInputType$raw =
-        data['InputScalarInsideInputType'];
-    if (InputScalarInsideInputType$raw != null) {
-      InputScalarInsideInputType_value =
-          InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
-            InputScalarInsideInputType$raw,
-          );
-    } else {
-      InputScalarInsideInputType_value = null;
-    }
+    final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
+    InputScalarInsideInputType_value =
+        InputScalarInsideInputType$raw == null
+            ? null
+            : InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
+              InputScalarInsideInputType$raw,
+            );
 
     return InputScalarInsideInputTypeResponse(
       InputScalarInsideInputType: InputScalarInsideInputType_value,
@@ -38,16 +35,13 @@ class InputScalarInsideInputTypeResponse {
     final InputScalarInsideInputType_InputScalarInsideInputType?
     InputScalarInsideInputType_value;
     if (data.containsKey('InputScalarInsideInputType')) {
-      final JsonObject? InputScalarInsideInputType$raw =
-          data['InputScalarInsideInputType'];
-      if (InputScalarInsideInputType$raw != null) {
-        InputScalarInsideInputType_value =
-            InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
-              InputScalarInsideInputType$raw,
-            );
-      } else {
-        InputScalarInsideInputType_value = null;
-      }
+      final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
+      InputScalarInsideInputType_value =
+          InputScalarInsideInputType$raw == null
+              ? null
+              : InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
+                InputScalarInsideInputType$raw,
+              );
     } else {
       InputScalarInsideInputType_value = InputScalarInsideInputType;
     }
@@ -68,7 +62,9 @@ class InputScalarInsideInputTypeResponse {
   int get hashCode => InputScalarInsideInputType.hashCode;
 
   JsonObject toJson() {
-    return {'InputScalarInsideInputType': InputScalarInsideInputType?.toJson()};
+    return {
+      'InputScalarInsideInputType': this.InputScalarInsideInputType?.toJson(),
+    };
   }
 }
 
@@ -87,8 +83,8 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
     JsonObject data,
   ) {
     final bool success_value;
-
-    success_value = data['success'];
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
 
     return InputScalarInsideInputType_InputScalarInsideInputType(
       success: success_value,
@@ -100,7 +96,8 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
   ) {
     final bool success_value;
     if (data.containsKey('success')) {
-      success_value = data['success'];
+      final success$raw = data["success"];
+      success_value = success$raw as bool;
     } else {
       success_value = success;
     }
@@ -121,7 +118,7 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
   int get hashCode => success.hashCode;
 
   JsonObject toJson() {
-    return {'success': success};
+    return {'success': this.success};
   }
 }
 
@@ -143,7 +140,7 @@ class RequestInputScalarInsideInputType extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputScalarInsideInputType',
+      opName: 'InputScalarInsideInputType',
     );
   }
 }

@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,8 +16,8 @@ class GetIntResponse {
   GetIntResponse({required this.intField});
   static GetIntResponse fromJson(JsonObject data) {
     final int intField_value;
-
-    intField_value = data['intField'];
+    final intField$raw = data["intField"];
+    intField_value = intField$raw as int;
 
     return GetIntResponse(intField: intField_value);
   }
@@ -24,7 +25,8 @@ class GetIntResponse {
   GetIntResponse updateWithJson(JsonObject data) {
     final int intField_value;
     if (data.containsKey('intField')) {
-      intField_value = data['intField'];
+      final intField$raw = data["intField"];
+      intField_value = intField$raw as int;
     } else {
       intField_value = intField;
     }
@@ -42,7 +44,7 @@ class GetIntResponse {
   int get hashCode => intField.hashCode;
 
   JsonObject toJson() {
-    return {'intField': intField};
+    return {'intField': this.intField};
   }
 }
 
@@ -62,7 +64,7 @@ class RequestGetInt extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetInt',
+      opName: 'GetInt',
     );
   }
 }

@@ -11,7 +11,7 @@
 - [ ] unions
 - [ ] fragments
 - [ ] list of
-    - [ ] scalars
+    - [x] scalars
     - [ ] custom scalars
     - [ ] objects
     - [ ] enums

@@ -1,5 +1,97 @@
 {% include "macros" %}
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+
+{# Recursive macro for deserializing selection values #}
+{% macro _deserialize_selection_value_macro(value_symbol, selection, is_optional=false) %}
+    {% if selection.kind == "Scalar" %}
+        {% if selection.is_custom_scalar %}
+            {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
+            {% if is_optional %}
+                {{ value_symbol }} == null ? null : {{ scalar_impl }}.deserialize({{ value_symbol }})
+            {% else %}
+                {{ scalar_impl }}.deserialize({{ value_symbol }})
+            {% endif %}
+        {% else %}
+            {% if is_optional %}
+                {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
+            {% else %}
+                {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}
+            {% endif %}
+        {% endif %}
+    {% elif selection.kind == "Object" %}
+        {% if is_optional %}
+            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJson({{ value_symbol }})
+        {% else %}
+            {{ selection.full_name }}.fromJson({{ value_symbol }})
+        {% endif %}
+    {% elif selection.kind == "Enum" %}
+        {% set typename = selection.concrete_type.name %}
+        {% if is_optional %}
+            {{ value_symbol }} == null ? null : {{ typename }}.fromString({{ value_symbol }})
+        {% else %}
+            {{ typename }}.fromString({{ value_symbol }})
+        {% endif %}
+    {% elif selection.kind == "List" %}
+        {% set inner_selection = selection.of_kind %}
+        {% if is_optional %}
+            {{ value_symbol }} == null ? null : ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_value_macro("e", inner_selection, false) }}).toList()
+        {% else %}
+            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_value_macro("e", inner_selection, false) }}).toList()
+        {% endif %}
+    {% else %}
+        {% if is_optional %}
+            {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
+        {% else %}
+            {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
+{# Recursive macro for serializing selection values #}
+{% macro _serialize_selection_value_macro(value_symbol, selection, is_optional=false) %}
+    {% if selection.kind == "Scalar" %}
+        {% if selection.is_custom_scalar %}
+            {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
+            {% if is_optional %}
+                {{ value_symbol }} == null ? null : {{ scalar_impl }}.serialize({{ value_symbol }}!)
+            {% else %}
+                {{ scalar_impl }}.serialize({{ value_symbol }})
+            {% endif %}
+        {% else %}
+            {{ value_symbol }}
+        {% endif %}
+    {% elif selection.kind == "Object" %}
+        {% if is_optional %}
+            {{ value_symbol }}?.toJson()
+        {% else %}
+            {{ value_symbol }}.toJson()
+        {% endif %}
+    {% elif selection.kind == "Enum" %}
+        {% if is_optional %}
+            {{ value_symbol }}?.name
+        {% else %}
+            {{ value_symbol }}.name
+        {% endif %}
+    {% elif selection.kind == "List" %}
+        {% set inner_selection = selection.of_kind %}
+        {% if is_optional %}
+            {{ value_symbol }}?.map((e) => {{ _serialize_selection_value_macro("e", inner_selection, false) }}).toList()
+        {% else %}
+            {{ value_symbol }}.map((e) => {{ _serialize_selection_value_macro("e", inner_selection, false) }}).toList()
+        {% endif %}
+    {% else %}
+        {{ value_symbol }}
+    {% endif %}
+{% endmacro %}
+
+{# Recursive macro for equality comparison #}
+{% macro _equality_comparison_macro(field_symbol, selection, other_symbol) %}
+    {% if selection.kind == "List" %}
+        const ListEquality().equals({{ other_symbol }}.{{ field_symbol }}, {{ field_symbol }})
+    {% else %}
+        {{ other_symbol }}.{{ field_symbol }} == {{ field_symbol }}
+    {% endif %}
+{% endmacro %}
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 {% for path, namespace_alias in extra_imports | items -%}
@@ -7,6 +99,7 @@ import '{{path}}' as {{ namespace_alias }};
 {% endfor %}
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 
 {% set operation_name = operation.context.operation_name %}
@@ -14,15 +107,7 @@ import 'package:shalom_core/shalom_core.dart';
     /// class members
     {% for selection in selections -%}
         {% set selection_name = selection.name %}
-        {% if selection.kind == "Object" %}
-            final {{ type_name_for_selection(selection) }} {{ selection_name }};
-        {% elif selection.kind == "Scalar" %}
-            final {{ type_name_for_selection(selection) }} {{ selection_name }};
-        {% elif selection.kind == "Enum" %}
-            final {{ type_name_for_selection(selection) }} {{ selection_name }};
-        {% else %}
-            throw NotImplemented();
-        {% endif %}
+        final {{ type_name_for_selection(selection) }} {{ selection_name }};
     {% endfor %}
     // keywordargs constructor
     {{ typename }}({
@@ -34,55 +119,10 @@ import 'package:shalom_core/shalom_core.dart';
     static {{ typename }} fromJson(JsonObject data) {
     {% for selection in selections -%}
         {% set selection_name = selection.name %}
-        {% if selection.kind == "Object" %}
-            final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
-            {% if selection.is_optional %}
-                final JsonObject? {{ selection_name }}$raw = data['{{ selection_name }}']; 
-                if ({{ selection_name }}$raw != null) {
-                    {{ selection_name }}_value = {{ selection.full_name }}.fromJson({{ selection_name }}$raw);
-                } else {
-                    {{ selection_name }}_value = null;
-                }
-            {% else %}
-                {{ selection_name }}_value = {{ selection.full_name }}.fromJson(data['{{ selection_name }}']);            
-            {% endif %}
-       {% elif selection.kind == "Scalar" %}
-           final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
-           {% if selection.is_custom_scalar %}
-               {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
-               {{ selection_name }}_value = data['{{ selection_name }}'] == null
-                 ? null
-                 : {{ scalar_impl }}.deserialize(data['{{ selection_name }}']);
-           {% else %}
-               {% if selection.kind == "List" %}
-                   {% if selection.is_optional %}
-                       {{ selection_name }}_value = data['{{ selection_name }}'] == null
-                           ? null
-                           : (data['{{ selection_name }}'] as List).cast<{{ get_list_cast_type(selection) }}>();
-                   {% else %}
-                       {{ selection_name }}_value = (data['{{ selection_name }}'] as List).cast<{{ get_list_cast_type(selection) }}>();
-                   {% endif %}
-               {% else %}
-                   {{ selection_name }}_value = data['{{ selection_name }}'];
-               {% endif %}
-           {% endif %}
-
-        {% elif selection.kind == "Enum" %}
-            {% set typename = selection.concrete_type.name %}
-            final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
-            {% if selection.is_optional %}
-                final String? {{ selection_name }}$raw = data['{{ selection_name }}'];
-                if ({{ selection_name }}$raw != null) {
-                    {{ selection_name }}_value = {{ typename }}.fromString({{ selection_name }}$raw);
-                } else {
-                    {{ selection_name }}_value = null;
-                }
-            {% else %}
-                {{ selection_name }}_value = {{ typename }}.fromString(data['{{ selection_name }}']);
-            {% endif %}
-        {% else %}
-            throw NotImplemented();
-        {% endif %}
+        {% set selection_typename = type_name_for_selection(selection) %}
+        final {{ selection_typename }} {{ selection_name }}_value;
+        final {{selection_name}}$raw = data["{{ selection_name }}"];
+        {{ selection_name }}_value = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
     {% endfor %}
     return {{ typename }}(
     {% for selection in selections %}
@@ -93,59 +133,15 @@ import 'package:shalom_core/shalom_core.dart';
     }
     {{ typename }} updateWithJson(JsonObject data) {
     {% for selection in selections -%}
+        {% set selection_typename = type_name_for_selection(selection) %}
         {% set selection_name = selection.name %}
-        {% if selection.kind == "Object" %}
-        final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
+        final {{ selection_typename }} {{ selection_name }}_value;
         if (data.containsKey('{{ selection_name }}')) {
-            {% if selection.is_optional %}
-                final JsonObject? {{ selection_name }}$raw = data['{{ selection_name }}'];
-                if ({{ selection_name }}$raw != null) {
-                    {{ selection_name }}_value = {{ selection.full_name }}.fromJson({{ selection_name }}$raw);
-                } else {
-                    {{ selection_name }}_value = null;
-                }
-            {% else %}
-                {{ selection_name }}_value = {{ selection.full_name }}.fromJson(data['{{ selection_name }}']);
-            {% endif %}
+            final {{selection_name}}$raw = data["{{ selection_name }}"];
+            {{ selection_name }}_value = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
         } else {
             {{ selection_name }}_value = {{ selection_name }};
         }
-
-    {% elif selection.kind == "Scalar" %}
-    final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
-    if (data.containsKey('{{ selection_name }}')) {
-        {% if selection.is_custom_scalar %}
-            {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
-            {{ selection_name }}_value = data['{{ selection_name }}'] == null
-                ? null
-                : {{ scalar_impl }}.deserialize(data['{{ selection_name }}']);
-        {% else %}
-            {{ selection_name }}_value = data['{{ selection_name }}'];
-        {% endif %}
-    } else {
-        {{ selection_name }}_value = {{ selection_name }};
-    }
-
-        {% elif selection.kind == "Enum" %}
-            {% set typename = selection.concrete_type.name %}
-            final {{ type_name_for_selection(selection) }} {{ selection_name }}_value;
-            if (data.containsKey('{{ selection_name }}')) {
-                {% if selection.is_optional %}
-                    final String? {{ selection_name }}$raw = data['{{ selection_name }}'];
-                    if ({{ selection_name }}$raw != null) {
-                        {{ selection_name }}_value = {{ typename }}.fromString({{ selection_name }}$raw);
-                    } else {
-                        {{ selection_name }}_value = null;
-                    }
-                {% else %}
-                    {{ selection_name }}_value = {{ typename }}.fromString(data['{{ selection_name }}']);
-                {% endif %}
-            } else {
-                {{ selection_name }}_value = {{ selection_name }};
-            }
-        {% else %}
-            throw NotImplemented();
-        {% endif %}
     {% endfor %}
     return {{ typename }}(
     {% for selection in selections %}
@@ -160,7 +156,7 @@ import 'package:shalom_core/shalom_core.dart';
     (other is {{ typename }} &&
     {% for selection in selections -%}
         {% set selection_name = selection.name %}
-        other.{{ selection_name }} == {{ selection_name }} {{ "&&"|if_not_last(loop.last) }}
+        {{ _equality_comparison_macro(selection_name, selection, "other") }} {{ "&&"|if_not_last(loop.last) }}
     {% endfor %}
     );
     }
@@ -181,19 +177,10 @@ import 'package:shalom_core/shalom_core.dart';
     {% for selection in selections %}
         {% set selection_name = selection.name %}
         '{{ selection_name }}':
-            {% if selection.kind == "Object" %}
-                {{ selection_name }}{% if selection.is_optional %}?{% endif %}.toJson()
-            {% elif selection.kind == "Scalar" %}
-                {% if selection.is_custom_scalar %}
-                    {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
-                    {{ selection_name }} == null ? null : {{ scalar_impl }}.serialize({{ selection_name }}!)
-                {% else %}
-                    {{ selection_name }}
-                {% endif %}
-            {% elif selection.kind == "Enum" %}
-                {{ selection_name }}{% if selection.is_optional %}?{% endif %}.name
+            {% if selection.is_optional %}
+                {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}
             {% else %}
-                throw NotImplemented();
+                {{ _serialize_selection_value_macro("this." + selection_name, selection, false) }}
             {% endif %}
         ,
     {% endfor %}
@@ -229,7 +216,7 @@ class Request{{ operation_name }} extends Requestable {
         {% if op_variables | length > 0 %}
         {
             required this.variables,
-        } 
+        }
         {% endif %}
     );
 
@@ -237,10 +224,10 @@ class Request{{ operation_name }} extends Requestable {
     Request toRequest() {
         JsonObject variablesJson = {% if op_variables | length > 0 %} variables.toJson() {% else %} {}  {% endif %};
         return Request(
-            query: r"""{{ operation.context.query }}""", 
-            variables: variablesJson, 
-            opType: OperationType.{{ operation.context.op_ty.name }}, 
-            StringopName: '{{ operation_name }}'
+            query: r"""{{ operation.context.query }}""",
+            variables: variablesJson,
+            opType: OperationType.{{ operation.context.op_ty.name }},
+            opName: '{{ operation_name }}'
         );
     }
 }
@@ -255,16 +242,16 @@ class {{ operation_name }}Variables {
     {{ typename }} (
         {% if op_variables | length > 0 %}
             {
-            {{ field_initialization_logic(op_variables) }} 
+            {{ field_initialization_logic(op_variables) }}
             }
         {% endif %}
     );
 
     JsonObject toJson() {
         JsonObject data = {};
-        {{ toJson_macro(op_variables) }}    
+        {{ toJson_macro(op_variables) }}
         return data;
-    } 
+    }
 
     {{ updateWith_macro(op_variables, typename) }}
 

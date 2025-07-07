@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,13 +16,11 @@ class OptionalArgumentsResponse {
   OptionalArgumentsResponse({this.updateUser});
   static OptionalArgumentsResponse fromJson(JsonObject data) {
     final OptionalArguments_updateUser? updateUser_value;
-
-    final JsonObject? updateUser$raw = data['updateUser'];
-    if (updateUser$raw != null) {
-      updateUser_value = OptionalArguments_updateUser.fromJson(updateUser$raw);
-    } else {
-      updateUser_value = null;
-    }
+    final updateUser$raw = data["updateUser"];
+    updateUser_value =
+        updateUser$raw == null
+            ? null
+            : OptionalArguments_updateUser.fromJson(updateUser$raw);
 
     return OptionalArgumentsResponse(updateUser: updateUser_value);
   }
@@ -29,14 +28,11 @@ class OptionalArgumentsResponse {
   OptionalArgumentsResponse updateWithJson(JsonObject data) {
     final OptionalArguments_updateUser? updateUser_value;
     if (data.containsKey('updateUser')) {
-      final JsonObject? updateUser$raw = data['updateUser'];
-      if (updateUser$raw != null) {
-        updateUser_value = OptionalArguments_updateUser.fromJson(
-          updateUser$raw,
-        );
-      } else {
-        updateUser_value = null;
-      }
+      final updateUser$raw = data["updateUser"];
+      updateUser_value =
+          updateUser$raw == null
+              ? null
+              : OptionalArguments_updateUser.fromJson(updateUser$raw);
     } else {
       updateUser_value = updateUser;
     }
@@ -54,7 +50,7 @@ class OptionalArgumentsResponse {
   int get hashCode => updateUser.hashCode;
 
   JsonObject toJson() {
-    return {'updateUser': updateUser?.toJson()};
+    return {'updateUser': this.updateUser?.toJson()};
   }
 }
 
@@ -69,8 +65,8 @@ class OptionalArguments_updateUser {
   OptionalArguments_updateUser({this.name});
   static OptionalArguments_updateUser fromJson(JsonObject data) {
     final String? name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
 
     return OptionalArguments_updateUser(name: name_value);
   }
@@ -78,7 +74,8 @@ class OptionalArguments_updateUser {
   OptionalArguments_updateUser updateWithJson(JsonObject data) {
     final String? name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String?;
     } else {
       name_value = name;
     }
@@ -96,7 +93,7 @@ class OptionalArguments_updateUser {
   int get hashCode => name.hashCode;
 
   JsonObject toJson() {
-    return {'name': name};
+    return {'name': this.name};
   }
 }
 
@@ -118,7 +115,7 @@ class RequestOptionalArguments extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'OptionalArguments',
+      opName: 'OptionalArguments',
     );
   }
 }

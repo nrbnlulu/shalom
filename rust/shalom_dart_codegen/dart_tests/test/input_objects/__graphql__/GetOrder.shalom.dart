@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,13 +16,9 @@ class GetOrderResponse {
   GetOrderResponse({this.getOrder});
   static GetOrderResponse fromJson(JsonObject data) {
     final GetOrder_getOrder? getOrder_value;
-
-    final JsonObject? getOrder$raw = data['getOrder'];
-    if (getOrder$raw != null) {
-      getOrder_value = GetOrder_getOrder.fromJson(getOrder$raw);
-    } else {
-      getOrder_value = null;
-    }
+    final getOrder$raw = data["getOrder"];
+    getOrder_value =
+        getOrder$raw == null ? null : GetOrder_getOrder.fromJson(getOrder$raw);
 
     return GetOrderResponse(getOrder: getOrder_value);
   }
@@ -29,12 +26,11 @@ class GetOrderResponse {
   GetOrderResponse updateWithJson(JsonObject data) {
     final GetOrder_getOrder? getOrder_value;
     if (data.containsKey('getOrder')) {
-      final JsonObject? getOrder$raw = data['getOrder'];
-      if (getOrder$raw != null) {
-        getOrder_value = GetOrder_getOrder.fromJson(getOrder$raw);
-      } else {
-        getOrder_value = null;
-      }
+      final getOrder$raw = data["getOrder"];
+      getOrder_value =
+          getOrder$raw == null
+              ? null
+              : GetOrder_getOrder.fromJson(getOrder$raw);
     } else {
       getOrder_value = getOrder;
     }
@@ -52,7 +48,7 @@ class GetOrderResponse {
   int get hashCode => getOrder.hashCode;
 
   JsonObject toJson() {
-    return {'getOrder': getOrder?.toJson()};
+    return {'getOrder': this.getOrder?.toJson()};
   }
 }
 
@@ -71,16 +67,16 @@ class GetOrder_getOrder {
   GetOrder_getOrder({this.quantity, this.name, this.price});
   static GetOrder_getOrder fromJson(JsonObject data) {
     final int? quantity_value;
-
-    quantity_value = data['quantity'];
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int?;
 
     final String? name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
 
     final double? price_value;
-
-    price_value = data['price'];
+    final price$raw = data["price"];
+    price_value = price$raw as double?;
 
     return GetOrder_getOrder(
       quantity: quantity_value,
@@ -94,21 +90,24 @@ class GetOrder_getOrder {
   GetOrder_getOrder updateWithJson(JsonObject data) {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
-      quantity_value = data['quantity'];
+      final quantity$raw = data["quantity"];
+      quantity_value = quantity$raw as int?;
     } else {
       quantity_value = quantity;
     }
 
     final String? name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String?;
     } else {
       name_value = name;
     }
 
     final double? price_value;
     if (data.containsKey('price')) {
-      price_value = data['price'];
+      final price$raw = data["price"];
+      price_value = price$raw as double?;
     } else {
       price_value = price;
     }
@@ -135,7 +134,7 @@ class GetOrder_getOrder {
   int get hashCode => Object.hashAll([quantity, name, price]);
 
   JsonObject toJson() {
-    return {'quantity': quantity, 'name': name, 'price': price};
+    return {'quantity': this.quantity, 'name': this.name, 'price': this.price};
   }
 }
 
@@ -159,7 +158,7 @@ class RequestGetOrder extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Query,
-      StringopName: 'GetOrder',
+      opName: 'GetOrder',
     );
   }
 }

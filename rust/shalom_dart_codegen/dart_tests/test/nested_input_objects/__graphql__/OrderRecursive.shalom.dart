@@ -1,8 +1,9 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -15,15 +16,11 @@ class OrderRecursiveResponse {
   OrderRecursiveResponse({this.orderRecursive});
   static OrderRecursiveResponse fromJson(JsonObject data) {
     final OrderRecursive_orderRecursive? orderRecursive_value;
-
-    final JsonObject? orderRecursive$raw = data['orderRecursive'];
-    if (orderRecursive$raw != null) {
-      orderRecursive_value = OrderRecursive_orderRecursive.fromJson(
-        orderRecursive$raw,
-      );
-    } else {
-      orderRecursive_value = null;
-    }
+    final orderRecursive$raw = data["orderRecursive"];
+    orderRecursive_value =
+        orderRecursive$raw == null
+            ? null
+            : OrderRecursive_orderRecursive.fromJson(orderRecursive$raw);
 
     return OrderRecursiveResponse(orderRecursive: orderRecursive_value);
   }
@@ -31,14 +28,11 @@ class OrderRecursiveResponse {
   OrderRecursiveResponse updateWithJson(JsonObject data) {
     final OrderRecursive_orderRecursive? orderRecursive_value;
     if (data.containsKey('orderRecursive')) {
-      final JsonObject? orderRecursive$raw = data['orderRecursive'];
-      if (orderRecursive$raw != null) {
-        orderRecursive_value = OrderRecursive_orderRecursive.fromJson(
-          orderRecursive$raw,
-        );
-      } else {
-        orderRecursive_value = null;
-      }
+      final orderRecursive$raw = data["orderRecursive"];
+      orderRecursive_value =
+          orderRecursive$raw == null
+              ? null
+              : OrderRecursive_orderRecursive.fromJson(orderRecursive$raw);
     } else {
       orderRecursive_value = orderRecursive;
     }
@@ -57,7 +51,7 @@ class OrderRecursiveResponse {
   int get hashCode => orderRecursive.hashCode;
 
   JsonObject toJson() {
-    return {'orderRecursive': orderRecursive?.toJson()};
+    return {'orderRecursive': this.orderRecursive?.toJson()};
   }
 }
 
@@ -76,16 +70,16 @@ class OrderRecursive_orderRecursive {
   OrderRecursive_orderRecursive({this.quantity, this.name, this.price});
   static OrderRecursive_orderRecursive fromJson(JsonObject data) {
     final int? quantity_value;
-
-    quantity_value = data['quantity'];
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int?;
 
     final String? name_value;
-
-    name_value = data['name'];
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
 
     final double? price_value;
-
-    price_value = data['price'];
+    final price$raw = data["price"];
+    price_value = price$raw as double?;
 
     return OrderRecursive_orderRecursive(
       quantity: quantity_value,
@@ -99,21 +93,24 @@ class OrderRecursive_orderRecursive {
   OrderRecursive_orderRecursive updateWithJson(JsonObject data) {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
-      quantity_value = data['quantity'];
+      final quantity$raw = data["quantity"];
+      quantity_value = quantity$raw as int?;
     } else {
       quantity_value = quantity;
     }
 
     final String? name_value;
     if (data.containsKey('name')) {
-      name_value = data['name'];
+      final name$raw = data["name"];
+      name_value = name$raw as String?;
     } else {
       name_value = name;
     }
 
     final double? price_value;
     if (data.containsKey('price')) {
-      price_value = data['price'];
+      final price$raw = data["price"];
+      price_value = price$raw as double?;
     } else {
       price_value = price;
     }
@@ -140,7 +137,7 @@ class OrderRecursive_orderRecursive {
   int get hashCode => Object.hashAll([quantity, name, price]);
 
   JsonObject toJson() {
-    return {'quantity': quantity, 'name': name, 'price': price};
+    return {'quantity': this.quantity, 'name': this.name, 'price': this.price};
   }
 }
 
@@ -164,7 +161,7 @@ class RequestOrderRecursive extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'OrderRecursive',
+      opName: 'OrderRecursive',
     );
   }
 }

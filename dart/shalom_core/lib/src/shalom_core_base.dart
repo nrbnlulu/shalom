@@ -28,21 +28,17 @@ class Request {
   final String query;
   final JsonObject variables;
   final OperationType opType;
-  final String StringopName;
+  final String opName;
 
   Request({
     required this.query,
     required this.variables,
     required this.opType,
-    required this.StringopName,
+    required this.opName,
   });
 
   JsonObject toJson() {
-    return {
-      "query": query,
-      "variables": variables,
-      "operationName": StringopName,
-    };
+    return {"query": query, "variables": variables, "operationName": opName};
   }
 }
 

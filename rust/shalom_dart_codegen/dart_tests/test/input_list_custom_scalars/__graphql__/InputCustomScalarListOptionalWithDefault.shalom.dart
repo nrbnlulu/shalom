@@ -1,9 +1,10 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
@@ -22,17 +23,14 @@ class InputCustomScalarListOptionalWithDefaultResponse {
   ) {
     final InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault?
     InputCustomScalarListOptionalWithDefault_value;
-
-    final JsonObject? InputCustomScalarListOptionalWithDefault$raw =
-        data['InputCustomScalarListOptionalWithDefault'];
-    if (InputCustomScalarListOptionalWithDefault$raw != null) {
-      InputCustomScalarListOptionalWithDefault_value =
-          InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault.fromJson(
-            InputCustomScalarListOptionalWithDefault$raw,
-          );
-    } else {
-      InputCustomScalarListOptionalWithDefault_value = null;
-    }
+    final InputCustomScalarListOptionalWithDefault$raw =
+        data["InputCustomScalarListOptionalWithDefault"];
+    InputCustomScalarListOptionalWithDefault_value =
+        InputCustomScalarListOptionalWithDefault$raw == null
+            ? null
+            : InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault.fromJson(
+              InputCustomScalarListOptionalWithDefault$raw,
+            );
 
     return InputCustomScalarListOptionalWithDefaultResponse(
       InputCustomScalarListOptionalWithDefault:
@@ -46,16 +44,14 @@ class InputCustomScalarListOptionalWithDefaultResponse {
     final InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault?
     InputCustomScalarListOptionalWithDefault_value;
     if (data.containsKey('InputCustomScalarListOptionalWithDefault')) {
-      final JsonObject? InputCustomScalarListOptionalWithDefault$raw =
-          data['InputCustomScalarListOptionalWithDefault'];
-      if (InputCustomScalarListOptionalWithDefault$raw != null) {
-        InputCustomScalarListOptionalWithDefault_value =
-            InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault.fromJson(
-              InputCustomScalarListOptionalWithDefault$raw,
-            );
-      } else {
-        InputCustomScalarListOptionalWithDefault_value = null;
-      }
+      final InputCustomScalarListOptionalWithDefault$raw =
+          data["InputCustomScalarListOptionalWithDefault"];
+      InputCustomScalarListOptionalWithDefault_value =
+          InputCustomScalarListOptionalWithDefault$raw == null
+              ? null
+              : InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault.fromJson(
+                InputCustomScalarListOptionalWithDefault$raw,
+              );
     } else {
       InputCustomScalarListOptionalWithDefault_value =
           InputCustomScalarListOptionalWithDefault;
@@ -81,7 +77,7 @@ class InputCustomScalarListOptionalWithDefaultResponse {
   JsonObject toJson() {
     return {
       'InputCustomScalarListOptionalWithDefault':
-          InputCustomScalarListOptionalWithDefault?.toJson(),
+          this.InputCustomScalarListOptionalWithDefault?.toJson(),
     };
   }
 }
@@ -104,12 +100,12 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
   static InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault
   fromJson(JsonObject data) {
     final bool success_value;
-
-    success_value = data['success'];
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
 
     final String? message_value;
-
-    message_value = data['message'];
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
 
     return InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault(
       success: success_value,
@@ -122,14 +118,16 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
   updateWithJson(JsonObject data) {
     final bool success_value;
     if (data.containsKey('success')) {
-      success_value = data['success'];
+      final success$raw = data["success"];
+      success_value = success$raw as bool;
     } else {
       success_value = success;
     }
 
     final String? message_value;
     if (data.containsKey('message')) {
-      message_value = data['message'];
+      final message$raw = data["message"];
+      message_value = message$raw as String?;
     } else {
       message_value = message;
     }
@@ -154,7 +152,7 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
   int get hashCode => Object.hashAll([success, message]);
 
   JsonObject toJson() {
-    return {'success': success, 'message': message};
+    return {'success': this.success, 'message': this.message};
   }
 }
 
@@ -178,7 +176,7 @@ class RequestInputCustomScalarListOptionalWithDefault extends Requestable {
 }""",
       variables: variablesJson,
       opType: OperationType.Mutation,
-      StringopName: 'InputCustomScalarListOptionalWithDefault',
+      opName: 'InputCustomScalarListOptionalWithDefault',
     );
   }
 }
