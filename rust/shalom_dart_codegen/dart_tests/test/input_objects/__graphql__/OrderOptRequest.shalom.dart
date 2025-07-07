@@ -17,7 +17,6 @@ class OrderOptRequestResponse {
   static OrderOptRequestResponse fromJson(JsonObject data) {
     final OrderOptRequest_orderOptRequest? orderOptRequest_value;
     final orderOptRequest$raw = data["orderOptRequest"];
-
     orderOptRequest_value =
         orderOptRequest$raw == null
             ? null
@@ -30,7 +29,6 @@ class OrderOptRequestResponse {
     final OrderOptRequest_orderOptRequest? orderOptRequest_value;
     if (data.containsKey('orderOptRequest')) {
       final orderOptRequest$raw = data["orderOptRequest"];
-
       orderOptRequest_value =
           orderOptRequest$raw == null
               ? null
@@ -73,17 +71,14 @@ class OrderOptRequest_orderOptRequest {
   static OrderOptRequest_orderOptRequest fromJson(JsonObject data) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int?;
 
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     final double? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double?;
 
     return OrderOptRequest_orderOptRequest(
@@ -99,7 +94,6 @@ class OrderOptRequest_orderOptRequest {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
       final quantity$raw = data["quantity"];
-
       quantity_value = quantity$raw as int?;
     } else {
       quantity_value = quantity;
@@ -108,7 +102,6 @@ class OrderOptRequest_orderOptRequest {
     final String? name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String?;
     } else {
       name_value = name;
@@ -117,7 +110,6 @@ class OrderOptRequest_orderOptRequest {
     final double? price_value;
     if (data.containsKey('price')) {
       final price$raw = data["price"];
-
       price_value = price$raw as double?;
     } else {
       price_value = price;

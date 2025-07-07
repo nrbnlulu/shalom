@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,8 +16,8 @@ class GetBooleanOptionalResponse {
   GetBooleanOptionalResponse({this.booleanOptional});
   static GetBooleanOptionalResponse fromJson(JsonObject data) {
     final bool? booleanOptional_value;
-
-    booleanOptional_value = data["booleanOptional"] as bool?;
+    final booleanOptional$raw = data["booleanOptional"];
+    booleanOptional_value = booleanOptional$raw as bool?;
 
     return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);
   }
@@ -25,7 +25,8 @@ class GetBooleanOptionalResponse {
   GetBooleanOptionalResponse updateWithJson(JsonObject data) {
     final bool? booleanOptional_value;
     if (data.containsKey('booleanOptional')) {
-      booleanOptional_value = data["booleanOptional"] as bool?;
+      final booleanOptional$raw = data["booleanOptional"];
+      booleanOptional_value = booleanOptional$raw as bool?;
     } else {
       booleanOptional_value = booleanOptional;
     }

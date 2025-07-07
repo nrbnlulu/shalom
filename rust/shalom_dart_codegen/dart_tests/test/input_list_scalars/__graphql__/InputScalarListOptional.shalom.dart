@@ -19,7 +19,6 @@ class InputScalarListOptionalResponse {
     final InputScalarListOptional_InputScalarListOptional?
     InputScalarListOptional_value;
     final InputScalarListOptional$raw = data["InputScalarListOptional"];
-
     InputScalarListOptional_value =
         InputScalarListOptional$raw == null
             ? null
@@ -37,7 +36,6 @@ class InputScalarListOptionalResponse {
     InputScalarListOptional_value;
     if (data.containsKey('InputScalarListOptional')) {
       final InputScalarListOptional$raw = data["InputScalarListOptional"];
-
       InputScalarListOptional_value =
           InputScalarListOptional$raw == null
               ? null
@@ -82,7 +80,6 @@ class InputScalarListOptional_InputScalarListOptional {
   ) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     return InputScalarListOptional_InputScalarListOptional(
@@ -96,7 +93,6 @@ class InputScalarListOptional_InputScalarListOptional {
     final bool success_value;
     if (data.containsKey('success')) {
       final success$raw = data["success"];
-
       success_value = success$raw as bool;
     } else {
       success_value = success;

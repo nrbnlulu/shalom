@@ -20,7 +20,6 @@ class InputCustomScalarListMaybeResponse {
     final InputCustomScalarListMaybe_InputCustomScalarListMaybe?
     InputCustomScalarListMaybe_value;
     final InputCustomScalarListMaybe$raw = data["InputCustomScalarListMaybe"];
-
     InputCustomScalarListMaybe_value =
         InputCustomScalarListMaybe$raw == null
             ? null
@@ -38,7 +37,6 @@ class InputCustomScalarListMaybeResponse {
     InputCustomScalarListMaybe_value;
     if (data.containsKey('InputCustomScalarListMaybe')) {
       final InputCustomScalarListMaybe$raw = data["InputCustomScalarListMaybe"];
-
       InputCustomScalarListMaybe_value =
           InputCustomScalarListMaybe$raw == null
               ? null
@@ -91,12 +89,10 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
   ) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputCustomScalarListMaybe_InputCustomScalarListMaybe(
@@ -112,7 +108,6 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
     final bool success_value;
     if (data.containsKey('success')) {
       final success$raw = data["success"];
-
       success_value = success$raw as bool;
     } else {
       success_value = success;
@@ -121,7 +116,6 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
     final String? message_value;
     if (data.containsKey('message')) {
       final message$raw = data["message"];
-
       message_value = message$raw as String?;
     } else {
       message_value = message;

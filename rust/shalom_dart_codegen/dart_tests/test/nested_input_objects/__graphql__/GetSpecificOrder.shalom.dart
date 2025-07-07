@@ -17,7 +17,6 @@ class GetSpecificOrderResponse {
   static GetSpecificOrderResponse fromJson(JsonObject data) {
     final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
     final getSpecificOrder$raw = data["getSpecificOrder"];
-
     getSpecificOrder_value =
         getSpecificOrder$raw == null
             ? null
@@ -30,7 +29,6 @@ class GetSpecificOrderResponse {
     final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
     if (data.containsKey('getSpecificOrder')) {
       final getSpecificOrder$raw = data["getSpecificOrder"];
-
       getSpecificOrder_value =
           getSpecificOrder$raw == null
               ? null
@@ -75,17 +73,14 @@ class GetSpecificOrder_getSpecificOrder {
   static GetSpecificOrder_getSpecificOrder fromJson(JsonObject data) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int?;
 
     final double? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double?;
 
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     return GetSpecificOrder_getSpecificOrder(
@@ -101,7 +96,6 @@ class GetSpecificOrder_getSpecificOrder {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
       final quantity$raw = data["quantity"];
-
       quantity_value = quantity$raw as int?;
     } else {
       quantity_value = quantity;
@@ -110,7 +104,6 @@ class GetSpecificOrder_getSpecificOrder {
     final double? price_value;
     if (data.containsKey('price')) {
       final price$raw = data["price"];
-
       price_value = price$raw as double?;
     } else {
       price_value = price;
@@ -119,7 +112,6 @@ class GetSpecificOrder_getSpecificOrder {
     final String? name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String?;
     } else {
       name_value = name;

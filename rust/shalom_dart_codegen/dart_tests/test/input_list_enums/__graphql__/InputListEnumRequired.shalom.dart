@@ -17,7 +17,6 @@ class InputListEnumRequiredResponse {
   static InputListEnumRequiredResponse fromJson(JsonObject data) {
     final String? InputListEnumRequired_value;
     final InputListEnumRequired$raw = data["InputListEnumRequired"];
-
     InputListEnumRequired_value = InputListEnumRequired$raw as String?;
 
     return InputListEnumRequiredResponse(
@@ -29,7 +28,6 @@ class InputListEnumRequiredResponse {
     final String? InputListEnumRequired_value;
     if (data.containsKey('InputListEnumRequired')) {
       final InputListEnumRequired$raw = data["InputListEnumRequired"];
-
       InputListEnumRequired_value = InputListEnumRequired$raw as String?;
     } else {
       InputListEnumRequired_value = InputListEnumRequired;

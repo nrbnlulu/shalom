@@ -24,7 +24,6 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
     InputListOfOptionalObjectsWithNullDefault_value;
     final InputListOfOptionalObjectsWithNullDefault$raw =
         data["InputListOfOptionalObjectsWithNullDefault"];
-
     InputListOfOptionalObjectsWithNullDefault_value =
         InputListOfOptionalObjectsWithNullDefault$raw == null
             ? null
@@ -46,7 +45,6 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
     if (data.containsKey('InputListOfOptionalObjectsWithNullDefault')) {
       final InputListOfOptionalObjectsWithNullDefault$raw =
           data["InputListOfOptionalObjectsWithNullDefault"];
-
       InputListOfOptionalObjectsWithNullDefault_value =
           InputListOfOptionalObjectsWithNullDefault$raw == null
               ? null
@@ -102,12 +100,10 @@ class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNu
   fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault(
@@ -122,7 +118,6 @@ class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNu
     final bool success_value;
     if (data.containsKey('success')) {
       final success$raw = data["success"];
-
       success_value = success$raw as bool;
     } else {
       success_value = success;
@@ -131,7 +126,6 @@ class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNu
     final String? message_value;
     if (data.containsKey('message')) {
       final message$raw = data["message"];
-
       message_value = message$raw as String?;
     } else {
       message_value = message;

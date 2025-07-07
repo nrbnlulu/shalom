@@ -20,7 +20,6 @@ class InputListEnumOptionalWithDefaultResponse {
     final String? InputListEnumOptionalWithDefault_value;
     final InputListEnumOptionalWithDefault$raw =
         data["InputListEnumOptionalWithDefault"];
-
     InputListEnumOptionalWithDefault_value =
         InputListEnumOptionalWithDefault$raw as String?;
 
@@ -34,7 +33,6 @@ class InputListEnumOptionalWithDefaultResponse {
     if (data.containsKey('InputListEnumOptionalWithDefault')) {
       final InputListEnumOptionalWithDefault$raw =
           data["InputListEnumOptionalWithDefault"];
-
       InputListEnumOptionalWithDefault_value =
           InputListEnumOptionalWithDefault$raw as String?;
     } else {

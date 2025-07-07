@@ -17,7 +17,6 @@ class OptionalArgumentsResponse {
   static OptionalArgumentsResponse fromJson(JsonObject data) {
     final OptionalArguments_updateUser? updateUser_value;
     final updateUser$raw = data["updateUser"];
-
     updateUser_value =
         updateUser$raw == null
             ? null
@@ -30,7 +29,6 @@ class OptionalArgumentsResponse {
     final OptionalArguments_updateUser? updateUser_value;
     if (data.containsKey('updateUser')) {
       final updateUser$raw = data["updateUser"];
-
       updateUser_value =
           updateUser$raw == null
               ? null
@@ -68,7 +66,6 @@ class OptionalArguments_updateUser {
   static OptionalArguments_updateUser fromJson(JsonObject data) {
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     return OptionalArguments_updateUser(name: name_value);
@@ -78,7 +75,6 @@ class OptionalArguments_updateUser {
     final String? name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String?;
     } else {
       name_value = name;

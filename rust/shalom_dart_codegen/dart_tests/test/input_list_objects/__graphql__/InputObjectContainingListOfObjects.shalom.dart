@@ -22,7 +22,6 @@ class InputObjectContainingListOfObjectsResponse {
     InputObjectContainingListOfObjects_value;
     final InputObjectContainingListOfObjects$raw =
         data["InputObjectContainingListOfObjects"];
-
     InputObjectContainingListOfObjects_value =
         InputObjectContainingListOfObjects$raw == null
             ? null
@@ -42,7 +41,6 @@ class InputObjectContainingListOfObjectsResponse {
     if (data.containsKey('InputObjectContainingListOfObjects')) {
       final InputObjectContainingListOfObjects$raw =
           data["InputObjectContainingListOfObjects"];
-
       InputObjectContainingListOfObjects_value =
           InputObjectContainingListOfObjects$raw == null
               ? null
@@ -98,12 +96,10 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
   fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputObjectContainingListOfObjects_InputObjectContainingListOfObjects(
@@ -118,7 +114,6 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
     final bool success_value;
     if (data.containsKey('success')) {
       final success$raw = data["success"];
-
       success_value = success$raw as bool;
     } else {
       success_value = success;
@@ -127,7 +122,6 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
     final String? message_value;
     if (data.containsKey('message')) {
       final message$raw = data["message"];
-
       message_value = message$raw as String?;
     } else {
       message_value = message;

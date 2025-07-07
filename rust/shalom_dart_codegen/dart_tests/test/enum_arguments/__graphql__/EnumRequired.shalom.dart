@@ -17,7 +17,6 @@ class EnumRequiredResponse {
   static EnumRequiredResponse fromJson(JsonObject data) {
     final EnumRequired_updateOrderStatus? updateOrderStatus_value;
     final updateOrderStatus$raw = data["updateOrderStatus"];
-
     updateOrderStatus_value =
         updateOrderStatus$raw == null
             ? null
@@ -30,7 +29,6 @@ class EnumRequiredResponse {
     final EnumRequired_updateOrderStatus? updateOrderStatus_value;
     if (data.containsKey('updateOrderStatus')) {
       final updateOrderStatus$raw = data["updateOrderStatus"];
-
       updateOrderStatus_value =
           updateOrderStatus$raw == null
               ? null
@@ -80,22 +78,18 @@ class EnumRequired_updateOrderStatus {
   static EnumRequired_updateOrderStatus fromJson(JsonObject data) {
     final Status? status_value;
     final status$raw = data["status"];
-
     status_value = status$raw == null ? null : Status.fromString(status$raw);
 
     final int quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final double price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double;
 
     return EnumRequired_updateOrderStatus(
@@ -113,7 +107,6 @@ class EnumRequired_updateOrderStatus {
     final Status? status_value;
     if (data.containsKey('status')) {
       final status$raw = data["status"];
-
       status_value = status$raw == null ? null : Status.fromString(status$raw);
     } else {
       status_value = status;
@@ -122,7 +115,6 @@ class EnumRequired_updateOrderStatus {
     final int quantity_value;
     if (data.containsKey('quantity')) {
       final quantity$raw = data["quantity"];
-
       quantity_value = quantity$raw as int;
     } else {
       quantity_value = quantity;
@@ -131,7 +123,6 @@ class EnumRequired_updateOrderStatus {
     final String name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String;
     } else {
       name_value = name;
@@ -140,7 +131,6 @@ class EnumRequired_updateOrderStatus {
     final double price_value;
     if (data.containsKey('price')) {
       final price$raw = data["price"];
-
       price_value = price$raw as double;
     } else {
       price_value = price;

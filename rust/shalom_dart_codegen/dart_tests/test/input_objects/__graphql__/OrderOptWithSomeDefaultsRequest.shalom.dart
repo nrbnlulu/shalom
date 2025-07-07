@@ -22,7 +22,6 @@ class OrderOptWithSomeDefaultsRequestResponse {
     orderOptWithSomeDefaultsRequest_value;
     final orderOptWithSomeDefaultsRequest$raw =
         data["orderOptWithSomeDefaultsRequest"];
-
     orderOptWithSomeDefaultsRequest_value =
         orderOptWithSomeDefaultsRequest$raw == null
             ? null
@@ -41,7 +40,6 @@ class OrderOptWithSomeDefaultsRequestResponse {
     if (data.containsKey('orderOptWithSomeDefaultsRequest')) {
       final orderOptWithSomeDefaultsRequest$raw =
           data["orderOptWithSomeDefaultsRequest"];
-
       orderOptWithSomeDefaultsRequest_value =
           orderOptWithSomeDefaultsRequest$raw == null
               ? null
@@ -99,17 +97,14 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
   fromJson(JsonObject data) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int?;
 
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     final double? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double?;
 
     return OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest(
@@ -126,7 +121,6 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
       final quantity$raw = data["quantity"];
-
       quantity_value = quantity$raw as int?;
     } else {
       quantity_value = quantity;
@@ -135,7 +129,6 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
     final String? name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String?;
     } else {
       name_value = name;
@@ -144,7 +137,6 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
     final double? price_value;
     if (data.containsKey('price')) {
       final price$raw = data["price"];
-
       price_value = price$raw as double?;
     } else {
       price_value = price;

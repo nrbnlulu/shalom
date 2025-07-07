@@ -17,7 +17,6 @@ class OrderRecursiveResponse {
   static OrderRecursiveResponse fromJson(JsonObject data) {
     final OrderRecursive_orderRecursive? orderRecursive_value;
     final orderRecursive$raw = data["orderRecursive"];
-
     orderRecursive_value =
         orderRecursive$raw == null
             ? null
@@ -30,7 +29,6 @@ class OrderRecursiveResponse {
     final OrderRecursive_orderRecursive? orderRecursive_value;
     if (data.containsKey('orderRecursive')) {
       final orderRecursive$raw = data["orderRecursive"];
-
       orderRecursive_value =
           orderRecursive$raw == null
               ? null
@@ -73,17 +71,14 @@ class OrderRecursive_orderRecursive {
   static OrderRecursive_orderRecursive fromJson(JsonObject data) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int?;
 
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     final double? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double?;
 
     return OrderRecursive_orderRecursive(
@@ -99,7 +94,6 @@ class OrderRecursive_orderRecursive {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
       final quantity$raw = data["quantity"];
-
       quantity_value = quantity$raw as int?;
     } else {
       quantity_value = quantity;
@@ -108,7 +102,6 @@ class OrderRecursive_orderRecursive {
     final String? name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String?;
     } else {
       name_value = name;
@@ -117,7 +110,6 @@ class OrderRecursive_orderRecursive {
     final double? price_value;
     if (data.containsKey('price')) {
       final price$raw = data["price"];
-
       price_value = price$raw as double?;
     } else {
       price_value = price;

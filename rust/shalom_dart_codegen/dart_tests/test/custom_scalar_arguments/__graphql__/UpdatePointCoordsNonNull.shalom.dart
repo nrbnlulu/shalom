@@ -18,7 +18,6 @@ class UpdatePointCoordsNonNullResponse {
   static UpdatePointCoordsNonNullResponse fromJson(JsonObject data) {
     final UpdatePointCoordsNonNull_updatePointCoords? updatePointCoords_value;
     final updatePointCoords$raw = data["updatePointCoords"];
-
     updatePointCoords_value =
         updatePointCoords$raw == null
             ? null
@@ -35,7 +34,6 @@ class UpdatePointCoordsNonNullResponse {
     final UpdatePointCoordsNonNull_updatePointCoords? updatePointCoords_value;
     if (data.containsKey('updatePointCoords')) {
       final updatePointCoords$raw = data["updatePointCoords"];
-
       updatePointCoords_value =
           updatePointCoords$raw == null
               ? null
@@ -86,7 +84,6 @@ class UpdatePointCoordsNonNull_updatePointCoords {
   static UpdatePointCoordsNonNull_updatePointCoords fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-
     coords_value =
         coords$raw == null
             ? null
@@ -94,12 +91,10 @@ class UpdatePointCoordsNonNull_updatePointCoords {
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     return UpdatePointCoordsNonNull_updatePointCoords(
@@ -115,7 +110,6 @@ class UpdatePointCoordsNonNull_updatePointCoords {
     final rmhlxei.Point? coords_value;
     if (data.containsKey('coords')) {
       final coords$raw = data["coords"];
-
       coords_value =
           coords$raw == null
               ? null
@@ -127,7 +121,6 @@ class UpdatePointCoordsNonNull_updatePointCoords {
     final String name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String;
     } else {
       name_value = name;
@@ -136,7 +129,6 @@ class UpdatePointCoordsNonNull_updatePointCoords {
     final String id_value;
     if (data.containsKey('id')) {
       final id$raw = data["id"];
-
       id_value = id$raw as String;
     } else {
       id_value = id;

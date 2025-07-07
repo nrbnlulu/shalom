@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,11 +16,11 @@ class GetListingOptWithUserResponse {
   GetListingOptWithUserResponse({this.listingOpt});
   static GetListingOptWithUserResponse fromJson(JsonObject data) {
     final GetListingOptWithUser_listingOpt? listingOpt_value;
-
+    final listingOpt$raw = data["listingOpt"];
     listingOpt_value =
-        data["listingOpt"] == null
+        listingOpt$raw == null
             ? null
-            : GetListingOptWithUser_listingOpt.fromJson(data["listingOpt"]);
+            : GetListingOptWithUser_listingOpt.fromJson(listingOpt$raw);
 
     return GetListingOptWithUserResponse(listingOpt: listingOpt_value);
   }
@@ -28,10 +28,11 @@ class GetListingOptWithUserResponse {
   GetListingOptWithUserResponse updateWithJson(JsonObject data) {
     final GetListingOptWithUser_listingOpt? listingOpt_value;
     if (data.containsKey('listingOpt')) {
+      final listingOpt$raw = data["listingOpt"];
       listingOpt_value =
-          data["listingOpt"] == null
+          listingOpt$raw == null
               ? null
-              : GetListingOptWithUser_listingOpt.fromJson(data["listingOpt"]);
+              : GetListingOptWithUser_listingOpt.fromJson(listingOpt$raw);
     } else {
       listingOpt_value = listingOpt;
     }
@@ -77,20 +78,20 @@ class GetListingOptWithUser_listingOpt {
   });
   static GetListingOptWithUser_listingOpt fromJson(JsonObject data) {
     final String id_value;
-
-    id_value = data["id"] as String;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
 
     final String name_value;
-
-    name_value = data["name"] as String;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
 
     final int? price_value;
-
-    price_value = data["price"] as int?;
+    final price$raw = data["price"];
+    price_value = price$raw as int?;
 
     final GetListingOptWithUser_listingOpt_user user_value;
-
-    user_value = GetListingOptWithUser_listingOpt_user.fromJson(data["user"]);
+    final user$raw = data["user"];
+    user_value = GetListingOptWithUser_listingOpt_user.fromJson(user$raw);
 
     return GetListingOptWithUser_listingOpt(
       id: id_value,
@@ -106,28 +107,32 @@ class GetListingOptWithUser_listingOpt {
   GetListingOptWithUser_listingOpt updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data["id"] as String;
+      final id$raw = data["id"];
+      id_value = id$raw as String;
     } else {
       id_value = id;
     }
 
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data["name"] as String;
+      final name$raw = data["name"];
+      name_value = name$raw as String;
     } else {
       name_value = name;
     }
 
     final int? price_value;
     if (data.containsKey('price')) {
-      price_value = data["price"] as int?;
+      final price$raw = data["price"];
+      price_value = price$raw as int?;
     } else {
       price_value = price;
     }
 
     final GetListingOptWithUser_listingOpt_user user_value;
     if (data.containsKey('user')) {
-      user_value = GetListingOptWithUser_listingOpt_user.fromJson(data["user"]);
+      final user$raw = data["user"];
+      user_value = GetListingOptWithUser_listingOpt_user.fromJson(user$raw);
     } else {
       user_value = user;
     }
@@ -190,20 +195,20 @@ class GetListingOptWithUser_listingOpt_user {
   });
   static GetListingOptWithUser_listingOpt_user fromJson(JsonObject data) {
     final String id_value;
-
-    id_value = data["id"] as String;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
 
     final String name_value;
-
-    name_value = data["name"] as String;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
 
     final String email_value;
-
-    email_value = data["email"] as String;
+    final email$raw = data["email"];
+    email_value = email$raw as String;
 
     final int? age_value;
-
-    age_value = data["age"] as int?;
+    final age$raw = data["age"];
+    age_value = age$raw as int?;
 
     return GetListingOptWithUser_listingOpt_user(
       id: id_value,
@@ -219,28 +224,32 @@ class GetListingOptWithUser_listingOpt_user {
   GetListingOptWithUser_listingOpt_user updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data["id"] as String;
+      final id$raw = data["id"];
+      id_value = id$raw as String;
     } else {
       id_value = id;
     }
 
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data["name"] as String;
+      final name$raw = data["name"];
+      name_value = name$raw as String;
     } else {
       name_value = name;
     }
 
     final String email_value;
     if (data.containsKey('email')) {
-      email_value = data["email"] as String;
+      final email$raw = data["email"];
+      email_value = email$raw as String;
     } else {
       email_value = email;
     }
 
     final int? age_value;
     if (data.containsKey('age')) {
-      age_value = data["age"] as int?;
+      final age$raw = data["age"];
+      age_value = age$raw as int?;
     } else {
       age_value = age;
     }

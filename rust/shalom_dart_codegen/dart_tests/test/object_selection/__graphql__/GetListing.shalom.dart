@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,8 +16,8 @@ class GetListingResponse {
   GetListingResponse({required this.listing});
   static GetListingResponse fromJson(JsonObject data) {
     final GetListing_listing listing_value;
-
-    listing_value = GetListing_listing.fromJson(data["listing"]);
+    final listing$raw = data["listing"];
+    listing_value = GetListing_listing.fromJson(listing$raw);
 
     return GetListingResponse(listing: listing_value);
   }
@@ -25,7 +25,8 @@ class GetListingResponse {
   GetListingResponse updateWithJson(JsonObject data) {
     final GetListing_listing listing_value;
     if (data.containsKey('listing')) {
-      listing_value = GetListing_listing.fromJson(data["listing"]);
+      final listing$raw = data["listing"];
+      listing_value = GetListing_listing.fromJson(listing$raw);
     } else {
       listing_value = listing;
     }
@@ -62,16 +63,16 @@ class GetListing_listing {
   GetListing_listing({required this.id, required this.name, this.price});
   static GetListing_listing fromJson(JsonObject data) {
     final String id_value;
-
-    id_value = data["id"] as String;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
 
     final String name_value;
-
-    name_value = data["name"] as String;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
 
     final int? price_value;
-
-    price_value = data["price"] as int?;
+    final price$raw = data["price"];
+    price_value = price$raw as int?;
 
     return GetListing_listing(
       id: id_value,
@@ -85,21 +86,24 @@ class GetListing_listing {
   GetListing_listing updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data["id"] as String;
+      final id$raw = data["id"];
+      id_value = id$raw as String;
     } else {
       id_value = id;
     }
 
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data["name"] as String;
+      final name$raw = data["name"];
+      name_value = name$raw as String;
     } else {
       name_value = name;
     }
 
     final int? price_value;
     if (data.containsKey('price')) {
-      price_value = data["price"] as int?;
+      final price$raw = data["price"];
+      price_value = price$raw as int?;
     } else {
       price_value = price;
     }

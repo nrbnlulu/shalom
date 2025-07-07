@@ -23,7 +23,6 @@ class UpdatePointWithInputCoordsMaybeResponse {
     updatePointWithInputCoordsMaybe_value;
     final updatePointWithInputCoordsMaybe$raw =
         data["updatePointWithInputCoordsMaybe"];
-
     updatePointWithInputCoordsMaybe_value =
         updatePointWithInputCoordsMaybe$raw == null
             ? null
@@ -42,7 +41,6 @@ class UpdatePointWithInputCoordsMaybeResponse {
     if (data.containsKey('updatePointWithInputCoordsMaybe')) {
       final updatePointWithInputCoordsMaybe$raw =
           data["updatePointWithInputCoordsMaybe"];
-
       updatePointWithInputCoordsMaybe_value =
           updatePointWithInputCoordsMaybe$raw == null
               ? null
@@ -98,7 +96,6 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
   fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-
     coords_value =
         coords$raw == null
             ? null
@@ -106,12 +103,10 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     return UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe(
@@ -128,7 +123,6 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
     final rmhlxei.Point? coords_value;
     if (data.containsKey('coords')) {
       final coords$raw = data["coords"];
-
       coords_value =
           coords$raw == null
               ? null
@@ -140,7 +134,6 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
     final String name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String;
     } else {
       name_value = name;
@@ -149,7 +142,6 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
     final String id_value;
     if (data.containsKey('id')) {
       final id$raw = data["id"];
-
       id_value = id$raw as String;
     } else {
       id_value = id;

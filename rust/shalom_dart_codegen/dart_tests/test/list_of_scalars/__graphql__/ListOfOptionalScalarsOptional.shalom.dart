@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -18,7 +18,6 @@ class ListOfOptionalScalarsOptionalResponse {
     final List<int>? listOfOptionalScalarsOptional_value;
     final listOfOptionalScalarsOptional$raw =
         data["listOfOptionalScalarsOptional"];
-
     listOfOptionalScalarsOptional_value =
         listOfOptionalScalarsOptional$raw == null
             ? null
@@ -36,7 +35,6 @@ class ListOfOptionalScalarsOptionalResponse {
     if (data.containsKey('listOfOptionalScalarsOptional')) {
       final listOfOptionalScalarsOptional$raw =
           data["listOfOptionalScalarsOptional"];
-
       listOfOptionalScalarsOptional_value =
           listOfOptionalScalarsOptional$raw == null
               ? null

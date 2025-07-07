@@ -19,7 +19,6 @@ class InputScalarListRequiredResponse {
     final InputScalarListRequired_InputScalarListRequired?
     InputScalarListRequired_value;
     final InputScalarListRequired$raw = data["InputScalarListRequired"];
-
     InputScalarListRequired_value =
         InputScalarListRequired$raw == null
             ? null
@@ -37,7 +36,6 @@ class InputScalarListRequiredResponse {
     InputScalarListRequired_value;
     if (data.containsKey('InputScalarListRequired')) {
       final InputScalarListRequired$raw = data["InputScalarListRequired"];
-
       InputScalarListRequired_value =
           InputScalarListRequired$raw == null
               ? null
@@ -82,7 +80,6 @@ class InputScalarListRequired_InputScalarListRequired {
   ) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     return InputScalarListRequired_InputScalarListRequired(
@@ -96,7 +93,6 @@ class InputScalarListRequired_InputScalarListRequired {
     final bool success_value;
     if (data.containsKey('success')) {
       final success$raw = data["success"];
-
       success_value = success$raw as bool;
     } else {
       success_value = success;

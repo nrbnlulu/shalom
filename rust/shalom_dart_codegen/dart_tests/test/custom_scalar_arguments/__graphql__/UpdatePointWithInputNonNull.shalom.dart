@@ -19,7 +19,6 @@ class UpdatePointWithInputNonNullResponse {
     final UpdatePointWithInputNonNull_updatePointWithInput?
     updatePointWithInput_value;
     final updatePointWithInput$raw = data["updatePointWithInput"];
-
     updatePointWithInput_value =
         updatePointWithInput$raw == null
             ? null
@@ -37,7 +36,6 @@ class UpdatePointWithInputNonNullResponse {
     updatePointWithInput_value;
     if (data.containsKey('updatePointWithInput')) {
       final updatePointWithInput$raw = data["updatePointWithInput"];
-
       updatePointWithInput_value =
           updatePointWithInput$raw == null
               ? null
@@ -90,7 +88,6 @@ class UpdatePointWithInputNonNull_updatePointWithInput {
   ) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-
     coords_value =
         coords$raw == null
             ? null
@@ -98,12 +95,10 @@ class UpdatePointWithInputNonNull_updatePointWithInput {
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     return UpdatePointWithInputNonNull_updatePointWithInput(
@@ -121,7 +116,6 @@ class UpdatePointWithInputNonNull_updatePointWithInput {
     final rmhlxei.Point? coords_value;
     if (data.containsKey('coords')) {
       final coords$raw = data["coords"];
-
       coords_value =
           coords$raw == null
               ? null
@@ -133,7 +127,6 @@ class UpdatePointWithInputNonNull_updatePointWithInput {
     final String name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String;
     } else {
       name_value = name;
@@ -142,7 +135,6 @@ class UpdatePointWithInputNonNull_updatePointWithInput {
     final String id_value;
     if (data.containsKey('id')) {
       final id$raw = data["id"];
-
       id_value = id$raw as String;
     } else {
       id_value = id;

@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,8 +16,8 @@ class GetTaskResponse {
   GetTaskResponse({required this.task});
   static GetTaskResponse fromJson(JsonObject data) {
     final GetTask_task task_value;
-
-    task_value = GetTask_task.fromJson(data["task"]);
+    final task$raw = data["task"];
+    task_value = GetTask_task.fromJson(task$raw);
 
     return GetTaskResponse(task: task_value);
   }
@@ -25,7 +25,8 @@ class GetTaskResponse {
   GetTaskResponse updateWithJson(JsonObject data) {
     final GetTask_task task_value;
     if (data.containsKey('task')) {
-      task_value = GetTask_task.fromJson(data["task"]);
+      final task$raw = data["task"];
+      task_value = GetTask_task.fromJson(task$raw);
     } else {
       task_value = task;
     }
@@ -62,16 +63,16 @@ class GetTask_task {
   GetTask_task({required this.id, required this.name, required this.status});
   static GetTask_task fromJson(JsonObject data) {
     final String id_value;
-
-    id_value = data["id"] as String;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
 
     final String name_value;
-
-    name_value = data["name"] as String;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
 
     final Status status_value;
-
-    status_value = Status.fromString(data["status"]);
+    final status$raw = data["status"];
+    status_value = Status.fromString(status$raw);
 
     return GetTask_task(id: id_value, name: name_value, status: status_value);
   }
@@ -79,21 +80,24 @@ class GetTask_task {
   GetTask_task updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data["id"] as String;
+      final id$raw = data["id"];
+      id_value = id$raw as String;
     } else {
       id_value = id;
     }
 
     final String name_value;
     if (data.containsKey('name')) {
-      name_value = data["name"] as String;
+      final name$raw = data["name"];
+      name_value = name$raw as String;
     } else {
       name_value = name;
     }
 
     final Status status_value;
     if (data.containsKey('status')) {
-      status_value = Status.fromString(data["status"]);
+      final status$raw = data["status"];
+      status_value = Status.fromString(status$raw);
     } else {
       status_value = status;
     }

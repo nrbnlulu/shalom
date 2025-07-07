@@ -19,7 +19,6 @@ class UpdatePointCoordsMaybeResponse {
     final UpdatePointCoordsMaybe_updatePointCoordsMaybe?
     updatePointCoordsMaybe_value;
     final updatePointCoordsMaybe$raw = data["updatePointCoordsMaybe"];
-
     updatePointCoordsMaybe_value =
         updatePointCoordsMaybe$raw == null
             ? null
@@ -37,7 +36,6 @@ class UpdatePointCoordsMaybeResponse {
     updatePointCoordsMaybe_value;
     if (data.containsKey('updatePointCoordsMaybe')) {
       final updatePointCoordsMaybe$raw = data["updatePointCoordsMaybe"];
-
       updatePointCoordsMaybe_value =
           updatePointCoordsMaybe$raw == null
               ? null
@@ -90,7 +88,6 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
   ) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-
     coords_value =
         coords$raw == null
             ? null
@@ -98,12 +95,10 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     return UpdatePointCoordsMaybe_updatePointCoordsMaybe(
@@ -121,7 +116,6 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
     final rmhlxei.Point? coords_value;
     if (data.containsKey('coords')) {
       final coords$raw = data["coords"];
-
       coords_value =
           coords$raw == null
               ? null
@@ -133,7 +127,6 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
     final String name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String;
     } else {
       name_value = name;
@@ -142,7 +135,6 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
     final String id_value;
     if (data.containsKey('id')) {
       final id$raw = data["id"];
-
       id_value = id$raw as String;
     } else {
       id_value = id;

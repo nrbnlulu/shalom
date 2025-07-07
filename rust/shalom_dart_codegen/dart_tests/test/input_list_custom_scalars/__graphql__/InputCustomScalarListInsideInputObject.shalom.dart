@@ -25,7 +25,6 @@ class InputCustomScalarListInsideInputObjectResponse {
     InputCustomScalarListInsideInputObject_value;
     final InputCustomScalarListInsideInputObject$raw =
         data["InputCustomScalarListInsideInputObject"];
-
     InputCustomScalarListInsideInputObject_value =
         InputCustomScalarListInsideInputObject$raw == null
             ? null
@@ -47,7 +46,6 @@ class InputCustomScalarListInsideInputObjectResponse {
     if (data.containsKey('InputCustomScalarListInsideInputObject')) {
       final InputCustomScalarListInsideInputObject$raw =
           data["InputCustomScalarListInsideInputObject"];
-
       InputCustomScalarListInsideInputObject_value =
           InputCustomScalarListInsideInputObject$raw == null
               ? null
@@ -103,12 +101,10 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
   fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject(
@@ -123,7 +119,6 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
     final bool success_value;
     if (data.containsKey('success')) {
       final success$raw = data["success"];
-
       success_value = success$raw as bool;
     } else {
       success_value = success;
@@ -132,7 +127,6 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
     final String? message_value;
     if (data.containsKey('message')) {
       final message$raw = data["message"];
-
       message_value = message$raw as String?;
     } else {
       message_value = message;

@@ -17,7 +17,6 @@ class InputScalarListMaybeResponse {
   static InputScalarListMaybeResponse fromJson(JsonObject data) {
     final InputScalarListMaybe_InputScalarListMaybe? InputScalarListMaybe_value;
     final InputScalarListMaybe$raw = data["InputScalarListMaybe"];
-
     InputScalarListMaybe_value =
         InputScalarListMaybe$raw == null
             ? null
@@ -34,7 +33,6 @@ class InputScalarListMaybeResponse {
     final InputScalarListMaybe_InputScalarListMaybe? InputScalarListMaybe_value;
     if (data.containsKey('InputScalarListMaybe')) {
       final InputScalarListMaybe$raw = data["InputScalarListMaybe"];
-
       InputScalarListMaybe_value =
           InputScalarListMaybe$raw == null
               ? null
@@ -77,7 +75,6 @@ class InputScalarListMaybe_InputScalarListMaybe {
   static InputScalarListMaybe_InputScalarListMaybe fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     return InputScalarListMaybe_InputScalarListMaybe(success: success_value);
@@ -87,7 +84,6 @@ class InputScalarListMaybe_InputScalarListMaybe {
     final bool success_value;
     if (data.containsKey('success')) {
       final success$raw = data["success"];
-
       success_value = success$raw as bool;
     } else {
       success_value = success;

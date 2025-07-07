@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../point.dart' as uomtoe;
@@ -17,11 +17,11 @@ class GetLocationResponse {
   GetLocationResponse({this.getLocation});
   static GetLocationResponse fromJson(JsonObject data) {
     final GetLocation_getLocation? getLocation_value;
-
+    final getLocation$raw = data["getLocation"];
     getLocation_value =
-        data["getLocation"] == null
+        getLocation$raw == null
             ? null
-            : GetLocation_getLocation.fromJson(data["getLocation"]);
+            : GetLocation_getLocation.fromJson(getLocation$raw);
 
     return GetLocationResponse(getLocation: getLocation_value);
   }
@@ -29,10 +29,11 @@ class GetLocationResponse {
   GetLocationResponse updateWithJson(JsonObject data) {
     final GetLocation_getLocation? getLocation_value;
     if (data.containsKey('getLocation')) {
+      final getLocation$raw = data["getLocation"];
       getLocation_value =
-          data["getLocation"] == null
+          getLocation$raw == null
               ? null
-              : GetLocation_getLocation.fromJson(data["getLocation"]);
+              : GetLocation_getLocation.fromJson(getLocation$raw);
     } else {
       getLocation_value = getLocation;
     }
@@ -67,15 +68,15 @@ class GetLocation_getLocation {
   GetLocation_getLocation({required this.id, this.coords});
   static GetLocation_getLocation fromJson(JsonObject data) {
     final String id_value;
-
-    id_value = data["id"] as String;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
 
     final uomtoe.Point? coords_value;
-
+    final coords$raw = data["coords"];
     coords_value =
-        data["coords"] == null
+        coords$raw == null
             ? null
-            : uomtoe.pointScalarImpl.deserialize(data["coords"]);
+            : uomtoe.pointScalarImpl.deserialize(coords$raw);
 
     return GetLocation_getLocation(id: id_value, coords: coords_value);
   }
@@ -83,17 +84,19 @@ class GetLocation_getLocation {
   GetLocation_getLocation updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
-      id_value = data["id"] as String;
+      final id$raw = data["id"];
+      id_value = id$raw as String;
     } else {
       id_value = id;
     }
 
     final uomtoe.Point? coords_value;
     if (data.containsKey('coords')) {
+      final coords$raw = data["coords"];
       coords_value =
-          data["coords"] == null
+          coords$raw == null
               ? null
-              : uomtoe.pointScalarImpl.deserialize(data["coords"]);
+              : uomtoe.pointScalarImpl.deserialize(coords$raw);
     } else {
       coords_value = coords;
     }

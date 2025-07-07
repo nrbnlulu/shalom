@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,8 +16,8 @@ class GetFloatOptionalResponse {
   GetFloatOptionalResponse({this.floatOptional});
   static GetFloatOptionalResponse fromJson(JsonObject data) {
     final double? floatOptional_value;
-
-    floatOptional_value = data["floatOptional"] as double?;
+    final floatOptional$raw = data["floatOptional"];
+    floatOptional_value = floatOptional$raw as double?;
 
     return GetFloatOptionalResponse(floatOptional: floatOptional_value);
   }
@@ -25,7 +25,8 @@ class GetFloatOptionalResponse {
   GetFloatOptionalResponse updateWithJson(JsonObject data) {
     final double? floatOptional_value;
     if (data.containsKey('floatOptional')) {
-      floatOptional_value = data["floatOptional"] as double?;
+      final floatOptional$raw = data["floatOptional"];
+      floatOptional_value = floatOptional$raw as double?;
     } else {
       floatOptional_value = floatOptional;
     }

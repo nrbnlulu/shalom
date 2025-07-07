@@ -18,7 +18,6 @@ class InputListEnumInsideInputObjectResponse {
     final String? InputListEnumInsideInputObject_value;
     final InputListEnumInsideInputObject$raw =
         data["InputListEnumInsideInputObject"];
-
     InputListEnumInsideInputObject_value =
         InputListEnumInsideInputObject$raw as String?;
 
@@ -32,7 +31,6 @@ class InputListEnumInsideInputObjectResponse {
     if (data.containsKey('InputListEnumInsideInputObject')) {
       final InputListEnumInsideInputObject$raw =
           data["InputListEnumInsideInputObject"];
-
       InputListEnumInsideInputObject_value =
           InputListEnumInsideInputObject$raw as String?;
     } else {

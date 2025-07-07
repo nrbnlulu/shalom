@@ -17,7 +17,6 @@ class RequiredArgumentsResponse {
   static RequiredArgumentsResponse fromJson(JsonObject data) {
     final RequiredArguments_product? product_value;
     final product$raw = data["product"];
-
     product_value =
         product$raw == null
             ? null
@@ -30,7 +29,6 @@ class RequiredArgumentsResponse {
     final RequiredArguments_product? product_value;
     if (data.containsKey('product')) {
       final product$raw = data["product"];
-
       product_value =
           product$raw == null
               ? null
@@ -70,12 +68,10 @@ class RequiredArguments_product {
   static RequiredArguments_product fromJson(JsonObject data) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     return RequiredArguments_product(id: id_value, name: name_value);
@@ -85,7 +81,6 @@ class RequiredArguments_product {
     final String id_value;
     if (data.containsKey('id')) {
       final id$raw = data["id"];
-
       id_value = id$raw as String;
     } else {
       id_value = id;
@@ -94,7 +89,6 @@ class RequiredArguments_product {
     final String name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String;
     } else {
       name_value = name;

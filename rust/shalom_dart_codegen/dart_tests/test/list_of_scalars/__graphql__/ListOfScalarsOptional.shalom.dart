@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -17,7 +17,6 @@ class ListOfScalarsOptionalResponse {
   static ListOfScalarsOptionalResponse fromJson(JsonObject data) {
     final List<String>? listOfScalarsOptional_value;
     final listOfScalarsOptional$raw = data["listOfScalarsOptional"];
-
     listOfScalarsOptional_value =
         listOfScalarsOptional$raw == null
             ? null
@@ -34,7 +33,6 @@ class ListOfScalarsOptionalResponse {
     final List<String>? listOfScalarsOptional_value;
     if (data.containsKey('listOfScalarsOptional')) {
       final listOfScalarsOptional$raw = data["listOfScalarsOptional"];
-
       listOfScalarsOptional_value =
           listOfScalarsOptional$raw == null
               ? null

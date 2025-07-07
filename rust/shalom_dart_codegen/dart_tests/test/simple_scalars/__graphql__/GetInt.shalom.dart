@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,8 +16,8 @@ class GetIntResponse {
   GetIntResponse({required this.intField});
   static GetIntResponse fromJson(JsonObject data) {
     final int intField_value;
-
-    intField_value = data["intField"] as int;
+    final intField$raw = data["intField"];
+    intField_value = intField$raw as int;
 
     return GetIntResponse(intField: intField_value);
   }
@@ -25,7 +25,8 @@ class GetIntResponse {
   GetIntResponse updateWithJson(JsonObject data) {
     final int intField_value;
     if (data.containsKey('intField')) {
-      intField_value = data["intField"] as int;
+      final intField$raw = data["intField"];
+      intField_value = intField$raw as int;
     } else {
       intField_value = intField;
     }

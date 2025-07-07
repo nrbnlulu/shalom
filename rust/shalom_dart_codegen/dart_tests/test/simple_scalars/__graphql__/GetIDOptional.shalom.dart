@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,8 +16,8 @@ class GetIDOptionalResponse {
   GetIDOptionalResponse({this.idOptional});
   static GetIDOptionalResponse fromJson(JsonObject data) {
     final String? idOptional_value;
-
-    idOptional_value = data["idOptional"] as String?;
+    final idOptional$raw = data["idOptional"];
+    idOptional_value = idOptional$raw as String?;
 
     return GetIDOptionalResponse(idOptional: idOptional_value);
   }
@@ -25,7 +25,8 @@ class GetIDOptionalResponse {
   GetIDOptionalResponse updateWithJson(JsonObject data) {
     final String? idOptional_value;
     if (data.containsKey('idOptional')) {
-      idOptional_value = data["idOptional"] as String?;
+      final idOptional$raw = data["idOptional"];
+      idOptional_value = idOptional$raw as String?;
     } else {
       idOptional_value = idOptional;
     }

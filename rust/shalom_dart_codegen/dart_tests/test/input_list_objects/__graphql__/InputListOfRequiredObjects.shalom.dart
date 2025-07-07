@@ -19,7 +19,6 @@ class InputListOfRequiredObjectsResponse {
     final InputListOfRequiredObjects_InputListOfRequiredObjects?
     InputListOfRequiredObjects_value;
     final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
-
     InputListOfRequiredObjects_value =
         InputListOfRequiredObjects$raw == null
             ? null
@@ -37,7 +36,6 @@ class InputListOfRequiredObjectsResponse {
     InputListOfRequiredObjects_value;
     if (data.containsKey('InputListOfRequiredObjects')) {
       final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
-
       InputListOfRequiredObjects_value =
           InputListOfRequiredObjects$raw == null
               ? null
@@ -90,12 +88,10 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
   ) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputListOfRequiredObjects_InputListOfRequiredObjects(
@@ -111,7 +107,6 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
     final bool success_value;
     if (data.containsKey('success')) {
       final success$raw = data["success"];
-
       success_value = success$raw as bool;
     } else {
       success_value = success;
@@ -120,7 +115,6 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
     final String? message_value;
     if (data.containsKey('message')) {
       final message$raw = data["message"];
-
       message_value = message$raw as String?;
     } else {
       message_value = message;

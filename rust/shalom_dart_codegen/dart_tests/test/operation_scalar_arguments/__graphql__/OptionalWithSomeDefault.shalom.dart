@@ -17,7 +17,6 @@ class OptionalWithSomeDefaultResponse {
   static OptionalWithSomeDefaultResponse fromJson(JsonObject data) {
     final OptionalWithSomeDefault_task? task_value;
     final task$raw = data["task"];
-
     task_value =
         task$raw == null
             ? null
@@ -30,7 +29,6 @@ class OptionalWithSomeDefaultResponse {
     final OptionalWithSomeDefault_task? task_value;
     if (data.containsKey('task')) {
       final task$raw = data["task"];
-
       task_value =
           task$raw == null
               ? null
@@ -72,17 +70,14 @@ class OptionalWithSomeDefault_task {
   static OptionalWithSomeDefault_task fromJson(JsonObject data) {
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     final int? duration_value;
     final duration$raw = data["duration"];
-
     duration_value = duration$raw as int?;
 
     final bool? is_easy_value;
     final is_easy$raw = data["is_easy"];
-
     is_easy_value = is_easy$raw as bool?;
 
     return OptionalWithSomeDefault_task(
@@ -98,7 +93,6 @@ class OptionalWithSomeDefault_task {
     final String? name_value;
     if (data.containsKey('name')) {
       final name$raw = data["name"];
-
       name_value = name$raw as String?;
     } else {
       name_value = name;
@@ -107,7 +101,6 @@ class OptionalWithSomeDefault_task {
     final int? duration_value;
     if (data.containsKey('duration')) {
       final duration$raw = data["duration"];
-
       duration_value = duration$raw as int?;
     } else {
       duration_value = duration;
@@ -116,7 +109,6 @@ class OptionalWithSomeDefault_task {
     final bool? is_easy_value;
     if (data.containsKey('is_easy')) {
       final is_easy$raw = data["is_easy"];
-
       is_easy_value = is_easy$raw as bool?;
     } else {
       is_easy_value = is_easy;

@@ -25,7 +25,6 @@ class InputCustomScalarListOptionalWithDefaultResponse {
     InputCustomScalarListOptionalWithDefault_value;
     final InputCustomScalarListOptionalWithDefault$raw =
         data["InputCustomScalarListOptionalWithDefault"];
-
     InputCustomScalarListOptionalWithDefault_value =
         InputCustomScalarListOptionalWithDefault$raw == null
             ? null
@@ -47,7 +46,6 @@ class InputCustomScalarListOptionalWithDefaultResponse {
     if (data.containsKey('InputCustomScalarListOptionalWithDefault')) {
       final InputCustomScalarListOptionalWithDefault$raw =
           data["InputCustomScalarListOptionalWithDefault"];
-
       InputCustomScalarListOptionalWithDefault_value =
           InputCustomScalarListOptionalWithDefault$raw == null
               ? null
@@ -103,12 +101,10 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
   fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault(
@@ -123,7 +119,6 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
     final bool success_value;
     if (data.containsKey('success')) {
       final success$raw = data["success"];
-
       success_value = success$raw as bool;
     } else {
       success_value = success;
@@ -132,7 +127,6 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
     final String? message_value;
     if (data.containsKey('message')) {
       final message$raw = data["message"];
-
       message_value = message$raw as String?;
     } else {
       message_value = message;

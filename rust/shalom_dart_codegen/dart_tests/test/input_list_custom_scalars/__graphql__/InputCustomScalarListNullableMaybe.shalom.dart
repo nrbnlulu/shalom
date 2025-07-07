@@ -23,7 +23,6 @@ class InputCustomScalarListNullableMaybeResponse {
     InputCustomScalarListNullableMaybe_value;
     final InputCustomScalarListNullableMaybe$raw =
         data["InputCustomScalarListNullableMaybe"];
-
     InputCustomScalarListNullableMaybe_value =
         InputCustomScalarListNullableMaybe$raw == null
             ? null
@@ -43,7 +42,6 @@ class InputCustomScalarListNullableMaybeResponse {
     if (data.containsKey('InputCustomScalarListNullableMaybe')) {
       final InputCustomScalarListNullableMaybe$raw =
           data["InputCustomScalarListNullableMaybe"];
-
       InputCustomScalarListNullableMaybe_value =
           InputCustomScalarListNullableMaybe$raw == null
               ? null
@@ -99,12 +97,10 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
   fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe(
@@ -119,7 +115,6 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
     final bool success_value;
     if (data.containsKey('success')) {
       final success$raw = data["success"];
-
       success_value = success$raw as bool;
     } else {
       success_value = success;
@@ -128,7 +123,6 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
     final String? message_value;
     if (data.containsKey('message')) {
       final message$raw = data["message"];
-
       message_value = message$raw as String?;
     } else {
       message_value = message;

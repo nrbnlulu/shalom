@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
@@ -16,8 +16,8 @@ class GetStringResponse {
   GetStringResponse({required this.string});
   static GetStringResponse fromJson(JsonObject data) {
     final String string_value;
-
-    string_value = data["string"] as String;
+    final string$raw = data["string"];
+    string_value = string$raw as String;
 
     return GetStringResponse(string: string_value);
   }
@@ -25,7 +25,8 @@ class GetStringResponse {
   GetStringResponse updateWithJson(JsonObject data) {
     final String string_value;
     if (data.containsKey('string')) {
-      string_value = data["string"] as String;
+      final string$raw = data["string"];
+      string_value = string$raw as String;
     } else {
       string_value = string;
     }

@@ -17,7 +17,6 @@ class InputListEnumMaybeResponse {
   static InputListEnumMaybeResponse fromJson(JsonObject data) {
     final String? InputListEnumMaybe_value;
     final InputListEnumMaybe$raw = data["InputListEnumMaybe"];
-
     InputListEnumMaybe_value = InputListEnumMaybe$raw as String?;
 
     return InputListEnumMaybeResponse(
@@ -29,7 +28,6 @@ class InputListEnumMaybeResponse {
     final String? InputListEnumMaybe_value;
     if (data.containsKey('InputListEnumMaybe')) {
       final InputListEnumMaybe$raw = data["InputListEnumMaybe"];
-
       InputListEnumMaybe_value = InputListEnumMaybe$raw as String?;
     } else {
       InputListEnumMaybe_value = InputListEnumMaybe;

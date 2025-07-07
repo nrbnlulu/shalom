@@ -19,7 +19,6 @@ class InputScalarInsideInputTypeResponse {
     final InputScalarInsideInputType_InputScalarInsideInputType?
     InputScalarInsideInputType_value;
     final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
-
     InputScalarInsideInputType_value =
         InputScalarInsideInputType$raw == null
             ? null
@@ -37,7 +36,6 @@ class InputScalarInsideInputTypeResponse {
     InputScalarInsideInputType_value;
     if (data.containsKey('InputScalarInsideInputType')) {
       final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
-
       InputScalarInsideInputType_value =
           InputScalarInsideInputType$raw == null
               ? null
@@ -86,7 +84,6 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
   ) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     return InputScalarInsideInputType_InputScalarInsideInputType(
@@ -100,7 +97,6 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
     final bool success_value;
     if (data.containsKey('success')) {
       final success$raw = data["success"];
-
       success_value = success$raw as bool;
     } else {
       success_value = success;
