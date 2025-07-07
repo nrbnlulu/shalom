@@ -1,102 +1,259 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 
+
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
+
+
+
 
 typedef JsonObject = Map<String, dynamic>;
 
-class SubmitReviewResponse {
-  /// class members
 
-  final String? submitReview;
 
-  // keywordargs constructor
-  SubmitReviewResponse({this.submitReview});
-  static SubmitReviewResponse fromJson(JsonObject data) {
-    final String? submitReview_value;
 
-    submitReview_value = data['submitReview'];
+class SubmitReviewResponse{
 
-    return SubmitReviewResponse(submitReview: submitReview_value);
-  }
+    /// class members
+    
+        final String? submitReview;
+    
+    // keywordargs constructor
+    SubmitReviewResponse({
+    
+        this.submitReview,
+    
+    });
+    static SubmitReviewResponse fromJson(JsonObject data) {
+    
+        
+        final String? submitReview_value;
+        
+            submitReview_value = 
+    
+        
+            
+                data["submitReview"] as 
+    String
+?
+            
+        
+    
+;
+        
+    
+    return SubmitReviewResponse(
+    
+        
+        submitReview: submitReview_value,
+    
+    );
+    }
+    SubmitReviewResponse updateWithJson(JsonObject data) {
+    
+        
+        final String? submitReview_value;
+        if (data.containsKey('submitReview')) {
+            
+                submitReview_value = 
+    
+        
+            
+                data["submitReview"] as 
+    String
+?
+            
+        
+    
+;
+            
+        } else {
+            submitReview_value = submitReview;
+        }
+    
+    return SubmitReviewResponse(
+    
+        
+        submitReview: submitReview_value,
+    
+    );
+    }
+    @override
+    bool operator ==(Object other) {
+    return identical(this, other) ||
+    (other is SubmitReviewResponse &&
+    
+        
+    
+        other.submitReview == submitReview
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        submitReview.hashCode;
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'submitReview':
+            
+                
+    
+        
+            this.submitReview
+        
+    
 
-  SubmitReviewResponse updateWithJson(JsonObject data) {
-    final String? submitReview_value;
-    if (data.containsKey('submitReview')) {
-      submitReview_value = data['submitReview'];
-    } else {
-      submitReview_value = submitReview;
+            
+        ,
+    
+    };
     }
 
-    return SubmitReviewResponse(submitReview: submitReview_value);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is SubmitReviewResponse && other.submitReview == submitReview);
-  }
-
-  @override
-  int get hashCode => submitReview.hashCode;
-
-  JsonObject toJson() {
-    return {'submitReview': submitReview};
-  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
+
+
 // ------------ END OBJECT DEFINITIONS -------------
 
+
 class RequestSubmitReview extends Requestable {
-  final SubmitReviewVariables variables;
+    
+    final SubmitReviewVariables variables;
+    
 
-  RequestSubmitReview({required this.variables});
+    RequestSubmitReview(
+        
+        {
+            required this.variables,
+        }
+        
+    );
 
-  @override
-  Request toRequest() {
-    JsonObject variablesJson = variables.toJson();
-    return Request(
-      query: r"""mutation SubmitReview($review: Review) {
+    @override
+    Request toRequest() {
+        JsonObject variablesJson =  variables.toJson() ;
+        return Request(
+            query: r"""mutation SubmitReview($review: Review) {
   submitReview(review: $review)
 }""",
-      variables: variablesJson,
-      opType: OperationType.Mutation,
-      StringopName: 'SubmitReview',
-    );
-  }
+            variables: variablesJson,
+            opType: OperationType.Mutation,
+            StringopName: 'SubmitReview'
+        );
+    }
 }
 
+
 class SubmitReviewVariables {
-  final Option<Review?> review;
+    
+    
+        final Option<Review?> review;
+    
 
-  SubmitReviewVariables({this.review = const None()});
+    SubmitReviewVariables (
+        
+            {
+            
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
+        
+            this.review = const None()
+        ,
+    
+    
 
-    if (review.isSome()) {
-      final value = this.review.some();
-      data["review"] = value?.toJson();
+            }
+        
+    );
+
+    JsonObject toJson() {
+        JsonObject data = {};
+        
+
+    
+    
+        if (review.isSome()) {
+            final value = this.review.some();
+            data["review"] = 
+    
+        
+            value?.toJson()
+        
+    
+;
+        }
+    
+
+
+        return data;
     }
 
-    return data;
-  }
-
-  SubmitReviewVariables updateWith({
-    Option<Option<Review?>> review = const None(),
-  }) {
-    final Option<Review?> review$next;
-
-    switch (review) {
-      case Some(value: final updateData):
-        review$next = updateData;
-      case None():
-        review$next = this.review;
+    
+SubmitReviewVariables updateWith(
+    {
+        
+            
+                Option<Option<Review?>> review = const None()
+            
+            
+        
     }
+) {
+    
+        final Option<Review?> review$next;
+        
+            switch (review) {
 
-    return SubmitReviewVariables(review: review$next);
-  }
+                case Some(value: final updateData):
+                    review$next = updateData;
+                case None():
+                    review$next = this.review;
+            }
+
+        
+    
+    return SubmitReviewVariables(
+        
+            review: review$next
+            
+        
+    );
+}
+
+
 }

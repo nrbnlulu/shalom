@@ -1,0 +1,19 @@
+schema {
+  query: Query
+}
+
+type Query {
+  """
+  Returns a list of required scalar values.
+  The list itself cannot be null, and neither can its individual elements.
+  """
+  listOfScalarsRequired: [String!]!
+
+  """
+  Returns a list of optional scalar values.
+  The list itself can be null, and its individual elements can also be null.
+  """
+  listOfScalarsOptional: [String!]
+  
+  listOfOptionalScalarsOptional: [Int]
+}

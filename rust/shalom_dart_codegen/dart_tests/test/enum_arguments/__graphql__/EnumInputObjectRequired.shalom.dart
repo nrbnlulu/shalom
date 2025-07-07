@@ -1,202 +1,474 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion
 
 import "schema.shalom.dart";
 
+
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
+
+
+
 
 typedef JsonObject = Map<String, dynamic>;
 
-class EnumInputObjectRequiredResponse {
-  /// class members
 
-  final EnumInputObjectRequired_updateOrder? updateOrder;
 
-  // keywordargs constructor
-  EnumInputObjectRequiredResponse({this.updateOrder});
-  static EnumInputObjectRequiredResponse fromJson(JsonObject data) {
-    final EnumInputObjectRequired_updateOrder? updateOrder_value;
 
-    final JsonObject? updateOrder$raw = data['updateOrder'];
-    if (updateOrder$raw != null) {
-      updateOrder_value = EnumInputObjectRequired_updateOrder.fromJson(
-        updateOrder$raw,
-      );
-    } else {
-      updateOrder_value = null;
+class EnumInputObjectRequiredResponse{
+
+    /// class members
+    
+        final EnumInputObjectRequired_updateOrder? updateOrder;
+    
+    // keywordargs constructor
+    EnumInputObjectRequiredResponse({
+    
+        this.updateOrder,
+    
+    });
+    static EnumInputObjectRequiredResponse fromJson(JsonObject data) {
+    
+        
+        final EnumInputObjectRequired_updateOrder? updateOrder_value;
+        
+            updateOrder_value = 
+    
+        
+            data["updateOrder"] == null ? null : EnumInputObjectRequired_updateOrder.fromJson(data["updateOrder"])
+        
+    
+;
+        
+    
+    return EnumInputObjectRequiredResponse(
+    
+        
+        updateOrder: updateOrder_value,
+    
+    );
     }
-
-    return EnumInputObjectRequiredResponse(updateOrder: updateOrder_value);
-  }
-
-  EnumInputObjectRequiredResponse updateWithJson(JsonObject data) {
-    final EnumInputObjectRequired_updateOrder? updateOrder_value;
-    if (data.containsKey('updateOrder')) {
-      final JsonObject? updateOrder$raw = data['updateOrder'];
-      if (updateOrder$raw != null) {
-        updateOrder_value = EnumInputObjectRequired_updateOrder.fromJson(
-          updateOrder$raw,
-        );
-      } else {
-        updateOrder_value = null;
-      }
-    } else {
-      updateOrder_value = updateOrder;
+    EnumInputObjectRequiredResponse updateWithJson(JsonObject data) {
+    
+        
+        final EnumInputObjectRequired_updateOrder? updateOrder_value;
+        if (data.containsKey('updateOrder')) {
+            
+                updateOrder_value = 
+    
+        
+            data["updateOrder"] == null ? null : EnumInputObjectRequired_updateOrder.fromJson(data["updateOrder"])
+        
+    
+;
+            
+        } else {
+            updateOrder_value = updateOrder;
+        }
+    
+    return EnumInputObjectRequiredResponse(
+    
+        
+        updateOrder: updateOrder_value,
+    
+    );
     }
-
-    return EnumInputObjectRequiredResponse(updateOrder: updateOrder_value);
-  }
-
-  @override
-  bool operator ==(Object other) {
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is EnumInputObjectRequiredResponse &&
-            other.updateOrder == updateOrder);
-  }
+    (other is EnumInputObjectRequiredResponse &&
+    
+        
+    
+        other.updateOrder == updateOrder
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        updateOrder.hashCode;
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'updateOrder':
+            
+                
+    
+        
+            this.updateOrder?.toJson()
+        
+    
 
-  @override
-  int get hashCode => updateOrder.hashCode;
+            
+        ,
+    
+    };
+    }
 
-  JsonObject toJson() {
-    return {'updateOrder': updateOrder?.toJson()};
-  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class EnumInputObjectRequired_updateOrder {
-  /// class members
 
-  final Status? status;
+    class EnumInputObjectRequired_updateOrder  {
+        
+    /// class members
+    
+        final Status? status;
+    
+        final int quantity;
+    
+        final String name;
+    
+        final double price;
+    
+    // keywordargs constructor
+    EnumInputObjectRequired_updateOrder({
+    
+        this.status,
+    required
+        this.quantity,
+    required
+        this.name,
+    required
+        this.price,
+    
+    });
+    static EnumInputObjectRequired_updateOrder fromJson(JsonObject data) {
+    
+        
+        final Status? status_value;
+        
+            status_value = 
+    
+        
+        
+            data["status"] == null ? null : Status.fromString(data["status"])
+        
+    
+;
+        
+    
+        
+        final int quantity_value;
+        
+            quantity_value = 
+    
+        
+            
+                data["quantity"] as 
+    int
 
-  final int quantity;
+            
+        
+    
+;
+        
+    
+        
+        final String name_value;
+        
+            name_value = 
+    
+        
+            
+                data["name"] as 
+    String
 
-  final String name;
+            
+        
+    
+;
+        
+    
+        
+        final double price_value;
+        
+            price_value = 
+    
+        
+            
+                data["price"] as 
+    double
 
-  final double price;
-
-  // keywordargs constructor
-  EnumInputObjectRequired_updateOrder({
-    this.status,
-    required this.quantity,
-    required this.name,
-    required this.price,
-  });
-  static EnumInputObjectRequired_updateOrder fromJson(JsonObject data) {
-    final Status? status_value;
-
-    final String? status$raw = data['status'];
-    if (status$raw != null) {
-      status_value = Status.fromString(status$raw);
-    } else {
-      status_value = null;
-    }
-
-    final int quantity_value;
-
-    quantity_value = data['quantity'];
-
-    final String name_value;
-
-    name_value = data['name'];
-
-    final double price_value;
-
-    price_value = data['price'];
-
+            
+        
+    
+;
+        
+    
     return EnumInputObjectRequired_updateOrder(
-      status: status_value,
-
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
+    
+        
+        status: status_value,
+    
+        
+        quantity: quantity_value,
+    
+        
+        name: name_value,
+    
+        
+        price: price_value,
+    
     );
-  }
-
-  EnumInputObjectRequired_updateOrder updateWithJson(JsonObject data) {
-    final Status? status_value;
-    if (data.containsKey('status')) {
-      final String? status$raw = data['status'];
-      if (status$raw != null) {
-        status_value = Status.fromString(status$raw);
-      } else {
-        status_value = null;
-      }
-    } else {
-      status_value = status;
     }
+    EnumInputObjectRequired_updateOrder updateWithJson(JsonObject data) {
+    
+        
+        final Status? status_value;
+        if (data.containsKey('status')) {
+            
+                status_value = 
+    
+        
+        
+            data["status"] == null ? null : Status.fromString(data["status"])
+        
+    
+;
+            
+        } else {
+            status_value = status;
+        }
+    
+        
+        final int quantity_value;
+        if (data.containsKey('quantity')) {
+            
+                quantity_value = 
+    
+        
+            
+                data["quantity"] as 
+    int
 
-    final int quantity_value;
-    if (data.containsKey('quantity')) {
-      quantity_value = data['quantity'];
-    } else {
-      quantity_value = quantity;
-    }
+            
+        
+    
+;
+            
+        } else {
+            quantity_value = quantity;
+        }
+    
+        
+        final String name_value;
+        if (data.containsKey('name')) {
+            
+                name_value = 
+    
+        
+            
+                data["name"] as 
+    String
 
-    final String name_value;
-    if (data.containsKey('name')) {
-      name_value = data['name'];
-    } else {
-      name_value = name;
-    }
+            
+        
+    
+;
+            
+        } else {
+            name_value = name;
+        }
+    
+        
+        final double price_value;
+        if (data.containsKey('price')) {
+            
+                price_value = 
+    
+        
+            
+                data["price"] as 
+    double
 
-    final double price_value;
-    if (data.containsKey('price')) {
-      price_value = data['price'];
-    } else {
-      price_value = price;
-    }
-
+            
+        
+    
+;
+            
+        } else {
+            price_value = price;
+        }
+    
     return EnumInputObjectRequired_updateOrder(
-      status: status_value,
-
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
+    
+        
+        status: status_value,
+    
+        
+        quantity: quantity_value,
+    
+        
+        name: name_value,
+    
+        
+        price: price_value,
+    
     );
-  }
-
-  @override
-  bool operator ==(Object other) {
+    }
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is EnumInputObjectRequired_updateOrder &&
-            other.status == status &&
-            other.quantity == quantity &&
-            other.name == name &&
-            other.price == price);
-  }
-
-  @override
-  int get hashCode => Object.hashAll([status, quantity, name, price]);
-
-  JsonObject toJson() {
+    (other is EnumInputObjectRequired_updateOrder &&
+    
+        
+    
+        other.status == status
+    
+ &&
+    
+        
+    
+        other.quantity == quantity
+    
+ &&
+    
+        
+    
+        other.name == name
+    
+ &&
+    
+        
+    
+        other.price == price
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        Object.hashAll([
+        
+            
+            status,
+        
+            
+            quantity,
+        
+            
+            name,
+        
+            
+            price,
+        
+        ]);
+    
+    JsonObject toJson() {
     return {
-      'status': status?.name,
+    
+        
+        'status':
+            
+                
+    
+        
+            this.status?.name
+        
+    
 
-      'quantity': quantity,
+            
+        ,
+    
+        
+        'quantity':
+            
+                
+    
+        
+            this.quantity
+        
+    
 
-      'name': name,
+            
+        ,
+    
+        
+        'name':
+            
+                
+    
+        
+            this.name
+        
+    
 
-      'price': price,
+            
+        ,
+    
+        
+        'price':
+            
+                
+    
+        
+            this.price
+        
+    
+
+            
+        ,
+    
     };
-  }
-}
+    }
+
+    }
+
 
 // ------------ END OBJECT DEFINITIONS -------------
 
+
 class RequestEnumInputObjectRequired extends Requestable {
-  final EnumInputObjectRequiredVariables variables;
+    
+    final EnumInputObjectRequiredVariables variables;
+    
 
-  RequestEnumInputObjectRequired({required this.variables});
+    RequestEnumInputObjectRequired(
+        
+        {
+            required this.variables,
+        }
+        
+    );
 
-  @override
-  Request toRequest() {
-    JsonObject variablesJson = variables.toJson();
-    return Request(
-      query: r"""mutation EnumInputObjectRequired($order: OrderUpdate!) {
+    @override
+    Request toRequest() {
+        JsonObject variablesJson =  variables.toJson() ;
+        return Request(
+            query: r"""mutation EnumInputObjectRequired($order: OrderUpdate!) {
   updateOrder(order: $order) {
     status
     quantity
@@ -204,35 +476,83 @@ class RequestEnumInputObjectRequired extends Requestable {
     price
   }
 }""",
-      variables: variablesJson,
-      opType: OperationType.Mutation,
-      StringopName: 'EnumInputObjectRequired',
-    );
-  }
+            variables: variablesJson,
+            opType: OperationType.Mutation,
+            StringopName: 'EnumInputObjectRequired'
+        );
+    }
 }
 
+
 class EnumInputObjectRequiredVariables {
-  final OrderUpdate order;
+    
+    
+        final OrderUpdate order;
+    
 
-  EnumInputObjectRequiredVariables({required this.order});
+    EnumInputObjectRequiredVariables (
+        
+            {
+            
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
+        
+            required this.order
+        ,
+    
+    
 
-    data["order"] = this.order.toJson();
+            }
+        
+    );
 
-    return data;
-  }
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  EnumInputObjectRequiredVariables updateWith({OrderUpdate? order}) {
-    final OrderUpdate order$next;
+    
+    
+        data["order"] = 
+    
+        
+            this.order.toJson()
+        
+    
+;
+    
 
-    if (order != null) {
-      order$next = order;
-    } else {
-      order$next = this.order;
+
+        return data;
     }
 
-    return EnumInputObjectRequiredVariables(order: order$next);
-  }
+    
+EnumInputObjectRequiredVariables updateWith(
+    {
+        
+            
+                OrderUpdate? order
+            
+            
+        
+    }
+) {
+    
+        final OrderUpdate order$next;
+        
+            if (order != null) {
+                order$next = order;
+            } else {
+                order$next = this.order;
+            }
+        
+    
+    return EnumInputObjectRequiredVariables(
+        
+            order: order$next
+            
+        
+    );
+}
+
+
 }
