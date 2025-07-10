@@ -31,16 +31,14 @@ import 'package:collection/collection.dart';
 
 
 
+
 typedef JsonObject = Map<String, dynamic>;
 
 
 
 
 
-
-    
-
-class OrderOptWithSomeDefaultsRequestResponse  {
+class OrderOptWithSomeDefaultsRequestResponse {
 
     /// class members
     
@@ -138,7 +136,7 @@ class OrderOptWithSomeDefaultsRequestResponse  {
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest  {
+    class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest   {
         
     /// class members
     

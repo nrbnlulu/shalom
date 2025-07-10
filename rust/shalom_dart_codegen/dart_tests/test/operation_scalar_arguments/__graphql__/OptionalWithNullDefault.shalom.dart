@@ -31,16 +31,14 @@ import 'package:collection/collection.dart';
 
 
 
+
 typedef JsonObject = Map<String, dynamic>;
 
 
 
 
 
-
-    
-
-class OptionalWithNullDefaultResponse  {
+class OptionalWithNullDefaultResponse {
 
     /// class members
     
@@ -138,7 +136,7 @@ class OptionalWithNullDefaultResponse  {
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class OptionalWithNullDefault_updateUser  {
+    class OptionalWithNullDefault_updateUser   {
         
     /// class members
     

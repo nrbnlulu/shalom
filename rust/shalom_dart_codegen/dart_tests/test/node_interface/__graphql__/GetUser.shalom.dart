@@ -36,71 +36,70 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-
-class GetListingOptResponse  {
+class GetUserResponse {
 
     /// class members
     
-        final GetListingOpt_listingOpt? listingOpt;
+        final GetUser_user? user;
     
     // keywordargs constructor
-    GetListingOptResponse({
+    GetUserResponse({
     
-        this.listingOpt,
+        this.user,
     
     });
-    static GetListingOptResponse fromJson(JsonObject data) {
+    static GetUserResponse fromJson(JsonObject data) {
     
         
-        final GetListingOpt_listingOpt? listingOpt_value;
-        final listingOpt$raw = data["listingOpt"];
-        listingOpt_value = 
+        final GetUser_user? user_value;
+        final user$raw = data["user"];
+        user_value = 
     
         
-            listingOpt$raw == null ? null : GetListingOpt_listingOpt.fromJson(listingOpt$raw)
+            user$raw == null ? null : GetUser_user.fromJson(user$raw)
         
     
 ;
     
-    return GetListingOptResponse(
+    return GetUserResponse(
     
         
-        listingOpt: listingOpt_value,
+        user: user_value,
     
     );
     }
-    GetListingOptResponse updateWithJson(JsonObject data) {
+    GetUserResponse updateWithJson(JsonObject data) {
     
         
-        final GetListingOpt_listingOpt? listingOpt_value;
-        if (data.containsKey('listingOpt')) {
-            final listingOpt$raw = data["listingOpt"];
-            listingOpt_value = 
+        final GetUser_user? user_value;
+        if (data.containsKey('user')) {
+            final user$raw = data["user"];
+            user_value = 
     
         
-            listingOpt$raw == null ? null : GetListingOpt_listingOpt.fromJson(listingOpt$raw)
+            user$raw == null ? null : GetUser_user.fromJson(user$raw)
         
     
 ;
         } else {
-            listingOpt_value = listingOpt;
+            user_value = user;
         }
     
-    return GetListingOptResponse(
+    return GetUserResponse(
     
         
-        listingOpt: listingOpt_value,
+        user: user_value,
     
     );
     }
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetListingOptResponse &&
+    (other is GetUserResponse &&
     
         
     
-        other.listingOpt == listingOpt
+        other.user == user
     
  
     
@@ -109,18 +108,18 @@ class GetListingOptResponse  {
     @override
     int get hashCode =>
     
-        listingOpt.hashCode;
+        user.hashCode;
     
     JsonObject toJson() {
     return {
     
         
-        'listingOpt':
+        'user':
             
                 
     
         
-            this.listingOpt?.toJson()
+            this.user?.toJson()
         
     
 
@@ -135,7 +134,7 @@ class GetListingOptResponse  {
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class GetListingOpt_listingOpt  {
+    class GetUser_user  extends Node  {
         
     /// class members
     
@@ -143,19 +142,23 @@ class GetListingOptResponse  {
     
         final String name;
     
-        final int? price;
+        final String email;
+    
+        final int? age;
     
     // keywordargs constructor
-    GetListingOpt_listingOpt({
+    GetUser_user({
     required
         this.id,
     required
         this.name,
+    required
+        this.email,
     
-        this.price,
+        this.age,
     
     });
-    static GetListingOpt_listingOpt fromJson(JsonObject data) {
+    static GetUser_user fromJson(JsonObject data) {
     
         
         final String id_value;
@@ -184,19 +187,32 @@ class GetListingOptResponse  {
 ;
     
         
-        final int? price_value;
-        final price$raw = data["price"];
-        price_value = 
+        final String email_value;
+        final email$raw = data["email"];
+        email_value = 
     
         
             
-                price$raw as int?
+                email$raw as String
             
         
     
 ;
     
-    return GetListingOpt_listingOpt(
+        
+        final int? age_value;
+        final age$raw = data["age"];
+        age_value = 
+    
+        
+            
+                age$raw as int?
+            
+        
+    
+;
+    
+    return GetUser_user(
     
         
         id: id_value,
@@ -205,11 +221,14 @@ class GetListingOptResponse  {
         name: name_value,
     
         
-        price: price_value,
+        email: email_value,
+    
+        
+        age: age_value,
     
     );
     }
-    GetListingOpt_listingOpt updateWithJson(JsonObject data) {
+    GetUser_user updateWithJson(JsonObject data) {
     
         
         final String id_value;
@@ -246,23 +265,40 @@ class GetListingOptResponse  {
         }
     
         
-        final int? price_value;
-        if (data.containsKey('price')) {
-            final price$raw = data["price"];
-            price_value = 
+        final String email_value;
+        if (data.containsKey('email')) {
+            final email$raw = data["email"];
+            email_value = 
     
         
             
-                price$raw as int?
+                email$raw as String
             
         
     
 ;
         } else {
-            price_value = price;
+            email_value = email;
         }
     
-    return GetListingOpt_listingOpt(
+        
+        final int? age_value;
+        if (data.containsKey('age')) {
+            final age$raw = data["age"];
+            age_value = 
+    
+        
+            
+                age$raw as int?
+            
+        
+    
+;
+        } else {
+            age_value = age;
+        }
+    
+    return GetUser_user(
     
         
         id: id_value,
@@ -271,14 +307,17 @@ class GetListingOptResponse  {
         name: name_value,
     
         
-        price: price_value,
+        email: email_value,
+    
+        
+        age: age_value,
     
     );
     }
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetListingOpt_listingOpt &&
+    (other is GetUser_user &&
     
         
     
@@ -294,7 +333,13 @@ class GetListingOptResponse  {
     
         
     
-        other.price == price
+        other.email == email
+    
+ &&
+    
+        
+    
+        other.age == age
     
  
     
@@ -312,7 +357,10 @@ class GetListingOptResponse  {
             name,
         
             
-            price,
+            email,
+        
+            
+            age,
         
         ]);
     
@@ -346,12 +394,25 @@ class GetListingOptResponse  {
         ,
     
         
-        'price':
+        'email':
             
                 
     
         
-            this.price
+            this.email
+        
+    
+
+            
+        ,
+    
+        
+        'age':
+            
+                
+    
+        
+            this.age
         
     
 
@@ -367,10 +428,10 @@ class GetListingOptResponse  {
 // ------------ END OBJECT DEFINITIONS -------------
 
 
-class RequestGetListingOpt extends Requestable {
+class RequestGetUser extends Requestable {
     
 
-    RequestGetListingOpt(
+    RequestGetUser(
         
     );
 
@@ -378,16 +439,17 @@ class RequestGetListingOpt extends Requestable {
     Request toRequest() {
         JsonObject variablesJson =  {}  ;
         return Request(
-            query: r"""query GetListingOpt {
-  listingOpt {
+            query: r"""query GetUser {
+  user {
     id
     name
-    price
+    email
+    age
   }
 }""",
             variables: variablesJson,
             opType: OperationType.Query,
-            opName: 'GetListingOpt'
+            opName: 'GetUser'
         );
     }
 }

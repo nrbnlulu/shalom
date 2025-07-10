@@ -31,16 +31,14 @@ import 'package:collection/collection.dart';
 
 
 
+
 typedef JsonObject = Map<String, dynamic>;
 
 
 
 
 
-
-    
-
-class InputListEnumInsideInputObjectResponse  {
+class InputListEnumInsideInputObjectResponse {
 
     /// class members
     

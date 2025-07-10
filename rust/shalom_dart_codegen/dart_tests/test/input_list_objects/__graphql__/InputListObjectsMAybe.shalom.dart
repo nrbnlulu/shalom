@@ -31,16 +31,14 @@ import 'package:collection/collection.dart';
 
 
 
+
 typedef JsonObject = Map<String, dynamic>;
 
 
 
 
 
-
-    
-
-class InputListObjectsMAybeResponse  {
+class InputListObjectsMAybeResponse {
 
     /// class members
     
@@ -138,7 +136,7 @@ class InputListObjectsMAybeResponse  {
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class InputListObjectsMAybe_InputListObjectsMAybe  {
+    class InputListObjectsMAybe_InputListObjectsMAybe   {
         
     /// class members
     

@@ -31,16 +31,14 @@ import 'package:collection/collection.dart';
 
 
 
+
 typedef JsonObject = Map<String, dynamic>;
 
 
 
 
 
-
-    
-
-class InputScalarListRequiredResponse  {
+class InputScalarListRequiredResponse {
 
     /// class members
     
@@ -138,7 +136,7 @@ class InputScalarListRequiredResponse  {
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class InputScalarListRequired_InputScalarListRequired  {
+    class InputScalarListRequired_InputScalarListRequired   {
         
     /// class members
     

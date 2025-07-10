@@ -42,3 +42,8 @@ fn test_input_list_custom_scalars_dart() {
 fn test_nested_input_objects_dart() {
     run_dart_tests_for_usecase("nested_input_objects");
 }
+
+#[test]
+fn test_node_interface() {
+    run_dart_tests_for_usecase("node_interface");
+}

@@ -31,16 +31,14 @@ import 'package:collection/collection.dart';
 
 
 
+
 typedef JsonObject = Map<String, dynamic>;
 
 
 
 
 
-
-    
-
-class InputScalarInsideInputTypeResponse  {
+class InputScalarInsideInputTypeResponse {
 
     /// class members
     
@@ -138,7 +136,7 @@ class InputScalarInsideInputTypeResponse  {
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class InputScalarInsideInputType_InputScalarInsideInputType  {
+    class InputScalarInsideInputType_InputScalarInsideInputType   {
         
     /// class members
     

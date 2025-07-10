@@ -32,16 +32,14 @@ import 'package:collection/collection.dart';
 
 
 
+
 typedef JsonObject = Map<String, dynamic>;
 
 
 
 
 
-
-    
-
-class UpdatePointCoordsNonNullResponse  {
+class UpdatePointCoordsNonNullResponse {
 
     /// class members
     
@@ -139,7 +137,7 @@ class UpdatePointCoordsNonNullResponse  {
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class UpdatePointCoordsNonNull_updatePointCoords  {
+    class UpdatePointCoordsNonNull_updatePointCoords   {
         
     /// class members
     

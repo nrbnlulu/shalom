@@ -31,16 +31,14 @@ import 'package:collection/collection.dart';
 
 
 
+
 typedef JsonObject = Map<String, dynamic>;
 
 
 
 
 
-
-    
-
-class OrderRecursiveResponse  {
+class OrderRecursiveResponse {
 
     /// class members
     
@@ -138,7 +136,7 @@ class OrderRecursiveResponse  {
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class OrderRecursive_orderRecursive  {
+    class OrderRecursive_orderRecursive   {
         
     /// class members
     

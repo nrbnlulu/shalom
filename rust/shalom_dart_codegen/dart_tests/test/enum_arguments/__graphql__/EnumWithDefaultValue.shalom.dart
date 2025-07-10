@@ -31,16 +31,14 @@ import 'package:collection/collection.dart';
 
 
 
+
 typedef JsonObject = Map<String, dynamic>;
 
 
 
 
 
-
-    
-
-class EnumWithDefaultValueResponse  {
+class EnumWithDefaultValueResponse {
 
     /// class members
     
@@ -138,7 +136,7 @@ class EnumWithDefaultValueResponse  {
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class EnumWithDefaultValue_getOrderByStatus  {
+    class EnumWithDefaultValue_getOrderByStatus   {
         
     /// class members
     
