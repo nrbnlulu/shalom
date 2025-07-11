@@ -18,6 +18,23 @@ class OrderOptWithSomeDefaultsRequestResponse {
     this.orderOptWithSomeDefaultsRequest,
   });
 
+  static OrderOptWithSomeDefaultsRequestResponse fromJson(JsonObject data) {
+    final OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest?
+    orderOptWithSomeDefaultsRequest_value;
+    final orderOptWithSomeDefaultsRequest$raw =
+        data["orderOptWithSomeDefaultsRequest"];
+    orderOptWithSomeDefaultsRequest_value =
+        orderOptWithSomeDefaultsRequest$raw == null
+            ? null
+            : OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest.fromJson(
+              orderOptWithSomeDefaultsRequest$raw,
+            );
+
+    return OrderOptWithSomeDefaultsRequestResponse(
+      orderOptWithSomeDefaultsRequest: orderOptWithSomeDefaultsRequest_value,
+    );
+  }
+
   OrderOptWithSomeDefaultsRequestResponse updateWithJson(JsonObject data) {
     final OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest?
     orderOptWithSomeDefaultsRequest_value;
@@ -33,23 +50,6 @@ class OrderOptWithSomeDefaultsRequestResponse {
     } else {
       orderOptWithSomeDefaultsRequest_value = orderOptWithSomeDefaultsRequest;
     }
-
-    return OrderOptWithSomeDefaultsRequestResponse(
-      orderOptWithSomeDefaultsRequest: orderOptWithSomeDefaultsRequest_value,
-    );
-  }
-
-  static OrderOptWithSomeDefaultsRequestResponse fromJson(JsonObject data) {
-    final OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest?
-    orderOptWithSomeDefaultsRequest_value;
-    final orderOptWithSomeDefaultsRequest$raw =
-        data["orderOptWithSomeDefaultsRequest"];
-    orderOptWithSomeDefaultsRequest_value =
-        orderOptWithSomeDefaultsRequest$raw == null
-            ? null
-            : OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest.fromJson(
-              orderOptWithSomeDefaultsRequest$raw,
-            );
 
     return OrderOptWithSomeDefaultsRequestResponse(
       orderOptWithSomeDefaultsRequest: orderOptWithSomeDefaultsRequest_value,
@@ -95,6 +95,29 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
     this.price,
   });
 
+  static OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest
+  fromJson(JsonObject data) {
+    final int? quantity_value;
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int?;
+
+    final String? name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
+
+    final double? price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as double?;
+
+    return OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest(
+      quantity: quantity_value,
+
+      name: name_value,
+
+      price: price_value,
+    );
+  }
+
   OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest
   updateWithJson(JsonObject data) {
     final int? quantity_value;
@@ -120,29 +143,6 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
     } else {
       price_value = price;
     }
-
-    return OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  static OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest
-  fromJson(JsonObject data) {
-    final int? quantity_value;
-    final quantity$raw = data["quantity"];
-    quantity_value = quantity$raw as int?;
-
-    final String? name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String?;
-
-    final double? price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as double?;
 
     return OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest(
       quantity: quantity_value,

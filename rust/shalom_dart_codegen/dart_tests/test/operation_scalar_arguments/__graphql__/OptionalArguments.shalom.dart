@@ -15,6 +15,17 @@ class OptionalArgumentsResponse {
   // keywordargs constructor
   OptionalArgumentsResponse({this.updateUser});
 
+  static OptionalArgumentsResponse fromJson(JsonObject data) {
+    final OptionalArguments_updateUser? updateUser_value;
+    final updateUser$raw = data["updateUser"];
+    updateUser_value =
+        updateUser$raw == null
+            ? null
+            : OptionalArguments_updateUser.fromJson(updateUser$raw);
+
+    return OptionalArgumentsResponse(updateUser: updateUser_value);
+  }
+
   OptionalArgumentsResponse updateWithJson(JsonObject data) {
     final OptionalArguments_updateUser? updateUser_value;
     if (data.containsKey('updateUser')) {
@@ -26,17 +37,6 @@ class OptionalArgumentsResponse {
     } else {
       updateUser_value = updateUser;
     }
-
-    return OptionalArgumentsResponse(updateUser: updateUser_value);
-  }
-
-  static OptionalArgumentsResponse fromJson(JsonObject data) {
-    final OptionalArguments_updateUser? updateUser_value;
-    final updateUser$raw = data["updateUser"];
-    updateUser_value =
-        updateUser$raw == null
-            ? null
-            : OptionalArguments_updateUser.fromJson(updateUser$raw);
 
     return OptionalArgumentsResponse(updateUser: updateUser_value);
   }
@@ -65,6 +65,14 @@ class OptionalArguments_updateUser {
   // keywordargs constructor
   OptionalArguments_updateUser({this.name});
 
+  static OptionalArguments_updateUser fromJson(JsonObject data) {
+    final String? name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
+
+    return OptionalArguments_updateUser(name: name_value);
+  }
+
   OptionalArguments_updateUser updateWithJson(JsonObject data) {
     final String? name_value;
     if (data.containsKey('name')) {
@@ -73,14 +81,6 @@ class OptionalArguments_updateUser {
     } else {
       name_value = name;
     }
-
-    return OptionalArguments_updateUser(name: name_value);
-  }
-
-  static OptionalArguments_updateUser fromJson(JsonObject data) {
-    final String? name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String?;
 
     return OptionalArguments_updateUser(name: name_value);
   }

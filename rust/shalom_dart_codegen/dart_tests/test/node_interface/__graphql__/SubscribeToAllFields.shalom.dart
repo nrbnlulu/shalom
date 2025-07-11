@@ -15,6 +15,15 @@ class SubscribeToAllFieldsResponse {
   // keywordargs constructor
   SubscribeToAllFieldsResponse({this.user});
 
+  static SubscribeToAllFieldsResponse fromJson(JsonObject data) {
+    final SubscribeToAllFields_user? user_value;
+    final user$raw = data["user"];
+    user_value =
+        user$raw == null ? null : SubscribeToAllFields_user.fromJson(user$raw);
+
+    return SubscribeToAllFieldsResponse(user: user_value);
+  }
+
   SubscribeToAllFieldsResponse updateWithJson(JsonObject data) {
     final SubscribeToAllFields_user? user_value;
     if (data.containsKey('user')) {
@@ -26,15 +35,6 @@ class SubscribeToAllFieldsResponse {
     } else {
       user_value = user;
     }
-
-    return SubscribeToAllFieldsResponse(user: user_value);
-  }
-
-  static SubscribeToAllFieldsResponse fromJson(JsonObject data) {
-    final SubscribeToAllFields_user? user_value;
-    final user$raw = data["user"];
-    user_value =
-        user$raw == null ? null : SubscribeToAllFields_user.fromJson(user$raw);
 
     return SubscribeToAllFieldsResponse(user: user_value);
   }
@@ -72,6 +72,34 @@ class SubscribeToAllFields_user extends Node {
 
     this.age,
   });
+
+  static SubscribeToAllFields_user fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final String email_value;
+    final email$raw = data["email"];
+    email_value = email$raw as String;
+
+    final int? age_value;
+    final age$raw = data["age"];
+    age_value = age$raw as int?;
+
+    return SubscribeToAllFields_user(
+      id: id_value,
+
+      name: name_value,
+
+      email: email_value,
+
+      age: age_value,
+    );
+  }
 
   static SubscribeToAllFields_user deserialize(
     JsonObject data,
@@ -128,34 +156,6 @@ class SubscribeToAllFields_user extends Node {
       }
     }
     notifyListeners();
-  }
-
-  static SubscribeToAllFields_user fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final String email_value;
-    final email$raw = data["email"];
-    email_value = email$raw as String;
-
-    final int? age_value;
-    final age$raw = data["age"];
-    age_value = age$raw as int?;
-
-    return SubscribeToAllFields_user(
-      id: id_value,
-
-      name: name_value,
-
-      email: email_value,
-
-      age: age_value,
-    );
   }
 
   @override

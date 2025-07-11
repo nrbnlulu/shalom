@@ -15,6 +15,22 @@ class InputListObjectsMAybeResponse {
   // keywordargs constructor
   InputListObjectsMAybeResponse({this.InputListObjectsMAybe});
 
+  static InputListObjectsMAybeResponse fromJson(JsonObject data) {
+    final InputListObjectsMAybe_InputListObjectsMAybe?
+    InputListObjectsMAybe_value;
+    final InputListObjectsMAybe$raw = data["InputListObjectsMAybe"];
+    InputListObjectsMAybe_value =
+        InputListObjectsMAybe$raw == null
+            ? null
+            : InputListObjectsMAybe_InputListObjectsMAybe.fromJson(
+              InputListObjectsMAybe$raw,
+            );
+
+    return InputListObjectsMAybeResponse(
+      InputListObjectsMAybe: InputListObjectsMAybe_value,
+    );
+  }
+
   InputListObjectsMAybeResponse updateWithJson(JsonObject data) {
     final InputListObjectsMAybe_InputListObjectsMAybe?
     InputListObjectsMAybe_value;
@@ -29,22 +45,6 @@ class InputListObjectsMAybeResponse {
     } else {
       InputListObjectsMAybe_value = InputListObjectsMAybe;
     }
-
-    return InputListObjectsMAybeResponse(
-      InputListObjectsMAybe: InputListObjectsMAybe_value,
-    );
-  }
-
-  static InputListObjectsMAybeResponse fromJson(JsonObject data) {
-    final InputListObjectsMAybe_InputListObjectsMAybe?
-    InputListObjectsMAybe_value;
-    final InputListObjectsMAybe$raw = data["InputListObjectsMAybe"];
-    InputListObjectsMAybe_value =
-        InputListObjectsMAybe$raw == null
-            ? null
-            : InputListObjectsMAybe_InputListObjectsMAybe.fromJson(
-              InputListObjectsMAybe$raw,
-            );
 
     return InputListObjectsMAybeResponse(
       InputListObjectsMAybe: InputListObjectsMAybe_value,
@@ -82,6 +82,22 @@ class InputListObjectsMAybe_InputListObjectsMAybe {
     this.message,
   });
 
+  static InputListObjectsMAybe_InputListObjectsMAybe fromJson(JsonObject data) {
+    final bool success_value;
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
+
+    final String? message_value;
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
+
+    return InputListObjectsMAybe_InputListObjectsMAybe(
+      success: success_value,
+
+      message: message_value,
+    );
+  }
+
   InputListObjectsMAybe_InputListObjectsMAybe updateWithJson(JsonObject data) {
     final bool success_value;
     if (data.containsKey('success')) {
@@ -98,22 +114,6 @@ class InputListObjectsMAybe_InputListObjectsMAybe {
     } else {
       message_value = message;
     }
-
-    return InputListObjectsMAybe_InputListObjectsMAybe(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  static InputListObjectsMAybe_InputListObjectsMAybe fromJson(JsonObject data) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
-
-    final String? message_value;
-    final message$raw = data["message"];
-    message_value = message$raw as String?;
 
     return InputListObjectsMAybe_InputListObjectsMAybe(
       success: success_value,

@@ -15,6 +15,17 @@ class OrderOptRequestResponse {
   // keywordargs constructor
   OrderOptRequestResponse({this.orderOptRequest});
 
+  static OrderOptRequestResponse fromJson(JsonObject data) {
+    final OrderOptRequest_orderOptRequest? orderOptRequest_value;
+    final orderOptRequest$raw = data["orderOptRequest"];
+    orderOptRequest_value =
+        orderOptRequest$raw == null
+            ? null
+            : OrderOptRequest_orderOptRequest.fromJson(orderOptRequest$raw);
+
+    return OrderOptRequestResponse(orderOptRequest: orderOptRequest_value);
+  }
+
   OrderOptRequestResponse updateWithJson(JsonObject data) {
     final OrderOptRequest_orderOptRequest? orderOptRequest_value;
     if (data.containsKey('orderOptRequest')) {
@@ -26,17 +37,6 @@ class OrderOptRequestResponse {
     } else {
       orderOptRequest_value = orderOptRequest;
     }
-
-    return OrderOptRequestResponse(orderOptRequest: orderOptRequest_value);
-  }
-
-  static OrderOptRequestResponse fromJson(JsonObject data) {
-    final OrderOptRequest_orderOptRequest? orderOptRequest_value;
-    final orderOptRequest$raw = data["orderOptRequest"];
-    orderOptRequest_value =
-        orderOptRequest$raw == null
-            ? null
-            : OrderOptRequest_orderOptRequest.fromJson(orderOptRequest$raw);
 
     return OrderOptRequestResponse(orderOptRequest: orderOptRequest_value);
   }
@@ -70,6 +70,28 @@ class OrderOptRequest_orderOptRequest {
   // keywordargs constructor
   OrderOptRequest_orderOptRequest({this.quantity, this.name, this.price});
 
+  static OrderOptRequest_orderOptRequest fromJson(JsonObject data) {
+    final int? quantity_value;
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int?;
+
+    final String? name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
+
+    final double? price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as double?;
+
+    return OrderOptRequest_orderOptRequest(
+      quantity: quantity_value,
+
+      name: name_value,
+
+      price: price_value,
+    );
+  }
+
   OrderOptRequest_orderOptRequest updateWithJson(JsonObject data) {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
@@ -94,28 +116,6 @@ class OrderOptRequest_orderOptRequest {
     } else {
       price_value = price;
     }
-
-    return OrderOptRequest_orderOptRequest(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  static OrderOptRequest_orderOptRequest fromJson(JsonObject data) {
-    final int? quantity_value;
-    final quantity$raw = data["quantity"];
-    quantity_value = quantity$raw as int?;
-
-    final String? name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String?;
-
-    final double? price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as double?;
 
     return OrderOptRequest_orderOptRequest(
       quantity: quantity_value,

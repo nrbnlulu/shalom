@@ -16,6 +16,22 @@ class InputScalarInsideInputTypeResponse {
   // keywordargs constructor
   InputScalarInsideInputTypeResponse({this.InputScalarInsideInputType});
 
+  static InputScalarInsideInputTypeResponse fromJson(JsonObject data) {
+    final InputScalarInsideInputType_InputScalarInsideInputType?
+    InputScalarInsideInputType_value;
+    final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
+    InputScalarInsideInputType_value =
+        InputScalarInsideInputType$raw == null
+            ? null
+            : InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
+              InputScalarInsideInputType$raw,
+            );
+
+    return InputScalarInsideInputTypeResponse(
+      InputScalarInsideInputType: InputScalarInsideInputType_value,
+    );
+  }
+
   InputScalarInsideInputTypeResponse updateWithJson(JsonObject data) {
     final InputScalarInsideInputType_InputScalarInsideInputType?
     InputScalarInsideInputType_value;
@@ -30,22 +46,6 @@ class InputScalarInsideInputTypeResponse {
     } else {
       InputScalarInsideInputType_value = InputScalarInsideInputType;
     }
-
-    return InputScalarInsideInputTypeResponse(
-      InputScalarInsideInputType: InputScalarInsideInputType_value,
-    );
-  }
-
-  static InputScalarInsideInputTypeResponse fromJson(JsonObject data) {
-    final InputScalarInsideInputType_InputScalarInsideInputType?
-    InputScalarInsideInputType_value;
-    final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
-    InputScalarInsideInputType_value =
-        InputScalarInsideInputType$raw == null
-            ? null
-            : InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
-              InputScalarInsideInputType$raw,
-            );
 
     return InputScalarInsideInputTypeResponse(
       InputScalarInsideInputType: InputScalarInsideInputType_value,
@@ -81,6 +81,18 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
     required this.success,
   });
 
+  static InputScalarInsideInputType_InputScalarInsideInputType fromJson(
+    JsonObject data,
+  ) {
+    final bool success_value;
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
+
+    return InputScalarInsideInputType_InputScalarInsideInputType(
+      success: success_value,
+    );
+  }
+
   InputScalarInsideInputType_InputScalarInsideInputType updateWithJson(
     JsonObject data,
   ) {
@@ -91,18 +103,6 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
     } else {
       success_value = success;
     }
-
-    return InputScalarInsideInputType_InputScalarInsideInputType(
-      success: success_value,
-    );
-  }
-
-  static InputScalarInsideInputType_InputScalarInsideInputType fromJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
 
     return InputScalarInsideInputType_InputScalarInsideInputType(
       success: success_value,

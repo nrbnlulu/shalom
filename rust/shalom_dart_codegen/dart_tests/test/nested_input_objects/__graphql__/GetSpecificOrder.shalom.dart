@@ -15,6 +15,17 @@ class GetSpecificOrderResponse {
   // keywordargs constructor
   GetSpecificOrderResponse({this.getSpecificOrder});
 
+  static GetSpecificOrderResponse fromJson(JsonObject data) {
+    final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
+    final getSpecificOrder$raw = data["getSpecificOrder"];
+    getSpecificOrder_value =
+        getSpecificOrder$raw == null
+            ? null
+            : GetSpecificOrder_getSpecificOrder.fromJson(getSpecificOrder$raw);
+
+    return GetSpecificOrderResponse(getSpecificOrder: getSpecificOrder_value);
+  }
+
   GetSpecificOrderResponse updateWithJson(JsonObject data) {
     final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
     if (data.containsKey('getSpecificOrder')) {
@@ -28,17 +39,6 @@ class GetSpecificOrderResponse {
     } else {
       getSpecificOrder_value = getSpecificOrder;
     }
-
-    return GetSpecificOrderResponse(getSpecificOrder: getSpecificOrder_value);
-  }
-
-  static GetSpecificOrderResponse fromJson(JsonObject data) {
-    final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
-    final getSpecificOrder$raw = data["getSpecificOrder"];
-    getSpecificOrder_value =
-        getSpecificOrder$raw == null
-            ? null
-            : GetSpecificOrder_getSpecificOrder.fromJson(getSpecificOrder$raw);
 
     return GetSpecificOrderResponse(getSpecificOrder: getSpecificOrder_value);
   }
@@ -72,6 +72,28 @@ class GetSpecificOrder_getSpecificOrder {
   // keywordargs constructor
   GetSpecificOrder_getSpecificOrder({this.quantity, this.price, this.name});
 
+  static GetSpecificOrder_getSpecificOrder fromJson(JsonObject data) {
+    final int? quantity_value;
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int?;
+
+    final double? price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as double?;
+
+    final String? name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
+
+    return GetSpecificOrder_getSpecificOrder(
+      quantity: quantity_value,
+
+      price: price_value,
+
+      name: name_value,
+    );
+  }
+
   GetSpecificOrder_getSpecificOrder updateWithJson(JsonObject data) {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
@@ -96,28 +118,6 @@ class GetSpecificOrder_getSpecificOrder {
     } else {
       name_value = name;
     }
-
-    return GetSpecificOrder_getSpecificOrder(
-      quantity: quantity_value,
-
-      price: price_value,
-
-      name: name_value,
-    );
-  }
-
-  static GetSpecificOrder_getSpecificOrder fromJson(JsonObject data) {
-    final int? quantity_value;
-    final quantity$raw = data["quantity"];
-    quantity_value = quantity$raw as int?;
-
-    final double? price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as double?;
-
-    final String? name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String?;
 
     return GetSpecificOrder_getSpecificOrder(
       quantity: quantity_value,

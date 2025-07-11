@@ -16,6 +16,22 @@ class InputScalarListOptionalResponse {
   // keywordargs constructor
   InputScalarListOptionalResponse({this.InputScalarListOptional});
 
+  static InputScalarListOptionalResponse fromJson(JsonObject data) {
+    final InputScalarListOptional_InputScalarListOptional?
+    InputScalarListOptional_value;
+    final InputScalarListOptional$raw = data["InputScalarListOptional"];
+    InputScalarListOptional_value =
+        InputScalarListOptional$raw == null
+            ? null
+            : InputScalarListOptional_InputScalarListOptional.fromJson(
+              InputScalarListOptional$raw,
+            );
+
+    return InputScalarListOptionalResponse(
+      InputScalarListOptional: InputScalarListOptional_value,
+    );
+  }
+
   InputScalarListOptionalResponse updateWithJson(JsonObject data) {
     final InputScalarListOptional_InputScalarListOptional?
     InputScalarListOptional_value;
@@ -30,22 +46,6 @@ class InputScalarListOptionalResponse {
     } else {
       InputScalarListOptional_value = InputScalarListOptional;
     }
-
-    return InputScalarListOptionalResponse(
-      InputScalarListOptional: InputScalarListOptional_value,
-    );
-  }
-
-  static InputScalarListOptionalResponse fromJson(JsonObject data) {
-    final InputScalarListOptional_InputScalarListOptional?
-    InputScalarListOptional_value;
-    final InputScalarListOptional$raw = data["InputScalarListOptional"];
-    InputScalarListOptional_value =
-        InputScalarListOptional$raw == null
-            ? null
-            : InputScalarListOptional_InputScalarListOptional.fromJson(
-              InputScalarListOptional$raw,
-            );
 
     return InputScalarListOptionalResponse(
       InputScalarListOptional: InputScalarListOptional_value,
@@ -77,6 +77,18 @@ class InputScalarListOptional_InputScalarListOptional {
   // keywordargs constructor
   InputScalarListOptional_InputScalarListOptional({required this.success});
 
+  static InputScalarListOptional_InputScalarListOptional fromJson(
+    JsonObject data,
+  ) {
+    final bool success_value;
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
+
+    return InputScalarListOptional_InputScalarListOptional(
+      success: success_value,
+    );
+  }
+
   InputScalarListOptional_InputScalarListOptional updateWithJson(
     JsonObject data,
   ) {
@@ -87,18 +99,6 @@ class InputScalarListOptional_InputScalarListOptional {
     } else {
       success_value = success;
     }
-
-    return InputScalarListOptional_InputScalarListOptional(
-      success: success_value,
-    );
-  }
-
-  static InputScalarListOptional_InputScalarListOptional fromJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
 
     return InputScalarListOptional_InputScalarListOptional(
       success: success_value,

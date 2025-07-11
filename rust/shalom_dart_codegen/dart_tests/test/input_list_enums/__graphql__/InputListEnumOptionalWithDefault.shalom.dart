@@ -17,6 +17,18 @@ class InputListEnumOptionalWithDefaultResponse {
     this.InputListEnumOptionalWithDefault,
   });
 
+  static InputListEnumOptionalWithDefaultResponse fromJson(JsonObject data) {
+    final String? InputListEnumOptionalWithDefault_value;
+    final InputListEnumOptionalWithDefault$raw =
+        data["InputListEnumOptionalWithDefault"];
+    InputListEnumOptionalWithDefault_value =
+        InputListEnumOptionalWithDefault$raw as String?;
+
+    return InputListEnumOptionalWithDefaultResponse(
+      InputListEnumOptionalWithDefault: InputListEnumOptionalWithDefault_value,
+    );
+  }
+
   InputListEnumOptionalWithDefaultResponse updateWithJson(JsonObject data) {
     final String? InputListEnumOptionalWithDefault_value;
     if (data.containsKey('InputListEnumOptionalWithDefault')) {
@@ -27,18 +39,6 @@ class InputListEnumOptionalWithDefaultResponse {
     } else {
       InputListEnumOptionalWithDefault_value = InputListEnumOptionalWithDefault;
     }
-
-    return InputListEnumOptionalWithDefaultResponse(
-      InputListEnumOptionalWithDefault: InputListEnumOptionalWithDefault_value,
-    );
-  }
-
-  static InputListEnumOptionalWithDefaultResponse fromJson(JsonObject data) {
-    final String? InputListEnumOptionalWithDefault_value;
-    final InputListEnumOptionalWithDefault$raw =
-        data["InputListEnumOptionalWithDefault"];
-    InputListEnumOptionalWithDefault_value =
-        InputListEnumOptionalWithDefault$raw as String?;
 
     return InputListEnumOptionalWithDefaultResponse(
       InputListEnumOptionalWithDefault: InputListEnumOptionalWithDefault_value,

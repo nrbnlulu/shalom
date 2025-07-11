@@ -15,6 +15,17 @@ class OptionalWithNullDefaultResponse {
   // keywordargs constructor
   OptionalWithNullDefaultResponse({this.updateUser});
 
+  static OptionalWithNullDefaultResponse fromJson(JsonObject data) {
+    final OptionalWithNullDefault_updateUser? updateUser_value;
+    final updateUser$raw = data["updateUser"];
+    updateUser_value =
+        updateUser$raw == null
+            ? null
+            : OptionalWithNullDefault_updateUser.fromJson(updateUser$raw);
+
+    return OptionalWithNullDefaultResponse(updateUser: updateUser_value);
+  }
+
   OptionalWithNullDefaultResponse updateWithJson(JsonObject data) {
     final OptionalWithNullDefault_updateUser? updateUser_value;
     if (data.containsKey('updateUser')) {
@@ -26,17 +37,6 @@ class OptionalWithNullDefaultResponse {
     } else {
       updateUser_value = updateUser;
     }
-
-    return OptionalWithNullDefaultResponse(updateUser: updateUser_value);
-  }
-
-  static OptionalWithNullDefaultResponse fromJson(JsonObject data) {
-    final OptionalWithNullDefault_updateUser? updateUser_value;
-    final updateUser$raw = data["updateUser"];
-    updateUser_value =
-        updateUser$raw == null
-            ? null
-            : OptionalWithNullDefault_updateUser.fromJson(updateUser$raw);
 
     return OptionalWithNullDefaultResponse(updateUser: updateUser_value);
   }
@@ -70,6 +70,28 @@ class OptionalWithNullDefault_updateUser {
   // keywordargs constructor
   OptionalWithNullDefault_updateUser({this.email, this.name, this.phone});
 
+  static OptionalWithNullDefault_updateUser fromJson(JsonObject data) {
+    final String? email_value;
+    final email$raw = data["email"];
+    email_value = email$raw as String?;
+
+    final String? name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
+
+    final String? phone_value;
+    final phone$raw = data["phone"];
+    phone_value = phone$raw as String?;
+
+    return OptionalWithNullDefault_updateUser(
+      email: email_value,
+
+      name: name_value,
+
+      phone: phone_value,
+    );
+  }
+
   OptionalWithNullDefault_updateUser updateWithJson(JsonObject data) {
     final String? email_value;
     if (data.containsKey('email')) {
@@ -94,28 +116,6 @@ class OptionalWithNullDefault_updateUser {
     } else {
       phone_value = phone;
     }
-
-    return OptionalWithNullDefault_updateUser(
-      email: email_value,
-
-      name: name_value,
-
-      phone: phone_value,
-    );
-  }
-
-  static OptionalWithNullDefault_updateUser fromJson(JsonObject data) {
-    final String? email_value;
-    final email$raw = data["email"];
-    email_value = email$raw as String?;
-
-    final String? name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String?;
-
-    final String? phone_value;
-    final phone$raw = data["phone"];
-    phone_value = phone$raw as String?;
 
     return OptionalWithNullDefault_updateUser(
       email: email_value,

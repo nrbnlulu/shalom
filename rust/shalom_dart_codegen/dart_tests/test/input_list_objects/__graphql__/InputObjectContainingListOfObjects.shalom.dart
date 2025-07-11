@@ -18,6 +18,24 @@ class InputObjectContainingListOfObjectsResponse {
     this.InputObjectContainingListOfObjects,
   });
 
+  static InputObjectContainingListOfObjectsResponse fromJson(JsonObject data) {
+    final InputObjectContainingListOfObjects_InputObjectContainingListOfObjects?
+    InputObjectContainingListOfObjects_value;
+    final InputObjectContainingListOfObjects$raw =
+        data["InputObjectContainingListOfObjects"];
+    InputObjectContainingListOfObjects_value =
+        InputObjectContainingListOfObjects$raw == null
+            ? null
+            : InputObjectContainingListOfObjects_InputObjectContainingListOfObjects.fromJson(
+              InputObjectContainingListOfObjects$raw,
+            );
+
+    return InputObjectContainingListOfObjectsResponse(
+      InputObjectContainingListOfObjects:
+          InputObjectContainingListOfObjects_value,
+    );
+  }
+
   InputObjectContainingListOfObjectsResponse updateWithJson(JsonObject data) {
     final InputObjectContainingListOfObjects_InputObjectContainingListOfObjects?
     InputObjectContainingListOfObjects_value;
@@ -34,24 +52,6 @@ class InputObjectContainingListOfObjectsResponse {
       InputObjectContainingListOfObjects_value =
           InputObjectContainingListOfObjects;
     }
-
-    return InputObjectContainingListOfObjectsResponse(
-      InputObjectContainingListOfObjects:
-          InputObjectContainingListOfObjects_value,
-    );
-  }
-
-  static InputObjectContainingListOfObjectsResponse fromJson(JsonObject data) {
-    final InputObjectContainingListOfObjects_InputObjectContainingListOfObjects?
-    InputObjectContainingListOfObjects_value;
-    final InputObjectContainingListOfObjects$raw =
-        data["InputObjectContainingListOfObjects"];
-    InputObjectContainingListOfObjects_value =
-        InputObjectContainingListOfObjects$raw == null
-            ? null
-            : InputObjectContainingListOfObjects_InputObjectContainingListOfObjects.fromJson(
-              InputObjectContainingListOfObjects$raw,
-            );
 
     return InputObjectContainingListOfObjectsResponse(
       InputObjectContainingListOfObjects:
@@ -94,6 +94,23 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
     this.message,
   });
 
+  static InputObjectContainingListOfObjects_InputObjectContainingListOfObjects
+  fromJson(JsonObject data) {
+    final bool success_value;
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
+
+    final String? message_value;
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
+
+    return InputObjectContainingListOfObjects_InputObjectContainingListOfObjects(
+      success: success_value,
+
+      message: message_value,
+    );
+  }
+
   InputObjectContainingListOfObjects_InputObjectContainingListOfObjects
   updateWithJson(JsonObject data) {
     final bool success_value;
@@ -111,23 +128,6 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
     } else {
       message_value = message;
     }
-
-    return InputObjectContainingListOfObjects_InputObjectContainingListOfObjects(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  static InputObjectContainingListOfObjects_InputObjectContainingListOfObjects
-  fromJson(JsonObject data) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
-
-    final String? message_value;
-    final message$raw = data["message"];
-    message_value = message$raw as String?;
 
     return InputObjectContainingListOfObjects_InputObjectContainingListOfObjects(
       success: success_value,

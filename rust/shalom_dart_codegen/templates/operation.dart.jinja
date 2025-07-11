@@ -123,6 +123,22 @@ import 'package:collection/collection.dart';
     {% endfor %}
     });
     
+    static {{ typename }} fromJson(JsonObject data) {
+    {% for selection in selections -%}
+        {% set selection_name = selection.name %}
+        {% set selection_typename = type_name_for_selection(selection) %}
+        final {{ selection_typename }} {{ selection_name }}_value;
+        final {{selection_name}}$raw = data["{{ selection_name }}"];
+        {{ selection_name }}_value = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
+    {% endfor %}
+    return {{ typename }}(
+    {% for selection in selections %}
+        {% set selection_name = selection.name %}
+        {{ selection_name }}: {{ selection_name }}_value,
+    {% endfor %}
+    );
+    }
+    
     {% if implements_node_interface %}
          static {{ typename }} deserialize(JsonObject data, ShalomContext context) {
             final self = {{ typename }}(
@@ -190,21 +206,7 @@ import 'package:collection/collection.dart';
         );
         }
     {% endif %}
-    static {{ typename }} fromJson(JsonObject data) {
-    {% for selection in selections -%}
-        {% set selection_name = selection.name %}
-        {% set selection_typename = type_name_for_selection(selection) %}
-        final {{ selection_typename }} {{ selection_name }}_value;
-        final {{selection_name}}$raw = data["{{ selection_name }}"];
-        {{ selection_name }}_value = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
-    {% endfor %}
-    return {{ typename }}(
-    {% for selection in selections %}
-        {% set selection_name = selection.name %}
-        {{ selection_name }}: {{ selection_name }}_value,
-    {% endfor %}
-    );
-    }
+    
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||

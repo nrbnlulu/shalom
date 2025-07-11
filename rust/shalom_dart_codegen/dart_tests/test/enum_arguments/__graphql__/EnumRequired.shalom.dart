@@ -15,6 +15,17 @@ class EnumRequiredResponse {
   // keywordargs constructor
   EnumRequiredResponse({this.updateOrderStatus});
 
+  static EnumRequiredResponse fromJson(JsonObject data) {
+    final EnumRequired_updateOrderStatus? updateOrderStatus_value;
+    final updateOrderStatus$raw = data["updateOrderStatus"];
+    updateOrderStatus_value =
+        updateOrderStatus$raw == null
+            ? null
+            : EnumRequired_updateOrderStatus.fromJson(updateOrderStatus$raw);
+
+    return EnumRequiredResponse(updateOrderStatus: updateOrderStatus_value);
+  }
+
   EnumRequiredResponse updateWithJson(JsonObject data) {
     final EnumRequired_updateOrderStatus? updateOrderStatus_value;
     if (data.containsKey('updateOrderStatus')) {
@@ -26,17 +37,6 @@ class EnumRequiredResponse {
     } else {
       updateOrderStatus_value = updateOrderStatus;
     }
-
-    return EnumRequiredResponse(updateOrderStatus: updateOrderStatus_value);
-  }
-
-  static EnumRequiredResponse fromJson(JsonObject data) {
-    final EnumRequired_updateOrderStatus? updateOrderStatus_value;
-    final updateOrderStatus$raw = data["updateOrderStatus"];
-    updateOrderStatus_value =
-        updateOrderStatus$raw == null
-            ? null
-            : EnumRequired_updateOrderStatus.fromJson(updateOrderStatus$raw);
 
     return EnumRequiredResponse(updateOrderStatus: updateOrderStatus_value);
   }
@@ -77,6 +77,34 @@ class EnumRequired_updateOrderStatus {
     required this.price,
   });
 
+  static EnumRequired_updateOrderStatus fromJson(JsonObject data) {
+    final Status? status_value;
+    final status$raw = data["status"];
+    status_value = status$raw == null ? null : Status.fromString(status$raw);
+
+    final int quantity_value;
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final double price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as double;
+
+    return EnumRequired_updateOrderStatus(
+      status: status_value,
+
+      quantity: quantity_value,
+
+      name: name_value,
+
+      price: price_value,
+    );
+  }
+
   EnumRequired_updateOrderStatus updateWithJson(JsonObject data) {
     final Status? status_value;
     if (data.containsKey('status')) {
@@ -109,34 +137,6 @@ class EnumRequired_updateOrderStatus {
     } else {
       price_value = price;
     }
-
-    return EnumRequired_updateOrderStatus(
-      status: status_value,
-
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  static EnumRequired_updateOrderStatus fromJson(JsonObject data) {
-    final Status? status_value;
-    final status$raw = data["status"];
-    status_value = status$raw == null ? null : Status.fromString(status$raw);
-
-    final int quantity_value;
-    final quantity$raw = data["quantity"];
-    quantity_value = quantity$raw as int;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final double price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as double;
 
     return EnumRequired_updateOrderStatus(
       status: status_value,

@@ -15,6 +15,21 @@ class EnumWithDefaultValueResponse {
   // keywordargs constructor
   EnumWithDefaultValueResponse({this.getOrderByStatus});
 
+  static EnumWithDefaultValueResponse fromJson(JsonObject data) {
+    final EnumWithDefaultValue_getOrderByStatus? getOrderByStatus_value;
+    final getOrderByStatus$raw = data["getOrderByStatus"];
+    getOrderByStatus_value =
+        getOrderByStatus$raw == null
+            ? null
+            : EnumWithDefaultValue_getOrderByStatus.fromJson(
+              getOrderByStatus$raw,
+            );
+
+    return EnumWithDefaultValueResponse(
+      getOrderByStatus: getOrderByStatus_value,
+    );
+  }
+
   EnumWithDefaultValueResponse updateWithJson(JsonObject data) {
     final EnumWithDefaultValue_getOrderByStatus? getOrderByStatus_value;
     if (data.containsKey('getOrderByStatus')) {
@@ -28,21 +43,6 @@ class EnumWithDefaultValueResponse {
     } else {
       getOrderByStatus_value = getOrderByStatus;
     }
-
-    return EnumWithDefaultValueResponse(
-      getOrderByStatus: getOrderByStatus_value,
-    );
-  }
-
-  static EnumWithDefaultValueResponse fromJson(JsonObject data) {
-    final EnumWithDefaultValue_getOrderByStatus? getOrderByStatus_value;
-    final getOrderByStatus$raw = data["getOrderByStatus"];
-    getOrderByStatus_value =
-        getOrderByStatus$raw == null
-            ? null
-            : EnumWithDefaultValue_getOrderByStatus.fromJson(
-              getOrderByStatus$raw,
-            );
 
     return EnumWithDefaultValueResponse(
       getOrderByStatus: getOrderByStatus_value,
@@ -85,6 +85,34 @@ class EnumWithDefaultValue_getOrderByStatus {
     required this.price,
   });
 
+  static EnumWithDefaultValue_getOrderByStatus fromJson(JsonObject data) {
+    final Status? status_value;
+    final status$raw = data["status"];
+    status_value = status$raw == null ? null : Status.fromString(status$raw);
+
+    final int quantity_value;
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final double price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as double;
+
+    return EnumWithDefaultValue_getOrderByStatus(
+      status: status_value,
+
+      quantity: quantity_value,
+
+      name: name_value,
+
+      price: price_value,
+    );
+  }
+
   EnumWithDefaultValue_getOrderByStatus updateWithJson(JsonObject data) {
     final Status? status_value;
     if (data.containsKey('status')) {
@@ -117,34 +145,6 @@ class EnumWithDefaultValue_getOrderByStatus {
     } else {
       price_value = price;
     }
-
-    return EnumWithDefaultValue_getOrderByStatus(
-      status: status_value,
-
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  static EnumWithDefaultValue_getOrderByStatus fromJson(JsonObject data) {
-    final Status? status_value;
-    final status$raw = data["status"];
-    status_value = status$raw == null ? null : Status.fromString(status$raw);
-
-    final int quantity_value;
-    final quantity$raw = data["quantity"];
-    quantity_value = quantity$raw as int;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final double price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as double;
 
     return EnumWithDefaultValue_getOrderByStatus(
       status: status_value,

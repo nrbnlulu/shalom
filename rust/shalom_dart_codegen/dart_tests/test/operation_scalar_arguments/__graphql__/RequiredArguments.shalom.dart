@@ -15,6 +15,17 @@ class RequiredArgumentsResponse {
   // keywordargs constructor
   RequiredArgumentsResponse({this.product});
 
+  static RequiredArgumentsResponse fromJson(JsonObject data) {
+    final RequiredArguments_product? product_value;
+    final product$raw = data["product"];
+    product_value =
+        product$raw == null
+            ? null
+            : RequiredArguments_product.fromJson(product$raw);
+
+    return RequiredArgumentsResponse(product: product_value);
+  }
+
   RequiredArgumentsResponse updateWithJson(JsonObject data) {
     final RequiredArguments_product? product_value;
     if (data.containsKey('product')) {
@@ -26,17 +37,6 @@ class RequiredArgumentsResponse {
     } else {
       product_value = product;
     }
-
-    return RequiredArgumentsResponse(product: product_value);
-  }
-
-  static RequiredArgumentsResponse fromJson(JsonObject data) {
-    final RequiredArguments_product? product_value;
-    final product$raw = data["product"];
-    product_value =
-        product$raw == null
-            ? null
-            : RequiredArguments_product.fromJson(product$raw);
 
     return RequiredArgumentsResponse(product: product_value);
   }
@@ -67,6 +67,18 @@ class RequiredArguments_product {
   // keywordargs constructor
   RequiredArguments_product({required this.id, required this.name});
 
+  static RequiredArguments_product fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    return RequiredArguments_product(id: id_value, name: name_value);
+  }
+
   RequiredArguments_product updateWithJson(JsonObject data) {
     final String id_value;
     if (data.containsKey('id')) {
@@ -83,18 +95,6 @@ class RequiredArguments_product {
     } else {
       name_value = name;
     }
-
-    return RequiredArguments_product(id: id_value, name: name_value);
-  }
-
-  static RequiredArguments_product fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
 
     return RequiredArguments_product(id: id_value, name: name_value);
   }

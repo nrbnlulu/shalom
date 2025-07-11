@@ -16,6 +16,22 @@ class UpdatePointCoordsMaybeResponse {
   // keywordargs constructor
   UpdatePointCoordsMaybeResponse({this.updatePointCoordsMaybe});
 
+  static UpdatePointCoordsMaybeResponse fromJson(JsonObject data) {
+    final UpdatePointCoordsMaybe_updatePointCoordsMaybe?
+    updatePointCoordsMaybe_value;
+    final updatePointCoordsMaybe$raw = data["updatePointCoordsMaybe"];
+    updatePointCoordsMaybe_value =
+        updatePointCoordsMaybe$raw == null
+            ? null
+            : UpdatePointCoordsMaybe_updatePointCoordsMaybe.fromJson(
+              updatePointCoordsMaybe$raw,
+            );
+
+    return UpdatePointCoordsMaybeResponse(
+      updatePointCoordsMaybe: updatePointCoordsMaybe_value,
+    );
+  }
+
   UpdatePointCoordsMaybeResponse updateWithJson(JsonObject data) {
     final UpdatePointCoordsMaybe_updatePointCoordsMaybe?
     updatePointCoordsMaybe_value;
@@ -30,22 +46,6 @@ class UpdatePointCoordsMaybeResponse {
     } else {
       updatePointCoordsMaybe_value = updatePointCoordsMaybe;
     }
-
-    return UpdatePointCoordsMaybeResponse(
-      updatePointCoordsMaybe: updatePointCoordsMaybe_value,
-    );
-  }
-
-  static UpdatePointCoordsMaybeResponse fromJson(JsonObject data) {
-    final UpdatePointCoordsMaybe_updatePointCoordsMaybe?
-    updatePointCoordsMaybe_value;
-    final updatePointCoordsMaybe$raw = data["updatePointCoordsMaybe"];
-    updatePointCoordsMaybe_value =
-        updatePointCoordsMaybe$raw == null
-            ? null
-            : UpdatePointCoordsMaybe_updatePointCoordsMaybe.fromJson(
-              updatePointCoordsMaybe$raw,
-            );
 
     return UpdatePointCoordsMaybeResponse(
       updatePointCoordsMaybe: updatePointCoordsMaybe_value,
@@ -85,6 +85,33 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
     required this.id,
   });
 
+  static UpdatePointCoordsMaybe_updatePointCoordsMaybe fromJson(
+    JsonObject data,
+  ) {
+    final rmhlxei.Point? coords_value;
+    final coords$raw = data["coords"];
+    coords_value =
+        coords$raw == null
+            ? null
+            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    return UpdatePointCoordsMaybe_updatePointCoordsMaybe(
+      coords: coords_value,
+
+      name: name_value,
+
+      id: id_value,
+    );
+  }
+
   UpdatePointCoordsMaybe_updatePointCoordsMaybe updateWithJson(
     JsonObject data,
   ) {
@@ -114,33 +141,6 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
     } else {
       id_value = id;
     }
-
-    return UpdatePointCoordsMaybe_updatePointCoordsMaybe(
-      coords: coords_value,
-
-      name: name_value,
-
-      id: id_value,
-    );
-  }
-
-  static UpdatePointCoordsMaybe_updatePointCoordsMaybe fromJson(
-    JsonObject data,
-  ) {
-    final rmhlxei.Point? coords_value;
-    final coords$raw = data["coords"];
-    coords_value =
-        coords$raw == null
-            ? null
-            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
 
     return UpdatePointCoordsMaybe_updatePointCoordsMaybe(
       coords: coords_value,

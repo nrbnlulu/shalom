@@ -15,6 +15,15 @@ class GetOrderResponse {
   // keywordargs constructor
   GetOrderResponse({this.getOrder});
 
+  static GetOrderResponse fromJson(JsonObject data) {
+    final GetOrder_getOrder? getOrder_value;
+    final getOrder$raw = data["getOrder"];
+    getOrder_value =
+        getOrder$raw == null ? null : GetOrder_getOrder.fromJson(getOrder$raw);
+
+    return GetOrderResponse(getOrder: getOrder_value);
+  }
+
   GetOrderResponse updateWithJson(JsonObject data) {
     final GetOrder_getOrder? getOrder_value;
     if (data.containsKey('getOrder')) {
@@ -26,15 +35,6 @@ class GetOrderResponse {
     } else {
       getOrder_value = getOrder;
     }
-
-    return GetOrderResponse(getOrder: getOrder_value);
-  }
-
-  static GetOrderResponse fromJson(JsonObject data) {
-    final GetOrder_getOrder? getOrder_value;
-    final getOrder$raw = data["getOrder"];
-    getOrder_value =
-        getOrder$raw == null ? null : GetOrder_getOrder.fromJson(getOrder$raw);
 
     return GetOrderResponse(getOrder: getOrder_value);
   }
@@ -67,6 +67,28 @@ class GetOrder_getOrder {
   // keywordargs constructor
   GetOrder_getOrder({this.quantity, this.name, this.price});
 
+  static GetOrder_getOrder fromJson(JsonObject data) {
+    final int? quantity_value;
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int?;
+
+    final String? name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
+
+    final double? price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as double?;
+
+    return GetOrder_getOrder(
+      quantity: quantity_value,
+
+      name: name_value,
+
+      price: price_value,
+    );
+  }
+
   GetOrder_getOrder updateWithJson(JsonObject data) {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
@@ -91,28 +113,6 @@ class GetOrder_getOrder {
     } else {
       price_value = price;
     }
-
-    return GetOrder_getOrder(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  static GetOrder_getOrder fromJson(JsonObject data) {
-    final int? quantity_value;
-    final quantity$raw = data["quantity"];
-    quantity_value = quantity$raw as int?;
-
-    final String? name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String?;
-
-    final double? price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as double?;
 
     return GetOrder_getOrder(
       quantity: quantity_value,

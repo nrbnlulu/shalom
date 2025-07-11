@@ -15,6 +15,21 @@ class EnumOptionalResponse {
   // keywordargs constructor
   EnumOptionalResponse({this.updateOrderStatusOpt});
 
+  static EnumOptionalResponse fromJson(JsonObject data) {
+    final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt_value;
+    final updateOrderStatusOpt$raw = data["updateOrderStatusOpt"];
+    updateOrderStatusOpt_value =
+        updateOrderStatusOpt$raw == null
+            ? null
+            : EnumOptional_updateOrderStatusOpt.fromJson(
+              updateOrderStatusOpt$raw,
+            );
+
+    return EnumOptionalResponse(
+      updateOrderStatusOpt: updateOrderStatusOpt_value,
+    );
+  }
+
   EnumOptionalResponse updateWithJson(JsonObject data) {
     final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt_value;
     if (data.containsKey('updateOrderStatusOpt')) {
@@ -28,21 +43,6 @@ class EnumOptionalResponse {
     } else {
       updateOrderStatusOpt_value = updateOrderStatusOpt;
     }
-
-    return EnumOptionalResponse(
-      updateOrderStatusOpt: updateOrderStatusOpt_value,
-    );
-  }
-
-  static EnumOptionalResponse fromJson(JsonObject data) {
-    final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt_value;
-    final updateOrderStatusOpt$raw = data["updateOrderStatusOpt"];
-    updateOrderStatusOpt_value =
-        updateOrderStatusOpt$raw == null
-            ? null
-            : EnumOptional_updateOrderStatusOpt.fromJson(
-              updateOrderStatusOpt$raw,
-            );
 
     return EnumOptionalResponse(
       updateOrderStatusOpt: updateOrderStatusOpt_value,
@@ -85,6 +85,34 @@ class EnumOptional_updateOrderStatusOpt {
     required this.price,
   });
 
+  static EnumOptional_updateOrderStatusOpt fromJson(JsonObject data) {
+    final Status? status_value;
+    final status$raw = data["status"];
+    status_value = status$raw == null ? null : Status.fromString(status$raw);
+
+    final int quantity_value;
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final double price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as double;
+
+    return EnumOptional_updateOrderStatusOpt(
+      status: status_value,
+
+      quantity: quantity_value,
+
+      name: name_value,
+
+      price: price_value,
+    );
+  }
+
   EnumOptional_updateOrderStatusOpt updateWithJson(JsonObject data) {
     final Status? status_value;
     if (data.containsKey('status')) {
@@ -117,34 +145,6 @@ class EnumOptional_updateOrderStatusOpt {
     } else {
       price_value = price;
     }
-
-    return EnumOptional_updateOrderStatusOpt(
-      status: status_value,
-
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  static EnumOptional_updateOrderStatusOpt fromJson(JsonObject data) {
-    final Status? status_value;
-    final status$raw = data["status"];
-    status_value = status$raw == null ? null : Status.fromString(status$raw);
-
-    final int quantity_value;
-    final quantity$raw = data["quantity"];
-    quantity_value = quantity$raw as int;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final double price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as double;
 
     return EnumOptional_updateOrderStatusOpt(
       status: status_value,

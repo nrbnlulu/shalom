@@ -18,6 +18,26 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
     this.InputListOfOptionalObjectsWithNullDefault,
   });
 
+  static InputListOfOptionalObjectsWithNullDefaultResponse fromJson(
+    JsonObject data,
+  ) {
+    final InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault?
+    InputListOfOptionalObjectsWithNullDefault_value;
+    final InputListOfOptionalObjectsWithNullDefault$raw =
+        data["InputListOfOptionalObjectsWithNullDefault"];
+    InputListOfOptionalObjectsWithNullDefault_value =
+        InputListOfOptionalObjectsWithNullDefault$raw == null
+            ? null
+            : InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault.fromJson(
+              InputListOfOptionalObjectsWithNullDefault$raw,
+            );
+
+    return InputListOfOptionalObjectsWithNullDefaultResponse(
+      InputListOfOptionalObjectsWithNullDefault:
+          InputListOfOptionalObjectsWithNullDefault_value,
+    );
+  }
+
   InputListOfOptionalObjectsWithNullDefaultResponse updateWithJson(
     JsonObject data,
   ) {
@@ -36,26 +56,6 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
       InputListOfOptionalObjectsWithNullDefault_value =
           InputListOfOptionalObjectsWithNullDefault;
     }
-
-    return InputListOfOptionalObjectsWithNullDefaultResponse(
-      InputListOfOptionalObjectsWithNullDefault:
-          InputListOfOptionalObjectsWithNullDefault_value,
-    );
-  }
-
-  static InputListOfOptionalObjectsWithNullDefaultResponse fromJson(
-    JsonObject data,
-  ) {
-    final InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault?
-    InputListOfOptionalObjectsWithNullDefault_value;
-    final InputListOfOptionalObjectsWithNullDefault$raw =
-        data["InputListOfOptionalObjectsWithNullDefault"];
-    InputListOfOptionalObjectsWithNullDefault_value =
-        InputListOfOptionalObjectsWithNullDefault$raw == null
-            ? null
-            : InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault.fromJson(
-              InputListOfOptionalObjectsWithNullDefault$raw,
-            );
 
     return InputListOfOptionalObjectsWithNullDefaultResponse(
       InputListOfOptionalObjectsWithNullDefault:
@@ -98,6 +98,23 @@ class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNu
     this.message,
   });
 
+  static InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault
+  fromJson(JsonObject data) {
+    final bool success_value;
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
+
+    final String? message_value;
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
+
+    return InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault(
+      success: success_value,
+
+      message: message_value,
+    );
+  }
+
   InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault
   updateWithJson(JsonObject data) {
     final bool success_value;
@@ -115,23 +132,6 @@ class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNu
     } else {
       message_value = message;
     }
-
-    return InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  static InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault
-  fromJson(JsonObject data) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
-
-    final String? message_value;
-    final message$raw = data["message"];
-    message_value = message$raw as String?;
 
     return InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault(
       success: success_value,

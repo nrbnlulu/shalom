@@ -15,6 +15,17 @@ class OrderRecursiveResponse {
   // keywordargs constructor
   OrderRecursiveResponse({this.orderRecursive});
 
+  static OrderRecursiveResponse fromJson(JsonObject data) {
+    final OrderRecursive_orderRecursive? orderRecursive_value;
+    final orderRecursive$raw = data["orderRecursive"];
+    orderRecursive_value =
+        orderRecursive$raw == null
+            ? null
+            : OrderRecursive_orderRecursive.fromJson(orderRecursive$raw);
+
+    return OrderRecursiveResponse(orderRecursive: orderRecursive_value);
+  }
+
   OrderRecursiveResponse updateWithJson(JsonObject data) {
     final OrderRecursive_orderRecursive? orderRecursive_value;
     if (data.containsKey('orderRecursive')) {
@@ -26,17 +37,6 @@ class OrderRecursiveResponse {
     } else {
       orderRecursive_value = orderRecursive;
     }
-
-    return OrderRecursiveResponse(orderRecursive: orderRecursive_value);
-  }
-
-  static OrderRecursiveResponse fromJson(JsonObject data) {
-    final OrderRecursive_orderRecursive? orderRecursive_value;
-    final orderRecursive$raw = data["orderRecursive"];
-    orderRecursive_value =
-        orderRecursive$raw == null
-            ? null
-            : OrderRecursive_orderRecursive.fromJson(orderRecursive$raw);
 
     return OrderRecursiveResponse(orderRecursive: orderRecursive_value);
   }
@@ -70,6 +70,28 @@ class OrderRecursive_orderRecursive {
   // keywordargs constructor
   OrderRecursive_orderRecursive({this.quantity, this.name, this.price});
 
+  static OrderRecursive_orderRecursive fromJson(JsonObject data) {
+    final int? quantity_value;
+    final quantity$raw = data["quantity"];
+    quantity_value = quantity$raw as int?;
+
+    final String? name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
+
+    final double? price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as double?;
+
+    return OrderRecursive_orderRecursive(
+      quantity: quantity_value,
+
+      name: name_value,
+
+      price: price_value,
+    );
+  }
+
   OrderRecursive_orderRecursive updateWithJson(JsonObject data) {
     final int? quantity_value;
     if (data.containsKey('quantity')) {
@@ -94,28 +116,6 @@ class OrderRecursive_orderRecursive {
     } else {
       price_value = price;
     }
-
-    return OrderRecursive_orderRecursive(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  static OrderRecursive_orderRecursive fromJson(JsonObject data) {
-    final int? quantity_value;
-    final quantity$raw = data["quantity"];
-    quantity_value = quantity$raw as int?;
-
-    final String? name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String?;
-
-    final double? price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as double?;
 
     return OrderRecursive_orderRecursive(
       quantity: quantity_value,

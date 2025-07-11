@@ -15,6 +15,18 @@ class InputListEnumInsideInputObjectResponse {
   // keywordargs constructor
   InputListEnumInsideInputObjectResponse({this.InputListEnumInsideInputObject});
 
+  static InputListEnumInsideInputObjectResponse fromJson(JsonObject data) {
+    final String? InputListEnumInsideInputObject_value;
+    final InputListEnumInsideInputObject$raw =
+        data["InputListEnumInsideInputObject"];
+    InputListEnumInsideInputObject_value =
+        InputListEnumInsideInputObject$raw as String?;
+
+    return InputListEnumInsideInputObjectResponse(
+      InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,
+    );
+  }
+
   InputListEnumInsideInputObjectResponse updateWithJson(JsonObject data) {
     final String? InputListEnumInsideInputObject_value;
     if (data.containsKey('InputListEnumInsideInputObject')) {
@@ -25,18 +37,6 @@ class InputListEnumInsideInputObjectResponse {
     } else {
       InputListEnumInsideInputObject_value = InputListEnumInsideInputObject;
     }
-
-    return InputListEnumInsideInputObjectResponse(
-      InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,
-    );
-  }
-
-  static InputListEnumInsideInputObjectResponse fromJson(JsonObject data) {
-    final String? InputListEnumInsideInputObject_value;
-    final InputListEnumInsideInputObject$raw =
-        data["InputListEnumInsideInputObject"];
-    InputListEnumInsideInputObject_value =
-        InputListEnumInsideInputObject$raw as String?;
 
     return InputListEnumInsideInputObjectResponse(
       InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,

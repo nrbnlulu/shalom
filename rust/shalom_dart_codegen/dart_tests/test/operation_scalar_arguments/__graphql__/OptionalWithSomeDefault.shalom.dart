@@ -15,6 +15,17 @@ class OptionalWithSomeDefaultResponse {
   // keywordargs constructor
   OptionalWithSomeDefaultResponse({this.task});
 
+  static OptionalWithSomeDefaultResponse fromJson(JsonObject data) {
+    final OptionalWithSomeDefault_task? task_value;
+    final task$raw = data["task"];
+    task_value =
+        task$raw == null
+            ? null
+            : OptionalWithSomeDefault_task.fromJson(task$raw);
+
+    return OptionalWithSomeDefaultResponse(task: task_value);
+  }
+
   OptionalWithSomeDefaultResponse updateWithJson(JsonObject data) {
     final OptionalWithSomeDefault_task? task_value;
     if (data.containsKey('task')) {
@@ -26,17 +37,6 @@ class OptionalWithSomeDefaultResponse {
     } else {
       task_value = task;
     }
-
-    return OptionalWithSomeDefaultResponse(task: task_value);
-  }
-
-  static OptionalWithSomeDefaultResponse fromJson(JsonObject data) {
-    final OptionalWithSomeDefault_task? task_value;
-    final task$raw = data["task"];
-    task_value =
-        task$raw == null
-            ? null
-            : OptionalWithSomeDefault_task.fromJson(task$raw);
 
     return OptionalWithSomeDefaultResponse(task: task_value);
   }
@@ -69,6 +69,28 @@ class OptionalWithSomeDefault_task {
   // keywordargs constructor
   OptionalWithSomeDefault_task({this.name, this.duration, this.is_easy});
 
+  static OptionalWithSomeDefault_task fromJson(JsonObject data) {
+    final String? name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String?;
+
+    final int? duration_value;
+    final duration$raw = data["duration"];
+    duration_value = duration$raw as int?;
+
+    final bool? is_easy_value;
+    final is_easy$raw = data["is_easy"];
+    is_easy_value = is_easy$raw as bool?;
+
+    return OptionalWithSomeDefault_task(
+      name: name_value,
+
+      duration: duration_value,
+
+      is_easy: is_easy_value,
+    );
+  }
+
   OptionalWithSomeDefault_task updateWithJson(JsonObject data) {
     final String? name_value;
     if (data.containsKey('name')) {
@@ -93,28 +115,6 @@ class OptionalWithSomeDefault_task {
     } else {
       is_easy_value = is_easy;
     }
-
-    return OptionalWithSomeDefault_task(
-      name: name_value,
-
-      duration: duration_value,
-
-      is_easy: is_easy_value,
-    );
-  }
-
-  static OptionalWithSomeDefault_task fromJson(JsonObject data) {
-    final String? name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String?;
-
-    final int? duration_value;
-    final duration$raw = data["duration"];
-    duration_value = duration$raw as int?;
-
-    final bool? is_easy_value;
-    final is_easy$raw = data["is_easy"];
-    is_easy_value = is_easy$raw as bool?;
 
     return OptionalWithSomeDefault_task(
       name: name_value,

@@ -17,6 +17,22 @@ class updatePointWithOptCoordsResponse {
   // keywordargs constructor
   updatePointWithOptCoordsResponse({this.updatePointWithOptCoords});
 
+  static updatePointWithOptCoordsResponse fromJson(JsonObject data) {
+    final updatePointWithOptCoords_updatePointWithOptCoords?
+    updatePointWithOptCoords_value;
+    final updatePointWithOptCoords$raw = data["updatePointWithOptCoords"];
+    updatePointWithOptCoords_value =
+        updatePointWithOptCoords$raw == null
+            ? null
+            : updatePointWithOptCoords_updatePointWithOptCoords.fromJson(
+              updatePointWithOptCoords$raw,
+            );
+
+    return updatePointWithOptCoordsResponse(
+      updatePointWithOptCoords: updatePointWithOptCoords_value,
+    );
+  }
+
   updatePointWithOptCoordsResponse updateWithJson(JsonObject data) {
     final updatePointWithOptCoords_updatePointWithOptCoords?
     updatePointWithOptCoords_value;
@@ -31,22 +47,6 @@ class updatePointWithOptCoordsResponse {
     } else {
       updatePointWithOptCoords_value = updatePointWithOptCoords;
     }
-
-    return updatePointWithOptCoordsResponse(
-      updatePointWithOptCoords: updatePointWithOptCoords_value,
-    );
-  }
-
-  static updatePointWithOptCoordsResponse fromJson(JsonObject data) {
-    final updatePointWithOptCoords_updatePointWithOptCoords?
-    updatePointWithOptCoords_value;
-    final updatePointWithOptCoords$raw = data["updatePointWithOptCoords"];
-    updatePointWithOptCoords_value =
-        updatePointWithOptCoords$raw == null
-            ? null
-            : updatePointWithOptCoords_updatePointWithOptCoords.fromJson(
-              updatePointWithOptCoords$raw,
-            );
 
     return updatePointWithOptCoordsResponse(
       updatePointWithOptCoords: updatePointWithOptCoords_value,
@@ -88,6 +88,33 @@ class updatePointWithOptCoords_updatePointWithOptCoords {
     required this.id,
   });
 
+  static updatePointWithOptCoords_updatePointWithOptCoords fromJson(
+    JsonObject data,
+  ) {
+    final rmhlxei.Point? coords_value;
+    final coords$raw = data["coords"];
+    coords_value =
+        coords$raw == null
+            ? null
+            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    return updatePointWithOptCoords_updatePointWithOptCoords(
+      coords: coords_value,
+
+      name: name_value,
+
+      id: id_value,
+    );
+  }
+
   updatePointWithOptCoords_updatePointWithOptCoords updateWithJson(
     JsonObject data,
   ) {
@@ -117,33 +144,6 @@ class updatePointWithOptCoords_updatePointWithOptCoords {
     } else {
       id_value = id;
     }
-
-    return updatePointWithOptCoords_updatePointWithOptCoords(
-      coords: coords_value,
-
-      name: name_value,
-
-      id: id_value,
-    );
-  }
-
-  static updatePointWithOptCoords_updatePointWithOptCoords fromJson(
-    JsonObject data,
-  ) {
-    final rmhlxei.Point? coords_value;
-    final coords$raw = data["coords"];
-    coords_value =
-        coords$raw == null
-            ? null
-            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
 
     return updatePointWithOptCoords_updatePointWithOptCoords(
       coords: coords_value,

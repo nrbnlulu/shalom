@@ -19,6 +19,24 @@ class InputCustomScalarListNullableMaybeResponse {
     this.InputCustomScalarListNullableMaybe,
   });
 
+  static InputCustomScalarListNullableMaybeResponse fromJson(JsonObject data) {
+    final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
+    InputCustomScalarListNullableMaybe_value;
+    final InputCustomScalarListNullableMaybe$raw =
+        data["InputCustomScalarListNullableMaybe"];
+    InputCustomScalarListNullableMaybe_value =
+        InputCustomScalarListNullableMaybe$raw == null
+            ? null
+            : InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
+              InputCustomScalarListNullableMaybe$raw,
+            );
+
+    return InputCustomScalarListNullableMaybeResponse(
+      InputCustomScalarListNullableMaybe:
+          InputCustomScalarListNullableMaybe_value,
+    );
+  }
+
   InputCustomScalarListNullableMaybeResponse updateWithJson(JsonObject data) {
     final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
     InputCustomScalarListNullableMaybe_value;
@@ -35,24 +53,6 @@ class InputCustomScalarListNullableMaybeResponse {
       InputCustomScalarListNullableMaybe_value =
           InputCustomScalarListNullableMaybe;
     }
-
-    return InputCustomScalarListNullableMaybeResponse(
-      InputCustomScalarListNullableMaybe:
-          InputCustomScalarListNullableMaybe_value,
-    );
-  }
-
-  static InputCustomScalarListNullableMaybeResponse fromJson(JsonObject data) {
-    final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
-    InputCustomScalarListNullableMaybe_value;
-    final InputCustomScalarListNullableMaybe$raw =
-        data["InputCustomScalarListNullableMaybe"];
-    InputCustomScalarListNullableMaybe_value =
-        InputCustomScalarListNullableMaybe$raw == null
-            ? null
-            : InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
-              InputCustomScalarListNullableMaybe$raw,
-            );
 
     return InputCustomScalarListNullableMaybeResponse(
       InputCustomScalarListNullableMaybe:
@@ -95,6 +95,23 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
     this.message,
   });
 
+  static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
+  fromJson(JsonObject data) {
+    final bool success_value;
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
+
+    final String? message_value;
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
+
+    return InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe(
+      success: success_value,
+
+      message: message_value,
+    );
+  }
+
   InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
   updateWithJson(JsonObject data) {
     final bool success_value;
@@ -112,23 +129,6 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
     } else {
       message_value = message;
     }
-
-    return InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
-  fromJson(JsonObject data) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
-
-    final String? message_value;
-    final message$raw = data["message"];
-    message_value = message$raw as String?;
 
     return InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe(
       success: success_value,

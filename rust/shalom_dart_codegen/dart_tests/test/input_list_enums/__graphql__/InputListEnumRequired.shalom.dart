@@ -15,6 +15,16 @@ class InputListEnumRequiredResponse {
   // keywordargs constructor
   InputListEnumRequiredResponse({this.InputListEnumRequired});
 
+  static InputListEnumRequiredResponse fromJson(JsonObject data) {
+    final String? InputListEnumRequired_value;
+    final InputListEnumRequired$raw = data["InputListEnumRequired"];
+    InputListEnumRequired_value = InputListEnumRequired$raw as String?;
+
+    return InputListEnumRequiredResponse(
+      InputListEnumRequired: InputListEnumRequired_value,
+    );
+  }
+
   InputListEnumRequiredResponse updateWithJson(JsonObject data) {
     final String? InputListEnumRequired_value;
     if (data.containsKey('InputListEnumRequired')) {
@@ -23,16 +33,6 @@ class InputListEnumRequiredResponse {
     } else {
       InputListEnumRequired_value = InputListEnumRequired;
     }
-
-    return InputListEnumRequiredResponse(
-      InputListEnumRequired: InputListEnumRequired_value,
-    );
-  }
-
-  static InputListEnumRequiredResponse fromJson(JsonObject data) {
-    final String? InputListEnumRequired_value;
-    final InputListEnumRequired$raw = data["InputListEnumRequired"];
-    InputListEnumRequired_value = InputListEnumRequired$raw as String?;
 
     return InputListEnumRequiredResponse(
       InputListEnumRequired: InputListEnumRequired_value,

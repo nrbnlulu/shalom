@@ -15,6 +15,15 @@ class SubscribeToSomeFieldsResponse {
   // keywordargs constructor
   SubscribeToSomeFieldsResponse({this.user});
 
+  static SubscribeToSomeFieldsResponse fromJson(JsonObject data) {
+    final SubscribeToSomeFields_user? user_value;
+    final user$raw = data["user"];
+    user_value =
+        user$raw == null ? null : SubscribeToSomeFields_user.fromJson(user$raw);
+
+    return SubscribeToSomeFieldsResponse(user: user_value);
+  }
+
   SubscribeToSomeFieldsResponse updateWithJson(JsonObject data) {
     final SubscribeToSomeFields_user? user_value;
     if (data.containsKey('user')) {
@@ -26,15 +35,6 @@ class SubscribeToSomeFieldsResponse {
     } else {
       user_value = user;
     }
-
-    return SubscribeToSomeFieldsResponse(user: user_value);
-  }
-
-  static SubscribeToSomeFieldsResponse fromJson(JsonObject data) {
-    final SubscribeToSomeFields_user? user_value;
-    final user$raw = data["user"];
-    user_value =
-        user$raw == null ? null : SubscribeToSomeFields_user.fromJson(user$raw);
 
     return SubscribeToSomeFieldsResponse(user: user_value);
   }
@@ -62,6 +62,18 @@ class SubscribeToSomeFields_user extends Node {
 
   // keywordargs constructor
   SubscribeToSomeFields_user({required super.id, required this.name});
+
+  static SubscribeToSomeFields_user fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    return SubscribeToSomeFields_user(id: id_value, name: name_value);
+  }
 
   static SubscribeToSomeFields_user deserialize(
     JsonObject data,
@@ -102,18 +114,6 @@ class SubscribeToSomeFields_user extends Node {
       }
     }
     notifyListeners();
-  }
-
-  static SubscribeToSomeFields_user fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    return SubscribeToSomeFields_user(id: id_value, name: name_value);
   }
 
   @override

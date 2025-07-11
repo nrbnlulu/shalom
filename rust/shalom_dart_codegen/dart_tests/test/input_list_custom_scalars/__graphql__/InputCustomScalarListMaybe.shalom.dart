@@ -17,6 +17,22 @@ class InputCustomScalarListMaybeResponse {
   // keywordargs constructor
   InputCustomScalarListMaybeResponse({this.InputCustomScalarListMaybe});
 
+  static InputCustomScalarListMaybeResponse fromJson(JsonObject data) {
+    final InputCustomScalarListMaybe_InputCustomScalarListMaybe?
+    InputCustomScalarListMaybe_value;
+    final InputCustomScalarListMaybe$raw = data["InputCustomScalarListMaybe"];
+    InputCustomScalarListMaybe_value =
+        InputCustomScalarListMaybe$raw == null
+            ? null
+            : InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(
+              InputCustomScalarListMaybe$raw,
+            );
+
+    return InputCustomScalarListMaybeResponse(
+      InputCustomScalarListMaybe: InputCustomScalarListMaybe_value,
+    );
+  }
+
   InputCustomScalarListMaybeResponse updateWithJson(JsonObject data) {
     final InputCustomScalarListMaybe_InputCustomScalarListMaybe?
     InputCustomScalarListMaybe_value;
@@ -31,22 +47,6 @@ class InputCustomScalarListMaybeResponse {
     } else {
       InputCustomScalarListMaybe_value = InputCustomScalarListMaybe;
     }
-
-    return InputCustomScalarListMaybeResponse(
-      InputCustomScalarListMaybe: InputCustomScalarListMaybe_value,
-    );
-  }
-
-  static InputCustomScalarListMaybeResponse fromJson(JsonObject data) {
-    final InputCustomScalarListMaybe_InputCustomScalarListMaybe?
-    InputCustomScalarListMaybe_value;
-    final InputCustomScalarListMaybe$raw = data["InputCustomScalarListMaybe"];
-    InputCustomScalarListMaybe_value =
-        InputCustomScalarListMaybe$raw == null
-            ? null
-            : InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(
-              InputCustomScalarListMaybe$raw,
-            );
 
     return InputCustomScalarListMaybeResponse(
       InputCustomScalarListMaybe: InputCustomScalarListMaybe_value,
@@ -86,6 +86,24 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
     this.message,
   });
 
+  static InputCustomScalarListMaybe_InputCustomScalarListMaybe fromJson(
+    JsonObject data,
+  ) {
+    final bool success_value;
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
+
+    final String? message_value;
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
+
+    return InputCustomScalarListMaybe_InputCustomScalarListMaybe(
+      success: success_value,
+
+      message: message_value,
+    );
+  }
+
   InputCustomScalarListMaybe_InputCustomScalarListMaybe updateWithJson(
     JsonObject data,
   ) {
@@ -104,24 +122,6 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
     } else {
       message_value = message;
     }
-
-    return InputCustomScalarListMaybe_InputCustomScalarListMaybe(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  static InputCustomScalarListMaybe_InputCustomScalarListMaybe fromJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
-
-    final String? message_value;
-    final message$raw = data["message"];
-    message_value = message$raw as String?;
 
     return InputCustomScalarListMaybe_InputCustomScalarListMaybe(
       success: success_value,

@@ -15,6 +15,16 @@ class InputListEnumMaybeResponse {
   // keywordargs constructor
   InputListEnumMaybeResponse({this.InputListEnumMaybe});
 
+  static InputListEnumMaybeResponse fromJson(JsonObject data) {
+    final String? InputListEnumMaybe_value;
+    final InputListEnumMaybe$raw = data["InputListEnumMaybe"];
+    InputListEnumMaybe_value = InputListEnumMaybe$raw as String?;
+
+    return InputListEnumMaybeResponse(
+      InputListEnumMaybe: InputListEnumMaybe_value,
+    );
+  }
+
   InputListEnumMaybeResponse updateWithJson(JsonObject data) {
     final String? InputListEnumMaybe_value;
     if (data.containsKey('InputListEnumMaybe')) {
@@ -23,16 +33,6 @@ class InputListEnumMaybeResponse {
     } else {
       InputListEnumMaybe_value = InputListEnumMaybe;
     }
-
-    return InputListEnumMaybeResponse(
-      InputListEnumMaybe: InputListEnumMaybe_value,
-    );
-  }
-
-  static InputListEnumMaybeResponse fromJson(JsonObject data) {
-    final String? InputListEnumMaybe_value;
-    final InputListEnumMaybe$raw = data["InputListEnumMaybe"];
-    InputListEnumMaybe_value = InputListEnumMaybe$raw as String?;
 
     return InputListEnumMaybeResponse(
       InputListEnumMaybe: InputListEnumMaybe_value,

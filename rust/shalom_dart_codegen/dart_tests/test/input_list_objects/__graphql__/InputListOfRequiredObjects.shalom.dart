@@ -16,6 +16,22 @@ class InputListOfRequiredObjectsResponse {
   // keywordargs constructor
   InputListOfRequiredObjectsResponse({this.InputListOfRequiredObjects});
 
+  static InputListOfRequiredObjectsResponse fromJson(JsonObject data) {
+    final InputListOfRequiredObjects_InputListOfRequiredObjects?
+    InputListOfRequiredObjects_value;
+    final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
+    InputListOfRequiredObjects_value =
+        InputListOfRequiredObjects$raw == null
+            ? null
+            : InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
+              InputListOfRequiredObjects$raw,
+            );
+
+    return InputListOfRequiredObjectsResponse(
+      InputListOfRequiredObjects: InputListOfRequiredObjects_value,
+    );
+  }
+
   InputListOfRequiredObjectsResponse updateWithJson(JsonObject data) {
     final InputListOfRequiredObjects_InputListOfRequiredObjects?
     InputListOfRequiredObjects_value;
@@ -30,22 +46,6 @@ class InputListOfRequiredObjectsResponse {
     } else {
       InputListOfRequiredObjects_value = InputListOfRequiredObjects;
     }
-
-    return InputListOfRequiredObjectsResponse(
-      InputListOfRequiredObjects: InputListOfRequiredObjects_value,
-    );
-  }
-
-  static InputListOfRequiredObjectsResponse fromJson(JsonObject data) {
-    final InputListOfRequiredObjects_InputListOfRequiredObjects?
-    InputListOfRequiredObjects_value;
-    final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
-    InputListOfRequiredObjects_value =
-        InputListOfRequiredObjects$raw == null
-            ? null
-            : InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
-              InputListOfRequiredObjects$raw,
-            );
 
     return InputListOfRequiredObjectsResponse(
       InputListOfRequiredObjects: InputListOfRequiredObjects_value,
@@ -85,6 +85,24 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
     this.message,
   });
 
+  static InputListOfRequiredObjects_InputListOfRequiredObjects fromJson(
+    JsonObject data,
+  ) {
+    final bool success_value;
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
+
+    final String? message_value;
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
+
+    return InputListOfRequiredObjects_InputListOfRequiredObjects(
+      success: success_value,
+
+      message: message_value,
+    );
+  }
+
   InputListOfRequiredObjects_InputListOfRequiredObjects updateWithJson(
     JsonObject data,
   ) {
@@ -103,24 +121,6 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
     } else {
       message_value = message;
     }
-
-    return InputListOfRequiredObjects_InputListOfRequiredObjects(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  static InputListOfRequiredObjects_InputListOfRequiredObjects fromJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
-
-    final String? message_value;
-    final message$raw = data["message"];
-    message_value = message$raw as String?;
 
     return InputListOfRequiredObjects_InputListOfRequiredObjects(
       success: success_value,

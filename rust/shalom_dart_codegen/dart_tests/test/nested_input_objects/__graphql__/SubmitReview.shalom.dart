@@ -15,6 +15,14 @@ class SubmitReviewResponse {
   // keywordargs constructor
   SubmitReviewResponse({this.submitReview});
 
+  static SubmitReviewResponse fromJson(JsonObject data) {
+    final String? submitReview_value;
+    final submitReview$raw = data["submitReview"];
+    submitReview_value = submitReview$raw as String?;
+
+    return SubmitReviewResponse(submitReview: submitReview_value);
+  }
+
   SubmitReviewResponse updateWithJson(JsonObject data) {
     final String? submitReview_value;
     if (data.containsKey('submitReview')) {
@@ -23,14 +31,6 @@ class SubmitReviewResponse {
     } else {
       submitReview_value = submitReview;
     }
-
-    return SubmitReviewResponse(submitReview: submitReview_value);
-  }
-
-  static SubmitReviewResponse fromJson(JsonObject data) {
-    final String? submitReview_value;
-    final submitReview$raw = data["submitReview"];
-    submitReview_value = submitReview$raw as String?;
 
     return SubmitReviewResponse(submitReview: submitReview_value);
   }

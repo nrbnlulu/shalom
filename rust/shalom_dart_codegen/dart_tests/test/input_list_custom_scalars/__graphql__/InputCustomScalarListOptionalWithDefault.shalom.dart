@@ -19,6 +19,26 @@ class InputCustomScalarListOptionalWithDefaultResponse {
     this.InputCustomScalarListOptionalWithDefault,
   });
 
+  static InputCustomScalarListOptionalWithDefaultResponse fromJson(
+    JsonObject data,
+  ) {
+    final InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault?
+    InputCustomScalarListOptionalWithDefault_value;
+    final InputCustomScalarListOptionalWithDefault$raw =
+        data["InputCustomScalarListOptionalWithDefault"];
+    InputCustomScalarListOptionalWithDefault_value =
+        InputCustomScalarListOptionalWithDefault$raw == null
+            ? null
+            : InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault.fromJson(
+              InputCustomScalarListOptionalWithDefault$raw,
+            );
+
+    return InputCustomScalarListOptionalWithDefaultResponse(
+      InputCustomScalarListOptionalWithDefault:
+          InputCustomScalarListOptionalWithDefault_value,
+    );
+  }
+
   InputCustomScalarListOptionalWithDefaultResponse updateWithJson(
     JsonObject data,
   ) {
@@ -37,26 +57,6 @@ class InputCustomScalarListOptionalWithDefaultResponse {
       InputCustomScalarListOptionalWithDefault_value =
           InputCustomScalarListOptionalWithDefault;
     }
-
-    return InputCustomScalarListOptionalWithDefaultResponse(
-      InputCustomScalarListOptionalWithDefault:
-          InputCustomScalarListOptionalWithDefault_value,
-    );
-  }
-
-  static InputCustomScalarListOptionalWithDefaultResponse fromJson(
-    JsonObject data,
-  ) {
-    final InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault?
-    InputCustomScalarListOptionalWithDefault_value;
-    final InputCustomScalarListOptionalWithDefault$raw =
-        data["InputCustomScalarListOptionalWithDefault"];
-    InputCustomScalarListOptionalWithDefault_value =
-        InputCustomScalarListOptionalWithDefault$raw == null
-            ? null
-            : InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault.fromJson(
-              InputCustomScalarListOptionalWithDefault$raw,
-            );
 
     return InputCustomScalarListOptionalWithDefaultResponse(
       InputCustomScalarListOptionalWithDefault:
@@ -99,6 +99,23 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
     this.message,
   });
 
+  static InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault
+  fromJson(JsonObject data) {
+    final bool success_value;
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
+
+    final String? message_value;
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
+
+    return InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault(
+      success: success_value,
+
+      message: message_value,
+    );
+  }
+
   InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault
   updateWithJson(JsonObject data) {
     final bool success_value;
@@ -116,23 +133,6 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
     } else {
       message_value = message;
     }
-
-    return InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  static InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault
-  fromJson(JsonObject data) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
-
-    final String? message_value;
-    final message$raw = data["message"];
-    message_value = message$raw as String?;
 
     return InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault(
       success: success_value,

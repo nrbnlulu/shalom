@@ -19,6 +19,26 @@ class InputCustomScalarListInsideInputObjectResponse {
     this.InputCustomScalarListInsideInputObject,
   });
 
+  static InputCustomScalarListInsideInputObjectResponse fromJson(
+    JsonObject data,
+  ) {
+    final InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject?
+    InputCustomScalarListInsideInputObject_value;
+    final InputCustomScalarListInsideInputObject$raw =
+        data["InputCustomScalarListInsideInputObject"];
+    InputCustomScalarListInsideInputObject_value =
+        InputCustomScalarListInsideInputObject$raw == null
+            ? null
+            : InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject.fromJson(
+              InputCustomScalarListInsideInputObject$raw,
+            );
+
+    return InputCustomScalarListInsideInputObjectResponse(
+      InputCustomScalarListInsideInputObject:
+          InputCustomScalarListInsideInputObject_value,
+    );
+  }
+
   InputCustomScalarListInsideInputObjectResponse updateWithJson(
     JsonObject data,
   ) {
@@ -37,26 +57,6 @@ class InputCustomScalarListInsideInputObjectResponse {
       InputCustomScalarListInsideInputObject_value =
           InputCustomScalarListInsideInputObject;
     }
-
-    return InputCustomScalarListInsideInputObjectResponse(
-      InputCustomScalarListInsideInputObject:
-          InputCustomScalarListInsideInputObject_value,
-    );
-  }
-
-  static InputCustomScalarListInsideInputObjectResponse fromJson(
-    JsonObject data,
-  ) {
-    final InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject?
-    InputCustomScalarListInsideInputObject_value;
-    final InputCustomScalarListInsideInputObject$raw =
-        data["InputCustomScalarListInsideInputObject"];
-    InputCustomScalarListInsideInputObject_value =
-        InputCustomScalarListInsideInputObject$raw == null
-            ? null
-            : InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject.fromJson(
-              InputCustomScalarListInsideInputObject$raw,
-            );
 
     return InputCustomScalarListInsideInputObjectResponse(
       InputCustomScalarListInsideInputObject:
@@ -99,6 +99,23 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
     this.message,
   });
 
+  static InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject
+  fromJson(JsonObject data) {
+    final bool success_value;
+    final success$raw = data["success"];
+    success_value = success$raw as bool;
+
+    final String? message_value;
+    final message$raw = data["message"];
+    message_value = message$raw as String?;
+
+    return InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject(
+      success: success_value,
+
+      message: message_value,
+    );
+  }
+
   InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject
   updateWithJson(JsonObject data) {
     final bool success_value;
@@ -116,23 +133,6 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
     } else {
       message_value = message;
     }
-
-    return InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  static InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject
-  fromJson(JsonObject data) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
-
-    final String? message_value;
-    final message$raw = data["message"];
-    message_value = message$raw as String?;
 
     return InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject(
       success: success_value,

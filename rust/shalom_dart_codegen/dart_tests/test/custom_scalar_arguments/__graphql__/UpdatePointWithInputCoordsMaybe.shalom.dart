@@ -19,6 +19,23 @@ class UpdatePointWithInputCoordsMaybeResponse {
     this.updatePointWithInputCoordsMaybe,
   });
 
+  static UpdatePointWithInputCoordsMaybeResponse fromJson(JsonObject data) {
+    final UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
+    updatePointWithInputCoordsMaybe_value;
+    final updatePointWithInputCoordsMaybe$raw =
+        data["updatePointWithInputCoordsMaybe"];
+    updatePointWithInputCoordsMaybe_value =
+        updatePointWithInputCoordsMaybe$raw == null
+            ? null
+            : UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe.fromJson(
+              updatePointWithInputCoordsMaybe$raw,
+            );
+
+    return UpdatePointWithInputCoordsMaybeResponse(
+      updatePointWithInputCoordsMaybe: updatePointWithInputCoordsMaybe_value,
+    );
+  }
+
   UpdatePointWithInputCoordsMaybeResponse updateWithJson(JsonObject data) {
     final UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
     updatePointWithInputCoordsMaybe_value;
@@ -34,23 +51,6 @@ class UpdatePointWithInputCoordsMaybeResponse {
     } else {
       updatePointWithInputCoordsMaybe_value = updatePointWithInputCoordsMaybe;
     }
-
-    return UpdatePointWithInputCoordsMaybeResponse(
-      updatePointWithInputCoordsMaybe: updatePointWithInputCoordsMaybe_value,
-    );
-  }
-
-  static UpdatePointWithInputCoordsMaybeResponse fromJson(JsonObject data) {
-    final UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
-    updatePointWithInputCoordsMaybe_value;
-    final updatePointWithInputCoordsMaybe$raw =
-        data["updatePointWithInputCoordsMaybe"];
-    updatePointWithInputCoordsMaybe_value =
-        updatePointWithInputCoordsMaybe$raw == null
-            ? null
-            : UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe.fromJson(
-              updatePointWithInputCoordsMaybe$raw,
-            );
 
     return UpdatePointWithInputCoordsMaybeResponse(
       updatePointWithInputCoordsMaybe: updatePointWithInputCoordsMaybe_value,
@@ -94,6 +94,32 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
     required this.id,
   });
 
+  static UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
+  fromJson(JsonObject data) {
+    final rmhlxei.Point? coords_value;
+    final coords$raw = data["coords"];
+    coords_value =
+        coords$raw == null
+            ? null
+            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    return UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe(
+      coords: coords_value,
+
+      name: name_value,
+
+      id: id_value,
+    );
+  }
+
   UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
   updateWithJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
@@ -122,32 +148,6 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
     } else {
       id_value = id;
     }
-
-    return UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe(
-      coords: coords_value,
-
-      name: name_value,
-
-      id: id_value,
-    );
-  }
-
-  static UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
-  fromJson(JsonObject data) {
-    final rmhlxei.Point? coords_value;
-    final coords$raw = data["coords"];
-    coords_value =
-        coords$raw == null
-            ? null
-            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
 
     return UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe(
       coords: coords_value,
