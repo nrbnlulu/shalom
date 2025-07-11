@@ -122,7 +122,6 @@ import 'package:collection/collection.dart';
         {% if implements_node_interface and selection.name == "id" %}super{% else %}this{% endif %}.{{ selection.name }},
     {% endfor %}
     });
-    
     static {{ typename }} fromJson(JsonObject data) {
     {% for selection in selections -%}
         {% set selection_name = selection.name %}
