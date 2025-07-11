@@ -36,32 +36,32 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class GetUserResponse {
+class SubscribeToSomeFieldsResponse {
 
     /// class members
     
             
-            final GetUser_user? user;
+            final SubscribeToSomeFields_user? user;
         
     
     // keywordargs constructor
-    GetUserResponse({
+    SubscribeToSomeFieldsResponse({
     
         this.user,
     
     });
     
     
-        GetUserResponse updateWithJson(JsonObject data) {
+        SubscribeToSomeFieldsResponse updateWithJson(JsonObject data) {
         
             
-            final GetUser_user? user_value;
+            final SubscribeToSomeFields_user? user_value;
             if (data.containsKey('user')) {
                 final user$raw = data["user"];
                 user_value = 
     
         
-            user$raw == null ? null : GetUser_user.fromJson(user$raw)
+            user$raw == null ? null : SubscribeToSomeFields_user.fromJson(user$raw)
         
     
 ;
@@ -69,7 +69,7 @@ class GetUserResponse {
                 user_value = user;
             }
         
-        return GetUserResponse(
+        return SubscribeToSomeFieldsResponse(
         
             
             user: user_value,
@@ -77,20 +77,20 @@ class GetUserResponse {
         );
         }
     
-    static GetUserResponse fromJson(JsonObject data) {
+    static SubscribeToSomeFieldsResponse fromJson(JsonObject data) {
     
         
-        final GetUser_user? user_value;
+        final SubscribeToSomeFields_user? user_value;
         final user$raw = data["user"];
         user_value = 
     
         
-            user$raw == null ? null : GetUser_user.fromJson(user$raw)
+            user$raw == null ? null : SubscribeToSomeFields_user.fromJson(user$raw)
         
     
 ;
     
-    return GetUserResponse(
+    return SubscribeToSomeFieldsResponse(
     
         
         user: user_value,
@@ -100,7 +100,7 @@ class GetUserResponse {
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetUserResponse &&
+    (other is SubscribeToSomeFieldsResponse &&
     
         
     
@@ -140,7 +140,7 @@ class GetUserResponse {
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class GetUser_user  extends Node  {
+    class SubscribeToSomeFields_user  extends Node  {
         
     /// class members
     
@@ -154,46 +154,24 @@ class GetUserResponse {
                 
         
     
-        
-            
-                String email;
-                
-        
-    
-        
-            
-                int? age;
-                
-        
-    
     // keywordargs constructor
-    GetUser_user({
+    SubscribeToSomeFields_user({
     required
         super.id,
     required
         this.name,
-    required
-        this.email,
-    
-        this.age,
     
     });
     
     
-         static GetUser_user deserialize(JsonObject data, ShalomContext context) {
-            final self = GetUser_user(
+         static SubscribeToSomeFields_user deserialize(JsonObject data, ShalomContext context) {
+            final self = SubscribeToSomeFields_user(
                 
                     
                     id: data['id'],
                 
                     
                     name: data['name'],
-                
-                    
-                    email: data['email'],
-                
-                    
-                    age: data['age'],
                 
             );
             context.manager.parseNodeData(self.toJson());
@@ -205,16 +183,10 @@ class GetUserResponse {
                 context.manager.register(this, { 
                        
                         
-                        'id'
+                        'id',
                        
                         
-                        'name'
-                       
-                        
-                        'email'
-                       
-                        
-                        'age'
+                        'name',
                     
                     }
                 );
@@ -244,22 +216,12 @@ class GetUserResponse {
                             name = rawData['name'];
                             break;
                     
-                         
-                         case 'email':
-                            email = rawData['email'];
-                            break;
-                    
-                         
-                         case 'age':
-                            age = rawData['age'];
-                            break;
-                    
                 }
             }
             notifyListeners();
          }
     
-    static GetUser_user fromJson(JsonObject data) {
+    static SubscribeToSomeFields_user fromJson(JsonObject data) {
     
         
         final String id_value;
@@ -287,33 +249,7 @@ class GetUserResponse {
     
 ;
     
-        
-        final String email_value;
-        final email$raw = data["email"];
-        email_value = 
-    
-        
-            
-                email$raw as String
-            
-        
-    
-;
-    
-        
-        final int? age_value;
-        final age$raw = data["age"];
-        age_value = 
-    
-        
-            
-                age$raw as int?
-            
-        
-    
-;
-    
-    return GetUser_user(
+    return SubscribeToSomeFields_user(
     
         
         id: id_value,
@@ -321,18 +257,12 @@ class GetUserResponse {
         
         name: name_value,
     
-        
-        email: email_value,
-    
-        
-        age: age_value,
-    
     );
     }
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetUser_user &&
+    (other is SubscribeToSomeFields_user &&
     
         
     
@@ -343,18 +273,6 @@ class GetUserResponse {
         
     
         other.name == name
-    
- &&
-    
-        
-    
-        other.email == email
-    
- &&
-    
-        
-    
-        other.age == age
     
  
     
@@ -370,12 +288,6 @@ class GetUserResponse {
         
             
             name,
-        
-            
-            email,
-        
-            
-            age,
         
         ]);
     
@@ -409,32 +321,6 @@ class GetUserResponse {
             
         ,
     
-        
-        'email':
-            
-                
-    
-        
-            this.email
-        
-    
-
-            
-        ,
-    
-        
-        'age':
-            
-                
-    
-        
-            this.age
-        
-    
-
-            
-        ,
-    
     };
     }
 
@@ -444,10 +330,10 @@ class GetUserResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 
-class RequestGetUser extends Requestable {
+class RequestSubscribeToSomeFields extends Requestable {
     
 
-    RequestGetUser(
+    RequestSubscribeToSomeFields(
         
     );
 
@@ -455,17 +341,15 @@ class RequestGetUser extends Requestable {
     Request toRequest() {
         JsonObject variablesJson =  {}  ;
         return Request(
-            query: r"""query GetUser {
+            query: r"""query SubscribeToSomeFields {
   user {
     id
     name
-    email
-    age
   }
 }""",
             variables: variablesJson,
             opType: OperationType.Query,
-            opName: 'GetUser'
+            opName: 'SubscribeToSomeFields'
         );
     }
 }

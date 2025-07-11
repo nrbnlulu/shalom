@@ -1,19 +1,44 @@
-import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
-import '__graphql__/GetUser.shalom.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '__graphql__/SubscribeToAllFields.shalom.dart';
+import '__graphql__/SubscribeToSomeFields.shalom.dart';
+
+Future<void> runNodeWidget<T extends Node>(WidgetTester tester, T node, ShalomContext context) async {
+  await tester.pumpWidget(
+      MaterialApp( 
+        home: NodeWidget<T>(
+          node: node,
+          context: context,
+          builder: (_, node) => SizedBox()
+        ),
+      ),
+    );
+} 
 
 void main() {
-    test("test sync nodes", () {
+  group("test subscription synchronization", () {
+    testWidgets("all subscribed fields", (WidgetTester tester) async {
         final manager = NodeManager();
         final context = ShalomContext(manager: manager);
         final id = "1";
         final initialUserData = {"id": id, "name": "qtgql", "email": "qtgql@gmail.com", "age": 2};
-        final initialUserNode = GetUser_user.deserialize(initialUserData, context);
-        NodeWidget<GetUser_user>(node: initialUserNode, builder: (_, node) => SizedBox(width: 16), context: context);  
+        final initialUserNode = SubscribeToAllFields_user.deserialize(initialUserData, context);
+        await runNodeWidget(tester, initialUserNode, context);
         final nextUserData = {"id": id, "name": "shalom", "email": "shalom@gmail.com", "age": 1}; 
-        GetUser_user.deserialize(nextUserData, context);
-        print(initialUserNode.toJson());
+        SubscribeToAllFields_user.deserialize(nextUserData, context);
+        expect(initialUserNode.toJson(), nextUserData);
     });
+    testWidgets("some subscribed fields", (WidgetTester tester) async {
+        final manager = NodeManager();
+        final context = ShalomContext(manager: manager);
+        final id = "1";
+        final initialUserData = {"id": id, "name": "qtgql", "email": "qtgql@gmail.com", "age": 2};
+        final initialUserNode = SubscribeToSomeFields_user.deserialize(initialUserData, context);
+        await runNodeWidget(tester, initialUserNode, context);
+        final nextUserData = {"id": id, "name": "shalom", "email": "shalom@gmail.com", "age": 1}; 
+        SubscribeToSomeFields_user.deserialize(nextUserData, context);
+    });
+    }
+  );
 }

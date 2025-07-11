@@ -1,8 +1,15 @@
-query GetUser {
+query SubscribeToAllFields {
     user {
         id    
         name 
         email
         age
+    }
+}
+
+query SubscribeToSomeFields {
+    user {
+        id
+        name
     }
 }

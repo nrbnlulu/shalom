@@ -140,7 +140,7 @@ import 'package:collection/collection.dart';
                 context.manager.register(this, { 
                     {% for selection in selections %}   
                         {% set selection_name = selection.name %}
-                        '{{ selection_name }}'
+                        '{{ selection_name }}',
                     {% endfor %}
                     }
                 );
