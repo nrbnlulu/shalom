@@ -30,3 +30,9 @@ fn test_nested_object_selection_dart() {
 fn test_list_of_scalars_dart() {
     run_dart_tests_for_usecase("list_of_scalars");
 }
+
+#[test]
+fn test_node_interface() {
+    run_dart_tests_for_usecase("node_interface");
+}
+
