@@ -5,7 +5,7 @@ typedef ID = String;
 
 abstract class Node extends ChangeNotifier {
   int widgetsSubscribed = 0;
-  final ID id;
+  ID id;
   Node({required this.id});
   void updateWithJson(JsonObject rawData, Set<String> changedFields);
   JsonObject toJson();

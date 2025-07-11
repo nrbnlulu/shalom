@@ -70,6 +70,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
             apollo_schema::ExtendedType::InputObject(input) => {
                 resolve_input(&ctx, name.to_string(), input);
             }
+            apollo_schema::ExtendedType::Interface(_) => {}
             _ => todo!(
                 "Unsupported type in schema {:?}: {:?}",
                 name.to_string(),

@@ -88,13 +88,19 @@ pub struct ObjectSelection {
     pub full_name: String,
     pub is_optional: bool,
     pub selections: RefCell<Vec<Selection>>,
+    pub implements_node_interface: bool,
 }
 
 pub type SharedObjectSelection = Rc<ObjectSelection>;
 
 impl ObjectSelection {
-    pub fn new(is_optional: bool, full_name: String) -> SharedObjectSelection {
+    pub fn new(
+        is_optional: bool,
+        full_name: String,
+        implements_node_interface: bool,
+    ) -> SharedObjectSelection {
         let ret = ObjectSelection {
+            implements_node_interface,
             full_name,
             is_optional,
             selections: RefCell::new(Vec::new()),

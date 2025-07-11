@@ -55,11 +55,11 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
     let mut cmd;
     #[cfg(target_os = "windows")]
     {
-        cmd = std::process::Command::new("dart.bat");
+        cmd = std::process::Command::new("flutter.bat");
     }
     #[cfg(not(target_os = "windows"))]
     {
-        cmd = std::process::Command::new("dart");
+        cmd = std::process::Command::new("flutter");
     }
     let dart_test_root = tests_path().join("..");
     cmd.current_dir(&dart_test_root);

@@ -103,19 +103,93 @@ import 'package:collection/collection.dart';
 
 
 {% set operation_name = operation.context.operation_name %}
-{% macro base_object_impl(typename, selections) %}
+{% macro base_object_impl(typename, selections, implements_node_interface) %}
     /// class members
     {% for selection in selections -%}
         {% set selection_name = selection.name %}
-        final {{ type_name_for_selection(selection) }} {{ selection_name }};
+        {% if implements_node_interface %}
+            {% if not selection_name == "id" %}
+                {{ type_name_for_selection(selection) }} {{ selection_name }};
+            {% endif %}    
+        {% else %}    
+            final {{ type_name_for_selection(selection) }} {{ selection_name }};
+        {% endif %}
     {% endfor %}
     // keywordargs constructor
     {{ typename }}({
     {% for selection in selections -%}
         {% if not selection.is_optional %}required{% endif %}
-        this.{{ selection.name }},
+        {% if implements_node_interface and selection.name == "id" %}super{% else %}this{% endif %}.{{ selection.name }},
     {% endfor %}
     });
+    
+    {% if implements_node_interface %}
+         static {{ typename }} deserialize(JsonObject data, ShalomContext context) {
+            final self = {{ typename }}(
+                {% for selection in selections %}
+                    {% set selection_name = selection.name %}
+                    {{ selection_name }}: data['{{ selection_name }}'] ?? '',
+                {% endfor %}
+            );
+            context.manager.parseNodeData(self.toJson());
+            return self;
+         }
+         @override
+         void subscribeToChanges(ShalomContext context) {
+            if (widgetsSubscribed == 0) {
+                context.manager.register(this, { 
+                    {% for selection in selections %}   
+                        {% set selection_name = selection.name %}
+                        '{{ selection_name }}'
+                    {% endfor %}
+                    }
+                );
+            }
+            widgetsSubscribed += 1;
+         }
+         @override 
+         void unSubscribeToChanges(ShalomContext context) {
+            if (widgetsSubscribed < 2) {
+                context.manager.unRegister(this);
+            }
+            widgetsSubscribed -= 1;
+         }
+
+         @override
+         void updateWithJson(JsonObject rawData, Set<String> changedFields) {
+            for (final fieldName in changedFields) {
+                switch (fieldName) {
+                    {% for selection in selections %}
+                         {% set selection_name = selection.name %}
+                         case '{{ selection_name }}':
+                            {{ selection_name }} = rawData['{{ selection_name }}'];
+                            break;
+                    {% endfor %}
+                }
+            }
+            notifyListeners();
+         }
+    {% else %}
+        {{ typename }} updateWithJson(JsonObject data) {
+        {% for selection in selections -%}
+            {% set selection_typename = type_name_for_selection(selection) %}
+            {% set selection_name = selection.name %}
+            final {{ selection_typename }} {{ selection_name }}_value;
+            if (data.containsKey('{{ selection_name }}')) {
+                final {{selection_name}}$raw = data["{{ selection_name }}"];
+                {{ selection_name }}_value = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
+            } else {
+                {{ selection_name }}_value = {{ selection_name }};
+            }
+        {% endfor %}
+        return {{ typename }}(
+        {% for selection in selections %}
+            {% set selection_name = selection.name %}
+            {{ selection_name }}: {{ selection_name }}_value,
+        {% endfor %}
+        );
+        }
+    {% endif %}
     static {{ typename }} fromJson(JsonObject data) {
     {% for selection in selections -%}
         {% set selection_name = selection.name %}
@@ -123,25 +197,6 @@ import 'package:collection/collection.dart';
         final {{ selection_typename }} {{ selection_name }}_value;
         final {{selection_name}}$raw = data["{{ selection_name }}"];
         {{ selection_name }}_value = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
-    {% endfor %}
-    return {{ typename }}(
-    {% for selection in selections %}
-        {% set selection_name = selection.name %}
-        {{ selection_name }}: {{ selection_name }}_value,
-    {% endfor %}
-    );
-    }
-    {{ typename }} updateWithJson(JsonObject data) {
-    {% for selection in selections -%}
-        {% set selection_typename = type_name_for_selection(selection) %}
-        {% set selection_name = selection.name %}
-        final {{ selection_typename }} {{ selection_name }}_value;
-        if (data.containsKey('{{ selection_name }}')) {
-            final {{selection_name}}$raw = data["{{ selection_name }}"];
-            {{ selection_name }}_value = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
-        } else {
-            {{ selection_name }}_value = {{ selection_name }};
-        }
     {% endfor %}
     return {{ typename }}(
     {% for selection in selections %}
@@ -172,6 +227,7 @@ import 'package:collection/collection.dart';
     {% else %}
         {{ (selections | first).name }}.hashCode;
     {% endif %}
+    {% if implements_node_interface %} @override {% endif %} 
     JsonObject toJson() {
     return {
     {% for selection in selections %}
@@ -193,14 +249,14 @@ typedef JsonObject = Map<String, dynamic>;
 
 {% set root_type_name = operation_name ~ "Response" %}
 class {{ root_type_name }} {
-{{ base_object_impl(root_type_name, operation.context.root_type.selections) }}
+{{ base_object_impl(root_type_name, operation.context.root_type.selections, false) }}
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
 {% for full_name, selection in operation.context.type_defs | items  if selection.kind == "Object" %}
     class {{ full_name }} {% if selection.implements_node_interface %} extends Node {% endif %} {
-        {{ base_object_impl(full_name, selection.selections) }}
+        {{ base_object_impl(full_name, selection.selections, selection.implements_node_interface) }}
     }
 {% endfor %}
 
