@@ -128,7 +128,7 @@ import 'package:collection/collection.dart';
             final self = {{ typename }}(
                 {% for selection in selections %}
                     {% set selection_name = selection.name %}
-                    {{ selection_name }}: data['{{ selection_name }}'] ?? '',
+                    {{ selection_name }}: data['{{ selection_name }}'],
                 {% endfor %}
             );
             context.manager.parseNodeData(self.toJson());

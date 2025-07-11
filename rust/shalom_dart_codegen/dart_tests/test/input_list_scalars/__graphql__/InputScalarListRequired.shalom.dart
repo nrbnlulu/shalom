@@ -1,170 +1,358 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
+
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 
+
+
+
 typedef JsonObject = Map<String, dynamic>;
 
+
+
+
 class InputScalarListRequiredResponse {
-  /// class members
 
-  final InputScalarListRequired_InputScalarListRequired?
-  InputScalarListRequired;
+    /// class members
+    
+            
+            final InputScalarListRequired_InputScalarListRequired? InputScalarListRequired;
+        
+    
+    // keywordargs constructor
+    InputScalarListRequiredResponse({
+    
+        this.InputScalarListRequired,
+    
+    });
+    
+    
+        InputScalarListRequiredResponse updateWithJson(JsonObject data) {
+        
+            
+            final InputScalarListRequired_InputScalarListRequired? InputScalarListRequired_value;
+            if (data.containsKey('InputScalarListRequired')) {
+                final InputScalarListRequired$raw = data["InputScalarListRequired"];
+                InputScalarListRequired_value = 
+    
+        
+            InputScalarListRequired$raw == null ? null : InputScalarListRequired_InputScalarListRequired.fromJson(InputScalarListRequired$raw)
+        
+    
+;
+            } else {
+                InputScalarListRequired_value = InputScalarListRequired;
+            }
+        
+        return InputScalarListRequiredResponse(
+        
+            
+            InputScalarListRequired: InputScalarListRequired_value,
+        
+        );
+        }
+    
+    static InputScalarListRequiredResponse fromJson(JsonObject data) {
+    
+        
+        final InputScalarListRequired_InputScalarListRequired? InputScalarListRequired_value;
+        final InputScalarListRequired$raw = data["InputScalarListRequired"];
+        InputScalarListRequired_value = 
+    
+        
+            InputScalarListRequired$raw == null ? null : InputScalarListRequired_InputScalarListRequired.fromJson(InputScalarListRequired$raw)
+        
+    
+;
+    
+    return InputScalarListRequiredResponse(
+    
+        
+        InputScalarListRequired: InputScalarListRequired_value,
+    
+    );
+    }
+    @override
+    bool operator ==(Object other) {
+    return identical(this, other) ||
+    (other is InputScalarListRequiredResponse &&
+    
+        
+    
+        other.InputScalarListRequired == InputScalarListRequired
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        InputScalarListRequired.hashCode;
+    
+     
+    JsonObject toJson() {
+    return {
+    
+        
+        'InputScalarListRequired':
+            
+                
+    
+        
+            this.InputScalarListRequired?.toJson()
+        
+    
 
-  // keywordargs constructor
-  InputScalarListRequiredResponse({this.InputScalarListRequired});
-
-  InputScalarListRequiredResponse updateWithJson(JsonObject data) {
-    final InputScalarListRequired_InputScalarListRequired?
-    InputScalarListRequired_value;
-    if (data.containsKey('InputScalarListRequired')) {
-      final InputScalarListRequired$raw = data["InputScalarListRequired"];
-      InputScalarListRequired_value =
-          InputScalarListRequired$raw == null
-              ? null
-              : InputScalarListRequired_InputScalarListRequired.fromJson(
-                InputScalarListRequired$raw,
-              );
-    } else {
-      InputScalarListRequired_value = InputScalarListRequired;
+            
+        ,
+    
+    };
     }
 
-    return InputScalarListRequiredResponse(
-      InputScalarListRequired: InputScalarListRequired_value,
-    );
-  }
-
-  static InputScalarListRequiredResponse fromJson(JsonObject data) {
-    final InputScalarListRequired_InputScalarListRequired?
-    InputScalarListRequired_value;
-    final InputScalarListRequired$raw = data["InputScalarListRequired"];
-    InputScalarListRequired_value =
-        InputScalarListRequired$raw == null
-            ? null
-            : InputScalarListRequired_InputScalarListRequired.fromJson(
-              InputScalarListRequired$raw,
-            );
-
-    return InputScalarListRequiredResponse(
-      InputScalarListRequired: InputScalarListRequired_value,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is InputScalarListRequiredResponse &&
-            other.InputScalarListRequired == InputScalarListRequired);
-  }
-
-  @override
-  int get hashCode => InputScalarListRequired.hashCode;
-
-  JsonObject toJson() {
-    return {'InputScalarListRequired': this.InputScalarListRequired?.toJson()};
-  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class InputScalarListRequired_InputScalarListRequired {
-  /// class members
 
-  final bool success;
+    class InputScalarListRequired_InputScalarListRequired  {
+        
+    /// class members
+    
+            
+            final bool success;
+        
+    
+    // keywordargs constructor
+    InputScalarListRequired_InputScalarListRequired({
+    required
+        this.success,
+    
+    });
+    
+    
+        InputScalarListRequired_InputScalarListRequired updateWithJson(JsonObject data) {
+        
+            
+            final bool success_value;
+            if (data.containsKey('success')) {
+                final success$raw = data["success"];
+                success_value = 
+    
+        
+            
+                success$raw as bool
+            
+        
+    
+;
+            } else {
+                success_value = success;
+            }
+        
+        return InputScalarListRequired_InputScalarListRequired(
+        
+            
+            success: success_value,
+        
+        );
+        }
+    
+    static InputScalarListRequired_InputScalarListRequired fromJson(JsonObject data) {
+    
+        
+        final bool success_value;
+        final success$raw = data["success"];
+        success_value = 
+    
+        
+            
+                success$raw as bool
+            
+        
+    
+;
+    
+    return InputScalarListRequired_InputScalarListRequired(
+    
+        
+        success: success_value,
+    
+    );
+    }
+    @override
+    bool operator ==(Object other) {
+    return identical(this, other) ||
+    (other is InputScalarListRequired_InputScalarListRequired &&
+    
+        
+    
+        other.success == success
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        success.hashCode;
+    
+     
+    JsonObject toJson() {
+    return {
+    
+        
+        'success':
+            
+                
+    
+        
+            this.success
+        
+    
 
-  // keywordargs constructor
-  InputScalarListRequired_InputScalarListRequired({required this.success});
-
-  InputScalarListRequired_InputScalarListRequired updateWithJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
+            
+        ,
+    
+    };
     }
 
-    return InputScalarListRequired_InputScalarListRequired(
-      success: success_value,
-    );
-  }
+    }
 
-  static InputScalarListRequired_InputScalarListRequired fromJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
-
-    return InputScalarListRequired_InputScalarListRequired(
-      success: success_value,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is InputScalarListRequired_InputScalarListRequired &&
-            other.success == success);
-  }
-
-  @override
-  int get hashCode => success.hashCode;
-
-  JsonObject toJson() {
-    return {'success': this.success};
-  }
-}
 
 // ------------ END OBJECT DEFINITIONS -------------
 
+
 class RequestInputScalarListRequired extends Requestable {
-  final InputScalarListRequiredVariables variables;
+    
+    final InputScalarListRequiredVariables variables;
+    
 
-  RequestInputScalarListRequired({required this.variables});
+    RequestInputScalarListRequired(
+        
+        {
+            required this.variables,
+        }
+        
+    );
 
-  @override
-  Request toRequest() {
-    JsonObject variablesJson = variables.toJson();
-    return Request(
-      query: r"""mutation InputScalarListRequired($strings: [String!]!) {
+    @override
+    Request toRequest() {
+        JsonObject variablesJson =  variables.toJson() ;
+        return Request(
+            query: r"""mutation InputScalarListRequired($strings: [String!]!) {
   InputScalarListRequired(strings: $strings) {
     success
   }
 }""",
-      variables: variablesJson,
-      opType: OperationType.Mutation,
-      opName: 'InputScalarListRequired',
-    );
-  }
+            variables: variablesJson,
+            opType: OperationType.Mutation,
+            opName: 'InputScalarListRequired'
+        );
+    }
 }
 
+
 class InputScalarListRequiredVariables {
-  final List<String> strings;
+    
+    
+        final List<String> strings;
+    
 
-  InputScalarListRequiredVariables({required this.strings});
+    InputScalarListRequiredVariables (
+        
+            {
+            
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
+        
+            required this.strings
+        ,
+    
+    
 
-    data["strings"] = this.strings.map((e) => e).toList();
+            }
+        
+    );
 
-    return data;
-  }
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  InputScalarListRequiredVariables updateWith({List<String>? strings}) {
-    final List<String> strings$next;
+    
+    
+        data["strings"] = 
+    
+        
+        
+            this.strings.map((e) => 
+    
+        e
+    
+).toList()
+        
+    
+;
+    
 
-    if (strings != null) {
-      strings$next = strings;
-    } else {
-      strings$next = this.strings;
+
+        return data;
     }
 
-    return InputScalarListRequiredVariables(strings: strings$next);
-  }
+    
+InputScalarListRequiredVariables updateWith(
+    {
+        
+            
+                List<String>? strings
+            
+            
+        
+    }
+) {
+    
+        final List<String> strings$next;
+        
+            if (strings != null) {
+                strings$next = strings;
+            } else {
+                strings$next = this.strings;
+            }
+        
+    
+    return InputScalarListRequiredVariables(
+        
+            strings: strings$next
+            
+        
+    );
+}
+
+
 }
