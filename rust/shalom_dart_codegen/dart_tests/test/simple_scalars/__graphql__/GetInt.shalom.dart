@@ -14,6 +14,13 @@ class GetIntResponse {
 
   // keywordargs constructor
   GetIntResponse({required this.intField});
+  static GetIntResponse fromJson(JsonObject data) {
+    final int intField_value;
+    final intField$raw = data["intField"];
+    intField_value = intField$raw as int;
+
+    return GetIntResponse(intField: intField_value);
+  }
 
   GetIntResponse updateWithJson(JsonObject data) {
     final int intField_value;
@@ -23,14 +30,6 @@ class GetIntResponse {
     } else {
       intField_value = intField;
     }
-
-    return GetIntResponse(intField: intField_value);
-  }
-
-  static GetIntResponse fromJson(JsonObject data) {
-    final int intField_value;
-    final intField$raw = data["intField"];
-    intField_value = intField$raw as int;
 
     return GetIntResponse(intField: intField_value);
   }

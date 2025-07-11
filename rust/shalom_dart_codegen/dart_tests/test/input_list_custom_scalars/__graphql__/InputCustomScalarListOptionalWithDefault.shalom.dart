@@ -18,7 +18,6 @@ class InputCustomScalarListOptionalWithDefaultResponse {
   InputCustomScalarListOptionalWithDefaultResponse({
     this.InputCustomScalarListOptionalWithDefault,
   });
-
   static InputCustomScalarListOptionalWithDefaultResponse fromJson(
     JsonObject data,
   ) {
@@ -98,7 +97,6 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
 
     this.message,
   });
-
   static InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault
   fromJson(JsonObject data) {
     final bool success_value;

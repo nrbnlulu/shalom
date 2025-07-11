@@ -14,6 +14,13 @@ class GetTaskResponse {
 
   // keywordargs constructor
   GetTaskResponse({required this.task});
+  static GetTaskResponse fromJson(JsonObject data) {
+    final GetTask_task task_value;
+    final task$raw = data["task"];
+    task_value = GetTask_task.fromJson(task$raw);
+
+    return GetTaskResponse(task: task_value);
+  }
 
   GetTaskResponse updateWithJson(JsonObject data) {
     final GetTask_task task_value;
@@ -23,14 +30,6 @@ class GetTaskResponse {
     } else {
       task_value = task;
     }
-
-    return GetTaskResponse(task: task_value);
-  }
-
-  static GetTaskResponse fromJson(JsonObject data) {
-    final GetTask_task task_value;
-    final task$raw = data["task"];
-    task_value = GetTask_task.fromJson(task$raw);
 
     return GetTaskResponse(task: task_value);
   }
@@ -62,6 +61,21 @@ class GetTask_task {
 
   // keywordargs constructor
   GetTask_task({required this.id, required this.name, required this.status});
+  static GetTask_task fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final Status status_value;
+    final status$raw = data["status"];
+    status_value = Status.fromString(status$raw);
+
+    return GetTask_task(id: id_value, name: name_value, status: status_value);
+  }
 
   GetTask_task updateWithJson(JsonObject data) {
     final String id_value;
@@ -87,22 +101,6 @@ class GetTask_task {
     } else {
       status_value = status;
     }
-
-    return GetTask_task(id: id_value, name: name_value, status: status_value);
-  }
-
-  static GetTask_task fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final Status status_value;
-    final status$raw = data["status"];
-    status_value = Status.fromString(status$raw);
 
     return GetTask_task(id: id_value, name: name_value, status: status_value);
   }

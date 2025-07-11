@@ -15,7 +15,6 @@ class InputListOfRequiredObjectsResponse {
 
   // keywordargs constructor
   InputListOfRequiredObjectsResponse({this.InputListOfRequiredObjects});
-
   static InputListOfRequiredObjectsResponse fromJson(JsonObject data) {
     final InputListOfRequiredObjects_InputListOfRequiredObjects?
     InputListOfRequiredObjects_value;
@@ -84,7 +83,6 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
 
     this.message,
   });
-
   static InputListOfRequiredObjects_InputListOfRequiredObjects fromJson(
     JsonObject data,
   ) {

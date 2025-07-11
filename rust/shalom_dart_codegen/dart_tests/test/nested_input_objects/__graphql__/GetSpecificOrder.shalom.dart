@@ -14,7 +14,6 @@ class GetSpecificOrderResponse {
 
   // keywordargs constructor
   GetSpecificOrderResponse({this.getSpecificOrder});
-
   static GetSpecificOrderResponse fromJson(JsonObject data) {
     final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
     final getSpecificOrder$raw = data["getSpecificOrder"];
@@ -71,7 +70,6 @@ class GetSpecificOrder_getSpecificOrder {
 
   // keywordargs constructor
   GetSpecificOrder_getSpecificOrder({this.quantity, this.price, this.name});
-
   static GetSpecificOrder_getSpecificOrder fromJson(JsonObject data) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];

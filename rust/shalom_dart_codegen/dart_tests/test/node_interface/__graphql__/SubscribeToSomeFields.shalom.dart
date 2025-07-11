@@ -14,7 +14,6 @@ class SubscribeToSomeFieldsResponse {
 
   // keywordargs constructor
   SubscribeToSomeFieldsResponse({this.user});
-
   static SubscribeToSomeFieldsResponse fromJson(JsonObject data) {
     final SubscribeToSomeFields_user? user_value;
     final user$raw = data["user"];
@@ -62,7 +61,6 @@ class SubscribeToSomeFields_user extends Node {
 
   // keywordargs constructor
   SubscribeToSomeFields_user({required super.id, required this.name});
-
   static SubscribeToSomeFields_user fromJson(JsonObject data) {
     final String id_value;
     final id$raw = data["id"];

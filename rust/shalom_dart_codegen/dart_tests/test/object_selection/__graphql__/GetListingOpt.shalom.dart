@@ -14,6 +14,16 @@ class GetListingOptResponse {
 
   // keywordargs constructor
   GetListingOptResponse({this.listingOpt});
+  static GetListingOptResponse fromJson(JsonObject data) {
+    final GetListingOpt_listingOpt? listingOpt_value;
+    final listingOpt$raw = data["listingOpt"];
+    listingOpt_value =
+        listingOpt$raw == null
+            ? null
+            : GetListingOpt_listingOpt.fromJson(listingOpt$raw);
+
+    return GetListingOptResponse(listingOpt: listingOpt_value);
+  }
 
   GetListingOptResponse updateWithJson(JsonObject data) {
     final GetListingOpt_listingOpt? listingOpt_value;
@@ -26,17 +36,6 @@ class GetListingOptResponse {
     } else {
       listingOpt_value = listingOpt;
     }
-
-    return GetListingOptResponse(listingOpt: listingOpt_value);
-  }
-
-  static GetListingOptResponse fromJson(JsonObject data) {
-    final GetListingOpt_listingOpt? listingOpt_value;
-    final listingOpt$raw = data["listingOpt"];
-    listingOpt_value =
-        listingOpt$raw == null
-            ? null
-            : GetListingOpt_listingOpt.fromJson(listingOpt$raw);
 
     return GetListingOptResponse(listingOpt: listingOpt_value);
   }
@@ -68,6 +67,27 @@ class GetListingOpt_listingOpt {
 
   // keywordargs constructor
   GetListingOpt_listingOpt({required this.id, required this.name, this.price});
+  static GetListingOpt_listingOpt fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final int? price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as int?;
+
+    return GetListingOpt_listingOpt(
+      id: id_value,
+
+      name: name_value,
+
+      price: price_value,
+    );
+  }
 
   GetListingOpt_listingOpt updateWithJson(JsonObject data) {
     final String id_value;
@@ -93,28 +113,6 @@ class GetListingOpt_listingOpt {
     } else {
       price_value = price;
     }
-
-    return GetListingOpt_listingOpt(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  static GetListingOpt_listingOpt fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final int? price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as int?;
 
     return GetListingOpt_listingOpt(
       id: id_value,

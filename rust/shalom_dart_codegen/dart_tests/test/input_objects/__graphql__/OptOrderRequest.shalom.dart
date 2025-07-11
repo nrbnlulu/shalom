@@ -14,7 +14,6 @@ class OptOrderRequestResponse {
 
   // keywordargs constructor
   OptOrderRequestResponse({this.optOrderRequest});
-
   static OptOrderRequestResponse fromJson(JsonObject data) {
     final OptOrderRequest_optOrderRequest? optOrderRequest_value;
     final optOrderRequest$raw = data["optOrderRequest"];
@@ -69,7 +68,6 @@ class OptOrderRequest_optOrderRequest {
 
   // keywordargs constructor
   OptOrderRequest_optOrderRequest({this.quantity, this.name, this.price});
-
   static OptOrderRequest_optOrderRequest fromJson(JsonObject data) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];

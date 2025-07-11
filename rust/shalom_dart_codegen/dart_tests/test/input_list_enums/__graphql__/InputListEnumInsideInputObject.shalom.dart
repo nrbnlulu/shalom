@@ -14,7 +14,6 @@ class InputListEnumInsideInputObjectResponse {
 
   // keywordargs constructor
   InputListEnumInsideInputObjectResponse({this.InputListEnumInsideInputObject});
-
   static InputListEnumInsideInputObjectResponse fromJson(JsonObject data) {
     final String? InputListEnumInsideInputObject_value;
     final InputListEnumInsideInputObject$raw =

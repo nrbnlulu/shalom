@@ -16,7 +16,6 @@ class InputCustomScalarListMaybeResponse {
 
   // keywordargs constructor
   InputCustomScalarListMaybeResponse({this.InputCustomScalarListMaybe});
-
   static InputCustomScalarListMaybeResponse fromJson(JsonObject data) {
     final InputCustomScalarListMaybe_InputCustomScalarListMaybe?
     InputCustomScalarListMaybe_value;
@@ -85,7 +84,6 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
 
     this.message,
   });
-
   static InputCustomScalarListMaybe_InputCustomScalarListMaybe fromJson(
     JsonObject data,
   ) {

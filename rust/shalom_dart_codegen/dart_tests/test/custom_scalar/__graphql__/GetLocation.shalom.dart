@@ -15,6 +15,16 @@ class GetLocationResponse {
 
   // keywordargs constructor
   GetLocationResponse({this.getLocation});
+  static GetLocationResponse fromJson(JsonObject data) {
+    final GetLocation_getLocation? getLocation_value;
+    final getLocation$raw = data["getLocation"];
+    getLocation_value =
+        getLocation$raw == null
+            ? null
+            : GetLocation_getLocation.fromJson(getLocation$raw);
+
+    return GetLocationResponse(getLocation: getLocation_value);
+  }
 
   GetLocationResponse updateWithJson(JsonObject data) {
     final GetLocation_getLocation? getLocation_value;
@@ -27,17 +37,6 @@ class GetLocationResponse {
     } else {
       getLocation_value = getLocation;
     }
-
-    return GetLocationResponse(getLocation: getLocation_value);
-  }
-
-  static GetLocationResponse fromJson(JsonObject data) {
-    final GetLocation_getLocation? getLocation_value;
-    final getLocation$raw = data["getLocation"];
-    getLocation_value =
-        getLocation$raw == null
-            ? null
-            : GetLocation_getLocation.fromJson(getLocation$raw);
 
     return GetLocationResponse(getLocation: getLocation_value);
   }
@@ -67,6 +66,20 @@ class GetLocation_getLocation {
 
   // keywordargs constructor
   GetLocation_getLocation({required this.id, this.coords});
+  static GetLocation_getLocation fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final uomtoe.Point? coords_value;
+    final coords$raw = data["coords"];
+    coords_value =
+        coords$raw == null
+            ? null
+            : uomtoe.pointScalarImpl.deserialize(coords$raw);
+
+    return GetLocation_getLocation(id: id_value, coords: coords_value);
+  }
 
   GetLocation_getLocation updateWithJson(JsonObject data) {
     final String id_value;
@@ -87,21 +100,6 @@ class GetLocation_getLocation {
     } else {
       coords_value = coords;
     }
-
-    return GetLocation_getLocation(id: id_value, coords: coords_value);
-  }
-
-  static GetLocation_getLocation fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final uomtoe.Point? coords_value;
-    final coords$raw = data["coords"];
-    coords_value =
-        coords$raw == null
-            ? null
-            : uomtoe.pointScalarImpl.deserialize(coords$raw);
 
     return GetLocation_getLocation(id: id_value, coords: coords_value);
   }

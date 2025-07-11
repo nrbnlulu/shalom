@@ -14,6 +14,13 @@ class GetListingResponse {
 
   // keywordargs constructor
   GetListingResponse({required this.listing});
+  static GetListingResponse fromJson(JsonObject data) {
+    final GetListing_listing listing_value;
+    final listing$raw = data["listing"];
+    listing_value = GetListing_listing.fromJson(listing$raw);
+
+    return GetListingResponse(listing: listing_value);
+  }
 
   GetListingResponse updateWithJson(JsonObject data) {
     final GetListing_listing listing_value;
@@ -23,14 +30,6 @@ class GetListingResponse {
     } else {
       listing_value = listing;
     }
-
-    return GetListingResponse(listing: listing_value);
-  }
-
-  static GetListingResponse fromJson(JsonObject data) {
-    final GetListing_listing listing_value;
-    final listing$raw = data["listing"];
-    listing_value = GetListing_listing.fromJson(listing$raw);
 
     return GetListingResponse(listing: listing_value);
   }
@@ -62,6 +61,27 @@ class GetListing_listing {
 
   // keywordargs constructor
   GetListing_listing({required this.id, required this.name, this.price});
+  static GetListing_listing fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final int? price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as int?;
+
+    return GetListing_listing(
+      id: id_value,
+
+      name: name_value,
+
+      price: price_value,
+    );
+  }
 
   GetListing_listing updateWithJson(JsonObject data) {
     final String id_value;
@@ -87,28 +107,6 @@ class GetListing_listing {
     } else {
       price_value = price;
     }
-
-    return GetListing_listing(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  static GetListing_listing fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final int? price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as int?;
 
     return GetListing_listing(
       id: id_value,

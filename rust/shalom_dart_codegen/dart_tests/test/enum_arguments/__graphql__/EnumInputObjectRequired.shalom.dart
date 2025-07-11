@@ -14,7 +14,6 @@ class EnumInputObjectRequiredResponse {
 
   // keywordargs constructor
   EnumInputObjectRequiredResponse({this.updateOrder});
-
   static EnumInputObjectRequiredResponse fromJson(JsonObject data) {
     final EnumInputObjectRequired_updateOrder? updateOrder_value;
     final updateOrder$raw = data["updateOrder"];
@@ -76,7 +75,6 @@ class EnumInputObjectRequired_updateOrder {
     required this.name,
     required this.price,
   });
-
   static EnumInputObjectRequired_updateOrder fromJson(JsonObject data) {
     final Status? status_value;
     final status$raw = data["status"];

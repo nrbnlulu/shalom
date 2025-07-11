@@ -18,7 +18,6 @@ class InputCustomScalarListInsideInputObjectResponse {
   InputCustomScalarListInsideInputObjectResponse({
     this.InputCustomScalarListInsideInputObject,
   });
-
   static InputCustomScalarListInsideInputObjectResponse fromJson(
     JsonObject data,
   ) {
@@ -98,7 +97,6 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
 
     this.message,
   });
-
   static InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject
   fromJson(JsonObject data) {
     final bool success_value;

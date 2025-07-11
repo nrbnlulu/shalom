@@ -15,7 +15,6 @@ class EnumInputObjectOptionalResponse {
 
   // keywordargs constructor
   EnumInputObjectOptionalResponse({this.updateOrderWithStatusOpt});
-
   static EnumInputObjectOptionalResponse fromJson(JsonObject data) {
     final EnumInputObjectOptional_updateOrderWithStatusOpt?
     updateOrderWithStatusOpt_value;
@@ -89,7 +88,6 @@ class EnumInputObjectOptional_updateOrderWithStatusOpt {
     required this.name,
     required this.price,
   });
-
   static EnumInputObjectOptional_updateOrderWithStatusOpt fromJson(
     JsonObject data,
   ) {

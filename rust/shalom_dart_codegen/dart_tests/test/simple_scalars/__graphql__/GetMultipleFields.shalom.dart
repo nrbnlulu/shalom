@@ -16,6 +16,17 @@ class GetMultipleFieldsResponse {
 
   // keywordargs constructor
   GetMultipleFieldsResponse({required this.id, required this.intField});
+  static GetMultipleFieldsResponse fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final int intField_value;
+    final intField$raw = data["intField"];
+    intField_value = intField$raw as int;
+
+    return GetMultipleFieldsResponse(id: id_value, intField: intField_value);
+  }
 
   GetMultipleFieldsResponse updateWithJson(JsonObject data) {
     final String id_value;
@@ -33,18 +44,6 @@ class GetMultipleFieldsResponse {
     } else {
       intField_value = intField;
     }
-
-    return GetMultipleFieldsResponse(id: id_value, intField: intField_value);
-  }
-
-  static GetMultipleFieldsResponse fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final int intField_value;
-    final intField$raw = data["intField"];
-    intField_value = intField$raw as int;
 
     return GetMultipleFieldsResponse(id: id_value, intField: intField_value);
   }

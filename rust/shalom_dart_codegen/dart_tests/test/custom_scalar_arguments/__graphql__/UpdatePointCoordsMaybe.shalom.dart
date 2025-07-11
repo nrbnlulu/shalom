@@ -15,7 +15,6 @@ class UpdatePointCoordsMaybeResponse {
 
   // keywordargs constructor
   UpdatePointCoordsMaybeResponse({this.updatePointCoordsMaybe});
-
   static UpdatePointCoordsMaybeResponse fromJson(JsonObject data) {
     final UpdatePointCoordsMaybe_updatePointCoordsMaybe?
     updatePointCoordsMaybe_value;
@@ -84,7 +83,6 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
     required this.name,
     required this.id,
   });
-
   static UpdatePointCoordsMaybe_updatePointCoordsMaybe fromJson(
     JsonObject data,
   ) {

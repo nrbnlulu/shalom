@@ -14,7 +14,6 @@ class OptionalArgumentsResponse {
 
   // keywordargs constructor
   OptionalArgumentsResponse({this.updateUser});
-
   static OptionalArgumentsResponse fromJson(JsonObject data) {
     final OptionalArguments_updateUser? updateUser_value;
     final updateUser$raw = data["updateUser"];
@@ -64,7 +63,6 @@ class OptionalArguments_updateUser {
 
   // keywordargs constructor
   OptionalArguments_updateUser({this.name});
-
   static OptionalArguments_updateUser fromJson(JsonObject data) {
     final String? name_value;
     final name$raw = data["name"];

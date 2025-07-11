@@ -14,7 +14,6 @@ class EnumRequiredResponse {
 
   // keywordargs constructor
   EnumRequiredResponse({this.updateOrderStatus});
-
   static EnumRequiredResponse fromJson(JsonObject data) {
     final EnumRequired_updateOrderStatus? updateOrderStatus_value;
     final updateOrderStatus$raw = data["updateOrderStatus"];
@@ -76,7 +75,6 @@ class EnumRequired_updateOrderStatus {
     required this.name,
     required this.price,
   });
-
   static EnumRequired_updateOrderStatus fromJson(JsonObject data) {
     final Status? status_value;
     final status$raw = data["status"];

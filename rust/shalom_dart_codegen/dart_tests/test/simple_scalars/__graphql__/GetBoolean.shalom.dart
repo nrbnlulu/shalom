@@ -14,6 +14,13 @@ class GetBooleanResponse {
 
   // keywordargs constructor
   GetBooleanResponse({required this.boolean});
+  static GetBooleanResponse fromJson(JsonObject data) {
+    final bool boolean_value;
+    final boolean$raw = data["boolean"];
+    boolean_value = boolean$raw as bool;
+
+    return GetBooleanResponse(boolean: boolean_value);
+  }
 
   GetBooleanResponse updateWithJson(JsonObject data) {
     final bool boolean_value;
@@ -23,14 +30,6 @@ class GetBooleanResponse {
     } else {
       boolean_value = boolean;
     }
-
-    return GetBooleanResponse(boolean: boolean_value);
-  }
-
-  static GetBooleanResponse fromJson(JsonObject data) {
-    final bool boolean_value;
-    final boolean$raw = data["boolean"];
-    boolean_value = boolean$raw as bool;
 
     return GetBooleanResponse(boolean: boolean_value);
   }

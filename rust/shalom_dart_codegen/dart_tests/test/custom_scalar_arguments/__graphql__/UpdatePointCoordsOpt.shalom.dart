@@ -15,7 +15,6 @@ class UpdatePointCoordsOptResponse {
 
   // keywordargs constructor
   UpdatePointCoordsOptResponse({this.getPointById});
-
   static UpdatePointCoordsOptResponse fromJson(JsonObject data) {
     final UpdatePointCoordsOpt_getPointById? getPointById_value;
     final getPointById$raw = data["getPointById"];
@@ -74,7 +73,6 @@ class UpdatePointCoordsOpt_getPointById {
     required this.name,
     required this.id,
   });
-
   static UpdatePointCoordsOpt_getPointById fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];

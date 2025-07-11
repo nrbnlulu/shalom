@@ -17,7 +17,6 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
   InputListOfOptionalObjectsWithNullDefaultResponse({
     this.InputListOfOptionalObjectsWithNullDefault,
   });
-
   static InputListOfOptionalObjectsWithNullDefaultResponse fromJson(
     JsonObject data,
   ) {
@@ -97,7 +96,6 @@ class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNu
 
     this.message,
   });
-
   static InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault
   fromJson(JsonObject data) {
     final bool success_value;

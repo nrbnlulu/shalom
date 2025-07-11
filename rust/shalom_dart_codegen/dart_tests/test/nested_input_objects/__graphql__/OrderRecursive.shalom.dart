@@ -14,7 +14,6 @@ class OrderRecursiveResponse {
 
   // keywordargs constructor
   OrderRecursiveResponse({this.orderRecursive});
-
   static OrderRecursiveResponse fromJson(JsonObject data) {
     final OrderRecursive_orderRecursive? orderRecursive_value;
     final orderRecursive$raw = data["orderRecursive"];
@@ -69,7 +68,6 @@ class OrderRecursive_orderRecursive {
 
   // keywordargs constructor
   OrderRecursive_orderRecursive({this.quantity, this.name, this.price});
-
   static OrderRecursive_orderRecursive fromJson(JsonObject data) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];

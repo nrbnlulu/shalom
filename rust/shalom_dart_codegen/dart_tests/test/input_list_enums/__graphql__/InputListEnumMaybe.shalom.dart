@@ -14,7 +14,6 @@ class InputListEnumMaybeResponse {
 
   // keywordargs constructor
   InputListEnumMaybeResponse({this.InputListEnumMaybe});
-
   static InputListEnumMaybeResponse fromJson(JsonObject data) {
     final String? InputListEnumMaybe_value;
     final InputListEnumMaybe$raw = data["InputListEnumMaybe"];

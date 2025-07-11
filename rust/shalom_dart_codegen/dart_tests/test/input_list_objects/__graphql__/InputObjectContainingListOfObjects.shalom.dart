@@ -17,7 +17,6 @@ class InputObjectContainingListOfObjectsResponse {
   InputObjectContainingListOfObjectsResponse({
     this.InputObjectContainingListOfObjects,
   });
-
   static InputObjectContainingListOfObjectsResponse fromJson(JsonObject data) {
     final InputObjectContainingListOfObjects_InputObjectContainingListOfObjects?
     InputObjectContainingListOfObjects_value;
@@ -93,7 +92,6 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
 
     this.message,
   });
-
   static InputObjectContainingListOfObjects_InputObjectContainingListOfObjects
   fromJson(JsonObject data) {
     final bool success_value;

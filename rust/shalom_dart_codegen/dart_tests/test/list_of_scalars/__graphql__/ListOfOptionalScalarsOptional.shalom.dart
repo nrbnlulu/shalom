@@ -14,6 +14,21 @@ class ListOfOptionalScalarsOptionalResponse {
 
   // keywordargs constructor
   ListOfOptionalScalarsOptionalResponse({this.listOfOptionalScalarsOptional});
+  static ListOfOptionalScalarsOptionalResponse fromJson(JsonObject data) {
+    final List<int>? listOfOptionalScalarsOptional_value;
+    final listOfOptionalScalarsOptional$raw =
+        data["listOfOptionalScalarsOptional"];
+    listOfOptionalScalarsOptional_value =
+        listOfOptionalScalarsOptional$raw == null
+            ? null
+            : (listOfOptionalScalarsOptional$raw as List<dynamic>)
+                .map((e) => e as int)
+                .toList();
+
+    return ListOfOptionalScalarsOptionalResponse(
+      listOfOptionalScalarsOptional: listOfOptionalScalarsOptional_value,
+    );
+  }
 
   ListOfOptionalScalarsOptionalResponse updateWithJson(JsonObject data) {
     final List<int>? listOfOptionalScalarsOptional_value;
@@ -29,22 +44,6 @@ class ListOfOptionalScalarsOptionalResponse {
     } else {
       listOfOptionalScalarsOptional_value = listOfOptionalScalarsOptional;
     }
-
-    return ListOfOptionalScalarsOptionalResponse(
-      listOfOptionalScalarsOptional: listOfOptionalScalarsOptional_value,
-    );
-  }
-
-  static ListOfOptionalScalarsOptionalResponse fromJson(JsonObject data) {
-    final List<int>? listOfOptionalScalarsOptional_value;
-    final listOfOptionalScalarsOptional$raw =
-        data["listOfOptionalScalarsOptional"];
-    listOfOptionalScalarsOptional_value =
-        listOfOptionalScalarsOptional$raw == null
-            ? null
-            : (listOfOptionalScalarsOptional$raw as List<dynamic>)
-                .map((e) => e as int)
-                .toList();
 
     return ListOfOptionalScalarsOptionalResponse(
       listOfOptionalScalarsOptional: listOfOptionalScalarsOptional_value,

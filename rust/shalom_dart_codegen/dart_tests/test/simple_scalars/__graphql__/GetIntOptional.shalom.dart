@@ -14,6 +14,13 @@ class GetIntOptionalResponse {
 
   // keywordargs constructor
   GetIntOptionalResponse({this.intOptional});
+  static GetIntOptionalResponse fromJson(JsonObject data) {
+    final int? intOptional_value;
+    final intOptional$raw = data["intOptional"];
+    intOptional_value = intOptional$raw as int?;
+
+    return GetIntOptionalResponse(intOptional: intOptional_value);
+  }
 
   GetIntOptionalResponse updateWithJson(JsonObject data) {
     final int? intOptional_value;
@@ -23,14 +30,6 @@ class GetIntOptionalResponse {
     } else {
       intOptional_value = intOptional;
     }
-
-    return GetIntOptionalResponse(intOptional: intOptional_value);
-  }
-
-  static GetIntOptionalResponse fromJson(JsonObject data) {
-    final int? intOptional_value;
-    final intOptional$raw = data["intOptional"];
-    intOptional_value = intOptional$raw as int?;
 
     return GetIntOptionalResponse(intOptional: intOptional_value);
   }

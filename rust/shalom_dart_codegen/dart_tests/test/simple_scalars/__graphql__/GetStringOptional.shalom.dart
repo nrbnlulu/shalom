@@ -14,6 +14,13 @@ class GetStringOptionalResponse {
 
   // keywordargs constructor
   GetStringOptionalResponse({this.stringOptional});
+  static GetStringOptionalResponse fromJson(JsonObject data) {
+    final String? stringOptional_value;
+    final stringOptional$raw = data["stringOptional"];
+    stringOptional_value = stringOptional$raw as String?;
+
+    return GetStringOptionalResponse(stringOptional: stringOptional_value);
+  }
 
   GetStringOptionalResponse updateWithJson(JsonObject data) {
     final String? stringOptional_value;
@@ -23,14 +30,6 @@ class GetStringOptionalResponse {
     } else {
       stringOptional_value = stringOptional;
     }
-
-    return GetStringOptionalResponse(stringOptional: stringOptional_value);
-  }
-
-  static GetStringOptionalResponse fromJson(JsonObject data) {
-    final String? stringOptional_value;
-    final stringOptional$raw = data["stringOptional"];
-    stringOptional_value = stringOptional$raw as String?;
 
     return GetStringOptionalResponse(stringOptional: stringOptional_value);
   }

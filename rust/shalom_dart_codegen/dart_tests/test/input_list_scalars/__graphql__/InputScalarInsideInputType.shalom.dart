@@ -15,7 +15,6 @@ class InputScalarInsideInputTypeResponse {
 
   // keywordargs constructor
   InputScalarInsideInputTypeResponse({this.InputScalarInsideInputType});
-
   static InputScalarInsideInputTypeResponse fromJson(JsonObject data) {
     final InputScalarInsideInputType_InputScalarInsideInputType?
     InputScalarInsideInputType_value;
@@ -80,7 +79,6 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
   InputScalarInsideInputType_InputScalarInsideInputType({
     required this.success,
   });
-
   static InputScalarInsideInputType_InputScalarInsideInputType fromJson(
     JsonObject data,
   ) {

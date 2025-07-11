@@ -15,7 +15,6 @@ class UpdatePointCoordsNonNullResponse {
 
   // keywordargs constructor
   UpdatePointCoordsNonNullResponse({this.updatePointCoords});
-
   static UpdatePointCoordsNonNullResponse fromJson(JsonObject data) {
     final UpdatePointCoordsNonNull_updatePointCoords? updatePointCoords_value;
     final updatePointCoords$raw = data["updatePointCoords"];
@@ -82,7 +81,6 @@ class UpdatePointCoordsNonNull_updatePointCoords {
     required this.name,
     required this.id,
   });
-
   static UpdatePointCoordsNonNull_updatePointCoords fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];

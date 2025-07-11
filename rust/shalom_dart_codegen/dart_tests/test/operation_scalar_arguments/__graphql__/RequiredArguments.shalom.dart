@@ -14,7 +14,6 @@ class RequiredArgumentsResponse {
 
   // keywordargs constructor
   RequiredArgumentsResponse({this.product});
-
   static RequiredArgumentsResponse fromJson(JsonObject data) {
     final RequiredArguments_product? product_value;
     final product$raw = data["product"];
@@ -66,7 +65,6 @@ class RequiredArguments_product {
 
   // keywordargs constructor
   RequiredArguments_product({required this.id, required this.name});
-
   static RequiredArguments_product fromJson(JsonObject data) {
     final String id_value;
     final id$raw = data["id"];

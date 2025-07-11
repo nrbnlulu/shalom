@@ -14,6 +14,13 @@ class GetIDOptionalResponse {
 
   // keywordargs constructor
   GetIDOptionalResponse({this.idOptional});
+  static GetIDOptionalResponse fromJson(JsonObject data) {
+    final String? idOptional_value;
+    final idOptional$raw = data["idOptional"];
+    idOptional_value = idOptional$raw as String?;
+
+    return GetIDOptionalResponse(idOptional: idOptional_value);
+  }
 
   GetIDOptionalResponse updateWithJson(JsonObject data) {
     final String? idOptional_value;
@@ -23,14 +30,6 @@ class GetIDOptionalResponse {
     } else {
       idOptional_value = idOptional;
     }
-
-    return GetIDOptionalResponse(idOptional: idOptional_value);
-  }
-
-  static GetIDOptionalResponse fromJson(JsonObject data) {
-    final String? idOptional_value;
-    final idOptional$raw = data["idOptional"];
-    idOptional_value = idOptional$raw as String?;
 
     return GetIDOptionalResponse(idOptional: idOptional_value);
   }

@@ -14,7 +14,6 @@ class OptionalWithSomeDefaultResponse {
 
   // keywordargs constructor
   OptionalWithSomeDefaultResponse({this.task});
-
   static OptionalWithSomeDefaultResponse fromJson(JsonObject data) {
     final OptionalWithSomeDefault_task? task_value;
     final task$raw = data["task"];
@@ -68,7 +67,6 @@ class OptionalWithSomeDefault_task {
 
   // keywordargs constructor
   OptionalWithSomeDefault_task({this.name, this.duration, this.is_easy});
-
   static OptionalWithSomeDefault_task fromJson(JsonObject data) {
     final String? name_value;
     final name$raw = data["name"];

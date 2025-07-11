@@ -14,7 +14,6 @@ class SubscribeToAllFieldsResponse {
 
   // keywordargs constructor
   SubscribeToAllFieldsResponse({this.user});
-
   static SubscribeToAllFieldsResponse fromJson(JsonObject data) {
     final SubscribeToAllFields_user? user_value;
     final user$raw = data["user"];
@@ -72,7 +71,6 @@ class SubscribeToAllFields_user extends Node {
 
     this.age,
   });
-
   static SubscribeToAllFields_user fromJson(JsonObject data) {
     final String id_value;
     final id$raw = data["id"];

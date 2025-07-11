@@ -14,7 +14,6 @@ class OptionalWithNullDefaultResponse {
 
   // keywordargs constructor
   OptionalWithNullDefaultResponse({this.updateUser});
-
   static OptionalWithNullDefaultResponse fromJson(JsonObject data) {
     final OptionalWithNullDefault_updateUser? updateUser_value;
     final updateUser$raw = data["updateUser"];
@@ -69,7 +68,6 @@ class OptionalWithNullDefault_updateUser {
 
   // keywordargs constructor
   OptionalWithNullDefault_updateUser({this.email, this.name, this.phone});
-
   static OptionalWithNullDefault_updateUser fromJson(JsonObject data) {
     final String? email_value;
     final email$raw = data["email"];

@@ -18,7 +18,6 @@ class InputCustomScalarListNullableMaybeResponse {
   InputCustomScalarListNullableMaybeResponse({
     this.InputCustomScalarListNullableMaybe,
   });
-
   static InputCustomScalarListNullableMaybeResponse fromJson(JsonObject data) {
     final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
     InputCustomScalarListNullableMaybe_value;
@@ -94,7 +93,6 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
 
     this.message,
   });
-
   static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
   fromJson(JsonObject data) {
     final bool success_value;

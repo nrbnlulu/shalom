@@ -14,7 +14,6 @@ class EnumWithDefaultValueResponse {
 
   // keywordargs constructor
   EnumWithDefaultValueResponse({this.getOrderByStatus});
-
   static EnumWithDefaultValueResponse fromJson(JsonObject data) {
     final EnumWithDefaultValue_getOrderByStatus? getOrderByStatus_value;
     final getOrderByStatus$raw = data["getOrderByStatus"];
@@ -84,7 +83,6 @@ class EnumWithDefaultValue_getOrderByStatus {
     required this.name,
     required this.price,
   });
-
   static EnumWithDefaultValue_getOrderByStatus fromJson(JsonObject data) {
     final Status? status_value;
     final status$raw = data["status"];

@@ -16,7 +16,6 @@ class InputListEnumOptionalWithDefaultResponse {
   InputListEnumOptionalWithDefaultResponse({
     this.InputListEnumOptionalWithDefault,
   });
-
   static InputListEnumOptionalWithDefaultResponse fromJson(JsonObject data) {
     final String? InputListEnumOptionalWithDefault_value;
     final InputListEnumOptionalWithDefault$raw =

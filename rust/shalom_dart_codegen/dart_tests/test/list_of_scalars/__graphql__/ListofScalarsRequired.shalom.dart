@@ -14,6 +14,18 @@ class ListofScalarsRequiredResponse {
 
   // keywordargs constructor
   ListofScalarsRequiredResponse({required this.listOfScalarsRequired});
+  static ListofScalarsRequiredResponse fromJson(JsonObject data) {
+    final List<String> listOfScalarsRequired_value;
+    final listOfScalarsRequired$raw = data["listOfScalarsRequired"];
+    listOfScalarsRequired_value =
+        (listOfScalarsRequired$raw as List<dynamic>)
+            .map((e) => e as String)
+            .toList();
+
+    return ListofScalarsRequiredResponse(
+      listOfScalarsRequired: listOfScalarsRequired_value,
+    );
+  }
 
   ListofScalarsRequiredResponse updateWithJson(JsonObject data) {
     final List<String> listOfScalarsRequired_value;
@@ -26,19 +38,6 @@ class ListofScalarsRequiredResponse {
     } else {
       listOfScalarsRequired_value = listOfScalarsRequired;
     }
-
-    return ListofScalarsRequiredResponse(
-      listOfScalarsRequired: listOfScalarsRequired_value,
-    );
-  }
-
-  static ListofScalarsRequiredResponse fromJson(JsonObject data) {
-    final List<String> listOfScalarsRequired_value;
-    final listOfScalarsRequired$raw = data["listOfScalarsRequired"];
-    listOfScalarsRequired_value =
-        (listOfScalarsRequired$raw as List<dynamic>)
-            .map((e) => e as String)
-            .toList();
 
     return ListofScalarsRequiredResponse(
       listOfScalarsRequired: listOfScalarsRequired_value,

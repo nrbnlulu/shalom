@@ -14,7 +14,6 @@ class EnumOptionalResponse {
 
   // keywordargs constructor
   EnumOptionalResponse({this.updateOrderStatusOpt});
-
   static EnumOptionalResponse fromJson(JsonObject data) {
     final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt_value;
     final updateOrderStatusOpt$raw = data["updateOrderStatusOpt"];
@@ -84,7 +83,6 @@ class EnumOptional_updateOrderStatusOpt {
     required this.name,
     required this.price,
   });
-
   static EnumOptional_updateOrderStatusOpt fromJson(JsonObject data) {
     final Status? status_value;
     final status$raw = data["status"];

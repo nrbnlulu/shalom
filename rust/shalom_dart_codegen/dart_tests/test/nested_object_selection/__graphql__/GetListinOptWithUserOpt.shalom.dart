@@ -14,6 +14,16 @@ class GetListinOptWithUserOptResponse {
 
   // keywordargs constructor
   GetListinOptWithUserOptResponse({this.listingOpt});
+  static GetListinOptWithUserOptResponse fromJson(JsonObject data) {
+    final GetListinOptWithUserOpt_listingOpt? listingOpt_value;
+    final listingOpt$raw = data["listingOpt"];
+    listingOpt_value =
+        listingOpt$raw == null
+            ? null
+            : GetListinOptWithUserOpt_listingOpt.fromJson(listingOpt$raw);
+
+    return GetListinOptWithUserOptResponse(listingOpt: listingOpt_value);
+  }
 
   GetListinOptWithUserOptResponse updateWithJson(JsonObject data) {
     final GetListinOptWithUserOpt_listingOpt? listingOpt_value;
@@ -26,17 +36,6 @@ class GetListinOptWithUserOptResponse {
     } else {
       listingOpt_value = listingOpt;
     }
-
-    return GetListinOptWithUserOptResponse(listingOpt: listingOpt_value);
-  }
-
-  static GetListinOptWithUserOptResponse fromJson(JsonObject data) {
-    final GetListinOptWithUserOpt_listingOpt? listingOpt_value;
-    final listingOpt$raw = data["listingOpt"];
-    listingOpt_value =
-        listingOpt$raw == null
-            ? null
-            : GetListinOptWithUserOpt_listingOpt.fromJson(listingOpt$raw);
 
     return GetListinOptWithUserOptResponse(listingOpt: listingOpt_value);
   }
@@ -78,6 +77,36 @@ class GetListinOptWithUserOpt_listingOpt {
 
     this.userOpt,
   });
+  static GetListinOptWithUserOpt_listingOpt fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final int? price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as int?;
+
+    final GetListinOptWithUserOpt_listingOpt_userOpt? userOpt_value;
+    final userOpt$raw = data["userOpt"];
+    userOpt_value =
+        userOpt$raw == null
+            ? null
+            : GetListinOptWithUserOpt_listingOpt_userOpt.fromJson(userOpt$raw);
+
+    return GetListinOptWithUserOpt_listingOpt(
+      id: id_value,
+
+      name: name_value,
+
+      price: price_value,
+
+      userOpt: userOpt_value,
+    );
+  }
 
   GetListinOptWithUserOpt_listingOpt updateWithJson(JsonObject data) {
     final String id_value;
@@ -128,37 +157,6 @@ class GetListinOptWithUserOpt_listingOpt {
     );
   }
 
-  static GetListinOptWithUserOpt_listingOpt fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final int? price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as int?;
-
-    final GetListinOptWithUserOpt_listingOpt_userOpt? userOpt_value;
-    final userOpt$raw = data["userOpt"];
-    userOpt_value =
-        userOpt$raw == null
-            ? null
-            : GetListinOptWithUserOpt_listingOpt_userOpt.fromJson(userOpt$raw);
-
-    return GetListinOptWithUserOpt_listingOpt(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-
-      userOpt: userOpt_value,
-    );
-  }
-
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
@@ -197,6 +195,21 @@ class GetListinOptWithUserOpt_listingOpt_userOpt {
     required this.id,
     required this.name,
   });
+  static GetListinOptWithUserOpt_listingOpt_userOpt fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    return GetListinOptWithUserOpt_listingOpt_userOpt(
+      id: id_value,
+
+      name: name_value,
+    );
+  }
 
   GetListinOptWithUserOpt_listingOpt_userOpt updateWithJson(JsonObject data) {
     final String id_value;
@@ -214,22 +227,6 @@ class GetListinOptWithUserOpt_listingOpt_userOpt {
     } else {
       name_value = name;
     }
-
-    return GetListinOptWithUserOpt_listingOpt_userOpt(
-      id: id_value,
-
-      name: name_value,
-    );
-  }
-
-  static GetListinOptWithUserOpt_listingOpt_userOpt fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
 
     return GetListinOptWithUserOpt_listingOpt_userOpt(
       id: id_value,

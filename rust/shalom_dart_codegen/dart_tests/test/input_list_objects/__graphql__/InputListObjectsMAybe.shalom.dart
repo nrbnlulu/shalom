@@ -14,7 +14,6 @@ class InputListObjectsMAybeResponse {
 
   // keywordargs constructor
   InputListObjectsMAybeResponse({this.InputListObjectsMAybe});
-
   static InputListObjectsMAybeResponse fromJson(JsonObject data) {
     final InputListObjectsMAybe_InputListObjectsMAybe?
     InputListObjectsMAybe_value;
@@ -81,7 +80,6 @@ class InputListObjectsMAybe_InputListObjectsMAybe {
 
     this.message,
   });
-
   static InputListObjectsMAybe_InputListObjectsMAybe fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];

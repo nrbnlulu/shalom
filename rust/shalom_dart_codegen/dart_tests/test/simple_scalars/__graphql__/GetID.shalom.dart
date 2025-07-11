@@ -14,6 +14,13 @@ class GetIDResponse {
 
   // keywordargs constructor
   GetIDResponse({required this.id});
+  static GetIDResponse fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    return GetIDResponse(id: id_value);
+  }
 
   GetIDResponse updateWithJson(JsonObject data) {
     final String id_value;
@@ -23,14 +30,6 @@ class GetIDResponse {
     } else {
       id_value = id;
     }
-
-    return GetIDResponse(id: id_value);
-  }
-
-  static GetIDResponse fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
 
     return GetIDResponse(id: id_value);
   }

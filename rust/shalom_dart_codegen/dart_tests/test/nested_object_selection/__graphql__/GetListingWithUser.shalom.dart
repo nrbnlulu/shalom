@@ -14,6 +14,13 @@ class GetListingWithUserResponse {
 
   // keywordargs constructor
   GetListingWithUserResponse({required this.listing});
+  static GetListingWithUserResponse fromJson(JsonObject data) {
+    final GetListingWithUser_listing listing_value;
+    final listing$raw = data["listing"];
+    listing_value = GetListingWithUser_listing.fromJson(listing$raw);
+
+    return GetListingWithUserResponse(listing: listing_value);
+  }
 
   GetListingWithUserResponse updateWithJson(JsonObject data) {
     final GetListingWithUser_listing listing_value;
@@ -23,14 +30,6 @@ class GetListingWithUserResponse {
     } else {
       listing_value = listing;
     }
-
-    return GetListingWithUserResponse(listing: listing_value);
-  }
-
-  static GetListingWithUserResponse fromJson(JsonObject data) {
-    final GetListingWithUser_listing listing_value;
-    final listing$raw = data["listing"];
-    listing_value = GetListingWithUser_listing.fromJson(listing$raw);
 
     return GetListingWithUserResponse(listing: listing_value);
   }
@@ -70,6 +69,33 @@ class GetListingWithUser_listing {
     this.price,
     required this.user,
   });
+  static GetListingWithUser_listing fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final int? price_value;
+    final price$raw = data["price"];
+    price_value = price$raw as int?;
+
+    final GetListingWithUser_listing_user user_value;
+    final user$raw = data["user"];
+    user_value = GetListingWithUser_listing_user.fromJson(user$raw);
+
+    return GetListingWithUser_listing(
+      id: id_value,
+
+      name: name_value,
+
+      price: price_value,
+
+      user: user_value,
+    );
+  }
 
   GetListingWithUser_listing updateWithJson(JsonObject data) {
     final String id_value;
@@ -103,34 +129,6 @@ class GetListingWithUser_listing {
     } else {
       user_value = user;
     }
-
-    return GetListingWithUser_listing(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-
-      user: user_value,
-    );
-  }
-
-  static GetListingWithUser_listing fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final int? price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as int?;
-
-    final GetListingWithUser_listing_user user_value;
-    final user$raw = data["user"];
-    user_value = GetListingWithUser_listing_user.fromJson(user$raw);
 
     return GetListingWithUser_listing(
       id: id_value,
@@ -188,6 +186,33 @@ class GetListingWithUser_listing_user {
 
     this.age,
   });
+  static GetListingWithUser_listing_user fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final String email_value;
+    final email$raw = data["email"];
+    email_value = email$raw as String;
+
+    final int? age_value;
+    final age$raw = data["age"];
+    age_value = age$raw as int?;
+
+    return GetListingWithUser_listing_user(
+      id: id_value,
+
+      name: name_value,
+
+      email: email_value,
+
+      age: age_value,
+    );
+  }
 
   GetListingWithUser_listing_user updateWithJson(JsonObject data) {
     final String id_value;
@@ -221,34 +246,6 @@ class GetListingWithUser_listing_user {
     } else {
       age_value = age;
     }
-
-    return GetListingWithUser_listing_user(
-      id: id_value,
-
-      name: name_value,
-
-      email: email_value,
-
-      age: age_value,
-    );
-  }
-
-  static GetListingWithUser_listing_user fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final String email_value;
-    final email$raw = data["email"];
-    email_value = email$raw as String;
-
-    final int? age_value;
-    final age$raw = data["age"];
-    age_value = age$raw as int?;
 
     return GetListingWithUser_listing_user(
       id: id_value,

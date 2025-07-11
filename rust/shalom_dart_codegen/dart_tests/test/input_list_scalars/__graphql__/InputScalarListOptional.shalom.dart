@@ -15,7 +15,6 @@ class InputScalarListOptionalResponse {
 
   // keywordargs constructor
   InputScalarListOptionalResponse({this.InputScalarListOptional});
-
   static InputScalarListOptionalResponse fromJson(JsonObject data) {
     final InputScalarListOptional_InputScalarListOptional?
     InputScalarListOptional_value;
@@ -76,7 +75,6 @@ class InputScalarListOptional_InputScalarListOptional {
 
   // keywordargs constructor
   InputScalarListOptional_InputScalarListOptional({required this.success});
-
   static InputScalarListOptional_InputScalarListOptional fromJson(
     JsonObject data,
   ) {

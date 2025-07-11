@@ -17,7 +17,6 @@ class OrderOptWithNullDefaultsRequestResponse {
   OrderOptWithNullDefaultsRequestResponse({
     this.orderOptWithNullDefaultsRequest,
   });
-
   static OrderOptWithNullDefaultsRequestResponse fromJson(JsonObject data) {
     final OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest?
     orderOptWithNullDefaultsRequest_value;
@@ -94,7 +93,6 @@ class OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest {
 
     this.price,
   });
-
   static OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest
   fromJson(JsonObject data) {
     final int? quantity_value;

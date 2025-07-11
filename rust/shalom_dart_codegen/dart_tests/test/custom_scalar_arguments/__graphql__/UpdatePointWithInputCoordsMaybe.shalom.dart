@@ -18,7 +18,6 @@ class UpdatePointWithInputCoordsMaybeResponse {
   UpdatePointWithInputCoordsMaybeResponse({
     this.updatePointWithInputCoordsMaybe,
   });
-
   static UpdatePointWithInputCoordsMaybeResponse fromJson(JsonObject data) {
     final UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
     updatePointWithInputCoordsMaybe_value;
@@ -93,7 +92,6 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
     required this.name,
     required this.id,
   });
-
   static UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
   fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;

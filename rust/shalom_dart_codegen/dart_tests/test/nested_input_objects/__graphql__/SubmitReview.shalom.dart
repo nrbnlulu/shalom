@@ -14,7 +14,6 @@ class SubmitReviewResponse {
 
   // keywordargs constructor
   SubmitReviewResponse({this.submitReview});
-
   static SubmitReviewResponse fromJson(JsonObject data) {
     final String? submitReview_value;
     final submitReview$raw = data["submitReview"];

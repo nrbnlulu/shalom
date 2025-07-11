@@ -14,7 +14,6 @@ class InputListEnumRequiredResponse {
 
   // keywordargs constructor
   InputListEnumRequiredResponse({this.InputListEnumRequired});
-
   static InputListEnumRequiredResponse fromJson(JsonObject data) {
     final String? InputListEnumRequired_value;
     final InputListEnumRequired$raw = data["InputListEnumRequired"];

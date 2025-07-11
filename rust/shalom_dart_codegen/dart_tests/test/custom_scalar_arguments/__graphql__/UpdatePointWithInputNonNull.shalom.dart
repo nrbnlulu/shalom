@@ -15,7 +15,6 @@ class UpdatePointWithInputNonNullResponse {
 
   // keywordargs constructor
   UpdatePointWithInputNonNullResponse({this.updatePointWithInput});
-
   static UpdatePointWithInputNonNullResponse fromJson(JsonObject data) {
     final UpdatePointWithInputNonNull_updatePointWithInput?
     updatePointWithInput_value;
@@ -84,7 +83,6 @@ class UpdatePointWithInputNonNull_updatePointWithInput {
     required this.name,
     required this.id,
   });
-
   static UpdatePointWithInputNonNull_updatePointWithInput fromJson(
     JsonObject data,
   ) {

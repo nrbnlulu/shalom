@@ -16,7 +16,6 @@ class updatePointWithOptCoordsResponse {
 
   // keywordargs constructor
   updatePointWithOptCoordsResponse({this.updatePointWithOptCoords});
-
   static updatePointWithOptCoordsResponse fromJson(JsonObject data) {
     final updatePointWithOptCoords_updatePointWithOptCoords?
     updatePointWithOptCoords_value;
@@ -87,7 +86,6 @@ class updatePointWithOptCoords_updatePointWithOptCoords {
     required this.name,
     required this.id,
   });
-
   static updatePointWithOptCoords_updatePointWithOptCoords fromJson(
     JsonObject data,
   ) {

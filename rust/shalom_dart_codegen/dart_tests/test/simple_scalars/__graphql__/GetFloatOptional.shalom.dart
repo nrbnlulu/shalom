@@ -14,6 +14,13 @@ class GetFloatOptionalResponse {
 
   // keywordargs constructor
   GetFloatOptionalResponse({this.floatOptional});
+  static GetFloatOptionalResponse fromJson(JsonObject data) {
+    final double? floatOptional_value;
+    final floatOptional$raw = data["floatOptional"];
+    floatOptional_value = floatOptional$raw as double?;
+
+    return GetFloatOptionalResponse(floatOptional: floatOptional_value);
+  }
 
   GetFloatOptionalResponse updateWithJson(JsonObject data) {
     final double? floatOptional_value;
@@ -23,14 +30,6 @@ class GetFloatOptionalResponse {
     } else {
       floatOptional_value = floatOptional;
     }
-
-    return GetFloatOptionalResponse(floatOptional: floatOptional_value);
-  }
-
-  static GetFloatOptionalResponse fromJson(JsonObject data) {
-    final double? floatOptional_value;
-    final floatOptional$raw = data["floatOptional"];
-    floatOptional_value = floatOptional$raw as double?;
 
     return GetFloatOptionalResponse(floatOptional: floatOptional_value);
   }

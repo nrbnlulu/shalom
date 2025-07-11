@@ -14,6 +14,13 @@ class GetBooleanOptionalResponse {
 
   // keywordargs constructor
   GetBooleanOptionalResponse({this.booleanOptional});
+  static GetBooleanOptionalResponse fromJson(JsonObject data) {
+    final bool? booleanOptional_value;
+    final booleanOptional$raw = data["booleanOptional"];
+    booleanOptional_value = booleanOptional$raw as bool?;
+
+    return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);
+  }
 
   GetBooleanOptionalResponse updateWithJson(JsonObject data) {
     final bool? booleanOptional_value;
@@ -23,14 +30,6 @@ class GetBooleanOptionalResponse {
     } else {
       booleanOptional_value = booleanOptional;
     }
-
-    return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);
-  }
-
-  static GetBooleanOptionalResponse fromJson(JsonObject data) {
-    final bool? booleanOptional_value;
-    final booleanOptional$raw = data["booleanOptional"];
-    booleanOptional_value = booleanOptional$raw as bool?;
 
     return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);
   }

@@ -15,7 +15,6 @@ class InputScalarListRequiredResponse {
 
   // keywordargs constructor
   InputScalarListRequiredResponse({this.InputScalarListRequired});
-
   static InputScalarListRequiredResponse fromJson(JsonObject data) {
     final InputScalarListRequired_InputScalarListRequired?
     InputScalarListRequired_value;
@@ -76,7 +75,6 @@ class InputScalarListRequired_InputScalarListRequired {
 
   // keywordargs constructor
   InputScalarListRequired_InputScalarListRequired({required this.success});
-
   static InputScalarListRequired_InputScalarListRequired fromJson(
     JsonObject data,
   ) {

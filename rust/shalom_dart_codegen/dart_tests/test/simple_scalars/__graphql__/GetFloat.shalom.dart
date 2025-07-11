@@ -14,6 +14,13 @@ class GetFloatResponse {
 
   // keywordargs constructor
   GetFloatResponse({required this.float});
+  static GetFloatResponse fromJson(JsonObject data) {
+    final double float_value;
+    final float$raw = data["float"];
+    float_value = float$raw as double;
+
+    return GetFloatResponse(float: float_value);
+  }
 
   GetFloatResponse updateWithJson(JsonObject data) {
     final double float_value;
@@ -23,14 +30,6 @@ class GetFloatResponse {
     } else {
       float_value = float;
     }
-
-    return GetFloatResponse(float: float_value);
-  }
-
-  static GetFloatResponse fromJson(JsonObject data) {
-    final double float_value;
-    final float$raw = data["float"];
-    float_value = float$raw as double;
 
     return GetFloatResponse(float: float_value);
   }

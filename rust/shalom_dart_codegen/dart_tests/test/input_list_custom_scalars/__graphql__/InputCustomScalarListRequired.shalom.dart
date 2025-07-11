@@ -16,7 +16,6 @@ class InputCustomScalarListRequiredResponse {
 
   // keywordargs constructor
   InputCustomScalarListRequiredResponse({this.InputCustomScalarListRequired});
-
   static InputCustomScalarListRequiredResponse fromJson(JsonObject data) {
     final InputCustomScalarListRequired_InputCustomScalarListRequired?
     InputCustomScalarListRequired_value;
@@ -89,7 +88,6 @@ class InputCustomScalarListRequired_InputCustomScalarListRequired {
 
     this.message,
   });
-
   static InputCustomScalarListRequired_InputCustomScalarListRequired fromJson(
     JsonObject data,
   ) {
