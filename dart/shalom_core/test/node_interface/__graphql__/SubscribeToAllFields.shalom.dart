@@ -1,59 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
-
-import "schema.shalom.dart";
-
 import 'package:shalom_core/shalom_core.dart';
-import 'package:collection/collection.dart';
-
-typedef JsonObject = Map<String, dynamic>;
-
-class SubscribeToAllFieldsResponse {
-  /// class members
-
-  final SubscribeToAllFields_user? user;
-
-  // keywordargs constructor
-  SubscribeToAllFieldsResponse({this.user});
-
-  SubscribeToAllFieldsResponse updateWithJson(JsonObject data) {
-    final SubscribeToAllFields_user? user_value;
-    if (data.containsKey('user')) {
-      final user$raw = data["user"];
-      user_value =
-          user$raw == null
-              ? null
-              : SubscribeToAllFields_user.fromJson(user$raw);
-    } else {
-      user_value = user;
-    }
-
-    return SubscribeToAllFieldsResponse(user: user_value);
-  }
-
-  static SubscribeToAllFieldsResponse fromJson(JsonObject data) {
-    final SubscribeToAllFields_user? user_value;
-    final user$raw = data["user"];
-    user_value =
-        user$raw == null ? null : SubscribeToAllFields_user.fromJson(user$raw);
-
-    return SubscribeToAllFieldsResponse(user: user_value);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is SubscribeToAllFieldsResponse && other.user == user);
-  }
-
-  @override
-  int get hashCode => user.hashCode;
-
-  JsonObject toJson() {
-    return {'user': this.user?.toJson()};
-  }
-}
-
-// ------------ OBJECT DEFINITIONS -------------
 
 class SubscribeToAllFields_user extends Node {
   /// class members
@@ -69,7 +14,6 @@ class SubscribeToAllFields_user extends Node {
     required super.id,
     required this.name,
     required this.email,
-
     this.age,
   });
 
@@ -79,11 +23,8 @@ class SubscribeToAllFields_user extends Node {
   ) {
     final self = SubscribeToAllFields_user(
       id: data['id'],
-
       name: data['name'],
-
       email: data['email'],
-
       age: data['age'],
     );
     context.manager.parseNodeData(self.toJson());
@@ -149,11 +90,8 @@ class SubscribeToAllFields_user extends Node {
 
     return SubscribeToAllFields_user(
       id: id_value,
-
       name: name_value,
-
       email: email_value,
-
       age: age_value,
     );
   }
@@ -175,36 +113,9 @@ class SubscribeToAllFields_user extends Node {
   JsonObject toJson() {
     return {
       'id': this.id,
-
       'name': this.name,
-
       'email': this.email,
-
       'age': this.age,
     };
-  }
-}
-
-// ------------ END OBJECT DEFINITIONS -------------
-
-class RequestSubscribeToAllFields extends Requestable {
-  RequestSubscribeToAllFields();
-
-  @override
-  Request toRequest() {
-    JsonObject variablesJson = {};
-    return Request(
-      query: r"""query SubscribeToAllFields {
-  user {
-    id
-    name
-    email
-    age
-  }
-}""",
-      variables: variablesJson,
-      opType: OperationType.Query,
-      opName: 'SubscribeToAllFields',
-    );
   }
 }

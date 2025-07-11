@@ -1,250 +1,114 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
-
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 
-
-
-
 typedef JsonObject = Map<String, dynamic>;
 
-
-
-
 class InputListEnumInsideInputObjectResponse {
+  /// class members
 
-    /// class members
-    
-            
-            final String? InputListEnumInsideInputObject;
-        
-    
-    // keywordargs constructor
-    InputListEnumInsideInputObjectResponse({
-    
-        this.InputListEnumInsideInputObject,
-    
-    });
-    
-    
-        InputListEnumInsideInputObjectResponse updateWithJson(JsonObject data) {
-        
-            
-            final String? InputListEnumInsideInputObject_value;
-            if (data.containsKey('InputListEnumInsideInputObject')) {
-                final InputListEnumInsideInputObject$raw = data["InputListEnumInsideInputObject"];
-                InputListEnumInsideInputObject_value = 
-    
-        
-            
-                InputListEnumInsideInputObject$raw as String?
-            
-        
-    
-;
-            } else {
-                InputListEnumInsideInputObject_value = InputListEnumInsideInputObject;
-            }
-        
-        return InputListEnumInsideInputObjectResponse(
-        
-            
-            InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,
-        
-        );
-        }
-    
-    static InputListEnumInsideInputObjectResponse fromJson(JsonObject data) {
-    
-        
-        final String? InputListEnumInsideInputObject_value;
-        final InputListEnumInsideInputObject$raw = data["InputListEnumInsideInputObject"];
-        InputListEnumInsideInputObject_value = 
-    
-        
-            
-                InputListEnumInsideInputObject$raw as String?
-            
-        
-    
-;
-    
+  final String? InputListEnumInsideInputObject;
+
+  // keywordargs constructor
+  InputListEnumInsideInputObjectResponse({this.InputListEnumInsideInputObject});
+
+  InputListEnumInsideInputObjectResponse updateWithJson(JsonObject data) {
+    final String? InputListEnumInsideInputObject_value;
+    if (data.containsKey('InputListEnumInsideInputObject')) {
+      final InputListEnumInsideInputObject$raw =
+          data["InputListEnumInsideInputObject"];
+      InputListEnumInsideInputObject_value =
+          InputListEnumInsideInputObject$raw as String?;
+    } else {
+      InputListEnumInsideInputObject_value = InputListEnumInsideInputObject;
+    }
+
     return InputListEnumInsideInputObjectResponse(
-    
-        
-        InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,
-    
+      InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,
     );
-    }
-    @override
-    bool operator ==(Object other) {
+  }
+
+  static InputListEnumInsideInputObjectResponse fromJson(JsonObject data) {
+    final String? InputListEnumInsideInputObject_value;
+    final InputListEnumInsideInputObject$raw =
+        data["InputListEnumInsideInputObject"];
+    InputListEnumInsideInputObject_value =
+        InputListEnumInsideInputObject$raw as String?;
+
+    return InputListEnumInsideInputObjectResponse(
+      InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is InputListEnumInsideInputObjectResponse &&
-    
-        
-    
-        other.InputListEnumInsideInputObject == InputListEnumInsideInputObject
-    
- 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        InputListEnumInsideInputObject.hashCode;
-    
-     
-    JsonObject toJson() {
+        (other is InputListEnumInsideInputObjectResponse &&
+            other.InputListEnumInsideInputObject ==
+                InputListEnumInsideInputObject);
+  }
+
+  @override
+  int get hashCode => InputListEnumInsideInputObject.hashCode;
+
+  JsonObject toJson() {
     return {
-    
-        
-        'InputListEnumInsideInputObject':
-            
-                
-    
-        
-            this.InputListEnumInsideInputObject
-        
-    
-
-            
-        ,
-    
+      'InputListEnumInsideInputObject': this.InputListEnumInsideInputObject,
     };
-    }
-
+  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-
-
 // ------------ END OBJECT DEFINITIONS -------------
 
-
 class RequestInputListEnumInsideInputObject extends Requestable {
-    
-    final InputListEnumInsideInputObjectVariables variables;
-    
+  final InputListEnumInsideInputObjectVariables variables;
 
-    RequestInputListEnumInsideInputObject(
-        
-        {
-            required this.variables,
-        }
-        
-    );
+  RequestInputListEnumInsideInputObject({required this.variables});
 
-    @override
-    Request toRequest() {
-        JsonObject variablesJson =  variables.toJson() ;
-        return Request(
-            query: r"""mutation InputListEnumInsideInputObject($input: ObjectWithListOfInput!) {
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = variables.toJson();
+    return Request(
+      query:
+          r"""mutation InputListEnumInsideInputObject($input: ObjectWithListOfInput!) {
   InputListEnumInsideInputObject(input: $input)
 }""",
-            variables: variablesJson,
-            opType: OperationType.Mutation,
-            opName: 'InputListEnumInsideInputObject'
-        );
-    }
+      variables: variablesJson,
+      opType: OperationType.Mutation,
+      opName: 'InputListEnumInsideInputObject',
+    );
+  }
 }
-
 
 class InputListEnumInsideInputObjectVariables {
-    
-    
-        final ObjectWithListOfInput input;
-    
+  final ObjectWithListOfInput input;
 
-    InputListEnumInsideInputObjectVariables (
-        
-            {
-            
+  InputListEnumInsideInputObjectVariables({required this.input});
 
-    
-        
-            required this.input
-        ,
-    
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-            }
-        
-    );
+    data["input"] = this.input.toJson();
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+    return data;
+  }
 
-    
-    
-        data["input"] = 
-    
-        
-            this.input.toJson()
-        
-    
-;
-    
+  InputListEnumInsideInputObjectVariables updateWith({
+    ObjectWithListOfInput? input,
+  }) {
+    final ObjectWithListOfInput input$next;
 
-
-        return data;
+    if (input != null) {
+      input$next = input;
+    } else {
+      input$next = this.input;
     }
 
-    
-InputListEnumInsideInputObjectVariables updateWith(
-    {
-        
-            
-                ObjectWithListOfInput? input
-            
-            
-        
-    }
-) {
-    
-        final ObjectWithListOfInput input$next;
-        
-            if (input != null) {
-                input$next = input;
-            } else {
-                input$next = this.input;
-            }
-        
-    
-    return InputListEnumInsideInputObjectVariables(
-        
-            input: input$next
-            
-        
-    );
-}
-
-
+    return InputListEnumInsideInputObjectVariables(input: input$next);
+  }
 }

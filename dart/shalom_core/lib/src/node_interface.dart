@@ -9,8 +9,8 @@ abstract class Node extends ChangeNotifier {
   Node({required this.id});
   void updateWithJson(JsonObject rawData, Set<String> changedFields);
   JsonObject toJson();
-  subscribeToChanges(ShalomContext context);
-  unSubscribeToChanges(ShalomContext context);
+  void subscribeToChanges(ShalomContext context);
+  void unSubscribeToChanges(ShalomContext context);
 }
 
 class NodeSubscriber {
@@ -105,9 +105,6 @@ class NodeManager {
       subscribedFields: subscribedFields,
     );
     _subscriberStore.putIfAbsent(nodeId, () => []).add(nodeSubscriber);
-    print(
-      "Number of subscribers for node $nodeId after addition: ${_subscriberStore[nodeId]?.length}",
-    );
   }
 
   void unRegister(Node node) {
@@ -116,9 +113,6 @@ class NodeManager {
     if (subscribers != null) {
       subscribers.removeWhere(
         (subscriber) => subscriber.nodeRef.target == node,
-      );
-      print(
-        "Number of subscribers for node $nodeId after removal: ${subscribers.length}",
       );
     }
   }
