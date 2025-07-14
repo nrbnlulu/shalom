@@ -134,7 +134,7 @@ class SubscribeToSomeNestedFields_userInfo extends Node {
           break;
 
         case 'user':
-          SubscribeToSomeNestedFields_userInfo_user.deserialize(
+          user = SubscribeToSomeNestedFields_userInfo_user.deserialize(
             rawData['user'],
             context,
           );
@@ -142,7 +142,7 @@ class SubscribeToSomeNestedFields_userInfo extends Node {
           break;
 
         case 'address':
-          SubscribeToSomeNestedFields_userInfo_address.deserialize(
+          address = SubscribeToSomeNestedFields_userInfo_address.deserialize(
             rawData['address'],
             context,
           );

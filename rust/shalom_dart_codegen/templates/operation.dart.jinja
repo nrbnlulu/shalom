@@ -173,7 +173,7 @@ import 'package:collection/collection.dart';
                          case '{{ selection_name }}':
                             {% if selection.kind == "Object" and selection.implements_node_interface %}
                                 {% set selection_typename = type_name_for_selection(selection) %}
-                                {{ selection_typename }}.deserialize(rawData['{{ selection_name }}'], context); 
+                                {{ selection_name }} = {{ selection_typename }}.deserialize(rawData['{{ selection_name }}'], context); 
                             {% else %}
                                 {{ selection_name }} = rawData['{{ selection_name }}'];
                             {% endif %}
