@@ -8,7 +8,12 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
+  flutter:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
   collection: ^1.18.0
+  uuid: ^4.5.1
 
 dev_dependencies:
   lints: ^4.0.0

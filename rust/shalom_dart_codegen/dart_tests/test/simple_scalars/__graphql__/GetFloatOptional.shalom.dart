@@ -22,16 +22,13 @@ class GetFloatOptionalResponse {
     return GetFloatOptionalResponse(floatOptional: floatOptional_value);
   }
 
-  GetFloatOptionalResponse updateWithJson(JsonObject data) {
-    final double? floatOptional_value;
-    if (data.containsKey('floatOptional')) {
-      final floatOptional$raw = data["floatOptional"];
-      floatOptional_value = floatOptional$raw as double?;
-    } else {
-      floatOptional_value = floatOptional;
-    }
+  static GetFloatOptionalResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetFloatOptionalResponse.fromJson(data);
 
-    return GetFloatOptionalResponse(floatOptional: floatOptional_value);
+    return self;
   }
 
   @override

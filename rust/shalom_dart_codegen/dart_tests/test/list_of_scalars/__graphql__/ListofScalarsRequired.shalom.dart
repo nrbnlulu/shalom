@@ -27,21 +27,13 @@ class ListofScalarsRequiredResponse {
     );
   }
 
-  ListofScalarsRequiredResponse updateWithJson(JsonObject data) {
-    final List<String> listOfScalarsRequired_value;
-    if (data.containsKey('listOfScalarsRequired')) {
-      final listOfScalarsRequired$raw = data["listOfScalarsRequired"];
-      listOfScalarsRequired_value =
-          (listOfScalarsRequired$raw as List<dynamic>)
-              .map((e) => e as String)
-              .toList();
-    } else {
-      listOfScalarsRequired_value = listOfScalarsRequired;
-    }
+  static ListofScalarsRequiredResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = ListofScalarsRequiredResponse.fromJson(data);
 
-    return ListofScalarsRequiredResponse(
-      listOfScalarsRequired: listOfScalarsRequired_value,
-    );
+    return self;
   }
 
   @override

@@ -29,23 +29,13 @@ class ListOfScalarsOptionalResponse {
     );
   }
 
-  ListOfScalarsOptionalResponse updateWithJson(JsonObject data) {
-    final List<String>? listOfScalarsOptional_value;
-    if (data.containsKey('listOfScalarsOptional')) {
-      final listOfScalarsOptional$raw = data["listOfScalarsOptional"];
-      listOfScalarsOptional_value =
-          listOfScalarsOptional$raw == null
-              ? null
-              : (listOfScalarsOptional$raw as List<dynamic>)
-                  .map((e) => e as String)
-                  .toList();
-    } else {
-      listOfScalarsOptional_value = listOfScalarsOptional;
-    }
+  static ListOfScalarsOptionalResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = ListOfScalarsOptionalResponse.fromJson(data);
 
-    return ListOfScalarsOptionalResponse(
-      listOfScalarsOptional: listOfScalarsOptional_value,
-    );
+    return self;
   }
 
   @override

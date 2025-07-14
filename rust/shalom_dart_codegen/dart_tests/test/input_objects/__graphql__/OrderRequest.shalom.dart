@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -25,19 +26,13 @@ class OrderRequestResponse {
     return OrderRequestResponse(orderRequest: orderRequest_value);
   }
 
-  OrderRequestResponse updateWithJson(JsonObject data) {
-    final OrderRequest_orderRequest? orderRequest_value;
-    if (data.containsKey('orderRequest')) {
-      final orderRequest$raw = data["orderRequest"];
-      orderRequest_value =
-          orderRequest$raw == null
-              ? null
-              : OrderRequest_orderRequest.fromJson(orderRequest$raw);
-    } else {
-      orderRequest_value = orderRequest;
-    }
+  static OrderRequestResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OrderRequestResponse.fromJson(data);
 
-    return OrderRequestResponse(orderRequest: orderRequest_value);
+    return self;
   }
 
   @override
@@ -89,38 +84,13 @@ class OrderRequest_orderRequest {
     );
   }
 
-  OrderRequest_orderRequest updateWithJson(JsonObject data) {
-    final int? quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int?;
-    } else {
-      quantity_value = quantity;
-    }
+  static OrderRequest_orderRequest deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OrderRequest_orderRequest.fromJson(data);
 
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final double? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double?;
-    } else {
-      price_value = price;
-    }
-
-    return OrderRequest_orderRequest(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
+    return self;
   }
 
   @override

@@ -22,16 +22,10 @@ class GetTaskResponse {
     return GetTaskResponse(task: task_value);
   }
 
-  GetTaskResponse updateWithJson(JsonObject data) {
-    final GetTask_task task_value;
-    if (data.containsKey('task')) {
-      final task$raw = data["task"];
-      task_value = GetTask_task.fromJson(task$raw);
-    } else {
-      task_value = task;
-    }
+  static GetTaskResponse deserialize(JsonObject data, ShalomContext context) {
+    final self = GetTaskResponse.fromJson(data);
 
-    return GetTaskResponse(task: task_value);
+    return self;
   }
 
   @override
@@ -77,32 +71,10 @@ class GetTask_task {
     return GetTask_task(id: id_value, name: name_value, status: status_value);
   }
 
-  GetTask_task updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
+  static GetTask_task deserialize(JsonObject data, ShalomContext context) {
+    final self = GetTask_task.fromJson(data);
 
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final Status status_value;
-    if (data.containsKey('status')) {
-      final status$raw = data["status"];
-      status_value = Status.fromString(status$raw);
-    } else {
-      status_value = status;
-    }
-
-    return GetTask_task(id: id_value, name: name_value, status: status_value);
+    return self;
   }
 
   @override

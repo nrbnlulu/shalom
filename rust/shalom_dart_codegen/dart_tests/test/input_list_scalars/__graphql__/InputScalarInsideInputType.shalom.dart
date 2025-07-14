@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -31,24 +32,13 @@ class InputScalarInsideInputTypeResponse {
     );
   }
 
-  InputScalarInsideInputTypeResponse updateWithJson(JsonObject data) {
-    final InputScalarInsideInputType_InputScalarInsideInputType?
-    InputScalarInsideInputType_value;
-    if (data.containsKey('InputScalarInsideInputType')) {
-      final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
-      InputScalarInsideInputType_value =
-          InputScalarInsideInputType$raw == null
-              ? null
-              : InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
-                InputScalarInsideInputType$raw,
-              );
-    } else {
-      InputScalarInsideInputType_value = InputScalarInsideInputType;
-    }
+  static InputScalarInsideInputTypeResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputScalarInsideInputTypeResponse.fromJson(data);
 
-    return InputScalarInsideInputTypeResponse(
-      InputScalarInsideInputType: InputScalarInsideInputType_value,
-    );
+    return self;
   }
 
   @override
@@ -91,20 +81,15 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
     );
   }
 
-  InputScalarInsideInputType_InputScalarInsideInputType updateWithJson(
+  static InputScalarInsideInputType_InputScalarInsideInputType deserialize(
     JsonObject data,
+    ShalomContext context,
   ) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
-
-    return InputScalarInsideInputType_InputScalarInsideInputType(
-      success: success_value,
+    final self = InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
+      data,
     );
+
+    return self;
   }
 
   @override

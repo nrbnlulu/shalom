@@ -22,16 +22,13 @@ class GetListingWithUserResponse {
     return GetListingWithUserResponse(listing: listing_value);
   }
 
-  GetListingWithUserResponse updateWithJson(JsonObject data) {
-    final GetListingWithUser_listing listing_value;
-    if (data.containsKey('listing')) {
-      final listing$raw = data["listing"];
-      listing_value = GetListingWithUser_listing.fromJson(listing$raw);
-    } else {
-      listing_value = listing;
-    }
+  static GetListingWithUserResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetListingWithUserResponse.fromJson(data);
 
-    return GetListingWithUserResponse(listing: listing_value);
+    return self;
   }
 
   @override
@@ -97,48 +94,13 @@ class GetListingWithUser_listing {
     );
   }
 
-  GetListingWithUser_listing updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
+  static GetListingWithUser_listing deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetListingWithUser_listing.fromJson(data);
 
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final int? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as int?;
-    } else {
-      price_value = price;
-    }
-
-    final GetListingWithUser_listing_user user_value;
-    if (data.containsKey('user')) {
-      final user$raw = data["user"];
-      user_value = GetListingWithUser_listing_user.fromJson(user$raw);
-    } else {
-      user_value = user;
-    }
-
-    return GetListingWithUser_listing(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-
-      user: user_value,
-    );
+    return self;
   }
 
   @override
@@ -214,48 +176,13 @@ class GetListingWithUser_listing_user {
     );
   }
 
-  GetListingWithUser_listing_user updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
+  static GetListingWithUser_listing_user deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetListingWithUser_listing_user.fromJson(data);
 
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final String email_value;
-    if (data.containsKey('email')) {
-      final email$raw = data["email"];
-      email_value = email$raw as String;
-    } else {
-      email_value = email;
-    }
-
-    final int? age_value;
-    if (data.containsKey('age')) {
-      final age$raw = data["age"];
-      age_value = age$raw as int?;
-    } else {
-      age_value = age;
-    }
-
-    return GetListingWithUser_listing_user(
-      id: id_value,
-
-      name: name_value,
-
-      email: email_value,
-
-      age: age_value,
-    );
+    return self;
   }
 
   @override

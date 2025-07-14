@@ -22,16 +22,13 @@ class GetIDOptionalResponse {
     return GetIDOptionalResponse(idOptional: idOptional_value);
   }
 
-  GetIDOptionalResponse updateWithJson(JsonObject data) {
-    final String? idOptional_value;
-    if (data.containsKey('idOptional')) {
-      final idOptional$raw = data["idOptional"];
-      idOptional_value = idOptional$raw as String?;
-    } else {
-      idOptional_value = idOptional;
-    }
+  static GetIDOptionalResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetIDOptionalResponse.fromJson(data);
 
-    return GetIDOptionalResponse(idOptional: idOptional_value);
+    return self;
   }
 
   @override

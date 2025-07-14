@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -32,24 +33,13 @@ class InputCustomScalarListMaybeResponse {
     );
   }
 
-  InputCustomScalarListMaybeResponse updateWithJson(JsonObject data) {
-    final InputCustomScalarListMaybe_InputCustomScalarListMaybe?
-    InputCustomScalarListMaybe_value;
-    if (data.containsKey('InputCustomScalarListMaybe')) {
-      final InputCustomScalarListMaybe$raw = data["InputCustomScalarListMaybe"];
-      InputCustomScalarListMaybe_value =
-          InputCustomScalarListMaybe$raw == null
-              ? null
-              : InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(
-                InputCustomScalarListMaybe$raw,
-              );
-    } else {
-      InputCustomScalarListMaybe_value = InputCustomScalarListMaybe;
-    }
+  static InputCustomScalarListMaybeResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputCustomScalarListMaybeResponse.fromJson(data);
 
-    return InputCustomScalarListMaybeResponse(
-      InputCustomScalarListMaybe: InputCustomScalarListMaybe_value,
-    );
+    return self;
   }
 
   @override
@@ -102,30 +92,15 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
     );
   }
 
-  InputCustomScalarListMaybe_InputCustomScalarListMaybe updateWithJson(
+  static InputCustomScalarListMaybe_InputCustomScalarListMaybe deserialize(
     JsonObject data,
+    ShalomContext context,
   ) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
-
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
-
-    return InputCustomScalarListMaybe_InputCustomScalarListMaybe(
-      success: success_value,
-
-      message: message_value,
+    final self = InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(
+      data,
     );
+
+    return self;
   }
 
   @override

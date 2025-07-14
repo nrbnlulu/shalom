@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -33,25 +34,13 @@ class InputCustomScalarListRequiredResponse {
     );
   }
 
-  InputCustomScalarListRequiredResponse updateWithJson(JsonObject data) {
-    final InputCustomScalarListRequired_InputCustomScalarListRequired?
-    InputCustomScalarListRequired_value;
-    if (data.containsKey('InputCustomScalarListRequired')) {
-      final InputCustomScalarListRequired$raw =
-          data["InputCustomScalarListRequired"];
-      InputCustomScalarListRequired_value =
-          InputCustomScalarListRequired$raw == null
-              ? null
-              : InputCustomScalarListRequired_InputCustomScalarListRequired.fromJson(
-                InputCustomScalarListRequired$raw,
-              );
-    } else {
-      InputCustomScalarListRequired_value = InputCustomScalarListRequired;
-    }
+  static InputCustomScalarListRequiredResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputCustomScalarListRequiredResponse.fromJson(data);
 
-    return InputCustomScalarListRequiredResponse(
-      InputCustomScalarListRequired: InputCustomScalarListRequired_value,
-    );
+    return self;
   }
 
   @override
@@ -106,30 +95,14 @@ class InputCustomScalarListRequired_InputCustomScalarListRequired {
     );
   }
 
-  InputCustomScalarListRequired_InputCustomScalarListRequired updateWithJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
+  static InputCustomScalarListRequired_InputCustomScalarListRequired
+  deserialize(JsonObject data, ShalomContext context) {
+    final self =
+        InputCustomScalarListRequired_InputCustomScalarListRequired.fromJson(
+          data,
+        );
 
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
-
-    return InputCustomScalarListRequired_InputCustomScalarListRequired(
-      success: success_value,
-
-      message: message_value,
-    );
+    return self;
   }
 
   @override

@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -23,19 +24,10 @@ class GetOrderResponse {
     return GetOrderResponse(getOrder: getOrder_value);
   }
 
-  GetOrderResponse updateWithJson(JsonObject data) {
-    final GetOrder_getOrder? getOrder_value;
-    if (data.containsKey('getOrder')) {
-      final getOrder$raw = data["getOrder"];
-      getOrder_value =
-          getOrder$raw == null
-              ? null
-              : GetOrder_getOrder.fromJson(getOrder$raw);
-    } else {
-      getOrder_value = getOrder;
-    }
+  static GetOrderResponse deserialize(JsonObject data, ShalomContext context) {
+    final self = GetOrderResponse.fromJson(data);
 
-    return GetOrderResponse(getOrder: getOrder_value);
+    return self;
   }
 
   @override
@@ -87,38 +79,10 @@ class GetOrder_getOrder {
     );
   }
 
-  GetOrder_getOrder updateWithJson(JsonObject data) {
-    final int? quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int?;
-    } else {
-      quantity_value = quantity;
-    }
+  static GetOrder_getOrder deserialize(JsonObject data, ShalomContext context) {
+    final self = GetOrder_getOrder.fromJson(data);
 
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final double? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double?;
-    } else {
-      price_value = price;
-    }
-
-    return GetOrder_getOrder(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
+    return self;
   }
 
   @override

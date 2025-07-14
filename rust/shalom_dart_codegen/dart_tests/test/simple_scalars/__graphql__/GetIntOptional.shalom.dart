@@ -22,16 +22,13 @@ class GetIntOptionalResponse {
     return GetIntOptionalResponse(intOptional: intOptional_value);
   }
 
-  GetIntOptionalResponse updateWithJson(JsonObject data) {
-    final int? intOptional_value;
-    if (data.containsKey('intOptional')) {
-      final intOptional$raw = data["intOptional"];
-      intOptional_value = intOptional$raw as int?;
-    } else {
-      intOptional_value = intOptional;
-    }
+  static GetIntOptionalResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetIntOptionalResponse.fromJson(data);
 
-    return GetIntOptionalResponse(intOptional: intOptional_value);
+    return self;
   }
 
   @override

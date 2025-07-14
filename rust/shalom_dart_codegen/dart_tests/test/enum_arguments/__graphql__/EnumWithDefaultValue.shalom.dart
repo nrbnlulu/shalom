@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -29,23 +30,13 @@ class EnumWithDefaultValueResponse {
     );
   }
 
-  EnumWithDefaultValueResponse updateWithJson(JsonObject data) {
-    final EnumWithDefaultValue_getOrderByStatus? getOrderByStatus_value;
-    if (data.containsKey('getOrderByStatus')) {
-      final getOrderByStatus$raw = data["getOrderByStatus"];
-      getOrderByStatus_value =
-          getOrderByStatus$raw == null
-              ? null
-              : EnumWithDefaultValue_getOrderByStatus.fromJson(
-                getOrderByStatus$raw,
-              );
-    } else {
-      getOrderByStatus_value = getOrderByStatus;
-    }
+  static EnumWithDefaultValueResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = EnumWithDefaultValueResponse.fromJson(data);
 
-    return EnumWithDefaultValueResponse(
-      getOrderByStatus: getOrderByStatus_value,
-    );
+    return self;
   }
 
   @override
@@ -111,48 +102,13 @@ class EnumWithDefaultValue_getOrderByStatus {
     );
   }
 
-  EnumWithDefaultValue_getOrderByStatus updateWithJson(JsonObject data) {
-    final Status? status_value;
-    if (data.containsKey('status')) {
-      final status$raw = data["status"];
-      status_value = status$raw == null ? null : Status.fromString(status$raw);
-    } else {
-      status_value = status;
-    }
+  static EnumWithDefaultValue_getOrderByStatus deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = EnumWithDefaultValue_getOrderByStatus.fromJson(data);
 
-    final int quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int;
-    } else {
-      quantity_value = quantity;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final double price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double;
-    } else {
-      price_value = price;
-    }
-
-    return EnumWithDefaultValue_getOrderByStatus(
-      status: status_value,
-
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
+    return self;
   }
 
   @override

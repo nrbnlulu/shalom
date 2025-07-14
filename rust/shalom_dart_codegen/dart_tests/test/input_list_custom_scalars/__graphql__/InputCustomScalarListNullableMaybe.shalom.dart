@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -36,27 +37,13 @@ class InputCustomScalarListNullableMaybeResponse {
     );
   }
 
-  InputCustomScalarListNullableMaybeResponse updateWithJson(JsonObject data) {
-    final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
-    InputCustomScalarListNullableMaybe_value;
-    if (data.containsKey('InputCustomScalarListNullableMaybe')) {
-      final InputCustomScalarListNullableMaybe$raw =
-          data["InputCustomScalarListNullableMaybe"];
-      InputCustomScalarListNullableMaybe_value =
-          InputCustomScalarListNullableMaybe$raw == null
-              ? null
-              : InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
-                InputCustomScalarListNullableMaybe$raw,
-              );
-    } else {
-      InputCustomScalarListNullableMaybe_value =
-          InputCustomScalarListNullableMaybe;
-    }
+  static InputCustomScalarListNullableMaybeResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputCustomScalarListNullableMaybeResponse.fromJson(data);
 
-    return InputCustomScalarListNullableMaybeResponse(
-      InputCustomScalarListNullableMaybe:
-          InputCustomScalarListNullableMaybe_value,
-    );
+    return self;
   }
 
   @override
@@ -110,29 +97,14 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
     );
   }
 
-  InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
-  updateWithJson(JsonObject data) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
+  static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
+  deserialize(JsonObject data, ShalomContext context) {
+    final self =
+        InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
+          data,
+        );
 
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
-
-    return InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe(
-      success: success_value,
-
-      message: message_value,
-    );
+    return self;
   }
 
   @override

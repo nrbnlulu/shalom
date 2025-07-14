@@ -22,16 +22,10 @@ class GetFloatResponse {
     return GetFloatResponse(float: float_value);
   }
 
-  GetFloatResponse updateWithJson(JsonObject data) {
-    final double float_value;
-    if (data.containsKey('float')) {
-      final float$raw = data["float"];
-      float_value = float$raw as double;
-    } else {
-      float_value = float;
-    }
+  static GetFloatResponse deserialize(JsonObject data, ShalomContext context) {
+    final self = GetFloatResponse.fromJson(data);
 
-    return GetFloatResponse(float: float_value);
+    return self;
   }
 
   @override

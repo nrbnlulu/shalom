@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -25,19 +26,13 @@ class RequiredArgumentsResponse {
     return RequiredArgumentsResponse(product: product_value);
   }
 
-  RequiredArgumentsResponse updateWithJson(JsonObject data) {
-    final RequiredArguments_product? product_value;
-    if (data.containsKey('product')) {
-      final product$raw = data["product"];
-      product_value =
-          product$raw == null
-              ? null
-              : RequiredArguments_product.fromJson(product$raw);
-    } else {
-      product_value = product;
-    }
+  static RequiredArgumentsResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = RequiredArgumentsResponse.fromJson(data);
 
-    return RequiredArgumentsResponse(product: product_value);
+    return self;
   }
 
   @override
@@ -77,24 +72,13 @@ class RequiredArguments_product {
     return RequiredArguments_product(id: id_value, name: name_value);
   }
 
-  RequiredArguments_product updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
+  static RequiredArguments_product deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = RequiredArguments_product.fromJson(data);
 
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    return RequiredArguments_product(id: id_value, name: name_value);
+    return self;
   }
 
   @override

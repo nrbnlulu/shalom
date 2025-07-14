@@ -22,16 +22,13 @@ class GetListingWithUserOptResponse {
     return GetListingWithUserOptResponse(listing: listing_value);
   }
 
-  GetListingWithUserOptResponse updateWithJson(JsonObject data) {
-    final GetListingWithUserOpt_listing listing_value;
-    if (data.containsKey('listing')) {
-      final listing$raw = data["listing"];
-      listing_value = GetListingWithUserOpt_listing.fromJson(listing$raw);
-    } else {
-      listing_value = listing;
-    }
+  static GetListingWithUserOptResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetListingWithUserOptResponse.fromJson(data);
 
-    return GetListingWithUserOptResponse(listing: listing_value);
+    return self;
   }
 
   @override
@@ -101,51 +98,13 @@ class GetListingWithUserOpt_listing {
     );
   }
 
-  GetListingWithUserOpt_listing updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
+  static GetListingWithUserOpt_listing deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetListingWithUserOpt_listing.fromJson(data);
 
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final int? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as int?;
-    } else {
-      price_value = price;
-    }
-
-    final GetListingWithUserOpt_listing_userOpt? userOpt_value;
-    if (data.containsKey('userOpt')) {
-      final userOpt$raw = data["userOpt"];
-      userOpt_value =
-          userOpt$raw == null
-              ? null
-              : GetListingWithUserOpt_listing_userOpt.fromJson(userOpt$raw);
-    } else {
-      userOpt_value = userOpt;
-    }
-
-    return GetListingWithUserOpt_listing(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-
-      userOpt: userOpt_value,
-    );
+    return self;
   }
 
   @override
@@ -199,28 +158,13 @@ class GetListingWithUserOpt_listing_userOpt {
     );
   }
 
-  GetListingWithUserOpt_listing_userOpt updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
+  static GetListingWithUserOpt_listing_userOpt deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetListingWithUserOpt_listing_userOpt.fromJson(data);
 
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    return GetListingWithUserOpt_listing_userOpt(
-      id: id_value,
-
-      name: name_value,
-    );
+    return self;
   }
 
   @override

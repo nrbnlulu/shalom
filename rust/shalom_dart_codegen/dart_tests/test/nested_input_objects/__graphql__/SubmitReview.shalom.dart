@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -22,16 +23,13 @@ class SubmitReviewResponse {
     return SubmitReviewResponse(submitReview: submitReview_value);
   }
 
-  SubmitReviewResponse updateWithJson(JsonObject data) {
-    final String? submitReview_value;
-    if (data.containsKey('submitReview')) {
-      final submitReview$raw = data["submitReview"];
-      submitReview_value = submitReview$raw as String?;
-    } else {
-      submitReview_value = submitReview;
-    }
+  static SubmitReviewResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = SubmitReviewResponse.fromJson(data);
 
-    return SubmitReviewResponse(submitReview: submitReview_value);
+    return self;
   }
 
   @override

@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -34,25 +35,13 @@ class OrderOptWithNullDefaultsRequestResponse {
     );
   }
 
-  OrderOptWithNullDefaultsRequestResponse updateWithJson(JsonObject data) {
-    final OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest?
-    orderOptWithNullDefaultsRequest_value;
-    if (data.containsKey('orderOptWithNullDefaultsRequest')) {
-      final orderOptWithNullDefaultsRequest$raw =
-          data["orderOptWithNullDefaultsRequest"];
-      orderOptWithNullDefaultsRequest_value =
-          orderOptWithNullDefaultsRequest$raw == null
-              ? null
-              : OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest.fromJson(
-                orderOptWithNullDefaultsRequest$raw,
-              );
-    } else {
-      orderOptWithNullDefaultsRequest_value = orderOptWithNullDefaultsRequest;
-    }
+  static OrderOptWithNullDefaultsRequestResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OrderOptWithNullDefaultsRequestResponse.fromJson(data);
 
-    return OrderOptWithNullDefaultsRequestResponse(
-      orderOptWithNullDefaultsRequest: orderOptWithNullDefaultsRequest_value,
-    );
+    return self;
   }
 
   @override
@@ -116,39 +105,14 @@ class OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest {
     );
   }
 
-  OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest
-  updateWithJson(JsonObject data) {
-    final int? quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int?;
-    } else {
-      quantity_value = quantity;
-    }
+  static OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest
+  deserialize(JsonObject data, ShalomContext context) {
+    final self =
+        OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest.fromJson(
+          data,
+        );
 
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final double? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double?;
-    } else {
-      price_value = price;
-    }
-
-    return OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
+    return self;
   }
 
   @override
