@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -35,25 +36,13 @@ class UpdatePointWithInputCoordsMaybeResponse {
     );
   }
 
-  UpdatePointWithInputCoordsMaybeResponse updateWithJson(JsonObject data) {
-    final UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
-    updatePointWithInputCoordsMaybe_value;
-    if (data.containsKey('updatePointWithInputCoordsMaybe')) {
-      final updatePointWithInputCoordsMaybe$raw =
-          data["updatePointWithInputCoordsMaybe"];
-      updatePointWithInputCoordsMaybe_value =
-          updatePointWithInputCoordsMaybe$raw == null
-              ? null
-              : UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe.fromJson(
-                updatePointWithInputCoordsMaybe$raw,
-              );
-    } else {
-      updatePointWithInputCoordsMaybe_value = updatePointWithInputCoordsMaybe;
-    }
+  static UpdatePointWithInputCoordsMaybeResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = UpdatePointWithInputCoordsMaybeResponse.fromJson(data);
 
-    return UpdatePointWithInputCoordsMaybeResponse(
-      updatePointWithInputCoordsMaybe: updatePointWithInputCoordsMaybe_value,
-    );
+    return self;
   }
 
   @override
@@ -118,42 +107,14 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
     );
   }
 
-  UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
-  updateWithJson(JsonObject data) {
-    final rmhlxei.Point? coords_value;
-    if (data.containsKey('coords')) {
-      final coords$raw = data["coords"];
-      coords_value =
-          coords$raw == null
-              ? null
-              : rmhlxei.pointScalarImpl.deserialize(coords$raw);
-    } else {
-      coords_value = coords;
-    }
+  static UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
+  deserialize(JsonObject data, ShalomContext context) {
+    final self =
+        UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe.fromJson(
+          data,
+        );
 
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    return UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe(
-      coords: coords_value,
-
-      name: name_value,
-
-      id: id_value,
-    );
+    return self;
   }
 
   @override

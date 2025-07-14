@@ -22,16 +22,13 @@ class GetBooleanResponse {
     return GetBooleanResponse(boolean: boolean_value);
   }
 
-  GetBooleanResponse updateWithJson(JsonObject data) {
-    final bool boolean_value;
-    if (data.containsKey('boolean')) {
-      final boolean$raw = data["boolean"];
-      boolean_value = boolean$raw as bool;
-    } else {
-      boolean_value = boolean;
-    }
+  static GetBooleanResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetBooleanResponse.fromJson(data);
 
-    return GetBooleanResponse(boolean: boolean_value);
+    return self;
   }
 
   @override

@@ -34,6 +34,7 @@ void main() {
         "age": 1
       };
       SubscribeToAllFields_user.deserialize(nextUserData, context);
+      await tester.pump();
 
       expect(initialUserNode.toJson(), nextUserData);
     });
@@ -53,6 +54,7 @@ void main() {
         "age": 1
       };
       SubscribeToAllFields_user.deserialize(nextUserData, context);
+      await tester.pump();
 
       expect(initialUserNode.toJson(), {"id": id, "name": "shalom"});
     });
@@ -72,6 +74,8 @@ void main() {
       final nextUserData = {"id": "2", "name": "shalom"};
       SubscribeToSomeFields_user.deserialize(nextUserData, context);
 
+      await tester.pump();
+
       expect(initialUserNode.toJson(), initialUserData);
     });
 
@@ -90,6 +94,8 @@ void main() {
       await tester.pumpWidget(const SizedBox());
       final nextUserData = {"id": id, "name": "shalom"};
       SubscribeToSomeFields_user.deserialize(nextUserData, context);
+
+      await tester.pump();
 
       expect(initialUserNode.toJson(), initialUserData);
     });

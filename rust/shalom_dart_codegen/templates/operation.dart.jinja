@@ -94,6 +94,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 {% for path, namespace_alias in extra_imports | items -%}
 import '{{path}}' as {{ namespace_alias }};
 {% endfor %}
@@ -138,72 +139,50 @@ import 'package:collection/collection.dart';
     );
     }
     
-    {% if implements_node_interface %}
-         static {{ typename }} deserialize(JsonObject data, ShalomContext context) {
-            final self = {{ typename }}(
-                {% for selection in selections %}
-                    {% set selection_name = selection.name %}
-                    {{ selection_name }}: data['{{ selection_name }}'],
-                {% endfor %}
-            );
-            context.manager.parseNodeData(self.toJson());
-            return self;
-         }
+    static {{ typename }} deserialize(JsonObject data, ShalomContext context) {
+        final self = {{ typename }}.fromJson(data); 
+        {% if implements_node_interface %}
+        context.manager.parseNodeData(self.toJson());
+        {% endif %}
+        {% for selection in selections %}
+            {% if selection.kind == "Object" and selection.implements_node_interface %} 
+                {% set selection_typename = type_name_for_selection(selection) %}
+                {{ selection_typename }}.deserialize(data['{{ selection.name }}'], context);  
+            {% endif %}
+        {% endfor %}
+        return self;
+    }
+   {% if implements_node_interface %}
          @override
-         void subscribeToChanges(ShalomContext context) {
-            if (widgetsSubscribed == 0) {
-                context.manager.register(this, { 
-                    {% for selection in selections %}   
-                        {% set selection_name = selection.name %}
-                        '{{ selection_name }}',
-                    {% endfor %}
-                    }
-                );
-            }
-            widgetsSubscribed += 1;
-         }
-         @override 
-         void unSubscribeToChanges(ShalomContext context) {
-            if (widgetsSubscribed < 2) {
-                context.manager.unRegister(this);
-            }
-            widgetsSubscribed -= 1;
+         StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
+            return context.manager.register(this, { 
+                {% for selection in selections %}   
+                    {% set selection_name = selection.name %}
+                    '{{ selection_name }}',
+                {% endfor %}
+                }, context 
+            );
          }
 
          @override
-         void updateWithJson(JsonObject rawData, Set<String> changedFields) {
+         void updateWithJson(JsonObject rawData, Set<String> changedFields, ShalomContext context) {
             for (final fieldName in changedFields) {
                 switch (fieldName) {
                     {% for selection in selections %}
                          {% set selection_name = selection.name %}
                          case '{{ selection_name }}':
-                            {{ selection_name }} = rawData['{{ selection_name }}'];
+                            {% if selection.kind == "Object" and selection.implements_node_interface %}
+                                {% set selection_typename = type_name_for_selection(selection) %}
+                                {{ selection_typename }}.deserialize(rawData['{{ selection_name }}'], context); 
+                            {% else %}
+                                {{ selection_name }} = rawData['{{ selection_name }}'];
+                            {% endif %}
                             break;
                     {% endfor %}
                 }
             }
             notifyListeners();
          }
-    {% else %}
-        {{ typename }} updateWithJson(JsonObject data) {
-        {% for selection in selections -%}
-            {% set selection_typename = type_name_for_selection(selection) %}
-            {% set selection_name = selection.name %}
-            final {{ selection_typename }} {{ selection_name }}_value;
-            if (data.containsKey('{{ selection_name }}')) {
-                final {{selection_name}}$raw = data["{{ selection_name }}"];
-                {{ selection_name }}_value = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
-            } else {
-                {{ selection_name }}_value = {{ selection_name }};
-            }
-        {% endfor %}
-        return {{ typename }}(
-        {% for selection in selections %}
-            {% set selection_name = selection.name %}
-            {{ selection_name }}: {{ selection_name }}_value,
-        {% endfor %}
-        );
-        }
     {% endif %}
     
     @override

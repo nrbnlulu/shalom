@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -25,19 +26,13 @@ class OptionalWithNullDefaultResponse {
     return OptionalWithNullDefaultResponse(updateUser: updateUser_value);
   }
 
-  OptionalWithNullDefaultResponse updateWithJson(JsonObject data) {
-    final OptionalWithNullDefault_updateUser? updateUser_value;
-    if (data.containsKey('updateUser')) {
-      final updateUser$raw = data["updateUser"];
-      updateUser_value =
-          updateUser$raw == null
-              ? null
-              : OptionalWithNullDefault_updateUser.fromJson(updateUser$raw);
-    } else {
-      updateUser_value = updateUser;
-    }
+  static OptionalWithNullDefaultResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OptionalWithNullDefaultResponse.fromJson(data);
 
-    return OptionalWithNullDefaultResponse(updateUser: updateUser_value);
+    return self;
   }
 
   @override
@@ -90,38 +85,13 @@ class OptionalWithNullDefault_updateUser {
     );
   }
 
-  OptionalWithNullDefault_updateUser updateWithJson(JsonObject data) {
-    final String? email_value;
-    if (data.containsKey('email')) {
-      final email$raw = data["email"];
-      email_value = email$raw as String?;
-    } else {
-      email_value = email;
-    }
+  static OptionalWithNullDefault_updateUser deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OptionalWithNullDefault_updateUser.fromJson(data);
 
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final String? phone_value;
-    if (data.containsKey('phone')) {
-      final phone$raw = data["phone"];
-      phone_value = phone$raw as String?;
-    } else {
-      phone_value = phone;
-    }
-
-    return OptionalWithNullDefault_updateUser(
-      email: email_value,
-
-      name: name_value,
-
-      phone: phone_value,
-    );
+    return self;
   }
 
   @override

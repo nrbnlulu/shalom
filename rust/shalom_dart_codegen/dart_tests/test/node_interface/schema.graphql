@@ -1,5 +1,6 @@
 type Query {
-  user: User
+  user: User,
+  userInfo: UserInfo
 }
 
 interface Node {
@@ -11,6 +12,18 @@ type User implements Node {
   name: String!
   email: String!
   age: Int
+}
+
+type Address implements Node {
+  id: ID!
+  street: String!,
+  city: String!
+}
+
+type UserInfo implements Node {
+  id: ID!,
+  user: User!,
+  address: Address!
 }
 
 

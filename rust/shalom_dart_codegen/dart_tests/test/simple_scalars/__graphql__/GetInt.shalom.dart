@@ -22,16 +22,10 @@ class GetIntResponse {
     return GetIntResponse(intField: intField_value);
   }
 
-  GetIntResponse updateWithJson(JsonObject data) {
-    final int intField_value;
-    if (data.containsKey('intField')) {
-      final intField$raw = data["intField"];
-      intField_value = intField$raw as int;
-    } else {
-      intField_value = intField;
-    }
+  static GetIntResponse deserialize(JsonObject data, ShalomContext context) {
+    final self = GetIntResponse.fromJson(data);
 
-    return GetIntResponse(intField: intField_value);
+    return self;
   }
 
   @override

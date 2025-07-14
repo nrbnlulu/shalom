@@ -1,22 +1,30 @@
+import 'dart:async';
+import 'package:uuid/uuid.dart';
 import 'shalom_core_base.dart';
 import 'package:flutter/material.dart';
 
 typedef ID = String;
 
+const uuid = Uuid();
+
 abstract class Node extends ChangeNotifier {
-  int widgetsSubscribed = 0;
+  ID instanceId = uuid.v4();
   ID id;
   Node({required this.id});
-  void updateWithJson(JsonObject rawData, Set<String> changedFields);
+  void updateWithJson(
+      JsonObject rawData, Set<String> changedFields, ShalomContext context);
   JsonObject toJson();
-  void subscribeToChanges(ShalomContext context);
-  void unSubscribeToChanges(ShalomContext context);
+  StreamSubscription<Event> subscribeToChanges(ShalomContext context);
 }
 
 class NodeSubscriber {
-  final WeakReference<Node> nodeRef;
+  final StreamController<Event> controller;
   final Set<String> subscribedFields;
-  NodeSubscriber({required this.nodeRef, required this.subscribedFields});
+  final ID nodeInstanceId;
+  NodeSubscriber(
+      {required this.controller,
+      required this.subscribedFields,
+      required this.nodeInstanceId});
 }
 
 class NodeWidget<T extends Node> extends StatefulWidget {
@@ -36,11 +44,12 @@ class NodeWidget<T extends Node> extends StatefulWidget {
 }
 
 class _NodeWidgetState<T extends Node> extends State<NodeWidget<T>> {
+  late StreamSubscription<Event> subscription;
   @override
   void initState() {
     super.initState();
     final node = widget.node;
-    node.subscribeToChanges(widget.context);
+    subscription = node.subscribeToChanges(widget.context);
   }
 
   @override
@@ -55,9 +64,15 @@ class _NodeWidgetState<T extends Node> extends State<NodeWidget<T>> {
 
   @override
   void dispose() {
-    widget.node.unSubscribeToChanges(widget.context);
+    subscription.cancel();
     super.dispose();
   }
+}
+
+class Event {
+  final JsonObject rawData;
+  final Set<String> changedFields;
+  Event({required this.rawData, required this.changedFields});
 }
 
 class NodeManager {
@@ -75,46 +90,48 @@ class NodeManager {
   }
 
   void parseNodeData(JsonObject newData) {
-    final nodeId = newData["id"];
-    final currentData = _rawStore[nodeId];
+    final id = newData["id"];
+    final currentData = _rawStore[id];
     if (currentData != null) {
       final changedFields = _getChangedFields(currentData, newData);
-      _rawStore[nodeId] = newData;
-      final subscribers = _subscriberStore[nodeId];
+      _rawStore[id] = newData;
+      final subscribers = _subscriberStore[id];
       if (subscribers != null) {
         for (final subscriber in subscribers) {
-          final node = subscriber.nodeRef.target;
-          if (node != null) {
-            if (changedFields
-                .intersection(subscriber.subscribedFields)
-                .isNotEmpty) {
-              node.updateWithJson(newData, changedFields);
-            }
+          if (changedFields
+              .intersection(subscriber.subscribedFields)
+              .isNotEmpty) {
+            subscriber.controller
+                .add(Event(rawData: newData, changedFields: changedFields));
           }
         }
       }
     } else {
-      _rawStore[nodeId] = newData;
+      _rawStore[id] = newData;
     }
   }
 
-  void register(Node node, Set<String> subscribedFields) {
-    final nodeId = node.id;
+  StreamSubscription<Event> register(
+      Node node, Set<String> subscribedFields, ShalomContext context) {
+    final controller = StreamController<Event>.broadcast(onCancel: () {
+      _subscriberStore[node.id]?.removeWhere((subscriber) {
+        if (subscriber.nodeInstanceId == node.instanceId) {
+          subscriber.controller.close();
+          return true;
+        }
+        return false;
+      });
+    });
+    final subscription = controller.stream.listen((event) {
+      node.updateWithJson(event.rawData, event.changedFields, context);
+    });
     final nodeSubscriber = NodeSubscriber(
-      nodeRef: WeakReference(node),
+      controller: controller,
       subscribedFields: subscribedFields,
+      nodeInstanceId: node.instanceId,
     );
-    _subscriberStore.putIfAbsent(nodeId, () => []).add(nodeSubscriber);
-  }
-
-  void unRegister(Node node) {
-    final nodeId = node.id;
-    final subscribers = _subscriberStore[nodeId];
-    if (subscribers != null) {
-      subscribers.removeWhere(
-        (subscriber) => subscriber.nodeRef.target == node,
-      );
-    }
+    _subscriberStore.putIfAbsent(node.id, () => []).add(nodeSubscriber);
+    return subscription;
   }
 }
 

@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -25,19 +26,13 @@ class OrderRecursiveResponse {
     return OrderRecursiveResponse(orderRecursive: orderRecursive_value);
   }
 
-  OrderRecursiveResponse updateWithJson(JsonObject data) {
-    final OrderRecursive_orderRecursive? orderRecursive_value;
-    if (data.containsKey('orderRecursive')) {
-      final orderRecursive$raw = data["orderRecursive"];
-      orderRecursive_value =
-          orderRecursive$raw == null
-              ? null
-              : OrderRecursive_orderRecursive.fromJson(orderRecursive$raw);
-    } else {
-      orderRecursive_value = orderRecursive;
-    }
+  static OrderRecursiveResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OrderRecursiveResponse.fromJson(data);
 
-    return OrderRecursiveResponse(orderRecursive: orderRecursive_value);
+    return self;
   }
 
   @override
@@ -90,38 +85,13 @@ class OrderRecursive_orderRecursive {
     );
   }
 
-  OrderRecursive_orderRecursive updateWithJson(JsonObject data) {
-    final int? quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int?;
-    } else {
-      quantity_value = quantity;
-    }
+  static OrderRecursive_orderRecursive deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OrderRecursive_orderRecursive.fromJson(data);
 
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final double? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double?;
-    } else {
-      price_value = price;
-    }
-
-    return OrderRecursive_orderRecursive(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
+    return self;
   }
 
   @override

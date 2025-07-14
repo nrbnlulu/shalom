@@ -22,16 +22,13 @@ class GetStringOptionalResponse {
     return GetStringOptionalResponse(stringOptional: stringOptional_value);
   }
 
-  GetStringOptionalResponse updateWithJson(JsonObject data) {
-    final String? stringOptional_value;
-    if (data.containsKey('stringOptional')) {
-      final stringOptional$raw = data["stringOptional"];
-      stringOptional_value = stringOptional$raw as String?;
-    } else {
-      stringOptional_value = stringOptional;
-    }
+  static GetStringOptionalResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetStringOptionalResponse.fromJson(data);
 
-    return GetStringOptionalResponse(stringOptional: stringOptional_value);
+    return self;
   }
 
   @override

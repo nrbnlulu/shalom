@@ -22,16 +22,10 @@ class GetStringResponse {
     return GetStringResponse(string: string_value);
   }
 
-  GetStringResponse updateWithJson(JsonObject data) {
-    final String string_value;
-    if (data.containsKey('string')) {
-      final string$raw = data["string"];
-      string_value = string$raw as String;
-    } else {
-      string_value = string;
-    }
+  static GetStringResponse deserialize(JsonObject data, ShalomContext context) {
+    final self = GetStringResponse.fromJson(data);
 
-    return GetStringResponse(string: string_value);
+    return self;
   }
 
   @override

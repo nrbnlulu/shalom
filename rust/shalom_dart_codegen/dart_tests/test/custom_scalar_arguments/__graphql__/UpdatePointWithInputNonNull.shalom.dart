@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -31,24 +32,13 @@ class UpdatePointWithInputNonNullResponse {
     );
   }
 
-  UpdatePointWithInputNonNullResponse updateWithJson(JsonObject data) {
-    final UpdatePointWithInputNonNull_updatePointWithInput?
-    updatePointWithInput_value;
-    if (data.containsKey('updatePointWithInput')) {
-      final updatePointWithInput$raw = data["updatePointWithInput"];
-      updatePointWithInput_value =
-          updatePointWithInput$raw == null
-              ? null
-              : UpdatePointWithInputNonNull_updatePointWithInput.fromJson(
-                updatePointWithInput$raw,
-              );
-    } else {
-      updatePointWithInput_value = updatePointWithInput;
-    }
+  static UpdatePointWithInputNonNullResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = UpdatePointWithInputNonNullResponse.fromJson(data);
 
-    return UpdatePointWithInputNonNullResponse(
-      updatePointWithInput: updatePointWithInput_value,
-    );
+    return self;
   }
 
   @override
@@ -110,43 +100,15 @@ class UpdatePointWithInputNonNull_updatePointWithInput {
     );
   }
 
-  UpdatePointWithInputNonNull_updatePointWithInput updateWithJson(
+  static UpdatePointWithInputNonNull_updatePointWithInput deserialize(
     JsonObject data,
+    ShalomContext context,
   ) {
-    final rmhlxei.Point? coords_value;
-    if (data.containsKey('coords')) {
-      final coords$raw = data["coords"];
-      coords_value =
-          coords$raw == null
-              ? null
-              : rmhlxei.pointScalarImpl.deserialize(coords$raw);
-    } else {
-      coords_value = coords;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    return UpdatePointWithInputNonNull_updatePointWithInput(
-      coords: coords_value,
-
-      name: name_value,
-
-      id: id_value,
+    final self = UpdatePointWithInputNonNull_updatePointWithInput.fromJson(
+      data,
     );
+
+    return self;
   }
 
   @override

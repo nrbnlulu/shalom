@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -25,19 +26,13 @@ class EnumInputObjectRequiredResponse {
     return EnumInputObjectRequiredResponse(updateOrder: updateOrder_value);
   }
 
-  EnumInputObjectRequiredResponse updateWithJson(JsonObject data) {
-    final EnumInputObjectRequired_updateOrder? updateOrder_value;
-    if (data.containsKey('updateOrder')) {
-      final updateOrder$raw = data["updateOrder"];
-      updateOrder_value =
-          updateOrder$raw == null
-              ? null
-              : EnumInputObjectRequired_updateOrder.fromJson(updateOrder$raw);
-    } else {
-      updateOrder_value = updateOrder;
-    }
+  static EnumInputObjectRequiredResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = EnumInputObjectRequiredResponse.fromJson(data);
 
-    return EnumInputObjectRequiredResponse(updateOrder: updateOrder_value);
+    return self;
   }
 
   @override
@@ -103,48 +98,13 @@ class EnumInputObjectRequired_updateOrder {
     );
   }
 
-  EnumInputObjectRequired_updateOrder updateWithJson(JsonObject data) {
-    final Status? status_value;
-    if (data.containsKey('status')) {
-      final status$raw = data["status"];
-      status_value = status$raw == null ? null : Status.fromString(status$raw);
-    } else {
-      status_value = status;
-    }
+  static EnumInputObjectRequired_updateOrder deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = EnumInputObjectRequired_updateOrder.fromJson(data);
 
-    final int quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int;
-    } else {
-      quantity_value = quantity;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final double price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double;
-    } else {
-      price_value = price;
-    }
-
-    return EnumInputObjectRequired_updateOrder(
-      status: status_value,
-
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
+    return self;
   }
 
   @override

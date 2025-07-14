@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 
 class SubscribeToAllFields_user extends Node {
   /// class members
@@ -16,35 +19,45 @@ class SubscribeToAllFields_user extends Node {
     required this.email,
     this.age,
   });
+  static SubscribeToAllFields_user fromJson(JsonObject data) {
+    final String id_value;
+    final id$raw = data["id"];
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    final String email_value;
+    final email$raw = data["email"];
+    email_value = email$raw as String;
+
+    final int? age_value;
+    final age$raw = data["age"];
+    age_value = age$raw as int?;
+
+    return SubscribeToAllFields_user(
+      id: id_value,
+      name: name_value,
+      email: email_value,
+      age: age_value,
+    );
+  }
 
   static SubscribeToAllFields_user deserialize(
     JsonObject data,
     ShalomContext context,
   ) {
-    final self = SubscribeToAllFields_user(
-      id: data['id'],
-      name: data['name'],
-      email: data['email'],
-      age: data['age'],
-    );
+    final self = SubscribeToAllFields_user.fromJson(data);
+
     context.manager.parseNodeData(self.toJson());
+
     return self;
   }
 
   @override
-  void subscribeToChanges(ShalomContext context) {
-    if (widgetsSubscribed == 0) {
-      context.manager.register(this, {'id', 'name', 'email', 'age'});
-    }
-    widgetsSubscribed += 1;
-  }
-
-  @override
-  void unSubscribeToChanges(ShalomContext context) {
-    if (widgetsSubscribed < 2) {
-      context.manager.unRegister(this);
-    }
-    widgetsSubscribed -= 1;
+  StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
+    return context.manager.register(this, {'id', 'name', 'email', 'age'});
   }
 
   @override
@@ -69,31 +82,6 @@ class SubscribeToAllFields_user extends Node {
       }
     }
     notifyListeners();
-  }
-
-  static SubscribeToAllFields_user fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final String email_value;
-    final email$raw = data["email"];
-    email_value = email$raw as String;
-
-    final int? age_value;
-    final age$raw = data["age"];
-    age_value = age$raw as int?;
-
-    return SubscribeToAllFields_user(
-      id: id_value,
-      name: name_value,
-      email: email_value,
-      age: age_value,
-    );
   }
 
   @override

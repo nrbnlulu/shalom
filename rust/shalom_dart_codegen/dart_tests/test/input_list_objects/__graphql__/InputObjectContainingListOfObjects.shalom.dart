@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -35,27 +36,13 @@ class InputObjectContainingListOfObjectsResponse {
     );
   }
 
-  InputObjectContainingListOfObjectsResponse updateWithJson(JsonObject data) {
-    final InputObjectContainingListOfObjects_InputObjectContainingListOfObjects?
-    InputObjectContainingListOfObjects_value;
-    if (data.containsKey('InputObjectContainingListOfObjects')) {
-      final InputObjectContainingListOfObjects$raw =
-          data["InputObjectContainingListOfObjects"];
-      InputObjectContainingListOfObjects_value =
-          InputObjectContainingListOfObjects$raw == null
-              ? null
-              : InputObjectContainingListOfObjects_InputObjectContainingListOfObjects.fromJson(
-                InputObjectContainingListOfObjects$raw,
-              );
-    } else {
-      InputObjectContainingListOfObjects_value =
-          InputObjectContainingListOfObjects;
-    }
+  static InputObjectContainingListOfObjectsResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputObjectContainingListOfObjectsResponse.fromJson(data);
 
-    return InputObjectContainingListOfObjectsResponse(
-      InputObjectContainingListOfObjects:
-          InputObjectContainingListOfObjects_value,
-    );
+    return self;
   }
 
   @override
@@ -109,29 +96,14 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
     );
   }
 
-  InputObjectContainingListOfObjects_InputObjectContainingListOfObjects
-  updateWithJson(JsonObject data) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
+  static InputObjectContainingListOfObjects_InputObjectContainingListOfObjects
+  deserialize(JsonObject data, ShalomContext context) {
+    final self =
+        InputObjectContainingListOfObjects_InputObjectContainingListOfObjects.fromJson(
+          data,
+        );
 
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
-
-    return InputObjectContainingListOfObjects_InputObjectContainingListOfObjects(
-      success: success_value,
-
-      message: message_value,
-    );
+    return self;
   }
 
   @override

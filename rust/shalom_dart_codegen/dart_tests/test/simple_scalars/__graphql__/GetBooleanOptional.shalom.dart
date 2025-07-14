@@ -22,16 +22,13 @@ class GetBooleanOptionalResponse {
     return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);
   }
 
-  GetBooleanOptionalResponse updateWithJson(JsonObject data) {
-    final bool? booleanOptional_value;
-    if (data.containsKey('booleanOptional')) {
-      final booleanOptional$raw = data["booleanOptional"];
-      booleanOptional_value = booleanOptional$raw as bool?;
-    } else {
-      booleanOptional_value = booleanOptional;
-    }
+  static GetBooleanOptionalResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetBooleanOptionalResponse.fromJson(data);
 
-    return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);
+    return self;
   }
 
   @override

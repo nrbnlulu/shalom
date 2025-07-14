@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -29,23 +30,13 @@ class EnumOptionalResponse {
     );
   }
 
-  EnumOptionalResponse updateWithJson(JsonObject data) {
-    final EnumOptional_updateOrderStatusOpt? updateOrderStatusOpt_value;
-    if (data.containsKey('updateOrderStatusOpt')) {
-      final updateOrderStatusOpt$raw = data["updateOrderStatusOpt"];
-      updateOrderStatusOpt_value =
-          updateOrderStatusOpt$raw == null
-              ? null
-              : EnumOptional_updateOrderStatusOpt.fromJson(
-                updateOrderStatusOpt$raw,
-              );
-    } else {
-      updateOrderStatusOpt_value = updateOrderStatusOpt;
-    }
+  static EnumOptionalResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = EnumOptionalResponse.fromJson(data);
 
-    return EnumOptionalResponse(
-      updateOrderStatusOpt: updateOrderStatusOpt_value,
-    );
+    return self;
   }
 
   @override
@@ -111,48 +102,13 @@ class EnumOptional_updateOrderStatusOpt {
     );
   }
 
-  EnumOptional_updateOrderStatusOpt updateWithJson(JsonObject data) {
-    final Status? status_value;
-    if (data.containsKey('status')) {
-      final status$raw = data["status"];
-      status_value = status$raw == null ? null : Status.fromString(status$raw);
-    } else {
-      status_value = status;
-    }
+  static EnumOptional_updateOrderStatusOpt deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = EnumOptional_updateOrderStatusOpt.fromJson(data);
 
-    final int quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int;
-    } else {
-      quantity_value = quantity;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final double price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double;
-    } else {
-      price_value = price;
-    }
-
-    return EnumOptional_updateOrderStatusOpt(
-      status: status_value,
-
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
+    return self;
   }
 
   @override

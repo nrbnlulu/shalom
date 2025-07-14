@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -25,19 +26,13 @@ class OptionalArgumentsResponse {
     return OptionalArgumentsResponse(updateUser: updateUser_value);
   }
 
-  OptionalArgumentsResponse updateWithJson(JsonObject data) {
-    final OptionalArguments_updateUser? updateUser_value;
-    if (data.containsKey('updateUser')) {
-      final updateUser$raw = data["updateUser"];
-      updateUser_value =
-          updateUser$raw == null
-              ? null
-              : OptionalArguments_updateUser.fromJson(updateUser$raw);
-    } else {
-      updateUser_value = updateUser;
-    }
+  static OptionalArgumentsResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OptionalArgumentsResponse.fromJson(data);
 
-    return OptionalArgumentsResponse(updateUser: updateUser_value);
+    return self;
   }
 
   @override
@@ -71,16 +66,13 @@ class OptionalArguments_updateUser {
     return OptionalArguments_updateUser(name: name_value);
   }
 
-  OptionalArguments_updateUser updateWithJson(JsonObject data) {
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
+  static OptionalArguments_updateUser deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OptionalArguments_updateUser.fromJson(data);
 
-    return OptionalArguments_updateUser(name: name_value);
+    return self;
   }
 
   @override

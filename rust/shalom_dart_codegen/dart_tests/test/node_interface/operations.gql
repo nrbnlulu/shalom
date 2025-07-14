@@ -13,3 +13,34 @@ query SubscribeToSomeFields {
         name
     }
 }
+
+query SubscribeToAllNestedFields {
+   userInfo {
+       id
+       user {
+           id 
+           name
+           email
+           age
+       } 
+       address {
+          id
+          street
+          city
+       }
+   }  
+}
+
+query SubscribeToSomeNestedFields {
+   userInfo {
+       id 
+       user {
+           id 
+           name
+       } 
+       address {
+          id
+          city
+       }
+   }  
+}

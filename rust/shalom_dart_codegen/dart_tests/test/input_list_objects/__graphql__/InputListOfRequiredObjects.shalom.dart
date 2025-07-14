@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -31,24 +32,13 @@ class InputListOfRequiredObjectsResponse {
     );
   }
 
-  InputListOfRequiredObjectsResponse updateWithJson(JsonObject data) {
-    final InputListOfRequiredObjects_InputListOfRequiredObjects?
-    InputListOfRequiredObjects_value;
-    if (data.containsKey('InputListOfRequiredObjects')) {
-      final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
-      InputListOfRequiredObjects_value =
-          InputListOfRequiredObjects$raw == null
-              ? null
-              : InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
-                InputListOfRequiredObjects$raw,
-              );
-    } else {
-      InputListOfRequiredObjects_value = InputListOfRequiredObjects;
-    }
+  static InputListOfRequiredObjectsResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputListOfRequiredObjectsResponse.fromJson(data);
 
-    return InputListOfRequiredObjectsResponse(
-      InputListOfRequiredObjects: InputListOfRequiredObjects_value,
-    );
+    return self;
   }
 
   @override
@@ -101,30 +91,15 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
     );
   }
 
-  InputListOfRequiredObjects_InputListOfRequiredObjects updateWithJson(
+  static InputListOfRequiredObjects_InputListOfRequiredObjects deserialize(
     JsonObject data,
+    ShalomContext context,
   ) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
-
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
-
-    return InputListOfRequiredObjects_InputListOfRequiredObjects(
-      success: success_value,
-
-      message: message_value,
+    final self = InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
+      data,
     );
+
+    return self;
   }
 
   @override

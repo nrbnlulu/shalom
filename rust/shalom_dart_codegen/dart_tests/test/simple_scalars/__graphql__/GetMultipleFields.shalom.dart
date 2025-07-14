@@ -28,24 +28,13 @@ class GetMultipleFieldsResponse {
     return GetMultipleFieldsResponse(id: id_value, intField: intField_value);
   }
 
-  GetMultipleFieldsResponse updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
+  static GetMultipleFieldsResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetMultipleFieldsResponse.fromJson(data);
 
-    final int intField_value;
-    if (data.containsKey('intField')) {
-      final intField$raw = data["intField"];
-      intField_value = intField$raw as int;
-    } else {
-      intField_value = intField;
-    }
-
-    return GetMultipleFieldsResponse(id: id_value, intField: intField_value);
+    return self;
   }
 
   @override

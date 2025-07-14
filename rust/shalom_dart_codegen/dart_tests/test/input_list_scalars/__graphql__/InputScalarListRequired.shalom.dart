@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -31,24 +32,13 @@ class InputScalarListRequiredResponse {
     );
   }
 
-  InputScalarListRequiredResponse updateWithJson(JsonObject data) {
-    final InputScalarListRequired_InputScalarListRequired?
-    InputScalarListRequired_value;
-    if (data.containsKey('InputScalarListRequired')) {
-      final InputScalarListRequired$raw = data["InputScalarListRequired"];
-      InputScalarListRequired_value =
-          InputScalarListRequired$raw == null
-              ? null
-              : InputScalarListRequired_InputScalarListRequired.fromJson(
-                InputScalarListRequired$raw,
-              );
-    } else {
-      InputScalarListRequired_value = InputScalarListRequired;
-    }
+  static InputScalarListRequiredResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputScalarListRequiredResponse.fromJson(data);
 
-    return InputScalarListRequiredResponse(
-      InputScalarListRequired: InputScalarListRequired_value,
-    );
+    return self;
   }
 
   @override
@@ -87,20 +77,13 @@ class InputScalarListRequired_InputScalarListRequired {
     );
   }
 
-  InputScalarListRequired_InputScalarListRequired updateWithJson(
+  static InputScalarListRequired_InputScalarListRequired deserialize(
     JsonObject data,
+    ShalomContext context,
   ) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
+    final self = InputScalarListRequired_InputScalarListRequired.fromJson(data);
 
-    return InputScalarListRequired_InputScalarListRequired(
-      success: success_value,
-    );
+    return self;
   }
 
   @override

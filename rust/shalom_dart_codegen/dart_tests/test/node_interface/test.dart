@@ -15,8 +15,12 @@ class TestSubscribeToAllFields_user extends SubscribeToAllFields_user {
   });
 
   @override
-  void updateWithJson(JsonObject rawData, Set<String> changedFields) {
-    super.updateWithJson(rawData, changedFields);
+  void updateWithJson(
+    JsonObject rawData,
+    Set<String> changedFields,
+    ShalomContext context,
+  ) {
+    super.updateWithJson(rawData, changedFields, context);
     updateCounter++;
   }
 
@@ -40,8 +44,12 @@ class TestSubscribeToSomeFields_user extends SubscribeToSomeFields_user {
   TestSubscribeToSomeFields_user({required super.id, required super.name});
 
   @override
-  void updateWithJson(JsonObject rawData, Set<String> changedFields) {
-    super.updateWithJson(rawData, changedFields);
+  void updateWithJson(
+    JsonObject rawData,
+    Set<String> changedFields,
+    ShalomContext context,
+  ) {
+    super.updateWithJson(rawData, changedFields, context);
     updateCounter++;
   }
 
@@ -82,37 +90,41 @@ void main() {
       context = ShalomContext(manager: manager);
     });
 
-    test("all subscribed fields with all fields updated", () {
+    test("all subscribed fields with all fields updated", () async {
+      manager.parseNodeData(initialUserData);
       final initialUserNode = TestSubscribeToAllFields_user.deserialize(
         initialUserData,
         context,
       );
       initialUserNode.subscribeToChanges(context);
 
-      SubscribeToAllFields_user.deserialize(nextUserData, context);
+      manager.parseNodeData(nextUserData);
 
+      await Future.delayed(Duration.zero);
       expect(initialUserNode.updateCounter, 1);
       expect(initialUserNode.toJson(), nextUserData);
     });
 
-    test("some subscribed fields with all fields updated", () {
+    test("some subscribed fields with all fields updated", () async {
+      manager.parseNodeData(initialUserData);
       final initialUserNode = TestSubscribeToSomeFields_user.deserialize(
         initialUserData,
         context,
       );
       initialUserNode.subscribeToChanges(context);
 
-      SubscribeToAllFields_user.deserialize(nextUserData, context);
+      manager.parseNodeData(nextUserData);
 
+      await Future.delayed(Duration.zero);
       expect(initialUserNode.updateCounter, 1);
-
       expect(initialUserNode.toJson(), {
         "id": id,
         "name": nextUserData["name"],
       });
     });
 
-    test("other node id updated", () {
+    test("other node id updated", () async {
+      manager.parseNodeData(initialUserData);
       final initialUserNode = TestSubscribeToAllFields_user.deserialize(
         initialUserData,
         context,
@@ -120,21 +132,24 @@ void main() {
       initialUserNode.subscribeToChanges(context);
 
       final otherNodeData = {"id": "2", "name": "other user"};
-      SubscribeToSomeFields_user.deserialize(otherNodeData, context);
+      manager.parseNodeData(otherNodeData);
 
+      await Future.delayed(Duration.zero);
       expect(initialUserNode.updateCounter, 0);
       expect(initialUserNode.toJson(), initialUserData);
     });
 
-    test("no changed fields", () {
+    test("no changed fields", () async {
+      manager.parseNodeData(initialUserData);
       final initialUserNode = TestSubscribeToSomeFields_user.deserialize(
         initialUserData,
         context,
       );
       initialUserNode.subscribeToChanges(context);
 
-      SubscribeToAllFields_user.deserialize(initialUserData, context);
+      manager.parseNodeData(initialUserData);
 
+      await Future.delayed(Duration.zero);
       expect(initialUserNode.updateCounter, 0);
       expect(initialUserNode.toJson(), {
         "id": initialUserData["id"],
@@ -142,29 +157,32 @@ void main() {
       });
     });
 
-    test("unsubscribed", () {
+    test("unsubscribed", () async {
+      manager.parseNodeData(initialUserData);
       final initialUserNode = TestSubscribeToAllFields_user.deserialize(
         initialUserData,
         context,
       );
 
-      SubscribeToAllFields_user.deserialize(nextUserData, context);
+      manager.parseNodeData(nextUserData);
 
+      await Future.delayed(Duration.zero);
       expect(initialUserNode.updateCounter, 0);
       expect(initialUserNode.toJson(), initialUserData);
     });
 
-    test("subscribed then unsubscribed", () {
+    test("subscribed then unsubscribed", () async {
+      manager.parseNodeData(initialUserData);
       final initialUserNode = TestSubscribeToAllFields_user.deserialize(
         initialUserData,
         context,
       );
-      manager.parseNodeData(initialUserNode.toJson());
-      initialUserNode.subscribeToChanges(context);
-      initialUserNode.unSubscribeToChanges(context);
+      final subscription = initialUserNode.subscribeToChanges(context);
+      subscription.cancel();
 
-      SubscribeToAllFields_user.deserialize(nextUserData, context);
+      manager.parseNodeData(nextUserData);
 
+      await Future.delayed(Duration.zero);
       expect(initialUserNode.updateCounter, 0);
       expect(initialUserNode.toJson(), initialUserData);
     });

@@ -22,16 +22,13 @@ class GetTaskStatusOptResponse {
     return GetTaskStatusOptResponse(task: task_value);
   }
 
-  GetTaskStatusOptResponse updateWithJson(JsonObject data) {
-    final GetTaskStatusOpt_task task_value;
-    if (data.containsKey('task')) {
-      final task$raw = data["task"];
-      task_value = GetTaskStatusOpt_task.fromJson(task$raw);
-    } else {
-      task_value = task;
-    }
+  static GetTaskStatusOptResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetTaskStatusOptResponse.fromJson(data);
 
-    return GetTaskStatusOptResponse(task: task_value);
+    return self;
   }
 
   @override
@@ -84,39 +81,13 @@ class GetTaskStatusOpt_task {
     );
   }
 
-  GetTaskStatusOpt_task updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
+  static GetTaskStatusOpt_task deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = GetTaskStatusOpt_task.fromJson(data);
 
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final Status? statusOpt_value;
-    if (data.containsKey('statusOpt')) {
-      final statusOpt$raw = data["statusOpt"];
-      statusOpt_value =
-          statusOpt$raw == null ? null : Status.fromString(statusOpt$raw);
-    } else {
-      statusOpt_value = statusOpt;
-    }
-
-    return GetTaskStatusOpt_task(
-      id: id_value,
-
-      name: name_value,
-
-      statusOpt: statusOpt_value,
-    );
+    return self;
   }
 
   @override

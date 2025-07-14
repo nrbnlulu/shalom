@@ -22,16 +22,10 @@ class GetIDResponse {
     return GetIDResponse(id: id_value);
   }
 
-  GetIDResponse updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
+  static GetIDResponse deserialize(JsonObject data, ShalomContext context) {
+    final self = GetIDResponse.fromJson(data);
 
-    return GetIDResponse(id: id_value);
+    return self;
   }
 
   @override

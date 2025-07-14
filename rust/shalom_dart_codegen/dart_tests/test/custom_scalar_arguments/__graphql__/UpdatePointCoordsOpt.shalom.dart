@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -26,19 +27,13 @@ class UpdatePointCoordsOptResponse {
     return UpdatePointCoordsOptResponse(getPointById: getPointById_value);
   }
 
-  UpdatePointCoordsOptResponse updateWithJson(JsonObject data) {
-    final UpdatePointCoordsOpt_getPointById? getPointById_value;
-    if (data.containsKey('getPointById')) {
-      final getPointById$raw = data["getPointById"];
-      getPointById_value =
-          getPointById$raw == null
-              ? null
-              : UpdatePointCoordsOpt_getPointById.fromJson(getPointById$raw);
-    } else {
-      getPointById_value = getPointById;
-    }
+  static UpdatePointCoordsOptResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = UpdatePointCoordsOptResponse.fromJson(data);
 
-    return UpdatePointCoordsOptResponse(getPointById: getPointById_value);
+    return self;
   }
 
   @override
@@ -98,41 +93,13 @@ class UpdatePointCoordsOpt_getPointById {
     );
   }
 
-  UpdatePointCoordsOpt_getPointById updateWithJson(JsonObject data) {
-    final rmhlxei.Point? coords_value;
-    if (data.containsKey('coords')) {
-      final coords$raw = data["coords"];
-      coords_value =
-          coords$raw == null
-              ? null
-              : rmhlxei.pointScalarImpl.deserialize(coords$raw);
-    } else {
-      coords_value = coords;
-    }
+  static UpdatePointCoordsOpt_getPointById deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = UpdatePointCoordsOpt_getPointById.fromJson(data);
 
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    return UpdatePointCoordsOpt_getPointById(
-      coords: coords_value,
-
-      name: name_value,
-
-      id: id_value,
-    );
+    return self;
   }
 
   @override

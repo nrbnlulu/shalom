@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -29,23 +30,13 @@ class InputScalarListMaybeResponse {
     );
   }
 
-  InputScalarListMaybeResponse updateWithJson(JsonObject data) {
-    final InputScalarListMaybe_InputScalarListMaybe? InputScalarListMaybe_value;
-    if (data.containsKey('InputScalarListMaybe')) {
-      final InputScalarListMaybe$raw = data["InputScalarListMaybe"];
-      InputScalarListMaybe_value =
-          InputScalarListMaybe$raw == null
-              ? null
-              : InputScalarListMaybe_InputScalarListMaybe.fromJson(
-                InputScalarListMaybe$raw,
-              );
-    } else {
-      InputScalarListMaybe_value = InputScalarListMaybe;
-    }
+  static InputScalarListMaybeResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputScalarListMaybeResponse.fromJson(data);
 
-    return InputScalarListMaybeResponse(
-      InputScalarListMaybe: InputScalarListMaybe_value,
-    );
+    return self;
   }
 
   @override
@@ -80,16 +71,13 @@ class InputScalarListMaybe_InputScalarListMaybe {
     return InputScalarListMaybe_InputScalarListMaybe(success: success_value);
   }
 
-  InputScalarListMaybe_InputScalarListMaybe updateWithJson(JsonObject data) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
+  static InputScalarListMaybe_InputScalarListMaybe deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputScalarListMaybe_InputScalarListMaybe.fromJson(data);
 
-    return InputScalarListMaybe_InputScalarListMaybe(success: success_value);
+    return self;
   }
 
   @override

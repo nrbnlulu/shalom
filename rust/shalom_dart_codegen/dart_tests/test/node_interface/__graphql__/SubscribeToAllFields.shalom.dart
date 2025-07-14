@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -23,19 +24,15 @@ class SubscribeToAllFieldsResponse {
     return SubscribeToAllFieldsResponse(user: user_value);
   }
 
-  SubscribeToAllFieldsResponse updateWithJson(JsonObject data) {
-    final SubscribeToAllFields_user? user_value;
-    if (data.containsKey('user')) {
-      final user$raw = data["user"];
-      user_value =
-          user$raw == null
-              ? null
-              : SubscribeToAllFields_user.fromJson(user$raw);
-    } else {
-      user_value = user;
-    }
+  static SubscribeToAllFieldsResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = SubscribeToAllFieldsResponse.fromJson(data);
 
-    return SubscribeToAllFieldsResponse(user: user_value);
+    SubscribeToAllFields_user?.deserialize(data['user'], context);
+
+    return self;
   }
 
   @override
@@ -103,53 +100,52 @@ class SubscribeToAllFields_user extends Node {
     JsonObject data,
     ShalomContext context,
   ) {
-    final self = SubscribeToAllFields_user(
-      id: data['id'],
+    final self = SubscribeToAllFields_user.fromJson(data);
 
-      name: data['name'],
-
-      email: data['email'],
-
-      age: data['age'],
-    );
     context.manager.parseNodeData(self.toJson());
+
     return self;
   }
 
   @override
-  void subscribeToChanges(ShalomContext context) {
-    if (widgetsSubscribed == 0) {
-      context.manager.register(this, {'id', 'name', 'email', 'age'});
-    }
-    widgetsSubscribed += 1;
+  StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
+    return context.manager.register(this, {
+      'id',
+
+      'name',
+
+      'email',
+
+      'age',
+    }, context);
   }
 
   @override
-  void unSubscribeToChanges(ShalomContext context) {
-    if (widgetsSubscribed < 2) {
-      context.manager.unRegister(this);
-    }
-    widgetsSubscribed -= 1;
-  }
-
-  @override
-  void updateWithJson(JsonObject rawData, Set<String> changedFields) {
+  void updateWithJson(
+    JsonObject rawData,
+    Set<String> changedFields,
+    ShalomContext context,
+  ) {
     for (final fieldName in changedFields) {
       switch (fieldName) {
         case 'id':
           id = rawData['id'];
+
           break;
 
         case 'name':
           name = rawData['name'];
+
           break;
 
         case 'email':
           email = rawData['email'];
+
           break;
 
         case 'age':
           age = rawData['age'];
+
           break;
       }
     }

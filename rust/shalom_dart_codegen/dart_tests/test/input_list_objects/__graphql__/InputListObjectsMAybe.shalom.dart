@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -30,24 +31,13 @@ class InputListObjectsMAybeResponse {
     );
   }
 
-  InputListObjectsMAybeResponse updateWithJson(JsonObject data) {
-    final InputListObjectsMAybe_InputListObjectsMAybe?
-    InputListObjectsMAybe_value;
-    if (data.containsKey('InputListObjectsMAybe')) {
-      final InputListObjectsMAybe$raw = data["InputListObjectsMAybe"];
-      InputListObjectsMAybe_value =
-          InputListObjectsMAybe$raw == null
-              ? null
-              : InputListObjectsMAybe_InputListObjectsMAybe.fromJson(
-                InputListObjectsMAybe$raw,
-              );
-    } else {
-      InputListObjectsMAybe_value = InputListObjectsMAybe;
-    }
+  static InputListObjectsMAybeResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputListObjectsMAybeResponse.fromJson(data);
 
-    return InputListObjectsMAybeResponse(
-      InputListObjectsMAybe: InputListObjectsMAybe_value,
-    );
+    return self;
   }
 
   @override
@@ -96,28 +86,13 @@ class InputListObjectsMAybe_InputListObjectsMAybe {
     );
   }
 
-  InputListObjectsMAybe_InputListObjectsMAybe updateWithJson(JsonObject data) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
+  static InputListObjectsMAybe_InputListObjectsMAybe deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputListObjectsMAybe_InputListObjectsMAybe.fromJson(data);
 
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
-
-    return InputListObjectsMAybe_InputListObjectsMAybe(
-      success: success_value,
-
-      message: message_value,
-    );
+    return self;
   }
 
   @override

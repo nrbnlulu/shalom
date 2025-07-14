@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -26,20 +27,13 @@ class InputListEnumInsideInputObjectResponse {
     );
   }
 
-  InputListEnumInsideInputObjectResponse updateWithJson(JsonObject data) {
-    final String? InputListEnumInsideInputObject_value;
-    if (data.containsKey('InputListEnumInsideInputObject')) {
-      final InputListEnumInsideInputObject$raw =
-          data["InputListEnumInsideInputObject"];
-      InputListEnumInsideInputObject_value =
-          InputListEnumInsideInputObject$raw as String?;
-    } else {
-      InputListEnumInsideInputObject_value = InputListEnumInsideInputObject;
-    }
+  static InputListEnumInsideInputObjectResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputListEnumInsideInputObjectResponse.fromJson(data);
 
-    return InputListEnumInsideInputObjectResponse(
-      InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,
-    );
+    return self;
   }
 
   @override

@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -25,19 +26,13 @@ class OrderOptRequestResponse {
     return OrderOptRequestResponse(orderOptRequest: orderOptRequest_value);
   }
 
-  OrderOptRequestResponse updateWithJson(JsonObject data) {
-    final OrderOptRequest_orderOptRequest? orderOptRequest_value;
-    if (data.containsKey('orderOptRequest')) {
-      final orderOptRequest$raw = data["orderOptRequest"];
-      orderOptRequest_value =
-          orderOptRequest$raw == null
-              ? null
-              : OrderOptRequest_orderOptRequest.fromJson(orderOptRequest$raw);
-    } else {
-      orderOptRequest_value = orderOptRequest;
-    }
+  static OrderOptRequestResponse deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OrderOptRequestResponse.fromJson(data);
 
-    return OrderOptRequestResponse(orderOptRequest: orderOptRequest_value);
+    return self;
   }
 
   @override
@@ -90,38 +85,13 @@ class OrderOptRequest_orderOptRequest {
     );
   }
 
-  OrderOptRequest_orderOptRequest updateWithJson(JsonObject data) {
-    final int? quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int?;
-    } else {
-      quantity_value = quantity;
-    }
+  static OrderOptRequest_orderOptRequest deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OrderOptRequest_orderOptRequest.fromJson(data);
 
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final double? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double?;
-    } else {
-      price_value = price;
-    }
-
-    return OrderOptRequest_orderOptRequest(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
+    return self;
   }
 
   @override
