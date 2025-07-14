@@ -28,6 +28,10 @@ query SubscribeToAllNestedFields {
           street
           city
        }
+       order {
+          name
+          price
+       }
    }  
 }
 
@@ -42,5 +46,30 @@ query SubscribeToSomeNestedFields {
           id
           city
        }
+       order {
+          name
+       }
    }  
 }
+
+query SubscribeToAllFieldsWithNonNodeParent {
+    userInfoNotNode {
+        user {
+            id
+            name
+            email
+            age
+        }
+    }
+}
+
+query SubscribeToSomeFieldsWithNonNodeParent {
+    userInfoNotNode {
+        user {
+            id
+            name
+        }
+    }
+}
+            
+            

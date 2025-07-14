@@ -64,11 +64,14 @@ class SubscribeToSomeNestedFields_userInfo extends Node {
 
   SubscribeToSomeNestedFields_userInfo_address address;
 
+  SubscribeToSomeNestedFields_userInfo_order order;
+
   // keywordargs constructor
   SubscribeToSomeNestedFields_userInfo({
     required super.id,
     required this.user,
     required this.address,
+    required this.order,
   });
   static SubscribeToSomeNestedFields_userInfo fromJson(JsonObject data) {
     final String id_value;
@@ -85,12 +88,20 @@ class SubscribeToSomeNestedFields_userInfo extends Node {
       address$raw,
     );
 
+    final SubscribeToSomeNestedFields_userInfo_order order_value;
+    final order$raw = data["order"];
+    order_value = SubscribeToSomeNestedFields_userInfo_order.fromJson(
+      order$raw,
+    );
+
     return SubscribeToSomeNestedFields_userInfo(
       id: id_value,
 
       user: user_value,
 
       address: address_value,
+
+      order: order_value,
     );
   }
 
@@ -117,7 +128,15 @@ class SubscribeToSomeNestedFields_userInfo extends Node {
 
   @override
   StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
-    return context.manager.register(this, {'id', 'user', 'address'}, context);
+    return context.manager.register(this, {
+      'id',
+
+      'user',
+
+      'address',
+
+      'order',
+    }, context);
   }
 
   @override
@@ -148,6 +167,11 @@ class SubscribeToSomeNestedFields_userInfo extends Node {
           );
 
           break;
+
+        case 'order':
+          order = rawData['order'];
+
+          break;
       }
     }
     notifyListeners();
@@ -159,11 +183,12 @@ class SubscribeToSomeNestedFields_userInfo extends Node {
         (other is SubscribeToSomeNestedFields_userInfo &&
             other.id == id &&
             other.user == user &&
-            other.address == address);
+            other.address == address &&
+            other.order == order);
   }
 
   @override
-  int get hashCode => Object.hashAll([id, user, address]);
+  int get hashCode => Object.hashAll([id, user, address, order]);
 
   @override
   JsonObject toJson() {
@@ -173,6 +198,8 @@ class SubscribeToSomeNestedFields_userInfo extends Node {
       'user': this.user.toJson(),
 
       'address': this.address.toJson(),
+
+      'order': this.order.toJson(),
     };
   }
 }
@@ -257,6 +284,45 @@ class SubscribeToSomeNestedFields_userInfo_address extends Node {
   @override
   JsonObject toJson() {
     return {'id': this.id, 'city': this.city};
+  }
+}
+
+class SubscribeToSomeNestedFields_userInfo_order {
+  /// class members
+
+  final String name;
+
+  // keywordargs constructor
+  SubscribeToSomeNestedFields_userInfo_order({required this.name});
+  static SubscribeToSomeNestedFields_userInfo_order fromJson(JsonObject data) {
+    final String name_value;
+    final name$raw = data["name"];
+    name_value = name$raw as String;
+
+    return SubscribeToSomeNestedFields_userInfo_order(name: name_value);
+  }
+
+  static SubscribeToSomeNestedFields_userInfo_order deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = SubscribeToSomeNestedFields_userInfo_order.fromJson(data);
+
+    return self;
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SubscribeToSomeNestedFields_userInfo_order &&
+            other.name == name);
+  }
+
+  @override
+  int get hashCode => name.hashCode;
+
+  JsonObject toJson() {
+    return {'name': this.name};
   }
 }
 
@@ -360,6 +426,9 @@ class RequestSubscribeToSomeNestedFields extends Requestable {
     address {
       id
       city
+    }
+    order {
+      name
     }
   }
 }""",
