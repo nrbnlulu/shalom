@@ -21,19 +21,12 @@ class EnumOptionalResponse {
     updateOrderStatusOpt_value =
         updateOrderStatusOpt$raw == null
             ? null
-            : EnumOptional_updateOrderStatusOpt.fromJson(
-              updateOrderStatusOpt$raw,
-            );
+            : EnumOptional_updateOrderStatusOpt.fromJson(updateOrderStatusOpt$raw);
 
-    return EnumOptionalResponse(
-      updateOrderStatusOpt: updateOrderStatusOpt_value,
-    );
+    return EnumOptionalResponse(updateOrderStatusOpt: updateOrderStatusOpt_value);
   }
 
-  static EnumOptionalResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static EnumOptionalResponse deserialize(JsonObject data, ShalomContext context) {
     final self = EnumOptionalResponse.fromJson(data);
 
     return self;
@@ -42,8 +35,7 @@ class EnumOptionalResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is EnumOptionalResponse &&
-            other.updateOrderStatusOpt == updateOrderStatusOpt);
+        (other is EnumOptionalResponse && other.updateOrderStatusOpt == updateOrderStatusOpt);
   }
 
   @override
@@ -102,10 +94,7 @@ class EnumOptional_updateOrderStatusOpt {
     );
   }
 
-  static EnumOptional_updateOrderStatusOpt deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static EnumOptional_updateOrderStatusOpt deserialize(JsonObject data, ShalomContext context) {
     final self = EnumOptional_updateOrderStatusOpt.fromJson(data);
 
     return self;
@@ -179,9 +168,7 @@ class EnumOptionalVariables {
     return data;
   }
 
-  EnumOptionalVariables updateWith({
-    Option<Option<Status?>> status = const None(),
-  }) {
+  EnumOptionalVariables updateWith({Option<Option<Status?>> status = const None()}) {
     final Option<Status?> status$next;
 
     switch (status) {

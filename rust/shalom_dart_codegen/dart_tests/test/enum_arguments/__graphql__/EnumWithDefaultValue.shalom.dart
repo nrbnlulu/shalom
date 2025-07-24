@@ -21,19 +21,12 @@ class EnumWithDefaultValueResponse {
     getOrderByStatus_value =
         getOrderByStatus$raw == null
             ? null
-            : EnumWithDefaultValue_getOrderByStatus.fromJson(
-              getOrderByStatus$raw,
-            );
+            : EnumWithDefaultValue_getOrderByStatus.fromJson(getOrderByStatus$raw);
 
-    return EnumWithDefaultValueResponse(
-      getOrderByStatus: getOrderByStatus_value,
-    );
+    return EnumWithDefaultValueResponse(getOrderByStatus: getOrderByStatus_value);
   }
 
-  static EnumWithDefaultValueResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static EnumWithDefaultValueResponse deserialize(JsonObject data, ShalomContext context) {
     final self = EnumWithDefaultValueResponse.fromJson(data);
 
     return self;
@@ -42,8 +35,7 @@ class EnumWithDefaultValueResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is EnumWithDefaultValueResponse &&
-            other.getOrderByStatus == getOrderByStatus);
+        (other is EnumWithDefaultValueResponse && other.getOrderByStatus == getOrderByStatus);
   }
 
   @override
@@ -102,10 +94,7 @@ class EnumWithDefaultValue_getOrderByStatus {
     );
   }
 
-  static EnumWithDefaultValue_getOrderByStatus deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static EnumWithDefaultValue_getOrderByStatus deserialize(JsonObject data, ShalomContext context) {
     final self = EnumWithDefaultValue_getOrderByStatus.fromJson(data);
 
     return self;
@@ -176,9 +165,7 @@ class EnumWithDefaultValueVariables {
     return data;
   }
 
-  EnumWithDefaultValueVariables updateWith({
-    Option<Status?> status = const None(),
-  }) {
+  EnumWithDefaultValueVariables updateWith({Option<Status?> status = const None()}) {
     final Status? status$next;
 
     switch (status) {

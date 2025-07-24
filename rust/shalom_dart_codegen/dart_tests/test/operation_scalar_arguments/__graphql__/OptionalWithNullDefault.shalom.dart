@@ -19,17 +19,12 @@ class OptionalWithNullDefaultResponse {
     final OptionalWithNullDefault_updateUser? updateUser_value;
     final updateUser$raw = data["updateUser"];
     updateUser_value =
-        updateUser$raw == null
-            ? null
-            : OptionalWithNullDefault_updateUser.fromJson(updateUser$raw);
+        updateUser$raw == null ? null : OptionalWithNullDefault_updateUser.fromJson(updateUser$raw);
 
     return OptionalWithNullDefaultResponse(updateUser: updateUser_value);
   }
 
-  static OptionalWithNullDefaultResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OptionalWithNullDefaultResponse deserialize(JsonObject data, ShalomContext context) {
     final self = OptionalWithNullDefaultResponse.fromJson(data);
 
     return self;
@@ -38,8 +33,7 @@ class OptionalWithNullDefaultResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is OptionalWithNullDefaultResponse &&
-            other.updateUser == updateUser);
+        (other is OptionalWithNullDefaultResponse && other.updateUser == updateUser);
   }
 
   @override
@@ -85,10 +79,7 @@ class OptionalWithNullDefault_updateUser {
     );
   }
 
-  static OptionalWithNullDefault_updateUser deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OptionalWithNullDefault_updateUser deserialize(JsonObject data, ShalomContext context) {
     final self = OptionalWithNullDefault_updateUser.fromJson(data);
 
     return self;
@@ -149,9 +140,7 @@ class OptionalWithNullDefaultVariables {
     return data;
   }
 
-  OptionalWithNullDefaultVariables updateWith({
-    Option<String?> phone = const None(),
-  }) {
+  OptionalWithNullDefaultVariables updateWith({Option<String?> phone = const None()}) {
     final String? phone$next;
 
     switch (phone) {

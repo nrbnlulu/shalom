@@ -73,9 +73,7 @@ class OrderDetails {
     return data;
   }
 
-  OrderDetails updateWith({
-    Option<Option<Review?>> firstReview = const None(),
-  }) {
+  OrderDetails updateWith({Option<Option<Review?>> firstReview = const None()}) {
     final Option<Review?> firstReview$next;
 
     switch (firstReview) {
@@ -105,9 +103,7 @@ class OrderRecursive {
     return data;
   }
 
-  OrderRecursive updateWith({
-    Option<Option<OrderRecursive?>> order = const None(),
-  }) {
+  OrderRecursive updateWith({Option<Option<OrderRecursive?>> order = const None()}) {
     final Option<OrderRecursive?> order$next;
 
     switch (order) {

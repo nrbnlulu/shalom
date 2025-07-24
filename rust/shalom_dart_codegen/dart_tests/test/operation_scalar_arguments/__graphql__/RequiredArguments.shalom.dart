@@ -18,18 +18,12 @@ class RequiredArgumentsResponse {
   static RequiredArgumentsResponse fromJson(JsonObject data) {
     final RequiredArguments_product? product_value;
     final product$raw = data["product"];
-    product_value =
-        product$raw == null
-            ? null
-            : RequiredArguments_product.fromJson(product$raw);
+    product_value = product$raw == null ? null : RequiredArguments_product.fromJson(product$raw);
 
     return RequiredArgumentsResponse(product: product_value);
   }
 
-  static RequiredArgumentsResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static RequiredArgumentsResponse deserialize(JsonObject data, ShalomContext context) {
     final self = RequiredArgumentsResponse.fromJson(data);
 
     return self;
@@ -72,10 +66,7 @@ class RequiredArguments_product {
     return RequiredArguments_product(id: id_value, name: name_value);
   }
 
-  static RequiredArguments_product deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static RequiredArguments_product deserialize(JsonObject data, ShalomContext context) {
     final self = RequiredArguments_product.fromJson(data);
 
     return self;
@@ -84,9 +75,7 @@ class RequiredArguments_product {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is RequiredArguments_product &&
-            other.id == id &&
-            other.name == name);
+        (other is RequiredArguments_product && other.id == id && other.name == name);
   }
 
   @override

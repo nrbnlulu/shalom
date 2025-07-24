@@ -20,15 +20,10 @@ class InputListEnumRequiredResponse {
     final InputListEnumRequired$raw = data["InputListEnumRequired"];
     InputListEnumRequired_value = InputListEnumRequired$raw as String?;
 
-    return InputListEnumRequiredResponse(
-      InputListEnumRequired: InputListEnumRequired_value,
-    );
+    return InputListEnumRequiredResponse(InputListEnumRequired: InputListEnumRequired_value);
   }
 
-  static InputListEnumRequiredResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static InputListEnumRequiredResponse deserialize(JsonObject data, ShalomContext context) {
     final self = InputListEnumRequiredResponse.fromJson(data);
 
     return self;

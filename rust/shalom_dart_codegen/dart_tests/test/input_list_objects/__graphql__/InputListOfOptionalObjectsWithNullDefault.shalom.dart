@@ -18,9 +18,7 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
   InputListOfOptionalObjectsWithNullDefaultResponse({
     this.InputListOfOptionalObjectsWithNullDefault,
   });
-  static InputListOfOptionalObjectsWithNullDefaultResponse fromJson(
-    JsonObject data,
-  ) {
+  static InputListOfOptionalObjectsWithNullDefaultResponse fromJson(JsonObject data) {
     final InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault?
     InputListOfOptionalObjectsWithNullDefault_value;
     final InputListOfOptionalObjectsWithNullDefault$raw =
@@ -33,8 +31,7 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
             );
 
     return InputListOfOptionalObjectsWithNullDefaultResponse(
-      InputListOfOptionalObjectsWithNullDefault:
-          InputListOfOptionalObjectsWithNullDefault_value,
+      InputListOfOptionalObjectsWithNullDefault: InputListOfOptionalObjectsWithNullDefault_value,
     );
   }
 
@@ -42,9 +39,7 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
     JsonObject data,
     ShalomContext context,
   ) {
-    final self = InputListOfOptionalObjectsWithNullDefaultResponse.fromJson(
-      data,
-    );
+    final self = InputListOfOptionalObjectsWithNullDefaultResponse.fromJson(data);
 
     return self;
   }
@@ -113,8 +108,7 @@ class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNu
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other
-                is InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault &&
+        (other is InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault &&
             other.success == success &&
             other.message == message);
   }
@@ -177,8 +171,6 @@ class InputListOfOptionalObjectsWithNullDefaultVariables {
         items$next = this.items;
     }
 
-    return InputListOfOptionalObjectsWithNullDefaultVariables(
-      items: items$next,
-    );
+    return InputListOfOptionalObjectsWithNullDefaultVariables(items: items$next);
   }
 }

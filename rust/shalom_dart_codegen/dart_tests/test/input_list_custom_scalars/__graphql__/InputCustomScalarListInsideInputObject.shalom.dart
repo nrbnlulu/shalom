@@ -16,12 +16,8 @@ class InputCustomScalarListInsideInputObjectResponse {
   InputCustomScalarListInsideInputObject;
 
   // keywordargs constructor
-  InputCustomScalarListInsideInputObjectResponse({
-    this.InputCustomScalarListInsideInputObject,
-  });
-  static InputCustomScalarListInsideInputObjectResponse fromJson(
-    JsonObject data,
-  ) {
+  InputCustomScalarListInsideInputObjectResponse({this.InputCustomScalarListInsideInputObject});
+  static InputCustomScalarListInsideInputObjectResponse fromJson(JsonObject data) {
     final InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject?
     InputCustomScalarListInsideInputObject_value;
     final InputCustomScalarListInsideInputObject$raw =
@@ -34,8 +30,7 @@ class InputCustomScalarListInsideInputObjectResponse {
             );
 
     return InputCustomScalarListInsideInputObjectResponse(
-      InputCustomScalarListInsideInputObject:
-          InputCustomScalarListInsideInputObject_value,
+      InputCustomScalarListInsideInputObject: InputCustomScalarListInsideInputObject_value,
     );
   }
 
@@ -52,8 +47,7 @@ class InputCustomScalarListInsideInputObjectResponse {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is InputCustomScalarListInsideInputObjectResponse &&
-            other.InputCustomScalarListInsideInputObject ==
-                InputCustomScalarListInsideInputObject);
+            other.InputCustomScalarListInsideInputObject == InputCustomScalarListInsideInputObject);
   }
 
   @override
@@ -82,8 +76,9 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
 
     this.message,
   });
-  static InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject
-  fromJson(JsonObject data) {
+  static InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject fromJson(
+    JsonObject data,
+  ) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -99,8 +94,10 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
     );
   }
 
-  static InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject
-  deserialize(JsonObject data, ShalomContext context) {
+  static InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
     final self =
         InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject.fromJson(
           data,
@@ -112,8 +109,7 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other
-                is InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject &&
+        (other is InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject &&
             other.success == success &&
             other.message == message);
   }
@@ -164,9 +160,7 @@ class InputCustomScalarListInsideInputObjectVariables {
     return data;
   }
 
-  InputCustomScalarListInsideInputObjectVariables updateWith({
-    ItemContainerInput? newContainer,
-  }) {
+  InputCustomScalarListInsideInputObjectVariables updateWith({ItemContainerInput? newContainer}) {
     final ItemContainerInput newContainer$next;
 
     if (newContainer != null) {
@@ -175,8 +169,6 @@ class InputCustomScalarListInsideInputObjectVariables {
       newContainer$next = this.newContainer;
     }
 
-    return InputCustomScalarListInsideInputObjectVariables(
-      newContainer: newContainer$next,
-    );
+    return InputCustomScalarListInsideInputObjectVariables(newContainer: newContainer$next);
   }
 }

@@ -17,10 +17,8 @@ class InputListEnumInsideInputObjectResponse {
   InputListEnumInsideInputObjectResponse({this.InputListEnumInsideInputObject});
   static InputListEnumInsideInputObjectResponse fromJson(JsonObject data) {
     final String? InputListEnumInsideInputObject_value;
-    final InputListEnumInsideInputObject$raw =
-        data["InputListEnumInsideInputObject"];
-    InputListEnumInsideInputObject_value =
-        InputListEnumInsideInputObject$raw as String?;
+    final InputListEnumInsideInputObject$raw = data["InputListEnumInsideInputObject"];
+    InputListEnumInsideInputObject_value = InputListEnumInsideInputObject$raw as String?;
 
     return InputListEnumInsideInputObjectResponse(
       InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,
@@ -40,17 +38,14 @@ class InputListEnumInsideInputObjectResponse {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is InputListEnumInsideInputObjectResponse &&
-            other.InputListEnumInsideInputObject ==
-                InputListEnumInsideInputObject);
+            other.InputListEnumInsideInputObject == InputListEnumInsideInputObject);
   }
 
   @override
   int get hashCode => InputListEnumInsideInputObject.hashCode;
 
   JsonObject toJson() {
-    return {
-      'InputListEnumInsideInputObject': this.InputListEnumInsideInputObject,
-    };
+    return {'InputListEnumInsideInputObject': this.InputListEnumInsideInputObject};
   }
 }
 
@@ -67,8 +62,7 @@ class RequestInputListEnumInsideInputObject extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation InputListEnumInsideInputObject($input: ObjectWithListOfInput!) {
+      query: r"""mutation InputListEnumInsideInputObject($input: ObjectWithListOfInput!) {
   InputListEnumInsideInputObject(input: $input)
 }""",
       variables: variablesJson,
@@ -91,9 +85,7 @@ class InputListEnumInsideInputObjectVariables {
     return data;
   }
 
-  InputListEnumInsideInputObjectVariables updateWith({
-    ObjectWithListOfInput? input,
-  }) {
+  InputListEnumInsideInputObjectVariables updateWith({ObjectWithListOfInput? input}) {
     final ObjectWithListOfInput input$next;
 
     if (input != null) {

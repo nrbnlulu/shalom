@@ -20,11 +20,7 @@ enum Gender {
       case 'OTHER':
         return Gender.OTHER;
       default:
-        throw ArgumentError.value(
-          name,
-          'name',
-          'No Status enum member with this name',
-        );
+        throw ArgumentError.value(name, 'name', 'No Status enum member with this name');
     }
   }
 }
@@ -37,11 +33,7 @@ class ObjectWithListOfInput {
 
   final Option<List<Gender>?> optionalGenders;
 
-  ObjectWithListOfInput({
-    required this.genders,
-
-    this.optionalGenders = const None(),
-  });
+  ObjectWithListOfInput({required this.genders, this.optionalGenders = const None()});
 
   JsonObject toJson() {
     JsonObject data = {};
@@ -78,11 +70,7 @@ class ObjectWithListOfInput {
         optionalGenders$next = this.optionalGenders;
     }
 
-    return ObjectWithListOfInput(
-      genders: genders$next,
-
-      optionalGenders: optionalGenders$next,
-    );
+    return ObjectWithListOfInput(genders: genders$next, optionalGenders: optionalGenders$next);
   }
 }
 

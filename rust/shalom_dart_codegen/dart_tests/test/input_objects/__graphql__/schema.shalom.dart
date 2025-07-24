@@ -64,13 +64,7 @@ class OrderOpt {
 
   final Option<int?> quantity;
 
-  OrderOpt({
-    this.name = const None(),
-
-    this.price = const None(),
-
-    this.quantity = const None(),
-  });
+  OrderOpt({this.name = const None(), this.price = const None(), this.quantity = const None()});
 
   JsonObject toJson() {
     JsonObject data = {};
@@ -127,13 +121,7 @@ class OrderOpt {
         quantity$next = this.quantity;
     }
 
-    return OrderOpt(
-      name: name$next,
-
-      price: price$next,
-
-      quantity: quantity$next,
-    );
+    return OrderOpt(name: name$next, price: price$next, quantity: quantity$next);
   }
 }
 
@@ -192,13 +180,7 @@ class OrderOptWithNullDefaults {
         quantity$next = this.quantity;
     }
 
-    return OrderOptWithNullDefaults(
-      name: name$next,
-
-      price: price$next,
-
-      quantity: quantity$next,
-    );
+    return OrderOptWithNullDefaults(name: name$next, price: price$next, quantity: quantity$next);
   }
 }
 
@@ -209,13 +191,7 @@ class OrderOptWithSomeDefaults {
 
   final int? quantity;
 
-  OrderOptWithSomeDefaults({
-    this.name = "burgers",
-
-    this.price = 10.0,
-
-    this.quantity = 2,
-  });
+  OrderOptWithSomeDefaults({this.name = "burgers", this.price = 10.0, this.quantity = 2});
 
   JsonObject toJson() {
     JsonObject data = {};
@@ -263,13 +239,7 @@ class OrderOptWithSomeDefaults {
         quantity$next = this.quantity;
     }
 
-    return OrderOptWithSomeDefaults(
-      name: name$next,
-
-      price: price$next,
-
-      quantity: quantity$next,
-    );
+    return OrderOptWithSomeDefaults(name: name$next, price: price$next, quantity: quantity$next);
   }
 }
 

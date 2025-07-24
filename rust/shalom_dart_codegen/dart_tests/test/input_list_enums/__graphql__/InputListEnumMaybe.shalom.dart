@@ -20,15 +20,10 @@ class InputListEnumMaybeResponse {
     final InputListEnumMaybe$raw = data["InputListEnumMaybe"];
     InputListEnumMaybe_value = InputListEnumMaybe$raw as String?;
 
-    return InputListEnumMaybeResponse(
-      InputListEnumMaybe: InputListEnumMaybe_value,
-    );
+    return InputListEnumMaybeResponse(InputListEnumMaybe: InputListEnumMaybe_value);
   }
 
-  static InputListEnumMaybeResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static InputListEnumMaybeResponse deserialize(JsonObject data, ShalomContext context) {
     final self = InputListEnumMaybeResponse.fromJson(data);
 
     return self;
@@ -37,8 +32,7 @@ class InputListEnumMaybeResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is InputListEnumMaybeResponse &&
-            other.InputListEnumMaybe == InputListEnumMaybe);
+        (other is InputListEnumMaybeResponse && other.InputListEnumMaybe == InputListEnumMaybe);
   }
 
   @override
@@ -88,9 +82,7 @@ class InputListEnumMaybeVariables {
     return data;
   }
 
-  InputListEnumMaybeVariables updateWith({
-    Option<Option<List<Gender>?>> foo = const None(),
-  }) {
+  InputListEnumMaybeVariables updateWith({Option<Option<List<Gender>?>> foo = const None()}) {
     final Option<List<Gender>?> foo$next;
 
     switch (foo) {

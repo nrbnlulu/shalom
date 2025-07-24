@@ -20,11 +20,7 @@ enum Status {
       case 'SENT':
         return Status.SENT;
       default:
-        throw ArgumentError.value(
-          name,
-          'name',
-          'No Status enum member with this name',
-        );
+        throw ArgumentError.value(name, 'name', 'No Status enum member with this name');
     }
   }
 }
@@ -90,11 +86,7 @@ class OrderUpdateStatusOpt {
     return data;
   }
 
-  OrderUpdateStatusOpt updateWith({
-    Option<Option<Status?>> status = const None(),
-
-    int? timeLeft,
-  }) {
+  OrderUpdateStatusOpt updateWith({Option<Option<Status?>> status = const None(), int? timeLeft}) {
     final Option<Status?> status$next;
 
     switch (status) {

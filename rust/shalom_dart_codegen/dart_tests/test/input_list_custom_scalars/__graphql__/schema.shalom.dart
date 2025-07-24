@@ -33,9 +33,7 @@ class ItemContainerInput {
 
     data["flexibleItems"] =
         this.flexibleItems
-            .map(
-              (e) => e == null ? null : rmhlxei.pointScalarImpl.serialize(e!),
-            )
+            .map((e) => e == null ? null : rmhlxei.pointScalarImpl.serialize(e!))
             .toList();
 
     data["name"] = this.name;
@@ -43,17 +41,11 @@ class ItemContainerInput {
     if (optionalItems.isSome()) {
       final value = this.optionalItems.some();
       data["optionalItems"] =
-          value
-              ?.map(
-                (e) => e == null ? null : rmhlxei.pointScalarImpl.serialize(e!),
-              )
-              .toList();
+          value?.map((e) => e == null ? null : rmhlxei.pointScalarImpl.serialize(e!)).toList();
     }
 
     data["requiredItems"] =
-        this.requiredItems
-            .map((e) => rmhlxei.pointScalarImpl.serialize(e))
-            .toList();
+        this.requiredItems.map((e) => rmhlxei.pointScalarImpl.serialize(e)).toList();
 
     return data;
   }

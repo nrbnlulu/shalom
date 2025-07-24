@@ -12,16 +12,14 @@ typedef JsonObject = Map<String, dynamic>;
 class InputCustomScalarListRequiredResponse {
   /// class members
 
-  final InputCustomScalarListRequired_InputCustomScalarListRequired?
-  InputCustomScalarListRequired;
+  final InputCustomScalarListRequired_InputCustomScalarListRequired? InputCustomScalarListRequired;
 
   // keywordargs constructor
   InputCustomScalarListRequiredResponse({this.InputCustomScalarListRequired});
   static InputCustomScalarListRequiredResponse fromJson(JsonObject data) {
     final InputCustomScalarListRequired_InputCustomScalarListRequired?
     InputCustomScalarListRequired_value;
-    final InputCustomScalarListRequired$raw =
-        data["InputCustomScalarListRequired"];
+    final InputCustomScalarListRequired$raw = data["InputCustomScalarListRequired"];
     InputCustomScalarListRequired_value =
         InputCustomScalarListRequired$raw == null
             ? null
@@ -34,10 +32,7 @@ class InputCustomScalarListRequiredResponse {
     );
   }
 
-  static InputCustomScalarListRequiredResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static InputCustomScalarListRequiredResponse deserialize(JsonObject data, ShalomContext context) {
     final self = InputCustomScalarListRequiredResponse.fromJson(data);
 
     return self;
@@ -47,18 +42,14 @@ class InputCustomScalarListRequiredResponse {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is InputCustomScalarListRequiredResponse &&
-            other.InputCustomScalarListRequired ==
-                InputCustomScalarListRequired);
+            other.InputCustomScalarListRequired == InputCustomScalarListRequired);
   }
 
   @override
   int get hashCode => InputCustomScalarListRequired.hashCode;
 
   JsonObject toJson() {
-    return {
-      'InputCustomScalarListRequired':
-          this.InputCustomScalarListRequired?.toJson(),
-    };
+    return {'InputCustomScalarListRequired': this.InputCustomScalarListRequired?.toJson()};
   }
 }
 
@@ -77,9 +68,7 @@ class InputCustomScalarListRequired_InputCustomScalarListRequired {
 
     this.message,
   });
-  static InputCustomScalarListRequired_InputCustomScalarListRequired fromJson(
-    JsonObject data,
-  ) {
+  static InputCustomScalarListRequired_InputCustomScalarListRequired fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -95,12 +84,11 @@ class InputCustomScalarListRequired_InputCustomScalarListRequired {
     );
   }
 
-  static InputCustomScalarListRequired_InputCustomScalarListRequired
-  deserialize(JsonObject data, ShalomContext context) {
-    final self =
-        InputCustomScalarListRequired_InputCustomScalarListRequired.fromJson(
-          data,
-        );
+  static InputCustomScalarListRequired_InputCustomScalarListRequired deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputCustomScalarListRequired_InputCustomScalarListRequired.fromJson(data);
 
     return self;
   }
@@ -132,8 +120,7 @@ class RequestInputCustomScalarListRequired extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation InputCustomScalarListRequired($requiredItems: [Point!]!) {
+      query: r"""mutation InputCustomScalarListRequired($requiredItems: [Point!]!) {
   InputCustomScalarListRequired(requiredItems: $requiredItems) {
     success
     message
@@ -155,16 +142,12 @@ class InputCustomScalarListRequiredVariables {
     JsonObject data = {};
 
     data["requiredItems"] =
-        this.requiredItems
-            .map((e) => rmhlxei.pointScalarImpl.serialize(e))
-            .toList();
+        this.requiredItems.map((e) => rmhlxei.pointScalarImpl.serialize(e)).toList();
 
     return data;
   }
 
-  InputCustomScalarListRequiredVariables updateWith({
-    List<rmhlxei.Point>? requiredItems,
-  }) {
+  InputCustomScalarListRequiredVariables updateWith({List<rmhlxei.Point>? requiredItems}) {
     final List<rmhlxei.Point> requiredItems$next;
 
     if (requiredItems != null) {
@@ -173,8 +156,6 @@ class InputCustomScalarListRequiredVariables {
       requiredItems$next = this.requiredItems;
     }
 
-    return InputCustomScalarListRequiredVariables(
-      requiredItems: requiredItems$next,
-    );
+    return InputCustomScalarListRequiredVariables(requiredItems: requiredItems$next);
   }
 }

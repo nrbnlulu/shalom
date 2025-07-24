@@ -22,19 +22,12 @@ class UpdatePointCoordsNonNullResponse {
     updatePointCoords_value =
         updatePointCoords$raw == null
             ? null
-            : UpdatePointCoordsNonNull_updatePointCoords.fromJson(
-              updatePointCoords$raw,
-            );
+            : UpdatePointCoordsNonNull_updatePointCoords.fromJson(updatePointCoords$raw);
 
-    return UpdatePointCoordsNonNullResponse(
-      updatePointCoords: updatePointCoords_value,
-    );
+    return UpdatePointCoordsNonNullResponse(updatePointCoords: updatePointCoords_value);
   }
 
-  static UpdatePointCoordsNonNullResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static UpdatePointCoordsNonNullResponse deserialize(JsonObject data, ShalomContext context) {
     final self = UpdatePointCoordsNonNullResponse.fromJson(data);
 
     return self;
@@ -43,8 +36,7 @@ class UpdatePointCoordsNonNullResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UpdatePointCoordsNonNullResponse &&
-            other.updatePointCoords == updatePointCoords);
+        (other is UpdatePointCoordsNonNullResponse && other.updatePointCoords == updatePointCoords);
   }
 
   @override
@@ -67,18 +59,11 @@ class UpdatePointCoordsNonNull_updatePointCoords {
   final String id;
 
   // keywordargs constructor
-  UpdatePointCoordsNonNull_updatePointCoords({
-    this.coords,
-    required this.name,
-    required this.id,
-  });
+  UpdatePointCoordsNonNull_updatePointCoords({this.coords, required this.name, required this.id});
   static UpdatePointCoordsNonNull_updatePointCoords fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-    coords_value =
-        coords$raw == null
-            ? null
-            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
+    coords_value = coords$raw == null ? null : rmhlxei.pointScalarImpl.deserialize(coords$raw);
 
     final String name_value;
     final name$raw = data["name"];
@@ -120,10 +105,7 @@ class UpdatePointCoordsNonNull_updatePointCoords {
 
   JsonObject toJson() {
     return {
-      'coords':
-          this.coords == null
-              ? null
-              : rmhlxei.pointScalarImpl.serialize(this.coords!),
+      'coords': this.coords == null ? null : rmhlxei.pointScalarImpl.serialize(this.coords!),
 
       'name': this.name,
 

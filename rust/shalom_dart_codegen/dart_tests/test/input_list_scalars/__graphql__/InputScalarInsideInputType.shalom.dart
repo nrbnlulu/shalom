@@ -11,14 +11,12 @@ typedef JsonObject = Map<String, dynamic>;
 class InputScalarInsideInputTypeResponse {
   /// class members
 
-  final InputScalarInsideInputType_InputScalarInsideInputType?
-  InputScalarInsideInputType;
+  final InputScalarInsideInputType_InputScalarInsideInputType? InputScalarInsideInputType;
 
   // keywordargs constructor
   InputScalarInsideInputTypeResponse({this.InputScalarInsideInputType});
   static InputScalarInsideInputTypeResponse fromJson(JsonObject data) {
-    final InputScalarInsideInputType_InputScalarInsideInputType?
-    InputScalarInsideInputType_value;
+    final InputScalarInsideInputType_InputScalarInsideInputType? InputScalarInsideInputType_value;
     final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
     InputScalarInsideInputType_value =
         InputScalarInsideInputType$raw == null
@@ -32,10 +30,7 @@ class InputScalarInsideInputTypeResponse {
     );
   }
 
-  static InputScalarInsideInputTypeResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static InputScalarInsideInputTypeResponse deserialize(JsonObject data, ShalomContext context) {
     final self = InputScalarInsideInputTypeResponse.fromJson(data);
 
     return self;
@@ -52,9 +47,7 @@ class InputScalarInsideInputTypeResponse {
   int get hashCode => InputScalarInsideInputType.hashCode;
 
   JsonObject toJson() {
-    return {
-      'InputScalarInsideInputType': this.InputScalarInsideInputType?.toJson(),
-    };
+    return {'InputScalarInsideInputType': this.InputScalarInsideInputType?.toJson()};
   }
 }
 
@@ -66,28 +59,20 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
   final bool success;
 
   // keywordargs constructor
-  InputScalarInsideInputType_InputScalarInsideInputType({
-    required this.success,
-  });
-  static InputScalarInsideInputType_InputScalarInsideInputType fromJson(
-    JsonObject data,
-  ) {
+  InputScalarInsideInputType_InputScalarInsideInputType({required this.success});
+  static InputScalarInsideInputType_InputScalarInsideInputType fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
 
-    return InputScalarInsideInputType_InputScalarInsideInputType(
-      success: success_value,
-    );
+    return InputScalarInsideInputType_InputScalarInsideInputType(success: success_value);
   }
 
   static InputScalarInsideInputType_InputScalarInsideInputType deserialize(
     JsonObject data,
     ShalomContext context,
   ) {
-    final self = InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
-      data,
-    );
+    final self = InputScalarInsideInputType_InputScalarInsideInputType.fromJson(data);
 
     return self;
   }

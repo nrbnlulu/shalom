@@ -15,14 +15,11 @@ class OrderOptWithSomeDefaultsRequestResponse {
   orderOptWithSomeDefaultsRequest;
 
   // keywordargs constructor
-  OrderOptWithSomeDefaultsRequestResponse({
-    this.orderOptWithSomeDefaultsRequest,
-  });
+  OrderOptWithSomeDefaultsRequestResponse({this.orderOptWithSomeDefaultsRequest});
   static OrderOptWithSomeDefaultsRequestResponse fromJson(JsonObject data) {
     final OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest?
     orderOptWithSomeDefaultsRequest_value;
-    final orderOptWithSomeDefaultsRequest$raw =
-        data["orderOptWithSomeDefaultsRequest"];
+    final orderOptWithSomeDefaultsRequest$raw = data["orderOptWithSomeDefaultsRequest"];
     orderOptWithSomeDefaultsRequest_value =
         orderOptWithSomeDefaultsRequest$raw == null
             ? null
@@ -48,18 +45,14 @@ class OrderOptWithSomeDefaultsRequestResponse {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is OrderOptWithSomeDefaultsRequestResponse &&
-            other.orderOptWithSomeDefaultsRequest ==
-                orderOptWithSomeDefaultsRequest);
+            other.orderOptWithSomeDefaultsRequest == orderOptWithSomeDefaultsRequest);
   }
 
   @override
   int get hashCode => orderOptWithSomeDefaultsRequest.hashCode;
 
   JsonObject toJson() {
-    return {
-      'orderOptWithSomeDefaultsRequest':
-          this.orderOptWithSomeDefaultsRequest?.toJson(),
-    };
+    return {'orderOptWithSomeDefaultsRequest': this.orderOptWithSomeDefaultsRequest?.toJson()};
   }
 }
 
@@ -82,8 +75,7 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
 
     this.price,
   });
-  static OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest
-  fromJson(JsonObject data) {
+  static OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest fromJson(JsonObject data) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
     quantity_value = quantity$raw as int?;
@@ -105,12 +97,11 @@ class OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest {
     );
   }
 
-  static OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest
-  deserialize(JsonObject data, ShalomContext context) {
-    final self =
-        OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest.fromJson(
-          data,
-        );
+  static OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = OrderOptWithSomeDefaultsRequest_orderOptWithSomeDefaultsRequest.fromJson(data);
 
     return self;
   }
@@ -143,8 +134,7 @@ class RequestOrderOptWithSomeDefaultsRequest extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation OrderOptWithSomeDefaultsRequest($order: OrderOptWithSomeDefaults!) {
+      query: r"""mutation OrderOptWithSomeDefaultsRequest($order: OrderOptWithSomeDefaults!) {
   orderOptWithSomeDefaultsRequest(order: $order) {
     quantity
     name
@@ -171,9 +161,7 @@ class OrderOptWithSomeDefaultsRequestVariables {
     return data;
   }
 
-  OrderOptWithSomeDefaultsRequestVariables updateWith({
-    OrderOptWithSomeDefaults? order,
-  }) {
+  OrderOptWithSomeDefaultsRequestVariables updateWith({OrderOptWithSomeDefaults? order}) {
     final OrderOptWithSomeDefaults order$next;
 
     if (order != null) {

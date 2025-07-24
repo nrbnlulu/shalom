@@ -19,17 +19,12 @@ class OrderRequestResponse {
     final OrderRequest_orderRequest? orderRequest_value;
     final orderRequest$raw = data["orderRequest"];
     orderRequest_value =
-        orderRequest$raw == null
-            ? null
-            : OrderRequest_orderRequest.fromJson(orderRequest$raw);
+        orderRequest$raw == null ? null : OrderRequest_orderRequest.fromJson(orderRequest$raw);
 
     return OrderRequestResponse(orderRequest: orderRequest_value);
   }
 
-  static OrderRequestResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OrderRequestResponse deserialize(JsonObject data, ShalomContext context) {
     final self = OrderRequestResponse.fromJson(data);
 
     return self;
@@ -84,10 +79,7 @@ class OrderRequest_orderRequest {
     );
   }
 
-  static OrderRequest_orderRequest deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OrderRequest_orderRequest deserialize(JsonObject data, ShalomContext context) {
     final self = OrderRequest_orderRequest.fromJson(data);
 
     return self;

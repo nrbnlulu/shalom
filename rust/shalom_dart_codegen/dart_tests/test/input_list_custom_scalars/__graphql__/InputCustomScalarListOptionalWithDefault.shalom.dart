@@ -16,12 +16,8 @@ class InputCustomScalarListOptionalWithDefaultResponse {
   InputCustomScalarListOptionalWithDefault;
 
   // keywordargs constructor
-  InputCustomScalarListOptionalWithDefaultResponse({
-    this.InputCustomScalarListOptionalWithDefault,
-  });
-  static InputCustomScalarListOptionalWithDefaultResponse fromJson(
-    JsonObject data,
-  ) {
+  InputCustomScalarListOptionalWithDefaultResponse({this.InputCustomScalarListOptionalWithDefault});
+  static InputCustomScalarListOptionalWithDefaultResponse fromJson(JsonObject data) {
     final InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault?
     InputCustomScalarListOptionalWithDefault_value;
     final InputCustomScalarListOptionalWithDefault$raw =
@@ -34,8 +30,7 @@ class InputCustomScalarListOptionalWithDefaultResponse {
             );
 
     return InputCustomScalarListOptionalWithDefaultResponse(
-      InputCustomScalarListOptionalWithDefault:
-          InputCustomScalarListOptionalWithDefault_value,
+      InputCustomScalarListOptionalWithDefault: InputCustomScalarListOptionalWithDefault_value,
     );
   }
 
@@ -43,9 +38,7 @@ class InputCustomScalarListOptionalWithDefaultResponse {
     JsonObject data,
     ShalomContext context,
   ) {
-    final self = InputCustomScalarListOptionalWithDefaultResponse.fromJson(
-      data,
-    );
+    final self = InputCustomScalarListOptionalWithDefaultResponse.fromJson(data);
 
     return self;
   }
@@ -84,8 +77,9 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
 
     this.message,
   });
-  static InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault
-  fromJson(JsonObject data) {
+  static InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault fromJson(
+    JsonObject data,
+  ) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -114,8 +108,7 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other
-                is InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault &&
+        (other is InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault &&
             other.success == success &&
             other.message == message);
   }
@@ -139,8 +132,7 @@ class RequestInputCustomScalarListOptionalWithDefault extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation InputCustomScalarListOptionalWithDefault($defaultItems: [Point!] = null) {
+      query: r"""mutation InputCustomScalarListOptionalWithDefault($defaultItems: [Point!] = null) {
   InputCustomScalarListOptionalWithDefault(defaultItems: $defaultItems) {
     success
     message
@@ -162,9 +154,7 @@ class InputCustomScalarListOptionalWithDefaultVariables {
     JsonObject data = {};
 
     data["defaultItems"] =
-        this.defaultItems
-            ?.map((e) => rmhlxei.pointScalarImpl.serialize(e))
-            .toList();
+        this.defaultItems?.map((e) => rmhlxei.pointScalarImpl.serialize(e)).toList();
 
     return data;
   }
@@ -181,8 +171,6 @@ class InputCustomScalarListOptionalWithDefaultVariables {
         defaultItems$next = this.defaultItems;
     }
 
-    return InputCustomScalarListOptionalWithDefaultVariables(
-      defaultItems: defaultItems$next,
-    );
+    return InputCustomScalarListOptionalWithDefaultVariables(defaultItems: defaultItems$next);
   }
 }

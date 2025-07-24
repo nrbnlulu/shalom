@@ -14,15 +14,11 @@ class InputListEnumOptionalWithDefaultResponse {
   final String? InputListEnumOptionalWithDefault;
 
   // keywordargs constructor
-  InputListEnumOptionalWithDefaultResponse({
-    this.InputListEnumOptionalWithDefault,
-  });
+  InputListEnumOptionalWithDefaultResponse({this.InputListEnumOptionalWithDefault});
   static InputListEnumOptionalWithDefaultResponse fromJson(JsonObject data) {
     final String? InputListEnumOptionalWithDefault_value;
-    final InputListEnumOptionalWithDefault$raw =
-        data["InputListEnumOptionalWithDefault"];
-    InputListEnumOptionalWithDefault_value =
-        InputListEnumOptionalWithDefault$raw as String?;
+    final InputListEnumOptionalWithDefault$raw = data["InputListEnumOptionalWithDefault"];
+    InputListEnumOptionalWithDefault_value = InputListEnumOptionalWithDefault$raw as String?;
 
     return InputListEnumOptionalWithDefaultResponse(
       InputListEnumOptionalWithDefault: InputListEnumOptionalWithDefault_value,
@@ -42,17 +38,14 @@ class InputListEnumOptionalWithDefaultResponse {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is InputListEnumOptionalWithDefaultResponse &&
-            other.InputListEnumOptionalWithDefault ==
-                InputListEnumOptionalWithDefault);
+            other.InputListEnumOptionalWithDefault == InputListEnumOptionalWithDefault);
   }
 
   @override
   int get hashCode => InputListEnumOptionalWithDefault.hashCode;
 
   JsonObject toJson() {
-    return {
-      'InputListEnumOptionalWithDefault': this.InputListEnumOptionalWithDefault,
-    };
+    return {'InputListEnumOptionalWithDefault': this.InputListEnumOptionalWithDefault};
   }
 }
 
@@ -69,8 +62,7 @@ class RequestInputListEnumOptionalWithDefault extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation InputListEnumOptionalWithDefault($foo: [Gender!] = null) {
+      query: r"""mutation InputListEnumOptionalWithDefault($foo: [Gender!] = null) {
   InputListEnumOptionalWithDefault(foo: $foo)
 }""",
       variables: variablesJson,
@@ -93,9 +85,7 @@ class InputListEnumOptionalWithDefaultVariables {
     return data;
   }
 
-  InputListEnumOptionalWithDefaultVariables updateWith({
-    Option<List<Gender>?> foo = const None(),
-  }) {
+  InputListEnumOptionalWithDefaultVariables updateWith({Option<List<Gender>?> foo = const None()}) {
     final List<Gender>? foo$next;
 
     switch (foo) {

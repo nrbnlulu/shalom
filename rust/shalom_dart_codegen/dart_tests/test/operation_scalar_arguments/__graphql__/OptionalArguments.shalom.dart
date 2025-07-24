@@ -19,17 +19,12 @@ class OptionalArgumentsResponse {
     final OptionalArguments_updateUser? updateUser_value;
     final updateUser$raw = data["updateUser"];
     updateUser_value =
-        updateUser$raw == null
-            ? null
-            : OptionalArguments_updateUser.fromJson(updateUser$raw);
+        updateUser$raw == null ? null : OptionalArguments_updateUser.fromJson(updateUser$raw);
 
     return OptionalArgumentsResponse(updateUser: updateUser_value);
   }
 
-  static OptionalArgumentsResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OptionalArgumentsResponse deserialize(JsonObject data, ShalomContext context) {
     final self = OptionalArgumentsResponse.fromJson(data);
 
     return self;
@@ -66,10 +61,7 @@ class OptionalArguments_updateUser {
     return OptionalArguments_updateUser(name: name_value);
   }
 
-  static OptionalArguments_updateUser deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OptionalArguments_updateUser deserialize(JsonObject data, ShalomContext context) {
     final self = OptionalArguments_updateUser.fromJson(data);
 
     return self;
@@ -77,8 +69,7 @@ class OptionalArguments_updateUser {
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is OptionalArguments_updateUser && other.name == name);
+    return identical(this, other) || (other is OptionalArguments_updateUser && other.name == name);
   }
 
   @override
@@ -117,11 +108,7 @@ class OptionalArgumentsVariables {
 
   final Option<String?> phone;
 
-  OptionalArgumentsVariables({
-    this.id = const None(),
-
-    this.phone = const None(),
-  });
+  OptionalArgumentsVariables({this.id = const None(), this.phone = const None()});
 
   JsonObject toJson() {
     JsonObject data = {};

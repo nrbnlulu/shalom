@@ -26,10 +26,7 @@ class OptOrderRequestResponse {
     return OptOrderRequestResponse(optOrderRequest: optOrderRequest_value);
   }
 
-  static OptOrderRequestResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OptOrderRequestResponse deserialize(JsonObject data, ShalomContext context) {
     final self = OptOrderRequestResponse.fromJson(data);
 
     return self;
@@ -38,8 +35,7 @@ class OptOrderRequestResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is OptOrderRequestResponse &&
-            other.optOrderRequest == optOrderRequest);
+        (other is OptOrderRequestResponse && other.optOrderRequest == optOrderRequest);
   }
 
   @override
@@ -85,10 +81,7 @@ class OptOrderRequest_optOrderRequest {
     );
   }
 
-  static OptOrderRequest_optOrderRequest deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OptOrderRequest_optOrderRequest deserialize(JsonObject data, ShalomContext context) {
     final self = OptOrderRequest_optOrderRequest.fromJson(data);
 
     return self;
@@ -152,9 +145,7 @@ class OptOrderRequestVariables {
     return data;
   }
 
-  OptOrderRequestVariables updateWith({
-    Option<Option<Order?>> order = const None(),
-  }) {
+  OptOrderRequestVariables updateWith({Option<Option<Order?>> order = const None()}) {
     final Option<Order?> order$next;
 
     switch (order) {

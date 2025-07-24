@@ -16,25 +16,17 @@ class InputListObjectsMAybeResponse {
   // keywordargs constructor
   InputListObjectsMAybeResponse({this.InputListObjectsMAybe});
   static InputListObjectsMAybeResponse fromJson(JsonObject data) {
-    final InputListObjectsMAybe_InputListObjectsMAybe?
-    InputListObjectsMAybe_value;
+    final InputListObjectsMAybe_InputListObjectsMAybe? InputListObjectsMAybe_value;
     final InputListObjectsMAybe$raw = data["InputListObjectsMAybe"];
     InputListObjectsMAybe_value =
         InputListObjectsMAybe$raw == null
             ? null
-            : InputListObjectsMAybe_InputListObjectsMAybe.fromJson(
-              InputListObjectsMAybe$raw,
-            );
+            : InputListObjectsMAybe_InputListObjectsMAybe.fromJson(InputListObjectsMAybe$raw);
 
-    return InputListObjectsMAybeResponse(
-      InputListObjectsMAybe: InputListObjectsMAybe_value,
-    );
+    return InputListObjectsMAybeResponse(InputListObjectsMAybe: InputListObjectsMAybe_value);
   }
 
-  static InputListObjectsMAybeResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static InputListObjectsMAybeResponse deserialize(JsonObject data, ShalomContext context) {
     final self = InputListObjectsMAybeResponse.fromJson(data);
 
     return self;
@@ -65,11 +57,7 @@ class InputListObjectsMAybe_InputListObjectsMAybe {
   final String? message;
 
   // keywordargs constructor
-  InputListObjectsMAybe_InputListObjectsMAybe({
-    required this.success,
-
-    this.message,
-  });
+  InputListObjectsMAybe_InputListObjectsMAybe({required this.success, this.message});
   static InputListObjectsMAybe_InputListObjectsMAybe fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];

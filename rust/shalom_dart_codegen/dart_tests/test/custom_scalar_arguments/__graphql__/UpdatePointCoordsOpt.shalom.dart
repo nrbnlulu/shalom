@@ -27,10 +27,7 @@ class UpdatePointCoordsOptResponse {
     return UpdatePointCoordsOptResponse(getPointById: getPointById_value);
   }
 
-  static UpdatePointCoordsOptResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static UpdatePointCoordsOptResponse deserialize(JsonObject data, ShalomContext context) {
     final self = UpdatePointCoordsOptResponse.fromJson(data);
 
     return self;
@@ -39,8 +36,7 @@ class UpdatePointCoordsOptResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UpdatePointCoordsOptResponse &&
-            other.getPointById == getPointById);
+        (other is UpdatePointCoordsOptResponse && other.getPointById == getPointById);
   }
 
   @override
@@ -63,18 +59,11 @@ class UpdatePointCoordsOpt_getPointById {
   final String id;
 
   // keywordargs constructor
-  UpdatePointCoordsOpt_getPointById({
-    this.coords,
-    required this.name,
-    required this.id,
-  });
+  UpdatePointCoordsOpt_getPointById({this.coords, required this.name, required this.id});
   static UpdatePointCoordsOpt_getPointById fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-    coords_value =
-        coords$raw == null
-            ? null
-            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
+    coords_value = coords$raw == null ? null : rmhlxei.pointScalarImpl.deserialize(coords$raw);
 
     final String name_value;
     final name$raw = data["name"];
@@ -84,19 +73,10 @@ class UpdatePointCoordsOpt_getPointById {
     final id$raw = data["id"];
     id_value = id$raw as String;
 
-    return UpdatePointCoordsOpt_getPointById(
-      coords: coords_value,
-
-      name: name_value,
-
-      id: id_value,
-    );
+    return UpdatePointCoordsOpt_getPointById(coords: coords_value, name: name_value, id: id_value);
   }
 
-  static UpdatePointCoordsOpt_getPointById deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static UpdatePointCoordsOpt_getPointById deserialize(JsonObject data, ShalomContext context) {
     final self = UpdatePointCoordsOpt_getPointById.fromJson(data);
 
     return self;
@@ -116,10 +96,7 @@ class UpdatePointCoordsOpt_getPointById {
 
   JsonObject toJson() {
     return {
-      'coords':
-          this.coords == null
-              ? null
-              : rmhlxei.pointScalarImpl.serialize(this.coords!),
+      'coords': this.coords == null ? null : rmhlxei.pointScalarImpl.serialize(this.coords!),
 
       'name': this.name,
 
@@ -139,8 +116,7 @@ class RequestUpdatePointCoordsOpt extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""query UpdatePointCoordsOpt($id: ID!, $coords: Point = "POINT (0,0)") {
+      query: r"""query UpdatePointCoordsOpt($id: ID!, $coords: Point = "POINT (0,0)") {
   getPointById(id: $id, coords: $coords) {
     coords
     name
@@ -164,10 +140,7 @@ class UpdatePointCoordsOptVariables {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["coords"] =
-        this.coords == null
-            ? null
-            : rmhlxei.pointScalarImpl.serialize(this.coords!);
+    data["coords"] = this.coords == null ? null : rmhlxei.pointScalarImpl.serialize(this.coords!);
 
     data["id"] = this.id;
 

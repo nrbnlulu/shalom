@@ -26,10 +26,7 @@ class EnumInputObjectRequiredResponse {
     return EnumInputObjectRequiredResponse(updateOrder: updateOrder_value);
   }
 
-  static EnumInputObjectRequiredResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static EnumInputObjectRequiredResponse deserialize(JsonObject data, ShalomContext context) {
     final self = EnumInputObjectRequiredResponse.fromJson(data);
 
     return self;
@@ -38,8 +35,7 @@ class EnumInputObjectRequiredResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is EnumInputObjectRequiredResponse &&
-            other.updateOrder == updateOrder);
+        (other is EnumInputObjectRequiredResponse && other.updateOrder == updateOrder);
   }
 
   @override
@@ -98,10 +94,7 @@ class EnumInputObjectRequired_updateOrder {
     );
   }
 
-  static EnumInputObjectRequired_updateOrder deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static EnumInputObjectRequired_updateOrder deserialize(JsonObject data, ShalomContext context) {
     final self = EnumInputObjectRequired_updateOrder.fromJson(data);
 
     return self;

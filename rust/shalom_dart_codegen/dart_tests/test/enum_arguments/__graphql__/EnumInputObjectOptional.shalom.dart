@@ -11,14 +11,12 @@ typedef JsonObject = Map<String, dynamic>;
 class EnumInputObjectOptionalResponse {
   /// class members
 
-  final EnumInputObjectOptional_updateOrderWithStatusOpt?
-  updateOrderWithStatusOpt;
+  final EnumInputObjectOptional_updateOrderWithStatusOpt? updateOrderWithStatusOpt;
 
   // keywordargs constructor
   EnumInputObjectOptionalResponse({this.updateOrderWithStatusOpt});
   static EnumInputObjectOptionalResponse fromJson(JsonObject data) {
-    final EnumInputObjectOptional_updateOrderWithStatusOpt?
-    updateOrderWithStatusOpt_value;
+    final EnumInputObjectOptional_updateOrderWithStatusOpt? updateOrderWithStatusOpt_value;
     final updateOrderWithStatusOpt$raw = data["updateOrderWithStatusOpt"];
     updateOrderWithStatusOpt_value =
         updateOrderWithStatusOpt$raw == null
@@ -32,10 +30,7 @@ class EnumInputObjectOptionalResponse {
     );
   }
 
-  static EnumInputObjectOptionalResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static EnumInputObjectOptionalResponse deserialize(JsonObject data, ShalomContext context) {
     final self = EnumInputObjectOptionalResponse.fromJson(data);
 
     return self;
@@ -52,9 +47,7 @@ class EnumInputObjectOptionalResponse {
   int get hashCode => updateOrderWithStatusOpt.hashCode;
 
   JsonObject toJson() {
-    return {
-      'updateOrderWithStatusOpt': this.updateOrderWithStatusOpt?.toJson(),
-    };
+    return {'updateOrderWithStatusOpt': this.updateOrderWithStatusOpt?.toJson()};
   }
 }
 
@@ -78,9 +71,7 @@ class EnumInputObjectOptional_updateOrderWithStatusOpt {
     required this.name,
     required this.price,
   });
-  static EnumInputObjectOptional_updateOrderWithStatusOpt fromJson(
-    JsonObject data,
-  ) {
+  static EnumInputObjectOptional_updateOrderWithStatusOpt fromJson(JsonObject data) {
     final Status? status_value;
     final status$raw = data["status"];
     status_value = status$raw == null ? null : Status.fromString(status$raw);
@@ -112,9 +103,7 @@ class EnumInputObjectOptional_updateOrderWithStatusOpt {
     JsonObject data,
     ShalomContext context,
   ) {
-    final self = EnumInputObjectOptional_updateOrderWithStatusOpt.fromJson(
-      data,
-    );
+    final self = EnumInputObjectOptional_updateOrderWithStatusOpt.fromJson(data);
 
     return self;
   }
@@ -156,8 +145,7 @@ class RequestEnumInputObjectOptional extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation EnumInputObjectOptional($order: OrderUpdateStatusOpt!) {
+      query: r"""mutation EnumInputObjectOptional($order: OrderUpdateStatusOpt!) {
   updateOrderWithStatusOpt(order: $order) {
     status
     quantity

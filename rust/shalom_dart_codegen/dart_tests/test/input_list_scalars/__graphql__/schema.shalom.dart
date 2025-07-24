@@ -14,13 +14,7 @@ class UserInput {
 
   final List<String> tags;
 
-  UserInput({
-    this.ids = const None(),
-
-    this.scores = const None(),
-
-    required this.tags,
-  });
+  UserInput({this.ids = const None(), this.scores = const None(), required this.tags});
 
   JsonObject toJson() {
     JsonObject data = {};

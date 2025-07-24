@@ -18,8 +18,7 @@ class GetOrderResponse {
   static GetOrderResponse fromJson(JsonObject data) {
     final GetOrder_getOrder? getOrder_value;
     final getOrder$raw = data["getOrder"];
-    getOrder_value =
-        getOrder$raw == null ? null : GetOrder_getOrder.fromJson(getOrder$raw);
+    getOrder_value = getOrder$raw == null ? null : GetOrder_getOrder.fromJson(getOrder$raw);
 
     return GetOrderResponse(getOrder: getOrder_value);
   }
@@ -32,8 +31,7 @@ class GetOrderResponse {
 
   @override
   bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is GetOrderResponse && other.getOrder == getOrder);
+    return identical(this, other) || (other is GetOrderResponse && other.getOrder == getOrder);
   }
 
   @override
@@ -70,13 +68,7 @@ class GetOrder_getOrder {
     final price$raw = data["price"];
     price_value = price$raw as double?;
 
-    return GetOrder_getOrder(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
+    return GetOrder_getOrder(quantity: quantity_value, name: name_value, price: price_value);
   }
 
   static GetOrder_getOrder deserialize(JsonObject data, ShalomContext context) {
@@ -147,11 +139,7 @@ class GetOrderVariables {
     return data;
   }
 
-  GetOrderVariables updateWith({
-    String? id,
-
-    Option<Option<Order?>> order = const None(),
-  }) {
+  GetOrderVariables updateWith({String? id, Option<Option<Order?>> order = const None()}) {
     final String id$next;
 
     if (id != null) {

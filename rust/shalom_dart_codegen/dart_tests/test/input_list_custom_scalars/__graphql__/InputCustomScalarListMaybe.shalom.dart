@@ -12,14 +12,12 @@ typedef JsonObject = Map<String, dynamic>;
 class InputCustomScalarListMaybeResponse {
   /// class members
 
-  final InputCustomScalarListMaybe_InputCustomScalarListMaybe?
-  InputCustomScalarListMaybe;
+  final InputCustomScalarListMaybe_InputCustomScalarListMaybe? InputCustomScalarListMaybe;
 
   // keywordargs constructor
   InputCustomScalarListMaybeResponse({this.InputCustomScalarListMaybe});
   static InputCustomScalarListMaybeResponse fromJson(JsonObject data) {
-    final InputCustomScalarListMaybe_InputCustomScalarListMaybe?
-    InputCustomScalarListMaybe_value;
+    final InputCustomScalarListMaybe_InputCustomScalarListMaybe? InputCustomScalarListMaybe_value;
     final InputCustomScalarListMaybe$raw = data["InputCustomScalarListMaybe"];
     InputCustomScalarListMaybe_value =
         InputCustomScalarListMaybe$raw == null
@@ -33,10 +31,7 @@ class InputCustomScalarListMaybeResponse {
     );
   }
 
-  static InputCustomScalarListMaybeResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static InputCustomScalarListMaybeResponse deserialize(JsonObject data, ShalomContext context) {
     final self = InputCustomScalarListMaybeResponse.fromJson(data);
 
     return self;
@@ -53,9 +48,7 @@ class InputCustomScalarListMaybeResponse {
   int get hashCode => InputCustomScalarListMaybe.hashCode;
 
   JsonObject toJson() {
-    return {
-      'InputCustomScalarListMaybe': this.InputCustomScalarListMaybe?.toJson(),
-    };
+    return {'InputCustomScalarListMaybe': this.InputCustomScalarListMaybe?.toJson()};
   }
 }
 
@@ -69,14 +62,8 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
   final String? message;
 
   // keywordargs constructor
-  InputCustomScalarListMaybe_InputCustomScalarListMaybe({
-    required this.success,
-
-    this.message,
-  });
-  static InputCustomScalarListMaybe_InputCustomScalarListMaybe fromJson(
-    JsonObject data,
-  ) {
+  InputCustomScalarListMaybe_InputCustomScalarListMaybe({required this.success, this.message});
+  static InputCustomScalarListMaybe_InputCustomScalarListMaybe fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -96,9 +83,7 @@ class InputCustomScalarListMaybe_InputCustomScalarListMaybe {
     JsonObject data,
     ShalomContext context,
   ) {
-    final self = InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(
-      data,
-    );
+    final self = InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(data);
 
     return self;
   }
@@ -153,8 +138,7 @@ class InputCustomScalarListMaybeVariables {
 
     if (optionalItems.isSome()) {
       final value = this.optionalItems.some();
-      data["optionalItems"] =
-          value?.map((e) => rmhlxei.pointScalarImpl.serialize(e)).toList();
+      data["optionalItems"] = value?.map((e) => rmhlxei.pointScalarImpl.serialize(e)).toList();
     }
 
     return data;
@@ -172,8 +156,6 @@ class InputCustomScalarListMaybeVariables {
         optionalItems$next = this.optionalItems;
     }
 
-    return InputCustomScalarListMaybeVariables(
-      optionalItems: optionalItems$next,
-    );
+    return InputCustomScalarListMaybeVariables(optionalItems: optionalItems$next);
   }
 }

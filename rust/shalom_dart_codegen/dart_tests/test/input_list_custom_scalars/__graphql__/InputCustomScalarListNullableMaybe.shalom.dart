@@ -16,14 +16,11 @@ class InputCustomScalarListNullableMaybeResponse {
   InputCustomScalarListNullableMaybe;
 
   // keywordargs constructor
-  InputCustomScalarListNullableMaybeResponse({
-    this.InputCustomScalarListNullableMaybe,
-  });
+  InputCustomScalarListNullableMaybeResponse({this.InputCustomScalarListNullableMaybe});
   static InputCustomScalarListNullableMaybeResponse fromJson(JsonObject data) {
     final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
     InputCustomScalarListNullableMaybe_value;
-    final InputCustomScalarListNullableMaybe$raw =
-        data["InputCustomScalarListNullableMaybe"];
+    final InputCustomScalarListNullableMaybe$raw = data["InputCustomScalarListNullableMaybe"];
     InputCustomScalarListNullableMaybe_value =
         InputCustomScalarListNullableMaybe$raw == null
             ? null
@@ -32,8 +29,7 @@ class InputCustomScalarListNullableMaybeResponse {
             );
 
     return InputCustomScalarListNullableMaybeResponse(
-      InputCustomScalarListNullableMaybe:
-          InputCustomScalarListNullableMaybe_value,
+      InputCustomScalarListNullableMaybe: InputCustomScalarListNullableMaybe_value,
     );
   }
 
@@ -50,8 +46,7 @@ class InputCustomScalarListNullableMaybeResponse {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is InputCustomScalarListNullableMaybeResponse &&
-            other.InputCustomScalarListNullableMaybe ==
-                InputCustomScalarListNullableMaybe);
+            other.InputCustomScalarListNullableMaybe == InputCustomScalarListNullableMaybe);
   }
 
   @override
@@ -59,8 +54,7 @@ class InputCustomScalarListNullableMaybeResponse {
 
   JsonObject toJson() {
     return {
-      'InputCustomScalarListNullableMaybe':
-          this.InputCustomScalarListNullableMaybe?.toJson(),
+      'InputCustomScalarListNullableMaybe': this.InputCustomScalarListNullableMaybe?.toJson(),
     };
   }
 }
@@ -80,8 +74,9 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
 
     this.message,
   });
-  static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
-  fromJson(JsonObject data) {
+  static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe fromJson(
+    JsonObject data,
+  ) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -97,12 +92,13 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
     );
   }
 
-  static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
-  deserialize(JsonObject data, ShalomContext context) {
-    final self =
-        InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
-          data,
-        );
+  static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
+      data,
+    );
 
     return self;
   }
@@ -110,8 +106,7 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other
-                is InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe &&
+        (other is InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe &&
             other.success == success &&
             other.message == message);
   }
@@ -135,8 +130,7 @@ class RequestInputCustomScalarListNullableMaybe extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation InputCustomScalarListNullableMaybe($sparseData: [Point]) {
+      query: r"""mutation InputCustomScalarListNullableMaybe($sparseData: [Point]) {
   InputCustomScalarListNullableMaybe(sparseData: $sparseData) {
     success
     message
@@ -160,11 +154,7 @@ class InputCustomScalarListNullableMaybeVariables {
     if (sparseData.isSome()) {
       final value = this.sparseData.some();
       data["sparseData"] =
-          value
-              ?.map(
-                (e) => e == null ? null : rmhlxei.pointScalarImpl.serialize(e!),
-              )
-              .toList();
+          value?.map((e) => e == null ? null : rmhlxei.pointScalarImpl.serialize(e!)).toList();
     }
 
     return data;
@@ -182,8 +172,6 @@ class InputCustomScalarListNullableMaybeVariables {
         sparseData$next = this.sparseData;
     }
 
-    return InputCustomScalarListNullableMaybeVariables(
-      sparseData: sparseData$next,
-    );
+    return InputCustomScalarListNullableMaybeVariables(sparseData: sparseData$next);
   }
 }

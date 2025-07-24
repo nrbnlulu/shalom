@@ -11,31 +11,22 @@ typedef JsonObject = Map<String, dynamic>;
 class InputScalarListOptionalResponse {
   /// class members
 
-  final InputScalarListOptional_InputScalarListOptional?
-  InputScalarListOptional;
+  final InputScalarListOptional_InputScalarListOptional? InputScalarListOptional;
 
   // keywordargs constructor
   InputScalarListOptionalResponse({this.InputScalarListOptional});
   static InputScalarListOptionalResponse fromJson(JsonObject data) {
-    final InputScalarListOptional_InputScalarListOptional?
-    InputScalarListOptional_value;
+    final InputScalarListOptional_InputScalarListOptional? InputScalarListOptional_value;
     final InputScalarListOptional$raw = data["InputScalarListOptional"];
     InputScalarListOptional_value =
         InputScalarListOptional$raw == null
             ? null
-            : InputScalarListOptional_InputScalarListOptional.fromJson(
-              InputScalarListOptional$raw,
-            );
+            : InputScalarListOptional_InputScalarListOptional.fromJson(InputScalarListOptional$raw);
 
-    return InputScalarListOptionalResponse(
-      InputScalarListOptional: InputScalarListOptional_value,
-    );
+    return InputScalarListOptionalResponse(InputScalarListOptional: InputScalarListOptional_value);
   }
 
-  static InputScalarListOptionalResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static InputScalarListOptionalResponse deserialize(JsonObject data, ShalomContext context) {
     final self = InputScalarListOptionalResponse.fromJson(data);
 
     return self;
@@ -65,16 +56,12 @@ class InputScalarListOptional_InputScalarListOptional {
 
   // keywordargs constructor
   InputScalarListOptional_InputScalarListOptional({required this.success});
-  static InputScalarListOptional_InputScalarListOptional fromJson(
-    JsonObject data,
-  ) {
+  static InputScalarListOptional_InputScalarListOptional fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
 
-    return InputScalarListOptional_InputScalarListOptional(
-      success: success_value,
-    );
+    return InputScalarListOptional_InputScalarListOptional(success: success_value);
   }
 
   static InputScalarListOptional_InputScalarListOptional deserialize(
@@ -89,8 +76,7 @@ class InputScalarListOptional_InputScalarListOptional {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is InputScalarListOptional_InputScalarListOptional &&
-            other.success == success);
+        (other is InputScalarListOptional_InputScalarListOptional && other.success == success);
   }
 
   @override
@@ -137,9 +123,7 @@ class InputScalarListOptionalVariables {
     return data;
   }
 
-  InputScalarListOptionalVariables updateWith({
-    Option<List<String?>?> names = const None(),
-  }) {
+  InputScalarListOptionalVariables updateWith({Option<List<String?>?> names = const None()}) {
     final List<String?>? names$next;
 
     switch (names) {

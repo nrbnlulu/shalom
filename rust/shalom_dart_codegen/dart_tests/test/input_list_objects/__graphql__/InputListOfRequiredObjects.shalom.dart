@@ -11,14 +11,12 @@ typedef JsonObject = Map<String, dynamic>;
 class InputListOfRequiredObjectsResponse {
   /// class members
 
-  final InputListOfRequiredObjects_InputListOfRequiredObjects?
-  InputListOfRequiredObjects;
+  final InputListOfRequiredObjects_InputListOfRequiredObjects? InputListOfRequiredObjects;
 
   // keywordargs constructor
   InputListOfRequiredObjectsResponse({this.InputListOfRequiredObjects});
   static InputListOfRequiredObjectsResponse fromJson(JsonObject data) {
-    final InputListOfRequiredObjects_InputListOfRequiredObjects?
-    InputListOfRequiredObjects_value;
+    final InputListOfRequiredObjects_InputListOfRequiredObjects? InputListOfRequiredObjects_value;
     final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
     InputListOfRequiredObjects_value =
         InputListOfRequiredObjects$raw == null
@@ -32,10 +30,7 @@ class InputListOfRequiredObjectsResponse {
     );
   }
 
-  static InputListOfRequiredObjectsResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static InputListOfRequiredObjectsResponse deserialize(JsonObject data, ShalomContext context) {
     final self = InputListOfRequiredObjectsResponse.fromJson(data);
 
     return self;
@@ -52,9 +47,7 @@ class InputListOfRequiredObjectsResponse {
   int get hashCode => InputListOfRequiredObjects.hashCode;
 
   JsonObject toJson() {
-    return {
-      'InputListOfRequiredObjects': this.InputListOfRequiredObjects?.toJson(),
-    };
+    return {'InputListOfRequiredObjects': this.InputListOfRequiredObjects?.toJson()};
   }
 }
 
@@ -68,14 +61,8 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
   final String? message;
 
   // keywordargs constructor
-  InputListOfRequiredObjects_InputListOfRequiredObjects({
-    required this.success,
-
-    this.message,
-  });
-  static InputListOfRequiredObjects_InputListOfRequiredObjects fromJson(
-    JsonObject data,
-  ) {
+  InputListOfRequiredObjects_InputListOfRequiredObjects({required this.success, this.message});
+  static InputListOfRequiredObjects_InputListOfRequiredObjects fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -95,9 +82,7 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
     JsonObject data,
     ShalomContext context,
   ) {
-    final self = InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
-      data,
-    );
+    final self = InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(data);
 
     return self;
   }
@@ -129,8 +114,7 @@ class RequestInputListOfRequiredObjects extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation InputListOfRequiredObjects($items: [MyInputObject!]!) {
+      query: r"""mutation InputListOfRequiredObjects($items: [MyInputObject!]!) {
   InputListOfRequiredObjects(items: $items) {
     success
     message

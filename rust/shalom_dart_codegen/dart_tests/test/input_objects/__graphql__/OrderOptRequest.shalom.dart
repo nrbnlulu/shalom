@@ -26,10 +26,7 @@ class OrderOptRequestResponse {
     return OrderOptRequestResponse(orderOptRequest: orderOptRequest_value);
   }
 
-  static OrderOptRequestResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OrderOptRequestResponse deserialize(JsonObject data, ShalomContext context) {
     final self = OrderOptRequestResponse.fromJson(data);
 
     return self;
@@ -38,8 +35,7 @@ class OrderOptRequestResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is OrderOptRequestResponse &&
-            other.orderOptRequest == orderOptRequest);
+        (other is OrderOptRequestResponse && other.orderOptRequest == orderOptRequest);
   }
 
   @override
@@ -85,10 +81,7 @@ class OrderOptRequest_orderOptRequest {
     );
   }
 
-  static OrderOptRequest_orderOptRequest deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OrderOptRequest_orderOptRequest deserialize(JsonObject data, ShalomContext context) {
     final self = OrderOptRequest_orderOptRequest.fromJson(data);
 
     return self;

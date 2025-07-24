@@ -26,10 +26,7 @@ class OrderRecursiveResponse {
     return OrderRecursiveResponse(orderRecursive: orderRecursive_value);
   }
 
-  static OrderRecursiveResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OrderRecursiveResponse deserialize(JsonObject data, ShalomContext context) {
     final self = OrderRecursiveResponse.fromJson(data);
 
     return self;
@@ -38,8 +35,7 @@ class OrderRecursiveResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is OrderRecursiveResponse &&
-            other.orderRecursive == orderRecursive);
+        (other is OrderRecursiveResponse && other.orderRecursive == orderRecursive);
   }
 
   @override
@@ -85,10 +81,7 @@ class OrderRecursive_orderRecursive {
     );
   }
 
-  static OrderRecursive_orderRecursive deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OrderRecursive_orderRecursive deserialize(JsonObject data, ShalomContext context) {
     final self = OrderRecursive_orderRecursive.fromJson(data);
 
     return self;
@@ -152,9 +145,7 @@ class OrderRecursiveVariables {
     return data;
   }
 
-  OrderRecursiveVariables updateWith({
-    Option<Option<OrderRecursive?>> order = const None(),
-  }) {
+  OrderRecursiveVariables updateWith({Option<Option<OrderRecursive?>> order = const None()}) {
     final Option<OrderRecursive?> order$next;
 
     switch (order) {

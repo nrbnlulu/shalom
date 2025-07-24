@@ -11,31 +11,22 @@ typedef JsonObject = Map<String, dynamic>;
 class InputScalarListRequiredResponse {
   /// class members
 
-  final InputScalarListRequired_InputScalarListRequired?
-  InputScalarListRequired;
+  final InputScalarListRequired_InputScalarListRequired? InputScalarListRequired;
 
   // keywordargs constructor
   InputScalarListRequiredResponse({this.InputScalarListRequired});
   static InputScalarListRequiredResponse fromJson(JsonObject data) {
-    final InputScalarListRequired_InputScalarListRequired?
-    InputScalarListRequired_value;
+    final InputScalarListRequired_InputScalarListRequired? InputScalarListRequired_value;
     final InputScalarListRequired$raw = data["InputScalarListRequired"];
     InputScalarListRequired_value =
         InputScalarListRequired$raw == null
             ? null
-            : InputScalarListRequired_InputScalarListRequired.fromJson(
-              InputScalarListRequired$raw,
-            );
+            : InputScalarListRequired_InputScalarListRequired.fromJson(InputScalarListRequired$raw);
 
-    return InputScalarListRequiredResponse(
-      InputScalarListRequired: InputScalarListRequired_value,
-    );
+    return InputScalarListRequiredResponse(InputScalarListRequired: InputScalarListRequired_value);
   }
 
-  static InputScalarListRequiredResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static InputScalarListRequiredResponse deserialize(JsonObject data, ShalomContext context) {
     final self = InputScalarListRequiredResponse.fromJson(data);
 
     return self;
@@ -65,16 +56,12 @@ class InputScalarListRequired_InputScalarListRequired {
 
   // keywordargs constructor
   InputScalarListRequired_InputScalarListRequired({required this.success});
-  static InputScalarListRequired_InputScalarListRequired fromJson(
-    JsonObject data,
-  ) {
+  static InputScalarListRequired_InputScalarListRequired fromJson(JsonObject data) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
 
-    return InputScalarListRequired_InputScalarListRequired(
-      success: success_value,
-    );
+    return InputScalarListRequired_InputScalarListRequired(success: success_value);
   }
 
   static InputScalarListRequired_InputScalarListRequired deserialize(
@@ -89,8 +76,7 @@ class InputScalarListRequired_InputScalarListRequired {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is InputScalarListRequired_InputScalarListRequired &&
-            other.success == success);
+        (other is InputScalarListRequired_InputScalarListRequired && other.success == success);
   }
 
   @override

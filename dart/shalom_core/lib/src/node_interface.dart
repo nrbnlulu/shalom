@@ -1,18 +1,16 @@
 import 'dart:async';
-import 'package:uuid/uuid.dart';
+import 'package:flutter/widgets.dart'
+    show BuildContext, ChangeNotifier, ListenableBuilder, State, StatefulWidget, Widget;
+
 import 'shalom_core_base.dart';
-import 'package:flutter/material.dart';
 
 typedef ID = String;
 
-const uuid = Uuid();
-
 abstract class Node extends ChangeNotifier {
-  ID instanceId = uuid.v4();
+  int get instanceId => identityHashCode(this);
   ID id;
   Node({required this.id});
-  void updateWithJson(
-      JsonObject rawData, Set<String> changedFields, ShalomContext context);
+  void updateWithJson(JsonObject rawData, Set<String> changedFields, ShalomContext context);
   JsonObject toJson();
   StreamSubscription<Event> subscribeToChanges(ShalomContext context);
 }
@@ -20,11 +18,12 @@ abstract class Node extends ChangeNotifier {
 class NodeSubscriber {
   final StreamController<Event> controller;
   final Set<String> subscribedFields;
-  final ID nodeInstanceId;
-  NodeSubscriber(
-      {required this.controller,
-      required this.subscribedFields,
-      required this.nodeInstanceId});
+  final int nodeInstanceId;
+  NodeSubscriber({
+    required this.controller,
+    required this.subscribedFields,
+    required this.nodeInstanceId,
+  });
 }
 
 class NodeWidget<T extends Node> extends StatefulWidget {
@@ -32,12 +31,7 @@ class NodeWidget<T extends Node> extends StatefulWidget {
   final Widget Function(BuildContext context, T node) builder;
   final ShalomContext context;
 
-  NodeWidget({
-    super.key,
-    required this.node,
-    required this.builder,
-    required this.context,
-  });
+  NodeWidget({super.key, required this.node, required this.builder, required this.context});
 
   @override
   State<NodeWidget<T>> createState() => _NodeWidgetState<T>();
@@ -98,11 +92,8 @@ class NodeManager {
       final subscribers = _subscriberStore[id];
       if (subscribers != null) {
         for (final subscriber in subscribers) {
-          if (changedFields
-              .intersection(subscriber.subscribedFields)
-              .isNotEmpty) {
-            subscriber.controller
-                .add(Event(rawData: newData, changedFields: changedFields));
+          if (changedFields.intersection(subscriber.subscribedFields).isNotEmpty) {
+            subscriber.controller.add(Event(rawData: newData, changedFields: changedFields));
           }
         }
       }
@@ -112,16 +103,21 @@ class NodeManager {
   }
 
   StreamSubscription<Event> register(
-      Node node, Set<String> subscribedFields, ShalomContext context) {
-    final controller = StreamController<Event>.broadcast(onCancel: () {
-      _subscriberStore[node.id]?.removeWhere((subscriber) {
-        if (subscriber.nodeInstanceId == node.instanceId) {
-          subscriber.controller.close();
-          return true;
-        }
-        return false;
-      });
-    });
+    Node node,
+    Set<String> subscribedFields,
+    ShalomContext context,
+  ) {
+    final controller = StreamController<Event>.broadcast(
+      onCancel: () {
+        _subscriberStore[node.id]?.removeWhere((subscriber) {
+          if (subscriber.nodeInstanceId == node.instanceId) {
+            subscriber.controller.close();
+            return true;
+          }
+          return false;
+        });
+      },
+    );
     final subscription = controller.stream.listen((event) {
       node.updateWithJson(event.rawData, event.changedFields, context);
     });

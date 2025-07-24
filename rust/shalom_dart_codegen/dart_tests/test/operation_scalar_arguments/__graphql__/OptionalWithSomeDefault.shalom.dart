@@ -18,18 +18,12 @@ class OptionalWithSomeDefaultResponse {
   static OptionalWithSomeDefaultResponse fromJson(JsonObject data) {
     final OptionalWithSomeDefault_task? task_value;
     final task$raw = data["task"];
-    task_value =
-        task$raw == null
-            ? null
-            : OptionalWithSomeDefault_task.fromJson(task$raw);
+    task_value = task$raw == null ? null : OptionalWithSomeDefault_task.fromJson(task$raw);
 
     return OptionalWithSomeDefaultResponse(task: task_value);
   }
 
-  static OptionalWithSomeDefaultResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OptionalWithSomeDefaultResponse deserialize(JsonObject data, ShalomContext context) {
     final self = OptionalWithSomeDefaultResponse.fromJson(data);
 
     return self;
@@ -84,10 +78,7 @@ class OptionalWithSomeDefault_task {
     );
   }
 
-  static OptionalWithSomeDefault_task deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static OptionalWithSomeDefault_task deserialize(JsonObject data, ShalomContext context) {
     final self = OptionalWithSomeDefault_task.fromJson(data);
 
     return self;
@@ -106,13 +97,7 @@ class OptionalWithSomeDefault_task {
   int get hashCode => Object.hashAll([name, duration, is_easy]);
 
   JsonObject toJson() {
-    return {
-      'name': this.name,
-
-      'duration': this.duration,
-
-      'is_easy': this.is_easy,
-    };
+    return {'name': this.name, 'duration': this.duration, 'is_easy': this.is_easy};
   }
 }
 
@@ -149,13 +134,7 @@ class OptionalWithSomeDefaultVariables {
 
   final String? name;
 
-  OptionalWithSomeDefaultVariables({
-    this.duration = 2,
-
-    this.is_easy = false,
-
-    this.name = "shalom",
-  });
+  OptionalWithSomeDefaultVariables({this.duration = 2, this.is_easy = false, this.name = "shalom"});
 
   JsonObject toJson() {
     JsonObject data = {};

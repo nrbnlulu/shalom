@@ -15,14 +15,11 @@ class InputObjectContainingListOfObjectsResponse {
   InputObjectContainingListOfObjects;
 
   // keywordargs constructor
-  InputObjectContainingListOfObjectsResponse({
-    this.InputObjectContainingListOfObjects,
-  });
+  InputObjectContainingListOfObjectsResponse({this.InputObjectContainingListOfObjects});
   static InputObjectContainingListOfObjectsResponse fromJson(JsonObject data) {
     final InputObjectContainingListOfObjects_InputObjectContainingListOfObjects?
     InputObjectContainingListOfObjects_value;
-    final InputObjectContainingListOfObjects$raw =
-        data["InputObjectContainingListOfObjects"];
+    final InputObjectContainingListOfObjects$raw = data["InputObjectContainingListOfObjects"];
     InputObjectContainingListOfObjects_value =
         InputObjectContainingListOfObjects$raw == null
             ? null
@@ -31,8 +28,7 @@ class InputObjectContainingListOfObjectsResponse {
             );
 
     return InputObjectContainingListOfObjectsResponse(
-      InputObjectContainingListOfObjects:
-          InputObjectContainingListOfObjects_value,
+      InputObjectContainingListOfObjects: InputObjectContainingListOfObjects_value,
     );
   }
 
@@ -49,8 +45,7 @@ class InputObjectContainingListOfObjectsResponse {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is InputObjectContainingListOfObjectsResponse &&
-            other.InputObjectContainingListOfObjects ==
-                InputObjectContainingListOfObjects);
+            other.InputObjectContainingListOfObjects == InputObjectContainingListOfObjects);
   }
 
   @override
@@ -58,8 +53,7 @@ class InputObjectContainingListOfObjectsResponse {
 
   JsonObject toJson() {
     return {
-      'InputObjectContainingListOfObjects':
-          this.InputObjectContainingListOfObjects?.toJson(),
+      'InputObjectContainingListOfObjects': this.InputObjectContainingListOfObjects?.toJson(),
     };
   }
 }
@@ -79,8 +73,9 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
 
     this.message,
   });
-  static InputObjectContainingListOfObjects_InputObjectContainingListOfObjects
-  fromJson(JsonObject data) {
+  static InputObjectContainingListOfObjects_InputObjectContainingListOfObjects fromJson(
+    JsonObject data,
+  ) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -96,12 +91,13 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
     );
   }
 
-  static InputObjectContainingListOfObjects_InputObjectContainingListOfObjects
-  deserialize(JsonObject data, ShalomContext context) {
-    final self =
-        InputObjectContainingListOfObjects_InputObjectContainingListOfObjects.fromJson(
-          data,
-        );
+  static InputObjectContainingListOfObjects_InputObjectContainingListOfObjects deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = InputObjectContainingListOfObjects_InputObjectContainingListOfObjects.fromJson(
+      data,
+    );
 
     return self;
   }
@@ -109,8 +105,7 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other
-                is InputObjectContainingListOfObjects_InputObjectContainingListOfObjects &&
+        (other is InputObjectContainingListOfObjects_InputObjectContainingListOfObjects &&
             other.success == success &&
             other.message == message);
   }
@@ -134,8 +129,7 @@ class RequestInputObjectContainingListOfObjects extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation InputObjectContainingListOfObjects($data: ContainerInput!) {
+      query: r"""mutation InputObjectContainingListOfObjects($data: ContainerInput!) {
   InputObjectContainingListOfObjects(data: $data) {
     success
     message
@@ -161,9 +155,7 @@ class InputObjectContainingListOfObjectsVariables {
     return data;
   }
 
-  InputObjectContainingListOfObjectsVariables updateWith({
-    ContainerInput? data,
-  }) {
+  InputObjectContainingListOfObjectsVariables updateWith({ContainerInput? data}) {
     final ContainerInput data$next;
 
     if (data != null) {

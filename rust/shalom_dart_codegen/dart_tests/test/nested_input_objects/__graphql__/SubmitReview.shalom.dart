@@ -23,10 +23,7 @@ class SubmitReviewResponse {
     return SubmitReviewResponse(submitReview: submitReview_value);
   }
 
-  static SubmitReviewResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static SubmitReviewResponse deserialize(JsonObject data, ShalomContext context) {
     final self = SubmitReviewResponse.fromJson(data);
 
     return self;
@@ -85,9 +82,7 @@ class SubmitReviewVariables {
     return data;
   }
 
-  SubmitReviewVariables updateWith({
-    Option<Option<Review?>> review = const None(),
-  }) {
+  SubmitReviewVariables updateWith({Option<Option<Review?>> review = const None()}) {
     final Option<Review?> review$next;
 
     switch (review) {

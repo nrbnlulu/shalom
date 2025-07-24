@@ -16,14 +16,11 @@ class UpdatePointWithInputCoordsMaybeResponse {
   updatePointWithInputCoordsMaybe;
 
   // keywordargs constructor
-  UpdatePointWithInputCoordsMaybeResponse({
-    this.updatePointWithInputCoordsMaybe,
-  });
+  UpdatePointWithInputCoordsMaybeResponse({this.updatePointWithInputCoordsMaybe});
   static UpdatePointWithInputCoordsMaybeResponse fromJson(JsonObject data) {
     final UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
     updatePointWithInputCoordsMaybe_value;
-    final updatePointWithInputCoordsMaybe$raw =
-        data["updatePointWithInputCoordsMaybe"];
+    final updatePointWithInputCoordsMaybe$raw = data["updatePointWithInputCoordsMaybe"];
     updatePointWithInputCoordsMaybe_value =
         updatePointWithInputCoordsMaybe$raw == null
             ? null
@@ -49,18 +46,14 @@ class UpdatePointWithInputCoordsMaybeResponse {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is UpdatePointWithInputCoordsMaybeResponse &&
-            other.updatePointWithInputCoordsMaybe ==
-                updatePointWithInputCoordsMaybe);
+            other.updatePointWithInputCoordsMaybe == updatePointWithInputCoordsMaybe);
   }
 
   @override
   int get hashCode => updatePointWithInputCoordsMaybe.hashCode;
 
   JsonObject toJson() {
-    return {
-      'updatePointWithInputCoordsMaybe':
-          this.updatePointWithInputCoordsMaybe?.toJson(),
-    };
+    return {'updatePointWithInputCoordsMaybe': this.updatePointWithInputCoordsMaybe?.toJson()};
   }
 }
 
@@ -81,14 +74,10 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
     required this.name,
     required this.id,
   });
-  static UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
-  fromJson(JsonObject data) {
+  static UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-    coords_value =
-        coords$raw == null
-            ? null
-            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
+    coords_value = coords$raw == null ? null : rmhlxei.pointScalarImpl.deserialize(coords$raw);
 
     final String name_value;
     final name$raw = data["name"];
@@ -107,12 +96,11 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
     );
   }
 
-  static UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
-  deserialize(JsonObject data, ShalomContext context) {
-    final self =
-        UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe.fromJson(
-          data,
-        );
+  static UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe deserialize(
+    JsonObject data,
+    ShalomContext context,
+  ) {
+    final self = UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe.fromJson(data);
 
     return self;
   }
@@ -131,10 +119,7 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
 
   JsonObject toJson() {
     return {
-      'coords':
-          this.coords == null
-              ? null
-              : rmhlxei.pointScalarImpl.serialize(this.coords!),
+      'coords': this.coords == null ? null : rmhlxei.pointScalarImpl.serialize(this.coords!),
 
       'name': this.name,
 
@@ -154,8 +139,7 @@ class RequestUpdatePointWithInputCoordsMaybe extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation UpdatePointWithInputCoordsMaybe($pointData: PointUpdateCoordsMaybe!) {
+      query: r"""mutation UpdatePointWithInputCoordsMaybe($pointData: PointUpdateCoordsMaybe!) {
   updatePointWithInputCoordsMaybe(pointData: $pointData) {
     coords
     name
@@ -182,9 +166,7 @@ class UpdatePointWithInputCoordsMaybeVariables {
     return data;
   }
 
-  UpdatePointWithInputCoordsMaybeVariables updateWith({
-    PointUpdateCoordsMaybe? pointData,
-  }) {
+  UpdatePointWithInputCoordsMaybeVariables updateWith({PointUpdateCoordsMaybe? pointData}) {
     final PointUpdateCoordsMaybe pointData$next;
 
     if (pointData != null) {

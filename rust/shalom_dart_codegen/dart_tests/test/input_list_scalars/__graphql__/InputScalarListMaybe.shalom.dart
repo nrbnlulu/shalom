@@ -21,19 +21,12 @@ class InputScalarListMaybeResponse {
     InputScalarListMaybe_value =
         InputScalarListMaybe$raw == null
             ? null
-            : InputScalarListMaybe_InputScalarListMaybe.fromJson(
-              InputScalarListMaybe$raw,
-            );
+            : InputScalarListMaybe_InputScalarListMaybe.fromJson(InputScalarListMaybe$raw);
 
-    return InputScalarListMaybeResponse(
-      InputScalarListMaybe: InputScalarListMaybe_value,
-    );
+    return InputScalarListMaybeResponse(InputScalarListMaybe: InputScalarListMaybe_value);
   }
 
-  static InputScalarListMaybeResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static InputScalarListMaybeResponse deserialize(JsonObject data, ShalomContext context) {
     final self = InputScalarListMaybeResponse.fromJson(data);
 
     return self;
@@ -83,8 +76,7 @@ class InputScalarListMaybe_InputScalarListMaybe {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is InputScalarListMaybe_InputScalarListMaybe &&
-            other.success == success);
+        (other is InputScalarListMaybe_InputScalarListMaybe && other.success == success);
   }
 
   @override
@@ -134,9 +126,7 @@ class InputScalarListMaybeVariables {
     return data;
   }
 
-  InputScalarListMaybeVariables updateWith({
-    Option<Option<List<int?>?>> ints = const None(),
-  }) {
+  InputScalarListMaybeVariables updateWith({Option<Option<List<int?>?>> ints = const None()}) {
     final Option<List<int?>?> ints$next;
 
     switch (ints) {

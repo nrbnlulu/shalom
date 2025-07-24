@@ -17,25 +17,17 @@ class UpdatePointCoordsMaybeResponse {
   // keywordargs constructor
   UpdatePointCoordsMaybeResponse({this.updatePointCoordsMaybe});
   static UpdatePointCoordsMaybeResponse fromJson(JsonObject data) {
-    final UpdatePointCoordsMaybe_updatePointCoordsMaybe?
-    updatePointCoordsMaybe_value;
+    final UpdatePointCoordsMaybe_updatePointCoordsMaybe? updatePointCoordsMaybe_value;
     final updatePointCoordsMaybe$raw = data["updatePointCoordsMaybe"];
     updatePointCoordsMaybe_value =
         updatePointCoordsMaybe$raw == null
             ? null
-            : UpdatePointCoordsMaybe_updatePointCoordsMaybe.fromJson(
-              updatePointCoordsMaybe$raw,
-            );
+            : UpdatePointCoordsMaybe_updatePointCoordsMaybe.fromJson(updatePointCoordsMaybe$raw);
 
-    return UpdatePointCoordsMaybeResponse(
-      updatePointCoordsMaybe: updatePointCoordsMaybe_value,
-    );
+    return UpdatePointCoordsMaybeResponse(updatePointCoordsMaybe: updatePointCoordsMaybe_value);
   }
 
-  static UpdatePointCoordsMaybeResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static UpdatePointCoordsMaybeResponse deserialize(JsonObject data, ShalomContext context) {
     final self = UpdatePointCoordsMaybeResponse.fromJson(data);
 
     return self;
@@ -73,15 +65,10 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
     required this.name,
     required this.id,
   });
-  static UpdatePointCoordsMaybe_updatePointCoordsMaybe fromJson(
-    JsonObject data,
-  ) {
+  static UpdatePointCoordsMaybe_updatePointCoordsMaybe fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-    coords_value =
-        coords$raw == null
-            ? null
-            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
+    coords_value = coords$raw == null ? null : rmhlxei.pointScalarImpl.deserialize(coords$raw);
 
     final String name_value;
     final name$raw = data["name"];
@@ -123,10 +110,7 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
 
   JsonObject toJson() {
     return {
-      'coords':
-          this.coords == null
-              ? null
-              : rmhlxei.pointScalarImpl.serialize(this.coords!),
+      'coords': this.coords == null ? null : rmhlxei.pointScalarImpl.serialize(this.coords!),
 
       'name': this.name,
 
@@ -170,8 +154,7 @@ class UpdatePointCoordsMaybeVariables {
 
     if (coords.isSome()) {
       final value = this.coords.some();
-      data["coords"] =
-          value == null ? null : rmhlxei.pointScalarImpl.serialize(value!);
+      data["coords"] = value == null ? null : rmhlxei.pointScalarImpl.serialize(value!);
     }
 
     return data;

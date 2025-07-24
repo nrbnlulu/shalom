@@ -57,21 +57,14 @@ class PointDataOptCoordsInput {
   JsonObject toJson() {
     JsonObject data = {};
 
-    data["coords"] =
-        this.coords == null
-            ? null
-            : rmhlxei.pointScalarImpl.serialize(this.coords!);
+    data["coords"] = this.coords == null ? null : rmhlxei.pointScalarImpl.serialize(this.coords!);
 
     data["name"] = this.name;
 
     return data;
   }
 
-  PointDataOptCoordsInput updateWith({
-    Option<rmhlxei.Point?> coords = const None(),
-
-    String? name,
-  }) {
+  PointDataOptCoordsInput updateWith({Option<rmhlxei.Point?> coords = const None(), String? name}) {
     final rmhlxei.Point? coords$next;
 
     switch (coords) {
@@ -105,8 +98,7 @@ class PointUpdateCoordsMaybe {
 
     if (coords.isSome()) {
       final value = this.coords.some();
-      data["coords"] =
-          value == null ? null : rmhlxei.pointScalarImpl.serialize(value!);
+      data["coords"] = value == null ? null : rmhlxei.pointScalarImpl.serialize(value!);
     }
 
     data["name"] = this.name;

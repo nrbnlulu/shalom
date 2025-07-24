@@ -17,25 +17,17 @@ class UpdatePointWithInputNonNullResponse {
   // keywordargs constructor
   UpdatePointWithInputNonNullResponse({this.updatePointWithInput});
   static UpdatePointWithInputNonNullResponse fromJson(JsonObject data) {
-    final UpdatePointWithInputNonNull_updatePointWithInput?
-    updatePointWithInput_value;
+    final UpdatePointWithInputNonNull_updatePointWithInput? updatePointWithInput_value;
     final updatePointWithInput$raw = data["updatePointWithInput"];
     updatePointWithInput_value =
         updatePointWithInput$raw == null
             ? null
-            : UpdatePointWithInputNonNull_updatePointWithInput.fromJson(
-              updatePointWithInput$raw,
-            );
+            : UpdatePointWithInputNonNull_updatePointWithInput.fromJson(updatePointWithInput$raw);
 
-    return UpdatePointWithInputNonNullResponse(
-      updatePointWithInput: updatePointWithInput_value,
-    );
+    return UpdatePointWithInputNonNullResponse(updatePointWithInput: updatePointWithInput_value);
   }
 
-  static UpdatePointWithInputNonNullResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static UpdatePointWithInputNonNullResponse deserialize(JsonObject data, ShalomContext context) {
     final self = UpdatePointWithInputNonNullResponse.fromJson(data);
 
     return self;
@@ -73,15 +65,10 @@ class UpdatePointWithInputNonNull_updatePointWithInput {
     required this.name,
     required this.id,
   });
-  static UpdatePointWithInputNonNull_updatePointWithInput fromJson(
-    JsonObject data,
-  ) {
+  static UpdatePointWithInputNonNull_updatePointWithInput fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-    coords_value =
-        coords$raw == null
-            ? null
-            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
+    coords_value = coords$raw == null ? null : rmhlxei.pointScalarImpl.deserialize(coords$raw);
 
     final String name_value;
     final name$raw = data["name"];
@@ -104,9 +91,7 @@ class UpdatePointWithInputNonNull_updatePointWithInput {
     JsonObject data,
     ShalomContext context,
   ) {
-    final self = UpdatePointWithInputNonNull_updatePointWithInput.fromJson(
-      data,
-    );
+    final self = UpdatePointWithInputNonNull_updatePointWithInput.fromJson(data);
 
     return self;
   }
@@ -125,10 +110,7 @@ class UpdatePointWithInputNonNull_updatePointWithInput {
 
   JsonObject toJson() {
     return {
-      'coords':
-          this.coords == null
-              ? null
-              : rmhlxei.pointScalarImpl.serialize(this.coords!),
+      'coords': this.coords == null ? null : rmhlxei.pointScalarImpl.serialize(this.coords!),
 
       'name': this.name,
 
@@ -148,8 +130,7 @@ class RequestUpdatePointWithInputNonNull extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation UpdatePointWithInputNonNull($pointData: PointDataInput!) {
+      query: r"""mutation UpdatePointWithInputNonNull($pointData: PointDataInput!) {
   updatePointWithInput(pointData: $pointData) {
     coords
     name

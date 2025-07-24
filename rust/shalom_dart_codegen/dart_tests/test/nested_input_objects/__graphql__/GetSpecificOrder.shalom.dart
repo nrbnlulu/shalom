@@ -26,10 +26,7 @@ class GetSpecificOrderResponse {
     return GetSpecificOrderResponse(getSpecificOrder: getSpecificOrder_value);
   }
 
-  static GetSpecificOrderResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static GetSpecificOrderResponse deserialize(JsonObject data, ShalomContext context) {
     final self = GetSpecificOrderResponse.fromJson(data);
 
     return self;
@@ -38,8 +35,7 @@ class GetSpecificOrderResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is GetSpecificOrderResponse &&
-            other.getSpecificOrder == getSpecificOrder);
+        (other is GetSpecificOrderResponse && other.getSpecificOrder == getSpecificOrder);
   }
 
   @override
@@ -85,10 +81,7 @@ class GetSpecificOrder_getSpecificOrder {
     );
   }
 
-  static GetSpecificOrder_getSpecificOrder deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static GetSpecificOrder_getSpecificOrder deserialize(JsonObject data, ShalomContext context) {
     final self = GetSpecificOrder_getSpecificOrder.fromJson(data);
 
     return self;
@@ -122,8 +115,7 @@ class RequestGetSpecificOrder extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""query GetSpecificOrder($id: ID!, $specificOrder: SpecificOrder!) {
+      query: r"""query GetSpecificOrder($id: ID!, $specificOrder: SpecificOrder!) {
   getSpecificOrder(id: $id, specificOrder: $specificOrder) {
     quantity
     price
@@ -154,11 +146,7 @@ class GetSpecificOrderVariables {
     return data;
   }
 
-  GetSpecificOrderVariables updateWith({
-    String? id,
-
-    SpecificOrder? specificOrder,
-  }) {
+  GetSpecificOrderVariables updateWith({String? id, SpecificOrder? specificOrder}) {
     final String id$next;
 
     if (id != null) {
@@ -175,10 +163,6 @@ class GetSpecificOrderVariables {
       specificOrder$next = this.specificOrder;
     }
 
-    return GetSpecificOrderVariables(
-      id: id$next,
-
-      specificOrder: specificOrder$next,
-    );
+    return GetSpecificOrderVariables(id: id$next, specificOrder: specificOrder$next);
   }
 }

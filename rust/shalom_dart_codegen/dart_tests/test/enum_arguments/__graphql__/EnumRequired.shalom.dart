@@ -26,10 +26,7 @@ class EnumRequiredResponse {
     return EnumRequiredResponse(updateOrderStatus: updateOrderStatus_value);
   }
 
-  static EnumRequiredResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static EnumRequiredResponse deserialize(JsonObject data, ShalomContext context) {
     final self = EnumRequiredResponse.fromJson(data);
 
     return self;
@@ -38,8 +35,7 @@ class EnumRequiredResponse {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is EnumRequiredResponse &&
-            other.updateOrderStatus == updateOrderStatus);
+        (other is EnumRequiredResponse && other.updateOrderStatus == updateOrderStatus);
   }
 
   @override
@@ -98,10 +94,7 @@ class EnumRequired_updateOrderStatus {
     );
   }
 
-  static EnumRequired_updateOrderStatus deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static EnumRequired_updateOrderStatus deserialize(JsonObject data, ShalomContext context) {
     final self = EnumRequired_updateOrderStatus.fromJson(data);
 
     return self;

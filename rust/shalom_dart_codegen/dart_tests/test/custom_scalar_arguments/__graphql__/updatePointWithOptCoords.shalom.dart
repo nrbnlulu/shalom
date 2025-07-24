@@ -12,14 +12,12 @@ typedef JsonObject = Map<String, dynamic>;
 class updatePointWithOptCoordsResponse {
   /// class members
 
-  final updatePointWithOptCoords_updatePointWithOptCoords?
-  updatePointWithOptCoords;
+  final updatePointWithOptCoords_updatePointWithOptCoords? updatePointWithOptCoords;
 
   // keywordargs constructor
   updatePointWithOptCoordsResponse({this.updatePointWithOptCoords});
   static updatePointWithOptCoordsResponse fromJson(JsonObject data) {
-    final updatePointWithOptCoords_updatePointWithOptCoords?
-    updatePointWithOptCoords_value;
+    final updatePointWithOptCoords_updatePointWithOptCoords? updatePointWithOptCoords_value;
     final updatePointWithOptCoords$raw = data["updatePointWithOptCoords"];
     updatePointWithOptCoords_value =
         updatePointWithOptCoords$raw == null
@@ -33,10 +31,7 @@ class updatePointWithOptCoordsResponse {
     );
   }
 
-  static updatePointWithOptCoordsResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
+  static updatePointWithOptCoordsResponse deserialize(JsonObject data, ShalomContext context) {
     final self = updatePointWithOptCoordsResponse.fromJson(data);
 
     return self;
@@ -53,9 +48,7 @@ class updatePointWithOptCoordsResponse {
   int get hashCode => updatePointWithOptCoords.hashCode;
 
   JsonObject toJson() {
-    return {
-      'updatePointWithOptCoords': this.updatePointWithOptCoords?.toJson(),
-    };
+    return {'updatePointWithOptCoords': this.updatePointWithOptCoords?.toJson()};
   }
 }
 
@@ -76,15 +69,10 @@ class updatePointWithOptCoords_updatePointWithOptCoords {
     required this.name,
     required this.id,
   });
-  static updatePointWithOptCoords_updatePointWithOptCoords fromJson(
-    JsonObject data,
-  ) {
+  static updatePointWithOptCoords_updatePointWithOptCoords fromJson(JsonObject data) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-    coords_value =
-        coords$raw == null
-            ? null
-            : rmhlxei.pointScalarImpl.deserialize(coords$raw);
+    coords_value = coords$raw == null ? null : rmhlxei.pointScalarImpl.deserialize(coords$raw);
 
     final String name_value;
     final name$raw = data["name"];
@@ -107,9 +95,7 @@ class updatePointWithOptCoords_updatePointWithOptCoords {
     JsonObject data,
     ShalomContext context,
   ) {
-    final self = updatePointWithOptCoords_updatePointWithOptCoords.fromJson(
-      data,
-    );
+    final self = updatePointWithOptCoords_updatePointWithOptCoords.fromJson(data);
 
     return self;
   }
@@ -128,10 +114,7 @@ class updatePointWithOptCoords_updatePointWithOptCoords {
 
   JsonObject toJson() {
     return {
-      'coords':
-          this.coords == null
-              ? null
-              : rmhlxei.pointScalarImpl.serialize(this.coords!),
+      'coords': this.coords == null ? null : rmhlxei.pointScalarImpl.serialize(this.coords!),
 
       'name': this.name,
 
@@ -151,8 +134,7 @@ class RequestupdatePointWithOptCoords extends Requestable {
   Request toRequest() {
     JsonObject variablesJson = variables.toJson();
     return Request(
-      query:
-          r"""mutation updatePointWithOptCoords($pointData: PointDataOptCoordsInput!) {
+      query: r"""mutation updatePointWithOptCoords($pointData: PointDataOptCoordsInput!) {
   updatePointWithOptCoords(pointData: $pointData) {
     coords
     name
@@ -179,9 +161,7 @@ class updatePointWithOptCoordsVariables {
     return data;
   }
 
-  updatePointWithOptCoordsVariables updateWith({
-    PointDataOptCoordsInput? pointData,
-  }) {
+  updatePointWithOptCoordsVariables updateWith({PointDataOptCoordsInput? pointData}) {
     final PointDataOptCoordsInput pointData$next;
 
     if (pointData != null) {
