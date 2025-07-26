@@ -33,6 +33,7 @@ fn parse_object_selection(
     path: &String,
     is_optional: bool,
     selection_orig: &apollo_compiler::executable::SelectionSet,
+    implements_node_interface: bool,
 ) -> SharedObjectSelection {
     trace!("Parsing object selection {:?}", selection_orig.ty);
     trace!("Path is {:?}", path);
@@ -42,7 +43,7 @@ fn parse_object_selection(
          selection was {:?}.",
         selection_orig
     );
-    let obj = ObjectSelection::new(is_optional, path.clone());
+    let obj = ObjectSelection::new(is_optional, path.clone(), implements_node_interface);
 
     for selection in selection_orig.selections.iter() {
         match selection {
@@ -104,12 +105,19 @@ pub fn parse_selection_kind(
                 GraphQLAny::Scalar(scalar) => {
                     SelectionKind::Scalar(parse_scalar_selection(global_ctx, is_optional, scalar))
                 }
-                GraphQLAny::Object(_) => SelectionKind::Object(parse_object_selection(
+                GraphQLAny::Object(obj) => SelectionKind::Object(parse_object_selection(
                     op_ctx,
                     global_ctx,
                     path,
                     is_optional,
                     selection_set,
+                    global_ctx
+                        .schema_ctx
+                        .schema
+                        .get_object(&obj.name)
+                        .unwrap()
+                        .implements_interfaces
+                        .contains("Node"),
                 )),
                 GraphQLAny::Enum(_enum) => {
                     SelectionKind::Enum(parse_enum_selection(is_optional, _enum))
@@ -190,7 +198,8 @@ fn parse_operation(
         name: name.clone(),
         description: None,
     };
-    let root_type = parse_object_selection(&mut ctx, global_ctx, &name, false, &op.selection_set);
+    let root_type =
+        parse_object_selection(&mut ctx, global_ctx, &name, false, &op.selection_set, false);
     ctx.set_root_type(Selection::new(
         selection_common,
         SelectionKind::Object(root_type),

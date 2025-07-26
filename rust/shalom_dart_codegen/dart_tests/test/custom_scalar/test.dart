@@ -37,26 +37,6 @@ void main() {
       });
     });
 
-    group('updateWithJson', () {
-      final initial = GetLocation_getLocation(id: 'id-1', coords: point);
-      test('optional from some to some', () {
-        final updatedPointRaw = "POINT (30,40)";
-        final updated = initial.updateWithJson({'coords': updatedPointRaw});
-        expect(updated.coords?.x, 30);
-        expect(initial, isNot(updated));
-      });
-      test('optional from some to null', () {
-        final updated = initial.updateWithJson({'coords': null});
-        expect(updated.coords, isNull);
-        expect(initial, isNot(updated));
-      });
-      test('required field', () {
-        final updated = initial.updateWithJson({'id': 'id-2'});
-        expect(updated.id, 'id-2');
-        expect(updated.coords?.x, point.x);
-      });
-    });
-
     test('equality', () {
       final foo = GetLocation_getLocation(id: 'id-1', coords: point);
       final bar = GetLocation_getLocation(id: 'id-1', coords: point);
