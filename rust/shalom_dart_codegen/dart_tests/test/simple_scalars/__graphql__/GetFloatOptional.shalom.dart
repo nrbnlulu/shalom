@@ -1,68 +1,144 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
+
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 
+
+
+
 typedef JsonObject = Map<String, dynamic>;
 
+
+
+
 class GetFloatOptionalResponse {
-  /// class members
 
-  final double? floatOptional;
-
-  // keywordargs constructor
-  GetFloatOptionalResponse({this.floatOptional});
-  static GetFloatOptionalResponse fromJson(JsonObject data) {
-    final double? floatOptional_value;
-    final floatOptional$raw = data["floatOptional"];
-    floatOptional_value = floatOptional$raw as double?;
-
-    return GetFloatOptionalResponse(floatOptional: floatOptional_value);
-  }
-
-  static GetFloatOptionalResponse deserialize(
-    JsonObject data,
-    ShalomContext context,
-  ) {
-    final self = GetFloatOptionalResponse.fromJson(data);
-
-    return self;
-  }
-
-  @override
-  bool operator ==(Object other) {
+    /// class members
+    
+        final double? floatOptional;
+    
+    // keywordargs constructor
+    GetFloatOptionalResponse({
+    
+        this.floatOptional,
+    
+    });
+    static GetFloatOptionalResponse fromJson(JsonObject data, ShalomContext? context) {
+    
+        
+        final double? floatOptional_value;
+        final floatOptional$raw = data["floatOptional"];
+        floatOptional_value = 
+    
+        
+            
+                floatOptional$raw as double?
+            
+        
+    
+;
+    
+    return GetFloatOptionalResponse(
+    
+        
+        floatOptional: floatOptional_value,
+    
+    );
+    }
+    
+   
+    
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is GetFloatOptionalResponse &&
-            other.floatOptional == floatOptional);
-  }
+    (other is GetFloatOptionalResponse &&
+    
+        
+    
+        other.floatOptional == floatOptional
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        floatOptional.hashCode;
+    
+     
+    JsonObject toJson() {
+    return {
+    
+        
+        'floatOptional':
+            
+                
+    
+        
+            this.floatOptional
+        
+    
 
-  @override
-  int get hashCode => floatOptional.hashCode;
+            
+        ,
+    
+    };
+    }
 
-  JsonObject toJson() {
-    return {'floatOptional': this.floatOptional};
-  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
+
+
 // ------------ END OBJECT DEFINITIONS -------------
 
-class RequestGetFloatOptional extends Requestable {
-  RequestGetFloatOptional();
 
-  @override
-  Request toRequest() {
-    JsonObject variablesJson = {};
-    return Request(
-      query: r"""query GetFloatOptional {
+class RequestGetFloatOptional extends Requestable {
+    
+
+    RequestGetFloatOptional(
+        
+    );
+
+    @override
+    Request toRequest() {
+        JsonObject variablesJson =  {}  ;
+        return Request(
+            query: r"""query GetFloatOptional {
   floatOptional
 }""",
-      variables: variablesJson,
-      opType: OperationType.Query,
-      opName: 'GetFloatOptional',
-    );
-  }
+            variables: variablesJson,
+            opType: OperationType.Query,
+            opName: 'GetFloatOptional'
+        );
+    }
 }
+

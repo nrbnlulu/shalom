@@ -1,6 +1,12 @@
 import 'dart:async';
 import 'package:flutter/widgets.dart'
-    show BuildContext, ChangeNotifier, ListenableBuilder, State, StatefulWidget, Widget;
+    show
+        BuildContext,
+        ChangeNotifier,
+        ListenableBuilder,
+        State,
+        StatefulWidget,
+        Widget;
 
 import 'shalom_core_base.dart';
 
@@ -10,7 +16,8 @@ abstract class Node extends ChangeNotifier {
   int get instanceId => identityHashCode(this);
   ID id;
   Node({required this.id});
-  void updateWithJson(JsonObject rawData, Set<String> changedFields, ShalomContext context);
+  void updateWithJson(
+      JsonObject rawData, Set<String> changedFields, ShalomContext context);
   JsonObject toJson();
   StreamSubscription<Event> subscribeToChanges(ShalomContext context);
 }
@@ -31,7 +38,11 @@ class NodeWidget<T extends Node> extends StatefulWidget {
   final Widget Function(BuildContext context, T node) builder;
   final ShalomContext context;
 
-  NodeWidget({super.key, required this.node, required this.builder, required this.context});
+  NodeWidget(
+      {super.key,
+      required this.node,
+      required this.builder,
+      required this.context});
 
   @override
   State<NodeWidget<T>> createState() => _NodeWidgetState<T>();
@@ -92,8 +103,11 @@ class NodeManager {
       final subscribers = _subscriberStore[id];
       if (subscribers != null) {
         for (final subscriber in subscribers) {
-          if (changedFields.intersection(subscriber.subscribedFields).isNotEmpty) {
-            subscriber.controller.add(Event(rawData: newData, changedFields: changedFields));
+          if (changedFields
+              .intersection(subscriber.subscribedFields)
+              .isNotEmpty) {
+            subscriber.controller
+                .add(Event(rawData: newData, changedFields: changedFields));
           }
         }
       }
