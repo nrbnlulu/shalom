@@ -26,3 +26,4 @@ tasks:
         cmds:
             # 2 threads, won't kill my pc
             - cd rust && cargo test -- --test-threads=2
+            - cd dart/shalom_core && flutter test
