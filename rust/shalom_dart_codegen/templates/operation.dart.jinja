@@ -1,7 +1,7 @@
 {% include "macros" %}
 
 {# Recursive macro for deserializing selection values #}
-{% macro _deserialize_selection_value_macro(value_symbol, selection, is_optional=false) %}
+{% macro _deserialize_selection_value_macro(value_symbol, selection, is_optional=false, include_context=true) %}
     {% if selection.kind == "Scalar" %}
         {% if selection.is_custom_scalar %}
             {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
@@ -19,9 +19,9 @@
         {% endif %}
     {% elif selection.kind == "Object" %}
        {% if is_optional %}
-            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJson({{ value_symbol }}, context: context)
+            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJson({{ value_symbol }}, {% if include_context %}context: context{% endif %})
         {% else %}
-            {{ selection.full_name }}.fromJson({{ value_symbol }}, context: context)
+            {{ selection.full_name }}.fromJson({{ value_symbol }}, {% if include_context %} context: context {% endif%})
         {% endif %} 
     {% elif selection.kind == "Enum" %}
     {% set typename = selection.concrete_type.name %}
@@ -150,8 +150,10 @@ import 'package:collection/collection.dart';
          NodeSubscriptionController subscribeToChanges(ShalomContext context) {
             return context.manager.register(this, { 
                 {% for selection in selections %}   
+                    {% if not (selection.kind == 'Object' and selection.implements_node_interface) %} 
                     {% set selection_name = selection.name %}
                     '{{ selection_name }}',
+                    {% endif %}
                 {% endfor %}
                 }, context 
             );
@@ -162,11 +164,11 @@ import 'package:collection/collection.dart';
             for (final fieldName in changedFields) {
                 switch (fieldName) {
                     {% for selection in selections %}
-                         {% if selection.kind != 'Object' %}
+                         {% if not (selection.kind == 'Object' and selection.implements_node_interface) %}
                             {% set selection_name = selection.name %}
                             case '{{ selection_name }}':
                                 final {{ selection_name }}$raw = rawData['{{ selection_name }}'];
-                                {{selection_name}} = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
+                                {{selection_name}} = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional, false)}};
                                 break;
                          {% endif %}    
                     {% endfor %}

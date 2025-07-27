@@ -236,5 +236,20 @@ void main() {
       expect(userNode.updateCounter, 0);
       expect(userNode.post.title, "Original Post Title");
     });
+
+    test("updates when nested non-node object changes", () async {
+      final userNode = Testable_User.fromJson(initialData, context);
+      userNode.subscribeToChanges(context);
+
+      final updatedData = {
+        "id": user1Id,
+        "address": {"street": "456 Side St", "city": "New City"},
+      };
+      manager.parseNodeData(updatedData);
+
+      await pumpEventQueue();
+      expect(userNode.updateCounter, 1);
+      expect(userNode.address?.city, "New City");
+    });
   });
 }

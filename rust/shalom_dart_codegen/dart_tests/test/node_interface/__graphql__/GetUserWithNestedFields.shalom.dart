@@ -110,15 +110,7 @@ class GetUserWithNestedFields_user extends Node {
 
   @override
   NodeSubscriptionController subscribeToChanges(ShalomContext context) {
-    return context.manager.register(this, {
-      'id',
-
-      'name',
-
-      'address',
-
-      'post',
-    }, context);
+    return context.manager.register(this, {'id', 'name', 'address'}, context);
   }
 
   @override
@@ -133,6 +125,14 @@ class GetUserWithNestedFields_user extends Node {
         case 'name':
           final name$raw = rawData['name'];
           name = name$raw as String;
+          break;
+
+        case 'address':
+          final address$raw = rawData['address'];
+          address =
+              address$raw == null
+                  ? null
+                  : GetUserWithNestedFields_user_address.fromJson(address$raw);
           break;
       }
     }

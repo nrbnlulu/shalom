@@ -84,10 +84,22 @@ class NodeManager {
   Map<ID, JsonObject> _rawStore = {};
   Map<ID, List<NodeSubscriber>> _subscriberStore = {};
 
+  bool isNode(JsonObject data) {
+    return data.containsKey("id") && _rawStore.containsKey(data["id"]);
+  }
+
   Set<String> _getChangedFields(JsonObject currentData, JsonObject newData) {
     Set<String> changedFields = Set();
     for (final field in newData.keys) {
-      if (newData[field] is! JsonObject) {
+      if (newData[field] is JsonObject) {
+        if (!isNode(newData[field])) {
+          if (!(currentData[field] as JsonObject).deepEquals(
+            newData[field] as JsonObject,
+          )) {
+            changedFields.add(field);
+          }
+        }
+      } else {
         if (currentData[field] != newData[field]) {
           changedFields.add(field);
         }
