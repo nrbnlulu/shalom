@@ -13,12 +13,8 @@ mixin UpdateCounterMixin on Node {
   int updateCounter = 0;
 
   @override
-  void updateWithJson(
-    JsonObject rawData,
-    Set<String> changedFields,
-    ShalomContext context,
-  ) {
-    super.updateWithJson(rawData, changedFields, context);
+  void updateWithJson(JsonObject rawData, Set<String> changedFields) {
+    super.updateWithJson(rawData, changedFields);
     if (changedFields.isNotEmpty) {
       updateCounter++;
     }
@@ -32,7 +28,6 @@ class Testable_GetSimpleUser_user extends GetSimpleUser_user
     required super.id,
     required super.name,
     required super.email,
-    required super.nodeParents,
   });
 
   /// Override fromJson to return an instance of this testable class.
@@ -46,31 +41,21 @@ class Testable_GetSimpleUser_user extends GetSimpleUser_user
       id: data["id"] as String,
       name: data["name"] as String,
       email: data["email"] as String,
-      nodeParents: parents ?? [],
     );
   }
 }
 
 class Testable_Post extends GetUserWithNestedFields_user_post
     with UpdateCounterMixin {
-  Testable_Post({
-    required super.id,
-    required super.title,
-    required super.nodeParents,
-  });
+  Testable_Post({required super.id, required super.title});
 
-  static Testable_Post fromJson(
-    JsonObject data,
-    ShalomContext? context, [
-    List<ID>? parents,
-  ]) {
+  static Testable_Post fromJson(JsonObject data, ShalomContext? context) {
     if (context != null) {
       context.manager.parseNodeData(data);
     }
     return Testable_Post(
       id: data["id"] as String,
       title: data["title"] as String,
-      nodeParents: parents ?? [],
     );
   }
 }
@@ -82,20 +67,11 @@ class Testable_User extends GetUserWithNestedFields_user
     required super.name,
     super.address,
     required super.post,
-    required super.nodeParents,
   });
 
-  static Testable_User fromJson(
-    JsonObject data,
-    ShalomContext? context, [
-    List<ID>? parents,
-  ]) {
+  static Testable_User fromJson(JsonObject data, ShalomContext? context) {
     if (context != null) {
       context.manager.parseNodeData(data);
-    }
-    List<ID> currentParents = parents ?? [];
-    if (data.containsKey("id")) {
-      currentParents.add(data["id"]);
     }
     return Testable_User(
       id: data["id"] as String,
@@ -108,8 +84,7 @@ class Testable_User extends GetUserWithNestedFields_user
                 context: context,
               ),
       // Crucially, we call the testable Post's fromJson here
-      post: Testable_Post.fromJson(data["post"], context, currentParents),
-      nodeParents: parents ?? currentParents,
+      post: Testable_Post.fromJson(data["post"], context),
     );
   }
 }
@@ -211,7 +186,7 @@ void main() {
         context,
       );
       final subscription = userNode.subscribeToChanges(context);
-      subscription.cancel();
+      subscription.unsubscribe();
 
       manager.parseNodeData(nextUserData);
 
@@ -251,20 +226,22 @@ void main() {
       expect(userNode.name, "New Name");
     });
 
-    test("updates when nested non-node object changes", () async {
-      final userNode = Testable_User.fromJson(initialData, context);
-      userNode.subscribeToChanges(context);
+    test(
+      "parent does not update when nested non-node object changes",
+      () async {
+        final userNode = Testable_User.fromJson(initialData, context);
+        userNode.subscribeToChanges(context);
 
-      final updatedData = {
-        "id": user1Id,
-        "address": {"street": "456 Side St", "city": "New City"},
-      };
-      manager.parseNodeData(updatedData);
+        final updatedData = {
+          "id": user1Id,
+          "address": {"street": "456 Side St", "city": "New City"},
+        };
+        manager.parseNodeData(updatedData);
 
-      await pumpEventQueue();
-      expect(userNode.updateCounter, 1);
-      expect(userNode.address?.city, "New City");
-    });
+        await pumpEventQueue();
+        expect(userNode.updateCounter, 0);
+      },
+    );
 
     test("does NOT update parent when only nested node changes", () async {
       final userNode = Testable_User.fromJson(initialData, context);

@@ -16,12 +16,11 @@ class SubmitReviewResponse {
   // keywordargs constructor
   SubmitReviewResponse({this.submitReview});
   static SubmitReviewResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String? submitReview_value;
     final submitReview$raw = data["submitReview"];
-
     submitReview_value = submitReview$raw as String?;
 
     return SubmitReviewResponse(submitReview: submitReview_value);

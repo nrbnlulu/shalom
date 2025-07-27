@@ -16,12 +16,11 @@ class OptionalWithSomeDefaultResponse {
   // keywordargs constructor
   OptionalWithSomeDefaultResponse({this.task});
   static OptionalWithSomeDefaultResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final OptionalWithSomeDefault_task? task_value;
     final task$raw = data["task"];
-
     task_value =
         task$raw == null
             ? null
@@ -58,22 +57,19 @@ class OptionalWithSomeDefault_task {
   // keywordargs constructor
   OptionalWithSomeDefault_task({this.name, this.duration, this.is_easy});
   static OptionalWithSomeDefault_task fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     final int? duration_value;
     final duration$raw = data["duration"];
-
     duration_value = duration$raw as int?;
 
     final bool? is_easy_value;
     final is_easy$raw = data["is_easy"];
-
     is_easy_value = is_easy$raw as bool?;
 
     return OptionalWithSomeDefault_task(

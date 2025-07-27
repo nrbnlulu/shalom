@@ -17,12 +17,11 @@ class UpdatePointCoordsNonNullResponse {
   // keywordargs constructor
   UpdatePointCoordsNonNullResponse({this.updatePointCoords});
   static UpdatePointCoordsNonNullResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final UpdatePointCoordsNonNull_updatePointCoords? updatePointCoords_value;
     final updatePointCoords$raw = data["updatePointCoords"];
-
     updatePointCoords_value =
         updatePointCoords$raw == null
             ? null
@@ -71,12 +70,11 @@ class UpdatePointCoordsNonNull_updatePointCoords {
     required this.id,
   });
   static UpdatePointCoordsNonNull_updatePointCoords fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-
     coords_value =
         coords$raw == null
             ? null
@@ -84,12 +82,10 @@ class UpdatePointCoordsNonNull_updatePointCoords {
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     return UpdatePointCoordsNonNull_updatePointCoords(

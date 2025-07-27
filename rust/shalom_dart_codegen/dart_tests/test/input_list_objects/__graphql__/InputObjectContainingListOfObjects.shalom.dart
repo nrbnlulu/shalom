@@ -19,14 +19,13 @@ class InputObjectContainingListOfObjectsResponse {
     this.InputObjectContainingListOfObjects,
   });
   static InputObjectContainingListOfObjectsResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final InputObjectContainingListOfObjects_InputObjectContainingListOfObjects?
     InputObjectContainingListOfObjects_value;
     final InputObjectContainingListOfObjects$raw =
         data["InputObjectContainingListOfObjects"];
-
     InputObjectContainingListOfObjects_value =
         InputObjectContainingListOfObjects$raw == null
             ? null
@@ -76,15 +75,13 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
     this.message,
   });
   static InputObjectContainingListOfObjects_InputObjectContainingListOfObjects
-  fromJson(JsonObject data, ShalomContext? context) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputObjectContainingListOfObjects_InputObjectContainingListOfObjects(

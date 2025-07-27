@@ -16,12 +16,11 @@ class EnumInputObjectRequiredResponse {
   // keywordargs constructor
   EnumInputObjectRequiredResponse({this.updateOrder});
   static EnumInputObjectRequiredResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final EnumInputObjectRequired_updateOrder? updateOrder_value;
     final updateOrder$raw = data["updateOrder"];
-
     updateOrder_value =
         updateOrder$raw == null
             ? null
@@ -72,27 +71,23 @@ class EnumInputObjectRequired_updateOrder {
     required this.price,
   });
   static EnumInputObjectRequired_updateOrder fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final Status? status_value;
     final status$raw = data["status"];
-
     status_value = status$raw == null ? null : Status.fromString(status$raw);
 
     final int quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final double price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double;
 
     return EnumInputObjectRequired_updateOrder(

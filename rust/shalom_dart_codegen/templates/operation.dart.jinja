@@ -19,9 +19,9 @@
         {% endif %}
     {% elif selection.kind == "Object" %}
        {% if is_optional %}
-            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJson({{ value_symbol }}, context, currentParents)
+            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJson({{ value_symbol }}, context: context)
         {% else %}
-            {{ selection.full_name }}.fromJson({{ value_symbol }}, context, currentParents)
+            {{ selection.full_name }}.fromJson({{ value_symbol }}, context: context)
         {% endif %} 
     {% elif selection.kind == "Enum" %}
     {% set typename = selection.concrete_type.name %}
@@ -123,16 +123,8 @@ import 'package:collection/collection.dart';
         this.{{ selection_name }},
         {% endif %}
     {% endfor %}
-    {% if implements_node_interface %}
-    required super.nodeParents
-    {% endif %}
     });
-    static {{ typename }} fromJson(JsonObject data, {ShalomContext? context, List<ID>? parents}) {
-    final localParents = parents ?? [];   
-    List<ID> currentParents = [...localParents];
-    if (data.containsKey('id')) {
-        currentParents.add(data['id']);
-    }    
+    static {{ typename }} fromJson(JsonObject data, {ShalomContext? context}) {
     {% if implements_node_interface %}      
         if (context != null) {
             context.manager.parseNodeData(data);
@@ -150,15 +142,12 @@ import 'package:collection/collection.dart';
         {% set selection_name = selection.name %}
         {{ selection_name }}: {{ selection_name }}_value,
     {% endfor %}
-    {% if implements_node_interface %}
-    nodeParents: currentParents
-    {% endif %}
     );
     }
     
    {% if implements_node_interface %}
          @override
-         StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
+         NodeSubscriptionController subscribeToChanges(ShalomContext context) {
             return context.manager.register(this, { 
                 {% for selection in selections %}   
                     {% set selection_name = selection.name %}
@@ -169,16 +158,17 @@ import 'package:collection/collection.dart';
          }
 
          @override
-         void updateWithJson(JsonObject rawData, Set<String> changedFields, ShalomContext context) {
-            final currentParents = [...nodeParents, id];
+         void updateWithJson(JsonObject rawData, Set<String> changedFields) {
             for (final fieldName in changedFields) {
                 switch (fieldName) {
                     {% for selection in selections %}
-                         {% set selection_name = selection.name %}
-                         case '{{ selection_name }}':
-                            final {{ selection_name }}$raw = rawData['{{ selection_name }}'];
-                            {{selection_name}} = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
-                            break;
+                         {% if selection.kind != 'Object' %}
+                            {% set selection_name = selection.name %}
+                            case '{{ selection_name }}':
+                                final {{ selection_name }}$raw = rawData['{{ selection_name }}'];
+                                {{selection_name}} = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
+                                break;
+                         {% endif %}    
                     {% endfor %}
                 }
             }

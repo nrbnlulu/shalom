@@ -20,14 +20,13 @@ class InputCustomScalarListNullableMaybeResponse {
     this.InputCustomScalarListNullableMaybe,
   });
   static InputCustomScalarListNullableMaybeResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
     InputCustomScalarListNullableMaybe_value;
     final InputCustomScalarListNullableMaybe$raw =
         data["InputCustomScalarListNullableMaybe"];
-
     InputCustomScalarListNullableMaybe_value =
         InputCustomScalarListNullableMaybe$raw == null
             ? null
@@ -77,15 +76,13 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
     this.message,
   });
   static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
-  fromJson(JsonObject data, ShalomContext? context) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe(

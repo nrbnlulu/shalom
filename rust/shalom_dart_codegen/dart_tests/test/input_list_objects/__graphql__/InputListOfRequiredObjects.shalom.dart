@@ -17,13 +17,12 @@ class InputListOfRequiredObjectsResponse {
   // keywordargs constructor
   InputListOfRequiredObjectsResponse({this.InputListOfRequiredObjects});
   static InputListOfRequiredObjectsResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final InputListOfRequiredObjects_InputListOfRequiredObjects?
     InputListOfRequiredObjects_value;
     final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
-
     InputListOfRequiredObjects_value =
         InputListOfRequiredObjects$raw == null
             ? null
@@ -70,17 +69,15 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
     this.message,
   });
   static InputListOfRequiredObjects_InputListOfRequiredObjects fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputListOfRequiredObjects_InputListOfRequiredObjects(

@@ -16,12 +16,11 @@ class OptionalArgumentsResponse {
   // keywordargs constructor
   OptionalArgumentsResponse({this.updateUser});
   static OptionalArgumentsResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final OptionalArguments_updateUser? updateUser_value;
     final updateUser$raw = data["updateUser"];
-
     updateUser_value =
         updateUser$raw == null
             ? null
@@ -54,12 +53,11 @@ class OptionalArguments_updateUser {
   // keywordargs constructor
   OptionalArguments_updateUser({this.name});
   static OptionalArguments_updateUser fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     return OptionalArguments_updateUser(name: name_value);

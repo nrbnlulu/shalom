@@ -20,14 +20,13 @@ class UpdatePointWithInputCoordsMaybeResponse {
     this.updatePointWithInputCoordsMaybe,
   });
   static UpdatePointWithInputCoordsMaybeResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
     updatePointWithInputCoordsMaybe_value;
     final updatePointWithInputCoordsMaybe$raw =
         data["updatePointWithInputCoordsMaybe"];
-
     updatePointWithInputCoordsMaybe_value =
         updatePointWithInputCoordsMaybe$raw == null
             ? null
@@ -80,10 +79,9 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
     required this.id,
   });
   static UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
-  fromJson(JsonObject data, ShalomContext? context) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-
     coords_value =
         coords$raw == null
             ? null
@@ -91,12 +89,10 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     return UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe(

@@ -19,14 +19,13 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
     this.InputListOfOptionalObjectsWithNullDefault,
   });
   static InputListOfOptionalObjectsWithNullDefaultResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault?
     InputListOfOptionalObjectsWithNullDefault_value;
     final InputListOfOptionalObjectsWithNullDefault$raw =
         data["InputListOfOptionalObjectsWithNullDefault"];
-
     InputListOfOptionalObjectsWithNullDefault_value =
         InputListOfOptionalObjectsWithNullDefault$raw == null
             ? null
@@ -76,15 +75,13 @@ class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNu
     this.message,
   });
   static InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault
-  fromJson(JsonObject data, ShalomContext? context) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault(

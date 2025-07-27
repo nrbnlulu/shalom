@@ -18,13 +18,12 @@ class InputListEnumOptionalWithDefaultResponse {
     this.InputListEnumOptionalWithDefault,
   });
   static InputListEnumOptionalWithDefaultResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String? InputListEnumOptionalWithDefault_value;
     final InputListEnumOptionalWithDefault$raw =
         data["InputListEnumOptionalWithDefault"];
-
     InputListEnumOptionalWithDefault_value =
         InputListEnumOptionalWithDefault$raw as String?;
 

@@ -16,12 +16,11 @@ class OrderRequestResponse {
   // keywordargs constructor
   OrderRequestResponse({this.orderRequest});
   static OrderRequestResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final OrderRequest_orderRequest? orderRequest_value;
     final orderRequest$raw = data["orderRequest"];
-
     orderRequest_value =
         orderRequest$raw == null
             ? null
@@ -58,22 +57,19 @@ class OrderRequest_orderRequest {
   // keywordargs constructor
   OrderRequest_orderRequest({this.quantity, this.name, this.price});
   static OrderRequest_orderRequest fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int?;
 
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     final double? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double?;
 
     return OrderRequest_orderRequest(

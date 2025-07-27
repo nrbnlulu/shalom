@@ -16,13 +16,12 @@ class InputListEnumInsideInputObjectResponse {
   // keywordargs constructor
   InputListEnumInsideInputObjectResponse({this.InputListEnumInsideInputObject});
   static InputListEnumInsideInputObjectResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String? InputListEnumInsideInputObject_value;
     final InputListEnumInsideInputObject$raw =
         data["InputListEnumInsideInputObject"];
-
     InputListEnumInsideInputObject_value =
         InputListEnumInsideInputObject$raw as String?;
 

@@ -20,14 +20,13 @@ class InputCustomScalarListOptionalWithDefaultResponse {
     this.InputCustomScalarListOptionalWithDefault,
   });
   static InputCustomScalarListOptionalWithDefaultResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault?
     InputCustomScalarListOptionalWithDefault_value;
     final InputCustomScalarListOptionalWithDefault$raw =
         data["InputCustomScalarListOptionalWithDefault"];
-
     InputCustomScalarListOptionalWithDefault_value =
         InputCustomScalarListOptionalWithDefault$raw == null
             ? null
@@ -77,15 +76,13 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
     this.message,
   });
   static InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault
-  fromJson(JsonObject data, ShalomContext? context) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault(

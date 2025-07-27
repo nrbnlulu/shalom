@@ -16,12 +16,11 @@ class OptionalWithNullDefaultResponse {
   // keywordargs constructor
   OptionalWithNullDefaultResponse({this.updateUser});
   static OptionalWithNullDefaultResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final OptionalWithNullDefault_updateUser? updateUser_value;
     final updateUser$raw = data["updateUser"];
-
     updateUser_value =
         updateUser$raw == null
             ? null
@@ -62,22 +61,19 @@ class OptionalWithNullDefault_updateUser {
   // keywordargs constructor
   OptionalWithNullDefault_updateUser({this.email, this.name, this.phone});
   static OptionalWithNullDefault_updateUser fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String? email_value;
     final email$raw = data["email"];
-
     email_value = email$raw as String?;
 
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     final String? phone_value;
     final phone$raw = data["phone"];
-
     phone_value = phone$raw as String?;
 
     return OptionalWithNullDefault_updateUser(

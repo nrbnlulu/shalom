@@ -16,12 +16,11 @@ class EnumRequiredResponse {
   // keywordargs constructor
   EnumRequiredResponse({this.updateOrderStatus});
   static EnumRequiredResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final EnumRequired_updateOrderStatus? updateOrderStatus_value;
     final updateOrderStatus$raw = data["updateOrderStatus"];
-
     updateOrderStatus_value =
         updateOrderStatus$raw == null
             ? null
@@ -72,27 +71,23 @@ class EnumRequired_updateOrderStatus {
     required this.price,
   });
   static EnumRequired_updateOrderStatus fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final Status? status_value;
     final status$raw = data["status"];
-
     status_value = status$raw == null ? null : Status.fromString(status$raw);
 
     final int quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final double price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double;
 
     return EnumRequired_updateOrderStatus(

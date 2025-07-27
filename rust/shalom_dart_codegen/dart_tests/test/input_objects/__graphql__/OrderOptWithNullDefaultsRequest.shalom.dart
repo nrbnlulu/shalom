@@ -19,14 +19,13 @@ class OrderOptWithNullDefaultsRequestResponse {
     this.orderOptWithNullDefaultsRequest,
   });
   static OrderOptWithNullDefaultsRequestResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest?
     orderOptWithNullDefaultsRequest_value;
     final orderOptWithNullDefaultsRequest$raw =
         data["orderOptWithNullDefaultsRequest"];
-
     orderOptWithNullDefaultsRequest_value =
         orderOptWithNullDefaultsRequest$raw == null
             ? null
@@ -79,20 +78,17 @@ class OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest {
     this.price,
   });
   static OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest
-  fromJson(JsonObject data, ShalomContext? context) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int?;
 
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     final double? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double?;
 
     return OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest(

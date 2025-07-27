@@ -16,12 +16,11 @@ class InputScalarListMaybeResponse {
   // keywordargs constructor
   InputScalarListMaybeResponse({this.InputScalarListMaybe});
   static InputScalarListMaybeResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final InputScalarListMaybe_InputScalarListMaybe? InputScalarListMaybe_value;
     final InputScalarListMaybe$raw = data["InputScalarListMaybe"];
-
     InputScalarListMaybe_value =
         InputScalarListMaybe$raw == null
             ? null
@@ -60,12 +59,11 @@ class InputScalarListMaybe_InputScalarListMaybe {
   // keywordargs constructor
   InputScalarListMaybe_InputScalarListMaybe({required this.success});
   static InputScalarListMaybe_InputScalarListMaybe fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     return InputScalarListMaybe_InputScalarListMaybe(success: success_value);

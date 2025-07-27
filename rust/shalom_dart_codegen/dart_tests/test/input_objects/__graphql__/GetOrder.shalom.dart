@@ -15,10 +15,9 @@ class GetOrderResponse {
 
   // keywordargs constructor
   GetOrderResponse({this.getOrder});
-  static GetOrderResponse fromJson(JsonObject data, ShalomContext? context) {
+  static GetOrderResponse fromJson(JsonObject data, {ShalomContext? context}) {
     final GetOrder_getOrder? getOrder_value;
     final getOrder$raw = data["getOrder"];
-
     getOrder_value =
         getOrder$raw == null
             ? null
@@ -54,20 +53,17 @@ class GetOrder_getOrder {
 
   // keywordargs constructor
   GetOrder_getOrder({this.quantity, this.name, this.price});
-  static GetOrder_getOrder fromJson(JsonObject data, ShalomContext? context) {
+  static GetOrder_getOrder fromJson(JsonObject data, {ShalomContext? context}) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int?;
 
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     final double? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double?;
 
     return GetOrder_getOrder(

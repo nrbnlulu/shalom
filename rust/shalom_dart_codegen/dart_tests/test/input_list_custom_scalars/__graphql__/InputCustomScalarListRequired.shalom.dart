@@ -18,14 +18,13 @@ class InputCustomScalarListRequiredResponse {
   // keywordargs constructor
   InputCustomScalarListRequiredResponse({this.InputCustomScalarListRequired});
   static InputCustomScalarListRequiredResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final InputCustomScalarListRequired_InputCustomScalarListRequired?
     InputCustomScalarListRequired_value;
     final InputCustomScalarListRequired$raw =
         data["InputCustomScalarListRequired"];
-
     InputCustomScalarListRequired_value =
         InputCustomScalarListRequired$raw == null
             ? null
@@ -74,17 +73,15 @@ class InputCustomScalarListRequired_InputCustomScalarListRequired {
     this.message,
   });
   static InputCustomScalarListRequired_InputCustomScalarListRequired fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     final String? message_value;
     final message$raw = data["message"];
-
     message_value = message$raw as String?;
 
     return InputCustomScalarListRequired_InputCustomScalarListRequired(

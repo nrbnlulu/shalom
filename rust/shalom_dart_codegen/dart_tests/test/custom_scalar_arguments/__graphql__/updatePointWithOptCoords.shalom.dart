@@ -17,13 +17,12 @@ class updatePointWithOptCoordsResponse {
   // keywordargs constructor
   updatePointWithOptCoordsResponse({this.updatePointWithOptCoords});
   static updatePointWithOptCoordsResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final updatePointWithOptCoords_updatePointWithOptCoords?
     updatePointWithOptCoords_value;
     final updatePointWithOptCoords$raw = data["updatePointWithOptCoords"];
-
     updatePointWithOptCoords_value =
         updatePointWithOptCoords$raw == null
             ? null
@@ -74,12 +73,11 @@ class updatePointWithOptCoords_updatePointWithOptCoords {
     required this.id,
   });
   static updatePointWithOptCoords_updatePointWithOptCoords fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-
     coords_value =
         coords$raw == null
             ? null
@@ -87,12 +85,10 @@ class updatePointWithOptCoords_updatePointWithOptCoords {
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     return updatePointWithOptCoords_updatePointWithOptCoords(

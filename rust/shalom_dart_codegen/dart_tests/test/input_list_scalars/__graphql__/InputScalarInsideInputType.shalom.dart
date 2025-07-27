@@ -17,13 +17,12 @@ class InputScalarInsideInputTypeResponse {
   // keywordargs constructor
   InputScalarInsideInputTypeResponse({this.InputScalarInsideInputType});
   static InputScalarInsideInputTypeResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final InputScalarInsideInputType_InputScalarInsideInputType?
     InputScalarInsideInputType_value;
     final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
-
     InputScalarInsideInputType_value =
         InputScalarInsideInputType$raw == null
             ? null
@@ -66,12 +65,11 @@ class InputScalarInsideInputType_InputScalarInsideInputType {
     required this.success,
   });
   static InputScalarInsideInputType_InputScalarInsideInputType fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final bool success_value;
     final success$raw = data["success"];
-
     success_value = success$raw as bool;
 
     return InputScalarInsideInputType_InputScalarInsideInputType(

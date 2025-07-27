@@ -16,12 +16,11 @@ class OrderRecursiveResponse {
   // keywordargs constructor
   OrderRecursiveResponse({this.orderRecursive});
   static OrderRecursiveResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final OrderRecursive_orderRecursive? orderRecursive_value;
     final orderRecursive$raw = data["orderRecursive"];
-
     orderRecursive_value =
         orderRecursive$raw == null
             ? null
@@ -62,22 +61,19 @@ class OrderRecursive_orderRecursive {
   // keywordargs constructor
   OrderRecursive_orderRecursive({this.quantity, this.name, this.price});
   static OrderRecursive_orderRecursive fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int?;
 
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     final double? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double?;
 
     return OrderRecursive_orderRecursive(

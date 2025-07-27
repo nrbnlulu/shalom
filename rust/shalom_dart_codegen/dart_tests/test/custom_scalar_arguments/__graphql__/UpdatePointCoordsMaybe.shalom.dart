@@ -17,13 +17,12 @@ class UpdatePointCoordsMaybeResponse {
   // keywordargs constructor
   UpdatePointCoordsMaybeResponse({this.updatePointCoordsMaybe});
   static UpdatePointCoordsMaybeResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final UpdatePointCoordsMaybe_updatePointCoordsMaybe?
     updatePointCoordsMaybe_value;
     final updatePointCoordsMaybe$raw = data["updatePointCoordsMaybe"];
-
     updatePointCoordsMaybe_value =
         updatePointCoordsMaybe$raw == null
             ? null
@@ -72,12 +71,11 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
     required this.id,
   });
   static UpdatePointCoordsMaybe_updatePointCoordsMaybe fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
-
     coords_value =
         coords$raw == null
             ? null
@@ -85,12 +83,10 @@ class UpdatePointCoordsMaybe_updatePointCoordsMaybe {
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     return UpdatePointCoordsMaybe_updatePointCoordsMaybe(

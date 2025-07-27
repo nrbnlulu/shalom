@@ -16,12 +16,11 @@ class GetSpecificOrderResponse {
   // keywordargs constructor
   GetSpecificOrderResponse({this.getSpecificOrder});
   static GetSpecificOrderResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
     final getSpecificOrder$raw = data["getSpecificOrder"];
-
     getSpecificOrder_value =
         getSpecificOrder$raw == null
             ? null
@@ -62,22 +61,19 @@ class GetSpecificOrder_getSpecificOrder {
   // keywordargs constructor
   GetSpecificOrder_getSpecificOrder({this.quantity, this.price, this.name});
   static GetSpecificOrder_getSpecificOrder fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int?;
 
     final double? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double?;
 
     final String? name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String?;
 
     return GetSpecificOrder_getSpecificOrder(

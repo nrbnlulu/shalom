@@ -16,12 +16,11 @@ class RequiredArgumentsResponse {
   // keywordargs constructor
   RequiredArgumentsResponse({this.product});
   static RequiredArgumentsResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final RequiredArguments_product? product_value;
     final product$raw = data["product"];
-
     product_value =
         product$raw == null
             ? null
@@ -56,17 +55,15 @@ class RequiredArguments_product {
   // keywordargs constructor
   RequiredArguments_product({required this.id, required this.name});
   static RequiredArguments_product fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     return RequiredArguments_product(id: id_value, name: name_value);

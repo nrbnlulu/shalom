@@ -16,12 +16,11 @@ class InputListEnumMaybeResponse {
   // keywordargs constructor
   InputListEnumMaybeResponse({this.InputListEnumMaybe});
   static InputListEnumMaybeResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String? InputListEnumMaybe_value;
     final InputListEnumMaybe$raw = data["InputListEnumMaybe"];
-
     InputListEnumMaybe_value = InputListEnumMaybe$raw as String?;
 
     return InputListEnumMaybeResponse(

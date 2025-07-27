@@ -16,13 +16,12 @@ class EnumInputObjectOptionalResponse {
   // keywordargs constructor
   EnumInputObjectOptionalResponse({this.updateOrderWithStatusOpt});
   static EnumInputObjectOptionalResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final EnumInputObjectOptional_updateOrderWithStatusOpt?
     updateOrderWithStatusOpt_value;
     final updateOrderWithStatusOpt$raw = data["updateOrderWithStatusOpt"];
-
     updateOrderWithStatusOpt_value =
         updateOrderWithStatusOpt$raw == null
             ? null
@@ -77,27 +76,23 @@ class EnumInputObjectOptional_updateOrderWithStatusOpt {
     required this.price,
   });
   static EnumInputObjectOptional_updateOrderWithStatusOpt fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final Status? status_value;
     final status$raw = data["status"];
-
     status_value = status$raw == null ? null : Status.fromString(status$raw);
 
     final int quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final double price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double;
 
     return EnumInputObjectOptional_updateOrderWithStatusOpt(

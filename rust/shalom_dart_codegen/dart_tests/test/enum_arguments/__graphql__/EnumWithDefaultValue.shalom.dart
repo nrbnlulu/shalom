@@ -16,12 +16,11 @@ class EnumWithDefaultValueResponse {
   // keywordargs constructor
   EnumWithDefaultValueResponse({this.getOrderByStatus});
   static EnumWithDefaultValueResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final EnumWithDefaultValue_getOrderByStatus? getOrderByStatus_value;
     final getOrderByStatus$raw = data["getOrderByStatus"];
-
     getOrderByStatus_value =
         getOrderByStatus$raw == null
             ? null
@@ -74,27 +73,23 @@ class EnumWithDefaultValue_getOrderByStatus {
     required this.price,
   });
   static EnumWithDefaultValue_getOrderByStatus fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final Status? status_value;
     final status$raw = data["status"];
-
     status_value = status$raw == null ? null : Status.fromString(status$raw);
 
     final int quantity_value;
     final quantity$raw = data["quantity"];
-
     quantity_value = quantity$raw as int;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final double price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as double;
 
     return EnumWithDefaultValue_getOrderByStatus(
