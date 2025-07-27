@@ -1,1068 +1,489 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import 'dart:async';
 
-
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 
-
-
-
 typedef JsonObject = Map<String, dynamic>;
 
-
-
-
 class SubscribeToAllNestedFieldsResponse {
+  /// class members
 
-    /// class members
-    
-        final SubscribeToAllNestedFields_userInfo? userInfo;
-    
-    // keywordargs constructor
-    SubscribeToAllNestedFieldsResponse({
-    
-        this.userInfo,
-    
-    });
-    static SubscribeToAllNestedFieldsResponse fromJson(JsonObject data, ShalomContext? context) {
-    
-        
-        final SubscribeToAllNestedFields_userInfo? userInfo_value;
-        final userInfo$raw = data["userInfo"];
-        userInfo_value = 
-    
-        
-            if (context != null) {
-                
-                    userInfo$raw == null ? null : SubscribeToAllNestedFields_userInfo.deserialize(userInfo$raw, context)
-                
-            }
-        
-    
-;
-    
-    return SubscribeToAllNestedFieldsResponse(
-    
-        
-        userInfo: userInfo_value,
-    
-    );
+  SubscribeToAllNestedFields_userInfo? userInfo;
+
+  // keywordargs constructor
+  SubscribeToAllNestedFieldsResponse({this.userInfo});
+  static SubscribeToAllNestedFieldsResponse fromJson(
+    JsonObject data,
+    ShalomContext? context,
+  ) {
+    final SubscribeToAllNestedFields_userInfo? userInfo_value;
+    final userInfo$raw = data["userInfo"];
+
+    userInfo_value =
+        userInfo$raw == null
+            ? null
+            : SubscribeToAllNestedFields_userInfo.fromJson(
+              userInfo$raw,
+              context,
+            );
+
+    if (context != null) {
+      if (userInfo$raw != null) {
+        context.manager.parseNodeData(userInfo$raw);
+      }
     }
-    
-   
-    
-    @override
-    bool operator ==(Object other) {
+
+    return SubscribeToAllNestedFieldsResponse(userInfo: userInfo_value);
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is SubscribeToAllNestedFieldsResponse &&
-    
-        
-    
-        other.userInfo == userInfo
-    
- 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        userInfo.hashCode;
-    
-     
-    JsonObject toJson() {
-    return {
-    
-        
-        'userInfo':
-            
-                
-    
-        
-            this.userInfo?.toJson()
-        
-    
+        (other is SubscribeToAllNestedFieldsResponse &&
+            other.userInfo == userInfo);
+  }
 
-            
-        ,
-    
-    };
-    }
+  @override
+  int get hashCode => userInfo.hashCode;
 
+  JsonObject toJson() {
+    return {'userInfo': this.userInfo?.toJson()};
+  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
+class SubscribeToAllNestedFields_userInfo extends Node {
+  /// class members
 
-    class SubscribeToAllNestedFields_userInfo  extends Node  {
-        
-    /// class members
-    
-        final String id;
-    
-        final SubscribeToAllNestedFields_userInfo_user user;
-    
-        final SubscribeToAllNestedFields_userInfo_address address;
-    
-        final SubscribeToAllNestedFields_userInfo_order order;
-    
-    // keywordargs constructor
-    SubscribeToAllNestedFields_userInfo({
-    required
-        this.id,
-    required
-        this.user,
-    required
-        this.address,
-    required
-        this.order,
-    
-    });
-    static SubscribeToAllNestedFields_userInfo fromJson(JsonObject data, ShalomContext? context) {
-    
-        
-        final String id_value;
-        final id$raw = data["id"];
-        id_value = 
-    
-        
-            
-                id$raw as String
-            
-        
-    
-;
-    
-        
-        final SubscribeToAllNestedFields_userInfo_user user_value;
-        final user$raw = data["user"];
-        user_value = 
-    
-        
-            if (context != null) {
-                
-                    SubscribeToAllNestedFields_userInfo_user.deserialize(user$raw, context)
-                
-            }
-        
-    
-;
-    
-        
-        final SubscribeToAllNestedFields_userInfo_address address_value;
-        final address$raw = data["address"];
-        address_value = 
-    
-        
-            if (context != null) {
-                
-                    SubscribeToAllNestedFields_userInfo_address.deserialize(address$raw, context)
-                
-            }
-        
-    
-;
-    
-        
-        final SubscribeToAllNestedFields_userInfo_order order_value;
-        final order$raw = data["order"];
-        order_value = 
-    
-           
-            
-                SubscribeToAllNestedFields_userInfo_order.fromJson(order$raw, context)
-            
-        
-    
-;
-    
+  SubscribeToAllNestedFields_userInfo_user user;
+
+  SubscribeToAllNestedFields_userInfo_address address;
+
+  SubscribeToAllNestedFields_userInfo_order order;
+
+  // keywordargs constructor
+  SubscribeToAllNestedFields_userInfo({
+    required super.id,
+
+    required this.user,
+
+    required this.address,
+
+    required this.order,
+  });
+  static SubscribeToAllNestedFields_userInfo fromJson(
+    JsonObject data,
+    ShalomContext? context,
+  ) {
+    final String id_value;
+    final id$raw = data["id"];
+
+    id_value = id$raw as String;
+
+    final SubscribeToAllNestedFields_userInfo_user user_value;
+    final user$raw = data["user"];
+
+    user_value = SubscribeToAllNestedFields_userInfo_user.fromJson(
+      user$raw,
+      context,
+    );
+
+    if (context != null) {
+      context.manager.parseNodeData(user$raw);
+    }
+
+    final SubscribeToAllNestedFields_userInfo_address address_value;
+    final address$raw = data["address"];
+
+    address_value = SubscribeToAllNestedFields_userInfo_address.fromJson(
+      address$raw,
+      context,
+    );
+
+    if (context != null) {
+      context.manager.parseNodeData(address$raw);
+    }
+
+    final SubscribeToAllNestedFields_userInfo_order order_value;
+    final order$raw = data["order"];
+
+    order_value = SubscribeToAllNestedFields_userInfo_order.fromJson(
+      order$raw,
+      context,
+    );
+
     return SubscribeToAllNestedFields_userInfo(
-    
-        
-        id: id_value,
-    
-        
-        user: user_value,
-    
-        
-        address: address_value,
-    
-        
-        order: order_value,
-    
-    );
-    }
-    
-   
-        static SubscribeToAllNestedFields_userInfo deserialize(JsonObject data, ShalomContext context) {
-            final self = SubscribeToAllNestedFields_userInfo.fromJson(data); 
-            
-            context.manager.parseNodeData(self.toJson());
-            
-            
-                
-            
-                 
-                    
-                    SubscribeToAllNestedFields_userInfo_user.deserialize(data['user'], context);  
-                
-            
-                 
-                    
-                    SubscribeToAllNestedFields_userInfo_address.deserialize(data['address'], context);  
-                
-            
-                
-            
-            return self;
-         }
-         @override
-         StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
-            return context.manager.register(this, { 
-                   
-                    
-                    'id',
-                   
-                    
-                    'user',
-                   
-                    
-                    'address',
-                   
-                    
-                    'order',
-                
-                }, context 
-            );
-         }
+      id: id_value,
 
-         @override
-         void updateWithJson(JsonObject rawData, Set<String> changedFields, ShalomContext context) {
-            for (final fieldName in changedFields) {
-                switch (fieldName) {
-                    
-                         
-                         case 'id':
-                            
-                                id = rawData['id'];
-                            
-                            break;
-                    
-                         
-                         case 'user':
-                            
-                                
-                                user = SubscribeToAllNestedFields_userInfo_user.deserialize(rawData['user'], context); 
-                            
-                            break;
-                    
-                         
-                         case 'address':
-                            
-                                
-                                address = SubscribeToAllNestedFields_userInfo_address.deserialize(rawData['address'], context); 
-                            
-                            break;
-                    
-                         
-                         case 'order':
-                            
-                                order = rawData['order'];
-                            
-                            break;
-                    
-                }
-            }
-            notifyListeners();
-         }
-    
-    
-    @override
-    bool operator ==(Object other) {
+      user: user_value,
+
+      address: address_value,
+
+      order: order_value,
+    );
+  }
+
+  @override
+  StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
+    return context.manager.register(this, {
+      'id',
+
+      'user',
+
+      'address',
+
+      'order',
+    }, context);
+  }
+
+  @override
+  void updateWithJson(
+    JsonObject rawData,
+    Set<String> changedFields,
+    ShalomContext context,
+  ) {
+    for (final fieldName in changedFields) {
+      switch (fieldName) {
+        case 'id':
+          id = rawData['id'];
+
+          break;
+
+        case 'user':
+          user = SubscribeToAllNestedFields_userInfo_user.fromJson(
+            rawData['user'],
+            context,
+          );
+
+          break;
+
+        case 'address':
+          address = SubscribeToAllNestedFields_userInfo_address.fromJson(
+            rawData['address'],
+            context,
+          );
+
+          break;
+
+        case 'order':
+          order = rawData['order'];
+
+          break;
+      }
+    }
+    notifyListeners();
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is SubscribeToAllNestedFields_userInfo &&
-    
-        
-    
-        other.id == id
-    
- &&
-    
-        
-    
-        other.user == user
-    
- &&
-    
-        
-    
-        other.address == address
-    
- &&
-    
-        
-    
-        other.order == order
-    
- 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            id,
-        
-            
-            user,
-        
-            
-            address,
-        
-            
-            order,
-        
-        ]);
-    
-     @override  
-    JsonObject toJson() {
+        (other is SubscribeToAllNestedFields_userInfo &&
+            other.id == id &&
+            other.user == user &&
+            other.address == address &&
+            other.order == order);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([id, user, address, order]);
+
+  @override
+  JsonObject toJson() {
     return {
-    
-        
-        'id':
-            
-                
-    
-        
-            this.id
-        
-    
+      'id': this.id,
 
-            
-        ,
-    
-        
-        'user':
-            
-                
-    
-        
-            this.user.toJson()
-        
-    
+      'user': this.user.toJson(),
 
-            
-        ,
-    
-        
-        'address':
-            
-                
-    
-        
-            this.address.toJson()
-        
-    
+      'address': this.address.toJson(),
 
-            
-        ,
-    
-        
-        'order':
-            
-                
-    
-        
-            this.order.toJson()
-        
-    
-
-            
-        ,
-    
+      'order': this.order.toJson(),
     };
-    }
+  }
+}
 
-    }
+class SubscribeToAllNestedFields_userInfo_address extends Node {
+  /// class members
 
-    class SubscribeToAllNestedFields_userInfo_address  extends Node  {
-        
-    /// class members
-    
-        final String id;
-    
-        final String street;
-    
-        final String city;
-    
-    // keywordargs constructor
-    SubscribeToAllNestedFields_userInfo_address({
-    required
-        this.id,
-    required
-        this.street,
-    required
-        this.city,
-    
-    });
-    static SubscribeToAllNestedFields_userInfo_address fromJson(JsonObject data, ShalomContext? context) {
-    
-        
-        final String id_value;
-        final id$raw = data["id"];
-        id_value = 
-    
-        
-            
-                id$raw as String
-            
-        
-    
-;
-    
-        
-        final String street_value;
-        final street$raw = data["street"];
-        street_value = 
-    
-        
-            
-                street$raw as String
-            
-        
-    
-;
-    
-        
-        final String city_value;
-        final city$raw = data["city"];
-        city_value = 
-    
-        
-            
-                city$raw as String
-            
-        
-    
-;
-    
+  String street;
+
+  String city;
+
+  // keywordargs constructor
+  SubscribeToAllNestedFields_userInfo_address({
+    required super.id,
+
+    required this.street,
+
+    required this.city,
+  });
+  static SubscribeToAllNestedFields_userInfo_address fromJson(
+    JsonObject data,
+    ShalomContext? context,
+  ) {
+    final String id_value;
+    final id$raw = data["id"];
+
+    id_value = id$raw as String;
+
+    final String street_value;
+    final street$raw = data["street"];
+
+    street_value = street$raw as String;
+
+    final String city_value;
+    final city$raw = data["city"];
+
+    city_value = city$raw as String;
+
     return SubscribeToAllNestedFields_userInfo_address(
-    
-        
-        id: id_value,
-    
-        
-        street: street_value,
-    
-        
-        city: city_value,
-    
-    );
-    }
-    
-   
-        static SubscribeToAllNestedFields_userInfo_address deserialize(JsonObject data, ShalomContext context) {
-            final self = SubscribeToAllNestedFields_userInfo_address.fromJson(data); 
-            
-            context.manager.parseNodeData(self.toJson());
-            
-            
-                
-            
-                
-            
-                
-            
-            return self;
-         }
-         @override
-         StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
-            return context.manager.register(this, { 
-                   
-                    
-                    'id',
-                   
-                    
-                    'street',
-                   
-                    
-                    'city',
-                
-                }, context 
-            );
-         }
+      id: id_value,
 
-         @override
-         void updateWithJson(JsonObject rawData, Set<String> changedFields, ShalomContext context) {
-            for (final fieldName in changedFields) {
-                switch (fieldName) {
-                    
-                         
-                         case 'id':
-                            
-                                id = rawData['id'];
-                            
-                            break;
-                    
-                         
-                         case 'street':
-                            
-                                street = rawData['street'];
-                            
-                            break;
-                    
-                         
-                         case 'city':
-                            
-                                city = rawData['city'];
-                            
-                            break;
-                    
-                }
-            }
-            notifyListeners();
-         }
-    
-    
-    @override
-    bool operator ==(Object other) {
+      street: street_value,
+
+      city: city_value,
+    );
+  }
+
+  @override
+  StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
+    return context.manager.register(this, {'id', 'street', 'city'}, context);
+  }
+
+  @override
+  void updateWithJson(
+    JsonObject rawData,
+    Set<String> changedFields,
+    ShalomContext context,
+  ) {
+    for (final fieldName in changedFields) {
+      switch (fieldName) {
+        case 'id':
+          id = rawData['id'];
+
+          break;
+
+        case 'street':
+          street = rawData['street'];
+
+          break;
+
+        case 'city':
+          city = rawData['city'];
+
+          break;
+      }
+    }
+    notifyListeners();
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is SubscribeToAllNestedFields_userInfo_address &&
-    
-        
-    
-        other.id == id
-    
- &&
-    
-        
-    
-        other.street == street
-    
- &&
-    
-        
-    
-        other.city == city
-    
- 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            id,
-        
-            
-            street,
-        
-            
-            city,
-        
-        ]);
-    
-     @override  
-    JsonObject toJson() {
-    return {
-    
-        
-        'id':
-            
-                
-    
-        
-            this.id
-        
-    
+        (other is SubscribeToAllNestedFields_userInfo_address &&
+            other.id == id &&
+            other.street == street &&
+            other.city == city);
+  }
 
-            
-        ,
-    
-        
-        'street':
-            
-                
-    
-        
-            this.street
-        
-    
+  @override
+  int get hashCode => Object.hashAll([id, street, city]);
 
-            
-        ,
-    
-        
-        'city':
-            
-                
-    
-        
-            this.city
-        
-    
+  @override
+  JsonObject toJson() {
+    return {'id': this.id, 'street': this.street, 'city': this.city};
+  }
+}
 
-            
-        ,
-    
-    };
-    }
+class SubscribeToAllNestedFields_userInfo_order {
+  /// class members
 
-    }
+  String name;
 
-    class SubscribeToAllNestedFields_userInfo_order  {
-        
-    /// class members
-    
-        final String name;
-    
-        final int price;
-    
-    // keywordargs constructor
-    SubscribeToAllNestedFields_userInfo_order({
-    required
-        this.name,
-    required
-        this.price,
-    
-    });
-    static SubscribeToAllNestedFields_userInfo_order fromJson(JsonObject data, ShalomContext? context) {
-    
-        
-        final String name_value;
-        final name$raw = data["name"];
-        name_value = 
-    
-        
-            
-                name$raw as String
-            
-        
-    
-;
-    
-        
-        final int price_value;
-        final price$raw = data["price"];
-        price_value = 
-    
-        
-            
-                price$raw as int
-            
-        
-    
-;
-    
+  int price;
+
+  // keywordargs constructor
+  SubscribeToAllNestedFields_userInfo_order({
+    required this.name,
+
+    required this.price,
+  });
+  static SubscribeToAllNestedFields_userInfo_order fromJson(
+    JsonObject data,
+    ShalomContext? context,
+  ) {
+    final String name_value;
+    final name$raw = data["name"];
+
+    name_value = name$raw as String;
+
+    final int price_value;
+    final price$raw = data["price"];
+
+    price_value = price$raw as int;
+
     return SubscribeToAllNestedFields_userInfo_order(
-    
-        
-        name: name_value,
-    
-        
-        price: price_value,
-    
+      name: name_value,
+
+      price: price_value,
     );
-    }
-    
-   
-    
-    @override
-    bool operator ==(Object other) {
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is SubscribeToAllNestedFields_userInfo_order &&
-    
-        
-    
-        other.name == name
-    
- &&
-    
-        
-    
-        other.price == price
-    
- 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            name,
-        
-            
-            price,
-        
-        ]);
-    
-     
-    JsonObject toJson() {
-    return {
-    
-        
-        'name':
-            
-                
-    
-        
-            this.name
-        
-    
+        (other is SubscribeToAllNestedFields_userInfo_order &&
+            other.name == name &&
+            other.price == price);
+  }
 
-            
-        ,
-    
-        
-        'price':
-            
-                
-    
-        
-            this.price
-        
-    
+  @override
+  int get hashCode => Object.hashAll([name, price]);
 
-            
-        ,
-    
-    };
-    }
+  JsonObject toJson() {
+    return {'name': this.name, 'price': this.price};
+  }
+}
 
-    }
+class SubscribeToAllNestedFields_userInfo_user extends Node {
+  /// class members
 
-    class SubscribeToAllNestedFields_userInfo_user  extends Node  {
-        
-    /// class members
-    
-        final String id;
-    
-        final String name;
-    
-        final String email;
-    
-        final int? age;
-    
-    // keywordargs constructor
-    SubscribeToAllNestedFields_userInfo_user({
-    required
-        this.id,
-    required
-        this.name,
-    required
-        this.email,
-    
-        this.age,
-    
-    });
-    static SubscribeToAllNestedFields_userInfo_user fromJson(JsonObject data, ShalomContext? context) {
-    
-        
-        final String id_value;
-        final id$raw = data["id"];
-        id_value = 
-    
-        
-            
-                id$raw as String
-            
-        
-    
-;
-    
-        
-        final String name_value;
-        final name$raw = data["name"];
-        name_value = 
-    
-        
-            
-                name$raw as String
-            
-        
-    
-;
-    
-        
-        final String email_value;
-        final email$raw = data["email"];
-        email_value = 
-    
-        
-            
-                email$raw as String
-            
-        
-    
-;
-    
-        
-        final int? age_value;
-        final age$raw = data["age"];
-        age_value = 
-    
-        
-            
-                age$raw as int?
-            
-        
-    
-;
-    
+  String name;
+
+  String email;
+
+  int? age;
+
+  // keywordargs constructor
+  SubscribeToAllNestedFields_userInfo_user({
+    required super.id,
+
+    required this.name,
+
+    required this.email,
+
+    this.age,
+  });
+  static SubscribeToAllNestedFields_userInfo_user fromJson(
+    JsonObject data,
+    ShalomContext? context,
+  ) {
+    final String id_value;
+    final id$raw = data["id"];
+
+    id_value = id$raw as String;
+
+    final String name_value;
+    final name$raw = data["name"];
+
+    name_value = name$raw as String;
+
+    final String email_value;
+    final email$raw = data["email"];
+
+    email_value = email$raw as String;
+
+    final int? age_value;
+    final age$raw = data["age"];
+
+    age_value = age$raw as int?;
+
     return SubscribeToAllNestedFields_userInfo_user(
-    
-        
-        id: id_value,
-    
-        
-        name: name_value,
-    
-        
-        email: email_value,
-    
-        
-        age: age_value,
-    
-    );
-    }
-    
-   
-        static SubscribeToAllNestedFields_userInfo_user deserialize(JsonObject data, ShalomContext context) {
-            final self = SubscribeToAllNestedFields_userInfo_user.fromJson(data); 
-            
-            context.manager.parseNodeData(self.toJson());
-            
-            
-                
-            
-                
-            
-                
-            
-                
-            
-            return self;
-         }
-         @override
-         StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
-            return context.manager.register(this, { 
-                   
-                    
-                    'id',
-                   
-                    
-                    'name',
-                   
-                    
-                    'email',
-                   
-                    
-                    'age',
-                
-                }, context 
-            );
-         }
+      id: id_value,
 
-         @override
-         void updateWithJson(JsonObject rawData, Set<String> changedFields, ShalomContext context) {
-            for (final fieldName in changedFields) {
-                switch (fieldName) {
-                    
-                         
-                         case 'id':
-                            
-                                id = rawData['id'];
-                            
-                            break;
-                    
-                         
-                         case 'name':
-                            
-                                name = rawData['name'];
-                            
-                            break;
-                    
-                         
-                         case 'email':
-                            
-                                email = rawData['email'];
-                            
-                            break;
-                    
-                         
-                         case 'age':
-                            
-                                age = rawData['age'];
-                            
-                            break;
-                    
-                }
-            }
-            notifyListeners();
-         }
-    
-    
-    @override
-    bool operator ==(Object other) {
+      name: name_value,
+
+      email: email_value,
+
+      age: age_value,
+    );
+  }
+
+  @override
+  StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
+    return context.manager.register(this, {
+      'id',
+
+      'name',
+
+      'email',
+
+      'age',
+    }, context);
+  }
+
+  @override
+  void updateWithJson(
+    JsonObject rawData,
+    Set<String> changedFields,
+    ShalomContext context,
+  ) {
+    for (final fieldName in changedFields) {
+      switch (fieldName) {
+        case 'id':
+          id = rawData['id'];
+
+          break;
+
+        case 'name':
+          name = rawData['name'];
+
+          break;
+
+        case 'email':
+          email = rawData['email'];
+
+          break;
+
+        case 'age':
+          age = rawData['age'];
+
+          break;
+      }
+    }
+    notifyListeners();
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is SubscribeToAllNestedFields_userInfo_user &&
-    
-        
-    
-        other.id == id
-    
- &&
-    
-        
-    
-        other.name == name
-    
- &&
-    
-        
-    
-        other.email == email
-    
- &&
-    
-        
-    
-        other.age == age
-    
- 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-            
-            id,
-        
-            
-            name,
-        
-            
-            email,
-        
-            
-            age,
-        
-        ]);
-    
-     @override  
-    JsonObject toJson() {
+        (other is SubscribeToAllNestedFields_userInfo_user &&
+            other.id == id &&
+            other.name == name &&
+            other.email == email &&
+            other.age == age);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([id, name, email, age]);
+
+  @override
+  JsonObject toJson() {
     return {
-    
-        
-        'id':
-            
-                
-    
-        
-            this.id
-        
-    
+      'id': this.id,
 
-            
-        ,
-    
-        
-        'name':
-            
-                
-    
-        
-            this.name
-        
-    
+      'name': this.name,
 
-            
-        ,
-    
-        
-        'email':
-            
-                
-    
-        
-            this.email
-        
-    
+      'email': this.email,
 
-            
-        ,
-    
-        
-        'age':
-            
-                
-    
-        
-            this.age
-        
-    
-
-            
-        ,
-    
+      'age': this.age,
     };
-    }
-
-    }
-
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-
 class RequestSubscribeToAllNestedFields extends Requestable {
-    
+  RequestSubscribeToAllNestedFields();
 
-    RequestSubscribeToAllNestedFields(
-        
-    );
-
-    @override
-    Request toRequest() {
-        JsonObject variablesJson =  {}  ;
-        return Request(
-            query: r"""query SubscribeToAllNestedFields {
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query SubscribeToAllNestedFields {
   userInfo {
     id
     user {
@@ -1082,10 +503,9 @@ class RequestSubscribeToAllNestedFields extends Requestable {
     }
   }
 }""",
-            variables: variablesJson,
-            opType: OperationType.Query,
-            opName: 'SubscribeToAllNestedFields'
-        );
-    }
+      variables: variablesJson,
+      opType: OperationType.Query,
+      opName: 'SubscribeToAllNestedFields',
+    );
+  }
 }
-

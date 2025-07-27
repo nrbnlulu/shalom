@@ -18,28 +18,18 @@
             {% endif %}
         {% endif %}
     {% elif selection.kind == "Object" %}
-        {% if selection.implements_node_interface %}
-            if (context != null) {
-                {% if is_optional %}
-                    {{ value_symbol }} == null ? null : {{ selection.full_name }}.deserialize({{ value_symbol }}, context)
-                {% else %}
-                    {{ selection.full_name }}.deserialize({{ value_symbol }}, context)
-                {% endif %}
-            }
-        {% else %}   
-            {% if is_optional %}
-                {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJson({{ value_symbol }}, context)
-            {% else %}
-                {{ selection.full_name }}.fromJson({{ value_symbol }}, context)
-            {% endif %}
-        {% endif %}
-    {% elif selection.kind == "Enum" %}
-        {% set typename = selection.concrete_type.name %}
-        {% if is_optional %}
-            {{ value_symbol }} == null ? null : {{ typename }}.fromString({{ value_symbol }})
+       {% if is_optional %}
+            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJson({{ value_symbol }}, context)
         {% else %}
-            {{ typename }}.fromString({{ value_symbol }})
-        {% endif %}
+            {{ selection.full_name }}.fromJson({{ value_symbol }}, context)
+        {% endif %} 
+    {% elif selection.kind == "Enum" %}
+    {% set typename = selection.concrete_type.name %}
+    {% if is_optional %}
+        {{ value_symbol }} == null ? null : {{ typename }}.fromString({{ value_symbol }})
+    {% else %}
+        {{ typename }}.fromString({{ value_symbol }})
+    {% endif %}
     {% elif selection.kind == "List" %}
         {% set inner_selection = selection.of_kind %}
         {% if is_optional %}
@@ -118,13 +108,20 @@ import 'package:collection/collection.dart';
     /// class members
     {% for selection in selections -%}
         {% set selection_name = selection.name %}
-        final {{ type_name_for_selection(selection) }} {{ selection_name }};
+        {% if not (implements_node_interface and selection_name == "id") %}
+        {{ type_name_for_selection(selection) }} {{ selection_name }};
+        {% endif %}
     {% endfor %}
     // keywordargs constructor
     {{ typename }}({
     {% for selection in selections -%}
+        {% set selection_name = selection.name %}
         {% if not selection.is_optional %}required{% endif %}
-        this.{{ selection.name }},
+        {% if implements_node_interface and selection_name == "id" %}
+        super.{{ selection_name }}, 
+        {% else %}
+        this.{{ selection_name }},
+        {% endif %}
     {% endfor %}
     });
     static {{ typename }} fromJson(JsonObject data, ShalomContext? context) {
@@ -133,7 +130,19 @@ import 'package:collection/collection.dart';
         {% set selection_typename = type_name_for_selection(selection) %}
         final {{ selection_typename }} {{ selection_name }}_value;
         final {{selection_name}}$raw = data["{{ selection_name }}"];
-        {{ selection_name }}_value = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
+        {% set value_symbol = selection_name + '$raw' %}
+        {{ selection_name }}_value = {{ _deserialize_selection_value_macro(value_symbol, selection, selection.is_optional) }};
+        {% if selection.kind == 'Object' and selection.implements_node_interface %}
+            if (context != null) {
+                {% if selection.is_optional %}   
+                if ({{ value_symbol }} != null) {
+                    context.manager.parseNodeData({{ value_symbol }});
+                }
+                {% else %}   
+                context.manager.parseNodeData({{ value_symbol }});
+                {% endif %}
+            }
+        {% endif %}
     {% endfor %}
     return {{ typename }}(
     {% for selection in selections %}
@@ -144,19 +153,6 @@ import 'package:collection/collection.dart';
     }
     
    {% if implements_node_interface %}
-        static {{ typename }} deserialize(JsonObject data, ShalomContext context) {
-            final self = {{ typename }}.fromJson(data); 
-            {% if implements_node_interface %}
-            context.manager.parseNodeData(self.toJson());
-            {% endif %}
-            {% for selection in selections %}
-                {% if selection.kind == "Object" and selection.implements_node_interface %} 
-                    {% set selection_typename = type_name_for_selection(selection) %}
-                    {{ selection_typename }}.deserialize(data['{{ selection.name }}'], context);  
-                {% endif %}
-            {% endfor %}
-            return self;
-         }
          @override
          StreamSubscription<Event> subscribeToChanges(ShalomContext context) {
             return context.manager.register(this, { 
@@ -177,7 +173,7 @@ import 'package:collection/collection.dart';
                          case '{{ selection_name }}':
                             {% if selection.kind == "Object" and selection.implements_node_interface %}
                                 {% set selection_typename = type_name_for_selection(selection) %}
-                                {{ selection_name }} = {{ selection_typename }}.deserialize(rawData['{{ selection_name }}'], context); 
+                                {{ selection_name }} = {{ selection_typename }}.fromJson(rawData['{{ selection_name }}'], context); 
                             {% else %}
                                 {{ selection_name }} = rawData['{{ selection_name }}'];
                             {% endif %}

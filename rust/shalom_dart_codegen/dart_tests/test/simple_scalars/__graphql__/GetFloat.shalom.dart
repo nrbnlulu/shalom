@@ -1,144 +1,59 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import 'dart:async';
 
-
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 
-
-
-
 typedef JsonObject = Map<String, dynamic>;
 
-
-
-
 class GetFloatResponse {
+  /// class members
 
-    /// class members
-    
-        final double float;
-    
-    // keywordargs constructor
-    GetFloatResponse({
-    required
-        this.float,
-    
-    });
-    static GetFloatResponse fromJson(JsonObject data, ShalomContext? context) {
-    
-        
-        final double float_value;
-        final float$raw = data["float"];
-        float_value = 
-    
-        
-            
-                float$raw as double
-            
-        
-    
-;
-    
-    return GetFloatResponse(
-    
-        
-        float: float_value,
-    
-    );
-    }
-    
-   
-    
-    @override
-    bool operator ==(Object other) {
+  final double float;
+
+  // keywordargs constructor
+  GetFloatResponse({required this.float});
+  static GetFloatResponse fromJson(JsonObject data, ShalomContext? context) {
+    final double float_value;
+    final float$raw = data["float"];
+    float_value = float$raw as double;
+
+    return GetFloatResponse(float: float_value);
+  }
+
+  @override
+  bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is GetFloatResponse &&
-    
-        
-    
-        other.float == float
-    
- 
-    
-    );
-    }
-    @override
-    int get hashCode =>
-    
-        float.hashCode;
-    
-     
-    JsonObject toJson() {
-    return {
-    
-        
-        'float':
-            
-                
-    
-        
-            this.float
-        
-    
+        (other is GetFloatResponse && other.float == float);
+  }
 
-            
-        ,
-    
-    };
-    }
+  @override
+  int get hashCode => float.hashCode;
 
+  JsonObject toJson() {
+    return {'float': this.float};
+  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-
-
 // ------------ END OBJECT DEFINITIONS -------------
 
-
 class RequestGetFloat extends Requestable {
-    
+  RequestGetFloat();
 
-    RequestGetFloat(
-        
-    );
-
-    @override
-    Request toRequest() {
-        JsonObject variablesJson =  {}  ;
-        return Request(
-            query: r"""query GetFloat {
+  @override
+  Request toRequest() {
+    JsonObject variablesJson = {};
+    return Request(
+      query: r"""query GetFloat {
   float
 }""",
-            variables: variablesJson,
-            opType: OperationType.Query,
-            opName: 'GetFloat'
-        );
-    }
+      variables: variablesJson,
+      opType: OperationType.Query,
+      opName: 'GetFloat',
+    );
+  }
 }
-

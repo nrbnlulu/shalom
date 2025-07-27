@@ -5,65 +5,33 @@ import 'package:test/test.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
-class TestSubscribeToAllFields_user extends SubscribeToAllFields_user {
+mixin UpdateCounterMixin on Node {
   int updateCounter = 0;
+
+  @override
+  void updateWithJson(
+    JsonObject rawData,
+    Set<String> changedFields,
+    ShalomContext context,
+  ) {
+    super.updateWithJson(rawData, changedFields, context);
+    updateCounter++;
+  }
+}
+
+class TestSubscribeToAllFields_user extends SubscribeToAllFields_user
+    with UpdateCounterMixin {
   TestSubscribeToAllFields_user({
     required super.id,
     required super.name,
     required super.email,
     required super.age,
   });
-
-  @override
-  void updateWithJson(
-    JsonObject rawData,
-    Set<String> changedFields,
-    ShalomContext context,
-  ) {
-    super.updateWithJson(rawData, changedFields, context);
-    updateCounter++;
-  }
-
-  static TestSubscribeToAllFields_user deserialize(
-    JsonObject json,
-    ShalomContext context,
-  ) {
-    final self = TestSubscribeToAllFields_user(
-      id: json["id"],
-      name: json["name"],
-      email: json["email"],
-      age: json["age"],
-    );
-    context.manager.parseNodeData(self.toJson());
-    return self;
-  }
 }
 
-class TestSubscribeToSomeFields_user extends SubscribeToSomeFields_user {
-  int updateCounter = 0;
+class TestSubscribeToSomeFields_user extends SubscribeToSomeFields_user
+    with UpdateCounterMixin {
   TestSubscribeToSomeFields_user({required super.id, required super.name});
-
-  @override
-  void updateWithJson(
-    JsonObject rawData,
-    Set<String> changedFields,
-    ShalomContext context,
-  ) {
-    super.updateWithJson(rawData, changedFields, context);
-    updateCounter++;
-  }
-
-  static TestSubscribeToSomeFields_user deserialize(
-    JsonObject json,
-    ShalomContext context,
-  ) {
-    final self = TestSubscribeToSomeFields_user(
-      id: json["id"],
-      name: json["name"],
-    );
-    context.manager.parseNodeData(self.toJson());
-    return self;
-  }
 }
 
 void main() {
@@ -92,30 +60,32 @@ void main() {
 
     test("all subscribed fields with all fields updated", () async {
       manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToAllFields_user.deserialize(
-        initialUserData,
-        context,
+      final initialUserNode = TestSubscribeToAllFields_user(
+        id: initialUserData['id'] as String,
+        name: initialUserData['name'] as String,
+        email: initialUserData['email'] as String,
+        age: initialUserData['age'] as int,
       );
       initialUserNode.subscribeToChanges(context);
 
       manager.parseNodeData(nextUserData);
 
-      await Future.delayed(Duration.zero);
+      await pumpEventQueue();
       expect(initialUserNode.updateCounter, 1);
       expect(initialUserNode.toJson(), nextUserData);
     });
 
     test("some subscribed fields with all fields updated", () async {
       manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToSomeFields_user.deserialize(
-        initialUserData,
-        context,
+      final initialUserNode = TestSubscribeToSomeFields_user(
+        id: initialUserData['id'] as String,
+        name: initialUserData['name'] as String,
       );
       initialUserNode.subscribeToChanges(context);
 
       manager.parseNodeData(nextUserData);
 
-      await Future.delayed(Duration.zero);
+      await pumpEventQueue();
       expect(initialUserNode.updateCounter, 1);
       expect(initialUserNode.toJson(), {
         "id": id,
@@ -125,31 +95,33 @@ void main() {
 
     test("other node id updated", () async {
       manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToAllFields_user.deserialize(
-        initialUserData,
-        context,
+      final initialUserNode = TestSubscribeToAllFields_user(
+        id: initialUserData['id'] as String,
+        name: initialUserData['name'] as String,
+        email: initialUserData['email'] as String,
+        age: initialUserData['age'] as int,
       );
       initialUserNode.subscribeToChanges(context);
 
       final otherNodeData = {"id": "2", "name": "other user"};
       manager.parseNodeData(otherNodeData);
 
-      await Future.delayed(Duration.zero);
+      await pumpEventQueue();
       expect(initialUserNode.updateCounter, 0);
       expect(initialUserNode.toJson(), initialUserData);
     });
 
     test("no changed fields", () async {
       manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToSomeFields_user.deserialize(
-        initialUserData,
-        context,
+      final initialUserNode = TestSubscribeToSomeFields_user(
+        id: initialUserData['id'] as String,
+        name: initialUserData['name'] as String,
       );
       initialUserNode.subscribeToChanges(context);
 
       manager.parseNodeData(initialUserData);
 
-      await Future.delayed(Duration.zero);
+      await pumpEventQueue();
       expect(initialUserNode.updateCounter, 0);
       expect(initialUserNode.toJson(), {
         "id": initialUserData["id"],
@@ -159,30 +131,34 @@ void main() {
 
     test("unsubscribed", () async {
       manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToAllFields_user.deserialize(
-        initialUserData,
-        context,
+      final initialUserNode = TestSubscribeToAllFields_user(
+        id: initialUserData['id'] as String,
+        name: initialUserData['name'] as String,
+        email: initialUserData['email'] as String,
+        age: initialUserData['age'] as int,
       );
 
       manager.parseNodeData(nextUserData);
 
-      await Future.delayed(Duration.zero);
+      await pumpEventQueue();
       expect(initialUserNode.updateCounter, 0);
       expect(initialUserNode.toJson(), initialUserData);
     });
 
     test("subscribed then unsubscribed", () async {
       manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToAllFields_user.deserialize(
-        initialUserData,
-        context,
+      final initialUserNode = TestSubscribeToAllFields_user(
+        id: initialUserData['id'] as String,
+        name: initialUserData['name'] as String,
+        email: initialUserData['email'] as String,
+        age: initialUserData['age'] as int,
       );
       final subscription = initialUserNode.subscribeToChanges(context);
       subscription.cancel();
 
       manager.parseNodeData(nextUserData);
 
-      await Future.delayed(Duration.zero);
+      await pumpEventQueue();
       expect(initialUserNode.updateCounter, 0);
       expect(initialUserNode.toJson(), initialUserData);
     });

@@ -32,6 +32,6 @@ fn test_list_of_scalars_dart() {
 }
 
 #[test]
-fn test_node_interface() {
+fn test_node_interface_dart() {
     run_dart_tests_for_usecase("node_interface");
 }
