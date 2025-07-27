@@ -17,20 +17,18 @@ abstract class Node extends ChangeNotifier {
   ID id;
   Node({required this.id});
   void updateWithJson(
-      JsonObject rawData, Set<String> changedFields, ShalomContext context);
+    JsonObject rawData,
+    Set<String> changedFields,
+    ShalomContext context,
+  );
   JsonObject toJson();
-  StreamSubscription<Event> subscribeToChanges(ShalomContext context);
+  StreamSubscription<NodeDataChange> subscribeToChanges(ShalomContext context);
 }
 
 class NodeSubscriber {
-  final StreamController<Event> controller;
+  final Node node;
   final Set<String> subscribedFields;
-  final int nodeInstanceId;
-  NodeSubscriber({
-    required this.controller,
-    required this.subscribedFields,
-    required this.nodeInstanceId,
-  });
+  NodeSubscriber({required this.subscribedFields, required this.node});
 }
 
 class NodeWidget<T extends Node> extends StatefulWidget {
@@ -38,18 +36,19 @@ class NodeWidget<T extends Node> extends StatefulWidget {
   final Widget Function(BuildContext context, T node) builder;
   final ShalomContext context;
 
-  NodeWidget(
-      {super.key,
-      required this.node,
-      required this.builder,
-      required this.context});
+  NodeWidget({
+    super.key,
+    required this.node,
+    required this.builder,
+    required this.context,
+  });
 
   @override
   State<NodeWidget<T>> createState() => _NodeWidgetState<T>();
 }
 
 class _NodeWidgetState<T extends Node> extends State<NodeWidget<T>> {
-  late StreamSubscription<Event> subscription;
+  late StreamSubscription<NodeDataChange> subscription;
   @override
   void initState() {
     super.initState();
@@ -74,10 +73,15 @@ class _NodeWidgetState<T extends Node> extends State<NodeWidget<T>> {
   }
 }
 
-class Event {
+class NodeSubscriptionController {
+  final void Function() unsubscribe;
+  NodeSubscriptionController(this.unsubscribe);
+}
+
+class NodeDataChange {
   final JsonObject rawData;
   final Set<String> changedFields;
-  Event({required this.rawData, required this.changedFields});
+  NodeDataChange({required this.rawData, required this.changedFields});
 }
 
 class NodeManager {
@@ -101,13 +105,16 @@ class NodeManager {
       final changedFields = _getChangedFields(currentData, newData);
       _rawStore[id] = newData;
       final subscribers = _subscriberStore[id];
+      final nodeDataChange = NodeDataChange(
+        rawData: newData,
+        changedFields: changedFields,
+      );
       if (subscribers != null) {
         for (final subscriber in subscribers) {
           if (changedFields
               .intersection(subscriber.subscribedFields)
               .isNotEmpty) {
-            subscriber.controller
-                .add(Event(rawData: newData, changedFields: changedFields));
+            subscriber.node.updateWithJson(nodeDataChange);
           }
         }
       }
@@ -116,32 +123,24 @@ class NodeManager {
     }
   }
 
-  StreamSubscription<Event> register(
+  NodeSubscriptionController register(
     Node node,
     Set<String> subscribedFields,
     ShalomContext context,
   ) {
-    final controller = StreamController<Event>.broadcast(
-      onCancel: () {
-        _subscriberStore[node.id]?.removeWhere((subscriber) {
-          if (subscriber.nodeInstanceId == node.instanceId) {
-            subscriber.controller.close();
-            return true;
-          }
-          return false;
-        });
-      },
-    );
-    final subscription = controller.stream.listen((event) {
-      node.updateWithJson(event.rawData, event.changedFields, context);
-    });
     final nodeSubscriber = NodeSubscriber(
-      controller: controller,
       subscribedFields: subscribedFields,
-      nodeInstanceId: node.instanceId,
+      node: node,
     );
     _subscriberStore.putIfAbsent(node.id, () => []).add(nodeSubscriber);
-    return subscription;
+    return NodeSubscriptionController(() {
+      _subscriberStore.removeWhere((id, subs) {
+        if (id == node.id && subs.contains(nodeSubscriber)) {
+          return true;
+        }
+        return false;
+      });
+    });
   }
 }
 
@@ -149,3 +148,4 @@ class ShalomContext {
   final NodeManager manager;
   ShalomContext({required this.manager});
 }
+
