@@ -24,7 +24,10 @@ class OptionalArgumentsResponse {
     updateUser_value =
         updateUser$raw == null
             ? null
-            : OptionalArguments_updateUser.fromJson(updateUser$raw, context);
+            : OptionalArguments_updateUser.fromJson(
+              updateUser$raw,
+              context: context,
+            );
 
     return OptionalArgumentsResponse(updateUser: updateUser_value);
   }

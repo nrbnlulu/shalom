@@ -27,7 +27,7 @@ class UpdatePointCoordsOptResponse {
             ? null
             : UpdatePointCoordsOpt_getPointById.fromJson(
               getPointById$raw,
-              context,
+              context: context,
             );
 
     return UpdatePointCoordsOptResponse(getPointById: getPointById_value);

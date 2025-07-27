@@ -26,7 +26,7 @@ class EnumWithDefaultValueResponse {
             ? null
             : EnumWithDefaultValue_getOrderByStatus.fromJson(
               getOrderByStatus$raw,
-              context,
+              context: context,
             );
 
     return EnumWithDefaultValueResponse(

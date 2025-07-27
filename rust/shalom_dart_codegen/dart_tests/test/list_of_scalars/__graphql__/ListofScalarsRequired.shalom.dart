@@ -16,12 +16,11 @@ class ListofScalarsRequiredResponse {
   // keywordargs constructor
   ListofScalarsRequiredResponse({required this.listOfScalarsRequired});
   static ListofScalarsRequiredResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final List<String> listOfScalarsRequired_value;
     final listOfScalarsRequired$raw = data["listOfScalarsRequired"];
-
     listOfScalarsRequired_value =
         (listOfScalarsRequired$raw as List<dynamic>)
             .map((e) => e as String)

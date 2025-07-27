@@ -28,7 +28,7 @@ class InputListOfRequiredObjectsResponse {
             ? null
             : InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
               InputListOfRequiredObjects$raw,
-              context,
+              context: context,
             );
 
     return InputListOfRequiredObjectsResponse(

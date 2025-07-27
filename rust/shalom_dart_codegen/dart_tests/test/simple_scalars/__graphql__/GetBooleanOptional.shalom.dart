@@ -16,12 +16,11 @@ class GetBooleanOptionalResponse {
   // keywordargs constructor
   GetBooleanOptionalResponse({this.booleanOptional});
   static GetBooleanOptionalResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final bool? booleanOptional_value;
     final booleanOptional$raw = data["booleanOptional"];
-
     booleanOptional_value = booleanOptional$raw as bool?;
 
     return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);

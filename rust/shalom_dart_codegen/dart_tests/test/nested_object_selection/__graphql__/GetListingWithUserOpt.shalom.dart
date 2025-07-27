@@ -16,15 +16,14 @@ class GetListingWithUserOptResponse {
   // keywordargs constructor
   GetListingWithUserOptResponse({required this.listing});
   static GetListingWithUserOptResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final GetListingWithUserOpt_listing listing_value;
     final listing$raw = data["listing"];
-
     listing_value = GetListingWithUserOpt_listing.fromJson(
       listing$raw,
-      context,
+      context: context,
     );
 
     return GetListingWithUserOptResponse(listing: listing_value);
@@ -68,33 +67,29 @@ class GetListingWithUserOpt_listing {
     this.userOpt,
   });
   static GetListingWithUserOpt_listing fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final int? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as int?;
 
     final GetListingWithUserOpt_listing_userOpt? userOpt_value;
     final userOpt$raw = data["userOpt"];
-
     userOpt_value =
         userOpt$raw == null
             ? null
             : GetListingWithUserOpt_listing_userOpt.fromJson(
               userOpt$raw,
-              context,
+              context: context,
             );
 
     return GetListingWithUserOpt_listing(
@@ -144,17 +139,15 @@ class GetListingWithUserOpt_listing_userOpt {
   // keywordargs constructor
   GetListingWithUserOpt_listing_userOpt({required this.id, required this.name});
   static GetListingWithUserOpt_listing_userOpt fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     return GetListingWithUserOpt_listing_userOpt(

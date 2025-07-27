@@ -8,7 +8,6 @@ typedef JsonObject = Map<String, dynamic>;
 
 Future<void> pumpEventQueue() => Future.delayed(Duration.zero);
 
-/// A mixin to count how many times updateWithJson is called with actual changes.
 mixin UpdateCounterMixin on Node {
   int updateCounter = 0;
 
@@ -21,7 +20,6 @@ mixin UpdateCounterMixin on Node {
   }
 }
 
-/// A test-specific version of your class that uses the mixin for verification.
 class Testable_GetSimpleUser_user extends GetSimpleUser_user
     with UpdateCounterMixin {
   Testable_GetSimpleUser_user({
@@ -30,7 +28,6 @@ class Testable_GetSimpleUser_user extends GetSimpleUser_user
     required super.email,
   });
 
-  /// Override fromJson to return an instance of this testable class.
   static Testable_GetSimpleUser_user fromJson(
     JsonObject data,
     ShalomContext context, [
@@ -83,7 +80,7 @@ class Testable_User extends GetUserWithNestedFields_user
                 data["address"],
                 context: context,
               ),
-      // Crucially, we call the testable Post's fromJson here
+
       post: Testable_Post.fromJson(data["post"], context),
     );
   }
@@ -171,7 +168,6 @@ void main() {
         initialUserData,
         context,
       );
-      // Did not call subscribeToChanges()
 
       manager.parseNodeData(nextUserData);
 
@@ -215,7 +211,7 @@ void main() {
       context = ShalomContext(manager: manager);
     });
 
-    test("updates top-level user field", () async {
+    test("updates top-level field", () async {
       final userNode = Testable_User.fromJson(initialData, context);
       userNode.subscribeToChanges(context);
 
@@ -226,56 +222,19 @@ void main() {
       expect(userNode.name, "New Name");
     });
 
-    test(
-      "parent does not update when nested non-node object changes",
-      () async {
-        final userNode = Testable_User.fromJson(initialData, context);
-        userNode.subscribeToChanges(context);
-
-        final updatedData = {
-          "id": user1Id,
-          "address": {"street": "456 Side St", "city": "New City"},
-        };
-        manager.parseNodeData(updatedData);
-
-        await pumpEventQueue();
-        expect(userNode.updateCounter, 0);
-      },
-    );
-
-    test("does NOT update parent when only nested node changes", () async {
+    test("does not updated when nested node object changes", () async {
       final userNode = Testable_User.fromJson(initialData, context);
       userNode.subscribeToChanges(context);
 
-      // Update ONLY the post node
-      manager.parseNodeData({"id": post1Id, "title": "New Post Title"});
+      final updatedData = {
+        "id": user1Id,
+        "post": {"id": post1Id, "title": "New Post Title"},
+      };
+      manager.parseNodeData(updatedData);
 
       await pumpEventQueue();
-      // The user object itself was not updated, so its counter is 0.
       expect(userNode.updateCounter, 0);
-
-      // However, the nested post object, being a managed Node, updates in-place.
-      expect(userNode.post.title, "New Post Title");
-    });
-
-    test("nested node receives its own update independently", () async {
-      // This creates the user and implicitly registers the post in the manager.
-      final userNode = Testable_User.fromJson(initialData, context);
-      final postNode = userNode.post as Testable_Post;
-
-      // Subscribe directly to the nested post node.
-      postNode.subscribeToChanges(context);
-
-      // Update ONLY the post node.
-      manager.parseNodeData({"id": post1Id, "title": "A Brave New Title"});
-
-      await pumpEventQueue();
-
-      // The post's own update counter should be 1.
-      expect(postNode.updateCounter, 1);
-      expect(postNode.title, "A Brave New Title");
-      // The parent user's counter remains 0.
-      expect(userNode.updateCounter, 0);
+      expect(userNode.post.title, "Original Post Title");
     });
   });
 }

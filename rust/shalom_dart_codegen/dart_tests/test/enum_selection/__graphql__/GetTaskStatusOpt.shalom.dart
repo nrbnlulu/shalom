@@ -16,13 +16,12 @@ class GetTaskStatusOptResponse {
   // keywordargs constructor
   GetTaskStatusOptResponse({required this.task});
   static GetTaskStatusOptResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final GetTaskStatusOpt_task task_value;
     final task$raw = data["task"];
-
-    task_value = GetTaskStatusOpt_task.fromJson(task$raw, context);
+    task_value = GetTaskStatusOpt_task.fromJson(task$raw, context: context);
 
     return GetTaskStatusOptResponse(task: task_value);
   }
@@ -55,22 +54,19 @@ class GetTaskStatusOpt_task {
   // keywordargs constructor
   GetTaskStatusOpt_task({required this.id, required this.name, this.statusOpt});
   static GetTaskStatusOpt_task fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final Status? statusOpt_value;
     final statusOpt$raw = data["statusOpt"];
-
     statusOpt_value =
         statusOpt$raw == null ? null : Status.fromString(statusOpt$raw);
 

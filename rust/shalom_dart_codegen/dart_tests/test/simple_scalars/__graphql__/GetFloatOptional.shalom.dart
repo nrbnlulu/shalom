@@ -16,12 +16,11 @@ class GetFloatOptionalResponse {
   // keywordargs constructor
   GetFloatOptionalResponse({this.floatOptional});
   static GetFloatOptionalResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final double? floatOptional_value;
     final floatOptional$raw = data["floatOptional"];
-
     floatOptional_value = floatOptional$raw as double?;
 
     return GetFloatOptionalResponse(floatOptional: floatOptional_value);

@@ -8,7 +8,7 @@ void main() {
       final json = {
         "listing": {"id": "foo", "name": "video games", "price": 100},
       };
-      final result = GetListingResponse.fromJson(json, null);
+      final result = GetListingResponse.fromJson(json);
       expect(result.listing.id, "foo");
       expect(result.listing.name, "video games");
       expect(result.listing.price, 100);
@@ -18,7 +18,7 @@ void main() {
       final data = {
         "listing": {"id": "foo", "name": "video games", "price": 100},
       };
-      final initial = GetListingResponse.fromJson(data, null);
+      final initial = GetListingResponse.fromJson(data);
       final json = initial.toJson();
       expect(json, data);
     });
@@ -30,7 +30,7 @@ void main() {
         final json = {
           "listingOpt": {"id": "foo", "name": "video games", "price": 100},
         };
-        final result = GetListingOptResponse.fromJson(json, null);
+        final result = GetListingOptResponse.fromJson(json);
         expect(result.listingOpt?.id, "foo");
         expect(result.listingOpt?.name, "video games");
         expect(result.listingOpt?.price, 100);
@@ -38,7 +38,7 @@ void main() {
 
       test('null value', () {
         final json = {"listingOpt": null};
-        final result = GetListingOptResponse.fromJson(json, null);
+        final result = GetListingOptResponse.fromJson(json);
         expect(result.listingOpt, null);
       });
     });
@@ -48,14 +48,14 @@ void main() {
         final data = {
           "listingOpt": {"id": "foo", "name": "video games", "price": 100},
         };
-        final initial = GetListingOptResponse.fromJson(data, null);
+        final initial = GetListingOptResponse.fromJson(data);
         final json = initial.toJson();
         expect(json, data);
       });
 
       test('null value', () {
         final data = {"listingOpt": null};
-        final initial = GetListingOptResponse.fromJson(data, null);
+        final initial = GetListingOptResponse.fromJson(data);
         final json = initial.toJson();
         expect(json, data);
       });

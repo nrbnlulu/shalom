@@ -8,139 +8,57 @@ void main() {
     test('ListofScalarsRequired', () {
       final result = ListofScalarsRequiredResponse.fromJson({
         'listOfScalarsRequired': ['hello', 'world', 'test'],
-      }, null);
+      });
       expect(result.listOfScalarsRequired, ['hello', 'world', 'test']);
     });
 
     test('ListofScalarsRequired with empty list', () {
       final result = ListofScalarsRequiredResponse.fromJson({
         'listOfScalarsRequired': [],
-      }, null);
+      });
       expect(result.listOfScalarsRequired, []);
     });
 
     test('ListOfScalarsOptional', () {
       final result = ListOfScalarsOptionalResponse.fromJson({
         'listOfScalarsOptional': ['hello', 'world', 'test'],
-      }, null);
+      });
       expect(result.listOfScalarsOptional, ['hello', 'world', 'test']);
     });
 
     test('ListOfScalarsOptional with null', () {
       final result = ListOfScalarsOptionalResponse.fromJson({
         'listOfScalarsOptional': null,
-      }, null);
+      });
       expect(result.listOfScalarsOptional, isNull);
     });
 
     test('ListOfScalarsOptional with empty list', () {
       final result = ListOfScalarsOptionalResponse.fromJson({
         'listOfScalarsOptional': [],
-      }, null);
+      });
       expect(result.listOfScalarsOptional, []);
     });
 
     test('ListOfOptionalScalarsOptional', () {
       final result = ListOfOptionalScalarsOptionalResponse.fromJson({
         'listOfOptionalScalarsOptional': [1, 2, 3],
-      }, null);
+      });
       expect(result.listOfOptionalScalarsOptional, [1, 2, 3]);
     });
 
     test('ListOfOptionalScalarsOptional with null', () {
       final result = ListOfOptionalScalarsOptionalResponse.fromJson({
         'listOfOptionalScalarsOptional': null,
-      }, null);
+      });
       expect(result.listOfOptionalScalarsOptional, isNull);
     });
 
     test('ListOfOptionalScalarsOptional with empty list', () {
       final result = ListOfOptionalScalarsOptionalResponse.fromJson({
         'listOfOptionalScalarsOptional': [],
-      }, null);
+      });
       expect(result.listOfOptionalScalarsOptional, []);
-    });
-  });
-
-  group("List of Scalars updateWithJson", () {
-    test("ListofScalarsRequired", () {
-      final initial = ListofScalarsRequiredResponse(
-        listOfScalarsRequired: ["hello", "world"],
-      );
-      final updated = initial.updateWithJson({
-        'listOfScalarsRequired': ['foo', 'bar', 'baz'],
-      });
-      expect(updated.listOfScalarsRequired, ['foo', 'bar', 'baz']);
-      expect(initial, isNot(updated));
-    });
-
-    test("ListofScalarsRequired without update", () {
-      final initial = ListofScalarsRequiredResponse(
-        listOfScalarsRequired: ["hello", "world"],
-      );
-      final updated = initial.updateWithJson({});
-      expect(updated.listOfScalarsRequired, ["hello", "world"]);
-      expect(initial, updated);
-    });
-
-    test("ListOfScalarsOptional", () {
-      final initial = ListOfScalarsOptionalResponse(
-        listOfScalarsOptional: ["hello", "world"],
-      );
-      final updated = initial.updateWithJson({
-        'listOfScalarsOptional': ['foo', 'bar', 'baz'],
-      });
-      expect(updated.listOfScalarsOptional, ['foo', 'bar', 'baz']);
-      expect(initial, isNot(updated));
-    });
-
-    test("ListOfScalarsOptional with null", () {
-      final initial = ListOfScalarsOptionalResponse(
-        listOfScalarsOptional: ["hello", "world"],
-      );
-      final updated = initial.updateWithJson({'listOfScalarsOptional': null});
-      expect(updated.listOfScalarsOptional, isNull);
-      expect(initial, isNot(updated));
-    });
-
-    test("ListOfScalarsOptional without update", () {
-      final initial = ListOfScalarsOptionalResponse(
-        listOfScalarsOptional: ["hello", "world"],
-      );
-      final updated = initial.updateWithJson({});
-      expect(updated.listOfScalarsOptional, ["hello", "world"]);
-      expect(initial, updated);
-    });
-
-    test("ListOfOptionalScalarsOptional", () {
-      final initial = ListOfOptionalScalarsOptionalResponse(
-        listOfOptionalScalarsOptional: [1, 2, 3],
-      );
-      final updated = initial.updateWithJson({
-        'listOfOptionalScalarsOptional': [4, 5, 6],
-      });
-      expect(updated.listOfOptionalScalarsOptional, [4, 5, 6]);
-      expect(initial, isNot(updated));
-    });
-
-    test("ListOfOptionalScalarsOptional with null", () {
-      final initial = ListOfOptionalScalarsOptionalResponse(
-        listOfOptionalScalarsOptional: [1, 2, 3],
-      );
-      final updated = initial.updateWithJson({
-        'listOfOptionalScalarsOptional': null,
-      });
-      expect(updated.listOfOptionalScalarsOptional, isNull);
-      expect(initial, isNot(updated));
-    });
-
-    test("ListOfOptionalScalarsOptional without update", () {
-      final initial = ListOfOptionalScalarsOptionalResponse(
-        listOfOptionalScalarsOptional: [1, 2, 3],
-      );
-      final updated = initial.updateWithJson({});
-      expect(updated.listOfOptionalScalarsOptional, [1, 2, 3]);
-      expect(initial, updated);
     });
   });
 

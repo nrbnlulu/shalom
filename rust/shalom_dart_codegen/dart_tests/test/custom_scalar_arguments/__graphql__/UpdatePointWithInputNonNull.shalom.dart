@@ -28,7 +28,7 @@ class UpdatePointWithInputNonNullResponse {
             ? null
             : UpdatePointWithInputNonNull_updatePointWithInput.fromJson(
               updatePointWithInput$raw,
-              context,
+              context: context,
             );
 
     return UpdatePointWithInputNonNullResponse(

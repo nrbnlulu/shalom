@@ -24,7 +24,7 @@ class RequiredArgumentsResponse {
     product_value =
         product$raw == null
             ? null
-            : RequiredArguments_product.fromJson(product$raw, context);
+            : RequiredArguments_product.fromJson(product$raw, context: context);
 
     return RequiredArgumentsResponse(product: product_value);
   }

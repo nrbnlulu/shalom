@@ -24,7 +24,7 @@ class OptionalWithSomeDefaultResponse {
     task_value =
         task$raw == null
             ? null
-            : OptionalWithSomeDefault_task.fromJson(task$raw, context);
+            : OptionalWithSomeDefault_task.fromJson(task$raw, context: context);
 
     return OptionalWithSomeDefaultResponse(task: task_value);
   }

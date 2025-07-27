@@ -15,11 +15,13 @@ class GetListingResponse {
 
   // keywordargs constructor
   GetListingResponse({required this.listing});
-  static GetListingResponse fromJson(JsonObject data, ShalomContext? context) {
+  static GetListingResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final GetListing_listing listing_value;
     final listing$raw = data["listing"];
-
-    listing_value = GetListing_listing.fromJson(listing$raw, context);
+    listing_value = GetListing_listing.fromJson(listing$raw, context: context);
 
     return GetListingResponse(listing: listing_value);
   }
@@ -51,20 +53,20 @@ class GetListing_listing {
 
   // keywordargs constructor
   GetListing_listing({required this.id, required this.name, this.price});
-  static GetListing_listing fromJson(JsonObject data, ShalomContext? context) {
+  static GetListing_listing fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final int? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as int?;
 
     return GetListing_listing(

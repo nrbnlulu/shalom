@@ -27,7 +27,7 @@ class UpdatePointCoordsNonNullResponse {
             ? null
             : UpdatePointCoordsNonNull_updatePointCoords.fromJson(
               updatePointCoords$raw,
-              context,
+              context: context,
             );
 
     return UpdatePointCoordsNonNullResponse(

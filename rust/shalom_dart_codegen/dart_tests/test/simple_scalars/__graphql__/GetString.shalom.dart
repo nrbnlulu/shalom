@@ -15,10 +15,9 @@ class GetStringResponse {
 
   // keywordargs constructor
   GetStringResponse({required this.string});
-  static GetStringResponse fromJson(JsonObject data, ShalomContext? context) {
+  static GetStringResponse fromJson(JsonObject data, {ShalomContext? context}) {
     final String string_value;
     final string$raw = data["string"];
-
     string_value = string$raw as String;
 
     return GetStringResponse(string: string_value);

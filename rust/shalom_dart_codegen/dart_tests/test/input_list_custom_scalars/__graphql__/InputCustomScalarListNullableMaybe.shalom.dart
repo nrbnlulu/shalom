@@ -32,7 +32,7 @@ class InputCustomScalarListNullableMaybeResponse {
             ? null
             : InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
               InputCustomScalarListNullableMaybe$raw,
-              context,
+              context: context,
             );
 
     return InputCustomScalarListNullableMaybeResponse(

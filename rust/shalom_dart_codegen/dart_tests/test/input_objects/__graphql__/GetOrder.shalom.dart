@@ -21,7 +21,7 @@ class GetOrderResponse {
     getOrder_value =
         getOrder$raw == null
             ? null
-            : GetOrder_getOrder.fromJson(getOrder$raw, context);
+            : GetOrder_getOrder.fromJson(getOrder$raw, context: context);
 
     return GetOrderResponse(getOrder: getOrder_value);
   }

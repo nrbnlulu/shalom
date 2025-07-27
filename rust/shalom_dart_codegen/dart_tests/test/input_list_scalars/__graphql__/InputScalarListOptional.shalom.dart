@@ -27,7 +27,7 @@ class InputScalarListOptionalResponse {
             ? null
             : InputScalarListOptional_InputScalarListOptional.fromJson(
               InputScalarListOptional$raw,
-              context,
+              context: context,
             );
 
     return InputScalarListOptionalResponse(

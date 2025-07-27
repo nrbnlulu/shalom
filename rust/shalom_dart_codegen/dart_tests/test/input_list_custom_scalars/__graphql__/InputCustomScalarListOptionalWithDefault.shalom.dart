@@ -32,7 +32,7 @@ class InputCustomScalarListOptionalWithDefaultResponse {
             ? null
             : InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault.fromJson(
               InputCustomScalarListOptionalWithDefault$raw,
-              context,
+              context: context,
             );
 
     return InputCustomScalarListOptionalWithDefaultResponse(

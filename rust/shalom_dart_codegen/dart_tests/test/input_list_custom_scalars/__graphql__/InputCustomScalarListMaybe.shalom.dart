@@ -29,7 +29,7 @@ class InputCustomScalarListMaybeResponse {
             ? null
             : InputCustomScalarListMaybe_InputCustomScalarListMaybe.fromJson(
               InputCustomScalarListMaybe$raw,
-              context,
+              context: context,
             );
 
     return InputCustomScalarListMaybeResponse(

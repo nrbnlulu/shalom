@@ -16,12 +16,11 @@ class ListOfScalarsOptionalResponse {
   // keywordargs constructor
   ListOfScalarsOptionalResponse({this.listOfScalarsOptional});
   static ListOfScalarsOptionalResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final List<String>? listOfScalarsOptional_value;
     final listOfScalarsOptional$raw = data["listOfScalarsOptional"];
-
     listOfScalarsOptional_value =
         listOfScalarsOptional$raw == null
             ? null

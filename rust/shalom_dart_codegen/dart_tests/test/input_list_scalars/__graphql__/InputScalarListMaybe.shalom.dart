@@ -26,7 +26,7 @@ class InputScalarListMaybeResponse {
             ? null
             : InputScalarListMaybe_InputScalarListMaybe.fromJson(
               InputScalarListMaybe$raw,
-              context,
+              context: context,
             );
 
     return InputScalarListMaybeResponse(

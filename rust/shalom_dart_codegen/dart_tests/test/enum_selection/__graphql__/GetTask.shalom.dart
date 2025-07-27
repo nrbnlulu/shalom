@@ -15,11 +15,10 @@ class GetTaskResponse {
 
   // keywordargs constructor
   GetTaskResponse({required this.task});
-  static GetTaskResponse fromJson(JsonObject data, ShalomContext? context) {
+  static GetTaskResponse fromJson(JsonObject data, {ShalomContext? context}) {
     final GetTask_task task_value;
     final task$raw = data["task"];
-
-    task_value = GetTask_task.fromJson(task$raw, context);
+    task_value = GetTask_task.fromJson(task$raw, context: context);
 
     return GetTaskResponse(task: task_value);
   }
@@ -51,20 +50,17 @@ class GetTask_task {
 
   // keywordargs constructor
   GetTask_task({required this.id, required this.name, required this.status});
-  static GetTask_task fromJson(JsonObject data, ShalomContext? context) {
+  static GetTask_task fromJson(JsonObject data, {ShalomContext? context}) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final Status status_value;
     final status$raw = data["status"];
-
     status_value = Status.fromString(status$raw);
 
     return GetTask_task(id: id_value, name: name_value, status: status_value);

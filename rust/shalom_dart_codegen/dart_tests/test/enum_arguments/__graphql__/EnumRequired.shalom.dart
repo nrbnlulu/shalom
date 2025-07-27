@@ -26,7 +26,7 @@ class EnumRequiredResponse {
             ? null
             : EnumRequired_updateOrderStatus.fromJson(
               updateOrderStatus$raw,
-              context,
+              context: context,
             );
 
     return EnumRequiredResponse(updateOrderStatus: updateOrderStatus_value);

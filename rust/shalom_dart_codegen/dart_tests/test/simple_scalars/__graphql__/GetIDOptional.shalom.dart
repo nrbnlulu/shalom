@@ -16,12 +16,11 @@ class GetIDOptionalResponse {
   // keywordargs constructor
   GetIDOptionalResponse({this.idOptional});
   static GetIDOptionalResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String? idOptional_value;
     final idOptional$raw = data["idOptional"];
-
     idOptional_value = idOptional$raw as String?;
 
     return GetIDOptionalResponse(idOptional: idOptional_value);

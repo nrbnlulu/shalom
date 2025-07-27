@@ -16,14 +16,19 @@ class GetLocationResponse {
 
   // keywordargs constructor
   GetLocationResponse({this.getLocation});
-  static GetLocationResponse fromJson(JsonObject data, ShalomContext? context) {
+  static GetLocationResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final GetLocation_getLocation? getLocation_value;
     final getLocation$raw = data["getLocation"];
-
     getLocation_value =
         getLocation$raw == null
             ? null
-            : GetLocation_getLocation.fromJson(getLocation$raw, context);
+            : GetLocation_getLocation.fromJson(
+              getLocation$raw,
+              context: context,
+            );
 
     return GetLocationResponse(getLocation: getLocation_value);
   }
@@ -54,17 +59,15 @@ class GetLocation_getLocation {
   // keywordargs constructor
   GetLocation_getLocation({required this.id, this.coords});
   static GetLocation_getLocation fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final uomtoe.Point? coords_value;
     final coords$raw = data["coords"];
-
     coords_value =
         coords$raw == null
             ? null

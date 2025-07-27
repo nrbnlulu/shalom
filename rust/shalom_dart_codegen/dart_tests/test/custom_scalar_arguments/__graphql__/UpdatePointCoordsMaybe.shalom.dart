@@ -28,7 +28,7 @@ class UpdatePointCoordsMaybeResponse {
             ? null
             : UpdatePointCoordsMaybe_updatePointCoordsMaybe.fromJson(
               updatePointCoordsMaybe$raw,
-              context,
+              context: context,
             );
 
     return UpdatePointCoordsMaybeResponse(

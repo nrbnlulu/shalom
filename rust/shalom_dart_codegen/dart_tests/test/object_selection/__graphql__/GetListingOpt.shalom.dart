@@ -16,16 +16,18 @@ class GetListingOptResponse {
   // keywordargs constructor
   GetListingOptResponse({this.listingOpt});
   static GetListingOptResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final GetListingOpt_listingOpt? listingOpt_value;
     final listingOpt$raw = data["listingOpt"];
-
     listingOpt_value =
         listingOpt$raw == null
             ? null
-            : GetListingOpt_listingOpt.fromJson(listingOpt$raw, context);
+            : GetListingOpt_listingOpt.fromJson(
+              listingOpt$raw,
+              context: context,
+            );
 
     return GetListingOptResponse(listingOpt: listingOpt_value);
   }
@@ -58,22 +60,19 @@ class GetListingOpt_listingOpt {
   // keywordargs constructor
   GetListingOpt_listingOpt({required this.id, required this.name, this.price});
   static GetListingOpt_listingOpt fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final int? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as int?;
 
     return GetListingOpt_listingOpt(

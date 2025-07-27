@@ -32,7 +32,7 @@ class UpdatePointWithInputCoordsMaybeResponse {
             ? null
             : UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe.fromJson(
               updatePointWithInputCoordsMaybe$raw,
-              context,
+              context: context,
             );
 
     return UpdatePointWithInputCoordsMaybeResponse(

@@ -30,7 +30,7 @@ class InputCustomScalarListRequiredResponse {
             ? null
             : InputCustomScalarListRequired_InputCustomScalarListRequired.fromJson(
               InputCustomScalarListRequired$raw,
-              context,
+              context: context,
             );
 
     return InputCustomScalarListRequiredResponse(

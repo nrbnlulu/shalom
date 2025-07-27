@@ -15,10 +15,9 @@ class GetFloatResponse {
 
   // keywordargs constructor
   GetFloatResponse({required this.float});
-  static GetFloatResponse fromJson(JsonObject data, ShalomContext? context) {
+  static GetFloatResponse fromJson(JsonObject data, {ShalomContext? context}) {
     final double float_value;
     final float$raw = data["float"];
-
     float_value = float$raw as double;
 
     return GetFloatResponse(float: float_value);

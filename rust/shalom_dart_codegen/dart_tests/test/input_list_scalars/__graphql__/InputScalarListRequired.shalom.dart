@@ -27,7 +27,7 @@ class InputScalarListRequiredResponse {
             ? null
             : InputScalarListRequired_InputScalarListRequired.fromJson(
               InputScalarListRequired$raw,
-              context,
+              context: context,
             );
 
     return InputScalarListRequiredResponse(

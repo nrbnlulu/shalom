@@ -27,7 +27,7 @@ class InputListObjectsMAybeResponse {
             ? null
             : InputListObjectsMAybe_InputListObjectsMAybe.fromJson(
               InputListObjectsMAybe$raw,
-              context,
+              context: context,
             );
 
     return InputListObjectsMAybeResponse(

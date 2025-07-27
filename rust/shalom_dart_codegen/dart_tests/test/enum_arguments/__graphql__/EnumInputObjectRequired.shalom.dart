@@ -26,7 +26,7 @@ class EnumInputObjectRequiredResponse {
             ? null
             : EnumInputObjectRequired_updateOrder.fromJson(
               updateOrder$raw,
-              context,
+              context: context,
             );
 
     return EnumInputObjectRequiredResponse(updateOrder: updateOrder_value);

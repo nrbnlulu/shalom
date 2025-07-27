@@ -27,7 +27,7 @@ class EnumInputObjectOptionalResponse {
             ? null
             : EnumInputObjectOptional_updateOrderWithStatusOpt.fromJson(
               updateOrderWithStatusOpt$raw,
-              context,
+              context: context,
             );
 
     return EnumInputObjectOptionalResponse(

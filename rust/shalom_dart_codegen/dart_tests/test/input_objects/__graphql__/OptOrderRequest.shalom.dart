@@ -26,7 +26,7 @@ class OptOrderRequestResponse {
             ? null
             : OptOrderRequest_optOrderRequest.fromJson(
               optOrderRequest$raw,
-              context,
+              context: context,
             );
 
     return OptOrderRequestResponse(optOrderRequest: optOrderRequest_value);

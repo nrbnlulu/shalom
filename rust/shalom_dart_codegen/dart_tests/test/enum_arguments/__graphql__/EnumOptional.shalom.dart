@@ -26,7 +26,7 @@ class EnumOptionalResponse {
             ? null
             : EnumOptional_updateOrderStatusOpt.fromJson(
               updateOrderStatusOpt$raw,
-              context,
+              context: context,
             );
 
     return EnumOptionalResponse(

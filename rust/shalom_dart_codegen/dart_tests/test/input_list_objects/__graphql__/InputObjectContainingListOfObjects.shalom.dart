@@ -31,7 +31,7 @@ class InputObjectContainingListOfObjectsResponse {
             ? null
             : InputObjectContainingListOfObjects_InputObjectContainingListOfObjects.fromJson(
               InputObjectContainingListOfObjects$raw,
-              context,
+              context: context,
             );
 
     return InputObjectContainingListOfObjectsResponse(

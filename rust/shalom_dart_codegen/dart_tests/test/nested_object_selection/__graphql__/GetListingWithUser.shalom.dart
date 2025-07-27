@@ -16,13 +16,15 @@ class GetListingWithUserResponse {
   // keywordargs constructor
   GetListingWithUserResponse({required this.listing});
   static GetListingWithUserResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final GetListingWithUser_listing listing_value;
     final listing$raw = data["listing"];
-
-    listing_value = GetListingWithUser_listing.fromJson(listing$raw, context);
+    listing_value = GetListingWithUser_listing.fromJson(
+      listing$raw,
+      context: context,
+    );
 
     return GetListingWithUserResponse(listing: listing_value);
   }
@@ -65,28 +67,27 @@ class GetListingWithUser_listing {
     required this.user,
   });
   static GetListingWithUser_listing fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final int? price_value;
     final price$raw = data["price"];
-
     price_value = price$raw as int?;
 
     final GetListingWithUser_listing_user user_value;
     final user$raw = data["user"];
-
-    user_value = GetListingWithUser_listing_user.fromJson(user$raw, context);
+    user_value = GetListingWithUser_listing_user.fromJson(
+      user$raw,
+      context: context,
+    );
 
     return GetListingWithUser_listing(
       id: id_value,
@@ -147,27 +148,23 @@ class GetListingWithUser_listing_user {
     this.age,
   });
   static GetListingWithUser_listing_user fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
-
     name_value = name$raw as String;
 
     final String email_value;
     final email$raw = data["email"];
-
     email_value = email$raw as String;
 
     final int? age_value;
     final age$raw = data["age"];
-
     age_value = age$raw as int?;
 
     return GetListingWithUser_listing_user(

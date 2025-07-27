@@ -16,12 +16,11 @@ class GetStringOptionalResponse {
   // keywordargs constructor
   GetStringOptionalResponse({this.stringOptional});
   static GetStringOptionalResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String? stringOptional_value;
     final stringOptional$raw = data["stringOptional"];
-
     stringOptional_value = stringOptional$raw as String?;
 
     return GetStringOptionalResponse(stringOptional: stringOptional_value);

@@ -24,7 +24,10 @@ class OrderRequestResponse {
     orderRequest_value =
         orderRequest$raw == null
             ? null
-            : OrderRequest_orderRequest.fromJson(orderRequest$raw, context);
+            : OrderRequest_orderRequest.fromJson(
+              orderRequest$raw,
+              context: context,
+            );
 
     return OrderRequestResponse(orderRequest: orderRequest_value);
   }

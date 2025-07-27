@@ -32,7 +32,7 @@ class InputCustomScalarListInsideInputObjectResponse {
             ? null
             : InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject.fromJson(
               InputCustomScalarListInsideInputObject$raw,
-              context,
+              context: context,
             );
 
     return InputCustomScalarListInsideInputObjectResponse(

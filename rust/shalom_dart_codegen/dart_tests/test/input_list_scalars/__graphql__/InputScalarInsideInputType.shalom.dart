@@ -28,7 +28,7 @@ class InputScalarInsideInputTypeResponse {
             ? null
             : InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
               InputScalarInsideInputType$raw,
-              context,
+              context: context,
             );
 
     return InputScalarInsideInputTypeResponse(

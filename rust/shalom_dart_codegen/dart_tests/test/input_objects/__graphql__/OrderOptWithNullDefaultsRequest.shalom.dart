@@ -31,7 +31,7 @@ class OrderOptWithNullDefaultsRequestResponse {
             ? null
             : OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest.fromJson(
               orderOptWithNullDefaultsRequest$raw,
-              context,
+              context: context,
             );
 
     return OrderOptWithNullDefaultsRequestResponse(

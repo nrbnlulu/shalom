@@ -26,7 +26,7 @@ class OrderOptRequestResponse {
             ? null
             : OrderOptRequest_orderOptRequest.fromJson(
               orderOptRequest$raw,
-              context,
+              context: context,
             );
 
     return OrderOptRequestResponse(orderOptRequest: orderOptRequest_value);

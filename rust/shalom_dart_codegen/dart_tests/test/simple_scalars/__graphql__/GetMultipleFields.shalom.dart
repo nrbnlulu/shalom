@@ -18,17 +18,15 @@ class GetMultipleFieldsResponse {
   // keywordargs constructor
   GetMultipleFieldsResponse({required this.id, required this.intField});
   static GetMultipleFieldsResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     final int intField_value;
     final intField$raw = data["intField"];
-
     intField_value = intField$raw as int;
 
     return GetMultipleFieldsResponse(id: id_value, intField: intField_value);

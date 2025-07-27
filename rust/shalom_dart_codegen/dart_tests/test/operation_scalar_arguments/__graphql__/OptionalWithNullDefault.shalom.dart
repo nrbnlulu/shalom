@@ -26,7 +26,7 @@ class OptionalWithNullDefaultResponse {
             ? null
             : OptionalWithNullDefault_updateUser.fromJson(
               updateUser$raw,
-              context,
+              context: context,
             );
 
     return OptionalWithNullDefaultResponse(updateUser: updateUser_value);

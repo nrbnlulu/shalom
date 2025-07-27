@@ -15,10 +15,9 @@ class GetIDResponse {
 
   // keywordargs constructor
   GetIDResponse({required this.id});
-  static GetIDResponse fromJson(JsonObject data, ShalomContext? context) {
+  static GetIDResponse fromJson(JsonObject data, {ShalomContext? context}) {
     final String id_value;
     final id$raw = data["id"];
-
     id_value = id$raw as String;
 
     return GetIDResponse(id: id_value);

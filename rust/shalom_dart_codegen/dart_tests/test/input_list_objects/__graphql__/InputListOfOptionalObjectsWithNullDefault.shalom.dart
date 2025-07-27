@@ -31,7 +31,7 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
             ? null
             : InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault.fromJson(
               InputListOfOptionalObjectsWithNullDefault$raw,
-              context,
+              context: context,
             );
 
     return InputListOfOptionalObjectsWithNullDefaultResponse(

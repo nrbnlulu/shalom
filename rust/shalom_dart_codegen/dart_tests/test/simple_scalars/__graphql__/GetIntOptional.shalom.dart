@@ -16,12 +16,11 @@ class GetIntOptionalResponse {
   // keywordargs constructor
   GetIntOptionalResponse({this.intOptional});
   static GetIntOptionalResponse fromJson(
-    JsonObject data,
+    JsonObject data, {
     ShalomContext? context,
-  ) {
+  }) {
     final int? intOptional_value;
     final intOptional$raw = data["intOptional"];
-
     intOptional_value = intOptional$raw as int?;
 
     return GetIntOptionalResponse(intOptional: intOptional_value);
