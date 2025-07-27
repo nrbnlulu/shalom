@@ -52,24 +52,6 @@ query SubscribeToSomeNestedFields {
    }  
 }
 
-query SubscribeToAllFieldsWithNonNodeParent {
-    userInfoNotNode {
-        user {
-            id
-            name
-            email
-            age
-        }
-    }
-}
 
-query SubscribeToSomeFieldsWithNonNodeParent {
-    userInfoNotNode {
-        user {
-            id
-            name
-        }
-    }
-}
             
             

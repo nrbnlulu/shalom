@@ -8,56 +8,56 @@ void main() {
     test('ListofScalarsRequired', () {
       final result = ListofScalarsRequiredResponse.fromJson({
         'listOfScalarsRequired': ['hello', 'world', 'test'],
-      });
+      }, null);
       expect(result.listOfScalarsRequired, ['hello', 'world', 'test']);
     });
 
     test('ListofScalarsRequired with empty list', () {
       final result = ListofScalarsRequiredResponse.fromJson({
         'listOfScalarsRequired': [],
-      });
+      }, null);
       expect(result.listOfScalarsRequired, []);
     });
 
     test('ListOfScalarsOptional', () {
       final result = ListOfScalarsOptionalResponse.fromJson({
         'listOfScalarsOptional': ['hello', 'world', 'test'],
-      });
+      }, null);
       expect(result.listOfScalarsOptional, ['hello', 'world', 'test']);
     });
 
     test('ListOfScalarsOptional with null', () {
       final result = ListOfScalarsOptionalResponse.fromJson({
         'listOfScalarsOptional': null,
-      });
+      }, null);
       expect(result.listOfScalarsOptional, isNull);
     });
 
     test('ListOfScalarsOptional with empty list', () {
       final result = ListOfScalarsOptionalResponse.fromJson({
         'listOfScalarsOptional': [],
-      });
+      }, null);
       expect(result.listOfScalarsOptional, []);
     });
 
     test('ListOfOptionalScalarsOptional', () {
       final result = ListOfOptionalScalarsOptionalResponse.fromJson({
         'listOfOptionalScalarsOptional': [1, 2, 3],
-      });
+      }, null);
       expect(result.listOfOptionalScalarsOptional, [1, 2, 3]);
     });
 
     test('ListOfOptionalScalarsOptional with null', () {
       final result = ListOfOptionalScalarsOptionalResponse.fromJson({
         'listOfOptionalScalarsOptional': null,
-      });
+      }, null);
       expect(result.listOfOptionalScalarsOptional, isNull);
     });
 
     test('ListOfOptionalScalarsOptional with empty list', () {
       final result = ListOfOptionalScalarsOptionalResponse.fromJson({
         'listOfOptionalScalarsOptional': [],
-      });
+      }, null);
       expect(result.listOfOptionalScalarsOptional, []);
     });
   });

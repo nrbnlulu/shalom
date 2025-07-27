@@ -11,13 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class GetIntResponse {
   /// class members
 
-  final int intField;
+  int intField;
 
   // keywordargs constructor
   GetIntResponse({required this.intField});
   static GetIntResponse fromJson(JsonObject data, ShalomContext? context) {
     final int intField_value;
     final intField$raw = data["intField"];
+
     intField_value = intField$raw as int;
 
     return GetIntResponse(intField: intField_value);

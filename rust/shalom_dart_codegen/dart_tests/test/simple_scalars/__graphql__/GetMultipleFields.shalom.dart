@@ -11,9 +11,9 @@ typedef JsonObject = Map<String, dynamic>;
 class GetMultipleFieldsResponse {
   /// class members
 
-  final String id;
+  String id;
 
-  final int intField;
+  int intField;
 
   // keywordargs constructor
   GetMultipleFieldsResponse({required this.id, required this.intField});
@@ -23,10 +23,12 @@ class GetMultipleFieldsResponse {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final int intField_value;
     final intField$raw = data["intField"];
+
     intField_value = intField$raw as int;
 
     return GetMultipleFieldsResponse(id: id_value, intField: intField_value);

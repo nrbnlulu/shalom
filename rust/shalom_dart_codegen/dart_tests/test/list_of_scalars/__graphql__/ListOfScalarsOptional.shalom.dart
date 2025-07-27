@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 class ListOfScalarsOptionalResponse {
   /// class members
 
-  final List<String>? listOfScalarsOptional;
+  List<String>? listOfScalarsOptional;
 
   // keywordargs constructor
   ListOfScalarsOptionalResponse({this.listOfScalarsOptional});
@@ -21,6 +21,7 @@ class ListOfScalarsOptionalResponse {
   ) {
     final List<String>? listOfScalarsOptional_value;
     final listOfScalarsOptional$raw = data["listOfScalarsOptional"];
+
     listOfScalarsOptional_value =
         listOfScalarsOptional$raw == null
             ? null

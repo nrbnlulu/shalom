@@ -1,15 +1,10 @@
 type Query {
   user: User,
   userInfo: UserInfo
-  userInfoNotNode: UserInfoNotNode,
 }
 
 interface Node {
    id: ID!  
-}
-
-type UserInfoNotNode {
-   user: User!    
 }
 
 type User implements Node {

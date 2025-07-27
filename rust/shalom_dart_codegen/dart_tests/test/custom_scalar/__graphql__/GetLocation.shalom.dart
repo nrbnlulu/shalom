@@ -12,13 +12,14 @@ typedef JsonObject = Map<String, dynamic>;
 class GetLocationResponse {
   /// class members
 
-  final GetLocation_getLocation? getLocation;
+  GetLocation_getLocation? getLocation;
 
   // keywordargs constructor
   GetLocationResponse({this.getLocation});
   static GetLocationResponse fromJson(JsonObject data, ShalomContext? context) {
     final GetLocation_getLocation? getLocation_value;
     final getLocation$raw = data["getLocation"];
+
     getLocation_value =
         getLocation$raw == null
             ? null
@@ -46,9 +47,9 @@ class GetLocationResponse {
 class GetLocation_getLocation {
   /// class members
 
-  final String id;
+  String id;
 
-  final uomtoe.Point? coords;
+  uomtoe.Point? coords;
 
   // keywordargs constructor
   GetLocation_getLocation({required this.id, this.coords});
@@ -58,10 +59,12 @@ class GetLocation_getLocation {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final uomtoe.Point? coords_value;
     final coords$raw = data["coords"];
+
     coords_value =
         coords$raw == null
             ? null

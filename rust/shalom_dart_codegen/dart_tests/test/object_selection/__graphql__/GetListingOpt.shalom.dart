@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 class GetListingOptResponse {
   /// class members
 
-  final GetListingOpt_listingOpt? listingOpt;
+  GetListingOpt_listingOpt? listingOpt;
 
   // keywordargs constructor
   GetListingOptResponse({this.listingOpt});
@@ -21,6 +21,7 @@ class GetListingOptResponse {
   ) {
     final GetListingOpt_listingOpt? listingOpt_value;
     final listingOpt$raw = data["listingOpt"];
+
     listingOpt_value =
         listingOpt$raw == null
             ? null
@@ -48,11 +49,11 @@ class GetListingOptResponse {
 class GetListingOpt_listingOpt {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final int? price;
+  int? price;
 
   // keywordargs constructor
   GetListingOpt_listingOpt({required this.id, required this.name, this.price});
@@ -62,14 +63,17 @@ class GetListingOpt_listingOpt {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
+
     name_value = name$raw as String;
 
     final int? price_value;
     final price$raw = data["price"];
+
     price_value = price$raw as int?;
 
     return GetListingOpt_listingOpt(

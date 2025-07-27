@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 class GetTaskStatusOptResponse {
   /// class members
 
-  final GetTaskStatusOpt_task task;
+  GetTaskStatusOpt_task task;
 
   // keywordargs constructor
   GetTaskStatusOptResponse({required this.task});
@@ -21,6 +21,7 @@ class GetTaskStatusOptResponse {
   ) {
     final GetTaskStatusOpt_task task_value;
     final task$raw = data["task"];
+
     task_value = GetTaskStatusOpt_task.fromJson(task$raw, context);
 
     return GetTaskStatusOptResponse(task: task_value);
@@ -45,11 +46,11 @@ class GetTaskStatusOptResponse {
 class GetTaskStatusOpt_task {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final Status? statusOpt;
+  Status? statusOpt;
 
   // keywordargs constructor
   GetTaskStatusOpt_task({required this.id, required this.name, this.statusOpt});
@@ -59,14 +60,17 @@ class GetTaskStatusOpt_task {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
+
     name_value = name$raw as String;
 
     final Status? statusOpt_value;
     final statusOpt$raw = data["statusOpt"];
+
     statusOpt_value =
         statusOpt$raw == null ? null : Status.fromString(statusOpt$raw);
 

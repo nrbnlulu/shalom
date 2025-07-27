@@ -11,13 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class GetBooleanResponse {
   /// class members
 
-  final bool boolean;
+  bool boolean;
 
   // keywordargs constructor
   GetBooleanResponse({required this.boolean});
   static GetBooleanResponse fromJson(JsonObject data, ShalomContext? context) {
     final bool boolean_value;
     final boolean$raw = data["boolean"];
+
     boolean_value = boolean$raw as bool;
 
     return GetBooleanResponse(boolean: boolean_value);

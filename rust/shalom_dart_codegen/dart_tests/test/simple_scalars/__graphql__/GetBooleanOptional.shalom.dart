@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 class GetBooleanOptionalResponse {
   /// class members
 
-  final bool? booleanOptional;
+  bool? booleanOptional;
 
   // keywordargs constructor
   GetBooleanOptionalResponse({this.booleanOptional});
@@ -21,6 +21,7 @@ class GetBooleanOptionalResponse {
   ) {
     final bool? booleanOptional_value;
     final booleanOptional$raw = data["booleanOptional"];
+
     booleanOptional_value = booleanOptional$raw as bool?;
 
     return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);

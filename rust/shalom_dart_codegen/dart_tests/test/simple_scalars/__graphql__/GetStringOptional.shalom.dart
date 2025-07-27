@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 class GetStringOptionalResponse {
   /// class members
 
-  final String? stringOptional;
+  String? stringOptional;
 
   // keywordargs constructor
   GetStringOptionalResponse({this.stringOptional});
@@ -21,6 +21,7 @@ class GetStringOptionalResponse {
   ) {
     final String? stringOptional_value;
     final stringOptional$raw = data["stringOptional"];
+
     stringOptional_value = stringOptional$raw as String?;
 
     return GetStringOptionalResponse(stringOptional: stringOptional_value);

@@ -11,13 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class GetFloatResponse {
   /// class members
 
-  final double float;
+  double float;
 
   // keywordargs constructor
   GetFloatResponse({required this.float});
   static GetFloatResponse fromJson(JsonObject data, ShalomContext? context) {
     final double float_value;
     final float$raw = data["float"];
+
     float_value = float$raw as double;
 
     return GetFloatResponse(float: float_value);

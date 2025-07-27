@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 class GetListinOptWithUserOptResponse {
   /// class members
 
-  final GetListinOptWithUserOpt_listingOpt? listingOpt;
+  GetListinOptWithUserOpt_listingOpt? listingOpt;
 
   // keywordargs constructor
   GetListinOptWithUserOptResponse({this.listingOpt});
@@ -21,6 +21,7 @@ class GetListinOptWithUserOptResponse {
   ) {
     final GetListinOptWithUserOpt_listingOpt? listingOpt_value;
     final listingOpt$raw = data["listingOpt"];
+
     listingOpt_value =
         listingOpt$raw == null
             ? null
@@ -52,17 +53,18 @@ class GetListinOptWithUserOptResponse {
 class GetListinOptWithUserOpt_listingOpt {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final int? price;
+  int? price;
 
-  final GetListinOptWithUserOpt_listingOpt_userOpt? userOpt;
+  GetListinOptWithUserOpt_listingOpt_userOpt? userOpt;
 
   // keywordargs constructor
   GetListinOptWithUserOpt_listingOpt({
     required this.id,
+
     required this.name,
 
     this.price,
@@ -75,18 +77,22 @@ class GetListinOptWithUserOpt_listingOpt {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
+
     name_value = name$raw as String;
 
     final int? price_value;
     final price$raw = data["price"];
+
     price_value = price$raw as int?;
 
     final GetListinOptWithUserOpt_listingOpt_userOpt? userOpt_value;
     final userOpt$raw = data["userOpt"];
+
     userOpt_value =
         userOpt$raw == null
             ? null
@@ -135,13 +141,14 @@ class GetListinOptWithUserOpt_listingOpt {
 class GetListinOptWithUserOpt_listingOpt_userOpt {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
   // keywordargs constructor
   GetListinOptWithUserOpt_listingOpt_userOpt({
     required this.id,
+
     required this.name,
   });
   static GetListinOptWithUserOpt_listingOpt_userOpt fromJson(
@@ -150,10 +157,12 @@ class GetListinOptWithUserOpt_listingOpt_userOpt {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
+
     name_value = name$raw as String;
 
     return GetListinOptWithUserOpt_listingOpt_userOpt(

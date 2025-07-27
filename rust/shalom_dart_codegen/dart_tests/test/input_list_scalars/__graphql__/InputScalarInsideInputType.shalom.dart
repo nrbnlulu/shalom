@@ -1,142 +1,314 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import 'dart:async';
 
+
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 
+
+
+
 typedef JsonObject = Map<String, dynamic>;
 
+
+
+
 class InputScalarInsideInputTypeResponse {
-  /// class members
 
-  final InputScalarInsideInputType_InputScalarInsideInputType?
-  InputScalarInsideInputType;
-
-  // keywordargs constructor
-  InputScalarInsideInputTypeResponse({this.InputScalarInsideInputType});
-  static InputScalarInsideInputTypeResponse fromJson(
-    JsonObject data,
-    ShalomContext? context,
-  ) {
-    final InputScalarInsideInputType_InputScalarInsideInputType?
-    InputScalarInsideInputType_value;
-    final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
-    InputScalarInsideInputType_value =
-        InputScalarInsideInputType$raw == null
-            ? null
-            : InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
-              InputScalarInsideInputType$raw,
-              context,
-            );
-
+    /// class members
+    
+        
+        InputScalarInsideInputType_InputScalarInsideInputType? InputScalarInsideInputType;
+        
+    
+    // keywordargs constructor
+    InputScalarInsideInputTypeResponse({
+    
+        
+        
+        this.InputScalarInsideInputType,
+        
+    
+    });
+    static InputScalarInsideInputTypeResponse fromJson(JsonObject data, ShalomContext? context) {
+    
+        
+        final InputScalarInsideInputType_InputScalarInsideInputType? InputScalarInsideInputType_value;
+        final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
+        
+        InputScalarInsideInputType_value = 
+    
+       
+            InputScalarInsideInputType$raw == null ? null : InputScalarInsideInputType_InputScalarInsideInputType.fromJson(InputScalarInsideInputType$raw, context)
+         
+    
+;
+        
+    
     return InputScalarInsideInputTypeResponse(
-      InputScalarInsideInputType: InputScalarInsideInputType_value,
+    
+        
+        InputScalarInsideInputType: InputScalarInsideInputType_value,
+    
     );
-  }
-
-  @override
-  bool operator ==(Object other) {
+    }
+    
+   
+    
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is InputScalarInsideInputTypeResponse &&
-            other.InputScalarInsideInputType == InputScalarInsideInputType);
-  }
-
-  @override
-  int get hashCode => InputScalarInsideInputType.hashCode;
-
-  JsonObject toJson() {
+    (other is InputScalarInsideInputTypeResponse &&
+    
+        
+    
+        other.InputScalarInsideInputType == InputScalarInsideInputType
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        InputScalarInsideInputType.hashCode;
+    
+     
+    JsonObject toJson() {
     return {
-      'InputScalarInsideInputType': this.InputScalarInsideInputType?.toJson(),
+    
+        
+        'InputScalarInsideInputType':
+            
+                
+    
+        
+            this.InputScalarInsideInputType?.toJson()
+        
+    
+
+            
+        ,
+    
     };
-  }
+    }
+
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class InputScalarInsideInputType_InputScalarInsideInputType {
-  /// class members
 
-  final bool success;
-
-  // keywordargs constructor
-  InputScalarInsideInputType_InputScalarInsideInputType({
-    required this.success,
-  });
-  static InputScalarInsideInputType_InputScalarInsideInputType fromJson(
-    JsonObject data,
-    ShalomContext? context,
-  ) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
-
+    class InputScalarInsideInputType_InputScalarInsideInputType  {
+        
+    /// class members
+    
+        
+        bool success;
+        
+    
+    // keywordargs constructor
+    InputScalarInsideInputType_InputScalarInsideInputType({
+    
+        required
+        
+        this.success,
+        
+    
+    });
+    static InputScalarInsideInputType_InputScalarInsideInputType fromJson(JsonObject data, ShalomContext? context) {
+    
+        
+        final bool success_value;
+        final success$raw = data["success"];
+        
+        success_value = 
+    
+        
+            
+                success$raw as bool
+            
+        
+    
+;
+        
+    
     return InputScalarInsideInputType_InputScalarInsideInputType(
-      success: success_value,
+    
+        
+        success: success_value,
+    
     );
-  }
-
-  @override
-  bool operator ==(Object other) {
+    }
+    
+   
+    
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is InputScalarInsideInputType_InputScalarInsideInputType &&
-            other.success == success);
-  }
+    (other is InputScalarInsideInputType_InputScalarInsideInputType &&
+    
+        
+    
+        other.success == success
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        success.hashCode;
+    
+     
+    JsonObject toJson() {
+    return {
+    
+        
+        'success':
+            
+                
+    
+        
+            this.success
+        
+    
 
-  @override
-  int get hashCode => success.hashCode;
+            
+        ,
+    
+    };
+    }
 
-  JsonObject toJson() {
-    return {'success': this.success};
-  }
-}
+    }
+
 
 // ------------ END OBJECT DEFINITIONS -------------
 
+
 class RequestInputScalarInsideInputType extends Requestable {
-  final InputScalarInsideInputTypeVariables variables;
+    
+    final InputScalarInsideInputTypeVariables variables;
+    
 
-  RequestInputScalarInsideInputType({required this.variables});
+    RequestInputScalarInsideInputType(
+        
+        {
+            required this.variables,
+        }
+        
+    );
 
-  @override
-  Request toRequest() {
-    JsonObject variablesJson = variables.toJson();
-    return Request(
-      query: r"""mutation InputScalarInsideInputType($user: UserInput!) {
+    @override
+    Request toRequest() {
+        JsonObject variablesJson =  variables.toJson() ;
+        return Request(
+            query: r"""mutation InputScalarInsideInputType($user: UserInput!) {
   InputScalarInsideInputType(user: $user) {
     success
   }
 }""",
-      variables: variablesJson,
-      opType: OperationType.Mutation,
-      opName: 'InputScalarInsideInputType',
-    );
-  }
+            variables: variablesJson,
+            opType: OperationType.Mutation,
+            opName: 'InputScalarInsideInputType'
+        );
+    }
 }
 
+
 class InputScalarInsideInputTypeVariables {
-  final UserInput user;
+    
+    
+        final UserInput user;
+    
 
-  InputScalarInsideInputTypeVariables({required this.user});
+    InputScalarInsideInputTypeVariables (
+        
+            {
+            
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
+        
+            required this.user
+        ,
+    
+    
 
-    data["user"] = this.user.toJson();
+            }
+        
+    );
 
-    return data;
-  }
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  InputScalarInsideInputTypeVariables updateWith({UserInput? user}) {
-    final UserInput user$next;
+    
+    
+        data["user"] = 
+    
+        
+            this.user.toJson()
+        
+    
+;
+    
 
-    if (user != null) {
-      user$next = user;
-    } else {
-      user$next = this.user;
+
+        return data;
     }
 
-    return InputScalarInsideInputTypeVariables(user: user$next);
-  }
+    
+InputScalarInsideInputTypeVariables updateWith(
+    {
+        
+            
+                UserInput? user
+            
+            
+        
+    }
+) {
+    
+        final UserInput user$next;
+        
+            if (user != null) {
+                user$next = user;
+            } else {
+                user$next = this.user;
+            }
+        
+    
+    return InputScalarInsideInputTypeVariables(
+        
+            user: user$next
+            
+        
+    );
+}
+
+
 }

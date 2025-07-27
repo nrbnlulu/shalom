@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 class GetListingWithUserOptResponse {
   /// class members
 
-  final GetListingWithUserOpt_listing listing;
+  GetListingWithUserOpt_listing listing;
 
   // keywordargs constructor
   GetListingWithUserOptResponse({required this.listing});
@@ -21,6 +21,7 @@ class GetListingWithUserOptResponse {
   ) {
     final GetListingWithUserOpt_listing listing_value;
     final listing$raw = data["listing"];
+
     listing_value = GetListingWithUserOpt_listing.fromJson(
       listing$raw,
       context,
@@ -48,17 +49,18 @@ class GetListingWithUserOptResponse {
 class GetListingWithUserOpt_listing {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final int? price;
+  int? price;
 
-  final GetListingWithUserOpt_listing_userOpt? userOpt;
+  GetListingWithUserOpt_listing_userOpt? userOpt;
 
   // keywordargs constructor
   GetListingWithUserOpt_listing({
     required this.id,
+
     required this.name,
 
     this.price,
@@ -71,18 +73,22 @@ class GetListingWithUserOpt_listing {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
+
     name_value = name$raw as String;
 
     final int? price_value;
     final price$raw = data["price"];
+
     price_value = price$raw as int?;
 
     final GetListingWithUserOpt_listing_userOpt? userOpt_value;
     final userOpt$raw = data["userOpt"];
+
     userOpt_value =
         userOpt$raw == null
             ? null
@@ -131,9 +137,9 @@ class GetListingWithUserOpt_listing {
 class GetListingWithUserOpt_listing_userOpt {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
   // keywordargs constructor
   GetListingWithUserOpt_listing_userOpt({required this.id, required this.name});
@@ -143,10 +149,12 @@ class GetListingWithUserOpt_listing_userOpt {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
+
     name_value = name$raw as String;
 
     return GetListingWithUserOpt_listing_userOpt(

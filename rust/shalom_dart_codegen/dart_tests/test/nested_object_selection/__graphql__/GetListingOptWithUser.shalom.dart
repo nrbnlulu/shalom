@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 class GetListingOptWithUserResponse {
   /// class members
 
-  final GetListingOptWithUser_listingOpt? listingOpt;
+  GetListingOptWithUser_listingOpt? listingOpt;
 
   // keywordargs constructor
   GetListingOptWithUserResponse({this.listingOpt});
@@ -21,6 +21,7 @@ class GetListingOptWithUserResponse {
   ) {
     final GetListingOptWithUser_listingOpt? listingOpt_value;
     final listingOpt$raw = data["listingOpt"];
+
     listingOpt_value =
         listingOpt$raw == null
             ? null
@@ -52,20 +53,22 @@ class GetListingOptWithUserResponse {
 class GetListingOptWithUser_listingOpt {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final int? price;
+  int? price;
 
-  final GetListingOptWithUser_listingOpt_user user;
+  GetListingOptWithUser_listingOpt_user user;
 
   // keywordargs constructor
   GetListingOptWithUser_listingOpt({
     required this.id,
+
     required this.name,
 
     this.price,
+
     required this.user,
   });
   static GetListingOptWithUser_listingOpt fromJson(
@@ -74,18 +77,22 @@ class GetListingOptWithUser_listingOpt {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
+
     name_value = name$raw as String;
 
     final int? price_value;
     final price$raw = data["price"];
+
     price_value = price$raw as int?;
 
     final GetListingOptWithUser_listingOpt_user user_value;
     final user$raw = data["user"];
+
     user_value = GetListingOptWithUser_listingOpt_user.fromJson(
       user$raw,
       context,
@@ -131,18 +138,20 @@ class GetListingOptWithUser_listingOpt {
 class GetListingOptWithUser_listingOpt_user {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final String email;
+  String email;
 
-  final int? age;
+  int? age;
 
   // keywordargs constructor
   GetListingOptWithUser_listingOpt_user({
     required this.id,
+
     required this.name,
+
     required this.email,
 
     this.age,
@@ -153,18 +162,22 @@ class GetListingOptWithUser_listingOpt_user {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
+
     name_value = name$raw as String;
 
     final String email_value;
     final email$raw = data["email"];
+
     email_value = email$raw as String;
 
     final int? age_value;
     final age$raw = data["age"];
+
     age_value = age$raw as int?;
 
     return GetListingOptWithUser_listingOpt_user(

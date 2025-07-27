@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 class GetListingWithUserResponse {
   /// class members
 
-  final GetListingWithUser_listing listing;
+  GetListingWithUser_listing listing;
 
   // keywordargs constructor
   GetListingWithUserResponse({required this.listing});
@@ -21,6 +21,7 @@ class GetListingWithUserResponse {
   ) {
     final GetListingWithUser_listing listing_value;
     final listing$raw = data["listing"];
+
     listing_value = GetListingWithUser_listing.fromJson(listing$raw, context);
 
     return GetListingWithUserResponse(listing: listing_value);
@@ -45,20 +46,22 @@ class GetListingWithUserResponse {
 class GetListingWithUser_listing {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final int? price;
+  int? price;
 
-  final GetListingWithUser_listing_user user;
+  GetListingWithUser_listing_user user;
 
   // keywordargs constructor
   GetListingWithUser_listing({
     required this.id,
+
     required this.name,
 
     this.price,
+
     required this.user,
   });
   static GetListingWithUser_listing fromJson(
@@ -67,18 +70,22 @@ class GetListingWithUser_listing {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
+
     name_value = name$raw as String;
 
     final int? price_value;
     final price$raw = data["price"];
+
     price_value = price$raw as int?;
 
     final GetListingWithUser_listing_user user_value;
     final user$raw = data["user"];
+
     user_value = GetListingWithUser_listing_user.fromJson(user$raw, context);
 
     return GetListingWithUser_listing(
@@ -121,18 +128,20 @@ class GetListingWithUser_listing {
 class GetListingWithUser_listing_user {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final String email;
+  String email;
 
-  final int? age;
+  int? age;
 
   // keywordargs constructor
   GetListingWithUser_listing_user({
     required this.id,
+
     required this.name,
+
     required this.email,
 
     this.age,
@@ -143,18 +152,22 @@ class GetListingWithUser_listing_user {
   ) {
     final String id_value;
     final id$raw = data["id"];
+
     id_value = id$raw as String;
 
     final String name_value;
     final name$raw = data["name"];
+
     name_value = name$raw as String;
 
     final String email_value;
     final email$raw = data["email"];
+
     email_value = email$raw as String;
 
     final int? age_value;
     final age$raw = data["age"];
+
     age_value = age$raw as int?;
 
     return GetListingWithUser_listing_user(

@@ -106,7 +106,6 @@ void main() {
       final otherNodeData = {"id": "2", "name": "other user"};
       manager.parseNodeData(otherNodeData);
 
-      await pumpEventQueue();
       expect(initialUserNode.updateCounter, 0);
       expect(initialUserNode.toJson(), initialUserData);
     });
@@ -121,7 +120,6 @@ void main() {
 
       manager.parseNodeData(initialUserData);
 
-      await pumpEventQueue();
       expect(initialUserNode.updateCounter, 0);
       expect(initialUserNode.toJson(), {
         "id": initialUserData["id"],

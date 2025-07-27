@@ -11,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 class ListofScalarsRequiredResponse {
   /// class members
 
-  final List<String> listOfScalarsRequired;
+  List<String> listOfScalarsRequired;
 
   // keywordargs constructor
   ListofScalarsRequiredResponse({required this.listOfScalarsRequired});
@@ -21,6 +21,7 @@ class ListofScalarsRequiredResponse {
   ) {
     final List<String> listOfScalarsRequired_value;
     final listOfScalarsRequired$raw = data["listOfScalarsRequired"];
+
     listOfScalarsRequired_value =
         (listOfScalarsRequired$raw as List<dynamic>)
             .map((e) => e as String)
