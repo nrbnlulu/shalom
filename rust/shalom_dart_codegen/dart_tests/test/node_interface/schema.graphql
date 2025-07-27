@@ -1,36 +1,32 @@
-type Query {
-  user: User,
-  userInfo: UserInfo
-}
-
 interface Node {
    id: ID!  
+}
+
+type Address {
+  street: String!
+  city: String!
+  zipCode: String!
+}
+
+type Post implements Node {
+  id: ID!
+  title: String!
+  content: String!
 }
 
 type User implements Node {
   id: ID!
   name: String!
   email: String!
-  age: Int
+  age: Int!
+
+  address: Address
+
+  post: Post!
 }
 
-type Address implements Node {
-  id: ID!
-  street: String!,
-  city: String!
+type Query {
+  user(id: ID!): User
 }
-
-type UserInfo implements Node {
-  id: ID!,
-  user: User!,
-  address: Address!
-  order: Order!
-}
-
-type Order {
-  name: String!,
-  price: Int!
-}   
-
 
 

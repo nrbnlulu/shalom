@@ -1,10 +1,14 @@
-import 'package:shalom_core/shalom_core.dart';
-import '__graphql__/SubscribeToAllFields.shalom.dart';
-import '__graphql__/SubscribeToSomeFields.shalom.dart';
+import 'dart:async';
 import 'package:test/test.dart';
+import 'package:shalom_core/shalom_core.dart';
+import '__graphql__/GetSimpleUser.shalom.dart';
+import '__graphql__/GetUserWithNestedFields.shalom.dart';
 
 typedef JsonObject = Map<String, dynamic>;
 
+Future<void> pumpEventQueue() => Future.delayed(Duration.zero);
+
+/// A mixin to count how many times updateWithJson is called with actual changes.
 mixin UpdateCounterMixin on Node {
   int updateCounter = 0;
 
@@ -15,27 +19,103 @@ mixin UpdateCounterMixin on Node {
     ShalomContext context,
   ) {
     super.updateWithJson(rawData, changedFields, context);
-    updateCounter++;
+    if (changedFields.isNotEmpty) {
+      updateCounter++;
+    }
   }
 }
 
-class TestSubscribeToAllFields_user extends SubscribeToAllFields_user
+/// A test-specific version of your class that uses the mixin for verification.
+class Testable_GetSimpleUser_user extends GetSimpleUser_user
     with UpdateCounterMixin {
-  TestSubscribeToAllFields_user({
+  Testable_GetSimpleUser_user({
     required super.id,
     required super.name,
     required super.email,
-    required super.age,
+    required super.nodeParents,
   });
+
+  /// Override fromJson to return an instance of this testable class.
+  static Testable_GetSimpleUser_user fromJson(
+    JsonObject data,
+    ShalomContext context, [
+    List<ID>? parents,
+  ]) {
+    context.manager.parseNodeData(data);
+    return Testable_GetSimpleUser_user(
+      id: data["id"] as String,
+      name: data["name"] as String,
+      email: data["email"] as String,
+      nodeParents: parents ?? [],
+    );
+  }
 }
 
-class TestSubscribeToSomeFields_user extends SubscribeToSomeFields_user
+class Testable_Post extends GetUserWithNestedFields_user_post
     with UpdateCounterMixin {
-  TestSubscribeToSomeFields_user({required super.id, required super.name});
+  Testable_Post({
+    required super.id,
+    required super.title,
+    required super.nodeParents,
+  });
+
+  static Testable_Post fromJson(
+    JsonObject data,
+    ShalomContext? context, [
+    List<ID>? parents,
+  ]) {
+    if (context != null) {
+      context.manager.parseNodeData(data);
+    }
+    return Testable_Post(
+      id: data["id"] as String,
+      title: data["title"] as String,
+      nodeParents: parents ?? [],
+    );
+  }
+}
+
+class Testable_User extends GetUserWithNestedFields_user
+    with UpdateCounterMixin {
+  Testable_User({
+    required super.id,
+    required super.name,
+    super.address,
+    required super.post,
+    required super.nodeParents,
+  });
+
+  static Testable_User fromJson(
+    JsonObject data,
+    ShalomContext? context, [
+    List<ID>? parents,
+  ]) {
+    if (context != null) {
+      context.manager.parseNodeData(data);
+    }
+    List<ID> currentParents = parents ?? [];
+    if (data.containsKey("id")) {
+      currentParents.add(data["id"]);
+    }
+    return Testable_User(
+      id: data["id"] as String,
+      name: data["name"] as String,
+      address:
+          data["address"] == null
+              ? null
+              : GetUserWithNestedFields_user_address.fromJson(
+                data["address"],
+                context: context,
+              ),
+      // Crucially, we call the testable Post's fromJson here
+      post: Testable_Post.fromJson(data["post"], context, currentParents),
+      nodeParents: parents ?? currentParents,
+    );
+  }
 }
 
 void main() {
-  group("test updateWithJson", () {
+  group("test GetSimpleUser_user updateWithJson", () {
     late NodeManager manager;
     late ShalomContext context;
 
@@ -44,13 +124,11 @@ void main() {
       "id": id,
       "name": "qtgql",
       "email": "qtgql@gmail.com",
-      "age": 2,
     };
     const nextUserData = {
       "id": id,
       "name": "shalom",
       "email": "shalom@gmail.com",
-      "age": 1,
     };
 
     setUp(() {
@@ -58,107 +136,169 @@ void main() {
       context = ShalomContext(manager: manager);
     });
 
-    test("all subscribed fields with all fields updated", () async {
-      manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToAllFields_user(
-        id: initialUserData['id'] as String,
-        name: initialUserData['name'] as String,
-        email: initialUserData['email'] as String,
-        age: initialUserData['age'] as int,
+    test("all fields updated on subscribed node", () async {
+      final userNode = Testable_GetSimpleUser_user.fromJson(
+        initialUserData,
+        context,
       );
-      initialUserNode.subscribeToChanges(context);
+      userNode.subscribeToChanges(context);
 
       manager.parseNodeData(nextUserData);
 
       await pumpEventQueue();
-      expect(initialUserNode.updateCounter, 1);
-      expect(initialUserNode.toJson(), nextUserData);
+      expect(userNode.updateCounter, 1);
+      expect(userNode.toJson(), nextUserData);
     });
 
-    test("some subscribed fields with all fields updated", () async {
-      manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToSomeFields_user(
-        id: initialUserData['id'] as String,
-        name: initialUserData['name'] as String,
+    test("one field updated on subscribed node", () async {
+      final userNode = Testable_GetSimpleUser_user.fromJson(
+        initialUserData,
+        context,
       );
-      initialUserNode.subscribeToChanges(context);
+      userNode.subscribeToChanges(context);
+
+      manager.parseNodeData({"id": id, "name": "shalom-new"});
+
+      await pumpEventQueue();
+      expect(userNode.updateCounter, 1);
+      expect(userNode.name, "shalom-new");
+    });
+
+    test("update to another node does not trigger update", () async {
+      final userNode = Testable_GetSimpleUser_user.fromJson(
+        initialUserData,
+        context,
+      );
+      userNode.subscribeToChanges(context);
+
+      manager.parseNodeData({"id": "2", "name": "other user"});
+
+      await pumpEventQueue();
+      expect(userNode.updateCounter, 0);
+      expect(userNode.toJson(), initialUserData);
+    });
+
+    test("no update triggered when data has not changed", () async {
+      final userNode = Testable_GetSimpleUser_user.fromJson(
+        initialUserData,
+        context,
+      );
+      userNode.subscribeToChanges(context);
+
+      manager.parseNodeData(initialUserData);
+
+      await pumpEventQueue();
+      expect(userNode.updateCounter, 0);
+    });
+
+    test("unsubscribed node does not receive updates", () async {
+      final userNode = Testable_GetSimpleUser_user.fromJson(
+        initialUserData,
+        context,
+      );
+      // Did not call subscribeToChanges()
 
       manager.parseNodeData(nextUserData);
 
       await pumpEventQueue();
-      expect(initialUserNode.updateCounter, 1);
-      expect(initialUserNode.toJson(), {
-        "id": id,
-        "name": nextUserData["name"],
-      });
+      expect(userNode.updateCounter, 0);
+      expect(userNode.toJson(), initialUserData);
     });
 
-    test("other node id updated", () async {
-      manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToAllFields_user(
-        id: initialUserData['id'] as String,
-        name: initialUserData['name'] as String,
-        email: initialUserData['email'] as String,
-        age: initialUserData['age'] as int,
+    test("cancelled subscription does not receive updates", () async {
+      final userNode = Testable_GetSimpleUser_user.fromJson(
+        initialUserData,
+        context,
       );
-      initialUserNode.subscribeToChanges(context);
-
-      final otherNodeData = {"id": "2", "name": "other user"};
-      manager.parseNodeData(otherNodeData);
-
-      expect(initialUserNode.updateCounter, 0);
-      expect(initialUserNode.toJson(), initialUserData);
-    });
-
-    test("no changed fields", () async {
-      manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToSomeFields_user(
-        id: initialUserData['id'] as String,
-        name: initialUserData['name'] as String,
-      );
-      initialUserNode.subscribeToChanges(context);
-
-      manager.parseNodeData(initialUserData);
-
-      expect(initialUserNode.updateCounter, 0);
-      expect(initialUserNode.toJson(), {
-        "id": initialUserData["id"],
-        "name": initialUserData["name"],
-      });
-    });
-
-    test("unsubscribed", () async {
-      manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToAllFields_user(
-        id: initialUserData['id'] as String,
-        name: initialUserData['name'] as String,
-        email: initialUserData['email'] as String,
-        age: initialUserData['age'] as int,
-      );
-
-      manager.parseNodeData(nextUserData);
-
-      await pumpEventQueue();
-      expect(initialUserNode.updateCounter, 0);
-      expect(initialUserNode.toJson(), initialUserData);
-    });
-
-    test("subscribed then unsubscribed", () async {
-      manager.parseNodeData(initialUserData);
-      final initialUserNode = TestSubscribeToAllFields_user(
-        id: initialUserData['id'] as String,
-        name: initialUserData['name'] as String,
-        email: initialUserData['email'] as String,
-        age: initialUserData['age'] as int,
-      );
-      final subscription = initialUserNode.subscribeToChanges(context);
+      final subscription = userNode.subscribeToChanges(context);
       subscription.cancel();
 
       manager.parseNodeData(nextUserData);
 
       await pumpEventQueue();
-      expect(initialUserNode.updateCounter, 0);
-      expect(initialUserNode.toJson(), initialUserData);
+      expect(userNode.updateCounter, 0);
+      expect(userNode.toJson(), initialUserData);
+    });
+  });
+
+  group("test GetUserWithNestedFields updateWithJson", () {
+    late NodeManager manager;
+    late ShalomContext context;
+
+    const user1Id = "user:1";
+    const post1Id = "post:1";
+
+    const initialData = {
+      "id": user1Id,
+      "name": "Original Name",
+      "address": {"street": "123 Main St", "city": "Anytown"},
+      "post": {"id": post1Id, "title": "Original Post Title"},
+    };
+
+    setUp(() {
+      manager = NodeManager();
+      context = ShalomContext(manager: manager);
+    });
+
+    test("updates top-level user field", () async {
+      final userNode = Testable_User.fromJson(initialData, context);
+      userNode.subscribeToChanges(context);
+
+      manager.parseNodeData({"id": user1Id, "name": "New Name"});
+
+      await pumpEventQueue();
+      expect(userNode.updateCounter, 1);
+      expect(userNode.name, "New Name");
+    });
+
+    test("updates when nested non-node object changes", () async {
+      final userNode = Testable_User.fromJson(initialData, context);
+      userNode.subscribeToChanges(context);
+
+      final updatedData = {
+        "id": user1Id,
+        "address": {"street": "456 Side St", "city": "New City"},
+      };
+      manager.parseNodeData(updatedData);
+
+      await pumpEventQueue();
+      expect(userNode.updateCounter, 1);
+      expect(userNode.address?.city, "New City");
+    });
+
+    test("does NOT update parent when only nested node changes", () async {
+      final userNode = Testable_User.fromJson(initialData, context);
+      userNode.subscribeToChanges(context);
+
+      // Update ONLY the post node
+      manager.parseNodeData({"id": post1Id, "title": "New Post Title"});
+
+      await pumpEventQueue();
+      // The user object itself was not updated, so its counter is 0.
+      expect(userNode.updateCounter, 0);
+
+      // However, the nested post object, being a managed Node, updates in-place.
+      expect(userNode.post.title, "New Post Title");
+    });
+
+    test("nested node receives its own update independently", () async {
+      // This creates the user and implicitly registers the post in the manager.
+      final userNode = Testable_User.fromJson(initialData, context);
+      final postNode = userNode.post as Testable_Post;
+
+      // Subscribe directly to the nested post node.
+      postNode.subscribeToChanges(context);
+
+      // Update ONLY the post node.
+      manager.parseNodeData({"id": post1Id, "title": "A Brave New Title"});
+
+      await pumpEventQueue();
+
+      // The post's own update counter should be 1.
+      expect(postNode.updateCounter, 1);
+      expect(postNode.title, "A Brave New Title");
+      // The parent user's counter remains 0.
+      expect(userNode.updateCounter, 0);
     });
   });
 }

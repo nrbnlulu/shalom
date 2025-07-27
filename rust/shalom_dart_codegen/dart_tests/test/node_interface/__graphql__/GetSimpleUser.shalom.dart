@@ -37,50 +37,48 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 
-class SubscribeToAllFieldsResponse {
+class GetSimpleUserResponse {
 
     /// class members
     
         
-        SubscribeToAllFields_user? user;
+        GetSimpleUser_user? user;
         
     
     // keywordargs constructor
-    SubscribeToAllFieldsResponse({
+    GetSimpleUserResponse({
     
         
         
         this.user,
         
     
+    
     });
-    static SubscribeToAllFieldsResponse fromJson(JsonObject data, ShalomContext? context) {
+    static GetSimpleUserResponse fromJson(JsonObject data, {ShalomContext? context, List<ID>? parents}) {
+    final localParents = parents ?? [];   
+    List<ID> currentParents = [...localParents];
+    if (data.containsKey('id')) {
+        currentParents.add(data['id']);
+    }    
+    
     
         
-        final SubscribeToAllFields_user? user_value;
+        final GetSimpleUser_user? user_value;
         final user$raw = data["user"];
-        
         user_value = 
     
        
-            user$raw == null ? null : SubscribeToAllFields_user.fromJson(user$raw, context)
+            user$raw == null ? null : GetSimpleUser_user.fromJson(user$raw, context, currentParents)
          
     
 ;
-        
-            if (context != null) {
-                   
-                if (user$raw != null) {
-                    context.manager.parseNodeData(user$raw);
-                }
-                
-            }
-        
     
-    return SubscribeToAllFieldsResponse(
+    return GetSimpleUserResponse(
     
         
         user: user_value,
+    
     
     );
     }
@@ -90,7 +88,7 @@ class SubscribeToAllFieldsResponse {
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is SubscribeToAllFieldsResponse &&
+    (other is GetSimpleUserResponse &&
     
         
     
@@ -130,7 +128,7 @@ class SubscribeToAllFieldsResponse {
 // ------------ OBJECT DEFINITIONS -------------
 
 
-    class SubscribeToAllFields_user  extends Node  {
+    class GetSimpleUser_user  extends Node  {
         
     /// class members
     
@@ -144,12 +142,8 @@ class SubscribeToAllFieldsResponse {
         String email;
         
     
-        
-        int? age;
-        
-    
     // keywordargs constructor
-    SubscribeToAllFields_user({
+    GetSimpleUser_user({
     
         required
         
@@ -166,18 +160,25 @@ class SubscribeToAllFieldsResponse {
         this.email,
         
     
-        
-        
-        this.age,
-        
+    
+    required super.nodeParents
     
     });
-    static SubscribeToAllFields_user fromJson(JsonObject data, ShalomContext? context) {
+    static GetSimpleUser_user fromJson(JsonObject data, {ShalomContext? context, List<ID>? parents}) {
+    final localParents = parents ?? [];   
+    List<ID> currentParents = [...localParents];
+    if (data.containsKey('id')) {
+        currentParents.add(data['id']);
+    }    
+          
+        if (context != null) {
+            context.manager.parseNodeData(data);
+        }
+    
     
         
         final String id_value;
         final id$raw = data["id"];
-        
         id_value = 
     
         
@@ -187,12 +188,10 @@ class SubscribeToAllFieldsResponse {
         
     
 ;
-        
     
         
         final String name_value;
         final name$raw = data["name"];
-        
         name_value = 
     
         
@@ -202,12 +201,10 @@ class SubscribeToAllFieldsResponse {
         
     
 ;
-        
     
         
         final String email_value;
         final email$raw = data["email"];
-        
         email_value = 
     
         
@@ -217,24 +214,8 @@ class SubscribeToAllFieldsResponse {
         
     
 ;
-        
     
-        
-        final int? age_value;
-        final age$raw = data["age"];
-        
-        age_value = 
-    
-        
-            
-                age$raw as int?
-            
-        
-    
-;
-        
-    
-    return SubscribeToAllFields_user(
+    return GetSimpleUser_user(
     
         
         id: id_value,
@@ -245,8 +226,8 @@ class SubscribeToAllFieldsResponse {
         
         email: email_value,
     
-        
-        age: age_value,
+    
+    nodeParents: currentParents
     
     );
     }
@@ -264,9 +245,6 @@ class SubscribeToAllFieldsResponse {
                    
                     
                     'email',
-                   
-                    
-                    'age',
                 
                 }, context 
             );
@@ -274,35 +252,50 @@ class SubscribeToAllFieldsResponse {
 
          @override
          void updateWithJson(JsonObject rawData, Set<String> changedFields, ShalomContext context) {
+            final currentParents = [...nodeParents, id];
             for (final fieldName in changedFields) {
                 switch (fieldName) {
                     
                          
                          case 'id':
-                            
-                                id = rawData['id'];
-                            
+                            final id$raw = rawData['id'];
+                            id = 
+    
+        
+            
+                id$raw as String
+            
+        
+    
+;
                             break;
                     
                          
                          case 'name':
-                            
-                                name = rawData['name'];
-                            
+                            final name$raw = rawData['name'];
+                            name = 
+    
+        
+            
+                name$raw as String
+            
+        
+    
+;
                             break;
                     
                          
                          case 'email':
-                            
-                                email = rawData['email'];
-                            
-                            break;
-                    
-                         
-                         case 'age':
-                            
-                                age = rawData['age'];
-                            
+                            final email$raw = rawData['email'];
+                            email = 
+    
+        
+            
+                email$raw as String
+            
+        
+    
+;
                             break;
                     
                 }
@@ -314,7 +307,7 @@ class SubscribeToAllFieldsResponse {
     @override
     bool operator ==(Object other) {
     return identical(this, other) ||
-    (other is SubscribeToAllFields_user &&
+    (other is GetSimpleUser_user &&
     
         
     
@@ -331,12 +324,6 @@ class SubscribeToAllFieldsResponse {
         
     
         other.email == email
-    
- &&
-    
-        
-    
-        other.age == age
     
  
     
@@ -355,9 +342,6 @@ class SubscribeToAllFieldsResponse {
         
             
             email,
-        
-            
-            age,
         
         ]);
     
@@ -404,19 +388,6 @@ class SubscribeToAllFieldsResponse {
             
         ,
     
-        
-        'age':
-            
-                
-    
-        
-            this.age
-        
-    
-
-            
-        ,
-    
     };
     }
 
@@ -426,29 +397,105 @@ class SubscribeToAllFieldsResponse {
 // ------------ END OBJECT DEFINITIONS -------------
 
 
-class RequestSubscribeToAllFields extends Requestable {
+class RequestGetSimpleUser extends Requestable {
+    
+    final GetSimpleUserVariables variables;
     
 
-    RequestSubscribeToAllFields(
+    RequestGetSimpleUser(
+        
+        {
+            required this.variables,
+        }
         
     );
 
     @override
     Request toRequest() {
-        JsonObject variablesJson =  {}  ;
+        JsonObject variablesJson =  variables.toJson() ;
         return Request(
-            query: r"""query SubscribeToAllFields {
-  user {
+            query: r"""query GetSimpleUser($userId: ID!) {
+  user(id: $userId) {
     id
     name
     email
-    age
   }
 }""",
             variables: variablesJson,
             opType: OperationType.Query,
-            opName: 'SubscribeToAllFields'
+            opName: 'GetSimpleUser'
         );
     }
 }
 
+
+class GetSimpleUserVariables {
+    
+    
+        final String userId;
+    
+
+    GetSimpleUserVariables (
+        
+            {
+            
+
+    
+        
+            required this.userId
+        ,
+    
+    
+
+            }
+        
+    );
+
+    JsonObject toJson() {
+        JsonObject data = {};
+        
+
+    
+    
+        data["userId"] = 
+    
+        this.userId
+    
+;
+    
+
+
+        return data;
+    }
+
+    
+GetSimpleUserVariables updateWith(
+    {
+        
+            
+                String? userId
+            
+            
+        
+    }
+) {
+    
+        final String userId$next;
+        
+            if (userId != null) {
+                userId$next = userId;
+            } else {
+                userId$next = this.userId;
+            }
+        
+    
+    return GetSimpleUserVariables(
+        
+            userId: userId$next
+            
+        
+    );
+}
+
+
+}

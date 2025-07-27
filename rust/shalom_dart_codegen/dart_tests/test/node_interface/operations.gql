@@ -1,57 +1,25 @@
-query SubscribeToAllFields {
-    user {
-        id    
-        name 
-        email
-        age
+
+query GetSimpleUser($userId: ID!) {
+  user(id: $userId) {
+    id
+    name
+    email
+  }
+}
+
+query GetUserWithNestedFields($userId: ID!) {
+  user(id: $userId) {
+    id
+    name
+    # Requesting fields from the nested 'address' object
+    address {
+      street
+      city
     }
-}
-
-query SubscribeToSomeFields {
-    user {
-        id
-        name
+    post {
+      id
+      title
     }
-}
-
-query SubscribeToAllNestedFields {
-   userInfo {
-       id
-       user {
-           id 
-           name
-           email
-           age
-       } 
-       address {
-          id
-          street
-          city
-       }
-       order {
-          name
-          price
-       }
-   }  
-}
-
-query SubscribeToSomeNestedFields {
-   userInfo {
-       id 
-       user {
-           id 
-           name
-       } 
-       address {
-          id
-          city
-       }
-       order {
-          name
-       }
-   }  
-}
-
-
-            
+  }
+}       
             

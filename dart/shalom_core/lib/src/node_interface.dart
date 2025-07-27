@@ -14,8 +14,9 @@ typedef ID = String;
 
 abstract class Node extends ChangeNotifier {
   int get instanceId => identityHashCode(this);
+  List<ID> nodeParents;
   ID id;
-  Node({required this.id});
+  Node({required this.id, required this.nodeParents});
   void updateWithJson(
       JsonObject rawData, Set<String> changedFields, ShalomContext context);
   JsonObject toJson();
@@ -83,6 +84,7 @@ class Event {
 class NodeManager {
   Map<ID, JsonObject> _rawStore = {};
   Map<ID, List<NodeSubscriber>> _subscriberStore = {};
+  Map<ID, Set<ID>> parentIds = {};
 
   Set<String> _getChangedFields(JsonObject currentData, JsonObject newData) {
     Set<String> changedFields = Set();
@@ -106,8 +108,10 @@ class NodeManager {
           if (changedFields
               .intersection(subscriber.subscribedFields)
               .isNotEmpty) {
-            subscriber.controller
-                .add(Event(rawData: newData, changedFields: changedFields));
+            subscriber.controller.add(Event(
+              rawData: newData,
+              changedFields: changedFields,
+            ));
           }
         }
       }
@@ -115,6 +119,24 @@ class NodeManager {
       _rawStore[id] = newData;
     }
   }
+
+  void notifyParents(Node node, JsonObject rawData) {
+    final parents = parentIds[node.id];
+    if (parents != null) {
+      for (final parentId in parents) {
+        final parentSubscribers = _subscriberStore[parentId];
+        if (parentSubscribers != null) {
+          for (final subscriber in parentSubscribers) {
+            subscriber.controller.add(Event(
+              rawData: _rawStore[parentId] ?? {},
+              changedFields: subscriber.subscribedFields,
+            ));
+          }
+        }
+      }
+    }
+
+  }  
 
   StreamSubscription<Event> register(
     Node node,
@@ -141,6 +163,9 @@ class NodeManager {
       nodeInstanceId: node.instanceId,
     );
     _subscriberStore.putIfAbsent(node.id, () => []).add(nodeSubscriber);
+    for (final parentId in node.nodeParents) {
+      parentIds.putIfAbsent(node.id, () => {}).add(parentId);
+    }
     return subscription;
   }
 }

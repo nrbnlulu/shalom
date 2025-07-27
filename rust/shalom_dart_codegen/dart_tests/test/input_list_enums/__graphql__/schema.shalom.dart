@@ -1,183 +1,89 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 import 'package:shalom_core/shalom_core.dart';
-
-
-
-
-
-
-
 
 // ------------ Enum DEFINITIONS -------------
 
-     
-     
-     enum Gender  {
-          
-                FEMALE ,
-          
-                MALE ,
-          
-                OTHER ;
-          
-          
-          static Gender fromString(String name) {
-              switch (name) {
-                  
-                  case 'FEMALE':
-                    return Gender.FEMALE;                   
-                  case 'MALE':
-                    return Gender.MALE;                   
-                  case 'OTHER':
-                    return Gender.OTHER;                   
-                  default:  
-                      throw ArgumentError.value(name, 'name', 'No Status enum member with this name');  
-              }
-          }
+enum Gender {
+  FEMALE,
 
-      }
+  MALE,
+
+  OTHER;
+
+  static Gender fromString(String name) {
+    switch (name) {
+      case 'FEMALE':
+        return Gender.FEMALE;
+      case 'MALE':
+        return Gender.MALE;
+      case 'OTHER':
+        return Gender.OTHER;
+      default:
+        throw ArgumentError.value(
+          name,
+          'name',
+          'No Status enum member with this name',
+        );
+    }
+  }
+}
 
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
 
-
 class ObjectWithListOfInput {
-    
-    
-        final List<Gender> genders; 
-    
-        final Option<List<Gender>?> optionalGenders; 
-    
-    ObjectWithListOfInput(
-        {
-        
+  final List<Gender> genders;
 
-    
-        
-            required this.genders
-        ,
-    
-    
-    
-        
-            this.optionalGenders = const None()
-        ,
-    
-    
- 
-        }
-    );
+  final Option<List<Gender>?> optionalGenders;
 
-    JsonObject toJson() {
-        JsonObject data = {};
-        
+  ObjectWithListOfInput({
+    required this.genders,
 
-    
-    
-        data["genders"] = 
-    
-        
-        
-            this.genders.map((e) => 
-    
-        
-            e.name
-        
-    
-).toList()
-        
-    
-;
-    
+    this.optionalGenders = const None(),
+  });
 
-    
-    
-        if (optionalGenders.isSome()) {
-            final value = this.optionalGenders.some();
-            data["optionalGenders"] = 
-    
-        
-        
-            value?.map((e) => 
-    
-        
-            e.name
-        
-    
-).toList()
-        
-    
-;
-        }
-    
+  JsonObject toJson() {
+    JsonObject data = {};
 
-    
-        return data;
-    } 
-  
-ObjectWithListOfInput updateWith(
-    {
-        
-            
-                List<Gender>? genders
-            
-            ,
-        
-            
-                Option<Option<List<Gender>?>> optionalGenders = const None()
-            
-            
-        
+    data["genders"] = this.genders.map((e) => e.name).toList();
+
+    if (optionalGenders.isSome()) {
+      final value = this.optionalGenders.some();
+      data["optionalGenders"] = value?.map((e) => e.name).toList();
     }
-) {
-    
-        final List<Gender> genders$next;
-        
-            if (genders != null) {
-                genders$next = genders;
-            } else {
-                genders$next = this.genders;
-            }
-        
-    
-        final Option<List<Gender>?> optionalGenders$next;
-        
-            switch (optionalGenders) {
 
-                case Some(value: final updateData):
-                    optionalGenders$next = updateData;
-                case None():
-                    optionalGenders$next = this.optionalGenders;
-            }
+    return data;
+  }
 
-        
-    
+  ObjectWithListOfInput updateWith({
+    List<Gender>? genders,
+
+    Option<Option<List<Gender>?>> optionalGenders = const None(),
+  }) {
+    final List<Gender> genders$next;
+
+    if (genders != null) {
+      genders$next = genders;
+    } else {
+      genders$next = this.genders;
+    }
+
+    final Option<List<Gender>?> optionalGenders$next;
+
+    switch (optionalGenders) {
+      case Some(value: final updateData):
+        optionalGenders$next = updateData;
+      case None():
+        optionalGenders$next = this.optionalGenders;
+    }
+
     return ObjectWithListOfInput(
-        
-            genders: genders$next
-            ,
-        
-            optionalGenders: optionalGenders$next
-            
-        
-    );
-}
+      genders: genders$next,
 
+      optionalGenders: optionalGenders$next,
+    );
+  }
 }
-     
 
 // ------------ END Input DEFINITIONS -------------
