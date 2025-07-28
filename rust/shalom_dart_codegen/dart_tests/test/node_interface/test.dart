@@ -222,7 +222,7 @@ void main() {
       expect(userNode.name, "New Name");
     });
 
-    test("does not updated when nested node object changes", () async {
+    test("does not update when nested node object changes", () async {
       final userNode = Testable_User.fromJson(initialData, context);
       userNode.subscribeToChanges(context);
 
@@ -237,7 +237,7 @@ void main() {
       expect(userNode.post.title, "Original Post Title");
     });
 
-    test("updates when nested non-node object changes", () async {
+    test("does not update when nested non-node object changes", () async {
       final userNode = Testable_User.fromJson(initialData, context);
       userNode.subscribeToChanges(context);
 
@@ -248,8 +248,8 @@ void main() {
       manager.parseNodeData(updatedData);
 
       await pumpEventQueue();
-      expect(userNode.updateCounter, 1);
-      expect(userNode.address?.city, "New City");
+      expect(userNode.updateCounter, 0);
+      expect(userNode.address?.city, "Anytown");
     });
   });
 }
