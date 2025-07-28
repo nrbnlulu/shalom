@@ -91,15 +91,7 @@ class NodeManager {
   Set<String> _getChangedFields(JsonObject currentData, JsonObject newData) {
     Set<String> changedFields = Set();
     for (final field in newData.keys) {
-      if (newData[field] is JsonObject) {
-        if (!isNode(newData[field])) {
-          if (!(currentData[field] as JsonObject).deepEquals(
-            newData[field] as JsonObject,
-          )) {
-            changedFields.add(field);
-          }
-        }
-      } else {
+      if (newData[field] is! JsonObject) {
         if (currentData[field] != newData[field]) {
           changedFields.add(field);
         }
