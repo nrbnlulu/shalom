@@ -84,10 +84,6 @@ class NodeManager {
   Map<ID, JsonObject> _rawStore = {};
   Map<ID, List<NodeSubscriber>> _subscriberStore = {};
 
-  bool isNode(JsonObject data) {
-    return data.containsKey("id") && _rawStore.containsKey(data["id"]);
-  }
-
   Set<String> _getChangedFields(JsonObject currentData, JsonObject newData) {
     Set<String> changedFields = Set();
     for (final field in newData.keys) {
