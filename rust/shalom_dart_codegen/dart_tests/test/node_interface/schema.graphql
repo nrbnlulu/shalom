@@ -1,0 +1,32 @@
+interface Node {
+   id: ID!  
+}
+
+type Address {
+  street: String!
+  city: String!
+  zipCode: String!
+}
+
+type Post implements Node {
+  id: ID!
+  title: String!
+  content: String!
+}
+
+type User implements Node {
+  id: ID!
+  name: String!
+  email: String!
+  age: Int!
+
+  address: Address
+
+  post: Post!
+}
+
+type Query {
+  user(id: ID!): User
+}
+
+

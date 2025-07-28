@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -11,7 +12,7 @@ typedef JsonObject = Map<String, dynamic>;
 class InputCustomScalarListInsideInputObjectResponse {
   /// class members
 
-  final InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject?
+  InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject?
   InputCustomScalarListInsideInputObject;
 
   // keywordargs constructor
@@ -19,8 +20,9 @@ class InputCustomScalarListInsideInputObjectResponse {
     this.InputCustomScalarListInsideInputObject,
   });
   static InputCustomScalarListInsideInputObjectResponse fromJson(
-    JsonObject data,
-  ) {
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject?
     InputCustomScalarListInsideInputObject_value;
     final InputCustomScalarListInsideInputObject$raw =
@@ -30,32 +32,8 @@ class InputCustomScalarListInsideInputObjectResponse {
             ? null
             : InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject.fromJson(
               InputCustomScalarListInsideInputObject$raw,
+              context: context,
             );
-
-    return InputCustomScalarListInsideInputObjectResponse(
-      InputCustomScalarListInsideInputObject:
-          InputCustomScalarListInsideInputObject_value,
-    );
-  }
-
-  InputCustomScalarListInsideInputObjectResponse updateWithJson(
-    JsonObject data,
-  ) {
-    final InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject?
-    InputCustomScalarListInsideInputObject_value;
-    if (data.containsKey('InputCustomScalarListInsideInputObject')) {
-      final InputCustomScalarListInsideInputObject$raw =
-          data["InputCustomScalarListInsideInputObject"];
-      InputCustomScalarListInsideInputObject_value =
-          InputCustomScalarListInsideInputObject$raw == null
-              ? null
-              : InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject.fromJson(
-                InputCustomScalarListInsideInputObject$raw,
-              );
-    } else {
-      InputCustomScalarListInsideInputObject_value =
-          InputCustomScalarListInsideInputObject;
-    }
 
     return InputCustomScalarListInsideInputObjectResponse(
       InputCustomScalarListInsideInputObject:
@@ -87,9 +65,9 @@ class InputCustomScalarListInsideInputObjectResponse {
 class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject {
   /// class members
 
-  final bool success;
+  bool success;
 
-  final String? message;
+  String? message;
 
   // keywordargs constructor
   InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject({
@@ -98,7 +76,7 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
     this.message,
   });
   static InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject
-  fromJson(JsonObject data) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -106,31 +84,6 @@ class InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObj
     final String? message_value;
     final message$raw = data["message"];
     message_value = message$raw as String?;
-
-    return InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject
-  updateWithJson(JsonObject data) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
-
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
 
     return InputCustomScalarListInsideInputObject_InputCustomScalarListInsideInputObject(
       success: success_value,

@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,11 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class ListOfScalarsOptionalResponse {
   /// class members
 
-  final List<String>? listOfScalarsOptional;
+  List<String>? listOfScalarsOptional;
 
   // keywordargs constructor
   ListOfScalarsOptionalResponse({this.listOfScalarsOptional});
-  static ListOfScalarsOptionalResponse fromJson(JsonObject data) {
+  static ListOfScalarsOptionalResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final List<String>? listOfScalarsOptional_value;
     final listOfScalarsOptional$raw = data["listOfScalarsOptional"];
     listOfScalarsOptional_value =
@@ -23,25 +27,6 @@ class ListOfScalarsOptionalResponse {
             : (listOfScalarsOptional$raw as List<dynamic>)
                 .map((e) => e as String)
                 .toList();
-
-    return ListOfScalarsOptionalResponse(
-      listOfScalarsOptional: listOfScalarsOptional_value,
-    );
-  }
-
-  ListOfScalarsOptionalResponse updateWithJson(JsonObject data) {
-    final List<String>? listOfScalarsOptional_value;
-    if (data.containsKey('listOfScalarsOptional')) {
-      final listOfScalarsOptional$raw = data["listOfScalarsOptional"];
-      listOfScalarsOptional_value =
-          listOfScalarsOptional$raw == null
-              ? null
-              : (listOfScalarsOptional$raw as List<dynamic>)
-                  .map((e) => e as String)
-                  .toList();
-    } else {
-      listOfScalarsOptional_value = listOfScalarsOptional;
-    }
 
     return ListOfScalarsOptionalResponse(
       listOfScalarsOptional: listOfScalarsOptional_value,

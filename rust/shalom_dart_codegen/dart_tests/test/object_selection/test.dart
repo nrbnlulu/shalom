@@ -22,17 +22,6 @@ void main() {
       final json = initial.toJson();
       expect(json, data);
     });
-
-    test("update", () {
-      final initial = GetListingResponse(
-        listing: GetListing_listing(id: "foo", name: "video games", price: 100),
-      );
-      final listingJson = initial.listing.toJson();
-      listingJson["price"] = 110;
-      final updated = initial.updateWithJson({'listing': listingJson});
-      expect(updated.listing.price, 110);
-      expect(initial, isNot(updated));
-    });
   });
 
   group('simple optional object selection', () {
@@ -69,49 +58,6 @@ void main() {
         final initial = GetListingOptResponse.fromJson(data);
         final json = initial.toJson();
         expect(json, data);
-      });
-    });
-
-    group('updateWithJson', () {
-      test('null to some', () {
-        final initial = GetListingOptResponse(listingOpt: null);
-
-        final listingJson = {"id": "foo", "name": "video games", "price": 110};
-
-        final updated = initial.updateWithJson({"listingOpt": listingJson});
-        expect(updated.listingOpt?.price, 110);
-        expect(initial, isNot(updated));
-      });
-
-      test('some to some', () {
-        final initial = GetListingOptResponse(
-          listingOpt: GetListingOpt_listingOpt(
-            id: "foo",
-            name: "video games",
-            price: 100,
-          ),
-        );
-
-        final listingJson = initial.listingOpt?.toJson();
-        listingJson?["price"] = 110;
-
-        final updated = initial.updateWithJson({"listingOpt": listingJson});
-        expect(updated.listingOpt?.price, 110);
-        expect(initial, isNot(updated));
-      });
-
-      test('some to null', () {
-        final initial = GetListingOptResponse(
-          listingOpt: GetListingOpt_listingOpt(
-            id: "foo",
-            name: "video games",
-            price: 100,
-          ),
-        );
-
-        final updated = initial.updateWithJson({"listingOpt": null});
-        expect(updated.listingOpt, null);
-        expect(initial, isNot(updated));
       });
     });
   });

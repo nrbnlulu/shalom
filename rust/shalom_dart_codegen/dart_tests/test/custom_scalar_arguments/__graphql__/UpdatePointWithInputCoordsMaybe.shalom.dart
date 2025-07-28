@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -11,14 +12,17 @@ typedef JsonObject = Map<String, dynamic>;
 class UpdatePointWithInputCoordsMaybeResponse {
   /// class members
 
-  final UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
+  UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
   updatePointWithInputCoordsMaybe;
 
   // keywordargs constructor
   UpdatePointWithInputCoordsMaybeResponse({
     this.updatePointWithInputCoordsMaybe,
   });
-  static UpdatePointWithInputCoordsMaybeResponse fromJson(JsonObject data) {
+  static UpdatePointWithInputCoordsMaybeResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
     updatePointWithInputCoordsMaybe_value;
     final updatePointWithInputCoordsMaybe$raw =
@@ -28,28 +32,8 @@ class UpdatePointWithInputCoordsMaybeResponse {
             ? null
             : UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe.fromJson(
               updatePointWithInputCoordsMaybe$raw,
+              context: context,
             );
-
-    return UpdatePointWithInputCoordsMaybeResponse(
-      updatePointWithInputCoordsMaybe: updatePointWithInputCoordsMaybe_value,
-    );
-  }
-
-  UpdatePointWithInputCoordsMaybeResponse updateWithJson(JsonObject data) {
-    final UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe?
-    updatePointWithInputCoordsMaybe_value;
-    if (data.containsKey('updatePointWithInputCoordsMaybe')) {
-      final updatePointWithInputCoordsMaybe$raw =
-          data["updatePointWithInputCoordsMaybe"];
-      updatePointWithInputCoordsMaybe_value =
-          updatePointWithInputCoordsMaybe$raw == null
-              ? null
-              : UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe.fromJson(
-                updatePointWithInputCoordsMaybe$raw,
-              );
-    } else {
-      updatePointWithInputCoordsMaybe_value = updatePointWithInputCoordsMaybe;
-    }
 
     return UpdatePointWithInputCoordsMaybeResponse(
       updatePointWithInputCoordsMaybe: updatePointWithInputCoordsMaybe_value,
@@ -80,20 +64,22 @@ class UpdatePointWithInputCoordsMaybeResponse {
 class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
   /// class members
 
-  final rmhlxei.Point? coords;
+  rmhlxei.Point? coords;
 
-  final String name;
+  String name;
 
-  final String id;
+  String id;
 
   // keywordargs constructor
   UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe({
     this.coords,
+
     required this.name,
+
     required this.id,
   });
   static UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
-  fromJson(JsonObject data) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
     coords_value =
@@ -108,44 +94,6 @@ class UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
-
-    return UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe(
-      coords: coords_value,
-
-      name: name_value,
-
-      id: id_value,
-    );
-  }
-
-  UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe
-  updateWithJson(JsonObject data) {
-    final rmhlxei.Point? coords_value;
-    if (data.containsKey('coords')) {
-      final coords$raw = data["coords"];
-      coords_value =
-          coords$raw == null
-              ? null
-              : rmhlxei.pointScalarImpl.deserialize(coords$raw);
-    } else {
-      coords_value = coords;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
 
     return UpdatePointWithInputCoordsMaybe_updatePointWithInputCoordsMaybe(
       coords: coords_value,

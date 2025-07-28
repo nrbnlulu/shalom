@@ -1,0 +1,26 @@
+interface Node {
+  id: ID!
+}
+
+enum Status {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+type User implements Node {
+  id: ID!
+  name: String!
+  status: Status!
+}
+
+type UserNameOptional implements Node {
+  id: ID!
+  name: String
+  status: Status!
+}
+
+type Query {
+  user: User
+  userOptional: UserNameOptional
+}

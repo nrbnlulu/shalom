@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,7 +11,7 @@ typedef JsonObject = Map<String, dynamic>;
 class InputListOfOptionalObjectsWithNullDefaultResponse {
   /// class members
 
-  final InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault?
+  InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault?
   InputListOfOptionalObjectsWithNullDefault;
 
   // keywordargs constructor
@@ -18,8 +19,9 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
     this.InputListOfOptionalObjectsWithNullDefault,
   });
   static InputListOfOptionalObjectsWithNullDefaultResponse fromJson(
-    JsonObject data,
-  ) {
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault?
     InputListOfOptionalObjectsWithNullDefault_value;
     final InputListOfOptionalObjectsWithNullDefault$raw =
@@ -29,32 +31,8 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
             ? null
             : InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault.fromJson(
               InputListOfOptionalObjectsWithNullDefault$raw,
+              context: context,
             );
-
-    return InputListOfOptionalObjectsWithNullDefaultResponse(
-      InputListOfOptionalObjectsWithNullDefault:
-          InputListOfOptionalObjectsWithNullDefault_value,
-    );
-  }
-
-  InputListOfOptionalObjectsWithNullDefaultResponse updateWithJson(
-    JsonObject data,
-  ) {
-    final InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault?
-    InputListOfOptionalObjectsWithNullDefault_value;
-    if (data.containsKey('InputListOfOptionalObjectsWithNullDefault')) {
-      final InputListOfOptionalObjectsWithNullDefault$raw =
-          data["InputListOfOptionalObjectsWithNullDefault"];
-      InputListOfOptionalObjectsWithNullDefault_value =
-          InputListOfOptionalObjectsWithNullDefault$raw == null
-              ? null
-              : InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault.fromJson(
-                InputListOfOptionalObjectsWithNullDefault$raw,
-              );
-    } else {
-      InputListOfOptionalObjectsWithNullDefault_value =
-          InputListOfOptionalObjectsWithNullDefault;
-    }
 
     return InputListOfOptionalObjectsWithNullDefaultResponse(
       InputListOfOptionalObjectsWithNullDefault:
@@ -86,9 +64,9 @@ class InputListOfOptionalObjectsWithNullDefaultResponse {
 class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault {
   /// class members
 
-  final bool success;
+  bool success;
 
-  final String? message;
+  String? message;
 
   // keywordargs constructor
   InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault({
@@ -97,7 +75,7 @@ class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNu
     this.message,
   });
   static InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault
-  fromJson(JsonObject data) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -105,31 +83,6 @@ class InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNu
     final String? message_value;
     final message$raw = data["message"];
     message_value = message$raw as String?;
-
-    return InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault
-  updateWithJson(JsonObject data) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
-
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
 
     return InputListOfOptionalObjectsWithNullDefault_InputListOfOptionalObjectsWithNullDefault(
       success: success_value,

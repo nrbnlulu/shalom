@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,12 +11,15 @@ typedef JsonObject = Map<String, dynamic>;
 class InputListOfRequiredObjectsResponse {
   /// class members
 
-  final InputListOfRequiredObjects_InputListOfRequiredObjects?
+  InputListOfRequiredObjects_InputListOfRequiredObjects?
   InputListOfRequiredObjects;
 
   // keywordargs constructor
   InputListOfRequiredObjectsResponse({this.InputListOfRequiredObjects});
-  static InputListOfRequiredObjectsResponse fromJson(JsonObject data) {
+  static InputListOfRequiredObjectsResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final InputListOfRequiredObjects_InputListOfRequiredObjects?
     InputListOfRequiredObjects_value;
     final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
@@ -24,27 +28,8 @@ class InputListOfRequiredObjectsResponse {
             ? null
             : InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
               InputListOfRequiredObjects$raw,
+              context: context,
             );
-
-    return InputListOfRequiredObjectsResponse(
-      InputListOfRequiredObjects: InputListOfRequiredObjects_value,
-    );
-  }
-
-  InputListOfRequiredObjectsResponse updateWithJson(JsonObject data) {
-    final InputListOfRequiredObjects_InputListOfRequiredObjects?
-    InputListOfRequiredObjects_value;
-    if (data.containsKey('InputListOfRequiredObjects')) {
-      final InputListOfRequiredObjects$raw = data["InputListOfRequiredObjects"];
-      InputListOfRequiredObjects_value =
-          InputListOfRequiredObjects$raw == null
-              ? null
-              : InputListOfRequiredObjects_InputListOfRequiredObjects.fromJson(
-                InputListOfRequiredObjects$raw,
-              );
-    } else {
-      InputListOfRequiredObjects_value = InputListOfRequiredObjects;
-    }
 
     return InputListOfRequiredObjectsResponse(
       InputListOfRequiredObjects: InputListOfRequiredObjects_value,
@@ -73,9 +58,9 @@ class InputListOfRequiredObjectsResponse {
 class InputListOfRequiredObjects_InputListOfRequiredObjects {
   /// class members
 
-  final bool success;
+  bool success;
 
-  final String? message;
+  String? message;
 
   // keywordargs constructor
   InputListOfRequiredObjects_InputListOfRequiredObjects({
@@ -84,8 +69,9 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
     this.message,
   });
   static InputListOfRequiredObjects_InputListOfRequiredObjects fromJson(
-    JsonObject data,
-  ) {
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -93,32 +79,6 @@ class InputListOfRequiredObjects_InputListOfRequiredObjects {
     final String? message_value;
     final message$raw = data["message"];
     message_value = message$raw as String?;
-
-    return InputListOfRequiredObjects_InputListOfRequiredObjects(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  InputListOfRequiredObjects_InputListOfRequiredObjects updateWithJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
-
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
 
     return InputListOfRequiredObjects_InputListOfRequiredObjects(
       success: success_value,

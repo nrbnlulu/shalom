@@ -1,0 +1,22 @@
+
+
+interface Node {
+    id: ID!
+}
+
+type User implements Node {
+    id: ID!
+    name: String!
+    password: String!
+}
+
+type UserNameOptional implements Node {
+    id: ID!,
+    name: String
+    password: String!
+} 
+
+type Query {
+    user: User
+    userOptional: UserNameOptional
+}

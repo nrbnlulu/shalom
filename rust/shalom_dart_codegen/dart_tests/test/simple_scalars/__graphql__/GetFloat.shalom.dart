@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,26 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class GetFloatResponse {
   /// class members
 
-  final double float;
+  double float;
 
   // keywordargs constructor
   GetFloatResponse({required this.float});
-  static GetFloatResponse fromJson(JsonObject data) {
+  static GetFloatResponse fromJson(JsonObject data, {ShalomContext? context}) {
     final double float_value;
     final float$raw = data["float"];
     float_value = float$raw as double;
-
-    return GetFloatResponse(float: float_value);
-  }
-
-  GetFloatResponse updateWithJson(JsonObject data) {
-    final double float_value;
-    if (data.containsKey('float')) {
-      final float$raw = data["float"];
-      float_value = float$raw as double;
-    } else {
-      float_value = float;
-    }
 
     return GetFloatResponse(float: float_value);
   }

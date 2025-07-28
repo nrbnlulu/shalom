@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,26 +11,17 @@ typedef JsonObject = Map<String, dynamic>;
 class GetListingResponse {
   /// class members
 
-  final GetListing_listing listing;
+  GetListing_listing listing;
 
   // keywordargs constructor
   GetListingResponse({required this.listing});
-  static GetListingResponse fromJson(JsonObject data) {
+  static GetListingResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final GetListing_listing listing_value;
     final listing$raw = data["listing"];
-    listing_value = GetListing_listing.fromJson(listing$raw);
-
-    return GetListingResponse(listing: listing_value);
-  }
-
-  GetListingResponse updateWithJson(JsonObject data) {
-    final GetListing_listing listing_value;
-    if (data.containsKey('listing')) {
-      final listing$raw = data["listing"];
-      listing_value = GetListing_listing.fromJson(listing$raw);
-    } else {
-      listing_value = listing;
-    }
+    listing_value = GetListing_listing.fromJson(listing$raw, context: context);
 
     return GetListingResponse(listing: listing_value);
   }
@@ -53,15 +45,18 @@ class GetListingResponse {
 class GetListing_listing {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final int? price;
+  int? price;
 
   // keywordargs constructor
   GetListing_listing({required this.id, required this.name, this.price});
-  static GetListing_listing fromJson(JsonObject data) {
+  static GetListing_listing fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
@@ -73,40 +68,6 @@ class GetListing_listing {
     final int? price_value;
     final price$raw = data["price"];
     price_value = price$raw as int?;
-
-    return GetListing_listing(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  GetListing_listing updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final int? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as int?;
-    } else {
-      price_value = price;
-    }
 
     return GetListing_listing(
       id: id_value,

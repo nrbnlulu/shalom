@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,14 +11,17 @@ typedef JsonObject = Map<String, dynamic>;
 class OrderOptWithNullDefaultsRequestResponse {
   /// class members
 
-  final OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest?
+  OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest?
   orderOptWithNullDefaultsRequest;
 
   // keywordargs constructor
   OrderOptWithNullDefaultsRequestResponse({
     this.orderOptWithNullDefaultsRequest,
   });
-  static OrderOptWithNullDefaultsRequestResponse fromJson(JsonObject data) {
+  static OrderOptWithNullDefaultsRequestResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest?
     orderOptWithNullDefaultsRequest_value;
     final orderOptWithNullDefaultsRequest$raw =
@@ -27,28 +31,8 @@ class OrderOptWithNullDefaultsRequestResponse {
             ? null
             : OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest.fromJson(
               orderOptWithNullDefaultsRequest$raw,
+              context: context,
             );
-
-    return OrderOptWithNullDefaultsRequestResponse(
-      orderOptWithNullDefaultsRequest: orderOptWithNullDefaultsRequest_value,
-    );
-  }
-
-  OrderOptWithNullDefaultsRequestResponse updateWithJson(JsonObject data) {
-    final OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest?
-    orderOptWithNullDefaultsRequest_value;
-    if (data.containsKey('orderOptWithNullDefaultsRequest')) {
-      final orderOptWithNullDefaultsRequest$raw =
-          data["orderOptWithNullDefaultsRequest"];
-      orderOptWithNullDefaultsRequest_value =
-          orderOptWithNullDefaultsRequest$raw == null
-              ? null
-              : OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest.fromJson(
-                orderOptWithNullDefaultsRequest$raw,
-              );
-    } else {
-      orderOptWithNullDefaultsRequest_value = orderOptWithNullDefaultsRequest;
-    }
 
     return OrderOptWithNullDefaultsRequestResponse(
       orderOptWithNullDefaultsRequest: orderOptWithNullDefaultsRequest_value,
@@ -79,11 +63,11 @@ class OrderOptWithNullDefaultsRequestResponse {
 class OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest {
   /// class members
 
-  final int? quantity;
+  int? quantity;
 
-  final String? name;
+  String? name;
 
-  final double? price;
+  double? price;
 
   // keywordargs constructor
   OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest({
@@ -94,7 +78,7 @@ class OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest {
     this.price,
   });
   static OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest
-  fromJson(JsonObject data) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
     quantity_value = quantity$raw as int?;
@@ -106,41 +90,6 @@ class OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest {
     final double? price_value;
     final price$raw = data["price"];
     price_value = price$raw as double?;
-
-    return OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest
-  updateWithJson(JsonObject data) {
-    final int? quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int?;
-    } else {
-      quantity_value = quantity;
-    }
-
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final double? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double?;
-    } else {
-      price_value = price;
-    }
 
     return OrderOptWithNullDefaultsRequest_orderOptWithNullDefaultsRequest(
       quantity: quantity_value,

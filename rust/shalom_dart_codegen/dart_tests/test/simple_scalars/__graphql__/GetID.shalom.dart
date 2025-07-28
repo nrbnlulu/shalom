@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,26 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class GetIDResponse {
   /// class members
 
-  final String id;
+  String id;
 
   // keywordargs constructor
   GetIDResponse({required this.id});
-  static GetIDResponse fromJson(JsonObject data) {
+  static GetIDResponse fromJson(JsonObject data, {ShalomContext? context}) {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
-
-    return GetIDResponse(id: id_value);
-  }
-
-  GetIDResponse updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
 
     return GetIDResponse(id: id_value);
   }

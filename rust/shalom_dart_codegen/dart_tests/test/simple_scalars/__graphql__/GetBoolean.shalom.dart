@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,26 +11,17 @@ typedef JsonObject = Map<String, dynamic>;
 class GetBooleanResponse {
   /// class members
 
-  final bool boolean;
+  bool boolean;
 
   // keywordargs constructor
   GetBooleanResponse({required this.boolean});
-  static GetBooleanResponse fromJson(JsonObject data) {
+  static GetBooleanResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final bool boolean_value;
     final boolean$raw = data["boolean"];
     boolean_value = boolean$raw as bool;
-
-    return GetBooleanResponse(boolean: boolean_value);
-  }
-
-  GetBooleanResponse updateWithJson(JsonObject data) {
-    final bool boolean_value;
-    if (data.containsKey('boolean')) {
-      final boolean$raw = data["boolean"];
-      boolean_value = boolean$raw as bool;
-    } else {
-      boolean_value = boolean;
-    }
 
     return GetBooleanResponse(boolean: boolean_value);
   }

@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,32 +11,23 @@ typedef JsonObject = Map<String, dynamic>;
 class OptOrderRequestResponse {
   /// class members
 
-  final OptOrderRequest_optOrderRequest? optOrderRequest;
+  OptOrderRequest_optOrderRequest? optOrderRequest;
 
   // keywordargs constructor
   OptOrderRequestResponse({this.optOrderRequest});
-  static OptOrderRequestResponse fromJson(JsonObject data) {
+  static OptOrderRequestResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final OptOrderRequest_optOrderRequest? optOrderRequest_value;
     final optOrderRequest$raw = data["optOrderRequest"];
     optOrderRequest_value =
         optOrderRequest$raw == null
             ? null
-            : OptOrderRequest_optOrderRequest.fromJson(optOrderRequest$raw);
-
-    return OptOrderRequestResponse(optOrderRequest: optOrderRequest_value);
-  }
-
-  OptOrderRequestResponse updateWithJson(JsonObject data) {
-    final OptOrderRequest_optOrderRequest? optOrderRequest_value;
-    if (data.containsKey('optOrderRequest')) {
-      final optOrderRequest$raw = data["optOrderRequest"];
-      optOrderRequest_value =
-          optOrderRequest$raw == null
-              ? null
-              : OptOrderRequest_optOrderRequest.fromJson(optOrderRequest$raw);
-    } else {
-      optOrderRequest_value = optOrderRequest;
-    }
+            : OptOrderRequest_optOrderRequest.fromJson(
+              optOrderRequest$raw,
+              context: context,
+            );
 
     return OptOrderRequestResponse(optOrderRequest: optOrderRequest_value);
   }
@@ -60,15 +52,18 @@ class OptOrderRequestResponse {
 class OptOrderRequest_optOrderRequest {
   /// class members
 
-  final int? quantity;
+  int? quantity;
 
-  final String? name;
+  String? name;
 
-  final double? price;
+  double? price;
 
   // keywordargs constructor
   OptOrderRequest_optOrderRequest({this.quantity, this.name, this.price});
-  static OptOrderRequest_optOrderRequest fromJson(JsonObject data) {
+  static OptOrderRequest_optOrderRequest fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
     quantity_value = quantity$raw as int?;
@@ -80,40 +75,6 @@ class OptOrderRequest_optOrderRequest {
     final double? price_value;
     final price$raw = data["price"];
     price_value = price$raw as double?;
-
-    return OptOrderRequest_optOrderRequest(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  OptOrderRequest_optOrderRequest updateWithJson(JsonObject data) {
-    final int? quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int?;
-    } else {
-      quantity_value = quantity;
-    }
-
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final double? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double?;
-    } else {
-      price_value = price;
-    }
 
     return OptOrderRequest_optOrderRequest(
       quantity: quantity_value,

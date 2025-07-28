@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,11 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class InputListObjectsMAybeResponse {
   /// class members
 
-  final InputListObjectsMAybe_InputListObjectsMAybe? InputListObjectsMAybe;
+  InputListObjectsMAybe_InputListObjectsMAybe? InputListObjectsMAybe;
 
   // keywordargs constructor
   InputListObjectsMAybeResponse({this.InputListObjectsMAybe});
-  static InputListObjectsMAybeResponse fromJson(JsonObject data) {
+  static InputListObjectsMAybeResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final InputListObjectsMAybe_InputListObjectsMAybe?
     InputListObjectsMAybe_value;
     final InputListObjectsMAybe$raw = data["InputListObjectsMAybe"];
@@ -23,27 +27,8 @@ class InputListObjectsMAybeResponse {
             ? null
             : InputListObjectsMAybe_InputListObjectsMAybe.fromJson(
               InputListObjectsMAybe$raw,
+              context: context,
             );
-
-    return InputListObjectsMAybeResponse(
-      InputListObjectsMAybe: InputListObjectsMAybe_value,
-    );
-  }
-
-  InputListObjectsMAybeResponse updateWithJson(JsonObject data) {
-    final InputListObjectsMAybe_InputListObjectsMAybe?
-    InputListObjectsMAybe_value;
-    if (data.containsKey('InputListObjectsMAybe')) {
-      final InputListObjectsMAybe$raw = data["InputListObjectsMAybe"];
-      InputListObjectsMAybe_value =
-          InputListObjectsMAybe$raw == null
-              ? null
-              : InputListObjectsMAybe_InputListObjectsMAybe.fromJson(
-                InputListObjectsMAybe$raw,
-              );
-    } else {
-      InputListObjectsMAybe_value = InputListObjectsMAybe;
-    }
 
     return InputListObjectsMAybeResponse(
       InputListObjectsMAybe: InputListObjectsMAybe_value,
@@ -70,9 +55,9 @@ class InputListObjectsMAybeResponse {
 class InputListObjectsMAybe_InputListObjectsMAybe {
   /// class members
 
-  final bool success;
+  bool success;
 
-  final String? message;
+  String? message;
 
   // keywordargs constructor
   InputListObjectsMAybe_InputListObjectsMAybe({
@@ -80,7 +65,10 @@ class InputListObjectsMAybe_InputListObjectsMAybe {
 
     this.message,
   });
-  static InputListObjectsMAybe_InputListObjectsMAybe fromJson(JsonObject data) {
+  static InputListObjectsMAybe_InputListObjectsMAybe fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -88,30 +76,6 @@ class InputListObjectsMAybe_InputListObjectsMAybe {
     final String? message_value;
     final message$raw = data["message"];
     message_value = message$raw as String?;
-
-    return InputListObjectsMAybe_InputListObjectsMAybe(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  InputListObjectsMAybe_InputListObjectsMAybe updateWithJson(JsonObject data) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
-
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
 
     return InputListObjectsMAybe_InputListObjectsMAybe(
       success: success_value,

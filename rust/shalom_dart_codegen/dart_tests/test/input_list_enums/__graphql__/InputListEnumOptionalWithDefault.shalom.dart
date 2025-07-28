@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,34 +11,21 @@ typedef JsonObject = Map<String, dynamic>;
 class InputListEnumOptionalWithDefaultResponse {
   /// class members
 
-  final String? InputListEnumOptionalWithDefault;
+  String? InputListEnumOptionalWithDefault;
 
   // keywordargs constructor
   InputListEnumOptionalWithDefaultResponse({
     this.InputListEnumOptionalWithDefault,
   });
-  static InputListEnumOptionalWithDefaultResponse fromJson(JsonObject data) {
+  static InputListEnumOptionalWithDefaultResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String? InputListEnumOptionalWithDefault_value;
     final InputListEnumOptionalWithDefault$raw =
         data["InputListEnumOptionalWithDefault"];
     InputListEnumOptionalWithDefault_value =
         InputListEnumOptionalWithDefault$raw as String?;
-
-    return InputListEnumOptionalWithDefaultResponse(
-      InputListEnumOptionalWithDefault: InputListEnumOptionalWithDefault_value,
-    );
-  }
-
-  InputListEnumOptionalWithDefaultResponse updateWithJson(JsonObject data) {
-    final String? InputListEnumOptionalWithDefault_value;
-    if (data.containsKey('InputListEnumOptionalWithDefault')) {
-      final InputListEnumOptionalWithDefault$raw =
-          data["InputListEnumOptionalWithDefault"];
-      InputListEnumOptionalWithDefault_value =
-          InputListEnumOptionalWithDefault$raw as String?;
-    } else {
-      InputListEnumOptionalWithDefault_value = InputListEnumOptionalWithDefault;
-    }
 
     return InputListEnumOptionalWithDefaultResponse(
       InputListEnumOptionalWithDefault: InputListEnumOptionalWithDefault_value,

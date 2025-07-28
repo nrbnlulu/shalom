@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,26 +11,20 @@ typedef JsonObject = Map<String, dynamic>;
 class GetListingWithUserResponse {
   /// class members
 
-  final GetListingWithUser_listing listing;
+  GetListingWithUser_listing listing;
 
   // keywordargs constructor
   GetListingWithUserResponse({required this.listing});
-  static GetListingWithUserResponse fromJson(JsonObject data) {
+  static GetListingWithUserResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final GetListingWithUser_listing listing_value;
     final listing$raw = data["listing"];
-    listing_value = GetListingWithUser_listing.fromJson(listing$raw);
-
-    return GetListingWithUserResponse(listing: listing_value);
-  }
-
-  GetListingWithUserResponse updateWithJson(JsonObject data) {
-    final GetListingWithUser_listing listing_value;
-    if (data.containsKey('listing')) {
-      final listing$raw = data["listing"];
-      listing_value = GetListingWithUser_listing.fromJson(listing$raw);
-    } else {
-      listing_value = listing;
-    }
+    listing_value = GetListingWithUser_listing.fromJson(
+      listing$raw,
+      context: context,
+    );
 
     return GetListingWithUserResponse(listing: listing_value);
   }
@@ -53,23 +48,28 @@ class GetListingWithUserResponse {
 class GetListingWithUser_listing {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final int? price;
+  int? price;
 
-  final GetListingWithUser_listing_user user;
+  GetListingWithUser_listing_user user;
 
   // keywordargs constructor
   GetListingWithUser_listing({
     required this.id,
+
     required this.name,
 
     this.price,
+
     required this.user,
   });
-  static GetListingWithUser_listing fromJson(JsonObject data) {
+  static GetListingWithUser_listing fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
@@ -84,51 +84,10 @@ class GetListingWithUser_listing {
 
     final GetListingWithUser_listing_user user_value;
     final user$raw = data["user"];
-    user_value = GetListingWithUser_listing_user.fromJson(user$raw);
-
-    return GetListingWithUser_listing(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-
-      user: user_value,
+    user_value = GetListingWithUser_listing_user.fromJson(
+      user$raw,
+      context: context,
     );
-  }
-
-  GetListingWithUser_listing updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final int? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as int?;
-    } else {
-      price_value = price;
-    }
-
-    final GetListingWithUser_listing_user user_value;
-    if (data.containsKey('user')) {
-      final user$raw = data["user"];
-      user_value = GetListingWithUser_listing_user.fromJson(user$raw);
-    } else {
-      user_value = user;
-    }
 
     return GetListingWithUser_listing(
       id: id_value,
@@ -170,23 +129,28 @@ class GetListingWithUser_listing {
 class GetListingWithUser_listing_user {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final String email;
+  String email;
 
-  final int? age;
+  int? age;
 
   // keywordargs constructor
   GetListingWithUser_listing_user({
     required this.id,
+
     required this.name,
+
     required this.email,
 
     this.age,
   });
-  static GetListingWithUser_listing_user fromJson(JsonObject data) {
+  static GetListingWithUser_listing_user fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
@@ -202,50 +166,6 @@ class GetListingWithUser_listing_user {
     final int? age_value;
     final age$raw = data["age"];
     age_value = age$raw as int?;
-
-    return GetListingWithUser_listing_user(
-      id: id_value,
-
-      name: name_value,
-
-      email: email_value,
-
-      age: age_value,
-    );
-  }
-
-  GetListingWithUser_listing_user updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final String email_value;
-    if (data.containsKey('email')) {
-      final email$raw = data["email"];
-      email_value = email$raw as String;
-    } else {
-      email_value = email;
-    }
-
-    final int? age_value;
-    if (data.containsKey('age')) {
-      final age$raw = data["age"];
-      age_value = age$raw as int?;
-    } else {
-      age_value = age;
-    }
 
     return GetListingWithUser_listing_user(
       id: id_value,

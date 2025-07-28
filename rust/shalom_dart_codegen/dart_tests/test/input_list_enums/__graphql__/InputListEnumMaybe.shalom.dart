@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,28 +11,17 @@ typedef JsonObject = Map<String, dynamic>;
 class InputListEnumMaybeResponse {
   /// class members
 
-  final String? InputListEnumMaybe;
+  String? InputListEnumMaybe;
 
   // keywordargs constructor
   InputListEnumMaybeResponse({this.InputListEnumMaybe});
-  static InputListEnumMaybeResponse fromJson(JsonObject data) {
+  static InputListEnumMaybeResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String? InputListEnumMaybe_value;
     final InputListEnumMaybe$raw = data["InputListEnumMaybe"];
     InputListEnumMaybe_value = InputListEnumMaybe$raw as String?;
-
-    return InputListEnumMaybeResponse(
-      InputListEnumMaybe: InputListEnumMaybe_value,
-    );
-  }
-
-  InputListEnumMaybeResponse updateWithJson(JsonObject data) {
-    final String? InputListEnumMaybe_value;
-    if (data.containsKey('InputListEnumMaybe')) {
-      final InputListEnumMaybe$raw = data["InputListEnumMaybe"];
-      InputListEnumMaybe_value = InputListEnumMaybe$raw as String?;
-    } else {
-      InputListEnumMaybe_value = InputListEnumMaybe;
-    }
 
     return InputListEnumMaybeResponse(
       InputListEnumMaybe: InputListEnumMaybe_value,

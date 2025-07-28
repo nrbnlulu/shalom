@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,26 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class GetTaskResponse {
   /// class members
 
-  final GetTask_task task;
+  GetTask_task task;
 
   // keywordargs constructor
   GetTaskResponse({required this.task});
-  static GetTaskResponse fromJson(JsonObject data) {
+  static GetTaskResponse fromJson(JsonObject data, {ShalomContext? context}) {
     final GetTask_task task_value;
     final task$raw = data["task"];
-    task_value = GetTask_task.fromJson(task$raw);
-
-    return GetTaskResponse(task: task_value);
-  }
-
-  GetTaskResponse updateWithJson(JsonObject data) {
-    final GetTask_task task_value;
-    if (data.containsKey('task')) {
-      final task$raw = data["task"];
-      task_value = GetTask_task.fromJson(task$raw);
-    } else {
-      task_value = task;
-    }
+    task_value = GetTask_task.fromJson(task$raw, context: context);
 
     return GetTaskResponse(task: task_value);
   }
@@ -53,15 +42,15 @@ class GetTaskResponse {
 class GetTask_task {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final Status status;
+  Status status;
 
   // keywordargs constructor
   GetTask_task({required this.id, required this.name, required this.status});
-  static GetTask_task fromJson(JsonObject data) {
+  static GetTask_task fromJson(JsonObject data, {ShalomContext? context}) {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
@@ -73,34 +62,6 @@ class GetTask_task {
     final Status status_value;
     final status$raw = data["status"];
     status_value = Status.fromString(status$raw);
-
-    return GetTask_task(id: id_value, name: name_value, status: status_value);
-  }
-
-  GetTask_task updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final Status status_value;
-    if (data.containsKey('status')) {
-      final status$raw = data["status"];
-      status_value = Status.fromString(status$raw);
-    } else {
-      status_value = status;
-    }
 
     return GetTask_task(id: id_value, name: name_value, status: status_value);
   }

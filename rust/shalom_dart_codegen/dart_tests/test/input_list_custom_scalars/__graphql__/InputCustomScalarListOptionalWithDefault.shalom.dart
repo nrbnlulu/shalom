@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -11,7 +12,7 @@ typedef JsonObject = Map<String, dynamic>;
 class InputCustomScalarListOptionalWithDefaultResponse {
   /// class members
 
-  final InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault?
+  InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault?
   InputCustomScalarListOptionalWithDefault;
 
   // keywordargs constructor
@@ -19,8 +20,9 @@ class InputCustomScalarListOptionalWithDefaultResponse {
     this.InputCustomScalarListOptionalWithDefault,
   });
   static InputCustomScalarListOptionalWithDefaultResponse fromJson(
-    JsonObject data,
-  ) {
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault?
     InputCustomScalarListOptionalWithDefault_value;
     final InputCustomScalarListOptionalWithDefault$raw =
@@ -30,32 +32,8 @@ class InputCustomScalarListOptionalWithDefaultResponse {
             ? null
             : InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault.fromJson(
               InputCustomScalarListOptionalWithDefault$raw,
+              context: context,
             );
-
-    return InputCustomScalarListOptionalWithDefaultResponse(
-      InputCustomScalarListOptionalWithDefault:
-          InputCustomScalarListOptionalWithDefault_value,
-    );
-  }
-
-  InputCustomScalarListOptionalWithDefaultResponse updateWithJson(
-    JsonObject data,
-  ) {
-    final InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault?
-    InputCustomScalarListOptionalWithDefault_value;
-    if (data.containsKey('InputCustomScalarListOptionalWithDefault')) {
-      final InputCustomScalarListOptionalWithDefault$raw =
-          data["InputCustomScalarListOptionalWithDefault"];
-      InputCustomScalarListOptionalWithDefault_value =
-          InputCustomScalarListOptionalWithDefault$raw == null
-              ? null
-              : InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault.fromJson(
-                InputCustomScalarListOptionalWithDefault$raw,
-              );
-    } else {
-      InputCustomScalarListOptionalWithDefault_value =
-          InputCustomScalarListOptionalWithDefault;
-    }
 
     return InputCustomScalarListOptionalWithDefaultResponse(
       InputCustomScalarListOptionalWithDefault:
@@ -87,9 +65,9 @@ class InputCustomScalarListOptionalWithDefaultResponse {
 class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault {
   /// class members
 
-  final bool success;
+  bool success;
 
-  final String? message;
+  String? message;
 
   // keywordargs constructor
   InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault({
@@ -98,7 +76,7 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
     this.message,
   });
   static InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault
-  fromJson(JsonObject data) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -106,31 +84,6 @@ class InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWith
     final String? message_value;
     final message$raw = data["message"];
     message_value = message$raw as String?;
-
-    return InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault
-  updateWithJson(JsonObject data) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
-
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
 
     return InputCustomScalarListOptionalWithDefault_InputCustomScalarListOptionalWithDefault(
       success: success_value,

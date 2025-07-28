@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,32 +11,23 @@ typedef JsonObject = Map<String, dynamic>;
 class OptionalArgumentsResponse {
   /// class members
 
-  final OptionalArguments_updateUser? updateUser;
+  OptionalArguments_updateUser? updateUser;
 
   // keywordargs constructor
   OptionalArgumentsResponse({this.updateUser});
-  static OptionalArgumentsResponse fromJson(JsonObject data) {
+  static OptionalArgumentsResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final OptionalArguments_updateUser? updateUser_value;
     final updateUser$raw = data["updateUser"];
     updateUser_value =
         updateUser$raw == null
             ? null
-            : OptionalArguments_updateUser.fromJson(updateUser$raw);
-
-    return OptionalArgumentsResponse(updateUser: updateUser_value);
-  }
-
-  OptionalArgumentsResponse updateWithJson(JsonObject data) {
-    final OptionalArguments_updateUser? updateUser_value;
-    if (data.containsKey('updateUser')) {
-      final updateUser$raw = data["updateUser"];
-      updateUser_value =
-          updateUser$raw == null
-              ? null
-              : OptionalArguments_updateUser.fromJson(updateUser$raw);
-    } else {
-      updateUser_value = updateUser;
-    }
+            : OptionalArguments_updateUser.fromJson(
+              updateUser$raw,
+              context: context,
+            );
 
     return OptionalArgumentsResponse(updateUser: updateUser_value);
   }
@@ -59,26 +51,17 @@ class OptionalArgumentsResponse {
 class OptionalArguments_updateUser {
   /// class members
 
-  final String? name;
+  String? name;
 
   // keywordargs constructor
   OptionalArguments_updateUser({this.name});
-  static OptionalArguments_updateUser fromJson(JsonObject data) {
+  static OptionalArguments_updateUser fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String? name_value;
     final name$raw = data["name"];
     name_value = name$raw as String?;
-
-    return OptionalArguments_updateUser(name: name_value);
-  }
-
-  OptionalArguments_updateUser updateWithJson(JsonObject data) {
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
 
     return OptionalArguments_updateUser(name: name_value);
   }

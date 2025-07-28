@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,11 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class InputScalarListMaybeResponse {
   /// class members
 
-  final InputScalarListMaybe_InputScalarListMaybe? InputScalarListMaybe;
+  InputScalarListMaybe_InputScalarListMaybe? InputScalarListMaybe;
 
   // keywordargs constructor
   InputScalarListMaybeResponse({this.InputScalarListMaybe});
-  static InputScalarListMaybeResponse fromJson(JsonObject data) {
+  static InputScalarListMaybeResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final InputScalarListMaybe_InputScalarListMaybe? InputScalarListMaybe_value;
     final InputScalarListMaybe$raw = data["InputScalarListMaybe"];
     InputScalarListMaybe_value =
@@ -22,26 +26,8 @@ class InputScalarListMaybeResponse {
             ? null
             : InputScalarListMaybe_InputScalarListMaybe.fromJson(
               InputScalarListMaybe$raw,
+              context: context,
             );
-
-    return InputScalarListMaybeResponse(
-      InputScalarListMaybe: InputScalarListMaybe_value,
-    );
-  }
-
-  InputScalarListMaybeResponse updateWithJson(JsonObject data) {
-    final InputScalarListMaybe_InputScalarListMaybe? InputScalarListMaybe_value;
-    if (data.containsKey('InputScalarListMaybe')) {
-      final InputScalarListMaybe$raw = data["InputScalarListMaybe"];
-      InputScalarListMaybe_value =
-          InputScalarListMaybe$raw == null
-              ? null
-              : InputScalarListMaybe_InputScalarListMaybe.fromJson(
-                InputScalarListMaybe$raw,
-              );
-    } else {
-      InputScalarListMaybe_value = InputScalarListMaybe;
-    }
 
     return InputScalarListMaybeResponse(
       InputScalarListMaybe: InputScalarListMaybe_value,
@@ -68,26 +54,17 @@ class InputScalarListMaybeResponse {
 class InputScalarListMaybe_InputScalarListMaybe {
   /// class members
 
-  final bool success;
+  bool success;
 
   // keywordargs constructor
   InputScalarListMaybe_InputScalarListMaybe({required this.success});
-  static InputScalarListMaybe_InputScalarListMaybe fromJson(JsonObject data) {
+  static InputScalarListMaybe_InputScalarListMaybe fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
-
-    return InputScalarListMaybe_InputScalarListMaybe(success: success_value);
-  }
-
-  InputScalarListMaybe_InputScalarListMaybe updateWithJson(JsonObject data) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
 
     return InputScalarListMaybe_InputScalarListMaybe(success: success_value);
   }

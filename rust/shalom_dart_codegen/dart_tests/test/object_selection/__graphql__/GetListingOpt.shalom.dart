@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,32 +11,23 @@ typedef JsonObject = Map<String, dynamic>;
 class GetListingOptResponse {
   /// class members
 
-  final GetListingOpt_listingOpt? listingOpt;
+  GetListingOpt_listingOpt? listingOpt;
 
   // keywordargs constructor
   GetListingOptResponse({this.listingOpt});
-  static GetListingOptResponse fromJson(JsonObject data) {
+  static GetListingOptResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final GetListingOpt_listingOpt? listingOpt_value;
     final listingOpt$raw = data["listingOpt"];
     listingOpt_value =
         listingOpt$raw == null
             ? null
-            : GetListingOpt_listingOpt.fromJson(listingOpt$raw);
-
-    return GetListingOptResponse(listingOpt: listingOpt_value);
-  }
-
-  GetListingOptResponse updateWithJson(JsonObject data) {
-    final GetListingOpt_listingOpt? listingOpt_value;
-    if (data.containsKey('listingOpt')) {
-      final listingOpt$raw = data["listingOpt"];
-      listingOpt_value =
-          listingOpt$raw == null
-              ? null
-              : GetListingOpt_listingOpt.fromJson(listingOpt$raw);
-    } else {
-      listingOpt_value = listingOpt;
-    }
+            : GetListingOpt_listingOpt.fromJson(
+              listingOpt$raw,
+              context: context,
+            );
 
     return GetListingOptResponse(listingOpt: listingOpt_value);
   }
@@ -59,15 +51,18 @@ class GetListingOptResponse {
 class GetListingOpt_listingOpt {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final int? price;
+  int? price;
 
   // keywordargs constructor
   GetListingOpt_listingOpt({required this.id, required this.name, this.price});
-  static GetListingOpt_listingOpt fromJson(JsonObject data) {
+  static GetListingOpt_listingOpt fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
@@ -79,40 +74,6 @@ class GetListingOpt_listingOpt {
     final int? price_value;
     final price$raw = data["price"];
     price_value = price$raw as int?;
-
-    return GetListingOpt_listingOpt(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  GetListingOpt_listingOpt updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final int? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as int?;
-    } else {
-      price_value = price;
-    }
 
     return GetListingOpt_listingOpt(
       id: id_value,

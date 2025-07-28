@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,32 +11,20 @@ typedef JsonObject = Map<String, dynamic>;
 class OptionalWithSomeDefaultResponse {
   /// class members
 
-  final OptionalWithSomeDefault_task? task;
+  OptionalWithSomeDefault_task? task;
 
   // keywordargs constructor
   OptionalWithSomeDefaultResponse({this.task});
-  static OptionalWithSomeDefaultResponse fromJson(JsonObject data) {
+  static OptionalWithSomeDefaultResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final OptionalWithSomeDefault_task? task_value;
     final task$raw = data["task"];
     task_value =
         task$raw == null
             ? null
-            : OptionalWithSomeDefault_task.fromJson(task$raw);
-
-    return OptionalWithSomeDefaultResponse(task: task_value);
-  }
-
-  OptionalWithSomeDefaultResponse updateWithJson(JsonObject data) {
-    final OptionalWithSomeDefault_task? task_value;
-    if (data.containsKey('task')) {
-      final task$raw = data["task"];
-      task_value =
-          task$raw == null
-              ? null
-              : OptionalWithSomeDefault_task.fromJson(task$raw);
-    } else {
-      task_value = task;
-    }
+            : OptionalWithSomeDefault_task.fromJson(task$raw, context: context);
 
     return OptionalWithSomeDefaultResponse(task: task_value);
   }
@@ -59,15 +48,18 @@ class OptionalWithSomeDefaultResponse {
 class OptionalWithSomeDefault_task {
   /// class members
 
-  final String? name;
+  String? name;
 
-  final int? duration;
+  int? duration;
 
-  final bool? is_easy;
+  bool? is_easy;
 
   // keywordargs constructor
   OptionalWithSomeDefault_task({this.name, this.duration, this.is_easy});
-  static OptionalWithSomeDefault_task fromJson(JsonObject data) {
+  static OptionalWithSomeDefault_task fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String? name_value;
     final name$raw = data["name"];
     name_value = name$raw as String?;
@@ -79,40 +71,6 @@ class OptionalWithSomeDefault_task {
     final bool? is_easy_value;
     final is_easy$raw = data["is_easy"];
     is_easy_value = is_easy$raw as bool?;
-
-    return OptionalWithSomeDefault_task(
-      name: name_value,
-
-      duration: duration_value,
-
-      is_easy: is_easy_value,
-    );
-  }
-
-  OptionalWithSomeDefault_task updateWithJson(JsonObject data) {
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final int? duration_value;
-    if (data.containsKey('duration')) {
-      final duration$raw = data["duration"];
-      duration_value = duration$raw as int?;
-    } else {
-      duration_value = duration;
-    }
-
-    final bool? is_easy_value;
-    if (data.containsKey('is_easy')) {
-      final is_easy$raw = data["is_easy"];
-      is_easy_value = is_easy$raw as bool?;
-    } else {
-      is_easy_value = is_easy;
-    }
 
     return OptionalWithSomeDefault_task(
       name: name_value,

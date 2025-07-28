@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,14 +11,17 @@ typedef JsonObject = Map<String, dynamic>;
 class InputObjectContainingListOfObjectsResponse {
   /// class members
 
-  final InputObjectContainingListOfObjects_InputObjectContainingListOfObjects?
+  InputObjectContainingListOfObjects_InputObjectContainingListOfObjects?
   InputObjectContainingListOfObjects;
 
   // keywordargs constructor
   InputObjectContainingListOfObjectsResponse({
     this.InputObjectContainingListOfObjects,
   });
-  static InputObjectContainingListOfObjectsResponse fromJson(JsonObject data) {
+  static InputObjectContainingListOfObjectsResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final InputObjectContainingListOfObjects_InputObjectContainingListOfObjects?
     InputObjectContainingListOfObjects_value;
     final InputObjectContainingListOfObjects$raw =
@@ -27,30 +31,8 @@ class InputObjectContainingListOfObjectsResponse {
             ? null
             : InputObjectContainingListOfObjects_InputObjectContainingListOfObjects.fromJson(
               InputObjectContainingListOfObjects$raw,
+              context: context,
             );
-
-    return InputObjectContainingListOfObjectsResponse(
-      InputObjectContainingListOfObjects:
-          InputObjectContainingListOfObjects_value,
-    );
-  }
-
-  InputObjectContainingListOfObjectsResponse updateWithJson(JsonObject data) {
-    final InputObjectContainingListOfObjects_InputObjectContainingListOfObjects?
-    InputObjectContainingListOfObjects_value;
-    if (data.containsKey('InputObjectContainingListOfObjects')) {
-      final InputObjectContainingListOfObjects$raw =
-          data["InputObjectContainingListOfObjects"];
-      InputObjectContainingListOfObjects_value =
-          InputObjectContainingListOfObjects$raw == null
-              ? null
-              : InputObjectContainingListOfObjects_InputObjectContainingListOfObjects.fromJson(
-                InputObjectContainingListOfObjects$raw,
-              );
-    } else {
-      InputObjectContainingListOfObjects_value =
-          InputObjectContainingListOfObjects;
-    }
 
     return InputObjectContainingListOfObjectsResponse(
       InputObjectContainingListOfObjects:
@@ -82,9 +64,9 @@ class InputObjectContainingListOfObjectsResponse {
 class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
   /// class members
 
-  final bool success;
+  bool success;
 
-  final String? message;
+  String? message;
 
   // keywordargs constructor
   InputObjectContainingListOfObjects_InputObjectContainingListOfObjects({
@@ -93,7 +75,7 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
     this.message,
   });
   static InputObjectContainingListOfObjects_InputObjectContainingListOfObjects
-  fromJson(JsonObject data) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -101,31 +83,6 @@ class InputObjectContainingListOfObjects_InputObjectContainingListOfObjects {
     final String? message_value;
     final message$raw = data["message"];
     message_value = message$raw as String?;
-
-    return InputObjectContainingListOfObjects_InputObjectContainingListOfObjects(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  InputObjectContainingListOfObjects_InputObjectContainingListOfObjects
-  updateWithJson(JsonObject data) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
-
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
 
     return InputObjectContainingListOfObjects_InputObjectContainingListOfObjects(
       success: success_value,

@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -11,12 +12,14 @@ typedef JsonObject = Map<String, dynamic>;
 class updatePointWithOptCoordsResponse {
   /// class members
 
-  final updatePointWithOptCoords_updatePointWithOptCoords?
-  updatePointWithOptCoords;
+  updatePointWithOptCoords_updatePointWithOptCoords? updatePointWithOptCoords;
 
   // keywordargs constructor
   updatePointWithOptCoordsResponse({this.updatePointWithOptCoords});
-  static updatePointWithOptCoordsResponse fromJson(JsonObject data) {
+  static updatePointWithOptCoordsResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final updatePointWithOptCoords_updatePointWithOptCoords?
     updatePointWithOptCoords_value;
     final updatePointWithOptCoords$raw = data["updatePointWithOptCoords"];
@@ -25,27 +28,8 @@ class updatePointWithOptCoordsResponse {
             ? null
             : updatePointWithOptCoords_updatePointWithOptCoords.fromJson(
               updatePointWithOptCoords$raw,
+              context: context,
             );
-
-    return updatePointWithOptCoordsResponse(
-      updatePointWithOptCoords: updatePointWithOptCoords_value,
-    );
-  }
-
-  updatePointWithOptCoordsResponse updateWithJson(JsonObject data) {
-    final updatePointWithOptCoords_updatePointWithOptCoords?
-    updatePointWithOptCoords_value;
-    if (data.containsKey('updatePointWithOptCoords')) {
-      final updatePointWithOptCoords$raw = data["updatePointWithOptCoords"];
-      updatePointWithOptCoords_value =
-          updatePointWithOptCoords$raw == null
-              ? null
-              : updatePointWithOptCoords_updatePointWithOptCoords.fromJson(
-                updatePointWithOptCoords$raw,
-              );
-    } else {
-      updatePointWithOptCoords_value = updatePointWithOptCoords;
-    }
 
     return updatePointWithOptCoordsResponse(
       updatePointWithOptCoords: updatePointWithOptCoords_value,
@@ -74,21 +58,24 @@ class updatePointWithOptCoordsResponse {
 class updatePointWithOptCoords_updatePointWithOptCoords {
   /// class members
 
-  final rmhlxei.Point? coords;
+  rmhlxei.Point? coords;
 
-  final String name;
+  String name;
 
-  final String id;
+  String id;
 
   // keywordargs constructor
   updatePointWithOptCoords_updatePointWithOptCoords({
     this.coords,
+
     required this.name,
+
     required this.id,
   });
   static updatePointWithOptCoords_updatePointWithOptCoords fromJson(
-    JsonObject data,
-  ) {
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
     coords_value =
@@ -103,45 +90,6 @@ class updatePointWithOptCoords_updatePointWithOptCoords {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
-
-    return updatePointWithOptCoords_updatePointWithOptCoords(
-      coords: coords_value,
-
-      name: name_value,
-
-      id: id_value,
-    );
-  }
-
-  updatePointWithOptCoords_updatePointWithOptCoords updateWithJson(
-    JsonObject data,
-  ) {
-    final rmhlxei.Point? coords_value;
-    if (data.containsKey('coords')) {
-      final coords$raw = data["coords"];
-      coords_value =
-          coords$raw == null
-              ? null
-              : rmhlxei.pointScalarImpl.deserialize(coords$raw);
-    } else {
-      coords_value = coords;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
 
     return updatePointWithOptCoords_updatePointWithOptCoords(
       coords: coords_value,

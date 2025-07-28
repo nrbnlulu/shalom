@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,26 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class GetIntResponse {
   /// class members
 
-  final int intField;
+  int intField;
 
   // keywordargs constructor
   GetIntResponse({required this.intField});
-  static GetIntResponse fromJson(JsonObject data) {
+  static GetIntResponse fromJson(JsonObject data, {ShalomContext? context}) {
     final int intField_value;
     final intField$raw = data["intField"];
     intField_value = intField$raw as int;
-
-    return GetIntResponse(intField: intField_value);
-  }
-
-  GetIntResponse updateWithJson(JsonObject data) {
-    final int intField_value;
-    if (data.containsKey('intField')) {
-      final intField$raw = data["intField"];
-      intField_value = intField$raw as int;
-    } else {
-      intField_value = intField;
-    }
 
     return GetIntResponse(intField: intField_value);
   }

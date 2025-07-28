@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,26 +11,17 @@ typedef JsonObject = Map<String, dynamic>;
 class GetFloatOptionalResponse {
   /// class members
 
-  final double? floatOptional;
+  double? floatOptional;
 
   // keywordargs constructor
   GetFloatOptionalResponse({this.floatOptional});
-  static GetFloatOptionalResponse fromJson(JsonObject data) {
+  static GetFloatOptionalResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final double? floatOptional_value;
     final floatOptional$raw = data["floatOptional"];
     floatOptional_value = floatOptional$raw as double?;
-
-    return GetFloatOptionalResponse(floatOptional: floatOptional_value);
-  }
-
-  GetFloatOptionalResponse updateWithJson(JsonObject data) {
-    final double? floatOptional_value;
-    if (data.containsKey('floatOptional')) {
-      final floatOptional$raw = data["floatOptional"];
-      floatOptional_value = floatOptional$raw as double?;
-    } else {
-      floatOptional_value = floatOptional;
-    }
 
     return GetFloatOptionalResponse(floatOptional: floatOptional_value);
   }

@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,34 +11,23 @@ typedef JsonObject = Map<String, dynamic>;
 class GetSpecificOrderResponse {
   /// class members
 
-  final GetSpecificOrder_getSpecificOrder? getSpecificOrder;
+  GetSpecificOrder_getSpecificOrder? getSpecificOrder;
 
   // keywordargs constructor
   GetSpecificOrderResponse({this.getSpecificOrder});
-  static GetSpecificOrderResponse fromJson(JsonObject data) {
+  static GetSpecificOrderResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
     final getSpecificOrder$raw = data["getSpecificOrder"];
     getSpecificOrder_value =
         getSpecificOrder$raw == null
             ? null
-            : GetSpecificOrder_getSpecificOrder.fromJson(getSpecificOrder$raw);
-
-    return GetSpecificOrderResponse(getSpecificOrder: getSpecificOrder_value);
-  }
-
-  GetSpecificOrderResponse updateWithJson(JsonObject data) {
-    final GetSpecificOrder_getSpecificOrder? getSpecificOrder_value;
-    if (data.containsKey('getSpecificOrder')) {
-      final getSpecificOrder$raw = data["getSpecificOrder"];
-      getSpecificOrder_value =
-          getSpecificOrder$raw == null
-              ? null
-              : GetSpecificOrder_getSpecificOrder.fromJson(
-                getSpecificOrder$raw,
-              );
-    } else {
-      getSpecificOrder_value = getSpecificOrder;
-    }
+            : GetSpecificOrder_getSpecificOrder.fromJson(
+              getSpecificOrder$raw,
+              context: context,
+            );
 
     return GetSpecificOrderResponse(getSpecificOrder: getSpecificOrder_value);
   }
@@ -62,15 +52,18 @@ class GetSpecificOrderResponse {
 class GetSpecificOrder_getSpecificOrder {
   /// class members
 
-  final int? quantity;
+  int? quantity;
 
-  final double? price;
+  double? price;
 
-  final String? name;
+  String? name;
 
   // keywordargs constructor
   GetSpecificOrder_getSpecificOrder({this.quantity, this.price, this.name});
-  static GetSpecificOrder_getSpecificOrder fromJson(JsonObject data) {
+  static GetSpecificOrder_getSpecificOrder fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
     quantity_value = quantity$raw as int?;
@@ -82,40 +75,6 @@ class GetSpecificOrder_getSpecificOrder {
     final String? name_value;
     final name$raw = data["name"];
     name_value = name$raw as String?;
-
-    return GetSpecificOrder_getSpecificOrder(
-      quantity: quantity_value,
-
-      price: price_value,
-
-      name: name_value,
-    );
-  }
-
-  GetSpecificOrder_getSpecificOrder updateWithJson(JsonObject data) {
-    final int? quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int?;
-    } else {
-      quantity_value = quantity;
-    }
-
-    final double? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double?;
-    } else {
-      price_value = price;
-    }
-
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
 
     return GetSpecificOrder_getSpecificOrder(
       quantity: quantity_value,

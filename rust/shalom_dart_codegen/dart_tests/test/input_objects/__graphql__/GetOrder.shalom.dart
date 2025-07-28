@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,30 +11,17 @@ typedef JsonObject = Map<String, dynamic>;
 class GetOrderResponse {
   /// class members
 
-  final GetOrder_getOrder? getOrder;
+  GetOrder_getOrder? getOrder;
 
   // keywordargs constructor
   GetOrderResponse({this.getOrder});
-  static GetOrderResponse fromJson(JsonObject data) {
+  static GetOrderResponse fromJson(JsonObject data, {ShalomContext? context}) {
     final GetOrder_getOrder? getOrder_value;
     final getOrder$raw = data["getOrder"];
     getOrder_value =
-        getOrder$raw == null ? null : GetOrder_getOrder.fromJson(getOrder$raw);
-
-    return GetOrderResponse(getOrder: getOrder_value);
-  }
-
-  GetOrderResponse updateWithJson(JsonObject data) {
-    final GetOrder_getOrder? getOrder_value;
-    if (data.containsKey('getOrder')) {
-      final getOrder$raw = data["getOrder"];
-      getOrder_value =
-          getOrder$raw == null
-              ? null
-              : GetOrder_getOrder.fromJson(getOrder$raw);
-    } else {
-      getOrder_value = getOrder;
-    }
+        getOrder$raw == null
+            ? null
+            : GetOrder_getOrder.fromJson(getOrder$raw, context: context);
 
     return GetOrderResponse(getOrder: getOrder_value);
   }
@@ -57,15 +45,15 @@ class GetOrderResponse {
 class GetOrder_getOrder {
   /// class members
 
-  final int? quantity;
+  int? quantity;
 
-  final String? name;
+  String? name;
 
-  final double? price;
+  double? price;
 
   // keywordargs constructor
   GetOrder_getOrder({this.quantity, this.name, this.price});
-  static GetOrder_getOrder fromJson(JsonObject data) {
+  static GetOrder_getOrder fromJson(JsonObject data, {ShalomContext? context}) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
     quantity_value = quantity$raw as int?;
@@ -77,40 +65,6 @@ class GetOrder_getOrder {
     final double? price_value;
     final price$raw = data["price"];
     price_value = price$raw as double?;
-
-    return GetOrder_getOrder(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  GetOrder_getOrder updateWithJson(JsonObject data) {
-    final int? quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int?;
-    } else {
-      quantity_value = quantity;
-    }
-
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final double? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double?;
-    } else {
-      price_value = price;
-    }
 
     return GetOrder_getOrder(
       quantity: quantity_value,

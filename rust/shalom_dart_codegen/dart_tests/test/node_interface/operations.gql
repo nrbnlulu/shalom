@@ -1,0 +1,25 @@
+
+query GetSimpleUser($userId: ID!) {
+  user(id: $userId) {
+    id
+    name
+    email
+  }
+}
+
+query GetUserWithNestedFields($userId: ID!) {
+  user(id: $userId) {
+    id
+    name
+    # Requesting fields from the nested 'address' object
+    address {
+      street
+      city
+    }
+    post {
+      id
+      title
+    }
+  }
+}       
+            

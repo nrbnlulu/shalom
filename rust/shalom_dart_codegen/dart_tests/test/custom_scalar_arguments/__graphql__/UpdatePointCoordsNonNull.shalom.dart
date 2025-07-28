@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -11,11 +12,14 @@ typedef JsonObject = Map<String, dynamic>;
 class UpdatePointCoordsNonNullResponse {
   /// class members
 
-  final UpdatePointCoordsNonNull_updatePointCoords? updatePointCoords;
+  UpdatePointCoordsNonNull_updatePointCoords? updatePointCoords;
 
   // keywordargs constructor
   UpdatePointCoordsNonNullResponse({this.updatePointCoords});
-  static UpdatePointCoordsNonNullResponse fromJson(JsonObject data) {
+  static UpdatePointCoordsNonNullResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final UpdatePointCoordsNonNull_updatePointCoords? updatePointCoords_value;
     final updatePointCoords$raw = data["updatePointCoords"];
     updatePointCoords_value =
@@ -23,26 +27,8 @@ class UpdatePointCoordsNonNullResponse {
             ? null
             : UpdatePointCoordsNonNull_updatePointCoords.fromJson(
               updatePointCoords$raw,
+              context: context,
             );
-
-    return UpdatePointCoordsNonNullResponse(
-      updatePointCoords: updatePointCoords_value,
-    );
-  }
-
-  UpdatePointCoordsNonNullResponse updateWithJson(JsonObject data) {
-    final UpdatePointCoordsNonNull_updatePointCoords? updatePointCoords_value;
-    if (data.containsKey('updatePointCoords')) {
-      final updatePointCoords$raw = data["updatePointCoords"];
-      updatePointCoords_value =
-          updatePointCoords$raw == null
-              ? null
-              : UpdatePointCoordsNonNull_updatePointCoords.fromJson(
-                updatePointCoords$raw,
-              );
-    } else {
-      updatePointCoords_value = updatePointCoords;
-    }
 
     return UpdatePointCoordsNonNullResponse(
       updatePointCoords: updatePointCoords_value,
@@ -69,19 +55,24 @@ class UpdatePointCoordsNonNullResponse {
 class UpdatePointCoordsNonNull_updatePointCoords {
   /// class members
 
-  final rmhlxei.Point? coords;
+  rmhlxei.Point? coords;
 
-  final String name;
+  String name;
 
-  final String id;
+  String id;
 
   // keywordargs constructor
   UpdatePointCoordsNonNull_updatePointCoords({
     this.coords,
+
     required this.name,
+
     required this.id,
   });
-  static UpdatePointCoordsNonNull_updatePointCoords fromJson(JsonObject data) {
+  static UpdatePointCoordsNonNull_updatePointCoords fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
     coords_value =
@@ -96,43 +87,6 @@ class UpdatePointCoordsNonNull_updatePointCoords {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
-
-    return UpdatePointCoordsNonNull_updatePointCoords(
-      coords: coords_value,
-
-      name: name_value,
-
-      id: id_value,
-    );
-  }
-
-  UpdatePointCoordsNonNull_updatePointCoords updateWithJson(JsonObject data) {
-    final rmhlxei.Point? coords_value;
-    if (data.containsKey('coords')) {
-      final coords$raw = data["coords"];
-      coords_value =
-          coords$raw == null
-              ? null
-              : rmhlxei.pointScalarImpl.deserialize(coords$raw);
-    } else {
-      coords_value = coords;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
 
     return UpdatePointCoordsNonNull_updatePointCoords(
       coords: coords_value,

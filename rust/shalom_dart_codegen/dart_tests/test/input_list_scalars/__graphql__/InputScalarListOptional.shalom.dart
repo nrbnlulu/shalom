@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,12 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class InputScalarListOptionalResponse {
   /// class members
 
-  final InputScalarListOptional_InputScalarListOptional?
-  InputScalarListOptional;
+  InputScalarListOptional_InputScalarListOptional? InputScalarListOptional;
 
   // keywordargs constructor
   InputScalarListOptionalResponse({this.InputScalarListOptional});
-  static InputScalarListOptionalResponse fromJson(JsonObject data) {
+  static InputScalarListOptionalResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final InputScalarListOptional_InputScalarListOptional?
     InputScalarListOptional_value;
     final InputScalarListOptional$raw = data["InputScalarListOptional"];
@@ -24,27 +27,8 @@ class InputScalarListOptionalResponse {
             ? null
             : InputScalarListOptional_InputScalarListOptional.fromJson(
               InputScalarListOptional$raw,
+              context: context,
             );
-
-    return InputScalarListOptionalResponse(
-      InputScalarListOptional: InputScalarListOptional_value,
-    );
-  }
-
-  InputScalarListOptionalResponse updateWithJson(JsonObject data) {
-    final InputScalarListOptional_InputScalarListOptional?
-    InputScalarListOptional_value;
-    if (data.containsKey('InputScalarListOptional')) {
-      final InputScalarListOptional$raw = data["InputScalarListOptional"];
-      InputScalarListOptional_value =
-          InputScalarListOptional$raw == null
-              ? null
-              : InputScalarListOptional_InputScalarListOptional.fromJson(
-                InputScalarListOptional$raw,
-              );
-    } else {
-      InputScalarListOptional_value = InputScalarListOptional;
-    }
 
     return InputScalarListOptionalResponse(
       InputScalarListOptional: InputScalarListOptional_value,
@@ -71,32 +55,17 @@ class InputScalarListOptionalResponse {
 class InputScalarListOptional_InputScalarListOptional {
   /// class members
 
-  final bool success;
+  bool success;
 
   // keywordargs constructor
   InputScalarListOptional_InputScalarListOptional({required this.success});
   static InputScalarListOptional_InputScalarListOptional fromJson(
-    JsonObject data,
-  ) {
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
-
-    return InputScalarListOptional_InputScalarListOptional(
-      success: success_value,
-    );
-  }
-
-  InputScalarListOptional_InputScalarListOptional updateWithJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
 
     return InputScalarListOptional_InputScalarListOptional(
       success: success_value,

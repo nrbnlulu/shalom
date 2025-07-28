@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,32 +11,19 @@ typedef JsonObject = Map<String, dynamic>;
 class InputListEnumInsideInputObjectResponse {
   /// class members
 
-  final String? InputListEnumInsideInputObject;
+  String? InputListEnumInsideInputObject;
 
   // keywordargs constructor
   InputListEnumInsideInputObjectResponse({this.InputListEnumInsideInputObject});
-  static InputListEnumInsideInputObjectResponse fromJson(JsonObject data) {
+  static InputListEnumInsideInputObjectResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String? InputListEnumInsideInputObject_value;
     final InputListEnumInsideInputObject$raw =
         data["InputListEnumInsideInputObject"];
     InputListEnumInsideInputObject_value =
         InputListEnumInsideInputObject$raw as String?;
-
-    return InputListEnumInsideInputObjectResponse(
-      InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,
-    );
-  }
-
-  InputListEnumInsideInputObjectResponse updateWithJson(JsonObject data) {
-    final String? InputListEnumInsideInputObject_value;
-    if (data.containsKey('InputListEnumInsideInputObject')) {
-      final InputListEnumInsideInputObject$raw =
-          data["InputListEnumInsideInputObject"];
-      InputListEnumInsideInputObject_value =
-          InputListEnumInsideInputObject$raw as String?;
-    } else {
-      InputListEnumInsideInputObject_value = InputListEnumInsideInputObject;
-    }
 
     return InputListEnumInsideInputObjectResponse(
       InputListEnumInsideInputObject: InputListEnumInsideInputObject_value,

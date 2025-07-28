@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,32 +11,23 @@ typedef JsonObject = Map<String, dynamic>;
 class OrderRequestResponse {
   /// class members
 
-  final OrderRequest_orderRequest? orderRequest;
+  OrderRequest_orderRequest? orderRequest;
 
   // keywordargs constructor
   OrderRequestResponse({this.orderRequest});
-  static OrderRequestResponse fromJson(JsonObject data) {
+  static OrderRequestResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final OrderRequest_orderRequest? orderRequest_value;
     final orderRequest$raw = data["orderRequest"];
     orderRequest_value =
         orderRequest$raw == null
             ? null
-            : OrderRequest_orderRequest.fromJson(orderRequest$raw);
-
-    return OrderRequestResponse(orderRequest: orderRequest_value);
-  }
-
-  OrderRequestResponse updateWithJson(JsonObject data) {
-    final OrderRequest_orderRequest? orderRequest_value;
-    if (data.containsKey('orderRequest')) {
-      final orderRequest$raw = data["orderRequest"];
-      orderRequest_value =
-          orderRequest$raw == null
-              ? null
-              : OrderRequest_orderRequest.fromJson(orderRequest$raw);
-    } else {
-      orderRequest_value = orderRequest;
-    }
+            : OrderRequest_orderRequest.fromJson(
+              orderRequest$raw,
+              context: context,
+            );
 
     return OrderRequestResponse(orderRequest: orderRequest_value);
   }
@@ -59,15 +51,18 @@ class OrderRequestResponse {
 class OrderRequest_orderRequest {
   /// class members
 
-  final int? quantity;
+  int? quantity;
 
-  final String? name;
+  String? name;
 
-  final double? price;
+  double? price;
 
   // keywordargs constructor
   OrderRequest_orderRequest({this.quantity, this.name, this.price});
-  static OrderRequest_orderRequest fromJson(JsonObject data) {
+  static OrderRequest_orderRequest fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
     quantity_value = quantity$raw as int?;
@@ -79,40 +74,6 @@ class OrderRequest_orderRequest {
     final double? price_value;
     final price$raw = data["price"];
     price_value = price$raw as double?;
-
-    return OrderRequest_orderRequest(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  OrderRequest_orderRequest updateWithJson(JsonObject data) {
-    final int? quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int?;
-    } else {
-      quantity_value = quantity;
-    }
-
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final double? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double?;
-    } else {
-      price_value = price;
-    }
 
     return OrderRequest_orderRequest(
       quantity: quantity_value,

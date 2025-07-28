@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,32 +11,23 @@ typedef JsonObject = Map<String, dynamic>;
 class OrderRecursiveResponse {
   /// class members
 
-  final OrderRecursive_orderRecursive? orderRecursive;
+  OrderRecursive_orderRecursive? orderRecursive;
 
   // keywordargs constructor
   OrderRecursiveResponse({this.orderRecursive});
-  static OrderRecursiveResponse fromJson(JsonObject data) {
+  static OrderRecursiveResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final OrderRecursive_orderRecursive? orderRecursive_value;
     final orderRecursive$raw = data["orderRecursive"];
     orderRecursive_value =
         orderRecursive$raw == null
             ? null
-            : OrderRecursive_orderRecursive.fromJson(orderRecursive$raw);
-
-    return OrderRecursiveResponse(orderRecursive: orderRecursive_value);
-  }
-
-  OrderRecursiveResponse updateWithJson(JsonObject data) {
-    final OrderRecursive_orderRecursive? orderRecursive_value;
-    if (data.containsKey('orderRecursive')) {
-      final orderRecursive$raw = data["orderRecursive"];
-      orderRecursive_value =
-          orderRecursive$raw == null
-              ? null
-              : OrderRecursive_orderRecursive.fromJson(orderRecursive$raw);
-    } else {
-      orderRecursive_value = orderRecursive;
-    }
+            : OrderRecursive_orderRecursive.fromJson(
+              orderRecursive$raw,
+              context: context,
+            );
 
     return OrderRecursiveResponse(orderRecursive: orderRecursive_value);
   }
@@ -60,15 +52,18 @@ class OrderRecursiveResponse {
 class OrderRecursive_orderRecursive {
   /// class members
 
-  final int? quantity;
+  int? quantity;
 
-  final String? name;
+  String? name;
 
-  final double? price;
+  double? price;
 
   // keywordargs constructor
   OrderRecursive_orderRecursive({this.quantity, this.name, this.price});
-  static OrderRecursive_orderRecursive fromJson(JsonObject data) {
+  static OrderRecursive_orderRecursive fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final int? quantity_value;
     final quantity$raw = data["quantity"];
     quantity_value = quantity$raw as int?;
@@ -80,40 +75,6 @@ class OrderRecursive_orderRecursive {
     final double? price_value;
     final price$raw = data["price"];
     price_value = price$raw as double?;
-
-    return OrderRecursive_orderRecursive(
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  OrderRecursive_orderRecursive updateWithJson(JsonObject data) {
-    final int? quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int?;
-    } else {
-      quantity_value = quantity;
-    }
-
-    final String? name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String?;
-    } else {
-      name_value = name;
-    }
-
-    final double? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double?;
-    } else {
-      price_value = price;
-    }
 
     return OrderRecursive_orderRecursive(
       quantity: quantity_value,

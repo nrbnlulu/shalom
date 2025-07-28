@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,32 +11,23 @@ typedef JsonObject = Map<String, dynamic>;
 class GetListingOptWithUserResponse {
   /// class members
 
-  final GetListingOptWithUser_listingOpt? listingOpt;
+  GetListingOptWithUser_listingOpt? listingOpt;
 
   // keywordargs constructor
   GetListingOptWithUserResponse({this.listingOpt});
-  static GetListingOptWithUserResponse fromJson(JsonObject data) {
+  static GetListingOptWithUserResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final GetListingOptWithUser_listingOpt? listingOpt_value;
     final listingOpt$raw = data["listingOpt"];
     listingOpt_value =
         listingOpt$raw == null
             ? null
-            : GetListingOptWithUser_listingOpt.fromJson(listingOpt$raw);
-
-    return GetListingOptWithUserResponse(listingOpt: listingOpt_value);
-  }
-
-  GetListingOptWithUserResponse updateWithJson(JsonObject data) {
-    final GetListingOptWithUser_listingOpt? listingOpt_value;
-    if (data.containsKey('listingOpt')) {
-      final listingOpt$raw = data["listingOpt"];
-      listingOpt_value =
-          listingOpt$raw == null
-              ? null
-              : GetListingOptWithUser_listingOpt.fromJson(listingOpt$raw);
-    } else {
-      listingOpt_value = listingOpt;
-    }
+            : GetListingOptWithUser_listingOpt.fromJson(
+              listingOpt$raw,
+              context: context,
+            );
 
     return GetListingOptWithUserResponse(listingOpt: listingOpt_value);
   }
@@ -60,23 +52,28 @@ class GetListingOptWithUserResponse {
 class GetListingOptWithUser_listingOpt {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final int? price;
+  int? price;
 
-  final GetListingOptWithUser_listingOpt_user user;
+  GetListingOptWithUser_listingOpt_user user;
 
   // keywordargs constructor
   GetListingOptWithUser_listingOpt({
     required this.id,
+
     required this.name,
 
     this.price,
+
     required this.user,
   });
-  static GetListingOptWithUser_listingOpt fromJson(JsonObject data) {
+  static GetListingOptWithUser_listingOpt fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
@@ -91,51 +88,10 @@ class GetListingOptWithUser_listingOpt {
 
     final GetListingOptWithUser_listingOpt_user user_value;
     final user$raw = data["user"];
-    user_value = GetListingOptWithUser_listingOpt_user.fromJson(user$raw);
-
-    return GetListingOptWithUser_listingOpt(
-      id: id_value,
-
-      name: name_value,
-
-      price: price_value,
-
-      user: user_value,
+    user_value = GetListingOptWithUser_listingOpt_user.fromJson(
+      user$raw,
+      context: context,
     );
-  }
-
-  GetListingOptWithUser_listingOpt updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final int? price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as int?;
-    } else {
-      price_value = price;
-    }
-
-    final GetListingOptWithUser_listingOpt_user user_value;
-    if (data.containsKey('user')) {
-      final user$raw = data["user"];
-      user_value = GetListingOptWithUser_listingOpt_user.fromJson(user$raw);
-    } else {
-      user_value = user;
-    }
 
     return GetListingOptWithUser_listingOpt(
       id: id_value,
@@ -177,23 +133,28 @@ class GetListingOptWithUser_listingOpt {
 class GetListingOptWithUser_listingOpt_user {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final String email;
+  String email;
 
-  final int? age;
+  int? age;
 
   // keywordargs constructor
   GetListingOptWithUser_listingOpt_user({
     required this.id,
+
     required this.name,
+
     required this.email,
 
     this.age,
   });
-  static GetListingOptWithUser_listingOpt_user fromJson(JsonObject data) {
+  static GetListingOptWithUser_listingOpt_user fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
@@ -209,50 +170,6 @@ class GetListingOptWithUser_listingOpt_user {
     final int? age_value;
     final age$raw = data["age"];
     age_value = age$raw as int?;
-
-    return GetListingOptWithUser_listingOpt_user(
-      id: id_value,
-
-      name: name_value,
-
-      email: email_value,
-
-      age: age_value,
-    );
-  }
-
-  GetListingOptWithUser_listingOpt_user updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final String email_value;
-    if (data.containsKey('email')) {
-      final email$raw = data["email"];
-      email_value = email$raw as String;
-    } else {
-      email_value = email;
-    }
-
-    final int? age_value;
-    if (data.containsKey('age')) {
-      final age$raw = data["age"];
-      age_value = age$raw as int?;
-    } else {
-      age_value = age;
-    }
 
     return GetListingOptWithUser_listingOpt_user(
       id: id_value,

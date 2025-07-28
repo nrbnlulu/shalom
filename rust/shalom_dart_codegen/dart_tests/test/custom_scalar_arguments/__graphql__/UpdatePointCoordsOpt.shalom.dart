@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -11,32 +12,23 @@ typedef JsonObject = Map<String, dynamic>;
 class UpdatePointCoordsOptResponse {
   /// class members
 
-  final UpdatePointCoordsOpt_getPointById? getPointById;
+  UpdatePointCoordsOpt_getPointById? getPointById;
 
   // keywordargs constructor
   UpdatePointCoordsOptResponse({this.getPointById});
-  static UpdatePointCoordsOptResponse fromJson(JsonObject data) {
+  static UpdatePointCoordsOptResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final UpdatePointCoordsOpt_getPointById? getPointById_value;
     final getPointById$raw = data["getPointById"];
     getPointById_value =
         getPointById$raw == null
             ? null
-            : UpdatePointCoordsOpt_getPointById.fromJson(getPointById$raw);
-
-    return UpdatePointCoordsOptResponse(getPointById: getPointById_value);
-  }
-
-  UpdatePointCoordsOptResponse updateWithJson(JsonObject data) {
-    final UpdatePointCoordsOpt_getPointById? getPointById_value;
-    if (data.containsKey('getPointById')) {
-      final getPointById$raw = data["getPointById"];
-      getPointById_value =
-          getPointById$raw == null
-              ? null
-              : UpdatePointCoordsOpt_getPointById.fromJson(getPointById$raw);
-    } else {
-      getPointById_value = getPointById;
-    }
+            : UpdatePointCoordsOpt_getPointById.fromJson(
+              getPointById$raw,
+              context: context,
+            );
 
     return UpdatePointCoordsOptResponse(getPointById: getPointById_value);
   }
@@ -61,19 +53,24 @@ class UpdatePointCoordsOptResponse {
 class UpdatePointCoordsOpt_getPointById {
   /// class members
 
-  final rmhlxei.Point? coords;
+  rmhlxei.Point? coords;
 
-  final String name;
+  String name;
 
-  final String id;
+  String id;
 
   // keywordargs constructor
   UpdatePointCoordsOpt_getPointById({
     this.coords,
+
     required this.name,
+
     required this.id,
   });
-  static UpdatePointCoordsOpt_getPointById fromJson(JsonObject data) {
+  static UpdatePointCoordsOpt_getPointById fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final rmhlxei.Point? coords_value;
     final coords$raw = data["coords"];
     coords_value =
@@ -88,43 +85,6 @@ class UpdatePointCoordsOpt_getPointById {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
-
-    return UpdatePointCoordsOpt_getPointById(
-      coords: coords_value,
-
-      name: name_value,
-
-      id: id_value,
-    );
-  }
-
-  UpdatePointCoordsOpt_getPointById updateWithJson(JsonObject data) {
-    final rmhlxei.Point? coords_value;
-    if (data.containsKey('coords')) {
-      final coords$raw = data["coords"];
-      coords_value =
-          coords$raw == null
-              ? null
-              : rmhlxei.pointScalarImpl.deserialize(coords$raw);
-    } else {
-      coords_value = coords;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
 
     return UpdatePointCoordsOpt_getPointById(
       coords: coords_value,

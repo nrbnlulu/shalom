@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,12 +11,15 @@ typedef JsonObject = Map<String, dynamic>;
 class InputScalarInsideInputTypeResponse {
   /// class members
 
-  final InputScalarInsideInputType_InputScalarInsideInputType?
+  InputScalarInsideInputType_InputScalarInsideInputType?
   InputScalarInsideInputType;
 
   // keywordargs constructor
   InputScalarInsideInputTypeResponse({this.InputScalarInsideInputType});
-  static InputScalarInsideInputTypeResponse fromJson(JsonObject data) {
+  static InputScalarInsideInputTypeResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final InputScalarInsideInputType_InputScalarInsideInputType?
     InputScalarInsideInputType_value;
     final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
@@ -24,27 +28,8 @@ class InputScalarInsideInputTypeResponse {
             ? null
             : InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
               InputScalarInsideInputType$raw,
+              context: context,
             );
-
-    return InputScalarInsideInputTypeResponse(
-      InputScalarInsideInputType: InputScalarInsideInputType_value,
-    );
-  }
-
-  InputScalarInsideInputTypeResponse updateWithJson(JsonObject data) {
-    final InputScalarInsideInputType_InputScalarInsideInputType?
-    InputScalarInsideInputType_value;
-    if (data.containsKey('InputScalarInsideInputType')) {
-      final InputScalarInsideInputType$raw = data["InputScalarInsideInputType"];
-      InputScalarInsideInputType_value =
-          InputScalarInsideInputType$raw == null
-              ? null
-              : InputScalarInsideInputType_InputScalarInsideInputType.fromJson(
-                InputScalarInsideInputType$raw,
-              );
-    } else {
-      InputScalarInsideInputType_value = InputScalarInsideInputType;
-    }
 
     return InputScalarInsideInputTypeResponse(
       InputScalarInsideInputType: InputScalarInsideInputType_value,
@@ -73,34 +58,19 @@ class InputScalarInsideInputTypeResponse {
 class InputScalarInsideInputType_InputScalarInsideInputType {
   /// class members
 
-  final bool success;
+  bool success;
 
   // keywordargs constructor
   InputScalarInsideInputType_InputScalarInsideInputType({
     required this.success,
   });
   static InputScalarInsideInputType_InputScalarInsideInputType fromJson(
-    JsonObject data,
-  ) {
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
-
-    return InputScalarInsideInputType_InputScalarInsideInputType(
-      success: success_value,
-    );
-  }
-
-  InputScalarInsideInputType_InputScalarInsideInputType updateWithJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
 
     return InputScalarInsideInputType_InputScalarInsideInputType(
       success: success_value,

@@ -1,0 +1,22 @@
+query GetUser {
+  user {
+    id
+    name
+    password
+  }
+}
+
+query GetUserWithOptionalName {
+  userOptional {
+    id
+    name
+    password
+  }
+}
+
+query GetUserNotAllSelected {
+    user {
+        id
+        name
+    }
+}

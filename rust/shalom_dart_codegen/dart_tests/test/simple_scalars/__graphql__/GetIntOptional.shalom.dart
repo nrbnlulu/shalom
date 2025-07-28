@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,26 +11,17 @@ typedef JsonObject = Map<String, dynamic>;
 class GetIntOptionalResponse {
   /// class members
 
-  final int? intOptional;
+  int? intOptional;
 
   // keywordargs constructor
   GetIntOptionalResponse({this.intOptional});
-  static GetIntOptionalResponse fromJson(JsonObject data) {
+  static GetIntOptionalResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final int? intOptional_value;
     final intOptional$raw = data["intOptional"];
     intOptional_value = intOptional$raw as int?;
-
-    return GetIntOptionalResponse(intOptional: intOptional_value);
-  }
-
-  GetIntOptionalResponse updateWithJson(JsonObject data) {
-    final int? intOptional_value;
-    if (data.containsKey('intOptional')) {
-      final intOptional$raw = data["intOptional"];
-      intOptional_value = intOptional$raw as int?;
-    } else {
-      intOptional_value = intOptional;
-    }
 
     return GetIntOptionalResponse(intOptional: intOptional_value);
   }

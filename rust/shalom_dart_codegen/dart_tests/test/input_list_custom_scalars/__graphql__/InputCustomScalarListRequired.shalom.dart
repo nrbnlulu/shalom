@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -11,12 +12,15 @@ typedef JsonObject = Map<String, dynamic>;
 class InputCustomScalarListRequiredResponse {
   /// class members
 
-  final InputCustomScalarListRequired_InputCustomScalarListRequired?
+  InputCustomScalarListRequired_InputCustomScalarListRequired?
   InputCustomScalarListRequired;
 
   // keywordargs constructor
   InputCustomScalarListRequiredResponse({this.InputCustomScalarListRequired});
-  static InputCustomScalarListRequiredResponse fromJson(JsonObject data) {
+  static InputCustomScalarListRequiredResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final InputCustomScalarListRequired_InputCustomScalarListRequired?
     InputCustomScalarListRequired_value;
     final InputCustomScalarListRequired$raw =
@@ -26,28 +30,8 @@ class InputCustomScalarListRequiredResponse {
             ? null
             : InputCustomScalarListRequired_InputCustomScalarListRequired.fromJson(
               InputCustomScalarListRequired$raw,
+              context: context,
             );
-
-    return InputCustomScalarListRequiredResponse(
-      InputCustomScalarListRequired: InputCustomScalarListRequired_value,
-    );
-  }
-
-  InputCustomScalarListRequiredResponse updateWithJson(JsonObject data) {
-    final InputCustomScalarListRequired_InputCustomScalarListRequired?
-    InputCustomScalarListRequired_value;
-    if (data.containsKey('InputCustomScalarListRequired')) {
-      final InputCustomScalarListRequired$raw =
-          data["InputCustomScalarListRequired"];
-      InputCustomScalarListRequired_value =
-          InputCustomScalarListRequired$raw == null
-              ? null
-              : InputCustomScalarListRequired_InputCustomScalarListRequired.fromJson(
-                InputCustomScalarListRequired$raw,
-              );
-    } else {
-      InputCustomScalarListRequired_value = InputCustomScalarListRequired;
-    }
 
     return InputCustomScalarListRequiredResponse(
       InputCustomScalarListRequired: InputCustomScalarListRequired_value,
@@ -78,9 +62,9 @@ class InputCustomScalarListRequiredResponse {
 class InputCustomScalarListRequired_InputCustomScalarListRequired {
   /// class members
 
-  final bool success;
+  bool success;
 
-  final String? message;
+  String? message;
 
   // keywordargs constructor
   InputCustomScalarListRequired_InputCustomScalarListRequired({
@@ -89,8 +73,9 @@ class InputCustomScalarListRequired_InputCustomScalarListRequired {
     this.message,
   });
   static InputCustomScalarListRequired_InputCustomScalarListRequired fromJson(
-    JsonObject data,
-  ) {
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -98,32 +83,6 @@ class InputCustomScalarListRequired_InputCustomScalarListRequired {
     final String? message_value;
     final message$raw = data["message"];
     message_value = message$raw as String?;
-
-    return InputCustomScalarListRequired_InputCustomScalarListRequired(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  InputCustomScalarListRequired_InputCustomScalarListRequired updateWithJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
-
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
 
     return InputCustomScalarListRequired_InputCustomScalarListRequired(
       success: success_value,

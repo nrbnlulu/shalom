@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 import '../../custom_scalar/point.dart' as rmhlxei;
 
 import 'package:shalom_core/shalom_core.dart';
@@ -11,14 +12,17 @@ typedef JsonObject = Map<String, dynamic>;
 class InputCustomScalarListNullableMaybeResponse {
   /// class members
 
-  final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
+  InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
   InputCustomScalarListNullableMaybe;
 
   // keywordargs constructor
   InputCustomScalarListNullableMaybeResponse({
     this.InputCustomScalarListNullableMaybe,
   });
-  static InputCustomScalarListNullableMaybeResponse fromJson(JsonObject data) {
+  static InputCustomScalarListNullableMaybeResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
     InputCustomScalarListNullableMaybe_value;
     final InputCustomScalarListNullableMaybe$raw =
@@ -28,30 +32,8 @@ class InputCustomScalarListNullableMaybeResponse {
             ? null
             : InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
               InputCustomScalarListNullableMaybe$raw,
+              context: context,
             );
-
-    return InputCustomScalarListNullableMaybeResponse(
-      InputCustomScalarListNullableMaybe:
-          InputCustomScalarListNullableMaybe_value,
-    );
-  }
-
-  InputCustomScalarListNullableMaybeResponse updateWithJson(JsonObject data) {
-    final InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe?
-    InputCustomScalarListNullableMaybe_value;
-    if (data.containsKey('InputCustomScalarListNullableMaybe')) {
-      final InputCustomScalarListNullableMaybe$raw =
-          data["InputCustomScalarListNullableMaybe"];
-      InputCustomScalarListNullableMaybe_value =
-          InputCustomScalarListNullableMaybe$raw == null
-              ? null
-              : InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe.fromJson(
-                InputCustomScalarListNullableMaybe$raw,
-              );
-    } else {
-      InputCustomScalarListNullableMaybe_value =
-          InputCustomScalarListNullableMaybe;
-    }
 
     return InputCustomScalarListNullableMaybeResponse(
       InputCustomScalarListNullableMaybe:
@@ -83,9 +65,9 @@ class InputCustomScalarListNullableMaybeResponse {
 class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
   /// class members
 
-  final bool success;
+  bool success;
 
-  final String? message;
+  String? message;
 
   // keywordargs constructor
   InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe({
@@ -94,7 +76,7 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
     this.message,
   });
   static InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
-  fromJson(JsonObject data) {
+  fromJson(JsonObject data, {ShalomContext? context}) {
     final bool success_value;
     final success$raw = data["success"];
     success_value = success$raw as bool;
@@ -102,31 +84,6 @@ class InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe {
     final String? message_value;
     final message$raw = data["message"];
     message_value = message$raw as String?;
-
-    return InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe
-  updateWithJson(JsonObject data) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
-    }
-
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
-    }
 
     return InputCustomScalarListNullableMaybe_InputCustomScalarListNullableMaybe(
       success: success_value,

@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,11 +11,14 @@ typedef JsonObject = Map<String, dynamic>;
 class ListOfOptionalScalarsOptionalResponse {
   /// class members
 
-  final List<int>? listOfOptionalScalarsOptional;
+  List<int>? listOfOptionalScalarsOptional;
 
   // keywordargs constructor
   ListOfOptionalScalarsOptionalResponse({this.listOfOptionalScalarsOptional});
-  static ListOfOptionalScalarsOptionalResponse fromJson(JsonObject data) {
+  static ListOfOptionalScalarsOptionalResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final List<int>? listOfOptionalScalarsOptional_value;
     final listOfOptionalScalarsOptional$raw =
         data["listOfOptionalScalarsOptional"];
@@ -24,26 +28,6 @@ class ListOfOptionalScalarsOptionalResponse {
             : (listOfOptionalScalarsOptional$raw as List<dynamic>)
                 .map((e) => e as int)
                 .toList();
-
-    return ListOfOptionalScalarsOptionalResponse(
-      listOfOptionalScalarsOptional: listOfOptionalScalarsOptional_value,
-    );
-  }
-
-  ListOfOptionalScalarsOptionalResponse updateWithJson(JsonObject data) {
-    final List<int>? listOfOptionalScalarsOptional_value;
-    if (data.containsKey('listOfOptionalScalarsOptional')) {
-      final listOfOptionalScalarsOptional$raw =
-          data["listOfOptionalScalarsOptional"];
-      listOfOptionalScalarsOptional_value =
-          listOfOptionalScalarsOptional$raw == null
-              ? null
-              : (listOfOptionalScalarsOptional$raw as List<dynamic>)
-                  .map((e) => e as int)
-                  .toList();
-    } else {
-      listOfOptionalScalarsOptional_value = listOfOptionalScalarsOptional;
-    }
 
     return ListOfOptionalScalarsOptionalResponse(
       listOfOptionalScalarsOptional: listOfOptionalScalarsOptional_value,

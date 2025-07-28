@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,26 +11,17 @@ typedef JsonObject = Map<String, dynamic>;
 class GetTaskStatusOptResponse {
   /// class members
 
-  final GetTaskStatusOpt_task task;
+  GetTaskStatusOpt_task task;
 
   // keywordargs constructor
   GetTaskStatusOptResponse({required this.task});
-  static GetTaskStatusOptResponse fromJson(JsonObject data) {
+  static GetTaskStatusOptResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final GetTaskStatusOpt_task task_value;
     final task$raw = data["task"];
-    task_value = GetTaskStatusOpt_task.fromJson(task$raw);
-
-    return GetTaskStatusOptResponse(task: task_value);
-  }
-
-  GetTaskStatusOptResponse updateWithJson(JsonObject data) {
-    final GetTaskStatusOpt_task task_value;
-    if (data.containsKey('task')) {
-      final task$raw = data["task"];
-      task_value = GetTaskStatusOpt_task.fromJson(task$raw);
-    } else {
-      task_value = task;
-    }
+    task_value = GetTaskStatusOpt_task.fromJson(task$raw, context: context);
 
     return GetTaskStatusOptResponse(task: task_value);
   }
@@ -53,15 +45,18 @@ class GetTaskStatusOptResponse {
 class GetTaskStatusOpt_task {
   /// class members
 
-  final String id;
+  String id;
 
-  final String name;
+  String name;
 
-  final Status? statusOpt;
+  Status? statusOpt;
 
   // keywordargs constructor
   GetTaskStatusOpt_task({required this.id, required this.name, this.statusOpt});
-  static GetTaskStatusOpt_task fromJson(JsonObject data) {
+  static GetTaskStatusOpt_task fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
@@ -74,41 +69,6 @@ class GetTaskStatusOpt_task {
     final statusOpt$raw = data["statusOpt"];
     statusOpt_value =
         statusOpt$raw == null ? null : Status.fromString(statusOpt$raw);
-
-    return GetTaskStatusOpt_task(
-      id: id_value,
-
-      name: name_value,
-
-      statusOpt: statusOpt_value,
-    );
-  }
-
-  GetTaskStatusOpt_task updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final Status? statusOpt_value;
-    if (data.containsKey('statusOpt')) {
-      final statusOpt$raw = data["statusOpt"];
-      statusOpt_value =
-          statusOpt$raw == null ? null : Status.fromString(statusOpt$raw);
-    } else {
-      statusOpt_value = statusOpt;
-    }
 
     return GetTaskStatusOpt_task(
       id: id_value,

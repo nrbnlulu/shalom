@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
+import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -10,13 +11,16 @@ typedef JsonObject = Map<String, dynamic>;
 class GetMultipleFieldsResponse {
   /// class members
 
-  final String id;
+  String id;
 
-  final int intField;
+  int intField;
 
   // keywordargs constructor
   GetMultipleFieldsResponse({required this.id, required this.intField});
-  static GetMultipleFieldsResponse fromJson(JsonObject data) {
+  static GetMultipleFieldsResponse fromJson(
+    JsonObject data, {
+    ShalomContext? context,
+  }) {
     final String id_value;
     final id$raw = data["id"];
     id_value = id$raw as String;
@@ -24,26 +28,6 @@ class GetMultipleFieldsResponse {
     final int intField_value;
     final intField$raw = data["intField"];
     intField_value = intField$raw as int;
-
-    return GetMultipleFieldsResponse(id: id_value, intField: intField_value);
-  }
-
-  GetMultipleFieldsResponse updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    final int intField_value;
-    if (data.containsKey('intField')) {
-      final intField$raw = data["intField"];
-      intField_value = intField$raw as int;
-    } else {
-      intField_value = intField;
-    }
 
     return GetMultipleFieldsResponse(id: id_value, intField: intField_value);
   }
