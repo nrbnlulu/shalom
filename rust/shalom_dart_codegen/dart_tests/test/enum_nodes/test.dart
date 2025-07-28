@@ -29,7 +29,9 @@ class Testable_GetUserWithStatus_user extends GetUserWithStatus_user
   });
 
   static Testable_GetUserWithStatus_user fromJson(
-      JsonObject data, ShalomContext context) {
+    JsonObject data,
+    ShalomContext context,
+  ) {
     context.manager.parseNodeData(data);
     return Testable_GetUserWithStatus_user(
       id: data['id'] as String,
@@ -40,7 +42,8 @@ class Testable_GetUserWithStatus_user extends GetUserWithStatus_user
 }
 
 class Testable_GetUserWithOptionalNameAndStatus_userOptional
-    extends GetUserWithOptionalNameAndStatus_userOptional with UpdateCounterMixin {
+    extends GetUserWithOptionalNameAndStatus_userOptional
+    with UpdateCounterMixin {
   Testable_GetUserWithOptionalNameAndStatus_userOptional({
     required super.id,
     super.name,
@@ -48,7 +51,9 @@ class Testable_GetUserWithOptionalNameAndStatus_userOptional
   });
 
   static Testable_GetUserWithOptionalNameAndStatus_userOptional fromJson(
-      JsonObject data, ShalomContext context) {
+    JsonObject data,
+    ShalomContext context,
+  ) {
     context.manager.parseNodeData(data);
     return Testable_GetUserWithOptionalNameAndStatus_userOptional(
       id: data['id'] as String,
@@ -64,16 +69,8 @@ void main() {
     late ShalomContext context;
 
     const id = "user:status:1";
-    final initialUserData = {
-      "id": id,
-      "name": "qtgql",
-      "status": "ACTIVE",
-    };
-    final nextUserData = {
-      "id": id,
-      "name": "shalom",
-      "status": "INACTIVE",
-    };
+    final initialUserData = {"id": id, "name": "qtgql", "status": "ACTIVE"};
+    final nextUserData = {"id": id, "name": "shalom", "status": "INACTIVE"};
 
     setUp(() {
       manager = NodeManager();
@@ -81,8 +78,10 @@ void main() {
     });
 
     test("all fields updated on subscribed node", () async {
-      final userNode =
-          Testable_GetUserWithStatus_user.fromJson(initialUserData, context);
+      final userNode = Testable_GetUserWithStatus_user.fromJson(
+        initialUserData,
+        context,
+      );
       userNode.subscribeToChanges(context);
 
       manager.parseNodeData(nextUserData);
@@ -93,8 +92,10 @@ void main() {
     });
 
     test("unsubscribed node does not receive updates", () async {
-      final userNode =
-          Testable_GetUserWithStatus_user.fromJson(initialUserData, context);
+      final userNode = Testable_GetUserWithStatus_user.fromJson(
+        initialUserData,
+        context,
+      );
 
       manager.parseNodeData(nextUserData);
 
@@ -104,51 +105,54 @@ void main() {
     });
   });
 
-  group("test GetUserWithOptionalNameAndStatus_userOptional updateWithJson",
-      () {
-    late NodeManager manager;
-    late ShalomContext context;
+  group(
+    "test GetUserWithOptionalNameAndStatus_userOptional updateWithJson",
+    () {
+      late NodeManager manager;
+      late ShalomContext context;
 
-    const id = "user:optional_status:1";
-    final initialData = {
-      "id": id,
-      "name": "Initial Name",
-      "status": "PENDING",
-    };
-
-    setUp(() {
-      manager = NodeManager();
-      context = ShalomContext(manager: manager);
-    });
-
-    test("updates status on subscribed node", () async {
-      final userNode =
-          Testable_GetUserWithOptionalNameAndStatus_userOptional.fromJson(
-              initialData, context);
-      userNode.subscribeToChanges(context);
-
-      final updatedData = {
+      const id = "user:optional_status:1";
+      final initialData = {
         "id": id,
-        "status": "ACTIVE",
+        "name": "Initial Name",
+        "status": "PENDING",
       };
-      manager.parseNodeData(updatedData);
 
-      await pumpEventQueue();
-      expect(userNode.updateCounter, 1);
-      expect(userNode.status, Status.ACTIVE);
-      expect(userNode.name, "Initial Name"); // Name should not change
-    });
+      setUp(() {
+        manager = NodeManager();
+        context = ShalomContext(manager: manager);
+      });
 
-    test("no update triggered when data has not changed", () async {
-       final userNode =
-          Testable_GetUserWithOptionalNameAndStatus_userOptional.fromJson(
-              initialData, context);
-      userNode.subscribeToChanges(context);
+      test("updates status on subscribed node", () async {
+        final userNode =
+            Testable_GetUserWithOptionalNameAndStatus_userOptional.fromJson(
+              initialData,
+              context,
+            );
+        userNode.subscribeToChanges(context);
 
-      manager.parseNodeData(initialData);
+        final updatedData = {"id": id, "status": "ACTIVE"};
+        manager.parseNodeData(updatedData);
 
-      await pumpEventQueue();
-      expect(userNode.updateCounter, 0);
-    });
-  });
+        await pumpEventQueue();
+        expect(userNode.updateCounter, 1);
+        expect(userNode.status, Status.ACTIVE);
+        expect(userNode.name, "Initial Name"); // Name should not change
+      });
+
+      test("no update triggered when data has not changed", () async {
+        final userNode =
+            Testable_GetUserWithOptionalNameAndStatus_userOptional.fromJson(
+              initialData,
+              context,
+            );
+        userNode.subscribeToChanges(context);
+
+        manager.parseNodeData(initialData);
+
+        await pumpEventQueue();
+        expect(userNode.updateCounter, 0);
+      });
+    },
+  );
 }
