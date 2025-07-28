@@ -35,3 +35,13 @@ fn test_list_of_scalars_dart() {
 fn test_node_interface_dart() {
     run_dart_tests_for_usecase("node_interface");
 }
+
+#[test]
+fn test_scalar_nodes_dart() {
+    run_dart_tests_for_usecase("scalar_nodes");
+}
+
+#[test]
+fn test_enum_nodes_dart() {
+    run_dart_tests_for_usecase("enum_nodes");
+}

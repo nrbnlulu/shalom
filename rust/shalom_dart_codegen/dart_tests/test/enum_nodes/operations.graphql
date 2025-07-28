@@ -1,0 +1,15 @@
+query GetUserWithStatus {
+  user {
+    id
+    name
+    status
+  }
+}
+
+query GetUserWithOptionalNameAndStatus {
+  userOptional {
+    id
+    name
+    status
+  }
+}
