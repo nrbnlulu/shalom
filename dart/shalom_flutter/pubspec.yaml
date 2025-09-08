@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  shalom_core:
+    path: ../shalom_core
 
 dev_dependencies:
   flutter_test:
