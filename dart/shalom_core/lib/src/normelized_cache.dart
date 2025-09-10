@@ -17,13 +17,17 @@ class RefUpdate {
   final List<String> changedFields;
   const RefUpdate({required this.newData, required this.changedFields});
 }
+
 typedef RefStreamType = StreamController<List<RefUpdate>>;
 
 class RefSubscriber {
   final RefStreamType streamController;
   final Set<RecordRef> subscribedRefs;
-  const RefSubscriber({required this.streamController, required this.subscribedRefs});
-  
+  const RefSubscriber({
+    required this.streamController,
+    required this.subscribedRefs,
+  });
+
   void cancel() {
     streamController.close();
   }
@@ -50,8 +54,8 @@ class NormelizedCache {
     cache.put(ref, Entity(ref: ref, data: data.newData));
     refSubscribers.values.forEach((subscriber) {
       if (subscriber.subscribedRefs.contains(ref)) {
-          /// ATM we only update one ref at a time,
-          /// ITF we can implement something similar to a dataloader
+        /// ATM we only update one ref at a time,
+        /// ITF we can implement something similar to a dataloader
         subscriber.streamController.add([data]);
       }
     });

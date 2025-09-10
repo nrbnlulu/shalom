@@ -12,14 +12,14 @@ class RefSubscriberWidget<T> extends StatefulWidget {
   final T initialResult;
   final T Function(List<RefUpdate>) onRefUpdate;
   final Widget Function({BuildContext ctx, T data}) childBuilder;
-  
+
   const RefSubscriberWidget({
     super.key,
     required this.initialResult,
     required this.onRefUpdate,
     required this.shalomCtx,
     required this.initialRefs,
-    required this.childBuilder
+    required this.childBuilder,
   });
 
   @override
@@ -29,18 +29,16 @@ class RefSubscriberWidget<T> extends StatefulWidget {
 class _RefSubscriberWidgetState<T> extends State<RefSubscriberWidget<T>> {
   RefSubscriber? subscription;
   late T data = widget.initialResult;
-  
+
   @override
   void initState() {
     super.initState();
     subscription = widget.shalomCtx.cache.subscribeToRefs(widget.initialRefs);
-    subscription!.streamController.stream.listen(
-        (update){
-            setState(() {
-                data = widget.onRefUpdate(update);
-            });
-        }
-    )
+    subscription!.streamController.stream.listen((update) {
+      setState(() {
+        data = widget.onRefUpdate(update);
+      });
+    });
   }
 
   @override
@@ -50,9 +48,6 @@ class _RefSubscriberWidgetState<T> extends State<RefSubscriberWidget<T>> {
 
   @override
   Widget build(BuildContext context) {
-      return widget.childBuilder(
-          ctx: context, data:data
-      );
-      
+    return widget.childBuilder(ctx: context, data: data);
   }
 }

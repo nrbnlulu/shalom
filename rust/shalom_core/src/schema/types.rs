@@ -81,6 +81,8 @@ impl GraphQLAny {
         match self {
             Self::InputObject(v) => v.name.clone(),
             Self::Object(v) => v.name.clone(),
+            Self::Interface(v) => v.name.clone(),
+            Self::Union(v) => v.name.clone(),
             Self::Enum(v) => v.name.clone(),
             Self::Scalar(v) => v.name.clone(),
             _ => todo!("Unsupported type"),

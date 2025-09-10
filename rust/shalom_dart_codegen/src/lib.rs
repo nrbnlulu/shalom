@@ -233,6 +233,19 @@ mod ext_jinja_fns {
     pub fn dart_type_for_scalar_name(scalar_name: &str) -> String {
         dart_type_for_scalar(scalar_name)
     }
+
+    pub fn is_type_implementing_interface(
+        ctx: &SharedShalomGlobalContext,
+        type_name: &str,
+        interface_name: &str,
+    ) -> bool {
+        ctx.schema_ctx
+            .is_type_implementing_interface(type_name, interface_name)
+    }
+
+    pub fn is_type_implementing_node(ctx: &SharedShalomGlobalContext, type_name: &str) -> bool {
+        ctx.schema_ctx.is_type_implementing_node(type_name)
+    }
 }
 
 /// takes a number and returns itself as if the abc was 123, i.e 143 would be "adc"
@@ -321,6 +334,19 @@ impl TemplateEnv<'_> {
 
         env.add_function("docstring", ext_jinja_fns::docstring);
         env.add_function("value_or_last", ext_jinja_fns::value_or_last);
+        let ctx_clone = ctx.clone();
+        env.add_function(
+            "is_type_implementing_interface",
+            move |type_name: &str, interface_name: &str| {
+                ext_jinja_fns::is_type_implementing_interface(&ctx_clone, type_name, interface_name)
+            },
+        );
+
+        let ctx_clone = ctx.clone();
+        env.add_function("is_type_implementing_node", move |type_name: &str| {
+            ext_jinja_fns::is_type_implementing_node(&ctx_clone, type_name)
+        });
+
         env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
 
         Self { env }
