@@ -17,7 +17,7 @@ Every test case should include the following:
 - `xOptional`
 where `x` is the kind of use case you are testing, for example `objectRequired`, `objectOptional`, `scalarRequired`, `scalarOptional`, etc.
 For each test, you should verify that `fromJson` works, `updateWithJson` works, `toJson` works, and `==` works.
-- 'xNormalizedCache' - ensures that the certain usecase is working with the data normalizer, meaning that if same node fetched twice it would get updated in the cache.
+- 'xNormalizedCache' - ensures that the certain use case is working with the data normalizer, meaning that if the same node is fetched twice it would get updated in the cache.
 
 - For input-related test cases, you should also add a `Maybe` test. This means that for fields that are optional but **have no default value**, they should be wrapped in a `Maybe` type (`Some` | `None`).
 
