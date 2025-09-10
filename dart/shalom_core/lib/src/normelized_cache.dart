@@ -4,25 +4,13 @@ import 'dart:collection';
 import 'shalom_core_base.dart';
 import 'utils/lru_cache.dart' show LruCache;
 
-typedef RecordRef = String;
-
-class Entity {
-  final RecordRef ref;
-  final JsonObject data;
-  const Entity({required this.ref, required this.data});
-}
-
-class RefUpdate {
-  final JsonObject newData;
-  final List<String> changedFields;
-  const RefUpdate({required this.newData, required this.changedFields});
-}
-
-typedef RefStreamType = StreamController<List<RefUpdate>>;
+/// can be typename:id or `full schema path with args`
+typedef RecordID = String;
+typedef RefStreamType = StreamController<dynamic>;
 
 class RefSubscriber {
   final RefStreamType streamController;
-  final Set<RecordRef> subscribedRefs;
+  final Set<RecordID> subscribedRefs;
   const RefSubscriber({
     required this.streamController,
     required this.subscribedRefs,
@@ -33,13 +21,38 @@ class RefSubscriber {
   }
 }
 
+class TypedObjectRecord {
+  final String typeName;
+  final String id;
+  final Map<String, RecordData> data;
+
+  const TypedObjectRecord({
+    required this.typeName,
+    required this.id,
+    required this.data,
+  });
+}
+
+class RefRecord {
+  final RecordID ref;
+  const RefRecord(this.ref);
+}
+
+class ListOfRefRecord {
+  final List<RecordID> refs;
+  const ListOfRefRecord(this.refs);
+}
+
+/// can be [TypedObjectRecord] | [RefRecord] | [ListOfRefRecord] or [dynamic] data that can't be normelized.
+typedef RecordData = dynamic;
+
 class NormelizedCache {
-  final LruCache<RecordRef, Entity> cache;
+  final LruCache<RecordID, RecordData> cache;
   final HashMap<int, RefSubscriber> refSubscribers = HashMap();
 
   NormelizedCache({int capacity = 1000}) : cache = LruCache(capacity: capacity);
 
-  RefSubscriber subscribeToRefs(Set<RecordRef> refs) {
+  RefSubscriber subscribeToRefs(Set<RecordID> refs) {
     RefSubscriber? subscriber = null;
     subscriber = RefSubscriber(
       subscribedRefs: refs,
@@ -50,13 +63,11 @@ class NormelizedCache {
     return subscriber;
   }
 
-  void updateRef(RecordRef ref, RefUpdate data) {
-    cache.put(ref, Entity(ref: ref, data: data.newData));
+  void updateRef(RecordID ref, RecordData data) {
+    cache.put(ref, data);
     refSubscribers.values.forEach((subscriber) {
       if (subscriber.subscribedRefs.contains(ref)) {
-        /// ATM we only update one ref at a time,
-        /// ITF we can implement something similar to a dataloader
-        subscriber.streamController.add([data]);
+        subscriber.streamController.add(data);
       }
     });
   }
