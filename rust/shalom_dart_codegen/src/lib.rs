@@ -284,7 +284,7 @@ struct TemplateEnv<'a> {
 struct OperationEnv<'a>{
     env: Environment<'a>,
 }
-
+// TODO: might not be good to create an environment for every operation. as it will recreate templates.
 fn register_default_template_fns<'a>(ctx: &SharedShalomGlobalContext) -> Environment<'a> {
     let mut env = Environment::new();
     env.set_undefined_behavior(minijinja::UndefinedBehavior::Strict);
