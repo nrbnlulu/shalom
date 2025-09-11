@@ -4,7 +4,7 @@ import 'dart:collection';
 import 'shalom_core_base.dart';
 import 'utils/lru_cache.dart' show LruCache;
 
-/// can be typename:id or `full schema path with args`
+/// can be typename:id or `full schema path (with args)`
 typedef RecordID = String;
 typedef RefStreamType = StreamController<dynamic>;
 
@@ -24,7 +24,7 @@ class RefSubscriber {
 class TypedObjectRecord {
   final String typeName;
   final String id;
-  final Map<String, RecordData> data;
+  final Map<String, NormalizedRecordData> data;
 
   const TypedObjectRecord({
     required this.typeName,
@@ -44,10 +44,10 @@ class ListOfRefRecord {
 }
 
 /// can be [TypedObjectRecord] | [RefRecord] | [ListOfRefRecord] or [dynamic] data that can't be normelized.
-typedef RecordData = dynamic;
+typedef NormalizedRecordData = dynamic;
 
 class NormelizedCache {
-  final LruCache<RecordID, RecordData> cache;
+  final LruCache<RecordID, NormalizedRecordData> cache;
   final HashMap<int, RefSubscriber> refSubscribers = HashMap();
 
   NormelizedCache({int capacity = 1000}) : cache = LruCache(capacity: capacity);
@@ -63,7 +63,7 @@ class NormelizedCache {
     return subscriber;
   }
 
-  void updateRef(RecordID ref, RecordData data) {
+  void updateRef(RecordID ref, NormalizedRecordData data) {
     cache.put(ref, data);
     refSubscribers.values.forEach((subscriber) {
       if (subscriber.subscribedRefs.contains(ref)) {
@@ -71,4 +71,12 @@ class NormelizedCache {
       }
     });
   }
+}
+
+/// would be used by generated code to
+class ReachableRecordsCtx {
+  final Set<RecordID> ids;
+  const ReachableRecordsCtx(this.ids);
+
+  bool add(RecordID ref) => ids.add(ref);
 }

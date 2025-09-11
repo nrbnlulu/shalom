@@ -1,3 +1,5 @@
+import '../shalom_core.dart';
+
 typedef JsonObject = Map<String, dynamic>;
 
 class GraphQLResult<T> {
@@ -109,3 +111,10 @@ class Some<T> implements Option<T> {
   @override
   int get hashCode => runtimeType.hashCode ^ value.hashCode;
 }
+
+class OperationContext<TVars> {
+  final TVars? variables;
+  final ShalomCtx shalomCtx;
+  const OperationContext({this.variables, required this.shalomCtx});
+}
+

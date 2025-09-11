@@ -8,4 +8,8 @@ export 'src/normelized_cache.dart'
 class ShalomCtx {
   final NormelizedCache cache;
   const ShalomCtx({required this.cache});
+
+  RecordID resolveNodeID(String id) {
+    return id.split(":").toString();
+  }
 }

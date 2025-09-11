@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use log::info;
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
-use shalom_core::operation::types::SelectionKind;
+use shalom_core::operation::types::{FullPathName, SelectionKind};
 use shalom_core::{
     context::SharedShalomGlobalContext,
     operation::{
@@ -17,6 +17,7 @@ use shalom_core::{
     shalom_config::RuntimeSymbolDefinition,
 };
 
+use std::str::EncodeUtf16;
 use std::{
     collections::HashMap,
     fs,
@@ -25,9 +26,7 @@ use std::{
     rc::Rc,
 };
 
-struct TemplateEnv<'a> {
-    env: Environment<'a>,
-}
+
 
 lazy_static! {
     static ref DEFAULT_SCALARS_MAP: HashMap<String, String> = HashMap::from([
@@ -46,7 +45,7 @@ const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
 
-    use shalom_core::context::ShalomGlobalContext;
+    use shalom_core::{context::ShalomGlobalContext, schema::context::SharedSchemaContext};
 
     use super::*;
     fn resolve_scalar_typename(
@@ -242,10 +241,6 @@ mod ext_jinja_fns {
         ctx.schema_ctx
             .is_type_implementing_interface(type_name, interface_name)
     }
-
-    pub fn is_type_implementing_node(ctx: &SharedShalomGlobalContext, type_name: &str) -> bool {
-        ctx.schema_ctx.is_type_implementing_node(type_name)
-    }
 }
 
 /// takes a number and returns itself as if the abc was 123, i.e 143 would be "adc"
@@ -282,75 +277,89 @@ impl SymbolName for RuntimeSymbolDefinition {
     }
 }
 
-impl TemplateEnv<'_> {
-    fn new(ctx: &SharedShalomGlobalContext) -> Self {
-        let mut env = Environment::new();
-        env.set_undefined_behavior(minijinja::UndefinedBehavior::Strict);
-        env.set_debug(true);
-        env.add_template(
-            "operation",
-            include_str!("../templates/operation.dart.jinja"),
-        )
+struct TemplateEnv<'a> {
+    env: Environment<'a>,
+}
+
+struct OperationEnv<'a>{
+    env: Environment<'a>,
+}
+
+fn register_default_template_fns<'a>(ctx: &SharedShalomGlobalContext) -> Environment<'a> {
+    let mut env = Environment::new();
+    env.set_undefined_behavior(minijinja::UndefinedBehavior::Strict);
+    env.set_debug(true);
+    env.add_template(
+        "operation",
+        include_str!("../templates/operation.dart.jinja"),
+    )
+    .unwrap();
+    env.add_template("schema", include_str!("../templates/schema.dart.jinja"))
         .unwrap();
-        env.add_template("schema", include_str!("../templates/schema.dart.jinja"))
-            .unwrap();
-        env.add_template("macros", include_str!("../templates/macros.dart.jinja"))
-            .unwrap();
+    env.add_template("macros", include_str!("../templates/macros.dart.jinja"))
+        .unwrap();
 
-        let ctx_clone = ctx.clone();
-        env.add_function("type_name_for_selection", move |a: _| {
-            ext_jinja_fns::type_name_for_selection(&ctx_clone, a)
-        });
+    let ctx_clone = ctx.clone();
+    env.add_function("type_name_for_selection", move |a: _| {
+        ext_jinja_fns::type_name_for_selection(&ctx_clone, a)
+    });
 
-        let ctx_clone = ctx.clone();
-        env.add_function("type_name_for_input_field", move |a: _| {
-            ext_jinja_fns::type_name_for_input_field(&ctx_clone, a)
-        });
+    let ctx_clone = ctx.clone();
+    env.add_function("type_name_for_input_field", move |a: _| {
+        ext_jinja_fns::type_name_for_input_field(&ctx_clone, a)
+    });
 
-        let schema_ctx_clone = ctx.schema_ctx.clone();
-        env.add_function("parse_field_default_value", move |a: _| {
-            ext_jinja_fns::parse_field_default_value(&schema_ctx_clone, a)
-        });
+    let schema_ctx_clone = ctx.schema_ctx.clone();
+    env.add_function("parse_field_default_value", move |a: _| {
+        ext_jinja_fns::parse_field_default_value(&schema_ctx_clone, a)
+    });
 
-        let schema_ctx_clone = ctx.schema_ctx.clone();
-        env.add_function("resolve_field_type", move |a: _| {
-            ext_jinja_fns::resolve_field_type(&schema_ctx_clone, a)
-        });
+    let schema_ctx_clone = ctx.schema_ctx.clone();
+    env.add_function("resolve_field_type", move |a: _| {
+        ext_jinja_fns::resolve_field_type(&schema_ctx_clone, a)
+    });
 
-        let ctx_clone = ctx.clone();
-        env.add_function("custom_scalar_impl_fullname", move |a: _| {
-            ext_jinja_fns::custom_scalar_impl_fullname(&ctx_clone, a)
-        });
+    let ctx_clone = ctx.clone();
+    env.add_function("custom_scalar_impl_fullname", move |a: _| {
+        ext_jinja_fns::custom_scalar_impl_fullname(&ctx_clone, a)
+    });
 
-        let ctx_clone = ctx.clone();
-        env.add_function("is_custom_scalar", move |name: &str| {
-            ext_jinja_fns::is_custom_scalar(&ctx_clone, name)
-        });
+    let ctx_clone = ctx.clone();
+    env.add_function("is_custom_scalar", move |name: &str| {
+        ext_jinja_fns::is_custom_scalar(&ctx_clone, name)
+    });
 
-        env.add_function(
-            "dart_type_for_scalar_name",
-            ext_jinja_fns::dart_type_for_scalar_name,
-        );
+    env.add_function(
+        "dart_type_for_scalar_name",
+        ext_jinja_fns::dart_type_for_scalar_name,
+    );
 
-        env.add_function("docstring", ext_jinja_fns::docstring);
-        env.add_function("value_or_last", ext_jinja_fns::value_or_last);
-        let ctx_clone = ctx.clone();
-        env.add_function(
-            "is_type_implementing_interface",
-            move |type_name: &str, interface_name: &str| {
-                ext_jinja_fns::is_type_implementing_interface(&ctx_clone, type_name, interface_name)
-            },
-        );
+    env.add_function("docstring", ext_jinja_fns::docstring);
+    env.add_function("value_or_last", ext_jinja_fns::value_or_last);
+    let ctx_clone = ctx.clone();
+    env.add_function(
+        "is_type_implementing_interface",
+        move |type_name: &str, interface_name: &str| {
+            ext_jinja_fns::is_type_implementing_interface(&ctx_clone, type_name, interface_name)
+        },
+    );
 
-        let ctx_clone = ctx.clone();
-        env.add_function("is_type_implementing_node", move |type_name: &str| {
-            ext_jinja_fns::is_type_implementing_node(&ctx_clone, type_name)
-        });
+    let schema_ctx = ctx.schema_ctx.clone();
+    env.add_function("is_type_implementing_node", move |type_name: &str| {
+        schema_ctx.is_type_implementing_node(type_name)
+    });
+    let ctx_clone = ctx.clone();
+    env.add_function("has_id_field", move |operation_name: String, full_name: FullPathName|{
+        let operation = ctx_clone.operation_exists(name)
+    });
 
-        env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
+    env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
 
-        Self { env }
-    }
+    Self { env }
+}
+
+impl TemplateEnv<'_> {
+
 
     fn render_operation<S: Serialize, T: Serialize>(
         &self,

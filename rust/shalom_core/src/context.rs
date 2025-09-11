@@ -50,6 +50,9 @@ impl ShalomGlobalContext {
     pub fn get_custom_scalars(&self) -> &HashMap<String, CustomScalarDefinition> {
         &self.config.custom_scalars
     }
+    fn get_operation(&self, name: &str) -> Option<&SharedOpCtx> {
+        self.operations.lock().unwrap().get(name).map(|op| op.as_ref())
+    }
 
     pub fn operation_exists(&self, name: &str) -> bool {
         let operations = self.operations.lock().unwrap();
