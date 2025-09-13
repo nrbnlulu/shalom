@@ -3,6 +3,8 @@ use lazy_static::lazy_static;
 use log::info;
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
+use shalom_core::context::ShalomGlobalContext;
+use shalom_core::operation::context::SharedOpCtx;
 use shalom_core::operation::types::{FullPathName, SelectionKind};
 use shalom_core::{
     context::SharedShalomGlobalContext,
@@ -25,8 +27,6 @@ use std::{
     path::{Path, PathBuf},
     rc::Rc,
 };
-
-
 
 lazy_static! {
     static ref DEFAULT_SCALARS_MAP: HashMap<String, String> = HashMap::from([
@@ -277,16 +277,18 @@ impl SymbolName for RuntimeSymbolDefinition {
     }
 }
 
-struct TemplateEnv<'a> {
+struct SchemaEnv<'a> {
     env: Environment<'a>,
 }
 
-struct OperationEnv<'a>{
+struct OperationEnv<'a> {
     env: Environment<'a>,
 }
 // TODO: might not be good to create an environment for every operation. as it will recreate templates.
-fn register_default_template_fns<'a>(ctx: &SharedShalomGlobalContext) -> Environment<'a> {
-    let mut env = Environment::new();
+fn register_default_template_fns<'a>(
+    env: &mut Environment<'a>,
+    ctx: &SharedShalomGlobalContext,
+) -> anyhow::Result<()> {
     env.set_undefined_behavior(minijinja::UndefinedBehavior::Strict);
     env.set_debug(true);
     env.add_template(
@@ -294,10 +296,9 @@ fn register_default_template_fns<'a>(ctx: &SharedShalomGlobalContext) -> Environ
         include_str!("../templates/operation.dart.jinja"),
     )
     .unwrap();
-    env.add_template("schema", include_str!("../templates/schema.dart.jinja"))
-        .unwrap();
-    env.add_template("macros", include_str!("../templates/macros.dart.jinja"))
-        .unwrap();
+
+    env.add_template("schema", include_str!("../templates/schema.dart.jinja"))?;
+    env.add_template("macros", include_str!("../templates/macros.dart.jinja"))?;
 
     let ctx_clone = ctx.clone();
     env.add_function("type_name_for_selection", move |a: _| {
@@ -348,18 +349,17 @@ fn register_default_template_fns<'a>(ctx: &SharedShalomGlobalContext) -> Environ
     env.add_function("is_type_implementing_node", move |type_name: &str| {
         schema_ctx.is_type_implementing_node(type_name)
     });
-    let ctx_clone = ctx.clone();
-    env.add_function("has_id_field", move |operation_name: String, full_name: FullPathName|{
-        let operation = ctx_clone.operation_exists(name)
-    });
 
     env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
-
-    Self { env }
+    Ok(())
 }
 
-impl TemplateEnv<'_> {
-
+impl SchemaEnv<'_> {
+    fn new(ctx: &ShalomGlobalContext) -> anyhow::Result<Self> {
+        let mut env = Environment::new();
+        register_default_template_fns(&mut env, ctx)?;
+        Ok(Self { env })
+    }
 
     fn render_operation<S: Serialize, T: Serialize>(
         &self,
@@ -403,6 +403,22 @@ impl TemplateEnv<'_> {
     }
 }
 
+impl OperationEnv<'_>{
+    fn new(ctx: &ShalomGlobalContext, op_ctx: &SharedOpCtx) -> anyhow::Result<Self>{
+        let mut env = Environment::new();
+        register_default_template_fns(env, ctx)?;
+        let op_ctx_clone = op_ctx.clone();
+        env.add_function("is_type_implements_node", |full_name: &str|{
+            match op_ctx_clone.get_selection(full_name).unwrap(){
+                Selection
+            }
+        });
+        
+        Ok(OperationEnv{env})
+    }
+}
+
+
 fn create_dir_if_not_exists(path: &Path) {
     if !path.exists() {
         fs::create_dir_all(path).unwrap();
@@ -419,7 +435,7 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
 }
 
 fn generate_operations_file(
-    template_env: &TemplateEnv,
+    template_env: &SchemaEnv,
     ctx: &SharedShalomGlobalContext,
     name: &str,
     operation: Rc<OperationContext>,
@@ -435,7 +451,7 @@ fn generate_operations_file(
     info!("Generated {}", generation_target.display());
 }
 
-fn generate_schema_file(template_env: &TemplateEnv, ctx: &SharedShalomGlobalContext, path: &Path) {
+fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContext, path: &Path) {
     info!("rendering schema file");
 
     let rendered_content = template_env.render_schema(ctx);
@@ -449,7 +465,7 @@ fn generate_schema_file(template_env: &TemplateEnv, ctx: &SharedShalomGlobalCont
 pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     info!("codegen started in working directory {}", pwd.display());
     let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
-    let template_env = TemplateEnv::new(&ctx);
+    let template_env = SchemaEnv::new(&ctx);
 
     let existing_op_names =
         glob::glob(pwd.join(format!("**/*.{}", END_OF_FILE)).to_str().unwrap())?;
