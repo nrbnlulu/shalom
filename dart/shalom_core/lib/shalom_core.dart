@@ -13,3 +13,17 @@ class ShalomCtx {
     return id.split(":").toString();
   }
 }
+
+class DeserializationContext {
+  final ShalomCtx shalomContext;
+  final ReachableRecordsCtx reachableRecordsCtx;
+  final void Function(Record) assignToCache;
+
+  DeserializationContext({
+    required this.shalomContext,
+    required this.reachableRecordsCtx,
+    required this.assignToCache,
+  });
+  
+  
+}

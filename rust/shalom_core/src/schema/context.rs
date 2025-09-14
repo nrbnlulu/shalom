@@ -211,7 +211,7 @@ impl SchemaContext {
         }
     }
 
-    pub fn is_type_implementing_node(&self, type_name: &str) -> bool {
+    pub fn is_type_implements_node(&self, type_name: &str) -> bool {
         self.is_type_implementing_interface(type_name, "Node")
     }
 

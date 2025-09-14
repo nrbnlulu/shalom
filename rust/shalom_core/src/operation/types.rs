@@ -107,6 +107,10 @@ impl ObjectSelection {
     pub fn add_selection(&self, selection: Selection) {
         self.selections.borrow_mut().push(selection);
     }
+    
+    pub fn get_id_selection(&self) -> Option<Selection>{
+        self.selections.borrow().iter().find(|s| s.self_selection_name().contains("id")).cloned()
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]

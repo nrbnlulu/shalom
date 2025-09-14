@@ -131,25 +131,34 @@ import 'package:collection/collection.dart';
         this.{{ selection.name }},
     {% endfor %}
     });
-    static {{ typename }} fromJson(JsonObject data, {OperationContextType? ctx, ReachableRecordsCtx? refsCtx}) {
+    static {{ typename }} fromJson(JsonObject data, {DeserializationContext? ctx}) {
+        if (ctx != null){
+            final RecordID? {{selection_name}}$cacheKey = {{selection_name}};
+            final NormalizedRecordData? normalized$Value;
+            {% if is_type_implements_node(parent_selection_object.name) -%}
+                final id$Tmp = data["id"] as String?;
+                if (id$Tmp != null) {
+                    {{selection_name}}$NormalizedKey = id$Tmp!;
+                }
+            {% elif get_id_selection(parent_selection_object.name) is not None -%}
+                {% set id_selection = get_id_selection(parent_selection_object.name) %}
+                final id$Tmp = data[{{id_selection.name}}] as String?;
+                if (id$Tmp != null) {
+                    {{selection_name}}$NormalizedKey = {{}}id$Tmp!;
+                }
+            {% else -%}
+                // TODO: handle variables
+                {{selection_name}}$NormalizedKey = selection.name;
+            {% endif -%}    
+        }
+    {% endif %}
+    
+ 
     {% for selection in selections -%}
         {% set selection_name = selection.name %}
         {% set selection_typename = type_name_for_selection(selection) %}
         final {{ selection_typename }} {{ selection_name }}_value;
         final {{selection_name}}$raw = data["{{ selection_name }}"];
-        final RecordID? {{selection_name}}$NormalizedKey;
-        final NormalizedRecordData? normalized$Value;
-        {% if parent_selection_object.kind == "Object"
-            and is_type_implementing_node(parent_selection_object.name) 
-        -%}
-            final id$Tmp = data["id"] as String?;
-            if (id$Tmp != null) {
-                {{selection_name}}$NormalizedKey = id$Tmp!;
-            }
-        {% else -%}
-            // TODO: handle variables
-            {{selection_name}}$NormalizedKey = selection.name;
-        {% endif -%}
         ({{ selection_name }}_value, normalized$Value) = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
         {{ selection_name }}: {{ selection_name }}_value,
     {% endfor %}
