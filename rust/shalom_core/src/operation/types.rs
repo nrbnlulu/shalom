@@ -86,6 +86,7 @@ impl ScalarSelection {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ObjectSelection {
     pub full_name: String,
+    pub concrete_typename: String,
     pub is_optional: bool,
     pub selections: RefCell<Vec<Selection>>,
 }
@@ -93,9 +94,10 @@ pub struct ObjectSelection {
 pub type SharedObjectSelection = Rc<ObjectSelection>;
 
 impl ObjectSelection {
-    pub fn new(is_optional: bool, full_name: String) -> SharedObjectSelection {
+    pub fn new(is_optional: bool, full_name: String, concrete_typename: String) -> SharedObjectSelection {
         let ret = ObjectSelection {
             full_name,
+            concrete_typename,
             is_optional,
             selections: RefCell::new(Vec::new()),
         };

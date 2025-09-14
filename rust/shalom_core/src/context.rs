@@ -34,7 +34,11 @@ impl ShalomGlobalContext {
         }
         operations.extend(operations_update);
     }
-
+    
+    pub fn get_operation(&self, name: &str) -> Option<SharedOpCtx> {
+        self.operations.lock().unwrap().get(name).map(|op| op.clone())
+    }
+    
     pub fn operations(&self) -> Vec<(String, SharedOpCtx)> {
         let operations = self.operations.lock().unwrap();
         operations
@@ -49,9 +53,6 @@ impl ShalomGlobalContext {
 
     pub fn get_custom_scalars(&self) -> &HashMap<String, CustomScalarDefinition> {
         &self.config.custom_scalars
-    }
-    fn get_operation(&self, name: &str) -> Option<&SharedOpCtx> {
-        self.operations.lock().unwrap().get(name).map(|op| op.as_ref())
     }
 
     pub fn operation_exists(&self, name: &str) -> bool {

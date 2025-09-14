@@ -39,7 +39,10 @@ impl OperationContext {
             op_ty,
         }
     }
-
+    pub fn get_operation_name(&self) -> &str {
+        &self.operation_name
+    }
+    
     pub fn set_root_type(&mut self, root_type: Selection) {
         self.root_type = Some(root_type);
     }

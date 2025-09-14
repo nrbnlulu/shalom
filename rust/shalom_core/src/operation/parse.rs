@@ -42,8 +42,8 @@ fn parse_object_selection(
          selection was {:?}.",
         selection_orig
     );
-    let obj = ObjectSelection::new(is_optional, path.clone());
-
+    let obj = ObjectSelection::new(is_optional, path.clone(),  selection_orig.ty.to_string());
+    
     for selection in selection_orig.selections.iter() {
         match selection {
             apollo_executable::Selection::Field(field) => {

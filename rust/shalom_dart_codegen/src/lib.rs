@@ -355,27 +355,12 @@ fn register_default_template_fns<'a>(
 }
 
 impl SchemaEnv<'_> {
-    fn new(ctx: &ShalomGlobalContext) -> anyhow::Result<Self> {
+    fn new(ctx: &SharedShalomGlobalContext) -> anyhow::Result<Self> {
         let mut env = Environment::new();
         register_default_template_fns(&mut env, ctx)?;
         Ok(Self { env })
     }
 
-    fn render_operation<S: Serialize, T: Serialize>(
-        &self,
-        operations_ctx: S,
-        schema_ctx: T,
-        extra_imports: HashMap<String, String>,
-    ) -> String {
-        let template = self.env.get_template("operation").unwrap();
-        let mut context = HashMap::new();
-
-        context.insert("schema", context! { context => schema_ctx });
-        context.insert("operation", context! { context => operations_ctx });
-        context.insert("extra_imports", minijinja::Value::from(extra_imports));
-
-        template.render(&context).unwrap()
-    }
     fn render_schema(&self, ctx: &SharedShalomGlobalContext) -> String {
         let template = self.env.get_template("schema").unwrap();
 
@@ -404,17 +389,40 @@ impl SchemaEnv<'_> {
 }
 
 impl OperationEnv<'_>{
-    fn new(ctx: &ShalomGlobalContext, op_ctx: &SharedOpCtx) -> anyhow::Result<Self>{
+    fn new(ctx: &SharedShalomGlobalContext, op_ctx: &OperationContext) -> anyhow::Result<Self>{
         let mut env = Environment::new();
-        register_default_template_fns(env, ctx)?;
-        let op_ctx_clone = op_ctx.clone();
-        env.add_function("is_type_implements_node", |full_name: &str|{
-            match op_ctx_clone.get_selection(full_name).unwrap(){
-                Selection
+        register_default_template_fns(&mut env, ctx)?;
+        let ctx = ctx.clone();
+        let op_name = op_ctx.get_operation_name().to_string();
+        
+        env.add_function("is_type_implements_node", move |full_name: &str|{
+            let selection = ctx.get_operation(&op_name).unwrap().get_selection(&full_name.to_string()).unwrap();
+            match selection.kind{
+                SelectionKind::Object(object_selection) => {
+                    ctx.schema_ctx.is_type_implementing_node(&object_selection.concrete_typename)
+                },
+                _ => false
             }
         });
         
         Ok(OperationEnv{env})
+    }
+    
+    
+    fn render_operation<S: Serialize, T: Serialize>(
+        &self,
+        operations_ctx: S,
+        schema_ctx: T,
+        extra_imports: HashMap<String, String>,
+    ) -> String {
+        let template = self.env.get_template("operation").unwrap();
+        let mut context = HashMap::new();
+
+        context.insert("schema", context! { context => schema_ctx });
+        context.insert("operation", context! { context => operations_ctx });
+        context.insert("extra_imports", minijinja::Value::from(extra_imports));
+
+        template.render(&context).unwrap()
     }
 }
 
@@ -435,20 +443,22 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
 }
 
 fn generate_operations_file(
-    template_env: &SchemaEnv,
     ctx: &SharedShalomGlobalContext,
     name: &str,
-    operation: Rc<OperationContext>,
+    operation: &OperationContext,
     additional_imports: HashMap<String, String>,
-) {
+)  ->  anyhow::Result<()>{
+    let op_env = OperationEnv::new(&ctx, &operation)?;
+        
     info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();
 
     let rendered_content =
-        template_env.render_operation(operation, ctx.schema_ctx.clone(), additional_imports);
+        op_env.render_operation(operation, ctx.schema_ctx.clone(), additional_imports);
     let generation_target = get_generation_path_for_operation(&operation_file_path, name);
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
+    Ok(())
 }
 
 fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContext, path: &Path) {
@@ -465,7 +475,7 @@ fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContex
 pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
     info!("codegen started in working directory {}", pwd.display());
     let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
-    let template_env = SchemaEnv::new(&ctx);
+    let template_env = SchemaEnv::new(&ctx)?;
 
     let existing_op_names =
         glob::glob(pwd.join(format!("**/*.{}", END_OF_FILE)).to_str().unwrap())?;
@@ -508,12 +518,11 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
         .collect();
     for (name, operation) in ctx.operations() {
         generate_operations_file(
-            &template_env,
             &ctx,
             &name,
-            operation,
+            &operation,
             additional_imports.clone(),
-        );
+        )?;
     }
 
     Ok(())
