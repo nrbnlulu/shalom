@@ -19,9 +19,9 @@
         {% endif %}
     {% elif selection.kind == "Object" %}
         {% if is_optional %}
-            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJson({{ value_symbol }}, {ctx: ctx})
+            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJsonImpl({{ value_symbol }}, {ctx: ctx})
         {% else %}
-            {{ selection.full_name }}.fromJson({{ value_symbol }}, {ctx: ctx})
+            {{ selection.full_name }}.fromJsonImpl({{ value_symbol }}, {ctx: ctx})
         {% endif %}
     {% elif selection.kind == "Enum" %}
         {% set typename = selection.concrete_type.name %}
@@ -119,19 +119,23 @@ import 'package:collection/collection.dart';
     {% endfor %}
     });
     
-    static ({{ typename }}, NormalizedRecordData) fromJson(JsonObject data, {DeserializationContext? ctx}) {
+    static ({{ typename }}, NormalizedRecordData) fromJsonImpl(JsonObject data, {DeserializationContext? ctx}) {
         final NormalizedRecordData record$Data = {};
         // define the object fields
-        final RecordID? normalized$ID;
         
-        {% if is_type_implements_node(selection_object.name) %}
-            normalized$ID = data["id"] as String?;
-        {% elif get_id_selection(selection_object.name) is not None -%}
-            {% set id_field_name = get_id_selection(selection_object.name).name %}
+        {% if is_type_implements_node(selection_object.full_name) %}
+            final normalized$ID = data["id"] as RecordID?;
+            if (normalized$ID != null){
+                ctx?.addReachableRecord(normalized$ID);
+            }
+        {% elif get_id_selection(selection_object.name) is not none -%}
+            {% set id_field_name = get_id_selection(selection_object.full_name).name %}
+            final normalized$ID = data["{{id_field_name}}"] as RecordID? ;
+            if (normalized$ID != null){
+                ctx?.addReachableRecord("{{selection_object.concrete_typename}}:${normalized$ID}");
+            }
         {% endif %}
-        if (normalized$ID != null){
-            ctx?.addReachableRecord(normalized$ID);
-        }
+      
         final NormalizedRecordData current$NormalizedRecord = {};
         
         {% for selection in selection_object.selections -%}
@@ -140,29 +144,27 @@ import 'package:collection/collection.dart';
         {% endfor -%}
         {% for selection in selection_object.selections -%}
             // TODO: handle arguments
-            final {{selection.name}}Normalized$Key = "{{selection.name}}":
-            final {{selection.name}}$raw = data["{{selection.name}}"];
+            final {{selection.name}}Normalized$Key = "{{selection.name}}";
+            {% set raw_value_symbol = selection.name + '$raw' %}
+            final {{raw_value_symbol}} = data["{{selection.name}}"];
             {% if selection.kind == "Object" %}
-                final {{selection.name}}$res = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
-                {{selection.name}}$value = {{selection.name}}$res.0;
-                current$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$res.1;
+                final {{selection.name}}$res = {{ _deserialize_selection_value_macro(raw_value_symbol, selection, selection.is_optional) }};
+                {{selection.name}}$value = {{selection.name}}$res.$1;
+                current$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$res.$2;
             {% else %}
-                {{selection.name}}$value =  {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
-                current$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$raw;
+                {{selection.name}}$value =  {{ _deserialize_selection_value_macro(raw_value_symbol, selection, selection.is_optional) }};
+                current$NormalizedRecord[{{selection.name}}Normalized$Key] = {{raw_value_symbol}};
             {% endif %}
         {% endfor -%}
-        
-                
-            {% endif %}
-            
-        {% endfor %}
-        
+        return ({{ typename }}(
+            {% for selection in selections -%}
+                {{selection.name}}: {{selection.name}}$value,
+            {% endfor %}
+        ), current$NormalizedRecord);
     }
     
-    static JsonObject _normalize$Response(JsonObject data, {OperationContextType? ctx, ReachableRecordsCtx? refsCtx}){
-        {% for selection in selections %}
-            {{
-    }
+    static {{typename}} fromJson(JsonObject data) => fromJsonImpl(data).$1;
+    
     
     @override
     bool operator ==(Object other) {

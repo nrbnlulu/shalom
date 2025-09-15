@@ -117,4 +117,3 @@ class OperationContext<TVars> {
   final ShalomCtx shalomCtx;
   const OperationContext({this.variables, required this.shalomCtx});
 }
-

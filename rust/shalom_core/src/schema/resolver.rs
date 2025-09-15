@@ -126,7 +126,7 @@ fn resolve_object(
     let implements_interfaces = origin
         .implements_interfaces
         .iter()
-        .map(|iface| Box::new(iface.to_string()))
+        .map(|iface| iface.to_string())
         .collect::<HashSet<_>>();
     let object = Node::new(ObjectType {
         name: name.clone(),

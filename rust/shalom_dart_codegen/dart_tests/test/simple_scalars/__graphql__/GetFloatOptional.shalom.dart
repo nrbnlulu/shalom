@@ -14,25 +14,33 @@ class GetFloatOptionalResponse {
 
   // keywordargs constructor
   GetFloatOptionalResponse({this.floatOptional});
-  static GetFloatOptionalResponse fromJson(JsonObject data) {
-    final double? floatOptional_value;
+
+  static (GetFloatOptionalResponse, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final double? floatOptional$value;
+    // TODO: handle arguments
+    final floatOptionalNormalized$Key = "floatOptional";
+
     final floatOptional$raw = data["floatOptional"];
-    floatOptional_value = floatOptional$raw as double?;
 
-    return GetFloatOptionalResponse(floatOptional: floatOptional_value);
+    floatOptional$value = floatOptional$raw as double?;
+    current$NormalizedRecord[floatOptionalNormalized$Key] = floatOptional$raw;
+
+    return (
+      GetFloatOptionalResponse(floatOptional: floatOptional$value),
+      current$NormalizedRecord,
+    );
   }
 
-  GetFloatOptionalResponse updateWithJson(JsonObject data) {
-    final double? floatOptional_value;
-    if (data.containsKey('floatOptional')) {
-      final floatOptional$raw = data["floatOptional"];
-      floatOptional_value = floatOptional$raw as double?;
-    } else {
-      floatOptional_value = floatOptional;
-    }
-
-    return GetFloatOptionalResponse(floatOptional: floatOptional_value);
-  }
+  static GetFloatOptionalResponse fromJson(JsonObject data) =>
+      fromJsonImpl(data).$1;
 
   @override
   bool operator ==(Object other) {
@@ -50,6 +58,54 @@ class GetFloatOptionalResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class GetFloatOptional {
+  /// class members
+
+  final double? floatOptional;
+
+  // keywordargs constructor
+  GetFloatOptional({this.floatOptional});
+
+  static (GetFloatOptional, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final double? floatOptional$value;
+    // TODO: handle arguments
+    final floatOptionalNormalized$Key = "floatOptional";
+
+    final floatOptional$raw = data["floatOptional"];
+
+    floatOptional$value = floatOptional$raw as double?;
+    current$NormalizedRecord[floatOptionalNormalized$Key] = floatOptional$raw;
+
+    return (
+      GetFloatOptional(floatOptional: floatOptional$value),
+      current$NormalizedRecord,
+    );
+  }
+
+  static GetFloatOptional fromJson(JsonObject data) => fromJsonImpl(data).$1;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is GetFloatOptional && other.floatOptional == floatOptional);
+  }
+
+  @override
+  int get hashCode => floatOptional.hashCode;
+
+  JsonObject toJson() {
+    return {'floatOptional': this.floatOptional};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 

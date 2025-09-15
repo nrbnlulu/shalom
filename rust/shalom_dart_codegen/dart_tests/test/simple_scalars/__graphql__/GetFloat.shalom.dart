@@ -14,25 +14,29 @@ class GetFloatResponse {
 
   // keywordargs constructor
   GetFloatResponse({required this.float});
-  static GetFloatResponse fromJson(JsonObject data) {
-    final double float_value;
+
+  static (GetFloatResponse, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final double float$value;
+    // TODO: handle arguments
+    final floatNormalized$Key = "float";
+
     final float$raw = data["float"];
-    float_value = float$raw as double;
 
-    return GetFloatResponse(float: float_value);
+    float$value = float$raw as double;
+    current$NormalizedRecord[floatNormalized$Key] = float$raw;
+
+    return (GetFloatResponse(float: float$value), current$NormalizedRecord);
   }
 
-  GetFloatResponse updateWithJson(JsonObject data) {
-    final double float_value;
-    if (data.containsKey('float')) {
-      final float$raw = data["float"];
-      float_value = float$raw as double;
-    } else {
-      float_value = float;
-    }
-
-    return GetFloatResponse(float: float_value);
-  }
+  static GetFloatResponse fromJson(JsonObject data) => fromJsonImpl(data).$1;
 
   @override
   bool operator ==(Object other) {
@@ -49,6 +53,51 @@ class GetFloatResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class GetFloat {
+  /// class members
+
+  final double float;
+
+  // keywordargs constructor
+  GetFloat({required this.float});
+
+  static (GetFloat, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final double float$value;
+    // TODO: handle arguments
+    final floatNormalized$Key = "float";
+
+    final float$raw = data["float"];
+
+    float$value = float$raw as double;
+    current$NormalizedRecord[floatNormalized$Key] = float$raw;
+
+    return (GetFloat(float: float$value), current$NormalizedRecord);
+  }
+
+  static GetFloat fromJson(JsonObject data) => fromJsonImpl(data).$1;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is GetFloat && other.float == float);
+  }
+
+  @override
+  int get hashCode => float.hashCode;
+
+  JsonObject toJson() {
+    return {'float': this.float};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 

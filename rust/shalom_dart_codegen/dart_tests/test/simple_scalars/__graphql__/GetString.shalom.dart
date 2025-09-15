@@ -14,25 +14,29 @@ class GetStringResponse {
 
   // keywordargs constructor
   GetStringResponse({required this.string});
-  static GetStringResponse fromJson(JsonObject data) {
-    final String string_value;
+
+  static (GetStringResponse, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final String string$value;
+    // TODO: handle arguments
+    final stringNormalized$Key = "string";
+
     final string$raw = data["string"];
-    string_value = string$raw as String;
 
-    return GetStringResponse(string: string_value);
+    string$value = string$raw as String;
+    current$NormalizedRecord[stringNormalized$Key] = string$raw;
+
+    return (GetStringResponse(string: string$value), current$NormalizedRecord);
   }
 
-  GetStringResponse updateWithJson(JsonObject data) {
-    final String string_value;
-    if (data.containsKey('string')) {
-      final string$raw = data["string"];
-      string_value = string$raw as String;
-    } else {
-      string_value = string;
-    }
-
-    return GetStringResponse(string: string_value);
-  }
+  static GetStringResponse fromJson(JsonObject data) => fromJsonImpl(data).$1;
 
   @override
   bool operator ==(Object other) {
@@ -49,6 +53,51 @@ class GetStringResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class GetString {
+  /// class members
+
+  final String string;
+
+  // keywordargs constructor
+  GetString({required this.string});
+
+  static (GetString, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final String string$value;
+    // TODO: handle arguments
+    final stringNormalized$Key = "string";
+
+    final string$raw = data["string"];
+
+    string$value = string$raw as String;
+    current$NormalizedRecord[stringNormalized$Key] = string$raw;
+
+    return (GetString(string: string$value), current$NormalizedRecord);
+  }
+
+  static GetString fromJson(JsonObject data) => fromJsonImpl(data).$1;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is GetString && other.string == string);
+  }
+
+  @override
+  int get hashCode => string.hashCode;
+
+  JsonObject toJson() {
+    return {'string': this.string};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 

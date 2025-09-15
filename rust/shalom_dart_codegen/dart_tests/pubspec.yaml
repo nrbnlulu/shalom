@@ -37,6 +37,9 @@ dependencies:
   shalom_core:
     path: ../../../dart/shalom_core 
 
+  shalom_flutter:
+    path: ../../../dart/shalom_flutter
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

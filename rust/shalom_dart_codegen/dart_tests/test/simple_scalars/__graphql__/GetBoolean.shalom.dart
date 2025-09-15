@@ -14,25 +14,32 @@ class GetBooleanResponse {
 
   // keywordargs constructor
   GetBooleanResponse({required this.boolean});
-  static GetBooleanResponse fromJson(JsonObject data) {
-    final bool boolean_value;
+
+  static (GetBooleanResponse, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final bool boolean$value;
+    // TODO: handle arguments
+    final booleanNormalized$Key = "boolean";
+
     final boolean$raw = data["boolean"];
-    boolean_value = boolean$raw as bool;
 
-    return GetBooleanResponse(boolean: boolean_value);
+    boolean$value = boolean$raw as bool;
+    current$NormalizedRecord[booleanNormalized$Key] = boolean$raw;
+
+    return (
+      GetBooleanResponse(boolean: boolean$value),
+      current$NormalizedRecord,
+    );
   }
 
-  GetBooleanResponse updateWithJson(JsonObject data) {
-    final bool boolean_value;
-    if (data.containsKey('boolean')) {
-      final boolean$raw = data["boolean"];
-      boolean_value = boolean$raw as bool;
-    } else {
-      boolean_value = boolean;
-    }
-
-    return GetBooleanResponse(boolean: boolean_value);
-  }
+  static GetBooleanResponse fromJson(JsonObject data) => fromJsonImpl(data).$1;
 
   @override
   bool operator ==(Object other) {
@@ -49,6 +56,51 @@ class GetBooleanResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class GetBoolean {
+  /// class members
+
+  final bool boolean;
+
+  // keywordargs constructor
+  GetBoolean({required this.boolean});
+
+  static (GetBoolean, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final bool boolean$value;
+    // TODO: handle arguments
+    final booleanNormalized$Key = "boolean";
+
+    final boolean$raw = data["boolean"];
+
+    boolean$value = boolean$raw as bool;
+    current$NormalizedRecord[booleanNormalized$Key] = boolean$raw;
+
+    return (GetBoolean(boolean: boolean$value), current$NormalizedRecord);
+  }
+
+  static GetBoolean fromJson(JsonObject data) => fromJsonImpl(data).$1;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is GetBoolean && other.boolean == boolean);
+  }
+
+  @override
+  int get hashCode => boolean.hashCode;
+
+  JsonObject toJson() {
+    return {'boolean': this.boolean};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 

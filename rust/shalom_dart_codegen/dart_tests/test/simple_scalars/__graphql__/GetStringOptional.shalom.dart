@@ -14,25 +14,33 @@ class GetStringOptionalResponse {
 
   // keywordargs constructor
   GetStringOptionalResponse({this.stringOptional});
-  static GetStringOptionalResponse fromJson(JsonObject data) {
-    final String? stringOptional_value;
+
+  static (GetStringOptionalResponse, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final String? stringOptional$value;
+    // TODO: handle arguments
+    final stringOptionalNormalized$Key = "stringOptional";
+
     final stringOptional$raw = data["stringOptional"];
-    stringOptional_value = stringOptional$raw as String?;
 
-    return GetStringOptionalResponse(stringOptional: stringOptional_value);
+    stringOptional$value = stringOptional$raw as String?;
+    current$NormalizedRecord[stringOptionalNormalized$Key] = stringOptional$raw;
+
+    return (
+      GetStringOptionalResponse(stringOptional: stringOptional$value),
+      current$NormalizedRecord,
+    );
   }
 
-  GetStringOptionalResponse updateWithJson(JsonObject data) {
-    final String? stringOptional_value;
-    if (data.containsKey('stringOptional')) {
-      final stringOptional$raw = data["stringOptional"];
-      stringOptional_value = stringOptional$raw as String?;
-    } else {
-      stringOptional_value = stringOptional;
-    }
-
-    return GetStringOptionalResponse(stringOptional: stringOptional_value);
-  }
+  static GetStringOptionalResponse fromJson(JsonObject data) =>
+      fromJsonImpl(data).$1;
 
   @override
   bool operator ==(Object other) {
@@ -50,6 +58,54 @@ class GetStringOptionalResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class GetStringOptional {
+  /// class members
+
+  final String? stringOptional;
+
+  // keywordargs constructor
+  GetStringOptional({this.stringOptional});
+
+  static (GetStringOptional, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final String? stringOptional$value;
+    // TODO: handle arguments
+    final stringOptionalNormalized$Key = "stringOptional";
+
+    final stringOptional$raw = data["stringOptional"];
+
+    stringOptional$value = stringOptional$raw as String?;
+    current$NormalizedRecord[stringOptionalNormalized$Key] = stringOptional$raw;
+
+    return (
+      GetStringOptional(stringOptional: stringOptional$value),
+      current$NormalizedRecord,
+    );
+  }
+
+  static GetStringOptional fromJson(JsonObject data) => fromJsonImpl(data).$1;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is GetStringOptional && other.stringOptional == stringOptional);
+  }
+
+  @override
+  int get hashCode => stringOptional.hashCode;
+
+  JsonObject toJson() {
+    return {'stringOptional': this.stringOptional};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 

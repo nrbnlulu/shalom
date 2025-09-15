@@ -5,7 +5,13 @@ import 'src/normelized_cache.dart';
 export 'src/shalom_core_base.dart';
 export 'src/scalar.dart';
 export 'src/normelized_cache.dart'
-    show NormelizedCache, RefSubscriber, RefUpdate, RecordRef, RefStreamType;
+    show
+        NormelizedCache,
+        RefSubscriber,
+        RefUpdate,
+        RefStreamType,
+        NormalizedRecordData,
+        RecordID;
 
 class ShalomCtx {
   final NormelizedCache cache;
@@ -22,15 +28,14 @@ class DeserializationContext {
 
   /// deserialized values should be appended here
   final HashMap<RecordID, NormalizedRecordData> currentCacheObject;
-  
+
   void addReachableRecord(RecordID id) {
     reachableRecordsCtx.add(id);
   }
-  
+
   DeserializationContext({
     required this.shalomContext,
     required this.reachableRecordsCtx,
     required this.currentCacheObject,
   });
-  DeserializationContext withNewObject
 }

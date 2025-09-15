@@ -14,25 +14,34 @@ class GetBooleanOptionalResponse {
 
   // keywordargs constructor
   GetBooleanOptionalResponse({this.booleanOptional});
-  static GetBooleanOptionalResponse fromJson(JsonObject data) {
-    final bool? booleanOptional_value;
+
+  static (GetBooleanOptionalResponse, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final bool? booleanOptional$value;
+    // TODO: handle arguments
+    final booleanOptionalNormalized$Key = "booleanOptional";
+
     final booleanOptional$raw = data["booleanOptional"];
-    booleanOptional_value = booleanOptional$raw as bool?;
 
-    return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);
+    booleanOptional$value = booleanOptional$raw as bool?;
+    current$NormalizedRecord[booleanOptionalNormalized$Key] =
+        booleanOptional$raw;
+
+    return (
+      GetBooleanOptionalResponse(booleanOptional: booleanOptional$value),
+      current$NormalizedRecord,
+    );
   }
 
-  GetBooleanOptionalResponse updateWithJson(JsonObject data) {
-    final bool? booleanOptional_value;
-    if (data.containsKey('booleanOptional')) {
-      final booleanOptional$raw = data["booleanOptional"];
-      booleanOptional_value = booleanOptional$raw as bool?;
-    } else {
-      booleanOptional_value = booleanOptional;
-    }
-
-    return GetBooleanOptionalResponse(booleanOptional: booleanOptional_value);
-  }
+  static GetBooleanOptionalResponse fromJson(JsonObject data) =>
+      fromJsonImpl(data).$1;
 
   @override
   bool operator ==(Object other) {
@@ -50,6 +59,56 @@ class GetBooleanOptionalResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class GetBooleanOptional {
+  /// class members
+
+  final bool? booleanOptional;
+
+  // keywordargs constructor
+  GetBooleanOptional({this.booleanOptional});
+
+  static (GetBooleanOptional, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final bool? booleanOptional$value;
+    // TODO: handle arguments
+    final booleanOptionalNormalized$Key = "booleanOptional";
+
+    final booleanOptional$raw = data["booleanOptional"];
+
+    booleanOptional$value = booleanOptional$raw as bool?;
+    current$NormalizedRecord[booleanOptionalNormalized$Key] =
+        booleanOptional$raw;
+
+    return (
+      GetBooleanOptional(booleanOptional: booleanOptional$value),
+      current$NormalizedRecord,
+    );
+  }
+
+  static GetBooleanOptional fromJson(JsonObject data) => fromJsonImpl(data).$1;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is GetBooleanOptional &&
+            other.booleanOptional == booleanOptional);
+  }
+
+  @override
+  int get hashCode => booleanOptional.hashCode;
+
+  JsonObject toJson() {
+    return {'booleanOptional': this.booleanOptional};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 

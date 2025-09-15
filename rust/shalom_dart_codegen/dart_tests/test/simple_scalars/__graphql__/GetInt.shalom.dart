@@ -14,25 +14,29 @@ class GetIntResponse {
 
   // keywordargs constructor
   GetIntResponse({required this.intField});
-  static GetIntResponse fromJson(JsonObject data) {
-    final int intField_value;
+
+  static (GetIntResponse, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final int intField$value;
+    // TODO: handle arguments
+    final intFieldNormalized$Key = "intField";
+
     final intField$raw = data["intField"];
-    intField_value = intField$raw as int;
 
-    return GetIntResponse(intField: intField_value);
+    intField$value = intField$raw as int;
+    current$NormalizedRecord[intFieldNormalized$Key] = intField$raw;
+
+    return (GetIntResponse(intField: intField$value), current$NormalizedRecord);
   }
 
-  GetIntResponse updateWithJson(JsonObject data) {
-    final int intField_value;
-    if (data.containsKey('intField')) {
-      final intField$raw = data["intField"];
-      intField_value = intField$raw as int;
-    } else {
-      intField_value = intField;
-    }
-
-    return GetIntResponse(intField: intField_value);
-  }
+  static GetIntResponse fromJson(JsonObject data) => fromJsonImpl(data).$1;
 
   @override
   bool operator ==(Object other) {
@@ -49,6 +53,51 @@ class GetIntResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class GetInt {
+  /// class members
+
+  final int intField;
+
+  // keywordargs constructor
+  GetInt({required this.intField});
+
+  static (GetInt, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final int intField$value;
+    // TODO: handle arguments
+    final intFieldNormalized$Key = "intField";
+
+    final intField$raw = data["intField"];
+
+    intField$value = intField$raw as int;
+    current$NormalizedRecord[intFieldNormalized$Key] = intField$raw;
+
+    return (GetInt(intField: intField$value), current$NormalizedRecord);
+  }
+
+  static GetInt fromJson(JsonObject data) => fromJsonImpl(data).$1;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is GetInt && other.intField == intField);
+  }
+
+  @override
+  int get hashCode => intField.hashCode;
+
+  JsonObject toJson() {
+    return {'intField': this.intField};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 

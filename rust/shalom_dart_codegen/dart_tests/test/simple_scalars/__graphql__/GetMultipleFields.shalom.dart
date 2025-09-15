@@ -16,37 +16,48 @@ class GetMultipleFieldsResponse {
 
   // keywordargs constructor
   GetMultipleFieldsResponse({required this.id, required this.intField});
-  static GetMultipleFieldsResponse fromJson(JsonObject data) {
-    final String id_value;
+
+  static (GetMultipleFieldsResponse, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final normalized$ID = data["id"] as RecordID?;
+    if (normalized$ID != null) {
+      ctx?.addReachableRecord("Query:${normalized$ID}");
+    }
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final String id$value;
+
+    final int intField$value;
+    // TODO: handle arguments
+    final idNormalized$Key = "id";
+
     final id$raw = data["id"];
-    id_value = id$raw as String;
 
-    final int intField_value;
+    id$value = id$raw as String;
+    current$NormalizedRecord[idNormalized$Key] = id$raw;
+
+    // TODO: handle arguments
+    final intFieldNormalized$Key = "intField";
+
     final intField$raw = data["intField"];
-    intField_value = intField$raw as int;
 
-    return GetMultipleFieldsResponse(id: id_value, intField: intField_value);
+    intField$value = intField$raw as int;
+    current$NormalizedRecord[intFieldNormalized$Key] = intField$raw;
+
+    return (
+      GetMultipleFieldsResponse(id: id$value, intField: intField$value),
+      current$NormalizedRecord,
+    );
   }
 
-  GetMultipleFieldsResponse updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
-    }
-
-    final int intField_value;
-    if (data.containsKey('intField')) {
-      final intField$raw = data["intField"];
-      intField_value = intField$raw as int;
-    } else {
-      intField_value = intField;
-    }
-
-    return GetMultipleFieldsResponse(id: id_value, intField: intField_value);
-  }
+  static GetMultipleFieldsResponse fromJson(JsonObject data) =>
+      fromJsonImpl(data).$1;
 
   @override
   bool operator ==(Object other) {
@@ -65,6 +76,73 @@ class GetMultipleFieldsResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class GetMultipleFields {
+  /// class members
+
+  final String id;
+
+  final int intField;
+
+  // keywordargs constructor
+  GetMultipleFields({required this.id, required this.intField});
+
+  static (GetMultipleFields, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final normalized$ID = data["id"] as RecordID?;
+    if (normalized$ID != null) {
+      ctx?.addReachableRecord("Query:${normalized$ID}");
+    }
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final String id$value;
+
+    final int intField$value;
+    // TODO: handle arguments
+    final idNormalized$Key = "id";
+
+    final id$raw = data["id"];
+
+    id$value = id$raw as String;
+    current$NormalizedRecord[idNormalized$Key] = id$raw;
+
+    // TODO: handle arguments
+    final intFieldNormalized$Key = "intField";
+
+    final intField$raw = data["intField"];
+
+    intField$value = intField$raw as int;
+    current$NormalizedRecord[intFieldNormalized$Key] = intField$raw;
+
+    return (
+      GetMultipleFields(id: id$value, intField: intField$value),
+      current$NormalizedRecord,
+    );
+  }
+
+  static GetMultipleFields fromJson(JsonObject data) => fromJsonImpl(data).$1;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is GetMultipleFields &&
+            other.id == id &&
+            other.intField == intField);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([id, intField]);
+
+  JsonObject toJson() {
+    return {'id': this.id, 'intField': this.intField};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 

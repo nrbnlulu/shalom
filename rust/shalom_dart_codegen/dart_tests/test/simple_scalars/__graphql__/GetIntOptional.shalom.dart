@@ -14,25 +14,33 @@ class GetIntOptionalResponse {
 
   // keywordargs constructor
   GetIntOptionalResponse({this.intOptional});
-  static GetIntOptionalResponse fromJson(JsonObject data) {
-    final int? intOptional_value;
+
+  static (GetIntOptionalResponse, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final int? intOptional$value;
+    // TODO: handle arguments
+    final intOptionalNormalized$Key = "intOptional";
+
     final intOptional$raw = data["intOptional"];
-    intOptional_value = intOptional$raw as int?;
 
-    return GetIntOptionalResponse(intOptional: intOptional_value);
+    intOptional$value = intOptional$raw as int?;
+    current$NormalizedRecord[intOptionalNormalized$Key] = intOptional$raw;
+
+    return (
+      GetIntOptionalResponse(intOptional: intOptional$value),
+      current$NormalizedRecord,
+    );
   }
 
-  GetIntOptionalResponse updateWithJson(JsonObject data) {
-    final int? intOptional_value;
-    if (data.containsKey('intOptional')) {
-      final intOptional$raw = data["intOptional"];
-      intOptional_value = intOptional$raw as int?;
-    } else {
-      intOptional_value = intOptional;
-    }
-
-    return GetIntOptionalResponse(intOptional: intOptional_value);
-  }
+  static GetIntOptionalResponse fromJson(JsonObject data) =>
+      fromJsonImpl(data).$1;
 
   @override
   bool operator ==(Object other) {
@@ -49,6 +57,54 @@ class GetIntOptionalResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class GetIntOptional {
+  /// class members
+
+  final int? intOptional;
+
+  // keywordargs constructor
+  GetIntOptional({this.intOptional});
+
+  static (GetIntOptional, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final int? intOptional$value;
+    // TODO: handle arguments
+    final intOptionalNormalized$Key = "intOptional";
+
+    final intOptional$raw = data["intOptional"];
+
+    intOptional$value = intOptional$raw as int?;
+    current$NormalizedRecord[intOptionalNormalized$Key] = intOptional$raw;
+
+    return (
+      GetIntOptional(intOptional: intOptional$value),
+      current$NormalizedRecord,
+    );
+  }
+
+  static GetIntOptional fromJson(JsonObject data) => fromJsonImpl(data).$1;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is GetIntOptional && other.intOptional == intOptional);
+  }
+
+  @override
+  int get hashCode => intOptional.hashCode;
+
+  JsonObject toJson() {
+    return {'intOptional': this.intOptional};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 

@@ -14,25 +14,38 @@ class GetIDOptionalResponse {
 
   // keywordargs constructor
   GetIDOptionalResponse({this.idOptional});
-  static GetIDOptionalResponse fromJson(JsonObject data) {
-    final String? idOptional_value;
-    final idOptional$raw = data["idOptional"];
-    idOptional_value = idOptional$raw as String?;
 
-    return GetIDOptionalResponse(idOptional: idOptional_value);
-  }
+  static (GetIDOptionalResponse, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
 
-  GetIDOptionalResponse updateWithJson(JsonObject data) {
-    final String? idOptional_value;
-    if (data.containsKey('idOptional')) {
-      final idOptional$raw = data["idOptional"];
-      idOptional_value = idOptional$raw as String?;
-    } else {
-      idOptional_value = idOptional;
+    final normalized$ID = data["idOptional"] as RecordID?;
+    if (normalized$ID != null) {
+      ctx?.addReachableRecord("Query:${normalized$ID}");
     }
 
-    return GetIDOptionalResponse(idOptional: idOptional_value);
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final String? idOptional$value;
+    // TODO: handle arguments
+    final idOptionalNormalized$Key = "idOptional";
+
+    final idOptional$raw = data["idOptional"];
+
+    idOptional$value = idOptional$raw as String?;
+    current$NormalizedRecord[idOptionalNormalized$Key] = idOptional$raw;
+
+    return (
+      GetIDOptionalResponse(idOptional: idOptional$value),
+      current$NormalizedRecord,
+    );
   }
+
+  static GetIDOptionalResponse fromJson(JsonObject data) =>
+      fromJsonImpl(data).$1;
 
   @override
   bool operator ==(Object other) {
@@ -49,6 +62,59 @@ class GetIDOptionalResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class GetIDOptional {
+  /// class members
+
+  final String? idOptional;
+
+  // keywordargs constructor
+  GetIDOptional({this.idOptional});
+
+  static (GetIDOptional, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final normalized$ID = data["idOptional"] as RecordID?;
+    if (normalized$ID != null) {
+      ctx?.addReachableRecord("Query:${normalized$ID}");
+    }
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final String? idOptional$value;
+    // TODO: handle arguments
+    final idOptionalNormalized$Key = "idOptional";
+
+    final idOptional$raw = data["idOptional"];
+
+    idOptional$value = idOptional$raw as String?;
+    current$NormalizedRecord[idOptionalNormalized$Key] = idOptional$raw;
+
+    return (
+      GetIDOptional(idOptional: idOptional$value),
+      current$NormalizedRecord,
+    );
+  }
+
+  static GetIDOptional fromJson(JsonObject data) => fromJsonImpl(data).$1;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is GetIDOptional && other.idOptional == idOptional);
+  }
+
+  @override
+  int get hashCode => idOptional.hashCode;
+
+  JsonObject toJson() {
+    return {'idOptional': this.idOptional};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 

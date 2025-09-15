@@ -42,8 +42,8 @@ fn parse_object_selection(
          selection was {:?}.",
         selection_orig
     );
-    let obj = ObjectSelection::new(is_optional, path.clone(),  selection_orig.ty.to_string());
-    
+    let obj = ObjectSelection::new(is_optional, path.clone(), selection_orig.ty.to_string());
+
     for selection in selection_orig.selections.iter() {
         match selection {
             apollo_executable::Selection::Field(field) => {
@@ -191,10 +191,9 @@ fn parse_operation(
         description: None,
     };
     let root_type = parse_object_selection(&mut ctx, global_ctx, &name, false, &op.selection_set);
-    ctx.set_root_type(Selection::new(
-        selection_common,
-        SelectionKind::Object(root_type),
-    ));
+    let selection = Selection::new(selection_common, SelectionKind::Object(root_type));
+    ctx.set_root_type(selection.clone());
+    ctx.add_selection(name, selection);
     Rc::new(ctx)
 }
 

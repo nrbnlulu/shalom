@@ -388,41 +388,48 @@ impl SchemaEnv<'_> {
     }
 }
 
-impl OperationEnv<'_>{
-    fn new(ctx: &SharedShalomGlobalContext, op_ctx: &OperationContext) -> anyhow::Result<Self>{
+impl OperationEnv<'_> {
+    fn new(ctx: &SharedShalomGlobalContext, op_ctx: &OperationContext) -> anyhow::Result<Self> {
         let mut env = Environment::new();
         register_default_template_fns(&mut env, ctx)?;
         let ctx_clone = ctx.clone();
         let op_name = op_ctx.get_operation_name().to_string();
-        
-        env.add_function("is_type_implements_node", move |full_name: &str|{
-            let selection = ctx_clone.get_operation(&op_name).unwrap().get_selection(&full_name.to_string()).unwrap();
-            match selection.kind{
-                SelectionKind::Object(object_selection) => {
-                    ctx_clone.schema_ctx.is_type_implements_node(&object_selection.concrete_typename)
-                },
-                _ => false
+
+        env.add_function("is_type_implements_node", move |full_name: &str| {
+            let op = ctx_clone.get_operation(&op_name).unwrap();
+            let selection = op
+                .get_selection(&full_name.to_string())
+                .ok_or(anyhow::anyhow!("Type {full_name} not found in {op_name}"))
+                .unwrap();
+            match selection.kind {
+                SelectionKind::Object(object_selection) => ctx_clone
+                    .schema_ctx
+                    .is_type_implements_node(&object_selection.concrete_typename),
+                _ => false,
             }
         });
         let op_name = op_ctx.get_operation_name().to_string();
         let ctx_clone = ctx.clone();
-        env.add_function("get_id_selection", move |full_name: &str| -> Option<minijinja::Value>{
-            let selection = ctx_clone.get_operation(&op_name).unwrap().get_selection(&full_name.to_string()).unwrap();
-            match selection.kind{
-                SelectionKind::Object(object_selection) => {
-                    object_selection.get_id_selection().map(
-                        |v| minijinja::Value::from_serialize(v)
-                    )
-                },
-                _ => None
-            }
-        });
-        
-        
-        Ok(OperationEnv{env})
+        env.add_function(
+            "get_id_selection",
+            move |full_name: &str| -> Option<minijinja::Value> {
+                let selection = ctx_clone
+                    .get_operation(&op_name)
+                    .unwrap()
+                    .get_selection(&full_name.to_string())
+                    .unwrap();
+                match selection.kind {
+                    SelectionKind::Object(object_selection) => object_selection
+                        .get_id_selection()
+                        .map(|v| minijinja::Value::from_serialize(v)),
+                    _ => None,
+                }
+            },
+        );
+
+        Ok(OperationEnv { env })
     }
-    
-    
+
     fn render_operation<S: Serialize, T: Serialize>(
         &self,
         operations_ctx: S,
@@ -439,7 +446,6 @@ impl OperationEnv<'_>{
         template.render(&context).unwrap()
     }
 }
-
 
 fn create_dir_if_not_exists(path: &Path) {
     if !path.exists() {
@@ -461,9 +467,9 @@ fn generate_operations_file(
     name: &str,
     operation: &OperationContext,
     additional_imports: HashMap<String, String>,
-)  ->  anyhow::Result<()>{
+) -> anyhow::Result<()> {
     let op_env = OperationEnv::new(&ctx, &operation)?;
-        
+
     info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();
 
@@ -531,12 +537,7 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
         .map(|(k, v)| (k.to_string_lossy().to_string(), v))
         .collect();
     for (name, operation) in ctx.operations() {
-        generate_operations_file(
-            &ctx,
-            &name,
-            &operation,
-            additional_imports.clone(),
-        )?;
+        generate_operations_file(&ctx, &name, &operation, additional_imports.clone())?;
     }
 
     Ok(())

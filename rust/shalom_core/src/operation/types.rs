@@ -94,7 +94,11 @@ pub struct ObjectSelection {
 pub type SharedObjectSelection = Rc<ObjectSelection>;
 
 impl ObjectSelection {
-    pub fn new(is_optional: bool, full_name: String, concrete_typename: String) -> SharedObjectSelection {
+    pub fn new(
+        is_optional: bool,
+        full_name: String,
+        concrete_typename: String,
+    ) -> SharedObjectSelection {
         let ret = ObjectSelection {
             full_name,
             concrete_typename,
@@ -107,9 +111,13 @@ impl ObjectSelection {
     pub fn add_selection(&self, selection: Selection) {
         self.selections.borrow_mut().push(selection);
     }
-    
-    pub fn get_id_selection(&self) -> Option<Selection>{
-        self.selections.borrow().iter().find(|s| s.self_selection_name().contains("id")).cloned()
+
+    pub fn get_id_selection(&self) -> Option<Selection> {
+        self.selections
+            .borrow()
+            .iter()
+            .find(|s| s.self_selection_name().contains("id"))
+            .cloned()
     }
 }
 

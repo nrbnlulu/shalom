@@ -1,4 +1,4 @@
-use crate::schema::types::GraphQLAny;
+use crate::schema::types::{GraphQLAny, Implementor};
 use apollo_compiler::{validation::Valid, Node};
 use serde::{Serialize, Serializer};
 use std::fmt::Debug;
@@ -191,20 +191,12 @@ impl SchemaContext {
     pub fn is_type_implementing_interface(&self, type_name: &str, interface_name: &str) -> bool {
         let types_ctx = self.types.lock().unwrap();
         if let Some(obj) = types_ctx.objects.get(type_name) {
-            self.check_implements_recursive(
-                obj.implements_interfaces.iter().map(|b| b.as_str()),
-                interface_name,
-                &types_ctx,
-            )
+            self.check_implements_recursive(obj.as_ref(), interface_name, &types_ctx)
         } else if let Some(iface) = types_ctx.interfaces.get(type_name) {
             if iface.name == interface_name {
                 true
             } else {
-                self.check_implements_recursive(
-                    iface.implements_interfaces.iter().map(|s| s.as_str()),
-                    interface_name,
-                    &types_ctx,
-                )
+                self.check_implements_recursive(iface.as_ref(), interface_name, &types_ctx)
             }
         } else {
             false
@@ -215,23 +207,21 @@ impl SchemaContext {
         self.is_type_implementing_interface(type_name, "Node")
     }
 
-    fn check_implements_recursive<'a>(
+    fn check_implements_recursive<I: Implementor>(
         &self,
-        implements: impl IntoIterator<Item = &'a str>,
+        implementor: &I,
         target_interface: &str,
         types_ctx: &SchemaTypesCtx,
     ) -> bool {
-        let implements_set: HashSet<&str> = implements.into_iter().collect();
-        if implements_set.contains(&target_interface) {
+        if implementor
+            .implements_interfaces()
+            .contains(target_interface)
+        {
             return true;
         }
-        for &iface_name in &implements_set {
+        for iface_name in implementor.implements_interfaces() {
             if let Some(iface) = types_ctx.interfaces.get(iface_name) {
-                if self.check_implements_recursive(
-                    iface.implements_interfaces.iter().map(|s| s.as_str()),
-                    target_interface,
-                    types_ctx,
-                ) {
+                if self.check_implements_recursive(iface.as_ref(), target_interface, types_ctx) {
                     return true;
                 }
             }

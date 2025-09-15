@@ -14,25 +14,34 @@ class GetIDResponse {
 
   // keywordargs constructor
   GetIDResponse({required this.id});
-  static GetIDResponse fromJson(JsonObject data) {
-    final String id_value;
-    final id$raw = data["id"];
-    id_value = id$raw as String;
 
-    return GetIDResponse(id: id_value);
-  }
+  static (GetIDResponse, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
 
-  GetIDResponse updateWithJson(JsonObject data) {
-    final String id_value;
-    if (data.containsKey('id')) {
-      final id$raw = data["id"];
-      id_value = id$raw as String;
-    } else {
-      id_value = id;
+    final normalized$ID = data["id"] as RecordID?;
+    if (normalized$ID != null) {
+      ctx?.addReachableRecord("Query:${normalized$ID}");
     }
 
-    return GetIDResponse(id: id_value);
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final String id$value;
+    // TODO: handle arguments
+    final idNormalized$Key = "id";
+
+    final id$raw = data["id"];
+
+    id$value = id$raw as String;
+    current$NormalizedRecord[idNormalized$Key] = id$raw;
+
+    return (GetIDResponse(id: id$value), current$NormalizedRecord);
   }
+
+  static GetIDResponse fromJson(JsonObject data) => fromJsonImpl(data).$1;
 
   @override
   bool operator ==(Object other) {
@@ -48,6 +57,55 @@ class GetIDResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class GetID {
+  /// class members
+
+  final String id;
+
+  // keywordargs constructor
+  GetID({required this.id});
+
+  static (GetID, NormalizedRecordData) fromJsonImpl(
+    JsonObject data, {
+    DeserializationContext? ctx,
+  }) {
+    final NormalizedRecordData record$Data = {};
+    // define the object fields
+
+    final normalized$ID = data["id"] as RecordID?;
+    if (normalized$ID != null) {
+      ctx?.addReachableRecord("Query:${normalized$ID}");
+    }
+
+    final NormalizedRecordData current$NormalizedRecord = {};
+
+    final String id$value;
+    // TODO: handle arguments
+    final idNormalized$Key = "id";
+
+    final id$raw = data["id"];
+
+    id$value = id$raw as String;
+    current$NormalizedRecord[idNormalized$Key] = id$raw;
+
+    return (GetID(id: id$value), current$NormalizedRecord);
+  }
+
+  static GetID fromJson(JsonObject data) => fromJsonImpl(data).$1;
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) || (other is GetID && other.id == id);
+  }
+
+  @override
+  int get hashCode => id.hashCode;
+
+  JsonObject toJson() {
+    return {'id': this.id};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 
