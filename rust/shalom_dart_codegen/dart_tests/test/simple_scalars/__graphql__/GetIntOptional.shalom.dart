@@ -17,7 +17,7 @@ class GetIntOptionalResponse {
 
   static (GetIntOptionalResponse, NormalizedRecordData) fromJsonImpl(
     JsonObject data, {
-    DeserializationContext? ctx,
+    CacheUpdateContext? ctx,
   }) {
     final NormalizedRecordData record$Data = {};
     // define the object fields
@@ -68,7 +68,7 @@ class GetIntOptional {
 
   static (GetIntOptional, NormalizedRecordData) fromJsonImpl(
     JsonObject data, {
-    DeserializationContext? ctx,
+    CacheUpdateContext? ctx,
   }) {
     final NormalizedRecordData record$Data = {};
     // define the object fields

@@ -17,7 +17,7 @@ class GetStringResponse {
 
   static (GetStringResponse, NormalizedRecordData) fromJsonImpl(
     JsonObject data, {
-    DeserializationContext? ctx,
+    CacheUpdateContext? ctx,
   }) {
     final NormalizedRecordData record$Data = {};
     // define the object fields
@@ -64,7 +64,7 @@ class GetString {
 
   static (GetString, NormalizedRecordData) fromJsonImpl(
     JsonObject data, {
-    DeserializationContext? ctx,
+    CacheUpdateContext? ctx,
   }) {
     final NormalizedRecordData record$Data = {};
     // define the object fields

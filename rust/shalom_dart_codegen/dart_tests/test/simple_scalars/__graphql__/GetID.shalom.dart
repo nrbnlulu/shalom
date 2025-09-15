@@ -17,7 +17,7 @@ class GetIDResponse {
 
   static (GetIDResponse, NormalizedRecordData) fromJsonImpl(
     JsonObject data, {
-    DeserializationContext? ctx,
+    CacheUpdateContext? ctx,
   }) {
     final NormalizedRecordData record$Data = {};
     // define the object fields
@@ -68,7 +68,7 @@ class GetID {
 
   static (GetID, NormalizedRecordData) fromJsonImpl(
     JsonObject data, {
-    DeserializationContext? ctx,
+    CacheUpdateContext? ctx,
   }) {
     final NormalizedRecordData record$Data = {};
     // define the object fields

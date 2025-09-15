@@ -17,7 +17,7 @@ class GetStringOptionalResponse {
 
   static (GetStringOptionalResponse, NormalizedRecordData) fromJsonImpl(
     JsonObject data, {
-    DeserializationContext? ctx,
+    CacheUpdateContext? ctx,
   }) {
     final NormalizedRecordData record$Data = {};
     // define the object fields
@@ -69,7 +69,7 @@ class GetStringOptional {
 
   static (GetStringOptional, NormalizedRecordData) fromJsonImpl(
     JsonObject data, {
-    DeserializationContext? ctx,
+    CacheUpdateContext? ctx,
   }) {
     final NormalizedRecordData record$Data = {};
     // define the object fields

@@ -7,8 +7,9 @@ export 'src/scalar.dart';
 export 'src/normelized_cache.dart'
     show
         NormelizedCache,
-        RefSubscriber,
-        RefUpdate,
+        RecordSubscriber,
+        RecordUpdateDTO,
+        RecordSubscriptionDTO,
         RefStreamType,
         NormalizedRecordData,
         RecordID;
@@ -22,20 +23,24 @@ class ShalomCtx {
   }
 }
 
-class DeserializationContext {
+class CacheUpdateContext {
   final ShalomCtx shalomContext;
   final ReachableRecordsCtx reachableRecordsCtx;
 
   /// deserialized values should be appended here
-  final HashMap<RecordID, NormalizedRecordData> currentCacheObject;
-
+  final HashMap<RecordID, NormalizedRecordData> currentNormalizedRecord;
+  final RecordID currentRecordID;
+  
   void addReachableRecord(RecordID id) {
     reachableRecordsCtx.add(id);
   }
+  
+  void addNormalizedRecord(RecordID id, NormalizedRecordData data) => shalomContext.cache.insertToCache(id, data);
 
-  DeserializationContext({
+  CacheUpdateContext({
     required this.shalomContext,
     required this.reachableRecordsCtx,
-    required this.currentCacheObject,
+    required this.currentNormalizedRecord,
+    required this.currentRecordID,
   });
 }

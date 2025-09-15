@@ -6,18 +6,24 @@ import 'utils/lru_cache.dart' show LruCache;
 
 /// can be typename:id or `full schema path (with args)`
 typedef RecordID = String;
-typedef RefStreamType = StreamController<dynamic>;
+typedef RefStreamType = StreamController<NormelizedCache>;
 
-class RefSubscriber {
+class RecordSubscriber {
   final RefStreamType streamController;
-  final Set<RecordID> subscribedRefs;
-  const RefSubscriber({
-    required this.streamController,
-    required this.subscribedRefs,
-  });
+  final Set<RecordSubscriptionDTO> subs;
+  const RecordSubscriber({required this.streamController, required this.subs});
 
   void cancel() {
     streamController.close();
+  }
+
+  bool isAffectedBy(RecordUpdateDTO update) {
+    for (final sub in subs) {
+      if (sub.fields.any((f) => update.updatedFields.contains(f))) {
+        return true;
+      }
+    }
+    return false;
   }
 }
 
@@ -33,9 +39,9 @@ class TypedObjectRecord {
   });
 }
 
-class RefRecord {
+class RecordRef {
   final RecordID ref;
-  const RefRecord(this.ref);
+  const RecordRef(this.ref);
 }
 
 class ListOfRefRecord {
@@ -43,19 +49,41 @@ class ListOfRefRecord {
   const ListOfRefRecord(this.refs);
 }
 
-/// can be [TypedObjectRecord] | [RefRecord] | [ListOfRefRecord] or a [dynamic] data that can't be normelized.
+/// can be [TypedObjectRecord] | [RecordRef] | [ListOfRefRecord] or a [dynamic] data that can't be normelized.
 typedef NormalizedRecordData = dynamic;
+
+class RecordSubscriptionDTO {
+  final RecordID recordID;
+  final Set<RecordID> fields;
+  const RecordSubscriptionDTO({required this.recordID, required this.fields});
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! RecordSubscriptionDTO) return false;
+    return recordID == other.recordID && fields == other.fields;
+  }
+
+  @override
+  int get hashCode => recordID.hashCode ^ fields.hashCode;
+}
+
+class RecordUpdateDTO {
+  final Set<RecordID> updatedFields;
+  final RecordID onRecord;
+  const RecordUpdateDTO({required this.updatedFields, required this.onRecord});
+}
 
 class NormelizedCache {
   final LruCache<RecordID, NormalizedRecordData> cache;
-  final HashMap<int, RefSubscriber> refSubscribers = HashMap();
+  final HashMap<int, RecordSubscriber> refSubscribers = HashMap();
 
   NormelizedCache({int capacity = 1000}) : cache = LruCache(capacity: capacity);
 
-  RefSubscriber subscribeToRefs(Set<RecordID> refs) {
-    RefSubscriber? subscriber = null;
-    subscriber = RefSubscriber(
-      subscribedRefs: refs,
+  RecordSubscriber subscribeToRefs(Set<RecordSubscriptionDTO> subs) {
+    RecordSubscriber? subscriber = null;
+    subscriber = RecordSubscriber(
+      subs: subs,
       streamController: RefStreamType(
         onCancel: () => refSubscribers.remove(identityHashCode(subscriber)),
       ),
@@ -63,13 +91,19 @@ class NormelizedCache {
     return subscriber;
   }
 
-  void updateRef(RecordID ref, NormalizedRecordData data) {
-    cache.put(ref, data);
-    refSubscribers.values.forEach((subscriber) {
-      if (subscriber.subscribedRefs.contains(ref)) {
-        subscriber.streamController.add(data);
+  void insertToCache(RecordID id, NormalizedRecordData data) {
+    cache.put(id, data);
+  }
+
+  void invalidateRefs(Iterable<RecordUpdateDTO> updates) {
+    for (final subscriber in refSubscribers.values) {
+      for (final update in updates) {
+        if (subscriber.isAffectedBy(update)) {
+          subscriber.streamController.add(this);
+          break;
+        }
       }
-    });
+    }
   }
 }
 

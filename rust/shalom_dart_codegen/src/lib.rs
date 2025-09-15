@@ -351,6 +351,13 @@ fn register_default_template_fns<'a>(
     });
 
     env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
+    env.add_filter("insert_if", |condition: bool, val: &str| {
+        if condition {
+            Some(val.to_string())
+        } else {
+            None
+        }
+    });
     Ok(())
 }
 

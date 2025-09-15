@@ -17,7 +17,7 @@ class GetBooleanOptionalResponse {
 
   static (GetBooleanOptionalResponse, NormalizedRecordData) fromJsonImpl(
     JsonObject data, {
-    DeserializationContext? ctx,
+    CacheUpdateContext? ctx,
   }) {
     final NormalizedRecordData record$Data = {};
     // define the object fields
@@ -70,7 +70,7 @@ class GetBooleanOptional {
 
   static (GetBooleanOptional, NormalizedRecordData) fromJsonImpl(
     JsonObject data, {
-    DeserializationContext? ctx,
+    CacheUpdateContext? ctx,
   }) {
     final NormalizedRecordData record$Data = {};
     // define the object fields
