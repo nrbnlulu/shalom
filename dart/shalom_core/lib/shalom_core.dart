@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'src/normelized_cache.dart';
 
 export 'src/shalom_core_base.dart';
@@ -17,13 +19,18 @@ class ShalomCtx {
 class DeserializationContext {
   final ShalomCtx shalomContext;
   final ReachableRecordsCtx reachableRecordsCtx;
-  final void Function(Record) assignToCache;
 
+  /// deserialized values should be appended here
+  final HashMap<RecordID, NormalizedRecordData> currentCacheObject;
+  
+  void addReachableRecord(RecordID id) {
+    reachableRecordsCtx.add(id);
+  }
+  
   DeserializationContext({
     required this.shalomContext,
     required this.reachableRecordsCtx,
-    required this.assignToCache,
+    required this.currentCacheObject,
   });
-  
-  
+  DeserializationContext withNewObject
 }

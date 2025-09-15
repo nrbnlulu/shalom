@@ -43,7 +43,7 @@ class ListOfRefRecord {
   const ListOfRefRecord(this.refs);
 }
 
-/// can be [TypedObjectRecord] | [RefRecord] | [ListOfRefRecord] or [dynamic] data that can't be normelized.
+/// can be [TypedObjectRecord] | [RefRecord] | [ListOfRefRecord] or a [dynamic] data that can't be normelized.
 typedef NormalizedRecordData = dynamic;
 
 class NormelizedCache {

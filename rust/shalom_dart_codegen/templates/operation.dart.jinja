@@ -19,9 +19,9 @@
         {% endif %}
     {% elif selection.kind == "Object" %}
         {% if is_optional %}
-            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJson({{ value_symbol }})
+            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJson({{ value_symbol }}, {ctx: ctx})
         {% else %}
-            {{ selection.full_name }}.fromJson({{ value_symbol }})
+            {{ selection.full_name }}.fromJson({{ value_symbol }}, {ctx: ctx})
         {% endif %}
     {% elif selection.kind == "Enum" %}
         {% set typename = selection.concrete_type.name %}
@@ -46,19 +46,6 @@
     {% endif %}
 {% endmacro %}
 
-{% macro normalizeSelection_macro(value_symbol, kind, assign_to, assign_operator) %}
-    {% set selection_name = selection.name %}
-    {% elif kind.kind == "Scalar" %}
-        {{assign_to}} {{assign_operator}} {{selection_name}};
-    {% elif kind.kind == "Object" %}
-        
-        {{assign_to}} {{assign_operator}} {{accessor}}.normalizeSelf();
-    {% elif kind.kind == "List" %}
-        {{assign_to}} {{assign_operator}} ({{value_symbol as List<dynamic>}}).map((item) => {{
-            normalizeSelection_macro("item", kind.of_kind, "", ""
-        }})).toList();
-    {% endif %}
-{% endmacro %}
 
 {# Recursive macro for serializing selection values #}
 {% macro _serialize_selection_value_macro(value_symbol, selection, is_optional=false) %}
@@ -117,8 +104,8 @@ import 'package:collection/collection.dart';
 
 
 {% set operation_name = operation.context.operation_name %}
-{% macro selection_object_impl(typename, parent_selection_object, is_root_selection) %}
-    {% set selections = parent_selection_object.selections %} 
+{% macro selection_object_impl(typename, selection_object, is_root_selection) %}
+    {% set selections = selection_object.selections %} 
     /// class members
     {% for selection in selections -%}
         {% set selection_name = selection.name %}
@@ -131,38 +118,45 @@ import 'package:collection/collection.dart';
         this.{{ selection.name }},
     {% endfor %}
     });
-    static {{ typename }} fromJson(JsonObject data, {DeserializationContext? ctx}) {
-        if (ctx != null){
-            final RecordID? {{selection_name}}$cacheKey = {{selection_name}};
-            final NormalizedRecordData? normalized$Value;
-            {% if is_type_implements_node(parent_selection_object.name) -%}
-                final id$Tmp = data["id"] as String?;
-                if (id$Tmp != null) {
-                    {{selection_name}}$NormalizedKey = id$Tmp!;
-                }
-            {% elif get_id_selection(parent_selection_object.name) is not None -%}
-                {% set id_selection = get_id_selection(parent_selection_object.name) %}
-                final id$Tmp = data[{{id_selection.name}}] as String?;
-                if (id$Tmp != null) {
-                    {{selection_name}}$NormalizedKey = {{}}id$Tmp!;
-                }
-            {% else -%}
-                // TODO: handle variables
-                {{selection_name}}$NormalizedKey = selection.name;
-            {% endif -%}    
-        }
-    {% endif %}
     
- 
-    {% for selection in selections -%}
-        {% set selection_name = selection.name %}
-        {% set selection_typename = type_name_for_selection(selection) %}
-        final {{ selection_typename }} {{ selection_name }}_value;
-        final {{selection_name}}$raw = data["{{ selection_name }}"];
-        ({{ selection_name }}_value, normalized$Value) = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
-        {{ selection_name }}: {{ selection_name }}_value,
-    {% endfor %}
-    );
+    static ({{ typename }}, NormalizedRecordData) fromJson(JsonObject data, {DeserializationContext? ctx}) {
+        final NormalizedRecordData record$Data = {};
+        // define the object fields
+        final RecordID? normalized$ID;
+        
+        {% if is_type_implements_node(selection_object.name) %}
+            normalized$ID = data["id"] as String?;
+        {% elif get_id_selection(selection_object.name) is not None -%}
+            {% set id_field_name = get_id_selection(selection_object.name).name %}
+        {% endif %}
+        if (normalized$ID != null){
+            ctx?.addReachableRecord(normalized$ID);
+        }
+        final NormalizedRecordData current$NormalizedRecord = {};
+        
+        {% for selection in selection_object.selections -%}
+            {% set selection_typename = type_name_for_selection(selection) %}
+            final {{ selection_typename }} {{selection.name}}$value;
+        {% endfor -%}
+        {% for selection in selection_object.selections -%}
+            // TODO: handle arguments
+            final {{selection.name}}Normalized$Key = "{{selection.name}}":
+            final {{selection.name}}$raw = data["{{selection.name}}"];
+            {% if selection.kind == "Object" %}
+                final {{selection.name}}$res = {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
+                {{selection.name}}$value = {{selection.name}}$res.0;
+                current$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$res.1;
+            {% else %}
+                {{selection.name}}$value =  {{ _deserialize_selection_value_macro(selection_name + '$raw', selection, selection.is_optional) }};
+                current$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$raw;
+            {% endif %}
+        {% endfor -%}
+        
+                
+            {% endif %}
+            
+        {% endfor %}
+        
     }
     
     static JsonObject _normalize$Response(JsonObject data, {OperationContextType? ctx, ReachableRecordsCtx? refsCtx}){

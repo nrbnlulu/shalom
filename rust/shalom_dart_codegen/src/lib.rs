@@ -406,7 +406,7 @@ impl OperationEnv<'_>{
         });
         let op_name = op_ctx.get_operation_name().to_string();
         let ctx_clone = ctx.clone();
-        env.add_function("has_id_selection", move |full_name: &str| -> Option<minijinja::Value>{
+        env.add_function("get_id_selection", move |full_name: &str| -> Option<minijinja::Value>{
             let selection = ctx_clone.get_operation(&op_name).unwrap().get_selection(&full_name.to_string()).unwrap();
             match selection.kind{
                 SelectionKind::Object(object_selection) => {
