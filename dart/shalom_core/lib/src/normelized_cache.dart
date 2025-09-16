@@ -76,9 +76,10 @@ class RecordUpdateDTO {
 
 class NormelizedCache {
   final LruCache<RecordID, NormalizedRecordData> cache;
-  final HashMap<int, RecordSubscriber> refSubscribers = HashMap();
+  final Map<int, RecordSubscriber> refSubscribers = {};
 
-  NormelizedCache({int capacity = 1000}) : cache = LruCache(capacity: capacity);
+   NormelizedCache({int capacity = 1000})
+    : cache = LruCache(capacity: capacity);
 
   RecordSubscriber subscribeToRefs(Set<RecordSubscriptionDTO> subs) {
     RecordSubscriber? subscriber = null;
@@ -90,6 +91,10 @@ class NormelizedCache {
     );
     return subscriber;
   }
+
+  bool containsKey(RecordID id) => cache.containsKey(id);
+
+  NormalizedRecordData get(RecordID id) => cache.get(id);
 
   void insertToCache(RecordID id, NormalizedRecordData data) {
     cache.put(id, data);
@@ -105,12 +110,4 @@ class NormelizedCache {
       }
     }
   }
-}
-
-/// would be used by generated code to
-class ReachableRecordsCtx {
-  final Set<RecordID> ids;
-  const ReachableRecordsCtx(this.ids);
-
-  bool add(RecordID ref) => ids.add(ref);
 }

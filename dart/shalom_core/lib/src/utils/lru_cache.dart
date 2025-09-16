@@ -34,6 +34,8 @@ class LruCache<K, V> {
   void clear() {
     _cache.clear();
   }
-
+  
+  bool containsKey(K key) => _cache.containsKey(key);
+  
   int get size => _cache.length;
 }

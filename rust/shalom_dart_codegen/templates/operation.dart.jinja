@@ -18,10 +18,15 @@
             {% endif %}
         {% endif %}
     {% elif selection.kind == "Object" %}
+        {% set id_field = get_id_selection(selection.full_name) -%}
         {% if is_optional %}
-            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromJsonImpl({{ value_symbol }}, {ctx: ctx})
+            {{ value_symbol }} == null ? null :
         {% else %}
-            {{ selection.full_name }}.fromJsonImpl({{ value_symbol }}, {ctx: ctx})
+            {% if  id_field is not none -%}
+                {{ selection.full_name }}.fromJsonImpl(ctx.getObjectCachedRecord(data["{{id_field.name}}"] as String), ctx);
+            {% else %}
+                {{ selection.full_name }}.fromJsonImpl({{ value_symbol }}, {ctx: ctx});
+            {% endif %}
         {% endif %}
     {% elif selection.kind == "Enum" %}
         {% set typename = selection.concrete_type.name %}
@@ -119,69 +124,91 @@ import 'package:collection/collection.dart';
     {% endfor %}
     });
     
-    static void updateCachePrivate(JsonObject data, CacheUpdateContext ctx){
-        final NormalizedRecordData current$NormalizedRecord = ctx.currentNormalizedRecord;    
-        final RecordUpdateDTO? updateDTO;
+    static void updateCachePrivate(JsonObject data,
+            CacheUpdateContext ctx,
+            {
+            /// can be just the selection name but also may include serialized arguments.
+            required RecordID  this$fieldName,
+            required JsonObject this$data
+            }){
+        {% set id_field = get_id_selection(selection_object.full_name) -%}
+        {% if is_type_implements_node(selection_object.full_name) %}
+            final this$normalizedID = data["id"] as RecordID?;
+        {% elif id_field is not none -%}
+            final this$normalizedID = data["{{id_field.name}}"] as RecordID?;
+        {% else %}
+            final this$normalizedID = this$fieldName;
+        {% endif -%}
+        {% if id_field is not none -%}
+            if (this$normalizedID == null) {
+                throw UnimplementedError("current we don't support nullable ids");
+            }
+            this$data[this$fieldName] = this$normalizedID;
+            ctx.addDependantRecord(this$normalizedID);
+            final JsonObject this$NormalizedRecord = ctx.getCachedObjectRecord(this$normalizedID);
+        {% else -%}
+            final JsonObject this$NormalizedRecord = getOrCreateObject(this$data, this$fieldName);
+        {% endif %}        
         {% for selection in selection_object.selections -%}
-`           // TODO: handle arguments
+            // TODO: handle arguments
             final {{selection.name}}Normalized$Key = "{{selection.name}}";
-            final {{selection.name}}$cached = current$NormalizedRecord[{{selection.name}}Normalized$Key]
-                
-            {% if selection.kind == "Object" %}
-                final {{selection.name}}$data = data["{{selection.name}}"] as JsonObject?;
-                {% if is_type_implements_node(selection.full_name) %}
-                    final {{selection.name}}$normalizedID = {{selection.name}}$data?["id"] as RecordID?;
-                {% elif get_id_selection(selection.full_name) is not none -%}
-                    {% set id_field_name = get_id_selection(selection.full_name).name %}
-                    final {{selection.name}}$normalizedID = {{selection.name}}$data?["{{id_field_name}}"] as RecordID?;
+            final {{selection.name}}$cached = this$NormalizedRecord[{{selection.name}}Normalized$Key];
+            final {{selection.name}}$raw = data["{{selection.name}}"];
+            if ({{selection.name}}$raw != null){
+                {% if selection.kind == "Object" %}
+                    {{selection.full_name}}.updateCachePrivate(
+                        {{selection.name}}$raw as JsonObject,
+                        ctx,
+                        this$fieldName: {{selection.name}}Normalized$Key,
+                        this$data: this$NormalizedRecord
+                    );
+                    
                 {% else %}
-                    final {{selection.name}}$assignDataTo = (NormalizedRecordData d) => current$NormalizedRecord[{{selection.name}}Normalized$Key] = d;
-                    
-                {% endif %}
-                {% if get_id_selection(selection.full_name) is not none -%}
-                    {# this is normalizeable #}
-                    if ({{selection.name}}$normalizedID != null){
-                        ctx.addReachableRecord("{{selection.concrete_typename}}:${{selection.name}}$normalizedID}");
-                        current$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$normalizedID;
-                        {{selection.name}}$assignDataTo = (NormalizedRecordData? d) => ctx.addNormalizedRecord({{selection.name}}Normalized$Key], d);
+                    if ({{selection.name}}$cached != {{selection.name}}$raw){
+                    ctx.addChangedRecord(this$normalizedID, {{selection.name}}Normalized$Key);
                     }
+                    this$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$raw;
                 {% endif %}
-                
-                
-                if ({{selection.name}}$cached &&
-                !{{selection.is_optional}}){
-                    
+            } else {
+                // if this field was null in the response and key exists clear the cache.
+                if (data.containsKey("{{selection.name}}") && {{selection.name}}$cached != null){
+                    this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
+                    ctx.addChangedRecord(this$normalizedID, {{selection.name}}Normalized$Key);
                 }
-            {% else %}
-                current$NormalizedRecord[{{selection.name}}Normalized$Key] = {{raw_value_symbol}};
-            {% endif %}
+            }
+
         {% endfor %}
     }
     
-    static ({{ typename }}, NormalizedRecordData) fromJsonImpl(JsonObject data, {CacheUpdateContext? ctx}) {
-        
-        final NormalizedRecordData current$NormalizedRecord = ctx?.currentCacheObject ?? {};
-        final record$UpdateDTO = RecordUpdateDTO(
+    static {{typename}} fromJsonImpl(JsonObject data, ShalomCtx ctx) {
         {% for selection in selection_object.selections -%}
-            {% set selection_typename = type_name_for_selection(selection) %}
-            final {{ selection_typename }} {{selection.name}}$value;
-        {% endfor -%}
-        {% for selection in selection_object.selections -%}
-
             {% set raw_value_symbol = selection.name + '$raw' %}
             final {{raw_value_symbol}} = data["{{selection.name}}"];
-            final {{selection.name}}$res = {{ _deserialize_selection_value_macro(raw_value_symbol, selection, selection.is_optional) }}; 
-
+            final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_value_macro(raw_value_symbol, selection, selection.is_optional) }}; 
         {% endfor -%}
-        return ({{ typename }}(
+        return {{ typename }}(
             {% for selection in selections -%}
                 {{selection.name}}: {{selection.name}}$value,
             {% endfor %}
-        ), current$NormalizedRecord);
+        );
     }
-    
-    static {{typename}} fromJson(JsonObject data) => fromJsonImpl(data).$1;
-    
+    {% if is_root_selection -%}
+        static {{typename}} fromJson(JsonObject data, {ShalomCtx? ctx}){
+            // if ctx not provider we create dummy one
+            ctx ??= ShalomCtx.withCapacity();
+            // first update the cache
+            final CacheUpdateContext updateCtx = CacheUpdateContext(shalomContext: ctx!);
+            {% set root_selection = selection_object.selections | first -%}
+            // TODO: handle arguments
+            updateCachePrivate(
+                data,
+                updateCtx,
+                this$fieldName: "{{root_selection.name}}",
+                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "{{root_selection.name}}")
+            );
+            return fromJsonImpl(data, ctx);
+        }
+    {% endif -%}
     
     @override
     bool operator ==(Object other) {
