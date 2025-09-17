@@ -4,7 +4,8 @@ This repo contains the code for "Shalom" a graphql codegen library for dart and 
 ### Architecture
 graphql parsing and codegen are implemented in rust under
 - /rust/shalom_core - for core graphql document parsing
-- /rust/shalom_dart_codegen - a codegen for dart and flutter that uses minijinja templates to generate code
+- /rust/shalom_dart_codegen - a codegen for dart and flutter that uses minijinja templates to generate code 
+- as a rule of thumb variables that you create in templates should have $ symbol in order to differentiate from user-defined symbols (i.e graphql fields).
 - /dart/shalom_core - core types and logic that needed for dart (dart only)
 - /dart/shalom_flutter - integration with flutter widgets and state management
 

@@ -212,4 +212,103 @@ void main() {
       expect(json, data);
     });
   });
+
+  group('Scalars Equality', () {
+    test('String ==', () {
+      final a = GetStringResponse.fromJson({'string': 'test'});
+      final b = GetStringResponse.fromJson({'string': 'test'});
+      expect(a == b, true);
+      final c = GetStringResponse.fromJson({'string': 'other'});
+      expect(a == c, false);
+    });
+
+    test('StringOptional ==', () {
+      final a = GetStringOptionalResponse.fromJson({'stringOptional': 'test'});
+      final b = GetStringOptionalResponse.fromJson({'stringOptional': 'test'});
+      expect(a == b, true);
+      final c = GetStringOptionalResponse.fromJson({'stringOptional': null});
+      expect(a == c, false);
+    });
+
+    test('ID ==', () {
+      final a = GetIDResponse.fromJson({'id': 'test'});
+      final b = GetIDResponse.fromJson({'id': 'test'});
+      expect(a == b, true);
+      final c = GetIDResponse.fromJson({'id': 'other'});
+      expect(a == c, false);
+    });
+
+    test('IDOptional ==', () {
+      final a = GetIDOptionalResponse.fromJson({'idOptional': 'test'});
+      final b = GetIDOptionalResponse.fromJson({'idOptional': 'test'});
+      expect(a == b, true);
+      final c = GetIDOptionalResponse.fromJson({'idOptional': null});
+      expect(a == c, false);
+    });
+
+    test('Float ==', () {
+      final a = GetFloatResponse.fromJson({'float': 1.23});
+      final b = GetFloatResponse.fromJson({'float': 1.23});
+      expect(a == b, true);
+      final c = GetFloatResponse.fromJson({'float': 4.56});
+      expect(a == c, false);
+    });
+
+    test('FloatOptional ==', () {
+      final a = GetFloatOptionalResponse.fromJson({'floatOptional': 1.23});
+      final b = GetFloatOptionalResponse.fromJson({'floatOptional': 1.23});
+      expect(a == b, true);
+      final c = GetFloatOptionalResponse.fromJson({'floatOptional': null});
+      expect(a == c, false);
+    });
+
+    test('Boolean ==', () {
+      final a = GetBooleanResponse.fromJson({'boolean': true});
+      final b = GetBooleanResponse.fromJson({'boolean': true});
+      expect(a == b, true);
+      final c = GetBooleanResponse.fromJson({'boolean': false});
+      expect(a == c, false);
+    });
+
+    test('BooleanOptional ==', () {
+      final a = GetBooleanOptionalResponse.fromJson({'booleanOptional': true});
+      final b = GetBooleanOptionalResponse.fromJson({'booleanOptional': true});
+      expect(a == b, true);
+      final c = GetBooleanOptionalResponse.fromJson({'booleanOptional': null});
+      expect(a == c, false);
+    });
+
+    test('Int ==', () {
+      final a = GetIntResponse.fromJson({'intField': 123});
+      final b = GetIntResponse.fromJson({'intField': 123});
+      expect(a == b, true);
+      final c = GetIntResponse.fromJson({'intField': 456});
+      expect(a == c, false);
+    });
+
+    test('IntOptional ==', () {
+      final a = GetIntOptionalResponse.fromJson({'intOptional': 123});
+      final b = GetIntOptionalResponse.fromJson({'intOptional': 123});
+      expect(a == b, true);
+      final c = GetIntOptionalResponse.fromJson({'intOptional': null});
+      expect(a == c, false);
+    });
+
+    test('Multiple fields ==', () {
+      final a = GetMultipleFieldsResponse.fromJson({
+        'id': 'test',
+        'intField': 123,
+      });
+      final b = GetMultipleFieldsResponse.fromJson({
+        'id': 'test',
+        'intField': 123,
+      });
+      expect(a == b, true);
+      final c = GetMultipleFieldsResponse.fromJson({
+        'id': 'other',
+        'intField': 123,
+      });
+      expect(a == c, false);
+    });
+  });
 }

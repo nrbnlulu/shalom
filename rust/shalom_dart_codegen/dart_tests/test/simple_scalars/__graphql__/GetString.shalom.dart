@@ -15,19 +15,18 @@ class GetStringResponse {
   // keywordargs constructor
   GetStringResponse({required this.string});
 
-  static void normalize$inCache(
-    JsonObject data,
-    CacheUpdateContext ctx, {
-
-    /// can be just the selection name but also may include serialized arguments.
-    required RecordID this$fieldName,
-    required JsonObject parent$record,
-  }) {
+  static void normalize$inCache(JsonObject data, CacheUpdateContext ctx) {
+    // TODO: arguments
+    final RecordID this$fieldName = "GetString";
+    final JsonObject parent$record = ctx.getOrCreateCachedObjectRecord(
+      "ROOT_QUERY",
+    );
     String this$normalizedID;
     JsonObject this$NormalizedRecord;
 
     this$normalizedID = this$fieldName;
-    this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+
+    this$NormalizedRecord = parent$record;
     // TODO: handle arguments
     final stringNormalized$Key = "string";
     final string$cached = this$NormalizedRecord[stringNormalized$Key];
@@ -60,16 +59,10 @@ class GetStringResponse {
       shalomContext: ctx!,
     );
     // TODO: handle arguments
-    final normalizedRecord = getOrCreateObject(
-      updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"),
-      "string",
+    final normalizedRecord = updateCtx.getOrCreateCachedObjectRecord(
+      "ROOT_QUERY",
     );
-    normalize$inCache(
-      data,
-      updateCtx,
-      this$fieldName: "string",
-      parent$record: normalizedRecord,
-    );
+    normalize$inCache(data, updateCtx);
     return fromJsonImpl(normalizedRecord, ctx);
   }
 
