@@ -1,10 +1,10 @@
 {% include "macros" %}
 
 {# Recursive macro for deserializing selection values #}
-{% macro _deserialize_selection_value_macro(value_symbol, selection, is_optional=false) %}
+{% macro _deserialize_selection_value_macro(value_symbol, selection, is_optional=false) -%}
     {% if selection.kind == "Scalar" %}
         {% if selection.is_custom_scalar %}
-            {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
+            {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
             {% if is_optional %}
                 {{ value_symbol }} == null ? null : {{ scalar_impl }}.deserialize({{ value_symbol }})
             {% else %}
@@ -20,7 +20,15 @@
     {% elif selection.kind == "Object" %}
         {% set id_field = get_id_selection(selection.full_name) -%}
         {% if is_optional %}
-            {{ value_symbol }} == null ? null : {% if id_field is not none -%} {{ selection.full_name }}.fromCache(ctx.getOrCreateCachedObjectRecord(data["{{id_field.name}}"] as String), ctx); {% else %} {{ selection.full_name }}.fromCache({{ value_symbol }}, {ctx: ctx}); {% endif %}
+            {{value_symbol}} == null ? null :
+                {% if id_field is not none -%}
+                    {{selection.full_name}}.fromCache(
+                        ctx.getOrCreateCachedObjectRecord({{value_symbol}} as String),
+                        ctx
+                    );
+                {% else %}
+                {{ selection.full_name }}.fromCache({{ value_symbol }}, {ctx: ctx});
+                {% endif %}
         {% else %}
             {% if  id_field is not none -%}
                 {{ selection.full_name }}.fromCache(ctx.getOrCreateCachedObjectRecord(data["{{id_field.name}}"] as String), ctx);
