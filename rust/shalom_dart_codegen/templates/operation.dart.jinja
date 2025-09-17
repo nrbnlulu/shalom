@@ -1,7 +1,7 @@
 {% include "macros" %}
 
 {# Recursive macro for deserializing selection values #}
-{% macro _deserialize_selection_value_macro(value_symbol, selection, is_optional=false) -%}
+{% macro _deserialize_selection_from_cache_macro(value_symbol, selection, is_optional=false) -%}
     {% if selection.kind == "Scalar" %}
         {% if selection.is_custom_scalar %}
             {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
@@ -22,18 +22,18 @@
         {% if is_optional %}
             {{value_symbol}} == null ? null :
                 {% if id_field is not none -%}
-                    {{selection.full_name}}.fromCache(
-                        ctx.getOrCreateCachedObjectRecord({{value_symbol}} as String),
+                    {{selection.full_name}}.fromCached(
+                        ctx.getCachedRecord({{value_symbol}} as String),
                         ctx
                     );
                 {% else %}
-                {{ selection.full_name }}.fromCache({{ value_symbol }}, {ctx: ctx});
+                {{ selection.full_name }}.fromCached({{ value_symbol }}, {ctx: ctx});
                 {% endif %}
         {% else %}
             {% if  id_field is not none -%}
-                {{selection.full_name}}.fromCache(ctx.getOrCreateCachedObjectRecord({{value_symbol}} as String), ctx);
+                {{selection.full_name}}.fromCached(ctx.getCachedRecord({{value_symbol}} as String), ctx);
             {% else %}
-                {{ selection.full_name }}.fromCache({{value_symbol}}, {ctx: ctx});
+                {{ selection.full_name }}.fromCached({{value_symbol}}, {ctx: ctx});
             {% endif %}
         {% endif %}
     {% elif selection.kind == "Enum" %}
@@ -46,9 +46,9 @@
     {% elif selection.kind == "List" %}
         {% set inner_selection = selection.of_kind %}
         {% if is_optional %}
-            {{ value_symbol }} == null ? null : ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_value_macro("e", inner_selection, false) }}).toList()
+            {{ value_symbol }} == null ? null : ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
         {% else %}
-            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_value_macro("e", inner_selection, false) }}).toList()
+            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
         {% endif %}
     {% else %}
         {% if is_optional %}
@@ -159,7 +159,6 @@ import 'package:collection/collection.dart';
             }
             this$normalizedID = this$normalizedID_temp!;
             parent$record[this$fieldName] = this$normalizedID;
-            ctx.addDependantRecord(this$normalizedID);
             this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
             {% set is_normalized = true -%}
         {% elif id_field is not none and not is_root_selection -%}
@@ -174,7 +173,6 @@ import 'package:collection/collection.dart';
             } else {
                 this$normalizedID = this$normalizedID_temp!;
                 parent$record[this$fieldName] = this$normalizedID;
-                ctx.addDependantRecord(this$normalizedID);
                 this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                 {% set is_normalized = true -%}
             }
@@ -186,10 +184,18 @@ import 'package:collection/collection.dart';
                 this$NormalizedRecord = parent$record;
             {% endif -%}
         {% endif -%}
-
+        // TODO: handle arguments
         {% for selection in selection_object.selections -%}
-            // TODO: handle arguments
             final {{selection.name}}Normalized$Key = "{{selection.name}}";
+        {% endfor -%}
+        ctx.upsertDependantRecord(this$normalizedID, 
+            {
+            {% for selection in selection_object.selections -%}
+            {{selection.name}}Normalized$Key {{"," |if_not_last(loop.last)}}
+            {% endfor -%}
+            }
+        );
+        {% for selection in selection_object.selections -%}
             final {{selection.name}}$cached = this$NormalizedRecord[{{selection.name}}Normalized$Key];
             final {{selection.name}}$raw = data["{{selection.name}}"];
             if ({{selection.name}}$raw != null){
@@ -202,11 +208,13 @@ import 'package:collection/collection.dart';
                     );
 
                 {% else %}
-                    if ({{selection.name}}$cached != {{selection.name}}$raw){
-                        {% if is_normalized %}
-                            ctx.addChangedRecord(this$normalizedID, {{selection.name}}Normalized$Key);
-                        {% endif %}
-                    }
+                    // TODO: we should prob notify for changes across non normalized fields.
+                    {% if is_normalized %}
+                        if ({{selection.name}}$cached != {{selection.name}}$raw){
+                                ctx.addChangedRecord(this$normalizedID, {{selection.name}}Normalized$Key);
+                        }
+                    {% endif %}
+                    
                     this$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$raw;
                 {% endif %}
             } else {
@@ -221,12 +229,18 @@ import 'package:collection/collection.dart';
 
         {% endfor %}
     }
-
-    static {{typename}} fromCache(NormalizedRecordData data, CacheUpdateContext ctx) {
+    {% if is_root_selection -%}
+    static {{typename}} fromCache(ShalomCtx ctx) {
+    {% else -%}
+    static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx) {
+    {% endif -%}
+        {% if is_root_selection -%}
+            final data = ctx.getCachedRecord("ROOT_QUERY");
+        {% endif -%}
         {% for selection in selection_object.selections -%}
             {% set raw_value_symbol = selection.name + '$raw' %}
             final {{raw_value_symbol}} = data["{{selection.name}}"];
-            final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_value_macro(raw_value_symbol, selection, selection.is_optional) }};
+            final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_cache_macro(raw_value_symbol, selection, selection.is_optional) }};
         {% endfor -%}
         return {{ typename }}(
             {% for selection in selections -%}
@@ -235,19 +249,21 @@ import 'package:collection/collection.dart';
         );
     }
     {% if is_root_selection -%}
-        static {{typename}} fromResponse(JsonObject data, {ShalomCtx? ctx}){
-            // if ctx not provider we create dummy one
-            ctx ??= ShalomCtx.withCapacity();
+        static ({{typename}}, CacheUpdateContext)  fromResponseImpl(JsonObject data, ShalomCtx ctx){
             // first update the cache
             final CacheUpdateContext updateCtx = CacheUpdateContext(shalomContext: ctx!);
             {% set root_selection = selection_object.selections | first -%}
             // TODO: handle arguments
-            final normalizedRecord = updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY");
             normalize$inCache(
                 data,
                 updateCtx,
             );
-            return fromCache(normalizedRecord, updateCtx);
+            return (fromCache(ctx), updateCtx);
+        }
+    
+        static {{typename}} fromResponse(JsonObject data, {ShalomCtx? ctx}){
+            // if ctx not provider we create dummy one
+            return fromResponseImpl(data, ctx ?? ShalomCtx.withCapacity()).$1;
         }
     {% endif -%}
 

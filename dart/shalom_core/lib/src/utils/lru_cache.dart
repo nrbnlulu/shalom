@@ -13,15 +13,8 @@ class LruCache<K, V> {
         // When an item is accessed, we can move it to the end of the queue.
       );
 
-  V? get(K key) {
-    if (_cache.containsKey(key)) {
-      final value = _cache.remove(key)!;
-      _cache[key] = value;
-      return value;
-    }
-    return null;
-  }
-
+  V? get(K key) => _cache[key];
+  
   void put(K key, V value) {
     if (_cache.containsKey(key)) {
       _cache.remove(key);

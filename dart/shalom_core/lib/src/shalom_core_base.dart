@@ -1,4 +1,4 @@
-import '../shalom_core.dart';
+import 'shalom_ctx.dart' show ShalomCtx;
 
 typedef JsonObject = Map<String, dynamic>;
 
