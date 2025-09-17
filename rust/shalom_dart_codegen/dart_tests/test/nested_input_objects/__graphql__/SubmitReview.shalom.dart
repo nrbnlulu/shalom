@@ -14,24 +14,60 @@ class SubmitReviewResponse {
 
   // keywordargs constructor
   SubmitReviewResponse({this.submitReview});
-  static SubmitReviewResponse fromJson(JsonObject data) {
-    final String? submitReview_value;
-    final submitReview$raw = data["submitReview"];
-    submitReview_value = submitReview$raw as String?;
 
-    return SubmitReviewResponse(submitReview: submitReview_value);
+  static void updateCachePrivate(
+    JsonObject data,
+    CacheUpdateContext ctx, {
+
+    /// can be just the selection name but also may include serialized arguments.
+    required RecordID this$fieldName,
+    required JsonObject this$data,
+  }) {
+    String this$normalizedID;
+    JsonObject this$NormalizedRecord;
+
+    this$normalizedID = this$fieldName;
+    this$NormalizedRecord = getOrCreateObject(this$data, this$fieldName);
+    // TODO: handle arguments
+    final submitReviewNormalized$Key = "submitReview";
+    final submitReview$cached =
+        this$NormalizedRecord[submitReviewNormalized$Key];
+    final submitReview$raw = data["submitReview"];
+    if (submitReview$raw != null) {
+      if (submitReview$cached != submitReview$raw) {}
+      this$NormalizedRecord[submitReviewNormalized$Key] = submitReview$raw;
+    } else {
+      // if this field was null in the response and key exists clear the cache.
+      if (data.containsKey("submitReview") && submitReview$cached != null) {
+        this$NormalizedRecord[submitReviewNormalized$Key] = null;
+      }
+    }
   }
 
-  SubmitReviewResponse updateWithJson(JsonObject data) {
-    final String? submitReview_value;
-    if (data.containsKey('submitReview')) {
-      final submitReview$raw = data["submitReview"];
-      submitReview_value = submitReview$raw as String?;
-    } else {
-      submitReview_value = submitReview;
-    }
+  static SubmitReviewResponse fromJsonImpl(JsonObject data, ShalomCtx ctx) {
+    final submitReview$raw = data["submitReview"];
+    final String? submitReview$value = submitReview$raw as String?;
+    return SubmitReviewResponse(submitReview: submitReview$value);
+  }
 
-    return SubmitReviewResponse(submitReview: submitReview_value);
+  static SubmitReviewResponse fromJson(JsonObject data, {ShalomCtx? ctx}) {
+    // if ctx not provider we create dummy one
+    ctx ??= ShalomCtx.withCapacity();
+    // first update the cache
+    final CacheUpdateContext updateCtx = CacheUpdateContext(
+      shalomContext: ctx!,
+    );
+    // TODO: handle arguments
+    updateCachePrivate(
+      data,
+      updateCtx,
+      this$fieldName: "submitReview",
+      this$data: getOrCreateObject(
+        updateCtx.getCachedObjectRecord("ROOT_QUERY"),
+        "submitReview",
+      ),
+    );
+    return fromJsonImpl(data, ctx);
   }
 
   @override
@@ -49,6 +85,63 @@ class SubmitReviewResponse {
 }
 
 // ------------ OBJECT DEFINITIONS -------------
+
+class SubmitReview {
+  /// class members
+
+  final String? submitReview;
+
+  // keywordargs constructor
+  SubmitReview({this.submitReview});
+
+  static void updateCachePrivate(
+    JsonObject data,
+    CacheUpdateContext ctx, {
+
+    /// can be just the selection name but also may include serialized arguments.
+    required RecordID this$fieldName,
+    required JsonObject this$data,
+  }) {
+    String this$normalizedID;
+    JsonObject this$NormalizedRecord;
+
+    this$normalizedID = this$fieldName;
+    this$NormalizedRecord = getOrCreateObject(this$data, this$fieldName);
+    // TODO: handle arguments
+    final submitReviewNormalized$Key = "submitReview";
+    final submitReview$cached =
+        this$NormalizedRecord[submitReviewNormalized$Key];
+    final submitReview$raw = data["submitReview"];
+    if (submitReview$raw != null) {
+      if (submitReview$cached != submitReview$raw) {}
+      this$NormalizedRecord[submitReviewNormalized$Key] = submitReview$raw;
+    } else {
+      // if this field was null in the response and key exists clear the cache.
+      if (data.containsKey("submitReview") && submitReview$cached != null) {
+        this$NormalizedRecord[submitReviewNormalized$Key] = null;
+      }
+    }
+  }
+
+  static SubmitReview fromJsonImpl(JsonObject data, ShalomCtx ctx) {
+    final submitReview$raw = data["submitReview"];
+    final String? submitReview$value = submitReview$raw as String?;
+    return SubmitReview(submitReview: submitReview$value);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is SubmitReview && other.submitReview == submitReview);
+  }
+
+  @override
+  int get hashCode => submitReview.hashCode;
+
+  JsonObject toJson() {
+    return {'submitReview': this.submitReview};
+  }
+}
 
 // ------------ END OBJECT DEFINITIONS -------------
 

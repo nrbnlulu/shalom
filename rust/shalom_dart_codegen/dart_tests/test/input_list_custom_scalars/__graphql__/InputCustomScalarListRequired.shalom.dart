@@ -1,207 +1,548 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 import '../../custom_scalar/point.dart' as rmhlxei;
 
+
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 
+
+
+
 typedef JsonObject = Map<String, dynamic>;
 
-class InputCustomScalarListRequiredResponse {
-  /// class members
 
-  final InputCustomScalarListRequired_InputCustomScalarListRequired?
-  InputCustomScalarListRequired;
 
-  // keywordargs constructor
-  InputCustomScalarListRequiredResponse({this.InputCustomScalarListRequired});
-  static InputCustomScalarListRequiredResponse fromJson(JsonObject data) {
-    final InputCustomScalarListRequired_InputCustomScalarListRequired?
-    InputCustomScalarListRequired_value;
-    final InputCustomScalarListRequired$raw =
-        data["InputCustomScalarListRequired"];
-    InputCustomScalarListRequired_value =
-        InputCustomScalarListRequired$raw == null
-            ? null
-            : InputCustomScalarListRequired_InputCustomScalarListRequired.fromJson(
-              InputCustomScalarListRequired$raw,
-            );
 
-    return InputCustomScalarListRequiredResponse(
-      InputCustomScalarListRequired: InputCustomScalarListRequired_value,
-    );
-  }
+class InputCustomScalarListRequiredResponse{
 
-  InputCustomScalarListRequiredResponse updateWithJson(JsonObject data) {
-    final InputCustomScalarListRequired_InputCustomScalarListRequired?
-    InputCustomScalarListRequired_value;
-    if (data.containsKey('InputCustomScalarListRequired')) {
-      final InputCustomScalarListRequired$raw =
-          data["InputCustomScalarListRequired"];
-      InputCustomScalarListRequired_value =
-          InputCustomScalarListRequired$raw == null
-              ? null
-              : InputCustomScalarListRequired_InputCustomScalarListRequired.fromJson(
-                InputCustomScalarListRequired$raw,
-              );
-    } else {
-      InputCustomScalarListRequired_value = InputCustomScalarListRequired;
+    
+    /// class members
+    
+        final InputCustomScalarListRequired_InputCustomScalarListRequired? InputCustomScalarListRequired;
+    
+    // keywordargs constructor
+    InputCustomScalarListRequiredResponse({
+    
+        this.InputCustomScalarListRequired,
+    
+    });
+
+    static void updateCachePrivate(JsonObject data,
+            CacheUpdateContext ctx,
+            {
+            /// can be just the selection name but also may include serialized arguments.
+            required RecordID  this$fieldName,
+            required JsonObject this$data
+            }){
+        String this$normalizedID;
+        JsonObject this$NormalizedRecord;
+        
+            this$normalizedID = this$fieldName;
+            this$NormalizedRecord = getOrCreateObject(this$data, this$fieldName);
+        // TODO: handle arguments
+            final InputCustomScalarListRequiredNormalized$Key = "InputCustomScalarListRequired";
+            final InputCustomScalarListRequired$cached = this$NormalizedRecord[InputCustomScalarListRequiredNormalized$Key];
+            final InputCustomScalarListRequired$raw = data["InputCustomScalarListRequired"];
+            if (InputCustomScalarListRequired$raw != null){
+                
+                    InputCustomScalarListRequired_InputCustomScalarListRequired.updateCachePrivate(
+                        InputCustomScalarListRequired$raw as JsonObject,
+                        ctx,
+                        this$fieldName: InputCustomScalarListRequiredNormalized$Key,
+                        this$data: this$NormalizedRecord
+                    );
+
+                
+            } else {
+                // if this field was null in the response and key exists clear the cache.
+                if (data.containsKey("InputCustomScalarListRequired") && InputCustomScalarListRequired$cached != null){
+                    this$NormalizedRecord[InputCustomScalarListRequiredNormalized$Key] = null;
+                    
+                }
+            }
+
+        
     }
 
-    return InputCustomScalarListRequiredResponse(
-      InputCustomScalarListRequired: InputCustomScalarListRequired_value,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
+    static InputCustomScalarListRequiredResponse fromJsonImpl(JsonObject data, ShalomCtx ctx) {
+        
+            final InputCustomScalarListRequired$raw = data["InputCustomScalarListRequired"];
+            final InputCustomScalarListRequired_InputCustomScalarListRequired? InputCustomScalarListRequired$value = 
+    
+        
+            InputCustomScalarListRequired$raw == null ? null :
+        
+    
+;
+        return InputCustomScalarListRequiredResponse(
+            InputCustomScalarListRequired: InputCustomScalarListRequired$value,
+            
+        );
+    }
+    static InputCustomScalarListRequiredResponse fromJson(JsonObject data, {ShalomCtx? ctx}){
+            // if ctx not provider we create dummy one
+            ctx ??= ShalomCtx.withCapacity();
+            // first update the cache
+            final CacheUpdateContext updateCtx = CacheUpdateContext(shalomContext: ctx!);
+            // TODO: handle arguments
+            updateCachePrivate(
+                data,
+                updateCtx,
+                this$fieldName: "InputCustomScalarListRequired",
+                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputCustomScalarListRequired")
+            );
+            return fromJsonImpl(data, ctx);
+        }
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is InputCustomScalarListRequiredResponse &&
-            other.InputCustomScalarListRequired ==
-                InputCustomScalarListRequired);
-  }
-
-  @override
-  int get hashCode => InputCustomScalarListRequired.hashCode;
-
-  JsonObject toJson() {
+    (other is InputCustomScalarListRequiredResponse &&
+    
+        
+    
+        other.InputCustomScalarListRequired == InputCustomScalarListRequired
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        InputCustomScalarListRequired.hashCode;
+    
+    JsonObject toJson() {
     return {
-      'InputCustomScalarListRequired':
-          this.InputCustomScalarListRequired?.toJson(),
+    
+        
+        'InputCustomScalarListRequired':
+            
+                
+    
+        
+            this.InputCustomScalarListRequired?.toJson()
+        
+    
+
+            
+        ,
+    
     };
-  }
+    }
+
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class InputCustomScalarListRequired_InputCustomScalarListRequired {
-  /// class members
 
-  final bool success;
+    class InputCustomScalarListRequired  {
+        
+    
+    /// class members
+    
+        final InputCustomScalarListRequired_InputCustomScalarListRequired? InputCustomScalarListRequired;
+    
+    // keywordargs constructor
+    InputCustomScalarListRequired({
+    
+        this.InputCustomScalarListRequired,
+    
+    });
 
-  final String? message;
+    static void updateCachePrivate(JsonObject data,
+            CacheUpdateContext ctx,
+            {
+            /// can be just the selection name but also may include serialized arguments.
+            required RecordID  this$fieldName,
+            required JsonObject this$data
+            }){
+        String this$normalizedID;
+        JsonObject this$NormalizedRecord;
+        
+            this$normalizedID = this$fieldName;
+            this$NormalizedRecord = getOrCreateObject(this$data, this$fieldName);
+        // TODO: handle arguments
+            final InputCustomScalarListRequiredNormalized$Key = "InputCustomScalarListRequired";
+            final InputCustomScalarListRequired$cached = this$NormalizedRecord[InputCustomScalarListRequiredNormalized$Key];
+            final InputCustomScalarListRequired$raw = data["InputCustomScalarListRequired"];
+            if (InputCustomScalarListRequired$raw != null){
+                
+                    InputCustomScalarListRequired_InputCustomScalarListRequired.updateCachePrivate(
+                        InputCustomScalarListRequired$raw as JsonObject,
+                        ctx,
+                        this$fieldName: InputCustomScalarListRequiredNormalized$Key,
+                        this$data: this$NormalizedRecord
+                    );
 
-  // keywordargs constructor
-  InputCustomScalarListRequired_InputCustomScalarListRequired({
-    required this.success,
+                
+            } else {
+                // if this field was null in the response and key exists clear the cache.
+                if (data.containsKey("InputCustomScalarListRequired") && InputCustomScalarListRequired$cached != null){
+                    this$NormalizedRecord[InputCustomScalarListRequiredNormalized$Key] = null;
+                    
+                }
+            }
 
-    this.message,
-  });
-  static InputCustomScalarListRequired_InputCustomScalarListRequired fromJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    final success$raw = data["success"];
-    success_value = success$raw as bool;
-
-    final String? message_value;
-    final message$raw = data["message"];
-    message_value = message$raw as String?;
-
-    return InputCustomScalarListRequired_InputCustomScalarListRequired(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  InputCustomScalarListRequired_InputCustomScalarListRequired updateWithJson(
-    JsonObject data,
-  ) {
-    final bool success_value;
-    if (data.containsKey('success')) {
-      final success$raw = data["success"];
-      success_value = success$raw as bool;
-    } else {
-      success_value = success;
+        
     }
 
-    final String? message_value;
-    if (data.containsKey('message')) {
-      final message$raw = data["message"];
-      message_value = message$raw as String?;
-    } else {
-      message_value = message;
+    static InputCustomScalarListRequired fromJsonImpl(JsonObject data, ShalomCtx ctx) {
+        
+            final InputCustomScalarListRequired$raw = data["InputCustomScalarListRequired"];
+            final InputCustomScalarListRequired_InputCustomScalarListRequired? InputCustomScalarListRequired$value = 
+    
+        
+            InputCustomScalarListRequired$raw == null ? null :
+        
+    
+;
+        return InputCustomScalarListRequired(
+            InputCustomScalarListRequired: InputCustomScalarListRequired$value,
+            
+        );
     }
-
-    return InputCustomScalarListRequired_InputCustomScalarListRequired(
-      success: success_value,
-
-      message: message_value,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is InputCustomScalarListRequired_InputCustomScalarListRequired &&
-            other.success == success &&
-            other.message == message);
-  }
+    (other is InputCustomScalarListRequired &&
+    
+        
+    
+        other.InputCustomScalarListRequired == InputCustomScalarListRequired
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        InputCustomScalarListRequired.hashCode;
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'InputCustomScalarListRequired':
+            
+                
+    
+        
+            this.InputCustomScalarListRequired?.toJson()
+        
+    
 
-  @override
-  int get hashCode => Object.hashAll([success, message]);
+            
+        ,
+    
+    };
+    }
 
-  JsonObject toJson() {
-    return {'success': this.success, 'message': this.message};
-  }
-}
+    }
+
+    class InputCustomScalarListRequired_InputCustomScalarListRequired  {
+        
+    
+    /// class members
+    
+        final bool success;
+    
+        final String? message;
+    
+    // keywordargs constructor
+    InputCustomScalarListRequired_InputCustomScalarListRequired({
+    required
+        this.success,
+    
+        this.message,
+    
+    });
+
+    static void updateCachePrivate(JsonObject data,
+            CacheUpdateContext ctx,
+            {
+            /// can be just the selection name but also may include serialized arguments.
+            required RecordID  this$fieldName,
+            required JsonObject this$data
+            }){
+        String this$normalizedID;
+        JsonObject this$NormalizedRecord;
+        
+            this$normalizedID = this$fieldName;
+            this$NormalizedRecord = getOrCreateObject(this$data, this$fieldName);
+        // TODO: handle arguments
+            final successNormalized$Key = "success";
+            final success$cached = this$NormalizedRecord[successNormalized$Key];
+            final success$raw = data["success"];
+            if (success$raw != null){
+                
+                    if (success$cached != success$raw){
+                        
+                    }
+                    this$NormalizedRecord[successNormalized$Key] = success$raw;
+                
+            } else {
+                // if this field was null in the response and key exists clear the cache.
+                if (data.containsKey("success") && success$cached != null){
+                    this$NormalizedRecord[successNormalized$Key] = null;
+                    
+                }
+            }
+
+        // TODO: handle arguments
+            final messageNormalized$Key = "message";
+            final message$cached = this$NormalizedRecord[messageNormalized$Key];
+            final message$raw = data["message"];
+            if (message$raw != null){
+                
+                    if (message$cached != message$raw){
+                        
+                    }
+                    this$NormalizedRecord[messageNormalized$Key] = message$raw;
+                
+            } else {
+                // if this field was null in the response and key exists clear the cache.
+                if (data.containsKey("message") && message$cached != null){
+                    this$NormalizedRecord[messageNormalized$Key] = null;
+                    
+                }
+            }
+
+        
+    }
+
+    static InputCustomScalarListRequired_InputCustomScalarListRequired fromJsonImpl(JsonObject data, ShalomCtx ctx) {
+        
+            final success$raw = data["success"];
+            final bool success$value = 
+    
+        
+            
+                success$raw as bool
+            
+        
+    
+;
+        
+            final message$raw = data["message"];
+            final String? message$value = 
+    
+        
+            
+                message$raw as String?
+            
+        
+    
+;
+        return InputCustomScalarListRequired_InputCustomScalarListRequired(
+            success: success$value,
+            message: message$value,
+            
+        );
+    }
+    @override
+    bool operator ==(Object other) {
+    return identical(this, other) ||
+    (other is InputCustomScalarListRequired_InputCustomScalarListRequired &&
+    
+        
+    
+        other.success == success
+    
+ &&
+    
+        
+    
+        other.message == message
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        Object.hashAll([
+        
+            
+            success,
+        
+            
+            message,
+        
+        ]);
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'success':
+            
+                
+    
+        
+            this.success
+        
+    
+
+            
+        ,
+    
+        
+        'message':
+            
+                
+    
+        
+            this.message
+        
+    
+
+            
+        ,
+    
+    };
+    }
+
+    }
+
 
 // ------------ END OBJECT DEFINITIONS -------------
 
+
 class RequestInputCustomScalarListRequired extends Requestable {
-  final InputCustomScalarListRequiredVariables variables;
+    
+    final InputCustomScalarListRequiredVariables variables;
+    
 
-  RequestInputCustomScalarListRequired({required this.variables});
+    RequestInputCustomScalarListRequired(
+        
+        {
+            required this.variables,
+        }
+        
+    );
 
-  @override
-  Request toRequest() {
-    JsonObject variablesJson = variables.toJson();
-    return Request(
-      query:
-          r"""mutation InputCustomScalarListRequired($requiredItems: [Point!]!) {
+    @override
+    Request toRequest() {
+        JsonObject variablesJson =  variables.toJson() ;
+        return Request(
+            query: r"""mutation InputCustomScalarListRequired($requiredItems: [Point!]!) {
   InputCustomScalarListRequired(requiredItems: $requiredItems) {
     success
     message
   }
 }""",
-      variables: variablesJson,
-      opType: OperationType.Mutation,
-      opName: 'InputCustomScalarListRequired',
-    );
-  }
+            variables: variablesJson,
+            opType: OperationType.Mutation,
+            opName: 'InputCustomScalarListRequired'
+        );
+    }
 }
 
+
 class InputCustomScalarListRequiredVariables {
-  final List<rmhlxei.Point> requiredItems;
+    
+    
+        final List<rmhlxei.Point> requiredItems;
+    
 
-  InputCustomScalarListRequiredVariables({required this.requiredItems});
+    InputCustomScalarListRequiredVariables (
+        
+            {
+            
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
+        
+            required this.requiredItems
+        ,
+    
+    
 
-    data["requiredItems"] =
-        this.requiredItems
-            .map((e) => rmhlxei.pointScalarImpl.serialize(e))
-            .toList();
+            }
+        
+    );
 
-    return data;
-  }
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  InputCustomScalarListRequiredVariables updateWith({
-    List<rmhlxei.Point>? requiredItems,
-  }) {
-    final List<rmhlxei.Point> requiredItems$next;
+    
+    
+        data["requiredItems"] = 
+    
+        
+        
+            this.requiredItems.map((e) => 
+    
+        
+        
+            rmhlxei.pointScalarImpl.serialize(e)
+        
+    
+).toList()
+        
+    
+;
+    
 
-    if (requiredItems != null) {
-      requiredItems$next = requiredItems;
-    } else {
-      requiredItems$next = this.requiredItems;
+
+        return data;
     }
 
+    
+InputCustomScalarListRequiredVariables updateWith(
+    {
+        
+            
+                List<rmhlxei.Point>? requiredItems
+            
+            
+        
+    }
+) {
+    
+        final List<rmhlxei.Point> requiredItems$next;
+        
+            if (requiredItems != null) {
+                requiredItems$next = requiredItems;
+            } else {
+                requiredItems$next = this.requiredItems;
+            }
+        
+    
     return InputCustomScalarListRequiredVariables(
-      requiredItems: requiredItems$next,
+        
+            requiredItems: requiredItems$next
+            
+        
     );
-  }
+}
+
+
 }

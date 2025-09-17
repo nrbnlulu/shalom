@@ -1,190 +1,570 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
 
 import "schema.shalom.dart";
 
+
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 
+
+
+
 typedef JsonObject = Map<String, dynamic>;
 
-class EnumInputObjectRequiredResponse {
-  /// class members
 
-  final EnumInputObjectRequired_updateOrder? updateOrder;
 
-  // keywordargs constructor
-  EnumInputObjectRequiredResponse({this.updateOrder});
-  static EnumInputObjectRequiredResponse fromJson(JsonObject data) {
-    final EnumInputObjectRequired_updateOrder? updateOrder_value;
-    final updateOrder$raw = data["updateOrder"];
-    updateOrder_value =
-        updateOrder$raw == null
-            ? null
-            : EnumInputObjectRequired_updateOrder.fromJson(updateOrder$raw);
 
-    return EnumInputObjectRequiredResponse(updateOrder: updateOrder_value);
-  }
+class EnumInputObjectRequiredResponse{
 
-  EnumInputObjectRequiredResponse updateWithJson(JsonObject data) {
-    final EnumInputObjectRequired_updateOrder? updateOrder_value;
-    if (data.containsKey('updateOrder')) {
-      final updateOrder$raw = data["updateOrder"];
-      updateOrder_value =
-          updateOrder$raw == null
-              ? null
-              : EnumInputObjectRequired_updateOrder.fromJson(updateOrder$raw);
-    } else {
-      updateOrder_value = updateOrder;
+    
+    /// class members
+    
+        final EnumInputObjectRequired_updateOrder? updateOrder;
+    
+    // keywordargs constructor
+    EnumInputObjectRequiredResponse({
+    
+        this.updateOrder,
+    
+    });
+
+    static void updateCachePrivate(JsonObject data,
+            CacheUpdateContext ctx,
+            {
+            /// can be just the selection name but also may include serialized arguments.
+            required RecordID  this$fieldName,
+            required JsonObject this$data
+            }){
+        String this$normalizedID;
+        JsonObject this$NormalizedRecord;
+        
+            this$normalizedID = this$fieldName;
+            this$NormalizedRecord = getOrCreateObject(this$data, this$fieldName);
+        // TODO: handle arguments
+            final updateOrderNormalized$Key = "updateOrder";
+            final updateOrder$cached = this$NormalizedRecord[updateOrderNormalized$Key];
+            final updateOrder$raw = data["updateOrder"];
+            if (updateOrder$raw != null){
+                
+                    EnumInputObjectRequired_updateOrder.updateCachePrivate(
+                        updateOrder$raw as JsonObject,
+                        ctx,
+                        this$fieldName: updateOrderNormalized$Key,
+                        this$data: this$NormalizedRecord
+                    );
+
+                
+            } else {
+                // if this field was null in the response and key exists clear the cache.
+                if (data.containsKey("updateOrder") && updateOrder$cached != null){
+                    this$NormalizedRecord[updateOrderNormalized$Key] = null;
+                    
+                }
+            }
+
+        
     }
 
-    return EnumInputObjectRequiredResponse(updateOrder: updateOrder_value);
-  }
-
-  @override
-  bool operator ==(Object other) {
+    static EnumInputObjectRequiredResponse fromJsonImpl(JsonObject data, ShalomCtx ctx) {
+        
+            final updateOrder$raw = data["updateOrder"];
+            final EnumInputObjectRequired_updateOrder? updateOrder$value = 
+    
+        
+            updateOrder$raw == null ? null :
+        
+    
+;
+        return EnumInputObjectRequiredResponse(
+            updateOrder: updateOrder$value,
+            
+        );
+    }
+    static EnumInputObjectRequiredResponse fromJson(JsonObject data, {ShalomCtx? ctx}){
+            // if ctx not provider we create dummy one
+            ctx ??= ShalomCtx.withCapacity();
+            // first update the cache
+            final CacheUpdateContext updateCtx = CacheUpdateContext(shalomContext: ctx!);
+            // TODO: handle arguments
+            updateCachePrivate(
+                data,
+                updateCtx,
+                this$fieldName: "updateOrder",
+                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "updateOrder")
+            );
+            return fromJsonImpl(data, ctx);
+        }
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is EnumInputObjectRequiredResponse &&
-            other.updateOrder == updateOrder);
-  }
+    (other is EnumInputObjectRequiredResponse &&
+    
+        
+    
+        other.updateOrder == updateOrder
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        updateOrder.hashCode;
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'updateOrder':
+            
+                
+    
+        
+            this.updateOrder?.toJson()
+        
+    
 
-  @override
-  int get hashCode => updateOrder.hashCode;
+            
+        ,
+    
+    };
+    }
 
-  JsonObject toJson() {
-    return {'updateOrder': this.updateOrder?.toJson()};
-  }
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class EnumInputObjectRequired_updateOrder {
-  /// class members
 
-  final Status? status;
+    class EnumInputObjectRequired  {
+        
+    
+    /// class members
+    
+        final EnumInputObjectRequired_updateOrder? updateOrder;
+    
+    // keywordargs constructor
+    EnumInputObjectRequired({
+    
+        this.updateOrder,
+    
+    });
 
-  final int quantity;
+    static void updateCachePrivate(JsonObject data,
+            CacheUpdateContext ctx,
+            {
+            /// can be just the selection name but also may include serialized arguments.
+            required RecordID  this$fieldName,
+            required JsonObject this$data
+            }){
+        String this$normalizedID;
+        JsonObject this$NormalizedRecord;
+        
+            this$normalizedID = this$fieldName;
+            this$NormalizedRecord = getOrCreateObject(this$data, this$fieldName);
+        // TODO: handle arguments
+            final updateOrderNormalized$Key = "updateOrder";
+            final updateOrder$cached = this$NormalizedRecord[updateOrderNormalized$Key];
+            final updateOrder$raw = data["updateOrder"];
+            if (updateOrder$raw != null){
+                
+                    EnumInputObjectRequired_updateOrder.updateCachePrivate(
+                        updateOrder$raw as JsonObject,
+                        ctx,
+                        this$fieldName: updateOrderNormalized$Key,
+                        this$data: this$NormalizedRecord
+                    );
 
-  final String name;
+                
+            } else {
+                // if this field was null in the response and key exists clear the cache.
+                if (data.containsKey("updateOrder") && updateOrder$cached != null){
+                    this$NormalizedRecord[updateOrderNormalized$Key] = null;
+                    
+                }
+            }
 
-  final double price;
-
-  // keywordargs constructor
-  EnumInputObjectRequired_updateOrder({
-    this.status,
-    required this.quantity,
-    required this.name,
-    required this.price,
-  });
-  static EnumInputObjectRequired_updateOrder fromJson(JsonObject data) {
-    final Status? status_value;
-    final status$raw = data["status"];
-    status_value = status$raw == null ? null : Status.fromString(status$raw);
-
-    final int quantity_value;
-    final quantity$raw = data["quantity"];
-    quantity_value = quantity$raw as int;
-
-    final String name_value;
-    final name$raw = data["name"];
-    name_value = name$raw as String;
-
-    final double price_value;
-    final price$raw = data["price"];
-    price_value = price$raw as double;
-
-    return EnumInputObjectRequired_updateOrder(
-      status: status_value,
-
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  EnumInputObjectRequired_updateOrder updateWithJson(JsonObject data) {
-    final Status? status_value;
-    if (data.containsKey('status')) {
-      final status$raw = data["status"];
-      status_value = status$raw == null ? null : Status.fromString(status$raw);
-    } else {
-      status_value = status;
+        
     }
 
-    final int quantity_value;
-    if (data.containsKey('quantity')) {
-      final quantity$raw = data["quantity"];
-      quantity_value = quantity$raw as int;
-    } else {
-      quantity_value = quantity;
+    static EnumInputObjectRequired fromJsonImpl(JsonObject data, ShalomCtx ctx) {
+        
+            final updateOrder$raw = data["updateOrder"];
+            final EnumInputObjectRequired_updateOrder? updateOrder$value = 
+    
+        
+            updateOrder$raw == null ? null :
+        
+    
+;
+        return EnumInputObjectRequired(
+            updateOrder: updateOrder$value,
+            
+        );
     }
-
-    final String name_value;
-    if (data.containsKey('name')) {
-      final name$raw = data["name"];
-      name_value = name$raw as String;
-    } else {
-      name_value = name;
-    }
-
-    final double price_value;
-    if (data.containsKey('price')) {
-      final price$raw = data["price"];
-      price_value = price$raw as double;
-    } else {
-      price_value = price;
-    }
-
-    return EnumInputObjectRequired_updateOrder(
-      status: status_value,
-
-      quantity: quantity_value,
-
-      name: name_value,
-
-      price: price_value,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
+    @override
+    bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is EnumInputObjectRequired_updateOrder &&
-            other.status == status &&
-            other.quantity == quantity &&
-            other.name == name &&
-            other.price == price);
-  }
-
-  @override
-  int get hashCode => Object.hashAll([status, quantity, name, price]);
-
-  JsonObject toJson() {
+    (other is EnumInputObjectRequired &&
+    
+        
+    
+        other.updateOrder == updateOrder
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        updateOrder.hashCode;
+    
+    JsonObject toJson() {
     return {
-      'status': this.status?.name,
+    
+        
+        'updateOrder':
+            
+                
+    
+        
+            this.updateOrder?.toJson()
+        
+    
 
-      'quantity': this.quantity,
-
-      'name': this.name,
-
-      'price': this.price,
+            
+        ,
+    
     };
-  }
-}
+    }
+
+    }
+
+    class EnumInputObjectRequired_updateOrder  {
+        
+    
+    /// class members
+    
+        final Status? status;
+    
+        final int quantity;
+    
+        final String name;
+    
+        final double price;
+    
+    // keywordargs constructor
+    EnumInputObjectRequired_updateOrder({
+    
+        this.status,
+    required
+        this.quantity,
+    required
+        this.name,
+    required
+        this.price,
+    
+    });
+
+    static void updateCachePrivate(JsonObject data,
+            CacheUpdateContext ctx,
+            {
+            /// can be just the selection name but also may include serialized arguments.
+            required RecordID  this$fieldName,
+            required JsonObject this$data
+            }){
+        String this$normalizedID;
+        JsonObject this$NormalizedRecord;
+        
+            this$normalizedID = this$fieldName;
+            this$NormalizedRecord = getOrCreateObject(this$data, this$fieldName);
+        // TODO: handle arguments
+            final statusNormalized$Key = "status";
+            final status$cached = this$NormalizedRecord[statusNormalized$Key];
+            final status$raw = data["status"];
+            if (status$raw != null){
+                
+                    if (status$cached != status$raw){
+                        
+                    }
+                    this$NormalizedRecord[statusNormalized$Key] = status$raw;
+                
+            } else {
+                // if this field was null in the response and key exists clear the cache.
+                if (data.containsKey("status") && status$cached != null){
+                    this$NormalizedRecord[statusNormalized$Key] = null;
+                    
+                }
+            }
+
+        // TODO: handle arguments
+            final quantityNormalized$Key = "quantity";
+            final quantity$cached = this$NormalizedRecord[quantityNormalized$Key];
+            final quantity$raw = data["quantity"];
+            if (quantity$raw != null){
+                
+                    if (quantity$cached != quantity$raw){
+                        
+                    }
+                    this$NormalizedRecord[quantityNormalized$Key] = quantity$raw;
+                
+            } else {
+                // if this field was null in the response and key exists clear the cache.
+                if (data.containsKey("quantity") && quantity$cached != null){
+                    this$NormalizedRecord[quantityNormalized$Key] = null;
+                    
+                }
+            }
+
+        // TODO: handle arguments
+            final nameNormalized$Key = "name";
+            final name$cached = this$NormalizedRecord[nameNormalized$Key];
+            final name$raw = data["name"];
+            if (name$raw != null){
+                
+                    if (name$cached != name$raw){
+                        
+                    }
+                    this$NormalizedRecord[nameNormalized$Key] = name$raw;
+                
+            } else {
+                // if this field was null in the response and key exists clear the cache.
+                if (data.containsKey("name") && name$cached != null){
+                    this$NormalizedRecord[nameNormalized$Key] = null;
+                    
+                }
+            }
+
+        // TODO: handle arguments
+            final priceNormalized$Key = "price";
+            final price$cached = this$NormalizedRecord[priceNormalized$Key];
+            final price$raw = data["price"];
+            if (price$raw != null){
+                
+                    if (price$cached != price$raw){
+                        
+                    }
+                    this$NormalizedRecord[priceNormalized$Key] = price$raw;
+                
+            } else {
+                // if this field was null in the response and key exists clear the cache.
+                if (data.containsKey("price") && price$cached != null){
+                    this$NormalizedRecord[priceNormalized$Key] = null;
+                    
+                }
+            }
+
+        
+    }
+
+    static EnumInputObjectRequired_updateOrder fromJsonImpl(JsonObject data, ShalomCtx ctx) {
+        
+            final status$raw = data["status"];
+            final Status? status$value = 
+    
+        
+        
+            status$raw == null ? null : Status.fromString(status$raw)
+        
+    
+;
+        
+            final quantity$raw = data["quantity"];
+            final int quantity$value = 
+    
+        
+            
+                quantity$raw as int
+            
+        
+    
+;
+        
+            final name$raw = data["name"];
+            final String name$value = 
+    
+        
+            
+                name$raw as String
+            
+        
+    
+;
+        
+            final price$raw = data["price"];
+            final double price$value = 
+    
+        
+            
+                price$raw as double
+            
+        
+    
+;
+        return EnumInputObjectRequired_updateOrder(
+            status: status$value,
+            quantity: quantity$value,
+            name: name$value,
+            price: price$value,
+            
+        );
+    }
+    @override
+    bool operator ==(Object other) {
+    return identical(this, other) ||
+    (other is EnumInputObjectRequired_updateOrder &&
+    
+        
+    
+        other.status == status
+    
+ &&
+    
+        
+    
+        other.quantity == quantity
+    
+ &&
+    
+        
+    
+        other.name == name
+    
+ &&
+    
+        
+    
+        other.price == price
+    
+ 
+    
+    );
+    }
+    @override
+    int get hashCode =>
+    
+        Object.hashAll([
+        
+            
+            status,
+        
+            
+            quantity,
+        
+            
+            name,
+        
+            
+            price,
+        
+        ]);
+    
+    JsonObject toJson() {
+    return {
+    
+        
+        'status':
+            
+                
+    
+        
+            this.status?.name
+        
+    
+
+            
+        ,
+    
+        
+        'quantity':
+            
+                
+    
+        
+            this.quantity
+        
+    
+
+            
+        ,
+    
+        
+        'name':
+            
+                
+    
+        
+            this.name
+        
+    
+
+            
+        ,
+    
+        
+        'price':
+            
+                
+    
+        
+            this.price
+        
+    
+
+            
+        ,
+    
+    };
+    }
+
+    }
+
 
 // ------------ END OBJECT DEFINITIONS -------------
 
+
 class RequestEnumInputObjectRequired extends Requestable {
-  final EnumInputObjectRequiredVariables variables;
+    
+    final EnumInputObjectRequiredVariables variables;
+    
 
-  RequestEnumInputObjectRequired({required this.variables});
+    RequestEnumInputObjectRequired(
+        
+        {
+            required this.variables,
+        }
+        
+    );
 
-  @override
-  Request toRequest() {
-    JsonObject variablesJson = variables.toJson();
-    return Request(
-      query: r"""mutation EnumInputObjectRequired($order: OrderUpdate!) {
+    @override
+    Request toRequest() {
+        JsonObject variablesJson =  variables.toJson() ;
+        return Request(
+            query: r"""mutation EnumInputObjectRequired($order: OrderUpdate!) {
   updateOrder(order: $order) {
     status
     quantity
@@ -192,35 +572,83 @@ class RequestEnumInputObjectRequired extends Requestable {
     price
   }
 }""",
-      variables: variablesJson,
-      opType: OperationType.Mutation,
-      opName: 'EnumInputObjectRequired',
-    );
-  }
+            variables: variablesJson,
+            opType: OperationType.Mutation,
+            opName: 'EnumInputObjectRequired'
+        );
+    }
 }
 
+
 class EnumInputObjectRequiredVariables {
-  final OrderUpdate order;
+    
+    
+        final OrderUpdate order;
+    
 
-  EnumInputObjectRequiredVariables({required this.order});
+    EnumInputObjectRequiredVariables (
+        
+            {
+            
 
-  JsonObject toJson() {
-    JsonObject data = {};
+    
+        
+            required this.order
+        ,
+    
+    
 
-    data["order"] = this.order.toJson();
+            }
+        
+    );
 
-    return data;
-  }
+    JsonObject toJson() {
+        JsonObject data = {};
+        
 
-  EnumInputObjectRequiredVariables updateWith({OrderUpdate? order}) {
-    final OrderUpdate order$next;
+    
+    
+        data["order"] = 
+    
+        
+            this.order.toJson()
+        
+    
+;
+    
 
-    if (order != null) {
-      order$next = order;
-    } else {
-      order$next = this.order;
+
+        return data;
     }
 
-    return EnumInputObjectRequiredVariables(order: order$next);
-  }
+    
+EnumInputObjectRequiredVariables updateWith(
+    {
+        
+            
+                OrderUpdate? order
+            
+            
+        
+    }
+) {
+    
+        final OrderUpdate order$next;
+        
+            if (order != null) {
+                order$next = order;
+            } else {
+                order$next = this.order;
+            }
+        
+    
+    return EnumInputObjectRequiredVariables(
+        
+            order: order$next
+            
+        
+    );
+}
+
+
 }
