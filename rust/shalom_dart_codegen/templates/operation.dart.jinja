@@ -20,12 +20,12 @@
     {% elif selection.kind == "Object" %}
         {% set id_field = get_id_selection(selection.full_name) -%}
         {% if is_optional %}
-            {{ value_symbol }} == null ? null : {% if id_field is not none -%} {{ selection.full_name }}.fromJsonImpl(ctx.getObjectCachedRecord(data["{{id_field.name}}"] as String), ctx); {% else %} {{ selection.full_name }}.fromJsonImpl({{ value_symbol }}, {ctx: ctx}); {% endif %}
+            {{ value_symbol }} == null ? null : {% if id_field is not none -%} {{ selection.full_name }}.fromCache(ctx.getOrCreateCachedObjectRecord(data["{{id_field.name}}"] as String), ctx); {% else %} {{ selection.full_name }}.fromCache({{ value_symbol }}, {ctx: ctx}); {% endif %}
         {% else %}
             {% if  id_field is not none -%}
-                {{ selection.full_name }}.fromJsonImpl(ctx.getObjectCachedRecord(data["{{id_field.name}}"] as String), ctx);
+                {{ selection.full_name }}.fromCache(ctx.getOrCreateCachedObjectRecord(data["{{id_field.name}}"] as String), ctx);
             {% else %}
-                {{ selection.full_name }}.fromJsonImpl({{ value_symbol }}, {ctx: ctx});
+                {{ selection.full_name }}.fromCache({{ value_symbol }}, {ctx: ctx});
             {% endif %}
         {% endif %}
     {% elif selection.kind == "Enum" %}
@@ -214,7 +214,7 @@ import 'package:collection/collection.dart';
         {% endfor %}
     }
 
-    static {{typename}} fromJsonImpl(NormalizedRecordData data, ShalomCtx ctx) {
+    static {{typename}} fromCache(NormalizedRecordData data, CacheUpdateContext ctx) {
         {% for selection in selection_object.selections -%}
             {% set raw_value_symbol = selection.name + '$raw' %}
             final {{raw_value_symbol}} = data["{{selection.name}}"];
@@ -227,7 +227,7 @@ import 'package:collection/collection.dart';
         );
     }
     {% if is_root_selection -%}
-        static {{typename}} fromJson(JsonObject data, {ShalomCtx? ctx}){
+        static {{typename}} fromResponse(JsonObject data, {ShalomCtx? ctx}){
             // if ctx not provider we create dummy one
             ctx ??= ShalomCtx.withCapacity();
             // first update the cache
@@ -239,7 +239,7 @@ import 'package:collection/collection.dart';
                 data,
                 updateCtx,
             );
-            return fromJsonImpl(normalizedRecord, ctx);
+            return fromCache(normalizedRecord, updateCtx);
         }
     {% endif -%}
 

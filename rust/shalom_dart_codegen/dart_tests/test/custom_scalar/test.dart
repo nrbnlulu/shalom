@@ -9,14 +9,14 @@ void main() {
     group('deserialize', () {
       test('with optional value', () {
         final json = {'id': 'test-id-1', 'coords': pointRaw};
-        final result = GetLocation_getLocation.fromJson(json);
+        final result = GetLocationResponse.fromResponse({"getLocation": json}).getLocation!;
         expect(result.id, 'test-id-1');
         expect(result.coords, isA<Point>());
         expect(result.coords?.x, point.x);
       });
       test('with null optional value', () {
         final json = {'id': 'test-id-2', 'coords': null};
-        final result = GetLocation_getLocation.fromJson(json);
+        final result = GetLocationResponse.fromResponse({"getLocation": json}).getLocation!;
         expect(result.id, 'test-id-2');
         expect(result.coords, isNull);
       });
@@ -25,35 +25,15 @@ void main() {
     group('serialize', () {
       test('with optional value', () {
         final data = {'id': 'test-id-1', 'coords': pointRaw};
-        final initial = GetLocation_getLocation.fromJson(data);
+        final initial = GetLocationResponse.fromResponse({"getLocation": data}).getLocation!;
         final json = initial.toJson();
         expect(json, data);
       });
       test('with null optional value', () {
         final data = {'id': 'test-id-2', 'coords': null};
-        final initial = GetLocation_getLocation.fromJson(data);
+        final initial = GetLocationResponse.fromResponse({"getLocation": data}).getLocation!;
         final json = initial.toJson();
         expect(json, data);
-      });
-    });
-
-    group('updateWithJson', () {
-      final initial = GetLocation_getLocation(id: 'id-1', coords: point);
-      test('optional from some to some', () {
-        final updatedPointRaw = "POINT (30,40)";
-        final updated = initial.updateWithJson({'coords': updatedPointRaw});
-        expect(updated.coords?.x, 30);
-        expect(initial, isNot(updated));
-      });
-      test('optional from some to null', () {
-        final updated = initial.updateWithJson({'coords': null});
-        expect(updated.coords, isNull);
-        expect(initial, isNot(updated));
-      });
-      test('required field', () {
-        final updated = initial.updateWithJson({'id': 'id-2'});
-        expect(updated.id, 'id-2');
-        expect(updated.coords?.x, point.x);
       });
     });
 
@@ -108,13 +88,13 @@ void main() {
         final json = {
           'getLocation': {'id': 'test-id-1', 'coords': pointRaw},
         };
-        final result = GetLocationResponse.fromJson(json);
+        final result = GetLocationResponse.fromResponse(json);
         expect(result.getLocation, isNotNull);
         expect(result.getLocation?.id, 'test-id-1');
       });
       test('null value', () {
         final json = {'getLocation': null};
-        final result = GetLocationResponse.fromJson(json);
+        final result = GetLocationResponse.fromResponse(json);
         expect(result.getLocation, isNull);
       });
     });
