@@ -9,7 +9,7 @@ void main() {
       final json = {
         "task": {"id": "foo", "name": "do nothing", "status": "FAILED"},
       };
-      final result = GetTaskResponse.fromJson(json);
+      final result = GetTaskResponse.fromResponse(json);
       expect(result.task.id, "foo");
       expect(result.task.name, "do nothing");
       expect(result.task.status, Status.FAILED);
@@ -19,25 +19,11 @@ void main() {
       final data = {
         "task": {"id": "foo", "name": "do nothing", "status": "FAILED"},
       };
-      final initial = GetTaskResponse.fromJson(data);
+      final initial = GetTaskResponse.fromResponse(data);
       final json = initial.toJson();
       expect(json, data);
     });
 
-    test("update", () {
-      final initial = GetTaskResponse(
-        task: GetTask_task(
-          id: "foo",
-          name: "do nothing",
-          status: Status.FAILED,
-        ),
-      );
-      final taskJson = initial.task.toJson();
-      taskJson["status"] = "COMPLETED";
-      final updated = initial.updateWithJson({'task': taskJson});
-      expect(updated.task.status, Status.COMPLETED);
-      expect(initial, isNot(updated));
-    });
 
     test("equality", () {
       final foo = GetTask_task(
@@ -67,7 +53,7 @@ void main() {
         final json = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": "FAILED"},
         };
-        final result = GetTaskStatusOptResponse.fromJson(json);
+        final result = GetTaskStatusOptResponse.fromResponse(json);
         expect(result.task.id, "foo");
         expect(result.task.name, "do nothing");
         expect(result.task.statusOpt, Status.FAILED);
@@ -76,7 +62,7 @@ void main() {
         final json = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": null},
         };
-        final result = GetTaskStatusOptResponse.fromJson(json);
+        final result = GetTaskStatusOptResponse.fromResponse(json);
         expect(result.task.id, "foo");
         expect(result.task.name, "do nothing");
         expect(result.task.statusOpt, null);
@@ -87,7 +73,7 @@ void main() {
         final data = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": "FAILED"},
         };
-        final initial = GetTaskStatusOptResponse.fromJson(data);
+        final initial = GetTaskStatusOptResponse.fromResponse(data);
         final json = initial.toJson();
         expect(json, data);
       });
@@ -95,56 +81,12 @@ void main() {
         final data = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": null},
         };
-        final initial = GetTaskStatusOptResponse.fromJson(data);
+        final initial = GetTaskStatusOptResponse.fromResponse(data);
         final json = initial.toJson();
         expect(json, data);
       });
     });
-    group("update", () {
-      test("null to some", () {
-        final initial = GetTaskStatusOptResponse(
-          task: GetTaskStatusOpt_task(
-            id: "foo",
-            name: "do nothing",
-            statusOpt: null,
-          ),
-        );
-        final taskJson = initial.task.toJson();
-        taskJson["statusOpt"] = "COMPLETED";
-        final updated = initial.updateWithJson({'task': taskJson});
-        expect(updated.task.statusOpt, Status.COMPLETED);
-        expect(initial, isNot(updated));
-      });
 
-      test("some to some", () {
-        final initial = GetTaskStatusOptResponse(
-          task: GetTaskStatusOpt_task(
-            id: "foo",
-            name: "do nothing",
-            statusOpt: Status.FAILED,
-          ),
-        );
-        final taskJson = initial.task.toJson();
-        taskJson["statusOpt"] = "COMPLETED";
-        final updated = initial.updateWithJson({'task': taskJson});
-        expect(updated.task.statusOpt, Status.COMPLETED);
-        expect(initial, isNot(updated));
-      });
-      test("some to null", () {
-        final initial = GetTaskStatusOptResponse(
-          task: GetTaskStatusOpt_task(
-            id: "foo",
-            name: "do nothing",
-            statusOpt: Status.FAILED,
-          ),
-        );
-        final taskJson = initial.task.toJson();
-        taskJson["statusOpt"] = null;
-        final updated = initial.updateWithJson({'task': taskJson});
-        expect(updated.task.statusOpt, null);
-        expect(initial, isNot(updated));
-      });
-    });
 
     test("equality", () {
       final foo = GetTaskStatusOpt_task(

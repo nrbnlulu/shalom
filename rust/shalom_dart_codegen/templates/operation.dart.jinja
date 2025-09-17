@@ -31,9 +31,9 @@
                 {% endif %}
         {% else %}
             {% if  id_field is not none -%}
-                {{ selection.full_name }}.fromCache(ctx.getOrCreateCachedObjectRecord(data["{{id_field.name}}"] as String), ctx);
+                {{selection.full_name}}.fromCache(ctx.getOrCreateCachedObjectRecord({{value_symbol}} as String), ctx);
             {% else %}
-                {{ selection.full_name }}.fromCache({{ value_symbol }}, {ctx: ctx});
+                {{ selection.full_name }}.fromCache({{value_symbol}}, {ctx: ctx});
             {% endif %}
         {% endif %}
     {% elif selection.kind == "Enum" %}
