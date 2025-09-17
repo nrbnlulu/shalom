@@ -112,7 +112,7 @@ class InputListEnumMaybeResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputListEnumMaybe",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputListEnumMaybe")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputListEnumMaybe")
             );
             return fromJsonImpl(data, ctx);
         }

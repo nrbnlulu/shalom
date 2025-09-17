@@ -113,7 +113,7 @@ class EnumWithDefaultValueResponse{
                 data,
                 updateCtx,
                 this$fieldName: "getOrderByStatus",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "getOrderByStatus")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "getOrderByStatus")
             );
             return fromJsonImpl(data, ctx);
         }

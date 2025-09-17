@@ -114,7 +114,7 @@ class InputCustomScalarListNullableMaybeResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputCustomScalarListNullableMaybe",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputCustomScalarListNullableMaybe")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputCustomScalarListNullableMaybe")
             );
             return fromJsonImpl(data, ctx);
         }

@@ -114,7 +114,7 @@ class InputCustomScalarListRequiredResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputCustomScalarListRequired",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputCustomScalarListRequired")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputCustomScalarListRequired")
             );
             return fromJsonImpl(data, ctx);
         }

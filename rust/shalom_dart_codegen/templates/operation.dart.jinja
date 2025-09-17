@@ -124,7 +124,7 @@ import 'package:collection/collection.dart';
     {% endfor %}
     });
 
-    static void updateCachePrivate(JsonObject data,
+    static void normalize$inCache(JsonObject data,
             CacheUpdateContext ctx,
             {
             /// can be just the selection name but also may include serialized arguments.
@@ -140,10 +140,10 @@ import 'package:collection/collection.dart';
             if (this$normalizedID_temp == null) {
                 throw UnimplementedError("Node ID cannot be null");
             }
-            this$normalizedID = this$normalizedID_temp as String;
+            this$normalizedID = this$normalizedID_temp!;
             parent$record[this$fieldName] = this$normalizedID;
             ctx.addDependantRecord(this$normalizedID);
-            this$NormalizedRecord = ctx.getCachedObjectRecord(this$normalizedID);
+            this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
             {% set is_normalized = true -%}
         {% elif id_field is not none -%}
             final RecordID? this$normalizedID_temp = data["{{id_field.name}}"] as RecordID?;
@@ -155,10 +155,10 @@ import 'package:collection/collection.dart';
                     throw UnimplementedError("Required ID cannot be null");
                 {% endif %}
             } else {
-                this$normalizedID = this$normalizedID_temp as String;
+                this$normalizedID = this$normalizedID_temp!;
                 parent$record[this$fieldName] = this$normalizedID;
                 ctx.addDependantRecord(this$normalizedID);
-                this$NormalizedRecord = ctx.getCachedObjectRecord(this$normalizedID);
+                this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                 {% set is_normalized = true -%}
             }
         {% else %}
@@ -173,7 +173,7 @@ import 'package:collection/collection.dart';
             final {{selection.name}}$raw = data["{{selection.name}}"];
             if ({{selection.name}}$raw != null){
                 {% if selection.kind == "Object" %}
-                    {{selection.full_name}}.updateCachePrivate(
+                    {{selection.full_name}}.normalize$inCache(
                         {{selection.name}}$raw as JsonObject,
                         ctx,
                         this$fieldName: {{selection.name}}Normalized$Key,
@@ -201,7 +201,7 @@ import 'package:collection/collection.dart';
         {% endfor %}
     }
 
-    static {{typename}} fromJsonImpl(JsonObject data, ShalomCtx ctx) {
+    static {{typename}} fromJsonImpl(NormalizedRecordData data, ShalomCtx ctx) {
         {% for selection in selection_object.selections -%}
             {% set raw_value_symbol = selection.name + '$raw' %}
             final {{raw_value_symbol}} = data["{{selection.name}}"];
@@ -221,13 +221,18 @@ import 'package:collection/collection.dart';
             final CacheUpdateContext updateCtx = CacheUpdateContext(shalomContext: ctx!);
             {% set root_selection = selection_object.selections | first -%}
             // TODO: handle arguments
-            updateCachePrivate(
+            final normalizedRecord = getOrCreateObject(
+                updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"),
+                "{{root_selection.name}}"
+            );
+            normalize$inCache(
                 data,
                 updateCtx,
                 this$fieldName: "{{root_selection.name}}",
-                parent$record: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "{{root_selection.name}}")
-            );
-            return fromJsonImpl(data, ctx);
+                parent$record: normalizedRecord,
+               
+                );
+            return fromJsonImpl(normalizedRecord, ctx);
         }
     {% endif -%}
 

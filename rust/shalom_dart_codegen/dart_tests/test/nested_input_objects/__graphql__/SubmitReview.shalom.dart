@@ -63,7 +63,7 @@ class SubmitReviewResponse {
       updateCtx,
       this$fieldName: "submitReview",
       this$data: getOrCreateObject(
-        updateCtx.getCachedObjectRecord("ROOT_QUERY"),
+        updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"),
         "submitReview",
       ),
     );

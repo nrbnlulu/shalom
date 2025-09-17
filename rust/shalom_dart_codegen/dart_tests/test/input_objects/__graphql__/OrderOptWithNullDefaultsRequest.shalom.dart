@@ -113,7 +113,7 @@ class OrderOptWithNullDefaultsRequestResponse{
                 data,
                 updateCtx,
                 this$fieldName: "orderOptWithNullDefaultsRequest",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "orderOptWithNullDefaultsRequest")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "orderOptWithNullDefaultsRequest")
             );
             return fromJsonImpl(data, ctx);
         }

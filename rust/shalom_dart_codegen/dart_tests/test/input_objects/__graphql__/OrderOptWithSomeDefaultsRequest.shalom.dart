@@ -113,7 +113,7 @@ class OrderOptWithSomeDefaultsRequestResponse{
                 data,
                 updateCtx,
                 this$fieldName: "orderOptWithSomeDefaultsRequest",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "orderOptWithSomeDefaultsRequest")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "orderOptWithSomeDefaultsRequest")
             );
             return fromJsonImpl(data, ctx);
         }

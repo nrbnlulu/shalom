@@ -114,7 +114,7 @@ class InputCustomScalarListMaybeResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputCustomScalarListMaybe",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputCustomScalarListMaybe")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputCustomScalarListMaybe")
             );
             return fromJsonImpl(data, ctx);
         }

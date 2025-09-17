@@ -113,7 +113,7 @@ class OptionalWithSomeDefaultResponse{
                 data,
                 updateCtx,
                 this$fieldName: "task",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "task")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "task")
             );
             return fromJsonImpl(data, ctx);
         }

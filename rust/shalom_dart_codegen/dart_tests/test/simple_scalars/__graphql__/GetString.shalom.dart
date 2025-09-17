@@ -15,7 +15,7 @@ class GetStringResponse {
   // keywordargs constructor
   GetStringResponse({required this.string});
 
-  static void updateCachePrivate(
+  static void normalize$inCache(
     JsonObject data,
     CacheUpdateContext ctx, {
 
@@ -43,7 +43,10 @@ class GetStringResponse {
     }
   }
 
-  static GetStringResponse fromJsonImpl(JsonObject data, ShalomCtx ctx) {
+  static GetStringResponse fromJsonImpl(
+    NormalizedRecordData data,
+    ShalomCtx ctx,
+  ) {
     final string$raw = data["string"];
     final String string$value = string$raw as String;
     return GetStringResponse(string: string$value);
@@ -57,16 +60,17 @@ class GetStringResponse {
       shalomContext: ctx!,
     );
     // TODO: handle arguments
-    updateCachePrivate(
+    final normalizedRecord = getOrCreateObject(
+      updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"),
+      "string",
+    );
+    normalize$inCache(
       data,
       updateCtx,
       this$fieldName: "string",
-      parent$record: getOrCreateObject(
-        updateCtx.getCachedObjectRecord("ROOT_QUERY"),
-        "string",
-      ),
+      parent$record: normalizedRecord,
     );
-    return fromJsonImpl(data, ctx);
+    return fromJsonImpl(normalizedRecord, ctx);
   }
 
   @override
@@ -93,7 +97,7 @@ class GetString {
   // keywordargs constructor
   GetString({required this.string});
 
-  static void updateCachePrivate(
+  static void normalize$inCache(
     JsonObject data,
     CacheUpdateContext ctx, {
 
@@ -121,7 +125,7 @@ class GetString {
     }
   }
 
-  static GetString fromJsonImpl(JsonObject data, ShalomCtx ctx) {
+  static GetString fromJsonImpl(NormalizedRecordData data, ShalomCtx ctx) {
     final string$raw = data["string"];
     final String string$value = string$raw as String;
     return GetString(string: string$value);

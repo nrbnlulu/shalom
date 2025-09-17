@@ -113,7 +113,7 @@ class InputObjectContainingListOfObjectsResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputObjectContainingListOfObjects",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputObjectContainingListOfObjects")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputObjectContainingListOfObjects")
             );
             return fromJsonImpl(data, ctx);
         }

@@ -113,7 +113,7 @@ class OrderOptRequestResponse{
                 data,
                 updateCtx,
                 this$fieldName: "orderOptRequest",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "orderOptRequest")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "orderOptRequest")
             );
             return fromJsonImpl(data, ctx);
         }

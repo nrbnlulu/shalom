@@ -113,7 +113,7 @@ class InputListObjectsMAybeResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputListObjectsMAybe",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputListObjectsMAybe")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputListObjectsMAybe")
             );
             return fromJsonImpl(data, ctx);
         }

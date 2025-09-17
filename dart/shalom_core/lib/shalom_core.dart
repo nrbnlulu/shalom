@@ -46,7 +46,7 @@ class CacheUpdateContext {
 
   /// if exist in normalized cache returns the record
   /// otherwise will create an object and return it
-  JsonObject getCachedObjectRecord(RecordID id) {
+  JsonObject getOrCreateCachedObjectRecord(RecordID id) {
     if (shalomContext.cache.containsKey(id)) {
       return shalomContext.cache.get(id) as JsonObject;
     } else {

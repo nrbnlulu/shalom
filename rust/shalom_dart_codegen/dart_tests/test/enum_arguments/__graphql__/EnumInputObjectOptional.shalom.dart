@@ -113,7 +113,7 @@ class EnumInputObjectOptionalResponse{
                 data,
                 updateCtx,
                 this$fieldName: "updateOrderWithStatusOpt",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "updateOrderWithStatusOpt")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "updateOrderWithStatusOpt")
             );
             return fromJsonImpl(data, ctx);
         }

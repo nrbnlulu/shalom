@@ -113,7 +113,7 @@ class OptionalArgumentsResponse{
                 data,
                 updateCtx,
                 this$fieldName: "updateUser",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "updateUser")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "updateUser")
             );
             return fromJsonImpl(data, ctx);
         }

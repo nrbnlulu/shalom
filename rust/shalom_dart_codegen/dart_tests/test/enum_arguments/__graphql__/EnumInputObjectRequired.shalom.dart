@@ -113,7 +113,7 @@ class EnumInputObjectRequiredResponse{
                 data,
                 updateCtx,
                 this$fieldName: "updateOrder",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "updateOrder")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "updateOrder")
             );
             return fromJsonImpl(data, ctx);
         }

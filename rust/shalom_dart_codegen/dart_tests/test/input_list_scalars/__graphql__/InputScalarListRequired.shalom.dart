@@ -113,7 +113,7 @@ class InputScalarListRequiredResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputScalarListRequired",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputScalarListRequired")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputScalarListRequired")
             );
             return fromJsonImpl(data, ctx);
         }

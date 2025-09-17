@@ -113,7 +113,7 @@ class InputListOfRequiredObjectsResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputListOfRequiredObjects",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputListOfRequiredObjects")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputListOfRequiredObjects")
             );
             return fromJsonImpl(data, ctx);
         }

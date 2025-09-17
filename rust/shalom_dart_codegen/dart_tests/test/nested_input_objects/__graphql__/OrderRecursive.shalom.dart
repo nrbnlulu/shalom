@@ -113,7 +113,7 @@ class OrderRecursiveResponse{
                 data,
                 updateCtx,
                 this$fieldName: "orderRecursive",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "orderRecursive")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "orderRecursive")
             );
             return fromJsonImpl(data, ctx);
         }

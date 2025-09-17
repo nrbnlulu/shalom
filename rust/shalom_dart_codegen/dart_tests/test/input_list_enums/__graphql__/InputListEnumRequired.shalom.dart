@@ -112,7 +112,7 @@ class InputListEnumRequiredResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputListEnumRequired",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputListEnumRequired")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputListEnumRequired")
             );
             return fromJsonImpl(data, ctx);
         }

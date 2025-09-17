@@ -113,7 +113,7 @@ class RequiredArgumentsResponse{
                 data,
                 updateCtx,
                 this$fieldName: "product",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "product")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "product")
             );
             return fromJsonImpl(data, ctx);
         }
@@ -300,7 +300,7 @@ class RequiredArgumentsResponse{
                 this$normalizedID = this$normalizedID_temp as String;
                 this$data[this$fieldName] = this$normalizedID;
                 ctx.addDependantRecord(this$normalizedID);
-                this$NormalizedRecord = ctx.getCachedObjectRecord(this$normalizedID);
+                this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                 }
         // TODO: handle arguments
             final idNormalized$Key = "id";

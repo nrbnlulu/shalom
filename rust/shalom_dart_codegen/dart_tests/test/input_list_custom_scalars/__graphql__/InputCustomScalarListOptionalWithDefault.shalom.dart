@@ -114,7 +114,7 @@ class InputCustomScalarListOptionalWithDefaultResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputCustomScalarListOptionalWithDefault",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputCustomScalarListOptionalWithDefault")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputCustomScalarListOptionalWithDefault")
             );
             return fromJsonImpl(data, ctx);
         }

@@ -113,7 +113,7 @@ class GetSpecificOrderResponse{
                 data,
                 updateCtx,
                 this$fieldName: "getSpecificOrder",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "getSpecificOrder")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "getSpecificOrder")
             );
             return fromJsonImpl(data, ctx);
         }

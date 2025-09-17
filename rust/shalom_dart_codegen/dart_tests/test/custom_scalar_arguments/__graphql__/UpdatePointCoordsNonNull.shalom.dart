@@ -114,7 +114,7 @@ class UpdatePointCoordsNonNullResponse{
                 data,
                 updateCtx,
                 this$fieldName: "updatePointCoords",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "updatePointCoords")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "updatePointCoords")
             );
             return fromJsonImpl(data, ctx);
         }
@@ -305,7 +305,7 @@ class UpdatePointCoordsNonNullResponse{
                 this$normalizedID = this$normalizedID_temp as String;
                 this$data[this$fieldName] = this$normalizedID;
                 ctx.addDependantRecord(this$normalizedID);
-                this$NormalizedRecord = ctx.getCachedObjectRecord(this$normalizedID);
+                this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                 }
         // TODO: handle arguments
             final coordsNormalized$Key = "coords";

@@ -112,7 +112,7 @@ class InputListEnumOptionalWithDefaultResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputListEnumOptionalWithDefault",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputListEnumOptionalWithDefault")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputListEnumOptionalWithDefault")
             );
             return fromJsonImpl(data, ctx);
         }

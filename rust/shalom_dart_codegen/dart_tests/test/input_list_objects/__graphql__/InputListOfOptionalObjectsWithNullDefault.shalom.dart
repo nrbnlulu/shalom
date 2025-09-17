@@ -113,7 +113,7 @@ class InputListOfOptionalObjectsWithNullDefaultResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputListOfOptionalObjectsWithNullDefault",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputListOfOptionalObjectsWithNullDefault")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputListOfOptionalObjectsWithNullDefault")
             );
             return fromJsonImpl(data, ctx);
         }

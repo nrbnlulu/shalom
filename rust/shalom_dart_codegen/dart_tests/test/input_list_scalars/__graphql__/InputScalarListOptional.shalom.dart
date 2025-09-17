@@ -113,7 +113,7 @@ class InputScalarListOptionalResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputScalarListOptional",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputScalarListOptional")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputScalarListOptional")
             );
             return fromJsonImpl(data, ctx);
         }

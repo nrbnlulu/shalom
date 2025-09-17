@@ -71,7 +71,7 @@ class InputCustomScalarListInsideInputObjectResponse{
                 this$normalizedID = this$normalizedID_temp as String;
                 this$data[this$fieldName] = this$normalizedID;
                 ctx.addDependantRecord(this$normalizedID);
-                this$NormalizedRecord = ctx.getCachedObjectRecord(this$normalizedID);
+                this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                 }
         // TODO: handle arguments
             final InputCustomScalarListInsideInputObjectNormalized$Key = "InputCustomScalarListInsideInputObject";
@@ -125,7 +125,7 @@ class InputCustomScalarListInsideInputObjectResponse{
                 data,
                 updateCtx,
                 this$fieldName: "InputCustomScalarListInsideInputObject",
-                this$data: getOrCreateObject(updateCtx.getCachedObjectRecord("ROOT_QUERY"), "InputCustomScalarListInsideInputObject")
+                this$data: getOrCreateObject(updateCtx.getOrCreateCachedObjectRecord("ROOT_QUERY"), "InputCustomScalarListInsideInputObject")
             );
             return fromJsonImpl(data, ctx);
         }
@@ -204,7 +204,7 @@ class InputCustomScalarListInsideInputObjectResponse{
                 this$normalizedID = this$normalizedID_temp as String;
                 this$data[this$fieldName] = this$normalizedID;
                 ctx.addDependantRecord(this$normalizedID);
-                this$NormalizedRecord = ctx.getCachedObjectRecord(this$normalizedID);
+                this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                 }
         // TODO: handle arguments
             final InputCustomScalarListInsideInputObjectNormalized$Key = "InputCustomScalarListInsideInputObject";
