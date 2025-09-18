@@ -1,7 +1,7 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
 use log::info;
-use minijinja::{context, value::ViaDeserialize, Environment};
+use minijinja::{context, value::ViaDeserialize, Environment, Value};
 use serde::Serialize;
 use shalom_core::context::ShalomGlobalContext;
 use shalom_core::operation::context::SharedOpCtx;
@@ -358,7 +358,26 @@ fn register_default_template_fns<'a>(
             None
         }
     });
+
+    env.add_function(
+        "get_field_name_with_args",
+        |name: &str, args: ViaDeserialize<Vec<shalom_core::operation::types::FieldArgument>>| {
+            get_field_name_with_args(name, &args.0)
+        },
+    );
+
     Ok(())
+}
+
+fn get_field_name_with_args(
+    field_name: &str,
+    args: &[shalom_core::operation::types::FieldArgument],
+) -> String {
+    if args.is_empty() {
+        field_name.to_string()
+    } else {
+        format!("{}_with_args", field_name)
+    }
 }
 
 impl SchemaEnv<'_> {

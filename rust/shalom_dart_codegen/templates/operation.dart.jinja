@@ -1,7 +1,46 @@
 {% include "macros" %}
 
+
+{% set op_variables = operation.context.variables %}
+{% macro if_op_variables(insert) %}
+{% if op_variables | length > 0 -%} {{insert}}
+{% endif -%}
+{% endmacro %}
+
+{# Macro to generate cache key with arguments #}
+{% macro generate_cache_key_with_args(field_name, arguments) -%}
+{% if arguments | length > 0 -%}
+"{{field_name}}(" + [
+    {%- for arg in arguments -%}
+    {%- if arg.value.VariableUse -%}
+        {%- if op_variables | length > 0 -%}
+            {%- set var_name = arg.value.VariableUse.name -%}
+            {%- if arg.is_maybe -%}
+                {# This is a Maybe/Option type - handle three states #}
+                "{{arg.name}}:${variables?.{{var_name}} == null ? '__NONE__' : (variables!.{{var_name}}.isSome() ? (variables!.{{var_name}}.some()?.toString() ?? 'null') : '__NONE__')}"
+            {%- else -%}
+                {%- if arg.default_value is not none -%}
+                    "{{arg.name}}:${variables?.{{var_name}} ?? '{{arg.default_value}}'}"
+                {%- else -%}
+                    "{{arg.name}}:${variables?.{{var_name}} ?? 'null'}"
+                {%- endif -%}
+            {%- endif -%}
+        {%- else -%}
+            "{{arg.name}}:null"
+        {%- endif -%}
+    {%- elif arg.value.InlineValue -%}
+        "{{arg.name}}:{{arg.value.InlineValue.value}}"
+    {%- endif -%}
+    {%- if not loop.last %},{% endif -%}
+    {%- endfor -%}
+].join(",") + ")"
+{%- else -%}
+"{{field_name}}"
+{%- endif -%}
+{% endmacro %}
+
 {# Recursive macro for deserializing selection values #}
-{% macro _deserialize_selection_from_cache_macro(value_symbol, selection, is_optional=false) -%}
+{% macro _deserialize_selection_from_cache_macro(value_symbol, selection, is_optional=false, op_variables=[]) -%}
     {% if selection.kind == "Scalar" %}
         {% if selection.is_custom_scalar %}
             {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
@@ -21,21 +60,21 @@
         {% set id_field = get_id_selection(selection.full_name) -%}
         {% if is_optional %}
             {{value_symbol}} == null ? null :
-                {% if id_field is not none -%}
-                    {{selection.full_name}}.fromCached(
-                        ctx.getCachedRecord({{value_symbol}} as String),
-                        ctx
-                    );
-                {% else %}
-                {{ selection.full_name }}.fromCached({{ value_symbol }}, {ctx: ctx});
-                {% endif %}
-        {% else %}
-            {% if  id_field is not none -%}
-                {{selection.full_name}}.fromCached(ctx.getCachedRecord({{value_symbol}} as String), ctx);
+            {% if id_field is not none -%}
+                {{selection.full_name}}.fromCached(
+                    ctx.getCachedRecord({{value_symbol}} as String),
+                    ctx {{if_op_variables(", variables")}}
+                )
             {% else %}
-                {{ selection.full_name }}.fromCached({{value_symbol}}, {ctx: ctx});
-            {% endif %}
-        {% endif %}
+            {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx: ctx{{if_op_variables(", variables")}});
+            {% endif -%}
+    {% else %}
+        {% if  id_field is not none -%}
+            {{selection.full_name}}.fromCached(ctx.getCachedRecord({{value_symbol}} as String), ctx{{if_op_variables(", variables")}});
+        {% else %}
+            {{ selection.full_name }}.fromCached({{value_symbol}}, ctx: ctx{{if_op_variables(", variables")}});
+        {% endif -%}
+    {% endif %}
     {% elif selection.kind == "Enum" %}
         {% set typename = selection.concrete_type.name %}
         {% if is_optional %}
@@ -135,6 +174,7 @@ import 'package:collection/collection.dart';
 
     static void normalize$inCache(JsonObject data,
             CacheUpdateContext ctx,
+            {% if op_variables | length > 0 %}{{ operation_name }}Variables? variables,{% endif %}
             {% if not is_root_selection -%}
                 {
                 /// can be just the selection name but also may include serialized arguments.
@@ -145,7 +185,6 @@ import 'package:collection/collection.dart';
             {% endif -%}
             ){
         {% if is_root_selection -%}
-            // TODO: arguments
             final String this$fieldName = "{{selection_object.name}}";
             final String this$normalizedID = "ROOT_{{OP_TYPE}}";
             final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");;
@@ -187,9 +226,8 @@ import 'package:collection/collection.dart';
         {% endif -%}
 
 
-        // TODO: handle arguments
         {% for selection in selection_object.selections -%}
-            final {{selection.name}}Normalized$Key = "{{selection.name}}";
+            final {{selection.name}}Normalized$Key = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
             final {{selection.name}}$normalizedID = "${this$normalizedID}.${ {{selection.name}}Normalized$Key}";
         {% endfor -%}
         ctx.addDependantRecords(
@@ -213,6 +251,7 @@ import 'package:collection/collection.dart';
                     {{selection.full_name}}.normalize$inCache(
                         {{selection.name}}$raw as JsonObject,
                         ctx,
+                        {% if op_variables | length > 0 %}variables,{% endif %}
                         this$fieldName: {{selection.name}}Normalized$Key,
                         parent$record: this$NormalizedRecord,
                         parent$normalizedID: this$normalizedID
@@ -235,18 +274,23 @@ import 'package:collection/collection.dart';
 
         {% endfor %}
     }
-    {% if is_root_selection -%}
-    static {{typename}} fromCache(ShalomCtx ctx) {
+    {% if not is_root_selection -%}
+    static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if op_variables | length > 0 %}, {{ operation_name }}Variables? variables{% endif %}) {
     {% else -%}
-    static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx) {
+    static {{typename}} fromCache(ShalomCtx ctx{% if op_variables | length > 0 %}, {{ operation_name }}Variables? variables{% endif %}) {
     {% endif -%}
         {% if is_root_selection -%}
             final data = ctx.getCachedRecord("ROOT_{{OP_TYPE}}");
         {% endif -%}
         {% for selection in selection_object.selections -%}
             {% set raw_value_symbol = selection.name + '$raw' %}
-            final {{raw_value_symbol}} = data["{{selection.name}}"];
-            final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_cache_macro(raw_value_symbol, selection, selection.is_optional) }};
+            {% if selection.arguments | length > 0 -%}
+                final {{selection.name}}CacheKey = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
+                final {{raw_value_symbol}} = data[{{selection.name}}CacheKey];
+            {% else -%}
+                final {{raw_value_symbol}} = data["{{selection.name}}"];
+            {% endif -%}
+            final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_cache_macro(raw_value_symbol, selection, selection.is_optional, op_variables) }};
         {% endfor -%}
         return {{ typename }}(
             {% for selection in selections -%}
@@ -255,22 +299,23 @@ import 'package:collection/collection.dart';
         );
     }
     {% if is_root_selection -%}
-        static ({{typename}}, CacheUpdateContext)  fromResponseImpl(JsonObject data, ShalomCtx ctx){
+        static ({{typename}}, CacheUpdateContext)  fromResponseImpl(JsonObject data, ShalomCtx ctx{% if op_variables | length > 0 %}, {{ operation_name }}Variables? variables{% endif %}){
             // first update the cache
             final CacheUpdateContext updateCtx = CacheUpdateContext(shalomContext: ctx!);
             {% set root_selection = selection_object.selections | first -%}
-            // TODO: handle arguments
+
             normalize$inCache(
                 data,
                 updateCtx,
+                {% if op_variables | length > 0 %}variables,{% endif %}
             );
             ctx.invalidateRefs(updateCtx.changedRecords);
-            return (fromCache(ctx), updateCtx);
+            return (fromCache(ctx{{if_op_variables(", variables")}}), updateCtx);
         }
 
-        static {{typename}} fromResponse(JsonObject data, {ShalomCtx? ctx}){
+        static {{typename}} fromResponse(JsonObject data, {ShalomCtx? ctx{% if op_variables | length > 0 %}, {{ operation_name }}Variables? variables{% endif %}}){
             // if ctx not provider we create dummy one
-            return fromResponseImpl(data, ctx ?? ShalomCtx.withCapacity()).$1;
+            return fromResponseImpl(data, ctx ?? ShalomCtx.withCapacity(){{if_op_variables(", variables")}}).$1;
         }
     {% endif -%}
 
@@ -330,7 +375,6 @@ class {{ root_type_name }}{
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-{% set op_variables = operation.context.variables %}
 class Request{{ operation_name }} extends Requestable {
     {% if op_variables | length > 0 %}
     final {{ operation_name }}Variables variables;

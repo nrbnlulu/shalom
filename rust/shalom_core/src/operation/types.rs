@@ -21,6 +21,19 @@ pub struct SelectionCommon {
     pub name: String,
     pub description: Option<String>,
 }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum ArgumentValue {
+    // usage of operation variable
+    VariableUse { name: String },
+    InlineValue { value: String },
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FieldArgument {
+    pub name: String,
+    pub value: ArgumentValue,
+    pub is_maybe: bool,
+    pub default_value: Option<String>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Selection {
@@ -28,13 +41,19 @@ pub struct Selection {
     pub selection_common: SelectionCommon,
     #[serde(flatten)]
     pub kind: SelectionKind,
+    pub arguments: Vec<FieldArgument>,
 }
 
 impl Selection {
-    pub fn new(selection_common: SelectionCommon, kind: SelectionKind) -> Self {
+    pub fn new(
+        selection_common: SelectionCommon,
+        kind: SelectionKind,
+        arguments: Vec<FieldArgument>,
+    ) -> Self {
         Selection {
             selection_common,
             kind,
+            arguments,
         }
     }
 
@@ -145,6 +164,8 @@ pub struct ListSelection {
 }
 
 pub type SharedListSelection = Rc<ListSelection>;
+
+struct VariableUse {}
 
 pub fn dart_type_for_scalar(scalar_name: &str) -> String {
     match scalar_name {

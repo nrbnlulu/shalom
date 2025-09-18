@@ -55,6 +55,42 @@ fn parse_object_selection(
                     .as_deref()
                     .map(|s| s.to_string());
                 let field_path = full_path_name(&f_name, path);
+                let args: Vec<crate::operation::types::FieldArgument> = field
+                    .arguments
+                    .iter()
+                    .map(|arg| {
+                        let value = match arg.value.as_ref() {
+                            apollo_executable::Value::Variable(var_name) => {
+                                crate::operation::types::ArgumentValue::VariableUse {
+                                    name: var_name.to_string(),
+                                }
+                            }
+                            _ => crate::operation::types::ArgumentValue::InlineValue {
+                                value: arg.value.to_string(),
+                            },
+                        };
+                        // Get argument definition from schema to determine if it's a Maybe type
+                        let arg_def = field
+                            .definition
+                            .arguments
+                            .iter()
+                            .find(|a| a.name == arg.name);
+                        let is_maybe = arg_def.map_or(false, |def| {
+                            let is_optional = !def.ty.is_non_null();
+                            is_optional && def.default_value.is_none()
+                        });
+
+                        let default_value = arg_def
+                            .and_then(|def| def.default_value.as_ref().map(|v| v.to_string()));
+
+                        crate::operation::types::FieldArgument {
+                            name: arg.name.to_string(),
+                            value,
+                            is_maybe,
+                            default_value,
+                        }
+                    })
+                    .collect();
                 let selection_common = SelectionCommon {
                     name: f_name.clone(),
                     description,
@@ -67,6 +103,7 @@ fn parse_object_selection(
                     selection_common,
                     &field.selection_set,
                     f_type,
+                    args,
                 );
 
                 obj.add_selection(field_selection);
@@ -134,14 +171,16 @@ fn parse_selection_set(
     selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
     field_type_orig: &FieldTypeOrig,
+    arguments: Vec<crate::operation::types::FieldArgument>,
 ) -> Selection {
     let full_name = path.clone();
     if let Some(selection) = op_ctx.get_selection(&full_name) {
         info!("Selection already exists");
         return selection.clone();
     }
+
     let kind = parse_selection_kind(op_ctx, global_ctx, path, selection_orig, field_type_orig);
-    let selection = Selection::new(selection_common, kind);
+    let selection = Selection::new(selection_common, kind, arguments);
     op_ctx.add_selection(full_name, selection.clone());
     selection
 }
@@ -206,7 +245,7 @@ fn parse_operation(
         false,
         &op.selection_set,
     );
-    let selection = Selection::new(selection_common, SelectionKind::Object(root_type));
+    let selection = Selection::new(selection_common, SelectionKind::Object(root_type), vec![]);
     ctx.set_root_type(selection.clone());
     ctx.add_selection(operation_name, selection);
     Ok(Rc::new(ctx))

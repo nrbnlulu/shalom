@@ -19,18 +19,18 @@ import '{{ path }}' as {{ namespace_alias }};
      {% set typename = enum.name %}
      {{docstring(enum.description)}}
      enum {{ typename }}  {
-          {% for name, value in enum.members | items -%}  
+          {% for name, value in enum.members | items -%}
                 {{docstring(value.description)}}
                 {{ name }} {{value_or_last(",", ";", loop.last)}}
           {% endfor %}
-          
+
           static {{ typename }} fromString(String name) {
               switch (name) {
                   {% for name, _ in enum.members | items %}
                   case '{{ name }}':
                     return {{ typename }}.{{name}};                   {% endfor %}
-                  default:  
-                      throw ArgumentError.value(name, 'name', 'No Status enum member with this name');  
+                  default:
+                      throw ArgumentError.value(name, 'name', 'No Status enum member with this name');
               }
           }
 
@@ -43,21 +43,27 @@ import '{{ path }}' as {{ namespace_alias }};
 class {{ typename }} {
     {% set fields = input_object.fields %}
     {% for name, field in fields | items %}
-        final {{ type_name_for_input_field(field) }} {{ name }}; 
+        final {{ type_name_for_input_field(field) }} {{ name }};
     {% endfor %}
     {{ typename }}(
         {
-        {{ field_initialization_logic(fields) }} 
+        {{ field_initialization_logic(fields) }}
         }
     );
 
     JsonObject toJson() {
         JsonObject data = {};
-        {{ toJson_macro(fields) }}    
+        {{ toJson_macro(fields) }}
         return data;
-    } 
+    }
+
+    @override
+    String toString() {
+        return toJson().toString();
+    }
+
   {{ updateWith_macro(fields, typename) }}
 }
-     
+
 {% endfor %}
 // ------------ END Input DEFINITIONS -------------
