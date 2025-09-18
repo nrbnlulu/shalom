@@ -157,18 +157,13 @@ fn parse_operation_type(operation_type: ApolloOperationType) -> OperationType {
 fn parse_operation(
     global_ctx: &SharedShalomGlobalContext,
     op: Node<apollo_compiler::executable::Operation>,
-    name: String,
+    operation_name: String,
     file_path: PathBuf,
-) -> SharedOpCtx {
+) -> anyhow::Result<SharedOpCtx> {
     let query = op.to_string();
-    let operation_name = op
-        .name
-        .as_ref()
-        .unwrap_or_else(|| unimplemented!("Anonymous operations are not supported"))
-        .to_string();
     let mut ctx = OperationContext::new(
         global_ctx.schema_ctx.clone(),
-        operation_name,
+        operation_name.clone(),
         query,
         file_path,
         parse_operation_type(op.operation_type),
@@ -186,15 +181,35 @@ fn parse_operation(
         ctx.add_variable(name, input_definition);
     }
 
+    let first_selection = {
+        if op.selection_set.selections.len() > 1 {
+            return Err(anyhow::anyhow!(
+                "{operation_name} has more than one selection which is not allowed"
+            ));
+        }
+        op.selection_set
+            .selections
+            .first()
+            .unwrap()
+            .as_field()
+            .unwrap()
+    };
+
     let selection_common = SelectionCommon {
-        name: name.clone(),
+        name: first_selection.name.to_string(),
         description: None,
     };
-    let root_type = parse_object_selection(&mut ctx, global_ctx, &name, false, &op.selection_set);
+    let root_type = parse_object_selection(
+        &mut ctx,
+        global_ctx,
+        &operation_name,
+        false,
+        &op.selection_set,
+    );
     let selection = Selection::new(selection_common, SelectionKind::Object(root_type));
     ctx.set_root_type(selection.clone());
-    ctx.add_selection(name, selection);
-    Rc::new(ctx)
+    ctx.add_selection(operation_name, selection);
+    Ok(Rc::new(ctx))
 }
 
 pub(crate) fn parse_document(
@@ -216,7 +231,7 @@ pub(crate) fn parse_document(
         let name = name.to_string();
         ret.insert(
             name.clone(),
-            parse_operation(global_ctx, op.clone(), name, doc_path.clone()),
+            parse_operation(global_ctx, op.clone(), name, doc_path.clone())?,
         );
     }
     Ok(ret)

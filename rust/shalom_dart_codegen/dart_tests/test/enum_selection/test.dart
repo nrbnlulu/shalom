@@ -24,7 +24,6 @@ void main() {
       expect(json, data);
     });
 
-
     test("equality", () {
       final foo = GetTask_task(
         id: "foo",
@@ -86,7 +85,6 @@ void main() {
         expect(json, data);
       });
     });
-
 
     test("equality", () {
       final foo = GetTaskStatusOpt_task(

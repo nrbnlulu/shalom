@@ -5,31 +5,30 @@ import 'src/shalom_ctx.dart' show ShalomCtx;
 export 'src/shalom_core_base.dart';
 export 'src/scalar.dart';
 export 'src/normelized_cache.dart'
-    show NormelizedCache, RecordSubscriptionDTO, NormalizedRecordData, RecordID;
+    show NormelizedCache, NormalizedRecordData, RecordID;
 
-export 'src/shalom_ctx.dart'
-    show RecordSubscriber, RecordUpdateDTO, RefStreamType, ShalomCtx;
+export 'src/shalom_ctx.dart' show RecordSubscriber, RefStreamType, ShalomCtx;
 
 class CacheUpdateContext {
   final ShalomCtx shalomContext;
-  final Map<RecordID, Set<RecordID>> dependantRecords = {};
 
-  /// record id and the fields that have changed.
-  final Map<RecordID, Set<RecordID>> changedRecords = {};
+  /// full json path / normalized id
+  final Set<RecordID> dependantRecords = {};
 
-  void upsertDependantRecord(RecordID id, Set<RecordID> dependants) {
-    if (dependantRecords.containsKey(id)) {
-      dependantRecords[id]!.addAll(dependants);
-    } else {
-      dependantRecords[id] = dependants;
-    }
+  /// full json path / normalized id
+  final Set<RecordID> changedRecords = {};
+  CacheUpdateContext({required this.shalomContext});
+
+  void addDependantRecords(Set<RecordID> ids) {
+    dependantRecords.addAll(ids);
   }
 
-  void addChangedRecord(RecordID id, RecordID fieldID) {
-    if (!changedRecords.containsKey(id)) {
-      changedRecords[id] = {};
-    }
-    changedRecords[id]!.add(fieldID);
+  void addDependantRecord(RecordID id) {
+    dependantRecords.add(id);
+  }
+
+  void addChangedRecord(RecordID id) {
+    changedRecords.add(id);
   }
 
   /// if exist in normalized cache returns the record
@@ -46,8 +45,6 @@ class CacheUpdateContext {
 
   void addNormalizedRecord(RecordID id, NormalizedRecordData data) =>
       shalomContext.cache.put(id, data);
-
-  CacheUpdateContext({required this.shalomContext});
 }
 
 JsonObject getOrCreateObject(JsonObject onObject, RecordID field) {

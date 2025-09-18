@@ -9,7 +9,6 @@ import "__graphql__/GetString.shalom.dart";
 import "__graphql__/GetStringOptional.shalom.dart";
 import "__graphql__/GetID.shalom.dart";
 import "__graphql__/GetIDOptional.shalom.dart";
-import "__graphql__/GetMultipleFields.shalom.dart";
 
 void main() {
   group('Simple Scalars Deserialize', () {
@@ -55,12 +54,16 @@ void main() {
     });
 
     test('FloatOptional', () {
-      final result = GetFloatOptionalResponse.fromResponse({'floatOptional': 4.56});
+      final result = GetFloatOptionalResponse.fromResponse({
+        'floatOptional': 4.56,
+      });
       expect(result.floatOptional, 4.56);
     });
 
     test('FloatOptional with null', () {
-      final result = GetFloatOptionalResponse.fromResponse({'floatOptional': null});
+      final result = GetFloatOptionalResponse.fromResponse({
+        'floatOptional': null,
+      });
       expect(result.floatOptional, isNull);
     });
 
@@ -205,12 +208,6 @@ void main() {
       expect(json, data);
     });
 
-    test("Multiple fields", () {
-      final data = {"id": "fooID", "intField": 123};
-      final initial = GetMultipleFieldsResponse.fromResponse(data);
-      final json = initial.toJson();
-      expect(json, data);
-    });
   });
 
   group('Scalars Equality', () {
@@ -223,10 +220,16 @@ void main() {
     });
 
     test('StringOptional ==', () {
-      final a = GetStringOptionalResponse.fromResponse({'stringOptional': 'test'});
-      final b = GetStringOptionalResponse.fromResponse({'stringOptional': 'test'});
+      final a = GetStringOptionalResponse.fromResponse({
+        'stringOptional': 'test',
+      });
+      final b = GetStringOptionalResponse.fromResponse({
+        'stringOptional': 'test',
+      });
       expect(a == b, true);
-      final c = GetStringOptionalResponse.fromResponse({'stringOptional': null});
+      final c = GetStringOptionalResponse.fromResponse({
+        'stringOptional': null,
+      });
       expect(a == c, false);
     });
 
@@ -271,10 +274,16 @@ void main() {
     });
 
     test('BooleanOptional ==', () {
-      final a = GetBooleanOptionalResponse.fromResponse({'booleanOptional': true});
-      final b = GetBooleanOptionalResponse.fromResponse({'booleanOptional': true});
+      final a = GetBooleanOptionalResponse.fromResponse({
+        'booleanOptional': true,
+      });
+      final b = GetBooleanOptionalResponse.fromResponse({
+        'booleanOptional': true,
+      });
       expect(a == b, true);
-      final c = GetBooleanOptionalResponse.fromResponse({'booleanOptional': null});
+      final c = GetBooleanOptionalResponse.fromResponse({
+        'booleanOptional': null,
+      });
       expect(a == c, false);
     });
 
@@ -291,23 +300,6 @@ void main() {
       final b = GetIntOptionalResponse.fromResponse({'intOptional': 123});
       expect(a == b, true);
       final c = GetIntOptionalResponse.fromResponse({'intOptional': null});
-      expect(a == c, false);
-    });
-
-    test('Multiple fields ==', () {
-      final a = GetMultipleFieldsResponse.fromResponse({
-        'id': 'test',
-        'intField': 123,
-      });
-      final b = GetMultipleFieldsResponse.fromResponse({
-        'id': 'test',
-        'intField': 123,
-      });
-      expect(a == b, true);
-      final c = GetMultipleFieldsResponse.fromResponse({
-        'id': 'other',
-        'intField': 123,
-      });
       expect(a == c, false);
     });
   });

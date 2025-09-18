@@ -111,6 +111,7 @@ import "schema.shalom.dart";
 {% for path, namespace_alias in extra_imports | items -%}
 import '{{path}}' as {{ namespace_alias }};
 {% endfor %}
+{% set OP_TYPE = operation.context.op_ty.name|upper %}
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
@@ -138,93 +139,101 @@ import 'package:collection/collection.dart';
                 {
                 /// can be just the selection name but also may include serialized arguments.
                 required RecordID  this$fieldName,
-                required JsonObject parent$record
+                required JsonObject parent$record,
+                required RecordID parent$normalizedID
                 }
             {% endif -%}
             ){
         {% if is_root_selection -%}
             // TODO: arguments
-            final RecordID this$fieldName = "{{selection_object.name}}";
-            final JsonObject parent$record = ctx.getOrCreateCachedObjectRecord("ROOT_QUERY");
-        {% endif -%}
+            final String this$fieldName = "{{selection_object.name}}";
+            final JsonObject parent$record = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");
+            final RecordID parent$fullPath = "ROOT_{{OP_TYPE}}";
+            final String this$normalizedID = "ROOT_{{OP_TYPE}}.${this$fieldName}";
+            final this$NormalizedRecord = parent$record;
             
-        {% set id_field = get_id_selection(selection_object.full_name) -%}
-        {% set is_normalized = false -%}
-        String this$normalizedID;
-        JsonObject this$NormalizedRecord;
-        {% if is_type_implements_node(selection_object.full_name) %}
-            final this$normalizedID_temp = data["id"] as RecordID?;
-            if (this$normalizedID_temp == null) {
-                throw UnimplementedError("Node ID cannot be null");
-            }
-            this$normalizedID = this$normalizedID_temp!;
-            parent$record[this$fieldName] = this$normalizedID;
-            this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
-            {% set is_normalized = true -%}
-        {% elif id_field is not none and not is_root_selection -%}
-            final RecordID? this$normalizedID_temp = data["{{id_field.name}}"] as RecordID?;
-            if (this$normalizedID_temp == null) {
-                {% if id_field.is_optional %}
-                    this$normalizedID = this$fieldName;
-                    this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
-                {% else %}
-                    throw UnimplementedError("Required ID cannot be null");
-                {% endif %}
-            } else {
+        {% else %}
+            {% set id_field = get_id_selection(selection_object.full_name) -%}
+            {% set is_normalized = false -%}
+            String this$normalizedID;
+            JsonObject this$NormalizedRecord;
+            {% if is_type_implements_node(selection_object.full_name) %}
+                final this$normalizedID_temp = data["id"] as RecordID?;
+                if (this$normalizedID_temp == null) {
+                    throw UnimplementedError("Node ID cannot be null");
+                }
                 this$normalizedID = this$normalizedID_temp!;
                 parent$record[this$fieldName] = this$normalizedID;
                 this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
+                ctx.addDependantRecord(this$normalizedID);
                 {% set is_normalized = true -%}
-            }
-        {% else %}
-            this$normalizedID = this$fieldName;
-            {% if not is_root_selection -%}
-                this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+            {% elif id_field is not none -%}
+                final RecordID? this$normalizedID_temp = data["{{id_field.name}}"] as RecordID?;
+                if (this$normalizedID_temp == null) {
+                    {% if id_field.is_optional %}
+                        this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
+                        this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+                    {% else %}
+                        throw UnimplementedError("Required ID cannot be null");
+                    {% endif %}
+                } else {
+                    this$normalizedID = this$normalizedID_temp!;
+                    parent$record[this$fieldName] = this$normalizedID;
+                    this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
+                    ctx.addDependantRecord(this$normalizedID);
+                    {% set is_normalized = true -%}
+                }
             {% else %}
-                this$NormalizedRecord = parent$record;
+                this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+                this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
             {% endif -%}
         {% endif -%}
+            
+        
         // TODO: handle arguments
         {% for selection in selection_object.selections -%}
             final {{selection.name}}Normalized$Key = "{{selection.name}}";
+            final {{selection.name}}$normalizedID = "${this$normalizedID}.${ {{selection.name}}Normalized$Key}";
         {% endfor -%}
-        ctx.upsertDependantRecord(this$normalizedID, 
+        ctx.addDependantRecords(
             {
             {% for selection in selection_object.selections -%}
-            {{selection.name}}Normalized$Key {{"," |if_not_last(loop.last)}}
+                {{selection.name}}$normalizedID  {{"," |if_not_last(loop.last)}}
             {% endfor -%}
             }
         );
+
         {% for selection in selection_object.selections -%}
             final {{selection.name}}$cached = this$NormalizedRecord[{{selection.name}}Normalized$Key];
             final {{selection.name}}$raw = data["{{selection.name}}"];
             if ({{selection.name}}$raw != null){
                 {% if selection.kind == "Object" %}
+                    {# object selections can be subscribed to, but will only get updates for 
+                        id changes or null<->some changes. sub fields should be subscribed by themself #}
+                    if ({{selection.name}}$cached == null){
+                        ctx.addChangedRecord({{selection.name}}$normalizedID);
+                    }
                     {{selection.full_name}}.normalize$inCache(
                         {{selection.name}}$raw as JsonObject,
                         ctx,
                         this$fieldName: {{selection.name}}Normalized$Key,
-                        parent$record: this$NormalizedRecord
+                        parent$record: this$NormalizedRecord,
+                        parent$NormalizedKey: this$normalizedID
                     );
-
                 {% else %}
-                    // TODO: we should prob notify for changes across non normalized fields.
-                    {% if is_normalized %}
-                        if ({{selection.name}}$cached != {{selection.name}}$raw){
-                                ctx.addChangedRecord(this$normalizedID, {{selection.name}}Normalized$Key);
-                        }
-                    {% endif %}
-                    
+                    if ({{selection.name}}$cached != {{selection.name}}$raw){
+                        ctx.addChangedRecord({{selection.name}}$normalizedID);
+                    }
                     this$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$raw;
                 {% endif %}
-            } else {
-                // if this field was null in the response and key exists clear the cache.
-                if (data.containsKey("{{selection.name}}") && {{selection.name}}$cached != null){
+            } else if (data.containsKey("{{selection.name}}") && {{selection.name}}$cached != null){
+                    // if this field was null in the response and key exists clear the cache.
+                
                     this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
-                    {% if is_normalized %}
-                        ctx.addChangedRecord(this$normalizedID, {{selection.name}}Normalized$Key);
-                    {% endif %}
-                }
+                    ctx.addChangedRecord({{selection.name}}$normalizedID);
+            } else {
+                // data is null and cache is null, do nothing.
+                this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
             }
 
         {% endfor %}
@@ -235,7 +244,7 @@ import 'package:collection/collection.dart';
     static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx) {
     {% endif -%}
         {% if is_root_selection -%}
-            final data = ctx.getCachedRecord("ROOT_QUERY");
+            final data = ctx.getCachedRecord("ROOT_{{OP_TYPE}}");
         {% endif -%}
         {% for selection in selection_object.selections -%}
             {% set raw_value_symbol = selection.name + '$raw' %}
@@ -258,9 +267,10 @@ import 'package:collection/collection.dart';
                 data,
                 updateCtx,
             );
+            ctx.invalidateRefs(updateCtx.changedRecords);
             return (fromCache(ctx), updateCtx);
         }
-    
+
         static {{typename}} fromResponse(JsonObject data, {ShalomCtx? ctx}){
             // if ctx not provider we create dummy one
             return fromResponseImpl(data, ctx ?? ShalomCtx.withCapacity()).$1;

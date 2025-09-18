@@ -9,14 +9,20 @@ void main() {
     group('deserialize', () {
       test('with optional value', () {
         final json = {'id': 'test-id-1', 'coords': pointRaw};
-        final result = GetLocationResponse.fromResponse({"getLocation": json}).getLocation!;
+        final result =
+            GetLocationResponse.fromResponse({
+              "getLocation": json,
+            }).getLocation!;
         expect(result.id, 'test-id-1');
         expect(result.coords, isA<Point>());
         expect(result.coords?.x, point.x);
       });
       test('with null optional value', () {
         final json = {'id': 'test-id-2', 'coords': null};
-        final result = GetLocationResponse.fromResponse({"getLocation": json}).getLocation!;
+        final result =
+            GetLocationResponse.fromResponse({
+              "getLocation": json,
+            }).getLocation!;
         expect(result.id, 'test-id-2');
         expect(result.coords, isNull);
       });
@@ -25,13 +31,19 @@ void main() {
     group('serialize', () {
       test('with optional value', () {
         final data = {'id': 'test-id-1', 'coords': pointRaw};
-        final initial = GetLocationResponse.fromResponse({"getLocation": data}).getLocation!;
+        final initial =
+            GetLocationResponse.fromResponse({
+              "getLocation": data,
+            }).getLocation!;
         final json = initial.toJson();
         expect(json, data);
       });
       test('with null optional value', () {
         final data = {'id': 'test-id-2', 'coords': null};
-        final initial = GetLocationResponse.fromResponse({"getLocation": data}).getLocation!;
+        final initial =
+            GetLocationResponse.fromResponse({
+              "getLocation": data,
+            }).getLocation!;
         final json = initial.toJson();
         expect(json, data);
       });

@@ -71,6 +71,7 @@ void main() {
           dataNull,
           ctx,
         );
+
         final hasChanged = Completer<bool>();
 
         final sub = ctx.subscribe(updateCtx.changedRecords);
@@ -78,9 +79,11 @@ void main() {
           result = GetListingOptResponse.fromCache(ctx);
           hasChanged.complete(true);
         });
-        final next = GetListingOptResponse.fromResponseImpl(dataSome, ctx);
+
+        final next = GetListingOptResponse.fromResponse(dataSome, ctx: ctx);
+
         await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(next.$1));
+        expect(result, equals(next));
       });
 
       //   test('some to some', () {

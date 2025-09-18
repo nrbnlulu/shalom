@@ -5,28 +5,24 @@ import 'normelized_cache.dart' show NormalizedRecordData, RecordID, RecordSubscr
 
 typedef RefStreamType = StreamController<ShalomCtx>;
 
-class RecordUpdateDTO {
-  final Set<RecordID> updatedFields;
-  final RecordID onRecord;
-  const RecordUpdateDTO({required this.updatedFields, required this.onRecord});
-}
+
 
 class RecordSubscriber {
   final RefStreamType streamController;
-  final Set<RecordSubscriptionDTO> subs;
+  final Set<RecordID> subs;
   const RecordSubscriber({required this.streamController, required this.subs});
 
   void cancel() {
     streamController.close();
   }
 
-  bool isAffectedBy(RecordUpdateDTO update) {
-    for (final sub in subs) {
-      if (sub.fields.any((f) => update.updatedFields.contains(f))) {
-        return true;
+  bool isAffectedBy(Set<RecordID> changes) {
+      for (final change in changes) {
+        if (subs.contains(change)) {
+          return true;
+        }
       }
-    }
-    return false;
+      return false;
   }
 }
 
@@ -43,11 +39,9 @@ class ShalomCtx {
     return id.split(":").toString();
   }
 
-  RecordSubscriber subscribe(Map<RecordID, Set<RecordID>> request) {
+  RecordSubscriber subscribe(Set<RecordID> records) {
     return subscribeToRefs(
-      request.entries
-          .map((e) => RecordSubscriptionDTO(recordID: e.key, fields: e.value))
-          .toSet(),
+        records
     );
   }
 
@@ -58,19 +52,18 @@ class ShalomCtx {
   }
 
 
-  void invalidateRefs(Iterable<RecordUpdateDTO> updates) {
+  void invalidateRefs(Set<RecordID> updates) {
+
     for (final subscriber in refSubscribers.values) {
-      for (final update in updates) {
-        if (subscriber.isAffectedBy(update)) {
+        if (subscriber.isAffectedBy(updates)) {
           subscriber.streamController.add(this);
           break;
         }
-      }
     }
   }
   
   
-  RecordSubscriber subscribeToRefs(Set<RecordSubscriptionDTO> subs) {
+  RecordSubscriber subscribeToRefs(Set<RecordID> subs) {
     RecordSubscriber? subscriber = null;
     subscriber = RecordSubscriber(
       subs: subs,
