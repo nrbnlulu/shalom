@@ -75,15 +75,18 @@ void main() {
         final hasChanged = Completer<bool>();
 
         final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((ctx) {
-          result = GetListingOptResponse.fromCache(ctx);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetListingOptResponse.fromCache(newCtx);
           hasChanged.complete(true);
         });
 
-        final next = GetListingOptResponse.fromResponse(dataSome, ctx: ctx);
+        final nextResult = GetListingOptResponse.fromResponse(
+          dataSome,
+          ctx: ctx,
+        );
 
         await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(next));
+        expect(result, equals(nextResult));
       });
 
       //   test('some to some', () {

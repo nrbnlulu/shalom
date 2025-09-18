@@ -207,7 +207,6 @@ void main() {
       final json = initial.toJson();
       expect(json, data);
     });
-
   });
 
   group('Scalars Equality', () {

@@ -147,11 +147,8 @@ import 'package:collection/collection.dart';
         {% if is_root_selection -%}
             // TODO: arguments
             final String this$fieldName = "{{selection_object.name}}";
-            final JsonObject parent$record = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");
-            final RecordID parent$fullPath = "ROOT_{{OP_TYPE}}";
-            final String this$normalizedID = "ROOT_{{OP_TYPE}}.${this$fieldName}";
-            final this$NormalizedRecord = parent$record;
-            
+            final String this$normalizedID = "ROOT_{{OP_TYPE}}";
+            final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");;
         {% else %}
             {% set id_field = get_id_selection(selection_object.full_name) -%}
             {% set is_normalized = false -%}
@@ -188,8 +185,8 @@ import 'package:collection/collection.dart';
                 this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
             {% endif -%}
         {% endif -%}
-            
-        
+
+
         // TODO: handle arguments
         {% for selection in selection_object.selections -%}
             final {{selection.name}}Normalized$Key = "{{selection.name}}";
@@ -208,7 +205,7 @@ import 'package:collection/collection.dart';
             final {{selection.name}}$raw = data["{{selection.name}}"];
             if ({{selection.name}}$raw != null){
                 {% if selection.kind == "Object" %}
-                    {# object selections can be subscribed to, but will only get updates for 
+                    {# object selections can be subscribed to, but will only get updates for
                         id changes or null<->some changes. sub fields should be subscribed by themself #}
                     if ({{selection.name}}$cached == null){
                         ctx.addChangedRecord({{selection.name}}$normalizedID);
@@ -228,7 +225,7 @@ import 'package:collection/collection.dart';
                 {% endif %}
             } else if (data.containsKey("{{selection.name}}") && {{selection.name}}$cached != null){
                     // if this field was null in the response and key exists clear the cache.
-                
+
                     this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
                     ctx.addChangedRecord({{selection.name}}$normalizedID);
             } else {

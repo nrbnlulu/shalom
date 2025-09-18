@@ -1,11 +1,10 @@
 import 'dart:async' show StreamController;
 
 import '../shalom_core.dart' show NormelizedCache;
-import 'normelized_cache.dart' show NormalizedRecordData, RecordID, RecordSubscriptionDTO;
+import 'normelized_cache.dart'
+    show NormalizedRecordData, RecordID, RecordSubscriptionDTO;
 
 typedef RefStreamType = StreamController<ShalomCtx>;
-
-
 
 class RecordSubscriber {
   final RefStreamType streamController;
@@ -17,15 +16,14 @@ class RecordSubscriber {
   }
 
   bool isAffectedBy(Set<RecordID> changes) {
-      for (final change in changes) {
-        if (subs.contains(change)) {
-          return true;
-        }
+    for (final change in changes) {
+      if (subs.contains(change)) {
+        return true;
       }
-      return false;
+    }
+    return false;
   }
 }
-
 
 class ShalomCtx {
   final NormelizedCache cache;
@@ -40,29 +38,23 @@ class ShalomCtx {
   }
 
   RecordSubscriber subscribe(Set<RecordID> records) {
-    return subscribeToRefs(
-        records
-    );
+    return subscribeToRefs(records);
   }
 
   NormalizedRecordData? getCachedRecord(RecordID id) => cache.get(id);
-  
+
   void insertToCache(RecordID id, NormalizedRecordData data) {
     cache.put(id, data);
   }
 
-
   void invalidateRefs(Set<RecordID> updates) {
-
     for (final subscriber in refSubscribers.values) {
-        if (subscriber.isAffectedBy(updates)) {
-          subscriber.streamController.add(this);
-          break;
-        }
+      if (subscriber.isAffectedBy(updates)) {
+        subscriber.streamController.add(this);
+      }
     }
   }
-  
-  
+
   RecordSubscriber subscribeToRefs(Set<RecordID> subs) {
     RecordSubscriber? subscriber = null;
     subscriber = RecordSubscriber(
@@ -71,7 +63,7 @@ class ShalomCtx {
         onCancel: () => refSubscribers.remove(identityHashCode(subscriber)),
       ),
     );
+    refSubscribers[identityHashCode(subscriber)] = subscriber;
     return subscriber;
   }
-
 }
