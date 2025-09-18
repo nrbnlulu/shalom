@@ -16,9 +16,11 @@ Every test case should include the following:
 
 - `xRequired`
 - `xOptional`
+- 'xCacheNormalization' - ensures that the certain use case is working with the data normalizer, meaning that if the same node is fetched twice it would get updated in the cache.
+- `equals(==)`
+` `toJson`
 where `x` is the kind of use case you are testing, for example `objectRequired`, `objectOptional`, `scalarRequired`, `scalarOptional`, etc.
-For each test, you should verify that `fromJson` works, `updateWithJson` works, `toJson` works, and `==` works.
-- 'xNormalizedCache' - ensures that the certain use case is working with the data normalizer, meaning that if the same node is fetched twice it would get updated in the cache.
+ for a reference of a complete testcase see `rust/shalom_dart_codegen/dart_tests/test/object_selection/test.dart`
 
 - For input-related test cases, you should also add a `Maybe` test. This means that for fields that are optional but **have no default value**, they should be wrapped in a `Maybe` type (`Some` | `None`).
 
