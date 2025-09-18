@@ -74,7 +74,7 @@ void main() {
 
         final hasChanged = Completer<bool>();
 
-        final sub = ctx.subscribe(updateCtx.changedRecords);
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
         sub.streamController.stream.listen((ctx) {
           result = GetListingOptResponse.fromCache(ctx);
           hasChanged.complete(true);
