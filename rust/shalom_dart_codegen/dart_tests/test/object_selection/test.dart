@@ -3,9 +3,16 @@ import "dart:async";
 import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
 import "__graphql__/GetListing.shalom.dart";
+import "__graphql__/GetListingNoPrice.shalom.dart";
 import "__graphql__/GetListingOpt.shalom.dart";
 
 void main() {
+    final listingData = {
+    "listing": {"id": "foo", "name": "video games", "price": 100},
+  };
+  final listingDataChangedPrice = {
+    "listing": {"id": "foo", "name": "video games", "price": 110},
+  };
   group('Test simple object selection', () {
     test('deserialize', () {
       final json = {
@@ -18,12 +25,10 @@ void main() {
     });
 
     test('serialize', () {
-      final data = {
-        "listing": {"id": "foo", "name": "video games", "price": 100},
-      };
-      final initial = GetListingResponse.fromResponse(data);
+  
+      final initial = GetListingResponse.fromResponse(listingData);
       final json = initial.toJson();
-      expect(json, data);
+      expect(json, listingData);
     });
   });
 
@@ -45,16 +50,20 @@ void main() {
         expect(result.listingOpt, null);
       });
     });
-    final dataSome = {
+    final listingOptSome = {
       "listingOpt": {"id": "foo", "name": "video games", "price": 100},
     };
+    final listingOptSome2ChangedPrice = {
+      "listingOpt": {"id": "foo", "name": "video games", "price": 110},
+    };
+    
     final dataNull = {"listingOpt": null};
 
     group('serialize', () {
       test('with value', () {
-        final initial = GetListingOptResponse.fromResponse(dataSome);
+        final initial = GetListingOptResponse.fromResponse(listingOptSome);
         final json = initial.toJson();
-        expect(json, dataSome);
+        expect(json, listingOptSome);
       });
 
       test('null value', () {
@@ -81,7 +90,7 @@ void main() {
         });
 
         final nextResult = GetListingOptResponse.fromResponse(
-          dataSome,
+          listingOptSome,
           ctx: ctx,
         );
 
@@ -89,36 +98,69 @@ void main() {
         expect(result, equals(nextResult));
       });
 
-      //   test('some to some', () {
-      //     final initial = GetListingOptResponse(
-      //       listingOpt: GetListingOpt_listingOpt(
-      //         id: "foo",
-      //         name: "video games",
-      //         price: 100,
-      //       ),
-      //     );
+      test("some to none", () async {
+        final ctx = ShalomCtx.withCapacity();
+        var (result, updateCtx) = GetListingOptResponse.fromResponseImpl(
+          listingOptSome,
+          ctx,
+        );
 
-      //     final listingJson = initial.listingOpt?.toJson();
-      //     listingJson?["price"] = 110;
+        final hasChanged = Completer<bool>();
 
-      //     final updated = initial.updateWithJson({"listingOpt": listingJson});
-      //     expect(updated.listingOpt?.price, 110);
-      //     expect(initial, isNot(updated));
-      //   });
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetListingOptResponse.fromCache(newCtx);
+          hasChanged.complete(true);
+        });
 
-      //   test('some to null', () {
-      //     final initial = GetListingOptResponse(
-      //       listingOpt: GetListingOpt_listingOpt(
-      //         id: "foo",
-      //         name: "video games",
-      //         price: 100,
-      //       ),
-      //     );
+        final nextResult = GetListingOptResponse.fromResponse(
+          dataNull,
+          ctx: ctx,
+        );
 
-      //     final updated = initial.updateWithJson({"listingOpt": null});
-      //     expect(updated.listingOpt, null);
-      //     expect(initial, isNot(updated));
-      //   });
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+      });
+      test("some to some", () async {
+        final ctx = ShalomCtx.withCapacity();
+        var (result, updateCtx) = GetListingOptResponse.fromResponseImpl(
+          listingOptSome,
+          ctx,
+        );
+
+        final hasChanged = Completer<bool>();
+
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetListingOptResponse.fromCache(newCtx);
+          hasChanged.complete(true);
+        });
+
+        final nextResult = GetListingOptResponse.fromResponse(
+          listingOptSome2ChangedPrice,
+          ctx: ctx,
+        );
+
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+      });
+
+      test("some to some no overlapping deps", () async {
+        final ctx = ShalomCtx.withCapacity();
+        var (result, updateCtx) = GetListingNoPriceResponse.fromResponseImpl(listingData, ctx);
+        final hasChanged = Completer<bool>();
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetListingNoPriceResponse.fromCache(newCtx);
+          hasChanged.complete(true);
+        });
+        final _ = GetListingResponse.fromResponse(listingDataChangedPrice, ctx: ctx);
+        // we don't expect any change as the price field is not part of the deps
+        await Future.delayed(Duration(milliseconds: 500));
+        expect(hasChanged.isCompleted, false);
+        expect(result, equals(GetListingNoPriceResponse.fromResponse(listingData)));
+      });
+
     });
   });
 }

@@ -22,6 +22,12 @@ fn test_object_selection_dart() {
 }
 
 #[test]
+fn test_object_selection_cache_with_args(){
+    run_dart_tests_for_usecase("object_selection_cache_with_args");
+}
+
+
+#[test]
 fn test_nested_object_selection_dart() {
     run_dart_tests_for_usecase("nested_object_selection");
 }
