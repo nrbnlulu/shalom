@@ -31,7 +31,15 @@ void main() {
       expect(json, listingData);
     });
   });
-
+  final listingOptSome = {
+    "listingOpt": {"id": "foo", "name": "video games", "price": 100},
+  };
+  final listingOptSome2ChangedPrice = {
+    "listingOpt": {"id": "foo", "name": "video games", "price": 110},
+  };
+  
+  final dataNull = {"listingOpt": null};
+  
   group('simple optional object selection', () {
     group('deserialize', () {
       test('with value', () {
@@ -50,14 +58,8 @@ void main() {
         expect(result.listingOpt, null);
       });
     });
-    final listingOptSome = {
-      "listingOpt": {"id": "foo", "name": "video games", "price": 100},
-    };
-    final listingOptSome2ChangedPrice = {
-      "listingOpt": {"id": "foo", "name": "video games", "price": 110},
-    };
     
-    final dataNull = {"listingOpt": null};
+    
 
     group('serialize', () {
       test('with value', () {
@@ -72,95 +74,95 @@ void main() {
         expect(json, dataNull);
       });
     });
+  });
+  
+  group('cacheUpdate', () {
+    test('null to some', () async {
+      final ctx = ShalomCtx.withCapacity();
+      var (result, updateCtx) = GetListingOptResponse.fromResponseImpl(
+        dataNull,
+        ctx,
+      );
 
-    group('cacheUpdate', () {
-      test('null to some', () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (result, updateCtx) = GetListingOptResponse.fromResponseImpl(
-          dataNull,
-          ctx,
-        );
+      final hasChanged = Completer<bool>();
 
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetListingOptResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetListingOptResponse.fromResponse(
-          listingOptSome,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
+      final sub = ctx.subscribe(updateCtx.dependantRecords);
+      sub.streamController.stream.listen((newCtx) {
+        result = GetListingOptResponse.fromCache(newCtx);
+        hasChanged.complete(true);
       });
 
-      test("some to none", () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (result, updateCtx) = GetListingOptResponse.fromResponseImpl(
-          listingOptSome,
-          ctx,
-        );
+      final nextResult = GetListingOptResponse.fromResponse(
+        listingOptSome,
+        ctx: ctx,
+      );
 
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetListingOptResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetListingOptResponse.fromResponse(
-          dataNull,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-      });
-      test("some to some", () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (result, updateCtx) = GetListingOptResponse.fromResponseImpl(
-          listingOptSome,
-          ctx,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetListingOptResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetListingOptResponse.fromResponse(
-          listingOptSome2ChangedPrice,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-      });
-
-      test("some to some no overlapping deps", () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (result, updateCtx) = GetListingNoPriceResponse.fromResponseImpl(listingData, ctx);
-        final hasChanged = Completer<bool>();
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetListingNoPriceResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-        final _ = GetListingResponse.fromResponse(listingDataChangedPrice, ctx: ctx);
-        // we don't expect any change as the price field is not part of the deps
-        await Future.delayed(Duration(milliseconds: 500));
-        expect(hasChanged.isCompleted, false);
-        expect(result, equals(GetListingNoPriceResponse.fromResponse(listingData)));
-      });
-
+      await hasChanged.future.timeout(Duration(seconds: 1));
+      expect(result, equals(nextResult));
     });
+
+    test("some to none", () async {
+      final ctx = ShalomCtx.withCapacity();
+      var (result, updateCtx) = GetListingOptResponse.fromResponseImpl(
+        listingOptSome,
+        ctx,
+      );
+
+      final hasChanged = Completer<bool>();
+
+      final sub = ctx.subscribe(updateCtx.dependantRecords);
+      sub.streamController.stream.listen((newCtx) {
+        result = GetListingOptResponse.fromCache(newCtx);
+        hasChanged.complete(true);
+      });
+
+      final nextResult = GetListingOptResponse.fromResponse(
+        dataNull,
+        ctx: ctx,
+      );
+
+      await hasChanged.future.timeout(Duration(seconds: 1));
+      expect(result, equals(nextResult));
+    });
+    test("some to some", () async {
+      final ctx = ShalomCtx.withCapacity();
+      var (result, updateCtx) = GetListingOptResponse.fromResponseImpl(
+        listingOptSome,
+        ctx,
+      );
+
+      final hasChanged = Completer<bool>();
+
+      final sub = ctx.subscribe(updateCtx.dependantRecords);
+      sub.streamController.stream.listen((newCtx) {
+        result = GetListingOptResponse.fromCache(newCtx);
+        hasChanged.complete(true);
+      });
+
+      final nextResult = GetListingOptResponse.fromResponse(
+        listingOptSome2ChangedPrice,
+        ctx: ctx,
+      );
+
+      await hasChanged.future.timeout(Duration(seconds: 1));
+      expect(result, equals(nextResult));
+    });
+
+    test("some to some no overlapping deps", () async {
+      final ctx = ShalomCtx.withCapacity();
+      var (result, updateCtx) = GetListingNoPriceResponse.fromResponseImpl(listingData, ctx);
+      final hasChanged = Completer<bool>();
+      final sub = ctx.subscribe(updateCtx.dependantRecords);
+      sub.streamController.stream.listen((newCtx) {
+        result = GetListingNoPriceResponse.fromCache(newCtx);
+        hasChanged.complete(true);
+      });
+      final _ = GetListingResponse.fromResponse(listingDataChangedPrice, ctx: ctx);
+      // we don't expect any change as the price field is not part of the deps
+      await Future.delayed(Duration(milliseconds: 500));
+      expect(hasChanged.isCompleted, false);
+      expect(result, equals(GetListingNoPriceResponse.fromResponse(listingData)));
+    });
+
   });
 }
