@@ -7,7 +7,7 @@ import '__graphql__/UpdatePointWithInputNonNull.shalom.dart';
 import '__graphql__/UpdatePointWithInputCoordsMaybe.shalom.dart';
 import '__graphql__/schema.shalom.dart';
 import '../custom_scalar/point.dart';
-import '__graphql__/updatePointWithOptCoords.shalom.dart';
+import '__graphql__/UpdatePointWithOptCoords.shalom.dart';
 
 void main() {
   final Point samplePoint = Point(x: 10, y: 20);
@@ -127,17 +127,17 @@ void main() {
     });
 
     test("custom scalar InputObject (optional default value)", () {
-      final variables = updatePointWithOptCoordsVariables(
+      final variables = UpdatePointWithOptCoordsVariables(
         pointData: PointDataOptCoordsInput(name: "Location M"),
       );
 
       final req =
-          RequestupdatePointWithOptCoords(variables: variables).toRequest();
+          RequestUpdatePointWithOptCoords(variables: variables).toRequest();
       expect(req.variables, {
         "pointData": {"coords": null, "name": "Location M"},
       });
 
-      final variablesWithCoords = updatePointWithOptCoordsVariables(
+      final variablesWithCoords = UpdatePointWithOptCoordsVariables(
         pointData: PointDataOptCoordsInput(
           coords: Point(x: 25, y: 35),
           name: "Location N",
@@ -145,7 +145,7 @@ void main() {
       );
 
       final reqWithCoords =
-          RequestupdatePointWithOptCoords(
+          RequestUpdatePointWithOptCoords(
             variables: variablesWithCoords,
           ).toRequest();
       expect(reqWithCoords.variables, {

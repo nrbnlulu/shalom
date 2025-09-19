@@ -65,8 +65,12 @@ void main() {
         },
       };
 
-      // Request without variables should work
-      final result = getUserResponse.fromResponse(userData, ctx: ctx);
+      // Request with default variables should work
+      final result = getUserResponse.fromResponse(
+        userData,
+        ctx: ctx,
+        variables: getUserVariables(id: "user1"),
+      );
       expect(result.user?.id, "user1");
       expect(result.user?.name, "Alice");
     });

@@ -1,10 +1,10 @@
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 import '__graphql__/schema.shalom.dart';
-import '__graphql__/InputListOfRequiredObjects.shalom.dart';
-import '__graphql__/InputListObjectsMAybe.shalom.dart';
-import '__graphql__/InputListOfOptionalObjectsWithNullDefault.shalom.dart';
-import '__graphql__/InputObjectContainingListOfObjects.shalom.dart';
+import '__graphql__/InputListOfRequiredObjectsMutation.shalom.dart';
+import '__graphql__/InputListObjectsMaybeMutation.shalom.dart';
+import '__graphql__/InputListOfOptionalObjectsWithNullDefaultMutation.shalom.dart';
+import '__graphql__/InputObjectContainingListOfObjectsMutation.shalom.dart';
 
 void main() {
   group('Input List of Objects Tests', () {
@@ -22,12 +22,14 @@ void main() {
 
     group('InputListOfRequiredObjects - [MyInputObject!]!', () {
       test('listOfRequiredObjectsRequired - with objects', () {
-        final variables = InputListOfRequiredObjectsVariables(
+        final variables = InputListOfRequiredObjectsMutationVariables(
           items: [sampleObject1, sampleObject2],
         );
 
         final request =
-            RequestInputListOfRequiredObjects(variables: variables).toRequest();
+            RequestInputListOfRequiredObjectsMutation(
+              variables: variables,
+            ).toRequest();
 
         expect(request.variables, {
           'items': [
@@ -37,7 +39,7 @@ void main() {
         });
 
         // Test fromJson
-        final variablesFromJson = InputListOfRequiredObjectsVariables(
+        final variablesFromJson = InputListOfRequiredObjectsMutationVariables(
           items: [
             MyInputObject(id: "1", name: "Object One", value: 100),
             MyInputObject(id: "2", name: "Object Two", value: 200),
@@ -54,17 +56,21 @@ void main() {
         });
 
         // Test equality
-        final variables2 = InputListOfRequiredObjectsVariables(
+        final variables2 = InputListOfRequiredObjectsMutationVariables(
           items: [sampleObject1, sampleObject2],
         );
         expect(variables.toJson(), variables2.toJson());
       });
 
       test('listOfRequiredObjectsRequired - empty list', () {
-        final variables = InputListOfRequiredObjectsVariables(items: []);
+        final variables = InputListOfRequiredObjectsMutationVariables(
+          items: [],
+        );
 
         final request =
-            RequestInputListOfRequiredObjects(variables: variables).toRequest();
+            RequestInputListOfRequiredObjectsMutation(
+              variables: variables,
+            ).toRequest();
 
         expect(request.variables, {'items': []});
       });
@@ -72,10 +78,12 @@ void main() {
 
     group('InputListObjectsMAybe - [MyInputObject!]', () {
       test('listOfRequiredObjectsOptional - None', () {
-        final variables = InputListObjectsMAybeVariables();
+        final variables = InputListObjectsMaybeMutationVariables();
 
         final request =
-            RequestInputListObjectsMAybe(variables: variables).toRequest();
+            RequestInputListObjectsMaybeMutation(
+              variables: variables,
+            ).toRequest();
 
         expect(request.variables, {});
 
@@ -91,12 +99,14 @@ void main() {
       });
 
       test('listOfRequiredObjectsOptional - Some(list)', () {
-        final variables = InputListObjectsMAybeVariables(
+        final variables = InputListObjectsMaybeMutationVariables(
           items: Some([sampleObject1, sampleObject2]),
         );
 
         final request =
-            RequestInputListObjectsMAybe(variables: variables).toRequest();
+            RequestInputListObjectsMaybeMutation(
+              variables: variables,
+            ).toRequest();
 
         expect(request.variables, {
           'items': [
@@ -107,10 +117,14 @@ void main() {
       });
 
       test('listOfRequiredObjectsOptional - Some(null)', () {
-        final variables = InputListObjectsMAybeVariables(items: Some(null));
+        final variables = InputListObjectsMaybeMutationVariables(
+          items: Some(null),
+        );
 
         final request =
-            RequestInputListObjectsMAybe(variables: variables).toRequest();
+            RequestInputListObjectsMaybeMutation(
+              variables: variables,
+            ).toRequest();
 
         expect(request.variables, {'items': null});
       });
@@ -121,10 +135,10 @@ void main() {
       () {
         test('listOfRequiredObjectsOptionalWithNullDefault - null default', () {
           final variables =
-              InputListOfOptionalObjectsWithNullDefaultVariables();
+              InputListOfOptionalObjectsWithNullDefaultMutationVariables();
 
           final request =
-              RequestInputListOfOptionalObjectsWithNullDefault(
+              RequestInputListOfOptionalObjectsWithNullDefaultMutation(
                 variables: variables,
               ).toRequest();
 
@@ -132,12 +146,13 @@ void main() {
         });
 
         test('listOfRequiredObjectsOptionalWithNullDefault - with objects', () {
-          final variables = InputListOfOptionalObjectsWithNullDefaultVariables(
-            items: [sampleObject1],
-          );
+          final variables =
+              InputListOfOptionalObjectsWithNullDefaultMutationVariables(
+                items: [sampleObject1],
+              );
 
           final request =
-              RequestInputListOfOptionalObjectsWithNullDefault(
+              RequestInputListOfOptionalObjectsWithNullDefaultMutation(
                 variables: variables,
               ).toRequest();
 
@@ -163,10 +178,12 @@ void main() {
           'listOfRequiredObjectsOptionalWithNullDefault - explicit null',
           () {
             final variables =
-                InputListOfOptionalObjectsWithNullDefaultVariables(items: null);
+                InputListOfOptionalObjectsWithNullDefaultMutationVariables(
+                  items: null,
+                );
 
             final request =
-                RequestInputListOfOptionalObjectsWithNullDefault(
+                RequestInputListOfOptionalObjectsWithNullDefaultMutation(
                   variables: variables,
                 ).toRequest();
 
@@ -183,12 +200,12 @@ void main() {
           nestedItems: [sampleObject1, sampleObject2],
         );
 
-        final variables = InputObjectContainingListOfObjectsVariables(
+        final variables = InputObjectContainingListOfObjectsMutationVariables(
           data: containerInput,
         );
 
         final request =
-            RequestInputObjectContainingListOfObjects(
+            RequestInputObjectContainingListOfObjectsMutation(
               variables: variables,
             ).toRequest();
 
@@ -209,12 +226,12 @@ void main() {
           nestedItems: [sampleObject1],
         );
 
-        final variables = InputObjectContainingListOfObjectsVariables(
+        final variables = InputObjectContainingListOfObjectsMutationVariables(
           data: containerInput,
         );
 
         final request =
-            RequestInputObjectContainingListOfObjects(
+            RequestInputObjectContainingListOfObjectsMutation(
               variables: variables,
             ).toRequest();
 
@@ -234,7 +251,7 @@ void main() {
           nestedItems: [sampleObject1],
         );
 
-        final variables = InputObjectContainingListOfObjectsVariables(
+        final variables = InputObjectContainingListOfObjectsMutationVariables(
           data: containerInput,
         );
 
