@@ -47,10 +47,10 @@ jobs:
               run: |
                   cargo install typos-cli
 
-            - name: Lint
-              run: task lint
-
             - name: Test
               run: |
                   cd rust
                   cargo test
+
+            - name: Lint
+              run: task lint
