@@ -91,12 +91,13 @@ pub fn parse_directory(pwd: &Path, strict: bool) -> anyhow::Result<SharedShalomG
     for operation in files.operations {
         let content = fs::read_to_string(&operation)?;
         if let Err(err) = parse_document(&global_ctx, &content, &operation)
-            .map(|parsed| global_ctx.register_operations(parsed)){
-                if strict{
-                    return Err(err);
-                }
-                error!("Failed to parse document: {}", err);
+            .map(|parsed| global_ctx.register_operations(parsed))
+        {
+            if strict {
+                return Err(err);
             }
+            error!("Failed to parse document: {}", err);
+        }
     }
 
     Ok(global_ctx)

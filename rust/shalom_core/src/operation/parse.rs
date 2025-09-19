@@ -234,7 +234,7 @@ fn parse_operation(
             .unwrap()
     };
     let first_selection_name = first_selection.name.to_string();
-    if first_selection_name == operation_name{
+    if first_selection_name == operation_name {
         return Err(
             anyhow::anyhow!("{operation_name} operation can't have the same name as its first field due to namespacing issues")
         );

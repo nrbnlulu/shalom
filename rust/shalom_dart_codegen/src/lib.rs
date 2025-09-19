@@ -561,9 +561,9 @@ pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
     for (name, operation) in ctx.operations() {
         let res = generate_operations_file(&ctx, &name, &operation, additional_imports.clone());
         if let Err(err) = res {
-            if strict{
+            if strict {
                 return Err(err);
-            } 
+            }
             error!("Failed to generate operation '{}' due to: {}", name, err);
         }
     }
