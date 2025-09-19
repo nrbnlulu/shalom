@@ -137,11 +137,15 @@
 {% endmacro %}
 
 {# Recursive macro for equality comparison #}
-{% macro _equality_comparison_macro(field_symbol, selection, other_symbol) %}
+{% macro selection_equality_comparison_macro(selection, symbol1, symbol2, ne=False) %}
     {% if selection.kind == "List" %}
-        const ListEquality().equals({{ other_symbol }}.{{ field_symbol }}, {{ field_symbol }})
+        {% if ne %}!{% endif %}const ListEquality().equals({{symbol1}}, {{ symbol2 }})
     {% else %}
-        {{ other_symbol }}.{{ field_symbol }} == {{ field_symbol }}
+        {% if ne %}
+            {{ symbol1 }} != {{ symbol2 }}
+        {% else %}
+            {{ symbol1 }} == {{ symbol2 }}
+        {% endif %}
     {% endif %}
 {% endmacro %}
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
@@ -244,7 +248,7 @@ import 'package:collection/collection.dart';
             if ({{selection.name}}$raw != null){
                 {% if selection.kind == "Object" %}
                     {# object selections can be subscribed to, but will only get updates for
-                        id changes or null<->some changes. sub fields should be subscribed by themself #}
+                     null<->some changes. sub fields should be subscribed by themself #}
                     if ({{selection.name}}$cached == null){
                         ctx.addChangedRecord({{selection.name}}$normalizedID);
                     }
@@ -257,7 +261,11 @@ import 'package:collection/collection.dart';
                         parent$normalizedID: this$normalizedID
                     );
                 {% else %}
-                    if ({{selection.name}}$cached != {{selection.name}}$raw){
+                    {% set cached_sym %} {{selection.name}}$cached {% endset %}
+                    {% set raw_sym %} {{selection.name}}$raw {% endset %}
+                    if (
+                        {{selection_equality_comparison_macro(selection, cached_sym, raw_sym, ne=True)}}
+                    ){
                         ctx.addChangedRecord({{selection.name}}$normalizedID);
                     }
                     this$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$raw;
@@ -324,8 +332,8 @@ import 'package:collection/collection.dart';
     return identical(this, other) ||
     (other is {{ typename }} &&
     {% for selection in selections -%}
-        {% set selection_name = selection.name %}
-        {{ _equality_comparison_macro(selection_name, selection, "other") }} {{ "&&"|if_not_last(loop.last) }}
+        {% set other_selection %}other.{{selection.name}}{% endset -%}
+        {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&"|if_not_last(loop.last) }}
     {% endfor %}
     );
     }
