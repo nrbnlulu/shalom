@@ -58,44 +58,38 @@ fn parse_object_selection(
                 let args: Vec<crate::operation::types::FieldArgument> = field
                     .arguments
                     .iter()
-                    .map(|arg| {
-                        return match arg.value.as_ref() {
-                            apollo_executable::Value::Variable(var_name) => {
-                                let op_var = op_ctx.get_variable(var_name).unwrap().clone();
-                                
-                                let value = crate::operation::types::ArgumentValue::VariableUse {
-                                    name:var_name.to_string(),
-                                    is_maybe: op_var.is_maybe,
-                                };
-                                 FieldArgument {
-                                     name: arg.name.to_string(),
-                                     value,
-                                     default_value: op_var.default_value.map(|v|v.to_string()),
-                                 }
-                            }
-                            _ => {
-                                
-                                let arg_def = field
-                                    .definition
-                                    .arguments
-                                    .iter()
-                                    .find(|a| a.name == arg.name);
+                    .map(|arg| match arg.value.as_ref() {
+                        apollo_executable::Value::Variable(var_name) => {
+                            let op_var = op_ctx.get_variable(var_name).unwrap().clone();
 
-                                let inline_val = crate::operation::types::ArgumentValue::InlineValue {
-                                    value: arg.value.to_string(),
-                                };
-                                FieldArgument {
-                                    name: arg.name.to_string(),
-                                    value: inline_val,
-                                    default_value: arg_def
-                                        .and_then(|def| def.default_value.as_ref().map(|v| v.to_string())),
-                                }
+                            let value = crate::operation::types::ArgumentValue::VariableUse {
+                                name: var_name.to_string(),
+                                is_maybe: op_var.is_maybe,
+                            };
+                            FieldArgument {
+                                name: arg.name.to_string(),
+                                value,
+                                default_value: op_var.default_value.map(|v| v.to_string()),
                             }
-                        };
-             
-            
-                     
-                      
+                        }
+                        _ => {
+                            let arg_def = field
+                                .definition
+                                .arguments
+                                .iter()
+                                .find(|a| a.name == arg.name);
+
+                            let inline_val = crate::operation::types::ArgumentValue::InlineValue {
+                                value: arg.value.to_string(),
+                            };
+                            FieldArgument {
+                                name: arg.name.to_string(),
+                                value: inline_val,
+                                default_value: arg_def.and_then(|def| {
+                                    def.default_value.as_ref().map(|v| v.to_string())
+                                }),
+                            }
+                        }
                     })
                     .collect();
                 let selection_common = SelectionCommon {
