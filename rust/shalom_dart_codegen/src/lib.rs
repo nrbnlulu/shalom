@@ -1,11 +1,9 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
 use log::info;
-use minijinja::{context, value::ViaDeserialize, Environment, Value};
+use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
-use shalom_core::context::ShalomGlobalContext;
-use shalom_core::operation::context::SharedOpCtx;
-use shalom_core::operation::types::{FullPathName, SelectionKind};
+use shalom_core::operation::types::SelectionKind;
 use shalom_core::{
     context::SharedShalomGlobalContext,
     operation::{
@@ -19,13 +17,11 @@ use shalom_core::{
     shalom_config::RuntimeSymbolDefinition,
 };
 
-use std::str::EncodeUtf16;
 use std::{
     collections::HashMap,
     fs,
     hash::{DefaultHasher, Hash, Hasher},
     path::{Path, PathBuf},
-    rc::Rc,
 };
 
 lazy_static! {
@@ -45,7 +41,7 @@ const LINE_ENDING: &str = "\n";
 
 mod ext_jinja_fns {
 
-    use shalom_core::{context::ShalomGlobalContext, schema::context::SharedSchemaContext};
+    use shalom_core::context::ShalomGlobalContext;
 
     use super::*;
     fn resolve_scalar_typename(
@@ -447,7 +443,7 @@ impl OperationEnv<'_> {
                 match selection.kind {
                     SelectionKind::Object(object_selection) => object_selection
                         .get_id_selection()
-                        .map(|v| minijinja::Value::from_serialize(v)),
+                        .map(minijinja::Value::from_serialize),
                     _ => None,
                 }
             },
@@ -494,7 +490,7 @@ fn generate_operations_file(
     operation: &OperationContext,
     additional_imports: HashMap<String, String>,
 ) -> anyhow::Result<()> {
-    let op_env = OperationEnv::new(&ctx, &operation)?;
+    let op_env = OperationEnv::new(ctx, operation)?;
 
     info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();

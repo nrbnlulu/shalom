@@ -15,6 +15,10 @@ tasks:
             - cd rust && cargo fmt
             - cd rust/shalom_dart_codegen/dart_tests && dart format ./test ./lib
             - dart format ./dart
+    fix:
+        cmds:
+            - cd rust && cargo fmt
+            - cd rust && cargo clippy --fix --allow-dirty
     lint:
         cmds:
             - cd rust && cargo fmt -- --check

@@ -75,7 +75,7 @@ fn parse_object_selection(
                             .arguments
                             .iter()
                             .find(|a| a.name == arg.name);
-                        let is_maybe = arg_def.map_or(false, |def| {
+                        let is_maybe = arg_def.is_some_and(|def| {
                             let is_optional = !def.ty.is_non_null();
                             is_optional && def.default_value.is_none()
                         });

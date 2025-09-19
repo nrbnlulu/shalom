@@ -3,7 +3,7 @@ use apollo_compiler::{validation::Valid, Node};
 use serde::{Serialize, Serializer};
 use std::fmt::Debug;
 use std::{
-    collections::{HashMap, HashSet},
+    collections::HashMap,
     sync::{Arc, Mutex, MutexGuard},
 };
 
@@ -191,12 +191,12 @@ impl SchemaContext {
     pub fn is_type_implementing_interface(&self, type_name: &str, interface_name: &str) -> bool {
         let types_ctx = self.types.lock().unwrap();
         if let Some(obj) = types_ctx.objects.get(type_name) {
-            self.check_implements_recursive(obj.as_ref(), interface_name, &types_ctx)
+            check_implements_recursive(obj.as_ref(), interface_name, &types_ctx)
         } else if let Some(iface) = types_ctx.interfaces.get(type_name) {
             if iface.name == interface_name {
                 true
             } else {
-                self.check_implements_recursive(iface.as_ref(), interface_name, &types_ctx)
+                check_implements_recursive(iface.as_ref(), interface_name, &types_ctx)
             }
         } else {
             false
@@ -206,27 +206,26 @@ impl SchemaContext {
     pub fn is_type_implements_node(&self, type_name: &str) -> bool {
         self.is_type_implementing_interface(type_name, "Node")
     }
+}
 
-    fn check_implements_recursive<I: Implementor>(
-        &self,
-        implementor: &I,
-        target_interface: &str,
-        types_ctx: &SchemaTypesCtx,
-    ) -> bool {
-        if implementor
-            .implements_interfaces()
-            .contains(target_interface)
-        {
-            return true;
-        }
-        for iface_name in implementor.implements_interfaces() {
-            if let Some(iface) = types_ctx.interfaces.get(iface_name) {
-                if self.check_implements_recursive(iface.as_ref(), target_interface, types_ctx) {
-                    return true;
-                }
+fn check_implements_recursive<I: Implementor>(
+    implementor: &I,
+    target_interface: &str,
+    types_ctx: &SchemaTypesCtx,
+) -> bool {
+    if implementor
+        .implements_interfaces()
+        .contains(target_interface)
+    {
+        return true;
+    }
+    for iface_name in implementor.implements_interfaces() {
+        if let Some(iface) = types_ctx.interfaces.get(iface_name) {
+            if check_implements_recursive(iface.as_ref(), target_interface, types_ctx) {
+                return true;
             }
         }
-        false
     }
+    false
 }
 pub type SharedSchemaContext = Arc<SchemaContext>;

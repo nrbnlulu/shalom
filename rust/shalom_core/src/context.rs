@@ -36,11 +36,7 @@ impl ShalomGlobalContext {
     }
 
     pub fn get_operation(&self, name: &str) -> Option<SharedOpCtx> {
-        self.operations
-            .lock()
-            .unwrap()
-            .get(name)
-            .map(|op| op.clone())
+        self.operations.lock().unwrap().get(name).cloned()
     }
 
     pub fn operations(&self) -> Vec<(String, SharedOpCtx)> {

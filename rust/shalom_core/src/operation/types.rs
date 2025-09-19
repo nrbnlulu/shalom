@@ -165,8 +165,6 @@ pub struct ListSelection {
 
 pub type SharedListSelection = Rc<ListSelection>;
 
-struct VariableUse {}
-
 pub fn dart_type_for_scalar(scalar_name: &str) -> String {
     match scalar_name {
         "String" | "ID" => "String".to_string(),

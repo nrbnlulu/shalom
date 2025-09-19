@@ -7,7 +7,7 @@ import "__graphql__/GetListingNoPrice.shalom.dart";
 import "__graphql__/GetListingOpt.shalom.dart";
 
 void main() {
-    final listingData = {
+  final listingData = {
     "listing": {"id": "foo", "name": "video games", "price": 100},
   };
   final listingDataChangedPrice = {
@@ -25,7 +25,6 @@ void main() {
     });
 
     test('serialize', () {
-  
       final initial = GetListingResponse.fromResponse(listingData);
       final json = initial.toJson();
       expect(json, listingData);
@@ -37,9 +36,9 @@ void main() {
   final listingOptSome2ChangedPrice = {
     "listingOpt": {"id": "foo", "name": "video games", "price": 110},
   };
-  
+
   final dataNull = {"listingOpt": null};
-  
+
   group('simple optional object selection', () {
     group('deserialize', () {
       test('with value', () {
@@ -58,8 +57,6 @@ void main() {
         expect(result.listingOpt, null);
       });
     });
-    
-    
 
     group('serialize', () {
       test('with value', () {
@@ -75,7 +72,7 @@ void main() {
       });
     });
   });
-  
+
   group('cacheUpdate', () {
     test('null to some', () async {
       final ctx = ShalomCtx.withCapacity();
@@ -116,10 +113,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetListingOptResponse.fromResponse(
-        dataNull,
-        ctx: ctx,
-      );
+      final nextResult = GetListingOptResponse.fromResponse(dataNull, ctx: ctx);
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
@@ -150,19 +144,27 @@ void main() {
 
     test("some to some no overlapping deps", () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetListingNoPriceResponse.fromResponseImpl(listingData, ctx);
+      var (result, updateCtx) = GetListingNoPriceResponse.fromResponseImpl(
+        listingData,
+        ctx,
+      );
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
       sub.streamController.stream.listen((newCtx) {
         result = GetListingNoPriceResponse.fromCache(newCtx);
         hasChanged.complete(true);
       });
-      final _ = GetListingResponse.fromResponse(listingDataChangedPrice, ctx: ctx);
+      final _ = GetListingResponse.fromResponse(
+        listingDataChangedPrice,
+        ctx: ctx,
+      );
       // we don't expect any change as the price field is not part of the deps
       await Future.delayed(Duration(milliseconds: 500));
       expect(hasChanged.isCompleted, false);
-      expect(result, equals(GetListingNoPriceResponse.fromResponse(listingData)));
+      expect(
+        result,
+        equals(GetListingNoPriceResponse.fromResponse(listingData)),
+      );
     });
-
   });
 }
