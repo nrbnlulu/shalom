@@ -83,6 +83,9 @@ class None<T> implements Maybe<T> {
   }
 
   @override
+  String toString() => "None";
+
+  @override
   int get hashCode => runtimeType.hashCode;
 }
 
@@ -108,6 +111,8 @@ class Some<T> implements Maybe<T> {
     return false;
   }
 
+  @override
+  String toString() => "Some(${value.toString()})";
   @override
   int get hashCode => runtimeType.hashCode ^ value.hashCode;
 }

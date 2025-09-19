@@ -213,10 +213,10 @@ void main() {
         final variablesSomeValue = filterUsersVariables(
           filter: Some(UserFilter(nameLike: "Alice")),
         );
-        final resultSomeValue = filterUsersResponse.fromResponse(
+        final (resultSomeValue, updateCtx) = filterUsersResponse.fromResponseImpl(
           userData,
-          ctx: ctx,
-          variables: variablesSomeValue,
+          ctx,
+           variablesSomeValue,
         );
         expect(resultSomeValue.userFilterMaybe.id, "user1");
 

@@ -11,8 +11,10 @@
 {# Macro to generate cache key with arguments #}
 {% macro generate_cache_key_with_args(field_name, arguments) -%}
 {% if arguments | length > 0 -%}
+TODO rewrite this correctly
 """{{field_name}}(
     {%- for arg in arguments -%}
+        
     {%- if arg.value.VariableUse -%}
         {% if op_variables_exist -%}
             {%- set var_name = arg.value.VariableUse.name -%}
