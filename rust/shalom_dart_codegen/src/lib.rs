@@ -136,7 +136,7 @@ mod ext_jinja_fns {
         let is_optional = resolved_type.is_optional;
         let res = resolve_schema_typename(&resolved_type.ty, is_optional, ctx);
         if is_optional && field.default_value.is_none() {
-            format!("Option<{res}>")
+            format!("Maybe<{res}>")
         } else {
             res
         }

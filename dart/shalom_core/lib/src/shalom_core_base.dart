@@ -59,13 +59,13 @@ abstract class Requestable {
   Request toRequest();
 }
 
-sealed class Option<T> {
+sealed class Maybe<T> {
   T? some();
   bool isSome();
   void inspect(void Function(T));
 }
 
-class None<T> implements Option<T> {
+class None<T> implements Maybe<T> {
   const None();
 
   @override
@@ -86,7 +86,7 @@ class None<T> implements Option<T> {
   int get hashCode => runtimeType.hashCode;
 }
 
-class Some<T> implements Option<T> {
+class Some<T> implements Maybe<T> {
   final T value;
 
   const Some(this.value);

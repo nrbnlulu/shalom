@@ -58,6 +58,9 @@ impl OperationContext {
     pub fn add_variable(&mut self, name: String, variable: InputFieldDefinition) {
         self.variables.entry(name).or_insert(variable);
     }
+    pub fn get_variable(&self, name: &str) -> Option<&InputFieldDefinition> {
+        self.variables.get(name)
+    }
 }
 
 pub type SharedOpCtx = Rc<OperationContext>;

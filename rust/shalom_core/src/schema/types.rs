@@ -333,5 +333,8 @@ pub struct SchemaObjectFieldDefinition {
 pub struct InputFieldDefinition {
     pub is_optional: bool,
     pub default_value: Option<Node<Value>>,
+    /// nullable fields with no default values are maybe types
+    /// and if not explicitly set they wouldn't be included in the request.
+    pub is_maybe: bool,
     pub common: SchemaFieldCommon,
 }

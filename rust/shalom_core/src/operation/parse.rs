@@ -8,7 +8,7 @@ use apollo_compiler::{
 use log::{info, trace};
 
 use crate::context::SharedShalomGlobalContext;
-use crate::operation::types::{ObjectSelection, SelectionCommon, SelectionKind};
+use crate::operation::types::{FieldArgument, ObjectSelection, SelectionCommon, SelectionKind};
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
 };
@@ -59,36 +59,43 @@ fn parse_object_selection(
                     .arguments
                     .iter()
                     .map(|arg| {
-                        let value = match arg.value.as_ref() {
+                        return match arg.value.as_ref() {
                             apollo_executable::Value::Variable(var_name) => {
-                                crate::operation::types::ArgumentValue::VariableUse {
-                                    name: var_name.to_string(),
+                                let op_var = op_ctx.get_variable(var_name).unwrap().clone();
+                                
+                                let value = crate::operation::types::ArgumentValue::VariableUse {
+                                    name:var_name.to_string(),
+                                    is_maybe: op_var.is_maybe,
+                                };
+                                 FieldArgument {
+                                     name: arg.name.to_string(),
+                                     value,
+                                     default_value: op_var.default_value.map(|v|v.to_string()),
+                                 }
+                            }
+                            _ => {
+                                
+                                let arg_def = field
+                                    .definition
+                                    .arguments
+                                    .iter()
+                                    .find(|a| a.name == arg.name);
+
+                                let inline_val = crate::operation::types::ArgumentValue::InlineValue {
+                                    value: arg.value.to_string(),
+                                };
+                                FieldArgument {
+                                    name: arg.name.to_string(),
+                                    value: inline_val,
+                                    default_value: arg_def
+                                        .and_then(|def| def.default_value.as_ref().map(|v| v.to_string())),
                                 }
                             }
-                            _ => crate::operation::types::ArgumentValue::InlineValue {
-                                value: arg.value.to_string(),
-                            },
                         };
-                        // Get argument definition from schema to determine if it's a Maybe type
-                        let arg_def = field
-                            .definition
-                            .arguments
-                            .iter()
-                            .find(|a| a.name == arg.name);
-                        let is_maybe = arg_def.is_some_and(|def| {
-                            let is_optional = !def.ty.is_non_null();
-                            is_optional && def.default_value.is_none()
-                        });
-
-                        let default_value = arg_def
-                            .and_then(|def| def.default_value.as_ref().map(|v| v.to_string()));
-
-                        crate::operation::types::FieldArgument {
-                            name: arg.name.to_string(),
-                            value,
-                            is_maybe,
-                            default_value,
-                        }
+             
+            
+                     
+                      
                     })
                     .collect();
                 let selection_common = SelectionCommon {
@@ -214,6 +221,7 @@ fn parse_operation(
         let field_definition = SchemaFieldCommon::new(name.clone(), &raw_type, None);
         let input_definition = InputFieldDefinition {
             common: field_definition,
+            is_maybe: is_optional && variable.default_value.is_none(),
             is_optional,
             default_value: variable.default_value.clone(),
         };

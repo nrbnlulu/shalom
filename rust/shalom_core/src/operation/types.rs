@@ -24,14 +24,13 @@ pub struct SelectionCommon {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ArgumentValue {
     // usage of operation variable
-    VariableUse { name: String },
+    VariableUse { name: String, is_maybe: bool },
     InlineValue { value: String },
 }
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FieldArgument {
     pub name: String,
     pub value: ArgumentValue,
-    pub is_maybe: bool,
     pub default_value: Option<String>,
 }
 
