@@ -30,7 +30,7 @@ import '{{ path }}' as {{ namespace_alias }};
                   case '{{ name }}':
                     return {{ typename }}.{{name}};                   {% endfor %}
                   default:
-                      throw ArgumentError.value(name, 'name', 'No Status enum member with this name');
+                      throw ArgumentError.value(name, 'name', 'No enum member with this name');
               }
           }
 

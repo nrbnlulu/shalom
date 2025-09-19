@@ -10,26 +10,26 @@ void main() {
   group('List of input enums', () {
     test('enumListRequired', () {
       final variables = InputListEnumRequiredVariables(
-        foo: [Gender.MALE, Gender.FEMALE, Gender.OTHER],
+        foo: [Gender.MALE, Gender.FEMALE, Gender.ANDRIGONOS],
       );
       expect(variables.toJson(), {
-        'foo': ['MALE', 'FEMALE', 'OTHER'],
+        'foo': ['MALE', 'FEMALE', 'ANDRIGONOS'],
       });
 
       final newVariables = variables.updateWith(
-        foo: [Gender.FEMALE, Gender.OTHER],
+        foo: [Gender.FEMALE, Gender.ANDRIGONOS],
       );
       expect(newVariables.toJson(), {
-        'foo': ['FEMALE', 'OTHER'],
+        'foo': ['FEMALE', 'ANDRIGONOS'],
       });
 
-      expect(newVariables.foo, [Gender.FEMALE, Gender.OTHER]);
+      expect(newVariables.foo, [Gender.FEMALE, Gender.ANDRIGONOS]);
       expect(newVariables == variables, false);
 
       final request =
           RequestInputListEnumRequired(variables: variables).toRequest();
       expect(request.variables, {
-        'foo': ['MALE', 'FEMALE', 'OTHER'],
+        'foo': ['MALE', 'FEMALE', 'ANDRIGONOS'],
       });
     });
 
@@ -81,25 +81,25 @@ void main() {
       final variables = InputListEnumInsideInputObjectVariables(
         input: ObjectWithListOfInput(
           genders: [Gender.MALE, Gender.FEMALE],
-          optionalGenders: Some([Gender.OTHER]),
+          optionalGenders: Some([Gender.ANDRIGONOS]),
         ),
       );
       expect(variables.toJson(), {
         'input': {
           'genders': ['MALE', 'FEMALE'],
-          'optionalGenders': ['OTHER'],
+          'optionalGenders': ['ANDRIGONOS'],
         },
       });
 
       final updatedVariables = variables.updateWith(
         input: variables.input.updateWith(
-          genders: [Gender.FEMALE, Gender.OTHER],
+          genders: [Gender.FEMALE, Gender.ANDRIGONOS],
           optionalGenders: Some(Some(null)),
         ),
       );
       expect(updatedVariables.toJson(), {
         'input': {
-          'genders': ['FEMALE', 'OTHER'],
+          'genders': ['FEMALE', 'ANDRIGONOS'],
           'optionalGenders': null,
         },
       });
@@ -120,7 +120,7 @@ void main() {
       expect(request.variables, {
         'input': {
           'genders': ['MALE', 'FEMALE'],
-          'optionalGenders': ['OTHER'],
+          'optionalGenders': ['ANDRIGONOS'],
         },
       });
     });

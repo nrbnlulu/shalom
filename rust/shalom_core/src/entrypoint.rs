@@ -5,6 +5,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use log::error;
+
 use crate::{
     context::{
         default_config, load_config_from_yaml_str, ShalomGlobalContext, SharedShalomGlobalContext,
@@ -59,7 +61,7 @@ pub fn parse_document(
     crate::operation::parse::parse_document(global_ctx, operation, source_path)
 }
 
-pub fn parse_directory(pwd: &Path) -> anyhow::Result<SharedShalomGlobalContext> {
+pub fn parse_directory(pwd: &Path, strict: bool) -> anyhow::Result<SharedShalomGlobalContext> {
     let files = find_graphql_files(pwd);
     let schema_raw = fs::read_to_string(&files.schema)?;
     let schema_parsed = parse_schema(&schema_raw)?;
@@ -88,8 +90,13 @@ pub fn parse_directory(pwd: &Path) -> anyhow::Result<SharedShalomGlobalContext> 
 
     for operation in files.operations {
         let content = fs::read_to_string(&operation)?;
-        let parsed = parse_document(&global_ctx, &content, &operation)?;
-        global_ctx.register_operations(parsed);
+        if let Err(err) = parse_document(&global_ctx, &content, &operation)
+            .map(|parsed| global_ctx.register_operations(parsed)){
+                if strict{
+                    return Err(err);
+                }
+                error!("Failed to parse document: {}", err);
+            }
     }
 
     Ok(global_ctx)

@@ -1,7 +1,7 @@
 enum Gender {
     MALE
     FEMALE
-    OTHER
+    ANDRIGONOS
 }
 
 input ObjectWithListOfInput {
@@ -14,9 +14,9 @@ type Query {
 }
 
 type Mutation {
-    InputListEnumRequired(foo: [Gender!]!): String
-    InputListEnumOptional(foo: [Gender!]): String
-    InputListEnumOptionalWithDefault(foo: [Gender!] = null): String
-    InputListEnumMaybe(foo: [Gender!]): String
-    InputListEnumInsideInputObject(input: ObjectWithListOfInput!): String
+    inputListEnumRequired(foo: [Gender!]!): String
+    inputListEnumOptional(foo: [Gender!]): String
+    inputListEnumOptionalWithDefault(foo: [Gender!] = null): String
+    inputListEnumMaybe(foo: [Gender!]): String
+    inputListEnumInsideInputObject(input: ObjectWithListOfInput!): String
 }

@@ -233,9 +233,14 @@ fn parse_operation(
             .as_field()
             .unwrap()
     };
-
+    let first_selection_name = first_selection.name.to_string();
+    if first_selection_name == operation_name{
+        return Err(
+            anyhow::anyhow!("{operation_name} operation can't have the same name as its first field due to namespacing issues")
+        );
+    }
     let selection_common = SelectionCommon {
-        name: first_selection.name.to_string(),
+        name: first_selection_name,
         description: None,
     };
     let root_type = parse_object_selection(

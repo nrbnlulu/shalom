@@ -1,6 +1,6 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
-use log::info;
+use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use shalom_core::operation::types::SelectionKind;
@@ -514,9 +514,9 @@ fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContex
     info!("Generated {}", generation_target.display());
 }
 
-pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
+pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
     info!("codegen started in working directory {}", pwd.display());
-    let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
+    let ctx = shalom_core::entrypoint::parse_directory(pwd, strict)?;
     let template_env = SchemaEnv::new(&ctx)?;
 
     let existing_op_names =
@@ -559,7 +559,13 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
         .map(|(k, v)| (k.to_string_lossy().to_string(), v))
         .collect();
     for (name, operation) in ctx.operations() {
-        generate_operations_file(&ctx, &name, &operation, additional_imports.clone())?;
+        let res = generate_operations_file(&ctx, &name, &operation, additional_imports.clone());
+        if let Err(err) = res {
+            if strict{
+                return Err(err);
+            } 
+            error!("Failed to generate operation '{}' due to: {}", name, err);
+        }
     }
 
     Ok(())
