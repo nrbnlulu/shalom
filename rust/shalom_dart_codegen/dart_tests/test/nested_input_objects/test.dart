@@ -1,12 +1,6 @@
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
 import '__graphql__/GetSpecificOrder.shalom.dart';
-import '__graphql__/OrderRecursive.shalom.dart'
-    show
-        RequestOrderRecursive,
-        OrderRecursiveVariables,
-        OrderRecursive_orderRecursive,
-        OrderRecursiveResponse;
+
 import '__graphql__/schema.shalom.dart';
 
 void main() {

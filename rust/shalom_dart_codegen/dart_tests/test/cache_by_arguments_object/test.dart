@@ -131,7 +131,6 @@ void main() {
     test('equals comparison works with argument-based cache keys', () {
       final variables1 = getUserVariables(id: "user1");
       final variables2 = getUserVariables(id: "user1"); // Same ID
-      final variables3 = getUserVariables(id: "user2"); // Different ID
 
       final userData = {
         "user": {
@@ -149,10 +148,6 @@ void main() {
       final result2 = getUserResponse.fromResponse(
         userData,
         variables: variables2,
-      );
-      final result3 = getUserResponse.fromResponse(
-        userData,
-        variables: variables3,
       );
 
       expect(result1, equals(result2)); // Same data, same variables

@@ -189,7 +189,6 @@ import 'package:collection/collection.dart';
             {% endif -%}
             ){
         {% if is_root_selection -%}
-            final String this$fieldName = "{{selection_object.name}}";
             final String this$normalizedID = "ROOT_{{OP_TYPE}}";
             final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");
         {% else %}

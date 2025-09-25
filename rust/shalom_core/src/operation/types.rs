@@ -3,7 +3,10 @@ use std::{cell::RefCell, rc::Rc};
 use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
-use crate::{operation::context::OperationVariable, schema::types::{EnumType, ScalarType}};
+use crate::{
+    operation::context::OperationVariable,
+    schema::types::{EnumType, ScalarType},
+};
 
 /// the name of i.e object in a graphql query based on the parent fields.
 pub type FullPathName = String;

@@ -14,7 +14,7 @@ class LruCache<K, V> {
       );
 
   V? get(K key) => _cache[key];
-  
+
   void put(K key, V value) {
     if (_cache.containsKey(key)) {
       _cache.remove(key);
@@ -27,8 +27,8 @@ class LruCache<K, V> {
   void clear() {
     _cache.clear();
   }
-  
+
   bool containsKey(K key) => _cache.containsKey(key);
-  
+
   int get size => _cache.length;
 }
