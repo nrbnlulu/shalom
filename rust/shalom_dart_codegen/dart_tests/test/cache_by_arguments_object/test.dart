@@ -234,14 +234,14 @@ void main() {
           reason: "Should have None() cache key",
         );
         expect(
-          keys.any((k) => k.toString().contains("filter:Some(null)")),
+          keys.any((k) => k.toString().contains("filter:null")),
           isTrue,
           reason: "Should have Some(null) cache key",
         );
         expect(
           keys.any(
             (k) => k.toString().contains(
-                  "filter:Some({age: null, id: null, nameLike: Alice})",
+                  "filter:{age: null, id: null, nameLike: Alice}",
                 ),
           ),
           isTrue,
