@@ -1,6 +1,6 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
-use log::info;
+use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use shalom_core::operation::types::SelectionKind;
@@ -22,12 +22,7 @@ use std::{
     fs,
     hash::{DefaultHasher, Hash, Hasher},
     path::{Path, PathBuf},
-    rc::Rc,
 };
-
-struct TemplateEnv<'a> {
-    env: Environment<'a>,
-}
 
 lazy_static! {
     static ref DEFAULT_SCALARS_MAP: HashMap<String, String> = HashMap::from([
@@ -141,7 +136,7 @@ mod ext_jinja_fns {
         let is_optional = resolved_type.is_optional;
         let res = resolve_schema_typename(&resolved_type.ty, is_optional, ctx);
         if is_optional && field.default_value.is_none() {
-            format!("Option<{res}>")
+            format!("Maybe<{res}>")
         } else {
             res
         }
@@ -233,6 +228,15 @@ mod ext_jinja_fns {
     pub fn dart_type_for_scalar_name(scalar_name: &str) -> String {
         dart_type_for_scalar(scalar_name)
     }
+
+    pub fn is_type_implementing_interface(
+        ctx: &SharedShalomGlobalContext,
+        type_name: &str,
+        interface_name: &str,
+    ) -> bool {
+        ctx.schema_ctx
+            .is_type_implementing_interface(type_name, interface_name)
+    }
 }
 
 /// takes a number and returns itself as if the abc was 123, i.e 143 would be "adc"
@@ -269,78 +273,116 @@ impl SymbolName for RuntimeSymbolDefinition {
     }
 }
 
-impl TemplateEnv<'_> {
-    fn new(ctx: &SharedShalomGlobalContext) -> Self {
+struct SchemaEnv<'a> {
+    env: Environment<'a>,
+}
+
+struct OperationEnv<'a> {
+    env: Environment<'a>,
+}
+// TODO: might not be good to create an environment for every operation. as it will recreate templates.
+fn register_default_template_fns<'a>(
+    env: &mut Environment<'a>,
+    ctx: &SharedShalomGlobalContext,
+) -> anyhow::Result<()> {
+    env.set_undefined_behavior(minijinja::UndefinedBehavior::Strict);
+    env.set_debug(true);
+    env.add_template(
+        "operation",
+        include_str!("../templates/operation.dart.jinja"),
+    )
+    .unwrap();
+
+    env.add_template("schema", include_str!("../templates/schema.dart.jinja"))?;
+    env.add_template("macros", include_str!("../templates/macros.dart.jinja"))?;
+
+    let ctx_clone = ctx.clone();
+    env.add_function("type_name_for_selection", move |a: _| {
+        ext_jinja_fns::type_name_for_selection(&ctx_clone, a)
+    });
+
+    let ctx_clone = ctx.clone();
+    env.add_function("type_name_for_input_field", move |a: _| {
+        ext_jinja_fns::type_name_for_input_field(&ctx_clone, a)
+    });
+
+    let schema_ctx_clone = ctx.schema_ctx.clone();
+    env.add_function("parse_field_default_value", move |a: _| {
+        ext_jinja_fns::parse_field_default_value(&schema_ctx_clone, a)
+    });
+
+    let schema_ctx_clone = ctx.schema_ctx.clone();
+    env.add_function("resolve_field_type", move |a: _| {
+        ext_jinja_fns::resolve_field_type(&schema_ctx_clone, a)
+    });
+
+    let ctx_clone = ctx.clone();
+    env.add_function("custom_scalar_impl_fullname", move |a: _| {
+        ext_jinja_fns::custom_scalar_impl_fullname(&ctx_clone, a)
+    });
+
+    let ctx_clone = ctx.clone();
+    env.add_function("is_custom_scalar", move |name: &str| {
+        ext_jinja_fns::is_custom_scalar(&ctx_clone, name)
+    });
+
+    env.add_function(
+        "dart_type_for_scalar_name",
+        ext_jinja_fns::dart_type_for_scalar_name,
+    );
+
+    env.add_function("docstring", ext_jinja_fns::docstring);
+    env.add_function("value_or_last", ext_jinja_fns::value_or_last);
+    let ctx_clone = ctx.clone();
+    env.add_function(
+        "is_type_implementing_interface",
+        move |type_name: &str, interface_name: &str| {
+            ext_jinja_fns::is_type_implementing_interface(&ctx_clone, type_name, interface_name)
+        },
+    );
+
+    let schema_ctx = ctx.schema_ctx.clone();
+    env.add_function("is_type_implements_node", move |type_name: &str| {
+        schema_ctx.is_type_implements_node(type_name)
+    });
+
+    env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
+    env.add_filter("insert_if", |condition: bool, val: &str| {
+        if condition {
+            Some(val.to_string())
+        } else {
+            None
+        }
+    });
+
+    env.add_function(
+        "get_field_name_with_args",
+        |name: &str, args: ViaDeserialize<Vec<shalom_core::operation::types::FieldArgument>>| {
+            get_field_name_with_args(name, &args.0)
+        },
+    );
+
+    Ok(())
+}
+
+fn get_field_name_with_args(
+    field_name: &str,
+    args: &[shalom_core::operation::types::FieldArgument],
+) -> String {
+    if args.is_empty() {
+        field_name.to_string()
+    } else {
+        format!("{}_with_args", field_name)
+    }
+}
+
+impl SchemaEnv<'_> {
+    fn new(ctx: &SharedShalomGlobalContext) -> anyhow::Result<Self> {
         let mut env = Environment::new();
-        env.set_undefined_behavior(minijinja::UndefinedBehavior::Strict);
-        env.set_debug(true);
-        env.add_template(
-            "operation",
-            include_str!("../templates/operation.dart.jinja"),
-        )
-        .unwrap();
-        env.add_template("schema", include_str!("../templates/schema.dart.jinja"))
-            .unwrap();
-        env.add_template("macros", include_str!("../templates/macros.dart.jinja"))
-            .unwrap();
-
-        let ctx_clone = ctx.clone();
-        env.add_function("type_name_for_selection", move |a: _| {
-            ext_jinja_fns::type_name_for_selection(&ctx_clone, a)
-        });
-
-        let ctx_clone = ctx.clone();
-        env.add_function("type_name_for_input_field", move |a: _| {
-            ext_jinja_fns::type_name_for_input_field(&ctx_clone, a)
-        });
-
-        let schema_ctx_clone = ctx.schema_ctx.clone();
-        env.add_function("parse_field_default_value", move |a: _| {
-            ext_jinja_fns::parse_field_default_value(&schema_ctx_clone, a)
-        });
-
-        let schema_ctx_clone = ctx.schema_ctx.clone();
-        env.add_function("resolve_field_type", move |a: _| {
-            ext_jinja_fns::resolve_field_type(&schema_ctx_clone, a)
-        });
-
-        let ctx_clone = ctx.clone();
-        env.add_function("custom_scalar_impl_fullname", move |a: _| {
-            ext_jinja_fns::custom_scalar_impl_fullname(&ctx_clone, a)
-        });
-
-        let ctx_clone = ctx.clone();
-        env.add_function("is_custom_scalar", move |name: &str| {
-            ext_jinja_fns::is_custom_scalar(&ctx_clone, name)
-        });
-
-        env.add_function(
-            "dart_type_for_scalar_name",
-            ext_jinja_fns::dart_type_for_scalar_name,
-        );
-
-        env.add_function("docstring", ext_jinja_fns::docstring);
-        env.add_function("value_or_last", ext_jinja_fns::value_or_last);
-        env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
-
-        Self { env }
+        register_default_template_fns(&mut env, ctx)?;
+        Ok(Self { env })
     }
 
-    fn render_operation<S: Serialize, T: Serialize>(
-        &self,
-        operations_ctx: S,
-        schema_ctx: T,
-        extra_imports: HashMap<String, String>,
-    ) -> String {
-        let template = self.env.get_template("operation").unwrap();
-        let mut context = HashMap::new();
-
-        context.insert("schema", context! { context => schema_ctx });
-        context.insert("operation", context! { context => operations_ctx });
-        context.insert("extra_imports", minijinja::Value::from(extra_imports));
-
-        template.render(&context).unwrap()
-    }
     fn render_schema(&self, ctx: &SharedShalomGlobalContext) -> String {
         let template = self.env.get_template("schema").unwrap();
 
@@ -368,6 +410,65 @@ impl TemplateEnv<'_> {
     }
 }
 
+impl OperationEnv<'_> {
+    fn new(ctx: &SharedShalomGlobalContext, op_ctx: &OperationContext) -> anyhow::Result<Self> {
+        let mut env = Environment::new();
+        register_default_template_fns(&mut env, ctx)?;
+        let ctx_clone = ctx.clone();
+        let op_name = op_ctx.get_operation_name().to_string();
+
+        env.add_function("is_type_implements_node", move |full_name: &str| {
+            let op = ctx_clone.get_operation(&op_name).unwrap();
+            let selection = op
+                .get_selection(&full_name.to_string())
+                .ok_or(anyhow::anyhow!("Type {full_name} not found in {op_name}"))
+                .unwrap();
+            match selection.kind {
+                SelectionKind::Object(object_selection) => ctx_clone
+                    .schema_ctx
+                    .is_type_implements_node(&object_selection.concrete_typename),
+                _ => false,
+            }
+        });
+        let op_name = op_ctx.get_operation_name().to_string();
+        let ctx_clone = ctx.clone();
+        env.add_function(
+            "get_id_selection",
+            move |full_name: &str| -> Option<minijinja::Value> {
+                let selection = ctx_clone
+                    .get_operation(&op_name)
+                    .unwrap()
+                    .get_selection(&full_name.to_string())
+                    .unwrap();
+                match selection.kind {
+                    SelectionKind::Object(object_selection) => object_selection
+                        .get_id_selection()
+                        .map(minijinja::Value::from_serialize),
+                    _ => None,
+                }
+            },
+        );
+
+        Ok(OperationEnv { env })
+    }
+
+    fn render_operation<S: Serialize, T: Serialize>(
+        &self,
+        operations_ctx: S,
+        schema_ctx: T,
+        extra_imports: HashMap<String, String>,
+    ) -> String {
+        let template = self.env.get_template("operation").unwrap();
+        let mut context = HashMap::new();
+
+        context.insert("schema", context! { context => schema_ctx });
+        context.insert("operation", context! { context => operations_ctx });
+        context.insert("extra_imports", minijinja::Value::from(extra_imports));
+
+        template.render(&context).unwrap()
+    }
+}
+
 fn create_dir_if_not_exists(path: &Path) {
     if !path.exists() {
         fs::create_dir_all(path).unwrap();
@@ -384,23 +485,25 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
 }
 
 fn generate_operations_file(
-    template_env: &TemplateEnv,
     ctx: &SharedShalomGlobalContext,
     name: &str,
-    operation: Rc<OperationContext>,
+    operation: &OperationContext,
     additional_imports: HashMap<String, String>,
-) {
+) -> anyhow::Result<()> {
+    let op_env = OperationEnv::new(ctx, operation)?;
+
     info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();
 
     let rendered_content =
-        template_env.render_operation(operation, ctx.schema_ctx.clone(), additional_imports);
+        op_env.render_operation(operation, ctx.schema_ctx.clone(), additional_imports);
     let generation_target = get_generation_path_for_operation(&operation_file_path, name);
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
+    Ok(())
 }
 
-fn generate_schema_file(template_env: &TemplateEnv, ctx: &SharedShalomGlobalContext, path: &Path) {
+fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContext, path: &Path) {
     info!("rendering schema file");
 
     let rendered_content = template_env.render_schema(ctx);
@@ -411,10 +514,10 @@ fn generate_schema_file(template_env: &TemplateEnv, ctx: &SharedShalomGlobalCont
     info!("Generated {}", generation_target.display());
 }
 
-pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
+pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
     info!("codegen started in working directory {}", pwd.display());
-    let ctx = shalom_core::entrypoint::parse_directory(pwd)?;
-    let template_env = TemplateEnv::new(&ctx);
+    let ctx = shalom_core::entrypoint::parse_directory(pwd, strict)?;
+    let template_env = SchemaEnv::new(&ctx)?;
 
     let existing_op_names =
         glob::glob(pwd.join(format!("**/*.{}", END_OF_FILE)).to_str().unwrap())?;
@@ -456,13 +559,13 @@ pub fn codegen_entry_point(pwd: &Path) -> Result<()> {
         .map(|(k, v)| (k.to_string_lossy().to_string(), v))
         .collect();
     for (name, operation) in ctx.operations() {
-        generate_operations_file(
-            &template_env,
-            &ctx,
-            &name,
-            operation,
-            additional_imports.clone(),
-        );
+        let res = generate_operations_file(&ctx, &name, &operation, additional_imports.clone());
+        if let Err(err) = res {
+            if strict {
+                return Err(err);
+            }
+            error!("Failed to generate operation '{}' due to: {}", name, err);
+        }
     }
 
     Ok(())

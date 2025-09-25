@@ -1,0 +1,18 @@
+input UserFilter {
+  nameLike: String = null
+  age: Int = null
+  id: ID = null
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  age: Int
+}
+
+type Query {
+  userFilterMaybe(filter: UserFilter): User!
+  userFilterNullable(filter: UserFilter = null): User
+  user(id: ID!): User
+}

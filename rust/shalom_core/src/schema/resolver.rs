@@ -2,8 +2,8 @@ use crate::schema::types::SchemaObjectFieldDefinition;
 
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{
-    EnumType, EnumValueDefinition, GraphQLAny, InputFieldDefinition, InputObjectType, ObjectType,
-    ScalarType, SchemaFieldCommon,
+    EnumType, EnumValueDefinition, GraphQLAny, InputFieldDefinition, InputObjectType,
+    InterfaceType, ObjectType, ScalarType, SchemaFieldCommon, UnionType,
 };
 use anyhow::Result;
 use apollo_compiler::{self};
@@ -70,11 +70,12 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
             apollo_schema::ExtendedType::InputObject(input) => {
                 resolve_input(&ctx, name.to_string(), input);
             }
-            _ => todo!(
-                "Unsupported type in schema {:?}: {:?}",
-                name.to_string(),
-                type_.name()
-            ),
+            apollo_schema::ExtendedType::Interface(interface) => {
+                resolve_interface(ctx.clone(), name.to_string(), interface.clone());
+            }
+            apollo_schema::ExtendedType::Union(union_) => {
+                resolve_union(ctx.clone(), name.to_string(), union_.clone());
+            }
         }
     }
     Ok(ctx)
@@ -121,13 +122,17 @@ fn resolve_object(
             },
         );
     }
-    #[allow(clippy::mutable_key_type)]
     let description = origin.description.as_ref().map(|v| v.to_string());
+    let implements_interfaces = origin
+        .implements_interfaces
+        .iter()
+        .map(|iface| iface.to_string())
+        .collect::<HashSet<_>>();
     let object = Node::new(ObjectType {
         name: name.clone(),
         description,
         fields,
-        implements_interfaces: HashSet::new(),
+        implements_interfaces,
     });
     context.add_object(name.clone(), object).unwrap();
 }
@@ -170,6 +175,7 @@ fn resolve_input(
         let field_definition = SchemaFieldCommon::new(name.clone(), &field.ty, description);
         let input_field_definition = InputFieldDefinition {
             common: field_definition,
+            is_maybe: !is_optional && default_value.is_none(),
             is_optional,
             default_value,
         };
@@ -182,6 +188,58 @@ fn resolve_input(
         fields,
     };
     context.add_input(name, Node::new(input_object)).unwrap();
+}
+
+fn resolve_interface(
+    context: SharedSchemaContext,
+    name: String,
+    origin: apollo_compiler::Node<apollo_schema::InterfaceType>,
+) {
+    if context.get_type(&name).is_some() {
+        return;
+    }
+    let mut fields = HashSet::new();
+    for (name, field) in origin.fields.iter() {
+        let name = name.to_string();
+        let description = field.description.as_ref().map(|v| v.to_string());
+        let field_definition = SchemaFieldCommon::new(name.clone(), &field.ty, description);
+        fields.insert(field_definition);
+    }
+    let description = origin.description.as_ref().map(|v| v.to_string());
+    let implements_interfaces = origin
+        .implements_interfaces
+        .iter()
+        .map(|iface| iface.to_string())
+        .collect::<HashSet<_>>();
+    let interface = Node::new(InterfaceType {
+        name: name.clone(),
+        description,
+        fields,
+        implements_interfaces,
+    });
+    context.add_interface(name.clone(), interface).unwrap();
+}
+
+fn resolve_union(
+    context: SharedSchemaContext,
+    name: String,
+    origin: apollo_compiler::Node<apollo_schema::UnionType>,
+) {
+    if context.get_type(&name).is_some() {
+        return;
+    }
+    let description = origin.description.as_ref().map(|v| v.to_string());
+    let members = origin
+        .members
+        .iter()
+        .map(|member| member.to_string())
+        .collect::<HashSet<_>>();
+    let union = Node::new(UnionType {
+        name: name.clone(),
+        description,
+        members,
+    });
+    context.add_union(name.clone(), union).unwrap();
 }
 
 #[cfg(test)]

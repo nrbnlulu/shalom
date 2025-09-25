@@ -3,7 +3,10 @@ use std::{cell::RefCell, rc::Rc};
 use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
-use crate::schema::types::{EnumType, ScalarType};
+use crate::{
+    operation::context::OperationVariable,
+    schema::types::{EnumType, ScalarType},
+};
 
 /// the name of i.e object in a graphql query based on the parent fields.
 pub type FullPathName = String;
@@ -21,6 +24,20 @@ pub struct SelectionCommon {
     pub name: String,
     pub description: Option<String>,
 }
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "kind")]
+pub enum ArgumentValue {
+    // usage of operation variable
+    VariableUse(OperationVariable),
+    InlineValue { value: String },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct FieldArgument {
+    pub name: String,
+    pub value: ArgumentValue,
+    pub default_value: Option<String>,
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Selection {
@@ -28,13 +45,19 @@ pub struct Selection {
     pub selection_common: SelectionCommon,
     #[serde(flatten)]
     pub kind: SelectionKind,
+    pub arguments: Vec<FieldArgument>,
 }
 
 impl Selection {
-    pub fn new(selection_common: SelectionCommon, kind: SelectionKind) -> Self {
+    pub fn new(
+        selection_common: SelectionCommon,
+        kind: SelectionKind,
+        arguments: Vec<FieldArgument>,
+    ) -> Self {
         Selection {
             selection_common,
             kind,
+            arguments,
         }
     }
 
@@ -86,6 +109,7 @@ impl ScalarSelection {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ObjectSelection {
     pub full_name: String,
+    pub concrete_typename: String,
     pub is_optional: bool,
     pub selections: RefCell<Vec<Selection>>,
 }
@@ -93,9 +117,14 @@ pub struct ObjectSelection {
 pub type SharedObjectSelection = Rc<ObjectSelection>;
 
 impl ObjectSelection {
-    pub fn new(is_optional: bool, full_name: String) -> SharedObjectSelection {
+    pub fn new(
+        is_optional: bool,
+        full_name: String,
+        concrete_typename: String,
+    ) -> SharedObjectSelection {
         let ret = ObjectSelection {
             full_name,
+            concrete_typename,
             is_optional,
             selections: RefCell::new(Vec::new()),
         };
@@ -104,6 +133,14 @@ impl ObjectSelection {
     }
     pub fn add_selection(&self, selection: Selection) {
         self.selections.borrow_mut().push(selection);
+    }
+
+    pub fn get_id_selection(&self) -> Option<Selection> {
+        self.selections
+            .borrow()
+            .iter()
+            .find(|s| s.self_selection_name().contains("id"))
+            .cloned()
     }
 }
 

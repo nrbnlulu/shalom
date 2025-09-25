@@ -1,4 +1,4 @@
-use crate::schema::types::GraphQLAny;
+use crate::schema::types::{GraphQLAny, Implementor};
 use apollo_compiler::{validation::Valid, Node};
 use serde::{Serialize, Serializer};
 use std::fmt::Debug;
@@ -7,7 +7,7 @@ use std::{
     sync::{Arc, Mutex, MutexGuard},
 };
 
-use super::types::{EnumType, InputObjectType, ObjectType, ScalarType};
+use super::types::{EnumType, InputObjectType, InterfaceType, ObjectType, ScalarType, UnionType};
 
 fn serialize_schema_types<S>(
     schema_types: &Mutex<SchemaTypesCtx>,
@@ -24,6 +24,8 @@ where
 pub(crate) struct SchemaTypesCtx {
     inputs: HashMap<String, Node<InputObjectType>>,
     objects: HashMap<String, Node<ObjectType>>,
+    interfaces: HashMap<String, Node<InterfaceType>>,
+    unions: HashMap<String, Node<UnionType>>,
     enums: HashMap<String, Node<EnumType>>,
     scalars: HashMap<String, Node<ScalarType>>,
 }
@@ -32,6 +34,8 @@ impl SchemaTypesCtx {
         Self {
             inputs: HashMap::new(),
             objects: HashMap::new(),
+            interfaces: HashMap::new(),
+            unions: HashMap::new(),
             enums: HashMap::new(),
             scalars: HashMap::new(),
         }
@@ -41,9 +45,11 @@ impl SchemaTypesCtx {
         match type_ {
             GraphQLAny::InputObject(v) => self.add_input(name, v.clone()),
             GraphQLAny::Object(v) => self.add_object(name, v.clone()),
+            GraphQLAny::Interface(v) => self.add_interface(name, v.clone()),
+            GraphQLAny::Union(v) => self.add_union(name, v.clone()),
             GraphQLAny::Enum(v) => self.add_enum(name, v.clone()),
             GraphQLAny::Scalar(v) => self.add_scalar(name, v.clone()),
-            _ => todo!("Unsupported type"),
+            GraphQLAny::List { .. } => todo!("List types not supported in add_any"),
         };
     }
 
@@ -53,6 +59,14 @@ impl SchemaTypesCtx {
 
     pub fn add_object(&mut self, name: String, type_: Node<ObjectType>) {
         self.objects.insert(name, type_);
+    }
+
+    pub fn add_interface(&mut self, name: String, type_: Node<InterfaceType>) {
+        self.interfaces.insert(name, type_);
+    }
+
+    pub fn add_union(&mut self, name: String, type_: Node<UnionType>) {
+        self.unions.insert(name, type_);
     }
 
     pub fn add_enum(&mut self, name: String, type_: Node<EnumType>) {
@@ -69,6 +83,12 @@ impl SchemaTypesCtx {
         }
         if let Some(v) = self.objects.get(name) {
             return Some(GraphQLAny::Object(v.clone()));
+        }
+        if let Some(v) = self.interfaces.get(name) {
+            return Some(GraphQLAny::Interface(v.clone()));
+        }
+        if let Some(v) = self.unions.get(name) {
+            return Some(GraphQLAny::Union(v.clone()));
         }
         if let Some(v) = self.enums.get(name) {
             return Some(GraphQLAny::Enum(v.clone()));
@@ -115,6 +135,16 @@ impl SchemaContext {
         types_ctx.scalars.get(name).cloned()
     }
 
+    pub fn get_interface(&self, name: &str) -> Option<Node<InterfaceType>> {
+        let types_ctx = self.types.lock().unwrap();
+        types_ctx.interfaces.get(name).cloned()
+    }
+
+    pub fn get_union(&self, name: &str) -> Option<Node<UnionType>> {
+        let types_ctx = self.types.lock().unwrap();
+        types_ctx.unions.get(name).cloned()
+    }
+
     pub fn add_object(&self, name: String, type_: Node<ObjectType>) -> anyhow::Result<()> {
         let mut types_ctx = self
             .types
@@ -145,5 +175,57 @@ impl SchemaContext {
         types_ctx.add_input(name, type_);
         Ok(())
     }
+
+    pub fn add_interface(&self, name: String, type_: Node<InterfaceType>) -> anyhow::Result<()> {
+        let mut types_ctx = self.get_types();
+        types_ctx.add_interface(name, type_);
+        Ok(())
+    }
+
+    pub fn add_union(&self, name: String, type_: Node<UnionType>) -> anyhow::Result<()> {
+        let mut types_ctx = self.get_types();
+        types_ctx.add_union(name, type_);
+        Ok(())
+    }
+
+    pub fn is_type_implementing_interface(&self, type_name: &str, interface_name: &str) -> bool {
+        let types_ctx = self.types.lock().unwrap();
+        if let Some(obj) = types_ctx.objects.get(type_name) {
+            check_implements_recursive(obj.as_ref(), interface_name, &types_ctx)
+        } else if let Some(iface) = types_ctx.interfaces.get(type_name) {
+            if iface.name == interface_name {
+                true
+            } else {
+                check_implements_recursive(iface.as_ref(), interface_name, &types_ctx)
+            }
+        } else {
+            false
+        }
+    }
+
+    pub fn is_type_implements_node(&self, type_name: &str) -> bool {
+        self.is_type_implementing_interface(type_name, "Node")
+    }
+}
+
+fn check_implements_recursive<I: Implementor>(
+    implementor: &I,
+    target_interface: &str,
+    types_ctx: &SchemaTypesCtx,
+) -> bool {
+    if implementor
+        .implements_interfaces()
+        .contains(target_interface)
+    {
+        return true;
+    }
+    for iface_name in implementor.implements_interfaces() {
+        if let Some(iface) = types_ctx.interfaces.get(iface_name) {
+            if check_implements_recursive(iface.as_ref(), target_interface, types_ctx) {
+                return true;
+            }
+        }
+    }
+    false
 }
 pub type SharedSchemaContext = Arc<SchemaContext>;

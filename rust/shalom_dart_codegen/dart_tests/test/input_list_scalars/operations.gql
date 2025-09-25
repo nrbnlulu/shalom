@@ -1,24 +1,23 @@
 
-mutation InputScalarListRequired($strings: [String!]!) {
+mutation InputScalarListRequiredMutation($strings: [String!]!) {
     InputScalarListRequired(strings: $strings) {
         success
     }
 }
 
-mutation InputScalarListMaybe($ints: [Int]) {
+mutation InputScalarListMaybeMutation($ints: [Int]) {
     InputScalarListMaybe(ints: $ints) {
         success
     }
 }
-mutation InputScalarListOptional($names: [String] = null) {
+mutation InputScalarListOptionalMutation($names: [String] = null) {
     InputScalarListOptional(names: $names) {
         success
     }
 }
 
-mutation InputScalarInsideInputType($user: UserInput!) {
+mutation InputScalarInsideInputTypeMutation($user: UserInput!) {
     InputScalarInsideInputType(user: $user) {
         success
     }
 }
-

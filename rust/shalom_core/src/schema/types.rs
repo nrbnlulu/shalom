@@ -81,6 +81,8 @@ impl GraphQLAny {
         match self {
             Self::InputObject(v) => v.name.clone(),
             Self::Object(v) => v.name.clone(),
+            Self::Interface(v) => v.name.clone(),
+            Self::Union(v) => v.name.clone(),
             Self::Enum(v) => v.name.clone(),
             Self::Scalar(v) => v.name.clone(),
             _ => todo!("Unsupported type"),
@@ -116,19 +118,27 @@ impl ScalarType {
         self.name == "ID"
     }
 }
+pub trait Implementor {
+    fn implements_interfaces(&self) -> &HashSet<GlobalName>;
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ObjectType {
     pub description: Option<String>,
     pub name: String,
     #[serde(skip_serializing)]
-    pub implements_interfaces: HashSet<Box<GlobalName>>,
+    pub implements_interfaces: HashSet<GlobalName>,
     pub fields: HashMap<String, SchemaObjectFieldDefinition>,
 }
 
 impl ObjectType {
     pub fn get_field(&self, name: &str) -> Option<&SchemaObjectFieldDefinition> {
         self.fields.get(name)
+    }
+}
+impl Implementor for ObjectType {
+    fn implements_interfaces(&self) -> &HashSet<GlobalName> {
+        &self.implements_interfaces
     }
 }
 
@@ -141,7 +151,6 @@ impl Hash for ObjectType {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct InterfaceType {
     pub description: Option<String>,
-
     pub name: String,
     pub implements_interfaces: HashSet<GlobalName>,
     pub fields: HashSet<SchemaFieldCommon>,
@@ -149,6 +158,11 @@ pub struct InterfaceType {
 impl Hash for InterfaceType {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.name.hash(state);
+    }
+}
+impl Implementor for InterfaceType {
+    fn implements_interfaces(&self) -> &HashSet<GlobalName> {
+        &self.implements_interfaces
     }
 }
 
@@ -319,5 +333,8 @@ pub struct SchemaObjectFieldDefinition {
 pub struct InputFieldDefinition {
     pub is_optional: bool,
     pub default_value: Option<Node<Value>>,
+    /// nullable fields with no default values are maybe types
+    /// and if not explicitly set they wouldn't be included in the request.
+    pub is_maybe: bool,
     pub common: SchemaFieldCommon,
 }

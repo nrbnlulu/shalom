@@ -5,7 +5,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = {workspace = true}
-apollo-compiler = "=1.28.0"
+apollo-compiler = {workspace = true}
 simple_logger = {workspace = true}
 log = {workspace = true}
 glob = {workspace = true}

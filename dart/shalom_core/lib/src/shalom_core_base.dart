@@ -1,3 +1,5 @@
+import 'shalom_ctx.dart' show ShalomCtx;
+
 typedef JsonObject = Map<String, dynamic>;
 
 class GraphQLResult<T> {
@@ -57,13 +59,13 @@ abstract class Requestable {
   Request toRequest();
 }
 
-sealed class Option<T> {
+sealed class Maybe<T> {
   T? some();
   bool isSome();
   void inspect(void Function(T));
 }
 
-class None<T> implements Option<T> {
+class None<T> implements Maybe<T> {
   const None();
 
   @override
@@ -81,10 +83,13 @@ class None<T> implements Option<T> {
   }
 
   @override
+  String toString() => "None";
+
+  @override
   int get hashCode => runtimeType.hashCode;
 }
 
-class Some<T> implements Option<T> {
+class Some<T> implements Maybe<T> {
   final T value;
 
   const Some(this.value);
@@ -107,5 +112,13 @@ class Some<T> implements Option<T> {
   }
 
   @override
+  String toString() => "Some(${value.toString()})";
+  @override
   int get hashCode => runtimeType.hashCode ^ value.hashCode;
+}
+
+class OperationContext<TVars> {
+  final TVars? variables;
+  final ShalomCtx shalomCtx;
+  const OperationContext({this.variables, required this.shalomCtx});
 }

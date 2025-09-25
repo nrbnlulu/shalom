@@ -39,8 +39,8 @@ pub fn ensure_test_folder_exists(usecase: &str) -> anyhow::Result<PathBuf> {
     Ok(usecase_path)
 }
 
-fn run_codegen(cwd: &Path) {
-    shalom_dart_codegen::codegen_entry_point(cwd).unwrap()
+fn run_codegen(cwd: &Path, strict: bool) {
+    shalom_dart_codegen::codegen_entry_point(cwd, strict).unwrap()
 }
 
 pub fn run_dart_tests_for_usecase(usecase: &str) {
@@ -50,7 +50,7 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
     }
     let usecase_test_dir =
         ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
-    run_codegen(&usecase_test_dir);
+    run_codegen(&usecase_test_dir, true);
 
     let mut cmd;
     #[cfg(target_os = "windows")]

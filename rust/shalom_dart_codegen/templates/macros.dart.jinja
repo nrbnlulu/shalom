@@ -102,7 +102,7 @@
     {
         {% for name, field in fields | items %}
             {% if field.is_optional %}
-                Option<{{type_name_for_input_field(field)}}> {{name}} = const None()
+                Maybe<{{type_name_for_input_field(field)}}> {{name}} = const None()
             {% else %}
                 {{type_name_for_input_field(field)}}? {{name}}
             {% endif %}
