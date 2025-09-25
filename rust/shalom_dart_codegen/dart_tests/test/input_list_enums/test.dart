@@ -47,10 +47,9 @@ void main() {
       final withNull = withValues.updateWith(foo: Some(null));
       expect(withNull.toJson(), {'foo': null});
 
-      final request =
-          RequestInputListEnumOptionalWithDefault(
-            variables: variables,
-          ).toRequest();
+      final request = RequestInputListEnumOptionalWithDefault(
+        variables: variables,
+      ).toRequest();
       expect(request.variables, {'foo': null});
     });
 
@@ -113,10 +112,9 @@ void main() {
         },
       });
 
-      final request =
-          RequestInputListEnumInsideInputObject(
-            variables: variables,
-          ).toRequest();
+      final request = RequestInputListEnumInsideInputObject(
+        variables: variables,
+      ).toRequest();
       expect(request.variables, {
         'input': {
           'genders': ['MALE', 'FEMALE'],

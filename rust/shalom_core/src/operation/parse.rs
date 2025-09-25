@@ -62,10 +62,7 @@ fn parse_object_selection(
                         apollo_executable::Value::Variable(var_name) => {
                             let op_var = op_ctx.get_variable(var_name).unwrap().clone();
 
-                            let value = crate::operation::types::ArgumentValue::VariableUse {
-                                name: var_name.to_string(),
-                                is_maybe: op_var.is_maybe,
-                            };
+                            let value = crate::operation::types::ArgumentValue::VariableUse(op_var.clone());
                             FieldArgument {
                                 name: arg.name.to_string(),
                                 value,

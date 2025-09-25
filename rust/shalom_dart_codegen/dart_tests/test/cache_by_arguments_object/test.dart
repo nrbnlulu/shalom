@@ -213,11 +213,8 @@ void main() {
         final variablesSomeValue = filterUsersVariables(
           filter: Some(UserFilter(nameLike: "Alice")),
         );
-        final (resultSomeValue, updateCtx) = filterUsersResponse.fromResponseImpl(
-          userData,
-          ctx,
-           variablesSomeValue,
-        );
+        final (resultSomeValue, updateCtx) = filterUsersResponse
+            .fromResponseImpl(userData, ctx, variablesSomeValue);
         expect(resultSomeValue.userFilterMaybe.id, "user1");
 
         // Verify different cache keys are created
@@ -232,20 +229,20 @@ void main() {
 
         // Verify the specific cache key patterns
         expect(
-          keys.any((k) => k.toString().contains("filter:__NONE__")),
+          keys.any((k) => k.toString().contains("filter:None")),
           isTrue,
           reason: "Should have None() cache key",
         );
         expect(
-          keys.any((k) => k.toString().contains("filter:null")),
+          keys.any((k) => k.toString().contains("filter:Some(null)")),
           isTrue,
           reason: "Should have Some(null) cache key",
         );
         expect(
           keys.any(
             (k) => k.toString().contains(
-              "filter:{age: null, id: null, nameLike: Alice}",
-            ),
+                  "filter:Some({age: null, id: null, nameLike: Alice})",
+                ),
           ),
           isTrue,
           reason: "Should have Some(value) cache key with proper toString",

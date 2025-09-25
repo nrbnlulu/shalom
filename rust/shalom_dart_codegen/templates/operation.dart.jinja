@@ -11,20 +11,19 @@
 {# Macro to generate cache key with arguments #}
 {% macro generate_cache_key_with_args(field_name, arguments) -%}
 {% if arguments | length > 0 -%}
-TODO rewrite this correctly
 """{{field_name}}(
     {%- for arg in arguments -%}
-        
-    {%- if arg.value.VariableUse -%}
+
+    {%- if arg.value.kind == "VariableUse"  -%}
         {% if op_variables_exist -%}
-            {%- set var_name = arg.value.VariableUse.name -%}
-            {%- if arg.type == "VariableUse" and arg.is_maybe -%}
-                {{arg.name}}:${variables.{{var_name}}.isSome() ? (variables!.{{var_name}}.some()?.toString() ?? 'null') : '__NONE__' }
+            {%- set var_name = arg.value.common.name -%}
+            {%- if arg.value.is_maybe -%}
+                {{arg.name}}:${variables.{{var_name}}.isSome() ? (variables!.{{var_name}}.some()?.toString()) : 'None' }
             {%- else -%}
                 {%- if arg.default_value is not none -%}
                    {{arg.name}}:${variables.{{var_name}} ?? '{{arg.default_value}}'}
                 {%- else -%}
-                    {{arg.name}}:${variables.{{var_name}} ?? 'null'}
+                {{arg.name}}:${variables.{{var_name}} }{% if arg.value.is_optional %} ?? 'null'{% endif %}}
                 {%- endif -%}
             {%- endif -%}
         {%- else -%}
@@ -149,7 +148,7 @@ TODO rewrite this correctly
         {% endif %}
     {% endif %}
 {% endmacro %}
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements
 
 import "schema.shalom.dart";
 {% for path, namespace_alias in extra_imports | items -%}
@@ -192,7 +191,7 @@ import 'package:collection/collection.dart';
         {% if is_root_selection -%}
             final String this$fieldName = "{{selection_object.name}}";
             final String this$normalizedID = "ROOT_{{OP_TYPE}}";
-            final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");;
+            final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");
         {% else %}
             {% set id_field = get_id_selection(selection_object.full_name) -%}
             {% set is_normalized = false -%}

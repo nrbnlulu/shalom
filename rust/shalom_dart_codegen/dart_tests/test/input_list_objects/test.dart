@@ -26,10 +26,9 @@ void main() {
           items: [sampleObject1, sampleObject2],
         );
 
-        final request =
-            RequestInputListOfRequiredObjectsMutation(
-              variables: variables,
-            ).toRequest();
+        final request = RequestInputListOfRequiredObjectsMutation(
+          variables: variables,
+        ).toRequest();
 
         expect(request.variables, {
           'items': [
@@ -67,10 +66,9 @@ void main() {
           items: [],
         );
 
-        final request =
-            RequestInputListOfRequiredObjectsMutation(
-              variables: variables,
-            ).toRequest();
+        final request = RequestInputListOfRequiredObjectsMutation(
+          variables: variables,
+        ).toRequest();
 
         expect(request.variables, {'items': []});
       });
@@ -80,10 +78,9 @@ void main() {
       test('listOfRequiredObjectsOptional - None', () {
         final variables = InputListObjectsMaybeMutationVariables();
 
-        final request =
-            RequestInputListObjectsMaybeMutation(
-              variables: variables,
-            ).toRequest();
+        final request = RequestInputListObjectsMaybeMutation(
+          variables: variables,
+        ).toRequest();
 
         expect(request.variables, {});
 
@@ -103,10 +100,9 @@ void main() {
           items: Some([sampleObject1, sampleObject2]),
         );
 
-        final request =
-            RequestInputListObjectsMaybeMutation(
-              variables: variables,
-            ).toRequest();
+        final request = RequestInputListObjectsMaybeMutation(
+          variables: variables,
+        ).toRequest();
 
         expect(request.variables, {
           'items': [
@@ -121,10 +117,9 @@ void main() {
           items: Some(null),
         );
 
-        final request =
-            RequestInputListObjectsMaybeMutation(
-              variables: variables,
-            ).toRequest();
+        final request = RequestInputListObjectsMaybeMutation(
+          variables: variables,
+        ).toRequest();
 
         expect(request.variables, {'items': null});
       });
@@ -139,8 +134,8 @@ void main() {
 
           final request =
               RequestInputListOfOptionalObjectsWithNullDefaultMutation(
-                variables: variables,
-              ).toRequest();
+            variables: variables,
+          ).toRequest();
 
           expect(request.variables, {'items': null});
         });
@@ -148,13 +143,13 @@ void main() {
         test('listOfRequiredObjectsOptionalWithNullDefault - with objects', () {
           final variables =
               InputListOfOptionalObjectsWithNullDefaultMutationVariables(
-                items: [sampleObject1],
-              );
+            items: [sampleObject1],
+          );
 
           final request =
               RequestInputListOfOptionalObjectsWithNullDefaultMutation(
-                variables: variables,
-              ).toRequest();
+            variables: variables,
+          ).toRequest();
 
           expect(request.variables, {
             'items': [
@@ -179,13 +174,13 @@ void main() {
           () {
             final variables =
                 InputListOfOptionalObjectsWithNullDefaultMutationVariables(
-                  items: null,
-                );
+              items: null,
+            );
 
             final request =
                 RequestInputListOfOptionalObjectsWithNullDefaultMutation(
-                  variables: variables,
-                ).toRequest();
+              variables: variables,
+            ).toRequest();
 
             expect(request.variables, {'items': null});
           },
@@ -204,10 +199,9 @@ void main() {
           data: containerInput,
         );
 
-        final request =
-            RequestInputObjectContainingListOfObjectsMutation(
-              variables: variables,
-            ).toRequest();
+        final request = RequestInputObjectContainingListOfObjectsMutation(
+          variables: variables,
+        ).toRequest();
 
         expect(request.variables, {
           'data': {
@@ -230,10 +224,9 @@ void main() {
           data: containerInput,
         );
 
-        final request =
-            RequestInputObjectContainingListOfObjectsMutation(
-              variables: variables,
-            ).toRequest();
+        final request = RequestInputObjectContainingListOfObjectsMutation(
+          variables: variables,
+        ).toRequest();
 
         expect(request.variables, {
           'data': {
