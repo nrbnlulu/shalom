@@ -54,5 +54,6 @@ jobs:
                   cargo install typos-cli
 
             - name: Lint
+              if: runner.os == 'Linux'
               run: task lint
               
