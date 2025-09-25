@@ -8,10 +8,9 @@ import "__graphql__/OptionalWithNullDefault.shalom.dart";
 void main() {
   group("scalar arguments", () {
     test("RequiredArguments", () {
-      final req =
-          RequestRequiredArguments(
-            variables: RequiredArgumentsVariables(id: "123"),
-          ).toRequest();
+      final req = RequestRequiredArguments(
+        variables: RequiredArgumentsVariables(id: "123"),
+      ).toRequest();
       expect(req.variables, {"id": "123"});
       expect(req.opName, "RequiredArguments");
       expect(req.query, isNotEmpty);
@@ -20,30 +19,27 @@ void main() {
 
     group("OptionalArguments", () {
       test("some(T)", () {
-        final req =
-            RequestOptionalArguments(
-              variables: OptionalArgumentsVariables(id: Some("123")),
-            ).toRequest();
+        final req = RequestOptionalArguments(
+          variables: OptionalArgumentsVariables(id: Some("123")),
+        ).toRequest();
         expect(req.variables, {"id": "123"});
         expect(req.opName, "OptionalArguments");
         expect(req.query, isNotEmpty);
         expect(req.opType, OperationType.Mutation);
       });
       test("some(null)", () {
-        final req =
-            RequestOptionalArguments(
-              variables: OptionalArgumentsVariables(id: Some(null)),
-            ).toRequest();
+        final req = RequestOptionalArguments(
+          variables: OptionalArgumentsVariables(id: Some(null)),
+        ).toRequest();
         expect(req.variables, {"id": null});
         expect(req.opName, "OptionalArguments");
         expect(req.query, isNotEmpty);
         expect(req.opType, OperationType.Mutation);
       });
       test("None", () {
-        final req =
-            RequestOptionalArguments(
-              variables: OptionalArgumentsVariables(id: None()),
-            ).toRequest();
+        final req = RequestOptionalArguments(
+          variables: OptionalArgumentsVariables(id: None()),
+        ).toRequest();
         expect(req.variables, {});
         expect(req.opName, "OptionalArguments");
         expect(req.query, isNotEmpty);
@@ -53,20 +49,18 @@ void main() {
 
     group("OptionalWithNullDefault", () {
       test("None", () {
-        final req =
-            RequestOptionalWithNullDefault(
-              variables: OptionalWithNullDefaultVariables(),
-            ).toRequest();
+        final req = RequestOptionalWithNullDefault(
+          variables: OptionalWithNullDefaultVariables(),
+        ).toRequest();
         expect(req.variables, {"phone": null});
         expect(req.opName, "OptionalWithNullDefault");
         expect(req.query, isNotEmpty);
         expect(req.opType, OperationType.Mutation);
       });
       test("Some", () {
-        final req =
-            RequestOptionalWithNullDefault(
-              variables: OptionalWithNullDefaultVariables(phone: "911"),
-            ).toRequest();
+        final req = RequestOptionalWithNullDefault(
+          variables: OptionalWithNullDefaultVariables(phone: "911"),
+        ).toRequest();
         expect(req.variables, {"phone": "911"});
         expect(req.opName, "OptionalWithNullDefault");
         expect(req.query, isNotEmpty);
@@ -76,10 +70,9 @@ void main() {
 
     group("OptionalWithSomeDefault", () {
       test("None", () {
-        final req =
-            RequestOptionalWithSomeDefault(
-              variables: OptionalWithSomeDefaultVariables(),
-            ).toRequest();
+        final req = RequestOptionalWithSomeDefault(
+          variables: OptionalWithSomeDefaultVariables(),
+        ).toRequest();
         expect(req.variables, {
           "duration": 2,
           "is_easy": false,
@@ -90,14 +83,13 @@ void main() {
         expect(req.opType, OperationType.Query);
       });
       test("Some", () {
-        final req =
-            RequestOptionalWithSomeDefault(
-              variables: OptionalWithSomeDefaultVariables(
-                duration: 10,
-                is_easy: false,
-                name: "shalom",
-              ),
-            ).toRequest();
+        final req = RequestOptionalWithSomeDefault(
+          variables: OptionalWithSomeDefaultVariables(
+            duration: 10,
+            is_easy: false,
+            name: "shalom",
+          ),
+        ).toRequest();
         expect(req.variables, {
           "duration": 10,
           "is_easy": false,
@@ -108,14 +100,13 @@ void main() {
         expect(req.opType, OperationType.Query);
       });
       test("Some(null)", () {
-        final req =
-            RequestOptionalWithSomeDefault(
-              variables: OptionalWithSomeDefaultVariables(
-                duration: null,
-                is_easy: null,
-                name: null,
-              ),
-            ).toRequest();
+        final req = RequestOptionalWithSomeDefault(
+          variables: OptionalWithSomeDefaultVariables(
+            duration: null,
+            is_easy: null,
+            name: null,
+          ),
+        ).toRequest();
         expect(req.variables, {
           "duration": null,
           "is_easy": null,

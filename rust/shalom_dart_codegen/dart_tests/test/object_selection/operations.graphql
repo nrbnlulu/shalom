@@ -17,3 +17,10 @@ query GetListing {
 }
 
 
+query GetListingNoPrice {
+   listing {
+    id 
+    name
+   }
+}
+

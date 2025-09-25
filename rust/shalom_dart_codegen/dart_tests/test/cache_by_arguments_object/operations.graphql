@@ -1,0 +1,17 @@
+query getUser($id: ID!) {
+    user(id: $id) {
+        id
+        name
+        email
+        age
+    }
+}
+
+query filterUsers($filter: UserFilter) {
+    userFilterMaybe(filter: $filter) {
+        id
+        name
+        email
+        age
+    }
+}

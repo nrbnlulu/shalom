@@ -6,6 +6,8 @@ use serde::Serialize;
 
 use super::types::{FullPathName, OperationType, Selection};
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
+pub type OperationVariable = InputFieldDefinition;
+
 #[derive(Debug, Serialize)]
 pub struct OperationContext {
     #[serde(skip_serializing)]
@@ -14,7 +16,7 @@ pub struct OperationContext {
     operation_name: String,
     pub file_path: PathBuf,
     query: String,
-    variables: HashMap<String, InputFieldDefinition>,
+    variables: HashMap<String, OperationVariable>,
     type_defs: HashMap<FullPathName, Selection>,
     root_type: Option<Selection>,
     op_ty: OperationType,
@@ -39,6 +41,9 @@ impl OperationContext {
             op_ty,
         }
     }
+    pub fn get_operation_name(&self) -> &str {
+        &self.operation_name
+    }
 
     pub fn set_root_type(&mut self, root_type: Selection) {
         self.root_type = Some(root_type);
@@ -52,8 +57,11 @@ impl OperationContext {
         self.type_defs.entry(name.clone()).or_insert(selection);
     }
 
-    pub fn add_variable(&mut self, name: String, variable: InputFieldDefinition) {
+    pub fn add_variable(&mut self, name: String, variable: OperationVariable) {
         self.variables.entry(name).or_insert(variable);
+    }
+    pub fn get_variable(&self, name: &str) -> Option<&OperationVariable> {
+        self.variables.get(name)
     }
 }
 

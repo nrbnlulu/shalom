@@ -1,18 +1,18 @@
-mutation InputListOfRequiredObjects($items: [MyInputObject!]!) {
+mutation InputListOfRequiredObjectsMutation($items: [MyInputObject!]!) {
     InputListOfRequiredObjects(items: $items) {
         success
         message
     }
 }
 
-mutation InputListObjectsMAybe($items: [MyInputObject!]) {
+mutation InputListObjectsMaybeMutation($items: [MyInputObject!]) {
     InputListObjectsMAybe(items: $items) {
         success
         message
     }
 }
 
-mutation InputListOfOptionalObjectsWithNullDefault(
+mutation InputListOfOptionalObjectsWithNullDefaultMutation(
     $items: [MyInputObject!] = null
 ) {
     InputListOfOptionalObjectsWithNullDefault(items: $items) {
@@ -21,7 +21,7 @@ mutation InputListOfOptionalObjectsWithNullDefault(
     }
 }
 
-mutation InputObjectContainingListOfObjects($data: ContainerInput!) {
+mutation InputObjectContainingListOfObjectsMutation($data: ContainerInput!) {
     InputObjectContainingListOfObjects(data: $data) {
         success
         message

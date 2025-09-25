@@ -1,15 +1,15 @@
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 import '../input_list_scalars/__graphql__/schema.shalom.dart';
-import '__graphql__/InputScalarInsideInputType.shalom.dart';
-import '__graphql__/InputScalarListMaybe.shalom.dart';
-import '__graphql__/InputScalarListRequired.shalom.dart';
-import '__graphql__/InputScalarListOptional.shalom.dart';
+import '__graphql__/InputScalarInsideInputTypeMutation.shalom.dart';
+import '__graphql__/InputScalarListMaybeMutation.shalom.dart';
+import '__graphql__/InputScalarListRequiredMutation.shalom.dart';
+import '__graphql__/InputScalarListOptionalMutation.shalom.dart';
 
 void main() {
   group('List of input scalars', () {
     test('required', () {
-      final variables = InputScalarListRequiredVariables(
+      final variables = InputScalarListRequiredMutationVariables(
         strings: ['tag1', 'tag2', 'tag3'],
       );
       expect(variables.toJson(), {
@@ -22,7 +22,7 @@ void main() {
     });
 
     test('maybe', () {
-      final variables = InputScalarListMaybeVariables(ints: None());
+      final variables = InputScalarListMaybeMutationVariables(ints: None());
       expect(variables.toJson(), {});
       final some = variables.updateWith(ints: Some(Some([1, 2, 3])));
       expect(some.toJson(), {
@@ -33,7 +33,7 @@ void main() {
     });
 
     test("optional", () {
-      final vars = InputScalarListOptionalVariables();
+      final vars = InputScalarListOptionalMutationVariables();
       expect(vars.toJson(), {"names": null});
       final varsWithValues = vars.updateWith(names: Some(['Alice', 'Bob']));
       expect(varsWithValues.toJson(), {
@@ -43,7 +43,7 @@ void main() {
   });
 
   test('List of input scalars inside input object', () {
-    final vars = InputScalarInsideInputTypeVariables(
+    final vars = InputScalarInsideInputTypeMutationVariables(
       user: UserInput(
         tags: ['tag1', 'tag2', 'tag3'],
         ids: Some(null),

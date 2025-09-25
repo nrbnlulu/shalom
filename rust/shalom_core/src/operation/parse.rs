@@ -8,7 +8,7 @@ use apollo_compiler::{
 use log::{info, trace};
 
 use crate::context::SharedShalomGlobalContext;
-use crate::operation::types::{ObjectSelection, SelectionCommon, SelectionKind};
+use crate::operation::types::{FieldArgument, ObjectSelection, SelectionCommon, SelectionKind};
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
 };
@@ -42,7 +42,7 @@ fn parse_object_selection(
          selection was {:?}.",
         selection_orig
     );
-    let obj = ObjectSelection::new(is_optional, path.clone());
+    let obj = ObjectSelection::new(is_optional, path.clone(), selection_orig.ty.to_string());
 
     for selection in selection_orig.selections.iter() {
         match selection {
@@ -55,6 +55,41 @@ fn parse_object_selection(
                     .as_deref()
                     .map(|s| s.to_string());
                 let field_path = full_path_name(&f_name, path);
+                let args: Vec<crate::operation::types::FieldArgument> = field
+                    .arguments
+                    .iter()
+                    .map(|arg| match arg.value.as_ref() {
+                        apollo_executable::Value::Variable(var_name) => {
+                            let op_var = op_ctx.get_variable(var_name).unwrap().clone();
+
+                            let value =
+                                crate::operation::types::ArgumentValue::VariableUse(op_var.clone());
+                            FieldArgument {
+                                name: arg.name.to_string(),
+                                value,
+                                default_value: op_var.default_value.map(|v| v.to_string()),
+                            }
+                        }
+                        _ => {
+                            let arg_def = field
+                                .definition
+                                .arguments
+                                .iter()
+                                .find(|a| a.name == arg.name);
+
+                            let inline_val = crate::operation::types::ArgumentValue::InlineValue {
+                                value: arg.value.to_string(),
+                            };
+                            FieldArgument {
+                                name: arg.name.to_string(),
+                                value: inline_val,
+                                default_value: arg_def.and_then(|def| {
+                                    def.default_value.as_ref().map(|v| v.to_string())
+                                }),
+                            }
+                        }
+                    })
+                    .collect();
                 let selection_common = SelectionCommon {
                     name: f_name.clone(),
                     description,
@@ -67,6 +102,7 @@ fn parse_object_selection(
                     selection_common,
                     &field.selection_set,
                     f_type,
+                    args,
                 );
 
                 obj.add_selection(field_selection);
@@ -134,14 +170,16 @@ fn parse_selection_set(
     selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
     field_type_orig: &FieldTypeOrig,
+    arguments: Vec<crate::operation::types::FieldArgument>,
 ) -> Selection {
     let full_name = path.clone();
     if let Some(selection) = op_ctx.get_selection(&full_name) {
         info!("Selection already exists");
         return selection.clone();
     }
+
     let kind = parse_selection_kind(op_ctx, global_ctx, path, selection_orig, field_type_orig);
-    let selection = Selection::new(selection_common, kind);
+    let selection = Selection::new(selection_common, kind, arguments);
     op_ctx.add_selection(full_name, selection.clone());
     selection
 }
@@ -157,18 +195,13 @@ fn parse_operation_type(operation_type: ApolloOperationType) -> OperationType {
 fn parse_operation(
     global_ctx: &SharedShalomGlobalContext,
     op: Node<apollo_compiler::executable::Operation>,
-    name: String,
+    operation_name: String,
     file_path: PathBuf,
-) -> SharedOpCtx {
+) -> anyhow::Result<SharedOpCtx> {
     let query = op.to_string();
-    let operation_name = op
-        .name
-        .as_ref()
-        .unwrap_or_else(|| unimplemented!("Anonymous operations are not supported"))
-        .to_string();
     let mut ctx = OperationContext::new(
         global_ctx.schema_ctx.clone(),
-        operation_name,
+        operation_name.clone(),
         query,
         file_path,
         parse_operation_type(op.operation_type),
@@ -180,22 +213,47 @@ fn parse_operation(
         let field_definition = SchemaFieldCommon::new(name.clone(), &raw_type, None);
         let input_definition = InputFieldDefinition {
             common: field_definition,
+            is_maybe: is_optional && variable.default_value.is_none(),
             is_optional,
             default_value: variable.default_value.clone(),
         };
         ctx.add_variable(name, input_definition);
     }
 
+    let first_selection = {
+        if op.selection_set.selections.len() > 1 {
+            return Err(anyhow::anyhow!(
+                "{operation_name} has more than one selection which is not allowed"
+            ));
+        }
+        op.selection_set
+            .selections
+            .first()
+            .unwrap()
+            .as_field()
+            .unwrap()
+    };
+    let first_selection_name = first_selection.name.to_string();
+    if first_selection_name == operation_name {
+        return Err(
+            anyhow::anyhow!("{operation_name} operation can't have the same name as its first field due to namespacing issues")
+        );
+    }
     let selection_common = SelectionCommon {
-        name: name.clone(),
+        name: first_selection_name,
         description: None,
     };
-    let root_type = parse_object_selection(&mut ctx, global_ctx, &name, false, &op.selection_set);
-    ctx.set_root_type(Selection::new(
-        selection_common,
-        SelectionKind::Object(root_type),
-    ));
-    Rc::new(ctx)
+    let root_type = parse_object_selection(
+        &mut ctx,
+        global_ctx,
+        &operation_name,
+        false,
+        &op.selection_set,
+    );
+    let selection = Selection::new(selection_common, SelectionKind::Object(root_type), vec![]);
+    ctx.set_root_type(selection.clone());
+    ctx.add_selection(operation_name, selection);
+    Ok(Rc::new(ctx))
 }
 
 pub(crate) fn parse_document(
@@ -217,7 +275,7 @@ pub(crate) fn parse_document(
         let name = name.to_string();
         ret.insert(
             name.clone(),
-            parse_operation(global_ctx, op.clone(), name, doc_path.clone()),
+            parse_operation(global_ctx, op.clone(), name, doc_path.clone())?,
         );
     }
     Ok(ret)

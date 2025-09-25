@@ -14,3 +14,4 @@ serde = { version = "1.0", features = ["derive", "rc"] }
 serde_json = "1.0"
 minijinja = "2.1.1"
 glob = "0.3.2"
+apollo-compiler = "=1.30.0"

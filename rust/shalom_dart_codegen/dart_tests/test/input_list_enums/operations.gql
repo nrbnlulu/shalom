@@ -1,15 +1,15 @@
 mutation InputListEnumRequired($foo: [Gender!]!) {
-    InputListEnumRequired(foo: $foo)
+    inputListEnumRequired(foo: $foo)
 }
 
 mutation InputListEnumOptionalWithDefault($foo: [Gender!] = null) {
-    InputListEnumOptionalWithDefault(foo: $foo)
+    inputListEnumOptionalWithDefault(foo: $foo)
 }
 
 mutation InputListEnumMaybe($foo: [Gender!]) {
-    InputListEnumMaybe(foo: $foo)
+    inputListEnumMaybe(foo: $foo)
 }
 
 mutation InputListEnumInsideInputObject($input: ObjectWithListOfInput!) {
-    InputListEnumInsideInputObject(input: $input)
+    inputListEnumInsideInputObject(input: $input)
 }

@@ -1,11 +1,11 @@
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 import '../input_list_custom_scalars/__graphql__/schema.shalom.dart';
-import '__graphql__/InputCustomScalarListRequired.shalom.dart';
-import '__graphql__/InputCustomScalarListMaybe.shalom.dart';
-import '__graphql__/InputCustomScalarListNullableMaybe.shalom.dart';
-import '__graphql__/InputCustomScalarListOptionalWithDefault.shalom.dart';
-import '__graphql__/InputCustomScalarListInsideInputObject.shalom.dart';
+import '__graphql__/InputCustomScalarListRequiredMutation.shalom.dart';
+import '__graphql__/InputCustomScalarListMaybeMutation.shalom.dart';
+import '__graphql__/InputCustomScalarListNullableMaybeMutation.shalom.dart';
+import '__graphql__/InputCustomScalarListOptionalWithDefaultMutation.shalom.dart';
+import '__graphql__/InputCustomScalarListInsideInputObjectMutation.shalom.dart';
 import '../custom_scalar/point.dart';
 
 void main() {
@@ -16,7 +16,7 @@ void main() {
 
   group('Input List Custom Scalars', () {
     test('customScalarListRequired', () {
-      final variables = InputCustomScalarListRequiredVariables(
+      final variables = InputCustomScalarListRequiredMutationVariables(
         requiredItems: samplePoints,
       );
       expect(variables.toJson(), {
@@ -35,7 +35,7 @@ void main() {
     });
 
     test('customScalarListMaybe', () {
-      final variables = InputCustomScalarListMaybeVariables(
+      final variables = InputCustomScalarListMaybeMutationVariables(
         optionalItems: None(),
       );
       expect(variables.toJson(), {});
@@ -57,7 +57,7 @@ void main() {
     });
 
     test('customScalarListNullableMaybe', () {
-      final variables = InputCustomScalarListNullableMaybeVariables(
+      final variables = InputCustomScalarListNullableMaybeMutationVariables(
         sparseData: None(),
       );
       expect(variables.toJson(), {});
@@ -79,7 +79,8 @@ void main() {
     });
 
     test('customScalarListOptionalWithDefault', () {
-      final variables = InputCustomScalarListOptionalWithDefaultVariables();
+      final variables =
+          InputCustomScalarListOptionalWithDefaultMutationVariables();
       expect(variables.toJson(), {'defaultItems': null});
 
       final variablesWithValues = variables.updateWith(
@@ -93,7 +94,7 @@ void main() {
     });
 
     test('customScalarListInsideInputObject', () {
-      final variables = InputCustomScalarListInsideInputObjectVariables(
+      final variables = InputCustomScalarListInsideInputObjectMutationVariables(
         newContainer: ItemContainerInput(
           name: 'Test Container',
           requiredItems: [point1, point2],

@@ -22,7 +22,7 @@ jobs:
             - name: Set up Rust
               uses: actions-rs/toolchain@v1
               with:
-                  toolchain: 1.86.0
+                  toolchain: 1.89.0
                   override: true
                   components: rustfmt, clippy
 
@@ -43,14 +43,17 @@ jobs:
                   cd rust/shalom_dart_codegen/dart_tests/
                   flutter packages get
 
-            - name: Install typos
-              run: |
-                  cargo install typos-cli
-
-            - name: Lint
-              run: task lint
 
             - name: Test
               run: |
                   cd rust
                   cargo test
+
+            - name: Install typos
+              run: |
+                  cargo install typos-cli
+
+            - name: Lint
+              if: runner.os == 'Linux'
+              run: task lint
+              
