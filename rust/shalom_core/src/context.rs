@@ -1,6 +1,9 @@
 use crate::shalom_config::{CustomScalarDefinition, ShalomConfig};
 
-use crate::{operation::context::SharedOpCtx, schema::context::SharedSchemaContext};
+use crate::{
+    operation::context::SharedOpCtx, operation::fragments::SharedFragmentContext,
+    schema::context::SharedSchemaContext,
+};
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
@@ -9,6 +12,7 @@ use std::{
 #[derive(Debug)]
 pub struct ShalomGlobalContext {
     operations: Mutex<HashMap<String, SharedOpCtx>>,
+    fragments: Mutex<HashMap<String, SharedFragmentContext>>,
     pub schema_ctx: SharedSchemaContext,
     pub config: ShalomConfig,
 }
@@ -20,6 +24,7 @@ impl ShalomGlobalContext {
     pub fn new(schema_ctx: SharedSchemaContext, config: ShalomConfig) -> Arc<Self> {
         Arc::new(Self {
             operations: Mutex::new(HashMap::new()),
+            fragments: Mutex::new(HashMap::new()),
             schema_ctx,
             config,
         })
@@ -27,9 +32,20 @@ impl ShalomGlobalContext {
 
     pub fn register_operations(&self, operations_update: HashMap<String, SharedOpCtx>) {
         let mut operations = self.operations.lock().unwrap();
+        let fragments = self.fragments.lock().unwrap();
         for (name, _) in operations_update.iter() {
             if operations.contains_key(name) {
                 panic!("Operation with name {} already exists", name);
+            }
+            if fragments.contains_key(name) {
+                panic!(
+                    "Operation name {} conflicts with existing fragment name",
+                    name
+                );
+            }
+            // Check if operation name conflicts with schema types
+            if self.schema_ctx.get_type(name).is_some() {
+                panic!("Operation name {} conflicts with schema type", name);
             }
         }
         operations.extend(operations_update);
@@ -58,6 +74,44 @@ impl ShalomGlobalContext {
     pub fn operation_exists(&self, name: &str) -> bool {
         let operations = self.operations.lock().unwrap();
         operations.contains_key(name)
+    }
+
+    pub fn register_fragments(&self, fragments_update: HashMap<String, SharedFragmentContext>) {
+        let mut fragments = self.fragments.lock().unwrap();
+        let operations = self.operations.lock().unwrap();
+        for (name, _) in fragments_update.iter() {
+            if fragments.contains_key(name) {
+                panic!("Fragment with name {} already exists", name);
+            }
+            if operations.contains_key(name) {
+                panic!(
+                    "Fragment name {} conflicts with existing operation name",
+                    name
+                );
+            }
+            // Check if fragment name conflicts with schema types
+            if self.schema_ctx.get_type(name).is_some() {
+                panic!("Fragment name {} conflicts with schema type", name);
+            }
+        }
+        fragments.extend(fragments_update);
+    }
+
+    pub fn get_fragment(&self, name: &str) -> Option<SharedFragmentContext> {
+        self.fragments.lock().unwrap().get(name).cloned()
+    }
+
+    pub fn fragments(&self) -> Vec<(String, SharedFragmentContext)> {
+        let fragments = self.fragments.lock().unwrap();
+        fragments
+            .iter()
+            .map(|(name, frag)| (name.clone(), frag.clone()))
+            .collect()
+    }
+
+    pub fn fragment_exists(&self, name: &str) -> bool {
+        let fragments = self.fragments.lock().unwrap();
+        fragments.contains_key(name)
     }
 }
 

@@ -280,6 +280,10 @@ struct SchemaEnv<'a> {
 struct OperationEnv<'a> {
     env: Environment<'a>,
 }
+
+struct FragmentEnv<'a> {
+    env: Environment<'a>,
+}
 // TODO: might not be good to create an environment for every operation. as it will recreate templates.
 fn register_default_template_fns<'a>(
     env: &mut Environment<'a>,
@@ -294,6 +298,7 @@ fn register_default_template_fns<'a>(
     .unwrap();
 
     env.add_template("schema", include_str!("../templates/schema.dart.jinja"))?;
+    env.add_template("fragment", include_str!("../templates/fragment.dart.jinja"))?;
     env.add_template("macros", include_str!("../templates/macros.dart.jinja"))?;
 
     let ctx_clone = ctx.clone();
@@ -419,15 +424,15 @@ impl OperationEnv<'_> {
 
         env.add_function("is_type_implements_node", move |full_name: &str| {
             let op = ctx_clone.get_operation(&op_name).unwrap();
-            let selection = op
-                .get_selection(&full_name.to_string())
-                .ok_or(anyhow::anyhow!("Type {full_name} not found in {op_name}"))
-                .unwrap();
-            match selection.kind {
-                SelectionKind::Object(object_selection) => ctx_clone
-                    .schema_ctx
-                    .is_type_implements_node(&object_selection.concrete_typename),
-                _ => false,
+            if let Some(selection) = op.get_selection(&full_name.to_string()) {
+                match selection.kind {
+                    SelectionKind::Object(object_selection) => ctx_clone
+                        .schema_ctx
+                        .is_type_implements_node(&object_selection.concrete_typename),
+                    _ => false,
+                }
+            } else {
+                false
             }
         });
         let op_name = op_ctx.get_operation_name().to_string();
@@ -435,11 +440,8 @@ impl OperationEnv<'_> {
         env.add_function(
             "get_id_selection",
             move |full_name: &str| -> Option<minijinja::Value> {
-                let selection = ctx_clone
-                    .get_operation(&op_name)
-                    .unwrap()
-                    .get_selection(&full_name.to_string())
-                    .unwrap();
+                let op = ctx_clone.get_operation(&op_name)?;
+                let selection = op.get_selection(&full_name.to_string())?;
                 match selection.kind {
                     SelectionKind::Object(object_selection) => object_selection
                         .get_id_selection()
@@ -469,6 +471,70 @@ impl OperationEnv<'_> {
     }
 }
 
+impl FragmentEnv<'_> {
+    fn new(
+        ctx: &SharedShalomGlobalContext,
+        fragment_ctx: &shalom_core::operation::fragments::FragmentContext,
+    ) -> anyhow::Result<Self> {
+        let mut env = Environment::new();
+        register_default_template_fns(&mut env, ctx)?;
+        let ctx_clone = ctx.clone();
+        let fragment_name = fragment_ctx.get_fragment_name().to_string();
+
+        env.add_function("is_type_implements_node", move |full_name: &str| {
+            let fragment = ctx_clone.get_fragment(&fragment_name).unwrap();
+            let selection = fragment
+                .get_selection(&full_name.to_string())
+                .ok_or(anyhow::anyhow!(
+                    "Type {full_name} not found in fragment {fragment_name}"
+                ))
+                .unwrap();
+            match selection.kind {
+                SelectionKind::Object(object_selection) => ctx_clone
+                    .schema_ctx
+                    .is_type_implements_node(&object_selection.concrete_typename),
+                _ => false,
+            }
+        });
+        let fragment_name = fragment_ctx.get_fragment_name().to_string();
+        let ctx_clone = ctx.clone();
+        env.add_function(
+            "get_id_selection",
+            move |full_name: &str| -> Option<minijinja::Value> {
+                let selection = ctx_clone
+                    .get_fragment(&fragment_name)
+                    .unwrap()
+                    .get_selection(&full_name.to_string())
+                    .unwrap();
+                match selection.kind {
+                    SelectionKind::Object(object_selection) => object_selection
+                        .get_id_selection()
+                        .map(minijinja::Value::from_serialize),
+                    _ => None,
+                }
+            },
+        );
+
+        Ok(FragmentEnv { env })
+    }
+
+    fn render_fragment<S: Serialize, T: Serialize>(
+        &self,
+        fragment_ctx: S,
+        schema_ctx: T,
+        extra_imports: HashMap<String, String>,
+    ) -> String {
+        let template = self.env.get_template("fragment").unwrap();
+        let mut context = HashMap::new();
+
+        context.insert("schema", context! { context => schema_ctx });
+        context.insert("fragment", context! { context => fragment_ctx });
+        context.insert("extra_imports", minijinja::Value::from(extra_imports));
+
+        template.render(&context).unwrap()
+    }
+}
+
 fn create_dir_if_not_exists(path: &Path) {
     if !path.exists() {
         fs::create_dir_all(path).unwrap();
@@ -482,6 +548,12 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
     let p = document_path.parent().unwrap().join(GRAPHQL_DIRECTORY);
     create_dir_if_not_exists(&p);
     p.join(format!("{}.{}", operation_name, END_OF_FILE))
+}
+
+fn get_generation_path_for_fragment(pwd: &Path, fragment_name: &str) -> PathBuf {
+    let p = pwd.join(GRAPHQL_DIRECTORY);
+    create_dir_if_not_exists(&p);
+    p.join(format!("{}.{}", fragment_name.to_lowercase(), END_OF_FILE))
 }
 
 fn generate_operations_file(
@@ -503,15 +575,24 @@ fn generate_operations_file(
     Ok(())
 }
 
-fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContext, path: &Path) {
-    info!("rendering schema file");
+fn generate_fragment_file(
+    ctx: &SharedShalomGlobalContext,
+    pwd: &Path,
+    fragment_name: &str,
+    fragment_ctx: &shalom_core::operation::fragments::FragmentContext,
+    additional_imports: HashMap<String, String>,
+) -> anyhow::Result<()> {
+    let fragment_env = FragmentEnv::new(ctx, fragment_ctx)?;
+    let generated_content = fragment_env.render_fragment(
+        context! { context => fragment_ctx },
+        context! { context => &ctx.schema_ctx },
+        additional_imports,
+    );
 
-    let rendered_content = template_env.render_schema(ctx);
-    let output_dir = path.join(GRAPHQL_DIRECTORY);
-    create_dir_if_not_exists(&output_dir);
-    let generation_target = output_dir.join(format!("schema.{}", END_OF_FILE));
-    fs::write(&generation_target, rendered_content).unwrap();
-    info!("Generated {}", generation_target.display());
+    let generation_path = get_generation_path_for_fragment(pwd, fragment_name);
+    fs::write(&generation_path, generated_content)?;
+    info!("Generated fragment file: {}", generation_path.display());
+    Ok(())
 }
 
 pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
@@ -519,12 +600,13 @@ pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
     let ctx = shalom_core::entrypoint::parse_directory(pwd, strict)?;
     let template_env = SchemaEnv::new(&ctx)?;
 
+    // Clean up unused operation files
     let existing_op_names =
         glob::glob(pwd.join(format!("**/*.{}", END_OF_FILE)).to_str().unwrap())?;
     for entry in existing_op_names {
         let entry = entry?;
         if entry.is_file() {
-            let resolved_op_name = entry
+            let resolved_name = entry
                 .file_name()
                 .unwrap()
                 .to_str()
@@ -532,8 +614,9 @@ pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
                 .split(format!(".{}", END_OF_FILE).as_str())
                 .next()
                 .unwrap();
-            if !ctx.operation_exists(resolved_op_name) {
-                info!("deleting unused operation {}", resolved_op_name);
+            // Check if it's neither an operation nor a fragment
+            if !ctx.operation_exists(resolved_name) && !ctx.fragment_exists(resolved_name) {
+                info!("deleting unused file {}", resolved_name);
                 fs::remove_file(entry)?;
             }
         }
@@ -558,6 +641,28 @@ pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
         .into_iter()
         .map(|(k, v)| (k.to_string_lossy().to_string(), v))
         .collect();
+
+    // Generate fragment files first (operations might depend on them)
+    for (fragment_name, fragment_ctx) in ctx.fragments() {
+        let res = generate_fragment_file(
+            &ctx,
+            pwd,
+            &fragment_name,
+            &*fragment_ctx,
+            additional_imports.clone(),
+        );
+        if let Err(err) = res {
+            if strict {
+                return Err(err);
+            }
+            error!(
+                "Failed to generate fragment '{}' due to: {}",
+                fragment_name, err
+            );
+        }
+    }
+
+    // Generate operation files
     for (name, operation) in ctx.operations() {
         let res = generate_operations_file(&ctx, &name, &operation, additional_imports.clone());
         if let Err(err) = res {
@@ -569,4 +674,15 @@ pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContext, path: &Path) {
+    info!("rendering schema file");
+
+    let rendered_content = template_env.render_schema(ctx);
+    let output_dir = path.join(GRAPHQL_DIRECTORY);
+    create_dir_if_not_exists(&output_dir);
+    let generation_target = output_dir.join(format!("schema.{}", END_OF_FILE));
+    fs::write(&generation_target, rendered_content).unwrap();
+    info!("Generated {}", generation_target.display());
 }

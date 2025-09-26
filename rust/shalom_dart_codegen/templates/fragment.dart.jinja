@@ -1,0 +1,201 @@
+{% include "macros" %}
+
+{% set fragment_name = fragment.context.context.name %}
+{% set fragment_selections = fragment.context.context.type_defs %}
+{% set root_type = fragment.context.context.root_type %}
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// Fragment: {{fragment_name}}
+
+import 'package:shalom_core/shalom_core.dart';
+{% for import_alias, import_path in extra_imports | items %}
+import '{{import_path}}' as {{import_alias}};
+{% endfor %}
+
+{% if fragment.context.context.used_fragments | length > 0 %}
+// Fragment imports
+{% for used_fragment in fragment.context.context.used_fragments %}
+import '{{used_fragment.get_fragment_name() | lower}}.dart';
+{% endfor %}
+{% endif %}
+
+{# Generate data classes for all selections in the fragment #}
+{% for selection_name, selection in fragment_selections | items %}
+{% if selection.kind == "Object" %}
+class {{type_name_for_selection(selection)}} {
+    {% for field_selection in selection.selections %}
+    final {{type_name_for_selection(field_selection)}} {{field_selection.name}};
+    {% endfor %}
+
+    const {{type_name_for_selection(selection)}}({
+        {% for field_selection in selection.selections %}
+        {% if not field_selection.is_optional %}required {% endif %}this.{{field_selection.name}},
+        {% endfor %}
+    });
+
+    @override
+    bool operator ==(Object other) =>
+        identical(this, other) ||
+        other is {{type_name_for_selection(selection)}} &&
+        runtimeType == other.runtimeType &&
+        {% for field_selection in selection.selections %}
+        {{field_selection.name}} == other.{{field_selection.name}}{% if not loop.last %} &&{% endif %}
+        {% endfor %};
+
+    @override
+    int get hashCode =>
+        {% for field_selection in selection.selections %}
+        {{field_selection.name}}.hashCode{% if not loop.last %} ^{% endif %}
+        {% endfor %};
+
+    Map<String, dynamic> toJson() {
+        final Map<String, dynamic> data = {};
+        {% for field_selection in selection.selections %}
+        {% set field_name = field_selection.name %}
+        {% if field_selection.kind == "Scalar" %}
+            {% if field_selection.is_optional %}
+            if ({{field_name}} != null) {
+                {% if field_selection.is_custom_scalar %}
+                data["{{field_name}}"] = {{ custom_scalar_impl_fullname(field_selection.concrete_type.name) }}.serialize({{field_name}}!);
+                {% else %}
+                data["{{field_name}}"] = {{field_name}};
+                {% endif %}
+            }
+            {% else %}
+                {% if field_selection.is_custom_scalar %}
+                data["{{field_name}}"] = {{ custom_scalar_impl_fullname(field_selection.concrete_type.name) }}.serialize({{field_name}});
+                {% else %}
+                data["{{field_name}}"] = {{field_name}};
+                {% endif %}
+            {% endif %}
+        {% elif field_selection.kind == "Object" %}
+            {% if field_selection.is_optional %}
+            if ({{field_name}} != null) {
+                data["{{field_name}}"] = {{field_name}}!.toJson();
+            }
+            {% else %}
+            data["{{field_name}}"] = {{field_name}}.toJson();
+            {% endif %}
+        {% elif field_selection.kind == "Enum" %}
+            {% if field_selection.is_optional %}
+            if ({{field_name}} != null) {
+                data["{{field_name}}"] = {{field_name}}!.name;
+            }
+            {% else %}
+            data["{{field_name}}"] = {{field_name}}.name;
+            {% endif %}
+        {% elif field_selection.kind == "List" %}
+            {% if field_selection.is_optional %}
+            if ({{field_name}} != null) {
+                data["{{field_name}}"] = {{field_name}}!.map((e) => e.toJson()).toList();
+            }
+            {% else %}
+            data["{{field_name}}"] = {{field_name}}.map((e) => e.toJson()).toList();
+            {% endif %}
+        {% endif %}
+        {% endfor %}
+        return data;
+    }
+}
+
+{% endif %}
+{% endfor %}
+
+{# Generate fromCache method for the fragment root type #}
+{% if root_type %}
+{{type_name_for_selection(root_type)}} {{fragment_name}}FromCache(Map<String, dynamic> cacheData) {
+    {% if root_type.kind == "Object" %}
+    return {{type_name_for_selection(root_type)}}(
+        {% for field_selection in root_type.selections %}
+        {% set field_name = field_selection.name %}
+        {% if field_selection.kind == "Scalar" %}
+            {% if field_selection.is_optional %}
+            {{field_name}}: cacheData["{{field_name}}"] == null ? null :
+                {% if field_selection.is_custom_scalar %}
+                {{ custom_scalar_impl_fullname(field_selection.concrete_type.name) }}.deserialize(cacheData["{{field_name}}"]),
+                {% else %}
+                cacheData["{{field_name}}"] as {{dart_type_for_scalar_name(field_selection.concrete_type.name)}}?,
+                {% endif %}
+            {% else %}
+            {{field_name}}:
+                {% if field_selection.is_custom_scalar %}
+                {{ custom_scalar_impl_fullname(field_selection.concrete_type.name) }}.deserialize(cacheData["{{field_name}}"]),
+                {% else %}
+                cacheData["{{field_name}}"] as {{dart_type_for_scalar_name(field_selection.concrete_type.name)}},
+                {% endif %}
+            {% endif %}
+        {% elif field_selection.kind == "Object" %}
+            {% if field_selection.is_optional %}
+            {{field_name}}: cacheData["{{field_name}}"] == null ? null : {{type_name_for_selection(field_selection)}}FromCache(cacheData["{{field_name}}"]),
+            {% else %}
+            {{field_name}}: {{type_name_for_selection(field_selection)}}FromCache(cacheData["{{field_name}}"]),
+            {% endif %}
+        {% elif field_selection.kind == "Enum" %}
+            {% if field_selection.is_optional %}
+            {{field_name}}: cacheData["{{field_name}}"] == null ? null : {{field_selection.concrete_type.name}}.values.byName(cacheData["{{field_name}}"]),
+            {% else %}
+            {{field_name}}: {{field_selection.concrete_type.name}}.values.byName(cacheData["{{field_name}}"]),
+            {% endif %}
+        {% elif field_selection.kind == "List" %}
+            {% if field_selection.is_optional %}
+            {{field_name}}: cacheData["{{field_name}}"] == null ? null : (cacheData["{{field_name}}"] as List).map((e) => {{type_name_for_selection(field_selection)}}FromCache(e)).toList(),
+            {% else %}
+            {{field_name}}: (cacheData["{{field_name}}"] as List).map((e) => {{type_name_for_selection(field_selection)}}FromCache(e)).toList(),
+            {% endif %}
+        {% endif %}
+        {% endfor %}
+    );
+    {% endif %}
+}
+
+{# Generate helper methods for nested objects #}
+{% for selection_name, selection in fragment_selections | items %}
+{% if selection.kind == "Object" and selection_name != fragment_name %}
+{{type_name_for_selection(selection)}} {{selection_name}}FromCache(Map<String, dynamic> cacheData) {
+    return {{type_name_for_selection(selection)}}(
+        {% for field_selection in selection.selections %}
+        {% set field_name = field_selection.name %}
+        {% if field_selection.kind == "Scalar" %}
+            {% if field_selection.is_optional %}
+            {{field_name}}: cacheData["{{field_name}}"] == null ? null :
+                {% if field_selection.is_custom_scalar %}
+                {{ custom_scalar_impl_fullname(field_selection.concrete_type.name) }}.deserialize(cacheData["{{field_name}}"]),
+                {% else %}
+                cacheData["{{field_name}}"] as {{dart_type_for_scalar_name(field_selection.concrete_type.name)}}?,
+                {% endif %}
+            {% else %}
+            {{field_name}}:
+                {% if field_selection.is_custom_scalar %}
+                {{ custom_scalar_impl_fullname(field_selection.concrete_type.name) }}.deserialize(cacheData["{{field_name}}"]),
+                {% else %}
+                cacheData["{{field_name}}"] as {{dart_type_for_scalar_name(field_selection.concrete_type.name)}},
+                {% endif %}
+            {% endif %}
+        {% elif field_selection.kind == "Object" %}
+            {% if field_selection.is_optional %}
+            {{field_name}}: cacheData["{{field_name}}"] == null ? null : {{type_name_for_selection(field_selection)}}FromCache(cacheData["{{field_name}}"]),
+            {% else %}
+            {{field_name}}: {{type_name_for_selection(field_selection)}}FromCache(cacheData["{{field_name}}"]),
+            {% endif %}
+        {% elif field_selection.kind == "Enum" %}
+            {% if field_selection.is_optional %}
+            {{field_name}}: cacheData["{{field_name}}"] == null ? null : {{field_selection.concrete_type.name}}.values.byName(cacheData["{{field_name}}"]),
+            {% else %}
+            {{field_name}}: {{field_selection.concrete_type.name}}.values.byName(cacheData["{{field_name}}"]),
+            {% endif %}
+        {% elif field_selection.kind == "List" %}
+            {% if field_selection.is_optional %}
+            {{field_name}}: cacheData["{{field_name}}"] == null ? null : (cacheData["{{field_name}}"] as List).map((e) => {{type_name_for_selection(field_selection)}}FromCache(e)).toList(),
+            {% else %}
+            {{field_name}}: (cacheData["{{field_name}}"] as List).map((e) => {{type_name_for_selection(field_selection)}}FromCache(e)).toList(),
+            {% endif %}
+        {% endif %}
+        {% endfor %}
+    );
+}
+
+{% endif %}
+{% endfor %}
+
+
+{% endif %}

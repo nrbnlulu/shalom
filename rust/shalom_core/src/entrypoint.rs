@@ -86,26 +86,52 @@ pub fn parse_directory(pwd: &Path, strict: bool) -> anyhow::Result<SharedShalomG
             ))
         }
     };
-    let executables = collect_executables(&files.operations, &schema_parsed.schema, strict)?;
-    // TODO: collect fragments and add to global context
-    // TODO: then you'd need to parse operations 
+    let _executables = collect_executables(&files.operations, &schema_parsed.schema, strict)?;
 
     let global_ctx = ShalomGlobalContext::new(schema_parsed, config);
+
+    // First pass: collect all fragments
+    let mut all_fragments = HashMap::new();
+    for file in &files.operations {
+        let content = fs::read_to_string(&file)?;
+        let fragments =
+            crate::operation::parse::parse_fragments_from_document(&global_ctx, &content, file)?;
+        all_fragments.extend(fragments);
+    }
+
+    // Register fragments in global context
+    global_ctx.register_fragments(all_fragments);
+
+    // Second pass: collect all operations (now that fragments are available)
+    let mut all_operations = HashMap::new();
+    for file in &files.operations {
+        let content = fs::read_to_string(&file)?;
+        let operations = crate::operation::parse::parse_document(&global_ctx, &content, file)?;
+        all_operations.extend(operations);
+    }
+
+    // Register operations in global context
+    global_ctx.register_operations(all_operations);
 
     Ok(global_ctx)
 }
 
-
-pub fn collect_executables(files: &Vec<PathBuf>, schema: &Valid<apollo_compiler::Schema>, strict: bool) -> anyhow::Result<Vec<ExecutableDocument>>{
+pub fn collect_executables(
+    files: &Vec<PathBuf>,
+    schema: &Valid<apollo_compiler::Schema>,
+    strict: bool,
+) -> anyhow::Result<Vec<ExecutableDocument>> {
     let mut parser = apollo_compiler::parser::Parser::new();
     let mut ret = Vec::new();
     for file in files {
         let content = fs::read_to_string(&file)?;
-        match parser.parse_executable(schema, content, file)
-        .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e)){
+        match parser
+            .parse_executable(schema, content, file)
+            .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))
+        {
             Ok(doc) => {
                 ret.push(doc);
-            },
+            }
             Err(err) => {
                 if strict {
                     return Err(err);
@@ -113,7 +139,6 @@ pub fn collect_executables(files: &Vec<PathBuf>, schema: &Valid<apollo_compiler:
                 error!("Failed to parse document: {}", err);
             }
         }
-        
     }
     Ok(ret)
 }
