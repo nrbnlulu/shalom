@@ -106,8 +106,11 @@ fn parse_object_selection(
                 );
 
                 obj.add_selection(field_selection);
+            },
+            apollo_executable::Selection::FragmentSpread(fragment)=>{
+                todo!("fetch fragment from context")
             }
-            _ => todo!("Unsupported selection type {:?}", selection),
+                
         }
     }
     obj
@@ -262,7 +265,6 @@ pub(crate) fn parse_document(
     doc_path: &PathBuf,
 ) -> anyhow::Result<HashMap<String, SharedOpCtx>> {
     let mut ret = HashMap::new();
-    let mut parser = apollo_compiler::parser::Parser::new();
     let schema = global_ctx.schema_ctx.schema.clone();
     let doc_orig = parser
         .parse_executable(&schema, source, doc_path)

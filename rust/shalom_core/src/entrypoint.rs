@@ -5,6 +5,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use apollo_compiler::{validation::Valid, ExecutableDocument};
 use log::error;
 
 use crate::{
@@ -85,20 +86,34 @@ pub fn parse_directory(pwd: &Path, strict: bool) -> anyhow::Result<SharedShalomG
             ))
         }
     };
+    let executables = collect_executables(&files.operations, &schema_parsed.schema, strict)?;
+    // TODO: collect fragments and add to global context
+    // TODO: then you'd need to parse operations 
 
     let global_ctx = ShalomGlobalContext::new(schema_parsed, config);
 
-    for operation in files.operations {
-        let content = fs::read_to_string(&operation)?;
-        if let Err(err) = parse_document(&global_ctx, &content, &operation)
-            .map(|parsed| global_ctx.register_operations(parsed))
-        {
-            if strict {
-                return Err(err);
-            }
-            error!("Failed to parse document: {}", err);
-        }
-    }
-
     Ok(global_ctx)
+}
+
+
+pub fn collect_executables(files: &Vec<PathBuf>, schema: &Valid<apollo_compiler::Schema>, strict: bool) -> anyhow::Result<Vec<ExecutableDocument>>{
+    let mut parser = apollo_compiler::parser::Parser::new();
+    let mut ret = Vec::new();
+    for file in files {
+        let content = fs::read_to_string(&file)?;
+        match parser.parse_executable(schema, content, file)
+        .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e)){
+            Ok(doc) => {
+                ret.push(doc);
+            },
+            Err(err) => {
+                if strict {
+                    return Err(err);
+                }
+                error!("Failed to parse document: {}", err);
+            }
+        }
+        
+    }
+    Ok(ret)
 }
