@@ -89,11 +89,11 @@
         {% else %}
             ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
         {% endif %}
-    {% else %}
+    {% elif selection.kind == "FragmentSpread" %}
         {% if is_optional %}
-            {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
+            {{ value_symbol }} == null ? null : {{ selection.fragment_name }}FromCache({{ value_symbol }} as Map<String, dynamic>)
         {% else %}
-            {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}
+            {{ selection.fragment_name }}FromCache({{ value_symbol }} as Map<String, dynamic>)
         {% endif %}
     {% endif %}
 {% endmacro %}
@@ -151,6 +151,16 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements
 
 import "schema.shalom.dart";
+
+
+
+{% if operation.context.used_fragments | length > 0 %}
+// Fragment imports
+{% for used_fragment in operation.context.used_fragments %}
+import '{{get_fragment_name(used_fragment) | lower}}.dart';
+{% endfor %}
+{% endif %}
+
 {% for path, namespace_alias in extra_imports | items -%}
 import '{{path}}' as {{ namespace_alias }};
 {% endfor %}

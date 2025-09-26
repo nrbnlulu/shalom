@@ -95,6 +95,10 @@ mod ext_jinja_fns {
                     enum_.concrete_type.name.clone()
                 }
             }
+            SelectionKind::FragmentSpread(fragment_spread) => {
+                // Fragment spreads use the fragment type name
+                fragment_spread.fragment_name.clone()
+            }
         }
     }
 
@@ -447,6 +451,19 @@ impl OperationEnv<'_> {
                         .get_id_selection()
                         .map(minijinja::Value::from_serialize),
                     _ => None,
+                }
+            },
+        );
+
+        env.add_function(
+            "get_fragment_name",
+            |fragment: minijinja::Value| -> Result<String, minijinja::Error> {
+                match fragment.get_attr("name") {
+                    Ok(name) => Ok(name.as_str().unwrap_or("").to_string()),
+                    Err(_) => Err(minijinja::Error::new(
+                        minijinja::ErrorKind::InvalidOperation,
+                        "Fragment context missing name field",
+                    )),
                 }
             },
         );

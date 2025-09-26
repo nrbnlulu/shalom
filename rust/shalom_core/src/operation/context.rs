@@ -4,6 +4,7 @@ use std::rc::Rc;
 
 use serde::Serialize;
 
+use super::fragments::SharedFragmentContext;
 use super::types::{FullPathName, OperationType, Selection};
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 pub type OperationVariable = InputFieldDefinition;
@@ -20,6 +21,7 @@ pub struct OperationContext {
     type_defs: HashMap<FullPathName, Selection>,
     root_type: Option<Selection>,
     op_ty: OperationType,
+    pub used_fragments: Vec<SharedFragmentContext>,
 }
 
 impl OperationContext {
@@ -39,6 +41,7 @@ impl OperationContext {
             type_defs: HashMap::new(),
             root_type: None,
             op_ty,
+            used_fragments: Vec::new(),
         }
     }
     pub fn get_operation_name(&self) -> &str {
@@ -62,6 +65,14 @@ impl OperationContext {
     }
     pub fn get_variable(&self, name: &str) -> Option<&OperationVariable> {
         self.variables.get(name)
+    }
+
+    pub fn add_used_fragment(&mut self, fragment: SharedFragmentContext) {
+        self.used_fragments.push(fragment);
+    }
+
+    pub fn get_used_fragments(&self) -> &Vec<SharedFragmentContext> {
+        &self.used_fragments
     }
 }
 

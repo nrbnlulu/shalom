@@ -17,8 +17,8 @@ use crate::schema::types::{
 use super::context::{OperationContext, SharedOpCtx};
 use super::fragments::{FragmentContext, SharedFragmentContext};
 use super::types::{
-    EnumSelection, OperationType, ScalarSelection, Selection, SharedEnumSelection,
-    SharedObjectSelection, SharedScalarSelection,
+    EnumSelection, FragmentSpreadSelection, OperationType, ScalarSelection, Selection,
+    SharedEnumSelection, SharedObjectSelection, SharedScalarSelection,
 };
 
 fn full_path_name(this_name: &String, parent_path: &String) -> String {
@@ -36,6 +36,7 @@ fn parse_object_selection<T>(
     is_optional: bool,
     selection_orig: &apollo_compiler::executable::SelectionSet,
     local_fragments: Option<&HashMap<String, SharedFragmentContext>>,
+    mut used_fragments: Option<&mut Vec<SharedFragmentContext>>,
 ) -> SharedObjectSelection
 where
     T: SelectionContext,
@@ -110,6 +111,7 @@ where
                     f_type,
                     args,
                     local_fragments,
+                    used_fragments.as_deref_mut(),
                 );
 
                 obj.add_selection(field_selection);
@@ -119,45 +121,49 @@ where
                 trace!("Processing fragment spread: {}", fragment_name);
 
                 // First try local fragments, then global
-                let fragment_found = if let Some(local_fragments) = local_fragments {
-                    if let Some(fragment_ctx) = local_fragments.get(&fragment_name) {
-                        // Add the fragment's selections to this object
-                        if let Some(root_selection) = fragment_ctx.get_root_type() {
-                            if let SelectionKind::Object(fragment_obj) = &root_selection.kind {
-                                for fragment_selection in fragment_obj.selections.borrow().iter() {
-                                    obj.add_selection(fragment_selection.clone());
-                                }
+                let (fragment_found, type_condition) =
+                    if let Some(local_fragments) = local_fragments {
+                        if let Some(fragment_ctx) = local_fragments.get(&fragment_name) {
+                            // Track fragment usage for operations
+                            if let Some(used_fragments) = used_fragments.as_mut() {
+                                used_fragments.push(fragment_ctx.clone());
                             }
+                            (true, fragment_ctx.type_condition.clone())
+                        } else if let Some(fragment_ctx) = global_ctx.get_fragment(&fragment_name) {
+                            // Track fragment usage for operations
+                            if let Some(used_fragments) = used_fragments.as_mut() {
+                                used_fragments.push(fragment_ctx.clone());
+                            }
+                            (true, fragment_ctx.type_condition.clone())
+                        } else {
+                            (false, String::new())
                         }
-                        true
                     } else if let Some(fragment_ctx) = global_ctx.get_fragment(&fragment_name) {
-                        // Add the fragment's selections to this object
-                        if let Some(root_selection) = fragment_ctx.get_root_type() {
-                            if let SelectionKind::Object(fragment_obj) = &root_selection.kind {
-                                for fragment_selection in fragment_obj.selections.borrow().iter() {
-                                    obj.add_selection(fragment_selection.clone());
-                                }
-                            }
+                        // Track fragment usage for operations
+                        if let Some(used_fragments) = used_fragments.as_mut() {
+                            used_fragments.push(fragment_ctx.clone());
                         }
-                        true
+                        (true, fragment_ctx.type_condition.clone())
                     } else {
-                        false
-                    }
-                } else if let Some(fragment_ctx) = global_ctx.get_fragment(&fragment_name) {
-                    // Add the fragment's selections to this object
-                    if let Some(root_selection) = fragment_ctx.get_root_type() {
-                        if let SelectionKind::Object(fragment_obj) = &root_selection.kind {
-                            for fragment_selection in fragment_obj.selections.borrow().iter() {
-                                obj.add_selection(fragment_selection.clone());
-                            }
-                        }
-                    }
-                    true
-                } else {
-                    false
-                };
+                        (false, String::new())
+                    };
 
-                if !fragment_found {
+                if fragment_found {
+                    // Create a fragment spread selection instead of expanding
+                    let fragment_spread_selection = Selection::new(
+                        SelectionCommon {
+                            name: fragment_name.clone(),
+                            description: None,
+                        },
+                        SelectionKind::FragmentSpread(FragmentSpreadSelection::new(
+                            fragment_name,
+                            type_condition,
+                            false, // Fragment spreads themselves are not optional
+                        )),
+                        Vec::new(),
+                    );
+                    obj.add_selection(fragment_spread_selection);
+                } else {
                     // Fragment not found - this might be a forward reference or missing fragment
                     trace!("Fragment {} not found, skipping", fragment_name);
                 }
@@ -191,6 +197,7 @@ pub fn parse_selection_kind<T>(
     selection_set: &apollo_executable::SelectionSet,
     field_type_orig: &FieldTypeOrig,
     local_fragments: Option<&HashMap<String, SharedFragmentContext>>,
+    used_fragments: Option<&mut Vec<SharedFragmentContext>>,
 ) -> SelectionKind
 where
     T: SelectionContext,
@@ -209,6 +216,7 @@ where
                     is_optional,
                     selection_set,
                     local_fragments,
+                    used_fragments,
                 )),
                 GraphQLAny::Enum(_enum) => {
                     SelectionKind::Enum(parse_enum_selection(is_optional, _enum))
@@ -227,6 +235,7 @@ where
                 selection_set,
                 of_type,
                 local_fragments,
+                used_fragments,
             );
             SelectionKind::new_list(is_optional, of_kind)
         }
@@ -277,6 +286,7 @@ fn parse_selection_set<T>(
     field_type_orig: &FieldTypeOrig,
     arguments: Vec<crate::operation::types::FieldArgument>,
     local_fragments: Option<&HashMap<String, SharedFragmentContext>>,
+    used_fragments: Option<&mut Vec<SharedFragmentContext>>,
 ) -> Selection
 where
     T: SelectionContext,
@@ -294,6 +304,7 @@ where
         selection_orig,
         field_type_orig,
         local_fragments,
+        used_fragments,
     );
     let selection = Selection::new(selection_common, kind, arguments);
     ctx.add_selection(full_name, selection.clone());
@@ -359,6 +370,7 @@ fn parse_operation(
         name: first_selection_name,
         description: None,
     };
+    let mut used_fragments = Vec::new();
     let root_type = parse_object_selection(
         &mut ctx,
         global_ctx,
@@ -366,7 +378,13 @@ fn parse_operation(
         false,
         &op.selection_set,
         None,
+        Some(&mut used_fragments),
     );
+
+    // Add used fragments to operation context
+    for fragment in used_fragments {
+        ctx.add_used_fragment(fragment);
+    }
     let selection = Selection::new(selection_common, SelectionKind::Object(root_type), vec![]);
     ctx.set_root_type(selection.clone());
     ctx.add_selection(operation_name, selection);
@@ -423,6 +441,7 @@ pub(crate) fn parse_fragments_from_document(
             false,
             &fragment.selection_set,
             Some(&local_fragments),
+            None,
         );
 
         let selection_common = SelectionCommon {

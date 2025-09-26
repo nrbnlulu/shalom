@@ -74,6 +74,7 @@ pub enum SelectionKind {
     Object(Rc<ObjectSelection>),
     Enum(Rc<EnumSelection>),
     List(Rc<ListSelection>),
+    FragmentSpread(Rc<FragmentSpreadSelection>),
 }
 impl SelectionKind {
     pub fn new_list(is_optional: bool, of_kind: SelectionKind) -> Self {
@@ -168,6 +169,29 @@ pub struct ListSelection {
 }
 
 pub type SharedListSelection = Rc<ListSelection>;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct FragmentSpreadSelection {
+    pub fragment_name: String,
+    pub type_condition: String,
+    pub is_optional: bool,
+}
+
+pub type SharedFragmentSpreadSelection = Rc<FragmentSpreadSelection>;
+
+impl FragmentSpreadSelection {
+    pub fn new(
+        fragment_name: String,
+        type_condition: String,
+        is_optional: bool,
+    ) -> SharedFragmentSpreadSelection {
+        Rc::new(FragmentSpreadSelection {
+            fragment_name,
+            type_condition,
+            is_optional,
+        })
+    }
+}
 
 pub fn dart_type_for_scalar(scalar_name: &str) -> String {
     match scalar_name {
