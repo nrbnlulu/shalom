@@ -15,11 +15,26 @@ import '{{import_path}}' as {{import_alias}};
 {% if fragment.context.context.used_fragments | length > 0 %}
 // Fragment imports
 {% for used_fragment in fragment.context.context.used_fragments %}
-import '{{used_fragment.get_fragment_name() | lower}}.dart';
+import '{{used_fragment.get_fragment_name() | lower}}.shalom.dart';
 {% endfor %}
 {% endif %}
 
-{# Generate data classes for all selections in the fragment using macros #}
+// Generate abstract fragment class
+{% if root_type %}
+abstract class {{ fragment_name }} {
+{% for field in root_type.selections %}
+  abstract {{ type_name_for_selection(field) }} get {{ field.name }};
+{% endfor %}
+
+  abstract Map<String, dynamic> toJson();
+
+  abstract bool operator ==(Object other);
+
+  abstract int get hashCode;
+}
+{% endif %}
+
+// Generate data classes for all selections in the fragment using macros
 {% for selection_name, selection in fragment_selections | items %}
 {% if selection.kind == "Object" %}
 {{ generate_data_class(type_name_for_selection(selection), selection.selections) }}
@@ -27,15 +42,10 @@ import '{{used_fragment.get_fragment_name() | lower}}.dart';
 {% endif %}
 {% endfor %}
 
-{# Generate main fragment fromCache method #}
-{% if root_type %}
-{{ generate_from_cache_method(type_name_for_selection(root_type), root_type.selections) }}
-
-{# Generate helper fromCache methods for nested objects #}
+{# Generate fromCache methods for nested objects #}
 {% for selection_name, selection in fragment_selections | items %}
-{% if selection.kind == "Object" and selection_name != fragment_name %}
+{% if selection.kind == "Object" %}
 {{ generate_from_cache_method(type_name_for_selection(selection), selection.selections) }}
 
 {% endif %}
 {% endfor %}
-{% endif %}

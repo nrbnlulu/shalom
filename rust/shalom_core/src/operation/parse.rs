@@ -156,13 +156,24 @@ where
                             description: None,
                         },
                         SelectionKind::FragmentSpread(FragmentSpreadSelection::new(
-                            fragment_name,
+                            fragment_name.clone(),
                             type_condition,
                             false, // Fragment spreads themselves are not optional
                         )),
                         Vec::new(),
                     );
                     obj.add_selection(fragment_spread_selection);
+
+                    // Expand fragment selections into the object selection
+                    if let Some(fragment_ctx) = global_ctx.get_fragment(&fragment_name) {
+                        if let Some(root_sel) = &fragment_ctx.root_type {
+                            if let SelectionKind::Object(obj_sel) = &root_sel.kind {
+                                for sel in obj_sel.selections.borrow().iter() {
+                                    obj.add_selection(sel.clone());
+                                }
+                            }
+                        }
+                    }
                 } else {
                     // Fragment not found - this might be a forward reference or missing fragment
                     trace!("Fragment {} not found, skipping", fragment_name);

@@ -1,13 +1,13 @@
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 
-import '__graphql__/userinfo.shalom.dart';
-import '__graphql__/postsummary.shalom.dart';
+import '__graphql__/GetUser.shalom.dart';
+import '__graphql__/GetPosts.shalom.dart';
 
 void main() {
   group('Fragment Tests', () {
     test('UserInfo fragment - Required fields', () {
-      final userInfo = UserInfo(
+      final userInfo = GetUser_user(
         id: "user1",
         name: "John Doe",
         email: "john@example.com",
@@ -20,7 +20,7 @@ void main() {
     });
 
     test('UserInfo fragment - Optional fields', () {
-      final userInfo = UserInfo(
+      final userInfo = GetUser_user(
         id: "user1",
         name: "John Doe",
         email: "john@example.com",
@@ -31,21 +31,21 @@ void main() {
     });
 
     test('UserInfo fragment - equals', () {
-      final userInfo1 = UserInfo(
+      final userInfo1 = GetUser_user(
         id: "user1",
         name: "John Doe",
         email: "john@example.com",
         age: 30,
       );
 
-      final userInfo2 = UserInfo(
+      final userInfo2 = GetUser_user(
         id: "user1",
         name: "John Doe",
         email: "john@example.com",
         age: 30,
       );
 
-      final userInfo3 = UserInfo(
+      final userInfo3 = GetUser_user(
         id: "user2",
         name: "John Doe",
         email: "john@example.com",
@@ -57,7 +57,7 @@ void main() {
     });
 
     test('UserInfo fragment - toJson', () {
-      final userInfo = UserInfo(
+      final userInfo = GetUser_user(
         id: "user1",
         name: "John Doe",
         email: "john@example.com",
@@ -71,23 +71,8 @@ void main() {
       expect(json['age'], equals(30));
     });
 
-    test('UserInfo fragment - fromCache', () {
-      final cacheData = {
-        'id': "user1",
-        'name': "John Doe",
-        'email': "john@example.com",
-        'age': 30,
-      };
-
-      final userInfo = UserInfoFromCache(cacheData);
-      expect(userInfo.id, equals("user1"));
-      expect(userInfo.name, equals("John Doe"));
-      expect(userInfo.email, equals("john@example.com"));
-      expect(userInfo.age, equals(30));
-    });
-
     test('PostSummary fragment - Required fields', () {
-      final postSummary = PostSummary(
+      final postSummary = GetPosts_posts(
         id: "post1",
         title: "Test Post",
       );
@@ -98,7 +83,7 @@ void main() {
     });
 
     test('PostSummary fragment - Optional fields', () {
-      final postSummary = PostSummary(
+      final postSummary = GetPosts_posts(
         id: "post1",
         title: "Test Post",
         publishedAt: "2023-01-01",
@@ -108,13 +93,13 @@ void main() {
     });
 
     test('PostSummary fragment - equals', () {
-      final post1 = PostSummary(
+      final post1 = GetPosts_posts(
         id: "post1",
         title: "Test Post",
         publishedAt: "2023-01-01",
       );
 
-      final post2 = PostSummary(
+      final post2 = GetPosts_posts(
         id: "post1",
         title: "Test Post",
         publishedAt: "2023-01-01",
@@ -124,7 +109,7 @@ void main() {
     });
 
     test('PostSummary fragment - toJson', () {
-      final postSummary = PostSummary(
+      final postSummary = GetPosts_posts(
         id: "post1",
         title: "Test Post",
         publishedAt: "2023-01-01",

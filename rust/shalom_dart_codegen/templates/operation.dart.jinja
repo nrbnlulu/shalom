@@ -89,12 +89,6 @@
         {% else %}
             ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
         {% endif %}
-    {% elif selection.kind == "FragmentSpread" %}
-        {% if is_optional %}
-            {{ value_symbol }} == null ? null : {{ selection.fragment_name }}FromCache({{ value_symbol }} as Map<String, dynamic>)
-        {% else %}
-            {{ selection.fragment_name }}FromCache({{ value_symbol }} as Map<String, dynamic>)
-        {% endif %}
     {% endif %}
 {% endmacro %}
 
@@ -157,7 +151,7 @@ import "schema.shalom.dart";
 {% if operation.context.used_fragments | length > 0 %}
 // Fragment imports
 {% for used_fragment in operation.context.used_fragments %}
-import '{{get_fragment_name(used_fragment) | lower}}.dart';
+import '{{get_fragment_name(used_fragment) | lower}}.shalom.dart';
 {% endfor %}
 {% endif %}
 
@@ -173,14 +167,15 @@ import 'package:collection/collection.dart';
 {% set operation_name = operation.context.operation_name %}
 {% macro selection_object_impl(typename, selection_object, is_root_selection) %}
     {% set selections = selection_object.selections %}
-    /// class members
-    {% for selection in selections -%}
+        {% set fragment_spreads = selections | selectattr('kind', 'equalto', 'FragmentSpread') | map(attribute='fragment_name') | list %}
+        {% if fragment_spreads %}implements {{ fragment_spreads | join(', ') }} {% endif %}{    /// class members
+    {% for selection in selections if selection.kind != 'FragmentSpread' -%}
         {% set selection_name = selection.name %}
         final {{ type_name_for_selection(selection) }} {{ selection_name }};
     {% endfor %}
     // keywordargs constructor
     {{ typename }}({
-    {% for selection in selections -%}
+    {% for selection in selections if selection.kind != 'FragmentSpread' -%}
         {% if not selection.is_optional %}required{% endif %}
         this.{{ selection.name }},
     {% endfor %}
@@ -188,7 +183,7 @@ import 'package:collection/collection.dart';
 
     static void normalize$inCache(JsonObject data,
             CacheUpdateContext ctx,
-            {% if op_variables_exist %} {{ operation_name }}Variables variables,{% endif %}
+             {% if op_variables_exist %} {{ operation_name }}Variables variables,{% endif %}
             {% if not is_root_selection -%}
                 {
                 /// can be just the selection name but also may include serialized arguments.
@@ -239,19 +234,19 @@ import 'package:collection/collection.dart';
         {% endif -%}
 
 
-        {% for selection in selection_object.selections -%}
+        {% for selection in selection_object.selections if selection.kind != 'FragmentSpread' -%}
             final {{selection.name}}Normalized$Key = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
             final {{selection.name}}$normalizedID = "${this$normalizedID}.${ {{selection.name}}Normalized$Key}";
         {% endfor -%}
         ctx.addDependantRecords(
             {
-            {% for selection in selection_object.selections -%}
+            {% for selection in selection_object.selections if selection.kind != 'FragmentSpread' -%}
                 {{selection.name}}$normalizedID  {{"," |if_not_last(loop.last)}}
             {% endfor -%}
             }
         );
 
-        {% for selection in selection_object.selections -%}
+        {% for selection in selection_object.selections if selection.kind != 'FragmentSpread' -%}
             final {{selection.name}}$cached = this$NormalizedRecord[{{selection.name}}Normalized$Key];
             final {{selection.name}}$raw = data["{{selection.name}}"];
             if ({{selection.name}}$raw != null){
@@ -299,7 +294,7 @@ import 'package:collection/collection.dart';
         {% if is_root_selection -%}
             final data = ctx.getCachedRecord("ROOT_{{OP_TYPE}}");
         {% endif -%}
-        {% for selection in selection_object.selections -%}
+        {% for selection in selection_object.selections if selection.kind != 'FragmentSpread' -%}
             {% set raw_value_symbol = selection.name + '$raw' %}
             {% if selection.arguments | length > 0 -%}
                 final {{selection.name}}$cacheKey = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
@@ -310,7 +305,7 @@ import 'package:collection/collection.dart';
             final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_cache_macro(raw_value_symbol, selection, selection.is_optional, op_variables) }};
         {% endfor -%}
         return {{ typename }}(
-            {% for selection in selections -%}
+            {% for selection in selections if selection.kind != 'FragmentSpread' -%}
                 {{selection.name}}: {{selection.name}}$value,
             {% endfor %}
         );
@@ -340,7 +335,7 @@ import 'package:collection/collection.dart';
     bool operator ==(Object other) {
     return identical(this, other) ||
     (other is {{ typename }} &&
-    {% for selection in selections -%}
+    {% for selection in selections if selection.kind != 'FragmentSpread' -%}
         {% set other_selection %}other.{{selection.name}}{% endset -%}
         {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&"|if_not_last(loop.last) }}
     {% endfor %}
@@ -348,19 +343,20 @@ import 'package:collection/collection.dart';
     }
     @override
     int get hashCode =>
-    {% if selections | length > 1 %}
+    {% set non_fragment_selections = selections | selectattr('kind', 'ne', 'FragmentSpread') %}
+    {% if non_fragment_selections | length > 1 %}
         Object.hashAll([
-        {% for selection in selections %}
+        {% for selection in non_fragment_selections %}
             {% set selection_name = selection.name %}
             {{ selection_name }},
         {% endfor %}
         ]);
     {% else %}
-        {{ (selections | first).name }}.hashCode;
+        {{ (non_fragment_selections | first).name }}.hashCode;
     {% endif %}
     JsonObject toJson() {
     return {
-    {% for selection in selections %}
+    {% for selection in selections if selection.kind != 'FragmentSpread' %}
         {% set selection_name = selection.name %}
         '{{ selection_name }}':
             {% if selection.is_optional %}

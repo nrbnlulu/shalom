@@ -16,7 +16,7 @@ pub struct FragmentContext {
     pub file_path: PathBuf,
     fragment: String,
     type_defs: HashMap<FullPathName, Selection>,
-    root_type: Option<Selection>,
+    pub root_type: Option<Selection>,
     pub used_fragments: Vec<SharedFragmentContext>,
     pub type_condition: String,
 }

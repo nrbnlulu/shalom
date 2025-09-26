@@ -139,15 +139,19 @@
 {% endmacro %}
 
 {# Macro to generate a data class with all required methods #}
-{% macro generate_data_class(class_name, fields) %}
-class {{ class_name }} {
+{% macro generate_data_class(class_name, fields, fragment_spreads=[]) %}
+class {{ class_name }} {% if fragment_spreads %} implements {{ fragment_spreads | join(', ') }} {% endif %} {
     {% for field in fields %}
+    {% if field.kind != "FragmentSpread" %}
     final {{ type_name_for_selection(field) }} {{ field.name }};
+    {% endif %}
     {% endfor %}
 
     const {{ class_name }}({
         {% for field in fields %}
+        {% if field.kind != "FragmentSpread" %}
         {% if not field.is_optional %}required {% endif %}this.{{ field.name }},
+        {% endif %}
         {% endfor %}
     });
 
@@ -157,20 +161,26 @@ class {{ class_name }} {
         other is {{ class_name }} &&
         runtimeType == other.runtimeType &&
         {% for field in fields %}
+        {% if field.kind != "FragmentSpread" %}
         {{ field.name }} == other.{{ field.name }}{% if not loop.last %} &&{% endif %}
+        {% endif %}
         {% endfor %};
 
     @override
     int get hashCode =>
         {% for field in fields %}
+        {% if field.kind != "FragmentSpread" %}
         {{ field.name }}.hashCode{% if not loop.last %} ^{% endif %}
+        {% endif %}
         {% endfor %};
 
     Map<String, dynamic> toJson() {
         final Map<String, dynamic> data = {};
         {% for field in fields %}
+        {% if field.kind != "FragmentSpread" %}
         {% set field_name = field.name %}
         {{ _serialize_field_to_json_macro(field_name, field) }}
+        {% endif %}
         {% endfor %}
         return data;
     }
@@ -219,14 +229,7 @@ class {{ class_name }} {
         {% else %}
         data["{{ field_name }}"] = {{ field_name }}.map((e) => e.toJson()).toList();
         {% endif %}
-    {% elif field.kind == "FragmentSpread" %}
-        {% if field.is_optional %}
-        if ({{ field_name }} != null) {
-            data.addAll({{ field_name }}!.toJson());
-        }
-        {% else %}
-        data.addAll({{ field_name }}.toJson());
-        {% endif %}
+
     {% endif %}
 {% endmacro %}
 
@@ -278,12 +281,7 @@ class {{ class_name }} {
         {% else %}
         {{ field_name }}: (cacheData["{{ field_name }}"] as List).map((e) => {{ type_name_for_selection(field) }}FromCache(e)).toList(),
         {% endif %}
-    {% elif field.kind == "FragmentSpread" %}
-        {% if field.is_optional %}
-        {{ field_name }}: cacheData["{{ field_name }}"] == null ? null : {{ field.fragment_name }}FromCache(cacheData),
-        {% else %}
-        {{ field_name }}: {{ field.fragment_name }}FromCache(cacheData),
-        {% endif %}
+
     {% endif %}
 {% endmacro %}
 
