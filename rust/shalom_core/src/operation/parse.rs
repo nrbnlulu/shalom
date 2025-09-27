@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use apollo_compiler::{
     ast::OperationType as ApolloOperationType, executable as apollo_executable, Node,
@@ -14,9 +15,10 @@ use crate::schema::types::{
 };
 
 use super::context::{OperationContext, SharedOpCtx};
+use super::fragments::{FragmentContext, SharedFragmentContext};
 use super::types::{
-    EnumSelection, OperationType, ScalarSelection, Selection, SharedEnumSelection,
-    SharedObjectSelection, SharedScalarSelection,
+    EnumSelection, FragmentSpreadSelection, OperationType, ScalarSelection, Selection,
+    SharedEnumSelection, SharedObjectSelection, SharedScalarSelection,
 };
 
 fn full_path_name(this_name: &String, parent_path: &String) -> String {
@@ -27,13 +29,18 @@ fn parse_enum_selection(is_optional: bool, concrete_type: Node<EnumType>) -> Sha
     EnumSelection::new(is_optional, concrete_type)
 }
 
-fn parse_object_selection(
-    op_ctx: &mut OperationContext,
+fn parse_object_selection<T>(
+    ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
     path: &String,
     is_optional: bool,
     selection_orig: &apollo_compiler::executable::SelectionSet,
-) -> SharedObjectSelection {
+    local_fragments: Option<&HashMap<String, SharedFragmentContext>>,
+    mut used_fragments: Option<&mut Vec<SharedFragmentContext>>,
+) -> SharedObjectSelection
+where
+    T: SelectionContext,
+{
     trace!("Parsing object selection {:?}", selection_orig.ty);
     trace!("Path is {:?}", path);
     assert!(
@@ -60,7 +67,7 @@ fn parse_object_selection(
                     .iter()
                     .map(|arg| match arg.value.as_ref() {
                         apollo_executable::Value::Variable(var_name) => {
-                            let op_var = op_ctx.get_variable(var_name).unwrap().clone();
+                            let op_var = ctx.get_variable(var_name).unwrap().clone();
 
                             let value =
                                 crate::operation::types::ArgumentValue::VariableUse(op_var.clone());
@@ -97,17 +104,85 @@ fn parse_object_selection(
 
                 let field_selection = parse_selection_set(
                     &field_path,
-                    op_ctx,
+                    ctx,
                     global_ctx,
                     selection_common,
                     &field.selection_set,
                     f_type,
                     args,
+                    local_fragments,
+                    used_fragments.as_deref_mut(),
                 );
 
                 obj.add_selection(field_selection);
             }
-            _ => todo!("Unsupported selection type {:?}", selection),
+            apollo_executable::Selection::FragmentSpread(fragment_spread) => {
+                let fragment_name = fragment_spread.fragment_name.to_string();
+                trace!("Processing fragment spread: {}", fragment_name);
+
+                // First try local fragments, then global
+                let (fragment_found, type_condition) =
+                    if let Some(local_fragments) = local_fragments {
+                        if let Some(fragment_ctx) = local_fragments.get(&fragment_name) {
+                            // Track fragment usage for operations
+                            if let Some(used_fragments) = used_fragments.as_mut() {
+                                used_fragments.push(fragment_ctx.clone());
+                            }
+                            (true, fragment_ctx.type_condition.clone())
+                        } else if let Some(fragment_ctx) = global_ctx.get_fragment(&fragment_name) {
+                            // Track fragment usage for operations
+                            if let Some(used_fragments) = used_fragments.as_mut() {
+                                used_fragments.push(fragment_ctx.clone());
+                            }
+                            (true, fragment_ctx.type_condition.clone())
+                        } else {
+                            (false, String::new())
+                        }
+                    } else if let Some(fragment_ctx) = global_ctx.get_fragment(&fragment_name) {
+                        // Track fragment usage for operations
+                        if let Some(used_fragments) = used_fragments.as_mut() {
+                            used_fragments.push(fragment_ctx.clone());
+                        }
+                        (true, fragment_ctx.type_condition.clone())
+                    } else {
+                        (false, String::new())
+                    };
+
+                if fragment_found {
+                    // Create a fragment spread selection instead of expanding
+                    let fragment_spread_selection = Selection::new(
+                        SelectionCommon {
+                            name: fragment_name.clone(),
+                            description: None,
+                        },
+                        SelectionKind::FragmentSpread(FragmentSpreadSelection::new(
+                            fragment_name.clone(),
+                            type_condition,
+                            false, // Fragment spreads themselves are not optional
+                        )),
+                        Vec::new(),
+                    );
+                    obj.add_selection(fragment_spread_selection);
+
+                    // Expand fragment selections into the object selection
+                    if let Some(fragment_ctx) = global_ctx.get_fragment(&fragment_name) {
+                        if let Some(root_sel) = &fragment_ctx.root_type {
+                            if let SelectionKind::Object(obj_sel) = &root_sel.kind {
+                                for sel in obj_sel.selections.borrow().iter() {
+                                    obj.add_selection(sel.clone());
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Fragment not found - this might be a forward reference or missing fragment
+                    trace!("Fragment {} not found, skipping", fragment_name);
+                }
+            }
+            apollo_executable::Selection::InlineFragment(_inline_fragment) => {
+                // TODO: Handle inline fragments
+                todo!("Inline fragments not yet supported");
+            }
         }
     }
     obj
@@ -126,13 +201,18 @@ fn parse_scalar_selection(
 
 type FieldTypeOrig = apollo_compiler::ast::Type;
 
-pub fn parse_selection_kind(
-    op_ctx: &mut OperationContext,
+pub fn parse_selection_kind<T>(
+    ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
     path: &String,
     selection_set: &apollo_executable::SelectionSet,
     field_type_orig: &FieldTypeOrig,
-) -> SelectionKind {
+    local_fragments: Option<&HashMap<String, SharedFragmentContext>>,
+    used_fragments: Option<&mut Vec<SharedFragmentContext>>,
+) -> SelectionKind
+where
+    T: SelectionContext,
+{
     let is_optional = !field_type_orig.is_non_null();
     match field_type_orig {
         FieldTypeOrig::Named(name) | FieldTypeOrig::NonNullNamed(name) => {
@@ -141,11 +221,13 @@ pub fn parse_selection_kind(
                     SelectionKind::Scalar(parse_scalar_selection(global_ctx, is_optional, scalar))
                 }
                 GraphQLAny::Object(_) => SelectionKind::Object(parse_object_selection(
-                    op_ctx,
+                    ctx,
                     global_ctx,
                     path,
                     is_optional,
                     selection_set,
+                    local_fragments,
+                    used_fragments,
                 )),
                 GraphQLAny::Enum(_enum) => {
                     SelectionKind::Enum(parse_enum_selection(is_optional, _enum))
@@ -157,30 +239,86 @@ pub fn parse_selection_kind(
             }
         }
         FieldTypeOrig::NonNullList(of_type) | FieldTypeOrig::List(of_type) => {
-            let of_kind = parse_selection_kind(op_ctx, global_ctx, path, selection_set, of_type);
+            let of_kind = parse_selection_kind(
+                ctx,
+                global_ctx,
+                path,
+                selection_set,
+                of_type,
+                local_fragments,
+                used_fragments,
+            );
             SelectionKind::new_list(is_optional, of_kind)
         }
     }
 }
 
-fn parse_selection_set(
+// Trait to abstract over OperationContext and FragmentContext
+pub trait SelectionContext {
+    fn get_selection(&self, name: &str) -> Option<Selection>;
+    fn add_selection(&mut self, name: String, selection: Selection);
+    fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable>;
+}
+
+impl SelectionContext for OperationContext {
+    fn get_selection(&self, name: &str) -> Option<Selection> {
+        self.get_selection(&name.to_string())
+    }
+
+    fn add_selection(&mut self, name: String, selection: Selection) {
+        self.add_selection(name, selection)
+    }
+
+    fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable> {
+        self.get_variable(name)
+    }
+}
+
+impl SelectionContext for FragmentContext {
+    fn get_selection(&self, name: &str) -> Option<Selection> {
+        self.get_selection(&name.to_string())
+    }
+
+    fn add_selection(&mut self, name: String, selection: Selection) {
+        self.add_selection(name, selection)
+    }
+
+    fn get_variable(&self, _name: &str) -> Option<&crate::operation::context::OperationVariable> {
+        None // Fragments don't have variables
+    }
+}
+
+fn parse_selection_set<T>(
     path: &String,
-    op_ctx: &mut OperationContext,
+    ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
     selection_common: SelectionCommon,
     selection_orig: &apollo_compiler::executable::SelectionSet,
     field_type_orig: &FieldTypeOrig,
     arguments: Vec<crate::operation::types::FieldArgument>,
-) -> Selection {
+    local_fragments: Option<&HashMap<String, SharedFragmentContext>>,
+    used_fragments: Option<&mut Vec<SharedFragmentContext>>,
+) -> Selection
+where
+    T: SelectionContext,
+{
     let full_name = path.clone();
-    if let Some(selection) = op_ctx.get_selection(&full_name) {
+    if let Some(selection) = ctx.get_selection(&full_name) {
         info!("Selection already exists");
         return selection.clone();
     }
 
-    let kind = parse_selection_kind(op_ctx, global_ctx, path, selection_orig, field_type_orig);
+    let kind = parse_selection_kind(
+        ctx,
+        global_ctx,
+        path,
+        selection_orig,
+        field_type_orig,
+        local_fragments,
+        used_fragments,
+    );
     let selection = Selection::new(selection_common, kind, arguments);
-    op_ctx.add_selection(full_name, selection.clone());
+    ctx.add_selection(full_name, selection.clone());
     selection
 }
 
@@ -243,17 +381,93 @@ fn parse_operation(
         name: first_selection_name,
         description: None,
     };
+    let mut used_fragments = Vec::new();
     let root_type = parse_object_selection(
         &mut ctx,
         global_ctx,
         &operation_name,
         false,
         &op.selection_set,
+        None,
+        Some(&mut used_fragments),
     );
+
+    // Add used fragments to operation context
+    for fragment in used_fragments {
+        ctx.add_used_fragment(fragment);
+    }
     let selection = Selection::new(selection_common, SelectionKind::Object(root_type), vec![]);
     ctx.set_root_type(selection.clone());
     ctx.add_selection(operation_name, selection);
     Ok(Rc::new(ctx))
+}
+
+// Parse fragments from executable document
+pub(crate) fn parse_fragments_from_document(
+    global_ctx: &SharedShalomGlobalContext,
+    source: &str,
+    doc_path: &PathBuf,
+) -> anyhow::Result<HashMap<String, SharedFragmentContext>> {
+    let mut ret = HashMap::new();
+    let schema = global_ctx.schema_ctx.schema.clone();
+    let mut parser = apollo_compiler::parser::Parser::new();
+    let doc_orig = parser
+        .parse_executable(&schema, source, doc_path)
+        .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
+    let doc_orig = doc_orig.validate(&schema).expect("doc is not valid");
+
+    // First pass: Create fragment contexts without processing spreads
+    let mut fragment_contexts: HashMap<String, FragmentContext> = HashMap::new();
+    for (name, fragment) in doc_orig.fragments.iter() {
+        let fragment_name = name.to_string();
+        let fragment_raw = fragment.to_string();
+        let type_condition = fragment.type_condition().to_string();
+
+        let ctx = FragmentContext::new(
+            global_ctx.schema_ctx.clone(),
+            fragment_name.clone(),
+            fragment_raw,
+            doc_path.clone(),
+            type_condition,
+        );
+        fragment_contexts.insert(fragment_name, ctx);
+    }
+
+    // Create shared references for local cross-referencing
+    let local_fragments: HashMap<String, SharedFragmentContext> = fragment_contexts
+        .iter()
+        .map(|(name, ctx)| (name.clone(), Arc::new(ctx.clone())))
+        .collect();
+
+    // Second pass: Process fragment selections with spreads
+    for (name, fragment) in doc_orig.fragments.iter() {
+        let fragment_name = name.to_string();
+        let mut ctx = fragment_contexts.remove(&fragment_name).unwrap();
+
+        // Parse the fragment's selection set as an object, passing local fragments for resolution
+        let obj = parse_object_selection(
+            &mut ctx,
+            global_ctx,
+            &fragment_name,
+            false,
+            &fragment.selection_set,
+            Some(&local_fragments),
+            None,
+        );
+
+        let selection_common = SelectionCommon {
+            name: fragment_name.clone(),
+            description: None,
+        };
+
+        let selection = Selection::new(selection_common, SelectionKind::Object(obj), vec![]);
+        ctx.set_root_type(selection.clone());
+        ctx.add_selection(fragment_name.clone(), selection);
+
+        ret.insert(fragment_name, Arc::new(ctx));
+    }
+
+    Ok(ret)
 }
 
 pub(crate) fn parse_document(
@@ -262,8 +476,8 @@ pub(crate) fn parse_document(
     doc_path: &PathBuf,
 ) -> anyhow::Result<HashMap<String, SharedOpCtx>> {
     let mut ret = HashMap::new();
-    let mut parser = apollo_compiler::parser::Parser::new();
     let schema = global_ctx.schema_ctx.schema.clone();
+    let mut parser = apollo_compiler::parser::Parser::new();
     let doc_orig = parser
         .parse_executable(&schema, source, doc_path)
         .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;

@@ -1,51 +1,52 @@
-use std::collections::HashMap;
 use std::path::PathBuf;
-use std::rc::Rc;
+use std::{collections::HashMap, sync::Arc};
 
 use serde::Serialize;
 
-use super::fragments::SharedFragmentContext;
-use super::types::{FullPathName, OperationType, Selection};
-use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
-pub type OperationVariable = InputFieldDefinition;
+use super::types::{FullPathName, Selection};
+use crate::schema::context::SharedSchemaContext;
+pub type SharedFragmentContext = Arc<FragmentContext>;
 
-#[derive(Debug, Serialize)]
-pub struct OperationContext {
+#[derive(Debug, Clone, Serialize)]
+pub struct FragmentContext {
     #[serde(skip_serializing)]
     #[allow(unused)]
     schema: SharedSchemaContext,
-    operation_name: String,
+    name: String,
     pub file_path: PathBuf,
-    query: String,
-    variables: HashMap<String, OperationVariable>,
+    fragment: String,
     type_defs: HashMap<FullPathName, Selection>,
-    root_type: Option<Selection>,
-    op_ty: OperationType,
+    pub root_type: Option<Selection>,
     pub used_fragments: Vec<SharedFragmentContext>,
+    pub type_condition: String,
 }
 
-impl OperationContext {
+impl FragmentContext {
     pub fn new(
         schema: SharedSchemaContext,
-        operation_name: String,
-        query: String,
+        name: String,
+        fragment: String,
         file_path: PathBuf,
-        op_ty: OperationType,
+        type_condition: String,
     ) -> Self {
-        OperationContext {
+        FragmentContext {
             schema,
-            operation_name,
+            name,
             file_path,
-            query,
-            variables: HashMap::new(),
+            fragment,
             type_defs: HashMap::new(),
             root_type: None,
-            op_ty,
             used_fragments: Vec::new(),
+            type_condition,
         }
     }
-    pub fn get_operation_name(&self) -> &str {
-        &self.operation_name
+
+    pub fn get_fragment_name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn get_type_condition(&self) -> &str {
+        &self.type_condition
     }
 
     pub fn set_root_type(&mut self, root_type: Selection) {
@@ -60,13 +61,6 @@ impl OperationContext {
         self.type_defs.entry(name.clone()).or_insert(selection);
     }
 
-    pub fn add_variable(&mut self, name: String, variable: OperationVariable) {
-        self.variables.entry(name).or_insert(variable);
-    }
-    pub fn get_variable(&self, name: &str) -> Option<&OperationVariable> {
-        self.variables.get(name)
-    }
-
     pub fn add_used_fragment(&mut self, fragment: SharedFragmentContext) {
         self.used_fragments.push(fragment);
     }
@@ -74,6 +68,8 @@ impl OperationContext {
     pub fn get_used_fragments(&self) -> &Vec<SharedFragmentContext> {
         &self.used_fragments
     }
-}
 
-pub type SharedOpCtx = Rc<OperationContext>;
+    pub fn get_root_type(&self) -> Option<&Selection> {
+        self.root_type.as_ref()
+    }
+}
