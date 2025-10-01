@@ -3,154 +3,8 @@
 
 {% set op_variables = operation.context.variables %}
 {% set op_variables_exist = op_variables | length > 0 %}
-{% macro if_op_variables(insert) %}
-{% if op_variables_exist -%} {{insert}}
-{% endif -%}
-{% endmacro %}
-
-{# Macro to generate cache key with arguments #}
-{% macro generate_cache_key_with_args(field_name, arguments) -%}
-{% if arguments | length > 0 -%}
-"""{{field_name}}(
-    {%- for arg in arguments -%}
-
-    {%- if arg.value.kind == "VariableUse"  -%}
-        {% if op_variables_exist -%}
-            {%- set var_name = arg.value.common.name -%}
-            {%- if arg.value.is_maybe -%}
-                {{arg.name}}:${variables.{{var_name}}.isSome() ? (variables!.{{var_name}}.some()?.toString()) : 'None' }
-            {%- else -%}
-                {%- if arg.default_value is not none -%}
-                   {{arg.name}}:${variables.{{var_name}} ?? '{{arg.default_value}}'}
-                {%- else -%}
-                {{arg.name}}:${variables.{{var_name}} }{% if arg.value.is_optional %} ?? 'null'{% endif %}}
-                {%- endif -%}
-            {%- endif -%}
-        {%- else -%}
-            {{arg.name}}:null
-        {%- endif -%}
-    {%- elif arg.value.InlineValue -%}
-        "{{arg.name}}:{{arg.value.InlineValue.value}}"
-    {%- endif -%}
-    {{", "|if_not_last(loop.last)}}
-    {%- endfor -%})"""
-{%- else -%}
-"{{field_name}}"
-{%- endif -%}
-{% endmacro %}
-
-{# Recursive macro for deserializing selection values #}
-{% macro _deserialize_selection_from_cache_macro(value_symbol, selection, is_optional=false, op_variables=[]) -%}
-    {% if selection.kind == "Scalar" %}
-        {% if selection.is_custom_scalar %}
-            {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
-            {% if is_optional %}
-                {{ value_symbol }} == null ? null : {{ scalar_impl }}.deserialize({{ value_symbol }})
-            {% else %}
-                {{ scalar_impl }}.deserialize({{ value_symbol }})
-            {% endif %}
-        {% else %}
-            {% if is_optional %}
-                {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
-            {% else %}
-                {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}
-            {% endif %}
-        {% endif %}
-    {% elif selection.kind == "Object" %}
-        {% set id_field = get_id_selection(selection.full_name) -%}
-        {% if is_optional %}
-            {{value_symbol}} == null ? null :
-            {% if id_field is not none -%}
-                {{selection.full_name}}.fromCached(
-                    ctx.getCachedRecord({{value_symbol}} as String),
-                    ctx {{if_op_variables(", variables")}}
-                )
-            {% else %}
-            {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{if_op_variables(", variables")}});
-            {% endif -%}
-    {% else %}
-        {% if  id_field is not none -%}
-            {{selection.full_name}}.fromCached(ctx.getCachedRecord({{value_symbol}} as String), ctx{{if_op_variables(", variables")}});
-        {% else %}
-            {{ selection.full_name }}.fromCached({{value_symbol}}, ctx{{if_op_variables(", variables")}});
-        {% endif -%}
-    {% endif %}
-    {% elif selection.kind == "Enum" %}
-        {% set typename = selection.concrete_type.name %}
-        {% if is_optional %}
-            {{ value_symbol }} == null ? null : {{ typename }}.fromString({{ value_symbol }})
-        {% else %}
-            {{ typename }}.fromString({{ value_symbol }})
-        {% endif %}
-    {% elif selection.kind == "List" %}
-        {% set inner_selection = selection.of_kind %}
-        {% if is_optional %}
-            {{ value_symbol }} == null ? null : ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
-        {% else %}
-            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
-        {% endif %}
-    {% elif selection.kind == "FragmentSpread" %}
-        {# Fragment spreads are handled by their inlined fields, so we skip them #}
-        {{ value_symbol }}
-    {% else %}
-        {% if is_optional %}
-            {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
-        {% else %}
-            {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}
-        {% endif %}
-    {% endif %}
-{% endmacro %}
 
 
-{# Recursive macro for serializing selection values #}
-{% macro _serialize_selection_value_macro(value_symbol, selection, is_optional=false) %}
-    {% if selection.kind == "Scalar" %}
-        {% if selection.is_custom_scalar %}
-            {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) %}
-            {% if is_optional %}
-                {{ value_symbol }} == null ? null : {{ scalar_impl }}.serialize({{ value_symbol }}!)
-            {% else %}
-                {{ scalar_impl }}.serialize({{ value_symbol }})
-            {% endif %}
-        {% else %}
-            {{ value_symbol }}
-        {% endif %}
-    {% elif selection.kind == "Object" %}
-        {% if is_optional %}
-            {{ value_symbol }}?.toJson()
-        {% else %}
-            {{ value_symbol }}.toJson()
-        {% endif %}
-    {% elif selection.kind == "Enum" %}
-        {% if is_optional %}
-            {{ value_symbol }}?.name
-        {% else %}
-            {{ value_symbol }}.name
-        {% endif %}
-    {% elif selection.kind == "List" %}
-        {% set inner_selection = selection.of_kind %}
-        {% if is_optional %}
-            {{ value_symbol }}?.map((e) => {{ _serialize_selection_value_macro("e", inner_selection, false) }}).toList()
-        {% else %}
-            {{ value_symbol }}.map((e) => {{ _serialize_selection_value_macro("e", inner_selection, false) }}).toList()
-        {% endif %}
-    {% else %}
-        {{ value_symbol }}
-    {% endif %}
-{% endmacro %}
-
-{# Recursive macro for equality comparison #}
-{% macro selection_equality_comparison_macro(selection, symbol1, symbol2, ne=False) %}
-    {% if selection.kind == "List" %}
-        {% if ne %}!{% endif %}const ListEquality().equals({{symbol1}}, {{ symbol2 }})
-    {% else %}
-        {% if ne %}
-            {{ symbol1 }} != {{ symbol2 }}
-        {% else %}
-            {{ symbol1 }} == {{ symbol2 }}
-        {% endif %}
-    {% endif %}
-{% endmacro %}
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements
 
 import "schema.shalom.dart";
@@ -373,6 +227,12 @@ import 'package:collection/collection.dart';
     };
     }
 {% endmacro %}
+{% macro selection_object_definition(full_name, selection) %}
+{% set obj_used_frags = get_used_fragments_for_selection_object(full_name) %}
+class {{ full_name }}{% if obj_used_frags | length > 0 %} implements {% for frag in obj_fragment_names %}{{ frag.name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+    {{ selection_object_impl(full_name, selection, false) }}
+}
+{% endmacro %}
 typedef JsonObject = Map<String, dynamic>;
 
 
@@ -386,10 +246,7 @@ class {{ root_type_name }}{% if root_fragment_names | length > 0 %} implements {
 // ------------ OBJECT DEFINITIONS -------------
 
 {% for full_name, selection in operation.context.type_defs | items  if selection.kind == "Object" %}
-    {% set obj_fragment_names = selection.selections | selectattr("kind", "equalto", "FragmentSpread") | map(attribute="fragment_name") | list %}
-    class {{ full_name }}{% if obj_fragment_names | length > 0 %} implements {% for impl in obj_fragment_names %}{{ impl }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
-        {{ selection_object_impl(full_name, selection, false) }}
-    }
+
 {% endfor %}
 
 // ------------ END OBJECT DEFINITIONS -------------

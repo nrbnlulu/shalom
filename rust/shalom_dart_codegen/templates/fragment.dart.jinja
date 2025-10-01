@@ -3,80 +3,40 @@
 {% set fragment_name = fragment.context.context.name %}
 {% set fragment_selections = fragment.context.context.type_defs %}
 {% set root_type = fragment.context.context.root_type %}
+{% set op_variables = None %}
+{% set op_variables_exist = false %}
+
+
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: {{fragment_name}}
 
 import 'package:shalom_core/shalom_core.dart';
-{% for import_alias, import_path in extra_imports | items %}
+{% for import_alias, import_path in extra_imports | items -%}
 import '{{import_path}}' as {{import_alias}};
-{% endfor %}
+{% endfor -%}
 
-{% if fragment.context.context.used_fragments | length > 0 %}
-// Fragment imports
-{% for used_fragment in fragment.context.context.used_fragments %}
-import '{{used_fragment.name | lower}}.shalom.dart';
-{% endfor %}
+{% if fragment.context.context.used_fragments | length > 0 -%}
+    // Fragment imports
+    {% for used_fragment in fragment.context.context.used_fragments -%}
+    import '{{used_fragment.name | lower}}.shalom.dart';
+    {% endfor %}
 {% endif %}
 
 // Generate abstract fragment class
-{% if root_type %}
 abstract class {{ fragment_name }} {
-{% for field in root_type.selections %}
-  {{ type_name_for_selection(field) }} get {{ field.name }};
-{% endfor %}
+    {% for field in root_type.selections -%}
+    {{ type_name_for_selection(field) }} get {{ field.name }};
+    {% endfor %}
 
   Map<String, dynamic> toJson();
   bool operator ==(Object other);
   int get hashCode;
 }
-{% endif %}
 
 // Generate data classes for nested object selections
 {% for selection_name, selection in fragment_selections | items %}
-{% if selection.kind == "Object" and selection_name != fragment_name %}
-class {{ type_name_for_selection(selection) }} {
-{% for field in selection.selections %}
-  final {{ type_name_for_selection(field) }} {{ field.name }};
-{% endfor %}
-
-  const {{ type_name_for_selection(selection) }}({
-{% for field in selection.selections %}
-    required this.{{ field.name }},
-{% endfor %}
-  });
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = {};
-{% for field in selection.selections %}
-    data["{{ field.name }}"] = {{ field.name }};
-{% endfor %}
-    return data;
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is {{ type_name_for_selection(selection) }} &&
-      runtimeType == other.runtimeType{% for field in selection.selections %} &&
-      {{ field.name }} == other.{{ field.name }}{% endfor %};
-
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-{% for field in selection.selections %}
-    {{ field.name }},
-{% endfor %}
-  );
-
-  static {{ type_name_for_selection(selection) }} fromJson(Map<String, dynamic> data) {
-    return {{ type_name_for_selection(selection) }}(
-{% for field in selection.selections %}
-      {{ field.name }}: data["{{ field.name }}"],
-{% endfor %}
-    );
-  }
-}
-
-{% endif %}
+    {% if selection.kind == "Object" and selection_name != fragment_name %}
+        
+    {% endif %}
 {% endfor %}
