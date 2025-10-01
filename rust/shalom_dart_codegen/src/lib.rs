@@ -3,7 +3,7 @@ use lazy_static::lazy_static;
 use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
-use shalom_core::operation::types::SelectionKind;
+use shalom_core::operation::types::{FullPathName, SelectionKind};
 use shalom_core::{
     context::SharedShalomGlobalContext,
     operation::{
@@ -455,19 +455,17 @@ impl OperationEnv<'_> {
             },
         );
 
-        env.add_function(
-            "get_fragment_name",
-            |fragment: minijinja::Value| -> Result<String, minijinja::Error> {
-                match fragment.get_attr("name") {
-                    Ok(name) => Ok(name.as_str().unwrap_or("").to_string()),
-                    Err(_) => Err(minijinja::Error::new(
-                        minijinja::ErrorKind::InvalidOperation,
-                        "Fragment context missing name field",
-                    )),
-                }
-            },
-        );
-
+        let ctx_clone = ctx.clone();
+        env.add_function("get_used_fragments_for_selection_object", move |full_name: &str| {
+            let op = ctx_clone.get_operation(&op_name)?;
+            let selection = op.get_selection(&full_name.to_string())?;
+            match selection.kind {
+                SelectionKind::Object(object_selection) =>
+               object_selection.get_used_fragments() 
+                    .map(minijinja::Value::from_serialize),
+                _ => None,
+            }
+        });
         Ok(OperationEnv { env })
     }
 

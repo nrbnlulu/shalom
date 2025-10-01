@@ -149,22 +149,7 @@ where
                     };
 
                 if fragment_found {
-                    // Create a fragment spread selection instead of expanding
-                    let fragment_spread_selection = Selection::new(
-                        SelectionCommon {
-                            name: fragment_name.clone(),
-                            description: None,
-                        },
-                        SelectionKind::FragmentSpread(FragmentSpreadSelection::new(
-                            fragment_name.clone(),
-                            type_condition,
-                            false, // Fragment spreads themselves are not optional
-                        )),
-                        Vec::new(),
-                    );
-                    obj.add_selection(fragment_spread_selection);
-
-                    // Expand fragment selections into the object selection
+                    // Only expand fragment selections into the object selection - don't create fragment spread field
                     if let Some(fragment_ctx) = global_ctx.get_fragment(&fragment_name) {
                         if let Some(root_sel) = &fragment_ctx.root_type {
                             if let SelectionKind::Object(obj_sel) = &root_sel.kind {

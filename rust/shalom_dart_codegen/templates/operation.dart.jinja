@@ -89,6 +89,9 @@
         {% else %}
             ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
         {% endif %}
+    {% elif selection.kind == "FragmentSpread" %}
+        {# Fragment spreads are handled by their inlined fields, so we skip them #}
+        {{ value_symbol }}
     {% else %}
         {% if is_optional %}
             {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
@@ -158,6 +161,13 @@ import '{{path}}' as {{ namespace_alias }};
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
+
+{% if operation.context.used_fragments | length > 0 %}
+    // Fragment imports
+    {% for used_fragment in operation.context.used_fragments -%}
+    import '{{used_fragment.name}}.shalom.dart';
+    {% endfor -%}
+{% endif %}
 
 
 {% set operation_name = operation.context.operation_name %}
@@ -368,14 +378,16 @@ typedef JsonObject = Map<String, dynamic>;
 
 
 {% set root_type_name = operation_name ~ "Response" %}
-class {{ root_type_name }}{
+{% set root_fragment_names = operation.context.root_type.selections | selectattr("kind", "equalto", "FragmentSpread") | map(attribute="fragment_name") | list %}
+class {{ root_type_name }}{% if root_fragment_names | length > 0 %} implements {% for impl in root_fragment_names %}{{ impl }}{{ ", " if not loop.last }}{% endfor %}{% endif %}{
 {{ selection_object_impl(root_type_name, operation.context.root_type, true) }}
 }
 
 // ------------ OBJECT DEFINITIONS -------------
 
 {% for full_name, selection in operation.context.type_defs | items  if selection.kind == "Object" %}
-    class {{ full_name }}  {
+    {% set obj_fragment_names = selection.selections | selectattr("kind", "equalto", "FragmentSpread") | map(attribute="fragment_name") | list %}
+    class {{ full_name }}{% if obj_fragment_names | length > 0 %} implements {% for impl in obj_fragment_names %}{{ impl }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
         {{ selection_object_impl(full_name, selection, false) }}
     }
 {% endfor %}
