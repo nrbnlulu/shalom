@@ -89,11 +89,34 @@ pub fn parse_directory(pwd: &Path, strict: bool) -> anyhow::Result<SharedShalomG
     let _executables = collect_executables(&files.operations, &schema_parsed.schema, strict)?;
 
     let global_ctx = ShalomGlobalContext::new(schema_parsed, config);
+    fn parse_document(parser: &apollo_compiler::parser::Parser, schema: &Valid<apollo_compiler::Schema>, file: &PathBuf, strict: bool) -> anyhow::Result{
+
+
+    }
+
+    let mut all_valid_docs = Vec::new();
+    let schema = global_ctx.schema_ctx.schema.clone();
+    let mut parser = apollo_compiler::parser::Parser::new();
+    for file in &files.operations {
+        let res =  parser.parse_executable(&schema, &fs::read_to_string(&file)?, file).map(
+            |doc|{doc.validate(&schema)}
+        );
+        match res {
+            Ok(doc) => all_valid_docs.push((doc,  file.clone())),
+            Err(e)=>{
+                let msg = format!("Failed to parse document at {}: {}", file.display(), e);
+                if strict{
+                    return Err(anyhow::anyhow!(msg));
+                } else{
+                    log::warn!("{msg}");
+                }
+            }
+        }
+    }
 
     // First pass: collect all fragments
     let mut all_fragments = HashMap::new();
-    for file in &files.operations {
-        let content = fs::read_to_string(&file)?;
+    for (doc, file) in &all_valid_docs {
         let fragments =
             crate::operation::parse::parse_fragments_from_document(&global_ctx, &content, file)?;
         all_fragments.extend(fragments);
@@ -115,6 +138,7 @@ pub fn parse_directory(pwd: &Path, strict: bool) -> anyhow::Result<SharedShalomG
 
     Ok(global_ctx)
 }
+
 
 pub fn collect_executables(
     files: &Vec<PathBuf>,

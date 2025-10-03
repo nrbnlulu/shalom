@@ -147,3 +147,213 @@
         {% endif %}
     {% endif %}
 {% endmacro %}
+    
+    {% macro selection_object_impl(typename, selection_object, is_root_selection) %}
+        {% set selections = selection_object.selections %}
+        /// class members
+        {% for selection in selections -%}
+            {% set selection_name = selection.name %}
+            final {{ type_name_for_selection(selection) }} {{ selection_name }};
+        {% endfor %}
+        // keywordargs constructor
+        {{ typename }}({
+        {% for selection in selections -%}
+            {% if not selection.is_optional %}required{% endif %}
+            this.{{ selection.name }},
+        {% endfor %}
+        });
+    
+        static void normalize$inCache(JsonObject data,
+                CacheUpdateContext ctx,
+                {% if op_variables_exist %} {{ operation_name }}Variables variables,{% endif %}
+                {% if not is_root_selection -%}
+                    {
+                    /// can be just the selection name but also may include serialized arguments.
+                    required RecordID  this$fieldName,
+                    required JsonObject parent$record,
+                    required RecordID parent$normalizedID
+                    }
+                {% endif -%}
+                ){
+            {% if is_root_selection -%}
+                final String this$normalizedID = "ROOT_{{OP_TYPE}}";
+                final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");
+            {% else %}
+                {% set id_field = get_id_selection(selection_object.full_name) -%}
+                {% set is_normalized = false -%}
+                String this$normalizedID;
+                JsonObject this$NormalizedRecord;
+                {% if is_type_implements_node(selection_object.full_name) %}
+                    final this$normalizedID_temp = data["id"] as RecordID?;
+                    if (this$normalizedID_temp == null) {
+                        throw UnimplementedError("Node ID cannot be null");
+                    }
+                    this$normalizedID = this$normalizedID_temp!;
+                    parent$record[this$fieldName] = this$normalizedID;
+                    this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
+                    ctx.addDependantRecord(this$normalizedID);
+                    {% set is_normalized = true -%}
+                {% elif id_field is not none -%}
+                    final RecordID? this$normalizedID_temp = data["{{id_field.name}}"] as RecordID?;
+                    if (this$normalizedID_temp == null) {
+                        {% if id_field.is_optional %}
+                            this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
+                            this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+                        {% else %}
+                            throw UnimplementedError("Required ID cannot be null");
+                        {% endif %}
+                    } else {
+                        this$normalizedID = this$normalizedID_temp!;
+                        parent$record[this$fieldName] = this$normalizedID;
+                        this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
+                        ctx.addDependantRecord(this$normalizedID);
+                        {% set is_normalized = true -%}
+                    }
+                {% else %}
+                    this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+                    this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
+                {% endif -%}
+            {% endif -%}
+    
+    
+            {% for selection in selection_object.selections -%}
+                final {{selection.name}}Normalized$Key = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
+                final {{selection.name}}$normalizedID = "${this$normalizedID}.${ {{selection.name}}Normalized$Key}";
+            {% endfor -%}
+            ctx.addDependantRecords(
+                {
+                {% for selection in selection_object.selections -%}
+                    {{selection.name}}$normalizedID  {{"," |if_not_last(loop.last)}}
+                {% endfor -%}
+                }
+            );
+    
+            {% for selection in selection_object.selections -%}
+                final {{selection.name}}$cached = this$NormalizedRecord[{{selection.name}}Normalized$Key];
+                final {{selection.name}}$raw = data["{{selection.name}}"];
+                if ({{selection.name}}$raw != null){
+                    {% if selection.kind == "Object" %}
+                        {# object selections can be subscribed to, but will only get updates for
+                         null<->some changes. sub fields should be subscribed by themself #}
+                        if ({{selection.name}}$cached == null){
+                            ctx.addChangedRecord({{selection.name}}$normalizedID);
+                        }
+                        {{selection.full_name}}.normalize$inCache(
+                            {{selection.name}}$raw as JsonObject,
+                            ctx,
+                            {% if op_variables_exist %}variables,{% endif %}
+                            this$fieldName: {{selection.name}}Normalized$Key,
+                            parent$record: this$NormalizedRecord,
+                            parent$normalizedID: this$normalizedID
+                        );
+                    {% else %}
+                        {% set cached_sym %} {{selection.name}}$cached {% endset %}
+                        {% set raw_sym %} {{selection.name}}$raw {% endset %}
+                        if (
+                            {{selection_equality_comparison_macro(selection, cached_sym, raw_sym, ne=True)}}
+                        ){
+                            ctx.addChangedRecord({{selection.name}}$normalizedID);
+                        }
+                        this$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$raw;
+                    {% endif %}
+                } else if (data.containsKey("{{selection.name}}") && {{selection.name}}$cached != null){
+                        // if this field was null in the response and key exists clear the cache.
+    
+                        this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
+                        ctx.addChangedRecord({{selection.name}}$normalizedID);
+                } else {
+                    // data is null and cache is null, do nothing.
+                    this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
+                }
+    
+            {% endfor -%}
+        }
+        {% if not is_root_selection -%}
+        static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}) {
+        {% else -%}
+        static {{typename}} fromCache(ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}) {
+        {% endif -%}
+            {% if is_root_selection -%}
+                final data = ctx.getCachedRecord("ROOT_{{OP_TYPE}}");
+            {% endif -%}
+            {% for selection in selection_object.selections -%}
+                {% set raw_value_symbol = selection.name + '$raw' %}
+                {% if selection.arguments | length > 0 -%}
+                    final {{selection.name}}$cacheKey = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
+                    final {{raw_value_symbol}} = data[{{selection.name}}$cacheKey];
+                {% else -%}
+                    final {{raw_value_symbol}} = data["{{selection.name}}"];
+                {% endif -%}
+                final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_cache_macro(raw_value_symbol, selection, selection.is_optional, op_variables) }};
+            {% endfor -%}
+            return {{ typename }}(
+                {% for selection in selections -%}
+                    {{selection.name}}: {{selection.name}}$value,
+                {% endfor %}
+            );
+        }
+        {% if is_root_selection -%}
+            static ({{typename}}, CacheUpdateContext)  fromResponseImpl(JsonObject data, ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}){
+                // first update the cache
+                final CacheUpdateContext updateCtx = CacheUpdateContext(shalomContext: ctx!);
+                {% set root_selection = selection_object.selections | first -%}
+    
+                normalize$inCache(
+                    data,
+                    updateCtx,
+                    {{if_op_variables("variables")}}
+                );
+                ctx.invalidateRefs(updateCtx.changedRecords);
+                return (fromCache(ctx{{if_op_variables(", variables")}}), updateCtx);
+            }
+    
+            static {{typename}} fromResponse(JsonObject data, {ShalomCtx? ctx{% if op_variables_exist %}, required {{ operation_name }}Variables variables{% endif %}}){
+                // if ctx not provider we create dummy one
+                return fromResponseImpl(data, ctx ?? ShalomCtx.withCapacity(){{if_op_variables(", variables")}}).$1;
+            }
+        {% endif -%}
+    
+        @override
+        bool operator ==(Object other) {
+        return identical(this, other) ||
+        (other is {{ typename }} &&
+        {% for selection in selections -%}
+            {% set other_selection %}other.{{selection.name}}{% endset -%}
+            {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&"|if_not_last(loop.last) }}
+        {% endfor -%}
+        );
+        }
+        @override
+        int get hashCode =>
+        {% if selections | length > 1 -%}
+            Object.hashAll([
+            {% for selection in selections %}
+                {% set selection_name = selection.name %}
+                {{ selection_name }},
+            {% endfor %}
+            ]);
+        {% else %}
+            {{ (selections | first).name }}.hashCode;
+        {% endif %}
+        JsonObject toJson() {
+        return {
+        {% for selection in selections %}
+            {% set selection_name = selection.name %}
+            '{{ selection_name }}':
+                {% if selection.is_optional %}
+                    {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}
+                {% else %}
+                    {{ _serialize_selection_value_macro("this." + selection_name, selection, false) }}
+                {% endif %}
+            ,
+        {% endfor %}
+        };
+        }
+{% endmacro %}
+    
+{% macro selection_object_definition(full_name, selection) -%}
+    {% set obj_used_frags = get_used_fragments_for_selection_object(full_name) -%}
+    class {{ full_name }}{% if obj_used_frags | length > 0 %} implements {% for frag in obj_fragment_names %}{{ frag.name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+        {{ selection_object_impl(full_name, selection, false) }}
+    }
+{% endmacro %}

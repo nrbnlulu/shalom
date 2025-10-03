@@ -24,6 +24,8 @@ pub struct SelectionCommon {
     pub name: String,
     pub description: Option<String>,
 }
+
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum ArgumentValue {
@@ -65,6 +67,7 @@ impl Selection {
         &self.selection_common.name
     }
 }
+
 pub type SharedSelection = Rc<Selection>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -1,9 +1,12 @@
 use std::path::PathBuf;
 use std::{collections::HashMap, sync::Arc};
 
+use apollo_compiler::validation::Valid;
 use serde::Serialize;
 
 use super::types::{FullPathName, Selection};
+use crate::context::SharedShalomGlobalContext;
+use crate::operation::parse::parse_selection_set;
 use crate::schema::context::SharedSchemaContext;
 pub type SharedFragmentContext = Arc<FragmentContext>;
 
@@ -13,8 +16,9 @@ pub struct FragmentContext {
     #[allow(unused)]
     schema: SharedSchemaContext,
     name: String,
+    fragment_raw: String,
+    #[serde(skip_serializing)]
     pub file_path: PathBuf,
-    fragment: String,
     type_defs: HashMap<FullPathName, Selection>,
     pub root_type: Option<Selection>,
     pub used_fragments: Vec<SharedFragmentContext>,
@@ -25,7 +29,7 @@ impl FragmentContext {
     pub fn new(
         schema: SharedSchemaContext,
         name: String,
-        fragment: String,
+        fragment_raw: String,
         file_path: PathBuf,
         type_condition: String,
     ) -> Self {
@@ -33,7 +37,7 @@ impl FragmentContext {
             schema,
             name,
             file_path,
-            fragment,
+            fragment_raw,
             type_defs: HashMap::new(),
             root_type: None,
             used_fragments: Vec::new(),
@@ -72,4 +76,32 @@ impl FragmentContext {
     pub fn get_root_type(&self) -> Option<&Selection> {
         self.root_type.as_ref()
     }
+}
+
+
+// Parse fragments from executable document
+pub(crate) fn get_fragments_from_document(
+    global_ctx: &SharedShalomGlobalContext,
+    doc_orig: Valid<apollo_compiler::ExecutableDocument>,
+    doc_path: &PathBuf,
+) -> anyhow::Result<HashMap<String, SharedFragmentContext>> {
+    let mut ret = HashMap::new();
+
+    // First pass: Create fragment contexts without processing spreads
+    for (name, fragment) in doc_orig.fragments.iter() {
+        let fragment_name = name.to_string();
+        let fragment_raw = fragment.to_string();
+        let type_condition = fragment.type_condition().to_string();
+
+        let ctx = Arc::new(FragmentContext::new(
+            global_ctx.schema_ctx.clone(),
+            fragment_name.clone(),
+            fragment_raw,
+            doc_path.clone(),
+            type_condition,
+        ));
+        ret.insert(fragment_name.clone(), ctx);
+    }
+
+    Ok(ret)
 }

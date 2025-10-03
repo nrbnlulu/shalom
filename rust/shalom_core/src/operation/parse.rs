@@ -3,6 +3,8 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::Arc;
 
+use apollo_compiler::validation::Valid;
+use apollo_compiler::ExecutableDocument;
 use apollo_compiler::{
     ast::OperationType as ApolloOperationType, executable as apollo_executable, Node,
 };
@@ -273,7 +275,7 @@ impl SelectionContext for FragmentContext {
     }
 }
 
-fn parse_selection_set<T>(
+pub(super) fn parse_selection_set<T>(
     path: &String,
     ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
@@ -387,73 +389,6 @@ fn parse_operation(
     Ok(Rc::new(ctx))
 }
 
-// Parse fragments from executable document
-pub(crate) fn parse_fragments_from_document(
-    global_ctx: &SharedShalomGlobalContext,
-    source: &str,
-    doc_path: &PathBuf,
-) -> anyhow::Result<HashMap<String, SharedFragmentContext>> {
-    let mut ret = HashMap::new();
-    let schema = global_ctx.schema_ctx.schema.clone();
-    let mut parser = apollo_compiler::parser::Parser::new();
-    let doc_orig = parser
-        .parse_executable(&schema, source, doc_path)
-        .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
-    let doc_orig = doc_orig.validate(&schema).expect("doc is not valid");
-
-    // First pass: Create fragment contexts without processing spreads
-    let mut fragment_contexts: HashMap<String, FragmentContext> = HashMap::new();
-    for (name, fragment) in doc_orig.fragments.iter() {
-        let fragment_name = name.to_string();
-        let fragment_raw = fragment.to_string();
-        let type_condition = fragment.type_condition().to_string();
-
-        let ctx = FragmentContext::new(
-            global_ctx.schema_ctx.clone(),
-            fragment_name.clone(),
-            fragment_raw,
-            doc_path.clone(),
-            type_condition,
-        );
-        fragment_contexts.insert(fragment_name, ctx);
-    }
-
-    // Create shared references for local cross-referencing
-    let local_fragments: HashMap<String, SharedFragmentContext> = fragment_contexts
-        .iter()
-        .map(|(name, ctx)| (name.clone(), Arc::new(ctx.clone())))
-        .collect();
-
-    // Second pass: Process fragment selections with spreads
-    for (name, fragment) in doc_orig.fragments.iter() {
-        let fragment_name = name.to_string();
-        let mut ctx = fragment_contexts.remove(&fragment_name).unwrap();
-
-        // Parse the fragment's selection set as an object, passing local fragments for resolution
-        let obj = parse_object_selection(
-            &mut ctx,
-            global_ctx,
-            &fragment_name,
-            false,
-            &fragment.selection_set,
-            Some(&local_fragments),
-            None,
-        );
-
-        let selection_common = SelectionCommon {
-            name: fragment_name.clone(),
-            description: None,
-        };
-
-        let selection = Selection::new(selection_common, SelectionKind::Object(obj), vec![]);
-        ctx.set_root_type(selection.clone());
-        ctx.add_selection(fragment_name.clone(), selection);
-
-        ret.insert(fragment_name, Arc::new(ctx));
-    }
-
-    Ok(ret)
-}
 
 pub(crate) fn parse_document(
     global_ctx: &SharedShalomGlobalContext,
