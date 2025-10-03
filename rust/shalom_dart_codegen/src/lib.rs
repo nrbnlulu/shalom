@@ -3,12 +3,11 @@ use lazy_static::lazy_static;
 use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
-use shalom_core::operation::types::{FullPathName, SelectionKind};
 use shalom_core::{
     context::SharedShalomGlobalContext,
     operation::{
         context::OperationContext,
-        types::{dart_type_for_scalar, Selection},
+        types::{dart_type_for_scalar, Selection, SelectionKind},
     },
     schema::{
         context::SchemaContext,
@@ -439,12 +438,13 @@ impl OperationEnv<'_> {
                 false
             }
         });
-        let op_name = op_ctx.get_operation_name().to_string();
+        let op_name = std::sync::Arc::new(op_ctx.get_operation_name().to_string());
         let ctx_clone = ctx.clone();
+        let op_name1 = op_name.clone();
         env.add_function(
             "get_id_selection",
             move |full_name: &str| -> Option<minijinja::Value> {
-                let op = ctx_clone.get_operation(&op_name)?;
+                let op = ctx_clone.get_operation(&*op_name1)?;
                 let selection = op.get_selection(&full_name.to_string())?;
                 match selection.kind {
                     SelectionKind::Object(object_selection) => object_selection
@@ -456,16 +456,20 @@ impl OperationEnv<'_> {
         );
 
         let ctx_clone = ctx.clone();
-        env.add_function("get_used_fragments_for_selection_object", move |full_name: &str| {
-            let op = ctx_clone.get_operation(&op_name)?;
-            let selection = op.get_selection(&full_name.to_string())?;
-            match selection.kind {
-                SelectionKind::Object(object_selection) =>
-               object_selection.get_used_fragments() 
-                    .map(minijinja::Value::from_serialize),
-                _ => None,
-            }
-        });
+        let op_name2 = op_name.clone();
+        env.add_function(
+            "get_used_fragments_for_selection_object",
+            move |full_name: &str| {
+                let op = ctx_clone.get_operation(&*op_name2)?;
+                let selection = op.get_selection(&full_name.to_string())?;
+                match selection.kind {
+                    SelectionKind::Object(object_selection) => Some(
+                        minijinja::Value::from_serialize(object_selection.get_used_fragments()),
+                    ),
+                    _ => None,
+                }
+            },
+        );
         Ok(OperationEnv { env })
     }
 
@@ -494,14 +498,16 @@ impl FragmentEnv<'_> {
         let mut env = Environment::new();
         register_default_template_fns(&mut env, ctx)?;
         let ctx_clone = ctx.clone();
-        let fragment_name = fragment_ctx.get_fragment_name().to_string();
+        let fragment_name = std::sync::Arc::new(fragment_ctx.get_fragment_name().to_string());
 
+        let frag_name1 = fragment_name.clone();
         env.add_function("is_type_implements_node", move |full_name: &str| {
-            let fragment = ctx_clone.get_fragment(&fragment_name).unwrap();
+            let frag_name = (*frag_name1).clone();
+            let fragment = ctx_clone.get_fragment(&frag_name).unwrap();
             let selection = fragment
                 .get_selection(&full_name.to_string())
                 .ok_or(anyhow::anyhow!(
-                    "Type {full_name} not found in fragment {fragment_name}"
+                    "Type {full_name} not found in fragment {frag_name}"
                 ))
                 .unwrap();
             match selection.kind {
@@ -511,13 +517,15 @@ impl FragmentEnv<'_> {
                 _ => false,
             }
         });
-        let fragment_name = fragment_ctx.get_fragment_name().to_string();
+
+        let frag_name2 = fragment_name.clone();
         let ctx_clone = ctx.clone();
         env.add_function(
             "get_id_selection",
             move |full_name: &str| -> Option<minijinja::Value> {
+                let frag_name = (*frag_name2).clone();
                 let selection = ctx_clone
-                    .get_fragment(&fragment_name)
+                    .get_fragment(&frag_name)
                     .unwrap()
                     .get_selection(&full_name.to_string())
                     .unwrap();

@@ -1,7 +1,8 @@
 use crate::shalom_config::{CustomScalarDefinition, ShalomConfig};
 
 use crate::{
-    operation::context::SharedOpCtx, operation::fragments::SharedFragmentContext,
+    operation::context::SharedOpCtx,
+    operation::fragments::{FragmentContext, SharedFragmentContext},
     schema::context::SharedSchemaContext,
 };
 use std::{
@@ -76,7 +77,7 @@ impl ShalomGlobalContext {
         operations.contains_key(name)
     }
 
-    pub fn register_fragments(&self, fragments_update: HashMap<String, SharedFragmentContext>) {
+    pub fn register_fragments(&self, fragments_update: HashMap<String, FragmentContext>) {
         let mut fragments = self.fragments.lock().unwrap();
         let operations = self.operations.lock().unwrap();
         for (name, _) in fragments_update.iter() {
@@ -94,7 +95,9 @@ impl ShalomGlobalContext {
                 panic!("Fragment name {} conflicts with schema type", name);
             }
         }
-        fragments.extend(fragments_update);
+        for (name, frag_ctx) in fragments_update {
+            fragments.insert(name, Arc::new(frag_ctx));
+        }
     }
 
     pub fn get_fragment(&self, name: &str) -> Option<SharedFragmentContext> {

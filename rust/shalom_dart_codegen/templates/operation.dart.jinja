@@ -30,7 +30,7 @@ import 'package:collection/collection.dart';
 // ------------ OBJECT DEFINITIONS -------------
 
 {% for full_name, selection in operation.context.type_defs | items  if selection.kind == "Object" %}
-    {{selection_object_definition(full_name, selection)}}
+    {% call selection_object_definition(full_name, selection) %}{% endcall %}
 {% endfor %}
 
 // ------------ END OBJECT DEFINITIONS -------------

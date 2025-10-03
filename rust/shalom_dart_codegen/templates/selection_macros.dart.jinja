@@ -147,7 +147,7 @@
         {% endif %}
     {% endif %}
 {% endmacro %}
-    
+
     {% macro selection_object_impl(typename, selection_object, is_root_selection) %}
         {% set selections = selection_object.selections %}
         /// class members
@@ -162,7 +162,7 @@
             this.{{ selection.name }},
         {% endfor %}
         });
-    
+
         static void normalize$inCache(JsonObject data,
                 CacheUpdateContext ctx,
                 {% if op_variables_exist %} {{ operation_name }}Variables variables,{% endif %}
@@ -214,8 +214,8 @@
                     this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
                 {% endif -%}
             {% endif -%}
-    
-    
+
+
             {% for selection in selection_object.selections -%}
                 final {{selection.name}}Normalized$Key = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
                 final {{selection.name}}$normalizedID = "${this$normalizedID}.${ {{selection.name}}Normalized$Key}";
@@ -227,7 +227,7 @@
                 {% endfor -%}
                 }
             );
-    
+
             {% for selection in selection_object.selections -%}
                 final {{selection.name}}$cached = this$NormalizedRecord[{{selection.name}}Normalized$Key];
                 final {{selection.name}}$raw = data["{{selection.name}}"];
@@ -258,14 +258,14 @@
                     {% endif %}
                 } else if (data.containsKey("{{selection.name}}") && {{selection.name}}$cached != null){
                         // if this field was null in the response and key exists clear the cache.
-    
+
                         this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
                         ctx.addChangedRecord({{selection.name}}$normalizedID);
                 } else {
                     // data is null and cache is null, do nothing.
                     this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
                 }
-    
+
             {% endfor -%}
         }
         {% if not is_root_selection -%}
@@ -297,7 +297,7 @@
                 // first update the cache
                 final CacheUpdateContext updateCtx = CacheUpdateContext(shalomContext: ctx!);
                 {% set root_selection = selection_object.selections | first -%}
-    
+
                 normalize$inCache(
                     data,
                     updateCtx,
@@ -306,13 +306,13 @@
                 ctx.invalidateRefs(updateCtx.changedRecords);
                 return (fromCache(ctx{{if_op_variables(", variables")}}), updateCtx);
             }
-    
+
             static {{typename}} fromResponse(JsonObject data, {ShalomCtx? ctx{% if op_variables_exist %}, required {{ operation_name }}Variables variables{% endif %}}){
                 // if ctx not provider we create dummy one
                 return fromResponseImpl(data, ctx ?? ShalomCtx.withCapacity(){{if_op_variables(", variables")}}).$1;
             }
         {% endif -%}
-    
+
         @override
         bool operator ==(Object other) {
         return identical(this, other) ||
@@ -350,10 +350,10 @@
         };
         }
 {% endmacro %}
-    
+
 {% macro selection_object_definition(full_name, selection) -%}
     {% set obj_used_frags = get_used_fragments_for_selection_object(full_name) -%}
-    class {{ full_name }}{% if obj_used_frags | length > 0 %} implements {% for frag in obj_fragment_names %}{{ frag.name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+    class {{ full_name }}{% if obj_used_frags | length > 0 %} implements {% for frag in obj_used_frags %}{{ frag.name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
         {{ selection_object_impl(full_name, selection, false) }}
     }
 {% endmacro %}

@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 use std::{collections::HashMap, sync::Arc};
 
-use apollo_compiler::validation::Valid;
+use apollo_compiler::{executable as apollo_executable, validation::Valid};
 use serde::Serialize;
 
 use super::types::{FullPathName, Selection};
@@ -78,13 +78,20 @@ impl FragmentContext {
     }
 }
 
-
 // Parse fragments from executable document
 pub(crate) fn get_fragments_from_document(
     global_ctx: &SharedShalomGlobalContext,
     doc_orig: Valid<apollo_compiler::ExecutableDocument>,
     doc_path: &PathBuf,
-) -> anyhow::Result<HashMap<String, SharedFragmentContext>> {
+) -> anyhow::Result<
+    HashMap<
+        String,
+        (
+            FragmentContext,
+            apollo_compiler::Node<apollo_executable::Fragment>,
+        ),
+    >,
+> {
     let mut ret = HashMap::new();
 
     // First pass: Create fragment contexts without processing spreads
@@ -93,14 +100,14 @@ pub(crate) fn get_fragments_from_document(
         let fragment_raw = fragment.to_string();
         let type_condition = fragment.type_condition().to_string();
 
-        let ctx = Arc::new(FragmentContext::new(
+        let ctx = FragmentContext::new(
             global_ctx.schema_ctx.clone(),
             fragment_name.clone(),
             fragment_raw,
             doc_path.clone(),
             type_condition,
-        ));
-        ret.insert(fragment_name.clone(), ctx);
+        );
+        ret.insert(fragment_name.clone(), (ctx, fragment.clone()));
     }
 
     Ok(ret)

@@ -25,7 +25,6 @@ pub struct SelectionCommon {
     pub description: Option<String>,
 }
 
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum ArgumentValue {
@@ -146,13 +145,13 @@ impl ObjectSelection {
             .find(|s| s.self_selection_name().contains("id"))
             .cloned()
     }
-    
+
     pub fn get_used_fragments(&self) -> Vec<Selection> {
         self.selections
             .borrow()
             .iter()
-            .filter_map(|s| match s.kind {
-                SelectionKind::FragmentSpread(fs) => Some(s.clone()),
+            .filter_map(|s| match &s.kind {
+                SelectionKind::FragmentSpread(_) => Some(s.clone()),
                 _ => None,
             })
             .collect()

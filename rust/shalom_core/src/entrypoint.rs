@@ -1,5 +1,5 @@
 use std::{
-    collections::HashMap,
+    collections::{HashMap, VecDeque},
     fs,
     io::ErrorKind,
     path::{Path, PathBuf},
@@ -12,7 +12,7 @@ use crate::{
     context::{
         default_config, load_config_from_yaml_str, ShalomGlobalContext, SharedShalomGlobalContext,
     },
-    operation::context::SharedOpCtx,
+    operation::{context::SharedOpCtx, fragments::FragmentContext},
     schema::{self, context::SharedSchemaContext},
 };
 
@@ -86,28 +86,35 @@ pub fn parse_directory(pwd: &Path, strict: bool) -> anyhow::Result<SharedShalomG
             ))
         }
     };
-    let _executables = collect_executables(&files.operations, &schema_parsed.schema, strict)?;
 
     let global_ctx = ShalomGlobalContext::new(schema_parsed, config);
-    fn parse_document(parser: &apollo_compiler::parser::Parser, schema: &Valid<apollo_compiler::Schema>, file: &PathBuf, strict: bool) -> anyhow::Result{
-
-
-    }
 
     let mut all_valid_docs = Vec::new();
     let schema = global_ctx.schema_ctx.schema.clone();
     let mut parser = apollo_compiler::parser::Parser::new();
     for file in &files.operations {
-        let res =  parser.parse_executable(&schema, &fs::read_to_string(&file)?, file).map(
-            |doc|{doc.validate(&schema)}
-        );
+        let res = parser.parse_executable(&schema, &fs::read_to_string(&file)?, file);
         match res {
-            Ok(doc) => all_valid_docs.push((doc,  file.clone())),
-            Err(e)=>{
+            Ok(doc) => {
+                let validated = doc.validate(&schema);
+                match validated {
+                    Ok(valid_doc) => all_valid_docs.push((valid_doc, file.clone())),
+                    Err(e) => {
+                        let msg =
+                            format!("Failed to validate document at {}: {}", file.display(), e);
+                        if strict {
+                            return Err(anyhow::anyhow!(msg));
+                        } else {
+                            log::warn!("{msg}");
+                        }
+                    }
+                }
+            }
+            Err(e) => {
                 let msg = format!("Failed to parse document at {}: {}", file.display(), e);
-                if strict{
+                if strict {
                     return Err(anyhow::anyhow!(msg));
-                } else{
+                } else {
                     log::warn!("{msg}");
                 }
             }
@@ -115,15 +122,46 @@ pub fn parse_directory(pwd: &Path, strict: bool) -> anyhow::Result<SharedShalomG
     }
 
     // First pass: collect all fragments
-    let mut all_fragments = HashMap::new();
+    let mut all_fragment_defs: HashMap<
+        String,
+        (
+            FragmentContext,
+            apollo_compiler::Node<apollo_compiler::executable::Fragment>,
+        ),
+    > = HashMap::new();
     for (doc, file) in &all_valid_docs {
-        let fragments =
-            crate::operation::parse::parse_fragments_from_document(&global_ctx, &content, file)?;
-        all_fragments.extend(fragments);
+        let fragments = crate::operation::fragments::get_fragments_from_document(
+            &global_ctx,
+            doc.clone(),
+            file,
+        )?;
+        for (name, (frag_ctx, frag_node)) in fragments {
+            if all_fragment_defs.contains_key(&name) {
+                return Err(anyhow::anyhow!("Fragment {} already exists", name));
+            }
+            all_fragment_defs.insert(name, (frag_ctx, frag_node));
+        }
+    }
+
+    // Build dependencies
+    let mut dependencies: HashMap<String, Vec<String>> = HashMap::new();
+    for (name, (_, frag_node)) in &all_fragment_defs {
+        let used = crate::operation::parse::get_used_fragments_from_fragment(frag_node);
+        dependencies.insert(name.clone(), used);
+    }
+
+    let order = topological_sort(&dependencies);
+
+    let mut parsed_fragments: HashMap<String, FragmentContext> = HashMap::new();
+    for name in order {
+        if let Some((mut frag_ctx, frag_node)) = all_fragment_defs.remove(&name) {
+            crate::operation::parse::parse_fragment(&global_ctx, frag_node, &mut frag_ctx)?;
+            parsed_fragments.insert(name, frag_ctx);
+        }
     }
 
     // Register fragments in global context
-    global_ctx.register_fragments(all_fragments);
+    global_ctx.register_fragments(parsed_fragments);
 
     // Second pass: collect all operations (now that fragments are available)
     let mut all_operations = HashMap::new();
@@ -139,6 +177,48 @@ pub fn parse_directory(pwd: &Path, strict: bool) -> anyhow::Result<SharedShalomG
     Ok(global_ctx)
 }
 
+fn topological_sort(dependencies: &HashMap<String, Vec<String>>) -> Vec<String> {
+    let mut in_degree: HashMap<String, usize> = HashMap::new();
+    let mut graph: HashMap<String, Vec<String>> = HashMap::new();
+
+    for (node, deps) in dependencies {
+        in_degree.entry(node.clone()).or_insert(0);
+        for dep in deps {
+            graph
+                .entry(dep.clone())
+                .or_insert(Vec::new())
+                .push(node.clone());
+            *in_degree.entry(node.clone()).or_insert(0) += 1;
+        }
+    }
+
+    let mut queue: VecDeque<String> = in_degree
+        .iter()
+        .filter(|(_, &deg)| deg == 0)
+        .map(|(k, _)| k.clone())
+        .collect();
+    let mut result = Vec::new();
+
+    while let Some(node) = queue.pop_front() {
+        result.push(node.clone());
+        if let Some(neighbors) = graph.get(&node) {
+            for neighbor in neighbors {
+                if let Some(deg) = in_degree.get_mut(neighbor) {
+                    *deg -= 1;
+                    if *deg == 0 {
+                        queue.push_back(neighbor.clone());
+                    }
+                }
+            }
+        }
+    }
+
+    if result.len() == dependencies.len() {
+        result
+    } else {
+        panic!("Cycle in fragment dependencies");
+    }
+}
 
 pub fn collect_executables(
     files: &Vec<PathBuf>,
