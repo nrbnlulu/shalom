@@ -4,15 +4,15 @@ import "__graphql__/OptOrderRequest.shalom.dart";
 import "__graphql__/OrderOptRequest.shalom.dart";
 import "__graphql__/OrderOptWithNullDefaultsRequest.shalom.dart";
 import "__graphql__/OrderOptWithSomeDefaultsRequest.shalom.dart";
-import "__graphql__/OrderRequest.shalom.dart";
+import "__graphql__/CreateOrderRequest.shalom.dart";
 import "__graphql__/schema.shalom.dart";
 import "__graphql__/GetOrder.shalom.dart";
 
 void main() {
   group("required input objects", () {
     test("RequiredArguments", () {
-      final req = RequestOrderRequest(
-        variables: OrderRequestVariables(
+      final req = RequestCreateOrderRequest(
+        variables: CreateOrderRequestVariables(
           order: Order(name: "shalom", price: 300.0, quantity: 2),
         ),
       ).toRequest();
