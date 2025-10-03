@@ -1,6 +1,5 @@
 {% include "macros" %}
 
-
 {% set op_variables = operation.context.variables %}
 {% set op_variables_exist = op_variables | length > 0 %}
 
@@ -19,18 +18,29 @@ import 'package:collection/collection.dart';
 {% if operation.context.used_fragments | length > 0 %}
     // Fragment imports
     {% for used_fragment in operation.context.used_fragments -%}
-    import '{{used_fragment.name}}.shalom.dart';
+    import '{{used_fragment.name|lower}}.shalom.dart';
     {% endfor -%}
 {% endif %}
 
 
 {% set operation_name = operation.context.operation_name %}
 
+{% include "selection_macros" %}
 
 // ------------ OBJECT DEFINITIONS -------------
 
 {% for full_name, selection in operation.context.type_defs | items  if selection.kind == "Object" %}
-    {% call selection_object_definition(full_name, selection) %}{% endcall %}
+    {% if full_name == operation_name %}
+        {# Root selection - add Response suffix and set is_root_selection=true #}
+        {% set response_class_name = operation_name ~ "Response" %}
+        {% set obj_used_frags = get_used_fragments_for_selection_object(full_name) -%}
+        class {{ response_class_name }}{% if obj_used_frags | length > 0 %} implements {% for frag in obj_used_frags %}{{ frag.name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+            {{ selection_object_impl(response_class_name, selection, true) }}
+        }
+    {% else %}
+        {# Nested object selections #}
+        {{ selection_object_definition(full_name, selection) }}
+    {% endif %}
 {% endfor %}
 
 // ------------ END OBJECT DEFINITIONS -------------

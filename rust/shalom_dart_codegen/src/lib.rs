@@ -303,6 +303,10 @@ fn register_default_template_fns<'a>(
     env.add_template("schema", include_str!("../templates/schema.dart.jinja"))?;
     env.add_template("fragment", include_str!("../templates/fragment.dart.jinja"))?;
     env.add_template("macros", include_str!("../templates/macros.dart.jinja"))?;
+    env.add_template(
+        "selection_macros",
+        include_str!("../templates/selection_macros.dart.jinja"),
+    )?;
 
     let ctx_clone = ctx.clone();
     env.add_function("type_name_for_selection", move |a: _| {
