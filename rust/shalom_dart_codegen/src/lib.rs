@@ -94,10 +94,6 @@ mod ext_jinja_fns {
                     enum_.concrete_type.name.clone()
                 }
             }
-            SelectionKind::FragmentSpread(fragment_spread) => {
-                // Fragment spreads use the fragment type name
-                fragment_spread.fragment_name.clone()
-            }
         }
     }
 

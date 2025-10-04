@@ -85,9 +85,6 @@
         {% else %}
             ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
         {% endif %}
-    {% elif selection.kind == "FragmentSpread" %}
-        {# Fragment spreads are handled by their inlined fields, so we skip them #}
-        {{ value_symbol }}
     {% else %}
         {% if is_optional %}
             {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
@@ -150,7 +147,7 @@
 
     {% macro selection_object_impl(typename, selection_object, is_root_selection, full_name=none) %}
         {% set lookup_name = full_name if full_name else typename %}
-        {% set selections = selection_object.field_selections %}
+        {% set selections = selection_object.selections %}
         /// class members
         {% for selection in selections -%}
             {% set selection_name = selection.name %}
@@ -278,7 +275,7 @@
                 final data = ctx.getCachedRecord("ROOT_{{OP_TYPE}}");
             {% endif -%}
             {% for selection in selections -%}
-                {% set raw_value_symbol = selection.name + '$raw' %}
+                {% set raw_value_symbol = selection.name + '$raw' -%}
                 {% if selection.arguments | length > 0 -%}
                     final {{selection.name}}$cacheKey = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
                     final {{raw_value_symbol}} = data[{{selection.name}}$cacheKey];
@@ -353,8 +350,7 @@
 {% endmacro %}
 
 {% macro selection_object_definition(full_name, selection) -%}
-    {% set obj_used_frags = selection.fragment_selections -%}
-    class {{ full_name }}{% if obj_used_frags | length > 0 %} implements {% for frag in obj_used_frags %}{{ frag.name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+    class {{ full_name }}{% if selection.used_fragments | length > 0 %} implements {% for frag in selection.used_fragments %}{{ frag.name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
         {{ selection_object_impl(full_name, selection, false, full_name) }}
     }
 {% endmacro %}

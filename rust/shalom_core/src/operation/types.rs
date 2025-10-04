@@ -76,7 +76,6 @@ pub enum SelectionKind {
     Object(Rc<ObjectSelection>),
     Enum(Rc<EnumSelection>),
     List(Rc<ListSelection>),
-    FragmentSpread(Rc<FragmentSpreadSelection>),
 }
 impl SelectionKind {
     pub fn new_list(is_optional: bool, of_kind: SelectionKind) -> Self {
@@ -108,6 +107,7 @@ impl ScalarSelection {
         })
     }
 }
+type FragName = String;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ObjectSelection {
@@ -115,8 +115,7 @@ pub struct ObjectSelection {
     pub concrete_typename: String,
     pub is_optional: bool,
     pub selections: RefCell<Vec<Selection>>,
-    pub field_selections: RefCell<Vec<Selection>>,
-    pub fragment_selections: RefCell<Vec<Selection>>,
+    pub used_fragments: RefCell<Vec<FragName>>,
 }
 
 pub type SharedObjectSelection = Rc<ObjectSelection>;
@@ -132,8 +131,7 @@ impl ObjectSelection {
             concrete_typename,
             is_optional,
             selections: RefCell::new(Vec::new()),
-            field_selections: RefCell::new(Vec::new()),
-            fragment_selections: RefCell::new(Vec::new()),
+            used_fragments: RefCell::new(Vec::new()),
         };
 
         Rc::new(ret)
@@ -152,20 +150,14 @@ impl ObjectSelection {
             // Skip duplicate selections to avoid field conflicts from fragment expansion
             return;
         }
-
-        // Add to appropriate filtered list based on kind
-        match &selection.kind {
-            SelectionKind::FragmentSpread(_) => {
-                self.fragment_selections
-                    .borrow_mut()
-                    .push(selection.clone());
-            }
-            _ => {
-                self.field_selections.borrow_mut().push(selection.clone());
-            }
-        }
-        // Add to main selections list
         self.selections.borrow_mut().push(selection);
+    }
+
+    pub fn add_used_fragment(&self, name: FragName) {
+        self.used_fragments.borrow_mut().push(name);
+    }
+    pub fn get_used_fragments(&self) -> Vec<FragName> {
+        self.used_fragments.borrow().clone()
     }
 
     pub fn get_id_selection(&self) -> Option<Selection> {
@@ -201,29 +193,6 @@ pub struct ListSelection {
 }
 
 pub type SharedListSelection = Rc<ListSelection>;
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct FragmentSpreadSelection {
-    pub fragment_name: String,
-    pub type_condition: String,
-    pub is_optional: bool,
-}
-
-pub type SharedFragmentSpreadSelection = Rc<FragmentSpreadSelection>;
-
-impl FragmentSpreadSelection {
-    pub fn new(
-        fragment_name: String,
-        type_condition: String,
-        is_optional: bool,
-    ) -> SharedFragmentSpreadSelection {
-        Rc::new(FragmentSpreadSelection {
-            fragment_name,
-            type_condition,
-            is_optional,
-        })
-    }
-}
 
 pub fn dart_type_for_scalar(scalar_name: &str) -> String {
     match scalar_name {
