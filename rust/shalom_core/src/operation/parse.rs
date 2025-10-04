@@ -16,8 +16,8 @@ use crate::schema::types::{
 use super::context::{OperationContext, SharedOpCtx};
 use super::fragments::{FragmentContext, SharedFragmentContext};
 use super::types::{
-    EnumSelection, OperationType, ScalarSelection, Selection, SharedEnumSelection,
-    SharedObjectSelection, SharedScalarSelection,
+    EnumSelection, FragmentSpreadSelection, OperationType, ScalarSelection, Selection,
+    SharedEnumSelection, SharedObjectSelection, SharedScalarSelection,
 };
 
 fn full_path_name(this_name: &String, parent_path: &String) -> String {
@@ -148,7 +148,24 @@ where
                     };
 
                 if fragment_found {
-                    // Only expand fragment selections into the object selection - don't create fragment spread field
+                    // Add FragmentSpread selection so the object can implement the fragment interface
+                    let type_condition = _type_condition.clone();
+                    let fragment_spread_sel = FragmentSpreadSelection::new(
+                        fragment_name.clone(),
+                        type_condition,
+                        false, // Fragments are never optional in spreads
+                    );
+                    let fragment_selection = Selection::new(
+                        SelectionCommon {
+                            name: fragment_name.clone(),
+                            description: None,
+                        },
+                        SelectionKind::FragmentSpread(fragment_spread_sel),
+                        Default::default(),
+                    );
+                    obj.add_selection(fragment_selection);
+
+                    // Also expand fragment selections into the object selection
                     if let Some(fragment_ctx) = global_ctx.get_fragment(&fragment_name) {
                         if let Some(root_sel) = &fragment_ctx.root_type {
                             if let SelectionKind::Object(obj_sel) = &root_sel.kind {

@@ -148,8 +148,9 @@
     {% endif %}
 {% endmacro %}
 
-    {% macro selection_object_impl(typename, selection_object, is_root_selection) %}
-        {% set selections = selection_object.selections %}
+    {% macro selection_object_impl(typename, selection_object, is_root_selection, full_name=none) %}
+        {% set lookup_name = full_name if full_name else typename %}
+        {% set selections = selection_object.field_selections %}
         /// class members
         {% for selection in selections -%}
             {% set selection_name = selection.name %}
@@ -179,11 +180,11 @@
                 final String this$normalizedID = "ROOT_{{OP_TYPE}}";
                 final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");
             {% else %}
-                {% set id_field = get_id_selection(selection_object.full_name) -%}
+                {% set id_field = get_id_selection(lookup_name) -%}
                 {% set is_normalized = false -%}
                 String this$normalizedID;
                 JsonObject this$NormalizedRecord;
-                {% if is_type_implements_node(selection_object.full_name) %}
+                {% if is_type_implements_node(lookup_name) %}
                     final this$normalizedID_temp = data["id"] as RecordID?;
                     if (this$normalizedID_temp == null) {
                         throw UnimplementedError("Node ID cannot be null");
@@ -216,19 +217,19 @@
             {% endif -%}
 
 
-            {% for selection in selection_object.selections -%}
+            {% for selection in selections -%}
                 final {{selection.name}}Normalized$Key = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
                 final {{selection.name}}$normalizedID = "${this$normalizedID}.${ {{selection.name}}Normalized$Key}";
             {% endfor -%}
             ctx.addDependantRecords(
                 {
-                {% for selection in selection_object.selections -%}
+                {% for selection in selections -%}
                     {{selection.name}}$normalizedID  {{"," if not loop.last}}
                 {% endfor -%}
                 }
             );
 
-            {% for selection in selection_object.selections -%}
+            {% for selection in selections -%}
                 final {{selection.name}}$cached = this$NormalizedRecord[{{selection.name}}Normalized$Key];
                 final {{selection.name}}$raw = data["{{selection.name}}"];
                 if ({{selection.name}}$raw != null){
@@ -276,7 +277,7 @@
             {% if is_root_selection -%}
                 final data = ctx.getCachedRecord("ROOT_{{OP_TYPE}}");
             {% endif -%}
-            {% for selection in selection_object.selections -%}
+            {% for selection in selections -%}
                 {% set raw_value_symbol = selection.name + '$raw' %}
                 {% if selection.arguments | length > 0 -%}
                     final {{selection.name}}$cacheKey = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
@@ -296,7 +297,7 @@
             static ({{typename}}, CacheUpdateContext)  fromResponseImpl(JsonObject data, ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}){
                 // first update the cache
                 final CacheUpdateContext updateCtx = CacheUpdateContext(shalomContext: ctx!);
-                {% set root_selection = selection_object.selections | first -%}
+                {% set root_selection = selections | first -%}
 
                 normalize$inCache(
                     data,
@@ -352,8 +353,8 @@
 {% endmacro %}
 
 {% macro selection_object_definition(full_name, selection) -%}
-    {% set obj_used_frags = get_used_fragments_for_selection_object(full_name) -%}
+    {% set obj_used_frags = selection.fragment_selections -%}
     class {{ full_name }}{% if obj_used_frags | length > 0 %} implements {% for frag in obj_used_frags %}{{ frag.name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
-        {{ selection_object_impl(full_name, selection, false) }}
+        {{ selection_object_impl(full_name, selection, false, full_name) }}
     }
 {% endmacro %}

@@ -557,21 +557,6 @@ impl OperationEnv<'_> {
             },
         );
 
-        let ctx_clone = ctx.clone();
-        let op_name2 = op_name.clone();
-        env.add_function(
-            "get_used_fragments_for_selection_object",
-            move |full_name: &str| {
-                let op = ctx_clone.get_operation(&*op_name2)?;
-                let selection = op.get_selection(&full_name.to_string())?;
-                match selection.kind {
-                    SelectionKind::Object(object_selection) => Some(
-                        minijinja::Value::from_serialize(object_selection.get_used_fragments()),
-                    ),
-                    _ => None,
-                }
-            },
-        );
         Ok(OperationEnv { env })
     }
 

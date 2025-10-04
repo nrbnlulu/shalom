@@ -153,34 +153,31 @@ void main() {
       expect(fromCache.post?.title, "Test Post");
     });
 
-    // TODO: Fragment interface implementation not working yet
-    // The following test checks if classes implement fragment interfaces
-    // This is currently not working in the codegen
-    // test(
-    //     'fragmentTypeChecking - Same fragment from different operations returns true for is check',
-    //     () {
-    //   final userData = {
-    //     "user": {
-    //       "id": "user1",
-    //       "name": "Alice",
-    //       "email": "alice@example.com",
-    //       "age": 25,
-    //     },
-    //   };
+    test(
+        'fragmentTypeChecking - Same fragment from different operations returns true for is check',
+        () {
+      final userData = {
+        "user": {
+          "id": "user1",
+          "name": "Alice",
+          "email": "alice@example.com",
+          "age": 25,
+        },
+      };
 
-    //   final getUserVars = GetUserVariables(userId: "user1");
-    //   final getUserResult =
-    //       GetUserResponse.fromResponse(userData, variables: getUserVars);
+      final getUserVars = GetUserVariables(userId: "user1");
+      final getUserResult =
+          GetUserResponse.fromResponse(userData, variables: getUserVars);
 
-    //   final getUserWithAuthorVars = GetUserWithAuthorVariables(userId: "user1");
-    //   final getUserWithAuthorResult = GetUserWithAuthorResponse.fromResponse(
-    //       userData,
-    //       variables: getUserWithAuthorVars);
+      final getUserWithAuthorVars = GetUserWithAuthorVariables(userId: "user1");
+      final getUserWithAuthorResult = GetUserWithAuthorResponse.fromResponse(
+          userData,
+          variables: getUserWithAuthorVars);
 
-    //   // Both should implement UserInfoFrag
-    //   expect(getUserResult.user is UserInfoFrag, true);
-    //   expect(getUserWithAuthorResult.user is UserInfoFrag, true);
-    // });
+      // Both should implement UserInfoFrag
+      expect(getUserResult.user is UserInfoFrag, true);
+      expect(getUserWithAuthorResult.user is UserInfoFrag, true);
+    });
 
     test(
         'fragmentExternalImport - Operations should import fragments from other folders',

@@ -125,5 +125,3 @@ pub fn load_config_from_yaml_str(yaml: &str) -> anyhow::Result<ShalomConfig> {
         serde_yaml::from_str(yaml).map_err(|e| anyhow::anyhow!("Invalid YAML: {}", e))?;
     Ok(config)
 }
-
-

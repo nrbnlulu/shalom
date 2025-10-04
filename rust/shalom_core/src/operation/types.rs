@@ -115,6 +115,8 @@ pub struct ObjectSelection {
     pub concrete_typename: String,
     pub is_optional: bool,
     pub selections: RefCell<Vec<Selection>>,
+    pub field_selections: RefCell<Vec<Selection>>,
+    pub fragment_selections: RefCell<Vec<Selection>>,
 }
 
 pub type SharedObjectSelection = Rc<ObjectSelection>;
@@ -130,11 +132,25 @@ impl ObjectSelection {
             concrete_typename,
             is_optional,
             selections: RefCell::new(Vec::new()),
+            field_selections: RefCell::new(Vec::new()),
+            fragment_selections: RefCell::new(Vec::new()),
         };
 
         Rc::new(ret)
     }
     pub fn add_selection(&self, selection: Selection) {
+        // Add to appropriate filtered list based on kind
+        match &selection.kind {
+            SelectionKind::FragmentSpread(_) => {
+                self.fragment_selections
+                    .borrow_mut()
+                    .push(selection.clone());
+            }
+            _ => {
+                self.field_selections.borrow_mut().push(selection.clone());
+            }
+        }
+        // Add to main selections list
         self.selections.borrow_mut().push(selection);
     }
 
@@ -144,17 +160,6 @@ impl ObjectSelection {
             .iter()
             .find(|s| s.self_selection_name().contains("id"))
             .cloned()
-    }
-
-    pub fn get_used_fragments(&self) -> Vec<Selection> {
-        self.selections
-            .borrow()
-            .iter()
-            .filter_map(|s| match &s.kind {
-                SelectionKind::FragmentSpread(_) => Some(s.clone()),
-                _ => None,
-            })
-            .collect()
     }
 }
 
