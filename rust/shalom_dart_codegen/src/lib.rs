@@ -409,8 +409,16 @@ fn register_default_template_fns<'a>(
                 .join("__graphql__")
                 .join(format!("{}.shalom.dart", frag_name.to_lowercase()));
 
+            log::debug!(
+                "Fragment '{}': op_graphql_dir={:?}, frag_generated_path={:?}",
+                frag_name,
+                op_graphql_dir,
+                frag_generated_path
+            );
+
             // If in the same __graphql__ directory, use relative import
             if op_graphql_dir == frag_parent_dir.join("__graphql__") {
+                log::debug!("Same directory, using simple relative import");
                 return Ok(format!("{}.shalom.dart", frag_name.to_lowercase()));
             }
 
@@ -439,16 +447,21 @@ fn register_default_template_fns<'a>(
                 ));
             }
 
-            // Same package, different directories - use relative path from operation dir
-            let relative_from_op =
-                pathdiff::diff_paths(&frag_generated_path, &op_dir).ok_or_else(|| {
+            // Same package, different directories - use relative path from operation __graphql__ dir
+            let relative_from_op = pathdiff::diff_paths(&frag_generated_path, &op_graphql_dir)
+                .ok_or_else(|| {
                     minijinja::Error::new(
                         minijinja::ErrorKind::InvalidOperation,
                         "Could not calculate relative path",
                     )
                 })?;
 
-            Ok(relative_from_op.to_string_lossy().replace('\\', "/"))
+            let import_path = relative_from_op.to_string_lossy().replace('\\', "/");
+            log::debug!(
+                "Different directories in same package, using relative import: {}",
+                import_path
+            );
+            Ok(import_path)
         },
     );
 
@@ -567,6 +580,7 @@ impl OperationEnv<'_> {
         operations_ctx: S,
         schema_ctx: T,
         extra_imports: HashMap<String, String>,
+        schema_import_path: String,
     ) -> String {
         let template = self.env.get_template("operation").unwrap();
         let mut context = HashMap::new();
@@ -574,6 +588,10 @@ impl OperationEnv<'_> {
         context.insert("schema", context! { context => schema_ctx });
         context.insert("operation", context! { context => operations_ctx });
         context.insert("extra_imports", minijinja::Value::from(extra_imports));
+        context.insert(
+            "schema_import_path",
+            minijinja::Value::from(schema_import_path),
+        );
 
         template.render(&context).unwrap()
     }
@@ -673,15 +691,28 @@ fn generate_operations_file(
     name: &str,
     operation: &OperationContext,
     additional_imports: HashMap<String, String>,
+    project_root: &Path,
 ) -> anyhow::Result<()> {
     let op_env = OperationEnv::new(ctx, operation)?;
 
     info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();
-
-    let rendered_content =
-        op_env.render_operation(operation, ctx.schema_ctx.clone(), additional_imports);
     let generation_target = get_generation_path_for_operation(&operation_file_path, name);
+
+    // Calculate relative path from operation __graphql__ dir to schema file
+    let op_dir = operation_file_path.parent().unwrap();
+    let op_graphql_dir = op_dir.join("__graphql__");
+    let schema_path = project_root.join("__graphql__").join("schema.shalom.dart");
+    let schema_import_path = pathdiff::diff_paths(&schema_path, &op_graphql_dir)
+        .map(|p| p.to_string_lossy().replace('\\', "/"))
+        .unwrap_or_else(|| "schema.shalom.dart".to_string());
+
+    let rendered_content = op_env.render_operation(
+        operation,
+        ctx.schema_ctx.clone(),
+        additional_imports,
+        schema_import_path,
+    );
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
     Ok(())
@@ -701,7 +732,15 @@ fn generate_fragment_file(
         additional_imports,
     );
 
-    let generation_path = get_generation_path_for_fragment(pwd, fragment_name);
+    // Generate fragment in __graphql__ subdirectory relative to where it's defined
+    let fragment_source_dir = fragment_ctx.file_path.parent().ok_or_else(|| {
+        anyhow::anyhow!("Invalid fragment file path: {:?}", fragment_ctx.file_path)
+    })?;
+    let generation_dir = fragment_source_dir.join(GRAPHQL_DIRECTORY);
+    create_dir_if_not_exists(&generation_dir);
+    let generation_path =
+        generation_dir.join(format!("{}.{}", fragment_name.to_lowercase(), END_OF_FILE));
+
     fs::write(&generation_path, generated_content)?;
     info!("Generated fragment file: {}", generation_path.display());
     Ok(())
@@ -778,7 +817,8 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
 
     // Generate operation files
     for (name, operation) in ctx.operations() {
-        let res = generate_operations_file(&ctx, &name, &operation, additional_imports.clone());
+        let res =
+            generate_operations_file(&ctx, &name, &operation, additional_imports.clone(), pwd);
         if let Err(err) = res {
             if strict {
                 return Err(err);

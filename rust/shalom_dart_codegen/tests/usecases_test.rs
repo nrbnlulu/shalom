@@ -39,3 +39,8 @@ fn test_list_of_scalars_dart() {
 fn test_fragments_dart() {
     run_dart_tests_for_usecase("fragments");
 }
+
+#[test]
+fn test_cross_dir_fragments_dart() {
+    run_dart_tests_for_usecase("cross_dir_fragments");
+}

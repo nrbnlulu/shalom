@@ -1,0 +1,14 @@
+query GetUser($userId: ID!) {
+    user(id: $userId) {
+        ...UserFields
+    }
+}
+
+query GetPost($postId: ID!) {
+    post(id: $postId) {
+        ...PostFields
+        author {
+            ...UserFields
+        }
+    }
+}
