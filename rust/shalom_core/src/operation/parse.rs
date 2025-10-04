@@ -180,9 +180,13 @@ where
                     trace!("Fragment {} not found, skipping", fragment_name);
                 }
             }
-            apollo_executable::Selection::InlineFragment(_inline_fragment) => {
+            apollo_executable::Selection::InlineFragment(inline_fragment) => {
                 // TODO: Handle inline fragments
-                todo!("Inline fragments not yet supported");
+                todo!(
+                    "Inline fragment '{}' is not yet supported and will be skipped",
+                    inline_fragment
+                        .to_string()
+                );
             }
         }
     }

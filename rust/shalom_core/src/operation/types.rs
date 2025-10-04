@@ -139,6 +139,20 @@ impl ObjectSelection {
         Rc::new(ret)
     }
     pub fn add_selection(&self, selection: Selection) {
+        let selection_name = selection.self_selection_name();
+
+        // Check if a selection with this name already exists (for deduplication)
+        let already_exists = self
+            .selections
+            .borrow()
+            .iter()
+            .any(|s| s.self_selection_name() == selection_name);
+
+        if already_exists {
+            // Skip duplicate selections to avoid field conflicts from fragment expansion
+            return;
+        }
+
         // Add to appropriate filtered list based on kind
         match &selection.kind {
             SelectionKind::FragmentSpread(_) => {

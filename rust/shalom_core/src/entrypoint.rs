@@ -151,7 +151,12 @@ pub fn parse_directory(
         dependencies.insert(name.clone(), used);
     }
 
-    let order = topological_sort(&dependencies);
+    let order = topological_sort(&dependencies).map_err(|e| {
+        anyhow::anyhow!(
+            "Fragment dependency cycle detected: {}. Please check your GraphQL fragments for circular references.",
+            e
+        )
+    })?;
 
     // Step 4: Get fragment SDL in dependency order for injection
     let mut fragment_sdls: HashMap<String, String> = HashMap::new();
@@ -330,7 +335,7 @@ pub fn parse_directory(
     }
 
     // Register fragments in global context
-    global_ctx.register_fragments(parsed_fragments);
+    global_ctx.register_fragments(parsed_fragments)?;
 
     // Step 7: Parse operations (now that fragments are available)
     // Skip fragment-only files (they were already processed in Step 6)
@@ -365,7 +370,7 @@ pub fn parse_directory(
     Ok(global_ctx)
 }
 
-fn topological_sort(dependencies: &HashMap<String, Vec<String>>) -> Vec<String> {
+fn topological_sort(dependencies: &HashMap<String, Vec<String>>) -> Result<Vec<String>, String> {
     let mut in_degree: HashMap<String, usize> = HashMap::new();
     let mut graph: HashMap<String, Vec<String>> = HashMap::new();
 
@@ -402,9 +407,14 @@ fn topological_sort(dependencies: &HashMap<String, Vec<String>>) -> Vec<String> 
     }
 
     if result.len() == dependencies.len() {
-        result
+        Ok(result)
     } else {
-        panic!("Cycle in fragment dependencies");
+        let missing: Vec<String> = dependencies
+            .keys()
+            .filter(|k| !result.contains(k))
+            .cloned()
+            .collect();
+        Err(format!("Fragments involved in cycle: {:?}", missing))
     }
 }
 

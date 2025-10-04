@@ -11,11 +11,11 @@ graphql parsing and codegen are implemented in rust under
 
 ### Dart codegen Architecture
 - Object - generated as a dart class with normalized cache read / write functions + few helpers
-- Operation - generated as a `<op_name>Request` dart class which has either data or errors and can be used as a Request object in order to actually fetch the operation from a grahpql server
+- Operation - generated as a `<op_name>Request` dart class which has either data or errors and can be used as a Request object in order to actually fetch the operation from a graphql server
 - Enum - just like a dart enum with a few helpers
-- Scalars - there is a base scalars mappping for dart types
-- Custom scalars - we support adding custom scalars to via a user defined dart glue and some configs in shalom.yml
-- Fragments - fragments are basically a dart abstract class that can `implement` each other. when a fragment is used in an operation it will be extended and all of its selections would be considered as if they were flatten inside the object that used that fragment(or its inner fragments). if a fragment has nested selections (of objects) it will generate their definitions in its very file and operations will need to use these definitions when reading/writing from cache.
+- Scalars - there is a base scalars mapping for dart types
+- Custom scalars - we support adding custom scalars via a user defined dart glue and some configs in shalom.yml
+- Fragments - fragments are basically a dart abstract class that can `implement` each other. When a fragment is used in an operation, it will be extended and all of its selections will be considered as if they were flattened inside the object that used that fragment (or its inner fragments). If a fragment has nested selections (of objects), it will generate their definitions in its own file and operations will need to use these definitions when reading/writing from cache.
 
 ### Development
 Add a test case for your use case under `rust/shalom_dart_codegen/tests/usecases_test.rs` and run this test. After the first run, it will generate a minimal Dart project under `rust/shalom_dart_codegen/dart_tests/`. In `tests.dart`, `operations.graphql`, and `schema.graphql`, you can add tests specific for your use case. To run the test, run the Rust test again (it won't overwrite the Dart project).

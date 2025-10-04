@@ -77,27 +77,37 @@ impl ShalomGlobalContext {
         operations.contains_key(name)
     }
 
-    pub fn register_fragments(&self, fragments_update: HashMap<String, FragmentContext>) {
+    pub fn register_fragments(
+        &self,
+        fragments_update: HashMap<String, FragmentContext>,
+    ) -> anyhow::Result<()> {
         let mut fragments = self.fragments.lock().unwrap();
         let operations = self.operations.lock().unwrap();
         for (name, _) in fragments_update.iter() {
             if fragments.contains_key(name) {
-                panic!("Fragment with name {} already exists", name);
+                return Err(anyhow::anyhow!(
+                    "Fragment with name {} already exists",
+                    name
+                ));
             }
             if operations.contains_key(name) {
-                panic!(
+                return Err(anyhow::anyhow!(
                     "Fragment name {} conflicts with existing operation name",
                     name
-                );
+                ));
             }
             // Check if fragment name conflicts with schema types
             if self.schema_ctx.get_type(name).is_some() {
-                panic!("Fragment name {} conflicts with schema type", name);
+                return Err(anyhow::anyhow!(
+                    "Fragment name {} conflicts with schema type",
+                    name
+                ));
             }
         }
         for (name, frag_ctx) in fragments_update {
             fragments.insert(name, Arc::new(frag_ctx));
         }
+        Ok(())
     }
 
     pub fn get_fragment(&self, name: &str) -> Option<SharedFragmentContext> {

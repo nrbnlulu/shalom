@@ -1,11 +1,9 @@
 use std::path::PathBuf;
 use std::{collections::HashMap, sync::Arc};
 
-use apollo_compiler::{executable as apollo_executable, validation::Valid};
 use serde::Serialize;
 
 use super::types::{FullPathName, Selection};
-use crate::context::SharedShalomGlobalContext;
 
 use crate::schema::context::SharedSchemaContext;
 pub type SharedFragmentContext = Arc<FragmentContext>;
@@ -76,39 +74,4 @@ impl FragmentContext {
     pub fn get_root_type(&self) -> Option<&Selection> {
         self.root_type.as_ref()
     }
-}
-
-// Parse fragments from executable document
-pub(crate) fn get_fragments_from_document(
-    global_ctx: &SharedShalomGlobalContext,
-    doc_orig: Valid<apollo_compiler::ExecutableDocument>,
-    doc_path: &PathBuf,
-) -> anyhow::Result<
-    HashMap<
-        String,
-        (
-            FragmentContext,
-            apollo_compiler::Node<apollo_executable::Fragment>,
-        ),
-    >,
-> {
-    let mut ret = HashMap::new();
-
-    // First pass: Create fragment contexts without processing spreads
-    for (name, fragment) in doc_orig.fragments.iter() {
-        let fragment_name = name.to_string();
-        let fragment_raw = fragment.to_string();
-        let type_condition = fragment.type_condition().to_string();
-
-        let ctx = FragmentContext::new(
-            global_ctx.schema_ctx.clone(),
-            fragment_name.clone(),
-            fragment_raw,
-            doc_path.clone(),
-            type_condition,
-        );
-        ret.insert(fragment_name.clone(), (ctx, fragment.clone()));
-    }
-
-    Ok(ret)
 }

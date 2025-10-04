@@ -38,6 +38,12 @@ fn load_config_from_yaml_str(yaml: &str, config_dir: &PathBuf) -> anyhow::Result
 
 fn find_config_in_nearest_parent() -> Option<PathBuf> {
     let pwd = current_dir().unwrap();
+    // Check current directory first
+    let config_path = pwd.join("shalom.yml");
+    if config_path.exists() {
+        return Some(config_path);
+    }
+    // Then check parent directories
     let mut parent = pwd.parent();
     while let Some(dir) = parent {
         let config_path = dir.join("shalom.yml");
