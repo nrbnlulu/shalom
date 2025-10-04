@@ -126,8 +126,4 @@ pub fn load_config_from_yaml_str(yaml: &str) -> anyhow::Result<ShalomConfig> {
     Ok(config)
 }
 
-pub fn default_config() -> ShalomConfig {
-    ShalomConfig {
-        custom_scalars: Default::default(),
-    }
-}
+

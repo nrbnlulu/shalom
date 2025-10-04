@@ -18,7 +18,7 @@ import 'package:collection/collection.dart';
 {% if operation.context.used_fragments | length > 0 %}
     // Fragment imports
     {% for used_fragment in operation.context.used_fragments -%}
-    import '{{used_fragment.name|lower}}.shalom.dart';
+    import '{{ import_path_for_fragment_from_operation(operation.context.file_path, used_fragment.name) }}';
     {% endfor -%}
 {% endif %}
 

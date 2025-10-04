@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use super::types::{FullPathName, Selection};
 use crate::context::SharedShalomGlobalContext;
-use crate::operation::parse::parse_selection_set;
+
 use crate::schema::context::SharedSchemaContext;
 pub type SharedFragmentContext = Arc<FragmentContext>;
 

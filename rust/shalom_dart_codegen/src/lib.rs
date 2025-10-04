@@ -198,9 +198,6 @@ mod ext_jinja_fns {
         }
     }
 
-
-
-
     pub fn custom_scalar_impl_fullname(
         ctx: &SharedShalomGlobalContext,
         scalar_name: String,
@@ -343,8 +340,117 @@ fn register_default_template_fns<'a>(
     env.add_function("is_type_implements_node", move |type_name: &str| {
         schema_ctx.is_type_implements_node(type_name)
     });
-    
 
+    // Helper function to find pubspec.yaml and extract package name
+    fn find_pubspec_and_package_name(start_path: &Path) -> Result<(PathBuf, String), String> {
+        let mut current_dir = start_path.parent();
+
+        while let Some(dir) = current_dir {
+            let potential_pubspec = dir.join("pubspec.yaml");
+            if potential_pubspec.exists() {
+                let pubspec_content = fs::read_to_string(&potential_pubspec)
+                    .map_err(|e| format!("Failed to read pubspec.yaml: {}", e))?;
+
+                let package_name = pubspec_content
+                    .lines()
+                    .find(|line| line.trim_start().starts_with("name:"))
+                    .and_then(|line| line.split(':').nth(1))
+                    .map(|name| name.trim().to_string())
+                    .ok_or_else(|| "Could not find 'name:' field in pubspec.yaml".to_string())?;
+
+                return Ok((potential_pubspec, package_name));
+            }
+            current_dir = dir.parent();
+        }
+
+        Err("No pubspec.yaml found".to_string())
+    }
+
+    let global_ctx = ctx.clone();
+    env.add_function(
+        "import_path_for_fragment_from_operation",
+        move |operation_file_path: String, frag_name: &str| -> Result<String, minijinja::Error> {
+            let op_path = PathBuf::from(&operation_file_path);
+            let fragment = global_ctx.get_fragment(frag_name).ok_or_else(|| {
+                minijinja::Error::new(
+                    minijinja::ErrorKind::InvalidOperation,
+                    format!("Fragment '{}' not found", frag_name),
+                )
+            })?;
+
+            // Find pubspec.yaml for both operation and fragment
+            let (op_pubspec, _op_package) = find_pubspec_and_package_name(&op_path)
+                .map_err(|e| minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, e))?;
+
+            let (frag_pubspec, frag_package) = find_pubspec_and_package_name(&fragment.file_path)
+                .map_err(|e| {
+                minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, e)
+            })?;
+
+            // Get the directory containing operation file
+            let op_dir = op_path.parent().ok_or_else(|| {
+                minijinja::Error::new(
+                    minijinja::ErrorKind::InvalidOperation,
+                    "Invalid operation file path",
+                )
+            })?;
+
+            // Calculate the __graphql__ directory for the operation
+            let op_graphql_dir = op_dir.join("__graphql__");
+
+            // Calculate where the fragment will be generated
+            let frag_parent_dir = fragment.file_path.parent().ok_or_else(|| {
+                minijinja::Error::new(
+                    minijinja::ErrorKind::InvalidOperation,
+                    "Invalid fragment file path",
+                )
+            })?;
+            let frag_generated_path = frag_parent_dir
+                .join("__graphql__")
+                .join(format!("{}.shalom.dart", frag_name.to_lowercase()));
+
+            // If in the same __graphql__ directory, use relative import
+            if op_graphql_dir == frag_parent_dir.join("__graphql__") {
+                return Ok(format!("{}.shalom.dart", frag_name.to_lowercase()));
+            }
+
+            // If in different packages, use package import
+            if op_pubspec != frag_pubspec {
+                let frag_package_root = frag_pubspec.parent().ok_or_else(|| {
+                    minijinja::Error::new(
+                        minijinja::ErrorKind::InvalidOperation,
+                        "Invalid pubspec.yaml path",
+                    )
+                })?;
+
+                let relative_path = frag_generated_path
+                    .strip_prefix(frag_package_root)
+                    .map_err(|e| {
+                        minijinja::Error::new(
+                            minijinja::ErrorKind::InvalidOperation,
+                            format!("Fragment path is not within package root: {}", e),
+                        )
+                    })?;
+
+                return Ok(format!(
+                    "package:{}/{}",
+                    frag_package,
+                    relative_path.to_string_lossy().replace('\\', "/")
+                ));
+            }
+
+            // Same package, different directories - use relative path from operation dir
+            let relative_from_op =
+                pathdiff::diff_paths(&frag_generated_path, &op_dir).ok_or_else(|| {
+                    minijinja::Error::new(
+                        minijinja::ErrorKind::InvalidOperation,
+                        "Could not calculate relative path",
+                    )
+                })?;
+
+            Ok(relative_from_op.to_string_lossy().replace('\\', "/"))
+        },
+    );
 
     env.add_function(
         "get_field_name_with_args",
@@ -601,9 +707,11 @@ fn generate_fragment_file(
     Ok(())
 }
 
-pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
-    info!("codegen started in working directory {}", pwd.display());
+pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
     let ctx = shalom_core::entrypoint::parse_directory(pwd, strict)?;
+    let pwd = &ctx.config.project_root;
+    info!("codegen started in working directory {}", pwd.display());
+
     let template_env = SchemaEnv::new(&ctx)?;
 
     // Clean up unused operation files

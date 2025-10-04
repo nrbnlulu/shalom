@@ -1,7 +1,6 @@
 use std::{
     collections::{HashMap, VecDeque},
     fs,
-    io::ErrorKind,
     path::{Path, PathBuf},
 };
 
@@ -9,11 +8,10 @@ use apollo_compiler::{validation::Valid, ExecutableDocument};
 use log::error;
 
 use crate::{
-    context::{
-        default_config, load_config_from_yaml_str, ShalomGlobalContext, SharedShalomGlobalContext,
-    },
+    context::{ShalomGlobalContext, SharedShalomGlobalContext},
     operation::{context::SharedOpCtx, fragments::FragmentContext},
     schema::{self, context::SharedSchemaContext},
+    shalom_config::ShalomConfig,
 };
 
 pub struct FoundGqlFiles {
@@ -62,30 +60,27 @@ pub fn parse_document(
     crate::operation::parse::parse_document(global_ctx, operation, source_path)
 }
 
-pub fn parse_directory(pwd: &Path, strict: bool) -> anyhow::Result<SharedShalomGlobalContext> {
+pub fn parse_directory(
+    pwd: &Option<PathBuf>,
+    strict: bool,
+) -> anyhow::Result<SharedShalomGlobalContext> {
+    let config = match pwd {
+        Some(pwd) => {
+            let config_path = pwd.join("shalom.yml");
+            if config_path.exists() {
+                ShalomConfig::from_file(&config_path).unwrap()
+            } else {
+                let mut config = ShalomConfig::default();
+                config.project_root = pwd.clone();
+                config
+            }
+        }
+        None => ShalomConfig::resolve_or_default().unwrap(),
+    };
+    let pwd = &config.project_root;
     let files = find_graphql_files(pwd);
     let schema_raw = fs::read_to_string(&files.schema)?;
     let schema_parsed = parse_schema(&schema_raw)?;
-
-    let config_path = pwd.join("shalom.yml");
-
-    let config = match fs::read_to_string(&config_path) {
-        Ok(yaml) => load_config_from_yaml_str(&yaml)?,
-        Err(e) if e.kind() == ErrorKind::NotFound => {
-            log::info!(
-                "⚠️  No shalom.yml found in {}. Using default config.",
-                config_path.display()
-            );
-            default_config()
-        }
-        Err(e) => {
-            return Err(anyhow::anyhow!(
-                "Failed to read config at {}: {}",
-                config_path.display(),
-                e
-            ))
-        }
-    };
 
     let global_ctx = ShalomGlobalContext::new(schema_parsed, config);
 
@@ -121,7 +116,6 @@ pub fn parse_directory(pwd: &Path, strict: bool) -> anyhow::Result<SharedShalomG
         }
     }
 
-    // First pass: collect all fragments
     let mut all_fragment_defs: HashMap<
         String,
         (
