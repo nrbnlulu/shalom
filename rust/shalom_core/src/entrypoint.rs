@@ -122,16 +122,16 @@ pub fn parse_directory(
             let fragment_name = name.to_string();
             let type_condition = fragment_def.type_condition().to_string();
 
+            // Extract fragment SDL for later injection
+            let fragment_sdl = format!("{}", fragment_def);
+
             let frag_ctx = FragmentContext::new(
                 global_ctx.schema_ctx.clone(),
                 fragment_name.clone(),
-                String::new(), // Will be filled later
+                fragment_sdl.clone(),
                 file.clone(),
                 type_condition,
             );
-
-            // Extract fragment SDL for later injection
-            let fragment_sdl = format!("{}", fragment_def);
 
             if all_fragment_defs.contains_key(&fragment_name) {
                 return Err(anyhow::anyhow!("Fragment {} already exists", fragment_name));

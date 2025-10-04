@@ -62,7 +62,10 @@ class Request{{ operation_name }} extends Requestable {
     Request toRequest() {
         JsonObject variablesJson = {% if op_variables_exist %} variables.toJson() {% else %} {}  {% endif %};
         return Request(
-            query: r"""{{ operation.context.query }}""",
+            query: r"""{{ operation.context.query }}
+{% for fragment in operation.context.used_fragments %}
+{{ fragment.fragment_raw }}
+{% endfor %}""",
             variables: variablesJson,
             opType: OperationType.{{ operation.context.op_ty.name }},
             opName: '{{ operation_name }}'

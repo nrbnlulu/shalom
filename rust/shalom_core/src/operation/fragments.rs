@@ -16,7 +16,7 @@ pub struct FragmentContext {
     #[allow(unused)]
     schema: SharedSchemaContext,
     name: String,
-    fragment_raw: String,
+    pub fragment_raw: String,
     #[serde(skip_serializing)]
     pub file_path: PathBuf,
     type_defs: HashMap<FullPathName, Selection>,
