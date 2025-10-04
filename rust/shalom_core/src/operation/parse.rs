@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use apollo_compiler::{
     ast::OperationType as ApolloOperationType, executable as apollo_executable, Node,
@@ -37,7 +38,7 @@ fn parse_object_selection<T>(
     used_fragments: &mut Vec<SharedFragmentContext>,
 ) -> SharedObjectSelection
 where
-    T: SelectionContext,
+    T: ExecutableContext,
 {
     trace!("Parsing object selection {:?}", selection_orig.ty);
     trace!("Path is {:?}", path);
@@ -124,12 +125,6 @@ where
                 used_fragments.push(frag.clone());
                 obj.add_used_fragment(fragment_name.clone());
 
-                // NOTE: we currently expand fragment selections into the object they selected.
-                // this might not be the ideal aproach as it can have side effects which I am not
-                // aware of, but for now it works.
-                for sel in frag.get_flat_selections(&global_ctx).iter() {
-                    obj.add_selection(sel.clone());
-                }
             }
             apollo_executable::Selection::InlineFragment(inline_fragment) => {
                 // TODO: Handle inline fragments
@@ -165,7 +160,7 @@ pub fn parse_selection_kind<T>(
     used_fragments: &mut Vec<SharedFragmentContext>,
 ) -> SelectionKind
 where
-    T: SelectionContext,
+    T: ExecutableContext,
 {
     let is_optional = !field_type_orig.is_non_null();
     match field_type_orig {
@@ -206,15 +201,22 @@ where
 }
 
 // Trait to abstract over OperationContext and FragmentContext
-pub trait SelectionContext {
+pub trait ExecutableContext: Send + Sync +'static  {
     fn get_selection(&self, name: &str) -> Option<Selection>;
+    fn get_selection_strict(&self, name: &str) -> Selection;
     fn add_selection(&mut self, name: String, selection: Selection);
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable>;
 }
 
-impl SelectionContext for OperationContext {
+impl ExecutableContext for OperationContext {
     fn get_selection(&self, name: &str) -> Option<Selection> {
         self.get_selection(&name.to_string())
+    }
+
+    fn get_selection_strict(&self, name: &str) -> Selection {
+        self.get_selection(&name.to_string()).unwrap_or_else(|| {
+            panic!("Selection {} not found", name);
+        })
     }
 
     fn add_selection(&mut self, name: String, selection: Selection) {
@@ -226,9 +228,14 @@ impl SelectionContext for OperationContext {
     }
 }
 
-impl SelectionContext for FragmentContext {
+impl ExecutableContext for FragmentContext {
     fn get_selection(&self, name: &str) -> Option<Selection> {
         self.get_selection(&name.to_string())
+    }
+    fn get_selection_strict(&self, name: &str) -> Selection {
+        self.get_selection(&name.to_string()).unwrap_or_else(|| {
+            panic!("Selection {} not found", name);
+        })
     }
 
     fn add_selection(&mut self, name: String, selection: Selection) {
@@ -251,7 +258,7 @@ pub(super) fn parse_selection_set<T>(
     used_fragments: &mut Vec<SharedFragmentContext>,
 ) -> Selection
 where
-    T: SelectionContext,
+    T: ExecutableContext,
 {
     let full_name = path.clone();
     if let Some(selection) = ctx.get_selection(&full_name) {
@@ -375,7 +382,7 @@ fn parse_operation(
     let selection = Selection::new(selection_common, SelectionKind::Object(root_type), vec![]);
     ctx.set_root_type(selection.clone());
     ctx.add_selection(operation_name, selection);
-    Ok(Rc::new(ctx))
+    Ok(Arc::new(ctx))
 }
 
 pub(crate) fn parse_document(

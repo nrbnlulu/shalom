@@ -5,7 +5,7 @@ use serde::Serialize;
 
 use super::types::{FullPathName, Selection};
 
-use crate::context::SharedShalomGlobalContext;
+use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
 use crate::operation::types::SelectionKind;
 use crate::schema::context::SharedSchemaContext;
 pub type SharedFragmentContext = Arc<FragmentContext>;
@@ -77,7 +77,7 @@ impl FragmentContext {
         self.root_type.as_ref()
     }
     /// return the selections of this fragment and every fragment that exist in the root selection object.
-    pub fn get_flat_selections(&self, global_ctx: &SharedShalomGlobalContext) -> Vec<Selection> {
+    pub fn get_flat_selections(&self, global_ctx: &ShalomGlobalContext) -> Vec<Selection> {
         let mut selections = Vec::new();
         if let Some(root_type) = self.root_type.as_ref() {
             match &root_type.kind {
@@ -94,3 +94,6 @@ impl FragmentContext {
         selections
     }
 }
+
+unsafe impl Send for FragmentContext {}
+unsafe impl Sync for FragmentContext {}

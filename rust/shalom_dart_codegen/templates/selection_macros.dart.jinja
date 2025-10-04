@@ -147,7 +147,7 @@
 
     {% macro selection_object_impl(typename, selection_object, is_root_selection, full_name=none) %}
         {% set lookup_name = full_name if full_name else typename %}
-        {% set selections = selection_object.selections %}
+        {% set selections = get_all_selections_for_object(selection_object.name) %}
         /// class members
         {% for selection in selections -%}
             {% set selection_name = selection.name %}

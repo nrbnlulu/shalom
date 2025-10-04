@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::rc::Rc;
+use std::sync::Arc;
 
 use serde::Serialize;
 
@@ -23,6 +24,9 @@ pub struct OperationContext {
     op_ty: OperationType,
     pub used_fragments: Vec<SharedFragmentContext>,
 }
+
+unsafe impl Send for OperationContext {}
+unsafe impl Sync for OperationContext {}
 
 impl OperationContext {
     pub fn new(
@@ -76,4 +80,4 @@ impl OperationContext {
     }
 }
 
-pub type SharedOpCtx = Rc<OperationContext>;
+pub type SharedOpCtx = Arc<OperationContext>;

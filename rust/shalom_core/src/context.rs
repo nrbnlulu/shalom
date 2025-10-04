@@ -113,6 +113,9 @@ impl ShalomGlobalContext {
     pub fn get_fragment(&self, name: &str) -> Option<SharedFragmentContext> {
         self.fragments.lock().unwrap().get(name).cloned()
     }
+    pub fn get_fragment_strict(&self, name: &str) -> SharedFragmentContext {
+        self.get_fragment(name).expect(&format!("fragment not found {}", name))
+    }
 
     pub fn fragments(&self) -> Vec<(String, SharedFragmentContext)> {
         let fragments = self.fragments.lock().unwrap();

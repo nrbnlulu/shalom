@@ -1,12 +1,14 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{error, info};
-use minijinja::{context, value::ViaDeserialize, Environment};
+use minijinja::{context, value::ViaDeserialize, Environment, Value};
 use serde::Serialize;
 use shalom_core::{
     context::SharedShalomGlobalContext,
     operation::{
-        context::OperationContext,
+        context::{OperationContext, SharedOpCtx},
+        fragments::SharedFragmentContext,
+        parse::ExecutableContext,
         types::{dart_type_for_scalar, Selection, SelectionKind},
     },
     schema::{
@@ -21,6 +23,8 @@ use std::{
     fs,
     hash::{DefaultHasher, Hash, Hasher},
     path::{Path, PathBuf},
+    rc::Rc,
+    sync::Arc,
 };
 
 lazy_static! {
@@ -457,42 +461,65 @@ impl SchemaEnv<'_> {
     }
 }
 
+fn register_executable_fns<'a, T>(
+    env: &mut Environment<'a>,
+    ctx: &SharedShalomGlobalContext,
+    executable_ctx: Arc<T>,
+) -> anyhow::Result<()>
+where
+    T: ExecutableContext + 'static,
+{
+    let ctx_clone = ctx.clone();
+    let executable_ctx_clone = executable_ctx.clone();
+
+    env.add_function("is_type_implements_node", move |full_name: &str| {
+        if let Some(selection) = executable_ctx_clone.get_selection(&full_name.to_string()) {
+            match selection.kind {
+                SelectionKind::Object(object_selection) => ctx_clone
+                    .schema_ctx
+                    .is_type_implements_node(&object_selection.concrete_typename),
+                _ => false,
+            }
+        } else {
+            false
+        }
+    });
+
+    let executable_ctx_clone = executable_ctx.clone();
+    env.add_function(
+        "get_id_selection",
+        move |full_name: &str| -> Option<minijinja::Value> {
+            let selection = executable_ctx_clone.get_selection(&full_name.to_string())?;
+            match selection.kind {
+                SelectionKind::Object(object_selection) => object_selection
+                    .get_id_selection()
+                    .map(minijinja::Value::from_serialize),
+                _ => None,
+            }
+        },
+    );
+
+    let ctx_clone = ctx.clone();
+    let executable_ctx_clone = executable_ctx.clone();
+    env.add_function("get_all_selections_for_object", move |object_name: &str| {
+        let object_selection = executable_ctx_clone.get_selection_strict(&object_name.to_string());
+        let selections = match object_selection.kind {
+            SelectionKind::Object(object_selection) => {
+                object_selection.get_all_selections(&ctx_clone)
+            }
+            _ => panic!("Expected object selection"),
+        };
+        minijinja::Value::from_serialize(selections)
+    });
+
+    Ok(())
+}
+
 impl OperationEnv<'_> {
-    fn new(ctx: &SharedShalomGlobalContext, op_ctx: &OperationContext) -> anyhow::Result<Self> {
+    fn new(ctx: &SharedShalomGlobalContext, op_ctx: SharedOpCtx) -> anyhow::Result<Self> {
         let mut env = Environment::new();
         register_default_template_fns(&mut env, ctx)?;
-        let ctx_clone = ctx.clone();
-        let op_name = op_ctx.get_operation_name().to_string();
-
-        env.add_function("is_type_implements_node", move |full_name: &str| {
-            let op = ctx_clone.get_operation(&op_name).unwrap();
-            if let Some(selection) = op.get_selection(&full_name.to_string()) {
-                match selection.kind {
-                    SelectionKind::Object(object_selection) => ctx_clone
-                        .schema_ctx
-                        .is_type_implements_node(&object_selection.concrete_typename),
-                    _ => false,
-                }
-            } else {
-                false
-            }
-        });
-        let op_name = std::sync::Arc::new(op_ctx.get_operation_name().to_string());
-        let ctx_clone = ctx.clone();
-        let op_name1 = op_name.clone();
-        env.add_function(
-            "get_id_selection",
-            move |full_name: &str| -> Option<minijinja::Value> {
-                let op = ctx_clone.get_operation(&*op_name1)?;
-                let selection = op.get_selection(&full_name.to_string())?;
-                match selection.kind {
-                    SelectionKind::Object(object_selection) => object_selection
-                        .get_id_selection()
-                        .map(minijinja::Value::from_serialize),
-                    _ => None,
-                }
-            },
-        );
+        register_executable_fns(&mut env, ctx, op_ctx)?;
 
         Ok(OperationEnv { env })
     }
@@ -522,51 +549,11 @@ impl OperationEnv<'_> {
 impl FragmentEnv<'_> {
     fn new(
         ctx: &SharedShalomGlobalContext,
-        fragment_ctx: &shalom_core::operation::fragments::FragmentContext,
+        fragment_ctx: SharedFragmentContext,
     ) -> anyhow::Result<Self> {
         let mut env = Environment::new();
         register_default_template_fns(&mut env, ctx)?;
-        let ctx_clone = ctx.clone();
-        let fragment_name = std::sync::Arc::new(fragment_ctx.get_fragment_name().to_string());
-
-        let frag_name1 = fragment_name.clone();
-        env.add_function("is_type_implements_node", move |full_name: &str| {
-            let frag_name = (*frag_name1).clone();
-            let fragment = ctx_clone.get_fragment(&frag_name).unwrap();
-            let selection = fragment
-                .get_selection(&full_name.to_string())
-                .ok_or(anyhow::anyhow!(
-                    "Type {full_name} not found in fragment {frag_name}"
-                ))
-                .unwrap();
-            match selection.kind {
-                SelectionKind::Object(object_selection) => ctx_clone
-                    .schema_ctx
-                    .is_type_implements_node(&object_selection.concrete_typename),
-                _ => false,
-            }
-        });
-
-        let frag_name2 = fragment_name.clone();
-        let ctx_clone = ctx.clone();
-        env.add_function(
-            "get_id_selection",
-            move |full_name: &str| -> Option<minijinja::Value> {
-                let frag_name = (*frag_name2).clone();
-                let selection = ctx_clone
-                    .get_fragment(&frag_name)
-                    .unwrap()
-                    .get_selection(&full_name.to_string())
-                    .unwrap();
-                match selection.kind {
-                    SelectionKind::Object(object_selection) => object_selection
-                        .get_id_selection()
-                        .map(minijinja::Value::from_serialize),
-                    _ => None,
-                }
-            },
-        );
-
+        register_executable_fns(&mut env, ctx, fragment_ctx);
         Ok(FragmentEnv { env })
     }
 
@@ -687,11 +674,11 @@ fn get_generation_path_for_fragment(pwd: &Path, fragment_name: &str) -> PathBuf 
 fn generate_operations_file(
     ctx: &SharedShalomGlobalContext,
     name: &str,
-    operation: &OperationContext,
+    operation: SharedOpCtx,
     additional_imports: HashMap<String, String>,
     project_root: &Path,
 ) -> anyhow::Result<()> {
-    let op_env = OperationEnv::new(ctx, operation)?;
+    let op_env = OperationEnv::new(ctx, operation.clone())?;
 
     info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();
@@ -720,10 +707,10 @@ fn generate_fragment_file(
     ctx: &SharedShalomGlobalContext,
     pwd: &Path,
     fragment_name: &str,
-    fragment_ctx: &shalom_core::operation::fragments::FragmentContext,
+    fragment_ctx: SharedFragmentContext,
     additional_imports: HashMap<String, String>,
 ) -> anyhow::Result<()> {
-    let fragment_env = FragmentEnv::new(ctx, fragment_ctx)?;
+    let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone())?;
     let generated_content = fragment_env.render_fragment(
         context! { context => fragment_ctx },
         context! { context => &ctx.schema_ctx },
@@ -799,7 +786,7 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
             &ctx,
             pwd,
             &fragment_name,
-            &*fragment_ctx,
+            fragment_ctx,
             additional_imports.clone(),
         );
         if let Err(err) = res {
@@ -815,8 +802,7 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
 
     // Generate operation files
     for (name, operation) in ctx.operations() {
-        let res =
-            generate_operations_file(&ctx, &name, &operation, additional_imports.clone(), pwd);
+        let res = generate_operations_file(&ctx, &name, operation, additional_imports.clone(), pwd);
         if let Err(err) = res {
             if strict {
                 return Err(err);

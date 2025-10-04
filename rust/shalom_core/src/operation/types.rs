@@ -4,8 +4,7 @@ use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    operation::context::OperationVariable,
-    schema::types::{EnumType, ScalarType},
+    context::ShalomGlobalContext, operation::context::OperationVariable, schema::types::{EnumType, ScalarType}
 };
 
 /// the name of i.e object in a graphql query based on the parent fields.
@@ -158,6 +157,20 @@ impl ObjectSelection {
     }
     pub fn get_used_fragments(&self) -> Vec<FragName> {
         self.used_fragments.borrow().clone()
+    }
+    
+    /// return all selections for an object including the fragment selections
+    /// for the current selection object
+    pub fn get_all_selections(&self, ctx: &ShalomGlobalContext) -> Vec<Selection>{
+        let mut selections = self.selections.borrow().clone();
+        let mut fragments = self.used_fragments.borrow().clone();
+        
+        while !fragments.is_empty() {
+            let fragment = ctx.get_fragment_strict(&fragments.pop().unwrap());
+            let fragment_selections = fragment.get_flat_selections(ctx);
+            selections.extend(fragment_selections);
+        }
+        selections
     }
 
     pub fn get_id_selection(&self) -> Option<Selection> {
