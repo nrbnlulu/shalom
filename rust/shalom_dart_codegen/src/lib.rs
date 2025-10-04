@@ -379,7 +379,37 @@ fn register_default_template_fns<'a>(
         },
     );
 
+    let ctx_clone = ctx.clone();
+    env.add_function(
+        "selection_uses_variables",
+        move |selection: ViaDeserialize<shalom_core::operation::types::Selection>| -> bool {
+            selection_uses_variables(&selection.0)
+        },
+    );
+
     Ok(())
+}
+
+fn selection_uses_variables(selection: &shalom_core::operation::types::Selection) -> bool {
+    use shalom_core::operation::types::{ArgumentValue, SelectionKind};
+
+    // Check if this selection has any arguments that use variables
+    for arg in &selection.arguments {
+        if matches!(arg.value, ArgumentValue::VariableUse(_)) {
+            return true;
+        }
+    }
+
+    // Recursively check nested selections if this is an object
+    if let SelectionKind::Object(obj) = &selection.kind {
+        for nested_selection in obj.selections.borrow().iter() {
+            if selection_uses_variables(nested_selection) {
+                return true;
+            }
+        }
+    }
+
+    false
 }
 
 fn get_field_name_with_args(

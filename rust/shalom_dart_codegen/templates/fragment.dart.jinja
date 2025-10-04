@@ -6,6 +6,7 @@
 {% set op_variables = None %}
 {% set op_variables_exist = false %}
 
+{% include "selection_macros" %}
 
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
@@ -36,6 +37,9 @@ abstract class {{ fragment_name }} {
 // Generate data classes for nested object selections
 {% for selection_name, selection in fragment_selections | items %}
     {% if selection.kind == "Object" and selection_name != fragment_name %}
-        
+        {{ selection_object_definition(selection_name, selection) }}
+    {% elif selection.kind == "List" and selection.of_kind.kind == "Object" %}
+        {# List of objects - generate the object class for list items #}
+        {{ selection_object_definition(selection_name, selection.of_kind) }}
     {% endif %}
 {% endfor %}

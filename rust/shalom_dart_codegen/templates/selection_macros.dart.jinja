@@ -59,16 +59,16 @@
             {% if id_field is not none -%}
                 {{selection.full_name}}.fromCached(
                     ctx.getCachedRecord({{value_symbol}} as String),
-                    ctx {{if_op_variables(", variables")}}
+                    ctx{% if selection_uses_variables(selection) %}, variables{% endif %}
                 )
             {% else %}
-            {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{if_op_variables(", variables")}});
+            {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
             {% endif -%}
     {% else %}
         {% if  id_field is not none -%}
-            {{selection.full_name}}.fromCached(ctx.getCachedRecord({{value_symbol}} as String), ctx{{if_op_variables(", variables")}});
+            {{selection.full_name}}.fromCached(ctx.getCachedRecord({{value_symbol}} as String), ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
         {% else %}
-            {{ selection.full_name }}.fromCached({{value_symbol}}, ctx{{if_op_variables(", variables")}});
+            {{ selection.full_name }}.fromCached({{value_symbol}}, ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
         {% endif -%}
     {% endif %}
     {% elif selection.kind == "Enum" %}
@@ -163,7 +163,7 @@
 
         static void normalize$inCache(JsonObject data,
                 CacheUpdateContext ctx,
-                {% if op_variables_exist %} {{ operation_name }}Variables variables,{% endif %}
+                {% if selection_uses_variables(selection_object) %} {{ operation_name }}Variables variables,{% endif %}
                 {% if not is_root_selection -%}
                     {
                     /// can be just the selection name but also may include serialized arguments.
@@ -239,7 +239,7 @@
                         {{selection.full_name}}.normalize$inCache(
                             {{selection.name}}$raw as JsonObject,
                             ctx,
-                            {% if op_variables_exist %}variables,{% endif %}
+                            {% if selection_uses_variables(selection) %}variables,{% endif %}
                             this$fieldName: {{selection.name}}Normalized$Key,
                             parent$record: this$NormalizedRecord,
                             parent$normalizedID: this$normalizedID
@@ -267,9 +267,9 @@
             {% endfor -%}
         }
         {% if not is_root_selection -%}
-        static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}) {
+        static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if selection_uses_variables(selection_object)  %}, {{ operation_name }}Variables variables{% endif %}) {
         {% else -%}
-        static {{typename}} fromCache(ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}) {
+        static {{typename}} fromCache(ShalomCtx ctx{% if selection_uses_variables(selection_object) -%}, {{ operation_name }}Variables variables{% endif %}) {
         {% endif -%}
             {% if is_root_selection -%}
                 final data = ctx.getCachedRecord("ROOT_{{OP_TYPE}}");
