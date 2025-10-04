@@ -198,21 +198,8 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn value_or_last(value: String, last: String, is_last: bool) -> String {
-        if is_last {
-            last
-        } else {
-            value
-        }
-    }
 
-    pub fn if_not_last(value: String, is_last: bool) -> String {
-        if is_last {
-            String::new()
-        } else {
-            value
-        }
-    }
+
 
     pub fn custom_scalar_impl_fullname(
         ctx: &SharedShalomGlobalContext,
@@ -344,7 +331,6 @@ fn register_default_template_fns<'a>(
     );
 
     env.add_function("docstring", ext_jinja_fns::docstring);
-    env.add_function("value_or_last", ext_jinja_fns::value_or_last);
     let ctx_clone = ctx.clone();
     env.add_function(
         "is_type_implementing_interface",
@@ -357,15 +343,8 @@ fn register_default_template_fns<'a>(
     env.add_function("is_type_implements_node", move |type_name: &str| {
         schema_ctx.is_type_implements_node(type_name)
     });
+    
 
-    env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
-    env.add_filter("insert_if", |condition: bool, val: &str| {
-        if condition {
-            Some(val.to_string())
-        } else {
-            None
-        }
-    });
 
     env.add_function(
         "get_field_name_with_args",

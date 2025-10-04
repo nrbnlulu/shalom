@@ -28,7 +28,7 @@
     {%- elif arg.value.InlineValue -%}
         "{{arg.name}}:{{arg.value.InlineValue.value}}"
     {%- endif -%}
-    {{", "|if_not_last(loop.last)}}
+    {{", " if not loop.last}}
     {%- endfor -%})"""
 {%- else -%}
 "{{field_name}}"
@@ -223,7 +223,7 @@
             ctx.addDependantRecords(
                 {
                 {% for selection in selection_object.selections -%}
-                    {{selection.name}}$normalizedID  {{"," |if_not_last(loop.last)}}
+                    {{selection.name}}$normalizedID  {{"," if not loop.last}}
                 {% endfor -%}
                 }
             );
@@ -319,7 +319,7 @@
         (other is {{ typename }} &&
         {% for selection in selections -%}
             {% set other_selection %}other.{{selection.name}}{% endset -%}
-            {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&"|if_not_last(loop.last) }}
+            {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&" if not loop.last }}
         {% endfor -%}
         );
         }

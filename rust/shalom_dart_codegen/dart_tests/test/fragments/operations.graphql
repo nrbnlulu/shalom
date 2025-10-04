@@ -57,24 +57,3 @@ query GetPostWithAuthor($postId: ID!) {
     }
 }
 
-# Note: External fragment definitions are intended to work but currently have limitations
-# The intended structure would be:
-# 1. Define fragments in separate .gql files in subdirectories
-# 2. Import and use them in operations.graphql
-# 3. Example: shared/ExternalInfoFrag.gql containing:
-#    fragment ExternalInfoFrag on User { id name }
-# 4. Then use: ...ExternalInfoFrag in operations
-#
-# Currently apollo compiler validates each document independently which prevents
-# cross-file fragment usage. This needs to be resolved for proper external fragment support.
-#
-# Nested object fragments also have code generation issues that prevent full testing:
-# query GetUserWithNestedFragments($userId: ID!) {
-#     user(id: $userId) {
-#         ...UserInfoFrag
-#         posts {
-#             ...PostDetailsFrag
-#             author { ...UserInfoFrag }
-#         }
-#     }
-# }
