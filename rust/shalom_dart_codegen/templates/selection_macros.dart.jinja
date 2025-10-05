@@ -399,7 +399,7 @@
 
         static void normalize$inCache(JsonObject data,
                 CacheUpdateContext ctx,
-                {% if object_selection_uses_variables(obj_selection) %} {{ operation_name }}Variables variables,{% endif %}
+                {% if uses_variables(obj_selection.selections) %} {{ operation_name }}Variables variables,{% endif %}
                 {
                     /// can be just the selection name but also may include serialized arguments.
                     required RecordID  this$fieldName,
@@ -479,7 +479,7 @@
 
             {% endfor -%}
         }
-        static {{obj_selection.full_name}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if object_selection_uses_variables(obj_selection)  %}, {{ operation_name }}Variables variables{% endif %}) {
+        static {{obj_selection.full_name}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if uses_variables(obj_selection.selections)  %}, {{ operation_name }}Variables variables{% endif %}) {
             {% for selection in selections -%}
                 {% set raw_value_symbol = selection.name + '$raw' -%}
                 {% if selection.arguments | length > 0 -%}
@@ -559,7 +559,7 @@
                     {{ obj_selection.full_name }}.normalize$inCache(
                         data,
                         ctx,
-                        {% if object_selection_uses_variables(obj_selection) %}variables,{% endif %}
+                        {% if uses_variables(obj_selection.selections) %}variables,{% endif %}
                         this$fieldName: this$fieldName,
                         parent$record: parent$record,
                         parent$normalizedID: parent$normalizedID
@@ -576,7 +576,7 @@
             switch (typename) {
                 {% for type_condition, obj_selection in selection.inline_fragments | items %}
                 case "{{ type_condition }}":
-                    return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx{% if object_selection_uses_variables(obj_selection) %}, variables{% endif %});
+                    return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx{% if uses_variables(obj_selection.selections) %}, variables{% endif %});
                 {% endfor %}
                 default:
                     throw Exception("Unknown __typename: $typename for union {{ selection.union_type.name }}");
@@ -595,7 +595,9 @@
     // Union member implementations
     {% for type_condition, obj_selection in selection.inline_fragments | items %}
     class {{ full_name }}_{{ type_condition }} extends {{ full_name }} {
-        {% set member_selections = selection.shared_selections + obj_selection.selections %}
+        {% set member_names = obj_selection.selections | map(attribute='name') | list %}
+        {% set shared_selections_filtered = selection.shared_selections | rejectattr('name', 'in', member_names) %}
+        {% set member_selections = shared_selections_filtered + obj_selection.selections %}
 
         // Fields
         {% for member_selection in member_selections -%}
@@ -624,7 +626,7 @@
         static void normalize$inCache(
             JsonObject data,
             CacheUpdateContext ctx,
-            {% if object_selection_uses_variables(obj_selection) %}{{ operation_name }}Variables variables,{% endif %}
+            {% if uses_variables(obj_selection.selections) %}{{ operation_name }}Variables variables,{% endif %}
             {
                 required RecordID this$fieldName,
                 required JsonObject parent$record,
@@ -699,7 +701,7 @@
             {% endfor -%}
         }
 
-        static {{ full_name }}_{{ type_condition }} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if object_selection_uses_variables(obj_selection) %}, {{ operation_name }}Variables variables{% endif %}) {
+        static {{ full_name }}_{{ type_condition }} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if uses_variables(obj_selection.selections) %}, {{ operation_name }}Variables variables{% endif %}) {
             {% for member_selection in member_selections -%}
                 {% set raw_value_symbol = member_selection.name + '$raw' -%}
                 {% if member_selection.arguments | length > 0 -%}

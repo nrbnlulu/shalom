@@ -162,3 +162,15 @@
     {% endif %}
     {% endfor %}
 {% endmacro %}
+
+{# Macro to check if a list of selections uses variables #}
+{% macro uses_variables(selections) -%}
+{% for sel in selections %}
+{% for arg in sel.arguments %}
+{% if arg.value.__class__.__name__ == 'VariableUse' %}
+true
+{% endif %}
+{% endfor %}
+{% endfor %}
+false
+{%- endmacro %}

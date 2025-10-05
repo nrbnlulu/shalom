@@ -199,7 +199,7 @@ where
                                 obj.add_used_fragment(fragment_name.clone());
                             }
                             apollo_executable::Selection::InlineFragment(_) => {
-                                // Nested inline fragments - skip for now
+                                todo!("nested inline fragments are not supported ATM")
                             }
                         }
                     }
