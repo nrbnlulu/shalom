@@ -528,14 +528,11 @@ impl OperationEnv<'_> {
             "get_id_selection",
             move |full_name: &str| -> Option<minijinja::Value> {
                 // First try to find in the operation context
-                let selection =
-                    op_ctx_clone.get_selection_with_fragments(full_name, &ctx_clone);
+                let selection = op_ctx_clone.get_selection_with_fragments(full_name, &ctx_clone);
                 match selection.kind {
-                    SelectionKind::Object(object_selection) => {
-                        object_selection
-                            .get_id_selection_with_fragments(&ctx_clone)
-                            .map(minijinja::Value::from_serialize)
-                    }
+                    SelectionKind::Object(object_selection) => object_selection
+                        .get_id_selection_with_fragments(&ctx_clone)
+                        .map(minijinja::Value::from_serialize),
                     _ => None,
                 }
             },
@@ -683,12 +680,6 @@ fn calculate_fragment_import_path(
         import_path
     );
     Ok(import_path)
-}
-
-fn get_generation_path_for_fragment(pwd: &Path, fragment_name: &str) -> PathBuf {
-    let p = pwd.join(GRAPHQL_DIRECTORY);
-    create_dir_if_not_exists(&p);
-    p.join(format!("{}.{}", fragment_name.to_lowercase(), END_OF_FILE))
 }
 
 fn generate_operations_file(

@@ -231,8 +231,8 @@ impl ExecutableContext for OperationContext {
     }
     fn get_used_fragments(
         &self,
-        name: &str,
-        ctx: &ShalomGlobalContext,
+        _name: &str,
+        _ctx: &ShalomGlobalContext,
     ) -> &Vec<SharedFragmentContext> {
         self.get_used_fragments()
     }
@@ -252,8 +252,8 @@ impl ExecutableContext for FragmentContext {
     }
     fn get_used_fragments(
         &self,
-        name: &str,
-        ctx: &ShalomGlobalContext,
+        _name: &str,
+        _ctx: &ShalomGlobalContext,
     ) -> &Vec<SharedFragmentContext> {
         self.get_used_fragments()
     }
@@ -267,6 +267,7 @@ impl ExecutableContext for FragmentContext {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) fn parse_selection_set<T>(
     path: &String,
     ctx: &mut T,

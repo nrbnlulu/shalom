@@ -70,9 +70,10 @@ pub fn parse_directory(
             if config_path.exists() {
                 ShalomConfig::from_file(&config_path).unwrap()
             } else {
-                let mut config = ShalomConfig::default();
-                config.project_root = pwd.clone();
-                config
+                ShalomConfig {
+                    project_root: pwd.clone(),
+                    ..Default::default()
+                }
             }
         }
         None => ShalomConfig::resolve_or_default().unwrap(),
@@ -377,10 +378,7 @@ fn topological_sort(dependencies: &HashMap<String, Vec<String>>) -> Result<Vec<S
     for (node, deps) in dependencies {
         in_degree.entry(node.clone()).or_insert(0);
         for dep in deps {
-            graph
-                .entry(dep.clone())
-                .or_default()
-                .push(node.clone());
+            graph.entry(dep.clone()).or_default().push(node.clone());
             *in_degree.entry(node.clone()).or_insert(0) += 1;
         }
     }

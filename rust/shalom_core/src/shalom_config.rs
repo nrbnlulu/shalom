@@ -1,5 +1,10 @@
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, env::current_dir, fs, path::PathBuf};
+use std::{
+    collections::HashMap,
+    env::current_dir,
+    fs,
+    path::{Path, PathBuf},
+};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CustomScalarDefinition {
@@ -29,10 +34,10 @@ impl Default for ShalomConfig {
         }
     }
 }
-fn load_config_from_yaml_str(yaml: &str, config_dir: &PathBuf) -> anyhow::Result<ShalomConfig> {
+fn load_config_from_yaml_str(yaml: &str, config_dir: &Path) -> anyhow::Result<ShalomConfig> {
     let mut config: ShalomConfig =
         serde_yaml::from_str(yaml).map_err(|e| anyhow::anyhow!("Invalid YAML: {}", e))?;
-    config.project_root = config_dir.clone();
+    config.project_root = config_dir.to_path_buf();
     Ok(config)
 }
 
