@@ -46,6 +46,20 @@ import 'package:collection/collection.dart';
 
 // ------------ UNION DEFINITIONS -------------
 
+{# First generate union member object classes #}
+{% set union_types = operation.context.union_types %}
+{% for union_full_name, union_selection in union_types | items %}
+    {% for type_condition, obj_selection in union_selection.inline_fragments | items %}
+        {# Generate union member object using the unified macro with shared selections #}
+        {% set member_full_name = union_full_name ~ "_" ~ type_condition %}
+        {# We need to create a wrapper that passes shared_selections to selection_object_impl #}
+        class {{ member_full_name }} extends {{ union_full_name }}{% if obj_selection.used_fragments | length > 0 %}, implements {% for frag_name in obj_selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+            {{ selection_object_impl(member_full_name, obj_selection, false, obj_selection.full_name, is_union_member=true, shared_selections=union_selection.shared_selections) }}
+        }
+    {% endfor %}
+{% endfor %}
+
+{# Then generate union sealed classes #}
 {% for full_name, selection in operation.context.type_defs | items if selection.kind == "Union" %}
     {{ selection_union_definition(full_name, selection) }}
 {% endfor %}

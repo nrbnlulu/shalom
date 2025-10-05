@@ -62,7 +62,11 @@ impl Selection {
             arguments,
         }
     }
-
+    pub fn get_parent_typename(&self) -> Option<FullPathName>{
+        if self.self_selection_name() == self.path{
+            
+        }
+    }
     pub fn self_selection_name(&self) -> &String {
         &self.selection_common.name
     }

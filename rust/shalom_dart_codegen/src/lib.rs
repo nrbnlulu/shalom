@@ -509,7 +509,7 @@ where
     let executable_ctx_clone3 = executable_ctx.clone();
     env.add_function("get_all_selections_for_object", move |object_name: &str| {
         let object_selection =
-            executable_ctx_clone3.get_selection_with_fragments(object_name, &ctx_clone3);
+            executable_ctx_clone3.get_selection_impl(object_name, &ctx_clone3);
         let selections = match object_selection.kind {
             SelectionKind::Object(object_selection) => {
                 object_selection.get_all_selections(&ctx_clone3)
@@ -517,6 +517,13 @@ where
             _ => panic!("Expected object selection"),
         };
         minijinja::Value::from_serialize(selections)
+    });
+    let executable_ctx_clone3 = executable_ctx.clone();
+
+    env.add_filter("is_subselection_of_a_union", |full_typename: &str|{
+        if let Some(selection) = executable_ctx_clone3.get_selection(full_typename){
+            let parent_full_path = selection.comm()
+        }
     });
 
     Ok(())
@@ -535,7 +542,7 @@ impl OperationEnv<'_> {
             "get_id_selection",
             move |full_name: &str| -> Option<minijinja::Value> {
                 // First try to find in the operation context
-                let selection = op_ctx_clone.get_selection_with_fragments(full_name, &ctx_clone);
+                let selection = op_ctx_clone.get_selection_impl(full_name, &ctx_clone);
                 match selection.kind {
                     SelectionKind::Object(object_selection) => object_selection
                         .get_id_selection_with_fragments(&ctx_clone)

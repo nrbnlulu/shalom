@@ -17,7 +17,7 @@ use super::context::{OperationContext, SharedOpCtx};
 use super::fragments::{FragmentContext, SharedFragmentContext};
 use super::types::{
     EnumSelection, OperationType, ScalarSelection, Selection, SharedEnumSelection,
-    SharedObjectSelection, SharedScalarSelection, UnionSelection,
+    SharedObjectSelection, SharedScalarSelection, SharedUnionSelection, UnionSelection,
 };
 
 fn full_path_name(this_name: &String, parent_path: &String) -> String {
@@ -196,7 +196,7 @@ where
                     .as_deref()
                     .map(|s| s.to_string());
                 let field_path = full_path_name(&f_name, path);
-                let args: Vec<crate::operation::types::FieldArgument> = vec![];
+                let args = parse_field_arguments(ctx, field);
 
                 let selection_common = SelectionCommon {
                     name: f_name.clone(),
@@ -213,7 +213,6 @@ where
                     args,
                     used_fragments,
                 );
-
                 union_selection.add_shared_selection(field_selection);
             }
             apollo_executable::Selection::InlineFragment(inline_fragment) => {
@@ -238,8 +237,14 @@ where
                         &inline_fragment.selection_set,
                         used_fragments,
                     );
-
-                    union_selection.add_inline_fragment(type_condition_str, obj);
+                    union_selection.add_inline_fragment(type_condition_str, obj.clone());
+                    
+                    let selection_common = SelectionCommon { name: fragment_path.clone(), description: None };
+                    let selection = Selection::new(selection_common, SelectionKind::Object(
+                        obj
+                    ), Default::default());
+                    
+                    ctx.add_selection(fragment_path, selection);
                 } else {
                     // Inline fragment without type condition - fields apply to all types
                     for sel in &inline_fragment.selection_set.selections {
@@ -293,6 +298,9 @@ where
         "Union selection '{}' must have __typename selected either at the top level or in all inline fragments",
         path
     );
+
+    // Register the union type in the context
+    ctx.add_union_type(path.clone(), union_selection.clone());
 
     union_selection
 }
@@ -363,7 +371,7 @@ pub trait ExecutableContext: Send + Sync + 'static {
         name: &str,
         ctx: &ShalomGlobalContext,
     ) -> &Vec<SharedFragmentContext>;
-    fn get_selection_with_fragments(&self, name: &str, ctx: &ShalomGlobalContext) -> Selection {
+    fn get_selection_impl(&self, name: &str, ctx: &ShalomGlobalContext) -> Selection {
         let res = match self.get_selection(name) {
             Some(selection) => Some(selection),
             None => {
@@ -380,6 +388,8 @@ pub trait ExecutableContext: Send + Sync + 'static {
 
     fn add_selection(&mut self, name: String, selection: Selection);
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable>;
+    fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection);
+    fn get_union_types(&self) -> &std::collections::HashMap<String, SharedUnionSelection>;
 }
 
 impl ExecutableContext for OperationContext {
@@ -401,6 +411,14 @@ impl ExecutableContext for OperationContext {
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable> {
         self.get_variable(name)
     }
+
+    fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {
+        self.add_union_type(name, union_selection)
+    }
+
+    fn get_union_types(&self) -> &std::collections::HashMap<String, SharedUnionSelection> {
+        self.get_union_types()
+    }
 }
 
 impl ExecutableContext for FragmentContext {
@@ -421,6 +439,14 @@ impl ExecutableContext for FragmentContext {
 
     fn get_variable(&self, _name: &str) -> Option<&crate::operation::context::OperationVariable> {
         None // Fragments don't have variables
+    }
+
+    fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {
+        self.add_union_type(name, union_selection)
+    }
+
+    fn get_union_types(&self) -> &std::collections::HashMap<String, SharedUnionSelection> {
+        self.get_union_types()
     }
 }
 

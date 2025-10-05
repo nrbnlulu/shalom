@@ -157,21 +157,45 @@
     {% endif %}
 {% endmacro %}
 
-    {% macro selection_object_impl(typename, selection_object, is_root_selection, full_name=none) %}
+    {% macro selection_object_impl(typename, selection_object, is_root_selection, full_name=none, is_union_member=false, shared_selections=none) %}
         {% set lookup_name = full_name if full_name else typename %}
         {% set selections = get_all_selections_for_object(lookup_name) %}
+        {# For union members, merge shared selections with object selections, avoiding duplicates #}
+        {% if is_union_member and shared_selections %}
+            {% set member_names = selections | map(attribute='name') | list %}
+            {% set shared_selections_filtered = shared_selections | rejectattr('name', 'in', member_names) %}
+            {% set selections = shared_selections_filtered + selections %}
+        {% endif %}
         /// class members
         {% for selection in selections -%}
             {% set selection_name = selection.name %}
+            {% if is_union_member and selection_name == "__typename" %}
+            final {{ type_name_for_selection(selection) }} typename_;
+            {% else %}
             final {{ type_name_for_selection(selection) }} {{ selection_name }};
+            {% endif %}
         {% endfor %}
+
+        {% if is_union_member %}
+        // Getter for typename (public accessor for __typename field)
+        {% for selection in selections %}
+            {% if selection.name == "__typename" %}
+        String get typename => typename_;
+            {% endif %}
+        {% endfor %}
+        {% endif %}
+
         // keywordargs constructor
-        {{ typename }}({
+        {% if is_union_member %}const {% endif %}{{ typename }}({
         {% for selection in selections -%}
-            {% if not selection.is_optional %}required{% endif %}
-            this.{{ selection.name }},
+            {% if is_union_member and selection.name == "__typename" %}
+                {% if not selection.is_optional %}required{% endif %} String $typename,
+            {% else %}
+                {% if not selection.is_optional %}required{% endif %}
+                this.{{ selection.name }},
+            {% endif %}
         {% endfor %}
-        });
+        }){% if is_union_member %}{% for selection in selections %}{% if selection.name == "__typename" %} : typename_ = $typename{% endif %}{% endfor %}{% endif %};
 
         static void normalize$inCache(JsonObject data,
                 CacheUpdateContext ctx,
@@ -311,7 +335,11 @@
             {% endfor -%}
             return {{ typename }}(
                 {% for selection in selections -%}
+                    {% if is_union_member and selection.name == "__typename" %}
+                    $typename: {{selection.name}}$value,
+                    {% else %}
                     {{selection.name}}: {{selection.name}}$value,
+                    {% endif %}
                 {% endfor %}
             );
         }
@@ -341,8 +369,13 @@
         return identical(this, other) ||
         (other is {{ typename }} &&
         {% for selection in selections -%}
-            {% set other_selection %}other.{{selection.name}}{% endset -%}
-            {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&" if not loop.last }}
+            {% if is_union_member and selection.name == "__typename" %}
+                {% set other_selection %}other.typename_{% endset -%}
+                {{ selection_equality_comparison_macro(selection, "typename_", other_selection) }} {{ "&&" if not loop.last }}
+            {% else %}
+                {% set other_selection %}other.{{selection.name}}{% endset -%}
+                {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&" if not loop.last }}
+            {% endif %}
         {% endfor -%}
         );
         }
@@ -352,191 +385,53 @@
             Object.hashAll([
             {% for selection in selections %}
                 {% set selection_name = selection.name %}
+                {% if is_union_member and selection_name == "__typename" %}
+                typename_,
+                {% else %}
                 {{ selection_name }},
+                {% endif %}
             {% endfor %}
             ]);
         {% else %}
+            {% if is_union_member and (selections | first).name == "__typename" %}
+            typename_.hashCode;
+            {% else %}
             {{ (selections | first).name }}.hashCode;
+            {% endif %}
         {% endif %}
         JsonObject toJson() {
         return {
         {% for selection in selections %}
             {% set selection_name = selection.name %}
             '{{ selection_name }}':
-                {% if selection.is_optional %}
-                    {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}
-                {% else %}
-                    {{ _serialize_selection_value_macro("this." + selection_name, selection, false) }}
-                {% endif %}
-            ,
-        {% endfor %}
-        };
-        }
-{% endmacro %}
-
-{% macro selection_object_definition(full_name, selection) -%}
-    class {{ full_name }}{% if selection.used_fragments | length > 0 %} implements {% for frag_name in selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
-        {{ selection_object_impl(full_name, selection, false, full_name) }}
-    }
-{% endmacro %}
-
-{# Macro for union member object definitions - works directly with ObjectSelection #}
-{% macro union_member_object_definition(obj_selection) -%}
-    class {{ obj_selection.full_name }}{% if obj_selection.used_fragments | length > 0 %} implements {% for frag_name in obj_selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
-        {% set selections = obj_selection.selections %}
-        /// class members
-        {% for selection in selections -%}
-            {% set selection_name = selection.name %}
-            final {{ type_name_for_selection(selection) }} {{ selection_name }};
-        {% endfor %}
-        // keywordargs constructor
-        {{ obj_selection.full_name }}({
-        {% for selection in selections -%}
-            {% if not selection.is_optional %}required{% endif %}
-            this.{{ selection.name }},
-        {% endfor %}
-        });
-
-        static void normalize$inCache(JsonObject data,
-                CacheUpdateContext ctx,
-                {% if uses_variables(obj_selection.selections) %} {{ operation_name }}Variables variables,{% endif %}
-                {
-                    /// can be just the selection name but also may include serialized arguments.
-                    required RecordID  this$fieldName,
-                    required JsonObject parent$record,
-                    required RecordID parent$normalizedID
-                }
-                ){
-                {% set id_field = none -%}
-                {% set is_normalized = false -%}
-                String this$normalizedID;
-                JsonObject this$NormalizedRecord;
-                this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
-                this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-
-            {% for selection in selections -%}
-                final {{selection.name}}Normalized$Key = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
-                final {{selection.name}}$normalizedID = "${this$normalizedID}.${ {{selection.name}}Normalized$Key}";
-            {% endfor -%}
-            ctx.addDependantRecords(
-                {
-                {% for selection in selections -%}
-                    {{selection.name}}$normalizedID  {{"," if not loop.last}}
-                {% endfor -%}
-                }
-            );
-
-            {% for selection in selections -%}
-                final {{selection.name}}$cached = this$NormalizedRecord[{{selection.name}}Normalized$Key];
-                final {{selection.name}}$raw = data["{{selection.name}}"];
-                if ({{selection.name}}$raw != null){
-                    {% if selection.kind == "Object" %}
-                        {# object selections can be subscribed to, but will only get updates for
-                         null<->some changes. sub fields should be subscribed by themself #}
-                        if ({{selection.name}}$cached == null){
-                            ctx.addChangedRecord({{selection.name}}$normalizedID);
-                        }
-                        {{selection.full_name}}.normalize$inCache(
-                            {{selection.name}}$raw as JsonObject,
-                            ctx,
-                            {% if selection_uses_variables(selection) %}variables,{% endif %}
-                            this$fieldName: {{selection.name}}Normalized$Key,
-                            parent$record: this$NormalizedRecord,
-                            parent$normalizedID: this$normalizedID
-                        );
-                    {% elif selection.kind == "Union" %}
-                        {# union selections are similar to objects - dispatch to correct type based on __typename #}
-                        if ({{selection.name}}$cached == null){
-                            ctx.addChangedRecord({{selection.name}}$normalizedID);
-                        }
-                        {{selection.full_name}}.normalize$inCache(
-                            {{selection.name}}$raw as JsonObject,
-                            ctx,
-                            {% if selection_uses_variables(selection) %}variables,{% endif %}
-                            this$fieldName: {{selection.name}}Normalized$Key,
-                            parent$record: this$NormalizedRecord,
-                            parent$normalizedID: this$normalizedID
-                        );
+                {% if is_union_member and selection_name == "__typename" %}
+                    {% if selection.is_optional %}
+                        {{ _serialize_selection_value_macro("typename_", selection, true) }}
                     {% else %}
-                        {% set cached_sym %} {{selection.name}}$cached {% endset %}
-                        {% set raw_sym %} {{selection.name}}$raw {% endset %}
-                        if (
-                            {{selection_equality_comparison_macro(selection, cached_sym, raw_sym, ne=True)}}
-                        ){
-                            ctx.addChangedRecord({{selection.name}}$normalizedID);
-                        }
-                        this$NormalizedRecord[{{selection.name}}Normalized$Key] = {{selection.name}}$raw;
+                        {{ _serialize_selection_value_macro("typename_", selection, false) }}
                     {% endif %}
-                } else if (data.containsKey("{{selection.name}}") && {{selection.name}}$cached != null){
-                        // if this field was null in the response and key exists clear the cache.
-
-                        this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
-                        ctx.addChangedRecord({{selection.name}}$normalizedID);
-                } else {
-                    // data is null and cache is null, do nothing.
-                    this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
-                }
-
-            {% endfor -%}
-        }
-        static {{obj_selection.full_name}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if uses_variables(obj_selection.selections)  %}, {{ operation_name }}Variables variables{% endif %}) {
-            {% for selection in selections -%}
-                {% set raw_value_symbol = selection.name + '$raw' -%}
-                {% if selection.arguments | length > 0 -%}
-                    final {{selection.name}}$cacheKey = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
-                    final {{raw_value_symbol}} = data[{{selection.name}}$cacheKey];
-                {% else -%}
-                    final {{raw_value_symbol}} = data["{{selection.name}}"];
-                {% endif -%}
-                final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_cache_macro(raw_value_symbol, selection, selection.is_optional, op_variables) }};
-            {% endfor -%}
-            return {{ obj_selection.full_name }}(
-                {% for selection in selections -%}
-                    {{selection.name}}: {{selection.name}}$value,
-                {% endfor %}
-            );
-        }
-
-        @override
-        bool operator ==(Object other) {
-        return identical(this, other) ||
-        (other is {{ obj_selection.full_name }} &&
-        {% for selection in selections -%}
-            {% set other_selection %}other.{{selection.name}}{% endset -%}
-            {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&" if not loop.last }}
-        {% endfor -%}
-        );
-        }
-        @override
-        int get hashCode =>
-        {% if selections | length > 1 -%}
-            Object.hashAll([
-            {% for selection in selections %}
-                {% set selection_name = selection.name %}
-                {{ selection_name }},
-            {% endfor %}
-            ]);
-        {% else %}
-            {{ (selections | first).name }}.hashCode;
-        {% endif %}
-        JsonObject toJson() {
-        return {
-        {% for selection in selections %}
-            {% set selection_name = selection.name %}
-            '{{ selection_name }}':
-                {% if selection.is_optional %}
-                    {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}
                 {% else %}
-                    {{ _serialize_selection_value_macro("this." + selection_name, selection, false) }}
+                    {% if selection.is_optional %}
+                        {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}
+                    {% else %}
+                        {{ _serialize_selection_value_macro("this." + selection_name, selection, false) }}
+                    {% endif %}
                 {% endif %}
             ,
         {% endfor %}
         };
         }
+{% endmacro %}
+
+{% macro selection_object_definition(full_name, selection, union_parent_name=none, is_union_member=false) -%}
+    class {{ full_name }}{% if is_union_member %} extends {{ union_parent_name }}{% endif %}{% if selection.used_fragments | length > 0 %}{% if is_union_member %},{% endif %} implements {% for frag_name in selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+        {{ selection_object_impl(full_name, selection, false, full_name, is_union_member=is_union_member) }}
     }
 {% endmacro %}
 
-{# Macro for union selection sealed class and implementations #}
+
+
+{# Macro for union selection sealed class - just the sealed class and dispatch logic #}
 {% macro selection_union_definition(full_name, selection) -%}
     // Union sealed class
     sealed class {{ full_name }} {
@@ -556,7 +451,7 @@
             switch (typename) {
                 {% for type_condition, obj_selection in selection.inline_fragments | items %}
                 case "{{ type_condition }}":
-                    {{ obj_selection.full_name }}.normalize$inCache(
+                    {{ full_name }}_{{ type_condition }}.normalize$inCache(
                         data,
                         ctx,
                         {% if uses_variables(obj_selection.selections) %}variables,{% endif %}
@@ -591,184 +486,4 @@
         @override
         int get hashCode;
     }
-
-    // Union member implementations
-    {% for type_condition, obj_selection in selection.inline_fragments | items %}
-    class {{ full_name }}_{{ type_condition }} extends {{ full_name }} {
-        {% set member_names = obj_selection.selections | map(attribute='name') | list %}
-        {% set shared_selections_filtered = selection.shared_selections | rejectattr('name', 'in', member_names) %}
-        {% set member_selections = shared_selections_filtered + obj_selection.selections %}
-
-        // Fields
-        {% for member_selection in member_selections -%}
-            {% if member_selection.name == "__typename" %}
-            final {{ type_name_for_selection(member_selection) }} typename_;
-            {% else %}
-            final {{ type_name_for_selection(member_selection) }} {{ member_selection.name }};
-            {% endif %}
-        {% endfor %}
-
-        // Getter for typename (public accessor for __typename field)
-        {% if member_selections | selectattr("name", "equalto", "__typename") | list | length > 0 %}
-        String get typename => typename_;
-        {% endif %}
-
-        const {{ full_name }}_{{ type_condition }}({
-            {% for member_selection in member_selections -%}
-                {% if member_selection.name == "__typename" %}
-                    {% if not member_selection.is_optional %}required{% endif %} String $typename,
-                {% else %}
-                    {% if not member_selection.is_optional %}required{% endif %} this.{{ member_selection.name }},
-                {% endif %}
-            {% endfor %}
-        }) {% if member_selections | selectattr("name", "equalto", "__typename") | list | length > 0 %}: typename_ = $typename{% endif %};
-
-        static void normalize$inCache(
-            JsonObject data,
-            CacheUpdateContext ctx,
-            {% if uses_variables(obj_selection.selections) %}{{ operation_name }}Variables variables,{% endif %}
-            {
-                required RecordID this$fieldName,
-                required JsonObject parent$record,
-                required RecordID parent$normalizedID
-            }
-        ) {
-            String this$normalizedID;
-            JsonObject this$NormalizedRecord;
-            // Ensure parent record has an object for this field (handle null case)
-            if (parent$record[this$fieldName] == null) {
-                parent$record[this$fieldName] = <String, dynamic>{};
-            }
-            this$NormalizedRecord = parent$record[this$fieldName] as JsonObject;
-            this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-
-            {% for member_selection in member_selections -%}
-                final {{member_selection.name}}Normalized$Key = {{ generate_cache_key_with_args(member_selection.name, member_selection.arguments) }};
-                final {{member_selection.name}}$normalizedID = "${this$normalizedID}.${ {{member_selection.name}}Normalized$Key}";
-            {% endfor -%}
-            ctx.addDependantRecords(
-                {
-                {% for member_selection in member_selections -%}
-                    {{member_selection.name}}$normalizedID  {{"," if not loop.last}}
-                {% endfor -%}
-                }
-            );
-
-            {% for member_selection in member_selections -%}
-                final {{member_selection.name}}$cached = this$NormalizedRecord[{{member_selection.name}}Normalized$Key];
-                final {{member_selection.name}}$raw = data["{{member_selection.name}}"];
-                if ({{member_selection.name}}$raw != null){
-                    {% if member_selection.kind == "Object" %}
-                        if ({{member_selection.name}}$cached == null){
-                            ctx.addChangedRecord({{member_selection.name}}$normalizedID);
-                        }
-                        {{member_selection.full_name}}.normalize$inCache(
-                            {{member_selection.name}}$raw as JsonObject,
-                            ctx,
-                            {% if selection_uses_variables(member_selection) %}variables,{% endif %}
-                            this$fieldName: {{member_selection.name}}Normalized$Key,
-                            parent$record: this$NormalizedRecord,
-                            parent$normalizedID: this$normalizedID
-                        );
-                    {% elif member_selection.kind == "Union" %}
-                        if ({{member_selection.name}}$cached == null){
-                            ctx.addChangedRecord({{member_selection.name}}$normalizedID);
-                        }
-                        {{member_selection.full_name}}.normalize$inCache(
-                            {{member_selection.name}}$raw as JsonObject,
-                            ctx,
-                            {% if selection_uses_variables(member_selection) %}variables,{% endif %}
-                            this$fieldName: {{member_selection.name}}Normalized$Key,
-                            parent$record: this$NormalizedRecord,
-                            parent$normalizedID: this$normalizedID
-                        );
-                    {% else %}
-                        {% set cached_sym %} {{member_selection.name}}$cached {% endset %}
-                        {% set raw_sym %} {{member_selection.name}}$raw {% endset %}
-                        if (
-                            {{selection_equality_comparison_macro(member_selection, cached_sym, raw_sym, ne=True)}}
-                        ){
-                            ctx.addChangedRecord({{member_selection.name}}$normalizedID);
-                        }
-                        this$NormalizedRecord[{{member_selection.name}}Normalized$Key] = {{member_selection.name}}$raw;
-                    {% endif %}
-                } else if (data.containsKey("{{member_selection.name}}") && {{member_selection.name}}$cached != null){
-                    this$NormalizedRecord[{{member_selection.name}}Normalized$Key] = null;
-                    ctx.addChangedRecord({{member_selection.name}}$normalizedID);
-                } else {
-                    this$NormalizedRecord[{{member_selection.name}}Normalized$Key] = null;
-                }
-            {% endfor -%}
-        }
-
-        static {{ full_name }}_{{ type_condition }} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if uses_variables(obj_selection.selections) %}, {{ operation_name }}Variables variables{% endif %}) {
-            {% for member_selection in member_selections -%}
-                {% set raw_value_symbol = member_selection.name + '$raw' -%}
-                {% if member_selection.arguments | length > 0 -%}
-                    final {{member_selection.name}}$cacheKey = {{ generate_cache_key_with_args(member_selection.name, member_selection.arguments) }};
-                    final {{raw_value_symbol}} = data[{{member_selection.name}}$cacheKey];
-                {% else -%}
-                    final {{raw_value_symbol}} = data["{{member_selection.name}}"];
-                {% endif -%}
-                final {{type_name_for_selection(member_selection)}} {{member_selection.name}}$value = {{ _deserialize_selection_from_cache_macro(raw_value_symbol, member_selection, member_selection.is_optional, op_variables) }};
-            {% endfor -%}
-            return {{ full_name }}_{{ type_condition }}(
-                {% for member_selection in member_selections -%}
-                    {% if member_selection.name == "__typename" %}
-                        $typename: {{member_selection.name}}$value,
-                    {% else %}
-                        {{member_selection.name}}: {{member_selection.name}}$value,
-                    {% endif %}
-                {% endfor %}
-            );
-        }
-
-        @override
-        JsonObject toJson() {
-            return {
-                {% for member_selection in member_selections %}
-                    {% if member_selection.name == "__typename" %}
-                    '{{ member_selection.name }}': {% if member_selection.is_optional %}{{ _serialize_selection_value_macro("typename_", member_selection, true) }}{% else %}{{ _serialize_selection_value_macro("typename_", member_selection, false) }}{% endif %},
-                    {% else %}
-                    '{{ member_selection.name }}': {% if member_selection.is_optional %}{{ _serialize_selection_value_macro("this." + member_selection.name, member_selection, true) }}{% else %}{{ _serialize_selection_value_macro("this." + member_selection.name, member_selection, false) }}{% endif %},
-                    {% endif %}
-                {% endfor %}
-            };
-        }
-
-        @override
-        bool operator ==(Object other) {
-            return identical(this, other) ||
-                (other is {{ full_name }}_{{ type_condition }} &&
-                {% for member_selection in member_selections -%}
-                    {% if member_selection.name == "__typename" %}
-                    {{ selection_equality_comparison_macro(member_selection, "typename_", "other.typename_") }} {{ "&&" if not loop.last }}
-                    {% else %}
-                    {{ selection_equality_comparison_macro(member_selection, member_selection.name, "other." + member_selection.name) }} {{ "&&" if not loop.last }}
-                    {% endif %}
-                {% endfor -%}
-                );
-        }
-
-        @override
-        int get hashCode =>
-            {% if member_selections | length > 1 -%}
-                Object.hashAll([
-                {% for member_selection in member_selections %}
-                    {% if member_selection.name == "__typename" %}
-                    typename_,
-                    {% else %}
-                    {{ member_selection.name }},
-                    {% endif %}
-                {% endfor %}
-                ]);
-            {% else %}
-                {% if (member_selections | first).name == "__typename" %}
-                typename_.hashCode;
-                {% else %}
-                {{ (member_selections | first).name }}.hashCode;
-                {% endif %}
-            {% endif %}
-    }
-    {% endfor %}
 {% endmacro %}
