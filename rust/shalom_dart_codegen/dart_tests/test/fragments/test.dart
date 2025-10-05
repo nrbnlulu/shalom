@@ -6,10 +6,6 @@ import '__graphql__/GetPost.shalom.dart';
 import '__graphql__/GetPostWithMeta.shalom.dart';
 import '__graphql__/GetUserWithAuthor.shalom.dart';
 import '__graphql__/GetPostWithAuthor.shalom.dart';
-<<<<<<< HEAD
-import '__graphql__/schema.shalom.dart';
-=======
->>>>>>> main
 
 void main() {
   group('Fragment Basic Functionality', () {

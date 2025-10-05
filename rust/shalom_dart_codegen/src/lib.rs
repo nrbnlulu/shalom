@@ -396,6 +396,13 @@ fn register_default_template_fns<'a>(
         },
     );
 
+    env.add_function(
+        "object_selection_uses_variables",
+        move |obj_selection: ViaDeserialize<shalom_core::operation::types::ObjectSelection>| -> bool {
+            object_selection_uses_variables(&obj_selection.0)
+        },
+    );
+
     Ok(())
 }
 
