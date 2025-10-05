@@ -24,6 +24,46 @@ fn full_path_name(this_name: &String, parent_path: &String) -> String {
     format!("{}_{}", parent_path, this_name)
 }
 
+fn parse_field_arguments<T>(
+    ctx: &T,
+    field: &apollo_executable::Field,
+) -> Vec<crate::operation::types::FieldArgument>
+where
+    T: ExecutableContext,
+{
+    field
+        .arguments
+        .iter()
+        .map(|arg| match arg.value.as_ref() {
+            apollo_executable::Value::Variable(var_name) => {
+                let op_var = ctx.get_variable(var_name).unwrap().clone();
+                let value = crate::operation::types::ArgumentValue::VariableUse(op_var.clone());
+                FieldArgument {
+                    name: arg.name.to_string(),
+                    value,
+                    default_value: op_var.default_value.map(|v| v.to_string()),
+                }
+            }
+            _ => {
+                let arg_def = field
+                    .definition
+                    .arguments
+                    .iter()
+                    .find(|a| a.name == arg.name);
+                let inline_val = crate::operation::types::ArgumentValue::InlineValue {
+                    value: arg.value.to_string(),
+                };
+                FieldArgument {
+                    name: arg.name.to_string(),
+                    value: inline_val,
+                    default_value: arg_def
+                        .and_then(|def| def.default_value.as_ref().map(|v| v.to_string())),
+                }
+            }
+        })
+        .collect()
+}
+
 fn parse_enum_selection(is_optional: bool, concrete_type: Node<EnumType>) -> SharedEnumSelection {
     EnumSelection::new(is_optional, concrete_type)
 }
@@ -60,41 +100,7 @@ where
                     .as_deref()
                     .map(|s| s.to_string());
                 let field_path = full_path_name(&f_name, path);
-                let args: Vec<crate::operation::types::FieldArgument> = field
-                    .arguments
-                    .iter()
-                    .map(|arg| match arg.value.as_ref() {
-                        apollo_executable::Value::Variable(var_name) => {
-                            let op_var = ctx.get_variable(var_name).unwrap().clone();
-
-                            let value =
-                                crate::operation::types::ArgumentValue::VariableUse(op_var.clone());
-                            FieldArgument {
-                                name: arg.name.to_string(),
-                                value,
-                                default_value: op_var.default_value.map(|v| v.to_string()),
-                            }
-                        }
-                        _ => {
-                            let arg_def = field
-                                .definition
-                                .arguments
-                                .iter()
-                                .find(|a| a.name == arg.name);
-
-                            let inline_val = crate::operation::types::ArgumentValue::InlineValue {
-                                value: arg.value.to_string(),
-                            };
-                            FieldArgument {
-                                name: arg.name.to_string(),
-                                value: inline_val,
-                                default_value: arg_def.and_then(|def| {
-                                    def.default_value.as_ref().map(|v| v.to_string())
-                                }),
-                            }
-                        }
-                    })
-                    .collect();
+                let args = parse_field_arguments(ctx, field);
                 let selection_common = SelectionCommon {
                     name: f_name.clone(),
                     description,
@@ -129,79 +135,18 @@ where
                 // When we encounter them in an object context, we should expand them inline
                 if let Some(type_condition) = &inline_fragment.type_condition {
                     trace!("Processing inline fragment on type: {}", type_condition);
-                    // For now, we'll expand inline fragments directly into the parent object
-                    for selection in &inline_fragment.selection_set.selections {
-                        match selection {
-                            apollo_executable::Selection::Field(field) => {
-                                let f_name = field.name.clone().to_string();
-                                let f_type = field.ty();
-                                let description = field
-                                    .definition
-                                    .description
-                                    .as_deref()
-                                    .map(|s| s.to_string());
-                                let field_path = full_path_name(&f_name, path);
-                                let args: Vec<crate::operation::types::FieldArgument> = field
-                                    .arguments
-                                    .iter()
-                                    .map(|arg| match arg.value.as_ref() {
-                                        apollo_executable::Value::Variable(var_name) => {
-                                            let op_var = ctx.get_variable(var_name).unwrap().clone();
-                                            let value = crate::operation::types::ArgumentValue::VariableUse(
-                                                op_var.clone(),
-                                            );
-                                            FieldArgument {
-                                                name: arg.name.to_string(),
-                                                value,
-                                                default_value: op_var.default_value.map(|v| v.to_string()),
-                                            }
-                                        }
-                                        _ => {
-                                            let arg_def = field
-                                                .definition
-                                                .arguments
-                                                .iter()
-                                                .find(|a| a.name == arg.name);
-                                            let inline_val =
-                                                crate::operation::types::ArgumentValue::InlineValue {
-                                                    value: arg.value.to_string(),
-                                                };
-                                            FieldArgument {
-                                                name: arg.name.to_string(),
-                                                value: inline_val,
-                                                default_value: arg_def.and_then(|def| {
-                                                    def.default_value.as_ref().map(|v| v.to_string())
-                                                }),
-                                            }
-                                        }
-                                    })
-                                    .collect();
-                                let selection_common = SelectionCommon {
-                                    name: f_name.clone(),
-                                    description,
-                                };
-                                let field_selection = parse_selection_set(
-                                    &field_path,
-                                    ctx,
-                                    global_ctx,
-                                    selection_common,
-                                    &field.selection_set,
-                                    f_type,
-                                    args,
-                                    used_fragments,
-                                );
-                                obj.add_selection(field_selection);
-                            }
-                            apollo_executable::Selection::FragmentSpread(spread) => {
-                                let fragment_name = spread.fragment_name.to_string();
-                                let frag = global_ctx.get_fragment(&fragment_name).unwrap();
-                                used_fragments.push(frag.clone());
-                                obj.add_used_fragment(fragment_name.clone());
-                            }
-                            apollo_executable::Selection::InlineFragment(_) => {
-                                todo!("nested inline fragments are not supported ATM")
-                            }
-                        }
+                    // Recursively parse the inline fragment's selection set as an object selection
+                    let inline_obj = parse_object_selection(
+                        ctx,
+                        global_ctx,
+                        path,
+                        false, // inline fragments in objects inherit the parent's optionality
+                        &inline_fragment.selection_set,
+                        used_fragments,
+                    );
+                    // Merge the inline fragment's selections into the parent object
+                    for selection in inline_obj.selections.borrow().iter() {
+                        obj.add_selection(selection.clone());
                     }
                 }
             }
