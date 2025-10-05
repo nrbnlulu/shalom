@@ -72,10 +72,26 @@
         {% endif -%}
     {% endif %}
     {% elif selection.kind == "Union" %}
-        {% if is_optional %}
-            {{ value_symbol }} == null ? null : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
+        {# Check if any union member has an ID (is normalized) by checking the first one #}
+        {% set first_member = selection.inline_fragments | items | first %}
+        {% if first_member %}
+            {% set first_member_has_id = get_id_selection(first_member[1].full_name) %}
         {% else %}
-            {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
+            {% set first_member_has_id = none %}
+        {% endif %}
+        {% if is_optional %}
+            {{ value_symbol }} == null ? null :
+            {% if first_member_has_id -%}
+                {{ selection.full_name }}.fromCached(ctx.getCachedRecord({{ value_symbol }} as String), ctx)
+            {%- else -%}
+                {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
+            {%- endif %}
+        {% else %}
+            {% if first_member_has_id -%}
+                {{ selection.full_name }}.fromCached(ctx.getCachedRecord({{ value_symbol }} as String), ctx)
+            {%- else -%}
+                {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
+            {%- endif %}
         {% endif %}
     {% elif selection.kind == "Enum" %}
         {% set typename = selection.concrete_type.name %}
@@ -199,7 +215,7 @@
 
         static void normalize$inCache(JsonObject data,
                 CacheUpdateContext ctx,
-                {% if selection_uses_variables(selection_object) %} {{ operation_name }}Variables variables,{% endif %}
+                {% if not is_union_member and selection_uses_variables(selection_object) %} {{ operation_name }}Variables variables,{% endif %}
                 {% if not is_root_selection -%}
                     {
                     /// can be just the selection name but also may include serialized arguments.
@@ -218,7 +234,7 @@
                 String this$normalizedID;
                 JsonObject this$NormalizedRecord;
                 {% if is_type_implements_node(lookup_name) %}
-                    final this$normalizedID_temp = data["id"] as RecordID?;
+                    final this$normalizedID_temp = NormalizedRecord(id: ["id"] as RecordID?, typename: "{{concrete_typename}}");
                     if (this$normalizedID_temp == null) {
                         throw UnimplementedError("Node ID cannot be null");
                     }
@@ -316,7 +332,7 @@
             {% endfor -%}
         }
         {% if not is_root_selection -%}
-        static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if selection_uses_variables(selection_object)  %}, {{ operation_name }}Variables variables{% endif %}) {
+        static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if not is_union_member and selection_uses_variables(selection_object)  %}, {{ operation_name }}Variables variables{% endif %}) {
         {% else -%}
         static {{typename}} fromCache(ShalomCtx ctx{% if selection_uses_variables(selection_object) -%}, {{ operation_name }}Variables variables{% endif %}) {
         {% endif -%}
@@ -431,7 +447,7 @@
 
 
 
-{# Macro for union selection sealed class - just the sealed class and dispatch logic #}
+{# Macro for union selection sealed class - just the sealed class and dispatch logic -#}
 {% macro selection_union_definition(full_name, selection) -%}
     // Union sealed class
     sealed class {{ full_name }} {
@@ -454,7 +470,6 @@
                     {{ full_name }}_{{ type_condition }}.normalize$inCache(
                         data,
                         ctx,
-                        {% if uses_variables(obj_selection.selections) %}variables,{% endif %}
                         this$fieldName: this$fieldName,
                         parent$record: parent$record,
                         parent$normalizedID: parent$normalizedID
@@ -466,12 +481,12 @@
             }
         }
 
-        static {{ full_name }} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}) {
+        static {{ full_name }} fromCached(NormalizedRecordData data, ShalomCtx ctx) {
             final typename = data["__typename"] as String;
             switch (typename) {
                 {% for type_condition, obj_selection in selection.inline_fragments | items %}
                 case "{{ type_condition }}":
-                    return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx{% if uses_variables(obj_selection.selections) %}, variables{% endif %});
+                    return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx);
                 {% endfor %}
                 default:
                     throw Exception("Unknown __typename: $typename for union {{ selection.union_type.name }}");

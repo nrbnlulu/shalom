@@ -8,7 +8,19 @@ class ListOfRefRecord {
   const ListOfRefRecord(this.refs);
 }
 
-/// can be [String] (id) | [ListOfRefRecord] or a [dynamic] data that can't be normalized.
+class NormalizedRecordObject {
+  final String typename;
+  final String id;
+  const NormalizedRecordObject({required this.typename, required this.id});
+
+  @override
+  int get hashCode => Object.hash(typename, id);
+
+  @override
+  String toString() => '$typename:$id';
+}
+
+/// can be [NormalizedRecordObject] (id) | [ListOfRefRecord] or a [dynamic] data that can't be normalized.
 typedef NormalizedRecordData = dynamic;
 
 class NormelizedCache {

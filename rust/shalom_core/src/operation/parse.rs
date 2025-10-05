@@ -238,12 +238,17 @@ where
                         used_fragments,
                     );
                     union_selection.add_inline_fragment(type_condition_str, obj.clone());
-                    
-                    let selection_common = SelectionCommon { name: fragment_path.clone(), description: None };
-                    let selection = Selection::new(selection_common, SelectionKind::Object(
-                        obj
-                    ), Default::default());
-                    
+
+                    let selection_common = SelectionCommon {
+                        name: fragment_path.clone(),
+                        description: None,
+                    };
+                    let selection = Selection::new(
+                        selection_common,
+                        SelectionKind::Object(obj),
+                        Default::default(),
+                    );
+
                     ctx.add_selection(fragment_path, selection);
                 } else {
                     // Inline fragment without type condition - fields apply to all types
