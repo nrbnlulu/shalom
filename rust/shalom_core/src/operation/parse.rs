@@ -8,7 +8,7 @@ use apollo_compiler::{
 };
 use log::{info, trace};
 
-use crate::context::SharedShalomGlobalContext;
+use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
 use crate::operation::types::{FieldArgument, ObjectSelection, SelectionCommon, SelectionKind};
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
@@ -124,7 +124,6 @@ where
                     .expect(&format!("Fragment not found: {}", fragment_name));
                 used_fragments.push(frag.clone());
                 obj.add_used_fragment(fragment_name.clone());
-
             }
             apollo_executable::Selection::InlineFragment(inline_fragment) => {
                 // TODO: Handle inline fragments
@@ -201,9 +200,28 @@ where
 }
 
 // Trait to abstract over OperationContext and FragmentContext
-pub trait ExecutableContext: Send + Sync +'static  {
+pub trait ExecutableContext: Send + Sync + 'static {
     fn get_selection(&self, name: &str) -> Option<Selection>;
-    fn get_selection_strict(&self, name: &str) -> Selection;
+    fn get_used_fragments(
+        &self,
+        name: &str,
+        ctx: &ShalomGlobalContext,
+    ) -> &Vec<SharedFragmentContext>;
+    fn get_selection_with_fragments(&self, name: &str, ctx: &ShalomGlobalContext) -> Selection {
+        let res = match self.get_selection(&name.to_string()) {
+            Some(selection) => Some(selection),
+            None => {
+                for frag in self.get_used_fragments(name, ctx) {
+                    if let Some(selection) = frag.get_selection(&name.to_string()) {
+                        return selection;
+                    }
+                }
+                None
+            }
+        };
+        res.expect(&format!("Selection not found for name: {}", name))
+    }
+
     fn add_selection(&mut self, name: String, selection: Selection);
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable>;
 }
@@ -212,11 +230,12 @@ impl ExecutableContext for OperationContext {
     fn get_selection(&self, name: &str) -> Option<Selection> {
         self.get_selection(&name.to_string())
     }
-
-    fn get_selection_strict(&self, name: &str) -> Selection {
-        self.get_selection(&name.to_string()).unwrap_or_else(|| {
-            panic!("Selection {} not found", name);
-        })
+    fn get_used_fragments(
+        &self,
+        name: &str,
+        ctx: &ShalomGlobalContext,
+    ) -> &Vec<SharedFragmentContext> {
+        self.get_used_fragments()
     }
 
     fn add_selection(&mut self, name: String, selection: Selection) {
@@ -232,10 +251,12 @@ impl ExecutableContext for FragmentContext {
     fn get_selection(&self, name: &str) -> Option<Selection> {
         self.get_selection(&name.to_string())
     }
-    fn get_selection_strict(&self, name: &str) -> Selection {
-        self.get_selection(&name.to_string()).unwrap_or_else(|| {
-            panic!("Selection {} not found", name);
-        })
+    fn get_used_fragments(
+        &self,
+        name: &str,
+        ctx: &ShalomGlobalContext,
+    ) -> &Vec<SharedFragmentContext> {
+        self.get_used_fragments()
     }
 
     fn add_selection(&mut self, name: String, selection: Selection) {

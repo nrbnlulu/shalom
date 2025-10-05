@@ -4,7 +4,9 @@ use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    context::ShalomGlobalContext, operation::context::OperationVariable, schema::types::{EnumType, ScalarType}
+    context::ShalomGlobalContext,
+    operation::context::OperationVariable,
+    schema::types::{EnumType, ScalarType},
 };
 
 /// the name of i.e object in a graphql query based on the parent fields.
@@ -158,13 +160,13 @@ impl ObjectSelection {
     pub fn get_used_fragments(&self) -> Vec<FragName> {
         self.used_fragments.borrow().clone()
     }
-    
+
     /// return all selections for an object including the fragment selections
     /// for the current selection object
-    pub fn get_all_selections(&self, ctx: &ShalomGlobalContext) -> Vec<Selection>{
+    pub fn get_all_selections(&self, ctx: &ShalomGlobalContext) -> Vec<Selection> {
         let mut selections = self.selections.borrow().clone();
         let mut fragments = self.used_fragments.borrow().clone();
-        
+
         while !fragments.is_empty() {
             let fragment = ctx.get_fragment_strict(&fragments.pop().unwrap());
             let fragment_selections = fragment.get_flat_selections(ctx);
@@ -176,6 +178,21 @@ impl ObjectSelection {
     pub fn get_id_selection(&self) -> Option<Selection> {
         self.selections
             .borrow()
+            .iter()
+            .find(|s| s.self_selection_name().contains("id"))
+            .cloned()
+    }
+
+    /// Get the id selection, including those from used fragments
+    pub fn get_id_selection_with_fragments(&self, ctx: &ShalomGlobalContext) -> Option<Selection> {
+        // First check in direct selections
+        if let Some(id_sel) = self.get_id_selection() {
+            return Some(id_sel);
+        }
+
+        // If not found, check in fragment selections
+        let all_selections = self.get_all_selections(ctx);
+        all_selections
             .iter()
             .find(|s| s.self_selection_name().contains("id"))
             .cloned()
