@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::sync::Arc;
 
 use apollo_compiler::{
@@ -121,7 +120,7 @@ where
                 // all fragments should be already parsed by now.
                 let frag = global_ctx
                     .get_fragment(&fragment_name)
-                    .expect(&format!("Fragment not found: {}", fragment_name));
+                    .unwrap_or_else(|| panic!("Fragment not found: {}", fragment_name));
                 used_fragments.push(frag.clone());
                 obj.add_used_fragment(fragment_name.clone());
             }
@@ -208,7 +207,7 @@ pub trait ExecutableContext: Send + Sync + 'static {
         ctx: &ShalomGlobalContext,
     ) -> &Vec<SharedFragmentContext>;
     fn get_selection_with_fragments(&self, name: &str, ctx: &ShalomGlobalContext) -> Selection {
-        let res = match self.get_selection(&name.to_string()) {
+        let res = match self.get_selection(name) {
             Some(selection) => Some(selection),
             None => {
                 for frag in self.get_used_fragments(name, ctx) {
@@ -219,7 +218,7 @@ pub trait ExecutableContext: Send + Sync + 'static {
                 None
             }
         };
-        res.expect(&format!("Selection not found for name: {}", name))
+        res.unwrap_or_else(|| panic!("Selection not found for name: {}", name))
     }
 
     fn add_selection(&mut self, name: String, selection: Selection);

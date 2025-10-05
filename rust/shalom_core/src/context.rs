@@ -115,7 +115,7 @@ impl ShalomGlobalContext {
     }
     pub fn get_fragment_strict(&self, name: &str) -> SharedFragmentContext {
         self.get_fragment(name)
-            .expect(&format!("fragment not found {}", name))
+            .unwrap_or_else(|| panic!("fragment not found {}", name))
     }
 
     pub fn fragments(&self) -> Vec<(String, SharedFragmentContext)> {

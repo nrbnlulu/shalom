@@ -61,7 +61,7 @@ impl ShalomConfig {
             .ok_or_else(|| anyhow::anyhow!("Invalid config path: no parent directory"))?
             .to_path_buf();
 
-        fs::read_to_string(&config_path)
+        fs::read_to_string(config_path)
             .map_err(|e| {
                 anyhow::anyhow!("Failed to read config at {}: {}", config_path.display(), e)
             })

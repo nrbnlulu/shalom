@@ -471,7 +471,7 @@ where
     let executable_ctx_clone1 = executable_ctx.clone();
 
     env.add_function("is_type_implements_node", move |full_name: &str| {
-        if let Some(selection) = executable_ctx_clone1.get_selection(&full_name.to_string()) {
+        if let Some(selection) = executable_ctx_clone1.get_selection(full_name) {
             match selection.kind {
                 SelectionKind::Object(object_selection) => ctx_clone1
                     .schema_ctx
@@ -488,7 +488,7 @@ where
     env.add_function(
         "get_id_selection",
         move |full_name: &str| -> Option<minijinja::Value> {
-            let selection = executable_ctx_clone2.get_selection(&full_name.to_string())?;
+            let selection = executable_ctx_clone2.get_selection(full_name)?;
             match selection.kind {
                 SelectionKind::Object(object_selection) => object_selection
                     .get_id_selection_with_fragments(&ctx_clone2)
@@ -529,14 +529,14 @@ impl OperationEnv<'_> {
             move |full_name: &str| -> Option<minijinja::Value> {
                 // First try to find in the operation context
                 let selection =
-                    op_ctx_clone.get_selection_with_fragments(&full_name.to_string(), &ctx_clone);
+                    op_ctx_clone.get_selection_with_fragments(full_name, &ctx_clone);
                 match selection.kind {
                     SelectionKind::Object(object_selection) => {
-                        return object_selection
+                        object_selection
                             .get_id_selection_with_fragments(&ctx_clone)
-                            .map(minijinja::Value::from_serialize);
+                            .map(minijinja::Value::from_serialize)
                     }
-                    _ => return None,
+                    _ => None,
                 }
             },
         );

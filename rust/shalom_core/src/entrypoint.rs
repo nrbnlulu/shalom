@@ -90,7 +90,7 @@ pub fn parse_directory(
     let mut parser = apollo_compiler::parser::Parser::new();
 
     for file in &files.operations {
-        let content = fs::read_to_string(&file)?;
+        let content = fs::read_to_string(file)?;
         let res = parser.parse_executable(&schema, &content, file);
         match res {
             Ok(doc) => {
@@ -271,7 +271,7 @@ pub fn parse_directory(
 
         // Add original content
         if injected_any {
-            augmented_content.push_str("\n");
+            augmented_content.push('\n');
         }
         augmented_content.push_str(content);
 
@@ -379,7 +379,7 @@ fn topological_sort(dependencies: &HashMap<String, Vec<String>>) -> Result<Vec<S
         for dep in deps {
             graph
                 .entry(dep.clone())
-                .or_insert(Vec::new())
+                .or_default()
                 .push(node.clone());
             *in_degree.entry(node.clone()).or_insert(0) += 1;
         }
@@ -426,7 +426,7 @@ pub fn collect_executables(
     let mut parser = apollo_compiler::parser::Parser::new();
     let mut ret = Vec::new();
     for file in files {
-        let content = fs::read_to_string(&file)?;
+        let content = fs::read_to_string(file)?;
         match parser
             .parse_executable(schema, content, file)
             .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))
