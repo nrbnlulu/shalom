@@ -5,7 +5,12 @@ import 'src/shalom_ctx.dart' show ShalomCtx;
 export 'src/shalom_core_base.dart';
 export 'src/scalar.dart';
 export 'src/normelized_cache.dart'
-    show NormelizedCache, NormalizedRecordData, RecordID;
+    show
+        NormelizedCache,
+        NormalizedRecordData,
+        NormalizedRecordObject,
+        ListOfRefRecord,
+        RecordID;
 
 export 'src/shalom_ctx.dart' show RecordSubscriber, RefStreamType, ShalomCtx;
 

@@ -82,13 +82,13 @@
         {% if is_optional %}
             {{ value_symbol }} == null ? null :
             {% if first_member_has_id -%}
-                {{ selection.full_name }}.fromCached(ctx.getCachedRecord({{ value_symbol }} as String), ctx)
+                {{ selection.full_name }}.fromCached({{ value_symbol }} as NormalizedRecordObject, ctx)
             {%- else -%}
                 {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
             {%- endif %}
         {% else %}
             {% if first_member_has_id -%}
-                {{ selection.full_name }}.fromCached(ctx.getCachedRecord({{ value_symbol }} as String), ctx)
+                {{ selection.full_name }}.fromCached({{ value_symbol }} as NormalizedRecordObject, ctx)
             {%- else -%}
                 {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
             {%- endif %}
@@ -233,17 +233,7 @@
                 {% set is_normalized = false -%}
                 String this$normalizedID;
                 JsonObject this$NormalizedRecord;
-                {% if is_type_implements_node(lookup_name) %}
-                    final this$normalizedID_temp = NormalizedRecord(id: ["id"] as RecordID?, typename: "{{concrete_typename}}");
-                    if (this$normalizedID_temp == null) {
-                        throw UnimplementedError("Node ID cannot be null");
-                    }
-                    this$normalizedID = this$normalizedID_temp!;
-                    parent$record[this$fieldName] = this$normalizedID;
-                    this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
-                    ctx.addDependantRecord(this$normalizedID);
-                    {% set is_normalized = true -%}
-                {% elif id_field is not none -%}
+                {% if id_field is not none -%}
                     final RecordID? this$normalizedID_temp = data["{{id_field.name}}"] as RecordID?;
                     if (this$normalizedID_temp == null) {
                         {% if id_field.is_optional %}
@@ -254,7 +244,8 @@
                         {% endif %}
                     } else {
                         this$normalizedID = this$normalizedID_temp!;
-                        parent$record[this$fieldName] = this$normalizedID;
+                        final typename = data["__typename"] as String;
+                        parent$record[this$fieldName] = NormalizedRecordObject(typename: typename, id: this$normalizedID);
                         this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                         ctx.addDependantRecord(this$normalizedID);
                         {% set is_normalized = true -%}
@@ -482,14 +473,29 @@
         }
 
         static {{ full_name }} fromCached(NormalizedRecordData data, ShalomCtx ctx) {
-            final typename = data["__typename"] as String;
-            switch (typename) {
-                {% for type_condition, obj_selection in selection.inline_fragments | items %}
-                case "{{ type_condition }}":
-                    return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx);
-                {% endfor %}
-                default:
-                    throw Exception("Unknown __typename: $typename for union {{ selection.union_type.name }}");
+            // Handle normalized objects (stored as NormalizedRecordObject)
+            if (data is NormalizedRecordObject) {
+                final typename = data.typename;
+                final actualData = ctx.getCachedRecord(data.id);
+                switch (typename) {
+                    {% for type_condition, obj_selection in selection.inline_fragments | items %}
+                    case "{{ type_condition }}":
+                        return {{ full_name }}_{{ type_condition }}.fromCached(actualData, ctx);
+                    {% endfor %}
+                    default:
+                        throw Exception("Unknown __typename: $typename for union {{ selection.union_type.name }}");
+                }
+            } else {
+                // Handle non-normalized objects (stored as JsonObject)
+                final typename = data["__typename"] as String;
+                switch (typename) {
+                    {% for type_condition, obj_selection in selection.inline_fragments | items %}
+                    case "{{ type_condition }}":
+                        return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx);
+                    {% endfor %}
+                    default:
+                        throw Exception("Unknown __typename: $typename for union {{ selection.union_type.name }}");
+                }
             }
         }
 

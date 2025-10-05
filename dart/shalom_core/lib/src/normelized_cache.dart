@@ -17,6 +17,14 @@ class NormalizedRecordObject {
   int get hashCode => Object.hash(typename, id);
 
   @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NormalizedRecordObject &&
+          runtimeType == other.runtimeType &&
+          typename == other.typename &&
+          id == other.id;
+
+  @override
   String toString() => '$typename:$id';
 }
 
