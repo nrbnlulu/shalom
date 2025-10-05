@@ -1,22 +1,20 @@
 
 query GetSpecificOrder($id: ID!, $specificOrder: SpecificOrder!) {
   getSpecificOrder(id: $id, specificOrder: $specificOrder) {
-    quantity, 
+    quantity,
     price,
     name
   }
 }
 
-mutation OrderRecursive($order: OrderRecursive) {
+mutation CreateOrderRecursive($order: OrderRecursive) {
   orderRecursive(order: $order) {
     quantity,
     name,
     price
   }
-} 
-
-mutation SubmitReview($review: Review) {
-  submitReview(review: $review) 
 }
 
-
+mutation SubmitReview($review: Review) {
+  submitReview(review: $review)
+}

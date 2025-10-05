@@ -1,6 +1,10 @@
 use crate::shalom_config::{CustomScalarDefinition, ShalomConfig};
 
-use crate::{operation::context::SharedOpCtx, schema::context::SharedSchemaContext};
+use crate::{
+    operation::context::SharedOpCtx,
+    operation::fragments::{FragmentContext, SharedFragmentContext},
+    schema::context::SharedSchemaContext,
+};
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
@@ -9,6 +13,7 @@ use std::{
 #[derive(Debug)]
 pub struct ShalomGlobalContext {
     operations: Mutex<HashMap<String, SharedOpCtx>>,
+    fragments: Mutex<HashMap<String, SharedFragmentContext>>,
     pub schema_ctx: SharedSchemaContext,
     pub config: ShalomConfig,
 }
@@ -20,6 +25,7 @@ impl ShalomGlobalContext {
     pub fn new(schema_ctx: SharedSchemaContext, config: ShalomConfig) -> Arc<Self> {
         Arc::new(Self {
             operations: Mutex::new(HashMap::new()),
+            fragments: Mutex::new(HashMap::new()),
             schema_ctx,
             config,
         })
@@ -27,9 +33,20 @@ impl ShalomGlobalContext {
 
     pub fn register_operations(&self, operations_update: HashMap<String, SharedOpCtx>) {
         let mut operations = self.operations.lock().unwrap();
+        let fragments = self.fragments.lock().unwrap();
         for (name, _) in operations_update.iter() {
             if operations.contains_key(name) {
                 panic!("Operation with name {} already exists", name);
+            }
+            if fragments.contains_key(name) {
+                panic!(
+                    "Operation name {} conflicts with existing fragment name",
+                    name
+                );
+            }
+            // Check if operation name conflicts with schema types
+            if self.schema_ctx.get_type(name).is_some() {
+                panic!("Operation name {} conflicts with schema type", name);
             }
         }
         operations.extend(operations_update);
@@ -59,6 +76,60 @@ impl ShalomGlobalContext {
         let operations = self.operations.lock().unwrap();
         operations.contains_key(name)
     }
+
+    pub fn register_fragments(
+        &self,
+        fragments_update: HashMap<String, FragmentContext>,
+    ) -> anyhow::Result<()> {
+        let mut fragments = self.fragments.lock().unwrap();
+        let operations = self.operations.lock().unwrap();
+        for (name, _) in fragments_update.iter() {
+            if fragments.contains_key(name) {
+                return Err(anyhow::anyhow!(
+                    "Fragment with name {} already exists",
+                    name
+                ));
+            }
+            if operations.contains_key(name) {
+                return Err(anyhow::anyhow!(
+                    "Fragment name {} conflicts with existing operation name",
+                    name
+                ));
+            }
+            // Check if fragment name conflicts with schema types
+            if self.schema_ctx.get_type(name).is_some() {
+                return Err(anyhow::anyhow!(
+                    "Fragment name {} conflicts with schema type",
+                    name
+                ));
+            }
+        }
+        for (name, frag_ctx) in fragments_update {
+            fragments.insert(name, Arc::new(frag_ctx));
+        }
+        Ok(())
+    }
+
+    pub fn get_fragment(&self, name: &str) -> Option<SharedFragmentContext> {
+        self.fragments.lock().unwrap().get(name).cloned()
+    }
+    pub fn get_fragment_strict(&self, name: &str) -> SharedFragmentContext {
+        self.get_fragment(name)
+            .unwrap_or_else(|| panic!("fragment not found {}", name))
+    }
+
+    pub fn fragments(&self) -> Vec<(String, SharedFragmentContext)> {
+        let fragments = self.fragments.lock().unwrap();
+        fragments
+            .iter()
+            .map(|(name, frag)| (name.clone(), frag.clone()))
+            .collect()
+    }
+
+    pub fn fragment_exists(&self, name: &str) -> bool {
+        let fragments = self.fragments.lock().unwrap();
+        fragments.contains_key(name)
+    }
 }
 
 pub type SharedShalomGlobalContext = Arc<ShalomGlobalContext>;
@@ -67,10 +138,4 @@ pub fn load_config_from_yaml_str(yaml: &str) -> anyhow::Result<ShalomConfig> {
     let config: ShalomConfig =
         serde_yaml::from_str(yaml).map_err(|e| anyhow::anyhow!("Invalid YAML: {}", e))?;
     Ok(config)
-}
-
-pub fn default_config() -> ShalomConfig {
-    ShalomConfig {
-        custom_scalars: Default::default(),
-    }
 }

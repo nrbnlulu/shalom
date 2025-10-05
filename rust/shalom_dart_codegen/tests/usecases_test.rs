@@ -34,3 +34,18 @@ fn test_nested_object_selection_dart() {
 fn test_list_of_scalars_dart() {
     run_dart_tests_for_usecase("list_of_scalars");
 }
+
+#[test]
+fn test_fragments_dart() {
+    run_dart_tests_for_usecase("fragments");
+}
+
+#[test]
+fn test_cross_dir_fragments_dart() {
+    run_dart_tests_for_usecase("cross_dir_fragments");
+}
+
+#[test]
+fn test_fragment_with_nested_object_selection_dart() {
+    run_dart_tests_for_usecase("fragment_with_nested_object_selection");
+}

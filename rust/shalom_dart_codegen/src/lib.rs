@@ -3,12 +3,13 @@ use lazy_static::lazy_static;
 use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
-use shalom_core::operation::types::SelectionKind;
 use shalom_core::{
     context::SharedShalomGlobalContext,
     operation::{
-        context::OperationContext,
-        types::{dart_type_for_scalar, Selection},
+        context::SharedOpCtx,
+        fragments::SharedFragmentContext,
+        parse::ExecutableContext,
+        types::{dart_type_for_scalar, Selection, SelectionKind},
     },
     schema::{
         context::SchemaContext,
@@ -22,6 +23,7 @@ use std::{
     fs,
     hash::{DefaultHasher, Hash, Hasher},
     path::{Path, PathBuf},
+    sync::Arc,
 };
 
 lazy_static! {
@@ -195,22 +197,6 @@ mod ext_jinja_fns {
         }
     }
 
-    pub fn value_or_last(value: String, last: String, is_last: bool) -> String {
-        if is_last {
-            last
-        } else {
-            value
-        }
-    }
-
-    pub fn if_not_last(value: String, is_last: bool) -> String {
-        if is_last {
-            String::new()
-        } else {
-            value
-        }
-    }
-
     pub fn custom_scalar_impl_fullname(
         ctx: &SharedShalomGlobalContext,
         scalar_name: String,
@@ -280,6 +266,35 @@ struct SchemaEnv<'a> {
 struct OperationEnv<'a> {
     env: Environment<'a>,
 }
+
+struct FragmentEnv<'a> {
+    env: Environment<'a>,
+}
+/// Helper function to find pubspec.yaml and extract package name
+fn find_pubspec_and_package_name(start_path: &Path) -> Result<(PathBuf, String), String> {
+    let mut current_dir = start_path.parent();
+
+    while let Some(dir) = current_dir {
+        let potential_pubspec = dir.join("pubspec.yaml");
+        if potential_pubspec.exists() {
+            let pubspec_content = fs::read_to_string(&potential_pubspec)
+                .map_err(|e| format!("Failed to read pubspec.yaml: {}", e))?;
+
+            let package_name = pubspec_content
+                .lines()
+                .find(|line| line.trim_start().starts_with("name:"))
+                .and_then(|line| line.split(':').nth(1))
+                .map(|name| name.trim().to_string())
+                .ok_or_else(|| "Could not find 'name:' field in pubspec.yaml".to_string())?;
+
+            return Ok((potential_pubspec, package_name));
+        }
+        current_dir = dir.parent();
+    }
+
+    Err("No pubspec.yaml found".to_string())
+}
+
 // TODO: might not be good to create an environment for every operation. as it will recreate templates.
 fn register_default_template_fns<'a>(
     env: &mut Environment<'a>,
@@ -294,7 +309,12 @@ fn register_default_template_fns<'a>(
     .unwrap();
 
     env.add_template("schema", include_str!("../templates/schema.dart.jinja"))?;
+    env.add_template("fragment", include_str!("../templates/fragment.dart.jinja"))?;
     env.add_template("macros", include_str!("../templates/macros.dart.jinja"))?;
+    env.add_template(
+        "selection_macros",
+        include_str!("../templates/selection_macros.dart.jinja"),
+    )?;
 
     let ctx_clone = ctx.clone();
     env.add_function("type_name_for_selection", move |a: _| {
@@ -332,7 +352,6 @@ fn register_default_template_fns<'a>(
     );
 
     env.add_function("docstring", ext_jinja_fns::docstring);
-    env.add_function("value_or_last", ext_jinja_fns::value_or_last);
     let ctx_clone = ctx.clone();
     env.add_function(
         "is_type_implementing_interface",
@@ -346,14 +365,15 @@ fn register_default_template_fns<'a>(
         schema_ctx.is_type_implements_node(type_name)
     });
 
-    env.add_filter("if_not_last", ext_jinja_fns::if_not_last);
-    env.add_filter("insert_if", |condition: bool, val: &str| {
-        if condition {
-            Some(val.to_string())
-        } else {
-            None
-        }
-    });
+    let global_ctx = ctx.clone();
+    env.add_function(
+        "import_path_for_fragment_from_operation",
+        move |operation_file_path: String, frag_name: &str| -> Result<String, minijinja::Error> {
+            calculate_fragment_import_path(&global_ctx, &operation_file_path, frag_name).map_err(
+                |e| minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()),
+            )
+        },
+    );
 
     env.add_function(
         "get_field_name_with_args",
@@ -362,7 +382,36 @@ fn register_default_template_fns<'a>(
         },
     );
 
+    env.add_function(
+        "selection_uses_variables",
+        move |selection: ViaDeserialize<shalom_core::operation::types::Selection>| -> bool {
+            selection_uses_variables(&selection.0)
+        },
+    );
+
     Ok(())
+}
+
+fn selection_uses_variables(selection: &shalom_core::operation::types::Selection) -> bool {
+    use shalom_core::operation::types::{ArgumentValue, SelectionKind};
+
+    // Check if this selection has any arguments that use variables
+    for arg in &selection.arguments {
+        if matches!(arg.value, ArgumentValue::VariableUse(_)) {
+            return true;
+        }
+    }
+
+    // Recursively check nested selections if this is an object
+    if let SelectionKind::Object(obj) = &selection.kind {
+        for nested_selection in obj.selections.borrow().iter() {
+            if selection_uses_variables(nested_selection) {
+                return true;
+            }
+        }
+    }
+
+    false
 }
 
 fn get_field_name_with_args(
@@ -410,39 +459,79 @@ impl SchemaEnv<'_> {
     }
 }
 
-impl OperationEnv<'_> {
-    fn new(ctx: &SharedShalomGlobalContext, op_ctx: &OperationContext) -> anyhow::Result<Self> {
-        let mut env = Environment::new();
-        register_default_template_fns(&mut env, ctx)?;
-        let ctx_clone = ctx.clone();
-        let op_name = op_ctx.get_operation_name().to_string();
+fn register_executable_fns<'a, T>(
+    env: &mut Environment<'a>,
+    ctx: &SharedShalomGlobalContext,
+    executable_ctx: Arc<T>,
+) -> anyhow::Result<()>
+where
+    T: ExecutableContext + 'static,
+{
+    let ctx_clone1 = ctx.clone();
+    let executable_ctx_clone1 = executable_ctx.clone();
 
-        env.add_function("is_type_implements_node", move |full_name: &str| {
-            let op = ctx_clone.get_operation(&op_name).unwrap();
-            let selection = op
-                .get_selection(&full_name.to_string())
-                .ok_or(anyhow::anyhow!("Type {full_name} not found in {op_name}"))
-                .unwrap();
+    env.add_function("is_type_implements_node", move |full_name: &str| {
+        if let Some(selection) = executable_ctx_clone1.get_selection(full_name) {
             match selection.kind {
-                SelectionKind::Object(object_selection) => ctx_clone
+                SelectionKind::Object(object_selection) => ctx_clone1
                     .schema_ctx
                     .is_type_implements_node(&object_selection.concrete_typename),
                 _ => false,
             }
-        });
-        let op_name = op_ctx.get_operation_name().to_string();
+        } else {
+            false
+        }
+    });
+
+    let ctx_clone2 = ctx.clone();
+    let executable_ctx_clone2 = executable_ctx.clone();
+    env.add_function(
+        "get_id_selection",
+        move |full_name: &str| -> Option<minijinja::Value> {
+            let selection = executable_ctx_clone2.get_selection(full_name)?;
+            match selection.kind {
+                SelectionKind::Object(object_selection) => object_selection
+                    .get_id_selection_with_fragments(&ctx_clone2)
+                    .map(minijinja::Value::from_serialize),
+                _ => None,
+            }
+        },
+    );
+
+    let ctx_clone3 = ctx.clone();
+    let executable_ctx_clone3 = executable_ctx.clone();
+    env.add_function("get_all_selections_for_object", move |object_name: &str| {
+        let object_selection =
+            executable_ctx_clone3.get_selection_with_fragments(object_name, &ctx_clone3);
+        let selections = match object_selection.kind {
+            SelectionKind::Object(object_selection) => {
+                object_selection.get_all_selections(&ctx_clone3)
+            }
+            _ => panic!("Expected object selection"),
+        };
+        minijinja::Value::from_serialize(selections)
+    });
+
+    Ok(())
+}
+
+impl OperationEnv<'_> {
+    fn new(ctx: &SharedShalomGlobalContext, op_ctx: SharedOpCtx) -> anyhow::Result<Self> {
+        let mut env = Environment::new();
+        register_default_template_fns(&mut env, ctx)?;
+        register_executable_fns(&mut env, ctx, op_ctx.clone())?;
+
+        // Override get_id_selection for operations to also search in used fragments
         let ctx_clone = ctx.clone();
+        let op_ctx_clone = op_ctx.clone();
         env.add_function(
             "get_id_selection",
             move |full_name: &str| -> Option<minijinja::Value> {
-                let selection = ctx_clone
-                    .get_operation(&op_name)
-                    .unwrap()
-                    .get_selection(&full_name.to_string())
-                    .unwrap();
+                // First try to find in the operation context
+                let selection = op_ctx_clone.get_selection_with_fragments(full_name, &ctx_clone);
                 match selection.kind {
                     SelectionKind::Object(object_selection) => object_selection
-                        .get_id_selection()
+                        .get_id_selection_with_fragments(&ctx_clone)
                         .map(minijinja::Value::from_serialize),
                     _ => None,
                 }
@@ -457,12 +546,45 @@ impl OperationEnv<'_> {
         operations_ctx: S,
         schema_ctx: T,
         extra_imports: HashMap<String, String>,
+        schema_import_path: String,
     ) -> String {
         let template = self.env.get_template("operation").unwrap();
         let mut context = HashMap::new();
 
         context.insert("schema", context! { context => schema_ctx });
         context.insert("operation", context! { context => operations_ctx });
+        context.insert("extra_imports", minijinja::Value::from(extra_imports));
+        context.insert(
+            "schema_import_path",
+            minijinja::Value::from(schema_import_path),
+        );
+
+        template.render(&context).unwrap()
+    }
+}
+
+impl FragmentEnv<'_> {
+    fn new(
+        ctx: &SharedShalomGlobalContext,
+        fragment_ctx: SharedFragmentContext,
+    ) -> anyhow::Result<Self> {
+        let mut env = Environment::new();
+        register_default_template_fns(&mut env, ctx)?;
+        register_executable_fns(&mut env, ctx, fragment_ctx)?;
+        Ok(FragmentEnv { env })
+    }
+
+    fn render_fragment<S: Serialize, T: Serialize>(
+        &self,
+        fragment_ctx: S,
+        schema_ctx: T,
+        extra_imports: HashMap<String, String>,
+    ) -> String {
+        let template = self.env.get_template("fragment").unwrap();
+        let mut context = HashMap::new();
+
+        context.insert("schema", context! { context => schema_ctx });
+        context.insert("fragment", context! { context => fragment_ctx });
         context.insert("extra_imports", minijinja::Value::from(extra_imports));
 
         template.render(&context).unwrap()
@@ -484,47 +606,156 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
     p.join(format!("{}.{}", operation_name, END_OF_FILE))
 }
 
+/// Calculate the import path for a fragment from an operation file
+fn calculate_fragment_import_path(
+    global_ctx: &SharedShalomGlobalContext,
+    operation_file_path: &str,
+    frag_name: &str,
+) -> anyhow::Result<String> {
+    let op_path = PathBuf::from(operation_file_path);
+    let fragment = global_ctx
+        .get_fragment(frag_name)
+        .ok_or_else(|| anyhow::anyhow!("Fragment '{}' not found", frag_name))?;
+
+    // Find pubspec.yaml for both operation and fragment
+    let (op_pubspec, _op_package) =
+        find_pubspec_and_package_name(&op_path).map_err(|e| anyhow::anyhow!("{}", e))?;
+    let (frag_pubspec, frag_package) =
+        find_pubspec_and_package_name(&fragment.file_path).map_err(|e| anyhow::anyhow!("{}", e))?;
+
+    // Get the directory containing operation file
+    let op_dir = op_path
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("Invalid operation file path"))?;
+
+    // Calculate the __graphql__ directory for the operation
+    let op_graphql_dir = op_dir.join("__graphql__");
+
+    // Calculate where the fragment will be generated
+    let frag_parent_dir = fragment
+        .file_path
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("Invalid fragment file path"))?;
+    let frag_generated_path = frag_parent_dir
+        .join("__graphql__")
+        .join(format!("{}.shalom.dart", frag_name.to_lowercase()));
+
+    log::debug!(
+        "Fragment '{}': op_graphql_dir={:?}, frag_generated_path={:?}",
+        frag_name,
+        op_graphql_dir,
+        frag_generated_path
+    );
+
+    // If in the same __graphql__ directory, use relative import
+    if op_graphql_dir == frag_parent_dir.join("__graphql__") {
+        log::debug!("Same directory, using simple relative import");
+        return Ok(format!("{}.shalom.dart", frag_name.to_lowercase()));
+    }
+
+    // If in different packages, use package import
+    if op_pubspec != frag_pubspec {
+        let frag_package_root = frag_pubspec
+            .parent()
+            .ok_or_else(|| anyhow::anyhow!("Invalid pubspec.yaml path"))?;
+
+        let relative_path = frag_generated_path
+            .strip_prefix(frag_package_root)
+            .map_err(|e| anyhow::anyhow!("Fragment path is not within package root: {}", e))?;
+
+        return Ok(format!(
+            "package:{}/{}",
+            frag_package,
+            relative_path.to_string_lossy().replace('\\', "/")
+        ));
+    }
+
+    // Same package, different directories - use relative path from operation __graphql__ dir
+    let relative_from_op = pathdiff::diff_paths(&frag_generated_path, &op_graphql_dir)
+        .ok_or_else(|| anyhow::anyhow!("Could not calculate relative path"))?;
+
+    let import_path = relative_from_op.to_string_lossy().replace('\\', "/");
+    log::debug!(
+        "Different directories in same package, using relative import: {}",
+        import_path
+    );
+    Ok(import_path)
+}
+
 fn generate_operations_file(
     ctx: &SharedShalomGlobalContext,
     name: &str,
-    operation: &OperationContext,
+    operation: SharedOpCtx,
     additional_imports: HashMap<String, String>,
+    project_root: &Path,
 ) -> anyhow::Result<()> {
-    let op_env = OperationEnv::new(ctx, operation)?;
+    let op_env = OperationEnv::new(ctx, operation.clone())?;
 
     info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();
-
-    let rendered_content =
-        op_env.render_operation(operation, ctx.schema_ctx.clone(), additional_imports);
     let generation_target = get_generation_path_for_operation(&operation_file_path, name);
+
+    // Calculate relative path from operation __graphql__ dir to schema file
+    let op_dir = operation_file_path.parent().unwrap();
+    let op_graphql_dir = op_dir.join("__graphql__");
+    let schema_path = project_root.join("__graphql__").join("schema.shalom.dart");
+    let schema_import_path = pathdiff::diff_paths(&schema_path, &op_graphql_dir)
+        .map(|p| p.to_string_lossy().replace('\\', "/"))
+        .unwrap_or_else(|| "schema.shalom.dart".to_string());
+
+    let rendered_content = op_env.render_operation(
+        operation,
+        ctx.schema_ctx.clone(),
+        additional_imports,
+        schema_import_path,
+    );
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
     Ok(())
 }
 
-fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContext, path: &Path) {
-    info!("rendering schema file");
+fn generate_fragment_file(
+    ctx: &SharedShalomGlobalContext,
+    _pwd: &Path,
+    fragment_name: &str,
+    fragment_ctx: SharedFragmentContext,
+    additional_imports: HashMap<String, String>,
+) -> anyhow::Result<()> {
+    let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone())?;
+    let generated_content = fragment_env.render_fragment(
+        context! { context => fragment_ctx },
+        context! { context => &ctx.schema_ctx },
+        additional_imports,
+    );
 
-    let rendered_content = template_env.render_schema(ctx);
-    let output_dir = path.join(GRAPHQL_DIRECTORY);
-    create_dir_if_not_exists(&output_dir);
-    let generation_target = output_dir.join(format!("schema.{}", END_OF_FILE));
-    fs::write(&generation_target, rendered_content).unwrap();
-    info!("Generated {}", generation_target.display());
+    // Generate fragment in __graphql__ subdirectory relative to where it's defined
+    let fragment_source_dir = fragment_ctx.file_path.parent().ok_or_else(|| {
+        anyhow::anyhow!("Invalid fragment file path: {:?}", fragment_ctx.file_path)
+    })?;
+    let generation_dir = fragment_source_dir.join(GRAPHQL_DIRECTORY);
+    create_dir_if_not_exists(&generation_dir);
+    let generation_path =
+        generation_dir.join(format!("{}.{}", fragment_name.to_lowercase(), END_OF_FILE));
+
+    fs::write(&generation_path, generated_content)?;
+    info!("Generated fragment file: {}", generation_path.display());
+    Ok(())
 }
 
-pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
-    info!("codegen started in working directory {}", pwd.display());
+pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
     let ctx = shalom_core::entrypoint::parse_directory(pwd, strict)?;
+    let pwd = &ctx.config.project_root;
+    info!("codegen started in working directory {}", pwd.display());
+
     let template_env = SchemaEnv::new(&ctx)?;
 
+    // Clean up unused operation files
     let existing_op_names =
         glob::glob(pwd.join(format!("**/*.{}", END_OF_FILE)).to_str().unwrap())?;
     for entry in existing_op_names {
         let entry = entry?;
         if entry.is_file() {
-            let resolved_op_name = entry
+            let resolved_name = entry
                 .file_name()
                 .unwrap()
                 .to_str()
@@ -532,8 +763,9 @@ pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
                 .split(format!(".{}", END_OF_FILE).as_str())
                 .next()
                 .unwrap();
-            if !ctx.operation_exists(resolved_op_name) {
-                info!("deleting unused operation {}", resolved_op_name);
+            // Check if it's neither an operation nor a fragment
+            if !ctx.operation_exists(resolved_name) && !ctx.fragment_exists(resolved_name) {
+                info!("deleting unused file {}", resolved_name);
                 fs::remove_file(entry)?;
             }
         }
@@ -558,8 +790,30 @@ pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
         .into_iter()
         .map(|(k, v)| (k.to_string_lossy().to_string(), v))
         .collect();
+
+    // Generate fragment files first (operations might depend on them)
+    for (fragment_name, fragment_ctx) in ctx.fragments() {
+        let res = generate_fragment_file(
+            &ctx,
+            pwd,
+            &fragment_name,
+            fragment_ctx,
+            additional_imports.clone(),
+        );
+        if let Err(err) = res {
+            if strict {
+                return Err(err);
+            }
+            error!(
+                "Failed to generate fragment '{}' due to: {}",
+                fragment_name, err
+            );
+        }
+    }
+
+    // Generate operation files
     for (name, operation) in ctx.operations() {
-        let res = generate_operations_file(&ctx, &name, &operation, additional_imports.clone());
+        let res = generate_operations_file(&ctx, &name, operation, additional_imports.clone(), pwd);
         if let Err(err) = res {
             if strict {
                 return Err(err);
@@ -569,4 +823,15 @@ pub fn codegen_entry_point(pwd: &Path, strict: bool) -> Result<()> {
     }
 
     Ok(())
+}
+
+fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContext, path: &Path) {
+    info!("rendering schema file");
+
+    let rendered_content = template_env.render_schema(ctx);
+    let output_dir = path.join(GRAPHQL_DIRECTORY);
+    create_dir_if_not_exists(&output_dir);
+    let generation_target = output_dir.join(format!("schema.{}", END_OF_FILE));
+    fs::write(&generation_target, rendered_content).unwrap();
+    info!("Generated {}", generation_target.display());
 }

@@ -1,10 +1,10 @@
-mutation OrderRequest($order: Order!) {
+mutation CreateOrderRequest($order: Order!) {
    orderRequest(order: $order) {
       quantity,
       name,
       price
    }
-} 
+}
 
 mutation OrderOptRequest($order: OrderOpt!) {
   orderOptRequest(order: $order) {
@@ -45,6 +45,3 @@ query GetOrder($id: ID!, $order: Order) {
     price
   }
 }
-
-
-

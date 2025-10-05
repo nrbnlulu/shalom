@@ -1,0 +1,59 @@
+fragment UserInfoFrag on User {
+    id
+    name
+    email
+}
+
+fragment PostDetailsFrag on Post {
+    id
+    title
+    published
+}
+
+fragment PostMetaFrag on Post {
+    title
+    published
+    content
+}
+
+fragment AuthorInfoFrag on User {
+    age
+}
+
+query GetUser($userId: ID!) {
+    user(id: $userId) {
+        ...UserInfoFrag
+        age
+    }
+}
+
+query GetPost($postId: ID!) {
+    post(id: $postId) {
+        ...PostDetailsFrag
+        content
+    }
+}
+
+query GetPostWithMeta($postId: ID!) {
+    post(id: $postId) {
+        id
+        ...PostMetaFrag
+    }
+}
+
+query GetUserWithAuthor($userId: ID!) {
+    user(id: $userId) {
+        ...UserInfoFrag
+        ...AuthorInfoFrag
+    }
+}
+
+query GetPostWithAuthor($postId: ID!) {
+    post(id: $postId) {
+        ...PostDetailsFrag
+        author {
+            ...UserInfoFrag
+        }
+    }
+}
+

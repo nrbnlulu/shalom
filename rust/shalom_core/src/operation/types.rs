@@ -4,6 +4,7 @@ use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    context::ShalomGlobalContext,
     operation::context::OperationVariable,
     schema::types::{EnumType, ScalarType},
 };
@@ -24,6 +25,7 @@ pub struct SelectionCommon {
     pub name: String,
     pub description: Option<String>,
 }
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum ArgumentValue {
@@ -65,6 +67,7 @@ impl Selection {
         &self.selection_common.name
     }
 }
+
 pub type SharedSelection = Rc<Selection>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -105,6 +108,7 @@ impl ScalarSelection {
         })
     }
 }
+type FragName = String;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ObjectSelection {
@@ -112,6 +116,7 @@ pub struct ObjectSelection {
     pub concrete_typename: String,
     pub is_optional: bool,
     pub selections: RefCell<Vec<Selection>>,
+    pub used_fragments: RefCell<Vec<FragName>>,
 }
 
 pub type SharedObjectSelection = Rc<ObjectSelection>;
@@ -127,17 +132,67 @@ impl ObjectSelection {
             concrete_typename,
             is_optional,
             selections: RefCell::new(Vec::new()),
+            used_fragments: RefCell::new(Vec::new()),
         };
 
         Rc::new(ret)
     }
     pub fn add_selection(&self, selection: Selection) {
+        let selection_name = selection.self_selection_name();
+
+        // Check if a selection with this name already exists (for deduplication)
+        let already_exists = self
+            .selections
+            .borrow()
+            .iter()
+            .any(|s| s.self_selection_name() == selection_name);
+
+        if already_exists {
+            // Skip duplicate selections to avoid field conflicts from fragment expansion
+            return;
+        }
         self.selections.borrow_mut().push(selection);
+    }
+
+    pub fn add_used_fragment(&self, name: FragName) {
+        self.used_fragments.borrow_mut().push(name);
+    }
+    pub fn get_used_fragments(&self) -> Vec<FragName> {
+        self.used_fragments.borrow().clone()
+    }
+
+    /// return all selections for an object including the fragment selections
+    /// for the current selection object
+    pub fn get_all_selections(&self, ctx: &ShalomGlobalContext) -> Vec<Selection> {
+        let mut selections = self.selections.borrow().clone();
+        let mut fragments = self.used_fragments.borrow().clone();
+
+        while !fragments.is_empty() {
+            let fragment = ctx.get_fragment_strict(&fragments.pop().unwrap());
+            let fragment_selections = fragment.get_flat_selections(ctx);
+            selections.extend(fragment_selections);
+        }
+        selections
     }
 
     pub fn get_id_selection(&self) -> Option<Selection> {
         self.selections
             .borrow()
+            .iter()
+            .find(|s| s.self_selection_name().contains("id"))
+            .cloned()
+    }
+
+    /// Get the id selection, including those from used fragments
+    pub fn get_id_selection_with_fragments(&self, ctx: &ShalomGlobalContext) -> Option<Selection> {
+        // First check in direct selections
+        if let Some(id_sel) = self.get_id_selection() {
+            return Some(id_sel);
+        }
+
+        // If not found, check in fragment selections
+        let all_selections = self.get_all_selections(ctx);
+        all_selections
             .iter()
             .find(|s| s.self_selection_name().contains("id"))
             .cloned()

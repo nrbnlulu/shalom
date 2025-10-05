@@ -10,7 +10,7 @@
 - [x] object selection
 - [x] nested objects
 - [ ] unions
-- [ ] fragments
+- [x] fragments
 - [ ] list of
     - [x] scalars
     - [ ] custom scalars
@@ -19,7 +19,7 @@
     - [ ] unions
     - [ ] fragments
     - [ ] nested list
-- [ ] Node interface real time updates.
+- [x] Node interface real time updates.
 - [ ] defer / stream
 - [ ] input
     - [x] scalar

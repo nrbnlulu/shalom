@@ -1,3 +1,5 @@
+
+
 {# Helper macro for serializing a field value recursively #}
 {% macro _serialize_field_value_macro(value_symbol, field_type, is_optional=false) %}
     {% if field_type.kind == "Scalar" and is_custom_scalar(field_type.name) %}
