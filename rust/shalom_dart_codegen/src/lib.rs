@@ -391,15 +391,8 @@ fn register_default_template_fns<'a>(
 
     env.add_function(
         "selection_uses_variables",
-        |selection: ViaDeserialize<shalom_core::operation::types::Selection>| {
+        move |selection: ViaDeserialize<shalom_core::operation::types::Selection>| -> bool {
             selection_uses_variables(&selection.0)
-        },
-    );
-
-    env.add_function(
-        "object_selection_uses_variables",
-        |obj_selection: ViaDeserialize<shalom_core::operation::types::ObjectSelection>| {
-            object_selection_uses_variables(&obj_selection.0)
         },
     );
 

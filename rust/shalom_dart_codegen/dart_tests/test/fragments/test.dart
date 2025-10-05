@@ -1,16 +1,15 @@
-import 'dart:async';
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 import '__graphql__/userinfofrag.shalom.dart';
-import '__graphql__/postdetailsfrag.shalom.dart';
-import '__graphql__/postmetafrag.shalom.dart';
-import '__graphql__/authorinfofrag.shalom.dart';
 import '__graphql__/GetUser.shalom.dart';
 import '__graphql__/GetPost.shalom.dart';
 import '__graphql__/GetPostWithMeta.shalom.dart';
 import '__graphql__/GetUserWithAuthor.shalom.dart';
 import '__graphql__/GetPostWithAuthor.shalom.dart';
+<<<<<<< HEAD
 import '__graphql__/schema.shalom.dart';
+=======
+>>>>>>> main
 
 void main() {
   group('Fragment Basic Functionality', () {
@@ -259,8 +258,7 @@ void main() {
         },
       };
 
-      final result2 = GetUserResponse.fromResponse(updatedData,
-          ctx: ctx, variables: variables);
+      GetUserResponse.fromResponse(updatedData, ctx: ctx, variables: variables);
 
       // Should get updated data from cache
       final fromCache = GetUserResponse.fromCache(ctx, variables);
@@ -298,8 +296,7 @@ void main() {
         },
       };
 
-      final result2 = GetPostResponse.fromResponse(updatedData,
-          ctx: ctx, variables: variables);
+      GetPostResponse.fromResponse(updatedData, ctx: ctx, variables: variables);
 
       // Verify cache update
       final fromCache = GetPostResponse.fromCache(ctx, variables);
@@ -345,7 +342,7 @@ void main() {
         },
       };
 
-      final result2 = GetPostWithAuthorResponse.fromResponse(updatedData,
+      GetPostWithAuthorResponse.fromResponse(updatedData,
           ctx: ctx, variables: variables);
 
       // Both the post and author should be normalized
@@ -384,7 +381,7 @@ void main() {
         },
       };
 
-      final result2 = GetPostWithMetaResponse.fromResponse(postData2,
+      GetPostWithMetaResponse.fromResponse(postData2,
           ctx: ctx, variables: variables);
 
       // Even without ID in the fragment, it should still be cached correctly
@@ -475,7 +472,7 @@ void main() {
         },
       };
 
-      final result1Updated = GetPostResponse.fromResponse(postData1Updated,
+      GetPostResponse.fromResponse(postData1Updated,
           ctx: ctx, variables: variables1);
 
       // Verify the update
@@ -494,8 +491,7 @@ void main() {
       };
 
       final variables2 = GetPostVariables(postId: "post2");
-      final result2 = GetPostResponse.fromResponse(postData2,
-          ctx: ctx, variables: variables2);
+      GetPostResponse.fromResponse(postData2, ctx: ctx, variables: variables2);
 
       // Both should be cached independently
       final fromCache2 = GetPostResponse.fromCache(ctx, variables2);
