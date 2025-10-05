@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, collections::HashMap, rc::Rc};
 
 use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     context::ShalomGlobalContext,
     operation::context::OperationVariable,
-    schema::types::{EnumType, ScalarType},
+    schema::types::{EnumType, ScalarType, UnionType},
 };
 
 /// the name of i.e object in a graphql query based on the parent fields.
@@ -77,6 +77,7 @@ pub enum SelectionKind {
     Object(Rc<ObjectSelection>),
     Enum(Rc<EnumSelection>),
     List(Rc<ListSelection>),
+    Union(Rc<UnionSelection>),
 }
 impl SelectionKind {
     pub fn new_list(is_optional: bool, of_kind: SelectionKind) -> Self {
@@ -223,6 +224,76 @@ pub struct ListSelection {
 }
 
 pub type SharedListSelection = Rc<ListSelection>;
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UnionSelection {
+    pub full_name: String,
+    pub union_type: Node<UnionType>,
+    pub is_optional: bool,
+    /// Selections that apply to all union members (e.g., __typename)
+    pub shared_selections: RefCell<Vec<Selection>>,
+    /// Inline fragment selections grouped by type condition
+    pub inline_fragments: RefCell<HashMap<String, SharedObjectSelection>>,
+}
+
+pub type SharedUnionSelection = Rc<UnionSelection>;
+
+impl UnionSelection {
+    pub fn new(
+        full_name: String,
+        union_type: Node<UnionType>,
+        is_optional: bool,
+    ) -> SharedUnionSelection {
+        Rc::new(UnionSelection {
+            full_name,
+            union_type,
+            is_optional,
+            shared_selections: RefCell::new(Vec::new()),
+            inline_fragments: RefCell::new(HashMap::new()),
+        })
+    }
+
+    pub fn add_shared_selection(&self, selection: Selection) {
+        self.shared_selections.borrow_mut().push(selection);
+    }
+
+    pub fn add_inline_fragment(
+        &self,
+        type_condition: String,
+        object_selection: SharedObjectSelection,
+    ) {
+        self.inline_fragments
+            .borrow_mut()
+            .insert(type_condition, object_selection);
+    }
+
+    /// Check if __typename is selected either at the top level or in all inline fragments
+    pub fn has_typename_selection(&self) -> bool {
+        // Check shared selections for __typename
+        let has_shared_typename = self
+            .shared_selections
+            .borrow()
+            .iter()
+            .any(|s| s.self_selection_name() == "__typename");
+
+        if has_shared_typename {
+            return true;
+        }
+
+        // Check if all inline fragments have __typename
+        let fragments = self.inline_fragments.borrow();
+        if fragments.is_empty() {
+            return false;
+        }
+
+        fragments.values().all(|obj| {
+            obj.selections
+                .borrow()
+                .iter()
+                .any(|s| s.self_selection_name() == "__typename")
+        })
+    }
+}
 
 pub fn dart_type_for_scalar(scalar_name: &str) -> String {
     match scalar_name {

@@ -44,6 +44,14 @@ import 'package:collection/collection.dart';
 
 // ------------ END OBJECT DEFINITIONS -------------
 
+// ------------ UNION DEFINITIONS -------------
+
+{% for full_name, selection in operation.context.type_defs | items if selection.kind == "Union" %}
+    {{ selection_union_definition(full_name, selection) }}
+{% endfor %}
+
+// ------------ END UNION DEFINITIONS -------------
+
 class Request{{ operation_name }} extends Requestable {
     {% if op_variables_exist %}
     final {{ operation_name }}Variables variables;

@@ -97,6 +97,13 @@ mod ext_jinja_fns {
                     enum_.concrete_type.name.clone()
                 }
             }
+            SelectionKind::Union(union) => {
+                if union.is_optional {
+                    format!("{}?", union.full_name)
+                } else {
+                    union.full_name.clone()
+                }
+            }
         }
     }
 
@@ -384,8 +391,15 @@ fn register_default_template_fns<'a>(
 
     env.add_function(
         "selection_uses_variables",
-        move |selection: ViaDeserialize<shalom_core::operation::types::Selection>| -> bool {
+        |selection: ViaDeserialize<shalom_core::operation::types::Selection>| {
             selection_uses_variables(&selection.0)
+        },
+    );
+
+    env.add_function(
+        "object_selection_uses_variables",
+        |obj_selection: ViaDeserialize<shalom_core::operation::types::ObjectSelection>| {
+            object_selection_uses_variables(&obj_selection.0)
         },
     );
 
@@ -408,6 +422,28 @@ fn selection_uses_variables(selection: &shalom_core::operation::types::Selection
             if selection_uses_variables(nested_selection) {
                 return true;
             }
+        }
+    }
+
+    false
+}
+
+fn object_selection_uses_variables(
+    obj_selection: &shalom_core::operation::types::ObjectSelection,
+) -> bool {
+    use shalom_core::operation::types::ArgumentValue;
+
+    for nested_selection in obj_selection.selections.borrow().iter() {
+        // Check if this selection has any arguments that use variables
+        for arg in &nested_selection.arguments {
+            if matches!(arg.value, ArgumentValue::VariableUse(_)) {
+                return true;
+            }
+        }
+
+        // Recursively check nested selections
+        if selection_uses_variables(nested_selection) {
+            return true;
         }
     }
 
