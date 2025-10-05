@@ -9,6 +9,7 @@ serde_json = {workspace = true}
 minijinja = {workspace = true}
 apollo-compiler = {workspace = true}
 glob = {workspace = true}
+pathdiff = "0.2"
 anyhow = {workspace = true}
 log = {workspace = true}
 simple_logger = {workspace = true}

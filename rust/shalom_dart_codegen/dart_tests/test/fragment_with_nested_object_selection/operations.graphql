@@ -1,0 +1,33 @@
+fragment PostDetailsFrag on Post {
+    id
+    title
+    content
+    author {
+        id
+        name
+        email
+        bio
+    }
+}
+
+fragment UserProfileFrag on User {
+    id
+    username
+    profile {
+        id
+        displayName
+        avatar
+    }
+}
+
+query GetPostWithDetails($postId: ID!) {
+    post(id: $postId) {
+        ...PostDetailsFrag
+    }
+}
+
+query GetUserWithProfile($userId: ID!) {
+    user(id: $userId) {
+        ...UserProfileFrag
+    }
+}

@@ -1,0 +1,45 @@
+{% include "macros" %}
+
+{% set fragment_name = fragment.context.context.name %}
+{% set fragment_selections = fragment.context.context.type_defs %}
+{% set root_type = fragment.context.context.root_type %}
+{% set op_variables = None %}
+{% set op_variables_exist = false %}
+
+{% include "selection_macros" %}
+
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// Fragment: {{fragment_name}}
+
+import 'package:shalom_core/shalom_core.dart';
+{% for import_alias, import_path in extra_imports | items -%}
+import '{{import_path}}' as {{import_alias}};
+{% endfor -%}
+
+{% if fragment.context.context.used_fragments | length > 0 -%}
+    // Fragment imports
+    {% for used_fragment in fragment.context.context.used_fragments -%}
+    import '{{used_fragment.name | lower}}.shalom.dart';
+    {% endfor %}
+{% endif %}
+
+// Generate abstract fragment class
+abstract class {{ fragment_name }} {
+    {% for field in root_type.selections -%}
+    {{ type_name_for_selection(field) }} get {{ field.name }};
+    {% endfor %}
+
+  Map<String, dynamic> toJson();
+
+}
+
+// Generate data classes for nested object selections
+{% for selection_name, selection in fragment_selections | items %}
+    {% if selection.kind == "Object" and selection_name != fragment_name %}
+        {{ selection_object_definition(selection_name, selection) }}
+    {% elif selection.kind == "List" and selection.of_kind.kind == "Object" %}
+        {# List of objects - generate the object class for list items #}
+        {{ selection_object_definition(selection_name, selection.of_kind) }}
+    {% endif %}
+{% endfor %}

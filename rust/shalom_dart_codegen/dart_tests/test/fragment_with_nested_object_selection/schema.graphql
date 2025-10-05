@@ -1,0 +1,30 @@
+type Query {
+  post(id: ID!): Post
+  user(id: ID!): User
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  author: Author!
+}
+
+type Author {
+  id: ID!
+  name: String!
+  email: String!
+  bio: String
+}
+
+type User {
+  id: ID!
+  username: String!
+  profile: Profile!
+}
+
+type Profile {
+  id: ID!
+  displayName: String!
+  avatar: String
+}
