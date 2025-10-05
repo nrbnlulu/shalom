@@ -46,7 +46,7 @@ void main() {
       expect(user.id, "user1");
       expect(user.name, "John Doe");
       expect(user.email, "john@example.com");
-      expect(user.__typename, "User");
+      expect(user.typename, "User");
     });
 
     test('deserialize Post', () {
@@ -60,7 +60,7 @@ void main() {
       expect(post.title, "Hello World");
       expect(post.content, "This is a test post");
       expect(post.author, "Jane Doe");
-      expect(post.__typename, "Post");
+      expect(post.typename, "Post");
     });
 
     test('deserialize Comment', () {
@@ -73,7 +73,7 @@ void main() {
       expect(comment.id, "comment1");
       expect(comment.text, "Great post!");
       expect(comment.author, "Bob Smith");
-      expect(comment.__typename, "Comment");
+      expect(comment.typename, "Comment");
     });
 
     test('serialize User', () {
@@ -181,7 +181,7 @@ void main() {
           result.search, isA<GetSearchResultWithoutTopTypename_search_User>());
       final user =
           result.search as GetSearchResultWithoutTopTypename_search_User;
-      expect(user.__typename, "User");
+      expect(user.typename, "User");
       expect(user.id, "user1");
     });
   });

@@ -599,8 +599,17 @@
 
         // Fields
         {% for member_selection in member_selections -%}
+            {% if member_selection.name == "__typename" %}
+            final {{ type_name_for_selection(member_selection) }} typename_;
+            {% else %}
             final {{ type_name_for_selection(member_selection) }} {{ member_selection.name }};
+            {% endif %}
         {% endfor %}
+
+        // Getter for typename (public accessor for __typename field)
+        {% if member_selections | selectattr("name", "equalto", "__typename") | list | length > 0 %}
+        String get typename => typename_;
+        {% endif %}
 
         const {{ full_name }}_{{ type_condition }}({
             {% for member_selection in member_selections -%}
@@ -610,7 +619,7 @@
                     {% if not member_selection.is_optional %}required{% endif %} this.{{ member_selection.name }},
                 {% endif %}
             {% endfor %}
-        }) {% if member_selections | selectattr("name", "equalto", "__typename") | list | length > 0 %}: __typename = $typename{% endif %};
+        }) {% if member_selections | selectattr("name", "equalto", "__typename") | list | length > 0 %}: typename_ = $typename{% endif %};
 
         static void normalize$inCache(
             JsonObject data,
@@ -624,7 +633,11 @@
         ) {
             String this$normalizedID;
             JsonObject this$NormalizedRecord;
-            this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+            // Ensure parent record has an object for this field (handle null case)
+            if (parent$record[this$fieldName] == null) {
+                parent$record[this$fieldName] = <String, dynamic>{};
+            }
+            this$NormalizedRecord = parent$record[this$fieldName] as JsonObject;
             this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
 
             {% for member_selection in member_selections -%}
@@ -712,7 +725,11 @@
         JsonObject toJson() {
             return {
                 {% for member_selection in member_selections %}
+                    {% if member_selection.name == "__typename" %}
+                    '{{ member_selection.name }}': {% if member_selection.is_optional %}{{ _serialize_selection_value_macro("typename_", member_selection, true) }}{% else %}{{ _serialize_selection_value_macro("typename_", member_selection, false) }}{% endif %},
+                    {% else %}
                     '{{ member_selection.name }}': {% if member_selection.is_optional %}{{ _serialize_selection_value_macro("this." + member_selection.name, member_selection, true) }}{% else %}{{ _serialize_selection_value_macro("this." + member_selection.name, member_selection, false) }}{% endif %},
+                    {% endif %}
                 {% endfor %}
             };
         }
@@ -722,7 +739,11 @@
             return identical(this, other) ||
                 (other is {{ full_name }}_{{ type_condition }} &&
                 {% for member_selection in member_selections -%}
+                    {% if member_selection.name == "__typename" %}
+                    {{ selection_equality_comparison_macro(member_selection, "typename_", "other.typename_") }} {{ "&&" if not loop.last }}
+                    {% else %}
                     {{ selection_equality_comparison_macro(member_selection, member_selection.name, "other." + member_selection.name) }} {{ "&&" if not loop.last }}
+                    {% endif %}
                 {% endfor -%}
                 );
         }
@@ -732,11 +753,19 @@
             {% if member_selections | length > 1 -%}
                 Object.hashAll([
                 {% for member_selection in member_selections %}
+                    {% if member_selection.name == "__typename" %}
+                    typename_,
+                    {% else %}
                     {{ member_selection.name }},
+                    {% endif %}
                 {% endfor %}
                 ]);
             {% else %}
+                {% if (member_selections | first).name == "__typename" %}
+                typename_.hashCode;
+                {% else %}
                 {{ (member_selections | first).name }}.hashCode;
+                {% endif %}
             {% endif %}
     }
     {% endfor %}
