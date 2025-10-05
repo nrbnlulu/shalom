@@ -1,11 +1,8 @@
 import 'dart:async';
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
-import '__graphql__/postdetailsfrag.shalom.dart';
-import '__graphql__/userprofilefrag.shalom.dart';
 import '__graphql__/GetPostWithDetails.shalom.dart';
 import '__graphql__/GetUserWithProfile.shalom.dart';
-import '__graphql__/schema.shalom.dart';
 
 void main() {
   group('Fragment With Nested Object Selection - PostDetailsFrag', () {

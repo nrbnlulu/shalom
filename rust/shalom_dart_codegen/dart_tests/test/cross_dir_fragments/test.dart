@@ -1,9 +1,7 @@
 import 'dart:io';
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
 import 'queries/__graphql__/GetUser.shalom.dart';
 import 'queries/__graphql__/GetPost.shalom.dart';
-import '__graphql__/schema.shalom.dart';
 
 void main() {
   group('Cross-Directory Fragment Tests', () {
