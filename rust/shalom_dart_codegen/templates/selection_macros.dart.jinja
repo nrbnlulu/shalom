@@ -58,19 +58,19 @@
             {{value_symbol}} == null ? null :
             {% if id_field is not none -%}
                 {{selection.full_name}}.fromCached(
-                    ctx.getCachedRecord({{value_symbol}} as String),
+                    ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
                     ctx{% if selection_uses_variables(selection) %}, variables{% endif %}
                 )
             {% else %}
             {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
             {% endif -%}
-    {% else %}
-        {% if  id_field is not none -%}
-            {{selection.full_name}}.fromCached(ctx.getCachedRecord({{value_symbol}} as String), ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
         {% else %}
-            {{ selection.full_name }}.fromCached({{value_symbol}}, ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
-        {% endif -%}
-    {% endif %}
+            {% if  id_field is not none -%}
+                {{selection.full_name}}.fromCached(ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()), ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
+            {% else %}
+                {{ selection.full_name }}.fromCached({{value_symbol}}, ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
+            {% endif -%}
+        {% endif %}
     {% elif selection.kind == "Union" %}
         {# Check if any union member has an ID (is normalized) by checking the first one #}
         {% set first_member = selection.inline_fragments | items | first %}
@@ -82,13 +82,13 @@
         {% if is_optional %}
             {{ value_symbol }} == null ? null :
             {% if first_member_has_id -%}
-                {{ selection.full_name }}.fromCached({{ value_symbol }} as NormalizedRecordObject, ctx)
+                {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx)
             {%- else -%}
                 {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
             {%- endif %}
         {% else %}
             {% if first_member_has_id -%}
-                {{ selection.full_name }}.fromCached({{ value_symbol }} as NormalizedRecordObject, ctx)
+                {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx)
             {%- else -%}
                 {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
             {%- endif %}
@@ -243,9 +243,15 @@
                             throw UnimplementedError("Required ID cannot be null");
                         {% endif %}
                     } else {
-                        this$normalizedID = this$normalizedID_temp!;
-                        final typename = data["__typename"] as String;
-                        parent$record[this$fieldName] = NormalizedRecordObject(typename: typename, id: this$normalizedID);
+                        {% if is_union_member -%}
+                            final normalized$objRecrord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
+                            parent$record[this$fieldName] = normalized$objRecrord;
+                            this$normalizedID = normalized$objRecrord.normalizedID();
+                        {% else %}
+                            final normalized$objRecrord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
+                            parent$record[this$fieldName] = normalized$objRecrord;
+                            this$normalizedID = normalized$objRecrord.normalizedID();
+                        {% endif -%}
                         this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                         ctx.addDependantRecord(this$normalizedID);
                         {% set is_normalized = true -%}
@@ -473,8 +479,8 @@
         }
 
         static {{ full_name }} fromCached(NormalizedRecordData data, ShalomCtx ctx) {
-            // Handle normalized objects (stored as NormalizedRecordObject)
-            if (data is NormalizedRecordObject) {
+            // Handle normalized objects (stored as NormalizedObjectRecord)
+            if (data is NormalizedObjectRecord) {
                 final typename = data.typename;
                 final actualData = ctx.getCachedRecord(data.id);
                 switch (typename) {

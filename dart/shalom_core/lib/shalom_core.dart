@@ -8,7 +8,7 @@ export 'src/normelized_cache.dart'
     show
         NormelizedCache,
         NormalizedRecordData,
-        NormalizedRecordObject,
+        NormalizedObjectRecord,
         ListOfRefRecord,
         RecordID;
 
