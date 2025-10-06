@@ -230,7 +230,6 @@
                 final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");
             {% else %}
                 {% set id_field = get_id_selection(lookup_name) -%}
-                {% set is_normalized = false -%}
                 String this$normalizedID;
                 JsonObject this$NormalizedRecord;
                 {% if id_field is not none -%}
@@ -244,17 +243,37 @@
                         {% endif %}
                     } else {
                         {% if is_union_member -%}
+                            {#
+                            improve how we deduce changes in normalized objects when the whole id has changed. 
+                            since the object is normalized like so 
+                            ```json
+                            "ROOT_QUERY.some_field": "{<id>, <typename>}"
+                            ```
+                            since up until now we only pushed updates for null->some changes on objects and sub object fields.
+                            even if the inner object fields have changed. since it is normalized
+                            previouse subscribers would listen to 
+                            `<sometype>:<id>` key. and they won't get updated.
+                            now, since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changess on that path if an id or typename has changed.
+                            #}
                             final normalized$objRecrord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
+                            final this$cached = parent$record[this$fieldName];
+                            // if id or typename changed we mark the whole selection as changed.
+                            if (this$cached != null && this$cached as NormalizedObjectRecord != normalized$objRecrord){
+                                ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
+                            }
                             parent$record[this$fieldName] = normalized$objRecrord;
                             this$normalizedID = normalized$objRecrord.normalizedID();
                         {% else %}
                             final normalized$objRecrord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
+                            final this$cached = parent$record[this$fieldName];
+                            if (this$cached != null && this$cached as NormalizedObjectRecord != normalized$objRecrord){
+                                ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
+                            }
                             parent$record[this$fieldName] = normalized$objRecrord;
                             this$normalizedID = normalized$objRecrord.normalizedID();
                         {% endif -%}
                         this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                         ctx.addDependantRecord(this$normalizedID);
-                        {% set is_normalized = true -%}
                     }
                 {% else %}
                     this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
@@ -280,6 +299,15 @@
                 final {{selection.name}}$raw = data["{{selection.name}}"];
                 if ({{selection.name}}$raw != null){
                     {% if selection.kind == "Object" %}
+                        {# object selections can be subscribed to,
+                            but will only get updates for null<->some changes. sub fields should be subscribed by themself
+                           if this object is normalized and the id has changed we should also notify for change
+                           in the normalize$inCache function
+                        #}
+                        if ({{selection.name}}$cached == null){
+                            ctx.addChangedRecord({{selection.name}}$normalizedID);
+                        } 
+                        
                         {{selection.full_name}}.normalize$inCache(
                             {{selection.name}}$raw as JsonObject,
                             ctx,
@@ -288,11 +316,10 @@
                             parent$record: this$NormalizedRecord,
                             parent$normalizedID: this$normalizedID
                         );
-                        final {{selection.name}}$new = this$NormalizedRecord[{{selection.name}}Normalized$Key];
-                        if ({{selection.name}}$cached != {{selection.name}}$new){
-                            ctx.addChangedRecord({{selection.name}}$normalizedID);
-                        }
                     {% elif selection.kind == "Union" %}
+                        if ({{selection.name}}$cached == null){
+                            ctx.addChangedRecord({{selection.name}}$normalizedID);
+                        }
                         {{selection.full_name}}.normalize$inCache(
                             {{selection.name}}$raw as JsonObject,
                             ctx,
@@ -301,10 +328,6 @@
                             parent$record: this$NormalizedRecord,
                             parent$normalizedID: this$normalizedID
                         );
-                        final {{selection.name}}$new = this$NormalizedRecord[{{selection.name}}Normalized$Key];
-                        if ({{selection.name}}$cached != {{selection.name}}$new){
-                            ctx.addChangedRecord({{selection.name}}$normalizedID);
-                        }
                     {% else %}
                         {% set cached_sym %} {{selection.name}}$cached {% endset %}
                         {% set raw_sym %} {{selection.name}}$raw {% endset %}
