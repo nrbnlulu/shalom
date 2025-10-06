@@ -23,9 +23,9 @@ class NormalizedObjectRecord {
           runtimeType == other.runtimeType &&
           typename == other.typename &&
           id == other.id;
-          
-String normalizedID() => '$typename:$id';
-          
+
+  String normalizedID() => '$typename:$id';
+
   @override
   String toString() => '$typename:$id';
 }

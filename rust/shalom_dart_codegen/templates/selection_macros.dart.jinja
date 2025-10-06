@@ -280,11 +280,6 @@
                 final {{selection.name}}$raw = data["{{selection.name}}"];
                 if ({{selection.name}}$raw != null){
                     {% if selection.kind == "Object" %}
-                        {# object selections can be subscribed to, but will only get updates for
-                         null<->some changes. sub fields should be subscribed by themself #}
-                        if ({{selection.name}}$cached == null){
-                            ctx.addChangedRecord({{selection.name}}$normalizedID);
-                        }
                         {{selection.full_name}}.normalize$inCache(
                             {{selection.name}}$raw as JsonObject,
                             ctx,
@@ -293,11 +288,11 @@
                             parent$record: this$NormalizedRecord,
                             parent$normalizedID: this$normalizedID
                         );
+                        final {{selection.name}}$new = this$NormalizedRecord[{{selection.name}}Normalized$Key];
+                        if ({{selection.name}}$cached != {{selection.name}}$new){
+                            ctx.addChangedRecord({{selection.name}}$normalizedID);
+                        }
                     {% elif selection.kind == "Union" %}
-                        {# union selections are similar to objects - dispatch to correct type based on __typename #}
-                        if ({{selection.name}}$cached == null){
-                            ctx.addChangedRecord({{selection.name}}$normalizedID);
-                        }
                         {{selection.full_name}}.normalize$inCache(
                             {{selection.name}}$raw as JsonObject,
                             ctx,
@@ -306,6 +301,10 @@
                             parent$record: this$NormalizedRecord,
                             parent$normalizedID: this$normalizedID
                         );
+                        final {{selection.name}}$new = this$NormalizedRecord[{{selection.name}}Normalized$Key];
+                        if ({{selection.name}}$cached != {{selection.name}}$new){
+                            ctx.addChangedRecord({{selection.name}}$normalizedID);
+                        }
                     {% else %}
                         {% set cached_sym %} {{selection.name}}$cached {% endset %}
                         {% set raw_sym %} {{selection.name}}$raw {% endset %}
@@ -479,10 +478,11 @@
         }
 
         static {{ full_name }} fromCached(NormalizedRecordData data, ShalomCtx ctx) {
-            // Handle normalized objects (stored as NormalizedObjectRecord)
-            if (data is NormalizedObjectRecord) {
-                final typename = data.typename;
-                final actualData = ctx.getCachedRecord(data.id);
+            // For unions, data is either a String (normalized cache key) or JsonObject (inline data)
+            if (data is String) {
+                // Normalized union: data is the cache key, fetch the actual record
+                final actualData = ctx.getCachedRecord(data);
+                final typename = actualData["__typename"] as String;
                 switch (typename) {
                     {% for type_condition, obj_selection in selection.inline_fragments | items %}
                     case "{{ type_condition }}":
@@ -492,7 +492,7 @@
                         throw Exception("Unknown __typename: $typename for union {{ selection.union_type.name }}");
                 }
             } else {
-                // Handle non-normalized objects (stored as JsonObject)
+                // Non-normalized union: data is the JsonObject directly
                 final typename = data["__typename"] as String;
                 switch (typename) {
                     {% for type_condition, obj_selection in selection.inline_fragments | items %}
