@@ -8,7 +8,29 @@ class ListOfRefRecord {
   const ListOfRefRecord(this.refs);
 }
 
-/// can be [String] (id) | [ListOfRefRecord] or a [dynamic] data that can't be normalized.
+class NormalizedObjectRecord {
+  final String typename;
+  final String id;
+  const NormalizedObjectRecord({required this.typename, required this.id});
+
+  @override
+  int get hashCode => Object.hash(typename, id);
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is NormalizedObjectRecord &&
+          runtimeType == other.runtimeType &&
+          typename == other.typename &&
+          id == other.id;
+
+  String normalizedID() => '$typename:$id';
+
+  @override
+  String toString() => '$typename:$id';
+}
+
+/// can be [NormalizedObjectRecord] (id) | [ListOfRefRecord] or a [dynamic] data that can't be normalized.
 typedef NormalizedRecordData = dynamic;
 
 class NormelizedCache {

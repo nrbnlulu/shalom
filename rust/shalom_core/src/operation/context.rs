@@ -5,7 +5,7 @@ use std::sync::Arc;
 use serde::Serialize;
 
 use super::fragments::SharedFragmentContext;
-use super::types::{FullPathName, OperationType, Selection};
+use super::types::{FullPathName, OperationType, Selection, SharedUnionSelection};
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 pub type OperationVariable = InputFieldDefinition;
 
@@ -22,6 +22,7 @@ pub struct OperationContext {
     root_type: Option<Selection>,
     op_ty: OperationType,
     pub used_fragments: Vec<SharedFragmentContext>,
+    union_types: HashMap<FullPathName, SharedUnionSelection>,
 }
 
 unsafe impl Send for OperationContext {}
@@ -45,6 +46,7 @@ impl OperationContext {
             root_type: None,
             op_ty,
             used_fragments: Vec::new(),
+            union_types: HashMap::new(),
         }
     }
     pub fn get_operation_name(&self) -> &str {
@@ -76,6 +78,14 @@ impl OperationContext {
 
     pub fn get_used_fragments(&self) -> &Vec<SharedFragmentContext> {
         &self.used_fragments
+    }
+
+    pub fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {
+        self.union_types.entry(name).or_insert(union_selection);
+    }
+
+    pub fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection> {
+        &self.union_types
     }
 }
 

@@ -97,6 +97,13 @@ mod ext_jinja_fns {
                     enum_.concrete_type.name.clone()
                 }
             }
+            SelectionKind::Union(union) => {
+                if union.is_optional {
+                    format!("{}?", union.full_name)
+                } else {
+                    union.full_name.clone()
+                }
+            }
         }
     }
 
@@ -501,8 +508,7 @@ where
     let ctx_clone3 = ctx.clone();
     let executable_ctx_clone3 = executable_ctx.clone();
     env.add_function("get_all_selections_for_object", move |object_name: &str| {
-        let object_selection =
-            executable_ctx_clone3.get_selection_with_fragments(object_name, &ctx_clone3);
+        let object_selection = executable_ctx_clone3.get_selection_impl(object_name, &ctx_clone3);
         let selections = match object_selection.kind {
             SelectionKind::Object(object_selection) => {
                 object_selection.get_all_selections(&ctx_clone3)
@@ -511,6 +517,26 @@ where
         };
         minijinja::Value::from_serialize(selections)
     });
+
+    let executable_ctx_clone3 = executable_ctx.clone();
+    env.add_filter(
+        "get_parent_union",
+        move |full_typename: &str| -> Option<minijinja::Value> {
+            // Try to extract parent union name by removing the last _TypeCondition part
+            if let Some(last_underscore_pos) = full_typename.rfind('_') {
+                let potential_parent = &full_typename[..last_underscore_pos];
+
+                // Check if this potential parent exists in union_types
+                if executable_ctx_clone3
+                    .get_union_types()
+                    .contains_key(potential_parent)
+                {
+                    return Some(minijinja::Value::from(potential_parent));
+                }
+            }
+            None
+        },
+    );
 
     Ok(())
 }
@@ -528,7 +554,7 @@ impl OperationEnv<'_> {
             "get_id_selection",
             move |full_name: &str| -> Option<minijinja::Value> {
                 // First try to find in the operation context
-                let selection = op_ctx_clone.get_selection_with_fragments(full_name, &ctx_clone);
+                let selection = op_ctx_clone.get_selection_impl(full_name, &ctx_clone);
                 match selection.kind {
                     SelectionKind::Object(object_selection) => object_selection
                         .get_id_selection_with_fragments(&ctx_clone)

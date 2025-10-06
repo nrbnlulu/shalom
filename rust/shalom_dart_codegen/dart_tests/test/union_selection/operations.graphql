@@ -1,0 +1,67 @@
+query GetSearchResult($query: String!) {
+  search(query: $query) {
+    __typename
+    ... on User {
+      id
+      name
+      email
+    }
+    ... on Post {
+      id
+      title
+      content
+      author
+    }
+    ... on Comment {
+      id
+      text
+      author
+    }
+  }
+}
+
+query GetSearchResultOpt($query: String!) {
+  searchOpt(query: $query) {
+    __typename
+    ... on User {
+      id
+      name
+      email
+    }
+    ... on Post {
+      id
+      title
+      content
+      author
+    }
+    ... on Comment {
+      id
+      text
+      author
+    }
+  }
+}
+
+query GetSearchResultWithoutTopTypename($query: String!) {
+  search(query: $query) {
+    ... on User {
+      __typename
+      id
+      name
+      email
+    }
+    ... on Post {
+      __typename
+      id
+      title
+      content
+      author
+    }
+    ... on Comment {
+      __typename
+      id
+      text
+      author
+    }
+  }
+}
