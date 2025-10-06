@@ -49,3 +49,8 @@ fn test_cross_dir_fragments_dart() {
 fn test_fragment_with_nested_object_selection_dart() {
     run_dart_tests_for_usecase("fragment_with_nested_object_selection");
 }
+
+#[test]
+fn test_union_selection_dart() {
+    run_dart_tests_for_usecase("union_selection");
+}
