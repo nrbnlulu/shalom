@@ -1,0 +1,30 @@
+query GetUsersRequired {
+  usersRequired {
+    id
+    name
+    email
+    age
+  }
+}
+
+query GetUsersOptional {
+  usersOptional {
+    id
+    name
+    email
+  }
+}
+
+query GetOptionalUsers {
+  optionalUsers {
+    id
+    name
+  }
+}
+
+query GetUsersRequiredPartial {
+  usersRequired {
+    id
+    name
+  }
+}

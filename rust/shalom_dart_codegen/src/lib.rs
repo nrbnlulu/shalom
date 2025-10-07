@@ -400,7 +400,7 @@ fn register_default_template_fns<'a>(
 }
 
 fn selection_uses_variables(selection: &shalom_core::operation::types::Selection) -> bool {
-    use shalom_core::operation::types::{ArgumentValue, SelectionKind};
+    use shalom_core::operation::types::ArgumentValue;
 
     // Check if this selection has any arguments that use variables
     for arg in &selection.arguments {
@@ -409,16 +409,44 @@ fn selection_uses_variables(selection: &shalom_core::operation::types::Selection
         }
     }
 
-    // Recursively check nested selections if this is an object
-    if let SelectionKind::Object(obj) = &selection.kind {
-        for nested_selection in obj.selections.borrow().iter() {
-            if selection_uses_variables(nested_selection) {
-                return true;
-            }
-        }
-    }
+    // Recursively check the selection kind
+    selection_kind_uses_variables(&selection.kind)
+}
 
-    false
+fn selection_kind_uses_variables(
+    selection_kind: &shalom_core::operation::types::SelectionKind,
+) -> bool {
+    use shalom_core::operation::types::SelectionKind;
+
+    match selection_kind {
+        SelectionKind::Object(obj) => {
+            for nested_selection in obj.selections.borrow().iter() {
+                if selection_uses_variables(nested_selection) {
+                    return true;
+                }
+            }
+            false
+        }
+        SelectionKind::List(list) => selection_kind_uses_variables(&list.of_kind),
+        SelectionKind::Union(union) => {
+            // Check shared selections
+            for selection in union.shared_selections.borrow().iter() {
+                if selection_uses_variables(selection) {
+                    return true;
+                }
+            }
+            // Check inline fragments
+            for obj in union.inline_fragments.borrow().values() {
+                for nested_selection in obj.selections.borrow().iter() {
+                    if selection_uses_variables(nested_selection) {
+                        return true;
+                    }
+                }
+            }
+            false
+        }
+        _ => false,
+    }
 }
 
 fn get_field_name_with_args(
@@ -537,6 +565,16 @@ where
             None
         },
     );
+
+    let _ctx_clone4 = ctx.clone();
+    let executable_ctx_clone4 = executable_ctx.clone();
+    env.add_function("object_uses_variables", move |full_name: &str| -> bool {
+        if let Some(selection) = executable_ctx_clone4.get_selection(full_name) {
+            selection_kind_uses_variables(&selection.kind)
+        } else {
+            false
+        }
+    });
 
     Ok(())
 }

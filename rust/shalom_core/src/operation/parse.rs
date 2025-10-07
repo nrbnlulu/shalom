@@ -363,6 +363,21 @@ where
                 of_type,
                 used_fragments,
             );
+
+            // Register inner object/union selections so they can be found for code generation
+            match &of_kind {
+                SelectionKind::Object(_) | SelectionKind::Union(_) => {
+                    let selection_common = SelectionCommon {
+                        name: path.clone(),
+                        description: None,
+                    };
+                    let inner_selection =
+                        Selection::new(selection_common, of_kind.clone(), Default::default());
+                    ctx.add_selection(path.clone(), inner_selection);
+                }
+                _ => {}
+            }
+
             SelectionKind::new_list(is_optional, of_kind)
         }
     }

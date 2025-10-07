@@ -1,0 +1,12 @@
+type Query {
+  usersRequired: [User!]!
+  usersOptional: [User!]
+  optionalUsers: [User]
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  age: Int
+}
