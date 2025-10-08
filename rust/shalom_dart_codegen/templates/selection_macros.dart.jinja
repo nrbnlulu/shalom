@@ -93,7 +93,7 @@
 
         for (int i = 0; i < {{selection_name}}$rawList.length; i++) {
             final item$raw = {{selection_name}}$rawList[i];
-            final item$cached = {{selection_name}}$cachedList?.atOpt(i);
+            final item$cached = {{selection_name}}$cachedList?.elementAtOrNull(i);
             final item$normalizedKey = "${ {{normalized_key}}}[$i]";
 
             {# Recursively normalize the item - macro handles ALL logic including storing the result #}
@@ -383,7 +383,6 @@
                             this$normalizedID = normalized$objRecrord.normalizedID();
                         {% else %}
                             final normalized$objRecrord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
-                            final this$cached = parent$record[this$fieldName];
                             if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecrord){
                                 ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
                             }
