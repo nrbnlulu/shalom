@@ -370,9 +370,9 @@
                             ```json
                             "ROOT_QUERY.some_field": "{<id>, <typename>}"
                             ```
-                            and subscribers that migt listen to
+                            and subscribers that might listen to
                             `<sometype>:<id>` key. and they won't get updated when the type / id has changed.
-                            since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changess on that path if an id or typename has changed.
+                            since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changes on that path if an id or typename has changed.
                             #}
                             final normalized$objRecrord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
                             // if id or typename changed we mark the whole selection as changed.

@@ -416,8 +416,8 @@ void main() {
     test('optionalUsers deserialize', () {
       final result = GetOptionalUsersResponse.fromResponse(optionalUsersData);
       expect(result.optionalUsers?.length, 2);
-      expect(result.optionalUsers?[0]?.id, "1");
-      expect(result.optionalUsers?[0]?.name, "Alice");
+      expect(result.optionalUsers?[0].id, "1");
+      expect(result.optionalUsers?[0].name, "Alice");
     });
 
     test('optionalUsers toJson', () {
@@ -462,7 +462,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.optionalUsers?[0]?.name, "Alice Modified");
+      expect(result.optionalUsers?[0].name, "Alice Modified");
     });
   });
 }
