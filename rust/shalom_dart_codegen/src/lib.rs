@@ -1,11 +1,7 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{error, info};
-use minijinja::{
-    context,
-    value::{Object, ViaDeserialize},
-    Environment,
-};
+use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use shalom_core::{
     context::SharedShalomGlobalContext,
@@ -393,32 +389,25 @@ fn register_default_template_fns<'a>(
         },
     );
 
- 
-
     Ok(())
 }
 
-
-
 /// if the operation contains variables and the selection is from this operation
 /// i.e not from a fragment returns true.
-fn selection_kind_uses_variables<T: ExecutableContext>(ctx: &T,
+fn selection_kind_uses_variables<T: ExecutableContext>(
+    ctx: &T,
     selection_kind: &shalom_core::operation::types::SelectionKind,
 ) -> bool {
     use shalom_core::operation::types::SelectionKind;
-    if !ctx.has_variables(){
+    if !ctx.has_variables() {
         return false;
     }
-    return match selection_kind {
-        SelectionKind::Object(obj) => {
-            ctx.get_selection(&obj.full_name).is_some()
-        }
+    match selection_kind {
+        SelectionKind::Object(obj) => ctx.get_selection(&obj.full_name).is_some(),
         SelectionKind::List(list) => selection_kind_uses_variables(ctx, &list.of_kind),
-        SelectionKind::Union(union) => {
-            ctx.get_union_types().contains_key(&union.full_name)
-        }
+        SelectionKind::Union(union) => ctx.get_union_types().contains_key(&union.full_name),
         _ => false,
-    };
+    }
 }
 
 fn get_field_name_with_args(

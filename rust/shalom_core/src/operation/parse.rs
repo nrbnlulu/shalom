@@ -418,7 +418,7 @@ impl ExecutableContext for OperationContext {
         self.get_selection(&name.to_string())
     }
     fn has_variables(&self) -> bool {
-        return self.has_variables();
+        self.has_variables()
     }
 
     fn get_used_fragments(
@@ -450,7 +450,7 @@ impl ExecutableContext for FragmentContext {
     fn get_selection(&self, name: &str) -> Option<Selection> {
         self.get_selection(&name.to_string())
     }
-    
+
     fn get_used_fragments(
         &self,
         _name: &str,
@@ -464,7 +464,7 @@ impl ExecutableContext for FragmentContext {
     }
 
     fn has_variables(&self) -> bool {
-        return false;
+        false
     }
     fn get_variable(&self, _name: &str) -> Option<&crate::operation::context::OperationVariable> {
         None // Fragments don't have variables

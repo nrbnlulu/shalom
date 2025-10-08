@@ -9,18 +9,18 @@
         #}
         if ({{cached_sym}} == null){
             {{ctx}}.addChangedRecord({{normalized_id}});
-        }  
+        }
 
         {{selection.full_name}}.normalize$inCache(
             {{raw_sym}} as JsonObject,
             {{ctx}},
-            {% if selection_kind_uses_variables(selection) %}{{ operation_name }}Variables variables,{% endif %}
+            {{"variables,"  if selection_kind_uses_variables(selection)}}
             this$cached: {{cached_sym}} is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{cached_sym}}.normalizedID()): {{cached_sym}},
             this$fieldName: {{normalized_key}},
             parent$record: {{this_normalized_record}},
             parent$normalizedID: {{this_normalized_id}}
         );
-        
+
         {# Store the normalized representation in parent record #}
         {% set id_field = get_id_selection(selection.full_name) %}
         {% if id_field is not none %}
@@ -38,9 +38,9 @@
         {% else %}
             {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
         {% endif %}
-        
-  
-  
+
+
+
     {% elif selection.kind == "Union" %}
         if ({{cached_sym}} == null){
             {{ctx}}.addChangedRecord({{normalized_id}});
@@ -48,7 +48,7 @@
         {{selection.full_name}}.normalize$inCache(
             {{raw_sym}} as JsonObject,
             {{ctx}},
-            {% if op_variables_exist %}{{ operation_name }}Variables variables,{% endif %}
+            {{"variables,"  if selection_kind_uses_variables(selection)}}
             this$cached: {{cached_sym}} is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{cached_sym}}.normalizedID()): {{cached_sym}},
             this$fieldName: {{normalized_key}},
             parent$record: {{this_normalized_record}},
@@ -195,13 +195,13 @@
             {% if  id_field is not none -%}
                 {{selection.full_name}}.fromCached(
                     ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
-                    ctx,
+                    ctx
                     {{", variables" if selection_kind_uses_variables(selection)}}
                 )
             {% else %}
                 {{ selection.full_name }}.fromCached(
                     {{value_symbol}},
-                    ctx,
+                    ctx
                     {{", variables" if selection_kind_uses_variables(selection)}}
                 )
             {% endif -%}
@@ -224,11 +224,10 @@
     {% elif selection.kind == "List" %}
         {% set inner_selection = selection.of_kind %}
         {# List - recursively deserialize each item via the macro #}
-        {% if is_optional -%} 
-            {{ value_symbol }} == null ? null : 
-        {% else -%}
-            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
+        {% if is_optional -%}
+            {{ value_symbol }} == null ? null :
         {% endif -%}
+            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
     {% else %}
         {% if is_optional %}
             {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
@@ -377,7 +376,7 @@
                             #}
                             final normalized$objRecrord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
                             // if id or typename changed we mark the whole selection as changed.
-                            if (this$cached != null && this$cached as NormalizedObjectRecord != normalized$objRecrord){
+                            if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecrord){
                                 ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
                             }
                             parent$record[this$fieldName] = normalized$objRecrord;
@@ -385,7 +384,7 @@
                         {% else %}
                             final normalized$objRecrord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
                             final this$cached = parent$record[this$fieldName];
-                            if (this$cached != null && this$cached as NormalizedObjectRecord != normalized$objRecrord){
+                            if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecrord){
                                 ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
                             }
                             parent$record[this$fieldName] = normalized$objRecrord;
@@ -570,7 +569,7 @@
                     {{ full_name }}_{{ type_condition }}.normalize$inCache(
                         data,
                         ctx,
-                        this$cached: {{cached_sym}} is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{cached_sym}}.normalizedID()): {{cached_sym}},
+                        this$cached: this$cached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord((this$cached as NormalizedObjectRecord).normalizedID()): this$cached,
                         this$fieldName: this$fieldName,
                         parent$record: parent$record,
                         parent$normalizedID: parent$normalizedID
