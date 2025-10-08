@@ -59,3 +59,8 @@ fn test_fragment_with_nested_object_selection_dart() {
 fn test_union_selection_dart() {
     run_dart_tests_for_usecase("union_selection");
 }
+
+#[test]
+fn test_list_of_unions_dart() {
+    run_dart_tests_for_usecase("list_of_unions");
+}

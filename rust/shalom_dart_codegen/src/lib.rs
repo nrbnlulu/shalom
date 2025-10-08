@@ -71,12 +71,10 @@ mod ext_jinja_fns {
             SelectionKind::List(list) => {
                 let inner_type_name = type_name_for_kind_impl(ctx, &list.of_kind);
 
-                let inner_type = inner_type_name.trim_end_matches('?');
-
                 if list.is_optional {
-                    format!("List<{}>?", inner_type)
+                    format!("List<{}>?", inner_type_name)
                 } else {
-                    format!("List<{}>", inner_type)
+                    format!("List<{}>", inner_type_name)
                 }
             }
             SelectionKind::Scalar(scalar) => {
