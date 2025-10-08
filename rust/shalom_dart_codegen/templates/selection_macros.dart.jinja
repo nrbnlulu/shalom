@@ -191,27 +191,14 @@
             {% endif -%}
         {% endif %}
     {% elif selection.kind == "Union" %}
-        {# Check if any union member has an ID (is normalized) by checking the first one #}
-        {% set first_member = selection.inline_fragments | items | first %}
-        {% if first_member %}
-            {% set first_member_has_id = get_id_selection(first_member[1].full_name) %}
-        {% else %}
-            {% set first_member_has_id = none %}
-        {% endif %}
+        
         {% if is_optional %}
-            {{ value_symbol }} == null ? null :
-            {% if first_member_has_id -%}
-                {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx)
-            {%- else -%}
-                {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
-            {%- endif %}
-        {% else %}
-            {% if first_member_has_id -%}
-                {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx)
-            {%- else -%}
-                {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
-            {%- endif %}
-        {% endif %}
+            {{ value_symbol }} == null ? null : 
+        {% endif -%}
+                ({{value_symbol}} is  NormalizedObjectRecord)?
+                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx)
+                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
+                
     {% elif selection.kind == "Enum" %}
         {% set typename = selection.concrete_type.name %}
         {% if is_optional %}
