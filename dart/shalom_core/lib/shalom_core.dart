@@ -61,3 +61,13 @@ JsonObject getOrCreateObject(JsonObject onObject, RecordID field) {
     return ret;
   }
 }
+
+extension OptionalAt<T> on List<T>{
+  T? atOpt(int index) {
+      try {
+          return this[index];
+      } on RangeError {
+          return null;
+      }
+  }
+}
