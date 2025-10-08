@@ -14,10 +14,10 @@
 - [ ] list of
     - [x] scalars
     - [ ] custom scalars
-    - [ ] objects
+    - [x] objects
     - [ ] enums
     - [ ] unions
-    - [ ] fragments
+    - [x] fragments
     - [ ] nested list
 - [x] Node interface real time updates.
 - [ ] defer / stream

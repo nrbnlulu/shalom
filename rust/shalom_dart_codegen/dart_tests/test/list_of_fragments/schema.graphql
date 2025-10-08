@@ -1,0 +1,34 @@
+interface Node {
+  id: ID!
+}
+
+interface Author {
+  name: String!
+  email: String!
+}
+
+type User implements Node & Author {
+  id: ID!
+  name: String!
+  email: String!
+  age: Int
+  bio: String
+}
+
+type Post implements Node {
+  id: ID!
+  title: String!
+  content: String!
+  published: Boolean!
+  tags: [String!]!
+  author: User!
+}
+
+type Query {
+  usersRequired: [User!]!
+  usersOptional: [User!]
+  posts: [Post!]!
+  postsOptional: [Post!]
+  user(id: ID!): User
+  post(id: ID!): Post
+}

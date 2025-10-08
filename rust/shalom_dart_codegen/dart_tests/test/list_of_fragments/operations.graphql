@@ -1,0 +1,77 @@
+fragment UserInfoFrag on User {
+    id
+    name
+    email
+}
+
+fragment UserBioFrag on User {
+    bio
+    age
+}
+
+fragment PostDetailsFrag on Post {
+    id
+    title
+    published
+}
+
+fragment PostContentFrag on Post {
+    content
+    tags
+}
+
+# Test required list of fragments
+query GetUsersRequiredWithFragment {
+    usersRequired {
+        ...UserInfoFrag
+    }
+}
+
+# Test optional list of fragments
+query GetUsersOptionalWithFragment {
+    usersOptional {
+        ...UserInfoFrag
+    }
+}
+
+# Test required list with multiple fragments
+query GetUsersRequiredWithMultipleFragments {
+    usersRequired {
+        ...UserInfoFrag
+        ...UserBioFrag
+    }
+}
+
+# Test required list with fragment and additional fields
+query GetUsersRequiredWithFragmentAndFields {
+    usersRequired {
+        ...UserInfoFrag
+        age
+        bio
+    }
+}
+
+# Test required list with nested object using fragment
+query GetPostsWithAuthorFragment {
+    posts {
+        ...PostDetailsFrag
+        author {
+            ...UserInfoFrag
+        }
+    }
+}
+
+# Test optional list with multiple fragments
+query GetPostsOptionalWithMultipleFragments {
+    postsOptional {
+        ...PostDetailsFrag
+        ...PostContentFrag
+    }
+}
+
+# Test partial selection for cache normalization
+query GetUsersRequiredPartialFragment {
+    usersRequired {
+        ...UserInfoFrag
+    }
+}
