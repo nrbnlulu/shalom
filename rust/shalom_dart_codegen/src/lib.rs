@@ -389,36 +389,25 @@ fn register_default_template_fns<'a>(
         },
     );
 
-    env.add_function(
-        "selection_uses_variables",
-        move |selection: ViaDeserialize<shalom_core::operation::types::Selection>| -> bool {
-            selection_uses_variables(&selection.0)
-        },
-    );
-
     Ok(())
 }
 
-fn selection_uses_variables(selection: &shalom_core::operation::types::Selection) -> bool {
-    use shalom_core::operation::types::{ArgumentValue, SelectionKind};
-
-    // Check if this selection has any arguments that use variables
-    for arg in &selection.arguments {
-        if matches!(arg.value, ArgumentValue::VariableUse(_)) {
-            return true;
-        }
+/// if the operation contains variables and the selection is from this operation
+/// i.e not from a fragment returns true.
+fn selection_kind_uses_variables<T: ExecutableContext>(
+    ctx: &T,
+    selection_kind: &shalom_core::operation::types::SelectionKind,
+) -> bool {
+    use shalom_core::operation::types::SelectionKind;
+    if !ctx.has_variables() {
+        return false;
     }
-
-    // Recursively check nested selections if this is an object
-    if let SelectionKind::Object(obj) = &selection.kind {
-        for nested_selection in obj.selections.borrow().iter() {
-            if selection_uses_variables(nested_selection) {
-                return true;
-            }
-        }
+    match selection_kind {
+        SelectionKind::Object(obj) => ctx.get_selection(&obj.full_name).is_some(),
+        SelectionKind::List(list) => selection_kind_uses_variables(ctx, &list.of_kind),
+        SelectionKind::Union(union) => ctx.get_union_types().contains_key(&union.full_name),
+        _ => false,
     }
-
-    false
 }
 
 fn get_field_name_with_args(
@@ -537,7 +526,13 @@ where
             None
         },
     );
-
+    let executable_ctx_clone3 = executable_ctx.clone();
+    env.add_function(
+        "selection_kind_uses_variables",
+        move |selection: ViaDeserialize<shalom_core::operation::types::SelectionKind>| -> bool {
+            selection_kind_uses_variables(executable_ctx_clone3.as_ref(), &selection.0)
+        },
+    );
     Ok(())
 }
 

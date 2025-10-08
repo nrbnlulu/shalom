@@ -36,6 +36,11 @@ fn test_list_of_scalars_dart() {
 }
 
 #[test]
+fn test_list_of_objects_dart() {
+    run_dart_tests_for_usecase("list_of_objects");
+}
+
+#[test]
 fn test_fragments_dart() {
     run_dart_tests_for_usecase("fragments");
 }
