@@ -363,6 +363,21 @@ where
                 of_type,
                 used_fragments,
             );
+
+            // Register inner object/union selections so they can be found for code generation
+            match &of_kind {
+                SelectionKind::Object(_) | SelectionKind::Union(_) => {
+                    let selection_common = SelectionCommon {
+                        name: path.clone(),
+                        description: None,
+                    };
+                    let inner_selection =
+                        Selection::new(selection_common, of_kind.clone(), Default::default());
+                    ctx.add_selection(path.clone(), inner_selection);
+                }
+                _ => {}
+            }
+
             SelectionKind::new_list(is_optional, of_kind)
         }
     }
@@ -393,6 +408,7 @@ pub trait ExecutableContext: Send + Sync + 'static {
 
     fn add_selection(&mut self, name: String, selection: Selection);
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable>;
+    fn has_variables(&self) -> bool;
     fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection);
     fn get_union_types(&self) -> &std::collections::HashMap<String, SharedUnionSelection>;
 }
@@ -401,6 +417,10 @@ impl ExecutableContext for OperationContext {
     fn get_selection(&self, name: &str) -> Option<Selection> {
         self.get_selection(&name.to_string())
     }
+    fn has_variables(&self) -> bool {
+        self.has_variables()
+    }
+
     fn get_used_fragments(
         &self,
         _name: &str,
@@ -430,6 +450,7 @@ impl ExecutableContext for FragmentContext {
     fn get_selection(&self, name: &str) -> Option<Selection> {
         self.get_selection(&name.to_string())
     }
+
     fn get_used_fragments(
         &self,
         _name: &str,
@@ -442,6 +463,9 @@ impl ExecutableContext for FragmentContext {
         self.add_selection(name, selection)
     }
 
+    fn has_variables(&self) -> bool {
+        false
+    }
     fn get_variable(&self, _name: &str) -> Option<&crate::operation::context::OperationVariable> {
         None // Fragments don't have variables
     }
