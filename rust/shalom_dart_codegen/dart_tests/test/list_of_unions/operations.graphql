@@ -1,0 +1,87 @@
+query GetSearchResultsRequired {
+  searchResultsRequired {
+    __typename
+    ... on User {
+      id
+      name
+      email
+    }
+    ... on Post {
+      id
+      title
+      content
+      author
+    }
+    ... on Comment {
+      id
+      text
+      author
+    }
+  }
+}
+
+query GetSearchResultsOptional {
+  searchResultsOptional {
+    __typename
+    ... on User {
+      id
+      name
+      email
+    }
+    ... on Post {
+      id
+      title
+      content
+      author
+    }
+    ... on Comment {
+      id
+      text
+      author
+    }
+  }
+}
+
+query GetOptionalSearchResults {
+  optionalSearchResults {
+    __typename
+    ... on User {
+      id
+      name
+      email
+    }
+    ... on Post {
+      id
+      title
+      content
+      author
+    }
+    ... on Comment {
+      id
+      text
+      author
+    }
+  }
+}
+
+query GetSearchResultsFullyOptional {
+  searchResultsFullyOptional {
+    __typename
+    ... on User {
+      id
+      name
+      email
+    }
+    ... on Post {
+      id
+      title
+      content
+      author
+    }
+    ... on Comment {
+      id
+      text
+      author
+    }
+  }
+}

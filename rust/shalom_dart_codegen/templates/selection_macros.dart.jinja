@@ -96,6 +96,26 @@
             final item$cached = {{selection_name}}$cachedList?.elementAtOrNull(i);
             final item$normalizedKey = "$i";
 
+            {# Check if the item is nullable and handle accordingly #}
+            {% if inner_selection.is_optional %}
+            if (item$raw != null) {
+                {# Recursively normalize the item - macro handles ALL logic including storing the result #}
+                {{ normalize_selection_in_cache(inner_selection,
+                    selection_name + "$item",
+                    "item$cached", "item$raw",
+                    "item$normalizedKey",
+                    normalized_id,
+                    this_normalized_record,
+                    this_normalized_id,
+                    ctx) }}
+            } else {
+                {# Item is null - check if it was previously non-null #}
+                if (item$cached != null) {
+                    {{ctx}}.addChangedRecord({{normalized_id}});
+                }
+                {{this_normalized_record}}[item$normalizedKey] = null;
+            }
+            {% else %}
             {# Recursively normalize the item - macro handles ALL logic including storing the result #}
             {{ normalize_selection_in_cache(inner_selection,
                 selection_name + "$item",
@@ -105,6 +125,7 @@
                 this_normalized_record,
                 this_normalized_id,
                 ctx) }}
+            {% endif %}
 
             {# Simply read the normalized result stored by the macro and add to list #}
             {% if inner_selection.kind == "Scalar" or inner_selection.kind == "Enum" %}
@@ -188,7 +209,7 @@
             {% if id_field is not none -%}
                 {{selection.full_name}}.fromCached(
                     ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
-                    ctx 
+                    ctx
                     {{", variables" if selection_kind_uses_variables(selection)}}
                 )
             {% else %}
@@ -234,7 +255,7 @@
         {% if is_optional -%}
             {{ value_symbol }} == null ? null :
         {% endif -%}
-            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
+            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, inner_selection.is_optional) }}).toList()
     {% else %}
         {% if is_optional %}
             {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
@@ -279,9 +300,9 @@
     {% elif selection.kind == "List" %}
         {% set inner_selection = selection.of_kind %}
         {% if is_optional %}
-            {{ value_symbol }}?.map((e) => {{ _serialize_selection_value_macro("e", inner_selection, false) }}).toList()
+            {{ value_symbol }}?.map((e) => {{ _serialize_selection_value_macro("e", inner_selection, inner_selection.is_optional) }}).toList()
         {% else %}
-            {{ value_symbol }}.map((e) => {{ _serialize_selection_value_macro("e", inner_selection, false) }}).toList()
+            {{ value_symbol }}.map((e) => {{ _serialize_selection_value_macro("e", inner_selection, inner_selection.is_optional) }}).toList()
         {% endif %}
     {% else %}
         {{ value_symbol }}
