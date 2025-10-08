@@ -52,6 +52,9 @@ impl OperationContext {
     pub fn get_operation_name(&self) -> &str {
         &self.operation_name
     }
+    pub fn has_variables(&self) -> bool {
+        !self.variables.is_empty()
+    }
 
     pub fn set_root_type(&mut self, root_type: Selection) {
         self.root_type = Some(root_type);

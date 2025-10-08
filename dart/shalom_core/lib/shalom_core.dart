@@ -64,10 +64,6 @@ JsonObject getOrCreateObject(JsonObject onObject, RecordID field) {
 
 extension OptionalAt<T> on List<T>{
   T? atOpt(int index) {
-      try {
-          return this[index];
-      } on RangeError {
-          return null;
-      }
+      return (index >= 0 && index < length) ? this[index] : null;
   }
 }

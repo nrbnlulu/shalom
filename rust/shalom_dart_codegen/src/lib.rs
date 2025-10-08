@@ -1,7 +1,11 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{error, info};
-use minijinja::{context, value::ViaDeserialize, Environment};
+use minijinja::{
+    context,
+    value::{Object, ViaDeserialize},
+    Environment,
+};
 use serde::Serialize;
 use shalom_core::{
     context::SharedShalomGlobalContext,
@@ -389,64 +393,32 @@ fn register_default_template_fns<'a>(
         },
     );
 
-    env.add_function(
-        "selection_uses_variables",
-        move |selection: ViaDeserialize<shalom_core::operation::types::Selection>| -> bool {
-            selection_uses_variables(&selection.0)
-        },
-    );
+ 
 
     Ok(())
 }
 
-fn selection_uses_variables(selection: &shalom_core::operation::types::Selection) -> bool {
-    use shalom_core::operation::types::ArgumentValue;
 
-    // Check if this selection has any arguments that use variables
-    for arg in &selection.arguments {
-        if matches!(arg.value, ArgumentValue::VariableUse(_)) {
-            return true;
-        }
-    }
 
-    // Recursively check the selection kind
-    selection_kind_uses_variables(&selection.kind)
-}
-
-fn selection_kind_uses_variables(
+/// if the operation contains variables and the selection is from this operation
+/// i.e not from a fragment returns true.
+fn selection_kind_uses_variables<T: ExecutableContext>(ctx: &T,
     selection_kind: &shalom_core::operation::types::SelectionKind,
 ) -> bool {
     use shalom_core::operation::types::SelectionKind;
-
-    match selection_kind {
+    if !ctx.has_variables(){
+        return false;
+    }
+    return match selection_kind {
         SelectionKind::Object(obj) => {
-            for nested_selection in obj.selections.borrow().iter() {
-                if selection_uses_variables(nested_selection) {
-                    return true;
-                }
-            }
-            false
+            ctx.get_selection(&obj.full_name).is_some()
         }
-        SelectionKind::List(list) => selection_kind_uses_variables(&list.of_kind),
+        SelectionKind::List(list) => selection_kind_uses_variables(ctx, &list.of_kind),
         SelectionKind::Union(union) => {
-            // Check shared selections
-            for selection in union.shared_selections.borrow().iter() {
-                if selection_uses_variables(selection) {
-                    return true;
-                }
-            }
-            // Check inline fragments
-            for obj in union.inline_fragments.borrow().values() {
-                for nested_selection in obj.selections.borrow().iter() {
-                    if selection_uses_variables(nested_selection) {
-                        return true;
-                    }
-                }
-            }
-            false
+            ctx.get_union_types().contains_key(&union.full_name)
         }
         _ => false,
-    }
+    };
 }
 
 fn get_field_name_with_args(
@@ -565,17 +537,13 @@ where
             None
         },
     );
-
-    let _ctx_clone4 = ctx.clone();
-    let executable_ctx_clone4 = executable_ctx.clone();
-    env.add_function("object_uses_variables", move |full_name: &str| -> bool {
-        if let Some(selection) = executable_ctx_clone4.get_selection(full_name) {
-            selection_kind_uses_variables(&selection.kind)
-        } else {
-            false
-        }
-    });
-
+    let executable_ctx_clone3 = executable_ctx.clone();
+    env.add_function(
+        "selection_kind_uses_variables",
+        move |selection: ViaDeserialize<shalom_core::operation::types::SelectionKind>| -> bool {
+            selection_kind_uses_variables(executable_ctx_clone3.as_ref(), &selection.0)
+        },
+    );
     Ok(())
 }
 

@@ -9,17 +9,18 @@
         #}
         if ({{cached_sym}} == null){
             {{ctx}}.addChangedRecord({{normalized_id}});
-        }
+        }  
 
         {{selection.full_name}}.normalize$inCache(
             {{raw_sym}} as JsonObject,
             {{ctx}},
-            {% if selection.arguments is defined %}{% if selection_uses_variables(selection) %}variables,{% endif %}{% else %}{% if object_uses_variables(selection.full_name) %}variables,{% endif %}{% endif %}
+            {% if selection_kind_uses_variables(selection) %}{{ operation_name }}Variables variables,{% endif %}
+            this$cached: {{cached_sym}} is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{cached_sym}}.normalizedID()): {{cached_sym}},
             this$fieldName: {{normalized_key}},
             parent$record: {{this_normalized_record}},
             parent$normalizedID: {{this_normalized_id}}
         );
-
+        
         {# Store the normalized representation in parent record #}
         {% set id_field = get_id_selection(selection.full_name) %}
         {% if id_field is not none %}
@@ -37,6 +38,9 @@
         {% else %}
             {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
         {% endif %}
+        
+  
+  
     {% elif selection.kind == "Union" %}
         if ({{cached_sym}} == null){
             {{ctx}}.addChangedRecord({{normalized_id}});
@@ -44,7 +48,8 @@
         {{selection.full_name}}.normalize$inCache(
             {{raw_sym}} as JsonObject,
             {{ctx}},
-            {% if selection.arguments is defined %}{% if selection_uses_variables(selection) %}variables,{% endif %}{% else %}{% if object_uses_variables(selection.full_name) %}variables,{% endif %}{% endif %}
+            {% if op_variables_exist %}{{ operation_name }}Variables variables,{% endif %}
+            this$cached: {{cached_sym}} is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{cached_sym}}.normalizedID()): {{cached_sym}},
             this$fieldName: {{normalized_key}},
             parent$record: {{this_normalized_record}},
             parent$normalizedID: {{this_normalized_id}}
@@ -176,27 +181,39 @@
             {% if id_field is not none -%}
                 {{selection.full_name}}.fromCached(
                     ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
-                    ctx{% if selection_uses_variables(selection) %}, variables{% endif %}
+                    ctx 
+                    {{", variables" if selection_kind_uses_variables(selection)}}
                 )
             {% else %}
-            {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
+            {{ selection.full_name }}.fromCached(
+                {{ value_symbol }},
+                ctx
+                {{", variables" if selection_kind_uses_variables(selection)}}
+            )
             {% endif -%}
         {% else %}
             {% if  id_field is not none -%}
-                {{selection.full_name}}.fromCached(ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()), ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
+                {{selection.full_name}}.fromCached(
+                    ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
+                    ctx,
+                    {{", variables" if selection_kind_uses_variables(selection)}}
+                )
             {% else %}
-                {{ selection.full_name }}.fromCached({{value_symbol}}, ctx{% if selection_uses_variables(selection) %}, variables{% endif %})
+                {{ selection.full_name }}.fromCached(
+                    {{value_symbol}},
+                    ctx,
+                    {{", variables" if selection_kind_uses_variables(selection)}}
+                )
             {% endif -%}
         {% endif %}
     {% elif selection.kind == "Union" %}
-        
         {% if is_optional %}
-            {{ value_symbol }} == null ? null : 
+            {{ value_symbol }} == null ? null :
         {% endif -%}
                 ({{value_symbol}} is  NormalizedObjectRecord)?
                     {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx)
                 : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
-                
+
     {% elif selection.kind == "Enum" %}
         {% set typename = selection.concrete_type.name %}
         {% if is_optional %}
@@ -206,32 +223,12 @@
         {% endif %}
     {% elif selection.kind == "List" %}
         {% set inner_selection = selection.of_kind %}
-        {% if inner_selection.kind == "Object" %}
-            {# List of objects - handle normalized vs non-normalized #}
-            {% set id_field = get_id_selection(inner_selection.full_name) %}
-            {% if id_field is not none %}
-                {# Normalized objects - stored as NormalizedObjectRecord references #}
-                {% if is_optional %}
-                    {{ value_symbol }} == null ? null : ({{ value_symbol }} as List<dynamic>).map((e) => {{inner_selection.full_name}}.fromCached(ctx.getCachedRecord((e as NormalizedObjectRecord).normalizedID()), ctx{% if object_uses_variables(inner_selection.full_name) %}, variables{% endif %})).toList()
-                {% else %}
-                    ({{ value_symbol }} as List<dynamic>).map((e) => {{inner_selection.full_name}}.fromCached(ctx.getCachedRecord((e as NormalizedObjectRecord).normalizedID()), ctx{% if object_uses_variables(inner_selection.full_name) %}, variables{% endif %})).toList()
-                {% endif %}
-            {% else %}
-                {# Non-normalized objects - stored as direct data #}
-                {% if is_optional %}
-                    {{ value_symbol }} == null ? null : ({{ value_symbol }} as List<dynamic>).map((e) => {{inner_selection.full_name}}.fromCached(e, ctx{% if object_uses_variables(inner_selection.full_name) %}, variables{% endif %})).toList()
-                {% else %}
-                    ({{ value_symbol }} as List<dynamic>).map((e) => {{inner_selection.full_name}}.fromCached(e, ctx{% if object_uses_variables(inner_selection.full_name) %}, variables{% endif %})).toList()
-                {% endif %}
-            {% endif %}
-        {% else %}
-            {# List of scalars or other non-object types #}
-            {% if is_optional %}
-                {{ value_symbol }} == null ? null : ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
-            {% else %}
-                ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
-            {% endif %}
-        {% endif %}
+        {# List - recursively deserialize each item via the macro #}
+        {% if is_optional -%} 
+            {{ value_symbol }} == null ? null : 
+        {% else -%}
+            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_cache_macro("e", inner_selection, false) }}).toList()
+        {% endif -%}
     {% else %}
         {% if is_optional %}
             {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
@@ -340,11 +337,12 @@
 
         static void normalize$inCache(JsonObject data,
                 CacheUpdateContext ctx,
-                {% if not is_union_member and selection_uses_variables(selection_object) %} {{ operation_name }}Variables variables,{% endif %}
+                {% if not is_union_member and selection_kind_uses_variables(selection_object) %} {{ operation_name }}Variables variables,{% endif %}
                 {% if not is_root_selection -%}
                     {
                     /// can be just the selection name but also may include serialized arguments.
                     required RecordID  this$fieldName,
+                    required JsonObject? this$cached,
                     required JsonObject parent$record,
                     required RecordID parent$normalizedID
                     }
@@ -369,19 +367,15 @@
                     } else {
                         {% if is_union_member -%}
                             {#
-                            improve how we deduce changes in normalized objects when the whole id has changed.
                             since the object is normalized like so
                             ```json
                             "ROOT_QUERY.some_field": "{<id>, <typename>}"
                             ```
-                            since up until now we only pushed updates for null->some changes on objects and sub object fields.
-                            even if the inner object fields have changed. since it is normalized
-                            previouse subscribers would listen to
-                            `<sometype>:<id>` key. and they won't get updated.
-                            now, since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changess on that path if an id or typename has changed.
+                            and subscribers that migt listen to
+                            `<sometype>:<id>` key. and they won't get updated when the type / id has changed.
+                            since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changess on that path if an id or typename has changed.
                             #}
                             final normalized$objRecrord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
-                            final this$cached = parent$record[this$fieldName];
                             // if id or typename changed we mark the whole selection as changed.
                             if (this$cached != null && this$cached as NormalizedObjectRecord != normalized$objRecrord){
                                 ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
@@ -437,9 +431,9 @@
             {% endfor -%}
         }
         {% if not is_root_selection -%}
-        static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if not is_union_member and selection_uses_variables(selection_object)  %}, {{ operation_name }}Variables variables{% endif %}) {
+        static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if not is_union_member and selection_kind_uses_variables(selection_object)  %}, {{ operation_name }}Variables variables{% endif %}) {
         {% else -%}
-        static {{typename}} fromCache(ShalomCtx ctx{% if selection_uses_variables(selection_object) -%}, {{ operation_name }}Variables variables{% endif %}) {
+        static {{typename}} fromCache(ShalomCtx ctx{% if selection_kind_uses_variables(selection_object) -%}, {{ operation_name }}Variables variables{% endif %}) {
         {% endif -%}
             {% if is_root_selection -%}
                 final data = ctx.getCachedRecord("ROOT_{{OP_TYPE}}");
@@ -565,7 +559,8 @@
             {
                 required RecordID this$fieldName,
                 required JsonObject parent$record,
-                required RecordID parent$normalizedID
+                required RecordID parent$normalizedID,
+                required JsonObject? this$cached
             }
         ) {
             final typename = data["__typename"] as String;
@@ -575,6 +570,7 @@
                     {{ full_name }}_{{ type_condition }}.normalize$inCache(
                         data,
                         ctx,
+                        this$cached: {{cached_sym}} is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{cached_sym}}.normalizedID()): {{cached_sym}},
                         this$fieldName: this$fieldName,
                         parent$record: parent$record,
                         parent$normalizedID: parent$normalizedID

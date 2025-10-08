@@ -408,6 +408,7 @@ pub trait ExecutableContext: Send + Sync + 'static {
 
     fn add_selection(&mut self, name: String, selection: Selection);
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable>;
+    fn has_variables(&self) -> bool;
     fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection);
     fn get_union_types(&self) -> &std::collections::HashMap<String, SharedUnionSelection>;
 }
@@ -416,6 +417,10 @@ impl ExecutableContext for OperationContext {
     fn get_selection(&self, name: &str) -> Option<Selection> {
         self.get_selection(&name.to_string())
     }
+    fn has_variables(&self) -> bool {
+        return self.has_variables();
+    }
+
     fn get_used_fragments(
         &self,
         _name: &str,
@@ -445,6 +450,7 @@ impl ExecutableContext for FragmentContext {
     fn get_selection(&self, name: &str) -> Option<Selection> {
         self.get_selection(&name.to_string())
     }
+    
     fn get_used_fragments(
         &self,
         _name: &str,
@@ -457,6 +463,9 @@ impl ExecutableContext for FragmentContext {
         self.add_selection(name, selection)
     }
 
+    fn has_variables(&self) -> bool {
+        return false;
+    }
     fn get_variable(&self, _name: &str) -> Option<&crate::operation::context::OperationVariable> {
         None // Fragments don't have variables
     }
