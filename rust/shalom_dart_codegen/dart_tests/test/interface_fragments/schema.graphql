@@ -1,0 +1,49 @@
+interface Node {
+  id: ID!
+}
+
+interface Author {
+  name: String!
+  email: String!
+}
+
+interface Timestamped {
+  createdAt: String!
+  updatedAt: String!
+}
+
+type User implements Node & Author {
+  id: ID!
+  name: String!
+  email: String!
+  age: Int
+  role: String!
+}
+
+type Post implements Node & Timestamped {
+  id: ID!
+  title: String!
+  content: String!
+  author: User!
+  createdAt: String!
+  updatedAt: String!
+  published: Boolean!
+}
+
+type Comment implements Node & Timestamped {
+  id: ID!
+  text: String!
+  author: User!
+  post: Post!
+  createdAt: String!
+  updatedAt: String!
+}
+
+type Query {
+  node(id: ID!): Node
+  nodes: [Node!]!
+  user(id: ID!): User
+  post(id: ID!): Post
+  comment(id: ID!): Comment
+  authors: [Author!]!
+}
