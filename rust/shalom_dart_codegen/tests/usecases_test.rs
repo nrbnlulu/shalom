@@ -50,8 +50,6 @@ fn test_union_selection_dart() {
     run_dart_tests_for_usecase("union_selection");
 }
 
-
-
 #[test]
 fn test_list_of_scalars_dart() {
     run_dart_tests_for_usecase("list_of_scalars");
@@ -61,7 +59,6 @@ fn test_list_of_scalars_dart() {
 fn test_list_of_objects_dart() {
     run_dart_tests_for_usecase("list_of_objects");
 }
-
 
 #[test]
 fn test_list_of_custom_scalars_dart() {

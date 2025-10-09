@@ -1,3 +1,4 @@
+import 'package:dart_tests/point.dart' show Point;
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 import '../input_list_custom_scalars/__graphql__/schema.shalom.dart';
@@ -6,7 +7,6 @@ import '__graphql__/InputCustomScalarListMaybeMutation.shalom.dart';
 import '__graphql__/InputCustomScalarListNullableMaybeMutation.shalom.dart';
 import '__graphql__/InputCustomScalarListOptionalWithDefaultMutation.shalom.dart';
 import '__graphql__/InputCustomScalarListInsideInputObjectMutation.shalom.dart';
-import '../custom_scalar/point.dart';
 
 void main() {
   final Point point1 = Point(x: 10, y: 20);
