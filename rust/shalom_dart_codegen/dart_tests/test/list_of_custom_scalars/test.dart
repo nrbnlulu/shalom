@@ -8,27 +8,32 @@ import "__graphql__/GetOptionalPoints.shalom.dart";
 import "__graphql__/GetPointsFullyOptional.shalom.dart";
 
 void main() {
-  // Test data for required list
+  // Test data for required list (input uses map format)
   final pointsRequiredData = {
     "pointsRequired": [
-      {"x": 1.0, "y": 2.0},
-      {"x": 3.0, "y": 4.0},
-      {"x": 5.0, "y": 6.0}
+      {"x": 1, "y": 2},
+      {"x": 3, "y": 4},
+      {"x": 5, "y": 6}
     ]
+  };
+
+  // Expected serialized output (uses string format)
+  final pointsRequiredDataSerialized = {
+    "pointsRequired": ["POINT (1, 2)", "POINT (3, 4)", "POINT (5, 6)"]
   };
 
   final pointsRequiredDataChanged = {
     "pointsRequired": [
-      {"x": 1.5, "y": 2.0},
-      {"x": 3.0, "y": 4.0},
-      {"x": 5.0, "y": 6.0}
+      {"x": 2, "y": 2},
+      {"x": 3, "y": 4},
+      {"x": 5, "y": 6}
     ]
   };
 
   final pointsRequiredLengthChanged = {
     "pointsRequired": [
-      {"x": 1.0, "y": 2.0},
-      {"x": 3.0, "y": 4.0}
+      {"x": 1, "y": 2},
+      {"x": 3, "y": 4}
     ]
   };
 
@@ -38,12 +43,12 @@ void main() {
     test('pointsRequired deserialize', () {
       final result = GetPointsRequiredResponse.fromResponse(pointsRequiredData);
       expect(result.pointsRequired.length, 3);
-      expect(result.pointsRequired[0].x, 1.0);
-      expect(result.pointsRequired[0].y, 2.0);
-      expect(result.pointsRequired[1].x, 3.0);
-      expect(result.pointsRequired[1].y, 4.0);
-      expect(result.pointsRequired[2].x, 5.0);
-      expect(result.pointsRequired[2].y, 6.0);
+      expect(result.pointsRequired[0].x, 1);
+      expect(result.pointsRequired[0].y, 2);
+      expect(result.pointsRequired[1].x, 3);
+      expect(result.pointsRequired[1].y, 4);
+      expect(result.pointsRequired[2].x, 5);
+      expect(result.pointsRequired[2].y, 6);
     });
 
     test('pointsRequired deserialize empty list', () {
@@ -56,7 +61,7 @@ void main() {
       final initial =
           GetPointsRequiredResponse.fromResponse(pointsRequiredData);
       final json = initial.toJson();
-      expect(json, pointsRequiredData);
+      expect(json, pointsRequiredDataSerialized);
     });
 
     test('pointsRequired toJson empty list', () {
@@ -100,7 +105,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.pointsRequired[0].x, 1.5);
+      expect(result.pointsRequired[0].x, 2);
     });
 
     test('pointsRequired cacheNormalization - list length changed', () async {
@@ -132,15 +137,19 @@ void main() {
   // Test data for optional list
   final pointsOptionalData = {
     "pointsOptional": [
-      {"x": 10.0, "y": 20.0},
-      {"x": 30.0, "y": 40.0}
+      {"x": 10, "y": 20},
+      {"x": 30, "y": 40}
     ]
+  };
+
+  final pointsOptionalDataSerialized = {
+    "pointsOptional": ["POINT (10, 20)", "POINT (30, 40)"]
   };
 
   final pointsOptionalDataChanged = {
     "pointsOptional": [
-      {"x": 15.0, "y": 20.0},
-      {"x": 30.0, "y": 40.0}
+      {"x": 15, "y": 20},
+      {"x": 30, "y": 40}
     ]
   };
 
@@ -151,10 +160,10 @@ void main() {
     test('pointsOptional deserialize', () {
       final result = GetPointsOptionalResponse.fromResponse(pointsOptionalData);
       expect(result.pointsOptional?.length, 2);
-      expect(result.pointsOptional?[0].x, 10.0);
-      expect(result.pointsOptional?[0].y, 20.0);
-      expect(result.pointsOptional?[1].x, 30.0);
-      expect(result.pointsOptional?[1].y, 40.0);
+      expect(result.pointsOptional?[0].x, 10);
+      expect(result.pointsOptional?[0].y, 20);
+      expect(result.pointsOptional?[1].x, 30);
+      expect(result.pointsOptional?[1].y, 40);
     });
 
     test('pointsOptional deserialize null', () {
@@ -173,7 +182,7 @@ void main() {
       final initial =
           GetPointsOptionalResponse.fromResponse(pointsOptionalData);
       final json = initial.toJson();
-      expect(json, pointsOptionalData);
+      expect(json, pointsOptionalDataSerialized);
     });
 
     test('pointsOptional toJson null', () {
@@ -281,24 +290,28 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.pointsOptional?[0].x, 15.0);
+      expect(result.pointsOptional?[0].x, 15);
     });
   });
 
   // Test data for optional items in list
   final optionalPointsData = {
     "optionalPoints": [
-      {"x": 100.0, "y": 200.0},
+      {"x": 100, "y": 200},
       null,
-      {"x": 300.0, "y": 400.0}
+      {"x": 300, "y": 400}
     ]
+  };
+
+  final optionalPointsDataSerialized = {
+    "optionalPoints": ["POINT (100, 200)", null, "POINT (300, 400)"]
   };
 
   final optionalPointsDataChanged = {
     "optionalPoints": [
-      {"x": 150.0, "y": 200.0},
+      {"x": 150, "y": 200},
       null,
-      {"x": 300.0, "y": 400.0}
+      {"x": 300, "y": 400}
     ]
   };
 
@@ -306,18 +319,18 @@ void main() {
     test('optionalPoints deserialize with nulls', () {
       final result = GetOptionalPointsResponse.fromResponse(optionalPointsData);
       expect(result.optionalPoints.length, 3);
-      expect(result.optionalPoints[0]?.x, 100.0);
-      expect(result.optionalPoints[0]?.y, 200.0);
+      expect(result.optionalPoints[0]?.x, 100);
+      expect(result.optionalPoints[0]?.y, 200);
       expect(result.optionalPoints[1], isNull);
-      expect(result.optionalPoints[2]?.x, 300.0);
-      expect(result.optionalPoints[2]?.y, 400.0);
+      expect(result.optionalPoints[2]?.x, 300);
+      expect(result.optionalPoints[2]?.y, 400);
     });
 
     test('optionalPoints toJson', () {
       final initial =
           GetOptionalPointsResponse.fromResponse(optionalPointsData);
       final json = initial.toJson();
-      expect(json, optionalPointsData);
+      expect(json, optionalPointsDataSerialized);
     });
 
     test('optionalPoints equals', () {
@@ -354,21 +367,25 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.optionalPoints[0]?.x, 150.0);
+      expect(result.optionalPoints[0]?.x, 150);
     });
   });
 
   // Test data for fully optional
   final pointsFullyOptionalData = {
     "pointsFullyOptional": [
-      {"x": 7.0, "y": 8.0},
+      {"x": 7, "y": 8},
       null
     ]
   };
 
+  final pointsFullyOptionalDataSerialized = {
+    "pointsFullyOptional": ["POINT (7, 8)", null]
+  };
+
   final pointsFullyOptionalDataChanged = {
     "pointsFullyOptional": [
-      {"x": 7.5, "y": 8.0},
+      {"x": 8, "y": 8},
       null
     ]
   };
@@ -381,8 +398,8 @@ void main() {
       final result =
           GetPointsFullyOptionalResponse.fromResponse(pointsFullyOptionalData);
       expect(result.pointsFullyOptional?.length, 2);
-      expect(result.pointsFullyOptional?[0]?.x, 7.0);
-      expect(result.pointsFullyOptional?[0]?.y, 8.0);
+      expect(result.pointsFullyOptional?[0]?.x, 7);
+      expect(result.pointsFullyOptional?[0]?.y, 8);
       expect(result.pointsFullyOptional?[1], isNull);
     });
 
@@ -402,7 +419,7 @@ void main() {
       final initial =
           GetPointsFullyOptionalResponse.fromResponse(pointsFullyOptionalData);
       final json = initial.toJson();
-      expect(json, pointsFullyOptionalData);
+      expect(json, pointsFullyOptionalDataSerialized);
     });
 
     test('pointsFullyOptional toJson null', () {
@@ -500,7 +517,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.pointsFullyOptional?[0]?.x, 7.5);
+      expect(result.pointsFullyOptional?[0]?.x, 8);
     });
   });
 }
