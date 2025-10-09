@@ -328,14 +328,16 @@ where
                 GraphQLAny::Scalar(scalar) => {
                     SelectionKind::Scalar(parse_scalar_selection(global_ctx, is_optional, scalar))
                 }
-                GraphQLAny::Object(_) => SelectionKind::Object(parse_object_selection(
-                    ctx,
-                    global_ctx,
-                    path,
-                    is_optional,
-                    selection_set,
-                    used_fragments,
-                )),
+                GraphQLAny::Object(_) | GraphQLAny::Interface(_) => {
+                    SelectionKind::Object(parse_object_selection(
+                        ctx,
+                        global_ctx,
+                        path,
+                        is_optional,
+                        selection_set,
+                        used_fragments,
+                    ))
+                }
                 GraphQLAny::Enum(_enum) => {
                     SelectionKind::Enum(parse_enum_selection(is_optional, _enum))
                 }
@@ -654,34 +656,37 @@ pub(crate) fn parse_fragment(
         .schema_ctx
         .get_type(&type_name.to_string())
         .unwrap();
-    if let crate::schema::types::GraphQLAny::Object(_) = type_info {
-        let selection_common = SelectionCommon {
-            name: fragment_ctx.get_fragment_name().to_string(),
-            description: None,
-        };
-        let mut used_fragments = Vec::new();
-        let root_obj = parse_object_selection(
-            fragment_ctx,
-            global_ctx,
-            &fragment_ctx.get_fragment_name().to_string(),
-            false,
-            selection_set,
-            &mut used_fragments,
-        );
-        for frag in used_fragments {
-            fragment_ctx.add_used_fragment(frag);
+    match type_info {
+        crate::schema::types::GraphQLAny::Object(_)
+        | crate::schema::types::GraphQLAny::Interface(_) => {
+            let selection_common = SelectionCommon {
+                name: fragment_ctx.get_fragment_name().to_string(),
+                description: None,
+            };
+            let mut used_fragments = Vec::new();
+            let root_obj = parse_object_selection(
+                fragment_ctx,
+                global_ctx,
+                &fragment_ctx.get_fragment_name().to_string(),
+                false,
+                selection_set,
+                &mut used_fragments,
+            );
+            for frag in used_fragments {
+                fragment_ctx.add_used_fragment(frag);
+            }
+            // fragments has no arguments
+            let root_selection =
+                Selection::new(selection_common, SelectionKind::Object(root_obj), vec![]);
+            fragment_ctx.set_root_type(root_selection.clone());
+            fragment_ctx
+                .add_selection(fragment_ctx.get_fragment_name().to_string(), root_selection);
+            Ok(())
         }
-        // fragments has no arguments
-        let root_selection =
-            Selection::new(selection_common, SelectionKind::Object(root_obj), vec![]);
-        fragment_ctx.set_root_type(root_selection.clone());
-        fragment_ctx.add_selection(fragment_ctx.get_fragment_name().to_string(), root_selection);
-        Ok(())
-    } else {
-        Err(anyhow::anyhow!(
-            "Fragment {} type condition {} is not an object type",
+        _ => Err(anyhow::anyhow!(
+            "Fragment {} type condition {} is not an object or interface type",
             fragment_ctx.get_fragment_name(),
             type_name
-        ))
+        )),
     }
 }

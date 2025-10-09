@@ -1,0 +1,71 @@
+# Fragment on Node interface
+fragment NodeFields on Node {
+    id
+}
+
+# Fragment on Author interface
+fragment AuthorFields on Author {
+    name
+    email
+}
+
+# Fragment on Timestamped interface
+fragment TimestampedFields on Timestamped {
+    createdAt
+    updatedAt
+}
+
+# Query using Node interface fragment
+query GetNode($id: ID!) {
+    node(id: $id) {
+        ...NodeFields
+    }
+}
+
+# Query using Author interface fragment
+query GetAuthors {
+    authors {
+        ...AuthorFields
+    }
+}
+
+# Query using multiple interface fragments
+query GetUser($id: ID!) {
+    user(id: $id) {
+        ...NodeFields
+        ...AuthorFields
+        age
+        role
+    }
+}
+
+# Query using Timestamped interface fragment
+query GetPost($id: ID!) {
+    post(id: $id) {
+        ...NodeFields
+        ...TimestampedFields
+        title
+        content
+        published
+    }
+}
+
+# Query using nested interface fragments
+query GetComment($id: ID!) {
+    comment(id: $id) {
+        ...NodeFields
+        ...TimestampedFields
+        text
+        author {
+            ...NodeFields
+            ...AuthorFields
+        }
+    }
+}
+
+# Query with list of interface type
+query GetNodes {
+    nodes {
+        ...NodeFields
+    }
+}
