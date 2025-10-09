@@ -8,7 +8,10 @@ use apollo_compiler::{
 use log::{info, trace};
 
 use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
-use crate::operation::types::{FieldArgument, ObjectSelection, SelectionCommon, SelectionKind};
+use crate::operation::context::TypeDefs;
+use crate::operation::types::{
+    FieldArgument, ObjectSelection, SelectionCommon, SelectionKind, SharedSelection,
+};
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
 };
@@ -592,80 +595,108 @@ where
 
 // Trait to abstract over OperationContext and FragmentContext
 pub trait ExecutableContext: Send + Sync + 'static {
-    fn get_selection(&self, name: &str) -> Option<Selection>;
     fn get_used_fragments(
         &self,
         name: &str,
         ctx: &ShalomGlobalContext,
     ) -> &Vec<SharedFragmentContext>;
-    fn get_selection_impl(&self, name: &str, ctx: &ShalomGlobalContext) -> Selection {
-        let res = match self.get_selection(name) {
-            Some(selection) => Some(selection),
-            None => {
+
+    fn name(&self) -> &str;
+    
+    fn get_selection(&self, name: &String, ctx: &ShalomGlobalContext) -> Option<&Selection> {
+        self.get_object_selection(name)
+            .or_else(|| self.get_union_selection(name))
+            .or_else(|| self.get_interface_selection(name))
+            .or_else(|| {
                 for frag in self.get_used_fragments(name, ctx) {
-                    if let Some(selection) = frag.get_selection(&name.to_string()) {
-                        return selection;
+                    if let Some(selection) = frag.get_selection(&name.to_string(), ctx) {
+                        return Some(selection);
                     }
                 }
                 None
-            }
-        };
-        res.unwrap_or_else(|| panic!("Selection not found for name: {}", name))
+            })
+    }
+    fn add_selection(&mut self, name: String, selection: Selection) {
+        match selection.kind {
+            SelectionKind::Object(_) => self.add_object_selection(name, selection),
+            SelectionKind::Interface(_) => self.add_interface_selection(name, selection),
+            SelectionKind::Union(_) => self.add_union_selection(name, selection),
+            _=>(),
+        }
+    }
+    
+    fn get_selection_strict(&self, name: &String, ctx: &ShalomGlobalContext) -> &Selection {
+        self.get_selection(name, ctx).expect(
+            &format!("selection for {name} not found neither in this context nor in its fragments")
+                .to_string(),
+        )
     }
 
-    fn add_selection(&mut self, name: String, selection: Selection);
+    fn typedefs(&self) -> &TypeDefs;
+    fn typedefs_mut(&mut self) -> &mut TypeDefs;
+
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable>;
     fn has_variables(&self) -> bool;
-    fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection);
-    fn get_union_types(&self) -> &std::collections::HashMap<String, SharedUnionSelection>;
-    fn add_interface_type(&mut self, name: String, interface_selection: SharedInterfaceSelection);
-    fn get_interface_types(&self) -> &std::collections::HashMap<String, SharedInterfaceSelection>;
+
+    fn add_object_selection(&mut self, name: String, object_selection: Selection) {
+        self.typedefs_mut()
+            .add_object_selection(name, object_selection);
+    }
+    fn get_object_selection(&self, name: &String) -> Option<&Selection> {
+        self.typedefs().get_object_selection(name)
+    }
+    fn add_union_selection(&mut self, name: String, union_selection: Selection) {
+        self.typedefs_mut()
+            .add_union_selection(name, union_selection);
+    }
+    fn get_union_selection(&self, name: &String) -> Option<&Selection> {
+        self.typedefs().get_union_selection(name)
+    }
+
+    fn add_interface_selection(&mut self, name: String, interface_selection: Selection) {
+        self.typedefs_mut()
+            .add_interface_selection(name, interface_selection);
+    }
+    fn get_interface_selection(&self, name: &String) -> Option<&Selection> {
+        self.typedefs().get_interface_selection(name)
+    }
 }
 
 impl ExecutableContext for OperationContext {
-    fn get_selection(&self, name: &str) -> Option<Selection> {
-        self.get_selection(&name.to_string())
+    fn name(&self) -> &str {
+        self.get_operation_name()
     }
     fn has_variables(&self) -> bool {
         self.has_variables()
     }
-
+    fn typedefs(&self) -> &TypeDefs {
+        &self.type_defs
+    }
+    fn typedefs_mut(&mut self) -> &mut TypeDefs {
+        &mut self.type_defs
+    }
     fn get_used_fragments(
         &self,
         _name: &str,
         _ctx: &ShalomGlobalContext,
     ) -> &Vec<SharedFragmentContext> {
         self.get_used_fragments()
-    }
-
-    fn add_selection(&mut self, name: String, selection: Selection) {
-        self.add_selection(name, selection)
     }
 
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable> {
         self.get_variable(name)
     }
-
-    fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {
-        self.add_union_type(name, union_selection)
-    }
-
-    fn get_union_types(&self) -> &std::collections::HashMap<String, SharedUnionSelection> {
-        self.get_union_types()
-    }
-
-    fn add_interface_type(&mut self, name: String, interface_selection: SharedInterfaceSelection) {
-        self.add_interface_type(name, interface_selection)
-    }
-
-    fn get_interface_types(&self) -> &std::collections::HashMap<String, SharedInterfaceSelection> {
-        self.get_interface_types()
-    }
 }
 
 impl ExecutableContext for FragmentContext {
-    fn get_selection(&self, name: &str) -> Option<Selection> {
-        self.get_selection(&name.to_string())
+    fn name(&self) -> &str {
+        &self.get_fragment_name()
+    }
+    fn typedefs(&self) -> &TypeDefs {
+        &self.type_defs
+    }
+    fn typedefs_mut(&mut self) -> &mut TypeDefs {
+        &mut self.type_defs
     }
 
     fn get_used_fragments(
@@ -674,10 +705,6 @@ impl ExecutableContext for FragmentContext {
         _ctx: &ShalomGlobalContext,
     ) -> &Vec<SharedFragmentContext> {
         self.get_used_fragments()
-    }
-
-    fn add_selection(&mut self, name: String, selection: Selection) {
-        self.add_selection(name, selection)
     }
 
     fn has_variables(&self) -> bool {
@@ -685,22 +712,6 @@ impl ExecutableContext for FragmentContext {
     }
     fn get_variable(&self, _name: &str) -> Option<&crate::operation::context::OperationVariable> {
         None // Fragments don't have variables
-    }
-
-    fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {
-        self.add_union_type(name, union_selection)
-    }
-
-    fn get_union_types(&self) -> &std::collections::HashMap<String, SharedUnionSelection> {
-        self.get_union_types()
-    }
-
-    fn add_interface_type(&mut self, name: String, interface_selection: SharedInterfaceSelection) {
-        self.add_interface_type(name, interface_selection)
-    }
-
-    fn get_interface_types(&self) -> &std::collections::HashMap<String, SharedInterfaceSelection> {
-        self.get_interface_types()
     }
 }
 
@@ -719,7 +730,7 @@ where
     T: ExecutableContext,
 {
     let full_name = path.clone();
-    if let Some(selection) = ctx.get_selection(&full_name) {
+    if let Some(selection) = ctx.get_selection(&full_name, &global_ctx) {
         info!("Selection already exists");
         return selection.clone();
     }
@@ -839,7 +850,7 @@ fn parse_operation(
     }
     let selection = Selection::new(selection_common, SelectionKind::Object(root_type), vec![]);
     ctx.set_root_type(selection.clone());
-    ctx.add_selection(operation_name, selection);
+    (&mut ctx as  &mut dyn ExecutableContext).add_selection(operation_name, selection);
     Ok(Arc::new(ctx))
 }
 
@@ -900,7 +911,8 @@ pub(crate) fn parse_fragment(
         let root_selection =
             Selection::new(selection_common, SelectionKind::Object(root_obj), vec![]);
         fragment_ctx.set_root_type(root_selection.clone());
-        fragment_ctx.add_selection(fragment_ctx.get_fragment_name().to_string(), root_selection);
+        let frag_name = fragment_ctx.get_fragment_name().to_string();
+        (fragment_ctx as  &mut dyn ExecutableContext).add_selection(frag_name, root_selection);
         Ok(())
     } else {
         Err(anyhow::anyhow!(

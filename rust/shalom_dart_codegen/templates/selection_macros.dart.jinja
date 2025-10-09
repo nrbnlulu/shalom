@@ -494,7 +494,17 @@
                 final {{selection.name}}$cached = this$NormalizedRecord[{{selection.name}}Normalized$Key];
                 final {{selection.name}}$raw = data["{{selection.name}}"];
                 if ({{selection.name}}$raw != null){
-                    {{ normalize_selection_in_cache(selection, selection.name, selection.name + "$cached", selection.name + "$raw", selection.name + "Normalized$Key", selection.name + "$normalizedID", "this$NormalizedRecord", "this$normalizedID", "ctx") }}
+                    {{ normalize_selection_in_cache(
+                        selection,
+                        selection.name,
+                        selection.name + "$cached",
+                        selection.name + "$raw",
+                        selection.name + "Normalized$Key",
+                        selection.name + "$normalizedID",
+                        "this$NormalizedRecord",
+                        "this$normalizedID",
+                        "ctx"
+                    ) }}
                 } else if (data.containsKey("{{selection.name}}") && {{selection.name}}$cached != null){
                         // if this field was null in the response and key exists clear the cache.
 

@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use apollo_compiler::ast::Type;
 use serde::Serialize;
 
 use super::fragments::SharedFragmentContext;
@@ -10,6 +11,48 @@ use super::types::{
 };
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 pub type OperationVariable = InputFieldDefinition;
+
+
+
+#[derive(Debug, Serialize)]
+pub struct TypeDefs{
+    selection_objects: HashMap<FullPathName, Selection>,
+    union_selections: HashMap<FullPathName, Selection>,
+    interface_selections: HashMap<FullPathName, Selection>,
+}
+impl TypeDefs{
+    pub fn new(
+    ) -> Self {
+        TypeDefs {
+            selection_objects: HashMap::new(),
+            union_selections: HashMap::new(),
+            interface_selections: HashMap::new(),
+        }
+    }
+
+    pub fn add_object_selection(&mut self, name: String, selection: Selection) {
+        self.selection_objects.entry(name.clone()).or_insert(selection);
+    }
+    
+    pub fn get_object_selection(&self, name: &FullPathName) -> Option<&Selection> {
+        self.selection_objects.get(name)
+    }
+    
+    pub fn add_union_selection(&mut self, name: String, selection: Selection) {
+        self.union_selections.entry(name.clone()).or_insert(selection);
+    }
+    pub fn get_union_selection(&self, name: &FullPathName) -> Option<&Selection> {
+        self.union_selections.get(name)
+    }
+    
+    pub fn add_interface_selection(&mut self, name: String, selection: Selection) {
+        self.interface_selections.entry(name.clone()).or_insert(selection);
+    }
+    pub fn get_interface_selection(&self, name: &FullPathName) -> Option<&Selection> {
+        self.interface_selections.get(name)
+    }
+    
+}
 
 #[derive(Debug, Serialize)]
 pub struct OperationContext {
@@ -20,7 +63,7 @@ pub struct OperationContext {
     pub file_path: PathBuf,
     query: String,
     variables: HashMap<String, OperationVariable>,
-    type_defs: HashMap<FullPathName, Selection>,
+    pub type_defs: TypeDefs,
     root_type: Option<Selection>,
     op_ty: OperationType,
     pub used_fragments: Vec<SharedFragmentContext>,
@@ -45,7 +88,7 @@ impl OperationContext {
             file_path,
             query,
             variables: HashMap::new(),
-            type_defs: HashMap::new(),
+            type_defs: TypeDefs::new(),
             root_type: None,
             op_ty,
             used_fragments: Vec::new(),
@@ -62,14 +105,6 @@ impl OperationContext {
 
     pub fn set_root_type(&mut self, root_type: Selection) {
         self.root_type = Some(root_type);
-    }
-
-    pub fn get_selection(&self, name: &FullPathName) -> Option<Selection> {
-        self.type_defs.get(name).cloned()
-    }
-
-    pub fn add_selection(&mut self, name: String, selection: Selection) {
-        self.type_defs.entry(name.clone()).or_insert(selection);
     }
 
     pub fn add_variable(&mut self, name: String, variable: OperationVariable) {
