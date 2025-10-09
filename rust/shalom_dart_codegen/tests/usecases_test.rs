@@ -79,3 +79,8 @@ fn test_list_of_fragments_dart() {
 fn test_union_selection_dart() {
     run_dart_tests_for_usecase("union_selection");
 }
+
+#[test]
+fn test_list_of_unions_dart() {
+    run_dart_tests_for_usecase("list_of_unions");
+}
