@@ -3,6 +3,10 @@ use clap::{Parser, Subcommand};
 use notify::{RecursiveMode, Watcher};
 use notify_debouncer_full::new_debouncer;
 use std::path::PathBuf;
+use std::sync::{
+    atomic::{AtomicBool, Ordering},
+    Arc,
+};
 use std::time::Duration;
 
 #[derive(Parser)]
@@ -54,10 +58,24 @@ fn main() -> Result<()> {
         Commands::Watch { path, strict } => {
             log::info!("Starting watch mode...");
 
+            // Add atomic flag to prevent concurrent codegen runs
+            let is_codegen_running = Arc::new(AtomicBool::new(false));
+
             // Run initial generation
-            match shalom_dart_codegen::codegen_entry_point(&path, strict) {
-                Ok(_) => log::info!("Initial code generation completed successfully!"),
-                Err(e) => log::error!("Initial code generation failed: {}", e),
+            {
+                let running = is_codegen_running.clone();
+                if running
+                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+                    .is_ok()
+                {
+                    match shalom_dart_codegen::codegen_entry_point(&path, strict) {
+                        Ok(_) => log::info!("Initial code generation completed successfully!"),
+                        Err(e) => log::error!("Initial code generation failed: {}", e),
+                    }
+                    running.store(false, Ordering::SeqCst);
+                } else {
+                    log::warn!("Code generation is already running, skipping initial run.");
+                }
             }
 
             let watch_path = path.clone().unwrap_or_else(|| PathBuf::from("."));
@@ -94,9 +112,20 @@ fn main() -> Result<()> {
 
                         if has_graphql_changes {
                             log::info!("GraphQL file changes detected, regenerating...");
-                            match shalom_dart_codegen::codegen_entry_point(&path, strict) {
-                                Ok(_) => log::info!("Code generation completed successfully!"),
-                                Err(e) => log::error!("Code generation failed: {}", e),
+                            let running = is_codegen_running.clone();
+                            if running
+                                .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+                                .is_ok()
+                            {
+                                match shalom_dart_codegen::codegen_entry_point(&path, strict) {
+                                    Ok(_) => log::info!("Code generation completed successfully!"),
+                                    Err(e) => log::error!("Code generation failed: {}", e),
+                                }
+                                running.store(false, Ordering::SeqCst);
+                            } else {
+                                log::warn!(
+                                    "Code generation is already running, skipping this event."
+                                );
                             }
                         }
                     }
