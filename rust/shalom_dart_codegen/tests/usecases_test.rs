@@ -51,6 +51,11 @@ fn test_union_selection_dart() {
 }
 
 #[test]
+fn test_interface_selection_dart() {
+    run_dart_tests_for_usecase("interface_selection");
+}
+
+#[test]
 fn test_list_of_scalars_dart() {
     run_dart_tests_for_usecase("list_of_scalars");
 }

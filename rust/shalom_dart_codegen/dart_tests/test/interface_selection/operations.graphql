@@ -1,0 +1,78 @@
+query GetAnimal($id: ID!) {
+  animal(id: $id) {
+    __typename
+    id
+    legs
+    sound
+    ... on Lion {
+      furColor
+    }
+    ... on Turtle {
+      shellColor
+    }
+  }
+}
+
+query GetAnimalOpt($id: ID!) {
+  animalOpt(id: $id) {
+    __typename
+    id
+    legs
+    sound
+    ... on Lion {
+      furColor
+    }
+    ... on Turtle {
+      shellColor
+    }
+  }
+}
+
+query GetAnimalAllTypes($id: ID!) {
+  animal(id: $id) {
+    __typename
+    id
+    legs
+    sound
+    ... on Lion {
+      furColor
+    }
+    ... on Turtle {
+      shellColor
+    }
+    ... on Dog {
+      breed
+    }
+  }
+}
+
+query GetAnimals {
+  animals {
+    __typename
+    id
+    legs
+    sound
+    ... on Lion {
+      furColor
+    }
+    ... on Turtle {
+      shellColor
+    }
+  }
+}
+
+query GetAnimalWithoutTopTypename($id: ID!) {
+  animal(id: $id) {
+    id
+    legs
+    sound
+    ... on Lion {
+      __typename
+      furColor
+    }
+    ... on Turtle {
+      __typename
+      shellColor
+    }
+  }
+}
