@@ -13,10 +13,10 @@
 - [x] fragments
 - [ ] list of
     - [x] scalars
-    - [ ] custom scalars
+    - [x] custom scalars
     - [x] objects
-    - [ ] enums
-    - [ ] unions
+    - [x] enums
+    - [x] unions
     - [x] fragments
     - [ ] nested list
 - [x] Node interface real time updates.
