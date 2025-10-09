@@ -1,0 +1,114 @@
+use anyhow::Result;
+use clap::{Parser, Subcommand};
+use notify::{RecursiveMode, Watcher};
+use notify_debouncer_full::new_debouncer;
+use std::path::PathBuf;
+use std::time::Duration;
+
+#[derive(Parser)]
+#[command(name = "shalom")]
+#[command(about = "GraphQL code generator for Dart and Flutter", long_about = None)]
+struct Cli {
+    #[command(subcommand)]
+    command: Commands,
+}
+
+#[derive(Subcommand)]
+enum Commands {
+    /// Generate Dart code from GraphQL schema and operations
+    Generate {
+        /// Path to the project directory (defaults to current directory)
+        #[arg(short, long)]
+        path: Option<PathBuf>,
+
+        /// Fail on first error instead of continuing
+        #[arg(short, long, default_value_t = false)]
+        strict: bool,
+    },
+    /// Watch for changes in GraphQL files and regenerate code
+    Watch {
+        /// Path to the project directory (defaults to current directory)
+        #[arg(short, long)]
+        path: Option<PathBuf>,
+
+        /// Fail on first error instead of continuing
+        #[arg(short, long, default_value_t = false)]
+        strict: bool,
+    },
+}
+
+fn main() -> Result<()> {
+    simple_logger::SimpleLogger::new()
+        .with_level(log::LevelFilter::Info)
+        .init()
+        .unwrap();
+
+    let cli = Cli::parse();
+
+    match cli.command {
+        Commands::Generate { path, strict } => {
+            log::info!("Running code generation...");
+            shalom_dart_codegen::codegen_entry_point(&path, strict)?;
+            log::info!("Code generation completed successfully!");
+        }
+        Commands::Watch { path, strict } => {
+            log::info!("Starting watch mode...");
+
+            // Run initial generation
+            match shalom_dart_codegen::codegen_entry_point(&path, strict) {
+                Ok(_) => log::info!("Initial code generation completed successfully!"),
+                Err(e) => log::error!("Initial code generation failed: {}", e),
+            }
+
+            let watch_path = path.clone().unwrap_or_else(|| PathBuf::from("."));
+
+            log::info!(
+                "Watching {} for changes in .graphql and .gql files...",
+                watch_path.display()
+            );
+            log::info!("Press Ctrl+C to stop watching");
+
+            let (tx, rx) = std::sync::mpsc::channel();
+
+            // Create a debouncer with 500ms delay
+            let mut debouncer = new_debouncer(Duration::from_millis(500), None, tx)?;
+
+            // Watch the path recursively
+            debouncer
+                .watcher()
+                .watch(&watch_path, RecursiveMode::Recursive)?;
+
+            // Process events
+            for result in rx {
+                match result {
+                    Ok(events) => {
+                        // Check if any event involves a .graphql or .gql file
+                        let has_graphql_changes = events.iter().any(|event| {
+                            event.paths.iter().any(|path| {
+                                path.extension()
+                                    .and_then(|ext| ext.to_str())
+                                    .map(|ext| ext == "graphql" || ext == "gql")
+                                    .unwrap_or(false)
+                            })
+                        });
+
+                        if has_graphql_changes {
+                            log::info!("GraphQL file changes detected, regenerating...");
+                            match shalom_dart_codegen::codegen_entry_point(&path, strict) {
+                                Ok(_) => log::info!("Code generation completed successfully!"),
+                                Err(e) => log::error!("Code generation failed: {}", e),
+                            }
+                        }
+                    }
+                    Err(errors) => {
+                        for error in errors {
+                            log::error!("Watch error: {:?}", error);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Ok(())
+}

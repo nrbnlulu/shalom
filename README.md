@@ -2,6 +2,63 @@
 
 ### (WIP 🚧) GraphQL client for dart and flutter.
 
+### CLI Usage
+
+The `shalom` CLI provides commands to generate Dart code from your GraphQL schema and operations.
+
+#### Installation
+
+Build the CLI from source:
+
+```bash
+cd rust/shalom_dart_codegen
+cargo build --release
+```
+
+The binary will be available at `rust/target/release/shalom`.
+
+#### Commands
+
+**Generate**
+
+Generate Dart code from GraphQL schema and operations:
+
+```bash
+shalom generate [OPTIONS]
+```
+
+Options:
+- `-p, --path <PATH>`: Path to the project directory (defaults to current directory)
+- `-s, --strict`: Fail on first error instead of continuing
+
+Example:
+```bash
+shalom generate --path ./my-project --strict
+```
+
+**Watch**
+
+Watch for changes in GraphQL files (`.graphql` and `.gql`) and automatically regenerate code:
+
+```bash
+shalom watch [OPTIONS]
+```
+
+Options:
+- `-p, --path <PATH>`: Path to the project directory (defaults to current directory)
+- `-s, --strict`: Fail on first error instead of continuing
+
+Example:
+```bash
+shalom watch --path ./my-project
+```
+
+The watch command will:
+1. Run an initial code generation
+2. Monitor the specified directory for changes to `.graphql` and `.gql` files
+3. Automatically regenerate code when changes are detected
+4. Continue watching until you press Ctrl+C
+
 ### Roadmap
 
 - [x] builtin scalars
