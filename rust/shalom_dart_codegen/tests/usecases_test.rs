@@ -41,6 +41,21 @@ fn test_list_of_objects_dart() {
 }
 
 #[test]
+fn test_list_of_unions_dart() {
+    run_dart_tests_for_usecase("list_of_unions");
+}
+
+#[test]
+fn test_list_of_custom_scalars_dart() {
+    run_dart_tests_for_usecase("list_of_custom_scalars");
+}
+
+#[test]
+fn test_list_of_enums_dart() {
+    run_dart_tests_for_usecase("list_of_enums");
+}
+
+#[test]
 fn test_fragments_dart() {
     run_dart_tests_for_usecase("fragments");
 }
@@ -63,9 +78,4 @@ fn test_list_of_fragments_dart() {
 #[test]
 fn test_union_selection_dart() {
     run_dart_tests_for_usecase("union_selection");
-}
-
-#[test]
-fn test_list_of_unions_dart() {
-    run_dart_tests_for_usecase("list_of_unions");
 }

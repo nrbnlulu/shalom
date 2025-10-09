@@ -1,0 +1,8 @@
+scalar Point
+
+type Query {
+  pointsRequired: [Point!]!
+  pointsOptional: [Point!]
+  optionalPoints: [Point]!
+  pointsFullyOptional: [Point]
+}
