@@ -66,21 +66,21 @@ impl Selection {
     pub fn self_selection_name(&self) -> &String {
         &self.selection_common.name
     }
-    
+
     pub fn as_interface_selection(&self) -> Option<&SharedInterfaceSelection> {
         match &self.kind {
             SelectionKind::Interface(selection) => Some(selection),
             _ => None,
         }
     }
-    
+
     pub fn as_union_selection(&self) -> Option<&SharedUnionSelection> {
         match &self.kind {
             SelectionKind::Union(selection) => Some(selection),
             _ => None,
         }
     }
-    
+
     pub fn as_object_selection(&self) -> Option<&SharedObjectSelection> {
         match &self.kind {
             SelectionKind::Object(selection) => Some(selection),

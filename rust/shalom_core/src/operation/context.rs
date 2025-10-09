@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use apollo_compiler::ast::Type;
 use serde::Serialize;
 
 use super::fragments::SharedFragmentContext;
@@ -12,17 +11,14 @@ use super::types::{
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 pub type OperationVariable = InputFieldDefinition;
 
-
-
 #[derive(Debug, Serialize)]
-pub struct TypeDefs{
-    selection_objects: HashMap<FullPathName, Selection>,
-    union_selections: HashMap<FullPathName, Selection>,
-    interface_selections: HashMap<FullPathName, Selection>,
+pub struct TypeDefs {
+    pub selection_objects: HashMap<FullPathName, Selection>,
+    pub union_selections: HashMap<FullPathName, Selection>,
+    pub interface_selections: HashMap<FullPathName, Selection>,
 }
-impl TypeDefs{
-    pub fn new(
-    ) -> Self {
+impl TypeDefs {
+    pub fn new() -> Self {
         TypeDefs {
             selection_objects: HashMap::new(),
             union_selections: HashMap::new(),
@@ -31,27 +27,38 @@ impl TypeDefs{
     }
 
     pub fn add_object_selection(&mut self, name: String, selection: Selection) {
-        self.selection_objects.entry(name.clone()).or_insert(selection);
+        self.selection_objects
+            .entry(name.clone())
+            .or_insert(selection);
     }
-    
+
     pub fn get_object_selection(&self, name: &FullPathName) -> Option<&Selection> {
         self.selection_objects.get(name)
     }
-    
+
     pub fn add_union_selection(&mut self, name: String, selection: Selection) {
-        self.union_selections.entry(name.clone()).or_insert(selection);
+        self.union_selections
+            .entry(name.clone())
+            .or_insert(selection);
     }
     pub fn get_union_selection(&self, name: &FullPathName) -> Option<&Selection> {
         self.union_selections.get(name)
     }
-    
+
     pub fn add_interface_selection(&mut self, name: String, selection: Selection) {
-        self.interface_selections.entry(name.clone()).or_insert(selection);
+        self.interface_selections
+            .entry(name.clone())
+            .or_insert(selection);
     }
     pub fn get_interface_selection(&self, name: &FullPathName) -> Option<&Selection> {
         self.interface_selections.get(name)
     }
-    
+}
+
+impl Default for TypeDefs {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 #[derive(Debug, Serialize)]

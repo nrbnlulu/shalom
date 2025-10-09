@@ -35,7 +35,7 @@ abstract class {{ fragment_name }} {
 }
 
 // Generate data classes for nested object selections
-{% for selection_name, selection in fragment_selections | items %}
+{% for selection_name, selection in fragment_selections.selection_objects | items %}
     {# Skip union/interface member objects - they'll be generated in UNION/INTERFACE DEFINITIONS #}
     {% if selection_name | get_parent_union or selection_name | get_parent_interface %}
         {# This is a union or interface member, skip it here #}
@@ -56,7 +56,7 @@ abstract class {{ fragment_name }} {
         {# Generate union member object using the unified macro with shared selections #}
         {% set member_full_name = union_full_name ~ "_" ~ type_condition %}
         {# Look up the full Selection from context which includes arguments #}
-        {% set member_selection = fragment.context.context.type_defs[member_full_name] %}
+        {% set member_selection = fragment.context.context.type_defs.selection_objects[member_full_name] %}
         {# We need to create a wrapper that passes shared_selections to selection_object_impl #}
         class {{ member_full_name }} extends {{ union_full_name }}{% if obj_selection.used_fragments | length > 0 %}, implements {% for frag_name in obj_selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
             {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_union_member=true, shared_selections=union_selection.shared_selections) }}
@@ -65,10 +65,8 @@ abstract class {{ fragment_name }} {
 {% endfor %}
 
 {# Then generate union sealed classes #}
-{% for selection_name, selection in fragment_selections | items %}
-    {% if selection.kind == "Union" %}
-        {{ selection_union_definition(selection_name, selection) }}
-    {% endif %}
+{% for selection_name, selection in fragment_selections.union_selections | items %}
+    {{ selection_union_definition(selection_name, selection) }}
 {% endfor %}
 
 // ------------ END UNION DEFINITIONS -------------
@@ -82,7 +80,7 @@ abstract class {{ fragment_name }} {
         {# Generate interface member object using the unified macro with shared selections #}
         {% set member_full_name = interface_full_name ~ "_" ~ type_condition %}
         {# Look up the full Selection from context which includes arguments #}
-        {% set member_selection = fragment.context.context.type_defs[member_full_name] %}
+        {% set member_selection = fragment.context.context.type_defs.selection_objects[member_full_name] %}
         class {{ member_full_name }} extends {{ interface_full_name }}{% if obj_selection.used_fragments | length > 0 %}, implements {% for frag_name in obj_selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
             {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_union_member=true, shared_selections=interface_selection.shared_selections) }}
         }
@@ -98,10 +96,8 @@ abstract class {{ fragment_name }} {
 {% endfor %}
 
 {# Then generate interface abstract classes #}
-{% for selection_name, selection in fragment_selections | items %}
-    {% if selection.kind == "Interface" %}
-        {{ selection_interface_definition(selection_name, selection) }}
-    {% endif %}
+{% for selection_name, selection in fragment_selections.interface_selections | items %}
+    {{ selection_interface_definition(selection_name, selection) }}
 {% endfor %}
 
 // ------------ END INTERFACE DEFINITIONS -------------

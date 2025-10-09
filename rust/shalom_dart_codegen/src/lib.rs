@@ -408,7 +408,7 @@ fn selection_kind_uses_variables<T: ExecutableContext>(
         return false;
     }
     match selection_kind {
-        SelectionKind::Object(obj) => ctx.get_selection(&obj.full_name).is_some(),
+        SelectionKind::Object(obj) => ctx.get_object_selection(&obj.full_name).is_some(),
         SelectionKind::List(list) => selection_kind_uses_variables(ctx, &list.of_kind),
         SelectionKind::Union(union) => ctx.get_union_types().contains_key(&union.full_name),
         SelectionKind::Interface(interface) => {
@@ -475,8 +475,10 @@ where
     let executable_ctx_clone1 = executable_ctx.clone();
 
     env.add_function("is_type_implements_node", move |full_name: &str| {
-        if let Some(selection) = executable_ctx_clone1.get_selection(full_name) {
-            match selection.kind {
+        if let Some(selection) =
+            executable_ctx_clone1.get_selection(&full_name.to_string(), &ctx_clone1)
+        {
+            match &selection.kind {
                 SelectionKind::Object(object_selection) => ctx_clone1
                     .schema_ctx
                     .is_type_implements_node(&object_selection.concrete_typename),
@@ -492,8 +494,9 @@ where
     env.add_function(
         "get_id_selection",
         move |full_name: &str| -> Option<minijinja::Value> {
-            let selection = executable_ctx_clone2.get_selection(full_name)?;
-            match selection.kind {
+            let selection =
+                executable_ctx_clone2.get_selection(&full_name.to_string(), &ctx_clone2)?;
+            match &selection.kind {
                 SelectionKind::Object(object_selection) => object_selection
                     .get_id_selection_with_fragments(&ctx_clone2)
                     .map(minijinja::Value::from_serialize),
@@ -505,8 +508,9 @@ where
     let ctx_clone3 = ctx.clone();
     let executable_ctx_clone3 = executable_ctx.clone();
     env.add_function("get_all_selections_for_object", move |object_name: &str| {
-        let object_selection = executable_ctx_clone3.get_selection_impl(object_name, &ctx_clone3);
-        let selections = match object_selection.kind {
+        let object_selection =
+            executable_ctx_clone3.get_selection(&object_name.to_string(), &ctx_clone3);
+        let selections = match &object_selection.unwrap().kind {
             SelectionKind::Object(object_selection) => {
                 object_selection.get_all_selections(&ctx_clone3)
             }
@@ -576,8 +580,8 @@ impl OperationEnv<'_> {
             "get_id_selection",
             move |full_name: &str| -> Option<minijinja::Value> {
                 // First try to find in the operation context
-                let selection = op_ctx_clone.get_selection_impl(full_name, &ctx_clone);
-                match selection.kind {
+                let selection = op_ctx_clone.get_selection(&full_name.to_string(), &ctx_clone)?;
+                match &selection.kind {
                     SelectionKind::Object(object_selection) => object_selection
                         .get_id_selection_with_fragments(&ctx_clone)
                         .map(minijinja::Value::from_serialize),

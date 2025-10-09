@@ -10,7 +10,7 @@ use log::{info, trace};
 use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
 use crate::operation::context::TypeDefs;
 use crate::operation::types::{
-    FieldArgument, ObjectSelection, SelectionCommon, SelectionKind, SharedSelection,
+    FieldArgument, FullPathName, ObjectSelection, SelectionCommon, SelectionKind,
 };
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
@@ -602,7 +602,7 @@ pub trait ExecutableContext: Send + Sync + 'static {
     ) -> &Vec<SharedFragmentContext>;
 
     fn name(&self) -> &str;
-    
+
     fn get_selection(&self, name: &String, ctx: &ShalomGlobalContext) -> Option<&Selection> {
         self.get_object_selection(name)
             .or_else(|| self.get_union_selection(name))
@@ -621,15 +621,14 @@ pub trait ExecutableContext: Send + Sync + 'static {
             SelectionKind::Object(_) => self.add_object_selection(name, selection),
             SelectionKind::Interface(_) => self.add_interface_selection(name, selection),
             SelectionKind::Union(_) => self.add_union_selection(name, selection),
-            _=>(),
+            _ => (),
         }
     }
-    
+
     fn get_selection_strict(&self, name: &String, ctx: &ShalomGlobalContext) -> &Selection {
-        self.get_selection(name, ctx).expect(
-            &format!("selection for {name} not found neither in this context nor in its fragments")
-                .to_string(),
-        )
+        self.get_selection(name, ctx).unwrap_or_else(|| {
+            panic!("selection for {name} not found neither in this context nor in its fragments")
+        })
     }
 
     fn typedefs(&self) -> &TypeDefs;
@@ -660,6 +659,11 @@ pub trait ExecutableContext: Send + Sync + 'static {
     fn get_interface_selection(&self, name: &String) -> Option<&Selection> {
         self.typedefs().get_interface_selection(name)
     }
+
+    fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection);
+    fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection>;
+    fn add_interface_type(&mut self, name: String, interface_selection: SharedInterfaceSelection);
+    fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection>;
 }
 
 impl ExecutableContext for OperationContext {
@@ -686,11 +690,27 @@ impl ExecutableContext for OperationContext {
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable> {
         self.get_variable(name)
     }
+
+    fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {
+        self.add_union_type(name, union_selection)
+    }
+
+    fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection> {
+        self.get_union_types()
+    }
+
+    fn add_interface_type(&mut self, name: String, interface_selection: SharedInterfaceSelection) {
+        self.add_interface_type(name, interface_selection)
+    }
+
+    fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection> {
+        self.get_interface_types()
+    }
 }
 
 impl ExecutableContext for FragmentContext {
     fn name(&self) -> &str {
-        &self.get_fragment_name()
+        self.get_fragment_name()
     }
     fn typedefs(&self) -> &TypeDefs {
         &self.type_defs
@@ -713,6 +733,22 @@ impl ExecutableContext for FragmentContext {
     fn get_variable(&self, _name: &str) -> Option<&crate::operation::context::OperationVariable> {
         None // Fragments don't have variables
     }
+
+    fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {
+        self.add_union_type(name, union_selection)
+    }
+
+    fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection> {
+        self.get_union_types()
+    }
+
+    fn add_interface_type(&mut self, name: String, interface_selection: SharedInterfaceSelection) {
+        self.add_interface_type(name, interface_selection)
+    }
+
+    fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection> {
+        self.get_interface_types()
+    }
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -730,7 +766,7 @@ where
     T: ExecutableContext,
 {
     let full_name = path.clone();
-    if let Some(selection) = ctx.get_selection(&full_name, &global_ctx) {
+    if let Some(selection) = ctx.get_selection(&full_name, global_ctx) {
         info!("Selection already exists");
         return selection.clone();
     }
@@ -850,7 +886,7 @@ fn parse_operation(
     }
     let selection = Selection::new(selection_common, SelectionKind::Object(root_type), vec![]);
     ctx.set_root_type(selection.clone());
-    (&mut ctx as  &mut dyn ExecutableContext).add_selection(operation_name, selection);
+    (&mut ctx as &mut dyn ExecutableContext).add_selection(operation_name, selection);
     Ok(Arc::new(ctx))
 }
 
@@ -912,7 +948,7 @@ pub(crate) fn parse_fragment(
             Selection::new(selection_common, SelectionKind::Object(root_obj), vec![]);
         fragment_ctx.set_root_type(root_selection.clone());
         let frag_name = fragment_ctx.get_fragment_name().to_string();
-        (fragment_ctx as  &mut dyn ExecutableContext).add_selection(frag_name, root_selection);
+        (fragment_ctx as &mut dyn ExecutableContext).add_selection(frag_name, root_selection);
         Ok(())
     } else {
         Err(anyhow::anyhow!(
