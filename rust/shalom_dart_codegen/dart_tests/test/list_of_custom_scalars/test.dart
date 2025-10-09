@@ -2,7 +2,6 @@ import "dart:async";
 
 import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
-import "point.dart";
 import "__graphql__/GetPointsRequired.shalom.dart";
 import "__graphql__/GetPointsOptional.shalom.dart";
 import "__graphql__/GetOptionalPoints.shalom.dart";
