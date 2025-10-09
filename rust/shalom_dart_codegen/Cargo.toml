@@ -3,7 +3,14 @@ name = "shalom_dart_codegen"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "shalom"
+path = "src/main.rs"
+
 [dependencies]
+clap = { version = "4.5", features = ["derive"] }
+notify = "6.1"
+notify-debouncer-full = "0.3"
 serde = {workspace = true}
 serde_json = {workspace = true}
 minijinja = {workspace = true}
