@@ -3,7 +3,7 @@ use std::{collections::HashMap, sync::Arc};
 
 use serde::Serialize;
 
-use super::types::{FullPathName, Selection, SharedUnionSelection};
+use super::types::{FullPathName, Selection, SharedInterfaceSelection, SharedUnionSelection};
 
 use crate::context::ShalomGlobalContext;
 use crate::operation::types::SelectionKind;
@@ -24,6 +24,7 @@ pub struct FragmentContext {
     pub used_fragments: Vec<SharedFragmentContext>,
     pub type_condition: String,
     union_types: HashMap<FullPathName, SharedUnionSelection>,
+    interface_types: HashMap<FullPathName, SharedInterfaceSelection>,
 }
 
 impl FragmentContext {
@@ -44,6 +45,7 @@ impl FragmentContext {
             used_fragments: Vec::new(),
             type_condition,
             union_types: HashMap::new(),
+            interface_types: HashMap::new(),
         }
     }
 
@@ -99,6 +101,20 @@ impl FragmentContext {
 
     pub fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection> {
         &self.union_types
+    }
+
+    pub fn add_interface_type(
+        &mut self,
+        name: String,
+        interface_selection: SharedInterfaceSelection,
+    ) {
+        self.interface_types
+            .entry(name)
+            .or_insert(interface_selection);
+    }
+
+    pub fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection> {
+        &self.interface_types
     }
 }
 

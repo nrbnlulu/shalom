@@ -5,7 +5,9 @@ use std::sync::Arc;
 use serde::Serialize;
 
 use super::fragments::SharedFragmentContext;
-use super::types::{FullPathName, OperationType, Selection, SharedUnionSelection};
+use super::types::{
+    FullPathName, OperationType, Selection, SharedInterfaceSelection, SharedUnionSelection,
+};
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 pub type OperationVariable = InputFieldDefinition;
 
@@ -23,6 +25,7 @@ pub struct OperationContext {
     op_ty: OperationType,
     pub used_fragments: Vec<SharedFragmentContext>,
     union_types: HashMap<FullPathName, SharedUnionSelection>,
+    interface_types: HashMap<FullPathName, SharedInterfaceSelection>,
 }
 
 unsafe impl Send for OperationContext {}
@@ -47,6 +50,7 @@ impl OperationContext {
             op_ty,
             used_fragments: Vec::new(),
             union_types: HashMap::new(),
+            interface_types: HashMap::new(),
         }
     }
     pub fn get_operation_name(&self) -> &str {
@@ -89,6 +93,20 @@ impl OperationContext {
 
     pub fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection> {
         &self.union_types
+    }
+
+    pub fn add_interface_type(
+        &mut self,
+        name: String,
+        interface_selection: SharedInterfaceSelection,
+    ) {
+        self.interface_types
+            .entry(name)
+            .or_insert(interface_selection);
+    }
+
+    pub fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection> {
+        &self.interface_types
     }
 }
 

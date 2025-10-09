@@ -78,6 +78,43 @@
         {% else %}
             {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
         {% endif %}
+    {% elif selection.kind == "Interface" %}
+        if ({{cached_sym}} == null){
+            {{ctx}}.addChangedRecord({{normalized_id}});
+        }
+        {{selection.full_name}}.normalize$inCache(
+            {{raw_sym}} as JsonObject,
+            {{ctx}},
+            {{"variables,"  if selection_kind_uses_variables(selection)}}
+            this$cached: {{cached_sym}} is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{cached_sym}}.normalizedID()): {{cached_sym}},
+            this$fieldName: {{normalized_key}},
+            parent$record: {{this_normalized_record}},
+            parent$normalizedID: {{this_normalized_id}}
+        );
+
+        {# Store the normalized representation in parent record #}
+        {% set first_member = selection.inline_fragments | items | first %}
+        {% if first_member %}
+            {% set id_field = get_id_selection(first_member[1].full_name) %}
+            {% if id_field is not none %}
+                final {{selection_name}}$id = ({{raw_sym}} as JsonObject)["{{id_field.name}}"] as RecordID?;
+                final {{selection_name}}$typename = ({{raw_sym}} as JsonObject)["__typename"] as String?;
+                if ({{selection_name}}$id != null && {{selection_name}}$typename != null) {
+                    final {{selection_name}}$normalized = NormalizedObjectRecord(typename: {{selection_name}}$typename, id: {{selection_name}}$id);
+                    {{this_normalized_record}}[{{normalized_key}}] = {{selection_name}}$normalized;
+                    {# Check if the reference changed #}
+                    if ({{cached_sym}} != null && {{cached_sym}} is NormalizedObjectRecord && {{cached_sym}} != {{selection_name}}$normalized) {
+                        {{ctx}}.addChangedRecord({{normalized_id}});
+                    }
+                } else {
+                    {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
+                }
+            {% else %}
+                {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
+            {% endif %}
+        {% else %}
+            {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
+        {% endif %}
     {% elif selection.kind == "List" %}
         {% set inner_selection = selection.of_kind %}
         {# List - recursively normalize each item via the macro #}
@@ -242,6 +279,14 @@
                     {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx)
                 : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
 
+    {% elif selection.kind == "Interface" %}
+        {% if is_optional %}
+            {{ value_symbol }} == null ? null :
+        {% endif -%}
+                ({{value_symbol}} is  NormalizedObjectRecord)?
+                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx)
+                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
+
     {% elif selection.kind == "Enum" %}
         {% set typename = selection.concrete_type.name %}
         {% if is_optional %}
@@ -286,6 +331,12 @@
             {{ value_symbol }}.toJson()
         {% endif %}
     {% elif selection.kind == "Union" %}
+        {% if is_optional %}
+            {{ value_symbol }}?.toJson()
+        {% else %}
+            {{ value_symbol }}.toJson()
+        {% endif %}
+    {% elif selection.kind == "Interface" %}
         {% if is_optional %}
             {{ value_symbol }}?.toJson()
         {% else %}
@@ -643,5 +694,208 @@
 
         @override
         int get hashCode;
+    }
+{% endmacro %}
+
+{# Macro for interface selection sealed class - similar to union but with fallback support -#}
+{% macro selection_interface_definition(full_name, selection) -%}
+    // Interface abstract class
+    abstract class {{ full_name }} {
+        const {{ full_name }}();
+
+        static void normalize$inCache(
+            JsonObject data,
+            CacheUpdateContext ctx,
+            {% if op_variables_exist %}{{ operation_name }}Variables variables,{% endif %}
+            {
+                required RecordID this$fieldName,
+                required JsonObject parent$record,
+                required RecordID parent$normalizedID,
+                required JsonObject? this$cached
+            }
+        ) {
+            final typename = data["__typename"] as String;
+            switch (typename) {
+                {% for type_condition, obj_selection in selection.inline_fragments | items %}
+                case "{{ type_condition }}":
+                    {{ full_name }}_{{ type_condition }}.normalize$inCache(
+                        data,
+                        ctx,
+                        this$cached: this$cached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord((this$cached as NormalizedObjectRecord).normalizedID()): this$cached,
+                        this$fieldName: this$fieldName,
+                        parent$record: parent$record,
+                        parent$normalizedID: parent$normalizedID
+                    );
+                    break;
+                {% endfor %}
+                default:
+                    {% if selection.has_fallback %}
+                    {{ full_name }}_Fallback.normalize$inCache(
+                        data,
+                        ctx,
+                        this$cached: this$cached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord((this$cached as NormalizedObjectRecord).normalizedID()): this$cached,
+                        this$fieldName: this$fieldName,
+                        parent$record: parent$record,
+                        parent$normalizedID: parent$normalizedID
+                    );
+                    {% else %}
+                    throw Exception("Unknown __typename: $typename for interface {{ selection.interface_type.name }}");
+                    {% endif %}
+            }
+        }
+
+        static {{ full_name }} fromCached(NormalizedRecordData data, ShalomCtx ctx) {
+            // For interfaces, data is either a String (normalized cache key) or JsonObject (inline data)
+            if (data is String) {
+                // Normalized interface: data is the cache key, fetch the actual record
+                final actualData = ctx.getCachedRecord(data);
+                final typename = actualData["__typename"] as String;
+                switch (typename) {
+                    {% for type_condition, obj_selection in selection.inline_fragments | items %}
+                    case "{{ type_condition }}":
+                        return {{ full_name }}_{{ type_condition }}.fromCached(actualData, ctx);
+                    {% endfor %}
+                    default:
+                        {% if selection.has_fallback %}
+                        return {{ full_name }}_Fallback.fromCached(actualData, ctx);
+                        {% else %}
+                        throw Exception("Unknown __typename: $typename for interface {{ selection.interface_type.name }}");
+                        {% endif %}
+                }
+            } else {
+                // Non-normalized interface: data is the JsonObject directly
+                final typename = data["__typename"] as String;
+                switch (typename) {
+                    {% for type_condition, obj_selection in selection.inline_fragments | items %}
+                    case "{{ type_condition }}":
+                        return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx);
+                    {% endfor %}
+                    default:
+                        {% if selection.has_fallback %}
+                        return {{ full_name }}_Fallback.fromCached(data, ctx);
+                        {% else %}
+                        throw Exception("Unknown __typename: $typename for interface {{ selection.interface_type.name }}");
+                        {% endif %}
+                }
+            }
+        }
+
+        JsonObject toJson();
+
+        @override
+        bool operator ==(Object other);
+
+        @override
+        int get hashCode;
+    }
+{% endmacro %}
+
+{# Macro for interface fallback class implementation - generates class directly from shared selections #}
+{% macro selection_interface_fallback_impl(fallback_class_name, interface_selection) -%}
+    {% set selections = interface_selection.shared_selections %}
+    /// class members
+    {% for selection in selections -%}
+    {% if selection.name == "__typename" %}
+    final {{ type_name_for_selection(selection) }} typename_;
+    {% else %}
+    final {{ type_name_for_selection(selection) }} {{ selection.name }};
+    {% endif %}
+    {% endfor %}
+
+    // Getter for typename (public accessor for __typename field)
+    {% for selection in selections -%}
+    {% if selection.name == "__typename" %}
+    String get typename => typename_;
+    {% endif %}
+    {% endfor %}
+
+    {% set has_typename = selections | selectattr('name', 'equalto', '__typename') | list | length > 0 %}
+    const {{ fallback_class_name }}({
+        {% for selection in selections -%}
+        {% if selection.name == "__typename" %}
+        required String $typename,
+        {% else %}
+        required this.{{ selection.name }},
+        {% endif %}
+        {% endfor %}
+    }){% if has_typename %} : typename_ = $typename{% endif %};
+
+    static void normalize$inCache(
+        JsonObject data,
+        CacheUpdateContext ctx,
+        {
+            required RecordID this$fieldName,
+            required JsonObject parent$record,
+            required RecordID parent$normalizedID,
+            required JsonObject? this$cached
+        }
+    ) {
+        final this$normalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+        final this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
+
+        {% for selection in selections %}
+        {# Normalize each selection #}
+        {% set selection_name = selection.name %}
+        final {{selection_name}}$raw = data["{{selection_name}}"];
+        final {{selection_name}}$cached = this$cached?["{{selection_name}}"];
+        {{ normalize_selection_in_cache(selection.kind, selection_name, selection_name + "$cached", selection_name + "$raw", '"' + selection_name + '"', "this$normalizedID", "this$normalizedRecord", "this$normalizedID", "ctx") }}
+        {% endfor %}
+    }
+
+    static {{ fallback_class_name }} fromCached(NormalizedRecordData data, ShalomCtx ctx) {
+        final record = data is String ? ctx.getCachedRecord(data) : data as JsonObject;
+        {% for selection in selections -%}
+            {% set raw_value_symbol = selection.name + '$raw' -%}
+            final {{raw_value_symbol}} = record["{{selection.name}}"];
+            final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_cache_macro(raw_value_symbol, selection, selection.kind.is_optional if selection.kind is mapping else false, op_variables) }};
+        {% endfor -%}
+        return {{ fallback_class_name }}(
+            {% for selection in selections -%}
+            {% if selection.name == "__typename" %}
+            $typename: {{selection.name}}$value,
+            {% else %}
+            {{ selection.name }}: {{selection.name}}$value,
+            {% endif %}
+            {% endfor %}
+        );
+    }
+
+    @override
+    JsonObject toJson() {
+        return {
+            {% for selection in selections -%}
+            {% if selection.name == "__typename" %}
+            "{{ selection.name }}": {{ _serialize_selection_value_macro("this.typename_", selection, false) }},
+            {% else %}
+            "{{ selection.name }}": {{ _serialize_selection_value_macro("this." + selection.name, selection, false) }},
+            {% endif %}
+            {% endfor %}
+        };
+    }
+
+    @override
+    bool operator ==(Object other) {
+        if (identical(this, other)) return true;
+        return other is {{ fallback_class_name }}
+        {% for selection in selections -%}
+        {% if selection.name == "__typename" %}
+            && other.typename_ == typename_
+        {% else %}
+            && other.{{ selection.name }} == {{ selection.name }}
+        {% endif %}
+        {% endfor %};
+    }
+
+    @override
+    int get hashCode {
+        return Object.hash(
+            {% for selection in selections -%}
+            {% if selection.name == "__typename" %}
+            typename_,
+            {% else %}
+            {{ selection.name }},
+            {% endif %}
+            {% endfor %}
+        );
     }
 {% endmacro %}

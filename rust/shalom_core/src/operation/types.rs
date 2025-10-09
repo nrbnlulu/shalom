@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     context::ShalomGlobalContext,
     operation::context::OperationVariable,
-    schema::types::{EnumType, ScalarType, UnionType},
+    schema::types::{EnumType, InterfaceType, ScalarType, UnionType},
 };
 
 /// the name of i.e object in a graphql query based on the parent fields.
@@ -78,6 +78,7 @@ pub enum SelectionKind {
     Enum(Rc<EnumSelection>),
     List(Rc<ListSelection>),
     Union(Rc<UnionSelection>),
+    Interface(Rc<InterfaceSelection>),
 }
 impl SelectionKind {
     pub fn new_list(is_optional: bool, of_kind: SelectionKind) -> Self {
@@ -292,6 +293,111 @@ impl UnionSelection {
                 .iter()
                 .any(|s| s.self_selection_name() == "__typename")
         })
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InterfaceSelection {
+    pub full_name: String,
+    pub interface_type: Node<InterfaceType>,
+    pub is_optional: bool,
+    /// Shared fields that all implementations have (from interface definition)
+    pub shared_selections: RefCell<Vec<Selection>>,
+    /// Map of typename -> concrete object selection for inline fragments
+    pub inline_fragments: RefCell<HashMap<String, SharedObjectSelection>>,
+    /// Whether to generate a fallback class for uncovered implementations
+    pub has_fallback: bool,
+}
+
+pub type SharedInterfaceSelection = Rc<InterfaceSelection>;
+
+impl InterfaceSelection {
+    pub fn new(
+        full_name: String,
+        interface_type: Node<InterfaceType>,
+        is_optional: bool,
+        has_fallback: bool,
+    ) -> SharedInterfaceSelection {
+        Rc::new(InterfaceSelection {
+            full_name,
+            interface_type,
+            is_optional,
+            shared_selections: RefCell::new(Vec::new()),
+            inline_fragments: RefCell::new(HashMap::new()),
+            has_fallback,
+        })
+    }
+
+    pub fn add_shared_selection(&self, selection: Selection) {
+        self.shared_selections.borrow_mut().push(selection);
+    }
+
+    pub fn add_inline_fragment(
+        &self,
+        type_condition: String,
+        object_selection: SharedObjectSelection,
+    ) {
+        self.inline_fragments
+            .borrow_mut()
+            .insert(type_condition, object_selection);
+    }
+
+    /// Check if __typename is selected either at the top level or in all inline fragments
+    pub fn has_typename_selection(&self) -> bool {
+        // Check shared selections for __typename
+        let has_shared_typename = self
+            .shared_selections
+            .borrow()
+            .iter()
+            .any(|s| s.self_selection_name() == "__typename");
+
+        if has_shared_typename {
+            return true;
+        }
+
+        // Check if all inline fragments have __typename
+        let fragments = self.inline_fragments.borrow();
+        if fragments.is_empty() {
+            return false;
+        }
+
+        fragments.values().all(|obj| {
+            obj.selections
+                .borrow()
+                .iter()
+                .any(|s| s.self_selection_name() == "__typename")
+        })
+    }
+
+    /// Get all concrete types that implement this interface from the schema
+    pub fn get_all_implementations(&self, ctx: &ShalomGlobalContext) -> Vec<String> {
+        let types = ctx.schema_ctx.schema.types.iter();
+        let interface_name = &self.interface_type.name;
+
+        types
+            .filter_map(|(name, _type_def)| {
+                if ctx
+                    .schema_ctx
+                    .is_type_implementing_interface(name.as_str(), interface_name.as_str())
+                {
+                    Some(name.to_string())
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    /// Check if we need a fallback class by comparing all implementations with covered inline fragments
+    pub fn should_generate_fallback(&self, ctx: &ShalomGlobalContext) -> bool {
+        let all_implementations = self.get_all_implementations(ctx);
+        let covered_types: std::collections::HashSet<String> =
+            self.inline_fragments.borrow().keys().cloned().collect();
+
+        // If not all implementations are covered, we need a fallback
+        all_implementations
+            .iter()
+            .any(|impl_name| !covered_types.contains(impl_name))
     }
 }
 

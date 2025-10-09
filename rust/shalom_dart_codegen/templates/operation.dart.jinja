@@ -30,9 +30,9 @@ import 'package:collection/collection.dart';
 // ------------ OBJECT DEFINITIONS -------------
 
 {% for full_name, selection in operation.context.type_defs | items  if selection.kind == "Object" %}
-    {# Skip union member objects - they'll be generated in UNION DEFINITIONS #}
-    {% if full_name | get_parent_union %}
-        {# This is a union member, skip it here #}
+    {# Skip union/interface member objects - they'll be generated in UNION/INTERFACE DEFINITIONS #}
+    {% if full_name | get_parent_union or full_name | get_parent_interface %}
+        {# This is a union or interface member, skip it here #}
     {% elif full_name == operation_name %}
         {# Root selection - add Response suffix and set is_root_selection=true #}
         {% set response_class_name = operation_name ~ "Response" %}
@@ -70,6 +70,37 @@ import 'package:collection/collection.dart';
 {% endfor %}
 
 // ------------ END UNION DEFINITIONS -------------
+
+// ------------ INTERFACE DEFINITIONS -------------
+
+{# First generate interface member object classes #}
+{% set interface_types = operation.context.interface_types %}
+{% for interface_full_name, interface_selection in interface_types | items %}
+    {% for type_condition, obj_selection in interface_selection.inline_fragments | items %}
+        {# Generate interface member object using the unified macro with shared selections #}
+        {% set member_full_name = interface_full_name ~ "_" ~ type_condition %}
+        {# Look up the full Selection from context which includes arguments #}
+        {% set member_selection = operation.context.type_defs[member_full_name] %}
+        class {{ member_full_name }} extends {{ interface_full_name }}{% if obj_selection.used_fragments | length > 0 %}, implements {% for frag_name in obj_selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_union_member=true, shared_selections=interface_selection.shared_selections) }}
+        }
+    {% endfor %}
+
+    {# Generate fallback class if needed #}
+    {% if interface_selection.has_fallback %}
+        {% set fallback_full_name = interface_full_name ~ "_Fallback" %}
+        class {{ fallback_full_name }} extends {{ interface_full_name }} {
+            {{ selection_interface_fallback_impl(fallback_full_name, interface_selection) }}
+        }
+    {% endif %}
+{% endfor %}
+
+{# Then generate interface abstract classes #}
+{% for full_name, selection in operation.context.type_defs | items if selection.kind == "Interface" %}
+    {{ selection_interface_definition(full_name, selection) }}
+{% endfor %}
+
+// ------------ END INTERFACE DEFINITIONS -------------
 
 class Request{{ operation_name }} extends Requestable {
     {% if op_variables_exist %}
