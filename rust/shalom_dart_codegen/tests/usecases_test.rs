@@ -31,16 +31,6 @@ fn test_nested_object_selection_dart() {
 }
 
 #[test]
-fn test_list_of_scalars_dart() {
-    run_dart_tests_for_usecase("list_of_scalars");
-}
-
-#[test]
-fn test_list_of_objects_dart() {
-    run_dart_tests_for_usecase("list_of_objects");
-}
-
-#[test]
 fn test_fragments_dart() {
     run_dart_tests_for_usecase("fragments");
 }
@@ -56,13 +46,33 @@ fn test_fragment_with_nested_object_selection_dart() {
 }
 
 #[test]
-fn test_list_of_fragments_dart() {
-    run_dart_tests_for_usecase("list_of_fragments");
+fn test_union_selection_dart() {
+    run_dart_tests_for_usecase("union_selection");
 }
 
 #[test]
-fn test_union_selection_dart() {
-    run_dart_tests_for_usecase("union_selection");
+fn test_list_of_scalars_dart() {
+    run_dart_tests_for_usecase("list_of_scalars");
+}
+
+#[test]
+fn test_list_of_objects_dart() {
+    run_dart_tests_for_usecase("list_of_objects");
+}
+
+#[test]
+fn test_list_of_custom_scalars_dart() {
+    run_dart_tests_for_usecase("list_of_custom_scalars");
+}
+
+#[test]
+fn test_list_of_enums_dart() {
+    run_dart_tests_for_usecase("list_of_enums");
+}
+
+#[test]
+fn test_list_of_fragments_dart() {
+    run_dart_tests_for_usecase("list_of_fragments");
 }
 
 #[test]
