@@ -1,0 +1,15 @@
+query GetStatusesRequired {
+  statusesRequired
+}
+
+query GetStatusesOptional {
+  statusesOptional
+}
+
+query GetOptionalStatuses {
+  optionalStatuses
+}
+
+query GetStatusesFullyOptional {
+  statusesFullyOptional
+}

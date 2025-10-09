@@ -1,0 +1,13 @@
+enum Status {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+type Query {
+  statusesRequired: [Status!]!
+  statusesOptional: [Status!]
+  optionalStatuses: [Status]!
+  statusesFullyOptional: [Status]
+}

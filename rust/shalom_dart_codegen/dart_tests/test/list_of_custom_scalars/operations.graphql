@@ -1,0 +1,15 @@
+query GetPointsRequired {
+  pointsRequired
+}
+
+query GetPointsOptional {
+  pointsOptional
+}
+
+query GetOptionalPoints {
+  optionalPoints
+}
+
+query GetPointsFullyOptional {
+  pointsFullyOptional
+}

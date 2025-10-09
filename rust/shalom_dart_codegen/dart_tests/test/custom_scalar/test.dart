@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import '__graphql__/GetLocation.shalom.dart';
-import 'point.dart';
+import 'package:dart_tests/point.dart';
 
 void main() {
   final point = Point(x: 10, y: 20);

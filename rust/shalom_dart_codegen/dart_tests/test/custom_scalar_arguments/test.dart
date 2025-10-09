@@ -1,3 +1,4 @@
+import 'package:dart_tests/point.dart' show Point;
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 import '__graphql__/UpdatePointCoordsNonNull.shalom.dart';
@@ -6,7 +7,6 @@ import '__graphql__/UpdatePointCoordsMaybe.shalom.dart';
 import '__graphql__/UpdatePointWithInputNonNull.shalom.dart';
 import '__graphql__/UpdatePointWithInputCoordsMaybe.shalom.dart';
 import '__graphql__/schema.shalom.dart';
-import '../custom_scalar/point.dart';
 import '__graphql__/UpdatePointWithOptCoords.shalom.dart';
 
 void main() {
