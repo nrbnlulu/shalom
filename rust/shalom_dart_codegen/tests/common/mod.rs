@@ -52,20 +52,25 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
         ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
     run_codegen(&usecase_test_dir, true);
 
-    let mut cmd;
+    let  dart;
     #[cfg(target_os = "windows")]
     {
-        cmd = std::process::Command::new("dart.bat");
+        dart = "dart.bat";
     }
     #[cfg(not(target_os = "windows"))]
     {
-        cmd = std::process::Command::new("dart");
+        dart = "dart";
     }
+    
     let dart_test_root = tests_path().join("..");
-    cmd.current_dir(&dart_test_root);
-    cmd.arg("test").arg(format!("test/{usecase}/test.dart"));
-    info!("Running command: {cmd:?} inside {dart_test_root:?}");
-    let output = cmd.output().unwrap();
+    let mut dart_fmt = std::process::Command::new(dart);
+    let output = dart_fmt.current_dir(&dart_test_root).arg("format").arg(format!("test/{usecase}")).output().unwrap();
+    info!("Running command: {dart_fmt:?} inside {dart_test_root:?} => {}", String::from_utf8_lossy(&output.stderr));
+    
+    let mut dart_test = std::process::Command::new(dart);
+    dart_test.current_dir(&dart_test_root).arg("test").arg(format!("test/{usecase}/test.dart"));
+    info!("Running command: {dart_test:?} inside {dart_test_root:?}");
+    let output = dart_test.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
 
     assert!(output.status.success(), "❌ Dart tests failed\n {out_std}");

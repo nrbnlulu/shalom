@@ -635,8 +635,13 @@
 
 {# Unified macro for union and interface selection - handles both with fallback support -#}
 {% macro multi_type_selection_definition(full_name, selection) -%}
+    {% set is_union = selection.union_type is defined %}
+    {% set is_interface = selection.interface_type is defined %}
+    {% set type_kind = "union" if is_union else "interface" %}
+    {% set type_name = selection.union_type.name if is_union else selection.interface_type.name %}
+    {% set class_modifier = "sealed" if is_union else "abstract" %}
     // {{ type_kind | capitalize }} {{ class_modifier }} class
-    sealed class {{ full_name }} {
+    {{ class_modifier }} class {{ full_name }} {
         const {{ full_name }}();
 
         static void normalize$inCache(
@@ -775,16 +780,60 @@
             required JsonObject? this$cached
         }
     ) {
-        final this$normalizedRecord = getOrCreateObject(parent$record, this$fieldName);
-        final this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
+        {# Runtime check: if data has an 'id' field, treat as normalizable #}
+        final bool hasIdField = data.containsKey("id") && data["id"] != null;
 
-        {% for selection in selections %}
-        {# Normalize each selection #}
-        {% set selection_name = selection.name %}
-        final {{selection_name}}$raw = data["{{selection_name}}"];
-        final {{selection_name}}$cached = this$cached?["{{selection_name}}"];
-        {{ normalize_selection_in_cache(selection.kind, selection_name, selection_name + "$cached", selection_name + "$raw", '"' + selection_name + '"', "this$normalizedID", "this$normalizedRecord", "this$normalizedID", "ctx") }}
-        {% endfor %}
+        if (hasIdField) {
+            {# Normalizable fallback - has ID field #}
+            final this$normalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+            final this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
+
+            {% for selection in selections %}
+            {# Normalize each selection #}
+            {% set selection_name = selection.name %}
+            final {{selection_name}}$raw = data["{{selection_name}}"];
+            final {{selection_name}}$cached = this$cached?["{{selection_name}}"];
+            {{ normalize_selection_in_cache(selection.kind, selection_name, selection_name + "$cached", selection_name + "$raw", '"' + selection_name + '"', "this$normalizedID", "this$normalizedRecord", "this$normalizedID", "ctx") }}
+            {% endfor %}
+        } else {
+            {# Non-normalizable fallback - store inline in parent #}
+            final JsonObject this$inlineRecord = {};
+            {% for selection in selections %}
+            {# Store each selection inline #}
+            {% set selection_name = selection.name %}
+            final {{selection_name}}$raw = data["{{selection_name}}"];
+            this$inlineRecord["{{selection_name}}"] = {{selection_name}}$raw;
+            {% endfor %}
+
+            {# Check if value changed and notify subscribers #}
+            final currentValue = parent$record[this$fieldName];
+
+            {# If transitioning from a normalized object, notify about that change too #}
+            if (currentValue is NormalizedObjectRecord) {
+                final oldNormalizedId = (currentValue as NormalizedObjectRecord).normalizedID();
+                ctx.addChangedRecord(oldNormalizedId);
+            }
+
+            {# Check if value actually changed by comparing field values #}
+            bool hasChanged = false;
+            if (currentValue is! JsonObject) {
+                hasChanged = true;
+            } else {
+                {# Compare each field in the inline record #}
+                {% for selection in selections %}
+                {% set selection_name = selection.name %}
+                if (currentValue["{{selection_name}}"] != this$inlineRecord["{{selection_name}}"]) {
+                    hasChanged = true;
+                }
+                {% endfor %}
+            }
+
+            if (hasChanged) {
+                ctx.addChangedRecord(parent$normalizedID);
+            }
+
+            parent$record[this$fieldName] = this$inlineRecord;
+        }
     }
 
     static {{ fallback_class_name }} fromCached(NormalizedRecordData data, ShalomCtx ctx) {

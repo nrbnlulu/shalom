@@ -316,38 +316,37 @@ void main() {
           isA<GetNotificationPartial_getNotification_SMSNotification>());
     });
 
-    // TODO: Cache normalization for union fallback needs special handling for non-normalizable objects
-    // test('EmailNotification to PushNotification (fallback)', () async {
-    //   final ctx = ShalomCtx.withCapacity();
-    //   final variables = GetNotificationPartialVariables(id: "test");
-    //
-    //   var (result, updateCtx) = GetNotificationPartialResponse.fromResponseImpl(
-    //     emailNotificationData,
-    //     ctx,
-    //     variables,
-    //   );
-    //
-    //   expect(result.getNotification,
-    //       isA<GetNotificationPartial_getNotification_EmailNotification>());
-    //
-    //   final hasChanged = Completer<bool>();
-    //   final sub = ctx.subscribe(updateCtx.dependantRecords);
-    //   sub.streamController.stream.listen((newCtx) {
-    //     result = GetNotificationPartialResponse.fromCache(newCtx, variables);
-    //     hasChanged.complete(true);
-    //   });
-    //
-    //   final nextResult = GetNotificationPartialResponse.fromResponse(
-    //     pushNotificationData,
-    //     ctx: ctx,
-    //     variables: variables,
-    //   );
-    //
-    //   await hasChanged.future.timeout(Duration(seconds: 1));
-    //   expect(result, equals(nextResult));
-    //   expect(result.getNotification,
-    //       isA<GetNotificationPartial_getNotification_Fallback>());
-    // });
+    test('EmailNotification to PushNotification (fallback)', () async {
+      final ctx = ShalomCtx.withCapacity();
+      final variables = GetNotificationPartialVariables(id: "test");
+
+      var (result, updateCtx) = GetNotificationPartialResponse.fromResponseImpl(
+        emailNotificationData,
+        ctx,
+        variables,
+      );
+
+      expect(result.getNotification,
+          isA<GetNotificationPartial_getNotification_EmailNotification>());
+
+      final hasChanged = Completer<bool>();
+      final sub = ctx.subscribe(updateCtx.dependantRecords);
+      sub.streamController.stream.listen((newCtx) {
+        result = GetNotificationPartialResponse.fromCache(newCtx, variables);
+        hasChanged.complete(true);
+      });
+
+      final nextResult = GetNotificationPartialResponse.fromResponse(
+        pushNotificationData,
+        ctx: ctx,
+        variables: variables,
+      );
+
+      await hasChanged.future.timeout(Duration(seconds: 1));
+      expect(result, equals(nextResult));
+      expect(result.getNotification,
+          isA<GetNotificationPartial_getNotification_Fallback>());
+    });
 
     test('PushNotification (fallback) to WebhookNotification (fallback)',
         () async {
@@ -413,38 +412,37 @@ void main() {
       expect(result.getNotificationOpt, isNotNull);
     });
 
-    // TODO: Cache normalization for union fallback needs special handling for non-normalizable objects
-    // test('optional - EmailNotification to fallback', () async {
-    //   final ctx = ShalomCtx.withCapacity();
-    //   final variables = GetNotificationPartialOptVariables(id: "test");
-    //
-    //   var (result, updateCtx) =
-    //       GetNotificationPartialOptResponse.fromResponseImpl(
-    //     emailNotificationOptData,
-    //     ctx,
-    //     variables,
-    //   );
-    //
-    //   expect(result.getNotificationOpt, isNotNull);
-    //
-    //   final hasChanged = Completer<bool>();
-    //   final sub = ctx.subscribe(updateCtx.dependantRecords);
-    //   sub.streamController.stream.listen((newCtx) {
-    //     result = GetNotificationPartialOptResponse.fromCache(newCtx, variables);
-    //     hasChanged.complete(true);
-    //   });
-    //
-    //   final nextResult = GetNotificationPartialOptResponse.fromResponse(
-    //     pushNotificationOptData,
-    //     ctx: ctx,
-    //     variables: variables,
-    //   );
-    //
-    //   await hasChanged.future.timeout(Duration(seconds: 1));
-    //   expect(result, equals(nextResult));
-    //   expect(result.getNotificationOpt,
-    //       isA<GetNotificationPartialOpt_getNotificationOpt_Fallback>());
-    // });
+    test('optional - EmailNotification to fallback', () async {
+      final ctx = ShalomCtx.withCapacity();
+      final variables = GetNotificationPartialOptVariables(id: "test");
+
+      var (result, updateCtx) =
+          GetNotificationPartialOptResponse.fromResponseImpl(
+        emailNotificationOptData,
+        ctx,
+        variables,
+      );
+
+      expect(result.getNotificationOpt, isNotNull);
+
+      final hasChanged = Completer<bool>();
+      final sub = ctx.subscribe(updateCtx.dependantRecords);
+      sub.streamController.stream.listen((newCtx) {
+        result = GetNotificationPartialOptResponse.fromCache(newCtx, variables);
+        hasChanged.complete(true);
+      });
+
+      final nextResult = GetNotificationPartialOptResponse.fromResponse(
+        pushNotificationOptData,
+        ctx: ctx,
+        variables: variables,
+      );
+
+      await hasChanged.future.timeout(Duration(seconds: 1));
+      expect(result, equals(nextResult));
+      expect(result.getNotificationOpt,
+          isA<GetNotificationPartialOpt_getNotificationOpt_Fallback>());
+    });
 
     test('optional - fallback to null', () async {
       final ctx = ShalomCtx.withCapacity();

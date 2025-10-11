@@ -107,4 +107,6 @@ For input-related test cases, you should also add a `Maybe` test. This means tha
 when you are done, make sure all tests pass using `task test` and all lints pass using `task lint`.
 
 
-`selection_interface_fallback_impl` macro is almost the same as the `selection_object_impl` macro. we can add the typename exception rules in selection_object_impl directly and by and just use it for union and interfaces as well..
+todo:
+
+- `selection_interface_fallback_impl` macro is almost the same as the `selection_object_impl` macro. we can add the typename exception rules in selection_object_impl directly and by and just use it for union and interfaces as well..
