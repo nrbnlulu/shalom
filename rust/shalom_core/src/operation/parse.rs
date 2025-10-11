@@ -323,11 +323,13 @@ where
     // Update the has_fallback field
     // Since UnionSelection is already in an Rc, we need to work with the existing instance
     // We'll need to make has_fallback a Cell or RefCell, but for now let's create a new one
-    let union_selection_with_fallback =
-        UnionSelection::new(path.clone(),
-            union_type.name.clone(),
-           
-            union_type.clone(), is_optional, has_fallback);
+    let union_selection_with_fallback = UnionSelection::new(
+        path.clone(),
+        union_type.name.clone(),
+        union_type.clone(),
+        is_optional,
+        has_fallback,
+    );
 
     // Copy over the selections and fragments
     for sel in union_selection.common.shared_selections.borrow().iter() {

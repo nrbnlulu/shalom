@@ -263,7 +263,12 @@ pub struct MultiTypeSelectionCommon {
 }
 
 impl MultiTypeSelectionCommon {
-    pub fn new(full_name: String, schema_typename: String, is_optional: bool, has_fallback: bool) -> Self {
+    pub fn new(
+        full_name: String,
+        schema_typename: String,
+        is_optional: bool,
+        has_fallback: bool,
+    ) -> Self {
         MultiTypeSelectionCommon {
             full_name,
             schema_typename,
@@ -316,8 +321,6 @@ impl MultiTypeSelectionCommon {
     }
 }
 pub trait MultiTypeSelection {
-    
-    
     /// Get all possible types for this multi-type selection (union members or interface implementations)
     fn get_all_members(&self, ctx: &ShalomGlobalContext) -> Vec<String>;
 
@@ -353,13 +356,18 @@ pub type SharedUnionSelection = Rc<UnionSelection>;
 impl UnionSelection {
     pub fn new(
         full_name: String,
-        schema_typename: String, 
+        schema_typename: String,
         union_type: Node<UnionType>,
         is_optional: bool,
         has_fallback: bool,
     ) -> SharedUnionSelection {
         Rc::new(UnionSelection {
-            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional, has_fallback),
+            common: MultiTypeSelectionCommon::new(
+                full_name,
+                schema_typename,
+                is_optional,
+                has_fallback,
+            ),
             union_type,
         })
     }
@@ -393,7 +401,12 @@ impl InterfaceSelection {
         has_fallback: bool,
     ) -> SharedInterfaceSelection {
         Rc::new(InterfaceSelection {
-            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional, has_fallback),
+            common: MultiTypeSelectionCommon::new(
+                full_name,
+                schema_typename,
+                is_optional,
+                has_fallback,
+            ),
             interface_type,
         })
     }
