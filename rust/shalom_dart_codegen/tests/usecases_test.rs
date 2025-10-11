@@ -51,6 +51,11 @@ fn test_union_selection_dart() {
 }
 
 #[test]
+fn test_union_partial_selection_dart() {
+    run_dart_tests_for_usecase("union_partial_selection");
+}
+
+#[test]
 fn test_interface_selection_dart() {
     run_dart_tests_for_usecase("interface_selection");
 }

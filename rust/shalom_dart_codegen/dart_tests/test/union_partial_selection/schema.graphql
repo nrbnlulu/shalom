@@ -1,0 +1,33 @@
+type Query {
+  getNotification(id: ID!): NotificationContent!
+  getNotificationOpt(id: ID!): NotificationContent
+}
+
+union NotificationContent = EmailNotification | SMSNotification | PushNotification | WebhookNotification
+
+type EmailNotification {
+  id: ID!
+  subject: String!
+  body: String!
+  recipient: String!
+}
+
+type SMSNotification {
+  id: ID!
+  message: String!
+  phoneNumber: String!
+}
+
+type PushNotification {
+  id: ID!
+  title: String!
+  body: String!
+  deviceToken: String!
+}
+
+type WebhookNotification {
+  id: ID!
+  url: String!
+  payload: String!
+  method: String!
+}

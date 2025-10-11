@@ -62,11 +62,19 @@ import 'package:collection/collection.dart';
             {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_union_member=true, shared_selections=union_selection.shared_selections) }}
         }
     {% endfor %}
+
+    {# Generate fallback class if needed #}
+    {% if union_selection.has_fallback %}
+        {% set fallback_full_name = union_full_name ~ "_Fallback" %}
+        class {{ fallback_full_name }} extends {{ union_full_name }} {
+            {{ selection_interface_fallback_impl(fallback_full_name, union_selection) }}
+        }
+    {% endif %}
 {% endfor %}
 
 {# Then generate union sealed classes #}
 {% for full_name, selection in operation.context.type_defs.union_selections | items %}
-    {{ selection_union_definition(full_name, selection) }}
+    {{ multi_type_selection_definition(full_name, selection) }}
 {% endfor %}
 
 // ------------ END UNION DEFINITIONS -------------
@@ -97,7 +105,7 @@ import 'package:collection/collection.dart';
 
 {# Then generate interface abstract classes #}
 {% for full_name, selection in operation.context.type_defs.interface_selections | items %}
-    {{ selection_interface_definition(full_name, selection) }}
+    {{ multi_type_selection_definition(full_name, selection) }}
 {% endfor %}
 
 // ------------ END INTERFACE DEFINITIONS -------------

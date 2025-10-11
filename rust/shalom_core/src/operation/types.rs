@@ -247,15 +247,105 @@ pub struct ListSelection {
 
 pub type SharedListSelection = Rc<ListSelection>;
 
+/// Common fields and behavior shared between Union and Interface selections
 #[derive(Debug, Serialize, Deserialize)]
-pub struct UnionSelection {
+pub struct MultiTypeSelectionCommon {
     pub full_name: String,
-    pub union_type: Node<UnionType>,
+    /// name of the union or uniterface
+    pub schema_typename: String,
     pub is_optional: bool,
-    /// Selections that apply to all union members (e.g., __typename)
+    /// Selections that apply to all types (e.g., __typename)
     pub shared_selections: RefCell<Vec<Selection>>,
     /// Inline fragment selections grouped by type condition
     pub inline_fragments: RefCell<HashMap<String, SharedObjectSelection>>,
+    /// Whether to generate a fallback class for uncovered types
+    pub has_fallback: bool,
+}
+
+impl MultiTypeSelectionCommon {
+    pub fn new(full_name: String, schema_typename: String, is_optional: bool, has_fallback: bool) -> Self {
+        MultiTypeSelectionCommon {
+            full_name,
+            schema_typename,
+            is_optional,
+            shared_selections: RefCell::new(Vec::new()),
+            inline_fragments: RefCell::new(HashMap::new()),
+            has_fallback,
+        }
+    }
+
+    pub fn add_shared_selection(&self, selection: Selection) {
+        self.shared_selections.borrow_mut().push(selection);
+    }
+
+    pub fn add_inline_fragment(
+        &self,
+        type_condition: String,
+        object_selection: SharedObjectSelection,
+    ) {
+        self.inline_fragments
+            .borrow_mut()
+            .insert(type_condition, object_selection);
+    }
+
+    /// Check if __typename is selected either at the top level or in all inline fragments
+    pub fn has_typename_selection(&self) -> bool {
+        // Check shared selections for __typename
+        let has_shared_typename = self
+            .shared_selections
+            .borrow()
+            .iter()
+            .any(|s| s.self_selection_name() == "__typename");
+
+        if has_shared_typename {
+            return true;
+        }
+
+        // Check if all inline fragments have __typename
+        let fragments = self.inline_fragments.borrow();
+        if fragments.is_empty() {
+            return false;
+        }
+
+        fragments.values().all(|obj| {
+            obj.selections
+                .borrow()
+                .iter()
+                .any(|s| s.self_selection_name() == "__typename")
+        })
+    }
+}
+pub trait MultiTypeSelection {
+    
+    
+    /// Get all possible types for this multi-type selection (union members or interface implementations)
+    fn get_all_members(&self, ctx: &ShalomGlobalContext) -> Vec<String>;
+
+    /// Check if we need a fallback class by comparing all possible types with covered inline fragments
+    fn should_generate_fallback(&self, ctx: &ShalomGlobalContext) -> bool {
+        let all_members_set: std::collections::HashSet<String> =
+            self.get_all_members(ctx).into_iter().collect();
+        let covered_types: std::collections::HashSet<String> = self
+            .common()
+            .inline_fragments
+            .borrow()
+            .keys()
+            .cloned()
+            .collect();
+
+        // If not all union members are covered, we need a fallback
+        !all_members_set.is_subset(&covered_types)
+    }
+
+    /// Get the common fields shared across all types
+    fn common(&self) -> &MultiTypeSelectionCommon;
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UnionSelection {
+    #[serde(flatten)]
+    pub common: MultiTypeSelectionCommon,
+    pub union_type: Node<UnionType>,
 }
 
 pub type SharedUnionSelection = Rc<UnionSelection>;
@@ -263,71 +353,33 @@ pub type SharedUnionSelection = Rc<UnionSelection>;
 impl UnionSelection {
     pub fn new(
         full_name: String,
+        schema_typename: String, 
         union_type: Node<UnionType>,
         is_optional: bool,
+        has_fallback: bool,
     ) -> SharedUnionSelection {
         Rc::new(UnionSelection {
-            full_name,
+            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional, has_fallback),
             union_type,
-            is_optional,
-            shared_selections: RefCell::new(Vec::new()),
-            inline_fragments: RefCell::new(HashMap::new()),
         })
     }
+}
 
-    pub fn add_shared_selection(&self, selection: Selection) {
-        self.shared_selections.borrow_mut().push(selection);
+impl MultiTypeSelection for UnionSelection {
+    fn get_all_members(&self, _ctx: &ShalomGlobalContext) -> Vec<String> {
+        self.union_type.members.iter().cloned().collect()
     }
 
-    pub fn add_inline_fragment(
-        &self,
-        type_condition: String,
-        object_selection: SharedObjectSelection,
-    ) {
-        self.inline_fragments
-            .borrow_mut()
-            .insert(type_condition, object_selection);
-    }
-
-    /// Check if __typename is selected either at the top level or in all inline fragments
-    pub fn has_typename_selection(&self) -> bool {
-        // Check shared selections for __typename
-        let has_shared_typename = self
-            .shared_selections
-            .borrow()
-            .iter()
-            .any(|s| s.self_selection_name() == "__typename");
-
-        if has_shared_typename {
-            return true;
-        }
-
-        // Check if all inline fragments have __typename
-        let fragments = self.inline_fragments.borrow();
-        if fragments.is_empty() {
-            return false;
-        }
-
-        fragments.values().all(|obj| {
-            obj.selections
-                .borrow()
-                .iter()
-                .any(|s| s.self_selection_name() == "__typename")
-        })
+    fn common(&self) -> &MultiTypeSelectionCommon {
+        &self.common
     }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct InterfaceSelection {
-    pub full_name: String,
+    #[serde(flatten)]
+    pub common: MultiTypeSelectionCommon,
     pub interface_type: Node<InterfaceType>,
-    pub is_optional: bool,
-    /// Shared fields that all implementations have (from interface definition)
-    pub shared_selections: RefCell<Vec<Selection>>,
-    /// Map of typename -> concrete object selection for inline fragments
-    pub inline_fragments: RefCell<HashMap<String, SharedObjectSelection>>,
-    /// Whether to generate a fallback class for uncovered implementations
-    pub has_fallback: bool,
 }
 
 pub type SharedInterfaceSelection = Rc<InterfaceSelection>;
@@ -335,63 +387,20 @@ pub type SharedInterfaceSelection = Rc<InterfaceSelection>;
 impl InterfaceSelection {
     pub fn new(
         full_name: String,
+        schema_typename: String,
         interface_type: Node<InterfaceType>,
         is_optional: bool,
         has_fallback: bool,
     ) -> SharedInterfaceSelection {
         Rc::new(InterfaceSelection {
-            full_name,
+            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional, has_fallback),
             interface_type,
-            is_optional,
-            shared_selections: RefCell::new(Vec::new()),
-            inline_fragments: RefCell::new(HashMap::new()),
-            has_fallback,
         })
     }
+}
 
-    pub fn add_shared_selection(&self, selection: Selection) {
-        self.shared_selections.borrow_mut().push(selection);
-    }
-
-    pub fn add_inline_fragment(
-        &self,
-        type_condition: String,
-        object_selection: SharedObjectSelection,
-    ) {
-        self.inline_fragments
-            .borrow_mut()
-            .insert(type_condition, object_selection);
-    }
-
-    /// Check if __typename is selected either at the top level or in all inline fragments
-    pub fn has_typename_selection(&self) -> bool {
-        // Check shared selections for __typename
-        let has_shared_typename = self
-            .shared_selections
-            .borrow()
-            .iter()
-            .any(|s| s.self_selection_name() == "__typename");
-
-        if has_shared_typename {
-            return true;
-        }
-
-        // Check if all inline fragments have __typename
-        let fragments = self.inline_fragments.borrow();
-        if fragments.is_empty() {
-            return false;
-        }
-
-        fragments.values().all(|obj| {
-            obj.selections
-                .borrow()
-                .iter()
-                .any(|s| s.self_selection_name() == "__typename")
-        })
-    }
-
-    /// Get all concrete types that implement this interface from the schema
-    pub fn get_all_implementations(&self, ctx: &ShalomGlobalContext) -> Vec<String> {
+impl MultiTypeSelection for InterfaceSelection {
+    fn get_all_members(&self, ctx: &ShalomGlobalContext) -> Vec<String> {
         let types = ctx.schema_ctx.schema.types.iter();
         let interface_name = &self.interface_type.name;
 
@@ -409,16 +418,8 @@ impl InterfaceSelection {
             .collect()
     }
 
-    /// Check if we need a fallback class by comparing all implementations with covered inline fragments
-    pub fn should_generate_fallback(&self, ctx: &ShalomGlobalContext) -> bool {
-        let all_implementations = self.get_all_implementations(ctx);
-        let covered_types: std::collections::HashSet<String> =
-            self.inline_fragments.borrow().keys().cloned().collect();
-
-        // If not all implementations are covered, we need a fallback
-        all_implementations
-            .iter()
-            .any(|impl_name| !covered_types.contains(impl_name))
+    fn common(&self) -> &MultiTypeSelectionCommon {
+        &self.common
     }
 }
 

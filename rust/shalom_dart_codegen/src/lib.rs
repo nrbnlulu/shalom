@@ -96,17 +96,17 @@ mod ext_jinja_fns {
                 }
             }
             SelectionKind::Union(union) => {
-                if union.is_optional {
-                    format!("{}?", union.full_name)
+                if union.common.is_optional {
+                    format!("{}?", union.common.full_name)
                 } else {
-                    union.full_name.clone()
+                    union.common.full_name.clone()
                 }
             }
             SelectionKind::Interface(interface) => {
-                if interface.is_optional {
-                    format!("{}?", interface.full_name)
+                if interface.common.is_optional {
+                    format!("{}?", interface.common.full_name)
                 } else {
-                    interface.full_name.clone()
+                    interface.common.full_name.clone()
                 }
             }
         }
@@ -410,10 +410,10 @@ fn selection_kind_uses_variables<T: ExecutableContext>(
     match selection_kind {
         SelectionKind::Object(obj) => ctx.get_object_selection(&obj.full_name).is_some(),
         SelectionKind::List(list) => selection_kind_uses_variables(ctx, &list.of_kind),
-        SelectionKind::Union(union) => ctx.get_union_types().contains_key(&union.full_name),
-        SelectionKind::Interface(interface) => {
-            ctx.get_interface_types().contains_key(&interface.full_name)
-        }
+        SelectionKind::Union(union) => ctx.get_union_types().contains_key(&union.common.full_name),
+        SelectionKind::Interface(interface) => ctx
+            .get_interface_types()
+            .contains_key(&interface.common.full_name),
         _ => false,
     }
 }

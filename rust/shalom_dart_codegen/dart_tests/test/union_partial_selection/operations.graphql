@@ -1,0 +1,51 @@
+query GetNotificationPartial($id: ID!) {
+  getNotification(id: $id) {
+    __typename
+    ... on EmailNotification {
+      id
+      subject
+      body
+      recipient
+    }
+    ... on SMSNotification {
+      id
+      message
+      phoneNumber
+    }
+  }
+}
+
+query GetNotificationPartialOpt($id: ID!) {
+  getNotificationOpt(id: $id) {
+    __typename
+    ... on EmailNotification {
+      id
+      subject
+      body
+      recipient
+    }
+    ... on SMSNotification {
+      id
+      message
+      phoneNumber
+    }
+  }
+}
+
+query GetNotificationPartialNoTopTypename($id: ID!) {
+  getNotification(id: $id) {
+    ... on EmailNotification {
+      __typename
+      id
+      subject
+      body
+      recipient
+    }
+    ... on SMSNotification {
+      __typename
+      id
+      message
+      phoneNumber
+    }
+  }
+}

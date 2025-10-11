@@ -19,9 +19,9 @@ use crate::schema::types::{
 use super::context::{OperationContext, SharedOpCtx};
 use super::fragments::{FragmentContext, SharedFragmentContext};
 use super::types::{
-    EnumSelection, InterfaceSelection, OperationType, ScalarSelection, Selection,
-    SharedEnumSelection, SharedInterfaceSelection, SharedObjectSelection, SharedScalarSelection,
-    SharedUnionSelection, UnionSelection,
+    EnumSelection, InterfaceSelection, MultiTypeSelection, OperationType, ScalarSelection,
+    Selection, SharedEnumSelection, SharedInterfaceSelection, SharedObjectSelection,
+    SharedScalarSelection, SharedUnionSelection, UnionSelection,
 };
 
 fn full_path_name(this_name: &String, parent_path: &String) -> String {
@@ -186,7 +186,14 @@ where
 {
     trace!("Parsing union selection {:?}", union_type.name);
 
-    let union_selection = UnionSelection::new(path.clone(), union_type.clone(), is_optional);
+    // Create union selection with placeholder has_fallback (we'll determine this later)
+    let union_selection = UnionSelection::new(
+        path.clone(),
+        union_type.name.clone(),
+        union_type.clone(),
+        is_optional,
+        false, // We'll update this after processing inline fragments
+    );
 
     for selection in selection_set.selections.iter() {
         match selection {
@@ -217,7 +224,7 @@ where
                     args,
                     used_fragments,
                 );
-                union_selection.add_shared_selection(field_selection);
+                union_selection.common.add_shared_selection(field_selection);
             }
             apollo_executable::Selection::InlineFragment(inline_fragment) => {
                 if let Some(type_condition) = &inline_fragment.type_condition {
@@ -241,7 +248,9 @@ where
                         &inline_fragment.selection_set,
                         used_fragments,
                     );
-                    union_selection.add_inline_fragment(type_condition_str, obj.clone());
+                    union_selection
+                        .common
+                        .add_inline_fragment(type_condition_str, obj.clone());
 
                     let selection_common = SelectionCommon {
                         name: fragment_path.clone(),
@@ -284,7 +293,7 @@ where
                                 used_fragments,
                             );
 
-                            union_selection.add_shared_selection(field_selection);
+                            union_selection.common.add_shared_selection(field_selection);
                         }
                     }
                 }
@@ -303,15 +312,39 @@ where
 
     // Validate that __typename is present
     assert!(
-        union_selection.has_typename_selection(),
+        union_selection.common.has_typename_selection(),
         "Union selection '{}' must have __typename selected either at the top level or in all inline fragments",
         path
     );
 
-    // Register the union type in the context
-    ctx.add_union_type(path.clone(), union_selection.clone());
+    // Determine if we need a fallback class
+    let has_fallback = union_selection.should_generate_fallback(global_ctx);
 
-    union_selection
+    // Update the has_fallback field
+    // Since UnionSelection is already in an Rc, we need to work with the existing instance
+    // We'll need to make has_fallback a Cell or RefCell, but for now let's create a new one
+    let union_selection_with_fallback =
+        UnionSelection::new(path.clone(),
+            union_type.name.clone(),
+           
+            union_type.clone(), is_optional, has_fallback);
+
+    // Copy over the selections and fragments
+    for sel in union_selection.common.shared_selections.borrow().iter() {
+        union_selection_with_fallback
+            .common
+            .add_shared_selection(sel.clone());
+    }
+    for (type_cond, obj_sel) in union_selection.common.inline_fragments.borrow().iter() {
+        union_selection_with_fallback
+            .common
+            .add_inline_fragment(type_cond.clone(), obj_sel.clone());
+    }
+
+    // Register the union type in the context
+    ctx.add_union_type(path.clone(), union_selection_with_fallback.clone());
+
+    union_selection_with_fallback
 }
 
 fn parse_interface_selection<T>(
@@ -331,6 +364,7 @@ where
     // Create interface selection with placeholder has_fallback (we'll determine this later)
     let interface_selection = InterfaceSelection::new(
         path.clone(),
+        interface_type.name.clone(),
         interface_type.clone(),
         is_optional,
         false, // We'll update this after processing inline fragments
@@ -365,7 +399,9 @@ where
                     args,
                     used_fragments,
                 );
-                interface_selection.add_shared_selection(field_selection);
+                interface_selection
+                    .common
+                    .add_shared_selection(field_selection);
             }
             apollo_executable::Selection::InlineFragment(inline_fragment) => {
                 if let Some(type_condition) = &inline_fragment.type_condition {
@@ -393,6 +429,7 @@ where
                         used_fragments,
                     );
                     interface_selection
+                        .common
                         .add_inline_fragment(type_condition_str.clone(), obj.clone());
 
                     let selection_common = SelectionCommon {
@@ -436,7 +473,9 @@ where
                                 used_fragments,
                             );
 
-                            interface_selection.add_shared_selection(field_selection);
+                            interface_selection
+                                .common
+                                .add_shared_selection(field_selection);
                         }
                     }
                 }
@@ -455,7 +494,7 @@ where
 
     // Validate that __typename is present
     assert!(
-        interface_selection.has_typename_selection(),
+        interface_selection.common.has_typename_selection(),
         "Interface selection '{}' must have __typename selected either at the top level or in all inline fragments",
         path
     );
@@ -468,17 +507,22 @@ where
     // We'll need to make has_fallback a Cell or RefCell, but for now let's create a new one
     let interface_selection_with_fallback = InterfaceSelection::new(
         path.clone(),
+        interface_type.name.clone(),
         interface_type.clone(),
         is_optional,
         has_fallback,
     );
 
     // Copy over the selections and fragments
-    for sel in interface_selection.shared_selections.borrow().iter() {
-        interface_selection_with_fallback.add_shared_selection(sel.clone());
+    for sel in interface_selection.common.shared_selections.borrow().iter() {
+        interface_selection_with_fallback
+            .common
+            .add_shared_selection(sel.clone());
     }
-    for (type_cond, obj_sel) in interface_selection.inline_fragments.borrow().iter() {
-        interface_selection_with_fallback.add_inline_fragment(type_cond.clone(), obj_sel.clone());
+    for (type_cond, obj_sel) in interface_selection.common.inline_fragments.borrow().iter() {
+        interface_selection_with_fallback
+            .common
+            .add_inline_fragment(type_cond.clone(), obj_sel.clone());
     }
 
     // Register the interface type in the context
