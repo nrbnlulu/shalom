@@ -809,5 +809,13 @@
 
 {# Macro for interface/union fallback class implementation - delegates to selection_object_impl with is_fallback=true #}
 {% macro selection_interface_fallback_impl(fallback_class_name, multi_type_selection) -%}
-    {{ selection_object_impl(fallback_class_name, multi_type_selection, false, fallback_class_name, true, multi_type_selection.shared_selections, true) }}
+    {{ selection_object_impl(
+        fallback_class_name,
+        multi_type_selection,
+        false,
+        full_name=fallback_class_name,
+        is_multi_type_member=true,
+        shared_selections=multi_type_selection.shared_selections,
+        is_fallback=true
+    ) }}
 {% endmacro %}
