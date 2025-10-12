@@ -1,0 +1,85 @@
+query GetVehiclesRequired($maxLength: Int!) {
+    vehiclesRequired {
+        __typename
+        id
+        brand
+        speed
+        description(maxLength: $maxLength)
+        ... on Car {
+            doors
+        }
+        ... on Motorcycle {
+            hasSidecar
+        }
+        ... on Bicycle {
+            gears
+        }
+    }
+}
+
+query GetVehiclesOptional($maxLength: Int!) {
+    vehiclesOptional {
+        __typename
+        id
+        brand
+        speed
+        description(maxLength: $maxLength)
+        ... on Car {
+            doors
+        }
+        ... on Motorcycle {
+            hasSidecar
+        }
+    }
+}
+
+query GetOptionalVehicles($maxLength: Int!) {
+    optionalVehicles {
+        __typename
+        id
+        brand
+        speed
+        description(maxLength: $maxLength)
+        ... on Car {
+            doors
+        }
+        ... on Motorcycle {
+            hasSidecar
+        }
+    }
+}
+
+query GetVehiclesFullyOptional($maxLength: Int!) {
+    vehiclesFullyOptional {
+        __typename
+        id
+        brand
+        speed
+        description(maxLength: $maxLength)
+        ... on Car {
+            doors
+        }
+        ... on Motorcycle {
+            hasSidecar
+        }
+    }
+}
+
+query GetVehiclesWithArgs($limit: Int!, $maxLength: Int!) {
+    vehiclesWithArgs(limit: $limit) {
+        __typename
+        id
+        brand
+        speed
+        description(maxLength: $maxLength)
+        ... on Car {
+            doors
+        }
+        ... on Motorcycle {
+            hasSidecar
+        }
+        ... on Bicycle {
+            gears
+        }
+    }
+}
