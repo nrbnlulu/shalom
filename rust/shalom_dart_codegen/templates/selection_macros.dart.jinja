@@ -204,16 +204,16 @@
             {{ value_symbol }} == null ? null :
         {% endif -%}
                 ({{value_symbol}} is  NormalizedObjectRecord)?
-                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx)
-                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
+                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx{{if_op_variables(", variables")}})
+                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{if_op_variables(", variables")}})
 
     {% elif selection.kind == "Interface" %}
         {% if is_optional %}
             {{ value_symbol }} == null ? null :
         {% endif -%}
                 ({{value_symbol}} is  NormalizedObjectRecord)?
-                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx)
-                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx)
+                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx{{if_op_variables(", variables")}})
+                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{if_op_variables(", variables")}})
 
     {% elif selection.kind == "Enum" %}
         {% set typename = selection.concrete_type.name %}
@@ -348,7 +348,7 @@
 
     static void normalize$inCache(JsonObject data,
             CacheUpdateContext ctx,
-            {% if not is_multi_type_member and selection_kind_uses_variables(selection_object) %} {{ operation_name }}Variables variables,{% endif %}
+            {% if op_variables_exist %} {{ operation_name }}Variables variables,{% endif %}
             {% if not is_root_selection -%}
                 {
                 /// can be just the selection name but also may include serialized arguments.
@@ -455,7 +455,7 @@
         {% endfor -%}
     }
     {% if not is_root_selection -%}
-    static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if not is_multi_type_member and selection_kind_uses_variables(selection_object)  %}, {{ operation_name }}Variables variables{% endif %}) {
+    static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if op_variables_exist  %}, {{ operation_name }}Variables variables{% endif %}) {
     {% else -%}
     static {{typename}} fromCache(ShalomCtx ctx{% if selection_kind_uses_variables(selection_object) -%}, {{ operation_name }}Variables variables{% endif %}) {
     {% endif -%}
@@ -605,6 +605,7 @@
                     {{ full_name }}_{{ type_condition }}.normalize$inCache(
                         data,
                         ctx,
+                        {% if op_variables_exist %}variables,{% endif %}
                         this$cached: this$cached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord((this$cached as NormalizedObjectRecord).normalizedID()): this$cached,
                         this$fieldName: this$fieldName,
                         parent$record: parent$record,
@@ -617,6 +618,7 @@
                     {{ full_name }}_Fallback.normalize$inCache(
                         data,
                         ctx,
+                        {% if op_variables_exist %}variables,{% endif %}
                         this$cached: this$cached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord((this$cached as NormalizedObjectRecord).normalizedID()): this$cached,
                         this$fieldName: this$fieldName,
                         parent$record: parent$record,
@@ -628,7 +630,7 @@
             }
         }
 
-        static {{ full_name }} fromCached(NormalizedRecordData data, ShalomCtx ctx) {
+        static {{ full_name }} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}) {
             // For {{ type_kind }}s, data is either a String (normalized cache key) or JsonObject (inline data)
             if (data is String) {
                 // Normalized {{ type_kind }}: data is the cache key, fetch the actual record
@@ -640,11 +642,11 @@
                 switch (typename) {
                     {% for type_condition, obj_selection in selection.inline_fragments | items %}
                     case "{{ type_condition }}":
-                        return {{ full_name }}_{{ type_condition }}.fromCached(actualData, ctx);
+                        return {{ full_name }}_{{ type_condition }}.fromCached(actualData, ctx{{if_op_variables(", variables")}});
                     {% endfor %}
                     default:
                         {% if selection.has_fallback %}
-                        return {{ full_name }}_Fallback.fromCached(actualData, ctx);
+                        return {{ full_name }}_Fallback.fromCached(actualData, ctx{{if_op_variables(", variables")}});
                         {% else %}
                         throw Exception("Unknown __typename: $typename for {{ type_kind }} {{ selection.schema_typename }}");
                         {% endif %}
@@ -655,11 +657,11 @@
                 switch (typename) {
                     {% for type_condition, obj_selection in selection.inline_fragments | items %}
                     case "{{ type_condition }}":
-                        return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx);
+                        return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx{{if_op_variables(", variables")}});
                     {% endfor %}
                     default:
                         {% if selection.has_fallback %}
-                        return {{ full_name }}_Fallback.fromCached(data, ctx);
+                        return {{ full_name }}_Fallback.fromCached(data, ctx{{if_op_variables(", variables")}});
                         {% else %}
                         throw Exception("Unknown __typename: $typename for {{ type_kind }} {{ selection.schema_typename }}");
                         {% endif %}

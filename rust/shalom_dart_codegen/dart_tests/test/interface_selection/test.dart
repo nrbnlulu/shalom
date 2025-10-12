@@ -7,6 +7,7 @@ import "__graphql__/GetAnimalOpt.shalom.dart";
 import "__graphql__/GetAnimalAllTypes.shalom.dart";
 import "__graphql__/GetAnimals.shalom.dart";
 import "__graphql__/GetAnimalWithoutTopTypename.shalom.dart";
+import "__graphql__/GetAnimalWithArguments.shalom.dart";
 
 void main() {
   final lionData = {
@@ -31,6 +32,39 @@ void main() {
 
   final dogData = {
     "animal": {"__typename": "Dog", "id": "dog1", "legs": 4, "sound": "Bark"}
+  };
+
+  final lionWithArgsData = {
+    "animal": {
+      "__typename": "Lion",
+      "id": "lion5",
+      "legs": 4,
+      "sound": "Roar",
+      "description": "A majestic golden lion",
+      "furColor": "Golden"
+    }
+  };
+
+  final turtleWithArgsData = {
+    "animal": {
+      "__typename": "Turtle",
+      "id": "turtle5",
+      "legs": 4,
+      "sound": "Hiss",
+      "description": "A slow green turtle",
+      "shellColor": "Green"
+    }
+  };
+
+  final dogWithArgsData = {
+    "animal": {
+      "__typename": "Dog",
+      "id": "dog5",
+      "legs": 4,
+      "sound": "Bark",
+      "description": "A friendly Labrador dog",
+      "breed": "Labrador"
+    }
   };
 
   group('Test interface selection - required', () {
@@ -393,6 +427,164 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       expect(result.animalOpt, isNull);
+    });
+  });
+
+  group('Test interface with arguments', () {
+    test('lionRequired', () {
+      final variables = GetAnimalWithArgumentsVariables(id: "lion5", limit: 30);
+      final result = GetAnimalWithArgumentsResponse.fromResponse(
+          lionWithArgsData,
+          variables: variables);
+
+      expect(result.animal, isA<GetAnimalWithArguments_animal_Lion>());
+      final lion = result.animal as GetAnimalWithArguments_animal_Lion;
+      expect(lion.id, "lion5");
+      expect(lion.legs, 4);
+      expect(lion.sound, "Roar");
+      expect(lion.description, "A majestic golden lion");
+      expect(lion.furColor, "Golden");
+      expect(lion.typename, "Lion");
+    });
+
+    test('turtleRequired', () {
+      final variables =
+          GetAnimalWithArgumentsVariables(id: "turtle5", limit: 25);
+      final result = GetAnimalWithArgumentsResponse.fromResponse(
+          turtleWithArgsData,
+          variables: variables);
+
+      expect(result.animal, isA<GetAnimalWithArguments_animal_Turtle>());
+      final turtle = result.animal as GetAnimalWithArguments_animal_Turtle;
+      expect(turtle.id, "turtle5");
+      expect(turtle.legs, 4);
+      expect(turtle.sound, "Hiss");
+      expect(turtle.description, "A slow green turtle");
+      expect(turtle.shellColor, "Green");
+      expect(turtle.typename, "Turtle");
+    });
+
+    test('dogRequired', () {
+      final variables = GetAnimalWithArgumentsVariables(id: "dog5", limit: 20);
+      final result = GetAnimalWithArgumentsResponse.fromResponse(
+          dogWithArgsData,
+          variables: variables);
+
+      expect(result.animal, isA<GetAnimalWithArguments_animal_Dog>());
+      final dog = result.animal as GetAnimalWithArguments_animal_Dog;
+      expect(dog.id, "dog5");
+      expect(dog.legs, 4);
+      expect(dog.sound, "Bark");
+      expect(dog.description, "A friendly Labrador dog");
+      expect(dog.breed, "Labrador");
+      expect(dog.typename, "Dog");
+    });
+
+    test('equals', () {
+      final variables = GetAnimalWithArgumentsVariables(id: "lion5", limit: 30);
+      final result1 = GetAnimalWithArgumentsResponse.fromResponse(
+          lionWithArgsData,
+          variables: variables);
+      final result2 = GetAnimalWithArgumentsResponse.fromResponse(
+          lionWithArgsData,
+          variables: variables);
+      expect(result1, equals(result2));
+    });
+
+    test('toJson', () {
+      final variables = GetAnimalWithArgumentsVariables(id: "lion5", limit: 30);
+      final initial = GetAnimalWithArgumentsResponse.fromResponse(
+          lionWithArgsData,
+          variables: variables);
+      final json = initial.toJson();
+      expect(json, lionWithArgsData);
+    });
+
+    test('cacheNormalization - description field update', () async {
+      final ctx = ShalomCtx.withCapacity();
+      final variables =
+          GetAnimalWithArgumentsVariables(id: "animal5", limit: 30);
+
+      final initialData = {
+        "animal": {
+          "__typename": "Lion",
+          "id": "animal5",
+          "legs": 4,
+          "sound": "Roar",
+          "description": "Initial description",
+          "furColor": "Golden"
+        }
+      };
+
+      var (result, updateCtx) = GetAnimalWithArgumentsResponse.fromResponseImpl(
+        initialData,
+        ctx,
+        variables,
+      );
+
+      expect(result.animal, isA<GetAnimalWithArguments_animal_Lion>());
+      final lion1 = result.animal as GetAnimalWithArguments_animal_Lion;
+      expect(lion1.description, "Initial description");
+
+      final hasChanged = Completer<bool>();
+      final sub = ctx.subscribe(updateCtx.dependantRecords);
+      sub.streamController.stream.listen((newCtx) {
+        result = GetAnimalWithArgumentsResponse.fromCache(newCtx, variables);
+        hasChanged.complete(true);
+      });
+
+      final updatedData = {
+        "animal": {
+          "__typename": "Lion",
+          "id": "animal5",
+          "legs": 4,
+          "sound": "Roar",
+          "description": "Updated description",
+          "furColor": "Golden"
+        }
+      };
+
+      final nextResult = GetAnimalWithArgumentsResponse.fromResponse(
+        updatedData,
+        ctx: ctx,
+        variables: variables,
+      );
+
+      await hasChanged.future.timeout(Duration(seconds: 1));
+      expect(result, equals(nextResult));
+      final lion2 = result.animal as GetAnimalWithArguments_animal_Lion;
+      expect(lion2.description, "Updated description");
+    });
+
+    test('cacheNormalization - type change Lion to Dog', () async {
+      final ctx = ShalomCtx.withCapacity();
+      final variables =
+          GetAnimalWithArgumentsVariables(id: "animal6", limit: 20);
+
+      var (result, updateCtx) = GetAnimalWithArgumentsResponse.fromResponseImpl(
+        lionWithArgsData,
+        ctx,
+        variables,
+      );
+
+      expect(result.animal, isA<GetAnimalWithArguments_animal_Lion>());
+
+      final hasChanged = Completer<bool>();
+      final sub = ctx.subscribe(updateCtx.dependantRecords);
+      sub.streamController.stream.listen((newCtx) {
+        result = GetAnimalWithArgumentsResponse.fromCache(newCtx, variables);
+        hasChanged.complete(true);
+      });
+
+      final nextResult = GetAnimalWithArgumentsResponse.fromResponse(
+        dogWithArgsData,
+        ctx: ctx,
+        variables: variables,
+      );
+
+      await hasChanged.future.timeout(Duration(seconds: 1));
+      expect(result, equals(nextResult));
+      expect(result.animal, isA<GetAnimalWithArguments_animal_Dog>());
     });
   });
 }
