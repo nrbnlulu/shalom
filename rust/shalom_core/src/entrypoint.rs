@@ -371,7 +371,7 @@ fn parse_and_register_fragments(
             parsed_fragments.insert(name, frag_ctx);
         }
     }
-
+    info!("parsed frags: {:?}", parsed_fragments);
     // Register fragments in global context
     global_ctx.register_fragments(parsed_fragments)
 }
@@ -461,12 +461,27 @@ pub fn parse_directory(
         &fragment_sdls,
         &schema,
         strict,
-    )?;
+    ).map_err(|e|{
+        if strict{
+            panic!("failed to validate docs with injected fragments {e}")
+        }
+        e
+    })?;
     // Build fragment dependencies and get topological order
-    let order = build_fragment_dependencies(&fragment_defs)?;
+    let order = build_fragment_dependencies(&fragment_defs).map_err(|e|{
+        if strict{
+            panic!("failed to build frag deps {e}")
+        }
+        e
+    })?;
     info!("order is {:?}", order);
     // Parse and register fragments
-    parse_and_register_fragments(fragment_defs, order, &global_ctx)?;
+    parse_and_register_fragments(fragment_defs, order, &global_ctx).map_err(|e|{
+        if strict{
+            panic!("failed to build frag deps {e}")
+        }
+        e
+    })?;
 
     // Parse and register operations
     parse_and_register_operations(
