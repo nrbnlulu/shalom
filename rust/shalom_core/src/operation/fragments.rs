@@ -3,14 +3,15 @@ use std::{collections::HashMap, sync::Arc};
 
 use serde::Serialize;
 
-use super::types::{FullPathName, Selection, SharedUnionSelection};
+use super::types::{FullPathName, Selection, SharedInterfaceSelection, SharedUnionSelection};
 
 use crate::context::ShalomGlobalContext;
+use crate::operation::context::TypeDefs;
 use crate::operation::types::SelectionKind;
 use crate::schema::context::SharedSchemaContext;
 pub type SharedFragmentContext = Arc<FragmentContext>;
 
-#[derive(Debug, Clone, Serialize)]
+#[derive(Debug, Serialize)]
 pub struct FragmentContext {
     #[serde(skip_serializing)]
     #[allow(unused)]
@@ -19,11 +20,12 @@ pub struct FragmentContext {
     pub fragment_raw: String,
     #[serde(skip_serializing)]
     pub file_path: PathBuf,
-    type_defs: HashMap<FullPathName, Selection>,
+    pub type_defs: TypeDefs,
     pub root_type: Option<Selection>,
     pub used_fragments: Vec<SharedFragmentContext>,
     pub type_condition: String,
     union_types: HashMap<FullPathName, SharedUnionSelection>,
+    interface_types: HashMap<FullPathName, SharedInterfaceSelection>,
 }
 
 impl FragmentContext {
@@ -39,11 +41,12 @@ impl FragmentContext {
             name,
             file_path,
             fragment_raw,
-            type_defs: HashMap::new(),
+            type_defs: TypeDefs::new(),
             root_type: None,
             used_fragments: Vec::new(),
             type_condition,
             union_types: HashMap::new(),
+            interface_types: HashMap::new(),
         }
     }
 
@@ -57,14 +60,6 @@ impl FragmentContext {
 
     pub fn set_root_type(&mut self, root_type: Selection) {
         self.root_type = Some(root_type);
-    }
-
-    pub fn get_selection(&self, name: &FullPathName) -> Option<Selection> {
-        self.type_defs.get(name).cloned()
-    }
-
-    pub fn add_selection(&mut self, name: String, selection: Selection) {
-        self.type_defs.entry(name.clone()).or_insert(selection);
     }
 
     pub fn add_used_fragment(&mut self, fragment: SharedFragmentContext) {
@@ -99,6 +94,20 @@ impl FragmentContext {
 
     pub fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection> {
         &self.union_types
+    }
+
+    pub fn add_interface_type(
+        &mut self,
+        name: String,
+        interface_selection: SharedInterfaceSelection,
+    ) {
+        self.interface_types
+            .entry(name)
+            .or_insert(interface_selection);
+    }
+
+    pub fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection> {
+        &self.interface_types
     }
 }
 

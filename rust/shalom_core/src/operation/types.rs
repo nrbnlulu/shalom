@@ -1,4 +1,8 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{
+    cell::{Cell, RefCell},
+    collections::HashMap,
+    rc::Rc,
+};
 
 use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
@@ -6,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     context::ShalomGlobalContext,
     operation::context::OperationVariable,
-    schema::types::{EnumType, ScalarType, UnionType},
+    schema::types::{EnumType, InterfaceType, ScalarType, UnionType},
 };
 
 /// the name of i.e object in a graphql query based on the parent fields.
@@ -66,6 +70,27 @@ impl Selection {
     pub fn self_selection_name(&self) -> &String {
         &self.selection_common.name
     }
+
+    pub fn as_interface_selection(&self) -> Option<&SharedInterfaceSelection> {
+        match &self.kind {
+            SelectionKind::Interface(selection) => Some(selection),
+            _ => None,
+        }
+    }
+
+    pub fn as_union_selection(&self) -> Option<&SharedUnionSelection> {
+        match &self.kind {
+            SelectionKind::Union(selection) => Some(selection),
+            _ => None,
+        }
+    }
+
+    pub fn as_object_selection(&self) -> Option<&SharedObjectSelection> {
+        match &self.kind {
+            SelectionKind::Object(selection) => Some(selection),
+            _ => None,
+        }
+    }
 }
 
 pub type SharedSelection = Rc<Selection>;
@@ -78,6 +103,7 @@ pub enum SelectionKind {
     Enum(Rc<EnumSelection>),
     List(Rc<ListSelection>),
     Union(Rc<UnionSelection>),
+    Interface(Rc<InterfaceSelection>),
 }
 impl SelectionKind {
     pub fn new_list(is_optional: bool, of_kind: SelectionKind) -> Self {
@@ -118,6 +144,7 @@ pub struct ObjectSelection {
     pub is_optional: bool,
     pub selections: RefCell<Vec<Selection>>,
     pub used_fragments: RefCell<Vec<FragName>>,
+    pub parent_multitype_fullname: Option<String>,
 }
 
 pub type SharedObjectSelection = Rc<ObjectSelection>;
@@ -127,6 +154,7 @@ impl ObjectSelection {
         is_optional: bool,
         full_name: String,
         concrete_typename: String,
+        parent_multitype_fullname: Option<String>,
     ) -> SharedObjectSelection {
         let ret = ObjectSelection {
             full_name,
@@ -134,6 +162,7 @@ impl ObjectSelection {
             is_optional,
             selections: RefCell::new(Vec::new()),
             used_fragments: RefCell::new(Vec::new()),
+            parent_multitype_fullname,
         };
 
         Rc::new(ret)
@@ -225,32 +254,31 @@ pub struct ListSelection {
 
 pub type SharedListSelection = Rc<ListSelection>;
 
+/// Common fields and behavior shared between Union and Interface selections
 #[derive(Debug, Serialize, Deserialize)]
-pub struct UnionSelection {
+pub struct MultiTypeSelectionCommon {
     pub full_name: String,
-    pub union_type: Node<UnionType>,
+    /// name of the union or uniterface
+    pub schema_typename: String,
     pub is_optional: bool,
-    /// Selections that apply to all union members (e.g., __typename)
+    /// Selections that apply to all types (e.g., __typename)
     pub shared_selections: RefCell<Vec<Selection>>,
     /// Inline fragment selections grouped by type condition
     pub inline_fragments: RefCell<HashMap<String, SharedObjectSelection>>,
+    /// Whether to generate a fallback class for uncovered types
+    pub has_fallback: Cell<bool>,
 }
 
-pub type SharedUnionSelection = Rc<UnionSelection>;
-
-impl UnionSelection {
-    pub fn new(
-        full_name: String,
-        union_type: Node<UnionType>,
-        is_optional: bool,
-    ) -> SharedUnionSelection {
-        Rc::new(UnionSelection {
+impl MultiTypeSelectionCommon {
+    pub fn new(full_name: String, schema_typename: String, is_optional: bool) -> Self {
+        MultiTypeSelectionCommon {
             full_name,
-            union_type,
+            schema_typename,
             is_optional,
             shared_selections: RefCell::new(Vec::new()),
             inline_fragments: RefCell::new(HashMap::new()),
-        })
+            has_fallback: Cell::new(false),
+        }
     }
 
     pub fn add_shared_selection(&self, selection: Selection) {
@@ -292,6 +320,109 @@ impl UnionSelection {
                 .iter()
                 .any(|s| s.self_selection_name() == "__typename")
         })
+    }
+}
+pub trait MultiTypeSelection {
+    /// Get all possible types for this multi-type selection (union members or interface implementations)
+    fn get_all_members(&self, ctx: &ShalomGlobalContext) -> Vec<String>;
+
+    /// Check if we need a fallback class by comparing all possible types with covered inline fragments
+    fn should_generate_fallback(&self, ctx: &ShalomGlobalContext) -> bool {
+        let all_members_set: std::collections::HashSet<String> =
+            self.get_all_members(ctx).into_iter().collect();
+        let covered_types: std::collections::HashSet<String> = self
+            .common()
+            .inline_fragments
+            .borrow()
+            .keys()
+            .cloned()
+            .collect();
+
+        // If not all multitype members are covered, we need a fallback
+        !all_members_set.is_subset(&covered_types)
+    }
+
+    /// Get the common fields shared across all types
+    fn common(&self) -> &MultiTypeSelectionCommon;
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct UnionSelection {
+    #[serde(flatten)]
+    pub common: MultiTypeSelectionCommon,
+    pub union_type: Node<UnionType>,
+}
+
+pub type SharedUnionSelection = Rc<UnionSelection>;
+
+impl UnionSelection {
+    pub fn new(
+        full_name: String,
+        schema_typename: String,
+        union_type: Node<UnionType>,
+        is_optional: bool,
+    ) -> SharedUnionSelection {
+        Rc::new(UnionSelection {
+            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional),
+            union_type,
+        })
+    }
+}
+
+impl MultiTypeSelection for UnionSelection {
+    fn get_all_members(&self, _ctx: &ShalomGlobalContext) -> Vec<String> {
+        self.union_type.members.iter().cloned().collect()
+    }
+
+    fn common(&self) -> &MultiTypeSelectionCommon {
+        &self.common
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InterfaceSelection {
+    #[serde(flatten)]
+    pub common: MultiTypeSelectionCommon,
+    pub interface_type: Node<InterfaceType>,
+}
+
+pub type SharedInterfaceSelection = Rc<InterfaceSelection>;
+
+impl InterfaceSelection {
+    pub fn new(
+        full_name: String,
+        schema_typename: String,
+        interface_type: Node<InterfaceType>,
+        is_optional: bool,
+    ) -> SharedInterfaceSelection {
+        Rc::new(InterfaceSelection {
+            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional),
+            interface_type,
+        })
+    }
+}
+
+impl MultiTypeSelection for InterfaceSelection {
+    fn get_all_members(&self, ctx: &ShalomGlobalContext) -> Vec<String> {
+        let types = ctx.schema_ctx.schema.types.iter();
+        let interface_name = &self.interface_type.name;
+
+        types
+            .filter_map(|(name, _type_def)| {
+                if ctx
+                    .schema_ctx
+                    .is_type_implementing_interface(name.as_str(), interface_name.as_str())
+                {
+                    Some(name.to_string())
+                } else {
+                    None
+                }
+            })
+            .collect()
+    }
+
+    fn common(&self) -> &MultiTypeSelectionCommon {
+        &self.common
     }
 }
 
