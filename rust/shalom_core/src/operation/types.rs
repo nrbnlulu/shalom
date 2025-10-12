@@ -1,4 +1,8 @@
-use std::{cell::RefCell, collections::HashMap, rc::Rc};
+use std::{
+    cell::{Cell, RefCell},
+    collections::HashMap,
+    rc::Rc,
+};
 
 use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
@@ -262,23 +266,18 @@ pub struct MultiTypeSelectionCommon {
     /// Inline fragment selections grouped by type condition
     pub inline_fragments: RefCell<HashMap<String, SharedObjectSelection>>,
     /// Whether to generate a fallback class for uncovered types
-    pub has_fallback: bool,
+    pub has_fallback: Cell<bool>,
 }
 
 impl MultiTypeSelectionCommon {
-    pub fn new(
-        full_name: String,
-        schema_typename: String,
-        is_optional: bool,
-        has_fallback: bool,
-    ) -> Self {
+    pub fn new(full_name: String, schema_typename: String, is_optional: bool) -> Self {
         MultiTypeSelectionCommon {
             full_name,
             schema_typename,
             is_optional,
             shared_selections: RefCell::new(Vec::new()),
             inline_fragments: RefCell::new(HashMap::new()),
-            has_fallback,
+            has_fallback: Cell::new(false),
         }
     }
 
@@ -362,15 +361,9 @@ impl UnionSelection {
         schema_typename: String,
         union_type: Node<UnionType>,
         is_optional: bool,
-        has_fallback: bool,
     ) -> SharedUnionSelection {
         Rc::new(UnionSelection {
-            common: MultiTypeSelectionCommon::new(
-                full_name,
-                schema_typename,
-                is_optional,
-                has_fallback,
-            ),
+            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional),
             union_type,
         })
     }
@@ -401,15 +394,9 @@ impl InterfaceSelection {
         schema_typename: String,
         interface_type: Node<InterfaceType>,
         is_optional: bool,
-        has_fallback: bool,
     ) -> SharedInterfaceSelection {
         Rc::new(InterfaceSelection {
-            common: MultiTypeSelectionCommon::new(
-                full_name,
-                schema_typename,
-                is_optional,
-                has_fallback,
-            ),
+            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional),
             interface_type,
         })
     }

@@ -199,7 +199,6 @@ where
         union_type.name.clone(),
         union_type.clone(),
         is_optional,
-        false, // We'll update this after processing inline fragments
     );
 
     for selection in selection_set.selections.iter() {
@@ -328,33 +327,12 @@ where
     // Determine if we need a fallback class
     let has_fallback = union_selection.should_generate_fallback(global_ctx);
 
-    // Update the has_fallback field
-    // Since UnionSelection is already in an Rc, we need to work with the existing instance
-    // We'll need to make has_fallback a Cell or RefCell, but for now let's create a new one
-    let union_selection_with_fallback = UnionSelection::new(
-        path.clone(),
-        union_type.name.clone(),
-        union_type.clone(),
-        is_optional,
-        has_fallback,
-    );
-
-    // Copy over the selections and fragments
-    for sel in union_selection.common.shared_selections.borrow().iter() {
-        union_selection_with_fallback
-            .common
-            .add_shared_selection(sel.clone());
-    }
-    for (type_cond, obj_sel) in union_selection.common.inline_fragments.borrow().iter() {
-        union_selection_with_fallback
-            .common
-            .add_inline_fragment(type_cond.clone(), obj_sel.clone());
-    }
+    union_selection.common.has_fallback.set(has_fallback);
 
     // Register the union type in the context
-    ctx.add_union_type(path.clone(), union_selection_with_fallback.clone());
+    ctx.add_union_type(path.clone(), union_selection.clone());
 
-    union_selection_with_fallback
+    union_selection
 }
 
 fn parse_interface_selection<T>(
@@ -377,7 +355,6 @@ where
         interface_type.name.clone(),
         interface_type.clone(),
         is_optional,
-        false, // We'll update this after processing inline fragments
     );
 
     for selection in selection_set.selections.iter() {
@@ -512,34 +489,10 @@ where
 
     // Determine if we need a fallback class
     let has_fallback = interface_selection.should_generate_fallback(global_ctx);
+    interface_selection.common.has_fallback.set(has_fallback);
+    ctx.add_interface_type(path.clone(), interface_selection.clone());
 
-    // Update the has_fallback field
-    // Since InterfaceSelection is already in an Rc, we need to work with the existing instance
-    // We'll need to make has_fallback a Cell or RefCell, but for now let's create a new one
-    let interface_selection_with_fallback = InterfaceSelection::new(
-        path.clone(),
-        interface_type.name.clone(),
-        interface_type.clone(),
-        is_optional,
-        has_fallback,
-    );
-
-    // Copy over the selections and fragments
-    for sel in interface_selection.common.shared_selections.borrow().iter() {
-        interface_selection_with_fallback
-            .common
-            .add_shared_selection(sel.clone());
-    }
-    for (type_cond, obj_sel) in interface_selection.common.inline_fragments.borrow().iter() {
-        interface_selection_with_fallback
-            .common
-            .add_inline_fragment(type_cond.clone(), obj_sel.clone());
-    }
-
-    // Register the interface type in the context
-    ctx.add_interface_type(path.clone(), interface_selection_with_fallback.clone());
-
-    interface_selection_with_fallback
+    interface_selection
 }
 
 pub fn parse_selection_kind<T>(
