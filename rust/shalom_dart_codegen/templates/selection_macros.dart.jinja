@@ -38,10 +38,7 @@
         {% else %}
             {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
         {% endif %}
-
-
-
-    {% elif selection.kind == "Union" %}
+    {% elif selection.kind == "Interface" or selection.kind == "Union" -%}
         if ({{cached_sym}} == null){
             {{ctx}}.addChangedRecord({{normalized_id}});
         }
@@ -55,66 +52,20 @@
             parent$normalizedID: {{this_normalized_id}}
         );
 
-        {# Store the normalized representation in parent record #}
-        {% set first_member = selection.inline_fragments | items | first %}
-        {% if first_member %}
-            {% set id_field = get_id_selection(first_member[1].full_name) %}
-            {% if id_field is not none %}
-                final {{selection_name}}$id = ({{raw_sym}} as JsonObject)["{{id_field.name}}"] as RecordID?;
-                final {{selection_name}}$typename = ({{raw_sym}} as JsonObject)["__typename"] as String?;
-                if ({{selection_name}}$id != null && {{selection_name}}$typename != null) {
-                    final {{selection_name}}$normalized = NormalizedObjectRecord(typename: {{selection_name}}$typename, id: {{selection_name}}$id);
-                    {{this_normalized_record}}[{{normalized_key}}] = {{selection_name}}$normalized;
-                    {# Check if the reference changed #}
-                    if ({{cached_sym}} != null && {{cached_sym}} is NormalizedObjectRecord && {{cached_sym}} != {{selection_name}}$normalized) {
-                        {{ctx}}.addChangedRecord({{normalized_id}});
-                    }
-                } else {
-                    {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
-                }
-            {% else %}
-                {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
-            {% endif %}
-        {% else %}
+        {# Store the normalized representation in parent record, we could furthur optimize this by deducing keyable objects per typename buts this should suffice for now. #}
+        {# TODO:(#GH-85) #}
+        final {{selection_name}}$id = ({{raw_sym}} as JsonObject?["id"] as RecordID?;
+        final {{selection_name}}$typename = ({{raw_sym}} as JsonObject)["__typename"] as String?;
+        if ({{selection_name}}$id != null && {{selection_name}}$typename != null) {
+            final {{selection_name}}$normalized = NormalizedObjectRecord(typename: {{selection_name}}$typename, id: {{selection_name}}$id);
+            {{this_normalized_record}}[{{normalized_key}}] = {{selection_name}}$normalized;
+            {# Check if the reference changed #}
+            if ({{cached_sym}} != null && {{cached_sym}} is NormalizedObjectRecord && {{cached_sym}} != {{selection_name}}$normalized) {
+                {{ctx}}.addChangedRecord({{normalized_id}});
+            }
+        } else {
             {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
-        {% endif %}
-    {% elif selection.kind == "Interface" %}
-        if ({{cached_sym}} == null){
-            {{ctx}}.addChangedRecord({{normalized_id}});
         }
-        {{selection.full_name}}.normalize$inCache(
-            {{raw_sym}} as JsonObject,
-            {{ctx}},
-            {{"variables,"  if selection_kind_uses_variables(selection)}}
-            this$cached: {{cached_sym}} is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{cached_sym}}.normalizedID()): {{cached_sym}},
-            this$fieldName: {{normalized_key}},
-            parent$record: {{this_normalized_record}},
-            parent$normalizedID: {{this_normalized_id}}
-        );
-
-        {# Store the normalized representation in parent record #}
-        {% set first_member = selection.inline_fragments | items | first %}
-        {% if first_member %}
-            {% set id_field = get_id_selection(first_member[1].full_name) %}
-            {% if id_field is not none %}
-                final {{selection_name}}$id = ({{raw_sym}} as JsonObject)["{{id_field.name}}"] as RecordID?;
-                final {{selection_name}}$typename = ({{raw_sym}} as JsonObject)["__typename"] as String?;
-                if ({{selection_name}}$id != null && {{selection_name}}$typename != null) {
-                    final {{selection_name}}$normalized = NormalizedObjectRecord(typename: {{selection_name}}$typename, id: {{selection_name}}$id);
-                    {{this_normalized_record}}[{{normalized_key}}] = {{selection_name}}$normalized;
-                    {# Check if the reference changed #}
-                    if ({{cached_sym}} != null && {{cached_sym}} is NormalizedObjectRecord && {{cached_sym}} != {{selection_name}}$normalized) {
-                        {{ctx}}.addChangedRecord({{normalized_id}});
-                    }
-                } else {
-                    {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
-                }
-            {% else %}
-                {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
-            {% endif %}
-        {% else %}
-            {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
-        {% endif %}
     {% elif selection.kind == "List" %}
         {% set inner_selection = selection.of_kind %}
         {# List - recursively normalize each item via the macro #}
