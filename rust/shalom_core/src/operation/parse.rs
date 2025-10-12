@@ -201,6 +201,9 @@ where
         is_optional,
     );
 
+    // Track fragments spread directly at the union level (not inside inline fragments)
+    let mut union_level_fragments: Vec<String> = Vec::new();
+
     for selection in selection_set.selections.iter() {
         match selection {
             apollo_executable::Selection::Field(field) => {
@@ -313,7 +316,47 @@ where
                     .get_fragment(&fragment_name)
                     .unwrap_or_else(|| panic!("Fragment not found: {}", fragment_name));
                 used_fragments.push(frag.clone());
+                // This is a union-level fragment spread, track it separately
+                union_level_fragments.push(fragment_name);
             }
+        }
+    }
+
+    // Store union-level fragments in the union selection so the template can access them
+    for frag_name in &union_level_fragments {
+        union_selection
+            .common
+            .add_shared_fragment(frag_name.clone());
+
+        // Also add the fragment's fields to shared selections so the fallback class has them
+        let frag = global_ctx.get_fragment(frag_name).unwrap();
+        if let Some(frag_root_type) = frag.get_root_type() {
+            match &frag_root_type.kind {
+                SelectionKind::Object(obj) => {
+                    for selection in obj.selections.borrow().iter() {
+                        union_selection
+                            .common
+                            .add_shared_selection(selection.clone());
+                    }
+                }
+                SelectionKind::Union(union_sel) => {
+                    for selection in union_sel.common.shared_selections.borrow().iter() {
+                        union_selection
+                            .common
+                            .add_shared_selection(selection.clone());
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    // Propagate union-level fragment spreads to all inline fragment members
+    // This ensures that if a fragment is spread on a union, all member types
+    // of that union also implement the fragment
+    for (_type_name, obj_selection) in union_selection.common.inline_fragments.borrow().iter() {
+        for frag_name in &union_level_fragments {
+            obj_selection.add_used_fragment(frag_name.clone());
         }
     }
 
@@ -356,6 +399,9 @@ where
         interface_type.clone(),
         is_optional,
     );
+
+    // Track fragments spread directly at the interface level (not inside inline fragments)
+    let mut interface_level_fragments: Vec<String> = Vec::new();
 
     for selection in selection_set.selections.iter() {
         match selection {
@@ -476,7 +522,47 @@ where
                     .get_fragment(&fragment_name)
                     .unwrap_or_else(|| panic!("Fragment not found: {}", fragment_name));
                 used_fragments.push(frag.clone());
+                // This is an interface-level fragment spread, track it separately
+                interface_level_fragments.push(fragment_name);
             }
+        }
+    }
+
+    // Store interface-level fragments in the interface selection so the template can access them
+    for frag_name in &interface_level_fragments {
+        interface_selection
+            .common
+            .add_shared_fragment(frag_name.clone());
+
+        // Also add the fragment's fields to shared selections so the fallback class has them
+        let frag = global_ctx.get_fragment(frag_name).unwrap();
+        if let Some(frag_root_type) = frag.get_root_type() {
+            match &frag_root_type.kind {
+                SelectionKind::Object(obj) => {
+                    for selection in obj.selections.borrow().iter() {
+                        interface_selection
+                            .common
+                            .add_shared_selection(selection.clone());
+                    }
+                }
+                SelectionKind::Interface(iface) => {
+                    for selection in iface.common.shared_selections.borrow().iter() {
+                        interface_selection
+                            .common
+                            .add_shared_selection(selection.clone());
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    // Propagate interface-level fragment spreads to all inline fragment members
+    // This ensures that if a fragment is spread on an interface, all concrete types
+    // that implement that interface also implement the fragment
+    for (_type_name, obj_selection) in interface_selection.common.inline_fragments.borrow().iter() {
+        for frag_name in &interface_level_fragments {
+            obj_selection.add_used_fragment(frag_name.clone());
         }
     }
 
@@ -937,36 +1023,79 @@ pub(crate) fn parse_fragment(
         .schema_ctx
         .get_type(&type_name.to_string())
         .unwrap();
-    if let crate::schema::types::GraphQLAny::Object(_) = type_info {
-        let selection_common = SelectionCommon {
-            name: fragment_ctx.get_fragment_name().to_string(),
-            description: None,
-        };
-        let mut used_fragments = Vec::new();
-        let root_obj = parse_object_selection(
-            fragment_ctx,
-            global_ctx,
-            &fragment_ctx.get_fragment_name().to_string(),
-            false,
-            selection_set,
-            &mut used_fragments,
-            None, // Fragment root object, not a multi-type member
-        );
-        for frag in used_fragments {
-            fragment_ctx.add_used_fragment(frag);
+
+    let selection_common = SelectionCommon {
+        name: fragment_ctx.get_fragment_name().to_string(),
+        description: None,
+    };
+    let mut used_fragments = Vec::new();
+
+    let root_selection = match type_info {
+        crate::schema::types::GraphQLAny::Object(_) => {
+            let root_obj = parse_object_selection(
+                fragment_ctx,
+                global_ctx,
+                &fragment_ctx.get_fragment_name().to_string(),
+                false,
+                selection_set,
+                &mut used_fragments,
+                None, // Fragment root object, not a multi-type member
+            );
+            // fragments has no arguments
+            Selection::new(selection_common, SelectionKind::Object(root_obj), vec![])
         }
-        // fragments has no arguments
-        let root_selection =
-            Selection::new(selection_common, SelectionKind::Object(root_obj), vec![]);
-        fragment_ctx.set_root_type(root_selection.clone());
-        let frag_name = fragment_ctx.get_fragment_name().to_string();
-        (fragment_ctx as &mut dyn ExecutableContext).add_selection(frag_name, root_selection);
-        Ok(())
-    } else {
-        Err(anyhow::anyhow!(
-            "Fragment {} type condition {} is not an object type",
-            fragment_ctx.get_fragment_name(),
-            type_name
-        ))
+        crate::schema::types::GraphQLAny::Interface(interface_type) => {
+            // Check if the selection set has inline fragments
+            let has_inline_fragments = selection_set
+                .selections
+                .iter()
+                .any(|sel| matches!(sel, apollo_executable::Selection::InlineFragment(_)));
+
+            if has_inline_fragments {
+                // Parse as interface selection with type discrimination
+                let root_interface = parse_interface_selection(
+                    fragment_ctx,
+                    global_ctx,
+                    &fragment_ctx.get_fragment_name().to_string(),
+                    false,
+                    selection_set,
+                    interface_type,
+                    &mut used_fragments,
+                );
+                Selection::new(
+                    selection_common,
+                    SelectionKind::Interface(root_interface),
+                    vec![],
+                )
+            } else {
+                // No inline fragments - treat as simple object selection
+                let root_obj = parse_object_selection(
+                    fragment_ctx,
+                    global_ctx,
+                    &fragment_ctx.get_fragment_name().to_string(),
+                    false,
+                    selection_set,
+                    &mut used_fragments,
+                    None,
+                );
+                Selection::new(selection_common, SelectionKind::Object(root_obj), vec![])
+            }
+        }
+        _ => {
+            return Err(anyhow::anyhow!(
+                "Fragment {} type condition {} is not an object or interface type",
+                fragment_ctx.get_fragment_name(),
+                type_name
+            ));
+        }
+    };
+
+    for frag in used_fragments {
+        fragment_ctx.add_used_fragment(frag);
     }
+
+    fragment_ctx.set_root_type(root_selection.clone());
+    let frag_name = fragment_ctx.get_fragment_name().to_string();
+    (fragment_ctx as &mut dyn ExecutableContext).add_selection(frag_name, root_selection);
+    Ok(())
 }
