@@ -53,9 +53,7 @@ class CacheUpdateContext {
 }
 
 JsonObject getOrCreateObject(JsonObject onObject, RecordID field) {
-  if (onObject.containsKey(field) &&
-      onObject[field] != null &&
-      onObject[field] is JsonObject) {
+  if (onObject.containsKey(field) && onObject[field] != null) {
     return onObject[field] as JsonObject;
   } else {
     final JsonObject ret = {};
