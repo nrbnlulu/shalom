@@ -48,7 +48,7 @@
             parent$normalizedID: {{this_normalized_id}}
         );
 
-        {# Store the normalized representation in parent record, we could furthur optimize this by deducing keyable objects per typename buts this should suffice for now. #}
+        {# Store the normalized representation in parent record, we could further optimize this by deducing keyable objects per typename buts this should suffice for now. #}
         {# TODO:(#GH-85) #}
         final {{selection_name}}$id = ({{raw_sym}} as JsonObject)["id"] as RecordID?;
         final {{selection_name}}$typename = ({{raw_sym}} as JsonObject)["__typename"] as String?;
@@ -370,9 +370,9 @@
             if (this$normalizedID_temp == null) {
                 this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
                 {% if is_multi_type_member -%}
-                {# multi_type_members might previousely stored a keyed object and thus the parent record might actually include an NormalizedObjectRecord #}
+                {# multi_type_members might previously stored a keyed object and thus the parent record might actually include an NormalizedObjectRecord #}
                     if (parent$record[this$fieldName] is NormalizedObjectRecord) {
-                        // since it previousely had and id and now we don't have, we can deduce that this is a diffrent type
+                        // since it previously had and id and now we don't have, we can deduce that this is a different type
                         // and we should create a new object directly.
                         this$NormalizedRecord = {};
                         parent$record[this$fieldName] = this$NormalizedRecord;
