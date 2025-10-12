@@ -369,8 +369,27 @@
 
             if (hasIdField) {
                 {# Normalizable fallback - has ID field #}
-                final this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
-                final this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
+                String this$normalizedID;
+                JsonObject this$NormalizedRecord;
+
+                final RecordID? this$normalizedID_temp = data["id"] as RecordID?;
+                if (this$normalizedID_temp == null) {
+                    this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
+                    this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+                } else {
+                    final normalized$objRecrord = NormalizedObjectRecord(
+                        typename: data["__typename"], id: this$normalizedID_temp!);
+                    // if id or typename changed we mark the whole selection as changed.
+                    if (this$cached != null &&
+                        this$cached is NormalizedObjectRecord &&
+                        this$cached as NormalizedObjectRecord != normalized$objRecrord) {
+                        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
+                    }
+                    parent$record[this$fieldName] = normalized$objRecrord;
+                    this$normalizedID = normalized$objRecrord.normalizedID();
+                    this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
+                    ctx.addDependantRecord(this$normalizedID);
+                }
 
                 {% for selection in selections %}
                 {# Normalize each selection #}
@@ -458,7 +477,7 @@
                 this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                 ctx.addDependantRecord(this$normalizedID);
             }
-    
+
         {% endif -%}
 
         {% if not is_fallback %}
@@ -681,6 +700,9 @@
             if (data is String) {
                 // Normalized {{ type_kind }}: data is the cache key, fetch the actual record
                 final actualData = ctx.getCachedRecord(data);
+                if (actualData == null) {
+                    throw Exception("Cached record not found for key: $data");
+                }
                 final typename = actualData["__typename"] as String;
                 switch (typename) {
                     {% for type_condition, obj_selection in selection.inline_fragments | items %}
