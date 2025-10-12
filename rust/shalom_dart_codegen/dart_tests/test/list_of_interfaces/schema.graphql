@@ -1,0 +1,38 @@
+type Query {
+    vehiclesRequired: [Vehicle!]!
+    vehiclesOptional: [Vehicle!]
+    optionalVehicles: [Vehicle]!
+    vehiclesFullyOptional: [Vehicle]
+    vehiclesWithArgs(limit: Int!): [Vehicle!]!
+}
+
+interface Vehicle {
+    id: ID!
+    brand: String!
+    speed: Int!
+    description(maxLength: Int!): String!
+}
+
+type Car implements Vehicle {
+    id: ID!
+    brand: String!
+    speed: Int!
+    description(maxLength: Int!): String!
+    doors: Int!
+}
+
+type Motorcycle implements Vehicle {
+    id: ID!
+    brand: String!
+    speed: Int!
+    description(maxLength: Int!): String!
+    hasSidecar: Boolean!
+}
+
+type Bicycle implements Vehicle {
+    id: ID!
+    brand: String!
+    speed: Int!
+    description(maxLength: Int!): String!
+    gears: Int!
+}

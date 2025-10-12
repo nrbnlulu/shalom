@@ -75,7 +75,7 @@ The watch command will:
     - [x] objects
     - [x] enums
     - [x] unions
-    - [ ] interface
+    - [x] interface
     - [x] fragments
     - [ ] nested list
 - [x] Node interface real time updates.
