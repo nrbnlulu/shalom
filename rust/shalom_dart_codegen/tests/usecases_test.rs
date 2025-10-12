@@ -89,3 +89,8 @@ fn test_list_of_fragments_dart() {
 fn test_list_of_unions_dart() {
     run_dart_tests_for_usecase("list_of_unions");
 }
+
+#[test]
+fn test_list_of_interfaces_dart() {
+    run_dart_tests_for_usecase("list_of_interfaces");
+}
