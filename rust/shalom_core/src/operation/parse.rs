@@ -135,8 +135,7 @@ where
 
                 // all fragments should be already parsed by now.
                 let frag = global_ctx
-                    .get_fragment(&fragment_name)
-                    .unwrap_or_else(|| panic!("Fragment not found: {}", fragment_name));
+                    .get_fragment_strict(&fragment_name);
                 used_fragments.push(frag.clone());
                 obj.add_used_fragment(fragment_name.clone());
             }
