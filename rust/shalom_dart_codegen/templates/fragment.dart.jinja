@@ -37,7 +37,7 @@ abstract class {{ fragment_name }} {
 // Generate data classes for nested object selections
 {% for selection_name, selection in fragment_selections.selection_objects | items %}
     {# Skip union/interface member objects - they'll be generated in UNION/INTERFACE DEFINITIONS #}
-    {% if selection_name | get_parent_union or selection_name | get_parent_interface %}
+    {% if selection.parent_multitype_fullname %}
         {# This is a union or interface member, skip it here #}
     {% elif selection.kind == "Object" and selection_name != fragment_name %}
         {{ selection_object_definition(selection_name, selection) }}

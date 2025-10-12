@@ -31,7 +31,7 @@ import 'package:collection/collection.dart';
 
 {% for full_name, selection in operation.context.type_defs.selection_objects | items %}
     {# Skip union/interface member objects - they'll be generated in UNION/INTERFACE DEFINITIONS #}
-    {% if full_name | get_parent_union or full_name | get_parent_interface %}
+    {% if selection.parent_multitype_fullname %}
         {# This is a union or interface member, skip it here #}
     {% elif full_name == operation_name %}
         {# Root selection - add Response suffix and set is_root_selection=true #}

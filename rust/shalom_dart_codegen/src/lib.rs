@@ -520,44 +520,6 @@ where
     });
 
     let executable_ctx_clone3 = executable_ctx.clone();
-    env.add_filter(
-        "get_parent_union",
-        move |full_typename: &str| -> Option<minijinja::Value> {
-            // Try to extract parent union name by removing the last _TypeCondition part
-            if let Some(last_underscore_pos) = full_typename.rfind('_') {
-                let potential_parent = &full_typename[..last_underscore_pos];
-
-                // Check if this potential parent exists in union_types
-                if executable_ctx_clone3
-                    .get_union_types()
-                    .contains_key(potential_parent)
-                {
-                    return Some(minijinja::Value::from(potential_parent));
-                }
-            }
-            None
-        },
-    );
-    let executable_ctx_clone4 = executable_ctx.clone();
-    env.add_filter(
-        "get_parent_interface",
-        move |full_typename: &str| -> Option<minijinja::Value> {
-            // Try to extract parent interface name by removing the last _TypeCondition or _Fallback part
-            if let Some(last_underscore_pos) = full_typename.rfind('_') {
-                let potential_parent = &full_typename[..last_underscore_pos];
-
-                // Check if this potential parent exists in interface_types
-                if executable_ctx_clone4
-                    .get_interface_types()
-                    .contains_key(potential_parent)
-                {
-                    return Some(minijinja::Value::from(potential_parent));
-                }
-            }
-            None
-        },
-    );
-    let executable_ctx_clone3 = executable_ctx.clone();
     env.add_function(
         "selection_kind_uses_variables",
         move |selection: ViaDeserialize<shalom_core::operation::types::SelectionKind>| -> bool {

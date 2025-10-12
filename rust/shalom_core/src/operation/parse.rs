@@ -79,6 +79,7 @@ fn parse_object_selection<T>(
     is_optional: bool,
     selection_orig: &apollo_compiler::executable::SelectionSet,
     used_fragments: &mut Vec<SharedFragmentContext>,
+    parent_multitype_fullname: Option<String>,
 ) -> SharedObjectSelection
 where
     T: ExecutableContext,
@@ -91,7 +92,12 @@ where
          selection was {:?}.",
         selection_orig
     );
-    let obj = ObjectSelection::new(is_optional, path.clone(), selection_orig.ty.to_string());
+    let obj = ObjectSelection::new(
+        is_optional,
+        path.clone(),
+        selection_orig.ty.to_string(),
+        parent_multitype_fullname,
+    );
 
     for selection in selection_orig.selections.iter() {
         match selection {
@@ -147,6 +153,7 @@ where
                         false, // inline fragments in objects inherit the parent's optionality
                         &inline_fragment.selection_set,
                         used_fragments,
+                        None, // inline fragments within objects don't have a multi-type parent
                     );
                     // Merge the inline fragment's selections into the parent object
                     for selection in inline_obj.selections.borrow().iter() {
@@ -247,6 +254,7 @@ where
                         false, // inline fragments within unions are not optional
                         &inline_fragment.selection_set,
                         used_fragments,
+                        Some(path.clone()), // Union member - parent is the union
                     );
                     union_selection
                         .common
@@ -429,6 +437,7 @@ where
                         false, // inline fragments within interfaces are not optional
                         &inline_fragment.selection_set,
                         used_fragments,
+                        Some(path.clone()), // Interface member - parent is the interface
                     );
                     interface_selection
                         .common
@@ -558,6 +567,7 @@ where
                     is_optional,
                     selection_set,
                     used_fragments,
+                    None, // Regular object selection, not a multi-type member
                 )),
                 GraphQLAny::Enum(_enum) => {
                     SelectionKind::Enum(parse_enum_selection(is_optional, _enum))
@@ -599,6 +609,7 @@ where
                             is_optional,
                             selection_set,
                             used_fragments,
+                            None, // Regular object selection, not a multi-type member
                         ))
                     }
                 }
@@ -924,6 +935,7 @@ fn parse_operation(
         false,
         &op.selection_set,
         &mut used_fragments,
+        None, // Root operation type, not a multi-type member
     );
 
     // Add used fragments to operation context
@@ -985,6 +997,7 @@ pub(crate) fn parse_fragment(
             false,
             selection_set,
             &mut used_fragments,
+            None, // Fragment root object, not a multi-type member
         );
         for frag in used_fragments {
             fragment_ctx.add_used_fragment(frag);

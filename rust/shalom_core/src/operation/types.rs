@@ -140,6 +140,7 @@ pub struct ObjectSelection {
     pub is_optional: bool,
     pub selections: RefCell<Vec<Selection>>,
     pub used_fragments: RefCell<Vec<FragName>>,
+    pub parent_multitype_fullname: Option<String>,
 }
 
 pub type SharedObjectSelection = Rc<ObjectSelection>;
@@ -149,6 +150,7 @@ impl ObjectSelection {
         is_optional: bool,
         full_name: String,
         concrete_typename: String,
+        parent_multitype_fullname: Option<String>,
     ) -> SharedObjectSelection {
         let ret = ObjectSelection {
             full_name,
@@ -156,6 +158,7 @@ impl ObjectSelection {
             is_optional,
             selections: RefCell::new(Vec::new()),
             used_fragments: RefCell::new(Vec::new()),
+            parent_multitype_fullname,
         };
 
         Rc::new(ret)
@@ -336,7 +339,7 @@ pub trait MultiTypeSelection {
             .cloned()
             .collect();
 
-        // If not all union members are covered, we need a fallback
+        // If not all multitype members are covered, we need a fallback
         !all_members_set.is_subset(&covered_types)
     }
 
