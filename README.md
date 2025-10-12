@@ -66,7 +66,8 @@ The watch command will:
 - [x] enums
 - [x] object selection
 - [x] nested objects
-- [ ] unions
+- [x] union
+- [x] interface
 - [x] fragments
 - [ ] list of
     - [x] scalars
@@ -74,6 +75,7 @@ The watch command will:
     - [x] objects
     - [x] enums
     - [x] unions
+    - [ ] interface
     - [x] fragments
     - [ ] nested list
 - [x] Node interface real time updates.
