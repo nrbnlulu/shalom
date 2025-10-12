@@ -8,7 +8,10 @@ use apollo_compiler::{
 use log::{info, trace};
 
 use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
-use crate::operation::types::{FieldArgument, ObjectSelection, SelectionCommon, SelectionKind};
+use crate::operation::context::TypeDefs;
+use crate::operation::types::{
+    FieldArgument, FullPathName, ObjectSelection, SelectionCommon, SelectionKind,
+};
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
 };
@@ -16,8 +19,9 @@ use crate::schema::types::{
 use super::context::{OperationContext, SharedOpCtx};
 use super::fragments::{FragmentContext, SharedFragmentContext};
 use super::types::{
-    EnumSelection, OperationType, ScalarSelection, Selection, SharedEnumSelection,
-    SharedObjectSelection, SharedScalarSelection, SharedUnionSelection, UnionSelection,
+    EnumSelection, InterfaceSelection, MultiTypeSelection, OperationType, ScalarSelection,
+    Selection, SharedEnumSelection, SharedInterfaceSelection, SharedObjectSelection,
+    SharedScalarSelection, SharedUnionSelection, UnionSelection,
 };
 
 fn full_path_name(this_name: &String, parent_path: &String) -> String {
@@ -75,6 +79,7 @@ fn parse_object_selection<T>(
     is_optional: bool,
     selection_orig: &apollo_compiler::executable::SelectionSet,
     used_fragments: &mut Vec<SharedFragmentContext>,
+    parent_multitype_fullname: Option<String>,
 ) -> SharedObjectSelection
 where
     T: ExecutableContext,
@@ -87,7 +92,12 @@ where
          selection was {:?}.",
         selection_orig
     );
-    let obj = ObjectSelection::new(is_optional, path.clone(), selection_orig.ty.to_string());
+    let obj = ObjectSelection::new(
+        is_optional,
+        path.clone(),
+        selection_orig.ty.to_string(),
+        parent_multitype_fullname,
+    );
 
     for selection in selection_orig.selections.iter() {
         match selection {
@@ -143,6 +153,7 @@ where
                         false, // inline fragments in objects inherit the parent's optionality
                         &inline_fragment.selection_set,
                         used_fragments,
+                        None, // inline fragments within objects don't have a multi-type parent
                     );
                     // Merge the inline fragment's selections into the parent object
                     for selection in inline_obj.selections.borrow().iter() {
@@ -182,7 +193,13 @@ where
 {
     trace!("Parsing union selection {:?}", union_type.name);
 
-    let union_selection = UnionSelection::new(path.clone(), union_type.clone(), is_optional);
+    // Create union selection with placeholder has_fallback (we'll determine this later)
+    let union_selection = UnionSelection::new(
+        path.clone(),
+        union_type.name.clone(),
+        union_type.clone(),
+        is_optional,
+    );
 
     for selection in selection_set.selections.iter() {
         match selection {
@@ -213,7 +230,7 @@ where
                     args,
                     used_fragments,
                 );
-                union_selection.add_shared_selection(field_selection);
+                union_selection.common.add_shared_selection(field_selection);
             }
             apollo_executable::Selection::InlineFragment(inline_fragment) => {
                 if let Some(type_condition) = &inline_fragment.type_condition {
@@ -236,8 +253,11 @@ where
                         false, // inline fragments within unions are not optional
                         &inline_fragment.selection_set,
                         used_fragments,
+                        Some(path.clone()), // Union member - parent is the union
                     );
-                    union_selection.add_inline_fragment(type_condition_str, obj.clone());
+                    union_selection
+                        .common
+                        .add_inline_fragment(type_condition_str, obj.clone());
 
                     let selection_common = SelectionCommon {
                         name: fragment_path.clone(),
@@ -280,7 +300,7 @@ where
                                 used_fragments,
                             );
 
-                            union_selection.add_shared_selection(field_selection);
+                            union_selection.common.add_shared_selection(field_selection);
                         }
                     }
                 }
@@ -299,15 +319,180 @@ where
 
     // Validate that __typename is present
     assert!(
-        union_selection.has_typename_selection(),
+        union_selection.common.has_typename_selection(),
         "Union selection '{}' must have __typename selected either at the top level or in all inline fragments",
         path
     );
+
+    // Determine if we need a fallback class
+    let has_fallback = union_selection.should_generate_fallback(global_ctx);
+
+    union_selection.common.has_fallback.set(has_fallback);
 
     // Register the union type in the context
     ctx.add_union_type(path.clone(), union_selection.clone());
 
     union_selection
+}
+
+fn parse_interface_selection<T>(
+    ctx: &mut T,
+    global_ctx: &SharedShalomGlobalContext,
+    path: &String,
+    is_optional: bool,
+    selection_set: &apollo_executable::SelectionSet,
+    interface_type: Node<crate::schema::types::InterfaceType>,
+    used_fragments: &mut Vec<SharedFragmentContext>,
+) -> SharedInterfaceSelection
+where
+    T: ExecutableContext,
+{
+    trace!("Parsing interface selection {:?}", interface_type.name);
+
+    // Create interface selection with placeholder has_fallback (we'll determine this later)
+    let interface_selection = InterfaceSelection::new(
+        path.clone(),
+        interface_type.name.clone(),
+        interface_type.clone(),
+        is_optional,
+    );
+
+    for selection in selection_set.selections.iter() {
+        match selection {
+            apollo_executable::Selection::Field(field) => {
+                // This is a shared field from the interface
+                let f_name = field.name.clone().to_string();
+                let f_type = field.ty();
+                let description = field
+                    .definition
+                    .description
+                    .as_deref()
+                    .map(|s| s.to_string());
+                let field_path = full_path_name(&f_name, path);
+                let args = parse_field_arguments(ctx, field);
+
+                let selection_common = SelectionCommon {
+                    name: f_name.clone(),
+                    description,
+                };
+
+                let field_selection = parse_selection_set(
+                    &field_path,
+                    ctx,
+                    global_ctx,
+                    selection_common,
+                    &field.selection_set,
+                    f_type,
+                    args,
+                    used_fragments,
+                );
+                interface_selection
+                    .common
+                    .add_shared_selection(field_selection);
+            }
+            apollo_executable::Selection::InlineFragment(inline_fragment) => {
+                if let Some(type_condition) = &inline_fragment.type_condition {
+                    let type_condition_str = type_condition.to_string();
+                    trace!("Processing inline fragment on type: {}", type_condition_str);
+
+                    // Verify this type implements the interface
+                    if !global_ctx
+                        .schema_ctx
+                        .is_type_implementing_interface(&type_condition_str, &interface_type.name)
+                    {
+                        panic!(
+                            "Type '{}' does not implement interface '{}'",
+                            type_condition_str, interface_type.name
+                        );
+                    }
+
+                    let fragment_path = format!("{}_{}", path, type_condition_str);
+                    let obj = parse_object_selection(
+                        ctx,
+                        global_ctx,
+                        &fragment_path,
+                        false, // inline fragments within interfaces are not optional
+                        &inline_fragment.selection_set,
+                        used_fragments,
+                        Some(path.clone()), // Interface member - parent is the interface
+                    );
+                    interface_selection
+                        .common
+                        .add_inline_fragment(type_condition_str.clone(), obj.clone());
+
+                    let selection_common = SelectionCommon {
+                        name: fragment_path.clone(),
+                        description: None,
+                    };
+                    let selection = Selection::new(
+                        selection_common,
+                        SelectionKind::Object(obj),
+                        Default::default(),
+                    );
+
+                    ctx.add_selection(fragment_path, selection);
+                } else {
+                    // Inline fragment without type condition - fields apply to all types
+                    for sel in &inline_fragment.selection_set.selections {
+                        if let apollo_executable::Selection::Field(field) = sel {
+                            let f_name = field.name.clone().to_string();
+                            let f_type = field.ty();
+                            let description = field
+                                .definition
+                                .description
+                                .as_deref()
+                                .map(|s| s.to_string());
+                            let field_path = full_path_name(&f_name, path);
+                            let args: Vec<crate::operation::types::FieldArgument> = vec![];
+
+                            let selection_common = SelectionCommon {
+                                name: f_name.clone(),
+                                description,
+                            };
+
+                            let field_selection = parse_selection_set(
+                                &field_path,
+                                ctx,
+                                global_ctx,
+                                selection_common,
+                                &field.selection_set,
+                                f_type,
+                                args,
+                                used_fragments,
+                            );
+
+                            interface_selection
+                                .common
+                                .add_shared_selection(field_selection);
+                        }
+                    }
+                }
+            }
+            apollo_executable::Selection::FragmentSpread(fragment_spread) => {
+                let fragment_name = fragment_spread.fragment_name.to_string();
+                trace!("Processing fragment spread: {}", fragment_name);
+
+                let frag = global_ctx
+                    .get_fragment(&fragment_name)
+                    .unwrap_or_else(|| panic!("Fragment not found: {}", fragment_name));
+                used_fragments.push(frag.clone());
+            }
+        }
+    }
+
+    // Validate that __typename is present
+    assert!(
+        interface_selection.common.has_typename_selection(),
+        "Interface selection '{}' must have __typename selected either at the top level or in all inline fragments",
+        path
+    );
+
+    // Determine if we need a fallback class
+    let has_fallback = interface_selection.should_generate_fallback(global_ctx);
+    interface_selection.common.has_fallback.set(has_fallback);
+    ctx.add_interface_type(path.clone(), interface_selection.clone());
+
+    interface_selection
 }
 
 pub fn parse_selection_kind<T>(
@@ -335,6 +520,7 @@ where
                     is_optional,
                     selection_set,
                     used_fragments,
+                    None, // Regular object selection, not a multi-type member
                 )),
                 GraphQLAny::Enum(_enum) => {
                     SelectionKind::Enum(parse_enum_selection(is_optional, _enum))
@@ -348,6 +534,38 @@ where
                     union_type,
                     used_fragments,
                 )),
+                GraphQLAny::Interface(interface_type) => {
+                    // Check if the selection set has inline fragments
+                    let has_inline_fragments = selection_set
+                        .selections
+                        .iter()
+                        .any(|sel| matches!(sel, apollo_executable::Selection::InlineFragment(_)));
+
+                    if has_inline_fragments {
+                        // Parse as interface selection with type discrimination
+                        SelectionKind::Interface(parse_interface_selection(
+                            ctx,
+                            global_ctx,
+                            path,
+                            is_optional,
+                            selection_set,
+                            interface_type,
+                            used_fragments,
+                        ))
+                    } else {
+                        // No inline fragments - treat as simple object selection
+                        // (all fields are from interface, no type-specific fields)
+                        SelectionKind::Object(parse_object_selection(
+                            ctx,
+                            global_ctx,
+                            path,
+                            is_optional,
+                            selection_set,
+                            used_fragments,
+                            None, // Regular object selection, not a multi-type member
+                        ))
+                    }
+                }
                 _ => todo!(
                     "Unsupported GraphQL type {:?}",
                     global_ctx.schema_ctx.get_type(&name.to_string())
@@ -364,9 +582,11 @@ where
                 used_fragments,
             );
 
-            // Register inner object/union selections so they can be found for code generation
+            // Register inner object/union/interface selections so they can be found for code generation
             match &of_kind {
-                SelectionKind::Object(_) | SelectionKind::Union(_) => {
+                SelectionKind::Object(_)
+                | SelectionKind::Union(_)
+                | SelectionKind::Interface(_) => {
                     let selection_common = SelectionCommon {
                         name: path.clone(),
                         description: None,
@@ -385,52 +605,96 @@ where
 
 // Trait to abstract over OperationContext and FragmentContext
 pub trait ExecutableContext: Send + Sync + 'static {
-    fn get_selection(&self, name: &str) -> Option<Selection>;
     fn get_used_fragments(
         &self,
         name: &str,
         ctx: &ShalomGlobalContext,
     ) -> &Vec<SharedFragmentContext>;
-    fn get_selection_impl(&self, name: &str, ctx: &ShalomGlobalContext) -> Selection {
-        let res = match self.get_selection(name) {
-            Some(selection) => Some(selection),
-            None => {
+
+    fn name(&self) -> &str;
+
+    fn get_selection(&self, name: &String, ctx: &ShalomGlobalContext) -> Option<&Selection> {
+        self.get_object_selection(name)
+            .or_else(|| self.get_union_selection(name))
+            .or_else(|| self.get_interface_selection(name))
+            .or_else(|| {
                 for frag in self.get_used_fragments(name, ctx) {
-                    if let Some(selection) = frag.get_selection(&name.to_string()) {
-                        return selection;
+                    if let Some(selection) = frag.get_selection(&name.to_string(), ctx) {
+                        return Some(selection);
                     }
                 }
                 None
-            }
-        };
-        res.unwrap_or_else(|| panic!("Selection not found for name: {}", name))
+            })
+    }
+    fn add_selection(&mut self, name: String, selection: Selection) {
+        match selection.kind {
+            SelectionKind::Object(_) => self.add_object_selection(name, selection),
+            SelectionKind::Interface(_) => self.add_interface_selection(name, selection),
+            SelectionKind::Union(_) => self.add_union_selection(name, selection),
+            _ => (),
+        }
     }
 
-    fn add_selection(&mut self, name: String, selection: Selection);
+    fn get_selection_strict(&self, name: &String, ctx: &ShalomGlobalContext) -> &Selection {
+        self.get_selection(name, ctx).unwrap_or_else(|| {
+            panic!("selection for {name} not found neither in this context nor in its fragments")
+        })
+    }
+
+    fn typedefs(&self) -> &TypeDefs;
+    fn typedefs_mut(&mut self) -> &mut TypeDefs;
+
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable>;
     fn has_variables(&self) -> bool;
+
+    fn add_object_selection(&mut self, name: String, object_selection: Selection) {
+        self.typedefs_mut()
+            .add_object_selection(name, object_selection);
+    }
+    fn get_object_selection(&self, name: &String) -> Option<&Selection> {
+        self.typedefs().get_object_selection(name)
+    }
+    fn add_union_selection(&mut self, name: String, union_selection: Selection) {
+        self.typedefs_mut()
+            .add_union_selection(name, union_selection);
+    }
+    fn get_union_selection(&self, name: &String) -> Option<&Selection> {
+        self.typedefs().get_union_selection(name)
+    }
+
+    fn add_interface_selection(&mut self, name: String, interface_selection: Selection) {
+        self.typedefs_mut()
+            .add_interface_selection(name, interface_selection);
+    }
+    fn get_interface_selection(&self, name: &String) -> Option<&Selection> {
+        self.typedefs().get_interface_selection(name)
+    }
+
     fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection);
-    fn get_union_types(&self) -> &std::collections::HashMap<String, SharedUnionSelection>;
+    fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection>;
+    fn add_interface_type(&mut self, name: String, interface_selection: SharedInterfaceSelection);
+    fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection>;
 }
 
 impl ExecutableContext for OperationContext {
-    fn get_selection(&self, name: &str) -> Option<Selection> {
-        self.get_selection(&name.to_string())
+    fn name(&self) -> &str {
+        self.get_operation_name()
     }
     fn has_variables(&self) -> bool {
         self.has_variables()
     }
-
+    fn typedefs(&self) -> &TypeDefs {
+        &self.type_defs
+    }
+    fn typedefs_mut(&mut self) -> &mut TypeDefs {
+        &mut self.type_defs
+    }
     fn get_used_fragments(
         &self,
         _name: &str,
         _ctx: &ShalomGlobalContext,
     ) -> &Vec<SharedFragmentContext> {
         self.get_used_fragments()
-    }
-
-    fn add_selection(&mut self, name: String, selection: Selection) {
-        self.add_selection(name, selection)
     }
 
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable> {
@@ -441,14 +705,28 @@ impl ExecutableContext for OperationContext {
         self.add_union_type(name, union_selection)
     }
 
-    fn get_union_types(&self) -> &std::collections::HashMap<String, SharedUnionSelection> {
+    fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection> {
         self.get_union_types()
+    }
+
+    fn add_interface_type(&mut self, name: String, interface_selection: SharedInterfaceSelection) {
+        self.add_interface_type(name, interface_selection)
+    }
+
+    fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection> {
+        self.get_interface_types()
     }
 }
 
 impl ExecutableContext for FragmentContext {
-    fn get_selection(&self, name: &str) -> Option<Selection> {
-        self.get_selection(&name.to_string())
+    fn name(&self) -> &str {
+        self.get_fragment_name()
+    }
+    fn typedefs(&self) -> &TypeDefs {
+        &self.type_defs
+    }
+    fn typedefs_mut(&mut self) -> &mut TypeDefs {
+        &mut self.type_defs
     }
 
     fn get_used_fragments(
@@ -457,10 +735,6 @@ impl ExecutableContext for FragmentContext {
         _ctx: &ShalomGlobalContext,
     ) -> &Vec<SharedFragmentContext> {
         self.get_used_fragments()
-    }
-
-    fn add_selection(&mut self, name: String, selection: Selection) {
-        self.add_selection(name, selection)
     }
 
     fn has_variables(&self) -> bool {
@@ -474,8 +748,16 @@ impl ExecutableContext for FragmentContext {
         self.add_union_type(name, union_selection)
     }
 
-    fn get_union_types(&self) -> &std::collections::HashMap<String, SharedUnionSelection> {
+    fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection> {
         self.get_union_types()
+    }
+
+    fn add_interface_type(&mut self, name: String, interface_selection: SharedInterfaceSelection) {
+        self.add_interface_type(name, interface_selection)
+    }
+
+    fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection> {
+        self.get_interface_types()
     }
 }
 
@@ -494,7 +776,7 @@ where
     T: ExecutableContext,
 {
     let full_name = path.clone();
-    if let Some(selection) = ctx.get_selection(&full_name) {
+    if let Some(selection) = ctx.get_selection(&full_name, global_ctx) {
         info!("Selection already exists");
         return selection.clone();
     }
@@ -606,6 +888,7 @@ fn parse_operation(
         false,
         &op.selection_set,
         &mut used_fragments,
+        None, // Root operation type, not a multi-type member
     );
 
     // Add used fragments to operation context
@@ -614,7 +897,7 @@ fn parse_operation(
     }
     let selection = Selection::new(selection_common, SelectionKind::Object(root_type), vec![]);
     ctx.set_root_type(selection.clone());
-    ctx.add_selection(operation_name, selection);
+    (&mut ctx as &mut dyn ExecutableContext).add_selection(operation_name, selection);
     Ok(Arc::new(ctx))
 }
 
@@ -667,6 +950,7 @@ pub(crate) fn parse_fragment(
             false,
             selection_set,
             &mut used_fragments,
+            None, // Fragment root object, not a multi-type member
         );
         for frag in used_fragments {
             fragment_ctx.add_used_fragment(frag);
@@ -675,7 +959,8 @@ pub(crate) fn parse_fragment(
         let root_selection =
             Selection::new(selection_common, SelectionKind::Object(root_obj), vec![]);
         fragment_ctx.set_root_type(root_selection.clone());
-        fragment_ctx.add_selection(fragment_ctx.get_fragment_name().to_string(), root_selection);
+        let frag_name = fragment_ctx.get_fragment_name().to_string();
+        (fragment_ctx as &mut dyn ExecutableContext).add_selection(frag_name, root_selection);
         Ok(())
     } else {
         Err(anyhow::anyhow!(
