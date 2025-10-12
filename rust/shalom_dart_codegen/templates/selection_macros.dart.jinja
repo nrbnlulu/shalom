@@ -21,23 +21,19 @@
             parent$normalizedID: {{this_normalized_id}}
         );
 
-        {# Store the normalized representation in parent record #}
-        {% set id_field = get_id_selection(selection.full_name) %}
-        {% if id_field is not none %}
-            final {{selection_name}}$id = ({{raw_sym}} as JsonObject)["{{id_field.name}}"] as RecordID?;
-            if ({{selection_name}}$id != null) {
-                final {{selection_name}}$normalized = NormalizedObjectRecord(typename: "{{selection.concrete_typename}}", id: {{selection_name}}$id);
-                {{this_normalized_record}}[{{normalized_key}}] = {{selection_name}}$normalized;
-                {# Check if the reference changed #}
-                if ({{cached_sym}} != null && {{cached_sym}} is NormalizedObjectRecord && {{cached_sym}} != {{selection_name}}$normalized) {
-                    {{ctx}}.addChangedRecord({{normalized_id}});
-                }
-            } else {
-                {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
+        {# Store the normalized representation in parent record.}
+        {# TODO:(#GH-85) #}
+        final {{selection_name}}$id = ({{raw_sym}} as JsonObject)["id"] as RecordID?;
+        if ({{selection_name}}$id != null) {
+            final {{selection_name}}$normalized = NormalizedObjectRecord(typename: "{{selection.concrete_typename}}", id: {{selection_name}}$id);
+            {{this_normalized_record}}[{{normalized_key}}] = {{selection_name}}$normalized;
+            {# Check if the reference changed #}
+            if ({{cached_sym}} != null && {{cached_sym}} is NormalizedObjectRecord && {{cached_sym}} != {{selection_name}}$normalized) {
+                {{ctx}}.addChangedRecord({{normalized_id}});
             }
-        {% else %}
+        } else {
             {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
-        {% endif %}
+        }
     {% elif selection.kind == "Interface" or selection.kind == "Union" -%}
         if ({{cached_sym}} == null){
             {{ctx}}.addChangedRecord({{normalized_id}});
@@ -54,7 +50,7 @@
 
         {# Store the normalized representation in parent record, we could furthur optimize this by deducing keyable objects per typename buts this should suffice for now. #}
         {# TODO:(#GH-85) #}
-        final {{selection_name}}$id = ({{raw_sym}} as JsonObject?["id"] as RecordID?;
+        final {{selection_name}}$id = ({{raw_sym}} as JsonObject)["id"] as RecordID?;
         final {{selection_name}}$typename = ({{raw_sym}} as JsonObject)["__typename"] as String?;
         if ({{selection_name}}$id != null && {{selection_name}}$typename != null) {
             final {{selection_name}}$normalized = NormalizedObjectRecord(typename: {{selection_name}}$typename, id: {{selection_name}}$id);
@@ -191,37 +187,22 @@
             {% endif %}
         {% endif %}
     {% elif selection.kind == "Object" %}
-        {% set id_field = get_id_selection(selection.full_name) -%}
-        {% if is_optional %}
+        {% if is_optional -%}
             {{value_symbol}} == null ? null :
-            {% if id_field is not none -%}
-                {{selection.full_name}}.fromCached(
-                    ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
-                    ctx
-                    {{", variables" if selection_kind_uses_variables(selection)}}
-                )
-            {% else %}
-            {{ selection.full_name }}.fromCached(
-                {{ value_symbol }},
+        {% endif -%}
+        {% if id_field is not none -%}
+            {{selection.full_name}}.fromCached(
+                ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
                 ctx
                 {{", variables" if selection_kind_uses_variables(selection)}}
             )
-            {% endif -%}
         {% else %}
-            {% if  id_field is not none -%}
-                {{selection.full_name}}.fromCached(
-                    ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
-                    ctx
-                    {{", variables" if selection_kind_uses_variables(selection)}}
-                )
-            {% else %}
-                {{ selection.full_name }}.fromCached(
-                    {{value_symbol}},
-                    ctx
-                    {{", variables" if selection_kind_uses_variables(selection)}}
-                )
-            {% endif -%}
-        {% endif %}
+        {{ selection.full_name }}.fromCached(
+            {{ value_symbol }},
+            ctx
+            {{", variables" if selection_kind_uses_variables(selection)}}
+        )
+        {% endif -%}
     {% elif selection.kind == "Union" %}
         {% if is_optional %}
             {{ value_symbol }} == null ? null :
@@ -441,51 +422,43 @@
             final String this$normalizedID = "ROOT_{{OP_TYPE}}";
             final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");
         {% else %}
-            {% set id_field = get_id_selection(lookup_name) -%}
             String this$normalizedID;
             JsonObject this$NormalizedRecord;
-            {% if id_field is not none -%}
-                final RecordID? this$normalizedID_temp = data["{{id_field.name}}"] as RecordID?;
-                if (this$normalizedID_temp == null) {
-                    {% if id_field.is_optional %}
-                        this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-                        this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
-                    {% else %}
-                        throw UnimplementedError("Required ID cannot be null");
-                    {% endif %}
-                } else {
-                    {% if is_multi_type_member -%}
-                        {#
-                        since the object is normalized like so
-                        ```json
-                        "ROOT_QUERY.some_field": "{<id>, <typename>}"
-                        ```
-                        and subscribers that might listen to
-                        `<sometype>:<id>` key. and they won't get updated when the type / id has changed.
-                        since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changes on that path if an id or typename has changed.
-                        #}
-                        final normalized$objRecrord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
-                        // if id or typename changed we mark the whole selection as changed.
-                        if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecrord){
-                            ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-                        }
-                        parent$record[this$fieldName] = normalized$objRecrord;
-                        this$normalizedID = normalized$objRecrord.normalizedID();
-                    {% else %}
-                        final normalized$objRecrord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
-                        if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecrord){
-                            ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-                        }
-                        parent$record[this$fieldName] = normalized$objRecrord;
-                        this$normalizedID = normalized$objRecrord.normalizedID();
-                    {% endif -%}
-                    this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
-                    ctx.addDependantRecord(this$normalizedID);
-                }
-            {% else %}
-                this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+            {# TODO:(#GH-85) #}
+            final RecordID? this$normalizedID_temp = data["id"] as RecordID?;
+            if (this$normalizedID_temp == null) {
                 this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-            {% endif -%}
+                this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+            } else {
+                {% if is_multi_type_member -%}
+                    {#
+                    since the object is normalized like so
+                    ```json
+                    "ROOT_QUERY.some_field": "{<id>, <typename>}"
+                    ```
+                    and subscribers that might listen to
+                    `<sometype>:<id>` key. and they won't get updated when the type / id has changed.
+                    since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changes on that path if an id or typename has changed.
+                    #}
+                    final normalized$objRecrord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
+                    // if id or typename changed we mark the whole selection as changed.
+                    if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecrord){
+                        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
+                    }
+                    parent$record[this$fieldName] = normalized$objRecrord;
+                    this$normalizedID = normalized$objRecrord.normalizedID();
+                {% else %}
+                    final normalized$objRecrord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
+                    if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecrord){
+                        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
+                    }
+                    parent$record[this$fieldName] = normalized$objRecrord;
+                    this$normalizedID = normalized$objRecrord.normalizedID();
+                {% endif -%}
+                this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
+                ctx.addDependantRecord(this$normalizedID);
+            }
+    
         {% endif -%}
 
         {% if not is_fallback %}
