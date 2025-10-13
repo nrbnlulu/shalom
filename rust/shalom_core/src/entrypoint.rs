@@ -29,7 +29,6 @@ pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
     found_files.extend(
         glob::glob(pwd.join("**/*.gql").to_str().unwrap())
             .unwrap()
-            .into_iter()
             .flatten(),
     );
     let mut schema = None;
@@ -38,7 +37,7 @@ pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
         let f_name = file.file_name().unwrap().to_str().unwrap();
         if let Ok(rel_path) = file.strip_prefix(pwd) {
             if std::process::Command::new("git")
-                .args(&["check-ignore", "--quiet", rel_path.to_str().unwrap()])
+                .args(["check-ignore", "--quiet", rel_path.to_str().unwrap()])
                 .current_dir(pwd)
                 .status()
                 .map(|s| s.success())
@@ -238,6 +237,7 @@ fn collect_fragment_spreads(
 }
 
 /// Validate documents with injected fragments
+#[allow(clippy::type_complexity)]
 fn validate_documents_with_fragments(
     parsed_docs: &[(ExecutableDocument, PathBuf, String)],
     dependencies: &HashMap<String, Vec<String>>,
