@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
+use std::rc::Rc;
 use std::sync::Arc;
 
 use apollo_compiler::{
@@ -134,8 +135,7 @@ where
                 trace!("Processing fragment spread: {}", fragment_name);
 
                 // all fragments should be already parsed by now.
-                let frag = global_ctx
-                    .get_fragment_strict(&fragment_name);
+                let frag = global_ctx.get_fragment_strict(&fragment_name);
                 used_fragments.push(frag.clone());
                 obj.add_used_fragment(fragment_name.clone());
             }

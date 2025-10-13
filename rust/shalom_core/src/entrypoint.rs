@@ -22,10 +22,13 @@ pub struct FoundGqlFiles {
 pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
     let mut found_files = vec![];
     found_files.extend(
-        glob::glob(pwd.join("**/*.graphql").to_str().unwrap()).unwrap().flatten()
+        glob::glob(pwd.join("**/*.graphql").to_str().unwrap())
+            .unwrap()
+            .flatten(),
     );
     found_files.extend(
-        glob::glob(pwd.join("**/*.gql").to_str().unwrap()).unwrap()
+        glob::glob(pwd.join("**/*.gql").to_str().unwrap())
+            .unwrap()
             .into_iter()
             .flatten(),
     );
@@ -116,22 +119,15 @@ fn parse_documents_unvalidated(
     Ok(all_parsed_docs)
 }
 
-
-struct FragmentDefInitial{
+struct FragmentDefInitial {
     ctx: FragmentContext,
-    origin: 
-    apollo_compiler::Node<apollo_compiler::executable::Fragment>,
-    sdl: String
+    origin: apollo_compiler::Node<apollo_compiler::executable::Fragment>,
+    sdl: String,
 }
 /// Extract all fragment definitions from parsed documents
 fn extract_fragment_definitions(
     parsed_docs: &[(ExecutableDocument, PathBuf, String)],
-) -> anyhow::Result<
-    HashMap<
-        String,
-        FragmentDefInitial,
-    >,
-> {
+) -> anyhow::Result<HashMap<String, FragmentDefInitial>> {
     let mut all_fragment_defs = HashMap::new();
 
     for (doc, file, _content) in parsed_docs {
@@ -156,11 +152,11 @@ fn extract_fragment_definitions(
 
             all_fragment_defs.insert(
                 fragment_name,
-                FragmentDefInitial{
+                FragmentDefInitial {
                     ctx: frag_ctx,
                     origin: fragment_def.clone(),
                     sdl: fragment_sdl,
-                }
+                },
             );
         }
     }
@@ -170,10 +166,7 @@ fn extract_fragment_definitions(
 
 /// Build fragment dependency tree and return topologically sorted order
 fn build_fragment_dependencies(
-    fragment_defs: &HashMap<
-        String,
-        FragmentDefInitial,
-    >,
+    fragment_defs: &HashMap<String, FragmentDefInitial>,
 ) -> anyhow::Result<Vec<String>> {
     let mut dependencies: HashMap<String, Vec<String>> = HashMap::new();
     for (name, def) in fragment_defs {
@@ -352,10 +345,7 @@ fn validate_documents_with_fragments(
 
 /// Parse and register all fragments in dependency order
 fn parse_and_register_fragments(
-    fragment_defs: HashMap<
-        String,
-        FragmentDefInitial,
-    >,
+    fragment_defs: HashMap<String, FragmentDefInitial>,
     order: Vec<String>,
     global_ctx: &SharedShalomGlobalContext,
 ) -> anyhow::Result<()> {
@@ -372,16 +362,16 @@ fn parse_and_register_fragments(
         final_fragment_defs.insert(name, (def.ctx, def.origin));
     }
 
-    let mut parsed_fragments: HashMap<String, FragmentContext> = HashMap::new();
     for name in order {
         if let Some((mut frag_ctx, frag_node)) = final_fragment_defs.remove(&name) {
             crate::operation::parse::parse_fragment(global_ctx, frag_node, &mut frag_ctx)?;
-            parsed_fragments.insert(name, frag_ctx);
+            // Register fragment immediately after parsing so it's available for subsequent fragments
+            let mut single_fragment = HashMap::new();
+            single_fragment.insert(name, frag_ctx);
+            global_ctx.register_fragments(single_fragment)?;
         }
     }
-    info!("parsed frags: {:?}", parsed_fragments);
-    // Register fragments in global context
-    global_ctx.register_fragments(parsed_fragments)
+    Ok(())
 }
 
 /// Parse and register operations from files
@@ -446,7 +436,6 @@ pub fn parse_directory(
     // Extract all fragment definitions
     let fragment_defs = extract_fragment_definitions(&parsed_docs)?;
 
-
     // Build fragment SDL map for injection
     let fragment_sdls: HashMap<String, String> = fragment_defs
         .iter()
@@ -459,7 +448,6 @@ pub fn parse_directory(
         let used = crate::operation::parse::get_used_fragments_from_fragment(&def.origin);
         dependencies.insert(name.clone(), used);
     }
-    
 
     // Validate documents with injected fragments
     let (_validated_docs, augmented_contents) = validate_documents_with_fragments(
@@ -468,24 +456,25 @@ pub fn parse_directory(
         &fragment_sdls,
         &schema,
         strict,
-    ).map_err(|e|{
-        if strict{
+    )
+    .map_err(|e| {
+        if strict {
             panic!("failed to validate docs with injected fragments {e}")
         }
         e
     })?;
     info!("calling order");
     // Build fragment dependencies and get topological order
-    let order = build_fragment_dependencies(&fragment_defs).map_err(|e|{
-        if strict{
+    let order = build_fragment_dependencies(&fragment_defs).map_err(|e| {
+        if strict {
             panic!("failed to build frag deps {e}")
         }
         e
     })?;
     info!("order is {:?}", order);
     // Parse and register fragments
-    parse_and_register_fragments(fragment_defs, order, &global_ctx).map_err(|e|{
-        if strict{
+    parse_and_register_fragments(fragment_defs, order, &global_ctx).map_err(|e| {
+        if strict {
             panic!("failed to build frag deps {e}")
         }
         e
