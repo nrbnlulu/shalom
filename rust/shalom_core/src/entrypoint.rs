@@ -5,7 +5,7 @@ use std::{
 };
 
 use apollo_compiler::{validation::Valid, ExecutableDocument};
-use log::{error, info};
+use log::{error, info, trace};
 
 use crate::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
@@ -22,23 +22,31 @@ pub struct FoundGqlFiles {
 pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
     let mut found_files = vec![];
     found_files.extend(
-        glob::glob(pwd.join("**/*.graphql").to_str().unwrap())
-            .into_iter()
-            .flatten(),
+        glob::glob(pwd.join("**/*.graphql").to_str().unwrap()).unwrap().flatten()
     );
     found_files.extend(
-        glob::glob(pwd.join("**/*.gql").to_str().unwrap())
+        glob::glob(pwd.join("**/*.gql").to_str().unwrap()).unwrap()
             .into_iter()
             .flatten(),
     );
     let mut schema = None;
     let mut operations = vec![];
     for file in found_files {
-        let file = file.unwrap();
         let f_name = file.file_name().unwrap().to_str().unwrap();
-        if f_name.contains("schema.graphql") || f_name.contains("schema.gql") {
+        if let Ok(rel_path) = file.strip_prefix(pwd) {
+            if std::process::Command::new("git")
+                .args(&["check-ignore", "--quiet", rel_path.to_str().unwrap()])
+                .current_dir(pwd)
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false)
+            {
+                continue;
+            }
+        }
+        if f_name == "schema.graphql" || f_name == "schema.gql" {
             schema = Some(file);
-        } else {
+        } else if f_name.ends_with(".gql") || f_name.ends_with(".graphql") {
             operations.push(file);
         }
     }
@@ -172,7 +180,7 @@ fn build_fragment_dependencies(
         let used = crate::operation::parse::get_used_fragments_from_fragment(&def.origin);
         dependencies.insert(name.clone(), used);
     }
-
+    trace!("before topological_sort");
     topological_sort(&dependencies).map_err(|e| {
         anyhow::anyhow!(
             "Fragment dependency cycle detected: {}. Please check your GraphQL fragments for circular references.",
@@ -432,7 +440,6 @@ pub fn parse_directory(
     // Create global context
     let global_ctx = ShalomGlobalContext::new(schema_parsed, config);
     let schema = global_ctx.schema_ctx.schema.clone();
-
     // Parse all documents without validation
     let parsed_docs = parse_documents_unvalidated(&files.operations, &schema, strict)?;
 
@@ -467,6 +474,7 @@ pub fn parse_directory(
         }
         e
     })?;
+    info!("calling order");
     // Build fragment dependencies and get topological order
     let order = build_fragment_dependencies(&fragment_defs).map_err(|e|{
         if strict{
