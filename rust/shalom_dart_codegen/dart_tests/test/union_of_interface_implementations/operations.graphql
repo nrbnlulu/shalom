@@ -1,0 +1,36 @@
+query GetError($id: ID!) {
+  getError(id: $id) {
+    __typename
+    ... on DoesNotExistsError {
+      message
+    }
+    ... on AlreadyExistsError {
+      message
+    }
+  }
+}
+
+query GetErrorOpt($id: ID!) {
+  getErrorOpt(id: $id) {
+    __typename
+    ... on DoesNotExistsError {
+      message
+    }
+    ... on AlreadyExistsError {
+      message
+    }
+  }
+}
+
+query GetErrorWithoutTopTypename($id: ID!) {
+  getError(id: $id) {
+    ... on DoesNotExistsError {
+      __typename
+      message
+    }
+    ... on AlreadyExistsError {
+      __typename
+      message
+    }
+  }
+}

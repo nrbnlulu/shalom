@@ -1,0 +1,18 @@
+type Query {
+  getError(id: ID!): DoesNotExistsErrorAlreadyExistsError!
+  getErrorOpt(id: ID!): DoesNotExistsErrorAlreadyExistsError
+}
+
+interface Error {
+  message: String!
+}
+
+type DoesNotExistsError implements Error {
+  message: String!
+}
+
+type AlreadyExistsError implements Error {
+  message: String!
+}
+
+union DoesNotExistsErrorAlreadyExistsError = DoesNotExistsError | AlreadyExistsError
