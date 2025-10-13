@@ -1,0 +1,68 @@
+fragment AnimalBasicInfo on Animal {
+    id
+    name
+    age
+}
+
+fragment CatDetails on Cat {
+    meowVolume
+}
+
+fragment DogDetails on Dog {
+    breed
+}
+
+query GetAnimal($id: ID!) {
+    animal(id: $id) {
+        ...AnimalBasicInfo
+        __typename
+        ... on Cat {
+            ...CatDetails
+        }
+        ... on Dog {
+            ...DogDetails
+        }
+    }
+}
+
+query GetAnimalOpt($id: ID!) {
+    animalOpt(id: $id) {
+        ...AnimalBasicInfo
+        __typename
+        ... on Cat {
+            ...CatDetails
+        }
+        ... on Dog {
+            ...DogDetails
+        }
+    }
+}
+
+query GetAnimals {
+    animals {
+        ...AnimalBasicInfo
+        __typename
+        ... on Cat {
+            ...CatDetails
+        }
+        ... on Dog {
+            ...DogDetails
+        }
+    }
+}
+
+query GetAnimalAllTypes($id: ID!) {
+    animal(id: $id) {
+        ...AnimalBasicInfo
+        __typename
+        ... on Cat {
+            ...CatDetails
+        }
+        ... on Dog {
+            ...DogDetails
+        }
+        ... on Bird {
+            wingspan
+        }
+    }
+}

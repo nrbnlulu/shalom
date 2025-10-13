@@ -114,8 +114,13 @@ impl ShalomGlobalContext {
         self.fragments.lock().unwrap().get(name).cloned()
     }
     pub fn get_fragment_strict(&self, name: &str) -> SharedFragmentContext {
-        self.get_fragment(name)
-            .unwrap_or_else(|| panic!("fragment not found {}", name))
+        self.get_fragment(name).unwrap_or_else(|| {
+            panic!(
+                "fragment not found {}.\n available fragments: {:?}",
+                name,
+                self.fragments.lock().unwrap().keys()
+            )
+        })
     }
 
     pub fn fragments(&self) -> Vec<(String, SharedFragmentContext)> {

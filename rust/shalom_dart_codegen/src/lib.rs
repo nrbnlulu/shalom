@@ -705,7 +705,6 @@ fn generate_operations_file(
 ) -> anyhow::Result<()> {
     let op_env = OperationEnv::new(ctx, operation.clone())?;
 
-    info!("rendering operation {}", name);
     let operation_file_path = operation.file_path.clone();
     let generation_target = get_generation_path_for_operation(&operation_file_path, name);
 

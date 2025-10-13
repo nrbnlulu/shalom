@@ -8,15 +8,11 @@ use super::types::{FullPathName, Selection, SharedInterfaceSelection, SharedUnio
 use crate::context::ShalomGlobalContext;
 use crate::operation::context::TypeDefs;
 use crate::operation::types::SelectionKind;
-use crate::schema::context::SharedSchemaContext;
 pub type SharedFragmentContext = Arc<FragmentContext>;
 
 #[derive(Debug, Serialize)]
 pub struct FragmentContext {
-    #[serde(skip_serializing)]
-    #[allow(unused)]
-    schema: SharedSchemaContext,
-    name: String,
+    pub name: String,
     pub fragment_raw: String,
     #[serde(skip_serializing)]
     pub file_path: PathBuf,
@@ -30,14 +26,12 @@ pub struct FragmentContext {
 
 impl FragmentContext {
     pub fn new(
-        schema: SharedSchemaContext,
         name: String,
         fragment_raw: String,
         file_path: PathBuf,
         type_condition: String,
     ) -> Self {
         FragmentContext {
-            schema,
             name,
             file_path,
             fragment_raw,
