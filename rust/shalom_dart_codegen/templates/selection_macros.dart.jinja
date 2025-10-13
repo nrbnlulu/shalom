@@ -159,8 +159,8 @@
         {%- else -%}
             {{arg.name}}:null
         {%- endif -%}
-    {%- elif arg.value.InlineValue -%}
-        "{{arg.name}}:{{arg.value.InlineValue.value}}"
+    {%- elif arg.value.kind == "InlineValue" -%}
+        "{{arg.name}}:{{arg.value.value}}"
     {%- endif -%}
     {{", " if not loop.last}}
     {%- endfor -%})"""

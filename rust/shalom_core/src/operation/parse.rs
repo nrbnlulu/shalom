@@ -238,39 +238,94 @@ where
                     let type_condition_str = type_condition.to_string();
                     trace!("Processing inline fragment on type: {}", type_condition_str);
 
-                    // Verify this type is actually a member of the union
-                    if !union_type.members.contains(&type_condition_str) {
+                    // Check if this is a direct member of the union
+                    let is_union_member = union_type.members.contains(&type_condition_str);
+
+                    // Check if this is an interface that all union members implement
+                    let is_common_interface = if !is_union_member {
+                        // Check if it's an interface
+                        if let Some(_interface) =
+                            global_ctx.schema_ctx.get_interface(&type_condition_str)
+                        {
+                            // Verify all union members implement this interface
+                            union_type.members.iter().all(|member| {
+                                global_ctx
+                                    .schema_ctx
+                                    .is_type_implementing_interface(member, &type_condition_str)
+                            })
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    };
+
+                    if is_union_member {
+                        // This is a specific union member type
+                        let fragment_path = format!("{}_{}", path, type_condition_str);
+                        let obj = parse_object_selection(
+                            ctx,
+                            global_ctx,
+                            &fragment_path,
+                            false, // inline fragments within unions are not optional
+                            &inline_fragment.selection_set,
+                            used_fragments,
+                            Some(path.clone()), // Union member - parent is the union
+                        );
+                        union_selection
+                            .common
+                            .add_inline_fragment(type_condition_str, obj.clone());
+
+                        let selection_common = SelectionCommon {
+                            name: fragment_path.clone(),
+                            description: None,
+                        };
+                        let selection = Selection::new(
+                            selection_common,
+                            SelectionKind::Object(obj),
+                            Default::default(),
+                        );
+
+                        ctx.add_selection(fragment_path, selection);
+                    } else if is_common_interface {
+                        // This is an interface implemented by all union members
+                        // Treat it like a shared selection that applies to all members
+                        for sel in &inline_fragment.selection_set.selections {
+                            if let apollo_executable::Selection::Field(field) = sel {
+                                let f_name = field.name.clone().to_string();
+                                let f_type = field.ty();
+                                let description = field
+                                    .definition
+                                    .description
+                                    .as_deref()
+                                    .map(|s| s.to_string());
+                                let field_path = full_path_name(&f_name, path);
+                                let args = parse_field_arguments(ctx, field);
+
+                                let selection_common = SelectionCommon {
+                                    name: f_name.clone(),
+                                    description,
+                                };
+
+                                let field_selection = parse_selection_set(
+                                    &field_path,
+                                    ctx,
+                                    global_ctx,
+                                    selection_common,
+                                    &field.selection_set,
+                                    f_type,
+                                    args,
+                                    used_fragments,
+                                );
+                                union_selection.common.add_shared_selection(field_selection);
+                            }
+                        }
+                    } else {
                         panic!(
-                            "Type '{}' is not a member of union '{}'",
+                            "Type '{}' is not a member of union '{}' and is not a common interface implemented by all members",
                             type_condition_str, union_type.name
                         );
                     }
-
-                    let fragment_path = format!("{}_{}", path, type_condition_str);
-                    let obj = parse_object_selection(
-                        ctx,
-                        global_ctx,
-                        &fragment_path,
-                        false, // inline fragments within unions are not optional
-                        &inline_fragment.selection_set,
-                        used_fragments,
-                        Some(path.clone()), // Union member - parent is the union
-                    );
-                    union_selection
-                        .common
-                        .add_inline_fragment(type_condition_str, obj.clone());
-
-                    let selection_common = SelectionCommon {
-                        name: fragment_path.clone(),
-                        description: None,
-                    };
-                    let selection = Selection::new(
-                        selection_common,
-                        SelectionKind::Object(obj),
-                        Default::default(),
-                    );
-
-                    ctx.add_selection(fragment_path, selection);
                 } else {
                     // Inline fragment without type condition - fields apply to all types
                     for sel in &inline_fragment.selection_set.selections {
@@ -432,13 +487,20 @@ where
                     let type_condition_str = type_condition.to_string();
                     trace!("Processing inline fragment on type: {}", type_condition_str);
 
-                    // Verify this type implements the interface
-                    if !global_ctx
+                    // Check if the type_condition is a valid type or interface
+                    let is_implementing_type = global_ctx
                         .schema_ctx
-                        .is_type_implementing_interface(&type_condition_str, &interface_type.name)
-                    {
+                        .is_type_implementing_interface(&type_condition_str, &interface_type.name);
+
+                    let is_interface = global_ctx
+                        .schema_ctx
+                        .get_interface(&type_condition_str)
+                        .is_some();
+
+                    // Verify this type implements the interface, or is itself a valid interface
+                    if !is_implementing_type && !is_interface {
                         panic!(
-                            "Type '{}' does not implement interface '{}'",
+                            "Type '{}' does not implement interface '{}' and is not a valid interface",
                             type_condition_str, interface_type.name
                         );
                     }
