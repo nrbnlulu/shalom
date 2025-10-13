@@ -42,7 +42,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
     };
     let schema = match schema_raw.validate() {
         Ok(schema) => {
-            info!(" Parsed schema");
+            info!("Parsed schema");
             schema
         }
         Err(e) => return Err(anyhow::anyhow!("Error validating schema: {}", e)),

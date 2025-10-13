@@ -267,6 +267,8 @@ pub struct MultiTypeSelectionCommon {
     pub inline_fragments: RefCell<HashMap<String, SharedObjectSelection>>,
     /// Whether to generate a fallback class for uncovered types
     pub has_fallback: Cell<bool>,
+    /// Fragments spread at the union/interface level (not inside inline fragments)
+    pub shared_fragments: RefCell<Vec<String>>,
 }
 
 impl MultiTypeSelectionCommon {
@@ -278,6 +280,7 @@ impl MultiTypeSelectionCommon {
             shared_selections: RefCell::new(Vec::new()),
             inline_fragments: RefCell::new(HashMap::new()),
             has_fallback: Cell::new(false),
+            shared_fragments: RefCell::new(Vec::new()),
         }
     }
 
@@ -293,6 +296,10 @@ impl MultiTypeSelectionCommon {
         self.inline_fragments
             .borrow_mut()
             .insert(type_condition, object_selection);
+    }
+
+    pub fn add_shared_fragment(&self, fragment_name: String) {
+        self.shared_fragments.borrow_mut().push(fragment_name);
     }
 
     /// Check if __typename is selected either at the top level or in all inline fragments

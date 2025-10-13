@@ -1,0 +1,32 @@
+type Query {
+    animal(id: ID!): Animal!
+    animalOpt(id: ID!): Animal
+    animals: [Animal!]!
+}
+
+interface Animal {
+    id: ID!
+    name: String!
+    age: Int!
+}
+
+type Cat implements Animal {
+    id: ID!
+    name: String!
+    age: Int!
+    meowVolume: Int!
+}
+
+type Dog implements Animal {
+    id: ID!
+    name: String!
+    age: Int!
+    breed: String!
+}
+
+type Bird implements Animal {
+    id: ID!
+    name: String!
+    age: Int!
+    wingspan: Float!
+}

@@ -1,8 +1,7 @@
 import 'dart:async' show StreamController;
 
 import '../shalom_core.dart' show NormelizedCache;
-import 'normelized_cache.dart'
-    show NormalizedRecordData, RecordID, RecordSubscriptionDTO;
+import 'normelized_cache.dart' show NormalizedRecordData, RecordID;
 
 typedef RefStreamType = StreamController<ShalomCtx>;
 
@@ -31,7 +30,7 @@ class ShalomCtx {
 
   ShalomCtx({required this.cache});
   ShalomCtx.withCapacity({int capacity = 1000})
-    : cache = NormelizedCache(capacity: capacity);
+      : cache = NormelizedCache(capacity: capacity);
 
   RecordID resolveNodeID(String id) {
     return id.split(":").toString();

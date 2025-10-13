@@ -52,13 +52,15 @@ abstract class {{ fragment_name }} {
 {# First generate union member object classes #}
 {% set union_types = fragment.context.context.union_types %}
 {% for union_full_name, union_selection in union_types | items %}
+    {# Skip the root union type of the fragment itself - it's just the abstract class #}
+    {% if union_full_name != fragment_name %}
     {% for type_condition, obj_selection in union_selection.inline_fragments | items %}
         {# Generate union member object using the unified macro with shared selections #}
         {% set member_full_name = union_full_name ~ "_" ~ type_condition %}
         {# Look up the full Selection from context which includes arguments #}
         {% set member_selection = fragment.context.context.type_defs.selection_objects[member_full_name] %}
         {# We need to create a wrapper that passes shared_selections to selection_object_impl #}
-        class {{ member_full_name }} extends {{ union_full_name }}{% if obj_selection.used_fragments | length > 0 %}, implements {% for frag_name in obj_selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+        class {{ member_full_name }} extends {{ union_full_name }}{% if obj_selection.used_fragments | length > 0 %} implements {% for frag_name in obj_selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
             {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_multi_type_member=true, shared_selections=union_selection.shared_selections) }}
         }
     {% endfor %}
@@ -70,11 +72,15 @@ abstract class {{ fragment_name }} {
             {{ selection_interface_fallback_impl(fallback_full_name, union_selection) }}
         }
     {% endif %}
+    {% endif %}
 {% endfor %}
 
 {# Then generate union sealed classes #}
 {% for selection_name, selection in fragment_selections.union_selections | items %}
+    {# Skip the root union type of the fragment itself #}
+    {% if selection_name != fragment_name %}
     {{ multi_type_selection_definition(selection_name, selection) }}
+    {% endif %}
 {% endfor %}
 
 // ------------ END UNION DEFINITIONS -------------
@@ -84,12 +90,14 @@ abstract class {{ fragment_name }} {
 {# First generate interface member object classes #}
 {% set interface_types = fragment.context.context.interface_types %}
 {% for interface_full_name, interface_selection in interface_types | items %}
+    {# Skip the root interface type of the fragment itself - it's just the abstract class #}
+    {% if interface_full_name != fragment_name %}
     {% for type_condition, obj_selection in interface_selection.inline_fragments | items %}
         {# Generate interface member object using the unified macro with shared selections #}
         {% set member_full_name = interface_full_name ~ "_" ~ type_condition %}
         {# Look up the full Selection from context which includes arguments #}
         {% set member_selection = fragment.context.context.type_defs.selection_objects[member_full_name] %}
-        class {{ member_full_name }} extends {{ interface_full_name }}{% if obj_selection.used_fragments | length > 0 %}, implements {% for frag_name in obj_selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+        class {{ member_full_name }} extends {{ interface_full_name }}{% if obj_selection.used_fragments | length > 0 %} implements {% for frag_name in obj_selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
             {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_multi_type_member=true, shared_selections=interface_selection.shared_selections) }}
         }
     {% endfor %}
@@ -101,11 +109,15 @@ abstract class {{ fragment_name }} {
             {{ selection_interface_fallback_impl(fallback_full_name, interface_selection) }}
         }
     {% endif %}
+    {% endif %}
 {% endfor %}
 
 {# Then generate interface abstract classes #}
 {% for selection_name, selection in fragment_selections.interface_selections | items %}
+    {# Skip the root interface type of the fragment itself #}
+    {% if selection_name != fragment_name %}
     {{ multi_type_selection_definition(selection_name, selection) }}
+    {% endif %}
 {% endfor %}
 
 // ------------ END INTERFACE DEFINITIONS -------------
