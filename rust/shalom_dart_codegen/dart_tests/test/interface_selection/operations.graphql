@@ -95,3 +95,17 @@ query GetAnimalWithArguments($id: ID!, $limit: Int!) {
         }
     }
 }
+
+query GetAnimalWithoutAnyTypename($id: ID!) {
+    animal(id: $id) {
+        id
+        legs
+        sound
+        ... on Lion {
+            furColor
+        }
+        ... on Turtle {
+            shellColor
+        }
+    }
+}
