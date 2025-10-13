@@ -132,7 +132,6 @@ fn extract_fragment_definitions(
     for (doc, file, _content) in parsed_docs {
         for (name, fragment_def) in doc.fragments.iter() {
             let fragment_name = name.to_string();
-            info!("parsing frag {}", fragment_name);
             let type_condition = fragment_def.type_condition().to_string();
 
             // Extract fragment SDL for later injection
@@ -463,7 +462,6 @@ pub fn parse_directory(
         }
         e
     })?;
-    info!("calling order");
     // Build fragment dependencies and get topological order
     let order = build_fragment_dependencies(&fragment_defs).map_err(|e| {
         if strict {
@@ -471,7 +469,6 @@ pub fn parse_directory(
         }
         e
     })?;
-    info!("order is {:?}", order);
     // Parse and register fragments
     parse_and_register_fragments(fragment_defs, order, &global_ctx).map_err(|e| {
         if strict {
