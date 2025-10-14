@@ -22,6 +22,8 @@ pub struct RuntimeSymbolDefinition {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ShalomConfig {
     pub custom_scalars: HashMap<String, CustomScalarDefinition>,
+    #[serde(default)]
+    pub schema_output_path: Option<PathBuf>,
     #[serde(skip)]
     pub project_root: PathBuf,
 }
@@ -30,6 +32,7 @@ impl Default for ShalomConfig {
     fn default() -> Self {
         Self {
             custom_scalars: HashMap::new(),
+            schema_output_path: None,
             project_root: current_dir().unwrap(),
         }
     }
