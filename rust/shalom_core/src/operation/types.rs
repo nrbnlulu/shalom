@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     context::ShalomGlobalContext,
-    operation::context::OperationVariable,
+    operation::{context::OperationVariable, parse::ExecutableContext},
     schema::types::{EnumType, InterfaceType, ScalarType, UnionType},
 };
 
@@ -35,7 +35,29 @@ pub struct SelectionCommon {
 pub enum ArgumentValue {
     // usage of operation variable
     VariableUse(OperationVariable),
-    InlineValue { value: String },
+    InlineValue {
+        #[serde(flatten)]
+        value: InlineValueArg,
+    },
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(tag = "value_kind")]
+pub enum InlineValueArg {
+    Object {
+        fields: HashMap<String, Box<ArgumentValue>>,
+        raw: String,
+    },
+    Scalar {
+        value: String,
+    },
+    List {
+        items: Vec<ArgumentValue>,
+        raw: String,
+    },
+    Enum {
+        value: String,
+    },
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -209,7 +231,7 @@ impl ObjectSelection {
         self.selections
             .borrow()
             .iter()
-            .find(|s| s.self_selection_name().contains("id"))
+            .find(|s| s.self_selection_name() == "id")
             .cloned()
     }
 
@@ -224,7 +246,7 @@ impl ObjectSelection {
         let all_selections = self.get_all_selections(ctx);
         all_selections
             .iter()
-            .find(|s| s.self_selection_name().contains("id"))
+            .find(|s| s.self_selection_name() == "id")
             .cloned()
     }
 }
@@ -311,7 +333,7 @@ impl MultiTypeSelectionCommon {
     pub fn add_shared_fragment(&self, fragment_name: String) {
         self.shared_fragments.borrow_mut().push(fragment_name);
     }
-
+    
     /// Check if __typename is selected either at the top level or in all inline fragments
     pub fn has_typename_selection(&self) -> bool {
         // Check shared selections for __typename
@@ -338,6 +360,7 @@ impl MultiTypeSelectionCommon {
                 .any(|s| s.self_selection_name() == "__typename")
         })
     }
+
 }
 pub trait MultiTypeSelection {
     /// Get all possible types for this multi-type selection (union members or interface implementations)
@@ -450,5 +473,42 @@ pub fn dart_type_for_scalar(scalar_name: &str) -> String {
         "Float" => "double".to_string(),
         "Boolean" => "bool".to_string(),
         _ => "dynamic".to_string(),
+    }
+}
+
+pub enum HasIdField{
+    TRUE,
+    FALSE,
+    MAYBE // unions / interfaces
+}
+
+
+pub fn hash_id_field<T: ExecutableContext>(ctx: &T, selection: &Selection) -> HashIdField{
+    match selection.kind{
+        SelectionKind::Object(object) => {
+           if  object.selections.borrow().iter().any(|f| hash_id_field(ctx, f)){
+               HasIdField::TRUE
+           }
+        },
+        SelectionKind::Interface(interface) => {
+            let commons = interface.common.shared_selections.borrow().iter().map(
+                |s| hash_id_field(ctx, s) 
+            ).;
+            
+            
+                HasIdField::TRUE
+            } else if interface.common.inline_fragments.borrow().values() {
+                
+            }
+            
+        },
+        SelectionKind::Union(union) => {
+            if ctx.get_union_types().contains_key(&union.common.full_name) {
+                
+            } else {
+                HashIdField::FALSE
+            }
+        },
+        _ => HashIdField::MAYBE
     }
 }

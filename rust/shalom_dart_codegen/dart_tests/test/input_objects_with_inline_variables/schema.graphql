@@ -1,0 +1,34 @@
+input UpdateRefreshToken {
+  token: String!
+  revokeOnRefresh: Boolean!
+}
+
+input UserUpdateInput {
+  name: String!
+  email: String!
+  age: Int
+  active: Boolean
+}
+
+type RefreshTokenResponse {
+  token: String!
+  expiresAt: String!
+  userId: ID!
+}
+
+type UserUpdateResponse {
+  id: ID!
+  name: String!
+  email: String!
+  age: Int
+  active: Boolean
+}
+
+type Mutation {
+  refreshToken(input: UpdateRefreshToken!): RefreshTokenResponse!
+  updateUser(id: ID!, input: UserUpdateInput!): UserUpdateResponse!
+}
+
+type Query {
+  dummy: String
+}

@@ -138,39 +138,58 @@
     {% endif -%}
     {% endmacro %}
 
-{# Macro to generate cache key with arguments #}
-{% macro generate_cache_key_with_args(field_name, arguments) -%}
-{% if arguments | length > 0 -%}
-"""{{field_name}}(
-    {%- for arg in arguments -%}
-
-    {%- if arg.value.kind == "VariableUse"  -%}
-        {% if op_variables_exist -%}
-            {%- set var_name = arg.value.common.name -%}
-            {%- if arg.value.is_maybe -%}
-                {{arg.name}}:${variables.{{var_name}}.isSome() ? (variables!.{{var_name}}.some()?.toString()) : 'None' }
+{# Recursive macro to serialize ArgumentValue for cache keys #}
+{% macro serialize_argument_value(arg_value) -%}
+    {%- if arg_value.kind == "VariableUse" -%}
+        {%- if op_variables_exist -%}
+            {%- set var_name = arg_value.common.name -%}
+            {%- if arg_value.is_maybe -%}
+${variables.{{var_name}}.isSome() ? (variables!.{{var_name}}.some()?.toString()) : 'None' }
             {%- else -%}
-                {%- if arg.default_value is not none -%}
-                   {{arg.name}}:${variables.{{var_name}} ?? '{{arg.default_value}}'}
+                {%- if arg_value.default_value is not none -%}
+${variables.{{var_name}} ?? '{{arg_value.default_value}}'}
                 {%- else -%}
-                {{arg.name}}:${variables.{{var_name}} }{% if arg.value.is_optional %} ?? 'null'{% endif %}}
+${variables.{{var_name}} }{% if arg_value.is_optional %} ?? 'null'{% endif %}
                 {%- endif -%}
             {%- endif -%}
         {%- else -%}
-            {{arg.name}}:null
+null
         {%- endif -%}
-    {%- elif arg.value.kind == "InlineValue" -%}
-        "{{arg.name}}:{{arg.value.value}}"
+    {%- elif arg_value.kind == "InlineValue" -%}
+        {%- if arg_value.value_kind == "Object" -%}
+{
+            {%- for field_name, field_value in arg_value.fields | items -%}
+{{field_name}}: {{ serialize_argument_value(field_value) }}{{", " if not loop.last}}
+            {%- endfor -%}
+}
+        {%- elif arg_value.value_kind == "List" -%}
+[
+            {%- for item in arg_value.items -%}
+{{ serialize_argument_value(item) }}{{", " if not loop.last}}
+            {%- endfor -%}
+]
+        {%- elif arg_value.value_kind == "Scalar" -%}
+{{arg_value.value}}
+        {%- elif arg_value.value_kind == "Enum" -%}
+{{arg_value.value}}
+        {%- endif -%}
     {%- endif -%}
-    {{", " if not loop.last}}
-    {%- endfor -%})"""
+{%- endmacro %}
+
+{# Macro to generate cache key with arguments #}
+{% macro generate_cache_key_with_args(field_name, arguments) -%}
+{% if arguments | length > 0 -%}
+'''{{field_name}}(
+    {%- for arg in arguments -%}
+{{arg.name}}:{{ serialize_argument_value(arg.value) }}{{", " if not loop.last}}
+    {%- endfor -%})'''
 {%- else -%}
 "{{field_name}}"
 {%- endif -%}
 {% endmacro %}
 
 {# Recursive macro for deserializing selection values #}
-{% macro _deserialize_selection_from_cache_macro(value_symbol, selection, is_optional=false, op_variables=[]) -%}
+{% macro _deserialize_selection_from_cache_macro(value_symbol, selection, is_optional=false, op_variables=[], has_id_field=false) -%}
     {% if selection.kind == "Scalar" %}
         {% if selection.is_custom_scalar %}
             {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
@@ -191,7 +210,7 @@
             {{value_symbol}} == null ? null :
         {% endif -%}
         {{selection.full_name}}.fromCached(
-            {% if id_field is not none -%}
+            {% if has_id_field  -%}
                 ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
             {% else -%}
             {{ value_symbol }},

@@ -4,7 +4,7 @@ use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use shalom_core::{
-    context::SharedShalomGlobalContext,
+    context::{ShalomGlobalContext, SharedShalomGlobalContext},
     operation::{
         context::SharedOpCtx,
         fragments::SharedFragmentContext,
@@ -168,8 +168,8 @@ mod ext_jinja_fns {
             .to_string();
 
         let ty = field.common.resolve_type(schema_ctx);
-        if default_value == "null"{
-            return "null".to_string();
+        if default_value == "null" {
+            return default_value;
         }
         match ty.ty {
             GraphQLAny::Enum(enum_) => {
@@ -431,6 +431,7 @@ fn get_field_name_with_args(
     }
 }
 
+
 impl SchemaEnv<'_> {
     fn new(ctx: &SharedShalomGlobalContext) -> anyhow::Result<Self> {
         let mut env = Environment::new();
@@ -595,6 +596,7 @@ impl FragmentEnv<'_> {
         fragment_ctx: S,
         schema_ctx: T,
         extra_imports: HashMap<String, String>,
+        schema_path: String,
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
         let mut context = HashMap::new();
@@ -602,6 +604,7 @@ impl FragmentEnv<'_> {
         context.insert("schema", context! { context => schema_ctx });
         context.insert("fragment", context! { context => fragment_ctx });
         context.insert("extra_imports", minijinja::Value::from(extra_imports));
+        context.insert("schema_import_path", minijinja::Value::from(schema_path));
 
         template.render(&context).unwrap()
     }
@@ -617,7 +620,7 @@ static END_OF_FILE: &str = "shalom.dart";
 static GRAPHQL_DIRECTORY: &str = "__graphql__";
 
 /// Get the directory where the schema file should be generated
-fn get_schema_output_dir(ctx: &SharedShalomGlobalContext) -> PathBuf {
+fn get_schema_output_dir(ctx: &ShalomGlobalContext) -> PathBuf {
     if let Some(schema_output_path) = &ctx.config.schema_output_path {
         // Use the configured schema output path (resolve relative to project root)
         let resolved = if schema_output_path.is_absolute() {
@@ -636,7 +639,7 @@ fn get_schema_output_dir(ctx: &SharedShalomGlobalContext) -> PathBuf {
 }
 
 /// Get the full path to the generated schema file
-fn get_schema_file_path(ctx: &SharedShalomGlobalContext) -> PathBuf {
+fn get_schema_file_path(ctx: &ShalomGlobalContext) -> PathBuf {
     get_schema_output_dir(ctx).join(format!("schema.{}", END_OF_FILE))
 }
 
@@ -722,6 +725,19 @@ fn calculate_fragment_import_path(
     Ok(import_path)
 }
 
+fn get_schema_import_path(relative_to: &PathBuf, ctx: &ShalomGlobalContext)-> String{
+
+    
+    // Calculate relative path from operation __graphql__ dir to schema file
+    let op_dir = relative_to.parent().unwrap();
+    let op_graphql_dir = op_dir.join("__graphql__");
+    let schema_path = get_schema_file_path(ctx);
+    let schema_import_path = pathdiff::diff_paths(&schema_path, &op_graphql_dir)
+        .map(|p| p.to_string_lossy().replace('\\', "/"))
+        .unwrap_or_else(|| "schema.shalom.dart".to_string());
+    schema_import_path
+}
+
 fn generate_operations_file(
     ctx: &SharedShalomGlobalContext,
     name: &str,
@@ -734,18 +750,12 @@ fn generate_operations_file(
     let generation_target = get_generation_path_for_operation(&operation_file_path, name);
 
     // Calculate relative path from operation __graphql__ dir to schema file
-    let op_dir = operation_file_path.parent().unwrap();
-    let op_graphql_dir = op_dir.join("__graphql__");
-    let schema_path = get_schema_file_path(ctx);
-    let schema_import_path = pathdiff::diff_paths(&schema_path, &op_graphql_dir)
-        .map(|p| p.to_string_lossy().replace('\\', "/"))
-        .unwrap_or_else(|| "schema.shalom.dart".to_string());
 
     let rendered_content = op_env.render_operation(
         operation,
         ctx.schema_ctx.clone(),
         additional_imports,
-        schema_import_path,
+        get_schema_import_path(&operation_file_path, &ctx),
     );
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
@@ -764,6 +774,7 @@ fn generate_fragment_file(
         context! { context => fragment_ctx },
         context! { context => &ctx.schema_ctx },
         additional_imports,
+        get_schema_import_path(&fragment_ctx.file_path, ctx)
     );
 
     // Generate fragment in __graphql__ subdirectory relative to where it's defined

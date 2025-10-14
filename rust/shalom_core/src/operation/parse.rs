@@ -28,6 +28,72 @@ fn full_path_name(this_name: &String, parent_path: &String) -> String {
     format!("{}_{}", parent_path, this_name)
 }
 
+/// Parse an inline value into a structured ArgumentValue representation
+fn parse_inline_value<T>(
+    ctx: &T,
+    value: &apollo_executable::Value,
+) -> crate::operation::types::ArgumentValue
+where
+    T: ExecutableContext,
+{
+    use crate::operation::types::{ArgumentValue, InlineValueArg};
+    use std::collections::HashMap;
+
+    match value {
+        apollo_executable::Value::Variable(var_name) => {
+            // Variable reference inside an inline object - look it up and create VariableUse
+            if let Some(op_var) = ctx.get_variable(var_name) {
+                ArgumentValue::VariableUse(op_var.clone())
+            } else {
+                // Fallback if variable not found (shouldn't happen in valid GraphQL)
+                ArgumentValue::InlineValue {
+                    value: InlineValueArg::Scalar {
+                        value: format!("${}", var_name),
+                    },
+                }
+            }
+        }
+        apollo_executable::Value::Object(obj) => {
+            let mut fields = HashMap::new();
+            for (key, val) in obj.iter() {
+                let parsed_val = parse_inline_value(ctx, val);
+                fields.insert(key.to_string(), Box::new(parsed_val));
+            }
+            ArgumentValue::InlineValue {
+                value: InlineValueArg::Object {
+                    fields,
+                    raw: value.to_string(),
+                },
+            }
+        }
+        apollo_executable::Value::List(list) => {
+            let items: Vec<ArgumentValue> = list
+                .iter()
+                .map(|item| parse_inline_value(ctx, item))
+                .collect();
+            ArgumentValue::InlineValue {
+                value: InlineValueArg::List {
+                    items,
+                    raw: value.to_string(),
+                },
+            }
+        }
+        apollo_executable::Value::Enum(e) => ArgumentValue::InlineValue {
+            value: InlineValueArg::Enum {
+                value: e.to_string(),
+            },
+        },
+        _ => {
+            // For scalars (String, Int, Float, Boolean, Null)
+            ArgumentValue::InlineValue {
+                value: InlineValueArg::Scalar {
+                    value: value.to_string(),
+                },
+            }
+        }
+    }
+}
+
 fn parse_field_arguments<T>(
     ctx: &T,
     field: &apollo_executable::Field,
@@ -54,9 +120,8 @@ where
                     .arguments
                     .iter()
                     .find(|a| a.name == arg.name);
-                let inline_val = crate::operation::types::ArgumentValue::InlineValue {
-                    value: arg.value.to_string(),
-                };
+                // Parse inline value with structured representation
+                let inline_val = parse_inline_value(ctx, arg.value.as_ref());
                 FieldArgument {
                     name: arg.name.to_string(),
                     value: inline_val,
