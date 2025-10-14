@@ -242,7 +242,7 @@ where
                     let is_union_member = union_type.members.contains(&type_condition_str);
 
                     // Check if this is an interface that all union members implement
-                    let is_common_interface = if !is_union_member {
+                    let is_common_interface = !is_union_member && {
                         // Check if it's an interface
                         if let Some(_interface) =
                             global_ctx.schema_ctx.get_interface(&type_condition_str)
@@ -256,8 +256,6 @@ where
                         } else {
                             false
                         }
-                    } else {
-                        false
                     };
 
                     if is_union_member {
