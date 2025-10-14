@@ -285,7 +285,17 @@ impl MultiTypeSelectionCommon {
     }
 
     pub fn add_shared_selection(&self, selection: Selection) {
-        self.shared_selections.borrow_mut().push(selection);
+        // Check if a selection with this name already exists to avoid duplicates
+        let selection_name = selection.self_selection_name();
+        let already_exists = self
+            .shared_selections
+            .borrow()
+            .iter()
+            .any(|s| s.self_selection_name() == selection_name);
+
+        if !already_exists {
+            self.shared_selections.borrow_mut().push(selection);
+        }
     }
 
     pub fn add_inline_fragment(
