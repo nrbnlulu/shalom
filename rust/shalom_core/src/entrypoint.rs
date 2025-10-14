@@ -5,7 +5,7 @@ use std::{
 };
 
 use apollo_compiler::{validation::Valid, ExecutableDocument};
-use log::{error, info, trace};
+use log::{error, trace};
 
 use crate::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},

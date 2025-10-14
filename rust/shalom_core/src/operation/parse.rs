@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use apollo_compiler::{
-    ast::OperationType as ApolloOperationType, executable as apollo_executable, Node,
+    ast::OperationType as ApolloOperationType, executable as apollo_executable, Name, Node, Schema,
 };
 use log::{info, trace};
 
@@ -358,13 +358,6 @@ where
         }
     }
 
-    // Validate that __typename is present
-    assert!(
-        union_selection.common.has_typename_selection(),
-        "Union selection '{}' must have __typename selected either at the top level or in all inline fragments",
-        path
-    );
-
     // Determine if we need a fallback class
     let has_fallback = union_selection.should_generate_fallback(global_ctx);
 
@@ -563,13 +556,6 @@ where
             obj_selection.add_used_fragment(frag_name.clone());
         }
     }
-
-    // Validate that __typename is present
-    assert!(
-        interface_selection.common.has_typename_selection(),
-        "Interface selection '{}' must have __typename selected either at the top level or in all inline fragments",
-        path
-    );
 
     // Determine if we need a fallback class
     let has_fallback = interface_selection.should_generate_fallback(global_ctx);
@@ -886,6 +872,70 @@ fn parse_operation_type(operation_type: ApolloOperationType) -> OperationType {
     }
 }
 
+/// Recursively inject __typename into union and interface selection sets
+fn inject_typename_in_selection_set(
+    schema: &Schema,
+    selection_set: &mut apollo_executable::SelectionSet,
+    global_ctx: &ShalomGlobalContext,
+) {
+    // Check if this selection set is for a union or interface type
+    let type_name = selection_set.ty.to_string();
+    let type_info = global_ctx.schema_ctx.get_type(&type_name);
+
+    let is_union_or_interface = type_info
+        .map(|t| {
+            matches!(
+                t,
+                crate::schema::types::GraphQLAny::Union(_)
+                    | crate::schema::types::GraphQLAny::Interface(_)
+            )
+        })
+        .unwrap_or(false);
+
+    if is_union_or_interface {
+        // Check if __typename is already selected
+        let has_typename = selection_set.selections.iter().any(|sel| {
+            if let apollo_executable::Selection::Field(field) = sel {
+                field.name.as_str() == "__typename"
+            } else {
+                false
+            }
+        });
+
+        // Inject __typename if not present
+        if !has_typename {
+            trace!("Injecting __typename into {} selection", type_name);
+            let typename_name = Name::new("__typename").expect("__typename is a valid field name");
+            selection_set
+                .new_field(schema, typename_name)
+                .expect("Failed to inject __typename");
+        }
+    }
+
+    // Recursively process all selections
+    for selection in selection_set.selections.iter_mut() {
+        match selection {
+            apollo_executable::Selection::Field(field) => {
+                if !field.selection_set.selections.is_empty() {
+                    let field_mut = field.make_mut();
+                    inject_typename_in_selection_set(
+                        schema,
+                        &mut field_mut.selection_set,
+                        global_ctx,
+                    );
+                }
+            }
+            apollo_executable::Selection::InlineFragment(inline_fragment) => {
+                let inline_mut = inline_fragment.make_mut();
+                inject_typename_in_selection_set(schema, &mut inline_mut.selection_set, global_ctx);
+            }
+            apollo_executable::Selection::FragmentSpread(_) => {
+                // Fragment spreads are handled separately
+            }
+        }
+    }
+}
+
 pub(crate) fn get_used_fragments_from_fragment(
     fragment: &Node<apollo_compiler::executable::Fragment>,
 ) -> Vec<String> {
@@ -915,10 +965,15 @@ pub(crate) fn get_used_fragments_from_fragment(
 
 fn parse_operation(
     global_ctx: &SharedShalomGlobalContext,
-    op: Node<apollo_compiler::executable::Operation>,
+    mut op: Node<apollo_compiler::executable::Operation>,
     operation_name: String,
     file_path: PathBuf,
 ) -> anyhow::Result<SharedOpCtx> {
+    // Inject __typename into union and interface selections
+    let schema = &global_ctx.schema_ctx.schema;
+    let op_mut = op.make_mut();
+    inject_typename_in_selection_set(schema, &mut op_mut.selection_set, global_ctx);
+
     let query = op.to_string();
     let mut ctx = OperationContext::new(
         global_ctx.schema_ctx.clone(),
@@ -1012,9 +1067,14 @@ pub(crate) fn parse_document(
 
 pub(crate) fn parse_fragment(
     global_ctx: &SharedShalomGlobalContext,
-    fragment: Node<apollo_compiler::executable::Fragment>,
+    mut fragment: Node<apollo_compiler::executable::Fragment>,
     fragment_ctx: &mut FragmentContext,
 ) -> anyhow::Result<()> {
+    // Inject __typename into union and interface selections
+    let schema = &global_ctx.schema_ctx.schema;
+    let fragment_mut = fragment.make_mut();
+    inject_typename_in_selection_set(schema, &mut fragment_mut.selection_set, global_ctx);
+
     let selection_set = &fragment.selection_set;
     let type_name = fragment.type_condition();
     let type_info = global_ctx
