@@ -9,7 +9,7 @@ use shalom_core::{
         context::SharedOpCtx,
         fragments::SharedFragmentContext,
         parse::ExecutableContext,
-        types::{dart_type_for_scalar, Selection, SelectionKind},
+        types::{dart_type_for_scalar, has_id_selection, Selection, SelectionKind},
     },
     schema::{
         context::SchemaContext,
@@ -431,7 +431,6 @@ fn get_field_name_with_args(
     }
 }
 
-
 impl SchemaEnv<'_> {
     fn new(ctx: &SharedShalomGlobalContext) -> anyhow::Result<Self> {
         let mut env = Environment::new();
@@ -529,6 +528,20 @@ where
             selection_kind_uses_variables(executable_ctx_clone3.as_ref(), &selection.0)
         },
     );
+
+    let ctx_clone4 = ctx.clone();
+    let executable_ctx_clone4 = executable_ctx.clone();
+    env.add_function(
+        "has_id_selection",
+        move |full_name: &str| -> Option<minijinja::Value> {
+            let selection =
+                executable_ctx_clone4.get_selection(&full_name.to_string(), &ctx_clone4)?;
+            Some(minijinja::Value::from_serialize(has_id_selection(
+                &selection,
+            )))
+        },
+    );
+
     Ok(())
 }
 
@@ -725,9 +738,7 @@ fn calculate_fragment_import_path(
     Ok(import_path)
 }
 
-fn get_schema_import_path(relative_to: &PathBuf, ctx: &ShalomGlobalContext)-> String{
-
-    
+fn get_schema_import_path(relative_to: &PathBuf, ctx: &ShalomGlobalContext) -> String {
     // Calculate relative path from operation __graphql__ dir to schema file
     let op_dir = relative_to.parent().unwrap();
     let op_graphql_dir = op_dir.join("__graphql__");
@@ -774,7 +785,7 @@ fn generate_fragment_file(
         context! { context => fragment_ctx },
         context! { context => &ctx.schema_ctx },
         additional_imports,
-        get_schema_import_path(&fragment_ctx.file_path, ctx)
+        get_schema_import_path(&fragment_ctx.file_path, ctx),
     );
 
     // Generate fragment in __graphql__ subdirectory relative to where it's defined

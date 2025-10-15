@@ -290,14 +290,14 @@ void main() {
             userId: 'opt-user',
             userName: 'Optional User',
             userEmail: 'opt@test.com',
-            userAge: const Some(30),
-            isActive: const Some(false));
+            userAge: const Some<int?>(30),
+            isActive: const Some<bool?>(false));
 
         expect(variables.userId, 'opt-user');
         expect(variables.userName, 'Optional User');
         expect(variables.userEmail, 'opt@test.com');
-        expect(variables.userAge, const Some(30));
-        expect(variables.isActive, const Some(false));
+        expect(variables.userAge, const Some<int?>(30));
+        expect(variables.isActive, const Some<bool?>(false));
       });
 
       test(
@@ -317,8 +317,11 @@ void main() {
         final gqlRequest =
             RequestUpdateUserWithOptionalVariables(variables: variables)
                 .toRequest();
-        expect(gqlRequest.variables.containsKey('userAge'), true);
-        expect(gqlRequest.variables.containsKey('isActive'), true);
+        expect(gqlRequest.variables, {
+          'userEmail': 'user2@test.com',
+          "userId": "opt-user-2",
+          "userName": "User 2"
+        });
       });
 
       test(

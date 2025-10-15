@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     context::ShalomGlobalContext,
-    operation::{context::OperationVariable, parse::ExecutableContext},
+    operation::context::OperationVariable,
     schema::types::{EnumType, InterfaceType, ScalarType, UnionType},
 };
 
@@ -333,7 +333,7 @@ impl MultiTypeSelectionCommon {
     pub fn add_shared_fragment(&self, fragment_name: String) {
         self.shared_fragments.borrow_mut().push(fragment_name);
     }
-    
+
     /// Check if __typename is selected either at the top level or in all inline fragments
     pub fn has_typename_selection(&self) -> bool {
         // Check shared selections for __typename
@@ -360,7 +360,6 @@ impl MultiTypeSelectionCommon {
                 .any(|s| s.self_selection_name() == "__typename")
         })
     }
-
 }
 pub trait MultiTypeSelection {
     /// Get all possible types for this multi-type selection (union members or interface implementations)
@@ -476,39 +475,101 @@ pub fn dart_type_for_scalar(scalar_name: &str) -> String {
     }
 }
 
-pub enum HasIdField{
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum HasIdSelection {
+    #[serde(rename = "TRUE")]
     TRUE,
+    #[serde(rename = "FALSE")]
     FALSE,
-    MAYBE // unions / interfaces
+    #[serde(rename = "MAYBE")]
+    MAYBE, // unions / interfaces when some but not all fragments have id
 }
 
-
-pub fn hash_id_field<T: ExecutableContext>(ctx: &T, selection: &Selection) -> HashIdField{
-    match selection.kind{
-        SelectionKind::Object(object) => {
-           if  object.selections.borrow().iter().any(|f| hash_id_field(ctx, f)){
-               HasIdField::TRUE
-           }
-        },
-        SelectionKind::Interface(interface) => {
-            let commons = interface.common.shared_selections.borrow().iter().map(
-                |s| hash_id_field(ctx, s) 
-            ).;
-            
-            
-                HasIdField::TRUE
-            } else if interface.common.inline_fragments.borrow().values() {
-                
-            }
-            
-        },
-        SelectionKind::Union(union) => {
-            if ctx.get_union_types().contains_key(&union.common.full_name) {
-                
+/// Determines whether a selection includes an "id" field
+/// This is used to decide whether to use cache normalization
+pub fn has_id_selection(selection: &Selection) -> HasIdSelection {
+    match &selection.kind {
+        SelectionKind::Scalar(scalar) => {
+            // Check if this field itself is named "id"
+            if selection.selection_common.name == "id" && !scalar.is_optional {
+                HasIdSelection::TRUE
             } else {
-                HashIdField::FALSE
+                HasIdSelection::FALSE
             }
-        },
-        _ => HashIdField::MAYBE
+        }
+        SelectionKind::Enum(_) => HasIdSelection::FALSE,
+        SelectionKind::Object(object) => {
+            // Check if any of the object's selections is named "id"
+            let has_id = object
+                .selections
+                .borrow()
+                .iter()
+                .any(|s| s.selection_common.name == "id");
+
+            if has_id {
+                HasIdSelection::TRUE
+            } else {
+                HasIdSelection::FALSE
+            }
+        }
+        SelectionKind::List(list) => {
+            // For lists, we need to check if the inner type has an id field
+            // Create a temporary selection to check the inner type
+            let inner_selection = Selection {
+                selection_common: selection.selection_common.clone(),
+                kind: list.of_kind.clone(),
+                arguments: selection.arguments.clone(),
+            };
+            has_id_selection(&inner_selection)
+        }
+        SelectionKind::Interface(_) | SelectionKind::Union(_) => {
+            let common;
+            if let Some(union) = selection.as_union_selection() {
+                common = &union.common;
+            } else {
+                common = &selection.as_interface_selection().unwrap().common;
+            }
+            // Check shared selections
+            let shared_has_id = common
+                .shared_selections
+                .borrow()
+                .iter()
+                .any(|s| s.selection_common.name == "id");
+
+            if shared_has_id {
+                return HasIdSelection::TRUE;
+            }
+
+            // Check inline fragments
+            let fragments = common.inline_fragments.borrow();
+            if fragments.is_empty() {
+                return HasIdSelection::FALSE;
+            }
+
+            let mut any_has_id = false;
+            let mut all_have_id = true;
+
+            for obj in fragments.values() {
+                let obj_has_id = obj
+                    .selections
+                    .borrow()
+                    .iter()
+                    .any(|s| s.selection_common.name == "id");
+
+                if obj_has_id {
+                    any_has_id = true;
+                } else {
+                    all_have_id = false;
+                }
+            }
+
+            if all_have_id {
+                HasIdSelection::TRUE
+            } else if any_has_id {
+                HasIdSelection::MAYBE
+            } else {
+                HasIdSelection::FALSE
+            }
+        }
     }
 }

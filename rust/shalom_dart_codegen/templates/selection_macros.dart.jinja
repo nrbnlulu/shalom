@@ -206,11 +206,12 @@ null
             {% endif %}
         {% endif %}
     {% elif selection.kind == "Object" %}
+        {% set obj_has_id = has_id_selection(selection.full_name) -%}
         {% if is_optional -%}
             {{value_symbol}} == null ? null :
         {% endif -%}
         {{selection.full_name}}.fromCached(
-            {% if has_id_field  -%}
+            {% if obj_has_id != "FALSE" -%}
                 ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
             {% else -%}
             {{ value_symbol }},
