@@ -304,27 +304,9 @@ where
                     let type_condition_str = type_condition.to_string();
                     trace!("Processing inline fragment on type: {}", type_condition_str);
 
-                    // Check if this is a direct member of the union
-                    let is_union_member = union_type.members.contains(&type_condition_str);
+                  
 
-                    // Check if this is an interface that all union members implement
-                    is_common_interface = !is_union_member && {
-                        // Check if it's an interface
-                        if let Some(_interface) =
-                            global_ctx.schema_ctx.get_interface(&type_condition_str)
-                        {
-                            // Verify all union members implement this interface
-                            union_type.members.iter().all(|member| {
-                                global_ctx
-                                    .schema_ctx
-                                    .is_type_implementing_interface(member, &type_condition_str)
-                            })
-                        } else {
-                            false
-                        }
-                    };
-
-                    if is_union_member {
+                    if union_type.members.contains(&type_condition_str) {
                         // This is a specific union member type
                         let fragment_path = format!("{}_{}", path, type_condition_str);
                         let obj = parse_object_selection(
@@ -351,6 +333,22 @@ where
                         );
 
                         ctx.add_selection(fragment_path, selection);
+                    } else if let Some(_interface) =
+                            global_ctx.schema_ctx.get_interface(&type_condition_str)
+                        {
+                            // Verify all union members implement this interface
+                            for member in union_type.members.iter(){
+                                if !global_ctx
+                                    .schema_ctx
+                                    .is_type_implementing_interface(member, &type_condition_str)
+                                {
+                                    panic!(
+                                        "Type '{}' is not a member of union '{}' and is not a common interface implemented by all members",
+                                        type_condition_str, union_type.name
+                                    );
+                                }
+                            }
+                            is_common_interface = true;
                     } else {
                         panic!(
                             "Type '{}' is not a member of union '{}' and is not a common interface implemented by all members",
