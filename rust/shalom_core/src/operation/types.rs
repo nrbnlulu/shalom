@@ -537,57 +537,19 @@ pub fn has_id_selection(ctx: &ShalomGlobalContext, selection: &Selection) -> Has
             has_id_selection(ctx, &inner_selection)
         }
         SelectionKind::Interface(_) | SelectionKind::Union(_) => {
-            let common;
-            if let Some(union) = selection.as_union_selection() {
-                common = &union.common;
-            } else {
-                common = &selection.as_interface_selection().unwrap().common;
-            }
-            // Check shared selections
-            let shared_has_id = common
-                .shared_selections
-                .borrow()
-                .iter()
-                .any(|s| s.selection_common.name == "id");
-
-            if shared_has_id {
-                return HasIdSelection::TRUE;
-            }
-
-            // Check inline fragments
-            let fragments = common.inline_fragments.borrow();
-            if fragments.is_empty() {
-                return HasIdSelection::FALSE;
-            }
-
-            let mut any_has_id = false;
-            let mut all_have_id = true;
-
-            for obj in fragments.values() {
-                let obj_has_id = obj
-                    .selections
-                    .borrow()
-                    .iter()
-                    .any(|s| s.selection_common.name == "id");
-
-                if obj_has_id {
-                    any_has_id = true;
-                } else {
-                    all_have_id = false;
-                }
-            }
-
-            if all_have_id {
-                HasIdSelection::TRUE
-            } else if any_has_id {
-                HasIdSelection::MAYBE
-            } else {
-                HasIdSelection::FALSE
-            }
+            // currently we don't care if unions and interfaces select id or not.
+            //  we instead handle it at runtime
+            HasIdSelection::FALSE
         }
     }
 }
 
 fn frag_has_id_selection(ctx: &ShalomGlobalContext, fragment: &FragmentContext) -> HasIdSelection {
+    for frag in fragment.used_fragments.iter() {
+        let fragment_res = frag_has_id_selection(ctx, &frag);
+        if fragment_res == HasIdSelection::TRUE {
+            return HasIdSelection::TRUE;
+        }
+    }
     has_id_selection(ctx, fragment.root_type.as_ref().unwrap())
 }
