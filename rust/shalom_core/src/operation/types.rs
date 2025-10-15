@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     context::ShalomGlobalContext,
-    operation::{context::OperationVariable, fragments::FragmentContext, parse::ExecutableContext},
+    operation::{context::OperationVariable, fragments::FragmentContext},
     schema::types::{EnumType, InterfaceType, ScalarType, UnionType},
 };
 
@@ -546,7 +546,7 @@ pub fn has_id_selection(ctx: &ShalomGlobalContext, selection: &Selection) -> Has
 
 fn frag_has_id_selection(ctx: &ShalomGlobalContext, fragment: &FragmentContext) -> HasIdSelection {
     for frag in fragment.used_fragments.iter() {
-        let fragment_res = frag_has_id_selection(ctx, &frag);
+        let fragment_res = frag_has_id_selection(ctx, frag);
         if fragment_res == HasIdSelection::TRUE {
             return HasIdSelection::TRUE;
         }

@@ -299,6 +299,7 @@ where
                 union_selection.common.add_shared_selection(field_selection);
             }
             apollo_executable::Selection::InlineFragment(inline_fragment) => {
+                let mut is_common_interface = false;
                 if let Some(type_condition) = &inline_fragment.type_condition {
                     let type_condition_str = type_condition.to_string();
                     trace!("Processing inline fragment on type: {}", type_condition_str);
@@ -307,7 +308,7 @@ where
                     let is_union_member = union_type.members.contains(&type_condition_str);
 
                     // Check if this is an interface that all union members implement
-                    let is_common_interface = !is_union_member && {
+                    is_common_interface = !is_union_member && {
                         // Check if it's an interface
                         if let Some(_interface) =
                             global_ctx.schema_ctx.get_interface(&type_condition_str)
@@ -350,46 +351,15 @@ where
                         );
 
                         ctx.add_selection(fragment_path, selection);
-                    } else if is_common_interface {
-                        // This is an interface implemented by all union members
-                        // Treat it like a shared selection that applies to all members
-                        for sel in &inline_fragment.selection_set.selections {
-                            if let apollo_executable::Selection::Field(field) = sel {
-                                let f_name = field.name.clone().to_string();
-                                let f_type = field.ty();
-                                let description = field
-                                    .definition
-                                    .description
-                                    .as_deref()
-                                    .map(|s| s.to_string());
-                                let field_path = full_path_name(&f_name, path);
-                                let args = parse_field_arguments(ctx, field);
-
-                                let selection_common = SelectionCommon {
-                                    name: f_name.clone(),
-                                    description,
-                                };
-
-                                let field_selection = parse_selection_set(
-                                    &field_path,
-                                    ctx,
-                                    global_ctx,
-                                    selection_common,
-                                    &field.selection_set,
-                                    f_type,
-                                    args,
-                                    used_fragments,
-                                );
-                                union_selection.common.add_shared_selection(field_selection);
-                            }
-                        }
                     } else {
                         panic!(
                             "Type '{}' is not a member of union '{}' and is not a common interface implemented by all members",
                             type_condition_str, union_type.name
                         );
                     }
-                } else {
+                }
+
+                if is_common_interface {
                     // Inline fragment without type condition - fields apply to all types
                     for sel in &inline_fragment.selection_set.selections {
                         if let apollo_executable::Selection::Field(field) = sel {

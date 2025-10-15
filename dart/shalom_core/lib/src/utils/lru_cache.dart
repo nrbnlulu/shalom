@@ -5,13 +5,13 @@ class LruCache<K, V> {
   final LinkedHashMap<K, V> _cache;
 
   LruCache({this.capacity = 100})
-    : _cache = LinkedHashMap<K, V>(
-        // We can't use a regular HashMap because we need to
-        // maintain the insertion order.
-        // LinkedHashMap is perfect for this.
-        // We can use a Queue to keep track of the most recently used items.
-        // When an item is accessed, we can move it to the end of the queue.
-      );
+      : _cache = LinkedHashMap<K, V>(
+            // We can't use a regular HashMap because we need to
+            // maintain the insertion order.
+            // LinkedHashMap is perfect for this.
+            // We can use a Queue to keep track of the most recently used items.
+            // When an item is accessed, we can move it to the end of the queue.
+            );
 
   V? get(K key) => _cache[key];
 

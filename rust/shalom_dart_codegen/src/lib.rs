@@ -739,7 +739,7 @@ fn calculate_fragment_import_path(
     Ok(import_path)
 }
 
-fn get_schema_import_path(relative_to: &PathBuf, ctx: &ShalomGlobalContext) -> String {
+fn get_schema_import_path(relative_to: &Path, ctx: &ShalomGlobalContext) -> String {
     // Calculate relative path from operation __graphql__ dir to schema file
     let op_dir = relative_to.parent().unwrap();
     let op_graphql_dir = op_dir.join("__graphql__");

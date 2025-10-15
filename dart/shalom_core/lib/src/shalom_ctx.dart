@@ -30,7 +30,7 @@ class ShalomCtx {
 
   ShalomCtx({required this.cache});
   ShalomCtx.withCapacity({int capacity = 1000})
-    : cache = NormelizedCache(capacity: capacity);
+      : cache = NormelizedCache(capacity: capacity);
 
   RecordID resolveNodeID(String id) {
     return id.split(":").toString();
