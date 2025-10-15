@@ -1,0 +1,229 @@
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:shalom_core/src/shalom_core_base.dart';
+import 'package:shalom_core/src/transport/link.dart' show GraphQLLink;
+import 'package:shalom_core/src/transport/transportlayer.dart';
+
+/// Implementation of GraphQL over HTTP protocol as specified in:
+/// https://github.com/graphql/graphql-over-http/blob/main/spec/GraphQLOverHTTP.md
+class HttpLink extends GraphQLLink {
+  final TransportLayer transportLayer;
+  final String url;
+  final bool useGet;
+  final JsonObject defaultHeaders;
+
+  /// Creates an HTTP link for GraphQL requests.
+  ///
+  /// [transportLayer] - The transport layer implementation to use for HTTP requests
+  /// [url] - The GraphQL endpoint URL
+  /// [useGet] - Whether to use GET requests (only for queries, not mutations). Defaults to false.
+  /// [defaultHeaders] - Default headers to include with every request
+  const HttpLink({
+    required this.transportLayer,
+    required this.url,
+    this.useGet = false,
+    this.defaultHeaders = const {},
+  });
+
+  @override
+  Stream<GraphQLResponse> request({
+    required Request request,
+    required JsonObject headers,
+  }) async* {
+    try {
+      // Merge default headers with request-specific headers
+      final $mergedHeaders = <String, dynamic>{
+        ...defaultHeaders,
+        ...headers,
+      };
+
+      // Determine request method based on operation type and useGet flag
+      final $useGetForThisRequest =
+          useGet && request.opType == OperationType.Query;
+
+      // Prepare the request
+      JsonObject $requestBody;
+      JsonObject $finalHeaders;
+
+      if ($useGetForThisRequest) {
+        // GET requests: parameters go in URL query string
+        $requestBody = _prepareGetRequest(request);
+        $finalHeaders = {
+          ...$mergedHeaders,
+          'Accept': _getAcceptHeader($mergedHeaders),
+        };
+      } else {
+        // POST requests: parameters go in JSON body
+        $requestBody = _preparePostRequest(request);
+        $finalHeaders = {
+          'Content-Type': 'application/json; charset=utf-8',
+          'Accept': _getAcceptHeader($mergedHeaders),
+          ...$mergedHeaders,
+        };
+      }
+
+      // Extra metadata for the transport layer
+      final $extra = <String, dynamic>{
+        'url': url,
+        'method': $useGetForThisRequest ? 'GET' : 'POST',
+      };
+
+      // Make the request through the transport layer
+      final $responseStream = transportLayer.request(
+        request: $requestBody,
+        headers: $finalHeaders,
+        extra: $extra,
+      );
+
+      await for (final $response in $responseStream) {
+        yield _parseResponse($response);
+      }
+    } catch (e) {
+      // Return a link error for any exceptions
+      yield LinkErrorResponse({
+        'message': 'Network error: ${e.toString()}',
+        'extensions': {
+          'code': 'NETWORK_ERROR',
+        },
+      });
+    }
+  }
+
+  /// Prepares a POST request body according to the GraphQL over HTTP spec
+  JsonObject _preparePostRequest(Request request) {
+    final $body = <String, dynamic>{
+      'query': request.query,
+      'operationName': request.opName,
+    };
+
+    // Only include variables if non-empty
+    if (request.variables.isNotEmpty) {
+      $body['variables'] = request.variables;
+    }
+
+    return $body;
+  }
+
+  /// Prepares a GET request with query parameters
+  JsonObject _prepareGetRequest(Request request) {
+    final $params = <String, dynamic>{
+      'query': request.query,
+    };
+
+    if (request.opName.isNotEmpty) {
+      $params['operationName'] = request.opName;
+    }
+
+    if (request.variables.isNotEmpty) {
+      // Variables must be JSON encoded for GET requests
+      $params['variables'] = jsonEncode(request.variables);
+    }
+
+    return $params;
+  }
+
+  /// Gets the Accept header value according to the spec.
+  /// Prefers application/graphql-response+json with application/json as fallback
+  String _getAcceptHeader(JsonObject headers) {
+    // If user already specified Accept header, use it
+    if (headers.containsKey('Accept')) {
+      return headers['Accept'] as String;
+    }
+
+    // Default: prefer graphql-response+json, fallback to json
+    return 'application/graphql-response+json, application/json;q=0.9';
+  }
+
+  /// Parses the transport layer response into a GraphQLResponse
+  GraphQLResponse _parseResponse(dynamic response) {
+    try {
+      // Response should be a JSON object (Map)
+      if (response is! Map) {
+        return LinkErrorResponse({
+          'message': 'Invalid response format: expected JSON object',
+          'extensions': {
+            'code': 'INVALID_RESPONSE_FORMAT',
+          },
+        });
+      }
+
+      final $jsonResponse = response as JsonObject;
+
+      // Check for data field
+      final $hasData = $jsonResponse.containsKey('data');
+      final $data = $jsonResponse['data'];
+
+      // Check for errors field
+      final $errors = $jsonResponse['errors'];
+      List<JsonObject>? $parsedErrors;
+
+      if ($errors != null) {
+        if ($errors is List) {
+          $parsedErrors = $errors.map((e) => e as JsonObject).toList();
+        } else {
+          return LinkErrorResponse({
+            'message': 'Invalid errors format: expected array',
+            'extensions': {
+              'code': 'INVALID_RESPONSE_FORMAT',
+            },
+          });
+        }
+      }
+
+      // Check for extensions field
+      final $extensionsRaw = $jsonResponse['extensions'];
+      final $extensions = $extensionsRaw != null && $extensionsRaw is Map
+          ? Map<String, dynamic>.from($extensionsRaw)
+          : <String, dynamic>{};
+
+      // According to GraphQL spec:
+      // - If data is present (even if null), it's a valid response
+      // - If data is not present, errors must be present
+      if ($hasData) {
+        // Handle data field - it can be null, a map, or other types
+        JsonObject $dataMap;
+        if ($data == null) {
+          $dataMap = <String, dynamic>{};
+        } else if ($data is Map) {
+          $dataMap = Map<String, dynamic>.from($data);
+        } else {
+          // Invalid data type
+          return LinkErrorResponse({
+            'message': 'Invalid data format: expected JSON object or null',
+            'extensions': {
+              'code': 'INVALID_RESPONSE_FORMAT',
+            },
+          });
+        }
+
+        return GraphQLData(
+          data: $dataMap,
+          errors: $parsedErrors,
+          extensions: $extensions,
+        );
+      } else if ($parsedErrors != null) {
+        // No data field, but has errors - this is a request error
+        return LinkErrorResponse({
+          'errors': $parsedErrors,
+          'extensions': $extensions,
+        });
+      } else {
+        // Neither data nor errors - invalid response
+        return LinkErrorResponse({
+          'message': 'Invalid GraphQL response: missing both data and errors',
+          'extensions': {
+            'code': 'INVALID_RESPONSE_FORMAT',
+          },
+        });
+      }
+    } catch (e) {
+      return LinkErrorResponse({
+        'message': 'Failed to parse response: ${e.toString()}',
+        'extensions': {
+          'code': 'RESPONSE_PARSE_ERROR',
+        },
+      });
+    }
+  }
+}

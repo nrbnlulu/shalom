@@ -1,0 +1,483 @@
+import 'dart:async';
+
+import 'package:shalom_core/shalom_core.dart';
+
+/// Implementation of GraphQL WebSocket protocol as specified in:
+/// https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md
+///
+/// This link manages WebSocket connections for GraphQL subscriptions,
+/// queries, and mutations over WebSocket transport.
+class WebSocketLink extends GraphQLLink {
+  final WebSocketTransport transport;
+  final String url;
+  final JsonObject? connectionParams;
+  final bool autoReconnect;
+  final Duration connectionInitTimeout;
+  final Duration reconnectTimeout;
+  final Duration pingInterval;
+  final Duration pongTimeout;
+
+  /// Active subscriptions mapped by operation ID
+  final Map<String, _OperationHandler> _activeOperations = {};
+
+  /// Pending operations waiting for connection acknowledgement
+  final Map<String, _OperationHandler> _pendingOperations = {};
+
+  /// Connection state
+  bool _connectionAcknowledged = false;
+  bool _disposed = false;
+
+  /// Timers
+  Timer? _connectionInitTimer;
+  Timer? _reconnectTimer;
+  Timer? _pingTimer;
+  Timer? _pongTimer;
+
+  /// Subscriptions
+  StreamSubscription<String>? _messageSubscription;
+  StreamSubscription<WebSocketState>? _stateSubscription;
+
+  /// Connection acknowledgement payload from server
+  JsonObject? _connectionAckPayload;
+
+  WebSocketLink({
+    required this.transport,
+    required this.url,
+    this.connectionParams,
+    this.autoReconnect = true,
+    this.connectionInitTimeout = const Duration(seconds: 10),
+    this.reconnectTimeout = const Duration(seconds: 5),
+    this.pingInterval = const Duration(seconds: 30),
+    this.pongTimeout = const Duration(seconds: 5),
+  }) {
+    _initialize();
+  }
+
+  /// Initialize the WebSocket connection
+  void _initialize() {
+    _messageSubscription = transport.messages.listen(
+      _handleMessage,
+      onError: _handleTransportError,
+    );
+
+    _stateSubscription = transport.stateChanges.listen(
+      _handleStateChange,
+    );
+
+    _connect();
+  }
+
+  /// Connect to the WebSocket server
+  Future<void> _connect() async {
+    if (_disposed) return;
+
+    try {
+      await transport.connect(
+        url: url,
+        protocols: ['graphql-transport-ws'],
+      );
+    } catch (e) {
+      _handleConnectionError(e);
+    }
+  }
+
+  /// Handle WebSocket state changes
+  void _handleStateChange(WebSocketState state) {
+    switch (state) {
+      case WebSocketState.connected:
+        _onConnected();
+        break;
+      case WebSocketState.disconnected:
+      case WebSocketState.closed:
+        _onDisconnected();
+        break;
+      default:
+        break;
+    }
+  }
+
+  /// Called when WebSocket connection is established
+  void _onConnected() {
+    // Send connection_init message
+    _sendMessage(ConnectionInitMessage(payload: connectionParams));
+
+    // Start connection init timeout
+    _connectionInitTimer?.cancel();
+    _connectionInitTimer = Timer(connectionInitTimeout, () {
+      if (!_connectionAcknowledged) {
+        _close(
+          WsCloseCodes.connectionInitTimeout,
+          'Connection initialization timeout',
+        );
+      }
+    });
+
+    // Cancel reconnect timer if active
+    _reconnectTimer?.cancel();
+  }
+
+  /// Called when WebSocket connection is lost
+  void _onDisconnected() {
+    _connectionAcknowledged = false;
+    _connectionInitTimer?.cancel();
+    _pingTimer?.cancel();
+    _pongTimer?.cancel();
+
+    // Move active operations to pending
+    _pendingOperations.addAll(_activeOperations);
+    _activeOperations.clear();
+
+    // Attempt reconnection if enabled
+    if (autoReconnect && !_disposed) {
+      _reconnectTimer?.cancel();
+      _reconnectTimer = Timer(reconnectTimeout, () {
+        _connect();
+      });
+    }
+  }
+
+  /// Handle incoming WebSocket messages
+  void _handleMessage(String message) {
+    final $parsedMessage = parseWsMessage(message);
+
+    if ($parsedMessage == null) {
+      _close(WsCloseCodes.invalidMessage, 'Invalid message format');
+      return;
+    }
+
+    if ($parsedMessage is ConnectionAckMessage) {
+      _handleConnectionAck($parsedMessage);
+    } else if ($parsedMessage is PingMessage) {
+      _handlePing($parsedMessage);
+    } else if ($parsedMessage is PongMessage) {
+      _handlePong($parsedMessage);
+    } else if ($parsedMessage is NextMessage) {
+      _handleNext($parsedMessage);
+    } else if ($parsedMessage is ErrorMessage) {
+      _handleErrorMessage($parsedMessage);
+    } else if ($parsedMessage is CompleteMessage) {
+      _handleComplete($parsedMessage);
+    }
+  }
+
+  /// Handle ConnectionAck message
+  void _handleConnectionAck(ConnectionAckMessage message) {
+    if (_connectionAcknowledged) {
+      // Already acknowledged, ignore
+      return;
+    }
+
+    _connectionAcknowledged = true;
+    _connectionAckPayload = message.payload;
+    _connectionInitTimer?.cancel();
+
+    // Start ping timer
+    _startPingTimer();
+
+    // Execute all pending operations
+    final $pendingOps = Map<String, _OperationHandler>.from(_pendingOperations);
+    _pendingOperations.clear();
+
+    for (final $entry in $pendingOps.entries) {
+      final $id = $entry.key;
+      final $handler = $entry.value;
+
+      // Re-execute operation
+      _executeOperation($id, $handler);
+    }
+  }
+
+  /// Handle Ping message
+  void _handlePing(PingMessage message) {
+    // Respond with Pong
+    _sendMessage(PongMessage(payload: message.payload));
+  }
+
+  /// Handle Pong message
+  void _handlePong(PongMessage message) {
+    // Cancel pong timeout
+    _pongTimer?.cancel();
+  }
+
+  /// Handle Next message
+  void _handleNext(NextMessage message) {
+    final $handler = _activeOperations[message.id];
+    if ($handler == null) {
+      // Unknown operation, ignore
+      return;
+    }
+
+    // Emit data to the handler's stream
+    final $payload = message.payload;
+
+    // Check if this is a valid GraphQL response
+    if ($payload.containsKey('data')) {
+      final $data = $payload['data'] as JsonObject?;
+      final $errors = $payload['errors'] as List?;
+      final $extensions = $payload['extensions'] as JsonObject?;
+
+      List<JsonObject>? $parsedErrors;
+      if ($errors != null) {
+        $parsedErrors = $errors.map((e) => e as JsonObject).toList();
+      }
+
+      $handler.controller.add(
+        GraphQLData(
+          data: $data ?? {},
+          errors: $parsedErrors,
+          extensions: $extensions ?? {},
+        ),
+      );
+    } else {
+      // Invalid response format
+      $handler.controller.add(
+        LinkErrorResponse({
+          'message': 'Invalid response: missing data field',
+          'extensions': {'code': 'INVALID_RESPONSE'},
+        }),
+      );
+    }
+  }
+
+  /// Handle Error message
+  void _handleErrorMessage(ErrorMessage message) {
+    final $handler = _activeOperations[message.id];
+    if ($handler == null) {
+      // Unknown operation, ignore
+      return;
+    }
+
+    // Emit error to the handler's stream
+    $handler.controller.add(
+      LinkErrorResponse({
+        'errors': message.payload,
+        'extensions': {'code': 'GRAPHQL_ERROR'},
+      }),
+    );
+
+    // Complete the operation
+    _completeOperation(message.id);
+  }
+
+  /// Handle Complete message
+  void _handleComplete(CompleteMessage message) {
+    _completeOperation(message.id);
+  }
+
+  /// Handle general transport errors
+  void _handleTransportError(dynamic error) {
+    // Emit error to all active operations
+    for (final $handler in _activeOperations.values) {
+      if (!$handler.controller.isClosed) {
+        $handler.controller.add(
+          LinkErrorResponse({
+            'message': 'WebSocket error: ${error.toString()}',
+            'extensions': {'code': 'WEBSOCKET_ERROR'},
+          }),
+        );
+      }
+    }
+  }
+
+  /// Handle connection errors
+  void _handleConnectionError(dynamic error) {
+    // Emit error to all pending operations
+    for (final $handler in _pendingOperations.values) {
+      if (!$handler.controller.isClosed) {
+        $handler.controller.add(
+          LinkErrorResponse({
+            'message': 'Connection error: ${error.toString()}',
+            'extensions': {'code': 'CONNECTION_ERROR'},
+          }),
+        );
+      }
+    }
+  }
+
+  /// Start the ping timer
+  void _startPingTimer() {
+    _pingTimer?.cancel();
+    _pingTimer = Timer.periodic(pingInterval, (_) {
+      _sendPing();
+    });
+  }
+
+  /// Send a ping message
+  void _sendPing() {
+    if (!_connectionAcknowledged) return;
+
+    _sendMessage(const PingMessage());
+
+    // Start pong timeout
+    _pongTimer?.cancel();
+    _pongTimer = Timer(pongTimeout, () {
+      // Pong timeout - close connection
+      _close(1002, 'Pong timeout');
+    });
+  }
+
+  /// Send a message through the WebSocket
+  void _sendMessage(WsMessage message) {
+    if (!transport.isConnected) return;
+
+    try {
+      transport.send(message.toJsonString());
+    } catch (e) {
+      // Handle send error
+    }
+  }
+
+  /// Close the WebSocket connection
+  Future<void> _close(int code, String reason) async {
+    await transport.close(code, reason);
+  }
+
+  @override
+  Stream<GraphQLResponse> request({
+    required Request request,
+    required JsonObject headers,
+  }) {
+    // Generate unique operation ID
+    final $operationId = _generateOperationId();
+
+    // Create operation handler
+    final $controller = StreamController<GraphQLResponse>();
+    final $handler = _OperationHandler(
+      id: $operationId,
+      request: request,
+      controller: $controller,
+    );
+
+    // Add to pending or execute immediately
+    if (_connectionAcknowledged && transport.isConnected) {
+      _executeOperation($operationId, $handler);
+    } else {
+      _pendingOperations[$operationId] = $handler;
+    }
+
+    // Set up stream controller callbacks
+    $controller.onCancel = () {
+      _unsubscribe($operationId);
+    };
+
+    return $controller.stream;
+  }
+
+  /// Execute an operation by sending Subscribe message
+  void _executeOperation(String operationId, _OperationHandler handler) {
+    // Check if already active
+    if (_activeOperations.containsKey(operationId)) {
+      handler.controller.add(
+        LinkErrorResponse({
+          'message': 'Operation with ID $operationId already exists',
+          'extensions': {'code': 'DUPLICATE_OPERATION'},
+        }),
+      );
+      handler.controller.close();
+      return;
+    }
+
+    // Add to active operations
+    _activeOperations[operationId] = handler;
+
+    // Send Subscribe message
+    final $subscribeMessage = SubscribeMessage(
+      id: operationId,
+      payload: SubscribePayload.fromRequest(handler.request),
+    );
+
+    _sendMessage($subscribeMessage);
+  }
+
+  /// Unsubscribe from an operation
+  void _unsubscribe(String operationId) {
+    // Remove from active operations
+    final $handler = _activeOperations.remove(operationId);
+    _pendingOperations.remove(operationId);
+
+    // Send Complete message if still connected
+    if (_connectionAcknowledged && transport.isConnected) {
+      _sendMessage(CompleteMessage(id: operationId));
+    }
+
+    // Close the stream controller
+    if ($handler != null && !$handler.controller.isClosed) {
+      $handler.controller.close();
+    }
+  }
+
+  /// Complete an operation
+  void _completeOperation(String operationId) {
+    final $handler = _activeOperations.remove(operationId);
+    if ($handler != null && !$handler.controller.isClosed) {
+      $handler.controller.close();
+    }
+  }
+
+  /// Generate a unique operation ID
+  String _generateOperationId() {
+    return DateTime.now().microsecondsSinceEpoch.toString();
+  }
+
+  /// Get the connection acknowledgement payload
+  JsonObject? get connectionAckPayload => _connectionAckPayload;
+
+  /// Whether the connection is acknowledged
+  bool get isConnectionAcknowledged => _connectionAcknowledged;
+
+  /// Whether the WebSocket is connected
+  bool get isConnected => transport.isConnected;
+
+  /// Manually reconnect
+  Future<void> reconnect() async {
+    await _close(WsCloseCodes.normalClosure, 'Manual reconnect');
+    await _connect();
+  }
+
+  /// Dispose the WebSocket link
+  Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
+
+    // Cancel all timers
+    _connectionInitTimer?.cancel();
+    _reconnectTimer?.cancel();
+    _pingTimer?.cancel();
+    _pongTimer?.cancel();
+
+    // Close all operation streams
+    for (final $handler in _activeOperations.values) {
+      if (!$handler.controller.isClosed) {
+        $handler.controller.close();
+      }
+    }
+    for (final $handler in _pendingOperations.values) {
+      if (!$handler.controller.isClosed) {
+        $handler.controller.close();
+      }
+    }
+
+    _activeOperations.clear();
+    _pendingOperations.clear();
+
+    // Cancel subscriptions
+    await _messageSubscription?.cancel();
+    await _stateSubscription?.cancel();
+
+    // Close WebSocket
+    await transport.close(WsCloseCodes.normalClosure, 'Disposed');
+  }
+}
+
+/// Internal class to manage operation handlers
+class _OperationHandler {
+  final String id;
+  final Request request;
+  final StreamController<GraphQLResponse> controller;
+
+  _OperationHandler({
+    required this.id,
+    required this.request,
+    required this.controller,
+  });
+}
