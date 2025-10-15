@@ -3,12 +3,29 @@ import 'dart:convert';
 
 import 'package:shalom_core/src/shalom_core_base.dart';
 import 'package:shalom_core/src/transport/link.dart' show GraphQLLink;
-import 'package:shalom_core/src/transport/transportlayer.dart';
+
+enum HttpMethod {
+  // ignore: constant_identifier_names
+  GET,
+  // ignore: constant_identifier_names
+  POST
+
+}
+
+
+abstract interface class ShalomHttpTransport {
+  Future<JsonObject> request(
+      {required HttpMethod method,
+      required String url,
+      required JsonObject data,
+      JsonObject? headers,
+      JsonObject? extra});
+}
 
 /// Implementation of GraphQL over HTTP protocol as specified in:
 /// https://github.com/graphql/graphql-over-http/blob/main/spec/GraphQLOverHTTP.md
 class HttpLink extends GraphQLLink {
-  final TransportLayer transportLayer;
+  final ShalomHttpTransport transportLayer;
   final String url;
   final bool useGet;
   final JsonObject defaultHeaders;
@@ -27,100 +44,89 @@ class HttpLink extends GraphQLLink {
   });
 
   @override
-  Stream<GraphQLResponse> request({
-    required Request request,
-    required JsonObject headers,
-  }) async* {
+  Stream<GraphQLResponse> request(
+      {required Request request, required JsonObject headers, forward}) async* {
+    assert(forward == null, 'http link should not have forward links');
     try {
       // Merge default headers with request-specific headers
-      final $mergedHeaders = <String, dynamic>{
+      final mergedHeaders = <String, dynamic>{
         ...defaultHeaders,
         ...headers,
       };
 
-      // Determine request method based on operation type and useGet flag
-      final $useGetForThisRequest =
-          useGet && request.opType == OperationType.Query;
+      final methodForThisRequest =
+          useGet && request.opType == OperationType.Query
+              ? HttpMethod.GET
+              : HttpMethod.POST;
 
       // Prepare the request
-      JsonObject $requestBody;
-      JsonObject $finalHeaders;
+      JsonObject requestBody;
+      JsonObject finalHeaders;
 
-      if ($useGetForThisRequest) {
+      if (methodForThisRequest == HttpMethod.GET) {
         // GET requests: parameters go in URL query string
-        $requestBody = _prepareGetRequest(request);
-        $finalHeaders = {
-          ...$mergedHeaders,
-          'Accept': _getAcceptHeader($mergedHeaders),
+        requestBody = _prepareGetRequest(request);
+        finalHeaders = {
+          ...mergedHeaders,
+          'Accept': _getAcceptHeader(mergedHeaders),
         };
       } else {
         // POST requests: parameters go in JSON body
-        $requestBody = _preparePostRequest(request);
-        $finalHeaders = {
+        requestBody = _preparePostRequest(request);
+        finalHeaders = {
           'Content-Type': 'application/json; charset=utf-8',
-          'Accept': _getAcceptHeader($mergedHeaders),
-          ...$mergedHeaders,
+          'Accept': _getAcceptHeader(mergedHeaders),
+          ...mergedHeaders,
         };
       }
 
-      // Extra metadata for the transport layer
-      final $extra = <String, dynamic>{
-        'url': url,
-        'method': $useGetForThisRequest ? 'GET' : 'POST',
-      };
-
       // Make the request through the transport layer
-      final $responseStream = transportLayer.request(
-        request: $requestBody,
-        headers: $finalHeaders,
-        extra: $extra,
+      final $responseStream = await transportLayer.request(
+        method: methodForThisRequest,
+        url: url,
+        data: requestBody,
+        headers: finalHeaders,
       );
-
-      await for (final $response in $responseStream) {
-        yield _parseResponse($response);
-      }
     } catch (e) {
       // Return a link error for any exceptions
       yield LinkErrorResponse({
+        'code': 'HTTP_LINK_ERROR',
         'message': 'Network error: ${e.toString()}',
-        'extensions': {
-          'code': 'NETWORK_ERROR',
-        },
       });
     }
   }
 
   /// Prepares a POST request body according to the GraphQL over HTTP spec
   JsonObject _preparePostRequest(Request request) {
-    final $body = <String, dynamic>{
+    final body = <String, dynamic>{
       'query': request.query,
       'operationName': request.opName,
     };
 
     // Only include variables if non-empty
     if (request.variables.isNotEmpty) {
-      $body['variables'] = request.variables;
+      body['variables'] = request.variables;
     }
 
-    return $body;
+    return body;
   }
 
   /// Prepares a GET request with query parameters
   JsonObject _prepareGetRequest(Request request) {
-    final $params = <String, dynamic>{
+    final params = <String, dynamic>{
       'query': request.query,
     };
 
     if (request.opName.isNotEmpty) {
-      $params['operationName'] = request.opName;
+      params['operationName'] = request.opName;
     }
 
     if (request.variables.isNotEmpty) {
       // Variables must be JSON encoded for GET requests
-      $params['variables'] = jsonEncode(request.variables);
+      params['variables'] = jsonEncode(request.variables);
     }
 
-    return $params;
+    return params;
   }
 
   /// Gets the Accept header value according to the spec.
