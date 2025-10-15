@@ -135,6 +135,7 @@ class GraphQLData extends GraphQLResponse {
   final JsonObject data;
   final List<JsonObject>? errors;
   final JsonObject extensions;
-  
-  const GraphQLData({required this.data, this.errors, required this.extensions});
+
+  const GraphQLData(
+      {required this.data, this.errors, required this.extensions});
 }
