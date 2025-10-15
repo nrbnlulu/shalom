@@ -4,6 +4,8 @@ use std::{
     rc::Rc,
 };
 
+use indexmap::IndexMap;
+
 use apollo_compiler::Node;
 use log::info;
 use serde::{Deserialize, Serialize};
@@ -25,13 +27,13 @@ pub enum OperationType {
     Subscription,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct SelectionCommon {
     pub name: String,
     pub description: Option<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "kind")]
 pub enum ArgumentValue {
     // usage of operation variable
@@ -42,11 +44,11 @@ pub enum ArgumentValue {
     },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "value_kind")]
 pub enum InlineValueArg {
     Object {
-        fields: HashMap<String, Box<ArgumentValue>>,
+        fields: IndexMap<String, Box<ArgumentValue>>,
         raw: String,
     },
     Scalar {
@@ -61,7 +63,7 @@ pub enum InlineValueArg {
     },
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FieldArgument {
     pub name: String,
     pub value: ArgumentValue,

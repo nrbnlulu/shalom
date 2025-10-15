@@ -37,7 +37,7 @@ where
     T: ExecutableContext,
 {
     use crate::operation::types::{ArgumentValue, InlineValueArg};
-    use std::collections::HashMap;
+    use indexmap::IndexMap;
 
     match value {
         apollo_executable::Value::Variable(var_name) => {
@@ -54,7 +54,7 @@ where
             }
         }
         apollo_executable::Value::Object(obj) => {
-            let mut fields = HashMap::new();
+            let mut fields = IndexMap::new();
             for (key, val) in obj.iter() {
                 let parsed_val = parse_inline_value(ctx, val);
                 fields.insert(key.to_string(), Box::new(parsed_val));

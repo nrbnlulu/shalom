@@ -415,20 +415,20 @@ null
                     `<sometype>:<id>` key. and they won't get updated when the type / id has changed.
                     since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changes on that path if an id or typename has changed.
                     #}
-                    final normalized$objRecrord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
+                    final normalized$objRecord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
                     // if id or typename changed we mark the whole selection as changed.
-                    if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecrord){
+                    if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecord){
                         ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
                     }
-                    parent$record[this$fieldName] = normalized$objRecrord;
-                    this$normalizedID = normalized$objRecrord.normalizedID();
+                    parent$record[this$fieldName] = normalized$objRecord;
+                    this$normalizedID = normalized$objRecord.normalizedID();
                 {% else %}
-                    final normalized$objRecrord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
-                    if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecrord){
+                    final normalized$objRecord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
+                    if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecord){
                         ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
                     }
-                    parent$record[this$fieldName] = normalized$objRecrord;
-                    this$normalizedID = normalized$objRecrord.normalizedID();
+                    parent$record[this$fieldName] = normalized$objRecord;
+                    this$normalizedID = normalized$objRecord.normalizedID();
                 {% endif -%}
                 this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                 ctx.addDependantRecord(this$normalizedID);
