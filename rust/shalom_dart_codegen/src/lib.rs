@@ -538,7 +538,7 @@ where
                 executable_ctx_clone4.get_selection(&full_name.to_string(), &ctx_clone4)?;
             Some(minijinja::Value::from_serialize(has_id_selection(
                 &ctx_clone4,
-                &selection,
+                selection,
             )))
         },
     );
@@ -637,12 +637,12 @@ static GRAPHQL_DIRECTORY: &str = "__graphql__";
 fn get_schema_output_dir(ctx: &ShalomGlobalContext) -> PathBuf {
     if let Some(schema_output_path) = &ctx.config.schema_output_path {
         // Use the configured schema output path (resolve relative to project root)
-        let resolved = if schema_output_path.is_absolute() {
+
+        if schema_output_path.is_absolute() {
             schema_output_path.clone()
         } else {
             ctx.config.project_root.join(schema_output_path)
-        };
-        resolved
+        }
     } else {
         // Default to schema file's parent directory + __graphql__
         ctx.schema_file_path
@@ -767,7 +767,7 @@ fn generate_operations_file(
         operation,
         ctx.schema_ctx.clone(),
         additional_imports,
-        get_schema_import_path(&operation_file_path, &ctx),
+        get_schema_import_path(&operation_file_path, ctx),
     );
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());

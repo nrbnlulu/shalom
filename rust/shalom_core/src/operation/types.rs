@@ -491,7 +491,10 @@ pub enum HasIdSelection {
 pub fn has_id_selection(ctx: &ShalomGlobalContext, selection: &Selection) -> HasIdSelection {
     match &selection.kind {
         SelectionKind::Scalar(_) => {
-            info!("Checking scalar field for id {}", selection.selection_common.name);
+            info!(
+                "Checking scalar field for id {}",
+                selection.selection_common.name
+            );
             // Check if this field itself is named "id"
             if selection.selection_common.name == "id" {
                 HasIdSelection::TRUE
@@ -502,24 +505,25 @@ pub fn has_id_selection(ctx: &ShalomGlobalContext, selection: &Selection) -> Has
         SelectionKind::Enum(_) => HasIdSelection::FALSE,
         SelectionKind::Object(object) => {
             info!("Checking scalar field for id {}", object.full_name);
-            
+
             // Check if any of the object's selections is named "id"
             let res: Vec<_> = object
                 .selections
-                .borrow().iter()
-                .map(|s| has_id_selection(ctx, s)).collect();
-            
+                .borrow()
+                .iter()
+                .map(|s| has_id_selection(ctx, s))
+                .collect();
+
             for fragment in object.used_fragments.borrow().iter() {
                 let fragment_res = frag_has_id_selection(ctx, &ctx.get_fragment(fragment).unwrap());
                 if fragment_res == HasIdSelection::TRUE {
                     return HasIdSelection::TRUE;
                 }
             }
-            if res.iter().any(|s| *s == HasIdSelection::TRUE) {
+            if res.contains(&HasIdSelection::TRUE) {
                 HasIdSelection::TRUE
             } else {
                 HasIdSelection::FALSE
-                
             }
         }
         SelectionKind::List(list) => {
@@ -581,10 +585,9 @@ pub fn has_id_selection(ctx: &ShalomGlobalContext, selection: &Selection) -> Has
                 HasIdSelection::FALSE
             }
         }
-
     }
 }
 
-fn frag_has_id_selection(ctx: &ShalomGlobalContext, fragment: &FragmentContext) -> HasIdSelection{
+fn frag_has_id_selection(ctx: &ShalomGlobalContext, fragment: &FragmentContext) -> HasIdSelection {
     has_id_selection(ctx, fragment.root_type.as_ref().unwrap())
 }
