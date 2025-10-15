@@ -121,3 +121,20 @@ class OperationContext<TVars> {
   final ShalomCtx shalomCtx;
   const OperationContext({this.variables, required this.shalomCtx});
 }
+
+sealed class GraphQLResponse {
+  const GraphQLResponse();
+}
+
+class LinkErrorResponse extends GraphQLResponse {
+  final JsonObject errors;
+  const LinkErrorResponse(this.errors);
+}
+
+class GraphQLData extends GraphQLResponse {
+  final JsonObject data;
+  final List<JsonObject>? errors;
+  final JsonObject extensions;
+  
+  const GraphQLData({required this.data, this.errors, required this.extensions});
+}

@@ -13,6 +13,9 @@ export 'src/normelized_cache.dart'
         RecordID;
 
 export 'src/shalom_ctx.dart' show RecordSubscriber, RefStreamType, ShalomCtx;
+export 'src/transport/http_link.dart' show HttpLink;
+export 'src/transport/link.dart' show GraphQLLink;
+export 'src/transport/transportlayer.dart' show TransportLayer;
 
 class CacheUpdateContext {
   final ShalomCtx shalomContext;
