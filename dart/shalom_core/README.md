@@ -6,7 +6,8 @@ Core Dart library for Shalom - a GraphQL code generation library with built-in n
 
 - **Normalized Cache**: Efficient data normalization and caching for GraphQL responses
 - **GraphQL over HTTP**: Spec-compliant HTTP link implementation for GraphQL requests
-- **Transport Agnostic**: Bring your own HTTP client implementation
+- **GraphQL over WebSocket**: Full implementation of graphql-ws protocol for subscriptions
+- **Transport Agnostic**: Bring your own HTTP/WebSocket client implementation
 - **Type Safety**: Generated types work seamlessly with the core runtime
 - **Reactive Updates**: Stream-based cache updates for reactive UI
 - **Flexible Architecture**: Extensible link system for custom transport logic
@@ -29,6 +30,17 @@ Shalom includes a powerful normalized cache that:
 - ✅ Proper media types (`application/graphql-response+json`, `application/json`)
 - ✅ Configurable headers and authentication
 - ✅ Comprehensive error handling
+- ✅ Transport layer abstraction
+
+### 3. WebSocketLink - GraphQL over WebSocket
+
+`WebSocketLink` provides a complete implementation of [graphql-ws protocol](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md):
+
+- ✅ Real-time subscriptions
+- ✅ Queries and mutations over WebSocket
+- ✅ Auto-reconnection with operation replay
+- ✅ Ping/Pong keep-alive
+- ✅ Multiple concurrent operations
 - ✅ Transport layer abstraction
 
 ## Getting Started
@@ -107,6 +119,66 @@ await for (final response in httpLink.request(request: request, headers: {})) {
     print('Request failed: ${response.errors}');
   }
 }
+```
+
+## WebSocketLink Usage
+
+### Basic Subscription
+
+```dart
+import 'package:shalom_core/shalom_core.dart';
+
+// 1. Implement WebSocket transport (see documentation for examples)
+class MyWebSocketTransport extends WebSocketTransport {
+  // Implementation using web_socket_channel or similar
+}
+
+// 2. Create WebSocketLink
+final wsLink = WebSocketLink(
+  transport: myWsTransport,
+  url: 'ws://localhost:4000/graphql',
+  connectionParams: {
+    'authToken': 'YOUR_TOKEN',
+  },
+);
+
+// 3. Subscribe to real-time updates
+final request = Request(
+  query: '''
+    subscription OnMessageAdded {
+      messageAdded {
+        id
+        text
+        author
+      }
+    }
+  ''',
+  variables: {},
+  opType: OperationType.Subscription,
+  opName: 'OnMessageAdded',
+);
+
+await for (final response in wsLink.request(request: request, headers: {})) {
+  if (response is GraphQLData) {
+    print('New message: ${response.data}');
+  } else if (response is LinkErrorResponse) {
+    print('Error: ${response.errors}');
+  }
+}
+```
+
+### With Auto-Reconnection
+
+```dart
+final wsLink = WebSocketLink(
+  transport: myWsTransport,
+  url: 'ws://localhost:4000/graphql',
+  autoReconnect: true,
+  reconnectTimeout: const Duration(seconds: 5),
+  pingInterval: const Duration(seconds: 30),
+);
+
+// Subscriptions automatically resume after reconnection
 ```
 
 ## HttpLink Configuration
@@ -297,8 +369,10 @@ final httpLink = HttpLink(
 ## Documentation
 
 - [HTTP_LINK.md](./HTTP_LINK.md) - Comprehensive HttpLink documentation
-- [example/http_link_example.dart](./example/http_link_example.dart) - Complete usage examples
-- [GraphQL over HTTP Spec](https://github.com/graphql/graphql-over-http/blob/main/spec/GraphQLOverHTTP.md) - Official specification
+- [WEBSOCKET_LINK.md](./WEBSOCKET_LINK.md) - Comprehensive WebSocketLink documentation
+- [example/http_link_example.dart](./example/http_link_example.dart) - Complete HTTP usage examples
+- [GraphQL over HTTP Spec](https://github.com/graphql/graphql-over-http/blob/main/spec/GraphQLOverHTTP.md) - Official HTTP specification
+- [graphql-ws Protocol](https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md) - Official WebSocket protocol
 
 ## Additional Information
 
