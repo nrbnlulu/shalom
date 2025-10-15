@@ -427,7 +427,7 @@ pub fn parse_directory(
     let schema_parsed = parse_schema(&schema_raw)?;
 
     // Create global context
-    let global_ctx = ShalomGlobalContext::new(schema_parsed, config);
+    let global_ctx = ShalomGlobalContext::new(schema_parsed, config, files.schema.clone());
     let schema = global_ctx.schema_ctx.schema.clone();
     // Parse all documents without validation
     let parsed_docs = parse_documents_unvalidated(&files.operations, &schema, strict)?;

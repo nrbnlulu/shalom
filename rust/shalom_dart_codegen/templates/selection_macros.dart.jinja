@@ -1,4 +1,5 @@
 
+
 {# Macro to normalize a selection in cache - handles Object, Union, List, Scalar, etc. #}
 {% macro normalize_selection_in_cache(selection, selection_name, cached_sym, raw_sym, normalized_key, normalized_id, this_normalized_record, this_normalized_id, ctx="ctx") -%}
     {% if selection.kind == "Object" %}
@@ -138,32 +139,51 @@
     {% endif -%}
     {% endmacro %}
 
-{# Macro to generate cache key with arguments #}
-{% macro generate_cache_key_with_args(field_name, arguments) -%}
-{% if arguments | length > 0 -%}
-"""{{field_name}}(
-    {%- for arg in arguments -%}
-
-    {%- if arg.value.kind == "VariableUse"  -%}
-        {% if op_variables_exist -%}
-            {%- set var_name = arg.value.common.name -%}
-            {%- if arg.value.is_maybe -%}
-                {{arg.name}}:${variables.{{var_name}}.isSome() ? (variables!.{{var_name}}.some()?.toString()) : 'None' }
+{# Recursive macro to serialize ArgumentValue for cache keys #}
+{% macro serialize_argument_value(arg_value) -%}
+    {%- if arg_value.kind == "VariableUse" -%}
+        {%- if op_variables_exist -%}
+            {%- set var_name = arg_value.common.name -%}
+            {%- if arg_value.is_maybe -%}
+${variables.{{var_name}}.isSome() ? (variables!.{{var_name}}.some()?.toString()) : 'None' }
             {%- else -%}
-                {%- if arg.default_value is not none -%}
-                   {{arg.name}}:${variables.{{var_name}} ?? '{{arg.default_value}}'}
+                {%- if arg_value.default_value is not none -%}
+${variables.{{var_name}} ?? '{{arg_value.default_value}}'}
                 {%- else -%}
-                {{arg.name}}:${variables.{{var_name}} }{% if arg.value.is_optional %} ?? 'null'{% endif %}}
+${variables.{{var_name}} }{% if arg_value.is_optional %} ?? 'null'{% endif %}
                 {%- endif -%}
             {%- endif -%}
         {%- else -%}
-            {{arg.name}}:null
+null
         {%- endif -%}
-    {%- elif arg.value.InlineValue -%}
-        "{{arg.name}}:{{arg.value.InlineValue.value}}"
+    {%- elif arg_value.kind == "InlineValue" -%}
+        {%- if arg_value.value_kind == "Object" -%}
+{
+            {%- for field_name, field_value in arg_value.fields | items -%}
+{{field_name}}: {{ serialize_argument_value(field_value) }}{{", " if not loop.last}}
+            {%- endfor -%}
+}
+        {%- elif arg_value.value_kind == "List" -%}
+[
+            {%- for item in arg_value.items -%}
+{{ serialize_argument_value(item) }}{{", " if not loop.last}}
+            {%- endfor -%}
+]
+        {%- elif arg_value.value_kind == "Scalar" -%}
+{{arg_value.value}}
+        {%- elif arg_value.value_kind == "Enum" -%}
+{{arg_value.value}}
+        {%- endif -%}
     {%- endif -%}
-    {{", " if not loop.last}}
-    {%- endfor -%})"""
+{%- endmacro %}
+
+{# Macro to generate cache key with arguments #}
+{% macro generate_cache_key_with_args(field_name, arguments) -%}
+{% if arguments | length > 0 -%}
+'''{{field_name}}(
+    {%- for arg in arguments -%}
+{{arg.name}}:{{ serialize_argument_value(arg.value) }}{{", " if not loop.last}}
+    {%- endfor -%})'''
 {%- else -%}
 "{{field_name}}"
 {%- endif -%}
@@ -187,11 +207,12 @@
             {% endif %}
         {% endif %}
     {% elif selection.kind == "Object" %}
+        {% set obj_has_id = has_id_selection(selection.full_name) -%}
         {% if is_optional -%}
             {{value_symbol}} == null ? null :
         {% endif -%}
         {{selection.full_name}}.fromCached(
-            {% if id_field is not none -%}
+            {% if obj_has_id == "TRUE" -%}
                 ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
             {% else -%}
             {{ value_symbol }},
@@ -394,20 +415,20 @@
                     `<sometype>:<id>` key. and they won't get updated when the type / id has changed.
                     since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changes on that path if an id or typename has changed.
                     #}
-                    final normalized$objRecrord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
+                    final normalized$objRecord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
                     // if id or typename changed we mark the whole selection as changed.
-                    if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecrord){
+                    if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecord){
                         ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
                     }
-                    parent$record[this$fieldName] = normalized$objRecrord;
-                    this$normalizedID = normalized$objRecrord.normalizedID();
+                    parent$record[this$fieldName] = normalized$objRecord;
+                    this$normalizedID = normalized$objRecord.normalizedID();
                 {% else %}
-                    final normalized$objRecrord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
-                    if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecrord){
+                    final normalized$objRecord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
+                    if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecord){
                         ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
                     }
-                    parent$record[this$fieldName] = normalized$objRecrord;
-                    this$normalizedID = normalized$objRecrord.normalizedID();
+                    parent$record[this$fieldName] = normalized$objRecord;
+                    this$normalizedID = normalized$objRecord.normalizedID();
                 {% endif -%}
                 this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                 ctx.addDependantRecord(this$normalizedID);

@@ -4,12 +4,12 @@ use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
 use serde::Serialize;
 use shalom_core::{
-    context::SharedShalomGlobalContext,
+    context::{ShalomGlobalContext, SharedShalomGlobalContext},
     operation::{
         context::SharedOpCtx,
         fragments::SharedFragmentContext,
         parse::ExecutableContext,
-        types::{dart_type_for_scalar, Selection, SelectionKind},
+        types::{dart_type_for_scalar, has_id_selection, Selection, SelectionKind},
     },
     schema::{
         context::SchemaContext,
@@ -168,7 +168,9 @@ mod ext_jinja_fns {
             .to_string();
 
         let ty = field.common.resolve_type(schema_ctx);
-
+        if default_value == "null" {
+            return default_value;
+        }
         match ty.ty {
             GraphQLAny::Enum(enum_) => {
                 format!("{}.{}", enum_.name, default_value)
@@ -526,6 +528,21 @@ where
             selection_kind_uses_variables(executable_ctx_clone3.as_ref(), &selection.0)
         },
     );
+
+    let ctx_clone4 = ctx.clone();
+    let executable_ctx_clone4 = executable_ctx.clone();
+    env.add_function(
+        "has_id_selection",
+        move |full_name: &str| -> Option<minijinja::Value> {
+            let selection =
+                executable_ctx_clone4.get_selection(&full_name.to_string(), &ctx_clone4)?;
+            Some(minijinja::Value::from_serialize(has_id_selection(
+                &ctx_clone4,
+                selection,
+            )))
+        },
+    );
+
     Ok(())
 }
 
@@ -593,6 +610,7 @@ impl FragmentEnv<'_> {
         fragment_ctx: S,
         schema_ctx: T,
         extra_imports: HashMap<String, String>,
+        schema_path: String,
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
         let mut context = HashMap::new();
@@ -600,6 +618,7 @@ impl FragmentEnv<'_> {
         context.insert("schema", context! { context => schema_ctx });
         context.insert("fragment", context! { context => fragment_ctx });
         context.insert("extra_imports", minijinja::Value::from(extra_imports));
+        context.insert("schema_import_path", minijinja::Value::from(schema_path));
 
         template.render(&context).unwrap()
     }
@@ -613,6 +632,30 @@ fn create_dir_if_not_exists(path: &Path) {
 
 static END_OF_FILE: &str = "shalom.dart";
 static GRAPHQL_DIRECTORY: &str = "__graphql__";
+
+/// Get the directory where the schema file should be generated
+fn get_schema_output_dir(ctx: &ShalomGlobalContext) -> PathBuf {
+    if let Some(schema_output_path) = &ctx.config.schema_output_path {
+        // Use the configured schema output path (resolve relative to project root)
+
+        if schema_output_path.is_absolute() {
+            schema_output_path.clone()
+        } else {
+            ctx.config.project_root.join(schema_output_path)
+        }
+    } else {
+        // Default to schema file's parent directory + __graphql__
+        ctx.schema_file_path
+            .parent()
+            .expect("Schema file must have a parent directory")
+            .join(GRAPHQL_DIRECTORY)
+    }
+}
+
+/// Get the full path to the generated schema file
+fn get_schema_file_path(ctx: &ShalomGlobalContext) -> PathBuf {
+    get_schema_output_dir(ctx).join(format!("schema.{}", END_OF_FILE))
+}
 
 fn get_generation_path_for_operation(document_path: &Path, operation_name: &str) -> PathBuf {
     let p = document_path.parent().unwrap().join(GRAPHQL_DIRECTORY);
@@ -696,12 +739,22 @@ fn calculate_fragment_import_path(
     Ok(import_path)
 }
 
+fn get_schema_import_path(relative_to: &Path, ctx: &ShalomGlobalContext) -> String {
+    // Calculate relative path from operation __graphql__ dir to schema file
+    let op_dir = relative_to.parent().unwrap();
+    let op_graphql_dir = op_dir.join("__graphql__");
+    let schema_path = get_schema_file_path(ctx);
+    let schema_import_path = pathdiff::diff_paths(&schema_path, &op_graphql_dir)
+        .map(|p| p.to_string_lossy().replace('\\', "/"))
+        .unwrap_or_else(|| "schema.shalom.dart".to_string());
+    schema_import_path
+}
+
 fn generate_operations_file(
     ctx: &SharedShalomGlobalContext,
     name: &str,
     operation: SharedOpCtx,
     additional_imports: HashMap<String, String>,
-    project_root: &Path,
 ) -> anyhow::Result<()> {
     let op_env = OperationEnv::new(ctx, operation.clone())?;
 
@@ -709,18 +762,12 @@ fn generate_operations_file(
     let generation_target = get_generation_path_for_operation(&operation_file_path, name);
 
     // Calculate relative path from operation __graphql__ dir to schema file
-    let op_dir = operation_file_path.parent().unwrap();
-    let op_graphql_dir = op_dir.join("__graphql__");
-    let schema_path = project_root.join("__graphql__").join("schema.shalom.dart");
-    let schema_import_path = pathdiff::diff_paths(&schema_path, &op_graphql_dir)
-        .map(|p| p.to_string_lossy().replace('\\', "/"))
-        .unwrap_or_else(|| "schema.shalom.dart".to_string());
 
     let rendered_content = op_env.render_operation(
         operation,
         ctx.schema_ctx.clone(),
         additional_imports,
-        schema_import_path,
+        get_schema_import_path(&operation_file_path, ctx),
     );
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
@@ -739,6 +786,7 @@ fn generate_fragment_file(
         context! { context => fragment_ctx },
         context! { context => &ctx.schema_ctx },
         additional_imports,
+        get_schema_import_path(&fragment_ctx.file_path, ctx),
     );
 
     // Generate fragment in __graphql__ subdirectory relative to where it's defined
@@ -784,7 +832,7 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
         }
     }
 
-    generate_schema_file(&template_env, &ctx, pwd);
+    generate_schema_file(&template_env, &ctx);
     let mut additional_imports: HashMap<PathBuf, String> = HashMap::new();
 
     for custom_scalar in ctx.get_custom_scalars().values() {
@@ -826,7 +874,7 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
 
     // Generate operation files
     for (name, operation) in ctx.operations() {
-        let res = generate_operations_file(&ctx, &name, operation, additional_imports.clone(), pwd);
+        let res = generate_operations_file(&ctx, &name, operation, additional_imports.clone());
         if let Err(err) = res {
             if strict {
                 return Err(err);
@@ -838,11 +886,11 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
     Ok(())
 }
 
-fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContext, path: &Path) {
+fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContext) {
     info!("rendering schema file");
 
     let rendered_content = template_env.render_schema(ctx);
-    let output_dir = path.join(GRAPHQL_DIRECTORY);
+    let output_dir = get_schema_output_dir(ctx);
     create_dir_if_not_exists(&output_dir);
     let generation_target = output_dir.join(format!("schema.{}", END_OF_FILE));
     fs::write(&generation_target, rendered_content).unwrap();
