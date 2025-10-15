@@ -1,4 +1,5 @@
 
+
 {# Macro to normalize a selection in cache - handles Object, Union, List, Scalar, etc. #}
 {% macro normalize_selection_in_cache(selection, selection_name, cached_sym, raw_sym, normalized_key, normalized_id, this_normalized_record, this_normalized_id, ctx="ctx") -%}
     {% if selection.kind == "Object" %}
@@ -189,7 +190,7 @@ null
 {% endmacro %}
 
 {# Recursive macro for deserializing selection values #}
-{% macro _deserialize_selection_from_cache_macro(value_symbol, selection, is_optional=false, op_variables=[], has_id_field=false) -%}
+{% macro _deserialize_selection_from_cache_macro(value_symbol, selection, is_optional=false, op_variables=[], has_id_field="FALSE") -%}
     {% if selection.kind == "Scalar" %}
         {% if selection.is_custom_scalar %}
             {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
@@ -211,7 +212,7 @@ null
             {{value_symbol}} == null ? null :
         {% endif -%}
         {{selection.full_name}}.fromCached(
-            {% if obj_has_id != "FALSE" -%}
+            {% if obj_has_id == "TRUE" -%}
                 ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
             {% else -%}
             {{ value_symbol }},

@@ -805,7 +805,11 @@ pub trait ExecutableContext: Send + Sync + 'static {
         name: &str,
         ctx: &ShalomGlobalContext,
     ) -> &Vec<SharedFragmentContext>;
-
+    
+    fn get_fragment(&self, name: &str, ctx: &ShalomGlobalContext) -> Option<&SharedFragmentContext> {
+        self.get_used_fragments(name, ctx).iter().find(|frag| frag.name() == name)
+    }
+    
     fn name(&self) -> &str;
 
     fn get_selection(&self, name: &String, ctx: &ShalomGlobalContext) -> Option<&Selection> {

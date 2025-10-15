@@ -537,6 +537,7 @@ where
             let selection =
                 executable_ctx_clone4.get_selection(&full_name.to_string(), &ctx_clone4)?;
             Some(minijinja::Value::from_serialize(has_id_selection(
+                &ctx_clone4,
                 &selection,
             )))
         },

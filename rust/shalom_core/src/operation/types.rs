@@ -5,11 +5,12 @@ use std::{
 };
 
 use apollo_compiler::Node;
+use log::info;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     context::ShalomGlobalContext,
-    operation::context::OperationVariable,
+    operation::{context::OperationVariable, fragments::FragmentContext, parse::ExecutableContext},
     schema::types::{EnumType, InterfaceType, ScalarType, UnionType},
 };
 
@@ -487,11 +488,12 @@ pub enum HasIdSelection {
 
 /// Determines whether a selection includes an "id" field
 /// This is used to decide whether to use cache normalization
-pub fn has_id_selection(selection: &Selection) -> HasIdSelection {
+pub fn has_id_selection(ctx: &ShalomGlobalContext, selection: &Selection) -> HasIdSelection {
     match &selection.kind {
-        SelectionKind::Scalar(scalar) => {
+        SelectionKind::Scalar(_) => {
+            info!("Checking scalar field for id {}", selection.selection_common.name);
             // Check if this field itself is named "id"
-            if selection.selection_common.name == "id" && !scalar.is_optional {
+            if selection.selection_common.name == "id" {
                 HasIdSelection::TRUE
             } else {
                 HasIdSelection::FALSE
@@ -499,17 +501,25 @@ pub fn has_id_selection(selection: &Selection) -> HasIdSelection {
         }
         SelectionKind::Enum(_) => HasIdSelection::FALSE,
         SelectionKind::Object(object) => {
+            info!("Checking scalar field for id {}", object.full_name);
+            
             // Check if any of the object's selections is named "id"
-            let has_id = object
+            let res: Vec<_> = object
                 .selections
-                .borrow()
-                .iter()
-                .any(|s| s.selection_common.name == "id");
-
-            if has_id {
+                .borrow().iter()
+                .map(|s| has_id_selection(ctx, s)).collect();
+            
+            for fragment in object.used_fragments.borrow().iter() {
+                let fragment_res = frag_has_id_selection(ctx, &ctx.get_fragment(fragment).unwrap());
+                if fragment_res == HasIdSelection::TRUE {
+                    return HasIdSelection::TRUE;
+                }
+            }
+            if res.iter().any(|s| *s == HasIdSelection::TRUE) {
                 HasIdSelection::TRUE
             } else {
                 HasIdSelection::FALSE
+                
             }
         }
         SelectionKind::List(list) => {
@@ -520,7 +530,7 @@ pub fn has_id_selection(selection: &Selection) -> HasIdSelection {
                 kind: list.of_kind.clone(),
                 arguments: selection.arguments.clone(),
             };
-            has_id_selection(&inner_selection)
+            has_id_selection(ctx, &inner_selection)
         }
         SelectionKind::Interface(_) | SelectionKind::Union(_) => {
             let common;
@@ -571,5 +581,10 @@ pub fn has_id_selection(selection: &Selection) -> HasIdSelection {
                 HasIdSelection::FALSE
             }
         }
+
     }
+}
+
+fn frag_has_id_selection(ctx: &ShalomGlobalContext, fragment: &FragmentContext) -> HasIdSelection{
+    has_id_selection(ctx, fragment.root_type.as_ref().unwrap())
 }
