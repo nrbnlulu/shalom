@@ -10,9 +10,12 @@ input OrderUpdate {
     timeLeft: Int!
 }
 
-input OrderUpdateStatusOpt {
+input OrderUpdateStatusMaybe {
     status: Status,
     timeLeft: Int!
+}
+input OrderUpdateStatusOpt{
+    status: Status = null,
 }
 
 type OrderRequest {
@@ -30,7 +33,7 @@ type Mutation {
     updateOrderStatus(status: Status!) : OrderRequest,     
     updateOrderStatusOpt(status: Status) : OrderRequest,     
     updateOrder(order: OrderUpdate!) : OrderRequest,
-    updateOrderWithStatusOpt(order: OrderUpdateStatusOpt!) : OrderRequest
+    updateOrderWithStatusOpt(order: OrderUpdateStatusMaybe!) : OrderRequest
 } 
 
 

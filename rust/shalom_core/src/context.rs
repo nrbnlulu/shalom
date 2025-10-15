@@ -7,6 +7,7 @@ use crate::{
 };
 use std::{
     collections::HashMap,
+    path::PathBuf,
     sync::{Arc, Mutex},
 };
 
@@ -16,18 +17,24 @@ pub struct ShalomGlobalContext {
     fragments: Mutex<HashMap<String, SharedFragmentContext>>,
     pub schema_ctx: SharedSchemaContext,
     pub config: ShalomConfig,
+    pub schema_file_path: PathBuf,
 }
 
 unsafe impl Send for ShalomGlobalContext {}
 unsafe impl Sync for ShalomGlobalContext {}
 
 impl ShalomGlobalContext {
-    pub fn new(schema_ctx: SharedSchemaContext, config: ShalomConfig) -> Arc<Self> {
+    pub fn new(
+        schema_ctx: SharedSchemaContext,
+        config: ShalomConfig,
+        schema_file_path: PathBuf,
+    ) -> Arc<Self> {
         Arc::new(Self {
             operations: Mutex::new(HashMap::new()),
             fragments: Mutex::new(HashMap::new()),
             schema_ctx,
             config,
+            schema_file_path,
         })
     }
 

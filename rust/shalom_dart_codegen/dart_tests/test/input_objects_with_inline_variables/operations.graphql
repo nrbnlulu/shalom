@@ -1,0 +1,65 @@
+mutation RefreshToken($refreshToken: String!) {
+  refreshToken(input: {
+    token: $refreshToken
+    revokeOnRefresh: true
+  }) {
+    token
+    expiresAt
+    userId
+  }
+}
+
+mutation RefreshTokenWithVariable($refreshToken: String!, $revoke: Boolean!) {
+  refreshToken(input: {
+    token: $refreshToken
+    revokeOnRefresh: $revoke
+  }) {
+    token
+    expiresAt
+    userId
+  }
+}
+
+mutation UpdateUser($userId: ID!, $userName: String!, $userEmail: String!) {
+  updateUser(id: $userId, input: {
+    name: $userName
+    email: $userEmail
+    age: 25
+    active: true
+  }) {
+    id
+    name
+    email
+    age
+    active
+  }
+}
+
+mutation UpdateUserWithOptionalVariables($userId: ID!, $userName: String!, $userEmail: String!, $userAge: Int, $isActive: Boolean) {
+  updateUser(id: $userId, input: {
+    name: $userName
+    email: $userEmail
+    age: $userAge
+    active: $isActive
+  }) {
+    id
+    name
+    email
+    age
+    active
+  }
+}
+
+mutation UpdateUserMixed($userId: ID!, $userName: String!) {
+  updateUser(id: $userId, input: {
+    name: $userName
+    email: "fixed@example.com"
+    age: 30
+  }) {
+    id
+    name
+    email
+    age
+    active
+  }
+}

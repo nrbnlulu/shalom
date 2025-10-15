@@ -67,10 +67,11 @@ void main() {
 
   test("optional enum argument in InputObject", () {
     final variables = EnumInputObjectOptionalVariables(
-      order: OrderUpdateStatusOpt(status: Some(null), timeLeft: 2),
+      order: OrderUpdateStatusMaybe(status: Some(null), timeLeft: 2),
     );
     final variablesUpdated = variables.updateWith(
-      order: OrderUpdateStatusOpt(status: Some(Status.COMPLETED), timeLeft: 3),
+      order:
+          OrderUpdateStatusMaybe(status: Some(Status.COMPLETED), timeLeft: 3),
     );
     expect(variablesUpdated.order.status, Some<Status?>(Status.COMPLETED));
     final req =

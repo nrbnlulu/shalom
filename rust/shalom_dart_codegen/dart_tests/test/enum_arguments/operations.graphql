@@ -27,7 +27,7 @@ mutation EnumInputObjectRequired($order: OrderUpdate!) {
     } 
 }
 
-mutation EnumInputObjectOptional($order: OrderUpdateStatusOpt!) {
+mutation EnumInputObjectOptional($order: OrderUpdateStatusMaybe!) {
     updateOrderWithStatusOpt(order: $order) {
         status,
         quantity,

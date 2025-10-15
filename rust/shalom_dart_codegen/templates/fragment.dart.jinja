@@ -12,6 +12,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: {{fragment_name}}
 
+import "{{ schema_import_path }}";
 import 'package:shalom_core/shalom_core.dart';
 {% for import_alias, import_path in extra_imports | items -%}
 import '{{import_path}}' as {{import_alias}};
