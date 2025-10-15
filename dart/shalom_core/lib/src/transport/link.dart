@@ -4,6 +4,5 @@ abstract class GraphQLLink {
   const GraphQLLink();
   Stream<GraphQLResponse> request(
       {required Request request, required JsonObject headers,
-      GraphQLLink? forward
       });
 }

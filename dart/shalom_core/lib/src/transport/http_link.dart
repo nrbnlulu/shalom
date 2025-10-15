@@ -9,9 +9,7 @@ enum HttpMethod {
   GET,
   // ignore: constant_identifier_names
   POST
-
 }
-
 
 abstract interface class ShalomHttpTransport {
   Future<JsonObject> request(
@@ -45,8 +43,7 @@ class HttpLink extends GraphQLLink {
 
   @override
   Stream<GraphQLResponse> request(
-      {required Request request, required JsonObject headers, forward}) async* {
-    assert(forward == null, 'http link should not have forward links');
+      {required Request request, required JsonObject headers}) async* {
     try {
       // Merge default headers with request-specific headers
       final mergedHeaders = <String, dynamic>{
@@ -81,12 +78,15 @@ class HttpLink extends GraphQLLink {
       }
 
       // Make the request through the transport layer
-      final $responseStream = await transportLayer.request(
+      final $response = await transportLayer.request(
         method: methodForThisRequest,
         url: url,
         data: requestBody,
         headers: finalHeaders,
       );
+
+      // Parse and yield the response
+      yield _parseResponse($response);
     } catch (e) {
       // Return a link error for any exceptions
       yield LinkErrorResponse({
