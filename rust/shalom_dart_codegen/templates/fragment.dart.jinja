@@ -14,16 +14,14 @@
 
 import "{{ schema_import_path }}";
 import 'package:shalom_core/shalom_core.dart';
+import 'package:collection/collection.dart';
 {% for import_alias, import_path in extra_imports | items -%}
 import '{{import_path}}' as {{import_alias}};
 {% endfor -%}
 
-{% if fragment.context.context.used_fragments | length > 0 -%}
-    // Fragment imports
-    {% for used_fragment in fragment.context.context.used_fragments -%}
-    import '{{used_fragment.name | lower}}.shalom.dart';
-    {% endfor %}
-{% endif %}
+{% for import_path in generate_fragment_imports(fragment_file_path, fragment.context.context.used_fragments) -%}
+import '{{ import_path }}';
+{% endfor %}
 
 // Generate abstract fragment class
 abstract class {{ fragment_name }} {

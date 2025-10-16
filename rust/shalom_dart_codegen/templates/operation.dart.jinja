@@ -15,12 +15,10 @@ import '{{path}}' as {{ namespace_alias }};
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 
-{% if operation.context.used_fragments | length > 0 %}
-    // Fragment imports
-    {% for used_fragment in operation.context.used_fragments -%}
-    import '{{ import_path_for_fragment_from_operation(operation.context.file_path, used_fragment.name) }}';
-    {% endfor -%}
-{% endif %}
+// Fragment imports
+{% for import_path in generate_fragment_imports(operation.context.file_path, operation.context.used_fragments) -%}
+import '{{ import_path }}';
+{% endfor -%}
 
 
 {% set operation_name = operation.context.operation_name %}

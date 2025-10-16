@@ -391,11 +391,53 @@ fn register_default_template_fns<'a>(
 
     let global_ctx = ctx.clone();
     env.add_function(
-        "import_path_for_fragment_from_operation",
-        move |operation_file_path: String, frag_name: &str| -> Result<String, minijinja::Error> {
-            calculate_fragment_import_path(&global_ctx, &operation_file_path, frag_name).map_err(
-                |e| minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()),
-            )
+        "generate_fragment_imports",
+        move |current_file_path: String,
+              direct_fragments: Vec<minijinja::Value>|
+              -> Result<Vec<String>, minijinja::Error> {
+            // Recursively collect all fragment dependencies
+            let mut all_imports = Vec::new();
+            let mut visited = std::collections::HashSet::new();
+            let mut queue = std::collections::VecDeque::new();
+
+            // Start with direct fragments
+            for frag_val in direct_fragments {
+                if let Ok(name_val) = frag_val.get_attr("name") {
+                    if let Some(frag_name) = name_val.as_str() {
+                        queue.push_back(frag_name.to_string());
+                    }
+                }
+            }
+
+            while let Some(frag_name) = queue.pop_front() {
+                // Skip if already visited
+                if visited.contains(&frag_name) {
+                    continue;
+                }
+                visited.insert(frag_name.clone());
+
+                // Calculate import path for this fragment
+                let import_path =
+                    calculate_fragment_import_path(&global_ctx, &current_file_path, &frag_name)
+                        .map_err(|e| {
+                            minijinja::Error::new(
+                                minijinja::ErrorKind::InvalidOperation,
+                                e.to_string(),
+                            )
+                        })?;
+                all_imports.push(import_path);
+
+                // Get the fragment and add its dependencies to the queue
+                if let Some(frag) = global_ctx.get_fragment(&frag_name) {
+                    for nested_frag in frag.get_used_fragments() {
+                        if !visited.contains(&nested_frag.name) {
+                            queue.push_back(nested_frag.name.clone());
+                        }
+                    }
+                }
+            }
+
+            Ok(all_imports)
         },
     );
 
@@ -660,6 +702,7 @@ impl FragmentEnv<'_> {
         schema_ctx: T,
         extra_imports: HashMap<String, String>,
         schema_path: String,
+        fragment_file_path: PathBuf,
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
         let mut context = HashMap::new();
@@ -668,6 +711,10 @@ impl FragmentEnv<'_> {
         context.insert("fragment", context! { context => fragment_ctx });
         context.insert("extra_imports", minijinja::Value::from(extra_imports));
         context.insert("schema_import_path", minijinja::Value::from(schema_path));
+        context.insert(
+            "fragment_file_path",
+            minijinja::Value::from(fragment_file_path.to_string_lossy().to_string()),
+        );
 
         template.render(&context).unwrap()
     }
@@ -832,11 +879,13 @@ fn generate_fragment_file(
     additional_imports: HashMap<String, String>,
 ) -> anyhow::Result<()> {
     let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone())?;
+    let fragment_file_path = fragment_ctx.file_path.clone();
     let generated_content = fragment_env.render_fragment(
         context! { context => fragment_ctx },
         context! { context => &ctx.schema_ctx },
         additional_imports,
         get_schema_import_path(&fragment_ctx.file_path, ctx),
+        fragment_file_path,
     );
 
     // Generate fragment in __graphql__ subdirectory relative to where it's defined

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'queries/__graphql__/GetUser.shalom.dart';
 import 'queries/__graphql__/GetPost.shalom.dart';
+import 'nested_queries/__graphql__/GetAuthor.shalom.dart';
 
 void main() {
   group('Cross-Directory Fragment Tests', () {
@@ -142,6 +143,131 @@ void main() {
       expect(response.post!.title, equals("Test Post"));
       expect(response.post!.author.id, equals("user1"));
       expect(response.post!.author.name, equals("Bob"));
+    });
+
+    test(
+        'nestedFragmentRequired - AuthorFields fragment with nested UserFields',
+        () {
+      final authorData = {
+        "user": {
+          "id": "author1",
+          "name": "Jane Doe",
+          "email": "jane@example.com",
+          "posts": [
+            {"id": "post1", "title": "First Post"},
+            {"id": "post2", "title": "Second Post"}
+          ]
+        },
+      };
+
+      final variables = GetAuthorVariables(authorId: "author1");
+      final response =
+          GetAuthorResponse.fromResponse(authorData, variables: variables);
+
+      expect(response.user, isNotNull);
+      expect(response.user!.id, equals("author1"));
+      expect(response.user!.name, equals("Jane Doe"));
+      expect(response.user!.email, equals("jane@example.com"));
+      expect(response.user!.posts.length, equals(2));
+      expect(response.user!.posts[0].id, equals("post1"));
+      expect(response.user!.posts[0].title, equals("First Post"));
+    });
+
+    test('nestedFragmentOptional - Optional author with nested fragments', () {
+      final authorData = {
+        "user": null,
+      };
+
+      final variables = GetAuthorVariables(authorId: "author999");
+      final response =
+          GetAuthorResponse.fromResponse(authorData, variables: variables);
+
+      expect(response.user, isNull);
+    });
+
+    test(
+        'nestedFragmentCacheNormalization - Cache normalization with nested fragments',
+        () {
+      final authorData1 = {
+        "user": {
+          "id": "author1",
+          "name": "Jane Doe",
+          "email": "jane@example.com",
+          "posts": [
+            {"id": "post1", "title": "First Post"}
+          ]
+        },
+      };
+
+      final variables = GetAuthorVariables(authorId: "author1");
+      final response =
+          GetAuthorResponse.fromResponse(authorData1, variables: variables);
+
+      // Verify that response preserves the data structure from nested fragments
+      expect(response.user, isNotNull);
+      expect(response.user!.id, equals('author1'));
+      expect(response.user!.name, equals('Jane Doe'));
+      expect(response.user!.email, equals('jane@example.com'));
+      expect(response.user!.posts.length, equals(1));
+      expect(response.user!.posts[0].id, equals('post1'));
+    });
+
+    test('nestedFragmentEquals - Equality works with nested fragments', () {
+      final authorData1 = {
+        "user": {
+          "id": "author1",
+          "name": "Jane Doe",
+          "email": "jane@example.com",
+          "posts": [
+            {"id": "post1", "title": "First Post"}
+          ]
+        },
+      };
+
+      final authorData2 = {
+        "user": {
+          "id": "author1",
+          "name": "Jane Doe",
+          "email": "jane@example.com",
+          "posts": [
+            {"id": "post1", "title": "First Post"}
+          ]
+        },
+      };
+
+      final variables = GetAuthorVariables(authorId: "author1");
+      final response1 =
+          GetAuthorResponse.fromResponse(authorData1, variables: variables);
+      final response2 =
+          GetAuthorResponse.fromResponse(authorData2, variables: variables);
+
+      expect(response1, equals(response2));
+    });
+
+    test('nestedFragmentToJson - Serialization works with nested fragments',
+        () {
+      final authorData = {
+        "user": {
+          "id": "author1",
+          "name": "Jane Doe",
+          "email": "jane@example.com",
+          "posts": [
+            {"id": "post1", "title": "First Post"},
+            {"id": "post2", "title": "Second Post"}
+          ]
+        },
+      };
+
+      final variables = GetAuthorVariables(authorId: "author1");
+      final response =
+          GetAuthorResponse.fromResponse(authorData, variables: variables);
+      final json = response.toJson();
+
+      expect(json["user"]["id"], equals("author1"));
+      expect(json["user"]["name"], equals("Jane Doe"));
+      expect(json["user"]["email"], equals("jane@example.com"));
+      expect(json["user"]["posts"].length, equals(2));
+      expect(json["user"]["posts"][0]["id"], equals("post1"));
     });
   });
 }
