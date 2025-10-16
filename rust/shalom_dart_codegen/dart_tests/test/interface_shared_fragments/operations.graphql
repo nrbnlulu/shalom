@@ -1,0 +1,81 @@
+# Fragment on the interface that includes shared fields
+fragment NodeTimestamps on Node {
+    id
+    createdAt
+    updatedAt
+}
+
+# Fragment on User that also includes some shared fields
+fragment UserInfo on User {
+    id
+    username
+    email
+    age
+}
+
+# Fragment on Post that also includes shared fields
+fragment PostInfo on Post {
+    id
+    title
+    content
+    views
+}
+
+# Query that uses fragment on interface AND fragments on type conditions
+# Both NodeTimestamps and UserInfo/PostInfo share the 'id' field
+query GetNode($id: ID!) {
+    node(id: $id) {
+        ...NodeTimestamps
+        __typename
+        ... on User {
+            ...UserInfo
+        }
+        ... on Post {
+            ...PostInfo
+        }
+    }
+}
+
+query GetNodeOpt($id: ID!) {
+    nodeOpt(id: $id) {
+        ...NodeTimestamps
+        __typename
+        ... on User {
+            ...UserInfo
+        }
+        ... on Post {
+            ...PostInfo
+        }
+    }
+}
+
+query GetNodes {
+    nodes {
+        ...NodeTimestamps
+        __typename
+        ... on User {
+            ...UserInfo
+        }
+        ... on Post {
+            ...PostInfo
+        }
+    }
+}
+
+# Query that covers all types including fallback
+query GetNodeAllTypes($id: ID!) {
+    node(id: $id) {
+        ...NodeTimestamps
+        __typename
+        ... on User {
+            ...UserInfo
+        }
+        ... on Post {
+            ...PostInfo
+        }
+        ... on Comment {
+            text
+            likes
+        }
+    }
+}

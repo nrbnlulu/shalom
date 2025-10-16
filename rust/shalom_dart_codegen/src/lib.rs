@@ -561,12 +561,12 @@ where
 
     let ctx_clone3 = ctx.clone();
     let executable_ctx_clone3 = executable_ctx.clone();
-    env.add_function("get_all_selections_for_object", move |object_name: &str| {
+    env.add_function("get_all_selections_distinct", move |object_name: &str| {
         let object_selection =
             executable_ctx_clone3.get_selection(&object_name.to_string(), &ctx_clone3);
         let selections = match &object_selection.unwrap().kind {
             SelectionKind::Object(object_selection) => {
-                object_selection.get_all_selections(&ctx_clone3)
+                object_selection.get_all_selections_distinct(&ctx_clone3)
             }
             _ => panic!("Expected object selection"),
         };
