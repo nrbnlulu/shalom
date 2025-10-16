@@ -186,6 +186,7 @@ mod ext_jinja_fns {
                     "null".to_string()
                 }
             },
+            GraphQLAny::List { of_type: _ } => format!("const {}", default_value),
             _ => default_value,
         }
     }
