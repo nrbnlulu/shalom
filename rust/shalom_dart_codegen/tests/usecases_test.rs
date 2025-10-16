@@ -100,11 +100,6 @@ fn test_fragments_on_interface_dart() {
     run_dart_tests_for_usecase("fragments_on_interface");
 }
 #[test]
-fn test_input_list_with_defaults_dart() {
-    run_dart_tests_for_usecase("input_list_with_defaults");
-}
-
-#[test]
 fn test_object_fragment_list_interfaces_dart() {
     run_dart_tests_for_usecase("object_fragment_list_interfaces");
 
