@@ -3,7 +3,10 @@ use std::{collections::HashMap, sync::Arc};
 
 use serde::Serialize;
 
-use super::types::{FullPathName, Selection, SharedInterfaceSelection, SharedUnionSelection};
+use super::types::{
+    get_selections_with_fragments_distinct, FullPathName, Selection, SharedInterfaceSelection,
+    SharedUnionSelection,
+};
 
 use crate::context::ShalomGlobalContext;
 use crate::operation::context::TypeDefs;
@@ -67,19 +70,19 @@ impl FragmentContext {
     pub fn get_root_type(&self) -> Option<&Selection> {
         self.root_type.as_ref()
     }
-    /// return the selections of this fragment and every fragment that exist in the root selection object.
+    /// return the selections of this fragment and every fragment that exist in the root selection object,
+    /// with duplicates removed by field name
     pub fn get_flat_selections(&self, global_ctx: &ShalomGlobalContext) -> Vec<Selection> {
-        let mut selections = Vec::new();
         if let Some(root_type) = self.root_type.as_ref() {
             if let SelectionKind::Object(obj) = &root_type.kind {
-                selections.extend(obj.selections.clone().into_inner());
-                for frag_name in obj.get_used_fragments() {
-                    let frag = global_ctx.get_fragment(&frag_name).unwrap();
-                    selections.extend(frag.get_flat_selections(global_ctx));
-                }
+                return get_selections_with_fragments_distinct(
+                    obj.selections.clone().into_inner(),
+                    obj.get_used_fragments(),
+                    global_ctx,
+                );
             }
         }
-        selections
+        Vec::new()
     }
 
     pub fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {

@@ -1,0 +1,37 @@
+type Query {
+    node(id: ID!): Node!
+    nodeOpt(id: ID!): Node
+    nodes: [Node!]!
+}
+
+interface Node {
+    id: ID!
+    createdAt: String!
+    updatedAt: String!
+}
+
+type User implements Node {
+    id: ID!
+    createdAt: String!
+    updatedAt: String!
+    username: String!
+    email: String!
+    age: Int!
+}
+
+type Post implements Node {
+    id: ID!
+    createdAt: String!
+    updatedAt: String!
+    title: String!
+    content: String!
+    views: Int!
+}
+
+type Comment implements Node {
+    id: ID!
+    createdAt: String!
+    updatedAt: String!
+    text: String!
+    likes: Int!
+}
