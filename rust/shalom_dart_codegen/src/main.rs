@@ -2,6 +2,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use notify::{RecursiveMode, Watcher};
 use notify_debouncer_full::new_debouncer;
+use shalom_dart_codegen::CodegenOptions;
 use std::path::PathBuf;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -59,7 +60,11 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::Generate { path, strict, fmt } => {
             log::info!("Running code generation...");
-            shalom_dart_codegen::codegen_entry_point(&path, strict, fmt)?;
+            shalom_dart_codegen::codegen_entry_point(CodegenOptions {
+                pwd: path,
+                strict,
+                fmt,
+            })?;
             log::info!("Code generation completed successfully!");
         }
         Commands::Watch { path, strict, fmt } => {
@@ -75,7 +80,11 @@ fn main() -> Result<()> {
                     .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
                     .is_ok()
                 {
-                    match shalom_dart_codegen::codegen_entry_point(&path, strict, fmt) {
+                    match shalom_dart_codegen::codegen_entry_point(CodegenOptions {
+                        pwd: path.clone(),
+                        strict,
+                        fmt,
+                    }) {
                         Ok(_) => log::info!("Initial code generation completed successfully!"),
                         Err(e) => log::error!("Initial code generation failed: {}", e),
                     }
@@ -124,7 +133,11 @@ fn main() -> Result<()> {
                                 .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
                                 .is_ok()
                             {
-                                match shalom_dart_codegen::codegen_entry_point(&path, strict, fmt) {
+                                match shalom_dart_codegen::codegen_entry_point(CodegenOptions {
+                                    pwd: path.clone(),
+                                    strict,
+                                    fmt,
+                                }) {
                                     Ok(_) => log::info!("Code generation completed successfully!"),
                                     Err(e) => log::error!("Code generation failed: {}", e),
                                 }

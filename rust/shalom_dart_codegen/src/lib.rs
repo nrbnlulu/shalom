@@ -275,6 +275,12 @@ impl SymbolName for RuntimeSymbolDefinition {
         }
     }
 }
+#[derive(Debug, Clone)]
+pub struct CodegenOptions {
+    pub pwd: Option<PathBuf>,
+    pub strict: bool,
+    pub fmt: bool,
+}
 
 struct SchemaEnv<'a> {
     env: Environment<'a>,
@@ -847,8 +853,8 @@ fn generate_fragment_file(
     Ok(())
 }
 
-pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool, fmt: bool) -> Result<()> {
-    let ctx = shalom_core::entrypoint::parse_directory(pwd, strict)?;
+pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
+    let ctx = shalom_core::entrypoint::parse_directory(&options.pwd, options.strict)?;
     let pwd = &ctx.config.project_root;
     info!("codegen started in working directory {}", pwd.display());
 
@@ -906,7 +912,7 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool, fmt: bool) -> Re
             additional_imports.clone(),
         );
         if let Err(err) = res {
-            if strict {
+            if options.strict {
                 return Err(err);
             }
             error!(
@@ -920,17 +926,17 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool, fmt: bool) -> Re
     for (name, operation) in ctx.operations() {
         let res = generate_operations_file(&ctx, &name, operation, additional_imports.clone());
         if let Err(err) = res {
-            if strict {
+            if options.strict {
                 return Err(err);
             }
             error!("Failed to generate operation '{}' due to: {}", name, err);
-            if fmt {
-                info!("Formatting generated Dart files...");
-                format_generated_files(pwd)?;
-            }
         }
     }
 
+    if options.fmt {
+        info!("Formatting generated Dart files...");
+        format_generated_files(pwd)?;
+    }
     Ok(())
 }
 
