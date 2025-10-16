@@ -23,6 +23,7 @@ use std::{
     fs,
     hash::{DefaultHasher, Hash, Hasher},
     path::{Path, PathBuf},
+    process::Command,
     sync::Arc,
 };
 
@@ -252,10 +253,12 @@ fn number_to_abc(n: u32) -> String {
     }
     result
 }
+
 trait SymbolName {
     fn symbol_fullname(&self) -> String;
     fn namespace(&self) -> Option<String>;
 }
+
 impl SymbolName for RuntimeSymbolDefinition {
     fn namespace(&self) -> Option<String> {
         self.import_path.as_ref().map(|p| {
@@ -273,6 +276,12 @@ impl SymbolName for RuntimeSymbolDefinition {
         }
     }
 }
+#[derive(Debug, Clone)]
+pub struct CodegenOptions {
+    pub pwd: Option<PathBuf>,
+    pub strict: bool,
+    pub fmt: bool,
+}
 
 struct SchemaEnv<'a> {
     env: Environment<'a>,
@@ -285,6 +294,7 @@ struct OperationEnv<'a> {
 struct FragmentEnv<'a> {
     env: Environment<'a>,
 }
+
 /// Helper function to find pubspec.yaml and extract package name
 fn find_pubspec_and_package_name(start_path: &Path) -> Result<(PathBuf, String), String> {
     let mut current_dir = start_path.parent();
@@ -382,11 +392,53 @@ fn register_default_template_fns<'a>(
 
     let global_ctx = ctx.clone();
     env.add_function(
-        "import_path_for_fragment_from_operation",
-        move |operation_file_path: String, frag_name: &str| -> Result<String, minijinja::Error> {
-            calculate_fragment_import_path(&global_ctx, &operation_file_path, frag_name).map_err(
-                |e| minijinja::Error::new(minijinja::ErrorKind::InvalidOperation, e.to_string()),
-            )
+        "generate_fragment_imports",
+        move |current_file_path: String,
+              direct_fragments: Vec<minijinja::Value>|
+              -> Result<Vec<String>, minijinja::Error> {
+            // Recursively collect all fragment dependencies
+            let mut all_imports = Vec::new();
+            let mut visited = std::collections::HashSet::new();
+            let mut queue = std::collections::VecDeque::new();
+
+            // Start with direct fragments
+            for frag_val in direct_fragments {
+                if let Ok(name_val) = frag_val.get_attr("name") {
+                    if let Some(frag_name) = name_val.as_str() {
+                        queue.push_back(frag_name.to_string());
+                    }
+                }
+            }
+
+            while let Some(frag_name) = queue.pop_front() {
+                // Skip if already visited
+                if visited.contains(&frag_name) {
+                    continue;
+                }
+                visited.insert(frag_name.clone());
+
+                // Calculate import path for this fragment
+                let import_path =
+                    calculate_fragment_import_path(&global_ctx, &current_file_path, &frag_name)
+                        .map_err(|e| {
+                            minijinja::Error::new(
+                                minijinja::ErrorKind::InvalidOperation,
+                                e.to_string(),
+                            )
+                        })?;
+                all_imports.push(import_path);
+
+                // Get the fragment and add its dependencies to the queue
+                if let Some(frag) = global_ctx.get_fragment(&frag_name) {
+                    for nested_frag in frag.get_used_fragments() {
+                        if !visited.contains(&nested_frag.name) {
+                            queue.push_back(nested_frag.name.clone());
+                        }
+                    }
+                }
+            }
+
+            Ok(all_imports)
         },
     );
 
@@ -510,12 +562,12 @@ where
 
     let ctx_clone3 = ctx.clone();
     let executable_ctx_clone3 = executable_ctx.clone();
-    env.add_function("get_all_selections_for_object", move |object_name: &str| {
+    env.add_function("get_all_selections_distinct", move |object_name: &str| {
         let object_selection =
             executable_ctx_clone3.get_selection(&object_name.to_string(), &ctx_clone3);
         let selections = match &object_selection.unwrap().kind {
             SelectionKind::Object(object_selection) => {
-                object_selection.get_all_selections(&ctx_clone3)
+                object_selection.get_all_selections_distinct(&ctx_clone3)
             }
             _ => panic!("Expected object selection"),
         };
@@ -651,6 +703,7 @@ impl FragmentEnv<'_> {
         schema_ctx: T,
         extra_imports: HashMap<String, String>,
         schema_path: String,
+        fragment_file_path: PathBuf,
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
         let mut context = HashMap::new();
@@ -659,6 +712,10 @@ impl FragmentEnv<'_> {
         context.insert("fragment", context! { context => fragment_ctx });
         context.insert("extra_imports", minijinja::Value::from(extra_imports));
         context.insert("schema_import_path", minijinja::Value::from(schema_path));
+        context.insert(
+            "fragment_file_path",
+            minijinja::Value::from(fragment_file_path.to_string_lossy().to_string()),
+        );
 
         template.render(&context).unwrap()
     }
@@ -811,6 +868,7 @@ fn generate_operations_file(
     );
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
+
     Ok(())
 }
 
@@ -822,11 +880,13 @@ fn generate_fragment_file(
     additional_imports: HashMap<String, String>,
 ) -> anyhow::Result<()> {
     let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone())?;
+    let fragment_file_path = fragment_ctx.file_path.clone();
     let generated_content = fragment_env.render_fragment(
         context! { context => fragment_ctx },
         context! { context => &ctx.schema_ctx },
         additional_imports,
         get_schema_import_path(&fragment_ctx.file_path, ctx),
+        fragment_file_path,
     );
 
     // Generate fragment in __graphql__ subdirectory relative to where it's defined
@@ -843,8 +903,8 @@ fn generate_fragment_file(
     Ok(())
 }
 
-pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
-    let ctx = shalom_core::entrypoint::parse_directory(pwd, strict)?;
+pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
+    let ctx = shalom_core::entrypoint::parse_directory(&options.pwd, options.strict)?;
     let pwd = &ctx.config.project_root;
     info!("codegen started in working directory {}", pwd.display());
 
@@ -902,7 +962,7 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
             additional_imports.clone(),
         );
         if let Err(err) = res {
-            if strict {
+            if options.strict {
                 return Err(err);
             }
             error!(
@@ -916,13 +976,17 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
     for (name, operation) in ctx.operations() {
         let res = generate_operations_file(&ctx, &name, operation, additional_imports.clone());
         if let Err(err) = res {
-            if strict {
+            if options.strict {
                 return Err(err);
             }
             error!("Failed to generate operation '{}' due to: {}", name, err);
         }
     }
 
+    if options.fmt {
+        info!("Formatting generated Dart files...");
+        format_generated_files(pwd)?;
+    }
     Ok(())
 }
 
@@ -935,4 +999,36 @@ fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContex
     let generation_target = output_dir.join(format!("schema.{}", END_OF_FILE));
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
+}
+
+fn format_generated_files(pwd: &Path) -> Result<()> {
+    #[cfg(target_os = "windows")]
+    {
+        let output = Command::new("powershell")
+            .arg("-Command")
+            .arg("Get-ChildItem -Recurse -Filter '*.shalom.dart' | ForEach-Object { dart format $_.FullName }")
+            .current_dir(pwd)
+            .output()?;
+        if !output.status.success() {
+            error!(
+                "Failed to format files: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let output = Command::new("sh")
+            .arg("-c")
+            .arg("find . -type f -name '*.shalom.dart' -print0 | xargs -0 dart format")
+            .current_dir(pwd)
+            .output()?;
+        if !output.status.success() {
+            error!(
+                "Failed to format files: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    }
+    Ok(())
 }

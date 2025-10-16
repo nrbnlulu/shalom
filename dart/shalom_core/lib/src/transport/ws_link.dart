@@ -164,9 +164,9 @@ class WebSocketLink extends GraphQLLink {
       case CompleteMessage():
         _handleComplete($parsedMessage);
         break;
-    default:
-      _close(WsCloseCodes.invalidMessage, 'Invalid message format');
-      break;
+      default:
+        _close(WsCloseCodes.invalidMessage, 'Invalid message format');
+        break;
     }
   }
 

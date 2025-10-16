@@ -1,3 +1,4 @@
+use shalom_dart_codegen::CodegenOptions;
 use std::path::{Path, PathBuf};
 
 use log::info;
@@ -40,7 +41,12 @@ pub fn ensure_test_folder_exists(usecase: &str) -> anyhow::Result<PathBuf> {
 }
 
 fn run_codegen(cwd: &Path, strict: bool) {
-    shalom_dart_codegen::codegen_entry_point(&Some(cwd.to_path_buf()), strict).unwrap()
+    shalom_dart_codegen::codegen_entry_point(CodegenOptions {
+        pwd: Some(cwd.to_path_buf()),
+        strict,
+        fmt: false,
+    })
+    .unwrap()
 }
 
 pub fn run_dart_tests_for_usecase(usecase: &str) {

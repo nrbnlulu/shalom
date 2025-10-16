@@ -20,6 +20,12 @@ fn test_enum_selection_dart() {
 fn test_object_selection_dart() {
     run_dart_tests_for_usecase("object_selection");
 }
+
+#[test]
+fn test_object_selection_with_typename_dart() {
+    run_dart_tests_for_usecase("object_selection_with_typename");
+}
+
 #[test]
 fn test_cache_by_arguments_object() {
     run_dart_tests_for_usecase("cache_by_arguments_object");
@@ -103,4 +109,9 @@ fn test_fragments_on_interface_dart() {
 fn test_object_fragment_list_interfaces_dart() {
     run_dart_tests_for_usecase("object_fragment_list_interfaces");
 
+}
+
+#[test]
+fn test_interface_shared_fragments_dart() {
+    run_dart_tests_for_usecase("interface_shared_fragments");
 }
