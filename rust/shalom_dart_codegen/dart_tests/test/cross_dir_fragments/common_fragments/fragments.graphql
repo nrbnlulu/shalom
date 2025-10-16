@@ -9,3 +9,11 @@ fragment PostFields on Post {
     title
     content
 }
+
+fragment AuthorFields on User {
+    ...UserFields
+    posts {
+        id
+        title
+    }
+}
