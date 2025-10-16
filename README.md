@@ -2,20 +2,24 @@
 
 ### (WIP 🚧) GraphQL client for dart and flutter.
 
+### Installation
+
+1. Build the CLI from source:
+
+```bash
+cargo install --git https://github.com/nrbnlulu/shalom.git --branch main shalom_dart_codegen
+```
+
+2. add flutter deps
+```bash
+dart pub add shalom_core:'{"git":{"url": "https://github.com/nrbnlulu/shalom.git", "path": "dart/shalom_core"}}'
+dart pub add shalom_flutter:'{"git":{"url": "https://github.com/nrbnlulu/shalom.git", "path": "dart/shalom_flutter"}}'
+```
+
+
 ### CLI Usage
 
 The `shalom` CLI provides commands to generate Dart code from your GraphQL schema and operations.
-
-#### Installation
-
-Build the CLI from source:
-
-```bash
-cd rust/shalom_dart_codegen
-cargo build --release
-```
-
-The binary will be available at `rust/target/release/shalom`.
 
 #### Commands
 
@@ -44,20 +48,6 @@ Watch for changes in GraphQL files (`.graphql` and `.gql`) and automatically reg
 shalom watch [OPTIONS]
 ```
 
-Options:
-- `-p, --path <PATH>`: Path to the project directory (defaults to current directory)
-- `-s, --strict`: Fail on first error instead of continuing
-
-Example:
-```bash
-shalom watch --path ./my-project
-```
-
-The watch command will:
-1. Run an initial code generation
-2. Monitor the specified directory for changes to `.graphql` and `.gql` files
-3. Automatically regenerate code when changes are detected
-4. Continue watching until you press Ctrl+C
 
 ### Roadmap
 
@@ -93,17 +83,3 @@ The watch command will:
         - [x] enum
         - [ ] oneOf
 
-### Development
-
-Add a test case for your use case under `rust/shalom_dart_codegen/tests/usecases_test.rs` and run this test. After the first run, it will generate a minimal Dart project under `rust/shalom_dart_codegen/dart_tests/`. In `tests.dart`, `operations.graphql`, and `schema.graphql`, you can add tests specific for your use case. To run the test, run the Rust test again (it won't overwrite the Dart project).
-
-Every test case should include the following:
-
-- `xRequired`
-- `xOptional`
-  where `x` is the kind of use case you are testing, for example `objectRequired`, `objectOptional`, `scalarRequired`, `scalarOptional`, etc.
-  For each test, you should verify that `fromJson` works, `updateWithJson` works, `toJson` works, and `==` works.
-
-For input-related test cases, you should also add a `Maybe` test. This means that for fields that are optional but **have no default value**, they should be wrapped in a `Maybe` type (`Some` | `None`).
-
-when you are done, make sure all tests pass using `task test` and all lints pass using `task lint`.
