@@ -1,6 +1,6 @@
 use std::{
     cell::{Cell, RefCell},
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     rc::Rc,
 };
 
@@ -17,6 +17,51 @@ use crate::{
 
 /// the name of i.e object in a graphql query based on the parent fields.
 pub type FullPathName = String;
+
+/// Helper function to get all selections including fragments, with deduplication by field name.
+///
+/// This function takes direct selections and recursively expands all fragment selections,
+/// ensuring that fields with the same name are not duplicated. This is particularly important
+/// when fragments on interfaces and their implementations share field names.
+///
+/// # Arguments
+/// * `direct_selections` - The direct selections from an object or fragment
+/// * `fragment_names` - Names of fragments to expand
+/// * `ctx` - The global context containing fragment definitions
+///
+/// # Returns
+/// A vector of distinct selections (by field name), preserving the order of first occurrence
+pub fn get_selections_with_fragments_distinct(
+    direct_selections: Vec<Selection>,
+    fragment_names: Vec<FragName>,
+    ctx: &ShalomGlobalContext,
+) -> Vec<Selection> {
+    let mut selections = direct_selections;
+    let mut seen_names: HashSet<String> = HashSet::new();
+
+    // Track names from direct selections
+    for selection in &selections {
+        seen_names.insert(selection.self_selection_name().clone());
+    }
+
+    // Process fragments
+    let mut fragments = fragment_names;
+    while !fragments.is_empty() {
+        let fragment = ctx.get_fragment_strict(&fragments.pop().unwrap());
+        let fragment_selections = fragment.get_flat_selections(ctx);
+
+        // Only add fragment selections if we haven't seen their name before
+        for fragment_selection in fragment_selections {
+            let name = fragment_selection.self_selection_name().clone();
+            if !seen_names.contains(&name) {
+                seen_names.insert(name);
+                selections.push(fragment_selection);
+            }
+        }
+    }
+
+    selections
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "name")]
@@ -216,17 +261,13 @@ impl ObjectSelection {
     }
 
     /// return all selections for an object including the fragment selections
-    /// for the current selection object
-    pub fn get_all_selections(&self, ctx: &ShalomGlobalContext) -> Vec<Selection> {
-        let mut selections = self.selections.borrow().clone();
-        let mut fragments = self.used_fragments.borrow().clone();
-
-        while !fragments.is_empty() {
-            let fragment = ctx.get_fragment_strict(&fragments.pop().unwrap());
-            let fragment_selections = fragment.get_flat_selections(ctx);
-            selections.extend(fragment_selections);
-        }
-        selections
+    /// for the current selection object, with duplicates removed by field name
+    pub fn get_all_selections_distinct(&self, ctx: &ShalomGlobalContext) -> Vec<Selection> {
+        get_selections_with_fragments_distinct(
+            self.selections.borrow().clone(),
+            self.used_fragments.borrow().clone(),
+            ctx,
+        )
     }
 
     pub fn get_id_selection(&self) -> Option<Selection> {
@@ -245,7 +286,7 @@ impl ObjectSelection {
         }
 
         // If not found, check in fragment selections
-        let all_selections = self.get_all_selections(ctx);
+        let all_selections = self.get_all_selections_distinct(ctx);
         all_selections
             .iter()
             .find(|s| s.self_selection_name() == "id")
