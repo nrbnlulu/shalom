@@ -1,0 +1,15 @@
+type Query {
+  product: Product!
+  productOpt: Product
+}
+
+type Product {
+  id: ID!
+  name: String!
+  price: Int
+}
+
+type User {
+  id: ID!
+  username: String!
+}

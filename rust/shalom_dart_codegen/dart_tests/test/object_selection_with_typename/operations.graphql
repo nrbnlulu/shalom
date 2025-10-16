@@ -1,0 +1,25 @@
+query GetProduct {
+  product {
+    __typename
+    id
+    name
+    price
+  }
+}
+
+query GetProductOpt {
+  productOpt {
+    __typename
+    id
+    name
+    price
+  }
+}
+
+query GetProductNoPrice {
+  product {
+    __typename
+    id
+    name
+  }
+}

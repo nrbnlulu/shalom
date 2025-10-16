@@ -20,6 +20,12 @@ fn test_enum_selection_dart() {
 fn test_object_selection_dart() {
     run_dart_tests_for_usecase("object_selection");
 }
+
+#[test]
+fn test_object_selection_with_typename_dart() {
+    run_dart_tests_for_usecase("object_selection_with_typename");
+}
+
 #[test]
 fn test_cache_by_arguments_object() {
     run_dart_tests_for_usecase("cache_by_arguments_object");
