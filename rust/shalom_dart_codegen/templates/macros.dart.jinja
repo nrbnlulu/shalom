@@ -144,7 +144,7 @@
 {% for name, field in fields | items %}
     {% if not field.is_optional %}
         {% if field.default_value is not none  %}
-            required this.{{ name }} = {{ parse_field_default_value(field) }}
+            this.{{ name }} = {{ parse_field_default_value(field) }}
         {% else %}
             required this.{{name}}
         {% endif %},
