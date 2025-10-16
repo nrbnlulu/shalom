@@ -17,11 +17,10 @@ export 'src/transport/http_link.dart' show HttpLink, HttpMethod, ShalomHttpTrans
 export 'src/transport/link.dart' show GraphQLLink;
 export 'src/transport/ws_link.dart' show WebSocketLink ;
 export 'src/transport/ws_transport.dart'
-    show WebSocketTransport, WebSocketState, WebSocketCloseEvent;
+    show WebSocketTransport, MessageSender;
 export 'src/transport/ws_messages.dart'
     show
         WsMessage,
-        WsMessageWithId,
         ConnectionInitMessage,
         ConnectionAckMessage,
         PingMessage,
