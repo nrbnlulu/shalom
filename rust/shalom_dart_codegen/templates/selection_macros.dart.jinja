@@ -341,8 +341,8 @@ null
     /// class members
     {% for selection in selections -%}
         {% set selection_name = selection.name %}
-        {% if (is_multi_type_member or is_fallback) and selection_name == "__typename" %}
-        final {{ type_name_for_selection(selection) }} typename_;
+        {% if selection_name == "__typename" %}
+        final {{ type_name_for_selection(selection) }} $__typename;
         {% else %}
         final {{ type_name_for_selection(selection) }} {{ selection_name }};
         {% endif %}
@@ -352,7 +352,7 @@ null
     // Getter for typename (public accessor for __typename field)
     {% for selection in selections %}
         {% if selection.name == "__typename" %}
-    String get typename => typename_;
+    String get typename => $__typename;
         {% endif %}
     {% endfor %}
     {% endif %}
@@ -360,14 +360,14 @@ null
     // keywordargs constructor
     {% if is_multi_type_member or is_fallback %}const {% endif %}{{ typename }}({% if selections | length > 0 %}{
     {% for selection in selections -%}
-        {% if (is_multi_type_member or is_fallback) and selection.name == "__typename" %}
-            {% if not selection.is_optional %}required{% endif %} String $typename,
+        {% if selection.name == "__typename" -%}
+            {% if not selection.is_optional %}required{% endif %} this.$__typename,
         {% else %}
             {% if not selection.is_optional %}required{% endif %}
             this.{{ selection.name }},
         {% endif %}
     {% endfor %}
-    }{% endif %}){% if is_multi_type_member or is_fallback %}{% for selection in selections %}{% if selection.name == "__typename" %} : typename_ = $typename{% endif %}{% endfor %}{% endif %};
+    }{% endif %});
 
     static void normalize$inCache(JsonObject data,
             CacheUpdateContext ctx,
@@ -497,8 +497,8 @@ null
         {% endfor -%}
         return {{ typename }}(
             {% for selection in selections -%}
-                {% if is_multi_type_member and selection.name == "__typename" %}
-                $typename: {{selection.name}}$value,
+                {% if selection.name == "__typename" %}
+                $__typename: {{selection.name}}$value,
                 {% else %}
                 {{selection.name}}: {{selection.name}}$value,
                 {% endif %}
@@ -533,8 +533,8 @@ null
     (other is {{ typename }} &&
     {% for selection in selections -%}
         {% if (is_multi_type_member or is_fallback) and selection.name == "__typename" %}
-            {% set other_selection %}other.typename_{% endset -%}
-            {{ selection_equality_comparison_macro(selection, "typename_", other_selection) }} {{ "&&" if not loop.last }}
+            {% set other_selection %}other.$__typename{% endset -%}
+            {{ selection_equality_comparison_macro(selection, "$__typename", other_selection) }} {{ "&&" if not loop.last }}
         {% else %}
             {% set other_selection %}other.{{selection.name}}{% endset -%}
             {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&" if not loop.last }}
@@ -551,8 +551,8 @@ null
         Object.hashAll([
         {% for selection in selections %}
             {% set selection_name = selection.name %}
-            {% if (is_multi_type_member or is_fallback) and selection_name == "__typename" %}
-                typename_,
+            {% if selection_name == "__typename" %}
+                $__typename,
             {% else %}
                 {{ selection_name }},
             {% endif %}
@@ -560,7 +560,7 @@ null
         ]);
     {% elif selections | length == 1 %}
         {% if (is_multi_type_member or is_fallback) and (selections | first).name == "__typename" %}
-        typename_.hashCode;
+        $__typename.hashCode;
         {% else %}
         {{ (selections | first).name }}.hashCode;
         {% endif %}
@@ -572,11 +572,11 @@ null
     {% for selection in selections %}
         {% set selection_name = selection.name %}
         '{{ selection_name }}':
-            {% if (is_multi_type_member or is_fallback) and selection_name == "__typename" %}
+            {% if selection_name == "__typename" %}
                 {% if selection.is_optional %}
-                    {{ _serialize_selection_value_macro("typename_", selection, true) }}
+                    {{ _serialize_selection_value_macro("$__typename", selection, true) }}
                 {% else %}
-                    {{ _serialize_selection_value_macro("typename_", selection, false) }}
+                    {{ _serialize_selection_value_macro("$__typename", selection, false) }}
                 {% endif %}
             {% else %}
                 {% if selection.is_optional %}
