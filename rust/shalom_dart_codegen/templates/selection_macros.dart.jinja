@@ -532,7 +532,7 @@ null
     {% if selections | length > 0 -%}
     (other is {{ typename }} &&
     {% for selection in selections -%}
-        {% if (is_multi_type_member or is_fallback) and selection.name == "__typename" %}
+        {% if selection.name == "__typename" %}
             {% set other_selection %}other.$__typename{% endset -%}
             {{ selection_equality_comparison_macro(selection, "$__typename", other_selection) }} {{ "&&" if not loop.last }}
         {% else %}
