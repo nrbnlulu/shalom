@@ -1,0 +1,9 @@
+input RequiredInputWithDefaults {
+  id: ID! = "default_id",
+  name: String! = "default_name",
+  count: Int! = 42
+}
+
+type Query {
+  getData(input: RequiredInputWithDefaults!): String
+}
