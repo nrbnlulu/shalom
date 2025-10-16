@@ -4,12 +4,14 @@ import 'package:shalom_core/shalom_core.dart';
 import 'package:test/test.dart';
 
 /// Fake transport layer for testing that returns controlled responses
-class FakeTransportLayer extends TransportLayer {
+class FakeTransportLayer implements ShalomHttpTransport {
   final List<dynamic> responses;
   final bool shouldThrow;
   final String? throwMessage;
 
-  JsonObject? lastRequest;
+  HttpMethod? lastMethod;
+  String? lastUrl;
+  JsonObject? lastData;
   JsonObject? lastHeaders;
   JsonObject? lastExtra;
 
@@ -20,12 +22,16 @@ class FakeTransportLayer extends TransportLayer {
   });
 
   @override
-  Stream<dynamic> request({
-    required JsonObject request,
+  Future<JsonObject> request({
+    required HttpMethod method,
+    required String url,
+    required JsonObject data,
     JsonObject? headers,
     JsonObject? extra,
-  }) async* {
-    lastRequest = request;
+  }) async {
+    lastMethod = method;
+    lastUrl = url;
+    lastData = data;
     lastHeaders = headers;
     lastExtra = extra;
 
@@ -33,9 +39,11 @@ class FakeTransportLayer extends TransportLayer {
       throw Exception(throwMessage ?? 'Transport error');
     }
 
-    for (final response in responses) {
-      yield response;
+    if (responses.isEmpty) {
+      return {};
     }
+
+    return responses.first as JsonObject;
   }
 }
 
@@ -285,12 +293,10 @@ void main() {
 
         await $httpLink.request(request: $testRequest, headers: {}).toList();
 
-        expect($fakeTransport.lastRequest, isNotNull);
-        expect($fakeTransport.lastRequest!['query'], $testRequest.query);
-        expect(
-            $fakeTransport.lastRequest!['operationName'], $testRequest.opName);
-        expect(
-            $fakeTransport.lastRequest!['variables'], $testRequest.variables);
+        expect($fakeTransport.lastData, isNotNull);
+        expect($fakeTransport.lastData!['query'], $testRequest.query);
+        expect($fakeTransport.lastData!['operationName'], $testRequest.opName);
+        expect($fakeTransport.lastData!['variables'], $testRequest.variables);
       });
 
       test('omits empty variables from request body', () async {
@@ -315,7 +321,7 @@ void main() {
         await $httpLink
             .request(request: $requestWithoutVars, headers: {}).toList();
 
-        expect($fakeTransport.lastRequest!.containsKey('variables'), isFalse);
+        expect($fakeTransport.lastData!.containsKey('variables'), isFalse);
       });
 
       test('includes method and url in extra metadata', () async {
@@ -428,11 +434,10 @@ void main() {
 
         await $httpLink.request(request: $testRequest, headers: {}).toList();
 
-        expect($fakeTransport.lastRequest!['query'], $testRequest.query);
-        expect(
-            $fakeTransport.lastRequest!['operationName'], $testRequest.opName);
+        expect($fakeTransport.lastData!['query'], $testRequest.query);
+        expect($fakeTransport.lastData!['operationName'], $testRequest.opName);
         // Variables should be JSON encoded for GET
-        expect($fakeTransport.lastRequest!['variables'], isA<String>());
+        expect($fakeTransport.lastData!['variables'], isA<String>());
       });
 
       test('omits empty operationName from GET request', () async {
@@ -458,8 +463,7 @@ void main() {
         await $httpLink
             .request(request: $requestWithoutOpName, headers: {}).toList();
 
-        expect(
-            $fakeTransport.lastRequest!.containsKey('operationName'), isFalse);
+        expect($fakeTransport.lastData!.containsKey('operationName'), isFalse);
       });
 
       test('omits empty variables from GET request', () async {
@@ -485,7 +489,7 @@ void main() {
         await $httpLink
             .request(request: $requestWithoutVars, headers: {}).toList();
 
-        expect($fakeTransport.lastRequest!.containsKey('variables'), isFalse);
+        expect($fakeTransport.lastData!.containsKey('variables'), isFalse);
       });
 
       test('does not include Content-Type header for GET', () async {

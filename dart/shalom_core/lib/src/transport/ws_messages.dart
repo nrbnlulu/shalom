@@ -4,8 +4,8 @@ import 'package:shalom_core/shalom_core.dart';
 /// GraphQL WebSocket protocol message types
 /// Based on: https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md
 
-/// Base class for all WebSocket messages
-abstract class WsMessage {
+/// Base sealed class for all WebSocket messages
+sealed class WsMessage {
   final String type;
 
   const WsMessage(this.type);
@@ -15,17 +15,10 @@ abstract class WsMessage {
   String toJsonString() => jsonEncode(toJson());
 }
 
-/// Base class for messages with an operation ID
-abstract class WsMessageWithId extends WsMessage {
-  final String id;
-
-  const WsMessageWithId(super.type, this.id);
-}
-
 /// ConnectionInit message - Client -> Server
 ///
 /// Indicates that the client wants to establish a connection within the existing socket.
-class ConnectionInitMessage extends WsMessage {
+final class ConnectionInitMessage extends WsMessage {
   final JsonObject? payload;
 
   const ConnectionInitMessage({this.payload}) : super('connection_init');
@@ -49,7 +42,7 @@ class ConnectionInitMessage extends WsMessage {
 /// ConnectionAck message - Server -> Client
 ///
 /// Acknowledges a successful connection with the server.
-class ConnectionAckMessage extends WsMessage {
+final class ConnectionAckMessage extends WsMessage {
   final JsonObject? payload;
 
   const ConnectionAckMessage({this.payload}) : super('connection_ack');
@@ -74,7 +67,7 @@ class ConnectionAckMessage extends WsMessage {
 ///
 /// Useful for detecting failed connections, displaying latency metrics
 /// or other types of network probing.
-class PingMessage extends WsMessage {
+final class PingMessage extends WsMessage {
   final JsonObject? payload;
 
   const PingMessage({this.payload}) : super('ping');
@@ -98,7 +91,7 @@ class PingMessage extends WsMessage {
 /// Pong message - Bidirectional
 ///
 /// Response to the Ping message. Must be sent as soon as the Ping message is received.
-class PongMessage extends WsMessage {
+final class PongMessage extends WsMessage {
   final JsonObject? payload;
 
   const PongMessage({this.payload}) : super('pong');
@@ -122,13 +115,14 @@ class PongMessage extends WsMessage {
 /// Subscribe message - Client -> Server
 ///
 /// Requests an operation specified in the message payload.
-class SubscribeMessage extends WsMessageWithId {
+final class SubscribeMessage extends WsMessage {
+  final String id;
   final SubscribePayload payload;
 
   const SubscribeMessage({
-    required String id,
+    required this.id,
     required this.payload,
-  }) : super('subscribe', id);
+  }) : super('subscribe');
 
   @override
   JsonObject toJson() {
@@ -201,13 +195,14 @@ class SubscribePayload {
 /// Next message - Server -> Client
 ///
 /// Operation execution result(s) from the source stream.
-class NextMessage extends WsMessageWithId {
+final class NextMessage extends WsMessage {
+  final String id;
   final JsonObject payload;
 
   const NextMessage({
-    required String id,
+    required this.id,
     required this.payload,
-  }) : super('next', id);
+  }) : super('next');
 
   @override
   JsonObject toJson() {
@@ -230,13 +225,14 @@ class NextMessage extends WsMessageWithId {
 ///
 /// Operation execution error(s) in response to the Subscribe message.
 /// This message terminates the operation.
-class ErrorMessage extends WsMessageWithId {
+final class ErrorMessage extends WsMessage {
+  final String id;
   final List<JsonObject> payload;
 
   const ErrorMessage({
-    required String id,
+    required this.id,
     required this.payload,
-  }) : super('error', id);
+  }) : super('error');
 
   @override
   JsonObject toJson() {
@@ -270,8 +266,10 @@ class ErrorMessage extends WsMessageWithId {
 ///
 /// Server -> Client: Indicates operation execution has completed.
 /// Client -> Server: Indicates client has stopped listening.
-class CompleteMessage extends WsMessageWithId {
-  const CompleteMessage({required String id}) : super('complete', id);
+final class CompleteMessage extends WsMessage {
+  final String id;
+
+  const CompleteMessage({required this.id}) : super('complete');
 
   @override
   JsonObject toJson() {

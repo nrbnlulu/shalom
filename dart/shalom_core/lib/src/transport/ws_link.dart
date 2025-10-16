@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert' show json;
+import 'dart:developer' show log;
 
 import 'package:shalom_core/shalom_core.dart';
 
@@ -24,18 +26,20 @@ class WebSocketLink extends GraphQLLink {
   final Map<String, _OperationHandler> _pendingOperations = {};
 
   /// Connection state
+  bool _isConnected = false;
   bool _connectionAcknowledged = false;
   bool _disposed = false;
+
+  /// Transport components
+  StreamController<JsonObject>? _messageStreamController;
+  MessageSender? _messageSender;
+  StreamSubscription<JsonObject>? _messageSubscription;
 
   /// Timers
   Timer? _connectionInitTimer;
   Timer? _reconnectTimer;
   Timer? _pingTimer;
   Timer? _pongTimer;
-
-  /// Subscriptions
-  StreamSubscription<String>? _messageSubscription;
-  StreamSubscription<WebSocketState>? _stateSubscription;
 
   /// Connection acknowledgement payload from server
   JsonObject? _connectionAckPayload;
@@ -55,15 +59,6 @@ class WebSocketLink extends GraphQLLink {
 
   /// Initialize the WebSocket connection
   void _initialize() {
-    _messageSubscription = transport.messages.listen(
-      _handleMessage,
-      onError: _handleTransportError,
-    );
-
-    _stateSubscription = transport.stateChanges.listen(
-      _handleStateChange,
-    );
-
     _connect();
   }
 
@@ -72,27 +67,26 @@ class WebSocketLink extends GraphQLLink {
     if (_disposed) return;
 
     try {
-      await transport.connect(
+      final (streamController, sender) = await transport.connect(
         url: url,
         protocols: ['graphql-transport-ws'],
       );
-    } catch (e) {
-      _handleConnectionError(e);
-    }
-  }
 
-  /// Handle WebSocket state changes
-  void _handleStateChange(WebSocketState state) {
-    switch (state) {
-      case WebSocketState.connected:
-        _onConnected();
-        break;
-      case WebSocketState.disconnected:
-      case WebSocketState.closed:
-        _onDisconnected();
-        break;
-      default:
-        break;
+      _messageStreamController = streamController;
+      _messageSender = sender;
+      _isConnected = true;
+
+      // Listen to messages from the stream
+      _messageSubscription = streamController.stream.listen(
+        _handleMessage,
+        onError: _handleTransportError,
+        onDone: _onDisconnected,
+      );
+
+      _onConnected();
+    } catch (e) {
+      _isConnected = false;
+      _handleConnectionError(e);
     }
   }
 
@@ -118,6 +112,7 @@ class WebSocketLink extends GraphQLLink {
 
   /// Called when WebSocket connection is lost
   void _onDisconnected() {
+    _isConnected = false;
     _connectionAcknowledged = false;
     _connectionInitTimer?.cancel();
     _pingTimer?.cancel();
@@ -126,6 +121,11 @@ class WebSocketLink extends GraphQLLink {
     // Move active operations to pending
     _pendingOperations.addAll(_activeOperations);
     _activeOperations.clear();
+
+    // Clean up transport resources
+    _messageSubscription?.cancel();
+    _messageStreamController = null;
+    _messageSender = null;
 
     // Attempt reconnection if enabled
     if (autoReconnect && !_disposed) {
@@ -137,26 +137,36 @@ class WebSocketLink extends GraphQLLink {
   }
 
   /// Handle incoming WebSocket messages
-  void _handleMessage(String message) {
-    final $parsedMessage = parseWsMessage(message);
+  void _handleMessage(JsonObject message) {
+    final $messageString = json.encode(message);
+    final $parsedMessage = parseWsMessage($messageString);
 
     if ($parsedMessage == null) {
       _close(WsCloseCodes.invalidMessage, 'Invalid message format');
       return;
     }
-
-    if ($parsedMessage is ConnectionAckMessage) {
-      _handleConnectionAck($parsedMessage);
-    } else if ($parsedMessage is PingMessage) {
-      _handlePing($parsedMessage);
-    } else if ($parsedMessage is PongMessage) {
-      _handlePong($parsedMessage);
-    } else if ($parsedMessage is NextMessage) {
-      _handleNext($parsedMessage);
-    } else if ($parsedMessage is ErrorMessage) {
-      _handleErrorMessage($parsedMessage);
-    } else if ($parsedMessage is CompleteMessage) {
-      _handleComplete($parsedMessage);
+    switch ($parsedMessage) {
+      case ConnectionAckMessage():
+        _handleConnectionAck($parsedMessage);
+        break;
+      case PingMessage():
+        _handlePing($parsedMessage);
+        break;
+      case PongMessage():
+        _handlePong($parsedMessage);
+        break;
+      case NextMessage():
+        _handleNext($parsedMessage);
+        break;
+      case ErrorMessage():
+        _handleErrorMessage($parsedMessage);
+        break;
+      case CompleteMessage():
+        _handleComplete($parsedMessage);
+        break;
+    default:
+      _close(WsCloseCodes.invalidMessage, 'Invalid message format');
+      break;
     }
   }
 
@@ -203,7 +213,7 @@ class WebSocketLink extends GraphQLLink {
   void _handleNext(NextMessage message) {
     final $handler = _activeOperations[message.id];
     if ($handler == null) {
-      // Unknown operation, ignore
+      log('Unknown graphql operation: ${message.id}');
       return;
     }
 
@@ -318,10 +328,11 @@ class WebSocketLink extends GraphQLLink {
 
   /// Send a message through the WebSocket
   void _sendMessage(WsMessage message) {
-    if (!transport.isConnected) return;
+    if (!isConnected || _messageSender == null) return;
 
     try {
-      transport.send(message.toJsonString());
+      final $messageJson = json.decode(message.toJsonString()) as JsonObject;
+      _messageSender!.send($messageJson);
     } catch (e) {
       // Handle send error
     }
@@ -329,7 +340,10 @@ class WebSocketLink extends GraphQLLink {
 
   /// Close the WebSocket connection
   Future<void> _close(int code, String reason) async {
-    await transport.close(code, reason);
+    _isConnected = false;
+    // Close the stream controller which should trigger the transport to close
+    await _messageStreamController?.close();
+    _onDisconnected();
   }
 
   @override
@@ -349,7 +363,7 @@ class WebSocketLink extends GraphQLLink {
     );
 
     // Add to pending or execute immediately
-    if (_connectionAcknowledged && transport.isConnected) {
+    if (_connectionAcknowledged && isConnected) {
       _executeOperation($operationId, $handler);
     } else {
       _pendingOperations[$operationId] = $handler;
@@ -396,8 +410,12 @@ class WebSocketLink extends GraphQLLink {
     _pendingOperations.remove(operationId);
 
     // Send Complete message if still connected
-    if (_connectionAcknowledged && transport.isConnected) {
-      _sendMessage(CompleteMessage(id: operationId));
+    if (_connectionAcknowledged && isConnected && !_disposed) {
+      try {
+        _sendMessage(CompleteMessage(id: operationId));
+      } catch (e) {
+        // Ignore errors during cleanup
+      }
     }
 
     // Close the stream controller
@@ -426,7 +444,7 @@ class WebSocketLink extends GraphQLLink {
   bool get isConnectionAcknowledged => _connectionAcknowledged;
 
   /// Whether the WebSocket is connected
-  bool get isConnected => transport.isConnected;
+  bool get isConnected => _isConnected;
 
   /// Manually reconnect
   Future<void> reconnect() async {
@@ -438,6 +456,7 @@ class WebSocketLink extends GraphQLLink {
   Future<void> dispose() async {
     if (_disposed) return;
     _disposed = true;
+    _isConnected = false;
 
     // Cancel all timers
     _connectionInitTimer?.cancel();
@@ -460,12 +479,12 @@ class WebSocketLink extends GraphQLLink {
     _activeOperations.clear();
     _pendingOperations.clear();
 
-    // Cancel subscriptions
+    // Cancel subscriptions and close transport
     await _messageSubscription?.cancel();
-    await _stateSubscription?.cancel();
+    await _messageStreamController?.close();
 
-    // Close WebSocket
-    await transport.close(WsCloseCodes.normalClosure, 'Disposed');
+    _messageStreamController = null;
+    _messageSender = null;
   }
 }
 

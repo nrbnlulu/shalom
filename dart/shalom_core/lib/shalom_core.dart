@@ -13,16 +13,14 @@ export 'src/normelized_cache.dart'
         RecordID;
 
 export 'src/shalom_ctx.dart' show RecordSubscriber, RefStreamType, ShalomCtx;
-export 'src/transport/http_link.dart' show HttpLink;
+export 'src/transport/http_link.dart' show HttpLink, HttpMethod, ShalomHttpTransport;
 export 'src/transport/link.dart' show GraphQLLink;
-export 'src/transport/transportlayer.dart' show TransportLayer;
-export 'src/transport/ws_link.dart' show WebSocketLink;
+export 'src/transport/ws_link.dart' show WebSocketLink ;
 export 'src/transport/ws_transport.dart'
-    show WebSocketTransport, WebSocketState, WebSocketCloseEvent;
+    show WebSocketTransport, MessageSender;
 export 'src/transport/ws_messages.dart'
     show
         WsMessage,
-        WsMessageWithId,
         ConnectionInitMessage,
         ConnectionAckMessage,
         PingMessage,
