@@ -330,7 +330,7 @@ null
         {# Fallback uses shared_selections directly without lookup #}
         {% set selections = shared_selections %}
     {% else %}
-        {% set selections = get_all_selections_for_object(lookup_name) %}
+        {% set selections = get_all_selections_distinct(lookup_name) %}
         {# For union members, merge shared selections with object selections, avoiding duplicates #}
         {% if is_multi_type_member and shared_selections %}
             {% set member_names = selections | map(attribute='name') | list %}
