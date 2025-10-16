@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 import "__graphql__/ProcessList.shalom.dart";
@@ -38,6 +39,78 @@ void main() {
       final input1 = ListInput();
       final input2 = ListInput();
       expect(input1.toJson(), equals(input2.toJson()));
+    });
+
+    test(
+        'inputListWithDefaultsCacheNormalization - different parameters use separate cache entries',
+        () async {
+      final ctx = ShalomCtx.withCapacity();
+      final variables1 = ProcessListVariables(input: ListInput(items: ["a"]));
+      final variables2 = ProcessListVariables(input: ListInput(items: ["b"]));
+
+      final data1 = {"processList": "result1"};
+      final data2 = {"processList": "result2"};
+
+      // First query
+      var (result1, updateCtx1) = ProcessListResponse.fromResponseImpl(
+        data1,
+        ctx,
+        variables1,
+      );
+      expect(result1.processList, "result1");
+
+      // Second query with different params
+      var (result2, updateCtx2) = ProcessListResponse.fromResponseImpl(
+        data2,
+        ctx,
+        variables2,
+      );
+      expect(result2.processList, "result2");
+
+      // Both should be cached separately
+      final cached1 = ProcessListResponse.fromCache(ctx, variables1);
+      final cached2 = ProcessListResponse.fromCache(ctx, variables2);
+      expect(cached1.processList, "result1");
+      expect(cached2.processList, "result2");
+
+      // Set up listeners for both
+      final completer1 = Completer<bool>();
+      final completer2 = Completer<bool>();
+      bool listener1Called = false;
+      bool listener2Called = false;
+
+      final sub1 = ctx.subscribe(updateCtx1.dependantRecords);
+      sub1.streamController.stream.listen((newCtx) {
+        final updated = ProcessListResponse.fromCache(newCtx, variables1);
+        expect(updated.processList, "updated1");
+        listener1Called = true;
+        completer1.complete(true);
+      });
+
+      final sub2 = ctx.subscribe(updateCtx2.dependantRecords);
+      sub2.streamController.stream.listen((newCtx) {
+        listener2Called = true;
+        completer2.complete(true);
+      });
+
+      // Update cache for first query
+      final updatedData1 = {"processList": "updated1"};
+      ProcessListResponse.fromResponse(
+        updatedData1,
+        ctx: ctx,
+        variables: variables1,
+      );
+
+      // Wait for listener1 to be called
+      await completer1.future.timeout(Duration(seconds: 1));
+
+      // Listener1 should be called, listener2 should not
+      expect(listener1Called, isTrue);
+      expect(listener2Called, isFalse);
+
+      // Second query should remain unchanged
+      final finalCached2 = ProcessListResponse.fromCache(ctx, variables2);
+      expect(finalCached2.processList, "result2");
     });
   });
 }
