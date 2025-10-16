@@ -224,17 +224,19 @@ null
         {% if is_optional %}
             {{ value_symbol }} == null ? null :
         {% endif -%}
+        {%- set should_pass_variables = op_variables_exist and not is_selection_from_fragment(selection.full_name) -%}
                 ({{value_symbol}} is  NormalizedObjectRecord)?
-                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx{{if_op_variables(", variables")}})
-                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{if_op_variables(", variables")}})
+                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx{{", variables" if should_pass_variables}})
+                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{", variables" if should_pass_variables}})
 
     {% elif selection.kind == "Interface" %}
         {% if is_optional %}
             {{ value_symbol }} == null ? null :
         {% endif -%}
+        {%- set should_pass_variables = op_variables_exist and not is_selection_from_fragment(selection.full_name) -%}
                 ({{value_symbol}} is  NormalizedObjectRecord)?
-                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx{{if_op_variables(", variables")}})
-                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{if_op_variables(", variables")}})
+                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx{{", variables" if should_pass_variables}})
+                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{", variables" if should_pass_variables}})
 
     {% elif selection.kind == "Enum" %}
         {% set typename = selection.concrete_type.name %}
