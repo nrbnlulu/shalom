@@ -116,14 +116,17 @@ void main() {
         'inputListWithDefaultsCacheNormalizationDefaults - update default and check different value stays same',
         () async {
       final ctx = ShalomCtx.withCapacity();
-      final variablesDefault = ProcessListVariables(input: ListInput()); // uses default items: []
-      final variablesDifferent = ProcessListVariables(input: ListInput(items: ["c"]));
+      final variablesDefault =
+          ProcessListVariables(input: ListInput()); // uses default items: []
+      final variablesDifferent =
+          ProcessListVariables(input: ListInput(items: ["c"]));
 
       final dataDefault = {"processList": "defaultResult"};
       final dataDifferent = {"processList": "differentResult"};
 
       // First query with defaults
-      var (resultDefault, updateCtxDefault) = ProcessListResponse.fromResponseImpl(
+      var (resultDefault, updateCtxDefault) =
+          ProcessListResponse.fromResponseImpl(
         dataDefault,
         ctx,
         variablesDefault,
@@ -131,7 +134,8 @@ void main() {
       expect(resultDefault.processList, "defaultResult");
 
       // Second query with different params
-      var (resultDifferent, updateCtxDifferent) = ProcessListResponse.fromResponseImpl(
+      var (resultDifferent, updateCtxDifferent) =
+          ProcessListResponse.fromResponseImpl(
         dataDifferent,
         ctx,
         variablesDifferent,
@@ -139,8 +143,10 @@ void main() {
       expect(resultDifferent.processList, "differentResult");
 
       // Both should be cached separately
-      final cachedDefault = ProcessListResponse.fromCache(ctx, variablesDefault);
-      final cachedDifferent = ProcessListResponse.fromCache(ctx, variablesDifferent);
+      final cachedDefault =
+          ProcessListResponse.fromCache(ctx, variablesDefault);
+      final cachedDifferent =
+          ProcessListResponse.fromCache(ctx, variablesDifferent);
       expect(cachedDefault.processList, "defaultResult");
       expect(cachedDifferent.processList, "differentResult");
 
@@ -180,7 +186,8 @@ void main() {
       expect(listenerDifferentCalled, isFalse);
 
       // Different query should remain unchanged
-      final finalCachedDifferent = ProcessListResponse.fromCache(ctx, variablesDifferent);
+      final finalCachedDifferent =
+          ProcessListResponse.fromCache(ctx, variablesDifferent);
       expect(finalCachedDifferent.processList, "differentResult");
     });
   });
