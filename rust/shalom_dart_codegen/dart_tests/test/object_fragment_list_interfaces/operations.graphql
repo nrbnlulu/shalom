@@ -1,0 +1,47 @@
+fragment CollectionDetailsFrag on LibraryCollection {
+  items {
+    __typename
+    id
+    title
+    year
+    ... on Book {
+      author
+      pages
+    }
+    ... on Movie {
+      director
+      duration
+    }
+    ... on Music {
+      artist
+      genre
+    }
+  }
+  curator
+  createdAt
+}
+
+query GetLibraryWithCollection($libraryId: ID!) {
+  library(id: $libraryId) {
+    id
+    name
+    collection {
+      id
+      title
+      description
+      ...CollectionDetailsFrag
+    }
+  }
+}
+
+query GetLibraryWithCollectionPartial($libraryId: ID!) {
+  library(id: $libraryId) {
+    id
+    name
+    collection {
+      id
+      title
+      ...CollectionDetailsFrag
+    }
+  }
+}

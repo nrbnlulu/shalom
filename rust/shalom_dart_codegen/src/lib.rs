@@ -569,6 +569,45 @@ impl OperationEnv<'_> {
             },
         );
 
+        // Add function to check if a selection is defined in a fragment (not in the operation itself)
+        let ctx_clone2 = ctx.clone();
+        let op_ctx_clone2 = op_ctx.clone();
+        env.add_function(
+            "is_selection_from_fragment",
+            move |full_name: &str| -> bool {
+                // Check if the selection exists in the operation's own typedefs
+                // First check if it's in the operation's own selections
+                if op_ctx_clone2
+                    .get_object_selection(&full_name.to_string())
+                    .is_some()
+                {
+                    return false;
+                }
+                if op_ctx_clone2
+                    .get_union_selection(&full_name.to_string())
+                    .is_some()
+                {
+                    return false;
+                }
+                if op_ctx_clone2
+                    .get_interface_selection(&full_name.to_string())
+                    .is_some()
+                {
+                    return false;
+                }
+
+                // If not found in operation but exists in get_selection (which searches fragments),
+                // then it must be from a fragment
+                assert!(
+                    op_ctx_clone2
+                        .get_selection(&full_name.to_string(), &ctx_clone2)
+                        .is_some(),
+                    "is_selection_from_fragment: failed to find selection"
+                );
+                true
+            },
+        );
+
         Ok(OperationEnv { env })
     }
 

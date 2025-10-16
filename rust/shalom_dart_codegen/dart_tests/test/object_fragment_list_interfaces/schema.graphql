@@ -1,0 +1,48 @@
+type Query {
+    library(id: ID!): Library
+}
+
+type Library {
+    id: ID!
+    name: String!
+    collection: LibraryCollection!
+}
+
+type LibraryCollection {
+    id: ID!
+    title: String!
+    description: String
+    items: [Media!]!
+    curator: String!
+    createdAt: String!
+}
+
+interface Media {
+    id: ID!
+    title: String!
+    year: Int!
+}
+
+type Book implements Media {
+    id: ID!
+    title: String!
+    year: Int!
+    author: String!
+    pages: Int!
+}
+
+type Movie implements Media {
+    id: ID!
+    title: String!
+    year: Int!
+    director: String!
+    duration: Int!
+}
+
+type Music implements Media {
+    id: ID!
+    title: String!
+    year: Int!
+    artist: String!
+    genre: String!
+}
