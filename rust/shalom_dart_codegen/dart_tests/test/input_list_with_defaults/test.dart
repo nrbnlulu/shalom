@@ -112,5 +112,76 @@ void main() {
       final finalCached2 = ProcessListResponse.fromCache(ctx, variables2);
       expect(finalCached2.processList, "result2");
     });
+    test(
+        'inputListWithDefaultsCacheNormalizationDefaults - update default and check different value stays same',
+        () async {
+      final ctx = ShalomCtx.withCapacity();
+      final variablesDefault = ProcessListVariables(input: ListInput()); // uses default items: []
+      final variablesDifferent = ProcessListVariables(input: ListInput(items: ["c"]));
+
+      final dataDefault = {"processList": "defaultResult"};
+      final dataDifferent = {"processList": "differentResult"};
+
+      // First query with defaults
+      var (resultDefault, updateCtxDefault) = ProcessListResponse.fromResponseImpl(
+        dataDefault,
+        ctx,
+        variablesDefault,
+      );
+      expect(resultDefault.processList, "defaultResult");
+
+      // Second query with different params
+      var (resultDifferent, updateCtxDifferent) = ProcessListResponse.fromResponseImpl(
+        dataDifferent,
+        ctx,
+        variablesDifferent,
+      );
+      expect(resultDifferent.processList, "differentResult");
+
+      // Both should be cached separately
+      final cachedDefault = ProcessListResponse.fromCache(ctx, variablesDefault);
+      final cachedDifferent = ProcessListResponse.fromCache(ctx, variablesDifferent);
+      expect(cachedDefault.processList, "defaultResult");
+      expect(cachedDifferent.processList, "differentResult");
+
+      // Set up listeners for both
+      final completerDefault = Completer<bool>();
+      final completerDifferent = Completer<bool>();
+      bool listenerDefaultCalled = false;
+      bool listenerDifferentCalled = false;
+
+      final subDefault = ctx.subscribe(updateCtxDefault.dependantRecords);
+      subDefault.streamController.stream.listen((newCtx) {
+        final updated = ProcessListResponse.fromCache(newCtx, variablesDefault);
+        expect(updated.processList, "updatedDefault");
+        listenerDefaultCalled = true;
+        completerDefault.complete(true);
+      });
+
+      final subDifferent = ctx.subscribe(updateCtxDifferent.dependantRecords);
+      subDifferent.streamController.stream.listen((newCtx) {
+        listenerDifferentCalled = true;
+        completerDifferent.complete(true);
+      });
+
+      // Update cache for default query
+      final updatedDataDefault = {"processList": "updatedDefault"};
+      ProcessListResponse.fromResponse(
+        updatedDataDefault,
+        ctx: ctx,
+        variables: variablesDefault,
+      );
+
+      // Wait for listenerDefault to be called
+      await completerDefault.future.timeout(Duration(seconds: 1));
+
+      // listenerDefault should be called, listenerDifferent should not
+      expect(listenerDefaultCalled, isTrue);
+      expect(listenerDifferentCalled, isFalse);
+
+      // Different query should remain unchanged
+      final finalCachedDifferent = ProcessListResponse.fromCache(ctx, variablesDifferent);
+      expect(finalCachedDifferent.processList, "differentResult");
+    });
   });
 }
