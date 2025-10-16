@@ -7,7 +7,6 @@ use std::{
 use indexmap::IndexMap;
 
 use apollo_compiler::Node;
-use log::info;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -493,7 +492,6 @@ pub enum HasIdSelection {
 pub fn has_id_selection(ctx: &ShalomGlobalContext, selection: &Selection) -> HasIdSelection {
     match &selection.kind {
         SelectionKind::Scalar(_) => {
-      
             // Check if this field itself is named "id"
             if selection.selection_common.name == "id" {
                 HasIdSelection::TRUE
@@ -503,7 +501,6 @@ pub fn has_id_selection(ctx: &ShalomGlobalContext, selection: &Selection) -> Has
         }
         SelectionKind::Enum(_) => HasIdSelection::FALSE,
         SelectionKind::Object(object) => {
-
             // Check if any of the object's selections is named "id"
             let res: Vec<_> = object
                 .selections
