@@ -23,6 +23,7 @@ use std::{
     fs,
     hash::{DefaultHasher, Hash, Hasher},
     path::{Path, PathBuf},
+    process::Command,
     sync::Arc,
 };
 
@@ -251,10 +252,12 @@ fn number_to_abc(n: u32) -> String {
     }
     result
 }
+
 trait SymbolName {
     fn symbol_fullname(&self) -> String;
     fn namespace(&self) -> Option<String>;
 }
+
 impl SymbolName for RuntimeSymbolDefinition {
     fn namespace(&self) -> Option<String> {
         self.import_path.as_ref().map(|p| {
@@ -272,6 +275,12 @@ impl SymbolName for RuntimeSymbolDefinition {
         }
     }
 }
+#[derive(Debug, Clone)]
+pub struct CodegenOptions {
+    pub pwd: Option<PathBuf>,
+    pub strict: bool,
+    pub fmt: bool,
+}
 
 struct SchemaEnv<'a> {
     env: Environment<'a>,
@@ -284,6 +293,7 @@ struct OperationEnv<'a> {
 struct FragmentEnv<'a> {
     env: Environment<'a>,
 }
+
 /// Helper function to find pubspec.yaml and extract package name
 fn find_pubspec_and_package_name(start_path: &Path) -> Result<(PathBuf, String), String> {
     let mut current_dir = start_path.parent();
@@ -810,6 +820,7 @@ fn generate_operations_file(
     );
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
+
     Ok(())
 }
 
@@ -842,8 +853,8 @@ fn generate_fragment_file(
     Ok(())
 }
 
-pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
-    let ctx = shalom_core::entrypoint::parse_directory(pwd, strict)?;
+pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
+    let ctx = shalom_core::entrypoint::parse_directory(&options.pwd, options.strict)?;
     let pwd = &ctx.config.project_root;
     info!("codegen started in working directory {}", pwd.display());
 
@@ -901,7 +912,7 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
             additional_imports.clone(),
         );
         if let Err(err) = res {
-            if strict {
+            if options.strict {
                 return Err(err);
             }
             error!(
@@ -915,13 +926,17 @@ pub fn codegen_entry_point(pwd: &Option<PathBuf>, strict: bool) -> Result<()> {
     for (name, operation) in ctx.operations() {
         let res = generate_operations_file(&ctx, &name, operation, additional_imports.clone());
         if let Err(err) = res {
-            if strict {
+            if options.strict {
                 return Err(err);
             }
             error!("Failed to generate operation '{}' due to: {}", name, err);
         }
     }
 
+    if options.fmt {
+        info!("Formatting generated Dart files...");
+        format_generated_files(pwd)?;
+    }
     Ok(())
 }
 
@@ -934,4 +949,36 @@ fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContex
     let generation_target = output_dir.join(format!("schema.{}", END_OF_FILE));
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
+}
+
+fn format_generated_files(pwd: &Path) -> Result<()> {
+    #[cfg(target_os = "windows")]
+    {
+        let output = Command::new("powershell")
+            .arg("-Command")
+            .arg("Get-ChildItem -Recurse -Filter '*.shalom.dart' | ForEach-Object { dart format $_.FullName }")
+            .current_dir(pwd)
+            .output()?;
+        if !output.status.success() {
+            error!(
+                "Failed to format files: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        let output = Command::new("sh")
+            .arg("-c")
+            .arg("find . -type f -name '*.shalom.dart' -print0 | xargs -0 dart format")
+            .current_dir(pwd)
+            .output()?;
+        if !output.status.success() {
+            error!(
+                "Failed to format files: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+        }
+    }
+    Ok(())
 }

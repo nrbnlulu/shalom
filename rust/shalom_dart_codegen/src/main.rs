@@ -2,6 +2,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 use notify::{RecursiveMode, Watcher};
 use notify_debouncer_full::new_debouncer;
+use shalom_dart_codegen::CodegenOptions;
 use std::path::PathBuf;
 use std::sync::{
     atomic::{AtomicBool, Ordering},
@@ -28,6 +29,10 @@ enum Commands {
         /// Fail on first error instead of continuing
         #[arg(short, long, default_value_t = false)]
         strict: bool,
+
+        /// Auto format generated Dart files after generation
+        #[arg(short, long, default_value_t = false)]
+        fmt: bool,
     },
     /// Watch for changes in GraphQL files and regenerate code
     Watch {
@@ -38,6 +43,10 @@ enum Commands {
         /// Fail on first error instead of continuing
         #[arg(short, long, default_value_t = false)]
         strict: bool,
+
+        /// Auto format generated Dart files after generation
+        #[arg(short, long, default_value_t = false)]
+        fmt: bool,
     },
 }
 
@@ -48,14 +57,17 @@ fn main() -> Result<()> {
         .unwrap();
 
     let cli = Cli::parse();
-
     match cli.command {
-        Commands::Generate { path, strict } => {
+        Commands::Generate { path, strict, fmt } => {
             log::info!("Running code generation...");
-            shalom_dart_codegen::codegen_entry_point(&path, strict)?;
+            shalom_dart_codegen::codegen_entry_point(CodegenOptions {
+                pwd: path,
+                strict,
+                fmt,
+            })?;
             log::info!("Code generation completed successfully!");
         }
-        Commands::Watch { path, strict } => {
+        Commands::Watch { path, strict, fmt } => {
             log::info!("Starting watch mode...");
 
             // Add atomic flag to prevent concurrent codegen runs
@@ -68,7 +80,11 @@ fn main() -> Result<()> {
                     .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
                     .is_ok()
                 {
-                    match shalom_dart_codegen::codegen_entry_point(&path, strict) {
+                    match shalom_dart_codegen::codegen_entry_point(CodegenOptions {
+                        pwd: path.clone(),
+                        strict,
+                        fmt,
+                    }) {
                         Ok(_) => log::info!("Initial code generation completed successfully!"),
                         Err(e) => log::error!("Initial code generation failed: {}", e),
                     }
@@ -117,7 +133,11 @@ fn main() -> Result<()> {
                                 .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
                                 .is_ok()
                             {
-                                match shalom_dart_codegen::codegen_entry_point(&path, strict) {
+                                match shalom_dart_codegen::codegen_entry_point(CodegenOptions {
+                                    pwd: path.clone(),
+                                    strict,
+                                    fmt,
+                                }) {
                                     Ok(_) => log::info!("Code generation completed successfully!"),
                                     Err(e) => log::error!("Code generation failed: {}", e),
                                 }
