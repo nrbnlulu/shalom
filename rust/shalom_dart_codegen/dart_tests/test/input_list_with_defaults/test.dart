@@ -41,139 +41,95 @@ void main() {
       expect(input1.toJson(), equals(input2.toJson()));
     });
 
-    test(
-        'inputListWithDefaultsCacheNormalization - different parameters use separate cache entries',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables1 = ProcessListVariables(input: ListInput(items: ["a"]));
-      final variables2 = ProcessListVariables(input: ListInput(items: ["b"]));
+    final data1 = {"processList": "result1"};
+    final data2 = {"processList": "result2"};
 
-      final data1 = {"processList": "result1"};
-      final data2 = {"processList": "result2"};
+    test('inputListWithDefaultsCacheNotificationsDontHappen', () async {
+      // Make operation, listen for cache updates,
+      // make another query with different parameters,
+      // verify listener is NOT called
 
-      // First query
-      var (result1, updateCtx1) = ProcessListResponse.fromResponseImpl(
-        data1,
-        ctx,
-        variables1,
-      );
-      expect(result1.processList, "result1");
-
-      // Second query with different params
-      var (result2, updateCtx2) = ProcessListResponse.fromResponseImpl(
-        data2,
-        ctx,
-        variables2,
-      );
-      expect(result2.processList, "result2");
-
-      // Both should be cached separately
-      final cached1 = ProcessListResponse.fromCache(ctx, variables1);
-      final cached2 = ProcessListResponse.fromCache(ctx, variables2);
-      expect(cached1.processList, "result1");
-      expect(cached2.processList, "result2");
-
-      // Set up listeners for both
-      final completer1 = Completer<bool>();
-      final completer2 = Completer<bool>();
-      bool listener1Called = false;
-      bool listener2Called = false;
-
-      final sub1 = ctx.subscribe(updateCtx1.dependantRecords);
-      sub1.streamController.stream.listen((newCtx) {
-        final updated = ProcessListResponse.fromCache(newCtx, variables1);
-        expect(updated.processList, "updated1");
-        listener1Called = true;
-        completer1.complete(true);
-      });
-
-      final sub2 = ctx.subscribe(updateCtx2.dependantRecords);
-      sub2.streamController.stream.listen((newCtx) {
-        listener2Called = true;
-        completer2.complete(true);
-      });
-
-      // Update cache for first query
-      final updatedData1 = {"processList": "updated1"};
-      ProcessListResponse.fromResponse(
-        updatedData1,
-        ctx: ctx,
-        variables: variables1,
-      );
-
-      // Wait for listener1 to be called
-      await completer1.future.timeout(Duration(seconds: 1));
-
-      // Listener1 should be called, listener2 should not
-      expect(listener1Called, isTrue);
-      expect(listener2Called, isFalse);
-
-      // Second query should remain unchanged
-      final finalCached2 = ProcessListResponse.fromCache(ctx, variables2);
-      expect(finalCached2.processList, "result2");
-    });
-    test(
-        'inputListWithDefaultsCacheNormalizationDefaults - update default and check different value stays same',
-        () async {
       final ctx = ShalomCtx.withCapacity();
       final variablesDefault =
           ProcessListVariables(input: ListInput()); // uses default items: []
       final variablesDifferent =
           ProcessListVariables(input: ListInput(items: ["c"]));
 
-      final dataDefault = {"processList": "defaultResult"};
-      final dataDifferent = {"processList": "differentResult"};
+      // First query with defaults
+      var (resultDefault, updateCtxDefault) =
+          ProcessListResponse.fromResponseImpl(
+        data1,
+        ctx,
+        variablesDefault,
+      );
+
+      //expect(resultDefault.toJson(), data1);
+
+      final defaultGotUpdate = Completer<bool>();
+
+      // sub updateCtxDefault -> true defaultGotUpdate
+      final sub1 = ctx.subscribe(updateCtxDefault.dependantRecords);
+      sub1.streamController.stream.listen((newCtx) {
+        final updated = ProcessListResponse.fromCache(newCtx, variablesDefault);
+        expect(updated.processList, "updated1");
+        defaultGotUpdate.complete(true);
+      });
+
+      // make query for second parameters
+      final _ = ProcessListResponse.fromResponse(
+        data2,
+        ctx: ctx,
+        variables: variablesDifferent,
+      );
+
+      void checkCacheUpdate() async {
+        // Wait for listenerDefault to be called
+        await defaultGotUpdate.future.timeout(Duration(seconds: 1));
+      }
+
+      // check that listener was not called
+      expect(checkCacheUpdate, throwsA(isA<TimeoutException>()));
+
+      // first query should remain unchanged
+      expect(
+          ProcessListResponse.fromCache(ctx, variablesDefault).toJson(), data1);
+
+      // second query should be updated
+      expect(ProcessListResponse.fromCache(ctx, variablesDifferent).toJson(),
+          data2);
+    });
+
+    test('inputListWithDefaultsCacheNotificationsHappen', () async {
+      // Make operation, listen for cache updates,
+      // make another query with different results but same parameters,
+      // verify listener is called
+
+      final ctx = ShalomCtx.withCapacity();
+      final variablesDefault =
+          ProcessListVariables(input: ListInput()); // uses default items: []
 
       // First query with defaults
       var (resultDefault, updateCtxDefault) =
           ProcessListResponse.fromResponseImpl(
-        dataDefault,
+        data1,
         ctx,
         variablesDefault,
       );
-      expect(resultDefault.processList, "defaultResult");
+      expect(resultDefault.toJson(), data1);
 
-      // Second query with different params
-      var (resultDifferent, updateCtxDifferent) =
-          ProcessListResponse.fromResponseImpl(
-        dataDifferent,
-        ctx,
-        variablesDifferent,
-      );
-      expect(resultDifferent.processList, "differentResult");
-
-      // Both should be cached separately
-      final cachedDefault =
-          ProcessListResponse.fromCache(ctx, variablesDefault);
-      final cachedDifferent =
-          ProcessListResponse.fromCache(ctx, variablesDifferent);
-      expect(cachedDefault.processList, "defaultResult");
-      expect(cachedDifferent.processList, "differentResult");
-
-      // Set up listeners for both
+      // Set up listener
       final completerDefault = Completer<bool>();
-      final completerDifferent = Completer<bool>();
-      bool listenerDefaultCalled = false;
-      bool listenerDifferentCalled = false;
 
       final subDefault = ctx.subscribe(updateCtxDefault.dependantRecords);
       subDefault.streamController.stream.listen((newCtx) {
         final updated = ProcessListResponse.fromCache(newCtx, variablesDefault);
-        expect(updated.processList, "updatedDefault");
-        listenerDefaultCalled = true;
+        expect(updated.toJson(), data2);
         completerDefault.complete(true);
       });
 
-      final subDifferent = ctx.subscribe(updateCtxDifferent.dependantRecords);
-      subDifferent.streamController.stream.listen((newCtx) {
-        listenerDifferentCalled = true;
-        completerDifferent.complete(true);
-      });
-
       // Update cache for default query
-      final updatedDataDefault = {"processList": "updatedDefault"};
       ProcessListResponse.fromResponse(
-        updatedDataDefault,
+        data2,
         ctx: ctx,
         variables: variablesDefault,
       );
@@ -181,14 +137,11 @@ void main() {
       // Wait for listenerDefault to be called
       await completerDefault.future.timeout(Duration(seconds: 1));
 
-      // listenerDefault should be called, listenerDifferent should not
-      expect(listenerDefaultCalled, isTrue);
-      expect(listenerDifferentCalled, isFalse);
+      // Check that cache is updated correctly
+      final cachedDefaultAfterUpdate =
+          ProcessListResponse.fromCache(ctx, variablesDefault);
 
-      // Different query should remain unchanged
-      final finalCachedDifferent =
-          ProcessListResponse.fromCache(ctx, variablesDifferent);
-      expect(finalCachedDifferent.processList, "differentResult");
+      expect(cachedDefaultAfterUpdate.toJson(), data2);
     });
   });
 }
