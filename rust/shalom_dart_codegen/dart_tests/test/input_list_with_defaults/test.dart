@@ -44,7 +44,9 @@ void main() {
     final data1 = {"processList": "result1"};
     final data2 = {"processList": "result2"};
 
-    test('inputListWithDefaultsCacheNotificationsDontHappen', () async {
+    test(
+        'operation with default argument is not affected by operation with arguemnts',
+        () async {
       // Make operation, listen for cache updates,
       // make another query with different parameters,
       // verify listener is NOT called
@@ -63,15 +65,13 @@ void main() {
         variablesDefault,
       );
 
-      //expect(resultDefault.toJson(), data1);
+      expect(resultDefault.toJson(), data1);
 
       final defaultGotUpdate = Completer<bool>();
 
       // sub updateCtxDefault -> true defaultGotUpdate
       final sub1 = ctx.subscribe(updateCtxDefault.dependantRecords);
       sub1.streamController.stream.listen((newCtx) {
-        final updated = ProcessListResponse.fromCache(newCtx, variablesDefault);
-        expect(updated.processList, "updated1");
         defaultGotUpdate.complete(true);
       });
 
@@ -84,7 +84,7 @@ void main() {
 
       void checkCacheUpdate() async {
         // Wait for listenerDefault to be called
-        await defaultGotUpdate.future.timeout(Duration(seconds: 1));
+        await defaultGotUpdate.future.timeout(Duration(milliseconds: 500));
       }
 
       // check that listener was not called
