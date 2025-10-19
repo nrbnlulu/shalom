@@ -1,0 +1,3 @@
+query ProcessList($input: ListInput!) {
+  processList(input: $input)
+}

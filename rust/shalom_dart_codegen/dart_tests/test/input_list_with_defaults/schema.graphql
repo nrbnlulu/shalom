@@ -1,0 +1,7 @@
+input ListInput {
+  items: [String] = []
+}
+
+type Query {
+  processList(input: ListInput!): String
+}
