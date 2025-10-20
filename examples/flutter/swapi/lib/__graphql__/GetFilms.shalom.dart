@@ -94,7 +94,7 @@ class GetFilmsResponse {
     ShalomCtx ctx,
   ) {
     // first update the cache
-    final updateCtx = CacheUpdateContext(shalomContext: ctx!);
+    final updateCtx = CacheUpdateContext(shalomContext: ctx);
     normalize$inCache(data, updateCtx);
     ctx.invalidateRefs(updateCtx.changedRecords);
     return (fromCache(ctx), updateCtx);

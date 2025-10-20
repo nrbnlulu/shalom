@@ -10,7 +10,7 @@ abstract class GraphQLLink {
   });
 }
 
-/// helper class that can deserialize generaetd requests automatically
+/// helper class that can deserialize generated requests automatically
 /// and auto listen for cache updates
 class ShalomClient {
   final ShalomCtx ctx;
