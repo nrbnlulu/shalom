@@ -155,10 +155,10 @@ class {{ operation_name }}Variables {
     {{ typename }} (
         {% if op_variables_exist %}
             {
-            {{ field_initialization_logic(op_variables) }}
+            {{ field_initialization_params(op_variables) }}
             }
         {% endif %}
-    );
+    ){{ field_initialization_initializers(op_variables) }};
 
     JsonObject toJson() {
         JsonObject data = {};

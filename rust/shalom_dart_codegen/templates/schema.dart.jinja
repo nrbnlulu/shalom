@@ -43,9 +43,9 @@ class {{ typename }} {
     {% endfor %}
     {{ typename }}(
         {
-        {{ field_initialization_logic(fields) }}
+        {{ field_initialization_params(fields) }}
         }
-    );
+    ){{ field_initialization_initializers(fields) }};
 
     JsonObject toJson() {
         JsonObject data = {};
