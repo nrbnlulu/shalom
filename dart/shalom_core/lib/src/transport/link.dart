@@ -19,7 +19,7 @@ class ShalomClient {
 
   Stream<GraphQLResponse<T>> request<T>({
     required Requestable<T> requestable,
-     JsonObject ?headers, 
+    JsonObject? headers,
   }) async* {
     final meta = requestable.getRequestMeta();
 
@@ -60,7 +60,8 @@ class ShalomClient {
                 // 7. Yield the fresh data from the cache
                 yield GraphQLData(
                     data: fromCacheData,
-                    errors: res.errors, // Re-use errors from original network res
+                    errors:
+                        res.errors, // Re-use errors from original network res
                     extensions: res.extensions // Re-use extensions
                     );
 
@@ -68,7 +69,7 @@ class ShalomClient {
                 if (!keyEquals.equals(newKeys, currentSubRefs)) {
                   // 9. If keys differ, update our tracking variable...
                   currentSubRefs = newKeys;
-                  
+
                   // ...and break the inner 'await for' loop.
                   // This causes the outer 'while' loop to re-evaluate.
                   // If currentSubRefs is now empty, the while loop exits.
