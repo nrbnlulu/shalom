@@ -31,7 +31,8 @@ class RequestMeta<T> {
   final (T, Set<RecordID>) Function(
       {required JsonObject data, required ShalomCtx ctx}) loadFn;
   final (T, Set<RecordID>) Function(ShalomCtx ctx) fromCacheFn;
-  const RequestMeta({required this.request, required this.loadFn, required this.fromCacheFn});
+  const RequestMeta(
+      {required this.request, required this.loadFn, required this.fromCacheFn});
 }
 
 class Response {
@@ -114,12 +115,29 @@ class OperationContext<TVars> {
   const OperationContext({this.variables, required this.shalomCtx});
 }
 
+class ShalomTransportException implements Exception {
+  final String message;
+  final String code;
+  final JsonObject? details;
+
+  const ShalomTransportException({
+    required this.message,
+    required this.code,
+    this.details,
+  });
+
+  @override
+  String toString() {
+    return 'ShalomTransportException: $message (code: $code)';
+  }
+}
+
 sealed class GraphQLResponse<T> {
   const GraphQLResponse();
 }
 
 class LinkErrorResponse<T> extends GraphQLResponse<T> {
-  final JsonObject errors;
+  final List<Exception> errors;
   const LinkErrorResponse(this.errors);
 }
 

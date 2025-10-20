@@ -17,9 +17,9 @@ class DioTransport extends ShalomHttpTransport {
     dio.Response response;
 
     if (method == HttpMethod.GET) {
-      response = await dioClient.get(url, options: dio.Options(headers: headers));
+      response = await dioClient.get(url, data: data, options: dio.Options(headers: headers));
     } else {
-      response = await dioClient.post(url, data: request, options: dio.Options(headers: headers));
+      response = await dioClient.post(url, data: data, options: dio.Options(headers: headers));
     }
 
     return response.data;

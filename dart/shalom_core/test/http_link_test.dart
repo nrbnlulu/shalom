@@ -25,13 +25,13 @@ class FakeTransportLayer implements ShalomHttpTransport {
   Future<JsonObject> request({
     required HttpMethod method,
     required String url,
-    required JsonObject data,
+    JsonObject? data,
     JsonObject? headers,
     JsonObject? extra,
   }) async {
     lastMethod = method;
     lastUrl = url;
-    lastData = data;
+    lastData = data ?? {};
     lastHeaders = headers;
     lastExtra = extra;
 
@@ -176,7 +176,10 @@ void main() {
         expect($responses[0], isA<LinkErrorResponse>());
 
         final $error = $responses[0] as LinkErrorResponse;
-        expect($error.errors['errors'], isNotNull);
+        expect($error.errors.length, 1);
+        expect($error.errors[0], isA<ShalomTransportException>());
+        final $transportError = $error.errors[0] as ShalomTransportException;
+        expect($transportError.details?['errors'], isNotNull);
       });
 
       test('response with extensions', () async {
@@ -532,8 +535,11 @@ void main() {
         expect($responses[0], isA<LinkErrorResponse>());
 
         final $error = $responses[0] as LinkErrorResponse;
-        expect($error.errors['message'], contains('Network timeout'));
-        expect($error.errors['extensions']['code'], 'NETWORK_ERROR');
+        expect($error.errors.length, 1);
+        expect($error.errors[0], isA<ShalomTransportException>());
+        final $transportError = $error.errors[0] as ShalomTransportException;
+        expect($transportError.message, contains('Network timeout'));
+        expect($transportError.code, 'NETWORK_ERROR');
       });
 
       test('handles invalid response format (not a map)', () async {
@@ -553,8 +559,11 @@ void main() {
         expect($responses[0], isA<LinkErrorResponse>());
 
         final $error = $responses[0] as LinkErrorResponse;
-        expect($error.errors['message'], contains('Invalid response format'));
-        expect($error.errors['extensions']['code'], 'INVALID_RESPONSE_FORMAT');
+        expect($error.errors.length, 1);
+        expect($error.errors[0], isA<ShalomTransportException>());
+        final $transportError = $error.errors[0] as ShalomTransportException;
+        expect($transportError.message, contains('Invalid response format'));
+        expect($transportError.code, 'INVALID_RESPONSE_FORMAT');
       });
 
       test('handles response missing both data and errors', () async {
@@ -576,8 +585,11 @@ void main() {
         expect($responses[0], isA<LinkErrorResponse>());
 
         final $error = $responses[0] as LinkErrorResponse;
+        expect($error.errors.length, 1);
+        expect($error.errors[0], isA<ShalomTransportException>());
+        final $transportError = $error.errors[0] as ShalomTransportException;
         expect(
-            $error.errors['message'], contains('missing both data and errors'));
+            $transportError.message, contains('missing both data and errors'));
       });
 
       test('handles invalid errors format (not an array)', () async {
@@ -602,7 +614,10 @@ void main() {
         expect($responses[0], isA<LinkErrorResponse>());
 
         final $error = $responses[0] as LinkErrorResponse;
-        expect($error.errors['message'], contains('Invalid errors format'));
+        expect($error.errors.length, 1);
+        expect($error.errors[0], isA<ShalomTransportException>());
+        final $transportError = $error.errors[0] as ShalomTransportException;
+        expect($transportError.message, contains('Invalid errors format'));
       });
     });
 

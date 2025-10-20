@@ -36,7 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   dio: ^5.0.0
   shalom_core:
-    path: ../../../../dart/shalom_core
+    path: ../../../dart/shalom_core
 
 dev_dependencies:
   flutter_test:

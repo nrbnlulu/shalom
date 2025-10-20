@@ -241,10 +241,12 @@ class WebSocketLink extends GraphQLLink {
     } else {
       // Invalid response format
       $handler.controller.add(
-        LinkErrorResponse({
-          'message': 'Invalid response: missing data field',
-          'extensions': {'code': 'INVALID_RESPONSE'},
-        }),
+        LinkErrorResponse([
+          ShalomTransportException(
+            message: 'Invalid response: missing data field',
+            code: 'INVALID_RESPONSE',
+          ),
+        ]),
       );
     }
   }
@@ -259,10 +261,13 @@ class WebSocketLink extends GraphQLLink {
 
     // Emit error to the handler's stream
     $handler.controller.add(
-      LinkErrorResponse({
-        'errors': message.payload,
-        'extensions': {'code': 'GRAPHQL_ERROR'},
-      }),
+      LinkErrorResponse([
+        ShalomTransportException(
+          message: 'GraphQL operation error',
+          code: 'GRAPHQL_ERROR',
+          details: {'errors': message.payload},
+        ),
+      ]),
     );
 
     // Complete the operation
@@ -280,10 +285,12 @@ class WebSocketLink extends GraphQLLink {
     for (final $handler in _activeOperations.values) {
       if (!$handler.controller.isClosed) {
         $handler.controller.add(
-          LinkErrorResponse({
-            'message': 'WebSocket error: ${error.toString()}',
-            'extensions': {'code': 'WEBSOCKET_ERROR'},
-          }),
+          LinkErrorResponse([
+            ShalomTransportException(
+              message: 'WebSocket error: ${error.toString()}',
+              code: 'WEBSOCKET_ERROR',
+            ),
+          ]),
         );
       }
     }
@@ -295,10 +302,12 @@ class WebSocketLink extends GraphQLLink {
     for (final $handler in _pendingOperations.values) {
       if (!$handler.controller.isClosed) {
         $handler.controller.add(
-          LinkErrorResponse({
-            'message': 'Connection error: ${error.toString()}',
-            'extensions': {'code': 'CONNECTION_ERROR'},
-          }),
+          LinkErrorResponse([
+            ShalomTransportException(
+              message: 'Connection error: ${error.toString()}',
+              code: 'CONNECTION_ERROR',
+            ),
+          ]),
         );
       }
     }
@@ -347,15 +356,15 @@ class WebSocketLink extends GraphQLLink {
   }
 
   @override
-  Stream<GraphQLResponse> request({
+  Stream<GraphQLResponse<JsonObject>> request({
     required Request request,
-    required JsonObject headers,
+    JsonObject? headers,
   }) {
     // Generate unique operation ID
     final $operationId = _generateOperationId();
 
     // Create operation handler
-    final $controller = StreamController<GraphQLResponse>();
+    final $controller = StreamController<GraphQLResponse<JsonObject>>();
     final $handler = _OperationHandler(
       id: $operationId,
       request: request,
@@ -382,10 +391,12 @@ class WebSocketLink extends GraphQLLink {
     // Check if already active
     if (_activeOperations.containsKey(operationId)) {
       handler.controller.add(
-        LinkErrorResponse({
-          'message': 'Operation with ID $operationId already exists',
-          'extensions': {'code': 'DUPLICATE_OPERATION'},
-        }),
+        LinkErrorResponse([
+          ShalomTransportException(
+            message: 'Operation with ID $operationId already exists',
+            code: 'DUPLICATE_OPERATION',
+          ),
+        ]),
       );
       handler.controller.close();
       return;
@@ -492,7 +503,7 @@ class WebSocketLink extends GraphQLLink {
 class _OperationHandler {
   final String id;
   final Request request;
-  final StreamController<GraphQLResponse> controller;
+  final StreamController<GraphQLResponse<JsonObject>> controller;
 
   _OperationHandler({
     required this.id,

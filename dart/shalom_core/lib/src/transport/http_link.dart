@@ -40,16 +40,15 @@ class HttpLink extends GraphQLLink {
     this.useGet = false,
     this.defaultHeaders = const {},
   });
-  
-  
+
   @override
-  Stream<GraphQLResponse<T>> request<T>(
-      {required Request request, required JsonObject headers}) async* {
+  Stream<GraphQLResponse<JsonObject>> request(
+      {required Request request, JsonObject? headers}) async* {
     try {
       // Merge default headers with request-specific headers
       final mergedHeaders = <String, dynamic>{
         ...defaultHeaders,
-        ...headers,
+        if (headers != null) ...headers,
       };
 
       final methodForThisRequest =
@@ -84,16 +83,22 @@ class HttpLink extends GraphQLLink {
         url: url,
         data: requestBody,
         headers: finalHeaders,
+        extra: {
+          'method': methodForThisRequest.name,
+          'url': url,
+        },
       );
 
       // Parse and yield the response
       yield _parseResponse($response);
     } catch (e) {
       // Return a link error for any exceptions
-      yield LinkErrorResponse({
-        'code': 'HTTP_LINK_ERROR',
-        'message': 'Network error: ${e.toString()}',
-      });
+      yield LinkErrorResponse([
+        ShalomTransportException(
+          message: 'Network error: ${e.toString()}',
+          code: 'NETWORK_ERROR',
+        ),
+      ]);
     }
   }
 
@@ -143,43 +148,31 @@ class HttpLink extends GraphQLLink {
   }
 
   /// Parses the transport layer response into a GraphQLResponse
-  GraphQLResponse _parseResponse(dynamic response) {
+  GraphQLResponse<JsonObject> _parseResponse(JsonObject response) {
     try {
-      // Response should be a JSON object (Map)
-      if (response is! Map) {
-        return LinkErrorResponse({
-          'message': 'Invalid response format: expected JSON object',
-          'extensions': {
-            'code': 'INVALID_RESPONSE_FORMAT',
-          },
-        });
-      }
-
-      final $jsonResponse = response as JsonObject;
-
       // Check for data field
-      final $hasData = $jsonResponse.containsKey('data');
-      final $data = $jsonResponse['data'];
+      final $hasData = response.containsKey('data');
+      final $data = response['data'];
 
       // Check for errors field
-      final $errors = $jsonResponse['errors'];
+      final $errors = response['errors'];
       List<JsonObject>? $parsedErrors;
 
       if ($errors != null) {
         if ($errors is List) {
           $parsedErrors = $errors.map((e) => e as JsonObject).toList();
         } else {
-          return LinkErrorResponse({
-            'message': 'Invalid errors format: expected array',
-            'extensions': {
-              'code': 'INVALID_RESPONSE_FORMAT',
-            },
-          });
+          return LinkErrorResponse([
+            ShalomTransportException(
+              message: 'Invalid errors format: expected array',
+              code: 'INVALID_RESPONSE_FORMAT',
+            ),
+          ]);
         }
       }
 
       // Check for extensions field
-      final $extensionsRaw = $jsonResponse['extensions'];
+      final $extensionsRaw = response['extensions'];
       final $extensions = $extensionsRaw != null && $extensionsRaw is Map
           ? Map<String, dynamic>.from($extensionsRaw)
           : <String, dynamic>{};
@@ -196,12 +189,12 @@ class HttpLink extends GraphQLLink {
           $dataMap = Map<String, dynamic>.from($data);
         } else {
           // Invalid data type
-          return LinkErrorResponse({
-            'message': 'Invalid data format: expected JSON object or null',
-            'extensions': {
-              'code': 'INVALID_RESPONSE_FORMAT',
-            },
-          });
+          return LinkErrorResponse([
+            ShalomTransportException(
+              message: 'Invalid data format: expected JSON object or null',
+              code: 'INVALID_RESPONSE_FORMAT',
+            ),
+          ]);
         }
 
         return GraphQLData(
@@ -211,26 +204,29 @@ class HttpLink extends GraphQLLink {
         );
       } else if ($parsedErrors != null) {
         // No data field, but has errors - this is a request error
-        return LinkErrorResponse({
-          'errors': $parsedErrors,
-          'extensions': $extensions,
-        });
+        return LinkErrorResponse([
+          ShalomTransportException(
+            message: 'GraphQL request error',
+            code: 'GRAPHQL_ERROR',
+            details: {'errors': $parsedErrors, 'extensions': $extensions},
+          ),
+        ]);
       } else {
         // Neither data nor errors - invalid response
-        return LinkErrorResponse({
-          'message': 'Invalid GraphQL response: missing both data and errors',
-          'extensions': {
-            'code': 'INVALID_RESPONSE_FORMAT',
-          },
-        });
+        return LinkErrorResponse([
+          ShalomTransportException(
+            message: 'Invalid GraphQL response: missing both data and errors',
+            code: 'INVALID_RESPONSE_FORMAT',
+          ),
+        ]);
       }
     } catch (e) {
-      return LinkErrorResponse({
-        'message': 'Failed to parse response: ${e.toString()}',
-        'extensions': {
-          'code': 'RESPONSE_PARSE_ERROR',
-        },
-      });
+      return LinkErrorResponse([
+        ShalomTransportException(
+          message: 'Failed to parse response: ${e.toString()}',
+          code: 'RESPONSE_PARSE_ERROR',
+        ),
+      ]);
     }
   }
 }

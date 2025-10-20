@@ -108,7 +108,7 @@ import '{{ import_path }}';
 
 // ------------ END INTERFACE DEFINITIONS -------------
 
-class Request{{ operation_name }} extends Requestable {
+class Request{{ operation_name }} extends Requestable<{{operation_name}}Response>{
     {% if op_variables_exist %}
     final {{ operation_name }}Variables variables;
     {% endif %}
@@ -120,13 +120,10 @@ class Request{{ operation_name }} extends Requestable {
         }
         {% endif %}
     );
-
     @override
-    Request<{{ operation_name }}> toRequest({
-        ShalomCtx? ctx
-    }) {
+    RequestMeta<{{operation_name}}Response> getRequestMeta(){
         JsonObject variablesJson = {% if op_variables_exist %} variables.toJson() {% else %} {}  {% endif %};
-        return Request(
+        final request = Request(
             query: r"""{{ operation.context.query }}
 {% for fragment in operation.context.used_fragments %}
 {{ fragment.fragment_raw }}
@@ -134,11 +131,20 @@ class Request{{ operation_name }} extends Requestable {
             variables: variablesJson,
             opType: OperationType.{{ operation.context.op_ty.name }},
             opName: '{{ operation_name }}',
-            dataConverter: (raw) => Request{{ operation_name }}.
+        );
+        return RequestMeta(
+            request: request,
+            loadFn: ({required JsonObject data, required ShalomCtx ctx}){
+                final (deserialized, updatedCtx) = {{operation_name}}Response.fromResponseImpl(data, ctx);
+                return (deserialized, updatedCtx.dependantRecords);
+            },
+            fromCacheFn: (ShalomCtx ctx){
+                final updateCtx = CacheUpdateContext(shalomContext: ctx);
+                final deserialized = {{operation_name}}Response.fromCache(ctx);
+                return (deserialized, updateCtx.dependantRecords);
+            }
         );
     }
-    
-    
 }
 
 {% if op_variables_exist %}
