@@ -1,4 +1,4 @@
-import 'package:shalom_core/shalom_core.dart' show RecordID;
+import 'normelized_cache.dart' show RecordID;
 
 import 'shalom_ctx.dart' show ShalomCtx;
 
@@ -67,7 +67,7 @@ class None<T> implements Maybe<T> {
   bool isSome() => false;
 
   @override
-  void inspect(void Function(T) _) => ();
+  void inspect(void Function(T) _) {}
 
   @override
   bool operator ==(Object other) {
