@@ -36,14 +36,16 @@ import 'package:shalom_core/shalom_core.dart';
 // ------------ Input DEFINITIONS -------------
 {% for _, input_object in schema.context.types.inputs | items %}
 {% set typename = input_object.name %}
+{% set fields_requiring_initializer_list = get_fields_requiring_initializer_list(fields) %}
 class {{ typename }} {
-    {% set fields = input_object.fields %}
-    {% for name, field in fields | items %}
+    {% for name, field in input_object.fields | items -%}
         final {{ type_name_for_input_field(field) }} {{ name }};
-    {% endfor %}
+    {% endfor -%}
     {{ typename }}(
         {
-        {{ field_initialization_params(fields) }}
+        {% for name, field in input_object.fields | items -%}
+            {{name}}:
+        {% endfor -%}
         }
     ){{ field_initialization_initializers(fields) }};
 

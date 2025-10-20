@@ -152,50 +152,46 @@ import '{{path}}' as {{ namespace_alias }};
 }
 {% endmacro %}
 
-{% macro field_initialization_params(fields) %}
-{% set initializer_fields = get_fields_requiring_initializer_list(fields) %}
-{% for name, field in fields | items %}
-    {% if name in initializer_fields %}
-        {# Field will use initializer list - has non-builtin-scalar default #}
-        {% set default_val = parse_field_default_value_deserializer(field) %}
-        {% if default_val == "null" %}
-            {# Default is null - no initializer needed, just use this.field #}
+{% macro input_field_constructor_initialization(field, required_initializer=false) %}
+    {% if required_initializer -%}
+        {% if field.default_value is none -%}
+            {{panic("no default value, no way that it needs an initializer list ")}}
+        {% endif -%}            
+            
+        {% set default_val = parse_field_default_value_deserializer(field) -%}
+        {% if default_val == "null" -%}
+            {# Default is null - no initializer needed, just use this.field -#}
             this.{{ name }}
         {% else %}
-            {# Non-null default - need initializer list #}
-            {% if field.is_optional %}
-                {{type_name_for_input_field(field)}} {{ name }}
-            {% else %}
+            {% if field.is_maybe or not field.is_optional -%}
                 {{type_name_for_input_field(field)}}? {{ name }}
-            {% endif %}
+            {% else -%}
+                Maybe<{{type_name_for_input_field(field)}}> {{ name }}
         {% endif %}
     {% else %}
         {# Field NOT in initializer list #}
-        {% if not field.is_optional %}
-            {% if field.default_value is not none %}
-                {# Required builtin scalar with default - use direct default value #}
+        {% if not field.is_optional -%}
+            {% if field.default_value is not none -%}
                 this.{{ name }} = {{ parse_field_default_value_deserializer(field) }}
-            {% else %}
-                {# Required field without default #}
+            {% else -%}
                 required this.{{name}}
-            {% endif %}
-        {% else %}
+            {% endif -%}
+        {% else -%}
             {# Optional field #}
-            {% if field.default_value is not none %}
-                {# Optional builtin scalar with default - use direct default value #}
-                {% set default_val = parse_field_default_value_deserializer(field) %}
-                {% if default_val == "null" %}
-                this.{{ name }}
-                {% else %}
-                this.{{ name }} = {{ default_val }}
-                {% endif %}
-            {% else %}
+            {% if field.is_maybe %}
                 {# Optional field without default - standard Maybe pattern #}
                 this.{{ name }} = const None()
+            {% else %}
+                {# Optional field that have a default value #}
+                {% set default_val = parse_field_default_value_deserializer(field) -%}
+                {% if default_val == "null" -%}
+                    this.{{ name }}
+                {% else -%}
+                    this.{{ name }} = {{ default_val }}
+                {% endif %}
             {% endif %}
         {% endif %}
-    {% endif %},
-    {% endfor %}
+    {% endif %}
 {% endmacro %}
 
 {% macro field_initialization_initializers(fields) %}

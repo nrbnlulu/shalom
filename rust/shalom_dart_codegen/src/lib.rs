@@ -177,15 +177,16 @@ mod ext_jinja_fns {
             GraphQLAny::Enum(enum_) => {
                 format!("{}.{}", enum_.name, default_value)
             }
-            GraphQLAny::Scalar(scalar) => match scalar.name.as_str() {
-                "ID" | "String" | "Int" | "Float" | "Boolean" => default_value,
-                _ => {
+            GraphQLAny::Scalar(scalar) => {
+                if scalar.is_built_in() {
+                    default_value
+                } else {
                     // Custom scalar - need to deserialize
                     let scalar_impl =
                         ext_jinja_fns::custom_scalar_impl_fullname(ctx, scalar.name.clone());
                     format!("{}.deserialize({})", scalar_impl, default_value)
                 }
-            },
+            }
             GraphQLAny::List { of_type: _ } => format!("const {}", default_value),
             _ => default_value,
         }
@@ -193,78 +194,26 @@ mod ext_jinja_fns {
 
     pub fn get_fields_requiring_initializer_list(
         ctx: &SharedShalomGlobalContext,
-        fields: minijinja::Value,
-    ) -> Vec<String> {
-        let mut result = Vec::new();
-
-        if let Ok(iter) = fields.try_iter() {
-            for key in iter {
-                let name = key.to_string();
-                if let Ok(field_value) = fields.get_item(&key) {
-                    // Try to deserialize the field via serde_json
-                    if let Ok(field_json) = serde_json::to_value(&field_value) {
-                        if let Ok(field_def) =
-                            serde_json::from_value::<InputFieldDefinition>(field_json)
-                        {
-                            if field_def.default_value.is_none() {
-                                continue;
-                            }
-
-                            let resolved_type =
-                                field_def.common.unresolved_type.resolve(&ctx.schema_ctx);
-
-                            // Check if field type is a built-in scalar
-                            let is_builtin_scalar = match &resolved_type.ty {
-                                GraphQLAny::Scalar(scalar) => matches!(
-                                    scalar.name.as_str(),
-                                    "ID" | "String" | "Int" | "Float" | "Boolean"
-                                ),
-                                _ => false,
-                            };
-
-                            // Built-in scalars with defaults don't need initializer list (can use default parameter)
-                            // Non-builtin types (custom scalars, enums, lists, objects) need initializer list
-                            if !is_builtin_scalar {
-                                result.push(name);
-                            }
-                        }
-                    }
-                }
+        fields: ViaDeserialize<HashMap<String, InputFieldDefinition>>,
+    ) -> HashMap<String, InputFieldDefinition> {
+        let mut result = HashMap::new();
+        for (name, field) in fields.iter() {
+            // Try to deserialize the field via serde_json
+            if field.default_value.is_none() {
+                continue;
+            }
+            let resolved_type = field.common.unresolved_type.resolve(&ctx.schema_ctx);
+            // Check if field type is a built-in scalar
+            if  !(match &resolved_type.ty {
+                GraphQLAny::Scalar(scalar) => scalar.is_built_in(),
+                _ => false,
+            }) {
+                result.insert(name.clone(), field.clone());   
             }
         }
-
         result
     }
 
-    pub fn field_needs_initializer_for_custom_scalar(
-        ctx: &SharedShalomGlobalContext,
-        field: ViaDeserialize<InputFieldDefinition>,
-    ) -> bool {
-        let field = field.0;
-
-        // Only fields with default values need checking
-        if field.default_value.is_none() {
-            return false;
-        }
-
-        // Required fields always use initializer list
-        let resolved_type = field.common.unresolved_type.resolve(&ctx.schema_ctx);
-        if !resolved_type.is_optional {
-            return true;
-        }
-
-        // Optional fields only need initializer list for custom scalars
-        match &resolved_type.ty {
-            GraphQLAny::Scalar(scalar) => {
-                // Custom scalars (not built-in) need initializer list
-                !matches!(
-                    scalar.name.as_str(),
-                    "ID" | "String" | "Int" | "Float" | "Boolean"
-                )
-            }
-            _ => false, // Enums, objects, etc. can use default parameter values
-        }
-    }
 
     pub fn resolve_field_type(
         schema_ctx: &SchemaContext,
@@ -415,7 +364,9 @@ fn register_default_template_fns<'a>(
         "selection_macros",
         include_str!("../templates/selection_macros.dart.jinja"),
     )?;
-
+    env.add_function("panic", move |a: &str| -> minijinja::Value {
+        panic!("{a}");
+    });
     let ctx_clone = ctx.clone();
     env.add_function("type_name_for_selection", move |a: _| {
         ext_jinja_fns::type_name_for_selection(&ctx_clone, a)
@@ -433,12 +384,7 @@ fn register_default_template_fns<'a>(
 
     let ctx_clone = ctx.clone();
     env.add_function("get_fields_requiring_initializer_list", move |a: _| {
-        ext_jinja_fns::get_fields_requiring_initializer_list(&ctx_clone, a)
-    });
-
-    let ctx_clone = ctx.clone();
-    env.add_function("field_needs_initializer_for_custom_scalar", move |a: _| {
-        ext_jinja_fns::field_needs_initializer_for_custom_scalar(&ctx_clone, a)
+        minijinja::Value::from_serialize(ext_jinja_fns::get_fields_requiring_initializer_list(&ctx_clone, a))
     });
 
     let schema_ctx_clone = ctx.schema_ctx.clone();
