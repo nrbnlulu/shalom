@@ -13,9 +13,10 @@ void main() {
     var variablesUpdated = variables.updateWith(status: Status.COMPLETED);
     expect(variablesUpdated.status, Status.COMPLETED);
     expect(variables.toJson(), {"status": "SENT"});
-    final req = RequestEnumRequired(
-      variables: EnumRequiredVariables(status: Status.COMPLETED),
-    ).toRequest();
+    final req =
+        RequestEnumRequired(
+          variables: EnumRequiredVariables(status: Status.COMPLETED),
+        ).toRequest();
     expect(req.variables, {"status": "COMPLETED"});
   });
 
@@ -55,11 +56,12 @@ void main() {
     );
     expect(variablesUpdated.order.status, Status.COMPLETED);
 
-    final req = RequestEnumInputObjectRequired(
-      variables: EnumInputObjectRequiredVariables(
-        order: OrderUpdate(status: Status.PROCESSING, timeLeft: 2),
-      ),
-    ).toRequest();
+    final req =
+        RequestEnumInputObjectRequired(
+          variables: EnumInputObjectRequiredVariables(
+            order: OrderUpdate(status: Status.PROCESSING, timeLeft: 2),
+          ),
+        ).toRequest();
     expect(req.variables, {
       "order": {"status": "PROCESSING", "timeLeft": 2},
     });
@@ -70,8 +72,10 @@ void main() {
       order: OrderUpdateStatusMaybe(status: Some(null), timeLeft: 2),
     );
     final variablesUpdated = variables.updateWith(
-      order:
-          OrderUpdateStatusMaybe(status: Some(Status.COMPLETED), timeLeft: 3),
+      order: OrderUpdateStatusMaybe(
+        status: Some(Status.COMPLETED),
+        timeLeft: 3,
+      ),
     );
     expect(variablesUpdated.order.status, Some<Status?>(Status.COMPLETED));
     final req =
@@ -82,9 +86,10 @@ void main() {
   });
 
   test("optional enum argument with default value", () {
-    final req = RequestEnumWithDefaultValue(
-      variables: EnumWithDefaultValueVariables(),
-    ).toRequest();
+    final req =
+        RequestEnumWithDefaultValue(
+          variables: EnumWithDefaultValueVariables(),
+        ).toRequest();
     expect(req.variables, {"status": "SENT"});
   });
 }

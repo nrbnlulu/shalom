@@ -15,6 +15,10 @@ abstract class GraphQLLink {
 class ShalomClient {
   final ShalomCtx ctx;
   final GraphQLLink link;
+
+  // Static const to avoid repeated allocations of SetEquality
+  static const _keyEquals = SetEquality<String>();
+
   const ShalomClient({required this.ctx, required this.link});
 
   Stream<GraphQLResponse<T>> request<T>({
@@ -24,8 +28,7 @@ class ShalomClient {
     final meta = requestable.getRequestMeta();
 
     // Helper for comparing subscription key sets
-    // Assuming keys are Strings, adjust type if needed
-    const keyEquals = SetEquality<String>();
+    // Using static const to avoid repeated allocations
 
     await for (final res
         in link.request(request: meta.request, headers: headers)) {
@@ -66,7 +69,7 @@ class ShalomClient {
                     );
 
                 // 8. Check if the keys this data depends on have changed
-                if (!keyEquals.equals(newKeys, currentSubRefs)) {
+                if (!_keyEquals.equals(newKeys, currentSubRefs)) {
                   // 9. If keys differ, update our tracking variable...
                   currentSubRefs = newKeys;
 
@@ -88,7 +91,7 @@ class ShalomClient {
       }
     }
   }
-  
+
   /// don't subscribe to changes of this operation and just get the initial data
   Future<GraphQLResponse<T>> requestOnce<T>({
     required Requestable<T> requestable,
