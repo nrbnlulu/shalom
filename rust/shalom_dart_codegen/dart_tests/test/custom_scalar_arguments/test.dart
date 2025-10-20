@@ -22,10 +22,9 @@ void main() {
       expect(variables.toJson(), {"coords": samplePointRaw});
       var variablesUpdated = variables.updateWith(coords: updatedPoint);
       expect(variablesUpdated.coords, updatedPoint);
-      final req =
-          RequestUpdatePointCoordsNonNull(
-            variables: UpdatePointCoordsNonNullVariables(coords: updatedPoint),
-          ).toRequest();
+      final req = RequestUpdatePointCoordsNonNull(
+        variables: UpdatePointCoordsNonNullVariables(coords: updatedPoint),
+      ).toRequest();
       expect(req.variables, {"coords": updatedPointRaw});
     });
 
@@ -59,19 +58,17 @@ void main() {
     });
 
     test("custom scalar argument with (optional default value)", () {
-      final req =
-          RequestUpdatePointCoordsOpt(
-            variables: UpdatePointCoordsOptVariables(id: "test-id-1"),
-          ).toRequest();
+      final req = RequestUpdatePointCoordsOpt(
+        variables: UpdatePointCoordsOptVariables(id: "test-id-1"),
+      ).toRequest();
       expect(req.variables, {"id": "test-id-1", "coords": null});
 
-      final reqWithExplicit =
-          RequestUpdatePointCoordsOpt(
-            variables: UpdatePointCoordsOptVariables(
-              id: "test-id-2",
-              coords: Point(x: 15, y: 25),
-            ),
-          ).toRequest();
+      final reqWithExplicit = RequestUpdatePointCoordsOpt(
+        variables: UpdatePointCoordsOptVariables(
+          id: "test-id-2",
+          coords: Point(x: 15, y: 25),
+        ),
+      ).toRequest();
       expect(reqWithExplicit.variables, {
         "id": "test-id-2",
         "coords": "POINT (15, 25)",
@@ -89,15 +86,14 @@ void main() {
       );
       expect(variablesUpdated.pointData.coords, updatedPoint);
 
-      final req =
-          RequestUpdatePointWithInputNonNull(
-            variables: UpdatePointWithInputNonNullVariables(
-              pointData: PointDataInput(
-                coords: Point(x: 50, y: 60),
-                name: "Location C",
-              ),
-            ),
-          ).toRequest();
+      final req = RequestUpdatePointWithInputNonNull(
+        variables: UpdatePointWithInputNonNullVariables(
+          pointData: PointDataInput(
+            coords: Point(x: 50, y: 60),
+            name: "Location C",
+          ),
+        ),
+      ).toRequest();
       expect(req.variables, {
         "pointData": {"coords": "POINT (50, 60)", "name": "Location C"},
       });
@@ -117,10 +113,9 @@ void main() {
         ),
       );
       expect(variablesUpdated.pointData.coords, Some<Point?>(updatedPoint));
-      final req =
-          RequestUpdatePointWithInputCoordsMaybe(
-            variables: variables,
-          ).toRequest();
+      final req = RequestUpdatePointWithInputCoordsMaybe(
+        variables: variables,
+      ).toRequest();
       expect(req.variables, {
         "pointData": {"coords": null, "name": "Location D"},
       });
@@ -144,10 +139,9 @@ void main() {
         ),
       );
 
-      final reqWithCoords =
-          RequestUpdatePointWithOptCoords(
-            variables: variablesWithCoords,
-          ).toRequest();
+      final reqWithCoords = RequestUpdatePointWithOptCoords(
+        variables: variablesWithCoords,
+      ).toRequest();
       expect(reqWithCoords.variables, {
         "pointData": {"coords": "POINT (25, 35)", "name": "Location N"},
       });

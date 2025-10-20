@@ -484,6 +484,28 @@ fn get_field_name_with_args(
     }
 }
 
+/// Helper function to generate custom scalar imports from the global context.
+/// Returns a HashMap where the key is the import path and the value is a generated alias.
+fn generate_custom_scalar_imports(ctx: &SharedShalomGlobalContext) -> HashMap<String, String> {
+    let mut imports: HashMap<String, String> = HashMap::new();
+
+    for custom_scalar in ctx.get_custom_scalars().values() {
+        for symbol in [&custom_scalar.impl_symbol, &custom_scalar.output_type] {
+            if let Some(import_path) = &symbol.import_path {
+                let import_path_str = import_path.to_string_lossy().to_string();
+
+                imports.entry(import_path_str).or_insert_with(|| {
+                    let mut hasher: DefaultHasher = DefaultHasher::new();
+                    import_path.hash(&mut hasher);
+                    number_to_abc(hasher.finish() as u32)
+                });
+            }
+        }
+    }
+
+    imports
+}
+
 impl SchemaEnv<'_> {
     fn new(ctx: &SharedShalomGlobalContext) -> anyhow::Result<Self> {
         let mut env = Environment::new();
@@ -494,25 +516,14 @@ impl SchemaEnv<'_> {
     fn render_schema(&self, ctx: &SharedShalomGlobalContext) -> String {
         let template = self.env.get_template("schema").unwrap();
 
-        let mut extra_imports: HashMap<String, String> = HashMap::new();
-
-        for custom_scalar in ctx.get_custom_scalars().values() {
-            for symbol in [&custom_scalar.impl_symbol, &custom_scalar.output_type] {
-                if let Some(import_path) = &symbol.import_path {
-                    let import_path_str = import_path.to_string_lossy().to_string();
-
-                    extra_imports.entry(import_path_str).or_insert_with(|| {
-                        let mut hasher: DefaultHasher = DefaultHasher::new();
-                        import_path.hash(&mut hasher);
-                        number_to_abc(hasher.finish() as u32)
-                    });
-                }
-            }
-        }
+        let custom_scalar_imports = generate_custom_scalar_imports(ctx);
 
         let mut context = HashMap::new();
         context.insert("schema", context! { context => &ctx.schema_ctx });
-        context.insert("extra_imports", minijinja::Value::from(extra_imports));
+        context.insert(
+            "custom_scalar_imports",
+            minijinja::Value::from(custom_scalar_imports),
+        );
 
         template.render(&context).unwrap()
     }
@@ -668,7 +679,7 @@ impl OperationEnv<'_> {
         &self,
         operations_ctx: S,
         schema_ctx: T,
-        extra_imports: HashMap<String, String>,
+        custom_scalar_imports: HashMap<String, String>,
         schema_import_path: String,
     ) -> String {
         let template = self.env.get_template("operation").unwrap();
@@ -676,7 +687,10 @@ impl OperationEnv<'_> {
 
         context.insert("schema", context! { context => schema_ctx });
         context.insert("operation", context! { context => operations_ctx });
-        context.insert("extra_imports", minijinja::Value::from(extra_imports));
+        context.insert(
+            "custom_scalar_imports",
+            minijinja::Value::from(custom_scalar_imports),
+        );
         context.insert(
             "schema_import_path",
             minijinja::Value::from(schema_import_path),
@@ -701,7 +715,7 @@ impl FragmentEnv<'_> {
         &self,
         fragment_ctx: S,
         schema_ctx: T,
-        extra_imports: HashMap<String, String>,
+        custom_scalar_imports: HashMap<String, String>,
         schema_path: String,
         fragment_file_path: PathBuf,
     ) -> String {
@@ -710,7 +724,10 @@ impl FragmentEnv<'_> {
 
         context.insert("schema", context! { context => schema_ctx });
         context.insert("fragment", context! { context => fragment_ctx });
-        context.insert("extra_imports", minijinja::Value::from(extra_imports));
+        context.insert(
+            "custom_scalar_imports",
+            minijinja::Value::from(custom_scalar_imports),
+        );
         context.insert("schema_import_path", minijinja::Value::from(schema_path));
         context.insert(
             "fragment_file_path",
@@ -851,7 +868,7 @@ fn generate_operations_file(
     ctx: &SharedShalomGlobalContext,
     name: &str,
     operation: SharedOpCtx,
-    additional_imports: HashMap<String, String>,
+    custom_scalar_imports: HashMap<String, String>,
 ) -> anyhow::Result<()> {
     let op_env = OperationEnv::new(ctx, operation.clone())?;
 
@@ -863,7 +880,7 @@ fn generate_operations_file(
     let rendered_content = op_env.render_operation(
         operation,
         ctx.schema_ctx.clone(),
-        additional_imports,
+        custom_scalar_imports,
         get_schema_import_path(&operation_file_path, ctx),
     );
     fs::write(&generation_target, rendered_content).unwrap();
@@ -877,14 +894,14 @@ fn generate_fragment_file(
     _pwd: &Path,
     fragment_name: &str,
     fragment_ctx: SharedFragmentContext,
-    additional_imports: HashMap<String, String>,
+    custom_scalar_imports: HashMap<String, String>,
 ) -> anyhow::Result<()> {
     let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone())?;
     let fragment_file_path = fragment_ctx.file_path.clone();
     let generated_content = fragment_env.render_fragment(
         context! { context => fragment_ctx },
         context! { context => &ctx.schema_ctx },
-        additional_imports,
+        custom_scalar_imports,
         get_schema_import_path(&fragment_ctx.file_path, ctx),
         fragment_file_path,
     );
@@ -933,24 +950,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
     }
 
     generate_schema_file(&template_env, &ctx);
-    let mut additional_imports: HashMap<PathBuf, String> = HashMap::new();
-
-    for custom_scalar in ctx.get_custom_scalars().values() {
-        for symbol in [&custom_scalar.impl_symbol, &custom_scalar.output_type] {
-            if let Some(import_path) = &symbol.import_path {
-                if !additional_imports.contains_key(import_path) {
-                    let mut hasher: DefaultHasher = DefaultHasher::new();
-                    import_path.hash(&mut hasher);
-                    additional_imports
-                        .insert(import_path.clone(), number_to_abc(hasher.finish() as u32));
-                }
-            }
-        }
-    }
-    let additional_imports: HashMap<String, String> = additional_imports
-        .into_iter()
-        .map(|(k, v)| (k.to_string_lossy().to_string(), v))
-        .collect();
+    let custom_scalar_imports = generate_custom_scalar_imports(&ctx);
 
     // Generate fragment files first (operations might depend on them)
     for (fragment_name, fragment_ctx) in ctx.fragments() {
@@ -959,7 +959,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
             pwd,
             &fragment_name,
             fragment_ctx,
-            additional_imports.clone(),
+            custom_scalar_imports.clone(),
         );
         if let Err(err) = res {
             if options.strict {
@@ -974,7 +974,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
 
     // Generate operation files
     for (name, operation) in ctx.operations() {
-        let res = generate_operations_file(&ctx, &name, operation, additional_imports.clone());
+        let res = generate_operations_file(&ctx, &name, operation, custom_scalar_imports.clone());
         if let Err(err) = res {
             if options.strict {
                 return Err(err);

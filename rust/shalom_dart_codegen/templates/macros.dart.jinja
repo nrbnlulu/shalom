@@ -1,4 +1,12 @@
 
+{# Macro for rendering custom scalar imports #}
+{% macro custom_scalar_imports_macro(custom_scalar_imports) %}
+{% if custom_scalar_imports is defined and custom_scalar_imports | length > 0 %}
+{% for path, namespace_alias in custom_scalar_imports | items -%}
+import '{{path}}' as {{ namespace_alias }};
+{% endfor %}
+{% endif %}
+{% endmacro %}
 
 {# Helper macro for serializing a field value recursively #}
 {% macro _serialize_field_value_macro(value_symbol, field_type, is_optional=false) %}
