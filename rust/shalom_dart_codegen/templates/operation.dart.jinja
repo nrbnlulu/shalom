@@ -122,7 +122,9 @@ class Request{{ operation_name }} extends Requestable {
     );
 
     @override
-    Request toRequest() {
+    Request<{{ operation_name }}> toRequest({
+        ShalomCtx? ctx
+    }) {
         JsonObject variablesJson = {% if op_variables_exist %} variables.toJson() {% else %} {}  {% endif %};
         return Request(
             query: r"""{{ operation.context.query }}
@@ -131,9 +133,12 @@ class Request{{ operation_name }} extends Requestable {
 {% endfor %}""",
             variables: variablesJson,
             opType: OperationType.{{ operation.context.op_ty.name }},
-            opName: '{{ operation_name }}'
+            opName: '{{ operation_name }}',
+            dataConverter: (raw) => Request{{ operation_name }}.
         );
     }
+    
+    
 }
 
 {% if op_variables_exist %}

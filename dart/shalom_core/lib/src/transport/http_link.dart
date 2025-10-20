@@ -11,7 +11,7 @@ enum HttpMethod {
   POST
 }
 
-abstract interface class ShalomHttpTransport {
+abstract class ShalomHttpTransport {
   Future<JsonObject> request(
       {required HttpMethod method,
       required String url,
@@ -40,9 +40,10 @@ class HttpLink extends GraphQLLink {
     this.useGet = false,
     this.defaultHeaders = const {},
   });
-
+  
+  
   @override
-  Stream<GraphQLResponse> request(
+  Stream<GraphQLResponse<T>> request<T>(
       {required Request request, required JsonObject headers}) async* {
     try {
       // Merge default headers with request-specific headers
