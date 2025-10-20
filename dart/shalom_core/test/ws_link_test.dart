@@ -21,7 +21,6 @@ class FakeWebSocketTransport extends WebSocketTransport {
   final Duration connectionDelay;
 
   StreamController<JsonObject>? _currentStreamController;
-  MessageSender? _currentSender;
 
   FakeWebSocketTransport({
     this.shouldFailConnection = false,
@@ -61,7 +60,6 @@ class FakeWebSocketTransport extends WebSocketTransport {
       subscription.cancel();
       _isConnected = false;
       _currentStreamController = null;
-      _currentSender = null;
     };
 
     final sender = MessageSender((msg) async {
@@ -72,7 +70,6 @@ class FakeWebSocketTransport extends WebSocketTransport {
     });
 
     _currentStreamController = streamController;
-    _currentSender = sender;
 
     return (streamController, sender);
   }
@@ -607,8 +604,6 @@ void main() {
 
         await Future.delayed(const Duration(milliseconds: 10));
         expect($wsLink.isConnected, isTrue);
-
-        final $connectCallsBefore = $fakeTransport.lastUrl != null ? 1 : 0;
 
         // Simulate disconnect
         $fakeTransport.simulateDisconnect();

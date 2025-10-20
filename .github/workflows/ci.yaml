@@ -46,8 +46,7 @@ jobs:
 
             - name: Test
               run: |
-                  cd rust
-                  cargo test
+                  task test
 
             - name: Install typos
               run: |

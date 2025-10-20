@@ -542,9 +542,12 @@ void main() {
         expect($transportError.code, 'NETWORK_ERROR');
       });
 
-      test('handles invalid response format (not a map)', () async {
+      test('handles invalid response format (data is not a map or null)',
+          () async {
         final $fakeTransport = FakeTransportLayer(
-          responses: ['invalid response'],
+          responses: [
+            {'data': 'invalid data type'}
+          ],
         );
 
         final $httpLink = HttpLink(
@@ -562,7 +565,7 @@ void main() {
         expect($error.errors.length, 1);
         expect($error.errors[0], isA<ShalomTransportException>());
         final $transportError = $error.errors[0] as ShalomTransportException;
-        expect($transportError.message, contains('Invalid response format'));
+        expect($transportError.message, contains('Invalid data format'));
         expect($transportError.code, 'INVALID_RESPONSE_FORMAT');
       });
 
@@ -664,17 +667,11 @@ void main() {
     });
 
     group('streaming responses', () {
-      test('handles multiple responses from transport layer', () async {
+      test('returns single response from HTTP request', () async {
         final $fakeTransport = FakeTransportLayer(
           responses: [
             {
               'data': {'count': 1}
-            },
-            {
-              'data': {'count': 2}
-            },
-            {
-              'data': {'count': 3}
             },
           ],
         );
@@ -687,10 +684,9 @@ void main() {
         final $responses = await $httpLink
             .request(request: $testRequest, headers: {}).toList();
 
-        expect($responses.length, 3);
+        // HTTP requests only return a single response
+        expect($responses.length, 1);
         expect(($responses[0] as GraphQLData).data['count'], 1);
-        expect(($responses[1] as GraphQLData).data['count'], 2);
-        expect(($responses[2] as GraphQLData).data['count'], 3);
       });
     });
   });
