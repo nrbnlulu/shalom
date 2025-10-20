@@ -88,4 +88,35 @@ class ShalomClient {
       }
     }
   }
+
+  Future<GraphQLResponse<T>> requestOnce<T>({
+    required Requestable<T> requestable,
+    JsonObject? headers,
+  }) async {
+    final meta = requestable.getRequestMeta();
+
+    await for (final res
+        in link.request(request: meta.request, headers: headers)) {
+      switch (res) {
+        case GraphQLData():
+          {
+            // Load from the network response and return immediately
+            final (deserialized, _) = meta.loadFn(data: res.data, ctx: ctx);
+
+            return GraphQLData(
+                data: deserialized,
+                errors: res.errors,
+                extensions: res.extensions);
+          }
+        case LinkErrorResponse():
+          {
+            // Just forward link errors
+            return LinkErrorResponse(res.errors);
+          }
+      }
+    }
+
+    // This should never be reached as the stream should always yield at least one response
+    throw StateError('No response received from GraphQL link');
+  }
 }
