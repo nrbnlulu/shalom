@@ -83,10 +83,6 @@ class HttpLink extends GraphQLLink {
         url: url,
         data: requestBody,
         headers: finalHeaders,
-        extra: {
-          'method': methodForThisRequest.name,
-          'url': url,
-        },
       );
 
       // Parse and yield the response
