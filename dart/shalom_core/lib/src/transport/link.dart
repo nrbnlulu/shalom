@@ -88,7 +88,8 @@ class ShalomClient {
       }
     }
   }
-
+  
+  /// don't subscribe to changes of this operation and just get the initial data
   Future<GraphQLResponse<T>> requestOnce<T>({
     required Requestable<T> requestable,
     JsonObject? headers,
