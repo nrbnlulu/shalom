@@ -508,7 +508,7 @@ null
     {% if is_root_selection -%}
         static ({{typename}}, CacheUpdateContext)  fromResponseImpl(JsonObject data, ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}){
             // first update the cache
-            final CacheUpdateContext updateCtx = CacheUpdateContext(shalomContext: ctx!);
+            final updateCtx = CacheUpdateContext(shalomContext: ctx);
             {% set root_selection = selections | first -%}
 
             normalize$inCache(

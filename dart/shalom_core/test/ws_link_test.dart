@@ -13,7 +13,7 @@ class FakeWebSocketTransport extends WebSocketTransport {
   bool _isConnected = false;
 
   String? lastUrl;
-  JsonObject? lastHeaders;
+  HeadersType? lastHeaders;
   List<String>? lastProtocols;
 
   // Configuration
@@ -21,7 +21,6 @@ class FakeWebSocketTransport extends WebSocketTransport {
   final Duration connectionDelay;
 
   StreamController<JsonObject>? _currentStreamController;
-  MessageSender? _currentSender;
 
   FakeWebSocketTransport({
     this.shouldFailConnection = false,
@@ -32,7 +31,7 @@ class FakeWebSocketTransport extends WebSocketTransport {
   Future<(StreamController<JsonObject>, MessageSender)> connect({
     required String url,
     required List<String> protocols,
-    JsonObject? headers,
+    HeadersType? headers,
   }) async {
     lastUrl = url;
     lastHeaders = headers;
@@ -61,7 +60,6 @@ class FakeWebSocketTransport extends WebSocketTransport {
       subscription.cancel();
       _isConnected = false;
       _currentStreamController = null;
-      _currentSender = null;
     };
 
     final sender = MessageSender((msg) async {
@@ -72,7 +70,6 @@ class FakeWebSocketTransport extends WebSocketTransport {
     });
 
     _currentStreamController = streamController;
-    _currentSender = sender;
 
     return (streamController, sender);
   }
@@ -122,6 +119,25 @@ void main() {
 
         expect($fakeTransport.lastUrl, 'ws://localhost:4000/graphql');
         expect($fakeTransport.lastProtocols, contains('graphql-transport-ws'));
+      });
+
+      test('passes headers to transport connect', () async {
+        $wsLink = WebSocketLink(
+          transport: $fakeTransport,
+          url: 'ws://localhost:4000/graphql',
+          headers: [
+            ('Authorization', 'Bearer test-token'),
+            ('X-Custom-Header', 'custom-value'),
+          ],
+        );
+
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        expect($fakeTransport.lastHeaders, isNotNull);
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
+        expect($headersMap['Authorization'], 'Bearer test-token');
+        expect($headersMap['X-Custom-Header'], 'custom-value');
       });
 
       test('sends ConnectionInit message on connect', () async {
@@ -356,7 +372,7 @@ void main() {
           opName: 'HelloQuery',
         );
 
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen((_) {});
 
         await Future.delayed(const Duration(milliseconds: 10));
@@ -400,7 +416,7 @@ void main() {
         );
 
         final $responses = <GraphQLResponse>[];
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen($responses.add);
 
         await Future.delayed(const Duration(milliseconds: 10));
@@ -458,7 +474,7 @@ void main() {
         );
 
         final $responses = <GraphQLResponse>[];
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen($responses.add);
 
         await Future.delayed(const Duration(milliseconds: 10));
@@ -514,7 +530,7 @@ void main() {
         );
 
         var $completed = false;
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen(
           (_) {},
           onDone: () => $completed = true,
@@ -566,7 +582,7 @@ void main() {
           opName: 'MessagesSub',
         );
 
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen((_) {});
 
         await Future.delayed(const Duration(milliseconds: 10));
@@ -607,8 +623,6 @@ void main() {
 
         await Future.delayed(const Duration(milliseconds: 10));
         expect($wsLink.isConnected, isTrue);
-
-        final $connectCallsBefore = $fakeTransport.lastUrl != null ? 1 : 0;
 
         // Simulate disconnect
         $fakeTransport.simulateDisconnect();
@@ -674,7 +688,7 @@ void main() {
         );
 
         final $responses = <GraphQLResponse>[];
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen($responses.add);
 
         await Future.delayed(const Duration(milliseconds: 10));
@@ -746,10 +760,10 @@ void main() {
         var $completed1 = false;
         var $completed2 = false;
 
-        final $stream1 = $wsLink.request(request: $request, headers: {});
+        final $stream1 = $wsLink.request(request: $request, headers: []);
         final $sub1 = $stream1.listen((_) {}, onDone: () => $completed1 = true);
 
-        final $stream2 = $wsLink.request(request: $request, headers: {});
+        final $stream2 = $wsLink.request(request: $request, headers: []);
         final $sub2 = $stream2.listen((_) {}, onDone: () => $completed2 = true);
 
         await Future.delayed(const Duration(milliseconds: 10));

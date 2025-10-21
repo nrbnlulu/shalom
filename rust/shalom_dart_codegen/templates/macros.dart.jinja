@@ -1,4 +1,11 @@
-
+{# Macro for rendering custom scalar imports #}
+{% macro custom_scalar_imports_macro(custom_scalar_imports) %}
+{% if custom_scalar_imports is defined and custom_scalar_imports | length > 0 %}
+{% for path, namespace_alias in custom_scalar_imports | items -%}
+import '{{path}}' as {{ namespace_alias }};
+{% endfor %}
+{% endif %}
+{% endmacro %}
 
 {# Helper macro for serializing a field value recursively #}
 {% macro _serialize_field_value_macro(value_symbol, field_type, is_optional=false) %}
@@ -86,79 +93,109 @@
 {% endmacro %}
 
 {% macro toJson_macro(fields) %}
-{% for name, field in fields | items %}
-    {% set field_ty = resolve_field_type(field.common).ty %}
-    {% if field.is_optional and field.default_value is none %}
+{% for name, field in fields | items -%}
+    {% set field_ty = resolve_field_type(field.common).ty -%}
+    {% if field.is_optional and field.default_value is none -%}
         if ({{ name }}.isSome()) {
             final value = this.{{ name }}.some();
             data["{{ name }}"] = {{ _serialize_field_value_macro("value", field_ty, true) }};
         }
-    {% else %}
+    {% else -%}
         data["{{ name }}"] = {{ _serialize_field_value_macro("this." + name, field_ty, field.is_optional) }};
-    {% endif %}
-{% endfor %}
+    {% endif -%}
+{% endfor -%}
 {% endmacro %}
 
 {% macro updateWith_macro(fields, typename) %}
+{% set fields_requiring_initializer_list = get_fields_requiring_initializer_list(fields) %}
 {{typename}} updateWith(
     {
-        {% for name, field in fields | items %}
-            {% if field.is_optional %}
+        {% for name, field in fields | items -%}
+            {% if field.is_optional -%}
                 Maybe<{{type_name_for_input_field(field)}}> {{name}} = const None()
-            {% else %}
+            {% else -%}
                 {{type_name_for_input_field(field)}}? {{name}}
-            {% endif %}
-            {% if not loop.last %},{% endif %}
-        {% endfor %}
+            {% endif -%}
+            {{"," if not loop.last}}
+        {% endfor -%}
     }
 ) {
     {% for name, field in fields | items %}
-        final {{ type_name_for_input_field(field) }} {{ name }}$next;
-        {% if field.is_optional %}
-            switch ({{name}}) {
-{# if this is a "maybe" field #}
-                case Some(value: final updateData):
-                    {{ name }}$next = updateData;
-                case None():
-                    {{ name }}$next = this.{{name}};
-            }
-
-        {% else %}
-            if ({{name}} != null) {
-                {{ name }}$next = {{name}};
-            } else {
-                {{ name }}$next = this.{{name}};
-            }
-        {% endif %}
+        {% if field.is_optional -%}
+            {# Optional field - it is wrapped in a Maybe #}
+            final {{name}}$next = switch ({{name}}) {
+                Some() => {{name}}.value,
+                None() => this.{{name}}
+            };
+        {% else -%}
+            {# Required field - use null check #}
+            final {{name}}$next = {{name}} ?? this.{{name}};
+        {% endif -%}
     {% endfor %}
-    return {{ typename }}(
+    return {{typename}}(
         {% for name, field in fields | items %}
-            {{ name }}: {{ name }}$next
-            {% if not loop.last %},{% endif %}
-        {% endfor %}
+            {{name}}: 
+                {%- if field.is_maybe -%}
+                    {{name}}$next.isSome() ? Some({{name}}$next.some()) : const None()
+                {# this is an optional field with non null default and needs initializer list so we need to use Some() in the constructor -#}
+                {% elif field.is_optional and parse_field_default_value_deserializer(field) != "null" and name in fields_requiring_initializer_list -%}
+                    Some({{name}}$next)
+                {%- else -%}
+                    {{name}}$next
+                {%- endif -%}{{"," if not loop.last}}
+        {% endfor -%}
     );
 }
 {% endmacro %}
 
-{% macro field_initialization_logic(fields) %}
-{% for name, field in fields | items %}
-    {% if not field.is_optional %}
-        {% if field.default_value is not none  %}
-            this.{{ name }} = {{ parse_field_default_value(field) }}
-        {% else %}
-            required this.{{name}}
-        {% endif %},
-    {% else %}
-        {% if field.default_value is not none %}
-            {% set default_value = parse_field_default_value(field) %}
-            {% if default_value == "null" %}
-                this.{{ name }}
+{% macro input_field_constructor_initialization(name, field, required_initializer=false) %}
+    {% if required_initializer -%}
+        {% if field.default_value is none -%}{{panic("no default value, no way that it needs an initializer list ")}}{% endif -%}
+
+        {% set default_val = parse_field_default_value_deserializer(field) -%}
+        {% if default_val == "null" -%}
+            {# Default is null - no initializer needed, just use this.field -#}
+            this.{{ name }}
+        {% else -%}
+            {% if field.is_maybe or not field.is_optional -%}
+                {{type_name_for_input_field(field)}}? {{ name }}
+            {% else -%}
+                Maybe<{{type_name_for_input_field(field)}}> {{ name }} = const None()
+            {% endif -%}
+        {% endif -%}
+    {% else -%}
+        {# Field NOT in initializer list #}
+        {% if not field.is_optional -%}
+            {% if field.default_value is not none -%}
+                this.{{ name }} = {{ parse_field_default_value_deserializer(field) }}
+            {% else -%}
+                required this.{{name}}
+            {% endif -%}
+        {% else -%}
+            {# Optional field #}
+            {% if field.is_maybe %}
+                {# Optional field without default - standard Maybe pattern #}
+                this.{{ name }} = const None()
             {% else %}
-                this.{{ name }} = {{ default_value }}
+                {# Optional field that have a default value #}
+                {% if field.default_value is not none -%}
+                    {% set default_val = parse_field_default_value_deserializer(field) -%}
+                    {% if default_val == "null" -%}
+                        this.{{ name }}
+                    {% else -%}
+                        this.{{ name }} = {{ default_val }}
+                    {% endif %}
+                {% else -%}
+                    this.{{ name }}
+                {% endif %}
             {% endif %}
-        {% else %}
-            this.{{ name }} = const None()
-        {% endif %},
+        {% endif %}
     {% endif %}
-    {% endfor %}
+{% endmacro %}
+
+{% macro field_initialization_initializers(fields) %}
+{% set initializer_fields = get_fields_requiring_initializer_list(fields) %}
+{% if initializer_fields | length > 0 %}
+{% set ns = namespace(first=true) %}{% for name, field in initializer_fields | items %}{% set default_val = parse_field_default_value_deserializer(field) %}{% if default_val != "null" %}{% if ns.first %} : {% set ns.first = false %}{% else %}, {% endif %}{% if field.is_optional %}{{ name }} = {{ name }}.isSome() ? {{ name }}.some() : {{ default_val }}{% else %}{{ name }} = {{ name }} ?? {{ default_val }}{% endif %}{% endif %}{% endfor %}
+{% endif %}
 {% endmacro %}
