@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
-import 'package:shalom_core/src/transport/link.dart' show HeadersType;
 import 'package:test/test.dart';
 
 /// Fake transport layer for testing that returns controlled responses

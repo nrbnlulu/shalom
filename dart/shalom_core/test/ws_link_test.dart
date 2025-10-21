@@ -13,7 +13,7 @@ class FakeWebSocketTransport extends WebSocketTransport {
   bool _isConnected = false;
 
   String? lastUrl;
-  JsonObject? lastHeaders;
+  HeadersType? lastHeaders;
   List<String>? lastProtocols;
 
   // Configuration
@@ -31,7 +31,7 @@ class FakeWebSocketTransport extends WebSocketTransport {
   Future<(StreamController<JsonObject>, MessageSender)> connect({
     required String url,
     required List<String> protocols,
-    JsonObject? headers,
+    HeadersType? headers,
   }) async {
     lastUrl = url;
     lastHeaders = headers;
@@ -119,6 +119,25 @@ void main() {
 
         expect($fakeTransport.lastUrl, 'ws://localhost:4000/graphql');
         expect($fakeTransport.lastProtocols, contains('graphql-transport-ws'));
+      });
+
+      test('passes headers to transport connect', () async {
+        $wsLink = WebSocketLink(
+          transport: $fakeTransport,
+          url: 'ws://localhost:4000/graphql',
+          headers: [
+            ('Authorization', 'Bearer test-token'),
+            ('X-Custom-Header', 'custom-value'),
+          ],
+        );
+
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        expect($fakeTransport.lastHeaders, isNotNull);
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
+        expect($headersMap['Authorization'], 'Bearer test-token');
+        expect($headersMap['X-Custom-Header'], 'custom-value');
       });
 
       test('sends ConnectionInit message on connect', () async {

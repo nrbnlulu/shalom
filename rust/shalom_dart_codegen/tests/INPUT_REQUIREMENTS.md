@@ -2,7 +2,7 @@ the expected behavior for types of inputs:
 1. (input / operation variables objects) fields
 	1. nonnull -> field type as per normal
     2. nullable no default value -> should resolved as a Maybe type in order to distinguish absent values (allowing patch graphql operations)
-    3. nulllable with default -> just a normal nullable
+    3. nullable with default -> just a normal nullable
 2. (input / operation variables objects) constructors
     1. if the field is required 
         1. has default value? -> should be nullable at constructor with the default value injected inline or in a constructor list based on the implementation details

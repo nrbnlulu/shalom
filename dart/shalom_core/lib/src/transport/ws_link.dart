@@ -3,7 +3,6 @@ import 'dart:convert' show json;
 import 'dart:developer' show log;
 
 import 'package:shalom_core/shalom_core.dart';
-import 'package:shalom_core/src/transport/link.dart' show HeadersType;
 
 /// Implementation of GraphQL WebSocket protocol as specified in:
 /// https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md
@@ -20,6 +19,7 @@ class WebSocketLink extends GraphQLLink {
   final Duration reconnectTimeout;
   final Duration pingInterval;
   final Duration pongTimeout;
+
   /// Active subscriptions mapped by operation ID
   final Map<String, _OperationHandler> _activeOperations = {};
 
@@ -70,10 +70,7 @@ class WebSocketLink extends GraphQLLink {
 
     try {
       final (streamController, sender) = await transport.connect(
-        url: url,
-        protocols: ['graphql-transport-ws'],
-        headers: headers
-      );
+          url: url, protocols: ['graphql-transport-ws'], headers: headers);
 
       _messageStreamController = streamController;
       _messageSender = sender;
