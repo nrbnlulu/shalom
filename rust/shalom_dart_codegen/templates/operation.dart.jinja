@@ -157,11 +157,11 @@ class {{ operation_name }}Variables {
         {
         {% for name, field in op_variables | items -%}
             {% if name not in fields_requiring_initializer_list -%}
-                {{input_field_constructor_initialization(name, field, false)}},
+                {{input_field_constructor_initialization(name, field, required_initializer=false)}},
             {% endif -%}
         {% endfor -%}
         {% for name, field in fields_requiring_initializer_list | items -%}
-            {{input_field_constructor_initialization(name, field, true)}},
+            {{input_field_constructor_initialization(name, field, required_initializer=true)}},
         {% endfor -%}
         }
     ){{ field_initialization_initializers(op_variables) }};

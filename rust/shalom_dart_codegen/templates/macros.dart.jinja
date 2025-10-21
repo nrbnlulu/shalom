@@ -110,53 +110,47 @@ import '{{path}}' as {{ namespace_alias }};
 {% set fields_requiring_initializer_list = get_fields_requiring_initializer_list(fields) %}
 {{typename}} updateWith(
     {
-        {% for name, field in fields | items %}
-            {% if field.is_optional %}
-                {# All optional fields use Maybe in updateWith #}
+        {% for name, field in fields | items -%}
+            {% if field.is_optional -%}
                 Maybe<{{type_name_for_input_field(field)}}> {{name}} = const None()
-            {% else %}
-                {# Required fields use nullable type #}
+            {% else -%}
                 {{type_name_for_input_field(field)}}? {{name}}
-            {% endif %}
-            {% if not loop.last %},{% endif %}
-        {% endfor %}
+            {% endif -%}
+            {{"," if not loop.last}}
+        {% endfor -%}
     }
 ) {
     {% for name, field in fields | items %}
-        {% if field.is_optional %}
-            {# Optional field - use Maybe switch pattern #}
-            final {{ type_name_for_input_field(field) }} {{ name }}$next;
-            switch ({{name}}) {
-                case Some(value: final updateData):
-                    {{ name }}$next = updateData;
-                case None():
-                    {{ name }}$next = this.{{name}};
-            }
-        {% else %}
+        {% if field.is_optional -%}
+            {# Optional field - it is wrapped in a Maybe #}
+            final {{name}}$next = switch ({{name}}) {
+                Some() => {{name}}.value,
+                None() => this.{{name}}
+            };
+        {% else -%}
             {# Required field - use null check #}
-            final {{ type_name_for_input_field(field) }} {{ name }}$next;
-            if ({{name}} != null) {
-                {{ name }}$next = {{name}};
-            } else {
-                {{ name }}$next = this.{{name}};
-            }
-        {% endif %}
-
+            final {{name}}$next = {{name}} ?? this.{{name}};
+        {% endif -%}
     {% endfor %}
-    return {{ typename }}(
+    return {{typename}}(
         {% for name, field in fields | items %}
-            {{ name }}: {% if field.is_optional and field.default_value is none %}{{ name }}$next.isSome() ? Some({{ name }}$next.some()) : const None(){% elif field.is_optional and field_requires_initializer_list(field) %}Some({{ name }}$next){% else %}{{ name }}$next{% endif %}
-            {% if not loop.last %},{% endif %}
-        {% endfor %}
+            {{name}}: 
+                {%- if field.is_maybe -%}
+                    {{name}}$next.isSome() ? Some({{name}}$next.some()) : const None()
+                {# this is an optional field with non null default and needs initializer list so we need to use Some() in the constructor -#}
+                {% elif field.is_optional and parse_field_default_value_deserializer(field) != "null" and name in fields_requiring_initializer_list -%}
+                    Some({{name}}$next)
+                {%- else -%}
+                    {{name}}$next
+                {%- endif -%}{{"," if not loop.last}}
+        {% endfor -%}
     );
 }
 {% endmacro %}
 
 {% macro input_field_constructor_initialization(name, field, required_initializer=false) %}
     {% if required_initializer -%}
-        {% if field.default_value is none -%}
-            {{panic("no default value, no way that it needs an initializer list ")}}
-        {% endif -%}
+        {% if field.default_value is none -%}{{panic("no default value, no way that it needs an initializer list ")}}{% endif -%}
 
         {% set default_val = parse_field_default_value_deserializer(field) -%}
         {% if default_val == "null" -%}
