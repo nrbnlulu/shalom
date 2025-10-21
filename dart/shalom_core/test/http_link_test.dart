@@ -12,7 +12,7 @@ class FakeTransportLayer implements ShalomHttpTransport {
   HttpMethod? lastMethod;
   String? lastUrl;
   JsonObject? lastData;
-  JsonObject? lastHeaders;
+  HeadersType? lastHeaders;
   JsonObject? lastExtra;
 
   FakeTransportLayer({
@@ -26,7 +26,7 @@ class FakeTransportLayer implements ShalomHttpTransport {
     required HttpMethod method,
     required String url,
     required JsonObject data,
-    JsonObject? headers,
+    HeadersType? headers,
     JsonObject? extra,
   }) async {
     lastMethod = method;
@@ -78,7 +78,7 @@ void main() {
         );
 
         final $responses = await $httpLink
-            .request(request: $testRequest, headers: {}).toList();
+            .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
         expect($responses[0], isA<GraphQLData>());
@@ -112,7 +112,7 @@ void main() {
         );
 
         final $responses = await $httpLink
-            .request(request: $testRequest, headers: {}).toList();
+            .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
         expect($responses[0], isA<GraphQLData>());
@@ -142,7 +142,7 @@ void main() {
         );
 
         final $responses = await $httpLink
-            .request(request: $testRequest, headers: {}).toList();
+            .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
         expect($responses[0], isA<GraphQLData>());
@@ -170,13 +170,16 @@ void main() {
         );
 
         final $responses = await $httpLink
-            .request(request: $testRequest, headers: {}).toList();
+            .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
         expect($responses[0], isA<LinkErrorResponse>());
 
         final $error = $responses[0] as LinkErrorResponse;
-        expect($error.errors['errors'], isNotNull);
+        expect($error.errors.length, 1);
+        expect($error.errors[0], isA<ShalomTransportException>());
+        final $transportError = $error.errors[0] as ShalomTransportException;
+        expect($transportError.details?['errors'], isNotNull);
       });
 
       test('response with extensions', () async {
@@ -197,7 +200,7 @@ void main() {
         );
 
         final $responses = await $httpLink
-            .request(request: $testRequest, headers: {}).toList();
+            .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
         expect($responses[0], isA<GraphQLData>());
@@ -218,13 +221,14 @@ void main() {
           url: 'http://example.com/graphql',
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
         expect($fakeTransport.lastHeaders, isNotNull);
-        expect($fakeTransport.lastHeaders!['Content-Type'],
-            'application/json; charset=utf-8');
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
+        expect($headersMap['Content-Type'], 'application/json; charset=utf-8');
         expect(
-          $fakeTransport.lastHeaders!['Accept'],
+          $headersMap['Accept'],
           'application/graphql-response+json, application/json;q=0.9',
         );
       });
@@ -239,20 +243,22 @@ void main() {
         final $httpLink = HttpLink(
           transportLayer: $fakeTransport,
           url: 'http://example.com/graphql',
-          defaultHeaders: {
-            'Authorization': 'Bearer token123',
-            'X-Custom-Header': 'custom-value',
-          },
+          defaultHeaders: [
+            ('Authorization', 'Bearer token123'),
+            ('X-Custom-Header', 'custom-value'),
+          ],
         );
 
         await $httpLink.request(
           request: $testRequest,
-          headers: {'X-Request-ID': 'req-456'},
+          headers: [('X-Request-ID', 'req-456')],
         ).toList();
 
-        expect($fakeTransport.lastHeaders!['Authorization'], 'Bearer token123');
-        expect($fakeTransport.lastHeaders!['X-Custom-Header'], 'custom-value');
-        expect($fakeTransport.lastHeaders!['X-Request-ID'], 'req-456');
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
+        expect($headersMap['Authorization'], 'Bearer token123');
+        expect($headersMap['X-Custom-Header'], 'custom-value');
+        expect($headersMap['X-Request-ID'], 'req-456');
       });
 
       test('request headers override default headers', () async {
@@ -265,18 +271,19 @@ void main() {
         final $httpLink = HttpLink(
           transportLayer: $fakeTransport,
           url: 'http://example.com/graphql',
-          defaultHeaders: {
-            'Authorization': 'Bearer default-token',
-          },
+          defaultHeaders: [
+            ('Authorization', 'Bearer default-token'),
+          ],
         );
 
         await $httpLink.request(
           request: $testRequest,
-          headers: {'Authorization': 'Bearer override-token'},
+          headers: [('Authorization', 'Bearer override-token')],
         ).toList();
 
-        expect($fakeTransport.lastHeaders!['Authorization'],
-            'Bearer override-token');
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
+        expect($headersMap['Authorization'], 'Bearer override-token');
       });
 
       test('sends correct request body', () async {
@@ -291,7 +298,7 @@ void main() {
           url: 'http://example.com/graphql',
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
         expect($fakeTransport.lastData, isNotNull);
         expect($fakeTransport.lastData!['query'], $testRequest.query);
@@ -319,7 +326,7 @@ void main() {
         );
 
         await $httpLink
-            .request(request: $requestWithoutVars, headers: {}).toList();
+            .request(request: $requestWithoutVars, headers: []).toList();
 
         expect($fakeTransport.lastData!.containsKey('variables'), isFalse);
       });
@@ -336,7 +343,7 @@ void main() {
           url: 'http://example.com/graphql',
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
         expect($fakeTransport.lastExtra, isNotNull);
         expect($fakeTransport.lastExtra!['method'], 'POST');
@@ -367,7 +374,7 @@ void main() {
         );
 
         await $httpLink
-            .request(request: $mutationRequest, headers: {}).toList();
+            .request(request: $mutationRequest, headers: []).toList();
 
         // Mutations should always use POST
         expect($fakeTransport.lastExtra!['method'], 'POST');
@@ -388,7 +395,7 @@ void main() {
           useGet: true,
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
         expect($fakeTransport.lastExtra!['method'], 'GET');
       });
@@ -414,7 +421,7 @@ void main() {
         );
 
         await $httpLink
-            .request(request: $mutationRequest, headers: {}).toList();
+            .request(request: $mutationRequest, headers: []).toList();
 
         expect($fakeTransport.lastExtra!['method'], 'POST');
       });
@@ -432,7 +439,7 @@ void main() {
           useGet: true,
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
         expect($fakeTransport.lastData!['query'], $testRequest.query);
         expect($fakeTransport.lastData!['operationName'], $testRequest.opName);
@@ -461,7 +468,7 @@ void main() {
         );
 
         await $httpLink
-            .request(request: $requestWithoutOpName, headers: {}).toList();
+            .request(request: $requestWithoutOpName, headers: []).toList();
 
         expect($fakeTransport.lastData!.containsKey('operationName'), isFalse);
       });
@@ -487,7 +494,7 @@ void main() {
         );
 
         await $httpLink
-            .request(request: $requestWithoutVars, headers: {}).toList();
+            .request(request: $requestWithoutVars, headers: []).toList();
 
         expect($fakeTransport.lastData!.containsKey('variables'), isFalse);
       });
@@ -505,10 +512,12 @@ void main() {
           useGet: true,
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
         // GET requests should still have Accept header
-        expect($fakeTransport.lastHeaders!['Accept'], isNotNull);
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
+        expect($headersMap['Accept'], isNotNull);
         // But might not have Content-Type (depends on merge order, but it's in the Accept section)
       });
     });
@@ -526,19 +535,25 @@ void main() {
         );
 
         final $responses = await $httpLink
-            .request(request: $testRequest, headers: {}).toList();
+            .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
         expect($responses[0], isA<LinkErrorResponse>());
 
         final $error = $responses[0] as LinkErrorResponse;
-        expect($error.errors['message'], contains('Network timeout'));
-        expect($error.errors['extensions']['code'], 'NETWORK_ERROR');
+        expect($error.errors.length, 1);
+        expect($error.errors[0], isA<ShalomTransportException>());
+        final $transportError = $error.errors[0] as ShalomTransportException;
+        expect($transportError.message, contains('Network timeout'));
+        expect($transportError.code, 'NETWORK_ERROR');
       });
 
-      test('handles invalid response format (not a map)', () async {
+      test('handles invalid response format (data is not a map or null)',
+          () async {
         final $fakeTransport = FakeTransportLayer(
-          responses: ['invalid response'],
+          responses: [
+            {'data': 'invalid data type'}
+          ],
         );
 
         final $httpLink = HttpLink(
@@ -547,14 +562,17 @@ void main() {
         );
 
         final $responses = await $httpLink
-            .request(request: $testRequest, headers: {}).toList();
+            .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
         expect($responses[0], isA<LinkErrorResponse>());
 
         final $error = $responses[0] as LinkErrorResponse;
-        expect($error.errors['message'], contains('Invalid response format'));
-        expect($error.errors['extensions']['code'], 'INVALID_RESPONSE_FORMAT');
+        expect($error.errors.length, 1);
+        expect($error.errors[0], isA<ShalomTransportException>());
+        final $transportError = $error.errors[0] as ShalomTransportException;
+        expect($transportError.message, contains('Invalid data format'));
+        expect($transportError.code, 'INVALID_RESPONSE_FORMAT');
       });
 
       test('handles response missing both data and errors', () async {
@@ -570,14 +588,17 @@ void main() {
         );
 
         final $responses = await $httpLink
-            .request(request: $testRequest, headers: {}).toList();
+            .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
         expect($responses[0], isA<LinkErrorResponse>());
 
         final $error = $responses[0] as LinkErrorResponse;
+        expect($error.errors.length, 1);
+        expect($error.errors[0], isA<ShalomTransportException>());
+        final $transportError = $error.errors[0] as ShalomTransportException;
         expect(
-            $error.errors['message'], contains('missing both data and errors'));
+            $transportError.message, contains('missing both data and errors'));
       });
 
       test('handles invalid errors format (not an array)', () async {
@@ -596,13 +617,16 @@ void main() {
         );
 
         final $responses = await $httpLink
-            .request(request: $testRequest, headers: {}).toList();
+            .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
         expect($responses[0], isA<LinkErrorResponse>());
 
         final $error = $responses[0] as LinkErrorResponse;
-        expect($error.errors['message'], contains('Invalid errors format'));
+        expect($error.errors.length, 1);
+        expect($error.errors[0], isA<ShalomTransportException>());
+        final $transportError = $error.errors[0] as ShalomTransportException;
+        expect($transportError.message, contains('Invalid errors format'));
       });
     });
 
@@ -621,10 +645,12 @@ void main() {
 
         await $httpLink.request(
           request: $testRequest,
-          headers: {'Accept': 'application/json'},
+          headers: [('Accept', 'application/json')],
         ).toList();
 
-        expect($fakeTransport.lastHeaders!['Accept'], 'application/json');
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
+        expect($headersMap['Accept'], 'application/json');
       });
 
       test('uses default Accept header when not provided', () async {
@@ -639,27 +665,23 @@ void main() {
           url: 'http://example.com/graphql',
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
         expect(
-          $fakeTransport.lastHeaders!['Accept'],
+          $headersMap['Accept'],
           'application/graphql-response+json, application/json;q=0.9',
         );
       });
     });
 
     group('streaming responses', () {
-      test('handles multiple responses from transport layer', () async {
+      test('returns single response from HTTP request', () async {
         final $fakeTransport = FakeTransportLayer(
           responses: [
             {
               'data': {'count': 1}
-            },
-            {
-              'data': {'count': 2}
-            },
-            {
-              'data': {'count': 3}
             },
           ],
         );
@@ -670,12 +692,11 @@ void main() {
         );
 
         final $responses = await $httpLink
-            .request(request: $testRequest, headers: {}).toList();
+            .request(request: $testRequest, headers: []).toList();
 
-        expect($responses.length, 3);
+        // HTTP requests only return a single response
+        expect($responses.length, 1);
         expect(($responses[0] as GraphQLData).data['count'], 1);
-        expect(($responses[1] as GraphQLData).data['count'], 2);
-        expect(($responses[2] as GraphQLData).data['count'], 3);
       });
     });
   });

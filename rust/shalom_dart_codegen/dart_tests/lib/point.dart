@@ -20,6 +20,7 @@ class Point {
 }
 
 class _PointScalarImpl implements CustomScalarImpl<Point> {
+  const _PointScalarImpl();
   @override
   Point deserialize(dynamic raw) {
     if (raw is Map<String, dynamic>) {
@@ -53,4 +54,4 @@ class _PointScalarImpl implements CustomScalarImpl<Point> {
 }
 
 // This is referenced in shalom.yml
-final pointScalarImpl = _PointScalarImpl();
+const pointScalarImpl = _PointScalarImpl();

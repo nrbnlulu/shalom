@@ -15,9 +15,7 @@
 import "{{ schema_import_path }}";
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
-{% for import_alias, import_path in extra_imports | items -%}
-import '{{import_path}}' as {{import_alias}};
-{% endfor -%}
+{{ custom_scalar_imports_macro(custom_scalar_imports) }}
 
 {% for import_path in generate_fragment_imports(fragment_file_path, fragment.context.context.used_fragments) -%}
 import '{{ import_path }}';

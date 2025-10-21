@@ -31,7 +31,16 @@ Every test case should include the following:
 where `x` is the kind of use case you are testing, for example `objectRequired`, `objectOptional`, `scalarRequired`, `scalarOptional`, etc.
  for a reference of a complete testcase see `rust/shalom_dart_codegen/dart_tests/test/object_selection/test.dart`
 
-- For input-related test cases, you should also add a `Maybe` test. This means that for fields that are optional but **have no default value**, they should be wrapped in a `Maybe` type (`Some` | `None`).
+- For input-related test cases, we are testing
+    - optional no default (`Maybe` type, it is useful for graphql patch updates because it is not included in the op vars if is `None`).
+    - optional with null default
+    - optional with default
+    - required 
+    - required with default
+    - for each case we should test:
+        - ==
+        - `toJson`
+        - cache normilization (meaning that the inputs are CORRECTLY used to deduce the normalized key for the queried fields)
 
 when you are done, make sure all tests pass using `task test` and all lints pass using `task lint` (check Taskfile.yml to see what they do if needed).
 

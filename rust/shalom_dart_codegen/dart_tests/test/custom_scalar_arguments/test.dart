@@ -8,6 +8,7 @@ import '__graphql__/UpdatePointWithInputNonNull.shalom.dart';
 import '__graphql__/UpdatePointWithInputCoordsMaybe.shalom.dart';
 import '__graphql__/schema.shalom.dart';
 import '__graphql__/UpdatePointWithOptCoords.shalom.dart';
+import '__graphql__/UpdatePointWithRequiredDefaultValue.shalom.dart';
 
 void main() {
   final Point samplePoint = Point(x: 10, y: 20);
@@ -61,12 +62,12 @@ void main() {
       final req = RequestUpdatePointCoordsOpt(
         variables: UpdatePointCoordsOptVariables(id: "test-id-1"),
       ).toRequest();
-      expect(req.variables, {"id": "test-id-1", "coords": null});
+      expect(req.variables, {"id": "test-id-1", "coords": "POINT (0, 0)"});
 
       final reqWithExplicit = RequestUpdatePointCoordsOpt(
         variables: UpdatePointCoordsOptVariables(
           id: "test-id-2",
-          coords: Point(x: 15, y: 25),
+          coords: Some(Point(x: 15, y: 25)),
         ),
       ).toRequest();
       expect(reqWithExplicit.variables, {
@@ -129,12 +130,12 @@ void main() {
       final req =
           RequestUpdatePointWithOptCoords(variables: variables).toRequest();
       expect(req.variables, {
-        "pointData": {"coords": null, "name": "Location M"},
+        "pointData": {"coords": "POINT (0, 0)", "name": "Location M"},
       });
 
       final variablesWithCoords = UpdatePointWithOptCoordsVariables(
         pointData: PointDataOptCoordsInput(
-          coords: Point(x: 25, y: 35),
+          coords: Some(Point(x: 25, y: 35)),
           name: "Location N",
         ),
       );
@@ -145,6 +146,65 @@ void main() {
       expect(reqWithCoords.variables, {
         "pointData": {"coords": "POINT (25, 35)", "name": "Location N"},
       });
+    });
+
+    test("custom scalar InputObject (required with default value)", () {
+      // Test with default value (not specifying coords)
+      final variables = UpdatePointWithRequiredDefaultValueVariables(
+        pointData: PointDataInputRequiredWithDefaultValue(),
+      );
+
+      final req = RequestUpdatePointWithRequiredDefaultValue(
+        variables: variables,
+      ).toRequest();
+      expect(req.variables, {
+        "pointData": {"coords": "POINT (0, 0)"},
+      });
+
+      // Test with explicit value
+      final variablesWithCoords = UpdatePointWithRequiredDefaultValueVariables(
+        pointData: PointDataInputRequiredWithDefaultValue(
+          coords: Point(x: 42, y: 84),
+        ),
+      );
+
+      final reqWithCoords = RequestUpdatePointWithRequiredDefaultValue(
+        variables: variablesWithCoords,
+      ).toRequest();
+      expect(reqWithCoords.variables, {
+        "pointData": {"coords": "POINT (42, 84)"},
+      });
+
+      // Test updateWith
+      final updatedVariables = variablesWithCoords.updateWith(
+        pointData: PointDataInputRequiredWithDefaultValue(
+          coords: Point(x: 100, y: 200),
+        ),
+      );
+      expect(updatedVariables.pointData.coords, Point(x: 100, y: 200));
+
+      // Test equals
+      final input1 = PointDataInputRequiredWithDefaultValue(
+        coords: Point(x: 10, y: 20),
+      );
+      final input2 = PointDataInputRequiredWithDefaultValue(
+        coords: Point(x: 10, y: 20),
+      );
+      final input3 = PointDataInputRequiredWithDefaultValue(
+        coords: Point(x: 30, y: 40),
+      );
+      expect(input1.toJson(), equals(input2.toJson()));
+      expect(input1.toJson(), isNot(equals(input3.toJson())));
+
+      // Test toJson
+      final inputForJson = PointDataInputRequiredWithDefaultValue(
+        coords: Point(x: 55, y: 66),
+      );
+      expect(inputForJson.toJson(), {"coords": "POINT (55, 66)"});
+
+      // Test with default (no coords provided)
+      final inputDefault = PointDataInputRequiredWithDefaultValue();
+      expect(inputDefault.toJson(), {"coords": "POINT (0, 0)"});
     });
   });
 }

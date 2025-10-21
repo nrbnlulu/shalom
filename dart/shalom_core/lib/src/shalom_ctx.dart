@@ -55,7 +55,7 @@ class ShalomCtx {
   }
 
   RecordSubscriber subscribeToRefs(Set<RecordID> subs) {
-    RecordSubscriber? subscriber = null;
+    RecordSubscriber? subscriber;
     subscriber = RecordSubscriber(
       subs: subs,
       streamController: RefStreamType(

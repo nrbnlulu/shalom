@@ -1,28 +1,10 @@
+import 'normelized_cache.dart' show RecordID;
+
 import 'shalom_ctx.dart' show ShalomCtx;
 
 typedef JsonObject = Map<String, dynamic>;
 
-class GraphQLResult<T> {
-  final T? data;
-  final List<List<JsonObject>>? errors;
-
-  GraphQLResult._({this.data, this.errors});
-
-  factory GraphQLResult.fromJson(
-    JsonObject json,
-    T Function(JsonObject) fromJson,
-  ) {
-    return GraphQLResult._(
-      data: json['data'] != null ? fromJson(json['data']) : null,
-      errors: json['errors'] != null
-          ? (json['errors'] as List)
-              .map((e) => (e as List).map((e) => e as JsonObject).toList())
-              .toList()
-          : null,
-    );
-  }
-}
-
+// ignore: constant_identifier_names
 enum OperationType { Query, Mutation, Subscription }
 
 class Request {
@@ -37,10 +19,20 @@ class Request {
     required this.opType,
     required this.opName,
   });
-
   JsonObject toJson() {
     return {"query": query, "variables": variables, "operationName": opName};
   }
+}
+
+class RequestMeta<T> {
+  final Request request;
+
+  /// if success returns the deserialized data + set of cache keys to subscribe to
+  final (T, Set<RecordID>) Function(
+      {required JsonObject data, required ShalomCtx ctx}) loadFn;
+  final (T, Set<RecordID>) Function(ShalomCtx ctx) fromCacheFn;
+  const RequestMeta(
+      {required this.request, required this.loadFn, required this.fromCacheFn});
 }
 
 class Response {
@@ -54,14 +46,15 @@ class Response {
   }
 }
 
-abstract class Requestable {
-  Request toRequest();
+abstract class Requestable<T> {
+  RequestMeta<T> getRequestMeta();
+  Request toRequest() => getRequestMeta().request;
 }
 
 sealed class Maybe<T> {
   T? some();
   bool isSome();
-  void inspect(void Function(T));
+  void inspect(void Function(T) _);
 }
 
 class None<T> implements Maybe<T> {
@@ -74,7 +67,7 @@ class None<T> implements Maybe<T> {
   bool isSome() => false;
 
   @override
-  void inspect(void Function(T) _) => null;
+  void inspect(void Function(T) _) {}
 
   @override
   bool operator ==(Object other) {
@@ -122,17 +115,34 @@ class OperationContext<TVars> {
   const OperationContext({this.variables, required this.shalomCtx});
 }
 
-sealed class GraphQLResponse {
+class ShalomTransportException implements Exception {
+  final String message;
+  final String code;
+  final JsonObject? details;
+
+  const ShalomTransportException({
+    required this.message,
+    required this.code,
+    this.details,
+  });
+
+  @override
+  String toString() {
+    return 'ShalomTransportException: $message (code: $code)';
+  }
+}
+
+sealed class GraphQLResponse<T> {
   const GraphQLResponse();
 }
 
-class LinkErrorResponse extends GraphQLResponse {
-  final JsonObject errors;
+class LinkErrorResponse<T> extends GraphQLResponse<T> {
+  final List<Exception> errors;
   const LinkErrorResponse(this.errors);
 }
 
-class GraphQLData extends GraphQLResponse {
-  final JsonObject data;
+class GraphQLData<T> extends GraphQLResponse<T> {
+  final T data;
   final List<JsonObject>? errors;
   final JsonObject extensions;
 

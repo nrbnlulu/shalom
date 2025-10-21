@@ -22,6 +22,6 @@ abstract class WebSocketTransport {
   Future<(StreamController<JsonObject>, MessageSender)> connect({
     required String url,
     required List<String> protocols,
-    JsonObject? headers,
+    HeadersType? headers,
   });
 }

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:shalom_core/src/shalom_core_base.dart';
-import 'package:shalom_core/src/transport/link.dart' show GraphQLLink;
+import 'package:shalom_core/src/transport/link.dart'
+    show GraphQLLink, HeadersType;
 
 enum HttpMethod {
   // ignore: constant_identifier_names
@@ -11,12 +13,12 @@ enum HttpMethod {
   POST
 }
 
-abstract interface class ShalomHttpTransport {
+abstract class ShalomHttpTransport {
   Future<JsonObject> request(
       {required HttpMethod method,
       required String url,
       required JsonObject data,
-      JsonObject? headers,
+      HeadersType? headers,
       JsonObject? extra});
 }
 
@@ -26,7 +28,7 @@ class HttpLink extends GraphQLLink {
   final ShalomHttpTransport transportLayer;
   final String url;
   final bool useGet;
-  final JsonObject defaultHeaders;
+  final HeadersType defaultHeaders;
 
   /// Creates an HTTP link for GraphQL requests.
   ///
@@ -38,18 +40,19 @@ class HttpLink extends GraphQLLink {
     required this.transportLayer,
     required this.url,
     this.useGet = false,
-    this.defaultHeaders = const {},
+    this.defaultHeaders = const [],
   });
 
   @override
-  Stream<GraphQLResponse> request(
-      {required Request request, required JsonObject headers}) async* {
+  Stream<GraphQLResponse<JsonObject>> request(
+      {required Request request, HeadersType? headers}) async* {
     try {
       // Merge default headers with request-specific headers
-      final mergedHeaders = <String, dynamic>{
+      var finalHeaders = [
         ...defaultHeaders,
-        ...headers,
-      };
+        if (headers != null) ...headers,
+      ];
+      finalHeaders = _ensureAcceptHeader(finalHeaders);
 
       final methodForThisRequest =
           useGet && request.opType == OperationType.Query
@@ -58,23 +61,17 @@ class HttpLink extends GraphQLLink {
 
       // Prepare the request
       JsonObject requestBody;
-      JsonObject finalHeaders;
 
       if (methodForThisRequest == HttpMethod.GET) {
         // GET requests: parameters go in URL query string
         requestBody = _prepareGetRequest(request);
-        finalHeaders = {
-          ...mergedHeaders,
-          'Accept': _getAcceptHeader(mergedHeaders),
-        };
       } else {
         // POST requests: parameters go in JSON body
         requestBody = _preparePostRequest(request);
-        finalHeaders = {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Accept': _getAcceptHeader(mergedHeaders),
-          ...mergedHeaders,
-        };
+        finalHeaders = [
+          ('Content-Type', 'application/json; charset=utf-8'),
+          ...finalHeaders,
+        ];
       }
 
       // Make the request through the transport layer
@@ -83,16 +80,22 @@ class HttpLink extends GraphQLLink {
         url: url,
         data: requestBody,
         headers: finalHeaders,
+        extra: {
+          'method': methodForThisRequest.name,
+          'url': url,
+        },
       );
 
       // Parse and yield the response
       yield _parseResponse($response);
     } catch (e) {
       // Return a link error for any exceptions
-      yield LinkErrorResponse({
-        'code': 'HTTP_LINK_ERROR',
-        'message': 'Network error: ${e.toString()}',
-      });
+      yield LinkErrorResponse([
+        ShalomTransportException(
+          message: 'Network error: ${e.toString()}',
+          code: 'NETWORK_ERROR',
+        ),
+      ]);
     }
   }
 
@@ -131,54 +134,46 @@ class HttpLink extends GraphQLLink {
 
   /// Gets the Accept header value according to the spec.
   /// Prefers application/graphql-response+json with application/json as fallback
-  String _getAcceptHeader(JsonObject headers) {
+  HeadersType _ensureAcceptHeader(HeadersType headers) {
     // If user already specified Accept header, use it
-    if (headers.containsKey('Accept')) {
-      return headers['Accept'] as String;
+    final acceptHeader = headers.firstWhereOrNull((e) => e.$1 == 'Accept');
+    if (acceptHeader != null) {
+      return headers;
     }
-
     // Default: prefer graphql-response+json, fallback to json
-    return 'application/graphql-response+json, application/json;q=0.9';
+
+    return [
+      ...headers,
+      ("Accept", 'application/graphql-response+json, application/json;q=0.9')
+    ];
   }
 
   /// Parses the transport layer response into a GraphQLResponse
-  GraphQLResponse _parseResponse(dynamic response) {
+  GraphQLResponse<JsonObject> _parseResponse(JsonObject response) {
     try {
-      // Response should be a JSON object (Map)
-      if (response is! Map) {
-        return LinkErrorResponse({
-          'message': 'Invalid response format: expected JSON object',
-          'extensions': {
-            'code': 'INVALID_RESPONSE_FORMAT',
-          },
-        });
-      }
-
-      final $jsonResponse = response as JsonObject;
-
       // Check for data field
-      final $hasData = $jsonResponse.containsKey('data');
-      final $data = $jsonResponse['data'];
+      final $hasData = response.containsKey('data');
+      final $data = response['data'];
 
       // Check for errors field
-      final $errors = $jsonResponse['errors'];
+      final $errors = response['errors'];
       List<JsonObject>? $parsedErrors;
 
       if ($errors != null) {
         if ($errors is List) {
           $parsedErrors = $errors.map((e) => e as JsonObject).toList();
         } else {
-          return LinkErrorResponse({
-            'message': 'Invalid errors format: expected array',
-            'extensions': {
-              'code': 'INVALID_RESPONSE_FORMAT',
-            },
-          });
+          return LinkErrorResponse([
+            ShalomTransportException(
+              message: 'Invalid errors format: expected array',
+              code: 'INVALID_RESPONSE_FORMAT',
+            ),
+          ]);
         }
       }
 
       // Check for extensions field
-      final $extensionsRaw = $jsonResponse['extensions'];
+      final $extensionsRaw = response['extensions'];
       final $extensions = $extensionsRaw != null && $extensionsRaw is Map
           ? Map<String, dynamic>.from($extensionsRaw)
           : <String, dynamic>{};
@@ -195,12 +190,12 @@ class HttpLink extends GraphQLLink {
           $dataMap = Map<String, dynamic>.from($data);
         } else {
           // Invalid data type
-          return LinkErrorResponse({
-            'message': 'Invalid data format: expected JSON object or null',
-            'extensions': {
-              'code': 'INVALID_RESPONSE_FORMAT',
-            },
-          });
+          return LinkErrorResponse([
+            ShalomTransportException(
+              message: 'Invalid data format: expected JSON object or null',
+              code: 'INVALID_RESPONSE_FORMAT',
+            ),
+          ]);
         }
 
         return GraphQLData(
@@ -210,26 +205,29 @@ class HttpLink extends GraphQLLink {
         );
       } else if ($parsedErrors != null) {
         // No data field, but has errors - this is a request error
-        return LinkErrorResponse({
-          'errors': $parsedErrors,
-          'extensions': $extensions,
-        });
+        return LinkErrorResponse([
+          ShalomTransportException(
+            message: 'GraphQL request error',
+            code: 'GRAPHQL_ERROR',
+            details: {'errors': $parsedErrors, 'extensions': $extensions},
+          ),
+        ]);
       } else {
         // Neither data nor errors - invalid response
-        return LinkErrorResponse({
-          'message': 'Invalid GraphQL response: missing both data and errors',
-          'extensions': {
-            'code': 'INVALID_RESPONSE_FORMAT',
-          },
-        });
+        return LinkErrorResponse([
+          ShalomTransportException(
+            message: 'Invalid GraphQL response: missing both data and errors',
+            code: 'INVALID_RESPONSE_FORMAT',
+          ),
+        ]);
       }
     } catch (e) {
-      return LinkErrorResponse({
-        'message': 'Failed to parse response: ${e.toString()}',
-        'extensions': {
-          'code': 'RESPONSE_PARSE_ERROR',
-        },
-      });
+      return LinkErrorResponse([
+        ShalomTransportException(
+          message: 'Failed to parse response: ${e.toString()}',
+          code: 'RESPONSE_PARSE_ERROR',
+        ),
+      ]);
     }
   }
 }

@@ -1,28 +1,38 @@
 import 'package:dio/dio.dart' as dio;
 import 'package:shalom_core/shalom_core.dart';
 
-class DioTransport extends TransportLayer {
+class DioTransport extends ShalomHttpTransport {
   final dio.Dio dioClient;
 
   DioTransport(this.dioClient);
 
   @override
-  Stream<dynamic> request({
-    required JsonObject request,
-    JsonObject? headers,
+  Future<JsonObject> request({
+    required HttpMethod method,
+    required String url,
+    required JsonObject data,
+    HeadersType? headers,
     JsonObject? extra,
-  }) async* {
-    final url = extra?['url'] as String;
-    final method = extra?['method'] as String? ?? 'POST';
-
+  }) async {
     dio.Response response;
 
-    if (method == 'GET') {
-      response = await dioClient.get(url, queryParameters: request, options: dio.Options(headers: headers));
+    // Convert HeadersType (List of tuples) to Map for Dio
+    final headersMap = headers != null ? Map.fromEntries(headers) : null;
+
+    if (method == HttpMethod.GET) {
+      response = await dioClient.get(
+        url,
+        data: data,
+        options: dio.Options(headers: headersMap),
+      );
     } else {
-      response = await dioClient.post(url, data: request, options: dio.Options(headers: headers));
+      response = await dioClient.post(
+        url,
+        data: data,
+        options: dio.Options(headers: headersMap),
+      );
     }
 
-    yield response.data;
+    return response.data;
   }
 }
