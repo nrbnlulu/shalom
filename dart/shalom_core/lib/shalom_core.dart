@@ -15,7 +15,7 @@ export 'src/normelized_cache.dart'
 export 'src/shalom_ctx.dart' show RecordSubscriber, RefStreamType, ShalomCtx;
 export 'src/transport/http_link.dart'
     show HttpLink, HttpMethod, ShalomHttpTransport;
-export 'src/transport/link.dart' show GraphQLLink, ShalomClient;
+export 'src/transport/link.dart' show GraphQLLink, ShalomClient, HeadersType;
 export 'src/transport/ws_link.dart' show WebSocketLink;
 export 'src/transport/ws_transport.dart' show WebSocketTransport, MessageSender;
 export 'src/transport/ws_messages.dart'

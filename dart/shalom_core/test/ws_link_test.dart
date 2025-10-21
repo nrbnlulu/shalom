@@ -353,7 +353,7 @@ void main() {
           opName: 'HelloQuery',
         );
 
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen((_) {});
 
         await Future.delayed(const Duration(milliseconds: 10));
@@ -397,7 +397,7 @@ void main() {
         );
 
         final $responses = <GraphQLResponse>[];
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen($responses.add);
 
         await Future.delayed(const Duration(milliseconds: 10));
@@ -455,7 +455,7 @@ void main() {
         );
 
         final $responses = <GraphQLResponse>[];
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen($responses.add);
 
         await Future.delayed(const Duration(milliseconds: 10));
@@ -511,7 +511,7 @@ void main() {
         );
 
         var $completed = false;
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen(
           (_) {},
           onDone: () => $completed = true,
@@ -563,7 +563,7 @@ void main() {
           opName: 'MessagesSub',
         );
 
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen((_) {});
 
         await Future.delayed(const Duration(milliseconds: 10));
@@ -669,7 +669,7 @@ void main() {
         );
 
         final $responses = <GraphQLResponse>[];
-        final $stream = $wsLink.request(request: $request, headers: {});
+        final $stream = $wsLink.request(request: $request, headers: []);
         final $subscription = $stream.listen($responses.add);
 
         await Future.delayed(const Duration(milliseconds: 10));
