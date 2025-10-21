@@ -93,17 +93,17 @@ import '{{path}}' as {{ namespace_alias }};
 {% endmacro %}
 
 {% macro toJson_macro(fields) %}
-{% for name, field in fields | items %}
-    {% set field_ty = resolve_field_type(field.common).ty %}
-    {% if field.is_optional and field.default_value is none %}
+{% for name, field in fields | items -%}
+    {% set field_ty = resolve_field_type(field.common).ty -%}
+    {% if field.is_optional and field.default_value is none -%}
         if ({{ name }}.isSome()) {
             final value = this.{{ name }}.some();
             data["{{ name }}"] = {{ _serialize_field_value_macro("value", field_ty, true) }};
         }
-    {% else %}
+    {% else -%}
         data["{{ name }}"] = {{ _serialize_field_value_macro("this." + name, field_ty, field.is_optional) }};
-    {% endif %}
-{% endfor %}
+    {% endif -%}
+{% endfor -%}
 {% endmacro %}
 
 {% macro updateWith_macro(fields, typename) %}
