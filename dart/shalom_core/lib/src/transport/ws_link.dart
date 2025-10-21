@@ -3,6 +3,7 @@ import 'dart:convert' show json;
 import 'dart:developer' show log;
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom_core/src/transport/link.dart' show HeadersType;
 
 /// Implementation of GraphQL WebSocket protocol as specified in:
 /// https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md
@@ -358,7 +359,7 @@ class WebSocketLink extends GraphQLLink {
   @override
   Stream<GraphQLResponse<JsonObject>> request({
     required Request request,
-    JsonObject? headers,
+    HeadersType? headers,
   }) {
     // Generate unique operation ID
     final $operationId = _generateOperationId();

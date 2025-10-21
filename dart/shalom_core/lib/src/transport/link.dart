@@ -2,11 +2,13 @@ import 'package:shalom_core/shalom_core.dart';
 // Add this import for reliable Set comparison
 import 'package:collection/collection.dart';
 
+typedef HeadersType = List<(String, String)>;
+
 abstract class GraphQLLink {
   const GraphQLLink();
   Stream<GraphQLResponse<JsonObject>> request({
     required Request request,
-    JsonObject? headers,
+    HeadersType? headers,
   });
 }
 
@@ -23,7 +25,7 @@ class ShalomClient {
 
   Stream<GraphQLResponse<T>> request<T>({
     required Requestable<T> requestable,
-    JsonObject? headers,
+    HeadersType? headers,
   }) async* {
     final meta = requestable.getRequestMeta();
 
@@ -95,7 +97,7 @@ class ShalomClient {
   /// don't subscribe to changes of this operation and just get the initial data
   Future<GraphQLResponse<T>> requestOnce<T>({
     required Requestable<T> requestable,
-    JsonObject? headers,
+    HeadersType? headers,
   }) async {
     final meta = requestable.getRequestMeta();
 

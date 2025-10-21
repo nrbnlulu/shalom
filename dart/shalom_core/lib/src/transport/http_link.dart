@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:shalom_core/src/shalom_core_base.dart';
-import 'package:shalom_core/src/transport/link.dart' show GraphQLLink;
+import 'package:shalom_core/src/transport/link.dart'
+    show GraphQLLink, HeadersType;
 
 enum HttpMethod {
   // ignore: constant_identifier_names
@@ -16,7 +18,7 @@ abstract class ShalomHttpTransport {
       {required HttpMethod method,
       required String url,
       required JsonObject data,
-      JsonObject? headers,
+      HeadersType? headers,
       JsonObject? extra});
 }
 
@@ -26,7 +28,7 @@ class HttpLink extends GraphQLLink {
   final ShalomHttpTransport transportLayer;
   final String url;
   final bool useGet;
-  final JsonObject defaultHeaders;
+  final HeadersType defaultHeaders;
 
   /// Creates an HTTP link for GraphQL requests.
   ///
@@ -38,18 +40,19 @@ class HttpLink extends GraphQLLink {
     required this.transportLayer,
     required this.url,
     this.useGet = false,
-    this.defaultHeaders = const {},
+    this.defaultHeaders = const [],
   });
 
   @override
   Stream<GraphQLResponse<JsonObject>> request(
-      {required Request request, JsonObject? headers}) async* {
+      {required Request request, HeadersType? headers}) async* {
     try {
       // Merge default headers with request-specific headers
-      final mergedHeaders = <String, dynamic>{
+      var finalHeaders = [
         ...defaultHeaders,
         if (headers != null) ...headers,
-      };
+      ];
+      finalHeaders = _ensureAcceptHeader(finalHeaders);
 
       final methodForThisRequest =
           useGet && request.opType == OperationType.Query
@@ -58,23 +61,17 @@ class HttpLink extends GraphQLLink {
 
       // Prepare the request
       JsonObject requestBody;
-      JsonObject finalHeaders;
 
       if (methodForThisRequest == HttpMethod.GET) {
         // GET requests: parameters go in URL query string
         requestBody = _prepareGetRequest(request);
-        finalHeaders = {
-          ...mergedHeaders,
-          'Accept': _getAcceptHeader(mergedHeaders),
-        };
       } else {
         // POST requests: parameters go in JSON body
         requestBody = _preparePostRequest(request);
-        finalHeaders = {
-          'Content-Type': 'application/json; charset=utf-8',
-          'Accept': _getAcceptHeader(mergedHeaders),
-          ...mergedHeaders,
-        };
+        finalHeaders = [
+          ('Content-Type', 'application/json; charset=utf-8'),
+          ...finalHeaders,
+        ];
       }
 
       // Make the request through the transport layer
@@ -137,14 +134,18 @@ class HttpLink extends GraphQLLink {
 
   /// Gets the Accept header value according to the spec.
   /// Prefers application/graphql-response+json with application/json as fallback
-  String _getAcceptHeader(JsonObject headers) {
+  HeadersType _ensureAcceptHeader(HeadersType headers) {
     // If user already specified Accept header, use it
-    if (headers.containsKey('Accept')) {
-      return headers['Accept'] as String;
+    final acceptHeader = headers.firstWhereOrNull((e) => e.$1 == 'Accept');
+    if (acceptHeader != null) {
+      return headers;
     }
-
     // Default: prefer graphql-response+json, fallback to json
-    return 'application/graphql-response+json, application/json;q=0.9';
+
+    return [
+      ...headers,
+      ("Accept", 'application/graphql-response+json, application/json;q=0.9')
+    ];
   }
 
   /// Parses the transport layer response into a GraphQLResponse
