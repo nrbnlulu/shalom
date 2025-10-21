@@ -10,16 +10,17 @@ enum HttpMethod {
   // ignore: constant_identifier_names
   GET,
   // ignore: constant_identifier_names
-  POST
+  POST,
 }
 
 abstract class ShalomHttpTransport {
-  Future<JsonObject> request(
-      {required HttpMethod method,
-      required String url,
-      required JsonObject data,
-      HeadersType? headers,
-      JsonObject? extra});
+  Future<JsonObject> request({
+    required HttpMethod method,
+    required String url,
+    required JsonObject data,
+    HeadersType? headers,
+    JsonObject? extra,
+  });
 }
 
 /// Implementation of GraphQL over HTTP protocol as specified in:
@@ -44,14 +45,13 @@ class HttpLink extends GraphQLLink {
   });
 
   @override
-  Stream<GraphQLResponse<JsonObject>> request(
-      {required Request request, HeadersType? headers}) async* {
+  Stream<GraphQLResponse<JsonObject>> request({
+    required Request request,
+    HeadersType? headers,
+  }) async* {
     try {
       // Merge default headers with request-specific headers
-      var finalHeaders = [
-        ...defaultHeaders,
-        if (headers != null) ...headers,
-      ];
+      var finalHeaders = [...defaultHeaders, if (headers != null) ...headers];
       finalHeaders = _ensureAcceptHeader(finalHeaders);
 
       final methodForThisRequest =
@@ -80,10 +80,6 @@ class HttpLink extends GraphQLLink {
         url: url,
         data: requestBody,
         headers: finalHeaders,
-        extra: {
-          'method': methodForThisRequest.name,
-          'url': url,
-        },
       );
 
       // Parse and yield the response
@@ -116,9 +112,7 @@ class HttpLink extends GraphQLLink {
 
   /// Prepares a GET request with query parameters
   JsonObject _prepareGetRequest(Request request) {
-    final params = <String, dynamic>{
-      'query': request.query,
-    };
+    final params = <String, dynamic>{'query': request.query};
 
     if (request.opName.isNotEmpty) {
       params['operationName'] = request.opName;
@@ -144,7 +138,7 @@ class HttpLink extends GraphQLLink {
 
     return [
       ...headers,
-      ("Accept", 'application/graphql-response+json, application/json;q=0.9')
+      ("Accept", 'application/graphql-response+json, application/json;q=0.9'),
     ];
   }
 
@@ -174,9 +168,10 @@ class HttpLink extends GraphQLLink {
 
       // Check for extensions field
       final $extensionsRaw = response['extensions'];
-      final $extensions = $extensionsRaw != null && $extensionsRaw is Map
-          ? Map<String, dynamic>.from($extensionsRaw)
-          : <String, dynamic>{};
+      final JsonObject? $extensions =
+          $extensionsRaw != null && $extensionsRaw is Map
+              ? Map<String, dynamic>.from($extensionsRaw)
+              : null;
 
       // According to GraphQL spec:
       // - If data is present (even if null), it's a valid response
@@ -204,14 +199,11 @@ class HttpLink extends GraphQLLink {
           extensions: $extensions,
         );
       } else if ($parsedErrors != null) {
-        // No data field, but has errors - this is a request error
-        return LinkErrorResponse([
-          ShalomTransportException(
-            message: 'GraphQL request error',
-            code: 'GRAPHQL_ERROR',
-            details: {'errors': $parsedErrors, 'extensions': $extensions},
-          ),
-        ]);
+        // No data field, but has errors - this is a GraphQL error response
+        return GraphQLError(
+          errors: $parsedErrors,
+          extensions: $extensions,
+        );
       } else {
         // Neither data nor errors - invalid response
         return LinkErrorResponse([

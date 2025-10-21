@@ -70,7 +70,10 @@ class WebSocketLink extends GraphQLLink {
 
     try {
       final (streamController, sender) = await transport.connect(
-          url: url, protocols: ['graphql-transport-ws'], headers: headers);
+        url: url,
+        protocols: ['graphql-transport-ws'],
+        headers: headers,
+      );
 
       _messageStreamController = streamController;
       _messageSender = sender;
@@ -221,29 +224,38 @@ class WebSocketLink extends GraphQLLink {
     final $payload = message.payload;
 
     // Check if this is a valid GraphQL response
+    final $errors = $payload['errors'] as List?;
+    final $extensions = $payload['extensions'] as JsonObject?;
+
+    List<JsonObject>? $parsedErrors;
+    if ($errors != null) {
+      $parsedErrors = $errors.map((e) => e as JsonObject).toList();
+    }
+
     if ($payload.containsKey('data')) {
       final $data = $payload['data'] as JsonObject?;
-      final $errors = $payload['errors'] as List?;
-      final $extensions = $payload['extensions'] as JsonObject?;
-
-      List<JsonObject>? $parsedErrors;
-      if ($errors != null) {
-        $parsedErrors = $errors.map((e) => e as JsonObject).toList();
-      }
 
       $handler.controller.add(
         GraphQLData(
           data: $data ?? {},
           errors: $parsedErrors,
-          extensions: $extensions ?? {},
+          extensions: $extensions,
+        ),
+      );
+    } else if ($parsedErrors != null) {
+      // No data field, but has errors - this is a GraphQL error response
+      $handler.controller.add(
+        GraphQLError(
+          errors: $parsedErrors,
+          extensions: $extensions,
         ),
       );
     } else {
-      // Invalid response format
+      // Neither data nor errors - invalid response format
       $handler.controller.add(
         LinkErrorResponse([
           ShalomTransportException(
-            message: 'Invalid response: missing data field',
+            message: 'Invalid response: missing both data and errors',
             code: 'INVALID_RESPONSE',
           ),
         ]),

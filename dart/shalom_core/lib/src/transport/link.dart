@@ -90,6 +90,11 @@ class ShalomClient {
             // Just forward link errors
             yield LinkErrorResponse(res.errors);
           }
+        case GraphQLError():
+          {
+            // Just forward GraphQL errors
+            yield GraphQLError(errors: res.errors, extensions: res.extensions);
+          }
       }
     }
   }
@@ -118,6 +123,11 @@ class ShalomClient {
           {
             // Just forward link errors
             return LinkErrorResponse(res.errors);
+          }
+        case GraphQLError():
+          {
+            // Just forward GraphQL errors
+            return GraphQLError(errors: res.errors, extensions: res.extensions);
           }
       }
     }

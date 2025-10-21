@@ -28,11 +28,16 @@ class RequestMeta<T> {
   final Request request;
 
   /// if success returns the deserialized data + set of cache keys to subscribe to
-  final (T, Set<RecordID>) Function(
-      {required JsonObject data, required ShalomCtx ctx}) loadFn;
+  final (T, Set<RecordID>) Function({
+    required JsonObject data,
+    required ShalomCtx ctx,
+  }) loadFn;
   final (T, Set<RecordID>) Function(ShalomCtx ctx) fromCacheFn;
-  const RequestMeta(
-      {required this.request, required this.loadFn, required this.fromCacheFn});
+  const RequestMeta({
+    required this.request,
+    required this.loadFn,
+    required this.fromCacheFn,
+  });
 }
 
 class Response {
@@ -144,8 +149,14 @@ class LinkErrorResponse<T> extends GraphQLResponse<T> {
 class GraphQLData<T> extends GraphQLResponse<T> {
   final T data;
   final List<JsonObject>? errors;
-  final JsonObject extensions;
+  final JsonObject? extensions;
 
-  const GraphQLData(
-      {required this.data, this.errors, required this.extensions});
+  const GraphQLData({required this.data, this.errors, this.extensions});
+}
+
+class GraphQLError<T> extends GraphQLResponse<T> {
+  final List<JsonObject> errors;
+  final JsonObject? extensions;
+
+  const GraphQLError({required this.errors, this.extensions});
 }
