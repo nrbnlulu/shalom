@@ -13,13 +13,13 @@ import 'package:shalom_core/src/transport/link.dart' show HeadersType;
 class WebSocketLink extends GraphQLLink {
   final WebSocketTransport transport;
   final String url;
+  final HeadersType? headers;
   final JsonObject? connectionParams;
   final bool autoReconnect;
   final Duration connectionInitTimeout;
   final Duration reconnectTimeout;
   final Duration pingInterval;
   final Duration pongTimeout;
-
   /// Active subscriptions mapped by operation ID
   final Map<String, _OperationHandler> _activeOperations = {};
 
@@ -49,6 +49,7 @@ class WebSocketLink extends GraphQLLink {
     required this.transport,
     required this.url,
     this.connectionParams,
+    this.headers,
     this.autoReconnect = true,
     this.connectionInitTimeout = const Duration(seconds: 10),
     this.reconnectTimeout = const Duration(seconds: 5),
@@ -71,6 +72,7 @@ class WebSocketLink extends GraphQLLink {
       final (streamController, sender) = await transport.connect(
         url: url,
         protocols: ['graphql-transport-ws'],
+        headers: headers
       );
 
       _messageStreamController = streamController;

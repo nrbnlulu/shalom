@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom_core/src/transport/link.dart' show HeadersType;
 import 'package:test/test.dart';
 
 /// Fake transport layer for testing that returns controlled responses
@@ -224,7 +225,8 @@ void main() {
         await $httpLink.request(request: $testRequest, headers: []).toList();
 
         expect($fakeTransport.lastHeaders, isNotNull);
-        final $headersMap = Map.fromEntries($fakeTransport.lastHeaders!);
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
         expect($headersMap['Content-Type'], 'application/json; charset=utf-8');
         expect(
           $headersMap['Accept'],
@@ -253,7 +255,8 @@ void main() {
           headers: [('X-Request-ID', 'req-456')],
         ).toList();
 
-        final $headersMap = Map.fromEntries($fakeTransport.lastHeaders!);
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
         expect($headersMap['Authorization'], 'Bearer token123');
         expect($headersMap['X-Custom-Header'], 'custom-value');
         expect($headersMap['X-Request-ID'], 'req-456');
@@ -279,7 +282,8 @@ void main() {
           headers: [('Authorization', 'Bearer override-token')],
         ).toList();
 
-        final $headersMap = Map.fromEntries($fakeTransport.lastHeaders!);
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
         expect($headersMap['Authorization'], 'Bearer override-token');
       });
 
@@ -295,7 +299,7 @@ void main() {
           url: 'http://example.com/graphql',
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
         expect($fakeTransport.lastData, isNotNull);
         expect($fakeTransport.lastData!['query'], $testRequest.query);
@@ -323,7 +327,7 @@ void main() {
         );
 
         await $httpLink
-            .request(request: $requestWithoutVars, headers: {}).toList();
+            .request(request: $requestWithoutVars, headers: []).toList();
 
         expect($fakeTransport.lastData!.containsKey('variables'), isFalse);
       });
@@ -340,7 +344,7 @@ void main() {
           url: 'http://example.com/graphql',
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
         expect($fakeTransport.lastExtra, isNotNull);
         expect($fakeTransport.lastExtra!['method'], 'POST');
@@ -371,7 +375,7 @@ void main() {
         );
 
         await $httpLink
-            .request(request: $mutationRequest, headers: {}).toList();
+            .request(request: $mutationRequest, headers: []).toList();
 
         // Mutations should always use POST
         expect($fakeTransport.lastExtra!['method'], 'POST');
@@ -392,7 +396,7 @@ void main() {
           useGet: true,
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
         expect($fakeTransport.lastExtra!['method'], 'GET');
       });
@@ -418,7 +422,7 @@ void main() {
         );
 
         await $httpLink
-            .request(request: $mutationRequest, headers: {}).toList();
+            .request(request: $mutationRequest, headers: []).toList();
 
         expect($fakeTransport.lastExtra!['method'], 'POST');
       });
@@ -436,7 +440,7 @@ void main() {
           useGet: true,
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
         expect($fakeTransport.lastData!['query'], $testRequest.query);
         expect($fakeTransport.lastData!['operationName'], $testRequest.opName);
@@ -465,7 +469,7 @@ void main() {
         );
 
         await $httpLink
-            .request(request: $requestWithoutOpName, headers: {}).toList();
+            .request(request: $requestWithoutOpName, headers: []).toList();
 
         expect($fakeTransport.lastData!.containsKey('operationName'), isFalse);
       });
@@ -491,7 +495,7 @@ void main() {
         );
 
         await $httpLink
-            .request(request: $requestWithoutVars, headers: {}).toList();
+            .request(request: $requestWithoutVars, headers: []).toList();
 
         expect($fakeTransport.lastData!.containsKey('variables'), isFalse);
       });
@@ -509,10 +513,12 @@ void main() {
           useGet: true,
         );
 
-        await $httpLink.request(request: $testRequest, headers: {}).toList();
+        await $httpLink.request(request: $testRequest, headers: []).toList();
 
         // GET requests should still have Accept header
-        expect($fakeTransport.lastHeaders!['Accept'], isNotNull);
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
+        expect($headersMap['Accept'], isNotNull);
         // But might not have Content-Type (depends on merge order, but it's in the Accept section)
       });
     });
@@ -643,7 +649,8 @@ void main() {
           headers: [('Accept', 'application/json')],
         ).toList();
 
-        final $headersMap = Map.fromEntries($fakeTransport.lastHeaders!);
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
         expect($headersMap['Accept'], 'application/json');
       });
 
@@ -661,7 +668,8 @@ void main() {
 
         await $httpLink.request(request: $testRequest, headers: []).toList();
 
-        final $headersMap = Map.fromEntries($fakeTransport.lastHeaders!);
+        final $headersMap = Map.fromEntries(
+            $fakeTransport.lastHeaders!.map((e) => MapEntry(e.$1, e.$2)));
         expect(
           $headersMap['Accept'],
           'application/graphql-response+json, application/json;q=0.9',

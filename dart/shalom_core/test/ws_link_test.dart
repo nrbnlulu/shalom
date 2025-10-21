@@ -741,10 +741,10 @@ void main() {
         var $completed1 = false;
         var $completed2 = false;
 
-        final $stream1 = $wsLink.request(request: $request, headers: {});
+        final $stream1 = $wsLink.request(request: $request, headers: []);
         final $sub1 = $stream1.listen((_) {}, onDone: () => $completed1 = true);
 
-        final $stream2 = $wsLink.request(request: $request, headers: {});
+        final $stream2 = $wsLink.request(request: $request, headers: []);
         final $sub2 = $stream2.listen((_) {}, onDone: () => $completed2 = true);
 
         await Future.delayed(const Duration(milliseconds: 10));
