@@ -107,7 +107,7 @@ import '{{path}}' as {{ namespace_alias }};
 {% endmacro %}
 
 {% macro updateWith_macro(fields, typename) %}
-{% set initializer_fields = get_fields_requiring_initializer_list(fields) %}
+{% set fields_requiring_initializer_list = get_fields_requiring_initializer_list(fields) %}
 {{typename}} updateWith(
     {
         {% for name, field in fields | items %}
@@ -145,30 +145,31 @@ import '{{path}}' as {{ namespace_alias }};
     {% endfor %}
     return {{ typename }}(
         {% for name, field in fields | items %}
-            {{ name }}: {% if field.is_optional and field.default_value is none %}{{ name }}$next.isSome() ? Some({{ name }}$next.some()) : const None(){% else %}{{ name }}$next{% endif %}
+            {{ name }}: {% if field.is_optional and field.default_value is none %}{{ name }}$next.isSome() ? Some({{ name }}$next.some()) : const None(){% elif field.is_optional and field_requires_initializer_list(field) %}Some({{ name }}$next){% else %}{{ name }}$next{% endif %}
             {% if not loop.last %},{% endif %}
         {% endfor %}
     );
 }
 {% endmacro %}
 
-{% macro input_field_constructor_initialization(field, required_initializer=false) %}
+{% macro input_field_constructor_initialization(name, field, required_initializer=false) %}
     {% if required_initializer -%}
         {% if field.default_value is none -%}
             {{panic("no default value, no way that it needs an initializer list ")}}
-        {% endif -%}            
-            
+        {% endif -%}
+
         {% set default_val = parse_field_default_value_deserializer(field) -%}
         {% if default_val == "null" -%}
             {# Default is null - no initializer needed, just use this.field -#}
             this.{{ name }}
-        {% else %}
+        {% else -%}
             {% if field.is_maybe or not field.is_optional -%}
                 {{type_name_for_input_field(field)}}? {{ name }}
             {% else -%}
-                Maybe<{{type_name_for_input_field(field)}}> {{ name }}
-        {% endif %}
-    {% else %}
+                Maybe<{{type_name_for_input_field(field)}}> {{ name }} = const None()
+            {% endif -%}
+        {% endif -%}
+    {% else -%}
         {# Field NOT in initializer list #}
         {% if not field.is_optional -%}
             {% if field.default_value is not none -%}
@@ -183,11 +184,15 @@ import '{{path}}' as {{ namespace_alias }};
                 this.{{ name }} = const None()
             {% else %}
                 {# Optional field that have a default value #}
-                {% set default_val = parse_field_default_value_deserializer(field) -%}
-                {% if default_val == "null" -%}
-                    this.{{ name }}
+                {% if field.default_value is not none -%}
+                    {% set default_val = parse_field_default_value_deserializer(field) -%}
+                    {% if default_val == "null" -%}
+                        this.{{ name }}
+                    {% else -%}
+                        this.{{ name }} = {{ default_val }}
+                    {% endif %}
                 {% else -%}
-                    this.{{ name }} = {{ default_val }}
+                    this.{{ name }}
                 {% endif %}
             {% endif %}
         {% endif %}
@@ -197,6 +202,6 @@ import '{{path}}' as {{ namespace_alias }};
 {% macro field_initialization_initializers(fields) %}
 {% set initializer_fields = get_fields_requiring_initializer_list(fields) %}
 {% if initializer_fields | length > 0 %}
-{% set ns = namespace(first=true) %}{% for name in initializer_fields %}{% set field = fields[name] %}{% set default_val = parse_field_default_value_deserializer(field) %}{% if default_val != "null" %}{% if ns.first %} : {% set ns.first = false %}{% else %}, {% endif %}{{ name }} = {{ name }} ?? {{ default_val }}{% endif %}{% endfor %}
+{% set ns = namespace(first=true) %}{% for name, field in initializer_fields | items %}{% set default_val = parse_field_default_value_deserializer(field) %}{% if default_val != "null" %}{% if ns.first %} : {% set ns.first = false %}{% else %}, {% endif %}{% if field.is_optional %}{{ name }} = {{ name }}.isSome() ? {{ name }}.some() : {{ default_val }}{% else %}{{ name }} = {{ name }} ?? {{ default_val }}{% endif %}{% endif %}{% endfor %}
 {% endif %}
 {% endmacro %}

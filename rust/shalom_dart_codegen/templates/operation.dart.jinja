@@ -148,16 +148,22 @@ class Request{{ operation_name }} extends Requestable<{{operation_name}}Response
 {% if op_variables_exist %}
 class {{ operation_name }}Variables {
     {% set typename = operation_name ~ 'Variables' %}
+    {% set fields_requiring_initializer_list = get_fields_requiring_initializer_list(op_variables) %}
     {% for name, variable in op_variables | items %}
         final {{ type_name_for_input_field(variable) }} {{ name }};
     {% endfor %}
 
-    {{ typename }} (
-        {% if op_variables_exist %}
-            {
-            {{ field_initialization_params(op_variables) }}
-            }
-        {% endif %}
+    {{ typename }}(
+        {
+        {% for name, field in op_variables | items -%}
+            {% if name not in fields_requiring_initializer_list -%}
+                {{input_field_constructor_initialization(name, field, false)}},
+            {% endif -%}
+        {% endfor -%}
+        {% for name, field in fields_requiring_initializer_list | items -%}
+            {{input_field_constructor_initialization(name, field, true)}},
+        {% endfor -%}
+        }
     ){{ field_initialization_initializers(op_variables) }};
 
     JsonObject toJson() {

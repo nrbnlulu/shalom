@@ -178,7 +178,7 @@ mod ext_jinja_fns {
                 format!("{}.{}", enum_.name, default_value)
             }
             GraphQLAny::Scalar(scalar) => {
-                if scalar.is_built_in() {
+                if scalar.is_builtin_scalar() {
                     default_value
                 } else {
                     // Custom scalar - need to deserialize
@@ -192,28 +192,52 @@ mod ext_jinja_fns {
         }
     }
 
+    pub fn is_kind_requires_initializer_list(ty: &GraphQLAny) -> bool {
+        match ty {
+            // Built-in scalars can use inline defaults
+            GraphQLAny::Scalar(scalar) => !scalar.is_builtin_scalar(),
+            // Enums can use inline defaults
+            GraphQLAny::Enum(_) => false,
+            // Lists: recursively check inner type
+            GraphQLAny::List { of_type } => is_kind_requires_initializer_list(&of_type.ty),
+            // Input objects need initializer lists
+            GraphQLAny::InputObject(_) => true,
+            // Everything else doesn't need it (or shouldn't appear here)
+            _ => false,
+        }
+    }
+
+    pub fn field_requires_initializer_list(
+        ctx: &SharedShalomGlobalContext,
+        field: ViaDeserialize<InputFieldDefinition>,
+    ) -> bool {
+        let field = field.0;
+        if field.default_value.is_none() {
+            return false;
+        }
+        let resolved_type = field.common.unresolved_type.resolve(&ctx.schema_ctx);
+        is_kind_requires_initializer_list(&resolved_type.ty)
+    }
+
     pub fn get_fields_requiring_initializer_list(
         ctx: &SharedShalomGlobalContext,
         fields: ViaDeserialize<HashMap<String, InputFieldDefinition>>,
     ) -> HashMap<String, InputFieldDefinition> {
         let mut result = HashMap::new();
         for (name, field) in fields.iter() {
-            // Try to deserialize the field via serde_json
+            // Only fields with default values need checking
             if field.default_value.is_none() {
                 continue;
             }
             let resolved_type = field.common.unresolved_type.resolve(&ctx.schema_ctx);
-            // Check if field type is a built-in scalar
-            if  !(match &resolved_type.ty {
-                GraphQLAny::Scalar(scalar) => scalar.is_built_in(),
-                _ => false,
-            }) {
-                result.insert(name.clone(), field.clone());   
+
+            // Check if field type requires initializer list
+            if is_kind_requires_initializer_list(&resolved_type.ty) {
+                result.insert(name.clone(), field.clone());
             }
         }
         result
     }
-
 
     pub fn resolve_field_type(
         schema_ctx: &SchemaContext,
@@ -384,7 +408,14 @@ fn register_default_template_fns<'a>(
 
     let ctx_clone = ctx.clone();
     env.add_function("get_fields_requiring_initializer_list", move |a: _| {
-        minijinja::Value::from_serialize(ext_jinja_fns::get_fields_requiring_initializer_list(&ctx_clone, a))
+        minijinja::Value::from_serialize(ext_jinja_fns::get_fields_requiring_initializer_list(
+            &ctx_clone, a,
+        ))
+    });
+
+    let ctx_clone = ctx.clone();
+    env.add_function("field_requires_initializer_list", move |a: _| {
+        ext_jinja_fns::field_requires_initializer_list(&ctx_clone, a)
     });
 
     let schema_ctx_clone = ctx.schema_ctx.clone();

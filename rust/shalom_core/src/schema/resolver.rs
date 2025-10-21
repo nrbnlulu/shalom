@@ -175,7 +175,7 @@ fn resolve_input(
         let field_definition = SchemaFieldCommon::new(name.clone(), &field.ty, description);
         let input_field_definition = InputFieldDefinition {
             common: field_definition,
-            is_maybe: !is_optional && default_value.is_none(),
+            is_maybe: is_optional && default_value.is_none(),
             is_optional,
             default_value,
         };
