@@ -781,4 +781,121 @@ void main() {
       expect(car2.description, "Updated desc");
     });
   });
+
+  group('WhereType Extension Tests', () {
+    final variables = GetVehiclesRequiredVariables(maxLength: 100);
+
+    test('vehiclesRequired filter to cars only', () {
+      final result = GetVehiclesRequiredResponse.fromResponse(
+        vehiclesRequiredData,
+        variables: variables,
+      );
+
+      final cars = result.vehiclesRequired.cars.toList();
+      expect(cars.length, 1);
+      expect(cars[0].id, "car1");
+      expect(cars[0].brand, "Toyota");
+      expect(cars[0].doors, 4);
+    });
+
+    test('vehiclesRequired filter to motorcycles only', () {
+      final result = GetVehiclesRequiredResponse.fromResponse(
+        vehiclesRequiredData,
+        variables: variables,
+      );
+
+      final motorcycles = result.vehiclesRequired.motorcycles.toList();
+      expect(motorcycles.length, 1);
+      expect(motorcycles[0].id, "moto1");
+      expect(motorcycles[0].brand, "Harley");
+      expect(motorcycles[0].hasSidecar, false);
+    });
+
+    test('vehiclesRequired filter to bicycles only', () {
+      final result = GetVehiclesRequiredResponse.fromResponse(
+        vehiclesRequiredData,
+        variables: variables,
+      );
+
+      final bicycles = result.vehiclesRequired.bicycles.toList();
+      expect(bicycles.length, 1);
+      expect(bicycles[0].id, "bike1");
+      expect(bicycles[0].brand, "Trek");
+      expect(bicycles[0].gears, 21);
+    });
+
+    test('vehiclesRequired empty result when no matching type', () {
+      final dataWithNoBicycles = {
+        "vehiclesRequired": [
+          {
+            "__typename": "Car",
+            "id": "car1",
+            "brand": "Toyota",
+            "speed": 180,
+            "description": "A reliable sedan",
+            "doors": 4
+          },
+          {
+            "__typename": "Motorcycle",
+            "id": "moto1",
+            "brand": "Harley",
+            "speed": 200,
+            "description": "A classic bike",
+            "hasSidecar": false
+          }
+        ]
+      };
+
+      final result = GetVehiclesRequiredResponse.fromResponse(
+        dataWithNoBicycles,
+        variables: variables,
+      );
+
+      final bicycles = result.vehiclesRequired.bicycles;
+      expect(bicycles.length, 0);
+    });
+
+    test('vehiclesRequired multiple cars filtered correctly', () {
+      final dataWithMultipleCars = {
+        "vehiclesRequired": [
+          {
+            "__typename": "Car",
+            "id": "car1",
+            "brand": "Toyota",
+            "speed": 180,
+            "description": "A reliable sedan",
+            "doors": 4
+          },
+          {
+            "__typename": "Car",
+            "id": "car2",
+            "brand": "Honda",
+            "speed": 200,
+            "description": "A sporty coupe",
+            "doors": 2
+          },
+          {
+            "__typename": "Motorcycle",
+            "id": "moto1",
+            "brand": "Harley",
+            "speed": 200,
+            "description": "A classic bike",
+            "hasSidecar": false
+          }
+        ]
+      };
+
+      final result = GetVehiclesRequiredResponse.fromResponse(
+        dataWithMultipleCars,
+        variables: variables,
+      );
+
+      final cars = result.vehiclesRequired.cars.toList();
+      expect(cars.length, 2);
+      expect(cars[0].id, "car1");
+      expect(cars[0].brand, "Toyota");
+      expect(cars[1].id, "car2");
+      expect(cars[1].brand, "Honda");
+    });
+  });
 }

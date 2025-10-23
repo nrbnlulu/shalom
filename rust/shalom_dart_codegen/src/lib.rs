@@ -601,12 +601,7 @@ where
     let union_types = executable_ctx.get_union_types();
     let interface_types = executable_ctx.get_interface_types();
     let mut multitype_list_selections = Vec::new();
-    fn get_parent_selection_name(name: &String) -> String {
-        // path can be Foo_baz_bar should resolve in Foo_baz
-        let mut parts: Vec<&str> = name.split('_').collect();
-        parts.pop();
-        parts.join("_")
-    }
+
     for fullname in union_types.keys() {
         if let Some(selection) = executable_ctx.get_list_selection(&fullname) {
             info!("{}, {:?}", selection.selection_common.name, selection.kind);
