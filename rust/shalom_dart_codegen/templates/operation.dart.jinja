@@ -32,7 +32,7 @@ import '{{ import_path }}';
     {% elif full_name == operation_name %}
         {# Root selection - add Response suffix and set is_root_selection=true #}
         {% set response_class_name = operation_name ~ "Response" %}
-        class {{ response_class_name }}{% if selection.used_fragments | length > 0 %} implements {% for frag_name in selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+        class {{ response_class_name }}{{ implements_used_fragments(selection.used_fragments) }}  {
             {{ selection_object_impl(response_class_name, selection, true, full_name) }}
         }
     {% else %}
@@ -54,7 +54,7 @@ import '{{ import_path }}';
         {# Look up the full Selection from context which includes arguments #}
         {% set member_selection = operation.context.type_defs.selection_objects[member_full_name] %}
         {# We need to create a wrapper that passes shared_selections to selection_object_impl #}
-        class {{ member_full_name }} extends {{ union_full_name }}{% if obj_selection.used_fragments | length > 0 %} implements {% for frag_name in obj_selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+        class {{ member_full_name }} extends {{ union_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
             {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_multi_type_member=true, shared_selections=union_selection.shared_selections) }}
         }
     {% endfor %}
@@ -85,7 +85,7 @@ import '{{ import_path }}';
         {% set member_full_name = interface_full_name ~ "_" ~ type_condition %}
         {# Look up the full Selection from context which includes arguments #}
         {% set member_selection = operation.context.type_defs.selection_objects[member_full_name] %}
-        class {{ member_full_name }} extends {{ interface_full_name }}{% if obj_selection.used_fragments | length > 0 %} implements {% for frag_name in obj_selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+        class {{ member_full_name }} extends {{ interface_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
             {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_multi_type_member=true, shared_selections=interface_selection.shared_selections) }}
         }
     {% endfor %}

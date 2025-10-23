@@ -114,3 +114,8 @@ fn test_object_fragment_list_interfaces_dart() {
 fn test_interface_shared_fragments_dart() {
     run_dart_tests_for_usecase("interface_shared_fragments");
 }
+
+#[test]
+fn test_nested_fragments_3_level_dart() {
+    run_dart_tests_for_usecase("nested_fragments_3_level");
+}
