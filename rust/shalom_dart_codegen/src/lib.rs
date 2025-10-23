@@ -603,16 +603,7 @@ where
     let mut multitype_list_selections = Vec::new();
 
     for fullname in union_types.keys() {
-        if let Some(selection) = executable_ctx.get_list_selection(&fullname) {
-            info!("{}, {:?}", selection.selection_common.name, selection.kind);
-            
-            if matches!(selection.kind, SelectionKind::List(_)) {
-                multitype_list_selections.push(selection.clone());
-            }
-        }
-    }
-    for fullname in interface_types.keys() {
-        if let Some(selection) = executable_ctx.get_list_selection(&fullname) {
+        if let Some(selection) = executable_ctx.get_list_selection(fullname) {
             info!("{}, {:?}", selection.selection_common.name, selection.kind);
 
             if matches!(selection.kind, SelectionKind::List(_)) {
@@ -620,7 +611,16 @@ where
             }
         }
     }
-    
+    for fullname in interface_types.keys() {
+        if let Some(selection) = executable_ctx.get_list_selection(fullname) {
+            info!("{}, {:?}", selection.selection_common.name, selection.kind);
+
+            if matches!(selection.kind, SelectionKind::List(_)) {
+                multitype_list_selections.push(selection.clone());
+            }
+        }
+    }
+
     multitype_list_selections
 }
 

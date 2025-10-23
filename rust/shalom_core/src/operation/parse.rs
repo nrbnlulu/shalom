@@ -10,7 +10,7 @@ use log::{info, trace};
 use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
 use crate::operation::context::TypeDefs;
 use crate::operation::types::{
-    FieldArgument, FullPathName, ObjectSelection, SelectionCommon, SelectionKind, SharedListSelection,
+    FieldArgument, FullPathName, ObjectSelection, SelectionCommon, SelectionKind,
 };
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
@@ -842,8 +842,7 @@ pub trait ExecutableContext: Send + Sync + 'static {
         self.typedefs().get_interface_selection(name)
     }
     fn add_list_selection(&mut self, name: String, list_selection: Selection) {
-        self.typedefs_mut()
-            .add_list_selection(name, list_selection);
+        self.typedefs_mut().add_list_selection(name, list_selection);
     }
     fn get_list_selection(&self, name: &String) -> Option<&Selection> {
         self.typedefs().get_list_selection(name)
@@ -853,8 +852,6 @@ pub trait ExecutableContext: Send + Sync + 'static {
     fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection>;
     fn add_interface_type(&mut self, name: String, interface_selection: SharedInterfaceSelection);
     fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection>;
-    
-
 }
 
 impl ExecutableContext for OperationContext {
@@ -897,7 +894,6 @@ impl ExecutableContext for OperationContext {
     fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection> {
         self.get_interface_types()
     }
-    
 }
 
 impl ExecutableContext for FragmentContext {

@@ -55,7 +55,7 @@ impl TypeDefs {
     pub fn get_interface_selection(&self, name: &FullPathName) -> Option<&Selection> {
         self.interface_selections.get(name)
     }
-    
+
     pub fn add_list_selection(&mut self, name: String, selection: Selection) {
         self.list_selections
             .entry(name.clone())
