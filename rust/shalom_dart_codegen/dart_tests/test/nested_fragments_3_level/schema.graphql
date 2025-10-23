@@ -1,0 +1,10 @@
+type Site {
+    id: ID!
+    name: String
+    location: String
+    address: String
+}
+
+type Query {
+    site(id: ID!): Site
+}
