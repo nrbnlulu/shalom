@@ -802,6 +802,7 @@ pub trait ExecutableContext: Send + Sync + 'static {
             SelectionKind::Object(_) => self.add_object_selection(name, selection),
             SelectionKind::Interface(_) => self.add_interface_selection(name, selection),
             SelectionKind::Union(_) => self.add_union_selection(name, selection),
+            SelectionKind::List(_) => self.add_list_selection(name, selection),
             _ => (),
         }
     }
@@ -839,6 +840,12 @@ pub trait ExecutableContext: Send + Sync + 'static {
     }
     fn get_interface_selection(&self, name: &String) -> Option<&Selection> {
         self.typedefs().get_interface_selection(name)
+    }
+    fn add_list_selection(&mut self, name: String, list_selection: Selection) {
+        self.typedefs_mut().add_list_selection(name, list_selection);
+    }
+    fn get_list_selection(&self, name: &String) -> Option<&Selection> {
+        self.typedefs().get_list_selection(name)
     }
 
     fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection);
