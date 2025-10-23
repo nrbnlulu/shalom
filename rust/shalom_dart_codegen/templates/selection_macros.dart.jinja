@@ -1,5 +1,10 @@
 
 
+{# Macro to generate implements clause for used fragments #}
+{% macro implements_used_fragments(used_fragments) -%}
+{% if used_fragments | length > 0 %} implements {% for frag_name in used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}
+{%- endmacro %}
+
 {# Macro to normalize a selection in cache - handles Object, Union, List, Scalar, etc. #}
 {% macro normalize_selection_in_cache(selection, selection_name, cached_sym, raw_sym, normalized_key, normalized_id, this_normalized_record, this_normalized_id, ctx="ctx") -%}
     {% if selection.kind == "Object" %}
@@ -592,7 +597,7 @@ null
 {% endmacro %}
 
 {% macro selection_object_definition(full_name, selection, union_parent_name=none, is_multi_type_member=false) -%}
-    class {{ full_name }}{% if is_multi_type_member %} extends {{ union_parent_name }}{% endif %}{% if selection.used_fragments | length > 0 %} implements {% for frag_name in selection.used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}  {
+    class {{ full_name }}{% if is_multi_type_member %} extends {{ union_parent_name }}{% endif %}{{ implements_used_fragments(selection.used_fragments) }}  {
         {{ selection_object_impl(full_name, selection, false, full_name, is_multi_type_member=is_multi_type_member) }}
     }
 {% endmacro %}
@@ -607,7 +612,7 @@ null
     {% set type_name = selection.union_type.name if is_union else selection.interface_type.name %}
     {% set class_modifier = "sealed" if is_union else "abstract" %}
     // {{ type_kind | capitalize }} {{ class_modifier }} class
-    {{ class_modifier }} class {{ full_name }}{% if selection.shared_fragments | length > 0 %} implements {% for frag_name in selection.shared_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %} {
+    {{ class_modifier }} class {{ full_name }}{{ implements_used_fragments(selection.shared_fragments) }} {
         const {{ full_name }}();
 
         static void normalize$inCache(

@@ -1,0 +1,20 @@
+fragment SiteWithNameFrag on Site {
+    name
+}
+
+fragment SiteWithLocAndNameFrag on Site {
+    ...SiteWithNameFrag
+    location
+}
+
+fragment SiteWithAddressAndLocFrag on Site {
+    ...SiteWithLocAndNameFrag
+    address
+}
+
+query SiteQuery($siteId: ID!) {
+    site(id: $siteId) {
+        id
+        ...SiteWithAddressAndLocFrag
+    }
+}
