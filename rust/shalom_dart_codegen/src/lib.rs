@@ -974,8 +974,7 @@ fn generate_fragment_file(
     })?;
     let generation_dir = fragment_source_dir.join(GRAPHQL_DIRECTORY);
     create_dir_if_not_exists(&generation_dir);
-    let generation_path =
-        generation_dir.join(format!("{}.{}", fragment_name, END_OF_FILE));
+    let generation_path = generation_dir.join(format!("{}.{}", fragment_name, END_OF_FILE));
 
     fs::write(&generation_path, generated_content)?;
     info!("Generated fragment file: {}", generation_path.display());
