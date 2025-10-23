@@ -73,13 +73,14 @@ void main() {
       final result =
           GetAnimalResponse.fromResponse(lionData, variables: variables);
 
+      final animal = result.animal;
+      expect(animal.id, "lion1");
+      expect(animal.legs, 4);
+      expect(animal.sound, "Roar");
       expect(result.animal, isA<GetAnimal_animal_Lion>());
-      final lion = result.animal as GetAnimal_animal_Lion;
-      expect(lion.id, "lion1");
-      expect(lion.legs, 4);
-      expect(lion.sound, "Roar");
-      expect(lion.furColor, "Golden");
-      expect(lion.typename, "Lion");
+      final animalAsLion = result.animal as GetAnimal_animal_Lion;
+      expect(animalAsLion.furColor, "Golden");
+      expect(animalAsLion.typename, "Lion");
     });
 
     test('deserialize Turtle', () {
