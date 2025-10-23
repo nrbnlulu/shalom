@@ -173,13 +173,11 @@ void main() {
             .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
-        expect($responses[0], isA<LinkErrorResponse>());
+        expect($responses[0], isA<GraphQLError>());
 
-        final $error = $responses[0] as LinkErrorResponse;
+        final $error = $responses[0] as GraphQLError;
         expect($error.errors.length, 1);
-        expect($error.errors[0], isA<ShalomTransportException>());
-        final $transportError = $error.errors[0] as ShalomTransportException;
-        expect($transportError.details?['errors'], isNotNull);
+        expect($error.errors[0]['message'], 'Request error');
       });
 
       test('response with extensions', () async {
@@ -206,7 +204,7 @@ void main() {
         expect($responses[0], isA<GraphQLData>());
 
         final $data = $responses[0] as GraphQLData;
-        expect($data.extensions['tracing']['duration'], 123);
+        expect($data.extensions!['tracing']['duration'], 123);
       });
 
       test('sends correct headers for POST request', () async {
@@ -331,25 +329,6 @@ void main() {
         expect($fakeTransport.lastData!.containsKey('variables'), isFalse);
       });
 
-      test('includes method and url in extra metadata', () async {
-        final $fakeTransport = FakeTransportLayer(
-          responses: [
-            {'data': {}}
-          ],
-        );
-
-        final $httpLink = HttpLink(
-          transportLayer: $fakeTransport,
-          url: 'http://example.com/graphql',
-        );
-
-        await $httpLink.request(request: $testRequest, headers: []).toList();
-
-        expect($fakeTransport.lastExtra, isNotNull);
-        expect($fakeTransport.lastExtra!['method'], 'POST');
-        expect($fakeTransport.lastExtra!['url'], 'http://example.com/graphql');
-      });
-
       test('handles mutation requests', () async {
         final $fakeTransport = FakeTransportLayer(
           responses: [
@@ -377,7 +356,7 @@ void main() {
             .request(request: $mutationRequest, headers: []).toList();
 
         // Mutations should always use POST
-        expect($fakeTransport.lastExtra!['method'], 'POST');
+        expect($fakeTransport.lastMethod!, HttpMethod.POST);
       });
     });
 
@@ -397,7 +376,7 @@ void main() {
 
         await $httpLink.request(request: $testRequest, headers: []).toList();
 
-        expect($fakeTransport.lastExtra!['method'], 'GET');
+        expect($fakeTransport.lastMethod!, HttpMethod.GET);
       });
 
       test('still uses POST for mutations even when useGet is true', () async {
@@ -423,7 +402,7 @@ void main() {
         await $httpLink
             .request(request: $mutationRequest, headers: []).toList();
 
-        expect($fakeTransport.lastExtra!['method'], 'POST');
+        expect($fakeTransport.lastMethod!, HttpMethod.POST);
       });
 
       test('encodes query parameters correctly for GET', () async {
@@ -538,9 +517,9 @@ void main() {
             .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
-        expect($responses[0], isA<LinkErrorResponse>());
+        expect($responses[0], isA<LinkExceptionResponse>());
 
-        final $error = $responses[0] as LinkErrorResponse;
+        final $error = $responses[0] as LinkExceptionResponse;
         expect($error.errors.length, 1);
         expect($error.errors[0], isA<ShalomTransportException>());
         final $transportError = $error.errors[0] as ShalomTransportException;
@@ -565,9 +544,9 @@ void main() {
             .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
-        expect($responses[0], isA<LinkErrorResponse>());
+        expect($responses[0], isA<LinkExceptionResponse>());
 
-        final $error = $responses[0] as LinkErrorResponse;
+        final $error = $responses[0] as LinkExceptionResponse;
         expect($error.errors.length, 1);
         expect($error.errors[0], isA<ShalomTransportException>());
         final $transportError = $error.errors[0] as ShalomTransportException;
@@ -591,9 +570,9 @@ void main() {
             .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
-        expect($responses[0], isA<LinkErrorResponse>());
+        expect($responses[0], isA<LinkExceptionResponse>());
 
-        final $error = $responses[0] as LinkErrorResponse;
+        final $error = $responses[0] as LinkExceptionResponse;
         expect($error.errors.length, 1);
         expect($error.errors[0], isA<ShalomTransportException>());
         final $transportError = $error.errors[0] as ShalomTransportException;
@@ -620,9 +599,9 @@ void main() {
             .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
-        expect($responses[0], isA<LinkErrorResponse>());
+        expect($responses[0], isA<LinkExceptionResponse>());
 
-        final $error = $responses[0] as LinkErrorResponse;
+        final $error = $responses[0] as LinkExceptionResponse;
         expect($error.errors.length, 1);
         expect($error.errors[0], isA<ShalomTransportException>());
         final $transportError = $error.errors[0] as ShalomTransportException;
