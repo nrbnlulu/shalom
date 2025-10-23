@@ -2,9 +2,9 @@ import "dart:async";
 
 import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
-import "__graphql__/nodetimestamps.shalom.dart";
-import "__graphql__/userinfo.shalom.dart";
-import "__graphql__/postinfo.shalom.dart";
+import "__graphql__/NodeTimestamps.shalom.dart";
+import "__graphql__/UserInfo.shalom.dart";
+import "__graphql__/PostInfo.shalom.dart";
 import "__graphql__/GetNode.shalom.dart";
 import "__graphql__/GetNodeOpt.shalom.dart";
 import "__graphql__/GetNodes.shalom.dart";

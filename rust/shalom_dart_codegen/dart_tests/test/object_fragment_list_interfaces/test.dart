@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
 import '__graphql__/GetLibraryWithCollection.shalom.dart';
 import '__graphql__/GetLibraryWithCollectionPartial.shalom.dart';
-import '__graphql__/collectiondetailsfrag.shalom.dart';
+import '__graphql__/CollectionDetailsFrag.shalom.dart';
 
 void main() {
   group('Object Fragment List Interfaces - GetLibraryWithCollection', () {

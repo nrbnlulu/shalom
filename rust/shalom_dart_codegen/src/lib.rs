@@ -871,7 +871,7 @@ fn calculate_fragment_import_path(
         .ok_or_else(|| anyhow::anyhow!("Invalid fragment file path"))?;
     let frag_generated_path = frag_parent_dir
         .join("__graphql__")
-        .join(format!("{}.shalom.dart", frag_name.to_lowercase()));
+        .join(format!("{}.shalom.dart", frag_name));
 
     log::debug!(
         "Fragment '{}': op_graphql_dir={:?}, frag_generated_path={:?}",
@@ -883,7 +883,7 @@ fn calculate_fragment_import_path(
     // If in the same __graphql__ directory, use relative import
     if op_graphql_dir == frag_parent_dir.join("__graphql__") {
         log::debug!("Same directory, using simple relative import");
-        return Ok(format!("{}.shalom.dart", frag_name.to_lowercase()));
+        return Ok(format!("{}.shalom.dart", frag_name));
     }
 
     // If in different packages, use package import
@@ -974,8 +974,7 @@ fn generate_fragment_file(
     })?;
     let generation_dir = fragment_source_dir.join(GRAPHQL_DIRECTORY);
     create_dir_if_not_exists(&generation_dir);
-    let generation_path =
-        generation_dir.join(format!("{}.{}", fragment_name.to_lowercase(), END_OF_FILE));
+    let generation_path = generation_dir.join(format!("{}.{}", fragment_name, END_OF_FILE));
 
     fs::write(&generation_path, generated_content)?;
     info!("Generated fragment file: {}", generation_path.display());
