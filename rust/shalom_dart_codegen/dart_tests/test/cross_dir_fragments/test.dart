@@ -17,7 +17,7 @@ void main() {
       final content = getUserFile.readAsStringSync();
       expect(
           content.contains(
-              "import '../../common_fragments/__graphql__/userfields.shalom.dart';"),
+              "import '../../common_fragments/__graphql__/UserFields.shalom.dart';"),
           isTrue,
           reason:
               'GetUser should import UserFields fragment with correct relative path');
@@ -31,13 +31,13 @@ void main() {
       final postContent = getPostFile.readAsStringSync();
       expect(
           postContent.contains(
-              "import '../../common_fragments/__graphql__/postfields.shalom.dart';"),
+              "import '../../common_fragments/__graphql__/PostFields.shalom.dart';"),
           isTrue,
           reason:
               'GetPost should import PostFields fragment with correct relative path');
       expect(
           postContent.contains(
-              "import '../../common_fragments/__graphql__/userfields.shalom.dart';"),
+              "import '../../common_fragments/__graphql__/UserFields.shalom.dart';"),
           isTrue,
           reason:
               'GetPost should import UserFields fragment (used in nested author) with correct relative path');

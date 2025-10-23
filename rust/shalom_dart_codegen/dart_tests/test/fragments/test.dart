@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 import 'package:shalom_core/shalom_core.dart';
-import '__graphql__/userinfofrag.shalom.dart';
+import '__graphql__/UserInfoFrag.shalom.dart';
 import '__graphql__/GetUser.shalom.dart';
 import '__graphql__/GetPost.shalom.dart';
 import '__graphql__/GetPostWithMeta.shalom.dart';
