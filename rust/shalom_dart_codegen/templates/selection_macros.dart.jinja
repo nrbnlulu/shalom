@@ -617,11 +617,11 @@ null
         const {{ full_name }}();
 
         {% for selection_field in selection.shared_selections -%}
-        {% set selection_name = selection_field.name %}
-        {% if selection_name != "__typename" %}
-        {{ type_name_for_selection(selection_field) }} get {{ selection_name }};
-        {% endif %}
-        {% endfor -%}
+            {% set selection_name = selection_field.name -%}
+            {% if selection_name != "__typename" -%}
+                {{type_name_for_selection(selection_field)}} get {{selection_name}};
+            {% endif -%}
+        {% endfor %}
 
         static void normalize$inCache(
             JsonObject data,
