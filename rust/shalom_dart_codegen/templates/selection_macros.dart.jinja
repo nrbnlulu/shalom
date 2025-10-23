@@ -736,3 +736,22 @@ null
         is_fallback=true
     ) }}
 {% endmacro %}
+
+{# Macro to generate WhereType extensions for lists of multi-types (interfaces/unions) #}
+{% macro generate_multi_type_list_extensions(multi_type_list_selections) -%}
+// ------------ MULTI-TYPE LIST EXTENSIONS -------------
+{% for selection in multi_type_list_selections %}
+{% set multi_type = selection.of_kind %}
+    {% set full_type_name = multi_type.full_name %}
+    {% set inline_fragments = multi_type.inline_fragments -%}
+    extension {{ selection.of_kind.full_name }}$WhereTypeExt on List<{{ full_type_name }}> {
+        {% for type_condition, obj_selection in inline_fragments | items -%}
+                // Extension to filter list to only {{ type_condition }} types
+                Iterable<{{ full_type_name }}_{{ type_condition }}> get {{ type_condition | lower }}s {
+                    return whereType<{{ full_type_name }}_{{ type_condition }}>();
+                }
+    {% endfor %}
+    }
+{% endfor %}
+// ------------ END MULTI-TYPE LIST EXTENSIONS -------------
+{% endmacro %}

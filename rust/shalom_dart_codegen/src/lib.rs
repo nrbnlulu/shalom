@@ -591,6 +591,35 @@ impl SchemaEnv<'_> {
     }
 }
 
+/// Collects all multi-type (interface/union) list selections from all selection objects.
+/// Returns a HashMap where the key is the full field name (e.g., "vehiclesRequired")
+/// and the value is the list selection containing the multi-type.
+fn collect_multi_type_list_selections<T>(executable_ctx: &T) -> Vec<Selection>
+where
+    T: ExecutableContext,
+{
+    let union_types = executable_ctx.get_union_types();
+    let interface_types = executable_ctx.get_interface_types();
+    let mut multitype_list_selections = Vec::new();
+
+    for fullname in union_types.keys() {
+        if let Some(selection) = executable_ctx.get_list_selection(fullname) {
+            if matches!(selection.kind, SelectionKind::List(_)) {
+                multitype_list_selections.push(selection.clone());
+            }
+        }
+    }
+    for fullname in interface_types.keys() {
+        if let Some(selection) = executable_ctx.get_list_selection(fullname) {
+            if matches!(selection.kind, SelectionKind::List(_)) {
+                multitype_list_selections.push(selection.clone());
+            }
+        }
+    }
+
+    multitype_list_selections
+}
+
 fn register_executable_fns<'a, T>(
     env: &mut Environment<'a>,
     ctx: &SharedShalomGlobalContext,
@@ -743,6 +772,7 @@ impl OperationEnv<'_> {
         schema_ctx: T,
         custom_scalar_imports: HashMap<String, String>,
         schema_import_path: String,
+        multi_type_list_selections: Vec<Selection>,
     ) -> String {
         let template = self.env.get_template("operation").unwrap();
         let mut context = HashMap::new();
@@ -756,6 +786,10 @@ impl OperationEnv<'_> {
         context.insert(
             "schema_import_path",
             minijinja::Value::from(schema_import_path),
+        );
+        context.insert(
+            "multi_type_list_selections",
+            minijinja::Value::from_serialize(&multi_type_list_selections),
         );
 
         template.render(&context).unwrap()
@@ -780,6 +814,7 @@ impl FragmentEnv<'_> {
         custom_scalar_imports: HashMap<String, String>,
         schema_path: String,
         fragment_file_path: PathBuf,
+        multi_type_list_selections: Vec<Selection>,
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
         let mut context = HashMap::new();
@@ -794,6 +829,10 @@ impl FragmentEnv<'_> {
         context.insert(
             "fragment_file_path",
             minijinja::Value::from(fragment_file_path.to_string_lossy().to_string()),
+        );
+        context.insert(
+            "multi_type_list_selections",
+            minijinja::Value::from_serialize(&multi_type_list_selections),
         );
 
         template.render(&context).unwrap()
@@ -939,11 +978,15 @@ fn generate_operations_file(
 
     // Calculate relative path from operation __graphql__ dir to schema file
 
+    // Collect multi-type list selections
+    let multi_type_list_selections = collect_multi_type_list_selections(operation.as_ref());
+
     let rendered_content = op_env.render_operation(
         operation,
         ctx.schema_ctx.clone(),
         custom_scalar_imports,
         get_schema_import_path(&operation_file_path, ctx),
+        multi_type_list_selections,
     );
     fs::write(&generation_target, rendered_content).unwrap();
     info!("Generated {}", generation_target.display());
@@ -960,12 +1003,17 @@ fn generate_fragment_file(
 ) -> anyhow::Result<()> {
     let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone())?;
     let fragment_file_path = fragment_ctx.file_path.clone();
+
+    // Collect multi-type list selections
+    let multi_type_list_selections = collect_multi_type_list_selections(fragment_ctx.as_ref());
+
     let generated_content = fragment_env.render_fragment(
         context! { context => fragment_ctx },
         context! { context => &ctx.schema_ctx },
         custom_scalar_imports,
         get_schema_import_path(&fragment_ctx.file_path, ctx),
         fragment_file_path,
+        multi_type_list_selections,
     );
 
     // Generate fragment in __graphql__ subdirectory relative to where it's defined
