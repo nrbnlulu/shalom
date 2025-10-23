@@ -16,6 +16,7 @@ pub struct TypeDefs {
     pub selection_objects: HashMap<FullPathName, Selection>,
     pub union_selections: HashMap<FullPathName, Selection>,
     pub interface_selections: HashMap<FullPathName, Selection>,
+    pub list_selections: HashMap<FullPathName, Selection>,
 }
 impl TypeDefs {
     pub fn new() -> Self {
@@ -23,6 +24,7 @@ impl TypeDefs {
             selection_objects: HashMap::new(),
             union_selections: HashMap::new(),
             interface_selections: HashMap::new(),
+            list_selections: HashMap::new(),
         }
     }
 
@@ -52,6 +54,15 @@ impl TypeDefs {
     }
     pub fn get_interface_selection(&self, name: &FullPathName) -> Option<&Selection> {
         self.interface_selections.get(name)
+    }
+    
+    pub fn add_list_selection(&mut self, name: String, selection: Selection) {
+        self.list_selections
+            .entry(name.clone())
+            .or_insert(selection);
+    }
+    pub fn get_list_selection(&self, name: &FullPathName) -> Option<&Selection> {
+        self.list_selections.get(name)
     }
 }
 

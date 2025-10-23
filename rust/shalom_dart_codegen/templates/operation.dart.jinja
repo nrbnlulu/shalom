@@ -106,6 +106,8 @@ import '{{ import_path }}';
 
 // ------------ END INTERFACE DEFINITIONS -------------
 
+{{ generate_multi_type_list_extensions(multi_type_list_selections) }}
+
 class Request{{ operation_name }} extends Requestable<{{operation_name}}Response>{
     {% if op_variables_exist %}
     final {{ operation_name }}Variables variables;
