@@ -744,7 +744,6 @@ null
 {% set multi_type = selection.of_kind %}
     {% set full_type_name = multi_type.full_name %}
     {% set inline_fragments = multi_type.inline_fragments -%}
-    // ignore: camel_case_extensions
     extension {{ selection.of_kind.full_name }}$WhereTypeExt on List<{{ full_type_name }}> {
         {% for type_condition, obj_selection in inline_fragments | items -%}
                 // Extension to filter list to only {{ type_condition }} types
