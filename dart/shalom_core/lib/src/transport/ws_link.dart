@@ -221,33 +221,33 @@ class WebSocketLink extends GraphQLLink {
     }
 
     // Emit data to the handler's stream
-    final $payload = message.payload;
+    final payload = message.payload;
 
     // Check if this is a valid GraphQL response
-    final $errors = $payload['errors'] as List?;
-    final $extensions = $payload['extensions'] as JsonObject?;
+    final errors = payload['errors'] as List?;
+    final extensions = payload['extensions'] as JsonObject?;
 
-    List<JsonObject>? $parsedErrors;
-    if ($errors != null) {
-      $parsedErrors = $errors.map((e) => e as JsonObject).toList();
+    List<JsonObject>? parsedErrors;
+    if (errors != null) {
+      parsedErrors = errors.map((e) => e as JsonObject).toList();
     }
 
-    if ($payload.containsKey('data')) {
-      final $data = $payload['data'] as JsonObject?;
+    if (payload.containsKey('data')) {
+      final data = payload['data'] as JsonObject?;
 
       $handler.controller.add(
         GraphQLData(
-          data: $data ?? {},
-          errors: $parsedErrors,
-          extensions: $extensions,
+          data: data ?? {},
+          errors: parsedErrors,
+          extensions: extensions,
         ),
       );
-    } else if ($parsedErrors != null) {
+    } else if (parsedErrors != null) {
       // No data field, but has errors - this is a GraphQL error response
       $handler.controller.add(
         GraphQLError(
-          errors: $parsedErrors,
-          extensions: $extensions,
+          errors: parsedErrors,
+          extensions: extensions,
         ),
       );
     } else {
@@ -273,13 +273,10 @@ class WebSocketLink extends GraphQLLink {
 
     // Emit error to the handler's stream
     handler.controller.add(
-      LinkExceptionResponse([
-        ShalomTransportException(
-          message: 'GraphQL operation error',
-          code: 'GRAPHQL_ERROR',
-          details: {'errors': message.payload},
-        ),
-      ]),
+      GraphQLError(
+        errors: message.payload,
+        extensions: null,
+      ),
     );
 
     // Complete the operation
