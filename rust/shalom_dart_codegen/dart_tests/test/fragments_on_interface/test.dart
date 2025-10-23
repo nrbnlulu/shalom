@@ -2,7 +2,7 @@ import "dart:async";
 
 import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
-import "__graphql__/animalbasicinfo.shalom.dart";
+import "__graphql__/AnimalBasicInfo.shalom.dart";
 import "__graphql__/GetAnimal.shalom.dart";
 import "__graphql__/GetAnimalOpt.shalom.dart";
 import "__graphql__/GetAnimals.shalom.dart";
