@@ -517,9 +517,9 @@ void main() {
             .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
-        expect($responses[0], isA<LinkErrorResponse>());
+        expect($responses[0], isA<LinkExceptionResponse>());
 
-        final $error = $responses[0] as LinkErrorResponse;
+        final $error = $responses[0] as LinkExceptionResponse;
         expect($error.errors.length, 1);
         expect($error.errors[0], isA<ShalomTransportException>());
         final $transportError = $error.errors[0] as ShalomTransportException;
@@ -544,9 +544,9 @@ void main() {
             .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
-        expect($responses[0], isA<LinkErrorResponse>());
+        expect($responses[0], isA<LinkExceptionResponse>());
 
-        final $error = $responses[0] as LinkErrorResponse;
+        final $error = $responses[0] as LinkExceptionResponse;
         expect($error.errors.length, 1);
         expect($error.errors[0], isA<ShalomTransportException>());
         final $transportError = $error.errors[0] as ShalomTransportException;
@@ -570,9 +570,9 @@ void main() {
             .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
-        expect($responses[0], isA<LinkErrorResponse>());
+        expect($responses[0], isA<LinkExceptionResponse>());
 
-        final $error = $responses[0] as LinkErrorResponse;
+        final $error = $responses[0] as LinkExceptionResponse;
         expect($error.errors.length, 1);
         expect($error.errors[0], isA<ShalomTransportException>());
         final $transportError = $error.errors[0] as ShalomTransportException;
@@ -599,9 +599,9 @@ void main() {
             .request(request: $testRequest, headers: []).toList();
 
         expect($responses.length, 1);
-        expect($responses[0], isA<LinkErrorResponse>());
+        expect($responses[0], isA<LinkExceptionResponse>());
 
-        final $error = $responses[0] as LinkErrorResponse;
+        final $error = $responses[0] as LinkExceptionResponse;
         expect($error.errors.length, 1);
         expect($error.errors[0], isA<ShalomTransportException>());
         final $transportError = $error.errors[0] as ShalomTransportException;

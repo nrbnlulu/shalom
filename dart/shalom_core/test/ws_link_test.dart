@@ -501,7 +501,7 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 10));
 
         expect($responses.length, 1);
-        expect($responses.first, isA<LinkErrorResponse>());
+        expect($responses.first, isA<LinkExceptionResponse>());
 
         await $subscription.cancel();
       });

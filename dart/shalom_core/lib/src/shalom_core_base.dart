@@ -141,9 +141,9 @@ sealed class GraphQLResponse<T> {
   const GraphQLResponse();
 }
 
-class LinkErrorResponse<T> extends GraphQLResponse<T> {
+class LinkExceptionResponse<T> extends GraphQLResponse<T> {
   final List<Exception> errors;
-  const LinkErrorResponse(this.errors);
+  const LinkExceptionResponse(this.errors);
 }
 
 class GraphQLData<T> extends GraphQLResponse<T> {

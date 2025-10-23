@@ -142,30 +142,30 @@ class WebSocketLink extends GraphQLLink {
   /// Handle incoming WebSocket messages
   void _handleMessage(JsonObject message) {
     final $messageString = json.encode(message);
-    final $parsedMessage = parseWsMessage($messageString);
+    final parsedMessage = parseWsMessage($messageString);
 
-    if ($parsedMessage == null) {
+    if (parsedMessage == null) {
       _close(WsCloseCodes.invalidMessage, 'Invalid message format');
       return;
     }
-    switch ($parsedMessage) {
+    switch (parsedMessage) {
       case ConnectionAckMessage():
-        _handleConnectionAck($parsedMessage);
+        _handleConnectionAck(parsedMessage);
         break;
       case PingMessage():
-        _handlePing($parsedMessage);
+        _handlePing(parsedMessage);
         break;
       case PongMessage():
-        _handlePong($parsedMessage);
+        _handlePong(parsedMessage);
         break;
       case NextMessage():
-        _handleNext($parsedMessage);
+        _handleNext(parsedMessage);
         break;
       case ErrorMessage():
-        _handleErrorMessage($parsedMessage);
+        _handleErrorMessage(parsedMessage);
         break;
       case CompleteMessage():
-        _handleComplete($parsedMessage);
+        _handleComplete(parsedMessage);
         break;
       default:
         _close(WsCloseCodes.invalidMessage, 'Invalid message format');
@@ -253,7 +253,7 @@ class WebSocketLink extends GraphQLLink {
     } else {
       // Neither data nor errors - invalid response format
       $handler.controller.add(
-        LinkErrorResponse([
+        LinkExceptionResponse([
           ShalomTransportException(
             message: 'Invalid response: missing both data and errors',
             code: 'INVALID_RESPONSE',
@@ -265,15 +265,15 @@ class WebSocketLink extends GraphQLLink {
 
   /// Handle Error message
   void _handleErrorMessage(ErrorMessage message) {
-    final $handler = _activeOperations[message.id];
-    if ($handler == null) {
+    final handler = _activeOperations[message.id];
+    if (handler == null) {
       // Unknown operation, ignore
       return;
     }
 
     // Emit error to the handler's stream
-    $handler.controller.add(
-      LinkErrorResponse([
+    handler.controller.add(
+      LinkExceptionResponse([
         ShalomTransportException(
           message: 'GraphQL operation error',
           code: 'GRAPHQL_ERROR',
@@ -297,7 +297,7 @@ class WebSocketLink extends GraphQLLink {
     for (final $handler in _activeOperations.values) {
       if (!$handler.controller.isClosed) {
         $handler.controller.add(
-          LinkErrorResponse([
+          LinkExceptionResponse([
             ShalomTransportException(
               message: 'WebSocket error: ${error.toString()}',
               code: 'WEBSOCKET_ERROR',
@@ -314,7 +314,7 @@ class WebSocketLink extends GraphQLLink {
     for (final $handler in _pendingOperations.values) {
       if (!$handler.controller.isClosed) {
         $handler.controller.add(
-          LinkErrorResponse([
+          LinkExceptionResponse([
             ShalomTransportException(
               message: 'Connection error: ${error.toString()}',
               code: 'CONNECTION_ERROR',
@@ -403,7 +403,7 @@ class WebSocketLink extends GraphQLLink {
     // Check if already active
     if (_activeOperations.containsKey(operationId)) {
       handler.controller.add(
-        LinkErrorResponse([
+        LinkExceptionResponse([
           ShalomTransportException(
             message: 'Operation with ID $operationId already exists',
             code: 'DUPLICATE_OPERATION',

@@ -85,10 +85,10 @@ class ShalomClient {
               }
             }
           }
-        case LinkErrorResponse():
+        case LinkExceptionResponse():
           {
             // Just forward link errors
-            yield LinkErrorResponse(res.errors);
+            yield LinkExceptionResponse(res.errors);
           }
         case GraphQLError():
           {
@@ -119,10 +119,10 @@ class ShalomClient {
                 errors: res.errors,
                 extensions: res.extensions);
           }
-        case LinkErrorResponse():
+        case LinkExceptionResponse():
           {
             // Just forward link errors
-            return LinkErrorResponse(res.errors);
+            return LinkExceptionResponse(res.errors);
           }
         case GraphQLError():
           {

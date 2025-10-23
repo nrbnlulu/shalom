@@ -86,7 +86,7 @@ class HttpLink extends GraphQLLink {
       yield _parseResponse($response);
     } catch (e) {
       // Return a link error for any exceptions
-      yield LinkErrorResponse([
+      yield LinkExceptionResponse([
         ShalomTransportException(
           message: 'Network error: ${e.toString()}',
           code: 'NETWORK_ERROR',
@@ -157,7 +157,7 @@ class HttpLink extends GraphQLLink {
         if ($errors is List) {
           $parsedErrors = $errors.map((e) => e as JsonObject).toList();
         } else {
-          return LinkErrorResponse([
+          return LinkExceptionResponse([
             ShalomTransportException(
               message: 'Invalid errors format: expected array',
               code: 'INVALID_RESPONSE_FORMAT',
@@ -185,7 +185,7 @@ class HttpLink extends GraphQLLink {
           $dataMap = Map<String, dynamic>.from($data);
         } else {
           // Invalid data type
-          return LinkErrorResponse([
+          return LinkExceptionResponse([
             ShalomTransportException(
               message: 'Invalid data format: expected JSON object or null',
               code: 'INVALID_RESPONSE_FORMAT',
@@ -206,7 +206,7 @@ class HttpLink extends GraphQLLink {
         );
       } else {
         // Neither data nor errors - invalid response
-        return LinkErrorResponse([
+        return LinkExceptionResponse([
           ShalomTransportException(
             message: 'Invalid GraphQL response: missing both data and errors',
             code: 'INVALID_RESPONSE_FORMAT',
@@ -214,7 +214,7 @@ class HttpLink extends GraphQLLink {
         ]);
       }
     } catch (e) {
-      return LinkErrorResponse([
+      return LinkExceptionResponse([
         ShalomTransportException(
           message: 'Failed to parse response: ${e.toString()}',
           code: 'RESPONSE_PARSE_ERROR',
