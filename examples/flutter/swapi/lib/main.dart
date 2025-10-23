@@ -88,7 +88,7 @@ class _FilmsPageState extends State<FilmsPage> {
                     // Delegate the list rendering to a clean, dedicated widget
                     return FilmsList(films: films);
                   }
-                case LinkErrorResponse():
+                case LinkExceptionResponse():
                   {
                     return Text("link errors: ${result.errors}");
                   }

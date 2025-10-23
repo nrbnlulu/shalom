@@ -501,7 +501,11 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 10));
 
         expect($responses.length, 1);
-        expect($responses.first, isA<LinkErrorResponse>());
+        expect($responses.first, isA<GraphQLError>());
+
+        final $errorResponse = $responses.first as GraphQLError;
+        expect($errorResponse.errors.length, 1);
+        expect($errorResponse.errors[0]['message'], 'Something went wrong');
 
         await $subscription.cancel();
       });
