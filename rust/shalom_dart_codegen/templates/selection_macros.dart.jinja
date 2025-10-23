@@ -613,7 +613,15 @@ null
     {% set class_modifier = "sealed" if is_union else "abstract" %}
     // {{ type_kind | capitalize }} {{ class_modifier }} class
     {{ class_modifier }} class {{ full_name }}{{ implements_used_fragments(selection.shared_fragments) }} {
+
         const {{ full_name }}();
+
+        {% for selection_field in selection.shared_selections -%}
+        {% set selection_name = selection_field.name %}
+        {% if selection_name != "__typename" %}
+        {{ type_name_for_selection(selection_field) }} get {{ selection_name }};
+        {% endif %}
+        {% endfor -%}
 
         static void normalize$inCache(
             JsonObject data,

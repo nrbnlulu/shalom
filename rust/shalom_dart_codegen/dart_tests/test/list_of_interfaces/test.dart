@@ -222,36 +222,45 @@ void main() {
           variables: variables);
       expect(result.vehiclesRequired.length, 3);
 
+      // Test shared fields via interface reference
+      final vehicle0 = result.vehiclesRequired[0];
+      expect(vehicle0.id, "car1");
+      expect(vehicle0.brand, "Toyota");
+      expect(vehicle0.speed, 180);
+      expect(vehicle0.description, "A reliable sedan");
+
       expect(result.vehiclesRequired[0],
           isA<GetVehiclesRequired_vehiclesRequired_Car>());
       final car = result.vehiclesRequired[0]
           as GetVehiclesRequired_vehiclesRequired_Car;
-      expect(car.id, "car1");
-      expect(car.brand, "Toyota");
-      expect(car.speed, 180);
-      expect(car.description, "A reliable sedan");
       expect(car.doors, 4);
       expect(car.typename, "Car");
+
+      // Test shared fields via interface reference
+      final vehicle1 = result.vehiclesRequired[1];
+      expect(vehicle1.id, "moto1");
+      expect(vehicle1.brand, "Harley");
+      expect(vehicle1.speed, 200);
+      expect(vehicle1.description, "A classic bike");
 
       expect(result.vehiclesRequired[1],
           isA<GetVehiclesRequired_vehiclesRequired_Motorcycle>());
       final moto = result.vehiclesRequired[1]
           as GetVehiclesRequired_vehiclesRequired_Motorcycle;
-      expect(moto.id, "moto1");
-      expect(moto.brand, "Harley");
-      expect(moto.speed, 200);
-      expect(moto.description, "A classic bike");
       expect(moto.hasSidecar, false);
       expect(moto.typename, "Motorcycle");
+
+      // Test shared fields via interface reference
+      final vehicle2 = result.vehiclesRequired[2];
+      expect(vehicle2.id, "bike1");
+      expect(vehicle2.brand, "Trek");
+      expect(vehicle2.speed, 30);
+      expect(vehicle2.description, "A mountain bike");
 
       expect(result.vehiclesRequired[2],
           isA<GetVehiclesRequired_vehiclesRequired_Bicycle>());
       final bike = result.vehiclesRequired[2]
           as GetVehiclesRequired_vehiclesRequired_Bicycle;
-      expect(bike.id, "bike1");
-      expect(bike.brand, "Trek");
-      expect(bike.speed, 30);
-      expect(bike.description, "A mountain bike");
       expect(bike.gears, 21);
       expect(bike.typename, "Bicycle");
     });
@@ -305,25 +314,31 @@ void main() {
       expect(result.vehiclesOptional, isNotNull);
       expect(result.vehiclesOptional!.length, 2);
 
+      // Test shared fields via interface reference
+      final vehicle0 = result.vehiclesOptional![0];
+      expect(vehicle0.id, "car2");
+      expect(vehicle0.brand, "Honda");
+      expect(vehicle0.speed, 170);
+      expect(vehicle0.description, "An efficient car");
+
       expect(result.vehiclesOptional![0],
           isA<GetVehiclesOptional_vehiclesOptional_Car>());
       final car = result.vehiclesOptional![0]
           as GetVehiclesOptional_vehiclesOptional_Car;
-      expect(car.id, "car2");
-      expect(car.brand, "Honda");
-      expect(car.speed, 170);
-      expect(car.description, "An efficient car");
       expect(car.doors, 4);
       expect(car.typename, "Car");
+
+      // Test shared fields via interface reference
+      final vehicle1 = result.vehiclesOptional![1];
+      expect(vehicle1.id, "moto2");
+      expect(vehicle1.brand, "Yamaha");
+      expect(vehicle1.speed, 210);
+      expect(vehicle1.description, "A sport bike");
 
       expect(result.vehiclesOptional![1],
           isA<GetVehiclesOptional_vehiclesOptional_Motorcycle>());
       final moto = result.vehiclesOptional![1]
           as GetVehiclesOptional_vehiclesOptional_Motorcycle;
-      expect(moto.id, "moto2");
-      expect(moto.brand, "Yamaha");
-      expect(moto.speed, 210);
-      expect(moto.description, "A sport bike");
       expect(moto.hasSidecar, false);
       expect(moto.typename, "Motorcycle");
     });
