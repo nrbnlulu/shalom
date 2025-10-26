@@ -85,6 +85,7 @@ pub struct OperationContext {
     root_type: Option<Selection>,
     op_ty: OperationType,
     pub used_fragments: Vec<SharedFragmentContext>,
+    pub used_fragments_flat: Vec<SharedFragmentContext>,
     union_types: HashMap<FullPathName, SharedUnionSelection>,
     interface_types: HashMap<FullPathName, SharedInterfaceSelection>,
 }
@@ -110,6 +111,7 @@ impl OperationContext {
             root_type: None,
             op_ty,
             used_fragments: Vec::new(),
+            used_fragments_flat: Vec::new(),
             union_types: HashMap::new(),
             interface_types: HashMap::new(),
         }
@@ -138,6 +140,32 @@ impl OperationContext {
 
     pub fn get_used_fragments(&self) -> &Vec<SharedFragmentContext> {
         &self.used_fragments
+    }
+
+    pub fn flatten_used_fragments(&mut self) {
+        use std::collections::HashSet;
+
+        let mut visited = HashSet::new();
+        let mut result = Vec::new();
+
+        fn collect_fragments_recursive(
+            fragments: &[SharedFragmentContext],
+            visited: &mut HashSet<String>,
+            result: &mut Vec<SharedFragmentContext>,
+        ) {
+            for fragment in fragments {
+                let fragment_name = fragment.name.clone();
+                if visited.insert(fragment_name) {
+                    // First collect nested fragments
+                    collect_fragments_recursive(&fragment.used_fragments, visited, result);
+                    // Then add this fragment
+                    result.push(fragment.clone());
+                }
+            }
+        }
+
+        collect_fragments_recursive(&self.used_fragments, &mut visited, &mut result);
+        self.used_fragments_flat = result;
     }
 
     pub fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {

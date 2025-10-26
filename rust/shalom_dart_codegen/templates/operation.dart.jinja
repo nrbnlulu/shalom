@@ -125,7 +125,7 @@ class Request{{ operation_name }} extends Requestable<{{operation_name}}Response
         JsonObject variablesJson = {% if op_variables_exist %} variables.toJson() {% else %} {}  {% endif %};
         final request = Request(
             query: r"""{{ operation.context.query }}
-{% for fragment in operation.context.used_fragments %}
+{% for fragment in operation.context.used_fragments_flat %}
 {{ fragment.fragment_raw }}
 {% endfor %}""",
             variables: variablesJson,
