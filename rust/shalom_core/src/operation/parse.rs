@@ -1142,6 +1142,10 @@ fn parse_operation(
     for fragment in used_fragments {
         ctx.add_used_fragment(fragment);
     }
+
+    // Flatten used fragments to include nested fragments
+    ctx.flatten_used_fragments();
+
     let selection = Selection::new(selection_common, SelectionKind::Object(root_type), vec![]);
     ctx.set_root_type(selection.clone());
     (&mut ctx as &mut dyn ExecutableContext).add_selection(operation_name, selection);
