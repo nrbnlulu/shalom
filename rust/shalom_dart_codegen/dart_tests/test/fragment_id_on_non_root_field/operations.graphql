@@ -1,0 +1,30 @@
+fragment UserFrag on User {
+    id
+    name
+    email
+    age
+    bio
+}
+
+fragment ErrorFrag on Error {
+    code
+    message
+    details
+}
+
+mutation UpdateUser($input: UpdateUserInput!) {
+    updateUser(input: $input) {
+        data {
+            ...UserFrag
+        }
+        error {
+            ...ErrorFrag
+        }
+    }
+}
+
+query GetUser($id: ID!) {
+    user(id: $id) {
+        ...UserFrag
+    }
+}

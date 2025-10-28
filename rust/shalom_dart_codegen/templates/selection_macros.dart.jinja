@@ -212,19 +212,13 @@ null
             {% endif %}
         {% endif %}
     {% elif selection.kind == "Object" %}
-        {% set obj_has_id = has_id_selection(selection.full_name) -%}
         {% if is_optional -%}
             {{value_symbol}} == null ? null :
         {% endif -%}
-        {{selection.full_name}}.fromCached(
-            {% if obj_has_id == "TRUE" -%}
-                ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()),
-            {% else -%}
-            {{ value_symbol }},
-            {% endif -%}
-            ctx
-            {{", variables" if selection_kind_uses_variables(selection)}}
-        )
+        {%- set should_pass_variables = selection_kind_uses_variables(selection) -%}
+        ({{value_symbol}} is  NormalizedObjectRecord)?
+            {{ selection.full_name }}.fromCached(ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()), ctx{{", variables" if should_pass_variables}})
+        : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{", variables" if should_pass_variables}})
     {% elif selection.kind == "Union" %}
         {% if is_optional %}
             {{ value_symbol }} == null ? null :

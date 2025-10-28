@@ -9,7 +9,7 @@ use shalom_core::{
         context::SharedOpCtx,
         fragments::SharedFragmentContext,
         parse::ExecutableContext,
-        types::{dart_type_for_scalar, has_id_selection, Selection, SelectionKind},
+        types::{dart_type_for_scalar, Selection, SelectionKind},
     },
     schema::{
         context::SchemaContext,
@@ -681,20 +681,6 @@ where
         "selection_kind_uses_variables",
         move |selection: ViaDeserialize<shalom_core::operation::types::SelectionKind>| -> bool {
             selection_kind_uses_variables(executable_ctx_clone3.as_ref(), &selection.0)
-        },
-    );
-
-    let ctx_clone4 = ctx.clone();
-    let executable_ctx_clone4 = executable_ctx.clone();
-    env.add_function(
-        "has_id_selection",
-        move |full_name: &str| -> Option<minijinja::Value> {
-            let selection =
-                executable_ctx_clone4.get_selection(&full_name.to_string(), &ctx_clone4)?;
-            Some(minijinja::Value::from_serialize(has_id_selection(
-                &ctx_clone4,
-                selection,
-            )))
         },
     );
 

@@ -119,3 +119,8 @@ fn test_interface_shared_fragments_dart() {
 fn test_nested_fragments_3_level_dart() {
     run_dart_tests_for_usecase("nested_fragments_3_level");
 }
+
+#[test]
+fn test_fragment_id_on_non_root_field_dart() {
+    run_dart_tests_for_usecase("fragment_id_on_non_root_field");
+}

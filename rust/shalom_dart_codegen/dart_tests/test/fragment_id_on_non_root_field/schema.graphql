@@ -1,0 +1,34 @@
+type Query {
+    user(id: ID!): User
+}
+
+type Mutation {
+    updateUser(input: UpdateUserInput!): UpdateUserResult!
+}
+
+type UpdateUserResult {
+    data: User
+    error: Error
+}
+
+type User {
+    id: ID!
+    name: String!
+    email: String!
+    age: Int
+    bio: String
+}
+
+type Error {
+    code: String!
+    message: String!
+    details: String
+}
+
+input UpdateUserInput {
+    id: ID!
+    name: String
+    email: String
+    age: Int
+    bio: String
+}
