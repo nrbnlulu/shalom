@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     context::ShalomGlobalContext,
-    operation::{context::OperationVariable, fragments::FragmentContext},
+    operation::context::OperationVariable,
     schema::types::{EnumType, InterfaceType, ScalarType, UnionType},
 };
 
@@ -516,76 +516,4 @@ pub fn dart_type_for_scalar(scalar_name: &str) -> String {
         "Boolean" => "bool".to_string(),
         _ => "dynamic".to_string(),
     }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-pub enum HasIdSelection {
-    #[serde(rename = "TRUE")]
-    TRUE,
-    #[serde(rename = "FALSE")]
-    FALSE,
-    #[serde(rename = "MAYBE")]
-    MAYBE, // unions / interfaces when some but not all fragments have id
-}
-
-/// Determines whether a selection includes an "id" field
-/// This is used to decide whether to use cache normalization
-pub fn has_id_selection(ctx: &ShalomGlobalContext, selection: &Selection) -> HasIdSelection {
-    match &selection.kind {
-        SelectionKind::Scalar(_) => {
-            // Check if this field itself is named "id"
-            if selection.selection_common.name == "id" {
-                HasIdSelection::TRUE
-            } else {
-                HasIdSelection::FALSE
-            }
-        }
-        SelectionKind::Enum(_) => HasIdSelection::FALSE,
-        SelectionKind::Object(object) => {
-            // Check if any of the object's selections is named "id"
-            let res: Vec<_> = object
-                .selections
-                .borrow()
-                .iter()
-                .map(|s| has_id_selection(ctx, s))
-                .collect();
-
-            for fragment in object.used_fragments.borrow().iter() {
-                let fragment_res = frag_has_id_selection(ctx, &ctx.get_fragment(fragment).unwrap());
-                if fragment_res == HasIdSelection::TRUE {
-                    return HasIdSelection::TRUE;
-                }
-            }
-            if res.contains(&HasIdSelection::TRUE) {
-                HasIdSelection::TRUE
-            } else {
-                HasIdSelection::FALSE
-            }
-        }
-        SelectionKind::List(list) => {
-            // For lists, we need to check if the inner type has an id field
-            // Create a temporary selection to check the inner type
-            let inner_selection = Selection {
-                selection_common: selection.selection_common.clone(),
-                kind: list.of_kind.clone(),
-                arguments: selection.arguments.clone(),
-            };
-            has_id_selection(ctx, &inner_selection)
-        }
-        SelectionKind::Interface(_) | SelectionKind::Union(_) => {
-            // currently we don't care if unions and interfaces select id or not.
-            //  we instead handle it at runtime
-            HasIdSelection::FALSE
-        }
-    }
-}
-
-fn frag_has_id_selection(ctx: &ShalomGlobalContext, fragment: &FragmentContext) -> HasIdSelection {
-    for frag in fragment.used_fragments.iter() {
-        let fragment_res = frag_has_id_selection(ctx, frag);
-        if fragment_res == HasIdSelection::TRUE {
-            return HasIdSelection::TRUE;
-        }
-    }
-    has_id_selection(ctx, fragment.root_type.as_ref().unwrap())
 }
