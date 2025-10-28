@@ -84,7 +84,7 @@
         for (int i = 0; i < {{selection_name}}$rawList.length; i++) {
             final item$raw = {{selection_name}}$rawList[i];
             final item$cached = {{selection_name}}$cachedList?.elementAtOrNull(i);
-            final item$normalizedKey = "$i";
+            final item$normalizedKey = "{{selection_name}}$i";
 
             {# Check if the item is nullable and handle accordingly #}
             {% if inner_selection.is_optional %}
