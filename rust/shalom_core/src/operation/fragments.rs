@@ -20,7 +20,7 @@ pub struct FragmentContext {
     #[serde(skip_serializing)]
     pub file_path: PathBuf,
     pub type_defs: TypeDefs,
-    pub root_type: Option<Selection>,
+    pub on_type: Option<Selection>,
     pub used_fragments: Vec<SharedFragmentContext>,
     pub type_condition: String,
     union_types: HashMap<FullPathName, SharedUnionSelection>,
@@ -39,7 +39,7 @@ impl FragmentContext {
             file_path,
             fragment_raw,
             type_defs: TypeDefs::new(),
-            root_type: None,
+            on_type: None,
             used_fragments: Vec::new(),
             type_condition,
             union_types: HashMap::new(),
@@ -55,8 +55,8 @@ impl FragmentContext {
         &self.type_condition
     }
 
-    pub fn set_root_type(&mut self, root_type: Selection) {
-        self.root_type = Some(root_type);
+    pub fn set_on_type(&mut self, root_type: Selection) {
+        self.on_type = Some(root_type);
     }
 
     pub fn add_used_fragment(&mut self, fragment: SharedFragmentContext) {
@@ -67,13 +67,13 @@ impl FragmentContext {
         &self.used_fragments
     }
 
-    pub fn get_root_type(&self) -> Option<&Selection> {
-        self.root_type.as_ref()
+    pub fn get_on_type(&self) -> Option<&Selection> {
+        self.on_type.as_ref()
     }
     /// return the selections of this fragment and every fragment that exist in the root selection object,
     /// with duplicates removed by field name
     pub fn get_flat_selections(&self, global_ctx: &ShalomGlobalContext) -> Vec<Selection> {
-        if let Some(root_type) = self.root_type.as_ref() {
+        if let Some(root_type) = self.on_type.as_ref() {
             if let SelectionKind::Object(obj) = &root_type.kind {
                 return get_selections_with_fragments_distinct(
                     obj.selections.clone().into_inner(),

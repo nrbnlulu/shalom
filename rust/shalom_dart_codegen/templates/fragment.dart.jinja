@@ -2,10 +2,10 @@
 
 {% set fragment_name = fragment.context.context.name %}
 {% set fragment_selections = fragment.context.context.type_defs %}
-{% set root_type = fragment.context.context.root_type %}
+{% set on_type = fragment.context.context.on_type %}
 {% set op_variables = None %}
 {% set op_variables_exist = false %}
-{% set fragment_used_fragments_names = root_type.used_fragments %}
+{% set fragment_used_fragments_names = on_type.used_fragments %}
 
 {% include "selection_macros" %}
 
@@ -24,7 +24,7 @@ import '{{ import_path }}';
 
 // Generate abstract fragment class
 abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fragments_names) }} {
-    {% for field in root_type.selections -%}
+    {% for field in fragment.context.context.on_type.selections -%}
     {{ type_name_for_selection(field) }} get {{ field.name }};
     {% endfor %}
 

@@ -1,0 +1,31 @@
+type Query {
+    node(id: ID!): Node!
+    nodeOpt(id: ID!): Node
+    nodes: [Node!]!
+}
+
+interface Node {
+    id: ID!
+    createdAt: String!
+}
+
+type Foo implements Node {
+    id: ID!
+    createdAt: String!
+    fooField: String!
+    fooValue: Int!
+}
+
+type Bar implements Node {
+    id: ID!
+    createdAt: String!
+    barField: String!
+    barValue: Float!
+}
+
+type Baz implements Node {
+    id: ID!
+    createdAt: String!
+    bazField: String!
+    bazValue: Boolean!
+}
