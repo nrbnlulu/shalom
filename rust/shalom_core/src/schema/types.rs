@@ -28,6 +28,7 @@ pub enum GraphQLAny {
     InputObject(Node<InputObjectType>),
     List { of_type: ListInnerTypeWrapper },
 }
+
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct ListInnerTypeWrapper {
     pub is_optional: bool,
@@ -87,6 +88,10 @@ impl GraphQLAny {
             Self::Scalar(v) => v.name.clone(),
             _ => todo!("Unsupported type"),
         }
+    }
+    
+    pub fn implements_interface(&self, iface_name: &str, ctx: &SchemaContext) -> bool{
+        ctx.is_type_implementing_interface(&self.name(), iface_name)
     }
 }
 

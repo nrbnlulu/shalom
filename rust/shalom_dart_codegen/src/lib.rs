@@ -648,19 +648,7 @@ where
 
     let ctx_clone2 = ctx.clone();
     let executable_ctx_clone2 = executable_ctx.clone();
-    env.add_function(
-        "get_id_selection",
-        move |full_name: &str| -> Option<minijinja::Value> {
-            let selection =
-                executable_ctx_clone2.get_selection(&full_name.to_string(), &ctx_clone2)?;
-            match &selection.kind {
-                SelectionKind::Object(object_selection) => object_selection
-                    .get_id_selection_with_fragments(&ctx_clone2)
-                    .map(minijinja::Value::from_serialize),
-                _ => None,
-            }
-        },
-    );
+
 
     let ctx_clone3 = ctx.clone();
     let executable_ctx_clone3 = executable_ctx.clone();
@@ -693,22 +681,6 @@ impl OperationEnv<'_> {
         register_default_template_fns(&mut env, ctx)?;
         register_executable_fns(&mut env, ctx, op_ctx.clone())?;
 
-        // Override get_id_selection for operations to also search in used fragments
-        let ctx_clone = ctx.clone();
-        let op_ctx_clone = op_ctx.clone();
-        env.add_function(
-            "get_id_selection",
-            move |full_name: &str| -> Option<minijinja::Value> {
-                // First try to find in the operation context
-                let selection = op_ctx_clone.get_selection(&full_name.to_string(), &ctx_clone)?;
-                match &selection.kind {
-                    SelectionKind::Object(object_selection) => object_selection
-                        .get_id_selection_with_fragments(&ctx_clone)
-                        .map(minijinja::Value::from_serialize),
-                    _ => None,
-                }
-            },
-        );
 
         // Add function to check if a selection is defined in a fragment (not in the operation itself)
         let ctx_clone2 = ctx.clone();

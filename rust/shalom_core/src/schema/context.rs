@@ -130,6 +130,10 @@ impl SchemaContext {
         let types_ctx = self.types.lock().unwrap();
         types_ctx.get_any(name)
     }
+    pub fn get_type_strict(&self, name: &String) -> GraphQLAny {
+        let types_ctx = self.types.lock().unwrap();
+        types_ctx.get_any(name).expect(&format!("Type {} not found", name))
+    }
 
     pub fn get_scalar(&self, name: &str) -> Option<Node<ScalarType>> {
         let types_ctx = self.types.lock().unwrap();

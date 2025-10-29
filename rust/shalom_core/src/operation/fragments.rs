@@ -2,6 +2,9 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::{collections::HashMap, sync::Arc};
 
+use apollo_compiler::{
+    ast::OperationType as ApolloOperationType, executable as apollo_executable, Name, Node, Schema,
+};
 use serde::{Deserialize, Serialize};
 
 use super::types::{
@@ -9,34 +12,34 @@ use super::types::{
     SharedUnionSelection,
 };
 
-use crate::context::ShalomGlobalContext;
+use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
 use crate::operation::context::{ExecutableContext, TypeDefs};
-use crate::operation::types::SelectionKind;
+use crate::operation::parse::{inject_typename_in_selection_set, parse_interface_selection, parse_object_selection};
+use crate::operation::types::{ObjectLikeCommon, SelectionCommon, SelectionKind};
 
 
 
 /// inline fragments should generally be generated in the same file 
 /// that they are declared and can't be used across the project (well they have no name)
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InlineFragment{
     pub path_name: String,
     pub type_condition: String,
-    /// can be object / interface
-    pub selection: Selection,
-    pub used_fragments: Vec<String>,
-    pub inline_fragments: Vec<SharedInlineFrag>,
+    pub common: ObjectLikeCommon
 }
 pub type SharedInlineFrag = Rc<InlineFragment>;
 
 impl InlineFragment {
-    pub fn new(path_name: String, type_condition: String, selection: Selection) -> Self {
+    pub fn new(path_name: String, type_condition: String, common: ObjectLikeCommon) -> Self {
         InlineFragment {
             path_name,
             type_condition,
-            selection,
-            used_fragments: Vec::new(),
-            inline_fragments: Vec::new()
+            common,
         }
+    }
+    
+    pub fn merge(&mut self, other: InlineFragment) {
+        self.common.merge(other.common);
     }
 }
 
@@ -50,12 +53,8 @@ pub struct FragmentContext {
     #[serde(skip_serializing)]
     pub file_path: PathBuf,
     pub type_defs: TypeDefs,
-    pub on_type: Option<Selection>,
-    pub used_fragments: Vec<SharedFragmentContext>,
-    pub used_inline_fragments: Vec<SharedInlineFrag>,
+    pub root: ObjectLikeCommon,
     pub type_condition: String,
-    union_types: HashMap<FullPathName, SharedUnionSelection>,
-    interface_types: HashMap<FullPathName, SharedInterfaceSelection>,
 }
 pub type SharedFragmentContext = Arc<FragmentContext>;
 
@@ -64,6 +63,7 @@ impl FragmentContext {
         name: String,
         fragment_raw: String,
         file_path: PathBuf,
+        root: ObjectLikeCommon,
         type_condition: String,
     ) -> Self {
         FragmentContext {
@@ -71,12 +71,8 @@ impl FragmentContext {
             file_path,
             fragment_raw,
             type_defs: TypeDefs::new(),
-            on_type: None,
-            used_fragments: Vec::new(),
-            used_inline_fragments: Vec::new(),
+            root,
             type_condition,
-            union_types: HashMap::new(),
-            interface_types: HashMap::new(),
         }
     }
 
@@ -103,20 +99,7 @@ impl FragmentContext {
     pub fn get_on_type(&self) -> Option<&Selection> {
         self.on_type.as_ref()
     }
-    /// return the selections of this fragment and every fragment that exist in the root selection object,
-    /// with duplicates removed by field name
-    pub fn get_flat_selections(&self, global_ctx: &ShalomGlobalContext) -> Vec<Selection> {
-        if let Some(root_type) = self.on_type.as_ref() {
-            if let SelectionKind::Object(obj) = &root_type.kind {
-                return get_selections_with_fragments_distinct(
-                    obj.selections.clone().into_inner(),
-                    obj.get_used_fragments(),
-                    global_ctx,
-                );
-            }
-        }
-        Vec::new()
-    }
+
 
     pub fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {
         self.union_types.entry(name).or_insert(union_selection);
@@ -218,7 +201,6 @@ pub(crate) fn parse_fragment(
                     false,
                     selection_set,
                     interface_type,
-                    &mut used_fragments,
                 );
                 Selection::new(
                     selection_common,
@@ -233,7 +215,6 @@ pub(crate) fn parse_fragment(
                     &fragment_ctx.get_fragment_name().to_string(),
                     false,
                     selection_set,
-                    &mut used_fragments,
                     None,
                 );
                 Selection::new(selection_common, SelectionKind::Object(root_obj), vec![])
@@ -248,12 +229,29 @@ pub(crate) fn parse_fragment(
         }
     };
 
-    for frag in used_fragments {
-        fragment_ctx.add_used_fragment(frag);
-    }
 
     fragment_ctx.set_on_type(root_selection.clone());
     let frag_name = fragment_ctx.get_fragment_name().to_string();
     (fragment_ctx as &mut dyn ExecutableContext).add_selection(frag_name, root_selection);
     Ok(())
+}
+
+
+pub (crate) fn parse_inline_fragment<T: ExecutableContext>(
+    ctx: &mut T,
+    global_ctx: &SharedShalomGlobalContext,
+    path: &String,
+    inline_frag: apollo_executable::InlineFragment,
+){
+    let type_cond = inline_frag.type_condition.expect("inline fragments with no type condition are not supported.").to_string();
+    let this_path = format!("{}__{}", path, type_cond);
+    let mut selections = Vec::new();
+    for selection in inline_frag.selection_set.selections{
+        match selection{
+            apollo_executable::Selection::Field(field) => {
+                
+            },
+            apo
+        }
+    }
 }
