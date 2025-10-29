@@ -1,5 +1,6 @@
 use crate::schema::types::{GraphQLAny, Implementor};
 use apollo_compiler::{validation::Valid, Node};
+use kash::kash;
 use serde::{Serialize, Serializer};
 use std::fmt::Debug;
 use std::{
@@ -206,6 +207,19 @@ impl SchemaContext {
     pub fn is_type_implements_node(&self, type_name: &str) -> bool {
         self.is_type_implementing_interface(type_name, "Node")
     }
+    
+    #[kash(size = "100", in_impl)]
+    pub fn get_interface_direct_members(&self, iface_name: String) ->  Vec<Node<InterfaceType>>{
+        let types = self.types.lock().unwrap();
+        let mut ret = Vec::new();
+        for iface in types.interfaces.values(){
+            if iface.implements_interfaces().contains(&iface_name){
+                ret.push(iface.clone());
+            }
+        }
+        ret
+    }
+
 }
 
 fn check_implements_recursive<I: Implementor>(
@@ -228,4 +242,6 @@ fn check_implements_recursive<I: Implementor>(
     }
     false
 }
+
+
 pub type SharedSchemaContext = Arc<SchemaContext>;

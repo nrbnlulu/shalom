@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     context::ShalomGlobalContext,
-    operation::context::OperationVariable,
+    operation::{context::OperationVariable, fragments::{InlineFragment, SharedFragmentContext}},
     schema::types::{EnumType, InterfaceType, ScalarType, UnionType},
 };
 
@@ -213,6 +213,7 @@ pub struct ObjectSelection {
     pub is_optional: bool,
     pub selections: RefCell<Vec<Selection>>,
     pub used_fragments: RefCell<Vec<FragName>>,
+    pub used_inline_frags: RefCell<Vec<FragName>>,
     pub parent_multitype_fullname: Option<String>,
 }
 
@@ -231,6 +232,7 @@ impl ObjectSelection {
             is_optional,
             selections: RefCell::new(Vec::new()),
             used_fragments: RefCell::new(Vec::new()),
+            used_inline_frags: RefCell::new(Vec::new()),
             parent_multitype_fullname,
         };
 
@@ -331,9 +333,9 @@ pub struct MultiTypeSelectionCommon {
     /// Inline fragment selections grouped by type condition
     pub inline_fragments: RefCell<HashMap<String, SharedObjectSelection>>,
     /// Whether to generate a fallback class for uncovered types
-    pub has_fallback: Cell<bool>,
-    /// Fragments spread at the union/interface level (not inside inline fragments)
-    pub shared_fragments: RefCell<Vec<String>>,
+    pub needs_fallback: Cell<bool>,
+    /// Fragments spreads at the union/interface,
+    pub fragment_spreads: RefCell<HashMap<String, Vec<String>>>
 }
 
 impl MultiTypeSelectionCommon {
@@ -344,8 +346,8 @@ impl MultiTypeSelectionCommon {
             is_optional,
             shared_selections: RefCell::new(Vec::new()),
             inline_fragments: RefCell::new(HashMap::new()),
-            has_fallback: Cell::new(false),
-            shared_fragments: RefCell::new(Vec::new()),
+            needs_fallback: Cell::new(false),
+            fragment_spreads: RefCell::new(HashMap::new()),
         }
     }
 
@@ -373,8 +375,8 @@ impl MultiTypeSelectionCommon {
             .insert(type_condition, object_selection);
     }
 
-    pub fn add_shared_fragment(&self, fragment_name: String) {
-        self.shared_fragments.borrow_mut().push(fragment_name);
+    pub fn add_fragment_spread(&self, fragment_name: String) {
+        self.fragment_spreads.borrow_mut().entry(fragment_name.clone()).or_insert_with(Vec::new).push(fragment_name);
     }
 
     /// Check if __typename is selected either at the top level or in all inline fragments

@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
+use std::hash::Hash;
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -8,61 +9,119 @@ use super::fragments::SharedFragmentContext;
 use super::types::{
     FullPathName, OperationType, Selection, SharedInterfaceSelection, SharedUnionSelection,
 };
+use crate::context::ShalomGlobalContext;
+use crate::operation::fragments::{FragName, SharedInlineFrag};
+use crate::operation::types::{SelectionKind, SharedListSelection, SharedObjectSelection};
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 pub type OperationVariable = InputFieldDefinition;
 
 #[derive(Debug, Serialize)]
 pub struct TypeDefs {
-    pub selection_objects: HashMap<FullPathName, Selection>,
-    pub union_selections: HashMap<FullPathName, Selection>,
-    pub interface_selections: HashMap<FullPathName, Selection>,
-    pub list_selections: HashMap<FullPathName, Selection>,
+    /// all selections
+    pub selections: HashMap<FullPathName, Selection>,
+    /// all object selections in this executable
+    pub objects: HashMap<FullPathName, SharedObjectSelection>,
+    /// all interface selections in this executable
+    pub interfaces: HashMap<FullPathName, SharedInterfaceSelection>,
+    /// all list selections in this executable
+    pub lists: HashMap<FullPathName, SharedListSelection>,
+    /// all union types that was selected in this executable
+    pub unions: HashMap<FullPathName, SharedUnionSelection>,
+    /// all inline fragments in this executable
+    pub used_inline_frags: HashMap<FullPathName, SharedInlineFrag>,
+    /// all fragments (not flattened) used in this executable
+    #[serde(skip_serializing)]
+    used_fragments_internal: HashMap<String, SharedFragmentContext>,
 }
+
 impl TypeDefs {
     pub fn new() -> Self {
         TypeDefs {
-            selection_objects: HashMap::new(),
-            union_selections: HashMap::new(),
-            interface_selections: HashMap::new(),
-            list_selections: HashMap::new(),
+            selections: HashMap::new(),
+            objects: HashMap::new(),
+            unions: HashMap::new(),
+            interfaces: HashMap::new(),
+            lists: HashMap::new(),
+            used_inline_frags: HashMap::new(),
+            used_fragments_internal: HashMap::new(),
         }
     }
 
-    pub fn add_object_selection(&mut self, name: String, selection: Selection) {
-        self.selection_objects
+    pub fn add_object_selection(&mut self, name: String, selection: SharedObjectSelection) {
+        self.objects
             .entry(name.clone())
             .or_insert(selection);
     }
 
-    pub fn get_object_selection(&self, name: &FullPathName) -> Option<&Selection> {
-        self.selection_objects.get(name)
+    pub fn get_object_selection(&self, name: &FullPathName) -> Option<&SharedObjectSelection> {
+        self.objects.get(name)
     }
 
-    pub fn add_union_selection(&mut self, name: String, selection: Selection) {
-        self.union_selections
+    pub fn add_union_selection(&mut self, name: String, selection: SharedUnionSelection) {
+        self.unions
             .entry(name.clone())
             .or_insert(selection);
     }
-    pub fn get_union_selection(&self, name: &FullPathName) -> Option<&Selection> {
-        self.union_selections.get(name)
+    
+    pub fn get_union_selection(&self, name: &FullPathName) -> Option<&SharedUnionSelection> {
+        self.unions.get(name)
     }
 
-    pub fn add_interface_selection(&mut self, name: String, selection: Selection) {
-        self.interface_selections
+    pub fn add_interface_selection(&mut self, name: String, selection: SharedInterfaceSelection) {
+        self.interfaces
             .entry(name.clone())
             .or_insert(selection);
     }
-    pub fn get_interface_selection(&self, name: &FullPathName) -> Option<&Selection> {
-        self.interface_selections.get(name)
+    pub fn get_interface_selection(&self, name: &FullPathName) -> Option<&SharedInterfaceSelection> {
+        self.interfaces.get(name)
     }
 
-    pub fn add_list_selection(&mut self, name: String, selection: Selection) {
-        self.list_selections
+    pub fn add_list_selection(&mut self, name: String, selection: SharedListSelection) {
+        self.lists
             .entry(name.clone())
             .or_insert(selection);
     }
-    pub fn get_list_selection(&self, name: &FullPathName) -> Option<&Selection> {
-        self.list_selections.get(name)
+    pub fn get_list_selection(&self, name: &FullPathName) -> Option<&SharedListSelection> {
+        self.lists.get(name)
+    }
+
+    pub fn add_used_inline_frag(&mut self, path_name: FullPathName, frag: SharedInlineFrag) {
+        self.used_inline_frags.insert(path_name, frag);
+    }
+    pub fn get_used_inline_frags(&self) -> &HashMap<FullPathName, SharedInlineFrag> {
+        &self.used_inline_frags
+    }
+
+    pub fn add_used_fragment(&mut self, frag: SharedFragmentContext) {
+        self.used_fragments_internal.insert(frag.name.clone(), frag);
+    }
+    pub fn get_used_fragments(&self) -> &HashMap<FragName, SharedFragmentContext> {
+        &self.used_fragments_internal
+    }
+    pub fn get_used_fragment(&self, name: &str) -> Option<&SharedFragmentContext> {
+        self.used_fragments_internal.get(name)
+    }
+
+    #[kash::kash(size = "1", in_impl)]
+    fn flatten_used_fragments(&self) {
+        let mut visited = HashSet::new();
+        let mut result = Vec::new();
+        fn collect_fragments_recursive<'a, T: Iterator<Item = &'a SharedFragmentContext>>(
+            fragments: T,
+            visited: &mut HashSet<String>,
+            result: &mut Vec<SharedFragmentContext>,
+        ) {
+            for frag in fragments {
+                let frag_name = frag.name.clone();
+                if visited.insert(frag_name) {
+                    // First collect nested fragments
+                    collect_fragments_recursive(frag.used_fragments.iter(), visited, result);
+                    // Then add this fragment
+                    result.push(frag.clone());
+                }
+            }
+        }
+        collect_fragments_recursive(self.used_fragments_internal.values(), &mut visited, &mut result)
     }
 }
 
@@ -84,10 +143,6 @@ pub struct OperationContext {
     pub type_defs: TypeDefs,
     root_type: Option<Selection>,
     op_ty: OperationType,
-    pub used_fragments: Vec<SharedFragmentContext>,
-    pub used_fragments_flat: Vec<SharedFragmentContext>,
-    union_types: HashMap<FullPathName, SharedUnionSelection>,
-    interface_types: HashMap<FullPathName, SharedInterfaceSelection>,
 }
 
 unsafe impl Send for OperationContext {}
@@ -110,10 +165,6 @@ impl OperationContext {
             type_defs: TypeDefs::new(),
             root_type: None,
             op_ty,
-            used_fragments: Vec::new(),
-            used_fragments_flat: Vec::new(),
-            union_types: HashMap::new(),
-            interface_types: HashMap::new(),
         }
     }
     pub fn get_operation_name(&self) -> &str {
@@ -133,62 +184,61 @@ impl OperationContext {
     pub fn get_variable(&self, name: &str) -> Option<&OperationVariable> {
         self.variables.get(name)
     }
-
-    pub fn add_used_fragment(&mut self, fragment: SharedFragmentContext) {
-        self.used_fragments.push(fragment);
-    }
-
-    pub fn get_used_fragments(&self) -> &Vec<SharedFragmentContext> {
-        &self.used_fragments
-    }
-
-    pub fn flatten_used_fragments(&mut self) {
-        use std::collections::HashSet;
-
-        let mut visited = HashSet::new();
-        let mut result = Vec::new();
-
-        fn collect_fragments_recursive(
-            fragments: &[SharedFragmentContext],
-            visited: &mut HashSet<String>,
-            result: &mut Vec<SharedFragmentContext>,
-        ) {
-            for fragment in fragments {
-                let fragment_name = fragment.name.clone();
-                if visited.insert(fragment_name) {
-                    // First collect nested fragments
-                    collect_fragments_recursive(&fragment.used_fragments, visited, result);
-                    // Then add this fragment
-                    result.push(fragment.clone());
-                }
-            }
-        }
-
-        collect_fragments_recursive(&self.used_fragments, &mut visited, &mut result);
-        self.used_fragments_flat = result;
-    }
-
-    pub fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {
-        self.union_types.entry(name).or_insert(union_selection);
-    }
-
-    pub fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection> {
-        &self.union_types
-    }
-
-    pub fn add_interface_type(
-        &mut self,
-        name: String,
-        interface_selection: SharedInterfaceSelection,
-    ) {
-        self.interface_types
-            .entry(name)
-            .or_insert(interface_selection);
-    }
-
-    pub fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection> {
-        &self.interface_types
-    }
 }
 
 pub type SharedOpCtx = Arc<OperationContext>;
+
+// Trait to abstract over OperationContext and FragmentContext
+pub trait ExecutableContext: Send + Sync + 'static {
+    fn name(&self) -> &str;
+    fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable>;
+    fn has_variables(&self) -> bool;
+    fn typedefs(&self) -> &TypeDefs;
+    fn typedefs_mut(&mut self) -> &mut TypeDefs;
+
+
+    fn get_selection(&self, name: &String, _: &ShalomGlobalContext) -> Option<&Selection> {
+        let td = self.typedefs();
+        td.selections.get(name)
+    }
+
+    fn add_selection(&mut self, name: String, selection: Selection) {
+        let td = self.typedefs_mut();
+        let name_clone = name.clone();
+        match &selection.kind{
+            SelectionKind::Interface(iface) => td.add_interface_selection(name, iface.clone()),
+            SelectionKind::Object(obj) => td.add_object_selection(name, obj.clone()),
+            SelectionKind::List(list) => td.add_list_selection(name, list.clone()),
+            SelectionKind::Union(union) => td.add_union_selection(name, union.clone()),
+            // other selection kinds shouldn't be available globally.
+            _ => ()
+        }
+        td.selections.insert(name_clone, selection);
+        
+    }
+
+    fn get_selection_strict(&self, name: &String, ctx: &ShalomGlobalContext) -> &Selection {
+        self.get_selection(name, ctx).unwrap_or_else(|| {
+            panic!("selection for {name} not found neither in this context nor in its fragments")
+        })
+    }
+
+}
+
+impl ExecutableContext for OperationContext {
+    fn name(&self) -> &str {
+        self.get_operation_name()
+    }
+    fn has_variables(&self) -> bool {
+        self.has_variables()
+    }
+    fn typedefs(&self) -> &TypeDefs {
+        &self.type_defs
+    }
+    fn typedefs_mut(&mut self) -> &mut TypeDefs {
+        &mut self.type_defs
+    }
+    fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable> {
+        self.get_variable(name)
+    }
+}

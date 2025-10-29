@@ -1,7 +1,8 @@
 use std::path::PathBuf;
+use std::rc::Rc;
 use std::{collections::HashMap, sync::Arc};
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 
 use super::types::{
     get_selections_with_fragments_distinct, FullPathName, Selection, SharedInterfaceSelection,
@@ -9,23 +10,54 @@ use super::types::{
 };
 
 use crate::context::ShalomGlobalContext;
-use crate::operation::context::TypeDefs;
+use crate::operation::context::{ExecutableContext, TypeDefs};
 use crate::operation::types::SelectionKind;
-pub type SharedFragmentContext = Arc<FragmentContext>;
+
+
+
+/// inline fragments should generally be generated in the same file 
+/// that they are declared and can't be used across the project (well they have no name)
+#[derive(Debug, Serialize, Deserialize)]
+pub struct InlineFragment{
+    pub path_name: String,
+    pub type_condition: String,
+    /// can be object / interface
+    pub selection: Selection,
+    pub used_fragments: Vec<String>,
+    pub inline_fragments: Vec<SharedInlineFrag>,
+}
+pub type SharedInlineFrag = Rc<InlineFragment>;
+
+impl InlineFragment {
+    pub fn new(path_name: String, type_condition: String, selection: Selection) -> Self {
+        InlineFragment {
+            path_name,
+            type_condition,
+            selection,
+            used_fragments: Vec::new(),
+            inline_fragments: Vec::new()
+        }
+    }
+}
+
+
+pub type FragName = String;
 
 #[derive(Debug, Serialize)]
 pub struct FragmentContext {
-    pub name: String,
+    pub name: FragName,
     pub fragment_raw: String,
     #[serde(skip_serializing)]
     pub file_path: PathBuf,
     pub type_defs: TypeDefs,
     pub on_type: Option<Selection>,
     pub used_fragments: Vec<SharedFragmentContext>,
+    pub used_inline_fragments: Vec<SharedInlineFrag>,
     pub type_condition: String,
     union_types: HashMap<FullPathName, SharedUnionSelection>,
     interface_types: HashMap<FullPathName, SharedInterfaceSelection>,
 }
+pub type SharedFragmentContext = Arc<FragmentContext>;
 
 impl FragmentContext {
     pub fn new(
@@ -41,6 +73,7 @@ impl FragmentContext {
             type_defs: TypeDefs::new(),
             on_type: None,
             used_fragments: Vec::new(),
+            used_inline_fragments: Vec::new(),
             type_condition,
             union_types: HashMap::new(),
             interface_types: HashMap::new(),
@@ -110,3 +143,117 @@ impl FragmentContext {
 
 unsafe impl Send for FragmentContext {}
 unsafe impl Sync for FragmentContext {}
+
+
+
+impl ExecutableContext for FragmentContext {
+    fn name(&self) -> &str {
+        self.get_fragment_name()
+    }
+    fn typedefs(&self) -> &TypeDefs {
+        &self.type_defs
+    }
+    fn typedefs_mut(&mut self) -> &mut TypeDefs {
+        &mut self.type_defs
+    }
+
+    fn has_variables(&self) -> bool {
+        false
+    }
+    fn get_variable(&self, _name: &str) -> Option<&crate::operation::context::OperationVariable> {
+        None // Fragments don't have variables
+    }
+}
+
+
+
+pub(crate) fn parse_fragment(
+    global_ctx: &SharedShalomGlobalContext,
+    mut fragment: Node<apollo_compiler::executable::Fragment>,
+    fragment_ctx: &mut FragmentContext,
+) -> anyhow::Result<()> {
+    // Inject __typename into union and interface selections
+    let schema = &global_ctx.schema_ctx.schema;
+    let fragment_mut = fragment.make_mut();
+    inject_typename_in_selection_set(schema, &mut fragment_mut.selection_set, global_ctx);
+
+    let selection_set = &fragment.selection_set;
+    let type_name = fragment.type_condition();
+    let type_info = global_ctx
+        .schema_ctx
+        .get_type(&type_name.to_string())
+        .unwrap();
+
+    let selection_common = SelectionCommon {
+        name: fragment_ctx.get_fragment_name().to_string(),
+        description: None,
+    };
+
+    let root_selection = match type_info {
+        crate::schema::types::GraphQLAny::Object(_) => {
+            let root_obj = parse_object_selection(
+                fragment_ctx,
+                global_ctx,
+                &fragment_ctx.get_fragment_name().to_string(),
+                false,
+                selection_set,
+                None, // Fragment root object, not a multi-type member
+            );
+            // fragments has no arguments
+            Selection::new(selection_common, SelectionKind::Object(root_obj), vec![])
+        }
+        crate::schema::types::GraphQLAny::Interface(interface_type) => {
+            // Check if the selection set has inline fragments
+            let has_inline_fragments = selection_set
+                .selections
+                .iter()
+                .any(|sel| matches!(sel, apollo_executable::Selection::InlineFragment(_)));
+
+            if has_inline_fragments {
+                // Parse as interface selection with type discrimination
+                let root_interface = parse_interface_selection(
+                    fragment_ctx,
+                    global_ctx,
+                    &fragment_ctx.get_fragment_name().to_string(),
+                    false,
+                    selection_set,
+                    interface_type,
+                    &mut used_fragments,
+                );
+                Selection::new(
+                    selection_common,
+                    SelectionKind::Interface(root_interface),
+                    vec![],
+                )
+            } else {
+                // No inline fragments - treat as simple object selection
+                let root_obj = parse_object_selection(
+                    fragment_ctx,
+                    global_ctx,
+                    &fragment_ctx.get_fragment_name().to_string(),
+                    false,
+                    selection_set,
+                    &mut used_fragments,
+                    None,
+                );
+                Selection::new(selection_common, SelectionKind::Object(root_obj), vec![])
+            }
+        }
+        _ => {
+            return Err(anyhow::anyhow!(
+                "Fragment {} type condition {} is not an object or interface type",
+                fragment_ctx.get_fragment_name(),
+                type_name
+            ));
+        }
+    };
+
+    for frag in used_fragments {
+        fragment_ctx.add_used_fragment(frag);
+    }
+
+    fragment_ctx.set_on_type(root_selection.clone());
+    let frag_name = fragment_ctx.get_fragment_name().to_string();
+    (fragment_ctx as &mut dyn ExecutableContext).add_selection(frag_name, root_selection);
+    Ok(())
+}

@@ -67,7 +67,7 @@ pub fn parse_document(
     operation: &str,
     source_path: &PathBuf,
 ) -> anyhow::Result<HashMap<String, SharedOpCtx>> {
-    crate::operation::parse::parse_document(global_ctx, operation, source_path)
+    crate::operation::parse::parse_document_impl(global_ctx, operation, source_path)
 }
 
 /// Load configuration from directory or use defaults
@@ -401,7 +401,7 @@ fn parse_and_register_operations(
             .cloned()
             .unwrap_or_else(|| fs::read_to_string(file).unwrap());
 
-        let operations = crate::operation::parse::parse_document(global_ctx, &content, file)?;
+        let operations = crate::operation::parse::parse_document_impl(global_ctx, &content, file)?;
         all_operations.extend(operations);
     }
 
