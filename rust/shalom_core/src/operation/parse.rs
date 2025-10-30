@@ -541,7 +541,7 @@ fn parse_operation(
     let object_like = parse_obj_like_from_selection_set(
         &mut ctx,
         global_ctx,
-        &"".to_string(),
+        &operation_name,
         op.operation_type.name().to_string(),
         &op.selection_set,
     );

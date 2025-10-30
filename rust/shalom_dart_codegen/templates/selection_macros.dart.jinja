@@ -31,7 +31,7 @@
         {# TODO:(#GH-85) #}
         final {{selection_name}}$id = ({{raw_sym}} as JsonObject)["id"] as RecordID?;
         if ({{selection_name}}$id != null) {
-            final {{selection_name}}$normalized = NormalizedObjectRecord(typename: "{{selection.concrete_typename}}", id: {{selection_name}}$id);
+            final {{selection_name}}$normalized = NormalizedObjectRecord(typename: "{{selection.schema_typename}}", id: {{selection_name}}$id);
             {{this_normalized_record}}[{{normalized_key}}] = {{selection_name}}$normalized;
             {# Check if the reference changed #}
             if ({{cached_sym}} != null && {{cached_sym}} is NormalizedObjectRecord && {{cached_sym}} != {{selection_name}}$normalized) {
@@ -424,7 +424,7 @@ null
                     parent$record[this$fieldName] = normalized$objRecord;
                     this$normalizedID = normalized$objRecord.normalizedID();
                 {% else %}
-                    final normalized$objRecord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
+                    final normalized$objRecord = NormalizedObjectRecord(typename: "{{selection_object.schema_typename}}", id: this$normalizedID_temp!);
                     if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecord){
                         ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
                     }

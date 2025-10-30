@@ -112,11 +112,11 @@ pub(crate) fn parse_fragment(
 
     let selection_set = &fragment.selection_set;
     let type_name = fragment.type_condition();
-
+    let frag_name = fragment_ctx.name.clone();
     let obj_like = parse_obj_like_from_selection_set(
         fragment_ctx,
         global_ctx,
-        &"".to_string(),
+        &frag_name,
         type_name.to_string().clone(),
         selection_set,
     );
