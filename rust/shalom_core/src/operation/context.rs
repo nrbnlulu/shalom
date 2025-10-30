@@ -211,7 +211,8 @@ pub trait ExecutableContext: Send + Sync + 'static {
     fn has_variables(&self) -> bool;
     fn typedefs(&self) -> &TypeDefs;
     fn typedefs_mut(&mut self) -> &mut TypeDefs;
-
+    fn get_root(&self) -> &ObjectLikeCommon;
+    
     fn get_selection(&self, name: &String) -> Option<&FieldSelection> {
         let td = self.typedefs();
         td.selections.get(name)
@@ -253,5 +254,8 @@ impl ExecutableContext for OperationContext {
     }
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable> {
         self.get_variable(name)
+    }
+    fn get_root(&self) -> &ObjectLikeCommon {
+        self.root_type.as_ref().unwrap()
     }
 }

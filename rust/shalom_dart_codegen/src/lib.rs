@@ -517,7 +517,7 @@ fn object_like_needs_variables<T: ExecutableContext>(
     if !ctx.has_variables() {
         return false;
     }
-    ctx.get_selection(&obj_like.path_name).is_some()
+    ctx.get_selection(&obj_like.path_name).is_some() || ctx.get_root().path_name == obj_like.path_name
 }
 
 fn get_field_name_with_args(

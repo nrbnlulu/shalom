@@ -98,6 +98,10 @@ impl ExecutableContext for FragmentContext {
     fn get_variable(&self, _name: &str) -> Option<&crate::operation::context::OperationVariable> {
         None // Fragments don't have variables
     }
+    
+    fn get_root(&self) -> &ObjectLikeCommon {
+        self.get_on_type()
+    }
 }
 
 pub(crate) fn parse_fragment(
