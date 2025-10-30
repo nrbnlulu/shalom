@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use serde::Serialize;
+use serde::ser::SerializeSeq;
 
 use super::fragments::SharedFragmentContext;
 use super::types::{
@@ -15,6 +16,15 @@ use crate::operation::types::{
 };
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 pub type OperationVariable = InputFieldDefinition;
+
+fn _used_frags_serialize_names_only<S: serde::Serializer>(x: &HashMap<String, SharedFragmentContext>, s: S) -> Result<S::Ok, S::Error>{
+    let out = x.keys().collect::<Vec<_>>();
+    let mut seq = s.serialize_seq(Some(out.len()))?;
+    for frag_name in out {
+        seq.serialize_element(frag_name)?;
+    }
+    seq.end()
+}
 
 #[derive(Debug, Serialize)]
 pub struct TypeDefs {
@@ -31,8 +41,8 @@ pub struct TypeDefs {
     /// all inline fragments in this executable
     pub used_inline_frags: HashMap<FullPathName, SharedInlineFrag>,
     /// all fragments (not flattened) used in this executable
-    #[serde(skip_serializing)]
-    used_fragments_internal: HashMap<String, SharedFragmentContext>,
+    #[serde(serialize_with = "_used_frags_serialize_names_only")]
+    used_fragments: HashMap<String, SharedFragmentContext>,
 }
 
 impl TypeDefs {
@@ -44,7 +54,7 @@ impl TypeDefs {
             interfaces: HashMap::new(),
             lists: HashMap::new(),
             used_inline_frags: HashMap::new(),
-            used_fragments_internal: HashMap::new(),
+            used_fragments: HashMap::new(),
         }
     }
 
@@ -89,17 +99,17 @@ impl TypeDefs {
     }
 
     pub fn add_used_fragment(&mut self, frag: SharedFragmentContext) {
-        self.used_fragments_internal.insert(frag.name.clone(), frag);
+        self.used_fragments.insert(frag.name.clone(), frag);
     }
     pub fn get_used_fragments(&self) -> &HashMap<FragName, SharedFragmentContext> {
-        &self.used_fragments_internal
+        &self.used_fragments
     }
     pub fn get_used_fragment(&self, name: &str) -> Option<&SharedFragmentContext> {
-        self.used_fragments_internal.get(name)
+        self.used_fragments.get(name)
     }
 
     #[kash::kash(size = "1", in_impl)]
-    fn flatten_used_fragments(&self) {
+    pub fn flatten_used_fragments(&self)-> Vec<SharedFragmentContext> {
         let mut visited = HashSet::new();
         let mut result = Vec::new();
         fn collect_fragments_recursive<'a, T: Iterator<Item = &'a SharedFragmentContext>>(
@@ -112,7 +122,7 @@ impl TypeDefs {
                 if visited.insert(frag_name) {
                     // First collect nested fragments
                     collect_fragments_recursive(
-                        frag.type_defs.used_fragments_internal.values(),
+                        frag.typedefs.used_fragments.values(),
                         visited,
                         result,
                     );
@@ -122,10 +132,12 @@ impl TypeDefs {
             }
         }
         collect_fragments_recursive(
-            self.used_fragments_internal.values(),
+            self.used_fragments.values(),
             &mut visited,
             &mut result,
-        )
+        );
+        result
+
     }
 }
 
@@ -142,9 +154,9 @@ pub struct OperationContext {
     schema: SharedSchemaContext,
     operation_name: String,
     pub file_path: PathBuf,
-    query: String,
+    pub query: String,
     variables: HashMap<String, OperationVariable>,
-    pub type_defs: TypeDefs,
+    pub typedefs: TypeDefs,
     root_type: Option<ObjectLikeCommon>,
     op_ty: OperationType,
 }
@@ -166,7 +178,7 @@ impl OperationContext {
             file_path,
             query,
             variables: HashMap::new(),
-            type_defs: TypeDefs::new(),
+            typedefs: TypeDefs::new(),
             root_type: None,
             op_ty,
         }
@@ -200,7 +212,7 @@ pub trait ExecutableContext: Send + Sync + 'static {
     fn typedefs(&self) -> &TypeDefs;
     fn typedefs_mut(&mut self) -> &mut TypeDefs;
 
-    fn get_selection(&self, name: &String, _: &ShalomGlobalContext) -> Option<&FieldSelection> {
+    fn get_selection(&self, name: &String) -> Option<&FieldSelection> {
         let td = self.typedefs();
         td.selections.get(name)
     }
@@ -219,8 +231,8 @@ pub trait ExecutableContext: Send + Sync + 'static {
         td.selections.insert(name_clone, selection);
     }
 
-    fn get_selection_strict(&self, name: &String, ctx: &ShalomGlobalContext) -> &FieldSelection {
-        self.get_selection(name, ctx).unwrap_or_else(|| {
+    fn get_selection_strict(&self, name: &String) -> &FieldSelection {
+        self.get_selection(name).unwrap_or_else(|| {
             panic!("selection for {name} not found neither in this context nor in its fragments")
         })
     }
@@ -234,10 +246,10 @@ impl ExecutableContext for OperationContext {
         self.has_variables()
     }
     fn typedefs(&self) -> &TypeDefs {
-        &self.type_defs
+        &self.typedefs
     }
     fn typedefs_mut(&mut self) -> &mut TypeDefs {
-        &mut self.type_defs
+        &mut self.typedefs
     }
     fn get_variable(&self, name: &str) -> Option<&crate::operation::context::OperationVariable> {
         self.get_variable(name)

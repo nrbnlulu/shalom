@@ -380,7 +380,7 @@ pub(super) fn parse_field_selection_set<T: ExecutableContext>(
     arguments: Vec<crate::operation::types::FieldArgument>,
 ) -> FieldSelection {
     let full_name = path.clone();
-    if let Some(selection) = ctx.get_selection(&full_name, global_ctx) {
+    if let Some(selection) = ctx.get_selection(&full_name) {
         info!("Selection already exists");
         return selection.clone();
     }

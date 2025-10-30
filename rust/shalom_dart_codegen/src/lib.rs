@@ -7,7 +7,7 @@ use shalom_core::{
     operation::{
         context::{ExecutableContext, OperationContext, SharedOpCtx},
         fragments::SharedFragmentContext,
-        types::{dart_type_for_scalar, FieldSelection, SelectionKind, SharedListSelection},
+        types::{FieldSelection, ObjectLikeCommon, SelectionKind, SharedListSelection, dart_type_for_scalar},
     },
     schema::{
         context::SchemaContext,
@@ -507,30 +507,17 @@ fn register_default_template_fns<'a>(
     Ok(())
 }
 
+
 /// if the operation contains variables and the selection is from this operation
 /// i.e not from a fragment returns true.
-fn selection_kind_uses_variables<T: ExecutableContext>(
+fn object_like_needs_variables<T: ExecutableContext>(
     ctx: &T,
-    selection_kind: &shalom_core::operation::types::SelectionKind,
+    obj_like: &ObjectLikeCommon,
 ) -> bool {
-    use shalom_core::operation::types::SelectionKind;
     if !ctx.has_variables() {
         return false;
     }
-    let typedefs = ctx.typedefs();
-    match selection_kind {
-        SelectionKind::Object(obj) => typedefs
-            .get_object_selection(&obj.common.path_name)
-            .is_some(),
-        SelectionKind::List(list) => selection_kind_uses_variables(ctx, &list.of_kind),
-        SelectionKind::Union(union) => typedefs
-            .get_union_selection(&union.common.common.path_name)
-            .is_some(),
-        SelectionKind::Interface(interface) => typedefs
-            .get_interface_selection(&interface.common.common.path_name)
-            .is_some(),
-        _ => false,
-    }
+    ctx.get_selection(&obj_like.path_name).is_some()
 }
 
 fn get_field_name_with_args(
@@ -622,24 +609,17 @@ where
     T: ExecutableContext + 'static,
 {
     let ctx_clone3 = ctx.clone();
-    let executable_ctx_clone3 = executable_ctx.clone();
-    env.add_function("get_all_selections_distinct", move |object_name: &str| {
-        let object_selection =
-            executable_ctx_clone3.get_selection(&object_name.to_string(), &ctx_clone3);
-        let selections = match &object_selection.unwrap().kind {
-            SelectionKind::Object(object_selection) => object_selection
-                .common
-                .get_all_selections_distinct(&ctx_clone3),
-            _ => panic!("Expected object selection"),
-        };
+    env.add_function("get_all_selections_distinct", move |obj_like: ViaDeserialize<ObjectLikeCommon>| {
+        let selections = obj_like.get_all_selections_distinct(&ctx_clone3);
+
         minijinja::Value::from_serialize(selections)
     });
 
     let executable_ctx_clone3 = executable_ctx.clone();
     env.add_function(
-        "selection_kind_uses_variables",
-        move |selection: ViaDeserialize<shalom_core::operation::types::SelectionKind>| -> bool {
-            selection_kind_uses_variables(executable_ctx_clone3.as_ref(), &selection.0)
+        "object_like_needs_variables",
+        move |selection: ViaDeserialize<ObjectLikeCommon>| -> bool {
+            object_like_needs_variables(executable_ctx_clone3.as_ref(), &selection.0)
         },
     );
 
@@ -684,7 +664,7 @@ impl OperationEnv<'_> {
                 // then it must be from a fragment
                 assert!(
                     op_ctx_clone2
-                        .get_selection(&path_name.to_string(), &ctx_clone2)
+                        .get_selection(&path_name.to_string())
                         .is_some(),
                     "is_selection_from_fragment: failed to find selection"
                 );
@@ -697,19 +677,23 @@ impl OperationEnv<'_> {
 
     fn render_operation(
         &self,
-        operations_ctx: &OperationContext,
+        operation_ctx: &OperationContext,
         custom_scalar_imports: HashMap<String, String>,
         schema_import_path: String,
         multi_type_list_selections: Vec<SharedListSelection>,
     ) -> String {
         let template = self.env.get_template("operation").unwrap();
+        let mut resolved_query = operation_ctx.query.clone();
+        for frag in operation_ctx.typedefs.flatten_used_fragments(){
+            resolved_query.push_str(format!("\n {}", frag.fragment_raw).as_str());
+        }
         let ctx = context! {
             context => context!{
-                operation => operations_ctx,
+                operation => operation_ctx,
                 custom_scalar_imports => custom_scalar_imports,
                 schema_import_path => schema_import_path,
                 multi_type_list_selections => multi_type_list_selections,
-
+                resolved_query => resolved_query
             }
         };
         template.render(&ctx).unwrap()

@@ -38,7 +38,7 @@ pub struct FragmentContext {
     pub fragment_raw: String,
     #[serde(skip_serializing)]
     pub file_path: PathBuf,
-    pub type_defs: TypeDefs,
+    pub typedefs: TypeDefs,
     pub root: Option<ObjectLikeCommon>,
     pub type_condition: String,
 }
@@ -55,7 +55,7 @@ impl FragmentContext {
             name,
             file_path,
             fragment_raw,
-            type_defs: TypeDefs::new(),
+            typedefs: TypeDefs::new(),
             root: None,
             type_condition,
         }
@@ -86,10 +86,10 @@ impl ExecutableContext for FragmentContext {
         self.get_fragment_name()
     }
     fn typedefs(&self) -> &TypeDefs {
-        &self.type_defs
+        &self.typedefs
     }
     fn typedefs_mut(&mut self) -> &mut TypeDefs {
-        &mut self.type_defs
+        &mut self.typedefs
     }
 
     fn has_variables(&self) -> bool {
