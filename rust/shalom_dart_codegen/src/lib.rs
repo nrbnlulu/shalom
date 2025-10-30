@@ -6,7 +6,7 @@ use serde::Serialize;
 use shalom_core::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
     operation::{
-        context::{ExecutableContext, SharedOpCtx, TypeDefs},
+        context::{ExecutableContext, OperationContext, SharedOpCtx, TypeDefs},
         fragments::SharedFragmentContext,
         types::{FieldSelection, SelectionKind, SharedListSelection, dart_type_for_scalar},
     },
@@ -446,7 +446,6 @@ fn register_default_template_fns<'a>(
         },
     );
 
-
     let global_ctx = ctx.clone();
     env.add_function(
         "generate_fragment_imports",
@@ -521,11 +520,16 @@ fn selection_kind_uses_variables<T: ExecutableContext>(
     }
     let typedefs = ctx.typedefs();
     match selection_kind {
-        SelectionKind::Object(obj) =>typedefs.get_object_selection(&obj.common.path_name).is_some(),
+        SelectionKind::Object(obj) => typedefs
+            .get_object_selection(&obj.common.path_name)
+            .is_some(),
         SelectionKind::List(list) => selection_kind_uses_variables(ctx, &list.of_kind),
-        SelectionKind::Union(union) => typedefs.get_union_selection(&union.common.common.path_name).is_some(),
+        SelectionKind::Union(union) => typedefs
+            .get_union_selection(&union.common.common.path_name)
+            .is_some(),
         SelectionKind::Interface(interface) => typedefs
-            .get_interface_selection(&interface.common.common.path_name).is_some(),
+            .get_interface_selection(&interface.common.common.path_name)
+            .is_some(),
         _ => false,
     }
 }
@@ -618,16 +622,15 @@ fn register_executable_fns<'a, T>(
 where
     T: ExecutableContext + 'static,
 {
-    
     let ctx_clone3 = ctx.clone();
     let executable_ctx_clone3 = executable_ctx.clone();
     env.add_function("get_all_selections_distinct", move |object_name: &str| {
         let object_selection =
             executable_ctx_clone3.get_selection(&object_name.to_string(), &ctx_clone3);
         let selections = match &object_selection.unwrap().kind {
-            SelectionKind::Object(object_selection) => {
-                object_selection.common.get_all_selections_distinct(&ctx_clone3)
-            }
+            SelectionKind::Object(object_selection) => object_selection
+                .common
+                .get_all_selections_distinct(&ctx_clone3),
             _ => panic!("Expected object selection"),
         };
         minijinja::Value::from_serialize(selections)
@@ -649,7 +652,6 @@ impl OperationEnv<'_> {
         let mut env = Environment::new();
         register_default_template_fns(&mut env, ctx)?;
         register_executable_fns(&mut env, ctx, op_ctx.clone())?;
-
 
         // Add function to check if a selection is defined in a fragment (not in the operation itself)
         let ctx_clone2 = ctx.clone();
@@ -694,33 +696,24 @@ impl OperationEnv<'_> {
         Ok(OperationEnv { env })
     }
 
-    fn render_operation<S: Serialize, T: Serialize>(
+    fn render_operation(
         &self,
-        operations_ctx: S,
-        schema_ctx: T,
+        operations_ctx: &OperationContext,
         custom_scalar_imports: HashMap<String, String>,
         schema_import_path: String,
         multi_type_list_selections: Vec<SharedListSelection>,
     ) -> String {
         let template = self.env.get_template("operation").unwrap();
-        let mut context = HashMap::new();
-
-        context.insert("schema", context! { context => schema_ctx });
-        context.insert("operation", context! { context => operations_ctx });
-        context.insert(
-            "custom_scalar_imports",
-            minijinja::Value::from(custom_scalar_imports),
-        );
-        context.insert(
-            "schema_import_path",
-            minijinja::Value::from(schema_import_path),
-        );
-        context.insert(
-            "multi_type_list_selections",
-            minijinja::Value::from_serialize(&multi_type_list_selections),
-        );
-
-        template.render(&context).unwrap()
+        let ctx = context!{
+            context => context!{
+                operation => operations_ctx,
+                custom_scalar_imports => custom_scalar_imports,
+                schema_import_path => schema_import_path,
+                multi_type_list_selections => multi_type_list_selections,
+                
+            }
+        };
+        template.render(&ctx).unwrap()
     }
 }
 
@@ -735,35 +728,27 @@ impl FragmentEnv<'_> {
         Ok(FragmentEnv { env })
     }
 
-    fn render_fragment<S: Serialize, T: Serialize>(
+    fn render_fragment(
         &self,
-        fragment_ctx: S,
-        schema_ctx: T,
+        fragment_ctx: SharedFragmentContext,
         custom_scalar_imports: HashMap<String, String>,
         schema_path: String,
         fragment_file_path: PathBuf,
         multi_type_list_selections: Vec<SharedListSelection>,
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
-        let mut context = HashMap::new();
 
-        context.insert("schema", context! { context => schema_ctx });
-        context.insert("fragment", context! { context => fragment_ctx });
-        context.insert(
-            "custom_scalar_imports",
-            minijinja::Value::from(custom_scalar_imports),
-        );
-        context.insert("schema_import_path", minijinja::Value::from(schema_path));
-        context.insert(
-            "fragment_file_path",
-            minijinja::Value::from(fragment_file_path.to_string_lossy().to_string()),
-        );
-        context.insert(
-            "multi_type_list_selections",
-            minijinja::Value::from_serialize(&multi_type_list_selections),
-        );
+        let ctx = context! {
+            context => context!{
+                fragment => fragment_ctx,
+                schema_path => schema_path,
+                custom_scalar_imports => custom_scalar_imports,
+                multi_type_list_selections => multi_type_list_selections,
+                fragment_file_path => fragment_file_path.to_string_lossy().to_string(),
+            }
+        };
 
-        template.render(&context).unwrap()
+        template.render(&ctx).unwrap()
     }
 }
 
@@ -936,8 +921,7 @@ fn generate_fragment_file(
     let multi_type_list_selections = collect_multi_type_list_selections(fragment_ctx.as_ref());
 
     let generated_content = fragment_env.render_fragment(
-        context! { context => fragment_ctx },
-        context! { context => &ctx.schema_ctx },
+        fragment_ctx.clone(),
         custom_scalar_imports,
         get_schema_import_path(&fragment_ctx.file_path, ctx),
         fragment_file_path,

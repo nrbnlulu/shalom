@@ -11,7 +11,7 @@ use super::types::{
 };
 use crate::context::ShalomGlobalContext;
 use crate::operation::fragments::{FragName, SharedInlineFrag};
-use crate::operation::types::{SelectionKind, SharedListSelection, SharedObjectSelection};
+use crate::operation::types::{ObjectLikeCommon, SelectionKind, SharedListSelection, SharedObjectSelection};
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 pub type OperationVariable = InputFieldDefinition;
 
@@ -141,7 +141,7 @@ pub struct OperationContext {
     query: String,
     variables: HashMap<String, OperationVariable>,
     pub type_defs: TypeDefs,
-    root_type: Option<FieldSelection>,
+    root_type: Option<ObjectLikeCommon>,
     op_ty: OperationType,
 }
 
@@ -174,7 +174,7 @@ impl OperationContext {
         !self.variables.is_empty()
     }
 
-    pub fn set_root_type(&mut self, root_type: FieldSelection) {
+    pub fn set_root_type(&mut self, root_type: ObjectLikeCommon) {
         self.root_type = Some(root_type);
     }
 

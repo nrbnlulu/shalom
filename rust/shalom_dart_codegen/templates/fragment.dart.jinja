@@ -1,7 +1,7 @@
 {% include "macros" %}
 
-{% set fragment_name = fragment.context.context.name %}
-{% set fragment_selections = fragment.context.context.type_defs %}
+{% set fragment_name = context.fragment.name %}
+{% set fragment_selections = context.fragment.type_defs %}
 {% set on_type = fragment.context.context.on_type %}
 {% set op_variables = None %}
 {% set op_variables_exist = false %}
@@ -59,7 +59,7 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fra
         {% set member_selection = fragment.context.context.type_defs.selection_objects[member_full_name] %}
         {# We need to create a wrapper that passes shared_selections to selection_object_impl #}
         class {{ member_full_name }} extends {{ union_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
-            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_multi_type_member=true, shared_selections=union_selection.shared_selections) }}
+            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.path_name, is_multi_type_member=true, shared_selections=union_selection.shared_selections) }}
         }
     {% endfor %}
 
@@ -96,7 +96,7 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fra
         {# Look up the full Selection from context which includes arguments #}
         {% set member_selection = fragment.context.context.type_defs.selection_objects[member_full_name] %}
         class {{ member_full_name }} extends {{ interface_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
-            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_multi_type_member=true, shared_selections=interface_selection.shared_selections) }}
+            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.path_name, is_multi_type_member=true, shared_selections=interface_selection.shared_selections) }}
         }
     {% endfor %}
 

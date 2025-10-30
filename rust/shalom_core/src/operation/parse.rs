@@ -11,7 +11,8 @@ use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
 use crate::operation::context::ExecutableContext;
 use crate::operation::fragments::parse_inline_fragment;
 use crate::operation::types::{
-    FieldArgument, FullPathName, ObjectLikeCommon, ObjectSelection, FieldSelectionCommon, SelectionKind
+    FieldArgument, FieldSelectionCommon, FullPathName, ObjectLikeCommon, ObjectSelection,
+    SelectionKind,
 };
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
@@ -20,8 +21,8 @@ use crate::schema::types::{
 use super::context::{OperationContext, SharedOpCtx};
 use super::fragments::{FragmentContext, SharedFragmentContext};
 use super::types::{
-    EnumSelection, InterfaceSelection, MultiTypeSelection, OperationType, ScalarSelection,
-    FieldSelection, SharedEnumSelection, SharedInterfaceSelection, SharedObjectSelection,
+    EnumSelection, FieldSelection, InterfaceSelection, MultiTypeSelection, OperationType,
+    ScalarSelection, SharedEnumSelection, SharedInterfaceSelection, SharedObjectSelection,
     SharedScalarSelection, SharedUnionSelection, UnionSelection,
 };
 
@@ -141,14 +142,13 @@ pub(crate) fn parse_enum_selection(
     EnumSelection::new(is_optional, concrete_type)
 }
 
-pub (crate) fn parse_selection<T: ExecutableContext>(
+pub(crate) fn parse_selection<T: ExecutableContext>(
     ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
     path: &String,
     obj_like: &mut ObjectLikeCommon,
     selection: &apollo_executable::Selection,
 ) {
-    
     match selection {
         apollo_executable::Selection::Field(field) => {
             let f_name = field.name.clone().to_string();
@@ -190,19 +190,12 @@ pub (crate) fn parse_selection<T: ExecutableContext>(
             // inline fragments should be generated localy in codegens
             // in dart, the generated object class would implement the abstract inline fragment that
             // was generated.
-            let inline_frag = parse_inline_fragment(
-                ctx,
-                global_ctx,
-                path,
-                &inline_fragment
-            );
+            let inline_frag = parse_inline_fragment(ctx, global_ctx, path, &inline_fragment);
             obj_like.add_inline_fragment(inline_frag);
-            
         }
     }
     ()
 }
-
 
 pub(crate) fn parse_object_selection<T: ExecutableContext>(
     ctx: &mut T,
@@ -212,8 +205,7 @@ pub(crate) fn parse_object_selection<T: ExecutableContext>(
     selection_orig: &apollo_compiler::executable::SelectionSet,
 
     parent_multitype_fullname: Option<String>,
-) -> SharedObjectSelection
-{
+) -> SharedObjectSelection {
     trace!("Parsing object selection {:?}", selection_orig.ty);
     trace!("Path is {:?}", path);
     assert!(
@@ -224,14 +216,9 @@ pub(crate) fn parse_object_selection<T: ExecutableContext>(
     );
 
     let schema_typename = selection_orig.ty.to_string();
-  
-    let obj_like = parse_obj_like_from_selection_set(
-            ctx,
-            global_ctx,
-            path,
-            schema_typename,
-            selection_orig,
-        );
+
+    let obj_like =
+        parse_obj_like_from_selection_set(ctx, global_ctx, path, schema_typename, selection_orig);
     ObjectSelection::new(is_optional, obj_like)
 }
 
@@ -248,7 +235,6 @@ pub(crate) fn parse_scalar_selection(
 
 type FieldTypeOrig = apollo_compiler::ast::Type;
 
-
 pub(crate) fn parse_union_selection<T>(
     ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
@@ -263,12 +249,12 @@ where
     trace!("Parsing union selection {:?}", union_type.name);
 
     let obj_like = parse_obj_like_from_selection_set(
-               ctx,
-               global_ctx,
-               path,
-               union_type.name.clone(),
-               selection_set,
-           );
+        ctx,
+        global_ctx,
+        path,
+        union_type.name.clone(),
+        selection_set,
+    );
     // Determine if we need a fallback class
     let union_selection = UnionSelection::new(union_type, obj_like, is_optional);
     let has_fallback = union_selection.should_generate_fallback(global_ctx);
@@ -291,7 +277,7 @@ pub(crate) fn parse_interface_selection<T: ExecutableContext>(
     interface_type: Node<crate::schema::types::InterfaceType>,
 ) -> SharedInterfaceSelection {
     trace!("Parsing interface selection {:?}", interface_type.name);
-    
+
     let obj_like = parse_obj_like_from_selection_set(
         ctx,
         global_ctx,
@@ -299,11 +285,11 @@ pub(crate) fn parse_interface_selection<T: ExecutableContext>(
         interface_type.name.clone(),
         selection_set,
     );
-    
+
     let iface = InterfaceSelection::new(interface_type, obj_like, is_optional);
-    
+
     // now that we have all type conditions lets extract what we need.
-    let  needs_a_fallback_type =     iface.should_generate_fallback(global_ctx);
+    let needs_a_fallback_type = iface.should_generate_fallback(global_ctx);
     iface.common.needs_fallback.set(needs_a_fallback_type);
     iface
 }
@@ -408,18 +394,18 @@ pub(super) fn parse_field_selection_set<T: ExecutableContext>(
 }
 
 pub(crate) fn parse_obj_like_from_selection_set<T: ExecutableContext>(
-ctx: &mut T,
-global_ctx: &SharedShalomGlobalContext,
-path: &String,
-schema_typename: String,
-selection_set: &apollo_compiler::executable::SelectionSet,
-) -> ObjectLikeCommon{
+    ctx: &mut T,
+    global_ctx: &SharedShalomGlobalContext,
+    path: &String,
+    schema_typename: String,
+    selection_set: &apollo_compiler::executable::SelectionSet,
+) -> ObjectLikeCommon {
     let mut obj_like = ObjectLikeCommon::new(path.clone(), schema_typename);
- 
-     for selection in selection_set.selections.iter() {
-         parse_selection(ctx, global_ctx, path, &mut obj_like, selection);
-     }
-     obj_like
+
+    for selection in selection_set.selections.iter() {
+        parse_selection(ctx, global_ctx, path, &mut obj_like, selection);
+    }
+    obj_like
 }
 
 pub(crate) fn parse_operation_type(operation_type: ApolloOperationType) -> OperationType {
@@ -531,14 +517,14 @@ fn parse_operation(
     let schema = &global_ctx.schema_ctx.schema;
     let op_mut = op.make_mut();
     inject_typename_in_selection_set(schema, &mut op_mut.selection_set, global_ctx);
-
+    let op_type = parse_operation_type(op.operation_type);
     let query = op.to_string();
     let mut ctx = OperationContext::new(
         global_ctx.schema_ctx.clone(),
         operation_name.clone(),
         query,
         file_path,
-        parse_operation_type(op.operation_type),
+        op_type,
     );
     for variable in op.variables.iter() {
         let name = variable.name.to_string();
@@ -554,40 +540,14 @@ fn parse_operation(
         ctx.add_variable(name, input_definition);
     }
 
-    let first_selection = {
-        if op.selection_set.selections.len() > 1 {
-            return Err(anyhow::anyhow!(
-                "{operation_name} has more than one selection which is not allowed"
-            ));
-        }
-        op.selection_set
-            .selections
-            .first()
-            .unwrap()
-            .as_field()
-            .unwrap()
-    };
-    let first_selection_name = first_selection.name.to_string();
-    if first_selection_name == operation_name {
-        return Err(
-            anyhow::anyhow!("{operation_name} operation can't have the same name as its first field due to namespacing issues")
-        );
-    }
-    let selection_common = FieldSelectionCommon {
-        name: first_selection_name,
-        description: None,
-    };
-    let root_type = parse_object_selection(
+    let object_like = parse_obj_like_from_selection_set(
         &mut ctx,
         global_ctx,
-        &operation_name,
-        false,
+        &"".to_string(),
+        op.operation_type.name().to_string(),
         &op.selection_set,
-        None, // Root operation type, not a multi-type member
     );
-    let selection = FieldSelection::new(selection_common, SelectionKind::Object(root_type), vec![]);
-    ctx.set_root_type(selection.clone());
-    (&mut ctx as &mut dyn ExecutableContext).add_selection(operation_name, selection);
+    ctx.set_root_type(object_like);
     Ok(Arc::new(ctx))
 }
 
