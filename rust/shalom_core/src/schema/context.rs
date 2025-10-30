@@ -132,7 +132,9 @@ impl SchemaContext {
     }
     pub fn get_type_strict(&self, name: &String) -> GraphQLAny {
         let types_ctx = self.types.lock().unwrap();
-        types_ctx.get_any(name).expect(&format!("Type {} not found", name))
+        types_ctx
+            .get_any(name)
+            .unwrap_or_else(|| panic!("Type {} not found", name))
     }
 
     pub fn get_scalar(&self, name: &str) -> Option<Node<ScalarType>> {
@@ -208,20 +210,17 @@ impl SchemaContext {
         }
     }
 
-  
-    
     #[kash(size = "100", in_impl)]
-    pub fn get_interface_direct_members(&self, iface_name: String) ->  Vec<Node<InterfaceType>>{
+    pub fn get_interface_direct_members(&self, iface_name: String) -> Vec<Node<InterfaceType>> {
         let types = self.types.lock().unwrap();
         let mut ret = Vec::new();
-        for iface in types.interfaces.values(){
-            if iface.implements_interfaces().contains(&iface_name){
+        for iface in types.interfaces.values() {
+            if iface.implements_interfaces().contains(&iface_name) {
                 ret.push(iface.clone());
             }
         }
         ret
     }
-
 }
 
 fn check_implements_recursive<I: Implementor>(
@@ -244,6 +243,5 @@ fn check_implements_recursive<I: Implementor>(
     }
     false
 }
-
 
 pub type SharedSchemaContext = Arc<SchemaContext>;

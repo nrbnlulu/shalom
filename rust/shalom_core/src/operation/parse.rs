@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -11,19 +11,18 @@ use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
 use crate::operation::context::ExecutableContext;
 use crate::operation::fragments::parse_inline_fragment;
 use crate::operation::types::{
-    FieldArgument, FieldSelectionCommon, FullPathName, ObjectLikeCommon, ObjectSelection,
-    SelectionKind,
+    FieldArgument, FieldSelectionCommon, ObjectLikeCommon, ObjectSelection, SelectionKind,
 };
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
 };
 
 use super::context::{OperationContext, SharedOpCtx};
-use super::fragments::{FragmentContext, SharedFragmentContext};
+use super::fragments::SharedFragmentContext;
 use super::types::{
     EnumSelection, FieldSelection, InterfaceSelection, MultiTypeSelection, OperationType,
     ScalarSelection, SharedEnumSelection, SharedInterfaceSelection, SharedObjectSelection,
-    SharedScalarSelection, SharedUnionSelection, UnionSelection,
+    SharedScalarSelection, UnionSelection,
 };
 
 fn full_path_name(this_name: &String, parent_path: &String) -> String {
@@ -159,7 +158,7 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
                 .as_deref()
                 .map(|s| s.to_string());
             let field_path = full_path_name(&f_name, path);
-            let args = parse_field_arguments(ctx, &field);
+            let args = parse_field_arguments(ctx, field);
             let selection_common = FieldSelectionCommon {
                 name: f_name.clone(),
                 description,
@@ -190,11 +189,10 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
             // inline fragments should be generated localy in codegens
             // in dart, the generated object class would implement the abstract inline fragment that
             // was generated.
-            let inline_frag = parse_inline_fragment(ctx, global_ctx, path, &inline_fragment);
+            let inline_frag = parse_inline_fragment(ctx, global_ctx, path, inline_fragment);
             obj_like.add_inline_fragment(inline_frag);
         }
     }
-    ()
 }
 
 pub(crate) fn parse_object_selection<T: ExecutableContext>(

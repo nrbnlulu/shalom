@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use std::hash::Hash;
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -7,11 +6,13 @@ use serde::Serialize;
 
 use super::fragments::SharedFragmentContext;
 use super::types::{
-    FullPathName, OperationType, FieldSelection, SharedInterfaceSelection, SharedUnionSelection,
+    FieldSelection, FullPathName, OperationType, SharedInterfaceSelection, SharedUnionSelection,
 };
 use crate::context::ShalomGlobalContext;
 use crate::operation::fragments::{FragName, SharedInlineFrag};
-use crate::operation::types::{ObjectLikeCommon, SelectionKind, SharedListSelection, SharedObjectSelection};
+use crate::operation::types::{
+    ObjectLikeCommon, SelectionKind, SharedListSelection, SharedObjectSelection,
+};
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 pub type OperationVariable = InputFieldDefinition;
 
@@ -48,9 +49,7 @@ impl TypeDefs {
     }
 
     pub fn add_object_selection(&mut self, name: String, selection: SharedObjectSelection) {
-        self.objects
-            .entry(name.clone())
-            .or_insert(selection);
+        self.objects.entry(name.clone()).or_insert(selection);
     }
 
     pub fn get_object_selection(&self, name: &FullPathName) -> Option<&SharedObjectSelection> {
@@ -58,28 +57,25 @@ impl TypeDefs {
     }
 
     pub fn add_union_selection(&mut self, name: String, selection: SharedUnionSelection) {
-        self.unions
-            .entry(name.clone())
-            .or_insert(selection);
+        self.unions.entry(name.clone()).or_insert(selection);
     }
-    
+
     pub fn get_union_selection(&self, name: &FullPathName) -> Option<&SharedUnionSelection> {
         self.unions.get(name)
     }
 
     pub fn add_interface_selection(&mut self, name: String, selection: SharedInterfaceSelection) {
-        self.interfaces
-            .entry(name.clone())
-            .or_insert(selection);
+        self.interfaces.entry(name.clone()).or_insert(selection);
     }
-    pub fn get_interface_selection(&self, name: &FullPathName) -> Option<&SharedInterfaceSelection> {
+    pub fn get_interface_selection(
+        &self,
+        name: &FullPathName,
+    ) -> Option<&SharedInterfaceSelection> {
         self.interfaces.get(name)
     }
 
     pub fn add_list_selection(&mut self, name: String, selection: SharedListSelection) {
-        self.lists
-            .entry(name.clone())
-            .or_insert(selection);
+        self.lists.entry(name.clone()).or_insert(selection);
     }
     pub fn get_list_selection(&self, name: &FullPathName) -> Option<&SharedListSelection> {
         self.lists.get(name)
@@ -115,13 +111,21 @@ impl TypeDefs {
                 let frag_name = frag.name.clone();
                 if visited.insert(frag_name) {
                     // First collect nested fragments
-                    collect_fragments_recursive(frag.type_defs.used_fragments_internal.values(), visited, result);
+                    collect_fragments_recursive(
+                        frag.type_defs.used_fragments_internal.values(),
+                        visited,
+                        result,
+                    );
                     // Then add this fragment
                     result.push(frag.clone());
                 }
             }
         }
-        collect_fragments_recursive(self.used_fragments_internal.values(), &mut visited, &mut result)
+        collect_fragments_recursive(
+            self.used_fragments_internal.values(),
+            &mut visited,
+            &mut result,
+        )
     }
 }
 
@@ -196,7 +200,6 @@ pub trait ExecutableContext: Send + Sync + 'static {
     fn typedefs(&self) -> &TypeDefs;
     fn typedefs_mut(&mut self) -> &mut TypeDefs;
 
-
     fn get_selection(&self, name: &String, _: &ShalomGlobalContext) -> Option<&FieldSelection> {
         let td = self.typedefs();
         td.selections.get(name)
@@ -205,16 +208,15 @@ pub trait ExecutableContext: Send + Sync + 'static {
     fn add_selection(&mut self, name: String, selection: FieldSelection) {
         let td = self.typedefs_mut();
         let name_clone = name.clone();
-        match &selection.kind{
+        match &selection.kind {
             SelectionKind::Interface(iface) => td.add_interface_selection(name, iface.clone()),
             SelectionKind::Object(obj) => td.add_object_selection(name, obj.clone()),
             SelectionKind::List(list) => td.add_list_selection(name, list.clone()),
             SelectionKind::Union(union) => td.add_union_selection(name, union.clone()),
             // other selection kinds shouldn't be available globally.
-            _ => ()
+            _ => (),
         }
         td.selections.insert(name_clone, selection);
-        
     }
 
     fn get_selection_strict(&self, name: &String, ctx: &ShalomGlobalContext) -> &FieldSelection {
@@ -222,7 +224,6 @@ pub trait ExecutableContext: Send + Sync + 'static {
             panic!("selection for {name} not found neither in this context nor in its fragments")
         })
     }
-
 }
 
 impl ExecutableContext for OperationContext {

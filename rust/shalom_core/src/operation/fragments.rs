@@ -1,45 +1,34 @@
 use std::path::PathBuf;
 use std::rc::Rc;
-use std::{collections::HashMap, sync::Arc};
+use std::sync::Arc;
 
-use apollo_compiler::{
-    ast::OperationType as ApolloOperationType, executable as apollo_executable, Name, Node, Schema,
-};
+use apollo_compiler::{executable as apollo_executable, Node};
 use serde::{Deserialize, Serialize};
 
-use super::types::{
-    FullPathName, FieldSelection, SharedInterfaceSelection,
-    SharedUnionSelection,
-};
-
-use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
+use crate::context::SharedShalomGlobalContext;
 use crate::operation::context::{ExecutableContext, TypeDefs};
-use crate::operation::parse::{inject_typename_in_selection_set, parse_interface_selection, parse_obj_like_from_selection_set, parse_object_selection, parse_selection};
-use crate::operation::types::{ObjectLikeCommon, FieldSelectionCommon, SelectionKind};
-use crate::schema::types::GraphQLAny;
+use crate::operation::parse::{
+    inject_typename_in_selection_set, parse_obj_like_from_selection_set, parse_selection,
+};
+use crate::operation::types::ObjectLikeCommon;
 
-
-
-/// inline fragments should generally be generated in the same file 
+/// inline fragments should generally be generated in the same file
 /// that they are declared and can't be used across the project (well they have no name)
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct InlineFragment{
-    pub common: ObjectLikeCommon
+pub struct InlineFragment {
+    pub common: ObjectLikeCommon,
 }
 pub type SharedInlineFrag = Rc<InlineFragment>;
 
 impl InlineFragment {
     pub fn new(common: ObjectLikeCommon) -> Self {
-        InlineFragment {
-            common,
-        }
+        InlineFragment { common }
     }
-    
+
     pub fn merge(&mut self, other: InlineFragment) {
         self.common.merge(other.common);
     }
 }
-
 
 pub type FragName = String;
 
@@ -84,17 +73,13 @@ impl FragmentContext {
         self.root.replace(root_type);
     }
 
-   
     pub fn get_on_type(&self) -> &ObjectLikeCommon {
         self.root.as_ref().unwrap()
     }
-
 }
 
 unsafe impl Send for FragmentContext {}
 unsafe impl Sync for FragmentContext {}
-
-
 
 impl ExecutableContext for FragmentContext {
     fn name(&self) -> &str {
@@ -115,8 +100,6 @@ impl ExecutableContext for FragmentContext {
     }
 }
 
-
-
 pub(crate) fn parse_fragment(
     global_ctx: &SharedShalomGlobalContext,
     mut fragment: Node<apollo_compiler::executable::Fragment>,
@@ -130,34 +113,34 @@ pub(crate) fn parse_fragment(
     let selection_set = &fragment.selection_set;
     let type_name = fragment.type_condition();
 
-
     let obj_like = parse_obj_like_from_selection_set(
-               fragment_ctx,
-               global_ctx,
-               &"".to_string(),
-               type_name.to_string().clone(),
-               selection_set,
-           );
-
+        fragment_ctx,
+        global_ctx,
+        &"".to_string(),
+        type_name.to_string().clone(),
+        selection_set,
+    );
 
     fragment_ctx.set_on_type(obj_like);
     Ok(())
 }
 
-
-pub (crate) fn parse_inline_fragment<T: ExecutableContext>(
+pub(crate) fn parse_inline_fragment<T: ExecutableContext>(
     ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
     path: &String,
     inline_frag: &apollo_executable::InlineFragment,
-) -> InlineFragment{
-    let type_cond = inline_frag.type_condition.as_ref().expect("inline fragments with no type condition are not supported.").to_string();
+) -> InlineFragment {
+    let type_cond = inline_frag
+        .type_condition
+        .as_ref()
+        .expect("inline fragments with no type condition are not supported.")
+        .to_string();
     let this_path = format!("{}__{}", path, type_cond);
     let mut obj_like = ObjectLikeCommon::new(this_path.clone(), type_cond);
-    
-    for selection in &inline_frag.selection_set.selections{
-        let _ = parse_selection(ctx, global_ctx, &this_path, &mut obj_like, selection);
+
+    for selection in &inline_frag.selection_set.selections {
+        parse_selection(ctx, global_ctx, &this_path, &mut obj_like, selection);
     }
     InlineFragment::new(obj_like)
 }
-

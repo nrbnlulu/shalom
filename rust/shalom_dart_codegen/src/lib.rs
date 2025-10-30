@@ -2,13 +2,12 @@ use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
-use serde::Serialize;
 use shalom_core::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
     operation::{
-        context::{ExecutableContext, OperationContext, SharedOpCtx, TypeDefs},
+        context::{ExecutableContext, OperationContext, SharedOpCtx},
         fragments::SharedFragmentContext,
-        types::{FieldSelection, SelectionKind, SharedListSelection, dart_type_for_scalar},
+        types::{dart_type_for_scalar, FieldSelection, SelectionKind, SharedListSelection},
     },
     schema::{
         context::SchemaContext,
@@ -704,13 +703,13 @@ impl OperationEnv<'_> {
         multi_type_list_selections: Vec<SharedListSelection>,
     ) -> String {
         let template = self.env.get_template("operation").unwrap();
-        let ctx = context!{
+        let ctx = context! {
             context => context!{
                 operation => operations_ctx,
                 custom_scalar_imports => custom_scalar_imports,
                 schema_import_path => schema_import_path,
                 multi_type_list_selections => multi_type_list_selections,
-                
+
             }
         };
         template.render(&ctx).unwrap()
@@ -895,8 +894,7 @@ fn generate_operations_file(
     let multi_type_list_selections = collect_multi_type_list_selections(operation.as_ref());
 
     let rendered_content = op_env.render_operation(
-        operation,
-        ctx.schema_ctx.clone(),
+        &operation,
         custom_scalar_imports,
         get_schema_import_path(&operation_file_path, ctx),
         multi_type_list_selections,

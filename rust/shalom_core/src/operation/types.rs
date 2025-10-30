@@ -1,19 +1,19 @@
 use std::{
-    cell::{Cell, RefCell},
+    cell::Cell,
     collections::{HashMap, HashSet},
     rc::Rc,
 };
 
 use indexmap::IndexMap;
 
-use apollo_compiler::{Node};
+use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
 use crate::{
     context::ShalomGlobalContext,
     operation::{
         context::OperationVariable,
-        fragments::{FragName, InlineFragment, SharedFragmentContext, SharedInlineFrag},
+        fragments::{FragName, InlineFragment},
     },
     schema::types::{EnumType, GraphQLAny, InterfaceType, ScalarType, UnionType},
 };
@@ -246,13 +246,10 @@ impl ObjectLikeCommon {
             }
 
             let frag_ty = ctx.schema_ctx.get_type_strict(&frag.common.schema_typename);
-            match frag_ty {
-                GraphQLAny::Interface(_) => {
-                    if this_ty.implements_interface(&frag.common.schema_typename, &ctx.schema_ctx) {
-                        return true;
-                    }
+            if let GraphQLAny::Interface(_) = frag_ty {
+                if this_ty.implements_interface(&frag.common.schema_typename, &ctx.schema_ctx) {
+                    return true;
                 }
-                _ => (),
             };
         }
         // now check for frag spreads
@@ -268,13 +265,10 @@ impl ObjectLikeCommon {
             }
 
             let frag_ty = ctx.schema_ctx.get_type_strict(&common.schema_typename);
-            match frag_ty {
-                GraphQLAny::Interface(_) => {
-                    if this_ty.implements_interface(&common.schema_typename, &ctx.schema_ctx) {
-                        return true;
-                    }
+            if let GraphQLAny::Interface(_) = frag_ty {
+                if this_ty.implements_interface(&common.schema_typename, &ctx.schema_ctx) {
+                    return true;
                 }
-                _ => (),
             };
         }
 
@@ -292,7 +286,8 @@ impl ObjectLikeCommon {
             // merge the exising one with this one
             exists.merge(frag);
         } else {
-            self.used_inline_frags.insert(frag.common.path_name.clone(), frag);
+            self.used_inline_frags
+                .insert(frag.common.path_name.clone(), frag);
         }
     }
 
@@ -330,20 +325,18 @@ impl ObjectLikeCommon {
         selections
     }
 
-    
     /// returns all the types that have directly selected by this object-like selections
     /// only valid for multi-types
-    fn get_all_directly_selected_typenames(&self, ctx: &ShalomGlobalContext) -> HashSet<String>{
+    fn get_all_directly_selected_typenames(&self, ctx: &ShalomGlobalContext) -> HashSet<String> {
         let mut ret = HashSet::new();
         ret.insert(self.schema_typename.clone());
-        for frag_name in &self.used_fragments{
+        for frag_name in &self.used_fragments {
             let frag = ctx.get_fragment(frag_name).unwrap();
             ret.insert(frag.get_on_type().schema_typename.clone());
         }
         ret.extend(self.used_inline_frags.keys().cloned());
         ret
     }
-    
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -356,10 +349,7 @@ pub struct ObjectSelection {
 pub type SharedObjectSelection = Rc<ObjectSelection>;
 
 impl ObjectSelection {
-    pub fn new(
-        is_optional: bool,
-        common: ObjectLikeCommon,
-    ) -> SharedObjectSelection {
+    pub fn new(is_optional: bool, common: ObjectLikeCommon) -> SharedObjectSelection {
         let ret = ObjectSelection {
             is_optional,
             common,
@@ -419,11 +409,14 @@ pub trait MultiTypeSelection {
 
     /// Check if we need a fallback class by comparing all possible types with covered inline fragments
     fn should_generate_fallback(&self, ctx: &ShalomGlobalContext) -> bool {
-        let all_members_set: std::collections::HashSet<String> =
-            self.get_all_direct_schema_subsets_typenames(ctx).into_iter().collect();
-        
+        let all_members_set: std::collections::HashSet<String> = self
+            .get_all_direct_schema_subsets_typenames(ctx)
+            .into_iter()
+            .collect();
+
         let covered_types = self
-            .common().common
+            .common()
+            .common
             .get_all_directly_selected_typenames(ctx);
 
         // If not all multitype members are covered, we need a fallback

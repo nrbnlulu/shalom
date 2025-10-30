@@ -89,8 +89,8 @@ impl GraphQLAny {
             _ => todo!("Unsupported type"),
         }
     }
-    
-    pub fn implements_interface(&self, iface_name: &str, ctx: &SchemaContext) -> bool{
+
+    pub fn implements_interface(&self, iface_name: &str, ctx: &SchemaContext) -> bool {
         ctx.is_type_implementing_interface(&self.name(), iface_name)
     }
 }
