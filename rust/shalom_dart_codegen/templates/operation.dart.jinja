@@ -15,7 +15,7 @@ import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 
 // Fragment imports
-{% for import_path in generate_fragment_imports(context.operation.file_path, typedefs.used_fragments) -%}
+{% for import_path in generate_fragment_imports(context.operation.file_path) -%}
 import '{{ import_path }}';
 {% endfor -%}
 

@@ -2,10 +2,8 @@
 
 {% set fragment_name = context.fragment.name %}
 {% set typedefs = context.fragment.typedefs %}
-{% set on_type = fragment.context.context.on_type %}
 {% set op_variables = None %}
 {% set op_variables_exist = false %}
-{% set fragment_used_fragments_names = on_type.used_fragments %}
 
 {% include "selection_macros" %}
 
@@ -13,18 +11,18 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: {{fragment_name}}
 
-import "{{ schema_import_path }}";
+import "{{ context.schema_import_path }}";
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 {{ custom_scalar_imports_macro(custom_scalar_imports) }}
 
-{% for import_path in generate_fragment_imports(fragment_file_path, fragment.context.context.used_fragments) -%}
+{% for import_path in generate_fragment_imports(fragment_file_path) -%}
 import '{{ import_path }}';
 {% endfor %}
 
 // Generate abstract fragment class
-abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fragments_names) }} {
-    {% for field in fragment.context.context.on_type.selections -%}
+abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.root.used_fragments) }} {
+    {% for field in context.fragment.root.selections -%}
     {{ type_name_for_selection(field) }} get {{ field.name }};
     {% endfor %}
 

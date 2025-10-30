@@ -1,13 +1,16 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{error, info};
-use minijinja::{context, value::ViaDeserialize, Environment};
+use minijinja::{context, value::ViaDeserialize, Environment, Value};
 use shalom_core::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
     operation::{
         context::{ExecutableContext, OperationContext, SharedOpCtx},
-        fragments::SharedFragmentContext,
-        types::{FieldSelection, ObjectLikeCommon, SelectionKind, SharedListSelection, dart_type_for_scalar},
+        fragments::{FragmentContext, SharedFragmentContext},
+        types::{
+            dart_type_for_scalar, FieldSelection, ObjectLikeCommon, SelectionKind,
+            SharedListSelection,
+        },
     },
     schema::{
         context::SchemaContext,
@@ -17,7 +20,7 @@ use shalom_core::{
 };
 
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs,
     hash::{DefaultHasher, Hash, Hasher},
     path::{Path, PathBuf},
@@ -446,56 +449,6 @@ fn register_default_template_fns<'a>(
     );
 
     let global_ctx = ctx.clone();
-    env.add_function(
-        "generate_fragment_imports",
-        move |current_file_path: String,
-              direct_fragments: Vec<minijinja::Value>|
-              -> Result<Vec<String>, minijinja::Error> {
-            // Recursively collect all fragment dependencies
-            let mut all_imports = Vec::new();
-            let mut visited = std::collections::HashSet::new();
-            let mut queue = std::collections::VecDeque::new();
-
-            // Start with direct fragments
-            for frag_val in direct_fragments {
-                if let Ok(name_val) = frag_val.get_attr("name") {
-                    if let Some(frag_name) = name_val.as_str() {
-                        queue.push_back(frag_name.to_string());
-                    }
-                }
-            }
-
-            while let Some(frag_name) = queue.pop_front() {
-                // Skip if already visited
-                if visited.contains(&frag_name) {
-                    continue;
-                }
-                visited.insert(frag_name.clone());
-
-                // Calculate import path for this fragment
-                let import_path =
-                    calculate_fragment_import_path(&global_ctx, &current_file_path, &frag_name)
-                        .map_err(|e| {
-                            minijinja::Error::new(
-                                minijinja::ErrorKind::InvalidOperation,
-                                e.to_string(),
-                            )
-                        })?;
-                all_imports.push(import_path);
-
-                // Get the fragment and add its dependencies to the queue
-                if let Some(frag) = global_ctx.get_fragment(&frag_name) {
-                    for nested_frag in frag.get_on_type().get_used_fragments() {
-                        if !visited.contains(nested_frag) {
-                            queue.push_back(nested_frag.clone());
-                        }
-                    }
-                }
-            }
-
-            Ok(all_imports)
-        },
-    );
 
     env.add_function(
         "get_field_name_with_args",
@@ -507,17 +460,14 @@ fn register_default_template_fns<'a>(
     Ok(())
 }
 
-
 /// if the operation contains variables and the selection is from this operation
 /// i.e not from a fragment returns true.
-fn object_like_needs_variables<T: ExecutableContext>(
-    ctx: &T,
-    obj_like: &ObjectLikeCommon,
-) -> bool {
+fn object_like_needs_variables<T: ExecutableContext>(ctx: &T, obj_like: &ObjectLikeCommon) -> bool {
     if !ctx.has_variables() {
         return false;
     }
-    ctx.get_selection(&obj_like.path_name).is_some() || ctx.get_root().path_name == obj_like.path_name
+    ctx.get_selection(&obj_like.path_name).is_some()
+        || ctx.get_root().path_name == obj_like.path_name
 }
 
 fn get_field_name_with_args(
@@ -609,11 +559,14 @@ where
     T: ExecutableContext + 'static,
 {
     let ctx_clone3 = ctx.clone();
-    env.add_function("get_all_selections_distinct", move |obj_like: ViaDeserialize<ObjectLikeCommon>| {
-        let selections = obj_like.get_all_selections_distinct(&ctx_clone3);
+    env.add_function(
+        "get_all_selections_distinct",
+        move |obj_like: ViaDeserialize<ObjectLikeCommon>| {
+            let selections = obj_like.get_all_selections_distinct(&ctx_clone3);
 
-        minijinja::Value::from_serialize(selections)
-    });
+            minijinja::Value::from_serialize(selections)
+        },
+    );
 
     let executable_ctx_clone3 = executable_ctx.clone();
     env.add_function(
@@ -622,7 +575,19 @@ where
             object_like_needs_variables(executable_ctx_clone3.as_ref(), &selection.0)
         },
     );
+    let ctx_clone = ctx.clone();
 
+    let executable_ctx_clone = executable_ctx.clone();
+    env.add_function(
+        "generate_fragment_imports",
+        move |current_file_path: String| {
+            let mut res = Vec::new();
+            for frag in executable_ctx_clone.typedefs().flatten_used_fragments() {
+                res.push(calculate_fragment_import_path(&current_file_path, &frag).unwrap());
+            }
+            minijinja::Value::from_serialize(res)
+        },
+    );
     Ok(())
 }
 
@@ -684,7 +649,7 @@ impl OperationEnv<'_> {
     ) -> String {
         let template = self.env.get_template("operation").unwrap();
         let mut resolved_query = operation_ctx.query.clone();
-        for frag in operation_ctx.typedefs.flatten_used_fragments(){
+        for frag in operation_ctx.typedefs.flatten_used_fragments() {
             resolved_query.push_str(format!("\n {}", frag.fragment_raw).as_str());
         }
         let ctx = context! {
@@ -724,7 +689,7 @@ impl FragmentEnv<'_> {
         let ctx = context! {
             context => context!{
                 fragment => fragment_ctx,
-                schema_path => schema_path,
+                schema_import_path => schema_path,
                 custom_scalar_imports => custom_scalar_imports,
                 multi_type_list_selections => multi_type_list_selections,
                 fragment_file_path => fragment_file_path.to_string_lossy().to_string(),
@@ -776,15 +741,12 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
 
 /// Calculate the import path for a fragment from an operation file
 fn calculate_fragment_import_path(
-    global_ctx: &SharedShalomGlobalContext,
     operation_file_path: &str,
-    frag_name: &str,
+    fragment: &FragmentContext,
 ) -> anyhow::Result<String> {
     let op_path = PathBuf::from(operation_file_path);
-    let fragment = global_ctx
-        .get_fragment(frag_name)
-        .ok_or_else(|| anyhow::anyhow!("Fragment '{}' not found", frag_name))?;
 
+    let frag_name = &fragment.name;
     // Find pubspec.yaml for both operation and fragment
     let (op_pubspec, _op_package) =
         find_pubspec_and_package_name(&op_path).map_err(|e| anyhow::anyhow!("{}", e))?;

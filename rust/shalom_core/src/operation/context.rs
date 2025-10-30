@@ -108,7 +108,6 @@ impl TypeDefs {
         self.used_fragments.get(name)
     }
 
-    #[kash::kash(size = "1", in_impl)]
     pub fn flatten_used_fragments(&self)-> Vec<SharedFragmentContext> {
         let mut visited = HashSet::new();
         let mut result = Vec::new();
