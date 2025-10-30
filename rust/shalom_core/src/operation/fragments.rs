@@ -8,14 +8,15 @@ use apollo_compiler::{
 use serde::{Deserialize, Serialize};
 
 use super::types::{
-    get_selections_with_fragments_distinct, FullPathName, Selection, SharedInterfaceSelection,
+    FullPathName, FieldSelection, SharedInterfaceSelection,
     SharedUnionSelection,
 };
 
 use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
 use crate::operation::context::{ExecutableContext, TypeDefs};
-use crate::operation::parse::{inject_typename_in_selection_set, parse_interface_selection, parse_object_selection};
-use crate::operation::types::{ObjectLikeCommon, SelectionCommon, SelectionKind};
+use crate::operation::parse::{inject_typename_in_selection_set, parse_interface_selection, parse_obj_like_from_selection_set, parse_object_selection, parse_selection};
+use crate::operation::types::{ObjectLikeCommon, FieldSelectionCommon, SelectionKind};
+use crate::schema::types::GraphQLAny;
 
 
 
@@ -23,17 +24,13 @@ use crate::operation::types::{ObjectLikeCommon, SelectionCommon, SelectionKind};
 /// that they are declared and can't be used across the project (well they have no name)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InlineFragment{
-    pub path_name: String,
-    pub type_condition: String,
     pub common: ObjectLikeCommon
 }
 pub type SharedInlineFrag = Rc<InlineFragment>;
 
 impl InlineFragment {
-    pub fn new(path_name: String, type_condition: String, common: ObjectLikeCommon) -> Self {
+    pub fn new(common: ObjectLikeCommon) -> Self {
         InlineFragment {
-            path_name,
-            type_condition,
             common,
         }
     }
@@ -53,7 +50,7 @@ pub struct FragmentContext {
     #[serde(skip_serializing)]
     pub file_path: PathBuf,
     pub type_defs: TypeDefs,
-    pub root: ObjectLikeCommon,
+    pub root: Option<ObjectLikeCommon>,
     pub type_condition: String,
 }
 pub type SharedFragmentContext = Arc<FragmentContext>;
@@ -63,7 +60,6 @@ impl FragmentContext {
         name: String,
         fragment_raw: String,
         file_path: PathBuf,
-        root: ObjectLikeCommon,
         type_condition: String,
     ) -> Self {
         FragmentContext {
@@ -71,7 +67,7 @@ impl FragmentContext {
             file_path,
             fragment_raw,
             type_defs: TypeDefs::new(),
-            root,
+            root: None,
             type_condition,
         }
     }
@@ -84,44 +80,15 @@ impl FragmentContext {
         &self.type_condition
     }
 
-    pub fn set_on_type(&mut self, root_type: Selection) {
-        self.on_type = Some(root_type);
+    pub fn set_on_type(&mut self, root_type: ObjectLikeCommon) {
+        self.root.replace(root_type);
     }
 
-    pub fn add_used_fragment(&mut self, fragment: SharedFragmentContext) {
-        self.used_fragments.push(fragment);
+   
+    pub fn get_on_type(&self) -> &ObjectLikeCommon {
+        self.root.as_ref().unwrap()
     }
 
-    pub fn get_used_fragments(&self) -> &Vec<SharedFragmentContext> {
-        &self.used_fragments
-    }
-
-    pub fn get_on_type(&self) -> Option<&Selection> {
-        self.on_type.as_ref()
-    }
-
-
-    pub fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {
-        self.union_types.entry(name).or_insert(union_selection);
-    }
-
-    pub fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection> {
-        &self.union_types
-    }
-
-    pub fn add_interface_type(
-        &mut self,
-        name: String,
-        interface_selection: SharedInterfaceSelection,
-    ) {
-        self.interface_types
-            .entry(name)
-            .or_insert(interface_selection);
-    }
-
-    pub fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection> {
-        &self.interface_types
-    }
 }
 
 unsafe impl Send for FragmentContext {}
@@ -162,77 +129,18 @@ pub(crate) fn parse_fragment(
 
     let selection_set = &fragment.selection_set;
     let type_name = fragment.type_condition();
-    let type_info = global_ctx
-        .schema_ctx
-        .get_type(&type_name.to_string())
-        .unwrap();
-
-    let selection_common = SelectionCommon {
-        name: fragment_ctx.get_fragment_name().to_string(),
-        description: None,
-    };
-
-    let root_selection = match type_info {
-        crate::schema::types::GraphQLAny::Object(_) => {
-            let root_obj = parse_object_selection(
-                fragment_ctx,
-                global_ctx,
-                &fragment_ctx.get_fragment_name().to_string(),
-                false,
-                selection_set,
-                None, // Fragment root object, not a multi-type member
-            );
-            // fragments has no arguments
-            Selection::new(selection_common, SelectionKind::Object(root_obj), vec![])
-        }
-        crate::schema::types::GraphQLAny::Interface(interface_type) => {
-            // Check if the selection set has inline fragments
-            let has_inline_fragments = selection_set
-                .selections
-                .iter()
-                .any(|sel| matches!(sel, apollo_executable::Selection::InlineFragment(_)));
-
-            if has_inline_fragments {
-                // Parse as interface selection with type discrimination
-                let root_interface = parse_interface_selection(
-                    fragment_ctx,
-                    global_ctx,
-                    &fragment_ctx.get_fragment_name().to_string(),
-                    false,
-                    selection_set,
-                    interface_type,
-                );
-                Selection::new(
-                    selection_common,
-                    SelectionKind::Interface(root_interface),
-                    vec![],
-                )
-            } else {
-                // No inline fragments - treat as simple object selection
-                let root_obj = parse_object_selection(
-                    fragment_ctx,
-                    global_ctx,
-                    &fragment_ctx.get_fragment_name().to_string(),
-                    false,
-                    selection_set,
-                    None,
-                );
-                Selection::new(selection_common, SelectionKind::Object(root_obj), vec![])
-            }
-        }
-        _ => {
-            return Err(anyhow::anyhow!(
-                "Fragment {} type condition {} is not an object or interface type",
-                fragment_ctx.get_fragment_name(),
-                type_name
-            ));
-        }
-    };
 
 
-    fragment_ctx.set_on_type(root_selection.clone());
-    let frag_name = fragment_ctx.get_fragment_name().to_string();
-    (fragment_ctx as &mut dyn ExecutableContext).add_selection(frag_name, root_selection);
+    let obj_like = parse_obj_like_from_selection_set(
+               fragment_ctx,
+               global_ctx,
+               &"".to_string(),
+               type_name.to_string().clone(),
+               selection_set,
+           );
+
+
+    fragment_ctx.set_on_type(obj_like);
     Ok(())
 }
 
@@ -241,17 +149,15 @@ pub (crate) fn parse_inline_fragment<T: ExecutableContext>(
     ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
     path: &String,
-    inline_frag: apollo_executable::InlineFragment,
-){
-    let type_cond = inline_frag.type_condition.expect("inline fragments with no type condition are not supported.").to_string();
+    inline_frag: &apollo_executable::InlineFragment,
+) -> InlineFragment{
+    let type_cond = inline_frag.type_condition.as_ref().expect("inline fragments with no type condition are not supported.").to_string();
     let this_path = format!("{}__{}", path, type_cond);
-    let mut selections = Vec::new();
-    for selection in inline_frag.selection_set.selections{
-        match selection{
-            apollo_executable::Selection::Field(field) => {
-                
-            },
-            apo
-        }
+    let mut obj_like = ObjectLikeCommon::new(this_path.clone(), type_cond);
+    
+    for selection in &inline_frag.selection_set.selections{
+        let _ = parse_selection(ctx, global_ctx, &this_path, &mut obj_like, selection);
     }
+    InlineFragment::new(obj_like)
 }
+

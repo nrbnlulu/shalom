@@ -363,7 +363,7 @@ fn parse_and_register_fragments(
 
     for name in order {
         if let Some((mut frag_ctx, frag_node)) = final_fragment_defs.remove(&name) {
-            crate::operation::parse::parse_fragment(global_ctx, frag_node, &mut frag_ctx)?;
+            crate::operation::fragments::parse_fragment(global_ctx, frag_node, &mut frag_ctx)?;
             // Register fragment immediately after parsing so it's available for subsequent fragments
             let mut single_fragment = HashMap::new();
             single_fragment.insert(name, frag_ctx);

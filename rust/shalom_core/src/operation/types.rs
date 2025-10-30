@@ -6,7 +6,7 @@ use std::{
 
 use indexmap::IndexMap;
 
-use apollo_compiler::{Node, collections::HashSet};
+use apollo_compiler::{Node};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -30,7 +30,7 @@ pub enum OperationType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SelectionCommon {
+pub struct FieldSelectionCommon {
     pub name: String,
     pub description: Option<String>,
 }
@@ -73,21 +73,21 @@ pub struct FieldArgument {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Selection {
+pub struct FieldSelection {
     #[serde(flatten)]
-    pub selection_common: SelectionCommon,
+    pub selection_common: FieldSelectionCommon,
     #[serde(flatten)]
     pub kind: SelectionKind,
     pub arguments: Vec<FieldArgument>,
 }
 
-impl Selection {
+impl FieldSelection {
     pub fn new(
-        selection_common: SelectionCommon,
+        selection_common: FieldSelectionCommon,
         kind: SelectionKind,
         arguments: Vec<FieldArgument>,
     ) -> Self {
-        Selection {
+        FieldSelection {
             selection_common,
             kind,
             arguments,
@@ -120,7 +120,7 @@ impl Selection {
     }
 }
 
-pub type SharedSelection = Rc<Selection>;
+pub type SharedSelection = Rc<FieldSelection>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind")]
@@ -165,10 +165,13 @@ impl ScalarSelection {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ObjectLikeCommon {
+    /// name that we generate in order to normalize types across the selection tree.
+    /// the is usually would be `{parent}_{schema_typename}`
+    pub path_name: String,
     pub schema_typename: String,
     /// selections that apply to all types in this object-like
     /// in interfaces / union this can be thought as shared selections
-    pub selections: Vec<Selection>,
+    pub selections: Vec<FieldSelection>,
     /// fragment spreads
     pub used_fragments: HashSet<FragName>,
     /// inline fragments
@@ -176,8 +179,9 @@ pub struct ObjectLikeCommon {
 }
 
 impl ObjectLikeCommon {
-    pub fn new(schema_typename: String) -> Self {
+    pub fn new(path_name: String, schema_typename: String) -> Self {
         ObjectLikeCommon {
+            path_name,
             schema_typename,
             used_fragments: HashSet::new(),
             used_inline_frags: HashMap::new(),
@@ -201,7 +205,7 @@ impl ObjectLikeCommon {
         self.used_fragments.extend(other.used_fragments);
     }
 
-    pub fn add_selection(&mut self, selection: Selection) {
+    pub fn add_selection(&mut self, selection: FieldSelection) {
         let selection_name = selection.self_selection_name();
         // Check if a selection with this name already exists (for deduplication)
         let already_exists = self
@@ -254,7 +258,7 @@ impl ObjectLikeCommon {
         // now check for frag spreads
         for frag_name in self.used_fragments.iter() {
             let frag = ctx.get_fragment_strict(frag_name);
-            let common = &frag.root;
+            let common = frag.get_on_type();
             if !common.contains_field("__typename") {
                 continue;
             }
@@ -283,18 +287,18 @@ impl ObjectLikeCommon {
         &self.used_fragments
     }
 
-    pub fn add_inline_fragment(&mut self, pathname: FullPathName, frag: InlineFragment) {
-        if let Some(exists) = self.used_inline_frags.get_mut(&pathname) {
+    pub fn add_inline_fragment(&mut self, frag: InlineFragment) {
+        if let Some(exists) = self.used_inline_frags.get_mut(&frag.common.path_name) {
             // merge the exising one with this one
             exists.merge(frag);
         } else {
-            self.used_inline_frags.insert(pathname, frag);
+            self.used_inline_frags.insert(frag.common.path_name.clone(), frag);
         }
     }
 
     /// return all selections for an object including the fragment selections
     /// for the current selection object, with duplicates removed by field name
-    pub fn get_all_selections_distinct(&self, ctx: &ShalomGlobalContext) -> Vec<Selection> {
+    pub fn get_all_selections_distinct(&self, ctx: &ShalomGlobalContext) -> Vec<FieldSelection> {
         let mut selections = self.selections.clone();
 
         let mut seen_names: HashSet<String> = HashSet::new();
@@ -306,7 +310,7 @@ impl ObjectLikeCommon {
 
         for frag_name in &self.used_fragments {
             let fragment = ctx.get_fragment_strict(frag_name);
-            for fragment_selection in fragment.root.get_all_selections_distinct(ctx) {
+            for fragment_selection in fragment.get_on_type().get_all_selections_distinct(ctx) {
                 let name = fragment_selection.self_selection_name().clone();
                 if !seen_names.contains(&name) {
                     seen_names.insert(name);
@@ -334,7 +338,7 @@ impl ObjectLikeCommon {
         ret.insert(self.schema_typename.clone());
         for frag_name in &self.used_fragments{
             let frag = ctx.get_fragment(frag_name).unwrap();
-            ret.insert(frag.root.schema_typename.clone());
+            ret.insert(frag.get_on_type().schema_typename.clone());
         }
         ret.extend(self.used_inline_frags.keys().cloned());
         ret
@@ -344,12 +348,9 @@ impl ObjectLikeCommon {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ObjectSelection {
-    pub full_name: String,
-    pub concrete_typename: String,
     pub is_optional: bool,
     #[serde(flatten)]
     pub common: ObjectLikeCommon,
-    pub parent_multitype_fullname: Option<String>,
 }
 
 pub type SharedObjectSelection = Rc<ObjectSelection>;
@@ -357,17 +358,11 @@ pub type SharedObjectSelection = Rc<ObjectSelection>;
 impl ObjectSelection {
     pub fn new(
         is_optional: bool,
-        full_name: String,
-        concrete_typename: String,
-        parent_multitype_fullname: Option<String>,
         common: ObjectLikeCommon,
     ) -> SharedObjectSelection {
         let ret = ObjectSelection {
-            full_name,
-            concrete_typename,
             is_optional,
             common,
-            parent_multitype_fullname,
         };
 
         Rc::new(ret)
@@ -402,7 +397,6 @@ pub type SharedListSelection = Rc<ListSelection>;
 /// Common fields and behavior shared between Union and Interface selections
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MultiTypeSelectionCommon {
-    pub full_name: String,
     pub is_optional: bool,
     #[serde(flatten)]
     pub common: ObjectLikeCommon,
@@ -411,9 +405,8 @@ pub struct MultiTypeSelectionCommon {
 }
 
 impl MultiTypeSelectionCommon {
-    pub fn new(full_name: String, is_optional: bool, common: ObjectLikeCommon) -> Self {
+    pub fn new(is_optional: bool, common: ObjectLikeCommon) -> Self {
         MultiTypeSelectionCommon {
-            full_name,
             is_optional,
             common,
             needs_fallback: Cell::new(false),
@@ -452,13 +445,12 @@ pub type SharedUnionSelection = Rc<UnionSelection>;
 
 impl UnionSelection {
     pub fn new(
-        full_name: String,
-        schema_typename: String,
         union_type: Node<UnionType>,
+        object_common: ObjectLikeCommon,
         is_optional: bool,
     ) -> SharedUnionSelection {
         Rc::new(UnionSelection {
-            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional),
+            common: MultiTypeSelectionCommon::new(is_optional, object_common),
             union_type,
         })
     }
@@ -485,13 +477,12 @@ pub type SharedInterfaceSelection = Rc<InterfaceSelection>;
 
 impl InterfaceSelection {
     pub fn new(
-        full_name: String,
-        schema_typename: String,
         interface_type: Node<InterfaceType>,
+        object_common: ObjectLikeCommon,
         is_optional: bool,
     ) -> SharedInterfaceSelection {
         Rc::new(InterfaceSelection {
-            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional),
+            common: MultiTypeSelectionCommon::new(is_optional, object_common),
             interface_type,
         })
     }

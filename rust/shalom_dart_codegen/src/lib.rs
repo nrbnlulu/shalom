@@ -9,7 +9,7 @@ use shalom_core::{
         context::SharedOpCtx,
         fragments::SharedFragmentContext,
         parse::ExecutableContext,
-        types::{dart_type_for_scalar, Selection, SelectionKind},
+        types::{dart_type_for_scalar, FieldSelection, SelectionKind},
     },
     schema::{
         context::SchemaContext,
@@ -115,7 +115,7 @@ mod ext_jinja_fns {
 
     pub fn type_name_for_selection(
         ctx: &SharedShalomGlobalContext,
-        selection: ViaDeserialize<Selection>,
+        selection: ViaDeserialize<FieldSelection>,
     ) -> String {
         type_name_for_kind_impl(ctx, &selection.0.kind)
     }
@@ -594,7 +594,7 @@ impl SchemaEnv<'_> {
 /// Collects all multi-type (interface/union) list selections from all selection objects.
 /// Returns a HashMap where the key is the full field name (e.g., "vehiclesRequired")
 /// and the value is the list selection containing the multi-type.
-fn collect_multi_type_list_selections<T>(executable_ctx: &T) -> Vec<Selection>
+fn collect_multi_type_list_selections<T>(executable_ctx: &T) -> Vec<FieldSelection>
 where
     T: ExecutableContext,
 {
@@ -730,7 +730,7 @@ impl OperationEnv<'_> {
         schema_ctx: T,
         custom_scalar_imports: HashMap<String, String>,
         schema_import_path: String,
-        multi_type_list_selections: Vec<Selection>,
+        multi_type_list_selections: Vec<FieldSelection>,
     ) -> String {
         let template = self.env.get_template("operation").unwrap();
         let mut context = HashMap::new();
@@ -772,7 +772,7 @@ impl FragmentEnv<'_> {
         custom_scalar_imports: HashMap<String, String>,
         schema_path: String,
         fragment_file_path: PathBuf,
-        multi_type_list_selections: Vec<Selection>,
+        multi_type_list_selections: Vec<FieldSelection>,
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
         let mut context = HashMap::new();

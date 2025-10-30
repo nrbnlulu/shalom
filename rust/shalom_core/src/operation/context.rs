@@ -7,7 +7,7 @@ use serde::Serialize;
 
 use super::fragments::SharedFragmentContext;
 use super::types::{
-    FullPathName, OperationType, Selection, SharedInterfaceSelection, SharedUnionSelection,
+    FullPathName, OperationType, FieldSelection, SharedInterfaceSelection, SharedUnionSelection,
 };
 use crate::context::ShalomGlobalContext;
 use crate::operation::fragments::{FragName, SharedInlineFrag};
@@ -18,7 +18,7 @@ pub type OperationVariable = InputFieldDefinition;
 #[derive(Debug, Serialize)]
 pub struct TypeDefs {
     /// all selections
-    pub selections: HashMap<FullPathName, Selection>,
+    pub selections: HashMap<FullPathName, FieldSelection>,
     /// all object selections in this executable
     pub objects: HashMap<FullPathName, SharedObjectSelection>,
     /// all interface selections in this executable
@@ -115,7 +115,7 @@ impl TypeDefs {
                 let frag_name = frag.name.clone();
                 if visited.insert(frag_name) {
                     // First collect nested fragments
-                    collect_fragments_recursive(frag.used_fragments.iter(), visited, result);
+                    collect_fragments_recursive(frag.type_defs.used_fragments_internal.values(), visited, result);
                     // Then add this fragment
                     result.push(frag.clone());
                 }
@@ -141,7 +141,7 @@ pub struct OperationContext {
     query: String,
     variables: HashMap<String, OperationVariable>,
     pub type_defs: TypeDefs,
-    root_type: Option<Selection>,
+    root_type: Option<FieldSelection>,
     op_ty: OperationType,
 }
 
@@ -174,7 +174,7 @@ impl OperationContext {
         !self.variables.is_empty()
     }
 
-    pub fn set_root_type(&mut self, root_type: Selection) {
+    pub fn set_root_type(&mut self, root_type: FieldSelection) {
         self.root_type = Some(root_type);
     }
 
@@ -197,12 +197,12 @@ pub trait ExecutableContext: Send + Sync + 'static {
     fn typedefs_mut(&mut self) -> &mut TypeDefs;
 
 
-    fn get_selection(&self, name: &String, _: &ShalomGlobalContext) -> Option<&Selection> {
+    fn get_selection(&self, name: &String, _: &ShalomGlobalContext) -> Option<&FieldSelection> {
         let td = self.typedefs();
         td.selections.get(name)
     }
 
-    fn add_selection(&mut self, name: String, selection: Selection) {
+    fn add_selection(&mut self, name: String, selection: FieldSelection) {
         let td = self.typedefs_mut();
         let name_clone = name.clone();
         match &selection.kind{
@@ -217,7 +217,7 @@ pub trait ExecutableContext: Send + Sync + 'static {
         
     }
 
-    fn get_selection_strict(&self, name: &String, ctx: &ShalomGlobalContext) -> &Selection {
+    fn get_selection_strict(&self, name: &String, ctx: &ShalomGlobalContext) -> &FieldSelection {
         self.get_selection(name, ctx).unwrap_or_else(|| {
             panic!("selection for {name} not found neither in this context nor in its fragments")
         })
