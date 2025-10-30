@@ -208,9 +208,7 @@ impl SchemaContext {
         }
     }
 
-    pub fn is_type_implements_node(&self, type_name: &str) -> bool {
-        self.is_type_implementing_interface(type_name, "Node")
-    }
+  
     
     #[kash(size = "100", in_impl)]
     pub fn get_interface_direct_members(&self, iface_name: String) ->  Vec<Node<InterfaceType>>{

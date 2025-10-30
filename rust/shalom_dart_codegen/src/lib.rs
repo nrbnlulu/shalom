@@ -6,10 +6,9 @@ use serde::Serialize;
 use shalom_core::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
     operation::{
-        context::SharedOpCtx,
+        context::{ExecutableContext, SharedOpCtx, TypeDefs},
         fragments::SharedFragmentContext,
-        parse::ExecutableContext,
-        types::{dart_type_for_scalar, FieldSelection, SelectionKind},
+        types::{FieldSelection, SelectionKind, SharedListSelection, dart_type_for_scalar},
     },
     schema::{
         context::SchemaContext,
@@ -84,9 +83,9 @@ mod ext_jinja_fns {
 
             SelectionKind::Object(object) => {
                 if object.is_optional {
-                    format!("{}?", object.full_name)
+                    format!("{}?", object.common.path_name)
                 } else {
-                    object.full_name.clone()
+                    object.common.path_name.clone()
                 }
             }
             SelectionKind::Enum(enum_) => {
@@ -98,16 +97,16 @@ mod ext_jinja_fns {
             }
             SelectionKind::Union(union) => {
                 if union.common.is_optional {
-                    format!("{}?", union.common.full_name)
+                    format!("{}?", union.common.common.path_name)
                 } else {
-                    union.common.full_name.clone()
+                    union.common.common.path_name.clone()
                 }
             }
             SelectionKind::Interface(interface) => {
                 if interface.common.is_optional {
-                    format!("{}?", interface.common.full_name)
+                    format!("{}?", interface.common.common.path_name)
                 } else {
-                    interface.common.full_name.clone()
+                    interface.common.common.path_name.clone()
                 }
             }
         }
@@ -447,10 +446,6 @@ fn register_default_template_fns<'a>(
         },
     );
 
-    let schema_ctx = ctx.schema_ctx.clone();
-    env.add_function("is_type_implements_node", move |type_name: &str| {
-        schema_ctx.is_type_implements_node(type_name)
-    });
 
     let global_ctx = ctx.clone();
     env.add_function(
@@ -492,9 +487,9 @@ fn register_default_template_fns<'a>(
 
                 // Get the fragment and add its dependencies to the queue
                 if let Some(frag) = global_ctx.get_fragment(&frag_name) {
-                    for nested_frag in frag.get_used_fragments() {
-                        if !visited.contains(&nested_frag.name) {
-                            queue.push_back(nested_frag.name.clone());
+                    for nested_frag in frag.get_on_type().get_used_fragments() {
+                        if !visited.contains(nested_frag) {
+                            queue.push_back(nested_frag.clone());
                         }
                     }
                 }
@@ -524,13 +519,13 @@ fn selection_kind_uses_variables<T: ExecutableContext>(
     if !ctx.has_variables() {
         return false;
     }
+    let typedefs = ctx.typedefs();
     match selection_kind {
-        SelectionKind::Object(obj) => ctx.get_object_selection(&obj.full_name).is_some(),
+        SelectionKind::Object(obj) =>typedefs.get_object_selection(&obj.common.path_name).is_some(),
         SelectionKind::List(list) => selection_kind_uses_variables(ctx, &list.of_kind),
-        SelectionKind::Union(union) => ctx.get_union_types().contains_key(&union.common.full_name),
-        SelectionKind::Interface(interface) => ctx
-            .get_interface_types()
-            .contains_key(&interface.common.full_name),
+        SelectionKind::Union(union) => typedefs.get_union_selection(&union.common.common.path_name).is_some(),
+        SelectionKind::Interface(interface) => typedefs
+            .get_interface_selection(&interface.common.common.path_name).is_some(),
         _ => false,
     }
 }
@@ -594,26 +589,21 @@ impl SchemaEnv<'_> {
 /// Collects all multi-type (interface/union) list selections from all selection objects.
 /// Returns a HashMap where the key is the full field name (e.g., "vehiclesRequired")
 /// and the value is the list selection containing the multi-type.
-fn collect_multi_type_list_selections<T>(executable_ctx: &T) -> Vec<FieldSelection>
+fn collect_multi_type_list_selections<T>(executable_ctx: &T) -> Vec<SharedListSelection>
 where
     T: ExecutableContext,
 {
-    let union_types = executable_ctx.get_union_types();
-    let interface_types = executable_ctx.get_interface_types();
+    let typedefs = executable_ctx.typedefs();
     let mut multitype_list_selections = Vec::new();
 
-    for fullname in union_types.keys() {
-        if let Some(selection) = executable_ctx.get_list_selection(fullname) {
-            if matches!(selection.kind, SelectionKind::List(_)) {
-                multitype_list_selections.push(selection.clone());
-            }
+    for fullname in typedefs.unions.keys() {
+        if let Some(selection) = typedefs.get_list_selection(fullname) {
+            multitype_list_selections.push(selection.clone());
         }
     }
-    for fullname in interface_types.keys() {
-        if let Some(selection) = executable_ctx.get_list_selection(fullname) {
-            if matches!(selection.kind, SelectionKind::List(_)) {
-                multitype_list_selections.push(selection.clone());
-            }
+    for fullname in typedefs.interfaces.keys() {
+        if let Some(selection) = typedefs.get_list_selection(fullname) {
+            multitype_list_selections.push(selection.clone());
         }
     }
 
@@ -628,28 +618,7 @@ fn register_executable_fns<'a, T>(
 where
     T: ExecutableContext + 'static,
 {
-    let ctx_clone1 = ctx.clone();
-    let executable_ctx_clone1 = executable_ctx.clone();
-
-    env.add_function("is_type_implements_node", move |full_name: &str| {
-        if let Some(selection) =
-            executable_ctx_clone1.get_selection(&full_name.to_string(), &ctx_clone1)
-        {
-            match &selection.kind {
-                SelectionKind::Object(object_selection) => ctx_clone1
-                    .schema_ctx
-                    .is_type_implements_node(&object_selection.concrete_typename),
-                _ => false,
-            }
-        } else {
-            false
-        }
-    });
-
-    let ctx_clone2 = ctx.clone();
-    let executable_ctx_clone2 = executable_ctx.clone();
-
-
+    
     let ctx_clone3 = ctx.clone();
     let executable_ctx_clone3 = executable_ctx.clone();
     env.add_function("get_all_selections_distinct", move |object_name: &str| {
@@ -657,7 +626,7 @@ where
             executable_ctx_clone3.get_selection(&object_name.to_string(), &ctx_clone3);
         let selections = match &object_selection.unwrap().kind {
             SelectionKind::Object(object_selection) => {
-                object_selection.get_all_selections_distinct(&ctx_clone3)
+                object_selection.common.get_all_selections_distinct(&ctx_clone3)
             }
             _ => panic!("Expected object selection"),
         };
@@ -687,23 +656,24 @@ impl OperationEnv<'_> {
         let op_ctx_clone2 = op_ctx.clone();
         env.add_function(
             "is_selection_from_fragment",
-            move |full_name: &str| -> bool {
+            move |path_name: &str| -> bool {
                 // Check if the selection exists in the operation's own typedefs
                 // First check if it's in the operation's own selections
-                if op_ctx_clone2
-                    .get_object_selection(&full_name.to_string())
+                let typedefs = op_ctx_clone2.typedefs();
+                if typedefs
+                    .get_object_selection(&path_name.to_string())
                     .is_some()
                 {
                     return false;
                 }
-                if op_ctx_clone2
-                    .get_union_selection(&full_name.to_string())
+                if typedefs
+                    .get_union_selection(&path_name.to_string())
                     .is_some()
                 {
                     return false;
                 }
-                if op_ctx_clone2
-                    .get_interface_selection(&full_name.to_string())
+                if typedefs
+                    .get_interface_selection(&path_name.to_string())
                     .is_some()
                 {
                     return false;
@@ -713,7 +683,7 @@ impl OperationEnv<'_> {
                 // then it must be from a fragment
                 assert!(
                     op_ctx_clone2
-                        .get_selection(&full_name.to_string(), &ctx_clone2)
+                        .get_selection(&path_name.to_string(), &ctx_clone2)
                         .is_some(),
                     "is_selection_from_fragment: failed to find selection"
                 );
@@ -730,7 +700,7 @@ impl OperationEnv<'_> {
         schema_ctx: T,
         custom_scalar_imports: HashMap<String, String>,
         schema_import_path: String,
-        multi_type_list_selections: Vec<FieldSelection>,
+        multi_type_list_selections: Vec<SharedListSelection>,
     ) -> String {
         let template = self.env.get_template("operation").unwrap();
         let mut context = HashMap::new();
@@ -772,7 +742,7 @@ impl FragmentEnv<'_> {
         custom_scalar_imports: HashMap<String, String>,
         schema_path: String,
         fragment_file_path: PathBuf,
-        multi_type_list_selections: Vec<FieldSelection>,
+        multi_type_list_selections: Vec<SharedListSelection>,
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
         let mut context = HashMap::new();
