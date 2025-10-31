@@ -17,10 +17,10 @@
             {{ctx}}.addChangedRecord({{normalized_id}});
         }
 
-        {{selection.full_name}}.normalize$inCache(
+        {{selection.path_name}}.normalize$inCache(
             {{raw_sym}} as JsonObject,
             {{ctx}},
-            {{"variables,"  if selection_kind_uses_variables(selection)}}
+            {{"variables,"  if object_like_needs_variables(selection)}}
             this$cached: {{cached_sym}} is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{cached_sym}}.normalizedID()): {{cached_sym}},
             this$fieldName: {{normalized_key}},
             parent$record: {{this_normalized_record}},
@@ -31,7 +31,7 @@
         {# TODO:(#GH-85) #}
         final {{selection_name}}$id = ({{raw_sym}} as JsonObject)["id"] as RecordID?;
         if ({{selection_name}}$id != null) {
-            final {{selection_name}}$normalized = NormalizedObjectRecord(typename: "{{selection.concrete_typename}}", id: {{selection_name}}$id);
+            final {{selection_name}}$normalized = NormalizedObjectRecord(typename: "{{selection.schema_typename}}", id: {{selection_name}}$id);
             {{this_normalized_record}}[{{normalized_key}}] = {{selection_name}}$normalized;
             {# Check if the reference changed #}
             if ({{cached_sym}} != null && {{cached_sym}} is NormalizedObjectRecord && {{cached_sym}} != {{selection_name}}$normalized) {
@@ -44,10 +44,10 @@
         if ({{cached_sym}} == null){
             {{ctx}}.addChangedRecord({{normalized_id}});
         }
-        {{selection.full_name}}.normalize$inCache(
+        {{selection.path_name}}.normalize$inCache(
             {{raw_sym}} as JsonObject,
             {{ctx}},
-            {{"variables,"  if selection_kind_uses_variables(selection)}}
+            {{"variables,"  if object_like_needs_variables(selection)}}
             this$cached: {{cached_sym}} is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{cached_sym}}.normalizedID()): {{cached_sym}},
             this$fieldName: {{normalized_key}},
             parent$record: {{this_normalized_record}},
@@ -215,27 +215,27 @@ null
         {% if is_optional -%}
             {{value_symbol}} == null ? null :
         {% endif -%}
-        {%- set should_pass_variables = selection_kind_uses_variables(selection) -%}
+        {%- set should_pass_variables = object_like_needs_variables(selection) -%}
         ({{value_symbol}} is  NormalizedObjectRecord)?
-            {{ selection.full_name }}.fromCached(ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()), ctx{{", variables" if should_pass_variables}})
-        : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{", variables" if should_pass_variables}})
+            {{ selection.path_name }}.fromCached(ctx.getCachedRecord(({{value_symbol}} as NormalizedObjectRecord).normalizedID()), ctx{{", variables" if should_pass_variables}})
+        : {{ selection.path_name }}.fromCached({{ value_symbol }}, ctx{{", variables" if should_pass_variables}})
     {% elif selection.kind == "Union" %}
         {% if is_optional %}
             {{ value_symbol }} == null ? null :
         {% endif -%}
-        {%- set should_pass_variables = op_variables_exist and not is_selection_from_fragment(selection.full_name) -%}
+        {%- set should_pass_variables = op_variables_exist and not is_selection_from_fragment(selection.path_name) -%}
                 ({{value_symbol}} is  NormalizedObjectRecord)?
-                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx{{", variables" if should_pass_variables}})
-                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{", variables" if should_pass_variables}})
+                    {{ selection.path_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx{{", variables" if should_pass_variables}})
+                : {{ selection.path_name }}.fromCached({{ value_symbol }}, ctx{{", variables" if should_pass_variables}})
 
     {% elif selection.kind == "Interface" %}
         {% if is_optional %}
             {{ value_symbol }} == null ? null :
         {% endif -%}
-        {%- set should_pass_variables = op_variables_exist and not is_selection_from_fragment(selection.full_name) -%}
+        {%- set should_pass_variables = op_variables_exist and not is_selection_from_fragment(selection.path_name) -%}
                 ({{value_symbol}} is  NormalizedObjectRecord)?
-                    {{ selection.full_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx{{", variables" if should_pass_variables}})
-                : {{ selection.full_name }}.fromCached({{ value_symbol }}, ctx{{", variables" if should_pass_variables}})
+                    {{ selection.path_name }}.fromCached(({{value_symbol}} as NormalizedObjectRecord).normalizedID(), ctx{{", variables" if should_pass_variables}})
+                : {{ selection.path_name }}.fromCached({{ value_symbol }}, ctx{{", variables" if should_pass_variables}})
 
     {% elif selection.kind == "Enum" %}
         {% set typename = selection.concrete_type.name %}
@@ -323,13 +323,13 @@ null
     {% endif %}
 {% endmacro %}
 
-{% macro selection_object_impl(typename, selection_object, is_root_selection, full_name=none, is_multi_type_member=false, shared_selections=none, is_fallback=false) %}
+{% macro selection_object_impl(typename, selection_object, is_root_selection=false, full_name=none, is_multi_type_member=false, shared_selections=none, is_fallback=false) %}
     {% set lookup_name = full_name if full_name else typename %}
     {% if is_fallback %}
         {# Fallback uses shared_selections directly without lookup #}
         {% set selections = shared_selections %}
     {% else %}
-        {% set selections = get_all_selections_distinct(lookup_name) %}
+        {% set selections = get_all_selections_distinct(selection_object) %}
         {# For union members, merge shared selections with object selections, avoiding duplicates #}
         {% if is_multi_type_member and shared_selections %}
             {% set member_names = selections | map(attribute='name') | list %}
@@ -424,7 +424,7 @@ null
                     parent$record[this$fieldName] = normalized$objRecord;
                     this$normalizedID = normalized$objRecord.normalizedID();
                 {% else %}
-                    final normalized$objRecord = NormalizedObjectRecord(typename: "{{selection_object.concrete_typename}}", id: this$normalizedID_temp!);
+                    final normalized$objRecord = NormalizedObjectRecord(typename: "{{selection_object.schema_typename}}", id: this$normalizedID_temp!);
                     if (this$cached != null && this$cached is NormalizedObjectRecord && this$cached as NormalizedObjectRecord != normalized$objRecord){
                         ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
                     }
@@ -479,7 +479,7 @@ null
     {% if not is_root_selection -%}
     static {{typename}} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if op_variables_exist  %}, {{ operation_name }}Variables variables{% endif %}) {
     {% else -%}
-    static {{typename}} fromCache(ShalomCtx ctx{% if selection_kind_uses_variables(selection_object) -%}, {{ operation_name }}Variables variables{% endif %}) {
+    static {{typename}} fromCache(ShalomCtx ctx{% if object_like_needs_variables(selection_object) -%}, {{ operation_name }}Variables variables{% endif %}) {
     {% endif -%}
         {% if is_root_selection -%}
             final data = ctx.getCachedRecord("ROOT_{{OP_TYPE}}");
@@ -734,11 +734,11 @@ null
 {# Macro to generate WhereType extensions for lists of multi-types (interfaces/unions) #}
 {% macro generate_multi_type_list_extensions(multi_type_list_selections) -%}
 // ------------ MULTI-TYPE LIST EXTENSIONS -------------
-{% for selection in multi_type_list_selections %}
+{% for selection in context.multi_type_list_selections %}
 {% set multi_type = selection.of_kind %}
-    {% set full_type_name = multi_type.full_name %}
+    {% set full_type_name = multi_type.path_name %}
     {% set inline_fragments = multi_type.inline_fragments -%}
-    extension {{ selection.of_kind.full_name }}$WhereTypeExt on List<{{ full_type_name }}> {
+    extension {{ selection.of_kind.path_name }}$WhereTypeExt on List<{{ full_type_name }}> {
         {% for type_condition, obj_selection in inline_fragments | items -%}
                 // Extension to filter list to only {{ type_condition }} types
                 Iterable<{{ full_type_name }}_{{ type_condition }}> get {{ type_condition | lower }}s {

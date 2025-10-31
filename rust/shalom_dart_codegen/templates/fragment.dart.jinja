@@ -1,11 +1,9 @@
 {% include "macros" %}
 
-{% set fragment_name = fragment.context.context.name %}
-{% set fragment_selections = fragment.context.context.type_defs %}
-{% set root_type = fragment.context.context.root_type %}
+{% set fragment_name = context.fragment.name %}
+{% set typedefs = context.fragment.typedefs %}
 {% set op_variables = None %}
 {% set op_variables_exist = false %}
-{% set fragment_used_fragments_names = root_type.used_fragments %}
 
 {% include "selection_macros" %}
 
@@ -13,18 +11,18 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: {{fragment_name}}
 
-import "{{ schema_import_path }}";
+import "{{ context.schema_import_path }}";
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 {{ custom_scalar_imports_macro(custom_scalar_imports) }}
 
-{% for import_path in generate_fragment_imports(fragment_file_path, fragment.context.context.used_fragments) -%}
+{% for import_path in generate_fragment_imports(context.fragment_file_path) -%}
 import '{{ import_path }}';
 {% endfor %}
 
 // Generate abstract fragment class
-abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fragments_names) }} {
-    {% for field in root_type.selections -%}
+abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.root.used_fragments) }} {
+    {% for field in context.fragment.root.selections -%}
     {{ type_name_for_selection(field) }} get {{ field.name }};
     {% endfor %}
 
@@ -33,9 +31,22 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fra
 }
 
 // Generate data classes for nested object selections
-{% for selection_name, selection in fragment_selections.selection_objects | items %}
+{# First, build a set of all union and interface member names to skip #}
+{% set multi_type_member_names = [] %}
+{% for union_full_name, union_selection in typedefs.unions | items %}
+    {% for type_condition in union_selection.inline_fragments | keys %}
+        {% set _ = multi_type_member_names.append(union_full_name ~ "_" ~ type_condition) %}
+    {% endfor %}
+{% endfor %}
+{% for interface_full_name, interface_selection in typedefs.interfaces | items %}
+    {% for type_condition in interface_selection.inline_fragments | keys %}
+        {% set _ = multi_type_member_names.append(interface_full_name ~ "_" ~ type_condition) %}
+    {% endfor %}
+{% endfor %}
+
+{% for selection_name, selection in typedefs.objects | items %}
     {# Skip union/interface member objects - they'll be generated in UNION/INTERFACE DEFINITIONS #}
-    {% if selection.parent_multitype_fullname %}
+    {% if selection_name in multi_type_member_names %}
         {# This is a union or interface member, skip it here #}
     {% elif selection.kind == "Object" and selection_name != fragment_name %}
         {{ selection_object_definition(selection_name, selection) }}
@@ -45,10 +56,18 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fra
     {% endif %}
 {% endfor %}
 
+{# Generate object classes for list items #}
+{% for selection_name, list_selection in typedefs.lists | items %}
+    {% if list_selection.of_kind.kind == "Object" %}
+        {# Generate the object class for list items #}
+        {{ selection_object_definition(selection_name, list_selection.of_kind) }}
+    {% endif %}
+{% endfor %}
+
 // ------------ UNION DEFINITIONS -------------
 
 {# First generate union member object classes #}
-{% set union_types = fragment.context.context.union_types %}
+{% set union_types = typedefs.unions %}
 {% for union_full_name, union_selection in union_types | items %}
     {# Skip the root union type of the fragment itself - it's just the abstract class #}
     {% if union_full_name != fragment_name %}
@@ -56,10 +75,10 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fra
         {# Generate union member object using the unified macro with shared selections #}
         {% set member_full_name = union_full_name ~ "_" ~ type_condition %}
         {# Look up the full Selection from context which includes arguments #}
-        {% set member_selection = fragment.context.context.type_defs.selection_objects[member_full_name] %}
+        {% set member_selection = typedefs.objects[member_full_name] %}
         {# We need to create a wrapper that passes shared_selections to selection_object_impl #}
         class {{ member_full_name }} extends {{ union_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
-            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_multi_type_member=true, shared_selections=union_selection.shared_selections) }}
+            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.path_name, is_multi_type_member=true, shared_selections=union_selection.shared_selections) }}
         }
     {% endfor %}
 
@@ -74,7 +93,7 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fra
 {% endfor %}
 
 {# Then generate union sealed classes #}
-{% for selection_name, selection in fragment_selections.union_selections | items %}
+{% for selection_name, selection in typedefs.unions | items %}
     {# Skip the root union type of the fragment itself #}
     {% if selection_name != fragment_name %}
     {{ multi_type_selection_definition(selection_name, selection) }}
@@ -86,17 +105,16 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fra
 // ------------ INTERFACE DEFINITIONS -------------
 
 {# First generate interface member object classes #}
-{% set interface_types = fragment.context.context.interface_types %}
-{% for interface_full_name, interface_selection in interface_types | items %}
+{% for interface_full_name, interface_selection in typedefs.interfaces | items %}
     {# Skip the root interface type of the fragment itself - it's just the abstract class #}
     {% if interface_full_name != fragment_name %}
     {% for type_condition, obj_selection in interface_selection.inline_fragments | items %}
         {# Generate interface member object using the unified macro with shared selections #}
         {% set member_full_name = interface_full_name ~ "_" ~ type_condition %}
         {# Look up the full Selection from context which includes arguments #}
-        {% set member_selection = fragment.context.context.type_defs.selection_objects[member_full_name] %}
+        {% set member_selection = typedefs.objects[member_full_name] %}
         class {{ member_full_name }} extends {{ interface_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
-            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_multi_type_member=true, shared_selections=interface_selection.shared_selections) }}
+            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.path_name, is_multi_type_member=true, shared_selections=interface_selection.shared_selections) }}
         }
     {% endfor %}
 
@@ -111,7 +129,7 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fra
 {% endfor %}
 
 {# Then generate interface abstract classes #}
-{% for selection_name, selection in fragment_selections.interface_selections | items %}
+{% for selection_name, selection in typedefs.interfaces | items %}
     {# Skip the root interface type of the fragment itself #}
     {% if selection_name != fragment_name %}
     {{ multi_type_selection_definition(selection_name, selection) }}
