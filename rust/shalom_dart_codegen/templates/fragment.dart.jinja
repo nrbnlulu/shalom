@@ -16,7 +16,7 @@ import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 {{ custom_scalar_imports_macro(custom_scalar_imports) }}
 
-{% for import_path in generate_fragment_imports(fragment_file_path) -%}
+{% for import_path in generate_fragment_imports(context.fragment.file_path) -%}
 import '{{ import_path }}';
 {% endfor %}
 

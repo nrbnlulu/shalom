@@ -583,7 +583,9 @@ where
         move |current_file_path: String| {
             let mut res = Vec::new();
             for frag in executable_ctx_clone.typedefs().flatten_used_fragments() {
-                res.push(calculate_fragment_import_path(&current_file_path, &frag).unwrap());
+                res.push(calculate_fragment_import_path(&current_file_path, &frag).expect(
+                    &format!("Failed to calculate import path for fragment: {}; current file: {}", frag.name(), frag_name)
+                ));
             }
             minijinja::Value::from_serialize(res)
         },
@@ -681,7 +683,6 @@ impl FragmentEnv<'_> {
         fragment_ctx: SharedFragmentContext,
         custom_scalar_imports: HashMap<String, String>,
         schema_path: String,
-        fragment_file_path: PathBuf,
         multi_type_list_selections: Vec<SharedListSelection>,
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
@@ -692,7 +693,6 @@ impl FragmentEnv<'_> {
                 schema_import_path => schema_path,
                 custom_scalar_imports => custom_scalar_imports,
                 multi_type_list_selections => multi_type_list_selections,
-                fragment_file_path => fragment_file_path.to_string_lossy().to_string(),
             }
         };
 
@@ -747,16 +747,11 @@ fn calculate_fragment_import_path(
     let op_path = PathBuf::from(operation_file_path);
 
     let frag_name = &fragment.name;
-    // Find pubspec.yaml for both operation and fragment
-    let (op_pubspec, _op_package) =
-        find_pubspec_and_package_name(&op_path).map_err(|e| anyhow::anyhow!("{}", e))?;
-    let (frag_pubspec, frag_package) =
-        find_pubspec_and_package_name(&fragment.file_path).map_err(|e| anyhow::anyhow!("{}", e))?;
-
+ 
     // Get the directory containing operation file
     let op_dir = op_path
         .parent()
-        .ok_or_else(|| anyhow::anyhow!("Invalid operation file path"))?;
+        .ok_or_else(|| anyhow::anyhow!("Invalid operation file path {}", operation_file_path))?;
 
     // Calculate the __graphql__ directory for the operation
     let op_graphql_dir = op_dir.join("__graphql__");
@@ -781,23 +776,6 @@ fn calculate_fragment_import_path(
     if op_graphql_dir == frag_parent_dir.join("__graphql__") {
         log::debug!("Same directory, using simple relative import");
         return Ok(format!("{}.shalom.dart", frag_name));
-    }
-
-    // If in different packages, use package import
-    if op_pubspec != frag_pubspec {
-        let frag_package_root = frag_pubspec
-            .parent()
-            .ok_or_else(|| anyhow::anyhow!("Invalid pubspec.yaml path"))?;
-
-        let relative_path = frag_generated_path
-            .strip_prefix(frag_package_root)
-            .map_err(|e| anyhow::anyhow!("Fragment path is not within package root: {}", e))?;
-
-        return Ok(format!(
-            "package:{}/{}",
-            frag_package,
-            relative_path.to_string_lossy().replace('\\', "/")
-        ));
     }
 
     // Same package, different directories - use relative path from operation __graphql__ dir
@@ -859,7 +837,6 @@ fn generate_fragment_file(
     custom_scalar_imports: HashMap<String, String>,
 ) -> anyhow::Result<()> {
     let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone())?;
-    let fragment_file_path = fragment_ctx.file_path.clone();
 
     // Collect multi-type list selections
     let multi_type_list_selections = collect_multi_type_list_selections(fragment_ctx.as_ref());
@@ -868,7 +845,6 @@ fn generate_fragment_file(
         fragment_ctx.clone(),
         custom_scalar_imports,
         get_schema_import_path(&fragment_ctx.file_path, ctx),
-        fragment_file_path,
         multi_type_list_selections,
     );
 

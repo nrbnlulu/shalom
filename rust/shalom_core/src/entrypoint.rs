@@ -129,18 +129,17 @@ fn extract_fragment_definitions(
 ) -> anyhow::Result<HashMap<String, FragmentDefInitial>> {
     let mut all_fragment_defs = HashMap::new();
 
-    for (doc, file, _content) in parsed_docs {
+    for (doc, file_path, _content) in parsed_docs {
         for (name, fragment_def) in doc.fragments.iter() {
             let fragment_name = name.to_string();
             let type_condition = fragment_def.type_condition().to_string();
 
             // Extract fragment SDL for later injection
             let fragment_sdl = format!("{}", fragment_def);
-
             let frag_ctx = FragmentContext::new(
                 fragment_name.clone(),
                 fragment_sdl.clone(),
-                file.clone(),
+                file_path.clone(),
                 type_condition,
             );
 
