@@ -16,7 +16,7 @@ import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 {{ custom_scalar_imports_macro(custom_scalar_imports) }}
 
-{% for import_path in generate_fragment_imports(context.fragment.file_path) -%}
+{% for import_path in generate_fragment_imports(context.fragment_file_path) -%}
 import '{{ import_path }}';
 {% endfor %}
 
@@ -31,15 +31,36 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
 }
 
 // Generate data classes for nested object selections
+{# First, build a set of all union and interface member names to skip #}
+{% set multi_type_member_names = [] %}
+{% for union_full_name, union_selection in typedefs.unions | items %}
+    {% for type_condition in union_selection.inline_fragments | keys %}
+        {% set _ = multi_type_member_names.append(union_full_name ~ "_" ~ type_condition) %}
+    {% endfor %}
+{% endfor %}
+{% for interface_full_name, interface_selection in typedefs.interfaces | items %}
+    {% for type_condition in interface_selection.inline_fragments | keys %}
+        {% set _ = multi_type_member_names.append(interface_full_name ~ "_" ~ type_condition) %}
+    {% endfor %}
+{% endfor %}
+
 {% for selection_name, selection in typedefs.objects | items %}
     {# Skip union/interface member objects - they'll be generated in UNION/INTERFACE DEFINITIONS #}
-    {% if selection.parent_multitype_fullname %}
+    {% if selection_name in multi_type_member_names %}
         {# This is a union or interface member, skip it here #}
     {% elif selection.kind == "Object" and selection_name != fragment_name %}
         {{ selection_object_definition(selection_name, selection) }}
     {% elif selection.kind == "List" and selection.of_kind.kind == "Object" %}
         {# List of objects - generate the object class for list items #}
         {{ selection_object_definition(selection_name, selection.of_kind) }}
+    {% endif %}
+{% endfor %}
+
+{# Generate object classes for list items #}
+{% for selection_name, list_selection in typedefs.lists | items %}
+    {% if list_selection.of_kind.kind == "Object" %}
+        {# Generate the object class for list items #}
+        {{ selection_object_definition(selection_name, list_selection.of_kind) }}
     {% endif %}
 {% endfor %}
 

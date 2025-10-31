@@ -29,8 +29,33 @@ import '{{ import_path }}';
 class {{ response_class_name }} {{ implements_used_fragments(context.operation.root_type.used_fragments) }}  {
     {{ selection_object_impl(response_class_name, context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name) }}
 }
+
+{# Build a set of all union and interface member names to skip #}
+{% set multi_type_member_names = [] %}
+{% for union_full_name, union_selection in typedefs.unions | items %}
+    {% for type_condition in union_selection.inline_fragments | keys %}
+        {% set _ = multi_type_member_names.append(union_full_name ~ "_" ~ type_condition) %}
+    {% endfor %}
+{% endfor %}
+{% for interface_full_name, interface_selection in typedefs.interfaces | items %}
+    {% for type_condition in interface_selection.inline_fragments | keys %}
+        {% set _ = multi_type_member_names.append(interface_full_name ~ "_" ~ type_condition) %}
+    {% endfor %}
+{% endfor %}
+
 {% for full_name, selection in typedefs.objects | items %}
-    {{ selection_object_definition(full_name, selection) }}
+    {# Skip union/interface member objects - they'll be generated in UNION/INTERFACE DEFINITIONS #}
+    {% if full_name not in multi_type_member_names %}
+        {{ selection_object_definition(full_name, selection) }}
+    {% endif %}
+{% endfor %}
+
+{# Generate object classes for list items #}
+{% for selection_name, list_selection in typedefs.lists | items %}
+    {% if list_selection.of_kind.kind == "Object" %}
+        {# Generate the object class for list items #}
+        {{ selection_object_definition(selection_name, list_selection.of_kind) }}
+    {% endif %}
 {% endfor %}
 
 // ------------ END OBJECT DEFINITIONS -------------

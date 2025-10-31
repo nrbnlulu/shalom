@@ -583,9 +583,13 @@ where
         move |current_file_path: String| {
             let mut res = Vec::new();
             for frag in executable_ctx_clone.typedefs().flatten_used_fragments() {
-                res.push(calculate_fragment_import_path(&current_file_path, &frag).expect(
-                    &format!("Failed to calculate import path for fragment: {}; current file: {}", frag.name(), frag_name)
-                ));
+                res.push(
+                    calculate_fragment_import_path(&current_file_path, &frag).expect(&format!(
+                        "Failed to calculate import path for fragment: {}; current file: {}",
+                        frag.name(),
+                        current_file_path
+                    )),
+                );
             }
             minijinja::Value::from_serialize(res)
         },
@@ -687,9 +691,13 @@ impl FragmentEnv<'_> {
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
 
+        // Extract file_path as a string since it's skipped during serialization
+        let fragment_file_path = fragment_ctx.file_path.to_string_lossy().to_string();
+
         let ctx = context! {
             context => context!{
                 fragment => fragment_ctx,
+                fragment_file_path => fragment_file_path,
                 schema_import_path => schema_path,
                 custom_scalar_imports => custom_scalar_imports,
                 multi_type_list_selections => multi_type_list_selections,
@@ -747,7 +755,7 @@ fn calculate_fragment_import_path(
     let op_path = PathBuf::from(operation_file_path);
 
     let frag_name = &fragment.name;
- 
+
     // Get the directory containing operation file
     let op_dir = op_path
         .parent()
