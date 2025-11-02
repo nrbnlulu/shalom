@@ -1,4 +1,4 @@
-use crate::schema::types::{GraphQLAny, Implementor};
+use crate::schema::types::{GraphQLAny, SchemaObjectLike, SharedSchemaObjectLike};
 use apollo_compiler::{validation::Valid, Node};
 use kash::kash;
 use serde::{Serialize, Serializer};
@@ -24,8 +24,8 @@ where
 #[derive(Debug, Serialize, Clone)]
 pub(crate) struct SchemaTypesCtx {
     inputs: HashMap<String, Node<InputObjectType>>,
-    objects: HashMap<String, Node<ObjectType>>,
-    interfaces: HashMap<String, Node<InterfaceType>>,
+    objects: HashMap<String, Arc<ObjectType>>,
+    interfaces: HashMap<String, Arc<InterfaceType>>,
     unions: HashMap<String, Node<UnionType>>,
     enums: HashMap<String, Node<EnumType>>,
     scalars: HashMap<String, Node<ScalarType>>,
@@ -58,11 +58,11 @@ impl SchemaTypesCtx {
         self.inputs.insert(name, type_);
     }
 
-    pub fn add_object(&mut self, name: String, type_: Node<ObjectType>) {
+    pub fn add_object(&mut self, name: String, type_: Arc<ObjectType>) {
         self.objects.insert(name, type_);
     }
 
-    pub fn add_interface(&mut self, name: String, type_: Node<InterfaceType>) {
+    pub fn add_interface(&mut self, name: String, type_: Arc<InterfaceType>) {
         self.interfaces.insert(name, type_);
     }
 
@@ -107,6 +107,7 @@ pub struct SchemaContext {
     types: Mutex<SchemaTypesCtx>,
     #[serde(skip_serializing)]
     pub schema: Valid<apollo_compiler::Schema>,
+
 }
 
 impl SchemaContext {
@@ -142,7 +143,7 @@ impl SchemaContext {
         types_ctx.scalars.get(name).cloned()
     }
 
-    pub fn get_interface(&self, name: &str) -> Option<Node<InterfaceType>> {
+    pub fn get_interface(&self, name: &str) -> Option<Arc<InterfaceType>> {
         let types_ctx = self.types.lock().unwrap();
         types_ctx.interfaces.get(name).cloned()
     }
@@ -152,7 +153,7 @@ impl SchemaContext {
         types_ctx.unions.get(name).cloned()
     }
 
-    pub fn add_object(&self, name: String, type_: Node<ObjectType>) -> anyhow::Result<()> {
+    pub fn add_object(&self, name: String, type_: Arc<ObjectType>) -> anyhow::Result<()> {
         let mut types_ctx = self
             .types
             .lock()
@@ -183,7 +184,7 @@ impl SchemaContext {
         Ok(())
     }
 
-    pub fn add_interface(&self, name: String, type_: Node<InterfaceType>) -> anyhow::Result<()> {
+    pub fn add_interface(&self, name: String, type_: Arc<InterfaceType>) -> anyhow::Result<()> {
         let mut types_ctx = self.get_types();
         types_ctx.add_interface(name, type_);
         Ok(())
@@ -210,20 +211,25 @@ impl SchemaContext {
         }
     }
 
-    #[kash(size = "100", in_impl)]
-    pub fn get_interface_direct_members(&self, iface_name: String) -> Vec<Node<InterfaceType>> {
+    pub fn get_interface_direct_members(&self, iface_name: &String) -> Vec<SharedSchemaObjectLike> {
         let types = self.types.lock().unwrap();
-        let mut ret = Vec::new();
+        let mut ret = Vec::<SharedSchemaObjectLike>::new();
         for iface in types.interfaces.values() {
             if iface.implements_interfaces().contains(&iface_name) {
                 ret.push(iface.clone());
             }
         }
+        for obj in types.objects.values() {
+            if obj.implements_interfaces().contains(&iface_name) {
+                ret.push(obj.clone());
+            }
+        }
         ret
     }
+    
 }
 
-fn check_implements_recursive<I: Implementor>(
+fn check_implements_recursive<I: SchemaObjectLike>(
     implementor: &I,
     target_interface: &str,
     types_ctx: &SchemaTypesCtx,

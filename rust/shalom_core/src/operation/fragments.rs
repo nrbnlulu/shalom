@@ -16,6 +16,7 @@ use crate::operation::types::ObjectLikeCommon;
 /// that they are declared and can't be used across the project (well they have no name)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct InlineFragment {
+    #[serde(flatten)]
     pub common: ObjectLikeCommon,
 }
 pub type SharedInlineFrag = Rc<InlineFragment>;
@@ -39,7 +40,7 @@ pub struct FragmentContext {
     #[serde(skip_serializing)]
     pub file_path: PathBuf,
     pub typedefs: TypeDefs,
-    pub root: Option<ObjectLikeCommon>,
+    pub root_type: Option<ObjectLikeCommon>,
     pub type_condition: String,
 }
 pub type SharedFragmentContext = Arc<FragmentContext>;
@@ -56,7 +57,7 @@ impl FragmentContext {
             file_path,
             fragment_raw,
             typedefs: TypeDefs::new(),
-            root: None,
+            root_type: None,
             type_condition,
         }
     }
@@ -70,11 +71,11 @@ impl FragmentContext {
     }
 
     pub fn set_on_type(&mut self, root_type: ObjectLikeCommon) {
-        self.root.replace(root_type);
+        self.root_type.replace(root_type);
     }
 
     pub fn get_on_type(&self) -> &ObjectLikeCommon {
-        self.root.as_ref().unwrap()
+        self.root_type.as_ref().unwrap()
     }
 }
 

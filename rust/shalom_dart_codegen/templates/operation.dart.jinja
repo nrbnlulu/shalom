@@ -30,54 +30,31 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
     {{ selection_object_impl(response_class_name, context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name) }}
 }
 
-{# Build a set of all union and interface member names to skip #}
-{% set multi_type_member_names = [] %}
-{% for union_full_name, union_selection in typedefs.unions | items %}
-    {% for type_condition in union_selection.inline_fragments | keys %}
-        {% set _ = multi_type_member_names.append(union_full_name ~ "_" ~ type_condition) %}
-    {% endfor %}
-{% endfor %}
-{% for interface_full_name, interface_selection in typedefs.interfaces | items %}
-    {% for type_condition in interface_selection.inline_fragments | keys %}
-        {% set _ = multi_type_member_names.append(interface_full_name ~ "_" ~ type_condition) %}
-    {% endfor %}
-{% endfor %}
 
-{% for full_name, selection in typedefs.objects | items %}
-    {# Skip union/interface member objects - they'll be generated in UNION/INTERFACE DEFINITIONS #}
-    {% if full_name not in multi_type_member_names %}
-        {{ selection_object_definition(full_name, selection) }}
-    {% endif %}
-{% endfor %}
-
-{# Generate object classes for list items #}
-{% for selection_name, list_selection in typedefs.lists | items %}
-    {% if list_selection.of_kind.kind == "Object" %}
-        {# Generate the object class for list items #}
-        {{ selection_object_definition(selection_name, list_selection.of_kind) }}
-    {% endif %}
+{% for obj in all_object_selections() %}
+    {{ selection_object_definition(obj.path_name, obj) }}
 {% endfor %}
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-// ------------ UNION DEFINITIONS -------------
 
+// ------------ UNION DEFINITIONS -------------
+{# Then generate union sealed classes #}
+{% for full_name, selection in typedefs.unions | items %}
+    {{ multi_type_selection_definition(full_name, selection) }}
+{% endfor %}
+    
 {# First generate union member object classes #}
 {% set union_types = typedefs.unions %}
 {% for union_full_name, union_selection in union_types | items %}
-    {% for type_condition, obj_selection in union_selection.inline_fragments | items %}
-        {# Generate union member object using the unified macro with shared selections #}
-        {% set member_full_name = union_full_name ~ "_" ~ type_condition %}
-        {# Look up the full Selection from context which includes arguments #}
-        {% set member_selection = typedefs.objects[member_full_name] %}
-        {# We need to create a wrapper that passes shared_selections to selection_object_impl #}
-        class {{ member_full_name }} extends {{ union_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
-            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.path_name, is_multi_type_member=true, shared_selections=union_selection.shared_selections) }}
+    {% for type_condition, obj in union_selection.used_inline_frags | items %}
+        class {{ obj.path_name }} extends {{ union_full_name }}{{ implements_used_fragments(obj.used_fragments) }}  {
+            {{ selection_object_impl(obj.path_name, obj, is_root_selection=false, full_name=obj.path_name, is_multi_type_member=true, shared_selections=union_selection.selections) }}
         }
     {% endfor %}
 
     {# Generate fallback class if needed #}
-    {% if union_selection.has_fallback %}
+    {% if union_selection.needs_fallback %}
         {% set fallback_full_name = union_full_name ~ "_Fallback" %}
         class {{ fallback_full_name }} extends {{ union_full_name }} {
             {{ selection_interface_fallback_impl(fallback_full_name, union_selection) }}
@@ -85,10 +62,7 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
     {% endif %}
 {% endfor %}
 
-{# Then generate union sealed classes #}
-{% for full_name, selection in typedefs.unions | items %}
-    {{ multi_type_selection_definition(full_name, selection) }}
-{% endfor %}
+
 
 // ------------ END UNION DEFINITIONS -------------
 
@@ -96,13 +70,13 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
 
 {# First generate interface member object classes #}
 {% for interface_full_name, interface_selection in typedefs.interfaces | items %}
-    {% for type_condition, obj_selection in interface_selection.inline_fragments | items %}
+    {% for type_condition, obj_selection in interface_selection.used_inline_frags | items %}
         {# Generate interface member object using the unified macro with shared selections #}
         {% set member_full_name = interface_full_name ~ "_" ~ type_condition %}
         {# Look up the full Selection from context which includes arguments #}
         {% set member_selection = typedefs.objects[member_full_name] %}
         class {{ member_full_name }} extends {{ interface_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
-            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.path_name, is_multi_type_member=true, shared_selections=interface_selection.shared_selections) }}
+            {{ selection_object_impl(member_full_name, member_selection, is_root_selection=false, full_name=obj_selection.path_name, is_multi_type_member=true, shared_selections=interface_selection.selections) }}
         }
     {% endfor %}
 

@@ -2,6 +2,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
+use apollo_compiler::collections::HashSet;
 use apollo_compiler::{
     ast::OperationType as ApolloOperationType, executable as apollo_executable, Name, Node, Schema,
 };
@@ -11,7 +12,8 @@ use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
 use crate::operation::context::ExecutableContext;
 use crate::operation::fragments::parse_inline_fragment;
 use crate::operation::types::{
-    FieldArgument, FieldSelectionCommon, ObjectLikeCommon, ObjectSelection, SelectionKind,
+    FieldArgument, FieldSelectionCommon, MultiTypeSelectionCommon, ObjectLikeCommon,
+    ObjectSelection, SelectionKind,
 };
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
@@ -141,12 +143,19 @@ pub(crate) fn parse_enum_selection(
     EnumSelection::new(is_optional, concrete_type)
 }
 
+#[derive(Debug, Hash)]
+enum _FieldOrUsedFrag {
+    Field(FieldSelection),
+    UsedFrag(String),
+}
+
 pub(crate) fn parse_selection<T: ExecutableContext>(
     ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
     path: &String,
     obj_like: &mut ObjectLikeCommon,
     selection: &apollo_executable::Selection,
+    on_condition: &Option<String>,
 ) {
     match selection {
         apollo_executable::Selection::Field(field) => {
@@ -173,7 +182,17 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
                 f_type,
                 args,
             );
-            obj_like.add_selection(field_selection);
+            if let Some(on_condition) = &on_condition {
+                obj_like
+                    .type_cond_selections
+                    .entry(on_condition.clone())
+                    .or_insert_with(move || {
+                        ObjectLikeCommon::new(path.clone(), on_condition.clone())
+                    })
+                    .add_selection(field_selection);
+            } else {
+                obj_like.add_selection(field_selection);
+            }
         }
         apollo_executable::Selection::FragmentSpread(fragment_spread) => {
             let fragment_name = fragment_spread.fragment_name.to_string();
@@ -182,19 +201,57 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
             // all fragments should be already parsed by now.
             let frag = global_ctx.get_fragment_strict(&fragment_name);
             ctx.typedefs_mut().add_used_fragment(frag.clone());
-            obj_like.add_used_fragment(fragment_name.clone());
+            if let Some(on_condition) = on_condition {
+                obj_like
+                    .type_cond_selections
+                    .entry(on_condition.clone())
+                    .or_insert_with(move || {
+                        ObjectLikeCommon::new(path.clone(), on_condition.clone())
+                    })
+                    .add_used_fragment(frag.name.clone());
+            } else {
+                obj_like.add_used_fragment(fragment_name.clone());                
+            }
         }
-
         apollo_executable::Selection::InlineFragment(inline_fragment) => {
-            // inline fragments should be generated localy in codegens
-            // in dart, the generated object class would implement the abstract inline fragment that
-            // was generated.
-            let inline_frag = parse_inline_fragment(ctx, global_ctx, path, inline_fragment);
-            obj_like.add_inline_fragment(inline_frag);
+            let is_on_self = inline_fragment
+                .type_condition
+                .as_ref()
+                .map_or(true, |t| t.to_string() == obj_like.schema_typename);
+            let type_condition = inline_fragment.type_condition.as_ref().unwrap().to_string();
+
+            if is_on_self {
+                // just spread the selections in here.
+                for selection in &inline_fragment.selection_set.selections {
+                    parse_selection(ctx, global_ctx, path, obj_like, selection)
+                }
+            } else {
+                let type_condition = type_condition.to_string();
+
+                let conditioned_path = format!("{}__{}", path, type_condition);
+                parse_selection(ctx, global_ctx, conditioned_path, obj_like, selection);
+                let typed_obj = parse_obj_like_from_selection_set(
+                    ctx,
+                    global_ctx,
+                    &conditioned_path,
+                    type_condition,
+                    &inline_fragment.selection_set,
+                    true,
+                );
+                obj_like.merge(typed_obj);
+            }
+            obj_like.optimize_type_conditions()
         }
     }
 }
 
+pub fn get_closest_member(
+    ctx: &ShalomGlobalContext,
+    multitype: &MultiTypeSelectionCommon,
+    type_condition: &str,
+) -> String {
+    ctx.schema_ctx.schema.implementers_map()
+}
 
 pub(crate) fn parse_object_selection<T: ExecutableContext>(
     ctx: &mut T,
@@ -220,7 +277,7 @@ pub(crate) fn parse_object_selection<T: ExecutableContext>(
         path,
         schema_typename,
         selection_orig,
-        false
+        false,
     );
     ObjectSelection::new(is_optional, obj_like)
 }
@@ -278,7 +335,7 @@ pub(crate) fn parse_interface_selection<T: ExecutableContext>(
     path: &String,
     is_optional: bool,
     selection_set: &apollo_executable::SelectionSet,
-    interface_type: Node<crate::schema::types::InterfaceType>,
+    interface_type: Arc<crate::schema::types::InterfaceType>,
 ) -> SharedInterfaceSelection {
     trace!("Parsing interface selection {:?}", interface_type.name);
 
@@ -403,7 +460,7 @@ pub(crate) fn parse_obj_like_from_selection_set<T: ExecutableContext>(
     path: &String,
     schema_typename: String,
     selection_set: &apollo_compiler::executable::SelectionSet,
-    is_inline_frag: bool
+    is_inline_frag: bool,
 ) -> ObjectLikeCommon {
     let mut obj_like = ObjectLikeCommon::new(path.clone(), schema_typename, is_inline_frag);
 
@@ -551,7 +608,7 @@ fn parse_operation(
         &operation_name,
         op.operation_type.name().to_string(),
         &op.selection_set,
-        false
+        false,
     );
     ctx.set_root_type(object_like);
     Ok(Arc::new(ctx))

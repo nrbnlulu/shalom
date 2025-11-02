@@ -1,7 +1,5 @@
 use std::{
-    cell::Cell,
-    collections::{HashMap, HashSet},
-    rc::Rc,
+    cell::Cell, collections::{HashMap, HashSet}, hash::Hasher, rc::Rc
 };
 
 use indexmap::IndexMap;
@@ -80,6 +78,18 @@ pub struct FieldSelection {
     pub kind: SelectionKind,
     pub arguments: Vec<FieldArgument>,
 }
+impl std::hash::Hash for FieldSelection {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.self_selection_name().hash(state);
+    }
+}
+impl std::cmp::PartialEq for FieldSelection {
+    fn eq(&self, other: &Self) -> bool {
+        self.self_selection_name() == other.self_selection_name()
+    }
+}
+
+impl std::cmp::Eq for FieldSelection {}
 
 impl FieldSelection {
     pub fn new(
@@ -171,42 +181,36 @@ pub struct ObjectLikeCommon {
     pub schema_typename: String,
     /// selections that apply to all types in this object-like
     /// in interfaces / union this can be thought as shared selections
-    pub selections: Vec<FieldSelection>,
+    pub selections: HashSet<FieldSelection>,
     /// fragment spreads
     pub used_fragments: HashSet<FragName>,
-    /// inline fragments
-    pub used_inline_frags: HashMap<FullPathName, InlineFragment>,
-    /// this is an inline fragment, thus should not generate a real object rather an abstract class or
-    /// something similar
-    pub is_inline_frag: bool,
+    pub type_cond_selections: HashMap<String, ObjectLikeCommon>,
 }
 
 impl ObjectLikeCommon {
-    pub fn new(path_name: String, schema_typename: String, is_inline_frag: bool) -> Self {
+    pub fn new(path_name: String, schema_typename: String) -> Self {
         ObjectLikeCommon {
             path_name,
             schema_typename,
             used_fragments: HashSet::new(),
-            used_inline_frags: HashMap::new(),
-            selections: Vec::new(),
-            is_inline_frag,
+            type_cond_selections: HashMap::new(),
+            selections: HashSet::new(),
         }
     }
+    
+ 
     pub fn merge(&mut self, other: ObjectLikeCommon) {
-        let this_selections_hashes: HashSet<String> = self
-            .selections
-            .iter()
-            .map(|s| s.self_selection_name().clone())
-            .collect();
-        for selection in other.selections {
-            let selection_name = selection.self_selection_name();
-            if this_selections_hashes.contains(selection_name) {
-                continue;
-            }
-            self.selections.push(selection);
+        self.used_fragments.extend(other.used_fragments.clone());
+        // the same type just extend selections
+        if self.schema_typename == other.schema_typename{
+            self.selections.extend(other.selections);
+        } else {
+            self.type_cond_selections.entry(
+                other.schema_typename.clone()
+            ).or_insert_with(Vec::new).push(
+                other
+            );
         }
-        self.used_inline_frags.extend(other.used_inline_frags);
-        self.used_fragments.extend(other.used_fragments);
     }
 
     pub fn add_selection(&mut self, selection: FieldSelection) {
@@ -328,7 +332,21 @@ impl ObjectLikeCommon {
         }
         selections
     }
+    /// the goal here is as follows
+    /// 
+    pub fn optimize_type_conditions(&mut self, ctx: &ShalomGlobalContext){
+        let recursion_limit = 100;
+        fn optimize_recursive(ctx: &ShalomGlobalContext, root: &mut ObjectLikeCommon, type_condition: String, inline_frag: ObjectLikeCommon) {
 
+            for member in ctx.schema_ctx.get_interface_direct_members(&type_condition){
+                
+            }
+            for (type_name, types) in this_level_types {
+                
+            }
+        }
+    }
+    
     /// returns all the types that have directly selected by this object-like selections
     /// only valid for multi-types
     fn get_all_directly_selected_typenames(&self, ctx: &ShalomGlobalContext) -> HashSet<String> {
@@ -474,7 +492,7 @@ pub type SharedInterfaceSelection = Rc<InterfaceSelection>;
 
 impl InterfaceSelection {
     pub fn new(
-        interface_type: Node<InterfaceType>,
+        interface_type: Arc<InterfaceType>,
         object_common: ObjectLikeCommon,
         is_optional: bool,
     ) -> SharedInterfaceSelection {

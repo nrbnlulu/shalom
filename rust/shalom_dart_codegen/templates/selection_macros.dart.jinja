@@ -2,7 +2,13 @@
 
 {# Macro to generate implements clause for used fragments #}
 {% macro implements_used_fragments(used_fragments) -%}
-{% if used_fragments | length > 0 %} implements {% for frag_name in used_fragments %}{{ frag_name }}{{ ", " if not loop.last }}{% endfor %}{% endif %}
+{{template_log(used_fragments)}}
+{% if used_fragments | length > 0 %} implements
+{% for frag_name in used_fragments %}
+    {{ frag_name }}
+    {{", " if not loop.last}}
+{% endfor -%}
+{% endif -%}
 {%- endmacro %}
 
 {# Macro to normalize a selection in cache - handles Object, Union, List, Scalar, etc. #}
@@ -348,12 +354,12 @@ null
     {% endfor %}
 
     {% if is_multi_type_member or is_fallback %}
-    // Getter for typename (public accessor for __typename field)
-    {% for selection in selections %}
-        {% if selection.name == "__typename" %}
-    String get typename => $__typename;
-        {% endif %}
-    {% endfor %}
+        // Getter for typename (public accessor for __typename field)
+        {% for selection in selections %}
+            {% if selection.name == "__typename" %}
+        String get typename => $__typename;
+            {% endif %}
+        {% endfor %}
     {% endif %}
 
     // keywordargs constructor
@@ -592,7 +598,7 @@ null
 
 {% macro selection_object_definition(full_name, selection, union_parent_name=none, is_multi_type_member=false) -%}
     class {{ full_name }}{% if is_multi_type_member %} extends {{ union_parent_name }}{% endif %}{{ implements_used_fragments(selection.used_fragments) }}  {
-        {{ selection_object_impl(full_name, selection, false, full_name, is_multi_type_member=is_multi_type_member) }}
+        {{ selection_object_impl(full_name, selection, is_root_selection=false, full_name=full_name, is_multi_type_member=is_multi_type_member) }}
     }
 {% endmacro %}
 
@@ -600,17 +606,13 @@ null
 
 {# Unified macro for union and interface selection - handles both with fallback support -#}
 {% macro multi_type_selection_definition(full_name, selection) -%}
-    {% set is_union = selection.union_type is defined %}
-    {% set is_interface = selection.interface_type is defined %}
-    {% set type_kind = "union" if is_union else "interface" %}
-    {% set type_name = selection.union_type.name if is_union else selection.interface_type.name %}
-    {% set class_modifier = "sealed" if is_union else "abstract" %}
-    // {{ type_kind | capitalize }} {{ class_modifier }} class
-    {{ class_modifier }} class {{ full_name }}{{ implements_used_fragments(selection.shared_fragments) }} {
+    {% set is_union = selection.kind == "Union" %}
+    {% set is_interface = not is_union %}
+    sealed class {{ full_name }}{{ implements_used_fragments(selection.used_fragments) }} {
 
         const {{ full_name }}();
 
-        {% for selection_field in selection.shared_selections -%}
+        {% for selection_field in selection.selections -%}
             {% set selection_name = selection_field.name -%}
             {% if selection_name != "__typename" -%}
                 {{type_name_for_selection(selection_field)}} get {{selection_name}};
@@ -630,7 +632,7 @@ null
         ) {
             final typename = data["__typename"] as String;
             switch (typename) {
-                {% for type_condition, obj_selection in selection.inline_fragments | items %}
+                {% for type_condition, obj_selection in selection.used_inline_frags | items %}
                 case "{{ type_condition }}":
                     {{ full_name }}_{{ type_condition }}.normalize$inCache(
                         data,
@@ -644,7 +646,7 @@ null
                     break;
                 {% endfor %}
                 default:
-                    {% if selection.has_fallback %}
+                    {% if selection.needs_fallback %}
                     {{ full_name }}_Fallback.normalize$inCache(
                         data,
                         ctx,
@@ -655,45 +657,44 @@ null
                         parent$normalizedID: parent$normalizedID
                     );
                     {% else %}
-                    throw Exception("Unknown __typename: $typename for {{ type_kind }} {{ selection.schema_typename }}");
+                    throw Exception("Unknown __typename: $typename for  {{ selection.schema_typename }}");
                     {% endif %}
             }
         }
 
         static {{ full_name }} fromCached(NormalizedRecordData data, ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}) {
-            // For {{ type_kind }}s, data is either a String (normalized cache key) or JsonObject (inline data)
             if (data is String) {
-                // Normalized {{ type_kind }}: data is the cache key, fetch the actual record
+                // Normalized {{ selection.schema_typename }}: data is the cache key, fetch the actual record
                 final actualData = ctx.getCachedRecord(data);
                 if (actualData == null) {
                     throw Exception("Cached record not found for key: $data");
                 }
                 final typename = actualData["__typename"] as String;
                 switch (typename) {
-                    {% for type_condition, obj_selection in selection.inline_fragments | items %}
+                    {% for type_condition, obj_selection in selection.used_inline_frags | items %}
                     case "{{ type_condition }}":
                         return {{ full_name }}_{{ type_condition }}.fromCached(actualData, ctx{{if_op_variables(", variables")}});
                     {% endfor %}
                     default:
-                        {% if selection.has_fallback %}
+                        {% if selection.needs_fallback %}
                         return {{ full_name }}_Fallback.fromCached(actualData, ctx{{if_op_variables(", variables")}});
                         {% else %}
-                        throw Exception("Unknown __typename: $typename for {{ type_kind }} {{ selection.schema_typename }}");
+                        throw Exception("Unknown __typename: $typename for {{ selection.schema_typename }}");
                         {% endif %}
                 }
             } else {
-                // Non-normalized {{ type_kind }}: data is the JsonObject directly
+                // Non-normalized {{ selection.schema_typename }}: data is the JsonObject directly
                 final typename = data["__typename"] as String;
                 switch (typename) {
-                    {% for type_condition, obj_selection in selection.inline_fragments | items %}
+                    {% for type_condition, obj_selection in selection.used_inline_frags | items %}
                     case "{{ type_condition }}":
                         return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx{{if_op_variables(", variables")}});
                     {% endfor %}
                     default:
-                        {% if selection.has_fallback %}
+                        {% if selection.needs_fallback %}
                         return {{ full_name }}_Fallback.fromCached(data, ctx{{if_op_variables(", variables")}});
                         {% else %}
-                        throw Exception("Unknown __typename: $typename for {{ type_kind }} {{ selection.schema_typename }}");
+                        throw Exception("Unknown __typename: $typename for {{ selection.schema_typename }}");
                         {% endif %}
                 }
             }
@@ -723,10 +724,10 @@ null
     {{ selection_object_impl(
         fallback_class_name,
         multi_type_selection,
-        false,
+        is_root_selection=false,
         full_name=fallback_class_name,
         is_multi_type_member=true,
-        shared_selections=multi_type_selection.shared_selections,
+        shared_selections=multi_type_selection.selection,
         is_fallback=true
     ) }}
 {% endmacro %}

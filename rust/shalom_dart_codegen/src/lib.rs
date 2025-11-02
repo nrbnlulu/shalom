@@ -344,32 +344,7 @@ struct FragmentEnv<'a> {
     env: Environment<'a>,
 }
 
-/// Helper function to find pubspec.yaml and extract package name
-fn find_pubspec_and_package_name(start_path: &Path) -> Result<(PathBuf, String), String> {
-    let mut current_dir = start_path.parent();
 
-    while let Some(dir) = current_dir {
-        let potential_pubspec = dir.join("pubspec.yaml");
-        if potential_pubspec.exists() {
-            let pubspec_content = fs::read_to_string(&potential_pubspec)
-                .map_err(|e| format!("Failed to read pubspec.yaml: {}", e))?;
-
-            let package_name = pubspec_content
-                .lines()
-                .find(|line| line.trim_start().starts_with("name:"))
-                .and_then(|line| line.split(':').nth(1))
-                .map(|name| name.trim().to_string())
-                .ok_or_else(|| "Could not find 'name:' field in pubspec.yaml".to_string())?;
-
-            return Ok((potential_pubspec, package_name));
-        }
-        current_dir = dir.parent();
-    }
-
-    Err("No pubspec.yaml found".to_string())
-}
-
-// TODO: might not be good to create an environment for every operation. as it will recreate templates.
 fn register_default_template_fns<'a>(
     env: &mut Environment<'a>,
     ctx: &SharedShalomGlobalContext,
@@ -392,6 +367,7 @@ fn register_default_template_fns<'a>(
     env.add_function("panic", move |a: &str| -> minijinja::Value {
         panic!("{a}");
     });
+
     let ctx_clone = ctx.clone();
     env.add_function("type_name_for_selection", move |a: _| {
         ext_jinja_fns::type_name_for_selection(&ctx_clone, a)
@@ -447,8 +423,6 @@ fn register_default_template_fns<'a>(
             ext_jinja_fns::is_type_implementing_interface(&ctx_clone, type_name, interface_name)
         },
     );
-
-    let global_ctx = ctx.clone();
 
     env.add_function(
         "get_field_name_with_args",
@@ -594,6 +568,29 @@ where
             minijinja::Value::from_serialize(res)
         },
     );
+    let executable_ctx_clone = executable_ctx.clone();
+
+    env.add_function("all_object_selections", move || {
+        let objects = executable_ctx_clone
+            .typedefs()
+            .objects
+            .values()
+            .filter(|obj| !obj.common.is_inline_frag);
+        let ret = objects.collect::<Vec<_>>();
+
+        minijinja::Value::from_serialize(ret)
+    });
+    let executable_ctx_clone2 = executable_ctx.clone();
+
+    env.add_function(
+        "template_log",
+        move |a: &minijinja::Value| -> minijinja::Value {
+            let template_name = &executable_ctx_clone2.get_root().path_name;
+            info!("in template for {template_name}: {a}");
+            minijinja::Value::from(0)
+        },
+    );
+
     Ok(())
 }
 
@@ -604,7 +601,6 @@ impl OperationEnv<'_> {
         register_executable_fns(&mut env, ctx, op_ctx.clone())?;
 
         // Add function to check if a selection is defined in a fragment (not in the operation itself)
-        let ctx_clone2 = ctx.clone();
         let op_ctx_clone2 = op_ctx.clone();
         env.add_function(
             "is_selection_from_fragment",
@@ -642,12 +638,6 @@ impl OperationEnv<'_> {
                 true
             },
         );
-        let op_ctx_clone = op_ctx.clone();
-        env.add_function("all_selected_objects", ||{
-            let mut object = Vec::new();
-            
-            
-        });
         Ok(OperationEnv { env })
     }
 
