@@ -176,16 +176,20 @@ pub struct ObjectLikeCommon {
     pub used_fragments: HashSet<FragName>,
     /// inline fragments
     pub used_inline_frags: HashMap<FullPathName, InlineFragment>,
+    /// this is an inline fragment, thus should not generate a real object rather an abstract class or
+    /// something similar
+    pub is_inline_frag: bool,
 }
 
 impl ObjectLikeCommon {
-    pub fn new(path_name: String, schema_typename: String) -> Self {
+    pub fn new(path_name: String, schema_typename: String, is_inline_frag: bool) -> Self {
         ObjectLikeCommon {
             path_name,
             schema_typename,
             used_fragments: HashSet::new(),
             used_inline_frags: HashMap::new(),
             selections: Vec::new(),
+            is_inline_frag,
         }
     }
     pub fn merge(&mut self, other: ObjectLikeCommon) {

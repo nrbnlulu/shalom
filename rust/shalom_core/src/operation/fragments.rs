@@ -123,6 +123,7 @@ pub(crate) fn parse_fragment(
         &frag_name,
         type_name.to_string().clone(),
         selection_set,
+        false
     );
 
     fragment_ctx.set_on_type(obj_like);
@@ -141,7 +142,7 @@ pub(crate) fn parse_inline_fragment<T: ExecutableContext>(
         .expect("inline fragments with no type condition are not supported.")
         .to_string();
     let this_path = format!("{}__{}", path, type_cond);
-    let mut obj_like = ObjectLikeCommon::new(this_path.clone(), type_cond);
+    let mut obj_like = ObjectLikeCommon::new(this_path.clone(), type_cond, true);
 
     for selection in &inline_frag.selection_set.selections {
         parse_selection(ctx, global_ctx, &this_path, &mut obj_like, selection);

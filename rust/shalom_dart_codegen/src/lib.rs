@@ -642,7 +642,12 @@ impl OperationEnv<'_> {
                 true
             },
         );
-
+        let op_ctx_clone = op_ctx.clone();
+        env.add_function("all_selected_objects", ||{
+            let mut object = Vec::new();
+            
+            
+        });
         Ok(OperationEnv { env })
     }
 

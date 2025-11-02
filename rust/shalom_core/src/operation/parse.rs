@@ -195,14 +195,13 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
     }
 }
 
+
 pub(crate) fn parse_object_selection<T: ExecutableContext>(
     ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
     path: &String,
     is_optional: bool,
     selection_orig: &apollo_compiler::executable::SelectionSet,
-
-    parent_multitype_fullname: Option<String>,
 ) -> SharedObjectSelection {
     trace!("Parsing object selection {:?}", selection_orig.ty);
     trace!("Path is {:?}", path);
@@ -215,8 +214,14 @@ pub(crate) fn parse_object_selection<T: ExecutableContext>(
 
     let schema_typename = selection_orig.ty.to_string();
 
-    let obj_like =
-        parse_obj_like_from_selection_set(ctx, global_ctx, path, schema_typename, selection_orig);
+    let obj_like = parse_obj_like_from_selection_set(
+        ctx,
+        global_ctx,
+        path,
+        schema_typename,
+        selection_orig,
+        false
+    );
     ObjectSelection::new(is_optional, obj_like)
 }
 
@@ -252,6 +257,7 @@ where
         path,
         union_type.name.clone(),
         selection_set,
+        false,
     );
     // Determine if we need a fallback class
     let union_selection = UnionSelection::new(union_type, obj_like, is_optional);
@@ -282,6 +288,7 @@ pub(crate) fn parse_interface_selection<T: ExecutableContext>(
         path,
         interface_type.name.clone(),
         selection_set,
+        true,
     );
 
     let iface = InterfaceSelection::new(interface_type, obj_like, is_optional);
@@ -315,7 +322,6 @@ where
                     path,
                     is_optional,
                     selection_set,
-                    None, // Regular object selection, not a multi-type member
                 )),
                 GraphQLAny::Enum(_enum) => {
                     SelectionKind::Enum(parse_enum_selection(is_optional, _enum))
@@ -397,8 +403,9 @@ pub(crate) fn parse_obj_like_from_selection_set<T: ExecutableContext>(
     path: &String,
     schema_typename: String,
     selection_set: &apollo_compiler::executable::SelectionSet,
+    is_inline_frag: bool
 ) -> ObjectLikeCommon {
-    let mut obj_like = ObjectLikeCommon::new(path.clone(), schema_typename);
+    let mut obj_like = ObjectLikeCommon::new(path.clone(), schema_typename, is_inline_frag);
 
     for selection in selection_set.selections.iter() {
         parse_selection(ctx, global_ctx, path, &mut obj_like, selection);
@@ -544,6 +551,7 @@ fn parse_operation(
         &operation_name,
         op.operation_type.name().to_string(),
         &op.selection_set,
+        false
     );
     ctx.set_root_type(object_like);
     Ok(Arc::new(ctx))
