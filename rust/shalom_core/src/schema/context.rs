@@ -107,7 +107,6 @@ pub struct SchemaContext {
     types: Mutex<SchemaTypesCtx>,
     #[serde(skip_serializing)]
     pub schema: Valid<apollo_compiler::Schema>,
-
 }
 
 impl SchemaContext {
@@ -215,18 +214,17 @@ impl SchemaContext {
         let types = self.types.lock().unwrap();
         let mut ret = Vec::<SharedSchemaObjectLike>::new();
         for iface in types.interfaces.values() {
-            if iface.implements_interfaces().contains(&iface_name) {
+            if iface.implements_interfaces().contains(iface_name.as_str()) {
                 ret.push(iface.clone());
             }
         }
         for obj in types.objects.values() {
-            if obj.implements_interfaces().contains(&iface_name) {
+            if obj.implements_interfaces().contains(iface_name.as_str()) {
                 ret.push(obj.clone());
             }
         }
         ret
     }
-    
 }
 
 fn check_implements_recursive<I: SchemaObjectLike>(

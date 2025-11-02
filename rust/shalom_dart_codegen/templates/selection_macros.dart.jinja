@@ -2,7 +2,6 @@
 
 {# Macro to generate implements clause for used fragments #}
 {% macro implements_used_fragments(used_fragments) -%}
-{{template_log(used_fragments)}}
 {% if used_fragments | length > 0 %} implements
 {% for frag_name in used_fragments %}
     {{ frag_name }}
@@ -632,7 +631,7 @@ null
         ) {
             final typename = data["__typename"] as String;
             switch (typename) {
-                {% for type_condition, obj_selection in selection.used_inline_frags | items %}
+                {% for type_condition, obj_selection in selection.type_cond_selections | items %}
                 case "{{ type_condition }}":
                     {{ full_name }}_{{ type_condition }}.normalize$inCache(
                         data,
@@ -671,7 +670,7 @@ null
                 }
                 final typename = actualData["__typename"] as String;
                 switch (typename) {
-                    {% for type_condition, obj_selection in selection.used_inline_frags | items %}
+                    {% for type_condition, obj_selection in selection.type_cond_selections | items %}
                     case "{{ type_condition }}":
                         return {{ full_name }}_{{ type_condition }}.fromCached(actualData, ctx{{if_op_variables(", variables")}});
                     {% endfor %}
@@ -686,7 +685,7 @@ null
                 // Non-normalized {{ selection.schema_typename }}: data is the JsonObject directly
                 final typename = data["__typename"] as String;
                 switch (typename) {
-                    {% for type_condition, obj_selection in selection.used_inline_frags | items %}
+                    {% for type_condition, obj_selection in selection.type_cond_selections | items %}
                     case "{{ type_condition }}":
                         return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx{{if_op_variables(", variables")}});
                     {% endfor %}
@@ -727,7 +726,7 @@ null
         is_root_selection=false,
         full_name=fallback_class_name,
         is_multi_type_member=true,
-        shared_selections=multi_type_selection.selection,
+        shared_selections=multi_type_selection.selections,
         is_fallback=true
     ) }}
 {% endmacro %}

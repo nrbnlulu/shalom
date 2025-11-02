@@ -43,13 +43,14 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
 {% for full_name, selection in typedefs.unions | items %}
     {{ multi_type_selection_definition(full_name, selection) }}
 {% endfor %}
-    
+
 {# First generate union member object classes #}
 {% set union_types = typedefs.unions %}
 {% for union_full_name, union_selection in union_types | items %}
-    {% for type_condition, obj in union_selection.used_inline_frags | items %}
-        class {{ obj.path_name }} extends {{ union_full_name }}{{ implements_used_fragments(obj.used_fragments) }}  {
-            {{ selection_object_impl(obj.path_name, obj, is_root_selection=false, full_name=obj.path_name, is_multi_type_member=true, shared_selections=union_selection.selections) }}
+    {% for type_condition, obj in union_selection.type_cond_selections | items %}
+        {% set member_full_name = union_full_name ~ "_" ~ type_condition %}
+        class {{ member_full_name }} extends {{ union_full_name }}{{ implements_used_fragments(obj.used_fragments) }}  {
+            {{ selection_object_impl(member_full_name, obj, is_root_selection=false, full_name=obj.path_name, is_multi_type_member=true, shared_selections=union_selection.selections) }}
         }
     {% endfor %}
 
@@ -70,18 +71,16 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
 
 {# First generate interface member object classes #}
 {% for interface_full_name, interface_selection in typedefs.interfaces | items %}
-    {% for type_condition, obj_selection in interface_selection.used_inline_frags | items %}
+    {% for type_condition, obj_selection in interface_selection.type_cond_selections | items %}
         {# Generate interface member object using the unified macro with shared selections #}
         {% set member_full_name = interface_full_name ~ "_" ~ type_condition %}
-        {# Look up the full Selection from context which includes arguments #}
-        {% set member_selection = typedefs.objects[member_full_name] %}
         class {{ member_full_name }} extends {{ interface_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
-            {{ selection_object_impl(member_full_name, member_selection, is_root_selection=false, full_name=obj_selection.path_name, is_multi_type_member=true, shared_selections=interface_selection.selections) }}
+            {{ selection_object_impl(member_full_name, obj_selection, is_root_selection=false, full_name=obj_selection.path_name, is_multi_type_member=true, shared_selections=interface_selection.selections) }}
         }
     {% endfor %}
 
     {# Generate fallback class if needed #}
-    {% if interface_selection.has_fallback %}
+    {% if interface_selection.needs_fallback %}
         {% set fallback_full_name = interface_full_name ~ "_Fallback" %}
         class {{ fallback_full_name }} extends {{ interface_full_name }} {
             {{ selection_interface_fallback_impl(fallback_full_name, interface_selection) }}

@@ -1,5 +1,9 @@
 use std::{
-    cell::Cell, collections::{HashMap, HashSet}, hash::Hasher, rc::Rc
+    cell::Cell,
+    collections::{HashMap, HashSet},
+    hash::Hasher,
+    rc::Rc,
+    sync::Arc,
 };
 
 use indexmap::IndexMap;
@@ -181,9 +185,12 @@ pub struct ObjectLikeCommon {
     pub schema_typename: String,
     /// selections that apply to all types in this object-like
     /// in interfaces / union this can be thought as shared selections
-    pub selections: HashSet<FieldSelection>,
+    pub selections: Vec<FieldSelection>,
     /// fragment spreads
     pub used_fragments: HashSet<FragName>,
+    /// inline fragments used in this object-like
+    pub used_inline_frags: HashMap<String, InlineFragment>,
+    /// type conditioned selections - stores selections for specific types
     pub type_cond_selections: HashMap<String, ObjectLikeCommon>,
 }
 
@@ -193,23 +200,22 @@ impl ObjectLikeCommon {
             path_name,
             schema_typename,
             used_fragments: HashSet::new(),
+            used_inline_frags: HashMap::new(),
             type_cond_selections: HashMap::new(),
-            selections: HashSet::new(),
+            selections: Vec::new(),
         }
     }
-    
- 
+
     pub fn merge(&mut self, other: ObjectLikeCommon) {
-        self.used_fragments.extend(other.used_fragments.clone());
-        // the same type just extend selections
-        if self.schema_typename == other.schema_typename{
+        if self.schema_typename == other.schema_typename {
+            // the same type just extend selections
+            self.used_fragments.extend(other.used_fragments);
+            self.used_inline_frags.extend(other.used_inline_frags);
             self.selections.extend(other.selections);
         } else {
-            self.type_cond_selections.entry(
-                other.schema_typename.clone()
-            ).or_insert_with(Vec::new).push(
-                other
-            );
+            // different type - store as type condition
+            self.type_cond_selections
+                .insert(other.schema_typename.clone(), other);
         }
     }
 
@@ -332,21 +338,13 @@ impl ObjectLikeCommon {
         }
         selections
     }
-    /// the goal here is as follows
-    /// 
-    pub fn optimize_type_conditions(&mut self, ctx: &ShalomGlobalContext){
-        let recursion_limit = 100;
-        fn optimize_recursive(ctx: &ShalomGlobalContext, root: &mut ObjectLikeCommon, type_condition: String, inline_frag: ObjectLikeCommon) {
-
-            for member in ctx.schema_ctx.get_interface_direct_members(&type_condition){
-                
-            }
-            for (type_name, types) in this_level_types {
-                
-            }
-        }
+    /// Optimizes type conditions by flattening and organizing them
+    /// This is called after parsing to optimize the structure
+    pub fn optimize_type_conditions(&mut self, _ctx: &ShalomGlobalContext) {
+        // TODO: Implement type condition optimization
+        // This will flatten nested type conditions and organize them for codegen
     }
-    
+
     /// returns all the types that have directly selected by this object-like selections
     /// only valid for multi-types
     fn get_all_directly_selected_typenames(&self, ctx: &ShalomGlobalContext) -> HashSet<String> {
@@ -485,7 +483,7 @@ impl MultiTypeSelection for UnionSelection {
 pub struct InterfaceSelection {
     #[serde(flatten)]
     pub common: MultiTypeSelectionCommon,
-    pub interface_type: Node<InterfaceType>,
+    pub interface_type: Arc<InterfaceType>,
 }
 
 pub type SharedInterfaceSelection = Rc<InterfaceSelection>;

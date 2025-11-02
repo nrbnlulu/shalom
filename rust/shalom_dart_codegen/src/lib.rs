@@ -344,7 +344,6 @@ struct FragmentEnv<'a> {
     env: Environment<'a>,
 }
 
-
 fn register_default_template_fns<'a>(
     env: &mut Environment<'a>,
     ctx: &SharedShalomGlobalContext,
@@ -571,11 +570,7 @@ where
     let executable_ctx_clone = executable_ctx.clone();
 
     env.add_function("all_object_selections", move || {
-        let objects = executable_ctx_clone
-            .typedefs()
-            .objects
-            .values()
-            .filter(|obj| !obj.common.is_inline_frag);
+        let objects = executable_ctx_clone.typedefs().objects.values();
         let ret = objects.collect::<Vec<_>>();
 
         minijinja::Value::from_serialize(ret)

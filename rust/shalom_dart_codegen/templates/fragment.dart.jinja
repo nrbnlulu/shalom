@@ -44,21 +44,22 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
     {% if selection_name != fragment_name %}
         {{ multi_type_selection_definition(selection_name, union) }}
     {% endif %}
-    {% for member in union.used_inline_frags | values %}
-        class {{ member_full_name }} extends {{ union.path_name }}{{ implements_used_fragments(member) }}  {
-            {{ selection_object_impl(member.path_name, member, false, member.path_name, is_multi_type_member=true, shared_selections=union.selections) }}
+    {% for type_condition, member in union.type_cond_selections | items %}
+        {% set member_full_name = union.path_name ~ "_" ~ type_condition %}
+        class {{ member_full_name }} extends {{ union.path_name }}{{ implements_used_fragments(member.used_fragments) }}  {
+            {{ selection_object_impl(member_full_name, member, false, member.path_name, is_multi_type_member=true, shared_selections=union.selections) }}
         }
     {% endfor %}
 
     {# Generate fallback class if needed #}
-    {% if union.has_fallback %}
+    {% if union.needs_fallback %}
         {% set fallback_full_name = union.path_name ~ "_Fallback" %}
         class {{ fallback_full_name }} extends {{ union.path_name }} {
             {{ selection_interface_fallback_impl(fallback_full_name, union) }}
         }
     {% endif %}
 {% endfor %}
-    
+
 
 // ------------ END UNION DEFINITIONS -------------
 
@@ -68,14 +69,15 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
 {% for interface_full_name, interface in typedefs.interfaces | items %}
     {# Skip the root interface type of the fragment itself - it's just the abstract class #}
     {% if interface_full_name != fragment_name %}
-    {% for type_condition, obj_selection in interface.used_inline_frags | items %}
+    {% for type_condition, obj_selection in interface.type_cond_selections | items %}
+        {% set member_full_name = interface_full_name ~ "_" ~ type_condition %}
         class {{ member_full_name }} extends {{ interface_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
             {{ selection_object_impl(member_full_name, obj_selection, is_root_selection=false, full_name=obj_selection.path_name, is_multi_type_member=true, shared_selections=interface.selections) }}
         }
     {% endfor %}
 
     {# Generate fallback class if needed #}
-    {% if interface.has_fallback %}
+    {% if interface.needs_fallback %}
         {% set fallback_full_name = interface_full_name ~ "_Fallback" %}
         class {{ fallback_full_name }} extends {{ interface_full_name }} {
             {{ selection_interface_fallback_impl(fallback_full_name, interface) }}

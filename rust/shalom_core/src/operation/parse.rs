@@ -210,7 +210,7 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
                     })
                     .add_used_fragment(frag.name.clone());
             } else {
-                obj_like.add_used_fragment(fragment_name.clone());                
+                obj_like.add_used_fragment(fragment_name.clone());
             }
         }
         apollo_executable::Selection::InlineFragment(inline_fragment) => {
@@ -223,34 +223,24 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
             if is_on_self {
                 // just spread the selections in here.
                 for selection in &inline_fragment.selection_set.selections {
-                    parse_selection(ctx, global_ctx, path, obj_like, selection)
+                    parse_selection(ctx, global_ctx, path, obj_like, selection, &None)
                 }
             } else {
                 let type_condition = type_condition.to_string();
 
                 let conditioned_path = format!("{}__{}", path, type_condition);
-                parse_selection(ctx, global_ctx, conditioned_path, obj_like, selection);
                 let typed_obj = parse_obj_like_from_selection_set(
                     ctx,
                     global_ctx,
                     &conditioned_path,
-                    type_condition,
+                    type_condition.clone(),
                     &inline_fragment.selection_set,
-                    true,
                 );
                 obj_like.merge(typed_obj);
             }
-            obj_like.optimize_type_conditions()
+            obj_like.optimize_type_conditions(global_ctx)
         }
     }
-}
-
-pub fn get_closest_member(
-    ctx: &ShalomGlobalContext,
-    multitype: &MultiTypeSelectionCommon,
-    type_condition: &str,
-) -> String {
-    ctx.schema_ctx.schema.implementers_map()
 }
 
 pub(crate) fn parse_object_selection<T: ExecutableContext>(
@@ -271,14 +261,8 @@ pub(crate) fn parse_object_selection<T: ExecutableContext>(
 
     let schema_typename = selection_orig.ty.to_string();
 
-    let obj_like = parse_obj_like_from_selection_set(
-        ctx,
-        global_ctx,
-        path,
-        schema_typename,
-        selection_orig,
-        false,
-    );
+    let obj_like =
+        parse_obj_like_from_selection_set(ctx, global_ctx, path, schema_typename, selection_orig);
     ObjectSelection::new(is_optional, obj_like)
 }
 
@@ -314,7 +298,6 @@ where
         path,
         union_type.name.clone(),
         selection_set,
-        false,
     );
     // Determine if we need a fallback class
     let union_selection = UnionSelection::new(union_type, obj_like, is_optional);
@@ -345,7 +328,6 @@ pub(crate) fn parse_interface_selection<T: ExecutableContext>(
         path,
         interface_type.name.clone(),
         selection_set,
-        true,
     );
 
     let iface = InterfaceSelection::new(interface_type, obj_like, is_optional);
@@ -460,12 +442,11 @@ pub(crate) fn parse_obj_like_from_selection_set<T: ExecutableContext>(
     path: &String,
     schema_typename: String,
     selection_set: &apollo_compiler::executable::SelectionSet,
-    is_inline_frag: bool,
 ) -> ObjectLikeCommon {
-    let mut obj_like = ObjectLikeCommon::new(path.clone(), schema_typename, is_inline_frag);
+    let mut obj_like = ObjectLikeCommon::new(path.clone(), schema_typename);
 
     for selection in selection_set.selections.iter() {
-        parse_selection(ctx, global_ctx, path, &mut obj_like, selection);
+        parse_selection(ctx, global_ctx, path, &mut obj_like, selection, &None);
     }
     obj_like
 }
@@ -608,7 +589,6 @@ fn parse_operation(
         &operation_name,
         op.operation_type.name().to_string(),
         &op.selection_set,
-        false,
     );
     ctx.set_root_type(object_like);
     Ok(Arc::new(ctx))
