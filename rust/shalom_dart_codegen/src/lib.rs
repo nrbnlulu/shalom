@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use apollo_compiler::Node;
 use lazy_static::lazy_static;
 use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment, Value};
@@ -8,13 +9,13 @@ use shalom_core::{
         context::{ExecutableContext, OperationContext, SharedOpCtx},
         fragments::{FragmentContext, SharedFragmentContext},
         types::{
-            dart_type_for_scalar, FieldSelection, MultiTypeSelectionCommon, ObjectLikeCommon,
-            SelectionKind, SharedListSelection,
+            dart_type_for_scalar, FieldSelection, FieldSelectionCommon, MultiTypeSelectionCommon,
+            ObjectLikeCommon, ScalarSelection, SelectionKind, SharedListSelection,
         },
     },
     schema::{
         context::SchemaContext,
-        types::{GraphQLAny, InputFieldDefinition, SchemaFieldCommon},
+        types::{GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon},
     },
     shalom_config::RuntimeSymbolDefinition,
 };
@@ -582,39 +583,69 @@ where
         other_obj: &ObjectLikeCommon,
         global_ctx: &ShalomGlobalContext,
     ) {
-        if resolve_to.schema_typename == other_obj.schema_typename || global_ctx.schema_ctx.is_type_implementing_interface(&resolve_to.schema_typename, &other_obj.schema_typename){
-                // this object is a subset or same as the other we can safely flatten other's selections here.
-               resolve_to.selections.extend(other_obj.selections.clone());
-               resolve_to.used_fragments.extend(other_obj.used_fragments.clone());
-               for (_, frag) in &other_obj.used_inline_frags{
-                   // flatten inlinefrag selections directly on here
-                   collect_selections_for_concrete(resolve_to, &frag.common, global_ctx);
-               }
-               resolve_to.used_fragments.extend(other_obj.used_fragments.clone());
+        if resolve_to.schema_typename == other_obj.schema_typename
+            || global_ctx.schema_ctx.is_type_implementing_interface(
+                &resolve_to.schema_typename,
+                &other_obj.schema_typename,
+            )
+        {
+            // this object is a subset or same as the other we can safely flatten other's selections here.
+            resolve_to.selections.extend(other_obj.selections.clone());
+            resolve_to
+                .used_fragments
+                .extend(other_obj.used_fragments.clone());
+            for frag in other_obj.used_inline_frags.values() {
+                // flatten inlinefrag selections directly on here
+                collect_selections_for_concrete(resolve_to, &frag.common, global_ctx);
+            }
+            resolve_to
+                .used_fragments
+                .extend(other_obj.used_fragments.clone());
+        } else if !resolve_to.contains_field("__typename") {
+            let typename_selection =
+                other_obj
+                    .get_selection(&"__typename")
+                    .cloned()
+                    .expect(&format!(
+                        "unions and interfaces MUST select __typename. {} didn't!",
+                        other_obj.path_name
+                    ));
+            resolve_to.selections.insert(typename_selection);
+        }
+
+        // Also traverse type condition selections to find matching concrete types
+        for type_cond_obj in other_obj.type_cond_selections.values() {
+            collect_selections_for_concrete(resolve_to, type_cond_obj, global_ctx);
         }
     }
-    
+
     let ctx_clone2 = ctx.clone();
 
-    env.add_function("multitype_selection_resolved_concretes", move |fullname: &str| {
-        let fullname = fullname.to_string();
-        let multitype = executable_ctx_clone2
-            .typedefs()
-            .get_multitype_selection(&fullname)
-            .expect(&format!("{fullname} not found"));
+    env.add_function(
+        "multitype_selection_resolved_concretes",
+        move |fullname: &str| {
+            let fullname = fullname.to_string();
+            let multitype = executable_ctx_clone2
+                .typedefs()
+                .get_multitype_selection(&fullname)
+                .expect(&format!("{fullname} not found"));
 
-        let mut ret = Vec::new();
-        for concrete_typename in &multitype.common().possible_concrete_types
-        {
-            let concrete_path = format!("{fullname}__{concrete_typename}");
-            let mut resolved = ObjectLikeCommon::new(concrete_path, concrete_typename.clone());
-            collect_selections_for_concrete(&mut resolved, &multitype.common().common, &ctx_clone2);
-            ret.push(resolved);
-        }
-        minijinja::Value::from_serialize(ret)
-    });
+            let mut ret = Vec::new();
+            for concrete_typename in &multitype.common().possible_concrete_types {
+                let concrete_path = format!("{fullname}__{concrete_typename}");
+                let mut resolved =
+                    ObjectLikeCommon::new(concrete_path.clone(), concrete_typename.clone());
+                collect_selections_for_concrete(
+                    &mut resolved,
+                    &multitype.common().common,
+                    &ctx_clone2,
+                );
+                ret.push(resolved);
+            }
+            minijinja::Value::from_serialize(ret)
+        },
+    );
 
-    
     let executable_ctx_clone3 = executable_ctx.clone();
 
     env.add_function(

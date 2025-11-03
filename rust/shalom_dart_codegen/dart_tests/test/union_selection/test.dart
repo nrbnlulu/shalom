@@ -41,8 +41,8 @@ void main() {
       final result = GetSearchResultResponse.fromResponse(userSearchData,
           variables: variables);
 
-      expect(result.search, isA<GetSearchResult_search_User>());
-      final user = result.search as GetSearchResult_search_User;
+      expect(result.search, isA<GetSearchResult_search__User>());
+      final user = result.search as GetSearchResult_search__User;
       expect(user.id, "user1");
       expect(user.name, "John Doe");
       expect(user.email, "john@example.com");
@@ -54,8 +54,8 @@ void main() {
       final result = GetSearchResultResponse.fromResponse(postSearchData,
           variables: variables);
 
-      expect(result.search, isA<GetSearchResult_search_Post>());
-      final post = result.search as GetSearchResult_search_Post;
+      expect(result.search, isA<GetSearchResult_search__Post>());
+      final post = result.search as GetSearchResult_search__Post;
       expect(post.id, "post1");
       expect(post.title, "Hello World");
       expect(post.content, "This is a test post");
@@ -68,8 +68,8 @@ void main() {
       final result = GetSearchResultResponse.fromResponse(commentSearchData,
           variables: variables);
 
-      expect(result.search, isA<GetSearchResult_search_Comment>());
-      final comment = result.search as GetSearchResult_search_Comment;
+      expect(result.search, isA<GetSearchResult_search__Comment>());
+      final comment = result.search as GetSearchResult_search__Comment;
       expect(comment.id, "comment1");
       expect(comment.text, "Great post!");
       expect(comment.author, "Bob Smith");
@@ -138,8 +138,8 @@ void main() {
           variables: variables);
 
       expect(result.searchOpt, isNotNull);
-      expect(result.searchOpt, isA<GetSearchResultOpt_searchOpt_User>());
-      final user = result.searchOpt as GetSearchResultOpt_searchOpt_User;
+      expect(result.searchOpt, isA<GetSearchResultOpt_searchOpt__User>());
+      final user = result.searchOpt as GetSearchResultOpt_searchOpt__User;
       expect(user.id, "user2");
       expect(user.name, "Alice Smith");
       expect(user.email, "alice@example.com");
@@ -181,7 +181,8 @@ void main() {
           result.search, isA<GetSearchResultWithoutTopTypename_search__User>());
       final user =
           result.search as GetSearchResultWithoutTopTypename_search__User;
-      expect(GetSearchResultWithoutTopTypename_search__User.G__typename, "User");
+      expect(
+          GetSearchResultWithoutTopTypename_search__User.G__typename, "User");
       expect(user.id, "user1");
     });
   });
@@ -197,7 +198,7 @@ void main() {
         variables,
       );
 
-      expect(result.search, isA<GetSearchResult_search_User>());
+      expect(result.search, isA<GetSearchResult_search__User>());
 
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
@@ -214,7 +215,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.search, isA<GetSearchResult_search_Post>());
+      expect(result.search, isA<GetSearchResult_search__Post>());
     });
 
     test('Post to Comment', () async {
@@ -227,7 +228,7 @@ void main() {
         variables,
       );
 
-      expect(result.search, isA<GetSearchResult_search_Post>());
+      expect(result.search, isA<GetSearchResult_search__Post>());
 
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
@@ -244,7 +245,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.search, isA<GetSearchResult_search_Comment>());
+      expect(result.search, isA<GetSearchResult_search__Comment>());
     });
 
     test('optional - null to User', () async {

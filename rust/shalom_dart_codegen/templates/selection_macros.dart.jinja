@@ -346,6 +346,11 @@ null
         {% endif %}
     {% endfor %}
 
+    {% if is_multi_type_member %}
+    // Getter for typename (public accessor for static __typename field)
+    String get typename => G__typename;
+    {% endif %}
+
     // keywordargs constructor
     {{ "const" if is_multi_type_member }} {{ typename }}(
     {% if selections | length > 0 %}
@@ -398,13 +403,13 @@ null
             } else {
                 {% if is_multi_type_member -%}
                     {#
-                    since the object is normalized like so
-                    ```json
-                    "ROOT_QUERY.some_field": "{<id>, <typename>}"
-                    ```
-                    and subscribers that might listen to
-                    `<sometype>:<id>` key. and they won't get updated when the type / id has changed.
-                    since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changes on that path if an id or typename has changed.
+                        since the object is normalized like so
+                        ```json
+                        "ROOT_QUERY.some_field": "{<id>, <typename>}"
+                        ```
+                        and subscribers that might listen to
+                        `<sometype>:<id>` key. and they won't get updated when the type / id has changed.
+                        since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changes on that path if an id or typename has changed.
                     #}
                     final normalized$objRecord = NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
                     // if id or typename changed we mark the whole selection as changed.
@@ -424,12 +429,11 @@ null
                 this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                 ctx.addDependantRecord(this$normalizedID);
             }
-
         {% endif -%}
 
         {% for selection in selections -%}
             final {{selection.name}}Normalized$Key = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
-            final {{selection.name}}$normalizedID = "${this$normalizedID}.${ {{selection.name}}Normalized$Key}";
+            final {{selection.name}}$normalizedID = "${this$normalizedID}.${ {{selection.name}}Normalized$Key }";
         {% endfor -%}
         ctx.addDependantRecords(
             {
@@ -438,7 +442,6 @@ null
             {% endfor -%}
             }
         );
-
         {% for selection in selections -%}
             final {{selection.name}}$cached = this$NormalizedRecord[{{selection.name}}Normalized$Key];
             final {{selection.name}}$raw = data["{{selection.name}}"];
@@ -463,7 +466,6 @@ null
                 // data is null and cache is null, do nothing.
                 this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
             }
-
         {% endfor -%}
     }
     {% if not is_root_selection -%}
@@ -517,14 +519,17 @@ null
     bool operator ==(Object other) {
     return identical(this, other) ||
     {% if selections | length > 0 -%}
+    {% set non_typename_selections = selections | rejectattr('name', 'equalto', '__typename') | list %}
+    {% if non_typename_selections | length > 0 -%}
     (other is {{ typename }} &&
-    {% for selection in selections -%}
-        {% if selection.name != "__typename" %}
+    {% for selection in non_typename_selections -%}
             {% set other_selection %}other.{{selection.name}}{% endset -%}
             {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&" if not loop.last }}
-        {% endif %}
     {% endfor -%}
     );
+    {% else -%}
+    (other is {{ typename }});
+    {% endif -%}
     {% else -%}
     (other is {{ typename }});
     {% endif -%}
@@ -532,33 +537,31 @@ null
     @override
     int get hashCode =>
     {% if selections | length > 0 -%}
+        {% set non_typename_selections = selections | rejectattr('name', 'equalto', '__typename') | list %}
         Object.hashAll([
-        {% for selection in selections %}
-            {% set selection_name = selection.name %}
-            {% if selection_name != "__typename" %}
-                {{ selection_name }},
-            {% endif %}
+        {% for selection in non_typename_selections %}
+                {{ selection.name }},
         {% endfor %}
-        {{"," if selections | length > 1}}
         {{ typename }}.G__typename
         ]);
     {% else -%}
         0;
     {% endif %}
-    
+
     JsonObject toJson() {
     return {
     {% for selection in selections %}
         {% set selection_name = selection.name %}
+        "__typename": {{ typename }}.G__typename,
+        {% if selection_name != "__typename" %}
         '{{ selection_name }}':
-            {% if selection_name != "__typename" %}
-                {% if selection.is_optional %}
-                    {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}
-                {% else %}
-                    {{ _serialize_selection_value_macro("this." + selection_name, selection, false) }}
-                {% endif %}
+            {% if selection.is_optional %}
+                {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}
+            {% else %}
+                {{ _serialize_selection_value_macro("this." + selection_name, selection, false) }}
             {% endif %}
         ,
+        {% endif %}
     {% endfor %}
     };
     }
@@ -597,19 +600,20 @@ null
             }
         ) {
             final typename = data["__typename"] as String;
+            final this$cachedResolved = this$cached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord((this$cached as NormalizedObjectRecord).normalizedID()): this$cached;
             switch (typename) {
                 {% for concrete in possible_concrets %}
-                case "{{ concrete.schema_typename }}":
-                    {{ concrete.path_name }}.normalize$inCache(
-                        data,
-                        ctx,
-                        {% if op_variables_exist %}variables,{% endif %}
-                        this$cached: this$cached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord((this$cached as NormalizedObjectRecord).normalizedID()): this$cached,
-                        this$fieldName: this$fieldName,
-                        parent$record: parent$record,
-                        parent$normalizedID: parent$normalizedID
-                    );
-                    break;
+                    case "{{ concrete.schema_typename }}":
+                        {{ concrete.path_name }}.normalize$inCache(
+                            data,
+                            ctx,
+                            {% if op_variables_exist %}variables,{% endif %}
+                            this$cached: this$cachedResolved,
+                            this$fieldName: this$fieldName,
+                            parent$record: parent$record,
+                            parent$normalizedID: parent$normalizedID
+                        );
+                        break;
                 {% endfor %}
                 default:
                     throw Exception("Unknown __typename: $typename for  {{ full_name }}");

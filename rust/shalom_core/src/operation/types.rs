@@ -205,7 +205,9 @@ impl ObjectLikeCommon {
             selections: HashSet::new(),
         }
     }
-
+    pub fn get_selection(&self, name: &str) -> Option<&FieldSelection> {
+        self.selections.iter().find(|s| s.self_selection_name() == name)
+    }
     pub fn merge(&mut self, other: ObjectLikeCommon) {
         if self.schema_typename == other.schema_typename {
             // the same type just extend selections (HashSet handles deduplication)
