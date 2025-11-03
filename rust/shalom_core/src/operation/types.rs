@@ -185,7 +185,7 @@ pub struct ObjectLikeCommon {
     pub schema_typename: String,
     /// selections that apply to all types in this object-like
     /// in interfaces / union this can be thought as shared selections
-    pub selections: Vec<FieldSelection>,
+    pub selections: HashSet<FieldSelection>,
     /// fragment spreads
     pub used_fragments: HashSet<FragName>,
     /// inline fragments used in this object-like
@@ -202,36 +202,30 @@ impl ObjectLikeCommon {
             used_fragments: HashSet::new(),
             used_inline_frags: HashMap::new(),
             type_cond_selections: HashMap::new(),
-            selections: Vec::new(),
+            selections: HashSet::new(),
         }
     }
 
     pub fn merge(&mut self, other: ObjectLikeCommon) {
         if self.schema_typename == other.schema_typename {
-            // the same type just extend selections
+            // the same type just extend selections (HashSet handles deduplication)
             self.used_fragments.extend(other.used_fragments);
             self.used_inline_frags.extend(other.used_inline_frags);
             self.selections.extend(other.selections);
         } else {
-            // different type - store as type condition
-            self.type_cond_selections
-                .insert(other.schema_typename.clone(), other);
+            // different type - store as type condition, merge if already exists
+            if let Some(existing) = self.type_cond_selections.get_mut(&other.schema_typename) {
+                existing.merge(other);
+            } else {
+                self.type_cond_selections
+                    .insert(other.schema_typename.clone(), other);
+            }
         }
     }
 
     pub fn add_selection(&mut self, selection: FieldSelection) {
-        let selection_name = selection.self_selection_name();
-        // Check if a selection with this name already exists (for deduplication)
-        let already_exists = self
-            .selections
-            .iter()
-            .any(|s| s.self_selection_name() == selection_name);
-
-        if already_exists {
-            // Skip duplicate selections to avoid field conflicts from fragment expansion
-            return;
-        }
-        self.selections.push(selection);
+        // HashSet automatically handles deduplication based on Hash/Eq implementation
+        self.selections.insert(selection);
     }
     /// finds a field with a name
     pub fn contains_field(&self, name: &str) -> bool {
@@ -308,7 +302,8 @@ impl ObjectLikeCommon {
     /// return all selections for an object including the fragment selections
     /// for the current selection object, with duplicates removed by field name
     pub fn get_all_selections_distinct(&self, ctx: &ShalomGlobalContext) -> Vec<FieldSelection> {
-        let mut selections = self.selections.clone();
+        // Convert HashSet to Vec for building the final result
+        let mut selections: Vec<FieldSelection> = self.selections.iter().cloned().collect();
 
         let mut seen_names: HashSet<String> = HashSet::new();
 
