@@ -203,10 +203,13 @@ fn resolve_interface(
         let name = name.to_string();
         let description = field.description.as_ref().map(|v| v.to_string());
         let field_definition = SchemaFieldCommon::new(name.clone(), &field.ty, description);
-        fields.insert(name.to_string(), SchemaObjectFieldDefinition{
-            arguments: vec![],
-            field: field_definition
-        });
+        fields.insert(
+            name.to_string(),
+            SchemaObjectFieldDefinition {
+                arguments: vec![],
+                field: field_definition,
+            },
+        );
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
     let implements_interfaces = origin

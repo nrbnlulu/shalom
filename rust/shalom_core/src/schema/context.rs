@@ -228,27 +228,27 @@ impl SchemaContext {
         ret
     }
 
-    pub fn get_concrete_implementors_of_interface(&self, iface: &String) -> HashSet<String>{
+    pub fn get_concrete_implementors_of_interface(&self, iface: &String) -> HashSet<String> {
         let mut ret = HashSet::new();
         let types = self.types.lock().unwrap();
-        for object in types.objects.values(){
-            if object.implements_interfaces.contains(iface){
+        for object in types.objects.values() {
+            if object.implements_interfaces.contains(iface) {
                 ret.insert(object.name.clone());
             }
         }
         ret
     }
-    pub fn get_possible_concretes_for_union(&self, union_type: &UnionType) -> HashSet<String>{
+    pub fn get_possible_concretes_for_union(&self, union_type: &UnionType) -> HashSet<String> {
         let mut ret = HashSet::new();
-        for member in &union_type.members{
-            match self.get_type_strict(member){
+        for member in &union_type.members {
+            match self.get_type_strict(member) {
                 GraphQLAny::Interface(iface) => {
                     ret.extend(self.get_concrete_implementors_of_interface(&iface.name));
                 }
                 GraphQLAny::Object(obj) => {
                     ret.insert(obj.name.clone());
                 }
-                _ => ()
+                _ => (),
             }
         }
         ret

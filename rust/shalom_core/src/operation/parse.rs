@@ -302,7 +302,8 @@ where
         .schema_ctx
         .get_possible_concretes_for_union(&union_type);
     // Determine if we need a fallback class
-    let union_selection = UnionSelection::new(union_type, obj_like, is_optional, possible_concretes);
+    let union_selection =
+        UnionSelection::new(union_type, obj_like, is_optional, possible_concretes);
     union_selection
 }
 

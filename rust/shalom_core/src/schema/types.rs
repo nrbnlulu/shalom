@@ -1,6 +1,7 @@
 use std::{
     collections::HashSet,
-    hash::{Hash, Hasher}, sync::Arc,
+    hash::{Hash, Hasher},
+    sync::Arc,
 };
 
 use apollo_compiler::{
