@@ -238,7 +238,6 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
                 );
                 obj_like.merge(typed_obj);
             }
-            obj_like.optimize_type_conditions(global_ctx)
         }
     }
 }
@@ -299,18 +298,15 @@ where
         union_type.name.clone(),
         selection_set,
     );
+    let possible_concretes = global_ctx
+        .schema_ctx
+        .get_possible_concretes_for_union(&union_type);
     // Determine if we need a fallback class
-    let union_selection = UnionSelection::new(union_type, obj_like, is_optional);
-    let has_fallback = union_selection.should_generate_fallback(global_ctx);
-    union_selection.common.needs_fallback.set(has_fallback);
+    let union_selection = UnionSelection::new(union_type, obj_like, is_optional, possible_concretes);
     union_selection
 }
 
-#[derive(Clone)]
-enum _FragOrInlineFragInternal {
-    FragSpread(SharedFragmentContext),
-    InlineFragSelections(apollo_executable::SelectionSet),
-}
+
 
 pub(crate) fn parse_interface_selection<T: ExecutableContext>(
     ctx: &mut T,
@@ -329,12 +325,10 @@ pub(crate) fn parse_interface_selection<T: ExecutableContext>(
         interface_type.name.clone(),
         selection_set,
     );
-
-    let iface = InterfaceSelection::new(interface_type, obj_like, is_optional);
-
-    // now that we have all type conditions lets extract what we need.
-    let needs_a_fallback_type = iface.should_generate_fallback(global_ctx);
-    iface.common.needs_fallback.set(needs_a_fallback_type);
+    let possible_concretes = global_ctx
+        .schema_ctx
+        .get_concrete_implementors_of_interface(&interface_type.name);
+    let iface = InterfaceSelection::new(interface_type, obj_like, is_optional, possible_concretes);
     iface
 }
 

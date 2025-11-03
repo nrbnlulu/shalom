@@ -328,50 +328,35 @@ null
     {% endif %}
 {% endmacro %}
 
-{% macro selection_object_impl(typename, selection_object, is_root_selection=false, full_name=none, is_multi_type_member=false, shared_selections=none, is_fallback=false) %}
+{% macro selection_object_impl(typename, selection_object, is_root_selection=false, full_name=none, is_multi_type_member=false, shared_selections=none) %}
+    static String G__typename = "{{selection_object.schema_typename}}";
     {% set lookup_name = full_name if full_name else typename %}
-    {% if is_fallback %}
-        {# Fallback uses shared_selections directly without lookup #}
-        {% set selections = shared_selections %}
-    {% else %}
-        {% set selections = get_all_selections_distinct(selection_object) %}
-        {# For union members, merge shared selections with object selections, avoiding duplicates #}
-        {% if is_multi_type_member and shared_selections %}
-            {% set member_names = selections | map(attribute='name') | list %}
-            {% set shared_selections_filtered = shared_selections | rejectattr('name', 'in', member_names) %}
-            {% set selections = shared_selections_filtered + selections %}
-        {% endif %}
+    {% set selections = shared_selections %}
+    {% set selections = get_all_selections_distinct(selection_object) %}
+    {# For union members, merge shared selections with object selections, avoiding duplicates #}
+    {% if is_multi_type_member and shared_selections %}
+        {% set member_names = selections | map(attribute='name') | list %}
+        {% set shared_selections_filtered = shared_selections | rejectattr('name', 'in', member_names) %}
+        {% set selections = shared_selections_filtered + selections %}
     {% endif %}
     /// class members
     {% for selection in selections -%}
-        {% set selection_name = selection.name %}
-        {% if selection_name == "__typename" %}
-        final {{ type_name_for_selection(selection) }} $__typename;
-        {% else %}
-        final {{ type_name_for_selection(selection) }} {{ selection_name }};
+        {% if selection.name != "__typename" -%}
+            final {{ type_name_for_selection(selection) }} {{ selection.name }};
         {% endif %}
     {% endfor %}
-
-    {% if is_multi_type_member or is_fallback %}
-        // Getter for typename (public accessor for __typename field)
-        {% for selection in selections %}
-            {% if selection.name == "__typename" %}
-        String get typename => $__typename;
-            {% endif %}
-        {% endfor %}
-    {% endif %}
 
     // keywordargs constructor
-    {% if is_multi_type_member or is_fallback %}const {% endif %}{{ typename }}({% if selections | length > 0 %}{
-    {% for selection in selections -%}
-        {% if selection.name == "__typename" -%}
-            {% if not selection.is_optional %}required{% endif %} this.$__typename,
-        {% else %}
-            {% if not selection.is_optional %}required{% endif %}
-            this.{{ selection.name }},
-        {% endif %}
-    {% endfor %}
-    }{% endif %});
+    {{ "const" if is_multi_type_member }} {{ typename }}(
+    {% if selections | length > 0 %}
+        {
+        {% for selection in selections -%}
+            {% if selection.name != "__typename" -%}
+                {{ "required" if not selection.is_optional }} this.{{ selection.name }},
+            {% endif %}
+        {% endfor %}
+        }
+    {% endif %});
 
     static void normalize$inCache(JsonObject data,
             CacheUpdateContext ctx,
@@ -501,10 +486,8 @@ null
         {% endfor -%}
         return {{ typename }}(
             {% for selection in selections -%}
-                {% if selection.name == "__typename" %}
-                $__typename: {{selection.name}}$value,
-                {% else %}
-                {{selection.name}}: {{selection.name}}$value,
+                {% if selection.name != "__typename" %}
+                    {{selection.name}}: {{selection.name}}$value,
                 {% endif %}
             {% endfor %}
         );
@@ -536,10 +519,7 @@ null
     {% if selections | length > 0 -%}
     (other is {{ typename }} &&
     {% for selection in selections -%}
-        {% if selection.name == "__typename" %}
-            {% set other_selection %}other.$__typename{% endset -%}
-            {{ selection_equality_comparison_macro(selection, "$__typename", other_selection) }} {{ "&&" if not loop.last }}
-        {% else %}
+        {% if selection.name != "__typename" %}
             {% set other_selection %}other.{{selection.name}}{% endset -%}
             {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&" if not loop.last }}
         {% endif %}
@@ -551,38 +531,27 @@ null
     }
     @override
     int get hashCode =>
-    {% if selections | length > 1 -%}
+    {% if selections | length > 0 -%}
         Object.hashAll([
         {% for selection in selections %}
             {% set selection_name = selection.name %}
-            {% if selection_name == "__typename" %}
-                $__typename,
-            {% else %}
+            {% if selection_name != "__typename" %}
                 {{ selection_name }},
             {% endif %}
         {% endfor %}
+        {{"," if selections | length > 1}}
+        {{ typename }}.G__typename
         ]);
-    {% elif selections | length == 1 %}
-        {% if (is_multi_type_member or is_fallback) and (selections | first).name == "__typename" %}
-        $__typename.hashCode;
-        {% else %}
-        {{ (selections | first).name }}.hashCode;
-        {% endif %}
-    {% else %}
+    {% else -%}
         0;
     {% endif %}
+    
     JsonObject toJson() {
     return {
     {% for selection in selections %}
         {% set selection_name = selection.name %}
         '{{ selection_name }}':
-            {% if selection_name == "__typename" %}
-                {% if selection.is_optional %}
-                    {{ _serialize_selection_value_macro("$__typename", selection, true) }}
-                {% else %}
-                    {{ _serialize_selection_value_macro("$__typename", selection, false) }}
-                {% endif %}
-            {% else %}
+            {% if selection_name != "__typename" %}
                 {% if selection.is_optional %}
                     {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}
                 {% else %}
@@ -603,10 +572,8 @@ null
 
 
 
-{# Unified macro for union and interface selection - handles both with fallback support -#}
-{% macro multi_type_selection_definition(full_name, selection) -%}
-    {% set is_union = selection.kind == "Union" %}
-    {% set is_interface = not is_union %}
+{# Unified macro for union and interface selection -#}
+{% macro multi_type_selection_definition(full_name, selection, possible_concrets) -%}
     sealed class {{ full_name }}{{ implements_used_fragments(selection.used_fragments) }} {
 
         const {{ full_name }}();
@@ -631,9 +598,9 @@ null
         ) {
             final typename = data["__typename"] as String;
             switch (typename) {
-                {% for type_condition, obj_selection in selection.type_cond_selections | items %}
-                case "{{ type_condition }}":
-                    {{ full_name }}_{{ type_condition }}.normalize$inCache(
+                {% for concrete in possible_concrets %}
+                case "{{ concrete.schema_typename }}":
+                    {{ concrete.path_name }}.normalize$inCache(
                         data,
                         ctx,
                         {% if op_variables_exist %}variables,{% endif %}
@@ -645,19 +612,7 @@ null
                     break;
                 {% endfor %}
                 default:
-                    {% if selection.needs_fallback %}
-                    {{ full_name }}_Fallback.normalize$inCache(
-                        data,
-                        ctx,
-                        {% if op_variables_exist %}variables,{% endif %}
-                        this$cached: this$cached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord((this$cached as NormalizedObjectRecord).normalizedID()): this$cached,
-                        this$fieldName: this$fieldName,
-                        parent$record: parent$record,
-                        parent$normalizedID: parent$normalizedID
-                    );
-                    {% else %}
-                    throw Exception("Unknown __typename: $typename for  {{ selection.schema_typename }}");
-                    {% endif %}
+                    throw Exception("Unknown __typename: $typename for  {{ full_name }}");
             }
         }
 
@@ -670,31 +625,23 @@ null
                 }
                 final typename = actualData["__typename"] as String;
                 switch (typename) {
-                    {% for type_condition, obj_selection in selection.type_cond_selections | items %}
-                    case "{{ type_condition }}":
-                        return {{ full_name }}_{{ type_condition }}.fromCached(actualData, ctx{{if_op_variables(", variables")}});
+                    {% for concrete in possible_concrets %}
+                    case "{{ concrete.schema_typename }}":
+                        return {{ concrete.path_name }}.fromCached(actualData, ctx{{if_op_variables(", variables")}});
                     {% endfor %}
                     default:
-                        {% if selection.needs_fallback %}
-                        return {{ full_name }}_Fallback.fromCached(actualData, ctx{{if_op_variables(", variables")}});
-                        {% else %}
                         throw Exception("Unknown __typename: $typename for {{ selection.schema_typename }}");
-                        {% endif %}
                 }
             } else {
                 // Non-normalized {{ selection.schema_typename }}: data is the JsonObject directly
                 final typename = data["__typename"] as String;
                 switch (typename) {
-                    {% for type_condition, obj_selection in selection.type_cond_selections | items %}
-                    case "{{ type_condition }}":
-                        return {{ full_name }}_{{ type_condition }}.fromCached(data, ctx{{if_op_variables(", variables")}});
+                    {% for concrete in possible_concrets %}
+                    case "{{ concrete.schema_typename }}":
+                        return {{ concrete.path_name }}.fromCached(data, ctx{{if_op_variables(", variables")}});
                     {% endfor %}
                     default:
-                        {% if selection.needs_fallback %}
-                        return {{ full_name }}_Fallback.fromCached(data, ctx{{if_op_variables(", variables")}});
-                        {% else %}
                         throw Exception("Unknown __typename: $typename for {{ selection.schema_typename }}");
-                        {% endif %}
                 }
             }
         }
@@ -709,10 +656,6 @@ null
     }
 {% endmacro %}
 
-{# Legacy macros for backward compatibility - delegate to unified macro -#}
-{% macro selection_union_definition(full_name, selection) -%}
-    {{ multi_type_selection_definition(full_name, selection) }}
-{% endmacro %}
 
 {% macro selection_interface_definition(full_name, selection) -%}
     {{ multi_type_selection_definition(full_name, selection) }}

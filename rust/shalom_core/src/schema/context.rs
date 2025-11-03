@@ -1,7 +1,9 @@
+use crate::operation::types::SharedObjectSelection;
 use crate::schema::types::{GraphQLAny, SchemaObjectLike, SharedSchemaObjectLike};
 use apollo_compiler::{validation::Valid, Node};
 use kash::kash;
 use serde::{Serialize, Serializer};
+use std::collections::HashSet;
 use std::fmt::Debug;
 use std::{
     collections::HashMap,
@@ -221,6 +223,32 @@ impl SchemaContext {
         for obj in types.objects.values() {
             if obj.implements_interfaces().contains(iface_name.as_str()) {
                 ret.push(obj.clone());
+            }
+        }
+        ret
+    }
+
+    pub fn get_concrete_implementors_of_interface(&self, iface: &String) -> HashSet<String>{
+        let mut ret = HashSet::new();
+        let types = self.types.lock().unwrap();
+        for object in types.objects.values(){
+            if object.implements_interfaces.contains(iface){
+                ret.insert(object.name.clone());
+            }
+        }
+        ret
+    }
+    pub fn get_possible_concretes_for_union(&self, union_type: &UnionType) -> HashSet<String>{
+        let mut ret = HashSet::new();
+        for member in &union_type.members{
+            match self.get_type_strict(member){
+                GraphQLAny::Interface(iface) => {
+                    ret.extend(self.get_concrete_implementors_of_interface(&iface.name));
+                }
+                GraphQLAny::Object(obj) => {
+                    ret.insert(obj.name.clone());
+                }
+                _ => ()
             }
         }
         ret

@@ -178,10 +178,10 @@ void main() {
           variables: variables);
 
       expect(
-          result.search, isA<GetSearchResultWithoutTopTypename_search_User>());
+          result.search, isA<GetSearchResultWithoutTopTypename_search__User>());
       final user =
-          result.search as GetSearchResultWithoutTopTypename_search_User;
-      expect(user.typename, "User");
+          result.search as GetSearchResultWithoutTopTypename_search__User;
+      expect(GetSearchResultWithoutTopTypename_search__User.G__typename, "User");
       expect(user.id, "user1");
     });
   });

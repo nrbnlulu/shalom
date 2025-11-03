@@ -1,9 +1,10 @@
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
+use std::rc::Rc;
 use std::sync::Arc;
 
-use serde::Serialize;
 use serde::ser::SerializeSeq;
+use serde::Serialize;
 
 use super::fragments::SharedFragmentContext;
 use super::types::{
@@ -12,12 +13,16 @@ use super::types::{
 use crate::context::ShalomGlobalContext;
 use crate::operation::fragments::{FragName, SharedInlineFrag};
 use crate::operation::types::{
-    ObjectLikeCommon, SelectionKind, SharedListSelection, SharedObjectSelection,
+    MultiTypeSelection, MultiTypeSelectionCommon, ObjectLikeCommon, SelectionKind,
+    SharedListSelection, SharedObjectSelection,
 };
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 pub type OperationVariable = InputFieldDefinition;
 
-fn _used_frags_serialize_names_only<S: serde::Serializer>(x: &HashMap<String, SharedFragmentContext>, s: S) -> Result<S::Ok, S::Error>{
+fn _used_frags_serialize_names_only<S: serde::Serializer>(
+    x: &HashMap<String, SharedFragmentContext>,
+    s: S,
+) -> Result<S::Ok, S::Error> {
     let out = x.keys().collect::<Vec<_>>();
     let mut seq = s.serialize_seq(Some(out.len()))?;
     for frag_name in out {
@@ -73,6 +78,18 @@ impl TypeDefs {
     pub fn get_union_selection(&self, name: &FullPathName) -> Option<&SharedUnionSelection> {
         self.unions.get(name)
     }
+    /// iface or union
+    pub fn get_multitype_selection(
+        &self,
+        name: &FullPathName,
+    ) -> Option<Rc<dyn MultiTypeSelection>> {
+        self.get_union_selection(name)
+            .map(|u| u.clone() as Rc<dyn MultiTypeSelection>)
+            .or_else(|| {
+                self.get_interface_selection(name)
+                    .map(|i| i.clone() as Rc<dyn MultiTypeSelection>)
+            })
+    }
 
     pub fn add_interface_selection(&mut self, name: String, selection: SharedInterfaceSelection) {
         self.interfaces.entry(name.clone()).or_insert(selection);
@@ -108,7 +125,7 @@ impl TypeDefs {
         self.used_fragments.get(name)
     }
 
-    pub fn flatten_used_fragments(&self)-> Vec<SharedFragmentContext> {
+    pub fn flatten_used_fragments(&self) -> Vec<SharedFragmentContext> {
         let mut visited = HashSet::new();
         let mut result = Vec::new();
         fn collect_fragments_recursive<'a, T: Iterator<Item = &'a SharedFragmentContext>>(
@@ -130,13 +147,8 @@ impl TypeDefs {
                 }
             }
         }
-        collect_fragments_recursive(
-            self.used_fragments.values(),
-            &mut visited,
-            &mut result,
-        );
+        collect_fragments_recursive(self.used_fragments.values(), &mut visited, &mut result);
         result
-
     }
 }
 
@@ -211,7 +223,7 @@ pub trait ExecutableContext: Send + Sync + 'static {
     fn typedefs(&self) -> &TypeDefs;
     fn typedefs_mut(&mut self) -> &mut TypeDefs;
     fn get_root(&self) -> &ObjectLikeCommon;
-    
+
     fn get_selection(&self, name: &String) -> Option<&FieldSelection> {
         let td = self.typedefs();
         td.selections.get(name)

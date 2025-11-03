@@ -333,12 +333,6 @@ impl ObjectLikeCommon {
         }
         selections
     }
-    /// Optimizes type conditions by flattening and organizing them
-    /// This is called after parsing to optimize the structure
-    pub fn optimize_type_conditions(&mut self, _ctx: &ShalomGlobalContext) {
-        // TODO: Implement type condition optimization
-        // This will flatten nested type conditions and organize them for codegen
-    }
 
     /// returns all the types that have directly selected by this object-like selections
     /// only valid for multi-types
@@ -405,16 +399,15 @@ pub struct MultiTypeSelectionCommon {
     pub is_optional: bool,
     #[serde(flatten)]
     pub common: ObjectLikeCommon,
-    /// Whether to generate a fallback class for uncovered types
-    pub needs_fallback: Cell<bool>,
+    pub possible_concrete_types: HashSet<String>
 }
 
 impl MultiTypeSelectionCommon {
-    pub fn new(is_optional: bool, common: ObjectLikeCommon) -> Self {
+    pub fn new(is_optional: bool, common: ObjectLikeCommon, possible_concrete_types: HashSet<String>) -> Self {
         MultiTypeSelectionCommon {
             is_optional,
             common,
-            needs_fallback: Cell::new(false),
+            possible_concrete_types
         }
     }
 }
@@ -422,21 +415,6 @@ pub trait MultiTypeSelection {
     /// Get all possible types for this multi-type selection (union members or interface implementations)
     fn get_all_direct_schema_subsets_typenames(&self, ctx: &ShalomGlobalContext) -> Vec<String>;
 
-    /// Check if we need a fallback class by comparing all possible types with covered inline fragments
-    fn should_generate_fallback(&self, ctx: &ShalomGlobalContext) -> bool {
-        let all_members_set: std::collections::HashSet<String> = self
-            .get_all_direct_schema_subsets_typenames(ctx)
-            .into_iter()
-            .collect();
-
-        let covered_types = self
-            .common()
-            .common
-            .get_all_directly_selected_typenames(ctx);
-
-        // If not all multitype members are covered, we need a fallback
-        !all_members_set.is_subset(&covered_types)
-    }
 
     /// Get the common fields shared across all types
     fn common(&self) -> &MultiTypeSelectionCommon;
@@ -456,9 +434,10 @@ impl UnionSelection {
         union_type: Node<UnionType>,
         object_common: ObjectLikeCommon,
         is_optional: bool,
+        possible_concrete_types: HashSet<String>
     ) -> SharedUnionSelection {
         Rc::new(UnionSelection {
-            common: MultiTypeSelectionCommon::new(is_optional, object_common),
+            common: MultiTypeSelectionCommon::new(is_optional, object_common, possible_concrete_types),
             union_type,
         })
     }
@@ -488,9 +467,10 @@ impl InterfaceSelection {
         interface_type: Arc<InterfaceType>,
         object_common: ObjectLikeCommon,
         is_optional: bool,
+        possible_concrete_types: HashSet<String>
     ) -> SharedInterfaceSelection {
         Rc::new(InterfaceSelection {
-            common: MultiTypeSelectionCommon::new(is_optional, object_common),
+            common: MultiTypeSelectionCommon::new(is_optional, object_common, possible_concrete_types),
             interface_type,
         })
     }
