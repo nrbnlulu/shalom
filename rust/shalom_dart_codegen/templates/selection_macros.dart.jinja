@@ -491,7 +491,7 @@ null
                 {% if selection.name != "__typename" %}
                     {{selection.name}}: {{selection.name}}$value,
                 {% endif %}
-            {% endfor %}
+            {% endfor -%}
         );
     }
     {% if is_root_selection -%}
@@ -552,8 +552,9 @@ null
     return {
     {% for selection in selections %}
         {% set selection_name = selection.name %}
+        {% if selection_name == "__typename" %}
         "__typename": {{ typename }}.G__typename,
-        {% if selection_name != "__typename" %}
+        {% else %}
         '{{ selection_name }}':
             {% if selection.is_optional %}
                 {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}

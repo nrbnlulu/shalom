@@ -82,6 +82,7 @@ pub struct FieldSelection {
     pub kind: SelectionKind,
     pub arguments: Vec<FieldArgument>,
 }
+
 impl std::hash::Hash for FieldSelection {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.self_selection_name().hash(state);
@@ -206,7 +207,9 @@ impl ObjectLikeCommon {
         }
     }
     pub fn get_selection(&self, name: &str) -> Option<&FieldSelection> {
-        self.selections.iter().find(|s| s.self_selection_name() == name)
+        self.selections
+            .iter()
+            .find(|s| s.self_selection_name() == name)
     }
     pub fn merge(&mut self, other: ObjectLikeCommon) {
         if self.schema_typename == other.schema_typename {
@@ -401,22 +404,25 @@ pub struct MultiTypeSelectionCommon {
     pub is_optional: bool,
     #[serde(flatten)]
     pub common: ObjectLikeCommon,
-    pub possible_concrete_types: HashSet<String>
+    pub possible_concrete_types: HashSet<String>,
 }
 
 impl MultiTypeSelectionCommon {
-    pub fn new(is_optional: bool, common: ObjectLikeCommon, possible_concrete_types: HashSet<String>) -> Self {
+    pub fn new(
+        is_optional: bool,
+        common: ObjectLikeCommon,
+        possible_concrete_types: HashSet<String>,
+    ) -> Self {
         MultiTypeSelectionCommon {
             is_optional,
             common,
-            possible_concrete_types
+            possible_concrete_types,
         }
     }
 }
 pub trait MultiTypeSelection {
     /// Get all possible types for this multi-type selection (union members or interface implementations)
     fn get_all_direct_schema_subsets_typenames(&self, ctx: &ShalomGlobalContext) -> Vec<String>;
-
 
     /// Get the common fields shared across all types
     fn common(&self) -> &MultiTypeSelectionCommon;
@@ -436,10 +442,14 @@ impl UnionSelection {
         union_type: Node<UnionType>,
         object_common: ObjectLikeCommon,
         is_optional: bool,
-        possible_concrete_types: HashSet<String>
+        possible_concrete_types: HashSet<String>,
     ) -> SharedUnionSelection {
         Rc::new(UnionSelection {
-            common: MultiTypeSelectionCommon::new(is_optional, object_common, possible_concrete_types),
+            common: MultiTypeSelectionCommon::new(
+                is_optional,
+                object_common,
+                possible_concrete_types,
+            ),
             union_type,
         })
     }
@@ -469,10 +479,14 @@ impl InterfaceSelection {
         interface_type: Arc<InterfaceType>,
         object_common: ObjectLikeCommon,
         is_optional: bool,
-        possible_concrete_types: HashSet<String>
+        possible_concrete_types: HashSet<String>,
     ) -> SharedInterfaceSelection {
         Rc::new(InterfaceSelection {
-            common: MultiTypeSelectionCommon::new(is_optional, object_common, possible_concrete_types),
+            common: MultiTypeSelectionCommon::new(
+                is_optional,
+                object_common,
+                possible_concrete_types,
+            ),
             interface_type,
         })
     }

@@ -537,7 +537,6 @@ where
         "get_all_selections_distinct",
         move |obj_like: ViaDeserialize<ObjectLikeCommon>| {
             let selections = obj_like.get_all_selections_distinct(&ctx_clone3);
-
             minijinja::Value::from_serialize(selections)
         },
     );

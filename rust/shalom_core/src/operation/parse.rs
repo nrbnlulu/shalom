@@ -306,8 +306,6 @@ where
     union_selection
 }
 
-
-
 pub(crate) fn parse_interface_selection<T: ExecutableContext>(
     ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
@@ -486,10 +484,14 @@ pub(crate) fn inject_typename_in_selection_set(
         // Inject __typename if not present
         if !has_typename {
             trace!("Injecting __typename into {} selection", type_name);
-            let typename_name = Name::new("__typename").expect("__typename is a valid field name");
-            selection_set
+            let typename_name = Name::new("__typename").unwrap();
+            let typename_field = selection_set
                 .new_field(schema, typename_name)
                 .expect("Failed to inject __typename");
+
+            // Actually push the field to the selection set
+            use apollo_executable::Selection;
+            selection_set.push(Selection::Field(typename_field.into()));
         }
     }
 
@@ -552,8 +554,10 @@ fn parse_operation(
 ) -> anyhow::Result<SharedOpCtx> {
     // Inject __typename into union and interface selections
     let schema = &global_ctx.schema_ctx.schema;
-    let op_mut = op.make_mut();
-    inject_typename_in_selection_set(schema, &mut op_mut.selection_set, global_ctx);
+    {
+        let op_mut = op.make_mut();
+        inject_typename_in_selection_set(schema, &mut op_mut.selection_set, global_ctx);
+    }
     let op_type = parse_operation_type(op.operation_type);
     let query = op.to_string();
     let mut ctx = OperationContext::new(
