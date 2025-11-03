@@ -1,7 +1,7 @@
 use shalom_dart_codegen::CodegenOptions;
 use std::path::{Path, PathBuf};
 
-use log::info;
+use log::{info, warn};
 
 fn tests_path() -> PathBuf {
     let f = file!();
@@ -49,6 +49,24 @@ fn run_codegen(cwd: &Path, strict: bool) {
     .unwrap()
 }
 
+fn is_dart_available() -> bool {
+    let dart;
+    #[cfg(target_os = "windows")]
+    {
+        dart = "dart.bat";
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        dart = "dart";
+    }
+
+    std::process::Command::new(dart)
+        .arg("--version")
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
+}
+
 pub fn run_dart_tests_for_usecase(usecase: &str) {
     match simple_logger::init() {
         Ok(_) => println!("Logger initialized"),
@@ -57,6 +75,12 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
     let usecase_test_dir =
         ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
     run_codegen(&usecase_test_dir, true);
+
+    if !is_dart_available() {
+        warn!("⚠️  Dart SDK not found. Skipping Dart tests for '{usecase}'. Install Dart SDK to run these tests.");
+        println!("⚠️  Dart SDK not found. Skipping Dart tests for '{usecase}'.");
+        return;
+    }
 
     let dart;
     #[cfg(target_os = "windows")]
