@@ -134,16 +134,16 @@ void main() {
       expect(fallback.typename, "PushNotification");
     });
 
-    test('deserialize WebhookNotification (fallback)', () {
+    test('deserialize WebhookNotification non directly selected', () {
       final variables = GetNotificationPartialVariables(id: "webhook1");
       final result = GetNotificationPartialResponse.fromResponse(
           webhookNotificationData,
           variables: variables);
 
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification__PushNotification>());
+          isA<GetNotificationPartial_getNotification__WebhookNotification>());
       final fallback = result.getNotification
-          as GetNotificationPartial_getNotification__PushNotification;
+          as GetNotificationPartial_getNotification__WebhookNotification;
       expect(fallback.typename, "WebhookNotification");
     });
 

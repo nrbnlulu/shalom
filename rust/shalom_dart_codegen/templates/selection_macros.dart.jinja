@@ -346,15 +346,12 @@ null
 
     // keywordargs constructor
     {{ "const" if is_multi_type_member }} {{ typename }}(
-    {% if selections | length > 0 %}
-        {
-        {% for selection in selections -%}
-            {% if selection.name != "__typename" -%}
+        {% for selection in selections if selection.name != "__typename" -%}
+        {{ "{" if loop.first }}
                 {{ "required" if not selection.is_optional }} this.{{ selection.name }},
-            {% endif %}
+        {{ "}" if loop.last }}
         {% endfor %}
-        }
-    {% endif %});
+    );
 
     static void normalize$inCache(JsonObject data,
             CacheUpdateContext ctx,
