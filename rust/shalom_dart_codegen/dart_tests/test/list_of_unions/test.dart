@@ -138,7 +138,7 @@ void main() {
       expect(user.id, "user1");
       expect(user.name, "Alice");
       expect(user.email, "alice@example.com");
-      expect(user.typename, "User");
+      expect(user.$__typename, "User");
 
       expect(result.searchResultsRequired[1],
           isA<GetSearchResultsRequired_searchResultsRequired__Post>());
@@ -148,7 +148,7 @@ void main() {
       expect(post.title, "Hello World");
       expect(post.content, "First post");
       expect(post.author, "Bob");
-      expect(post.typename, "Post");
+      expect(post.$__typename, "Post");
 
       expect(result.searchResultsRequired[2],
           isA<GetSearchResultsRequired_searchResultsRequired__Comment>());
@@ -157,7 +157,7 @@ void main() {
       expect(comment.id, "comment1");
       expect(comment.text, "Great!");
       expect(comment.author, "Charlie");
-      expect(comment.typename, "Comment");
+      expect(comment.$__typename, "Comment");
     });
 
     test('searchResultsRequired deserialize empty list', () {

@@ -63,7 +63,7 @@ void main() {
       expect(user.username, "john_doe");
       expect(user.email, "john@example.com");
       expect(user.age, 30);
-      expect(user.typename, "User");
+      expect(user.$__typename, "User");
 
       // Test fragment interface access - NodeTimestamps
       final nodeTimestamps = result.node as NodeTimestamps;
@@ -95,7 +95,7 @@ void main() {
       expect(post.title, "Hello World");
       expect(post.content, "This is my first post");
       expect(post.views, 100);
-      expect(post.typename, "Post");
+      expect(post.$__typename, "Post");
 
       // Test fragment interface access - NodeTimestamps
       final nodeTimestamps = result.node as NodeTimestamps;
@@ -123,7 +123,7 @@ void main() {
       expect(comment.id, "comment1");
       expect(comment.createdAt, "2024-01-05T00:00:00Z");
       expect(comment.updatedAt, "2024-01-06T00:00:00Z");
-      expect(comment.typename, "Comment");
+      expect(comment.$__typename, "Comment");
 
       // Test fragment interface access - NodeTimestamps
       final nodeTimestamps = result.node as NodeTimestamps;
@@ -195,7 +195,7 @@ void main() {
       expect(user.username, "john_doe");
       expect(user.email, "john@example.com");
       expect(user.age, 30);
-      expect(user.typename, "User");
+      expect(user.$__typename, "User");
 
       // Test fragment interface access
       final nodeTimestamps = result.nodeOpt as NodeTimestamps;
@@ -227,7 +227,7 @@ void main() {
       expect(post.title, "Hello World");
       expect(post.content, "This is my first post");
       expect(post.views, 100);
-      expect(post.typename, "Post");
+      expect(post.$__typename, "Post");
     });
 
     test('interfaceSharedFragmentsOptional - null', () {
@@ -474,7 +474,7 @@ void main() {
       expect(result.nodes[2], isA<NodeTimestamps>());
       final comment = result.nodes[2] as GetNodes_nodes__Comment;
       expect(comment.id, "comment1");
-      expect(comment.typename, "Comment");
+      expect(comment.$__typename, "Comment");
     });
 
     test('interfaceSharedFragmentsList - equals', () {
@@ -518,7 +518,7 @@ void main() {
       expect(comment.updatedAt, "2024-01-06T00:00:00Z");
       expect(comment.text, "Great post!");
       expect(comment.likes, 5);
-      expect(comment.typename, "Comment");
+      expect(comment.$__typename, "Comment");
 
       // Test fragment interface access
       final nodeTimestamps = result.node as NodeTimestamps;

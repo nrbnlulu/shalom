@@ -59,7 +59,7 @@ void main() {
       expect(foo.createdAt, "2024-01-01T00:00:00Z");
       expect(foo.fooField, "foo field value");
       expect(foo.fooValue, 42);
-      expect(foo.typename, "Foo");
+      expect(foo.$__typename, "Foo");
     });
 
     test('interfaceWithNestedTypeFragmentsRequired - Bar', () {
@@ -79,7 +79,7 @@ void main() {
       expect(bar.createdAt, "2024-01-02T00:00:00Z");
       expect(bar.barField, "bar field value");
       expect(bar.barValue, 3.14);
-      expect(bar.typename, "Bar");
+      expect(bar.$__typename, "Bar");
     });
 
     test('interfaceWithNestedTypeFragmentsRequired - Baz', () {
@@ -99,7 +99,7 @@ void main() {
       expect(baz.createdAt, "2024-01-03T00:00:00Z");
       expect(baz.bazField, "baz field value");
       expect(baz.bazValue, true);
-      expect(baz.typename, "Baz");
+      expect(baz.$__typename, "Baz");
     });
 
     test('equals - Foo', () {

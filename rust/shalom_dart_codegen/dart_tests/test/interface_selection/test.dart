@@ -80,7 +80,7 @@ void main() {
       expect(result.animal, isA<GetAnimal_animal__Lion>());
       final animalAsLion = result.animal as GetAnimal_animal__Lion;
       expect(animalAsLion.furColor, "Golden");
-      expect(animalAsLion.typename, "Lion");
+      expect(animalAsLion.$__typename, "Lion");
     });
 
     test('deserialize Turtle', () {
@@ -94,7 +94,7 @@ void main() {
       expect(turtle.legs, 4);
       expect(turtle.sound, "Hiss");
       expect(turtle.shellColor, "Green");
-      expect(turtle.typename, "Turtle");
+      expect(turtle.$__typename, "Turtle");
     });
 
     test('deserialize Dog (fallback)', () {
@@ -107,7 +107,7 @@ void main() {
       expect(dog.id, "dog1");
       expect(dog.legs, 4);
       expect(dog.sound, "Bark");
-      expect(dog.typename, "Dog");
+      expect(dog.$__typename, "Dog");
     });
 
     test('serialize Lion', () {
@@ -235,7 +235,7 @@ void main() {
       expect(dog.legs, 4);
       expect(dog.sound, "Woof");
       expect(dog.breed, "Labrador");
-      expect(dog.typename, "Dog");
+      expect(dog.$__typename, "Dog");
     });
 
     test('serialize Dog', () {
@@ -304,7 +304,7 @@ void main() {
 
       expect(result.animal, isA<GetAnimalWithoutTopTypename_animal__Lion>());
       final lion = result.animal as GetAnimalWithoutTopTypename_animal__Lion;
-      expect(lion.typename, "Lion");
+      expect(lion.$__typename, "Lion");
       expect(lion.id, "lion1");
     });
   });
@@ -445,7 +445,7 @@ void main() {
       expect(lion.sound, "Roar");
       expect(lion.description, "A majestic golden lion");
       expect(lion.furColor, "Golden");
-      expect(lion.typename, "Lion");
+      expect(lion.$__typename, "Lion");
     });
 
     test('turtleRequired', () {
@@ -462,7 +462,7 @@ void main() {
       expect(turtle.sound, "Hiss");
       expect(turtle.description, "A slow green turtle");
       expect(turtle.shellColor, "Green");
-      expect(turtle.typename, "Turtle");
+      expect(turtle.$__typename, "Turtle");
     });
 
     test('dogRequired', () {
@@ -478,7 +478,7 @@ void main() {
       expect(dog.sound, "Bark");
       expect(dog.description, "A friendly Labrador dog");
       expect(dog.breed, "Labrador");
-      expect(dog.typename, "Dog");
+      expect(dog.$__typename, "Dog");
     });
 
     test('equals', () {

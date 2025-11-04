@@ -137,7 +137,7 @@ void main() {
       final book = result.library?.collection.items[0];
       expect(book, isA<CollectionDetailsFrag_items__Book>());
       if (book is CollectionDetailsFrag_items__Book) {
-        expect(book.typename, "Book");
+        expect(book.$__typename, "Book");
         expect(book.id, "book1");
         expect(book.title, "The Great Novel");
         expect(book.year, 2024);
@@ -149,7 +149,7 @@ void main() {
       final movie = result.library?.collection.items[1];
       expect(movie, isA<CollectionDetailsFrag_items__Movie>());
       if (movie is CollectionDetailsFrag_items__Movie) {
-        expect(movie.typename, "Movie");
+        expect(movie.$__typename, "Movie");
         expect(movie.id, "movie1");
         expect(movie.title, "Epic Adventure");
         expect(movie.year, 2024);
@@ -161,7 +161,7 @@ void main() {
       final music = result.library?.collection.items[2];
       expect(music, isA<CollectionDetailsFrag_items__Music>());
       if (music is CollectionDetailsFrag_items__Music) {
-        expect(music.typename, "Music");
+        expect(music.$__typename, "Music");
         expect(music.id, "music1");
         expect(music.title, "Summer Hits");
         expect(music.year, 2024);
@@ -192,7 +192,7 @@ void main() {
       final book = result.library?.collection.items[0];
       expect(book, isA<CollectionDetailsFrag_items__Book>());
       if (book is CollectionDetailsFrag_items__Book) {
-        expect(book.typename, "Book");
+        expect(book.$__typename, "Book");
         expect(book.author, "F. Scott Fitzgerald");
         expect(book.pages, 180);
       }

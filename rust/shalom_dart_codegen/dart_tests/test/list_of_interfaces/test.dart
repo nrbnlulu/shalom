@@ -234,7 +234,7 @@ void main() {
       final car = result.vehiclesRequired[0]
           as GetVehiclesRequired_vehiclesRequired__Car;
       expect(car.doors, 4);
-      expect(car.typename, "Car");
+      expect(car.$__typename, "Car");
 
       // Test shared fields via interface reference
       final vehicle1 = result.vehiclesRequired[1];
@@ -248,7 +248,7 @@ void main() {
       final moto = result.vehiclesRequired[1]
           as GetVehiclesRequired_vehiclesRequired__Motorcycle;
       expect(moto.hasSidecar, false);
-      expect(moto.typename, "Motorcycle");
+      expect(moto.$__typename, "Motorcycle");
 
       // Test shared fields via interface reference
       final vehicle2 = result.vehiclesRequired[2];
@@ -262,7 +262,7 @@ void main() {
       final bike = result.vehiclesRequired[2]
           as GetVehiclesRequired_vehiclesRequired__Bicycle;
       expect(bike.gears, 21);
-      expect(bike.typename, "Bicycle");
+      expect(bike.$__typename, "Bicycle");
     });
 
     test('vehiclesRequired deserialize empty list', () {
@@ -326,7 +326,7 @@ void main() {
       final car = result.vehiclesOptional![0]
           as GetVehiclesOptional_vehiclesOptional__Car;
       expect(car.doors, 4);
-      expect(car.typename, "Car");
+      expect(car.$__typename, "Car");
 
       // Test shared fields via interface reference
       final vehicle1 = result.vehiclesOptional![1];
@@ -340,7 +340,7 @@ void main() {
       final moto = result.vehiclesOptional![1]
           as GetVehiclesOptional_vehiclesOptional__Motorcycle;
       expect(moto.hasSidecar, false);
-      expect(moto.typename, "Motorcycle");
+      expect(moto.$__typename, "Motorcycle");
     });
 
     test('vehiclesOptional deserialize null', () {
@@ -513,7 +513,7 @@ void main() {
       expect(car.speed, 250);
       expect(car.description, "Short desc");
       expect(car.doors, 2);
-      expect(car.typename, "Car");
+      expect(car.$__typename, "Car");
 
       expect(result.vehiclesWithArgs[1],
           isA<GetVehiclesWithArgs_vehiclesWithArgs__Motorcycle>());
@@ -524,7 +524,7 @@ void main() {
       expect(moto.speed, 230);
       expect(moto.description, "Short desc");
       expect(moto.hasSidecar, true);
-      expect(moto.typename, "Motorcycle");
+      expect(moto.$__typename, "Motorcycle");
 
       expect(result.vehiclesWithArgs[2],
           isA<GetVehiclesWithArgs_vehiclesWithArgs__Bicycle>());
@@ -535,7 +535,7 @@ void main() {
       expect(bike.speed, 25);
       expect(bike.description, "Short desc");
       expect(bike.gears, 18);
-      expect(bike.typename, "Bicycle");
+      expect(bike.$__typename, "Bicycle");
     });
 
     test('vehiclesWithArgs toJson', () {

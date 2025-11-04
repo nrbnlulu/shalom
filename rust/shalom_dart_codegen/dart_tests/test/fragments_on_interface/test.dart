@@ -47,7 +47,7 @@ void main() {
       expect(cat.name, "Whiskers");
       expect(cat.age, 3);
       expect(cat.meowVolume, 8);
-      expect(cat.typename, "Cat");
+      expect(cat.$__typename, "Cat");
 
       // Test fragment interface access
       final animalFrag = result.animal as AnimalBasicInfo;
@@ -69,7 +69,7 @@ void main() {
       expect(dog.name, "Buddy");
       expect(dog.age, 5);
       expect(dog.breed, "Golden Retriever");
-      expect(dog.typename, "Dog");
+      expect(dog.$__typename, "Dog");
 
       // Test fragment interface access
       final animalFrag = result.animal as AnimalBasicInfo;
@@ -90,7 +90,7 @@ void main() {
       expect(bird.id, "bird1");
       expect(bird.name, "Tweety");
       expect(bird.age, 2);
-      expect(bird.typename, "Bird");
+      expect(bird.$__typename, "Bird");
 
       // Test fragment interface access
       final animalFrag = result.animal as AnimalBasicInfo;
@@ -252,7 +252,7 @@ void main() {
       expect(bird.name, "Polly");
       expect(bird.age, 3);
       expect(bird.wingspan, 45.5);
-      expect(bird.typename, "Bird");
+      expect(bird.$__typename, "Bird");
 
       // Test fragment interface access
       final animalFrag = result.animal as AnimalBasicInfo;

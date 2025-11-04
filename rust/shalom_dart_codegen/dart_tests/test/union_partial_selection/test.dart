@@ -49,7 +49,7 @@ void main() {
       expect(email.subject, "Test Email");
       expect(email.body, "This is a test email");
       expect(email.recipient, "test@example.com");
-      expect(email.typename, "EmailNotification");
+      expect(email.$__typename, "EmailNotification");
     });
 
     test('deserialize SMSNotification', () {
@@ -65,7 +65,7 @@ void main() {
       expect(sms.id, "sms1");
       expect(sms.message, "Test SMS");
       expect(sms.phoneNumber, "+1234567890");
-      expect(sms.typename, "SMSNotification");
+      expect(sms.$__typename, "SMSNotification");
     });
 
     test('serialize EmailNotification', () {
@@ -131,7 +131,7 @@ void main() {
           isA<GetNotificationPartial_getNotification__PushNotification>());
       final fallback = result.getNotification
           as GetNotificationPartial_getNotification__PushNotification;
-      expect(fallback.typename, "PushNotification");
+      expect(fallback.$__typename, "PushNotification");
     });
 
     test('deserialize WebhookNotification non directly selected', () {
@@ -144,7 +144,7 @@ void main() {
           isA<GetNotificationPartial_getNotification__WebhookNotification>());
       final fallback = result.getNotification
           as GetNotificationPartial_getNotification__WebhookNotification;
-      expect(fallback.typename, "WebhookNotification");
+      expect(fallback.$__typename, "WebhookNotification");
     });
 
     test('serialize PushNotification (fallback)', () {
@@ -224,7 +224,7 @@ void main() {
           isA<GetNotificationPartialOpt_getNotificationOpt__PushNotification>());
       final fallback = result.getNotificationOpt
           as GetNotificationPartialOpt_getNotificationOpt__PushNotification;
-      expect(fallback.typename, "PushNotification");
+      expect(fallback.$__typename, "PushNotification");
     });
 
     test('deserialize null', () {
@@ -275,7 +275,7 @@ void main() {
           isA<GetNotificationPartialNoTopTypename_getNotification__EmailNotification>());
       final email = result.getNotification
           as GetNotificationPartialNoTopTypename_getNotification__EmailNotification;
-      expect(email.typename, "EmailNotification");
+      expect(email.$__typename, "EmailNotification");
       expect(email.id, "email1");
     });
 
