@@ -567,15 +567,49 @@ where
             minijinja::Value::from_serialize(res)
         },
     );
-    let executable_ctx_clone = executable_ctx.clone();
 
-    env.add_function("all_object_selections", move || {
-        let objects = executable_ctx_clone.typedefs().objects.values();
-        let ret = objects.collect::<Vec<_>>();
-
-        minijinja::Value::from_serialize(ret)
-    });
+ 
     let executable_ctx_clone2 = executable_ctx.clone();
+
+    /// Recursively expand fragments, but only include fragments that match the concrete type
+    fn expand_fragments_for_concrete(
+        concrete_typename: &str,
+        used_fragments: &HashSet<String>,
+        global_ctx: &ShalomGlobalContext,
+    ) -> HashSet<FieldSelection> {
+        let mut selections = HashSet::new();
+        for frag_name in used_fragments {
+            let fragment = global_ctx.get_fragment_strict(frag_name);
+            let frag_obj = fragment.get_on_type();
+
+            // Add direct selections from this fragment
+            selections.extend(frag_obj.selections.clone());
+
+            // Recursively expand nested fragments, but only those that match the concrete type
+            let compatible_nested_fragments: HashSet<String> = frag_obj
+                .used_fragments
+                .iter()
+                .filter(|nested_frag_name| {
+                    let nested_fragment = global_ctx.get_fragment_strict(nested_frag_name);
+                    let nested_on_type = &nested_fragment.get_on_type().schema_typename;
+                    // Include if it's for this concrete type or an interface it implements
+                    nested_on_type == concrete_typename
+                        || global_ctx
+                            .schema_ctx
+                            .is_type_implementing_interface(concrete_typename, nested_on_type)
+                })
+                .cloned()
+                .collect();
+
+            // Recursively expand compatible nested fragments
+            selections.extend(expand_fragments_for_concrete(
+                concrete_typename,
+                &compatible_nested_fragments,
+                global_ctx,
+            ));
+        }
+        selections
+    }
 
     fn collect_selections_for_concrete(
         resolve_to: &mut ObjectLikeCommon,
@@ -590,16 +624,40 @@ where
         {
             // this object is a subset or same as the other we can safely flatten other's selections here.
             resolve_to.selections.extend(other_obj.selections.clone());
-            resolve_to
-                .used_fragments
-                .extend(other_obj.used_fragments.clone());
+
+            for frag_name in &other_obj.used_fragments {
+                let fragment = global_ctx.get_fragment_strict(frag_name);
+                let frag_on_type = &fragment.get_on_type().schema_typename;
+
+                if frag_on_type == &resolve_to.schema_typename {
+                    // Fragment is exactly on this concrete type - add it to used_fragments
+                    info!(
+                        "    Fragment '{}' on '{}': INCLUDE (exact match)",
+                        frag_name, frag_on_type
+                    );
+                    resolve_to.used_fragments.insert(frag_name.clone());
+                } else if global_ctx
+                    .schema_ctx
+                    .is_type_implementing_interface(&resolve_to.schema_typename, frag_on_type)
+                {
+                    // Fragment is on an interface this type implements
+                    // Recursively collect fragments from it but don't add to used_fragments
+                    info!(
+                        "    Fragment '{}' on '{}': EXPAND (interface)",
+                        frag_name, frag_on_type
+                    );
+                    collect_selections_for_concrete(resolve_to, fragment.get_on_type(), global_ctx);
+                } else {
+                    info!("    Fragment '{}' on '{}': SKIP", frag_name, frag_on_type);
+                }
+            }
+
+            info!("  Final used_fragments: {:?}", resolve_to.used_fragments);
+
             for frag in other_obj.used_inline_frags.values() {
                 // flatten inlinefrag selections directly on here
                 collect_selections_for_concrete(resolve_to, &frag.common, global_ctx);
             }
-            resolve_to
-                .used_fragments
-                .extend(other_obj.used_fragments.clone());
         } else if !resolve_to.contains_field("__typename") {
             let typename_selection =
                 other_obj
@@ -613,7 +671,15 @@ where
         }
 
         // Also traverse type condition selections to find matching concrete types
-        for type_cond_obj in other_obj.type_cond_selections.values() {
+        info!(
+            "[collect_selections_for_concrete] Traversing {} type_cond_selections",
+            other_obj.type_cond_selections.len()
+        );
+        for (type_cond_name, type_cond_obj) in &other_obj.type_cond_selections {
+            info!(
+                "  Processing type_cond: {} (schema: {})",
+                type_cond_name, type_cond_obj.schema_typename
+            );
             collect_selections_for_concrete(resolve_to, type_cond_obj, global_ctx);
         }
     }
@@ -639,8 +705,20 @@ where
                     &multitype.common().common,
                     &ctx_clone2,
                 );
-                // also collect selections from used fragments and inject in the object directly
-                resolved.selections = resolved.get_all_selections_distinct(&ctx_clone2);
+                info!(
+                    "[multitype_selection_resolved_concretes] Concrete type '{}' final used_fragments: {:?}",
+                    concrete_typename, resolved.used_fragments
+                );
+                // Expand fragments in a type-aware manner (only expanding compatible fragments)
+                resolved.selections.extend(expand_fragments_for_concrete(
+                    &concrete_typename,
+                    &resolved.used_fragments,
+                    &ctx_clone2,
+                ));
+                info!(
+                    "[multitype_selection_resolved_concretes] After expansion, '{}' has {} selections",
+                    concrete_typename, resolved.selections.len()
+                );
                 ret.push(resolved);
             }
             minijinja::Value::from_serialize(ret)
@@ -658,6 +736,29 @@ where
         },
     );
 
+    let ctx_clone3 = ctx.clone();
+    env.add_function(
+        "get_interface_level_fragments",
+        move |selection_schema_typename: &str,
+              used_fragments: ViaDeserialize<HashSet<String>>|
+              -> minijinja::Value {
+            // Filter fragments to only include those defined on the interface/union type itself
+            // Not on concrete implementors
+            let filtered: HashSet<String> = used_fragments
+                .0
+                .iter()
+                .filter(|frag_name| {
+                    let fragment = ctx_clone3.get_fragment_strict(frag_name);
+                    let frag_on_type = &fragment.get_on_type().schema_typename;
+                    // Only include if fragment is on the same type as the selection
+                    frag_on_type == selection_schema_typename
+                })
+                .cloned()
+                .collect();
+            minijinja::Value::from_serialize(filtered)
+        },
+    );
+
     Ok(())
 }
 
@@ -672,37 +773,20 @@ impl OperationEnv<'_> {
         env.add_function(
             "is_selection_from_fragment",
             move |path_name: &str| -> bool {
+                let path_name = path_name.to_string();
                 // Check if the selection exists in the operation's own typedefs
                 // First check if it's in the operation's own selections
-                let typedefs = op_ctx_clone2.typedefs();
-                if typedefs
-                    .get_object_selection(&path_name.to_string())
-                    .is_some()
-                {
+                if let Some(_) = op_ctx_clone2.get_selection(&path_name){
                     return false;
                 }
-                if typedefs
-                    .get_union_selection(&path_name.to_string())
-                    .is_some()
-                {
-                    return false;
-                }
-                if typedefs
-                    .get_interface_selection(&path_name.to_string())
-                    .is_some()
-                {
-                    return false;
-                }
-
                 // If not found in operation but exists in get_selection (which searches fragments),
                 // then it must be from a fragment
-                assert!(
-                    op_ctx_clone2
-                        .get_selection(&path_name.to_string())
-                        .is_some(),
-                    "is_selection_from_fragment: failed to find selection"
-                );
-                true
+                for frag in op_ctx_clone2.typedefs.flatten_used_fragments(){
+                    if let Some(_) = frag.get_selection(&path_name){
+                        return true;
+                    }
+                }
+                panic!("is_selection_from_fragment: failed to find selection {}", path_name);
             },
         );
         Ok(OperationEnv { env })

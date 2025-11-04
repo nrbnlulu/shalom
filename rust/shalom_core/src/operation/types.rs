@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     context::ShalomGlobalContext,
     operation::{
-        context::OperationVariable,
+        context::{ OperationVariable},
         fragments::{FragName, InlineFragment},
     },
     schema::types::{EnumType, GraphQLAny, InterfaceType, ScalarType, UnionType},

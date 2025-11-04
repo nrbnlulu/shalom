@@ -378,7 +378,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification__PushNotification>());
+          isA<GetNotificationPartial_getNotification__WebhookNotification>());
     });
 
     test('optional - null to EmailNotification', () async {
