@@ -129,23 +129,3 @@ pub(crate) fn parse_fragment(
     fragment_ctx.set_on_type(obj_like);
     Ok(())
 }
-
-pub(crate) fn parse_inline_fragment<T: ExecutableContext>(
-    ctx: &mut T,
-    global_ctx: &SharedShalomGlobalContext,
-    path: &String,
-    inline_frag: &apollo_executable::InlineFragment,
-) -> InlineFragment {
-    let type_cond = inline_frag
-        .type_condition
-        .as_ref()
-        .expect("inline fragments with no type condition are not supported.")
-        .to_string();
-    let this_path = format!("{}__{}", path, type_cond);
-    let mut obj_like = ObjectLikeCommon::new(this_path.clone(), type_cond);
-
-    for selection in &inline_frag.selection_set.selections {
-        parse_selection(ctx, global_ctx, &this_path, &mut obj_like, selection, &None);
-    }
-    InlineFragment::new(obj_like)
-}

@@ -319,20 +319,10 @@ impl ObjectLikeCommon {
         for inline_frag in self.used_inline_frags.values() {
             selections.extend(inline_frag.common.get_all_selections_distinct(ctx));
         }
-        selections
-    }
-
-    /// returns all the types that have directly selected by this object-like selections
-    /// only valid for multi-types
-    fn get_all_directly_selected_typenames(&self, ctx: &ShalomGlobalContext) -> HashSet<String> {
-        let mut ret = HashSet::new();
-        ret.insert(self.schema_typename.clone());
-        for frag_name in &self.used_fragments {
-            let frag = ctx.get_fragment(frag_name).unwrap();
-            ret.insert(frag.get_on_type().schema_typename.clone());
+        for obj in self.type_cond_selections.values(){
+            selections.extend(obj.get_all_selections_distinct(ctx));
         }
-        ret.extend(self.used_inline_frags.keys().cloned());
-        ret
+        selections
     }
 }
 

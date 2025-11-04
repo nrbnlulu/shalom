@@ -567,45 +567,7 @@ where
 
     let executable_ctx_clone2 = executable_ctx.clone();
 
-    /// Recursively expand fragments, but only include fragments that match the concrete type
-    fn expand_fragments_for_concrete(
-        concrete_typename: &str,
-        used_fragments: &HashSet<String>,
-        global_ctx: &ShalomGlobalContext,
-    ) -> HashSet<FieldSelection> {
-        let mut selections = HashSet::new();
-        for frag_name in used_fragments {
-            let fragment = global_ctx.get_fragment_strict(frag_name);
-            let frag_obj = fragment.get_on_type();
-
-            // Add direct selections from this fragment
-            selections.extend(frag_obj.selections.clone());
-
-            // Recursively expand nested fragments, but only those that match the concrete type
-            let compatible_nested_fragments: HashSet<String> = frag_obj
-                .used_fragments
-                .iter()
-                .filter(|nested_frag_name| {
-                    let nested_fragment = global_ctx.get_fragment_strict(nested_frag_name);
-                    let nested_on_type = &nested_fragment.get_on_type().schema_typename;
-                    // Include if it's for this concrete type or an interface it implements
-                    nested_on_type == concrete_typename
-                        || global_ctx
-                            .schema_ctx
-                            .is_type_implementing_interface(concrete_typename, nested_on_type)
-                })
-                .cloned()
-                .collect();
-
-            // Recursively expand compatible nested fragments
-            selections.extend(expand_fragments_for_concrete(
-                concrete_typename,
-                &compatible_nested_fragments,
-                global_ctx,
-            ));
-        }
-        selections
-    }
+   
 
     fn collect_selections_for_concrete(
         resolve_to: &mut ObjectLikeCommon,
@@ -627,10 +589,6 @@ where
 
                 if frag_on_type == &resolve_to.schema_typename {
                     // Fragment is exactly on this concrete type - add it to used_fragments
-                    info!(
-                        "    Fragment '{}' on '{}': INCLUDE (exact match)",
-                        frag_name, frag_on_type
-                    );
                     resolve_to.used_fragments.insert(frag_name.clone());
                 } else if global_ctx
                     .schema_ctx
@@ -638,17 +596,9 @@ where
                 {
                     // Fragment is on an interface this type implements
                     // Recursively collect fragments from it but don't add to used_fragments
-                    info!(
-                        "    Fragment '{}' on '{}': EXPAND (interface)",
-                        frag_name, frag_on_type
-                    );
                     collect_selections_for_concrete(resolve_to, fragment.get_on_type(), global_ctx);
-                } else {
-                    info!("    Fragment '{}' on '{}': SKIP", frag_name, frag_on_type);
                 }
             }
-
-            info!("  Final used_fragments: {:?}", resolve_to.used_fragments);
 
             for frag in other_obj.used_inline_frags.values() {
                 // flatten inlinefrag selections directly on here
@@ -706,12 +656,7 @@ where
                     "[multitype_selection_resolved_concretes] Concrete type '{}' final used_fragments: {:?}",
                     concrete_typename, resolved.used_fragments
                 );
-                // Expand fragments in a type-aware manner (only expanding compatible fragments)
-                resolved.selections.extend(expand_fragments_for_concrete(
-                    concrete_typename,
-                    &resolved.used_fragments,
-                    &ctx_clone2,
-                ));
+                resolved.selections = resolved.get_all_selections_distinct(&ctx_clone2);
                 info!(
                     "[multitype_selection_resolved_concretes] After expansion, '{}' has {} selections",
                     concrete_typename, resolved.selections.len()

@@ -196,17 +196,21 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
 
             // all fragments should be already parsed by now.
             let frag = global_ctx.get_fragment_strict(&fragment_name);
+            // add it globally for imports awareness
             ctx.typedefs_mut().add_used_fragment(frag.clone());
-            if let Some(on_condition) = on_condition {
+
+            let frag_root = frag.get_root();
+            if obj_like.schema_typename == frag_root.schema_typename {
+                // if this fragment is of the same type that it is used on we just add it on the used_fragments
+                obj_like.add_used_fragment(fragment_name.clone());
+            } else {
                 obj_like
                     .type_cond_selections
-                    .entry(on_condition.clone())
+                    .entry(frag_root.schema_typename.clone())
                     .or_insert_with(move || {
-                        ObjectLikeCommon::new(path.clone(), on_condition.clone())
+                        ObjectLikeCommon::new(path.clone(), frag_root.schema_typename.clone())
                     })
                     .add_used_fragment(frag.name.clone());
-            } else {
-                obj_like.add_used_fragment(fragment_name.clone());
             }
         }
         apollo_executable::Selection::InlineFragment(inline_fragment) => {
