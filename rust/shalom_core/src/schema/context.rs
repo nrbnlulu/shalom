@@ -1,7 +1,5 @@
-use crate::operation::types::SharedObjectSelection;
 use crate::schema::types::{GraphQLAny, SchemaObjectLike, SharedSchemaObjectLike};
 use apollo_compiler::{validation::Valid, Node};
-use kash::kash;
 use serde::{Serialize, Serializer};
 use std::collections::HashSet;
 use std::fmt::Debug;

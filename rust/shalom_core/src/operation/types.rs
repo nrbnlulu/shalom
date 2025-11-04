@@ -1,5 +1,4 @@
 use std::{
-    cell::Cell,
     collections::{HashMap, HashSet},
     hash::Hasher,
     rc::Rc,
@@ -14,7 +13,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     context::ShalomGlobalContext,
     operation::{
-        context::{ OperationVariable},
+        context::OperationVariable,
         fragments::{FragName, InlineFragment},
     },
     schema::types::{EnumType, GraphQLAny, InterfaceType, ScalarType, UnionType},
@@ -306,7 +305,10 @@ impl ObjectLikeCommon {
 
     /// return all selections for an object including the fragment selections
     /// for the current selection object, with duplicates removed by field name
-    pub fn get_all_selections_distinct(&self, ctx: &ShalomGlobalContext) -> HashSet<FieldSelection> {
+    pub fn get_all_selections_distinct(
+        &self,
+        ctx: &ShalomGlobalContext,
+    ) -> HashSet<FieldSelection> {
         // Convert HashSet to Vec for building the final result
         let mut selections = self.selections.clone();
 

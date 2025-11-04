@@ -13,11 +13,12 @@ fn tests_path() -> PathBuf {
         // Construct the glob pattern: "[parent_path]/dart_tests"
         // This pattern checks for "dart_tests" directly inside the parent directory.
         let glob_pattern = parent.join("dart_tests");
-        
+
         // Convert the PathBuf to a string
-        let pattern_str = glob_pattern.to_str()
+        let pattern_str = glob_pattern
+            .to_str()
             .expect("Path to glob pattern is not valid UTF-8");
-        
+
         // Execute the glob search
         if let Ok(mut entries) = glob(pattern_str) {
             // Check if any matching entry (the dart_tests folder) was found
@@ -30,14 +31,17 @@ fn tests_path() -> PathBuf {
         // Move to the next parent directory for the next iteration
         // The loop continues the "recursive" search by moving one level up.
         current_dir = parent.to_path_buf();
-        
+
         // Stop if we reach the root directory
         if current_dir == parent.parent().unwrap_or(parent) {
-             break;
+            break;
         }
     }
 
-    panic!("Could not find the 'dart_tests/test' directory by searching up from {}", file!());
+    panic!(
+        "Could not find the 'dart_tests/test' directory by searching up from {}",
+        file!()
+    );
 }
 
 /// creates a test folder specific for the given usecase

@@ -1,21 +1,20 @@
-use anyhow::{Context, Result};
-use apollo_compiler::Node;
+use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{error, info};
-use minijinja::{context, value::ViaDeserialize, Environment, Value};
+use minijinja::{context, value::ViaDeserialize, Environment};
 use shalom_core::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
     operation::{
         context::{ExecutableContext, OperationContext, SharedOpCtx},
         fragments::{FragmentContext, SharedFragmentContext},
         types::{
-            dart_type_for_scalar, FieldSelection, FieldSelectionCommon, MultiTypeSelectionCommon,
-            ObjectLikeCommon, ScalarSelection, SelectionKind, SharedListSelection,
+            dart_type_for_scalar, FieldSelection,
+            ObjectLikeCommon, SelectionKind, SharedListSelection,
         },
     },
     schema::{
         context::SchemaContext,
-        types::{GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon},
+        types::{GraphQLAny, InputFieldDefinition, SchemaFieldCommon},
     },
     shalom_config::RuntimeSymbolDefinition,
 };
@@ -557,18 +556,15 @@ where
             let mut res = Vec::new();
             for frag in executable_ctx_clone.typedefs().flatten_used_fragments() {
                 res.push(
-                    calculate_fragment_import_path(&current_file_path, &frag).expect(&format!(
-                        "Failed to calculate import path for fragment: {}; current file: {}",
+                    calculate_fragment_import_path(&current_file_path, &frag).unwrap_or_else(|_| panic!("Failed to calculate import path for fragment: {}; current file: {}",
                         frag.name(),
-                        current_file_path
-                    )),
+                        current_file_path)),
                 );
             }
             minijinja::Value::from_serialize(res)
         },
     );
 
- 
     let executable_ctx_clone2 = executable_ctx.clone();
 
     /// Recursively expand fragments, but only include fragments that match the concrete type
@@ -661,12 +657,10 @@ where
         } else if !resolve_to.contains_field("__typename") {
             let typename_selection =
                 other_obj
-                    .get_selection(&"__typename")
+                    .get_selection("__typename")
                     .cloned()
-                    .expect(&format!(
-                        "unions and interfaces MUST select __typename. {} didn't!",
-                        other_obj.path_name
-                    ));
+                    .unwrap_or_else(|| panic!("unions and interfaces MUST select __typename. {} didn't!",
+                        other_obj.path_name));
             resolve_to.selections.insert(typename_selection);
         }
 
@@ -693,7 +687,7 @@ where
             let multitype = executable_ctx_clone2
                 .typedefs()
                 .get_multitype_selection(&fullname)
-                .expect(&format!("{fullname} not found"));
+                .unwrap_or_else(|| panic!("{fullname} not found"));
 
             let mut ret = Vec::new();
             for concrete_typename in &multitype.common().possible_concrete_types {
@@ -711,7 +705,7 @@ where
                 );
                 // Expand fragments in a type-aware manner (only expanding compatible fragments)
                 resolved.selections.extend(expand_fragments_for_concrete(
-                    &concrete_typename,
+                    concrete_typename,
                     &resolved.used_fragments,
                     &ctx_clone2,
                 ));
@@ -776,17 +770,20 @@ impl OperationEnv<'_> {
                 let path_name = path_name.to_string();
                 // Check if the selection exists in the operation's own typedefs
                 // First check if it's in the operation's own selections
-                if let Some(_) = op_ctx_clone2.get_selection(&path_name){
+                if op_ctx_clone2.get_selection(&path_name).is_some() {
                     return false;
                 }
                 // If not found in operation but exists in get_selection (which searches fragments),
                 // then it must be from a fragment
-                for frag in op_ctx_clone2.typedefs.flatten_used_fragments(){
-                    if let Some(_) = frag.get_selection(&path_name){
+                for frag in op_ctx_clone2.typedefs.flatten_used_fragments() {
+                    if frag.get_selection(&path_name).is_some() {
                         return true;
                     }
                 }
-                panic!("is_selection_from_fragment: failed to find selection {}", path_name);
+                panic!(
+                    "is_selection_from_fragment: failed to find selection {}",
+                    path_name
+                );
             },
         );
         Ok(OperationEnv { env })

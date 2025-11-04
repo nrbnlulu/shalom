@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use apollo_compiler::collections::HashSet;
 use apollo_compiler::{
     ast::OperationType as ApolloOperationType, executable as apollo_executable, Name, Node, Schema,
 };
@@ -10,9 +9,8 @@ use log::{info, trace};
 
 use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
 use crate::operation::context::ExecutableContext;
-use crate::operation::fragments::parse_inline_fragment;
 use crate::operation::types::{
-    FieldArgument, FieldSelectionCommon, MultiTypeSelectionCommon, ObjectLikeCommon,
+    FieldArgument, FieldSelectionCommon, ObjectLikeCommon,
     ObjectSelection, SelectionKind,
 };
 use crate::schema::types::{
@@ -20,9 +18,8 @@ use crate::schema::types::{
 };
 
 use super::context::{OperationContext, SharedOpCtx};
-use super::fragments::SharedFragmentContext;
 use super::types::{
-    EnumSelection, FieldSelection, InterfaceSelection, MultiTypeSelection, OperationType,
+    EnumSelection, FieldSelection, InterfaceSelection, OperationType,
     ScalarSelection, SharedEnumSelection, SharedInterfaceSelection, SharedObjectSelection,
     SharedScalarSelection, UnionSelection,
 };
@@ -217,7 +214,7 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
             let is_on_self = inline_fragment
                 .type_condition
                 .as_ref()
-                .map_or(true, |t| t.to_string() == obj_like.schema_typename);
+                .is_none_or(|t| t.to_string() == obj_like.schema_typename);
             let type_condition = inline_fragment.type_condition.as_ref().unwrap().to_string();
 
             if is_on_self {
@@ -302,9 +299,8 @@ where
         .schema_ctx
         .get_possible_concretes_for_union(&union_type);
     // Determine if we need a fallback class
-    let union_selection =
-        UnionSelection::new(union_type, obj_like, is_optional, possible_concretes);
-    union_selection
+    
+    UnionSelection::new(union_type, obj_like, is_optional, possible_concretes)
 }
 
 pub(crate) fn parse_interface_selection<T: ExecutableContext>(
@@ -327,8 +323,8 @@ pub(crate) fn parse_interface_selection<T: ExecutableContext>(
     let possible_concretes = global_ctx
         .schema_ctx
         .get_concrete_implementors_of_interface(&interface_type.name);
-    let iface = InterfaceSelection::new(interface_type, obj_like, is_optional, possible_concretes);
-    iface
+    
+    InterfaceSelection::new(interface_type, obj_like, is_optional, possible_concretes)
 }
 
 pub(crate) fn parse_selection_kind<T>(

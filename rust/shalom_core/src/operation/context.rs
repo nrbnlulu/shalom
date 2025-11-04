@@ -10,10 +10,9 @@ use super::fragments::SharedFragmentContext;
 use super::types::{
     FieldSelection, FullPathName, OperationType, SharedInterfaceSelection, SharedUnionSelection,
 };
-use crate::context::ShalomGlobalContext;
 use crate::operation::fragments::{FragName, SharedInlineFrag};
 use crate::operation::types::{
-    MultiTypeSelection, MultiTypeSelectionCommon, ObjectLikeCommon, SelectionKind,
+    MultiTypeSelection, ObjectLikeCommon, SelectionKind,
     SharedListSelection, SharedObjectSelection,
 };
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
