@@ -43,7 +43,7 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
 {% set union_types = typedefs.unions %}
 {% for union_full_name, union_selection in union_types | items %}
     {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}    
-    {# generate sealed classe #}
+    {# generate sealed classes #}
     {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
     
     {# generate subsets #}
@@ -60,7 +60,7 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
 
 {% for iface_path_name, iface_selection in typedefs.interfaces | items %}
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
-    {# generate sealed classe #}
+    {# generate sealed classes #}
     {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
     
     {# generate subsets #}

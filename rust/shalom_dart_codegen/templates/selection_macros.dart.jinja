@@ -564,7 +564,7 @@ null
 
 
 {# Unified macro for union and interface selection -#}
-{% macro multi_type_selection_definition(full_name, selection, possible_concrets) -%}
+{% macro multi_type_selection_definition(full_name, selection, possible_concretes) -%}
     sealed class {{ full_name }}{{ implements_used_fragments(selection.used_fragments) }} {
 
 
@@ -588,7 +588,7 @@ null
             final typename = data["__typename"] as String;
             final this$cachedResolved = this$cached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord((this$cached as NormalizedObjectRecord).normalizedID()): this$cached;
             switch (typename) {
-                {% for concrete in possible_concrets %}
+                {% for concrete in possible_concretes %}
                     case "{{ concrete.schema_typename }}":
                         {{ concrete.path_name }}.normalize$inCache(
                             data,
@@ -615,7 +615,7 @@ null
                 }
                 final typename = actualData["__typename"] as String;
                 switch (typename) {
-                    {% for concrete in possible_concrets %}
+                    {% for concrete in possible_concretes %}
                     case "{{ concrete.schema_typename }}":
                         return {{ concrete.path_name }}.fromCached(actualData, ctx{{if_op_variables(", variables")}});
                     {% endfor %}
@@ -626,7 +626,7 @@ null
                 // Non-normalized {{ selection.schema_typename }}: data is the JsonObject directly
                 final typename = data["__typename"] as String;
                 switch (typename) {
-                    {% for concrete in possible_concrets %}
+                    {% for concrete in possible_concretes %}
                     case "{{ concrete.schema_typename }}":
                         return {{ concrete.path_name }}.fromCached(data, ctx{{if_op_variables(", variables")}});
                     {% endfor %}

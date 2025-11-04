@@ -295,7 +295,7 @@ impl ObjectLikeCommon {
 
     pub fn add_inline_fragment(&mut self, frag: InlineFragment) {
         if let Some(exists) = self.used_inline_frags.get_mut(&frag.common.path_name) {
-            // merge the exising one with this one
+            // merge the existing one with this one
             exists.merge(frag);
         } else {
             self.used_inline_frags
