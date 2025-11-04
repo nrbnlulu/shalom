@@ -581,7 +581,6 @@ fn parse_operation(
         };
         ctx.add_variable(name, input_definition);
     }
-
     let object_like = parse_obj_like_from_selection_set(
         &mut ctx,
         global_ctx,

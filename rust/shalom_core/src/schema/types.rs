@@ -345,7 +345,6 @@ impl Eq for SchemaFieldCommon {}
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct SchemaObjectFieldDefinition {
-    #[serde(skip_serializing)]
     pub arguments: Vec<InputFieldDefinition>,
     pub field: SchemaFieldCommon,
 }

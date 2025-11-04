@@ -639,6 +639,8 @@ where
                     &multitype.common().common,
                     &ctx_clone2,
                 );
+                // also collect selections from used fragments and inject in the object directly
+                resolved.selections = resolved.get_all_selections_distinct(&ctx_clone2);
                 ret.push(resolved);
             }
             minijinja::Value::from_serialize(ret)

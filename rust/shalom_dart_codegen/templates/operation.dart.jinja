@@ -27,7 +27,7 @@ import '{{ import_path }}';
 // ------------ OBJECT DEFINITIONS -------------
 {% set response_class_name = operation_name ~ "Response" %}
 class {{ response_class_name }} {{ implements_used_fragments(context.operation.root_type.used_fragments) }}  {
-    {{ selection_object_impl(response_class_name, context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name) }}
+    {{ selection_object_impl(response_class_name, context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name, shared_selections=context.operation.root_type.selections) }}
 }
 
 
@@ -65,7 +65,7 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
     
     {# generate subsets #}
     {% for concrete_subset in concretes -%}
-        class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}}  {
+        class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}}  {
             {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections) }}
         }
     {% endfor %}

@@ -332,13 +332,6 @@ null
     static String G__typename = "{{selection_object.schema_typename}}";
     {% set lookup_name = full_name if full_name else typename %}
     {% set selections = shared_selections %}
-    {% set selections = get_all_selections_distinct(selection_object) %}
-    {# For union members, merge shared selections with object selections, avoiding duplicates #}
-    {% if is_multi_type_member and shared_selections %}
-        {% set member_names = selections | map(attribute='name') | list %}
-        {% set shared_selections_filtered = shared_selections | rejectattr('name', 'in', member_names) %}
-        {% set selections = shared_selections_filtered + selections %}
-    {% endif %}
     /// class members
     {% for selection in selections -%}
         {% if selection.name != "__typename" -%}
@@ -517,23 +510,19 @@ null
 
     @override
     bool operator ==(Object other) {
-    return identical(this, other) ||
-    {% if selections | length > 0 -%}
-    {% set non_typename_selections = selections | rejectattr('name', 'equalto', '__typename') | list %}
-    {% if non_typename_selections | length > 0 -%}
-    (other is {{ typename }} &&
-    {% for selection in non_typename_selections -%}
-            {% set other_selection %}other.{{selection.name}}{% endset -%}
-            {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&" if not loop.last }}
-    {% endfor -%}
-    );
-    {% else -%}
-    (other is {{ typename }});
-    {% endif -%}
-    {% else -%}
-    (other is {{ typename }});
-    {% endif -%}
+        return identical(this, other) ||
+            {% set non_typename_selections = selections | rejectattr('name', 'equalto', '__typename') | list %}
+            {% if non_typename_selections | length > 0 -%}
+                (other is {{ typename }} &&
+                    {% for selection in non_typename_selections -%}
+                            {% set other_selection %}other.{{selection.name}}{% endset -%}
+                            {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&" if not loop.last }}
+                    {% endfor -%}
+                ) &&
+            {% endif -%}
+            (other is {{ typename }});
     }
+
     @override
     int get hashCode =>
     {% if selections | length > 0 -%}
@@ -662,35 +651,19 @@ null
 {% endmacro %}
 
 
-{% macro selection_interface_definition(full_name, selection) -%}
-    {{ multi_type_selection_definition(full_name, selection) }}
-{% endmacro %}
-
-{# Macro for interface/union fallback class implementation - delegates to selection_object_impl with is_fallback=true #}
-{% macro selection_interface_fallback_impl(fallback_class_name, multi_type_selection) -%}
-    {{ selection_object_impl(
-        fallback_class_name,
-        multi_type_selection,
-        is_root_selection=false,
-        full_name=fallback_class_name,
-        is_multi_type_member=true,
-        shared_selections=multi_type_selection.selections,
-        is_fallback=true
-    ) }}
-{% endmacro %}
-
 {# Macro to generate WhereType extensions for lists of multi-types (interfaces/unions) #}
 {% macro generate_multi_type_list_extensions(multi_type_list_selections) -%}
 // ------------ MULTI-TYPE LIST EXTENSIONS -------------
 {% for selection in context.multi_type_list_selections %}
-{% set multi_type = selection.of_kind %}
+    {% set multi_type = selection.of_kind %}
+    {% set concretes = multitype_selection_resolved_concretes(multi_type.path_name) -%}
     {% set full_type_name = multi_type.path_name %}
     {% set inline_fragments = multi_type.inline_fragments -%}
     extension {{ selection.of_kind.path_name }}$WhereTypeExt on List<{{ full_type_name }}> {
-        {% for type_condition, obj_selection in inline_fragments | items -%}
-                // Extension to filter list to only {{ type_condition }} types
-                Iterable<{{ full_type_name }}_{{ type_condition }}> get {{ type_condition | lower }}s {
-                    return whereType<{{ full_type_name }}_{{ type_condition }}>();
+        {% for concrete in concretes -%}
+                // Extension to filter list to only {{ concrete.schema_typename }} types
+                Iterable<{{ concrete.path_name }}> get {{ concrete.schema_typename | lower }}s {
+                    return whereType<{{ concrete.path_name }}>();
                 }
     {% endfor %}
     }

@@ -39,10 +39,10 @@ void main() {
       final result =
           GetAnimalResponse.fromResponse(catData, variables: variables);
 
-      expect(result.animal, isA<GetAnimal_animal_Cat>());
+      expect(result.animal, isA<GetAnimal_animal__Cat>());
       expect(result.animal, isA<AnimalBasicInfo>());
 
-      final cat = result.animal as GetAnimal_animal_Cat;
+      final cat = result.animal as GetAnimal_animal__Cat;
       expect(cat.id, "cat1");
       expect(cat.name, "Whiskers");
       expect(cat.age, 3);
@@ -61,10 +61,10 @@ void main() {
       final result =
           GetAnimalResponse.fromResponse(dogData, variables: variables);
 
-      expect(result.animal, isA<GetAnimal_animal_Dog>());
+      expect(result.animal, isA<GetAnimal_animal__Dog>());
       expect(result.animal, isA<AnimalBasicInfo>());
 
-      final dog = result.animal as GetAnimal_animal_Dog;
+      final dog = result.animal as GetAnimal_animal__Dog;
       expect(dog.id, "dog1");
       expect(dog.name, "Buddy");
       expect(dog.age, 5);
@@ -83,10 +83,10 @@ void main() {
       final result =
           GetAnimalResponse.fromResponse(birdData, variables: variables);
 
-      expect(result.animal, isA<GetAnimal_animal_Fallback>());
+      expect(result.animal, isA<GetAnimal_animal__Fallback>());
       expect(result.animal, isA<AnimalBasicInfo>());
 
-      final bird = result.animal as GetAnimal_animal_Fallback;
+      final bird = result.animal as GetAnimal_animal__Fallback;
       expect(bird.id, "bird1");
       expect(bird.name, "Tweety");
       expect(bird.age, 2);
@@ -304,24 +304,24 @@ void main() {
       final result = GetAnimalsResponse.fromResponse(animalsListData);
 
       expect(result.animals.length, 3);
-      expect(result.animals[0], isA<GetAnimals_animals_Cat>());
+      expect(result.animals[0], isA<GetAnimals_animals__Cat>());
       expect(result.animals[0], isA<AnimalBasicInfo>());
-      expect(result.animals[1], isA<GetAnimals_animals_Dog>());
+      expect(result.animals[1], isA<GetAnimals_animals__Dog>());
       expect(result.animals[1], isA<AnimalBasicInfo>());
-      expect(result.animals[2], isA<GetAnimals_animals_Fallback>());
+      expect(result.animals[2], isA<GetAnimals_animals__Fallback>());
       expect(result.animals[2], isA<AnimalBasicInfo>());
 
-      final cat = result.animals[0] as GetAnimals_animals_Cat;
+      final cat = result.animals[0] as GetAnimals_animals__Cat;
       expect(cat.id, "cat3");
       expect(cat.name, "Shadow");
       expect(cat.meowVolume, 7);
 
-      final dog = result.animals[1] as GetAnimals_animals_Dog;
+      final dog = result.animals[1] as GetAnimals_animals__Dog;
       expect(dog.id, "dog3");
       expect(dog.name, "Max");
       expect(dog.breed, "Beagle");
 
-      final bird = result.animals[2] as GetAnimals_animals_Fallback;
+      final bird = result.animals[2] as GetAnimals_animals__Fallback;
       expect(bird.id, "bird3");
       expect(bird.name, "Chirpy");
       expect(bird.age, 1);
@@ -359,7 +359,7 @@ void main() {
         variables,
       );
 
-      expect(result.animal, isA<GetAnimal_animal_Cat>());
+      expect(result.animal, isA<GetAnimal_animal__Cat>());
       expect(result.animal, isA<AnimalBasicInfo>());
 
       final hasChanged = Completer<bool>();
@@ -377,7 +377,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.animal, isA<GetAnimal_animal_Dog>());
+      expect(result.animal, isA<GetAnimal_animal__Dog>());
       expect(result.animal, isA<AnimalBasicInfo>());
     });
 
@@ -391,7 +391,7 @@ void main() {
         variables,
       );
 
-      expect(result.animal, isA<GetAnimal_animal_Dog>());
+      expect(result.animal, isA<GetAnimal_animal__Dog>());
 
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
@@ -408,7 +408,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.animal, isA<GetAnimal_animal_Fallback>());
+      expect(result.animal, isA<GetAnimal_animal__Fallback>());
       expect(result.animal, isA<AnimalBasicInfo>());
     });
 
@@ -494,8 +494,8 @@ void main() {
         variables,
       );
 
-      expect(result.animal, isA<GetAnimal_animal_Cat>());
-      final cat1 = result.animal as GetAnimal_animal_Cat;
+      expect(result.animal, isA<GetAnimal_animal__Cat>());
+      final cat1 = result.animal as GetAnimal_animal__Cat;
       expect(cat1.name, "OldName");
       expect(cat1.age, 2);
 
@@ -524,7 +524,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      final cat2 = result.animal as GetAnimal_animal_Cat;
+      final cat2 = result.animal as GetAnimal_animal__Cat;
       expect(cat2.name, "NewName");
       expect(cat2.age, 3);
       expect(cat2.meowVolume, 9);

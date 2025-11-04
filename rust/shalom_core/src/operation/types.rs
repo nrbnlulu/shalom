@@ -306,35 +306,16 @@ impl ObjectLikeCommon {
 
     /// return all selections for an object including the fragment selections
     /// for the current selection object, with duplicates removed by field name
-    pub fn get_all_selections_distinct(&self, ctx: &ShalomGlobalContext) -> Vec<FieldSelection> {
+    pub fn get_all_selections_distinct(&self, ctx: &ShalomGlobalContext) -> HashSet<FieldSelection> {
         // Convert HashSet to Vec for building the final result
-        let mut selections: Vec<FieldSelection> = self.selections.iter().cloned().collect();
-
-        let mut seen_names: HashSet<String> = HashSet::new();
-
-        // Track names from direct selections
-        for selection in &selections {
-            seen_names.insert(selection.self_selection_name().clone());
-        }
+        let mut selections = self.selections.clone();
 
         for frag_name in &self.used_fragments {
             let fragment = ctx.get_fragment_strict(frag_name);
-            for fragment_selection in fragment.get_on_type().get_all_selections_distinct(ctx) {
-                let name = fragment_selection.self_selection_name().clone();
-                if !seen_names.contains(&name) {
-                    seen_names.insert(name);
-                    selections.push(fragment_selection);
-                }
-            }
+            selections.extend(fragment.get_on_type().get_all_selections_distinct(ctx));
         }
         for inline_frag in self.used_inline_frags.values() {
-            for selection in inline_frag.common.get_all_selections_distinct(ctx) {
-                let name = selection.self_selection_name().clone();
-                if !seen_names.contains(&name) {
-                    seen_names.insert(name);
-                    selections.push(selection);
-                }
-            }
+            selections.extend(inline_frag.common.get_all_selections_distinct(ctx));
         }
         selections
     }
