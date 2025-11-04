@@ -547,7 +547,6 @@ where
             object_like_needs_variables(executable_ctx_clone3.as_ref(), &selection.0)
         },
     );
-    let ctx_clone = ctx.clone();
 
     let executable_ctx_clone = executable_ctx.clone();
     env.add_function(
@@ -566,8 +565,6 @@ where
     );
 
     let executable_ctx_clone2 = executable_ctx.clone();
-
-   
 
     fn collect_selections_for_concrete(
         resolve_to: &mut ObjectLikeCommon,

@@ -1,4 +1,4 @@
-use crate::schema::types::{GraphQLAny, SchemaObjectLike, SharedSchemaObjectLike};
+use crate::schema::types::{GraphQLAny, SchemaObjectLike};
 use apollo_compiler::{validation::Valid, Node};
 use serde::{Serialize, Serializer};
 use std::collections::HashSet;
@@ -208,22 +208,6 @@ impl SchemaContext {
         } else {
             false
         }
-    }
-
-    pub fn get_interface_direct_members(&self, iface_name: &String) -> Vec<SharedSchemaObjectLike> {
-        let types = self.types.lock().unwrap();
-        let mut ret = Vec::<SharedSchemaObjectLike>::new();
-        for iface in types.interfaces.values() {
-            if iface.implements_interfaces().contains(iface_name.as_str()) {
-                ret.push(iface.clone());
-            }
-        }
-        for obj in types.objects.values() {
-            if obj.implements_interfaces().contains(iface_name.as_str()) {
-                ret.push(obj.clone());
-            }
-        }
-        ret
     }
 
     pub fn get_concrete_implementors_of_interface(&self, iface: &String) -> HashSet<String> {

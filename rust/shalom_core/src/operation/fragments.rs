@@ -2,13 +2,13 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use apollo_compiler::{executable as apollo_executable, Node};
+use apollo_compiler::Node;
 use serde::{Deserialize, Serialize};
 
 use crate::context::SharedShalomGlobalContext;
 use crate::operation::context::{ExecutableContext, TypeDefs};
 use crate::operation::parse::{
-    inject_typename_in_selection_set, parse_obj_like_from_selection_set, parse_selection,
+    inject_typename_in_selection_set, parse_obj_like_from_selection_set,
 };
 use crate::operation::types::ObjectLikeCommon;
 

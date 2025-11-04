@@ -319,7 +319,7 @@ impl ObjectLikeCommon {
         for inline_frag in self.used_inline_frags.values() {
             selections.extend(inline_frag.common.get_all_selections_distinct(ctx));
         }
-        for obj in self.type_cond_selections.values(){
+        for obj in self.type_cond_selections.values() {
             selections.extend(obj.get_all_selections_distinct(ctx));
         }
         selections
