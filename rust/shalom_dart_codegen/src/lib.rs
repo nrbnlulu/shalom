@@ -8,8 +8,8 @@ use shalom_core::{
         context::{ExecutableContext, OperationContext, SharedOpCtx},
         fragments::{FragmentContext, SharedFragmentContext},
         types::{
-            dart_type_for_scalar, FieldSelection,
-            ObjectLikeCommon, SelectionKind, SharedListSelection,
+            dart_type_for_scalar, FieldSelection, ObjectLikeCommon, SelectionKind,
+            SharedListSelection,
         },
     },
     schema::{
@@ -655,12 +655,15 @@ where
                 collect_selections_for_concrete(resolve_to, &frag.common, global_ctx);
             }
         } else if !resolve_to.contains_field("__typename") {
-            let typename_selection =
-                other_obj
-                    .get_selection("__typename")
-                    .cloned()
-                    .unwrap_or_else(|| panic!("unions and interfaces MUST select __typename. {} didn't!",
-                        other_obj.path_name));
+            let typename_selection = other_obj
+                .get_selection("__typename")
+                .cloned()
+                .unwrap_or_else(|| {
+                    panic!(
+                        "unions and interfaces MUST select __typename. {} didn't!",
+                        other_obj.path_name
+                    )
+                });
             resolve_to.selections.insert(typename_selection);
         }
 

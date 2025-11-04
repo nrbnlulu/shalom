@@ -10,8 +10,7 @@ use log::{info, trace};
 use crate::context::{ShalomGlobalContext, SharedShalomGlobalContext};
 use crate::operation::context::ExecutableContext;
 use crate::operation::types::{
-    FieldArgument, FieldSelectionCommon, ObjectLikeCommon,
-    ObjectSelection, SelectionKind,
+    FieldArgument, FieldSelectionCommon, ObjectLikeCommon, ObjectSelection, SelectionKind,
 };
 use crate::schema::types::{
     EnumType, GraphQLAny, InputFieldDefinition, ScalarType, SchemaFieldCommon,
@@ -19,9 +18,9 @@ use crate::schema::types::{
 
 use super::context::{OperationContext, SharedOpCtx};
 use super::types::{
-    EnumSelection, FieldSelection, InterfaceSelection, OperationType,
-    ScalarSelection, SharedEnumSelection, SharedInterfaceSelection, SharedObjectSelection,
-    SharedScalarSelection, UnionSelection,
+    EnumSelection, FieldSelection, InterfaceSelection, OperationType, ScalarSelection,
+    SharedEnumSelection, SharedInterfaceSelection, SharedObjectSelection, SharedScalarSelection,
+    UnionSelection,
 };
 
 fn full_path_name(this_name: &String, parent_path: &String) -> String {
@@ -299,7 +298,7 @@ where
         .schema_ctx
         .get_possible_concretes_for_union(&union_type);
     // Determine if we need a fallback class
-    
+
     UnionSelection::new(union_type, obj_like, is_optional, possible_concretes)
 }
 
@@ -323,7 +322,7 @@ pub(crate) fn parse_interface_selection<T: ExecutableContext>(
     let possible_concretes = global_ctx
         .schema_ctx
         .get_concrete_implementors_of_interface(&interface_type.name);
-    
+
     InterfaceSelection::new(interface_type, obj_like, is_optional, possible_concretes)
 }
 

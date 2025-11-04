@@ -12,8 +12,7 @@ use super::types::{
 };
 use crate::operation::fragments::{FragName, SharedInlineFrag};
 use crate::operation::types::{
-    MultiTypeSelection, ObjectLikeCommon, SelectionKind,
-    SharedListSelection, SharedObjectSelection,
+    MultiTypeSelection, ObjectLikeCommon, SelectionKind, SharedListSelection, SharedObjectSelection,
 };
 use crate::schema::{context::SharedSchemaContext, types::InputFieldDefinition};
 pub type OperationVariable = InputFieldDefinition;
