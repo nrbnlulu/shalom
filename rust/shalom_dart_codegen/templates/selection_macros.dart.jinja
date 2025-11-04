@@ -466,7 +466,7 @@ null
         {% if is_root_selection -%}
             final data = ctx.getCachedRecord("ROOT_{{OP_TYPE}}");
         {% endif -%}
-        {% for selection in selections -%}
+        {% for selection in selections if selection.name != "__typename" -%}
             {% set raw_value_symbol = selection.name + '$raw' -%}
             {% if selection.arguments | length > 0 -%}
                 final {{selection.name}}$cacheKey = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
@@ -515,9 +515,10 @@ null
                             {% set other_selection %}other.{{selection.name}}{% endset -%}
                             {{ selection_equality_comparison_macro(selection, selection.name, other_selection) }} {{ "&&" if not loop.last }}
                     {% endfor -%}
-                ) &&
-            {% endif -%}
+                );
+            {% else -%}
             (other is {{ typename }});
+            {% endif %}
     }
 
     @override
@@ -566,14 +567,12 @@ null
 {% macro multi_type_selection_definition(full_name, selection, possible_concrets) -%}
     sealed class {{ full_name }}{{ implements_used_fragments(selection.used_fragments) }} {
 
-        const {{ full_name }}();
 
-        {% for selection_field in selection.selections -%}
-            {% set selection_name = selection_field.name -%}
-            {% if selection_name != "__typename" -%}
-                {{type_name_for_selection(selection_field)}} get {{selection_name}};
-            {% endif -%}
+        {% for selection in selection.selections if selection.name != "__typename" -%}
+            {{type_name_for_selection(selection)}} get {{selection.name}};
         {% endfor %}
+        
+        const {{ full_name }}();
 
         static void normalize$inCache(
             JsonObject data,

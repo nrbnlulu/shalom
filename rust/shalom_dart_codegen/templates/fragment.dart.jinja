@@ -22,8 +22,8 @@ import '{{ import_path }}';
 
 // Generate abstract fragment class
 abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.root_type.used_fragments) }} {
-    {% for field in context.fragment.root_type.selections -%}
-    {{ type_name_for_selection(field) }} get {{ field.name }};
+    {% for field in context.fragment.root_type.selections if field.name != "__typename" -%}
+        {{ type_name_for_selection(field) }} get {{ field.name }};
     {% endfor %}
 
   Map<String, dynamic> toJson();
