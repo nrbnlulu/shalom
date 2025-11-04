@@ -535,9 +535,9 @@ where
     let ctx_clone3 = ctx.clone();
     env.add_function(
         "get_all_selections_distinct",
-        move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> Result<minijinja::Value, minijinja::Error> {
+        move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
             let selections = obj_like.0.get_all_selections_distinct(&ctx_clone3);
-            Ok(minijinja::Value::from_serialize(&selections))
+            minijinja::Value::from_serialize(&selections)
         },
     );
 

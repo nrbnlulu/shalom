@@ -32,7 +32,7 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
 
 
 {% for obj in all_object_selections() %}
-    {{ selection_object_definition(obj.path_name, obj) }}
+    {{ selection_object_definition(obj) }}
 {% endfor %}
 
 // ------------ END OBJECT DEFINITIONS -------------

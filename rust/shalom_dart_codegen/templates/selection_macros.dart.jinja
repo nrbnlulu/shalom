@@ -331,7 +331,7 @@ null
 {% macro selection_object_impl(typename, selection_object, is_root_selection=false, full_name=none, is_multi_type_member=false, shared_selections=none) %}
     static String G__typename = "{{selection_object.schema_typename}}";
     {% set lookup_name = full_name if full_name else typename %}
-    {% set selections = shared_selections %}
+    {% set selections = shared_selections or selection_object.selections %}
     /// class members
     {% for selection in selections -%}
         {% if selection.name != "__typename" -%}
@@ -557,9 +557,9 @@ null
     }
 {% endmacro %}
 
-{% macro selection_object_definition(full_name, selection, union_parent_name=none, is_multi_type_member=false) -%}
-    class {{ full_name }}{% if is_multi_type_member %} extends {{ union_parent_name }}{% endif %}{{ implements_used_fragments(selection.used_fragments) }}  {
-        {{ selection_object_impl(full_name, selection, is_root_selection=false, full_name=full_name, is_multi_type_member=is_multi_type_member) }}
+{% macro selection_object_definition(object) -%}
+    class {{ object.path_name }} {{ implements_used_fragments(object.used_fragments) }}  {
+        {{ selection_object_impl(object.path_name, object, is_root_selection=false, full_name=object.path_name, shared_selections=get_all_selections_distinct(object)) }}
     }
 {% endmacro %}
 
