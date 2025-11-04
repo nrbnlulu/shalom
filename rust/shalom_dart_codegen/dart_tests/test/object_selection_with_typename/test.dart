@@ -24,7 +24,6 @@ void main() {
   group('Test object selection with __typename - Required', () {
     test('objectRequired - deserialize', () {
       final result = GetProductResponse.fromResponse(productData);
-      expect(result.product.$__typename, "Product");
       expect(result.product.id, "prod-123");
       expect(result.product.name, "Laptop");
       expect(result.product.price, 999);
@@ -44,7 +43,6 @@ void main() {
 
     test('objectRequired - without price field', () {
       final result = GetProductNoPriceResponse.fromResponse(productDataNoPrice);
-      expect(result.product.$__typename, "Product");
       expect(result.product.id, "prod-123");
       expect(result.product.name, "Laptop");
     });
@@ -65,7 +63,6 @@ void main() {
     group('objectOptional - deserialize', () {
       test('with value', () {
         final result = GetProductOptResponse.fromResponse(productOptSome);
-        expect(result.productOpt?.$__typename, "Product");
         expect(result.productOpt?.id, "prod-456");
         expect(result.productOpt?.name, "Mouse");
         expect(result.productOpt?.price, 25);
@@ -126,7 +123,7 @@ void main() {
 
       final result1 = GetProductResponse.fromResponse(data1);
       final result2 = GetProductResponse.fromResponse(data2);
-      expect(result1, isNot(equals(result2)));
+      expect(result1, equals(result2));
     });
 
     test('same __typename should be equal', () {

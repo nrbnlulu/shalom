@@ -135,8 +135,8 @@ void main() {
 
       // Test first item (Book)
       final book = result.library?.collection.items[0];
-      expect(book, isA<CollectionDetailsFrag_items_Book>());
-      if (book is CollectionDetailsFrag_items_Book) {
+      expect(book, isA<CollectionDetailsFrag_items__Book>());
+      if (book is CollectionDetailsFrag_items__Book) {
         expect(book.typename, "Book");
         expect(book.id, "book1");
         expect(book.title, "The Great Novel");
@@ -147,8 +147,8 @@ void main() {
 
       // Test second item (Movie)
       final movie = result.library?.collection.items[1];
-      expect(movie, isA<CollectionDetailsFrag_items_Movie>());
-      if (movie is CollectionDetailsFrag_items_Movie) {
+      expect(movie, isA<CollectionDetailsFrag_items__Movie>());
+      if (movie is CollectionDetailsFrag_items__Movie) {
         expect(movie.typename, "Movie");
         expect(movie.id, "movie1");
         expect(movie.title, "Epic Adventure");
@@ -159,8 +159,8 @@ void main() {
 
       // Test third item (Music)
       final music = result.library?.collection.items[2];
-      expect(music, isA<CollectionDetailsFrag_items_Music>());
-      if (music is CollectionDetailsFrag_items_Music) {
+      expect(music, isA<CollectionDetailsFrag_items__Music>());
+      if (music is CollectionDetailsFrag_items__Music) {
         expect(music.typename, "Music");
         expect(music.id, "music1");
         expect(music.title, "Summer Hits");
@@ -190,8 +190,8 @@ void main() {
       expect(result.library?.collection.items.length, 1);
 
       final book = result.library?.collection.items[0];
-      expect(book, isA<CollectionDetailsFrag_items_Book>());
-      if (book is CollectionDetailsFrag_items_Book) {
+      expect(book, isA<CollectionDetailsFrag_items__Book>());
+      if (book is CollectionDetailsFrag_items__Book) {
         expect(book.typename, "Book");
         expect(book.author, "F. Scott Fitzgerald");
         expect(book.pages, 180);
@@ -235,17 +235,17 @@ void main() {
 
       // Verify items through type checking
       final item0 = result.library?.collection.items[0];
-      if (item0 is CollectionDetailsFrag_items_Book) {
+      if (item0 is CollectionDetailsFrag_items__Book) {
         expect(item0.id, "book1");
       }
 
       final item1 = result.library?.collection.items[1];
-      if (item1 is CollectionDetailsFrag_items_Movie) {
+      if (item1 is CollectionDetailsFrag_items__Movie) {
         expect(item1.id, "movie1");
       }
 
       final item2 = result.library?.collection.items[2];
-      if (item2 is CollectionDetailsFrag_items_Music) {
+      if (item2 is CollectionDetailsFrag_items__Music) {
         expect(item2.id, "music1");
       }
 
@@ -387,15 +387,15 @@ void main() {
       expect(result.library?.collection.items.length, 2);
 
       final book1 = result.library?.collection.items[0];
-      expect(book1, isA<CollectionDetailsFrag_items_Book>());
-      if (book1 is CollectionDetailsFrag_items_Book) {
+      expect(book1, isA<CollectionDetailsFrag_items__Book>());
+      if (book1 is CollectionDetailsFrag_items__Book) {
         expect(book1.title, "Advanced Physics");
         expect(book1.author, "Dr. Smith");
       }
 
       final book2 = result.library?.collection.items[1];
-      expect(book2, isA<CollectionDetailsFrag_items_Book>());
-      if (book2 is CollectionDetailsFrag_items_Book) {
+      expect(book2, isA<CollectionDetailsFrag_items__Book>());
+      if (book2 is CollectionDetailsFrag_items__Book) {
         expect(book2.title, "Modern Chemistry");
         expect(book2.author, "Dr. Jones");
       }
@@ -415,7 +415,7 @@ void main() {
 
       // Verify all items in the list are of the same interface implementation
       final allBooks = result.library?.collection.items
-          .every((item) => item is CollectionDetailsFrag_items_Book);
+          .every((item) => item is CollectionDetailsFrag_items__Book);
       expect(allBooks, true);
     });
 

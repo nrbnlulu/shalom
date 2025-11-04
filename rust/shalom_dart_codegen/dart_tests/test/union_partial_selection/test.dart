@@ -42,9 +42,9 @@ void main() {
           variables: variables);
 
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification_EmailNotification>());
+          isA<GetNotificationPartial_getNotification__EmailNotification>());
       final email = result.getNotification
-          as GetNotificationPartial_getNotification_EmailNotification;
+          as GetNotificationPartial_getNotification__EmailNotification;
       expect(email.id, "email1");
       expect(email.subject, "Test Email");
       expect(email.body, "This is a test email");
@@ -59,9 +59,9 @@ void main() {
           variables: variables);
 
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification_SMSNotification>());
+          isA<GetNotificationPartial_getNotification__SMSNotification>());
       final sms = result.getNotification
-          as GetNotificationPartial_getNotification_SMSNotification;
+          as GetNotificationPartial_getNotification__SMSNotification;
       expect(sms.id, "sms1");
       expect(sms.message, "Test SMS");
       expect(sms.phoneNumber, "+1234567890");
@@ -128,9 +128,9 @@ void main() {
           variables: variables);
 
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification_Fallback>());
+          isA<GetNotificationPartial_getNotification__PushNotification>());
       final fallback = result.getNotification
-          as GetNotificationPartial_getNotification_Fallback;
+          as GetNotificationPartial_getNotification__PushNotification;
       expect(fallback.typename, "PushNotification");
     });
 
@@ -141,9 +141,9 @@ void main() {
           variables: variables);
 
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification_Fallback>());
+          isA<GetNotificationPartial_getNotification__PushNotification>());
       final fallback = result.getNotification
-          as GetNotificationPartial_getNotification_Fallback;
+          as GetNotificationPartial_getNotification__PushNotification;
       expect(fallback.typename, "WebhookNotification");
     });
 
@@ -204,9 +204,9 @@ void main() {
 
       expect(result.getNotificationOpt, isNotNull);
       expect(result.getNotificationOpt,
-          isA<GetNotificationPartialOpt_getNotificationOpt_EmailNotification>());
+          isA<GetNotificationPartialOpt_getNotificationOpt__EmailNotification>());
       final email = result.getNotificationOpt
-          as GetNotificationPartialOpt_getNotificationOpt_EmailNotification;
+          as GetNotificationPartialOpt_getNotificationOpt__EmailNotification;
       expect(email.id, "email2");
       expect(email.subject, "Optional Email");
       expect(email.body, "This is optional");
@@ -221,9 +221,9 @@ void main() {
 
       expect(result.getNotificationOpt, isNotNull);
       expect(result.getNotificationOpt,
-          isA<GetNotificationPartialOpt_getNotificationOpt_Fallback>());
+          isA<GetNotificationPartialOpt_getNotificationOpt__PushNotification>());
       final fallback = result.getNotificationOpt
-          as GetNotificationPartialOpt_getNotificationOpt_Fallback;
+          as GetNotificationPartialOpt_getNotificationOpt__PushNotification;
       expect(fallback.typename, "PushNotification");
     });
 
@@ -272,9 +272,9 @@ void main() {
           variables: variables);
 
       expect(result.getNotification,
-          isA<GetNotificationPartialNoTopTypename_getNotification_EmailNotification>());
+          isA<GetNotificationPartialNoTopTypename_getNotification__EmailNotification>());
       final email = result.getNotification
-          as GetNotificationPartialNoTopTypename_getNotification_EmailNotification;
+          as GetNotificationPartialNoTopTypename_getNotification__EmailNotification;
       expect(email.typename, "EmailNotification");
       expect(email.id, "email1");
     });
@@ -295,7 +295,7 @@ void main() {
       );
 
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification_EmailNotification>());
+          isA<GetNotificationPartial_getNotification__EmailNotification>());
 
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
@@ -313,7 +313,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification_SMSNotification>());
+          isA<GetNotificationPartial_getNotification__SMSNotification>());
     });
 
     test('EmailNotification to PushNotification (fallback)', () async {
@@ -327,7 +327,7 @@ void main() {
       );
 
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification_EmailNotification>());
+          isA<GetNotificationPartial_getNotification__EmailNotification>());
 
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
@@ -345,7 +345,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification_Fallback>());
+          isA<GetNotificationPartial_getNotification__PushNotification>());
     });
 
     test('PushNotification (fallback) to WebhookNotification (fallback)',
@@ -360,7 +360,7 @@ void main() {
       );
 
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification_Fallback>());
+          isA<GetNotificationPartial_getNotification__PushNotification>());
 
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
@@ -378,7 +378,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       expect(result.getNotification,
-          isA<GetNotificationPartial_getNotification_Fallback>());
+          isA<GetNotificationPartial_getNotification__PushNotification>());
     });
 
     test('optional - null to EmailNotification', () async {
@@ -441,7 +441,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       expect(result.getNotificationOpt,
-          isA<GetNotificationPartialOpt_getNotificationOpt_Fallback>());
+          isA<GetNotificationPartialOpt_getNotificationOpt__PushNotification>());
     });
 
     test('optional - fallback to null', () async {

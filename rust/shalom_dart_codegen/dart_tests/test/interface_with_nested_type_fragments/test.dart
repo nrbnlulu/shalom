@@ -45,7 +45,7 @@ void main() {
           NodeGlobalQueryResponse.fromResponse(fooData, variables: variables);
 
       // Verify it's the correct type
-      expect(result.node, isA<NodeGlobalQuery_node_Foo>());
+      expect(result.node, isA<NodeGlobalQuery_node__Foo>());
       expect(result.node, isA<NodeGlobalFrag>());
 
       // Access through interface fragment
@@ -54,7 +54,7 @@ void main() {
       expect(nodeFrag.createdAt, "2024-01-01T00:00:00Z");
 
       // Access through concrete type
-      final foo = result.node as NodeGlobalQuery_node_Foo;
+      final foo = result.node as NodeGlobalQuery_node__Foo;
       expect(foo.id, "foo1");
       expect(foo.createdAt, "2024-01-01T00:00:00Z");
       expect(foo.fooField, "foo field value");
@@ -67,14 +67,14 @@ void main() {
       final result =
           NodeGlobalQueryResponse.fromResponse(barData, variables: variables);
 
-      expect(result.node, isA<NodeGlobalQuery_node_Bar>());
+      expect(result.node, isA<NodeGlobalQuery_node__Bar>());
       expect(result.node, isA<NodeGlobalFrag>());
 
       final nodeFrag = result.node as NodeGlobalFrag;
       expect(nodeFrag.id, "bar1");
       expect(nodeFrag.createdAt, "2024-01-02T00:00:00Z");
 
-      final bar = result.node as NodeGlobalQuery_node_Bar;
+      final bar = result.node as NodeGlobalQuery_node__Bar;
       expect(bar.id, "bar1");
       expect(bar.createdAt, "2024-01-02T00:00:00Z");
       expect(bar.barField, "bar field value");
@@ -87,14 +87,14 @@ void main() {
       final result =
           NodeGlobalQueryResponse.fromResponse(bazData, variables: variables);
 
-      expect(result.node, isA<NodeGlobalQuery_node_Baz>());
+      expect(result.node, isA<NodeGlobalQuery_node__Baz>());
       expect(result.node, isA<NodeGlobalFrag>());
 
       final nodeFrag = result.node as NodeGlobalFrag;
       expect(nodeFrag.id, "baz1");
       expect(nodeFrag.createdAt, "2024-01-03T00:00:00Z");
 
-      final baz = result.node as NodeGlobalQuery_node_Baz;
+      final baz = result.node as NodeGlobalQuery_node__Baz;
       expect(baz.id, "baz1");
       expect(baz.createdAt, "2024-01-03T00:00:00Z");
       expect(baz.bazField, "baz field value");
@@ -173,14 +173,14 @@ void main() {
           variables: variables);
 
       expect(result.nodeOpt, isNotNull);
-      expect(result.nodeOpt, isA<NodeGlobalQueryOpt_nodeOpt_Foo>());
+      expect(result.nodeOpt, isA<NodeGlobalQueryOpt_nodeOpt__Foo>());
       expect(result.nodeOpt, isA<NodeGlobalFrag>());
 
       final nodeFrag = result.nodeOpt as NodeGlobalFrag;
       expect(nodeFrag.id, "foo2");
       expect(nodeFrag.createdAt, "2024-01-04T00:00:00Z");
 
-      final foo = result.nodeOpt as NodeGlobalQueryOpt_nodeOpt_Foo;
+      final foo = result.nodeOpt as NodeGlobalQueryOpt_nodeOpt__Foo;
       expect(foo.id, "foo2");
       expect(foo.fooField, "optional foo");
       expect(foo.fooValue, 99);
@@ -259,24 +259,24 @@ void main() {
       final result = NodesGlobalQueryResponse.fromResponse(nodesListData);
 
       expect(result.nodes.length, 3);
-      expect(result.nodes[0], isA<NodesGlobalQuery_nodes_Foo>());
+      expect(result.nodes[0], isA<NodesGlobalQuery_nodes__Foo>());
       expect(result.nodes[0], isA<NodeGlobalFrag>());
-      expect(result.nodes[1], isA<NodesGlobalQuery_nodes_Bar>());
+      expect(result.nodes[1], isA<NodesGlobalQuery_nodes__Bar>());
       expect(result.nodes[1], isA<NodeGlobalFrag>());
-      expect(result.nodes[2], isA<NodesGlobalQuery_nodes_Baz>());
+      expect(result.nodes[2], isA<NodesGlobalQuery_nodes__Baz>());
       expect(result.nodes[2], isA<NodeGlobalFrag>());
 
-      final foo = result.nodes[0] as NodesGlobalQuery_nodes_Foo;
+      final foo = result.nodes[0] as NodesGlobalQuery_nodes__Foo;
       expect(foo.id, "foo3");
       expect(foo.fooField, "list foo");
       expect(foo.fooValue, 10);
 
-      final bar = result.nodes[1] as NodesGlobalQuery_nodes_Bar;
+      final bar = result.nodes[1] as NodesGlobalQuery_nodes__Bar;
       expect(bar.id, "bar3");
       expect(bar.barField, "list bar");
       expect(bar.barValue, 2.71);
 
-      final baz = result.nodes[2] as NodesGlobalQuery_nodes_Baz;
+      final baz = result.nodes[2] as NodesGlobalQuery_nodes__Baz;
       expect(baz.id, "baz3");
       expect(baz.bazField, "list baz");
       expect(baz.bazValue, false);
@@ -314,7 +314,7 @@ void main() {
         variables,
       );
 
-      expect(result.node, isA<NodeGlobalQuery_node_Foo>());
+      expect(result.node, isA<NodeGlobalQuery_node__Foo>());
       expect(result.node, isA<NodeGlobalFrag>());
 
       final hasChanged = Completer<bool>();
@@ -332,7 +332,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.node, isA<NodeGlobalQuery_node_Bar>());
+      expect(result.node, isA<NodeGlobalQuery_node__Bar>());
       expect(result.node, isA<NodeGlobalFrag>());
     });
 
@@ -418,8 +418,8 @@ void main() {
         variables,
       );
 
-      expect(result.node, isA<NodeGlobalQuery_node_Foo>());
-      final foo1 = result.node as NodeGlobalQuery_node_Foo;
+      expect(result.node, isA<NodeGlobalQuery_node__Foo>());
+      final foo1 = result.node as NodeGlobalQuery_node__Foo;
       expect(foo1.fooField, "old value");
       expect(foo1.fooValue, 1);
 
@@ -448,7 +448,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      final foo2 = result.node as NodeGlobalQuery_node_Foo;
+      final foo2 = result.node as NodeGlobalQuery_node__Foo;
       expect(foo2.fooField, "new value");
       expect(foo2.fooValue, 999);
     });

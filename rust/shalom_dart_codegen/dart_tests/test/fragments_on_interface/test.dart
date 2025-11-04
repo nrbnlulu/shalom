@@ -78,15 +78,15 @@ void main() {
       expect(animalFrag.age, 5);
     });
 
-    test('fragmentsOnInterfaceRequired - Bird (fallback)', () {
+    test('fragmentsOnInterfaceRequired - Bird (no inline fragment)', () {
       final variables = GetAnimalVariables(id: "bird1");
       final result =
           GetAnimalResponse.fromResponse(birdData, variables: variables);
 
-      expect(result.animal, isA<GetAnimal_animal__Fallback>());
+      expect(result.animal, isA<GetAnimal_animal__Bird>());
       expect(result.animal, isA<AnimalBasicInfo>());
 
-      final bird = result.animal as GetAnimal_animal__Fallback;
+      final bird = result.animal as GetAnimal_animal__Bird;
       expect(bird.id, "bird1");
       expect(bird.name, "Tweety");
       expect(bird.age, 2);
@@ -142,7 +142,7 @@ void main() {
       expect(json, dogData);
     });
 
-    test('toJson - Bird (fallback)', () {
+    test('toJson - Bird', () {
       final variables = GetAnimalVariables(id: "bird1");
       final initial =
           GetAnimalResponse.fromResponse(birdData, variables: variables);
@@ -170,10 +170,10 @@ void main() {
           GetAnimalOptResponse.fromResponse(catOptData, variables: variables);
 
       expect(result.animalOpt, isNotNull);
-      expect(result.animalOpt, isA<GetAnimalOpt_animalOpt_Cat>());
+      expect(result.animalOpt, isA<GetAnimalOpt_animalOpt__Cat>());
       expect(result.animalOpt, isA<AnimalBasicInfo>());
 
-      final cat = result.animalOpt as GetAnimalOpt_animalOpt_Cat;
+      final cat = result.animalOpt as GetAnimalOpt_animalOpt__Cat;
       expect(cat.id, "cat2");
       expect(cat.name, "Mittens");
       expect(cat.age, 4);
@@ -244,10 +244,10 @@ void main() {
       final result = GetAnimalAllTypesResponse.fromResponse(birdAllTypesData,
           variables: variables);
 
-      expect(result.animal, isA<GetAnimalAllTypes_animal_Bird>());
+      expect(result.animal, isA<GetAnimalAllTypes_animal__Bird>());
       expect(result.animal, isA<AnimalBasicInfo>());
 
-      final bird = result.animal as GetAnimalAllTypes_animal_Bird;
+      final bird = result.animal as GetAnimalAllTypes_animal__Bird;
       expect(bird.id, "bird2");
       expect(bird.name, "Polly");
       expect(bird.age, 3);
@@ -308,7 +308,7 @@ void main() {
       expect(result.animals[0], isA<AnimalBasicInfo>());
       expect(result.animals[1], isA<GetAnimals_animals__Dog>());
       expect(result.animals[1], isA<AnimalBasicInfo>());
-      expect(result.animals[2], isA<GetAnimals_animals__Fallback>());
+      expect(result.animals[2], isA<GetAnimals_animals__Bird>());
       expect(result.animals[2], isA<AnimalBasicInfo>());
 
       final cat = result.animals[0] as GetAnimals_animals__Cat;
@@ -321,7 +321,7 @@ void main() {
       expect(dog.name, "Max");
       expect(dog.breed, "Beagle");
 
-      final bird = result.animals[2] as GetAnimals_animals__Fallback;
+      final bird = result.animals[2] as GetAnimals_animals__Bird;
       expect(bird.id, "bird3");
       expect(bird.name, "Chirpy");
       expect(bird.age, 1);
@@ -381,7 +381,7 @@ void main() {
       expect(result.animal, isA<AnimalBasicInfo>());
     });
 
-    test('Dog to Bird (fallback) type change', () async {
+    test('Dog to Bird type change', () async {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetAnimalVariables(id: "animal1");
 
@@ -408,7 +408,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.animal, isA<GetAnimal_animal__Fallback>());
+      expect(result.animal, isA<GetAnimal_animal__Bird>());
       expect(result.animal, isA<AnimalBasicInfo>());
     });
 

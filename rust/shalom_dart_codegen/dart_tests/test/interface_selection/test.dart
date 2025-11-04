@@ -77,8 +77,8 @@ void main() {
       expect(animal.id, "lion1");
       expect(animal.legs, 4);
       expect(animal.sound, "Roar");
-      expect(result.animal, isA<GetAnimal_animal_Lion>());
-      final animalAsLion = result.animal as GetAnimal_animal_Lion;
+      expect(result.animal, isA<GetAnimal_animal__Lion>());
+      final animalAsLion = result.animal as GetAnimal_animal__Lion;
       expect(animalAsLion.furColor, "Golden");
       expect(animalAsLion.typename, "Lion");
     });
@@ -88,8 +88,8 @@ void main() {
       final result =
           GetAnimalResponse.fromResponse(turtleData, variables: variables);
 
-      expect(result.animal, isA<GetAnimal_animal_Turtle>());
-      final turtle = result.animal as GetAnimal_animal_Turtle;
+      expect(result.animal, isA<GetAnimal_animal__Turtle>());
+      final turtle = result.animal as GetAnimal_animal__Turtle;
       expect(turtle.id, "turtle1");
       expect(turtle.legs, 4);
       expect(turtle.sound, "Hiss");
@@ -102,8 +102,8 @@ void main() {
       final result =
           GetAnimalResponse.fromResponse(dogData, variables: variables);
 
-      expect(result.animal, isA<GetAnimal_animal_Fallback>());
-      final dog = result.animal as GetAnimal_animal_Fallback;
+      expect(result.animal, isA<GetAnimal_animal__Dog>());
+      final dog = result.animal as GetAnimal_animal__Dog;
       expect(dog.id, "dog1");
       expect(dog.legs, 4);
       expect(dog.sound, "Bark");
@@ -181,8 +181,8 @@ void main() {
           GetAnimalOptResponse.fromResponse(lionOptData, variables: variables);
 
       expect(result.animalOpt, isNotNull);
-      expect(result.animalOpt, isA<GetAnimalOpt_animalOpt_Lion>());
-      final lion = result.animalOpt as GetAnimalOpt_animalOpt_Lion;
+      expect(result.animalOpt, isA<GetAnimalOpt_animalOpt__Lion>());
+      final lion = result.animalOpt as GetAnimalOpt_animalOpt__Lion;
       expect(lion.id, "lion2");
       expect(lion.legs, 4);
       expect(lion.sound, "Roar");
@@ -229,8 +229,8 @@ void main() {
       final result = GetAnimalAllTypesResponse.fromResponse(dogAllTypesData,
           variables: variables);
 
-      expect(result.animal, isA<GetAnimalAllTypes_animal_Dog>());
-      final dog = result.animal as GetAnimalAllTypes_animal_Dog;
+      expect(result.animal, isA<GetAnimalAllTypes_animal__Dog>());
+      final dog = result.animal as GetAnimalAllTypes_animal__Dog;
       expect(dog.id, "dog2");
       expect(dog.legs, 4);
       expect(dog.sound, "Woof");
@@ -272,19 +272,19 @@ void main() {
       final result = GetAnimalsResponse.fromResponse(animalsListData);
 
       expect(result.animals.length, 3);
-      expect(result.animals[0], isA<GetAnimals_animals_Lion>());
-      expect(result.animals[1], isA<GetAnimals_animals_Turtle>());
-      expect(result.animals[2], isA<GetAnimals_animals_Fallback>());
+      expect(result.animals[0], isA<GetAnimals_animals__Lion>());
+      expect(result.animals[1], isA<GetAnimals_animals__Turtle>());
+      expect(result.animals[2], isA<GetAnimals_animals__Dog>());
 
-      final lion = result.animals[0] as GetAnimals_animals_Lion;
+      final lion = result.animals[0] as GetAnimals_animals__Lion;
       expect(lion.id, "lion3");
       expect(lion.furColor, "Golden");
 
-      final turtle = result.animals[1] as GetAnimals_animals_Turtle;
+      final turtle = result.animals[1] as GetAnimals_animals__Turtle;
       expect(turtle.id, "turtle2");
       expect(turtle.shellColor, "Brown");
 
-      final dog = result.animals[2] as GetAnimals_animals_Fallback;
+      final dog = result.animals[2] as GetAnimals_animals__Dog;
       expect(dog.id, "dog3");
       expect(dog.sound, "Bark");
     });
@@ -302,8 +302,8 @@ void main() {
       final result = GetAnimalWithoutTopTypenameResponse.fromResponse(lionData,
           variables: variables);
 
-      expect(result.animal, isA<GetAnimalWithoutTopTypename_animal_Lion>());
-      final lion = result.animal as GetAnimalWithoutTopTypename_animal_Lion;
+      expect(result.animal, isA<GetAnimalWithoutTopTypename_animal__Lion>());
+      final lion = result.animal as GetAnimalWithoutTopTypename_animal__Lion;
       expect(lion.typename, "Lion");
       expect(lion.id, "lion1");
     });
@@ -320,7 +320,7 @@ void main() {
         variables,
       );
 
-      expect(result.animal, isA<GetAnimal_animal_Lion>());
+      expect(result.animal, isA<GetAnimal_animal__Lion>());
 
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
@@ -337,7 +337,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.animal, isA<GetAnimal_animal_Turtle>());
+      expect(result.animal, isA<GetAnimal_animal__Turtle>());
     });
 
     test('Turtle to Dog (fallback)', () async {
@@ -350,7 +350,7 @@ void main() {
         variables,
       );
 
-      expect(result.animal, isA<GetAnimal_animal_Turtle>());
+      expect(result.animal, isA<GetAnimal_animal__Turtle>());
 
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
@@ -367,7 +367,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.animal, isA<GetAnimal_animal_Fallback>());
+      expect(result.animal, isA<GetAnimal_animal__Dog>());
     });
 
     test('optional - null to Lion', () async {
@@ -438,8 +438,8 @@ void main() {
           lionWithArgsData,
           variables: variables);
 
-      expect(result.animal, isA<GetAnimalWithArguments_animal_Lion>());
-      final lion = result.animal as GetAnimalWithArguments_animal_Lion;
+      expect(result.animal, isA<GetAnimalWithArguments_animal__Lion>());
+      final lion = result.animal as GetAnimalWithArguments_animal__Lion;
       expect(lion.id, "lion5");
       expect(lion.legs, 4);
       expect(lion.sound, "Roar");
@@ -455,8 +455,8 @@ void main() {
           turtleWithArgsData,
           variables: variables);
 
-      expect(result.animal, isA<GetAnimalWithArguments_animal_Turtle>());
-      final turtle = result.animal as GetAnimalWithArguments_animal_Turtle;
+      expect(result.animal, isA<GetAnimalWithArguments_animal__Turtle>());
+      final turtle = result.animal as GetAnimalWithArguments_animal__Turtle;
       expect(turtle.id, "turtle5");
       expect(turtle.legs, 4);
       expect(turtle.sound, "Hiss");
@@ -471,8 +471,8 @@ void main() {
           dogWithArgsData,
           variables: variables);
 
-      expect(result.animal, isA<GetAnimalWithArguments_animal_Dog>());
-      final dog = result.animal as GetAnimalWithArguments_animal_Dog;
+      expect(result.animal, isA<GetAnimalWithArguments_animal__Dog>());
+      final dog = result.animal as GetAnimalWithArguments_animal__Dog;
       expect(dog.id, "dog5");
       expect(dog.legs, 4);
       expect(dog.sound, "Bark");
@@ -523,8 +523,8 @@ void main() {
         variables,
       );
 
-      expect(result.animal, isA<GetAnimalWithArguments_animal_Lion>());
-      final lion1 = result.animal as GetAnimalWithArguments_animal_Lion;
+      expect(result.animal, isA<GetAnimalWithArguments_animal__Lion>());
+      final lion1 = result.animal as GetAnimalWithArguments_animal__Lion;
       expect(lion1.description, "Initial description");
 
       final hasChanged = Completer<bool>();
@@ -553,7 +553,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      final lion2 = result.animal as GetAnimalWithArguments_animal_Lion;
+      final lion2 = result.animal as GetAnimalWithArguments_animal__Lion;
       expect(lion2.description, "Updated description");
     });
 
@@ -568,7 +568,7 @@ void main() {
         variables,
       );
 
-      expect(result.animal, isA<GetAnimalWithArguments_animal_Lion>());
+      expect(result.animal, isA<GetAnimalWithArguments_animal__Lion>());
 
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
@@ -585,7 +585,7 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.animal, isA<GetAnimalWithArguments_animal_Dog>());
+      expect(result.animal, isA<GetAnimalWithArguments_animal__Dog>());
     });
   });
 }

@@ -52,11 +52,11 @@ void main() {
       final result =
           GetNodeResponse.fromResponse(userData, variables: variables);
 
-      expect(result.node, isA<GetNode_node_User>());
+      expect(result.node, isA<GetNode_node__User>());
       expect(result.node, isA<NodeTimestamps>());
       expect(result.node, isA<UserInfo>());
 
-      final user = result.node as GetNode_node_User;
+      final user = result.node as GetNode_node__User;
       expect(user.id, "user1");
       expect(user.createdAt, "2024-01-01T00:00:00Z");
       expect(user.updatedAt, "2024-01-02T00:00:00Z");
@@ -84,11 +84,11 @@ void main() {
       final result =
           GetNodeResponse.fromResponse(postData, variables: variables);
 
-      expect(result.node, isA<GetNode_node_Post>());
+      expect(result.node, isA<GetNode_node__Post>());
       expect(result.node, isA<NodeTimestamps>());
       expect(result.node, isA<PostInfo>());
 
-      final post = result.node as GetNode_node_Post;
+      final post = result.node as GetNode_node__Post;
       expect(post.id, "post1");
       expect(post.createdAt, "2024-01-03T00:00:00Z");
       expect(post.updatedAt, "2024-01-04T00:00:00Z");
@@ -116,10 +116,10 @@ void main() {
       final result =
           GetNodeResponse.fromResponse(commentData, variables: variables);
 
-      expect(result.node, isA<GetNode_node_Fallback>());
+      expect(result.node, isA<GetNode_node__Comment>());
       expect(result.node, isA<NodeTimestamps>());
 
-      final comment = result.node as GetNode_node_Fallback;
+      final comment = result.node as GetNode_node__Comment;
       expect(comment.id, "comment1");
       expect(comment.createdAt, "2024-01-05T00:00:00Z");
       expect(comment.updatedAt, "2024-01-06T00:00:00Z");
@@ -184,11 +184,11 @@ void main() {
           GetNodeOptResponse.fromResponse(userOptData, variables: variables);
 
       expect(result.nodeOpt, isNotNull);
-      expect(result.nodeOpt, isA<GetNodeOpt_nodeOpt_User>());
+      expect(result.nodeOpt, isA<GetNodeOpt_nodeOpt__User>());
       expect(result.nodeOpt, isA<NodeTimestamps>());
       expect(result.nodeOpt, isA<UserInfo>());
 
-      final user = result.nodeOpt as GetNodeOpt_nodeOpt_User;
+      final user = result.nodeOpt as GetNodeOpt_nodeOpt__User;
       expect(user.id, "user1");
       expect(user.createdAt, "2024-01-01T00:00:00Z");
       expect(user.updatedAt, "2024-01-02T00:00:00Z");
@@ -216,11 +216,11 @@ void main() {
           GetNodeOptResponse.fromResponse(postOptData, variables: variables);
 
       expect(result.nodeOpt, isNotNull);
-      expect(result.nodeOpt, isA<GetNodeOpt_nodeOpt_Post>());
+      expect(result.nodeOpt, isA<GetNodeOpt_nodeOpt__Post>());
       expect(result.nodeOpt, isA<NodeTimestamps>());
       expect(result.nodeOpt, isA<PostInfo>());
 
-      final post = result.nodeOpt as GetNodeOpt_nodeOpt_Post;
+      final post = result.nodeOpt as GetNodeOpt_nodeOpt__Post;
       expect(post.id, "post1");
       expect(post.createdAt, "2024-01-03T00:00:00Z");
       expect(post.updatedAt, "2024-01-04T00:00:00Z");
@@ -304,7 +304,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
 
-      final user = result.node as GetNode_node_User;
+      final user = result.node as GetNode_node__User;
       expect(user.username, "john_doe_updated");
       expect(user.email, "john.updated@example.com");
       expect(user.age, 31);
@@ -350,7 +350,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
 
-      final post = result.node as GetNode_node_Post;
+      final post = result.node as GetNode_node__Post;
       expect(post.title, "Hello World Updated");
       expect(post.content, "This is my updated post");
       expect(post.views, 200);
@@ -454,25 +454,25 @@ void main() {
       expect(result.nodes.length, 3);
 
       // Check User
-      expect(result.nodes[0], isA<GetNodes_nodes_User>());
+      expect(result.nodes[0], isA<GetNodes_nodes__User>());
       expect(result.nodes[0], isA<NodeTimestamps>());
       expect(result.nodes[0], isA<UserInfo>());
-      final user = result.nodes[0] as GetNodes_nodes_User;
+      final user = result.nodes[0] as GetNodes_nodes__User;
       expect(user.id, "user1");
       expect(user.username, "john_doe");
 
       // Check Post
-      expect(result.nodes[1], isA<GetNodes_nodes_Post>());
+      expect(result.nodes[1], isA<GetNodes_nodes__Post>());
       expect(result.nodes[1], isA<NodeTimestamps>());
       expect(result.nodes[1], isA<PostInfo>());
-      final post = result.nodes[1] as GetNodes_nodes_Post;
+      final post = result.nodes[1] as GetNodes_nodes__Post;
       expect(post.id, "post1");
       expect(post.title, "Hello World");
 
       // Check Comment (fallback)
-      expect(result.nodes[2], isA<GetNodes_nodes_Fallback>());
+      expect(result.nodes[2], isA<GetNodes_nodes__Comment>());
       expect(result.nodes[2], isA<NodeTimestamps>());
-      final comment = result.nodes[2] as GetNodes_nodes_Fallback;
+      final comment = result.nodes[2] as GetNodes_nodes__Comment;
       expect(comment.id, "comment1");
       expect(comment.typename, "Comment");
     });
@@ -509,10 +509,10 @@ void main() {
         variables: variables,
       );
 
-      expect(result.node, isA<GetNodeAllTypes_node_Comment>());
+      expect(result.node, isA<GetNodeAllTypes_node__Comment>());
       expect(result.node, isA<NodeTimestamps>());
 
-      final comment = result.node as GetNodeAllTypes_node_Comment;
+      final comment = result.node as GetNodeAllTypes_node__Comment;
       expect(comment.id, "comment1");
       expect(comment.createdAt, "2024-01-05T00:00:00Z");
       expect(comment.updatedAt, "2024-01-06T00:00:00Z");

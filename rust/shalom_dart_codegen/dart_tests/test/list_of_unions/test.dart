@@ -132,18 +132,18 @@ void main() {
       expect(result.searchResultsRequired.length, 3);
 
       expect(result.searchResultsRequired[0],
-          isA<GetSearchResultsRequired_searchResultsRequired_User>());
+          isA<GetSearchResultsRequired_searchResultsRequired__User>());
       final user = result.searchResultsRequired[0]
-          as GetSearchResultsRequired_searchResultsRequired_User;
+          as GetSearchResultsRequired_searchResultsRequired__User;
       expect(user.id, "user1");
       expect(user.name, "Alice");
       expect(user.email, "alice@example.com");
       expect(user.typename, "User");
 
       expect(result.searchResultsRequired[1],
-          isA<GetSearchResultsRequired_searchResultsRequired_Post>());
+          isA<GetSearchResultsRequired_searchResultsRequired__Post>());
       final post = result.searchResultsRequired[1]
-          as GetSearchResultsRequired_searchResultsRequired_Post;
+          as GetSearchResultsRequired_searchResultsRequired__Post;
       expect(post.id, "post1");
       expect(post.title, "Hello World");
       expect(post.content, "First post");
@@ -151,9 +151,9 @@ void main() {
       expect(post.typename, "Post");
 
       expect(result.searchResultsRequired[2],
-          isA<GetSearchResultsRequired_searchResultsRequired_Comment>());
+          isA<GetSearchResultsRequired_searchResultsRequired__Comment>());
       final comment = result.searchResultsRequired[2]
-          as GetSearchResultsRequired_searchResultsRequired_Comment;
+          as GetSearchResultsRequired_searchResultsRequired__Comment;
       expect(comment.id, "comment1");
       expect(comment.text, "Great!");
       expect(comment.author, "Charlie");
@@ -217,7 +217,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       final user = result.searchResultsRequired[0]
-          as GetSearchResultsRequired_searchResultsRequired_User;
+          as GetSearchResultsRequired_searchResultsRequired__User;
       expect(user.name, "Alice Updated");
     });
 
@@ -230,7 +230,7 @@ void main() {
       );
 
       expect(result.searchResultsRequired[0],
-          isA<GetSearchResultsRequired_searchResultsRequired_User>());
+          isA<GetSearchResultsRequired_searchResultsRequired__User>());
 
       final hasChanged = Completer<bool>();
 
@@ -248,9 +248,9 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       expect(result.searchResultsRequired[0],
-          isA<GetSearchResultsRequired_searchResultsRequired_Post>());
+          isA<GetSearchResultsRequired_searchResultsRequired__Post>());
       final post = result.searchResultsRequired[0]
-          as GetSearchResultsRequired_searchResultsRequired_Post;
+          as GetSearchResultsRequired_searchResultsRequired__Post;
       expect(post.title, "Now a post");
     });
 
@@ -307,7 +307,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       final user = result.searchResultsRequired[1]
-          as GetSearchResultsRequired_searchResultsRequired_User;
+          as GetSearchResultsRequired_searchResultsRequired__User;
       expect(user.id, "user2");
       expect(user.name, "David");
     });
@@ -358,16 +358,16 @@ void main() {
       expect(result.searchResultsOptional?.length, 2);
 
       expect(result.searchResultsOptional?[0],
-          isA<GetSearchResultsOptional_searchResultsOptional_User>());
+          isA<GetSearchResultsOptional_searchResultsOptional__User>());
       final user = result.searchResultsOptional?[0]
-          as GetSearchResultsOptional_searchResultsOptional_User;
+          as GetSearchResultsOptional_searchResultsOptional__User;
       expect(user.id, "user1");
       expect(user.name, "Alice");
 
       expect(result.searchResultsOptional?[1],
-          isA<GetSearchResultsOptional_searchResultsOptional_Comment>());
+          isA<GetSearchResultsOptional_searchResultsOptional__Comment>());
       final comment = result.searchResultsOptional?[1]
-          as GetSearchResultsOptional_searchResultsOptional_Comment;
+          as GetSearchResultsOptional_searchResultsOptional__Comment;
       expect(comment.id, "comment1");
       expect(comment.text, "Nice!");
     });
@@ -500,7 +500,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       final user = result.searchResultsOptional?[0]
-          as GetSearchResultsOptional_searchResultsOptional_User;
+          as GetSearchResultsOptional_searchResultsOptional__User;
       expect(user.name, "Alice Modified");
     });
   });
@@ -551,18 +551,18 @@ void main() {
       expect(result.optionalSearchResults.length, 3);
 
       expect(result.optionalSearchResults[0],
-          isA<GetOptionalSearchResults_optionalSearchResults_Post>());
+          isA<GetOptionalSearchResults_optionalSearchResults__Post>());
       final post = result.optionalSearchResults[0]
-          as GetOptionalSearchResults_optionalSearchResults_Post;
+          as GetOptionalSearchResults_optionalSearchResults__Post;
       expect(post.id, "post1");
       expect(post.title, "Test");
 
       expect(result.optionalSearchResults[1], isNull);
 
       expect(result.optionalSearchResults[2],
-          isA<GetOptionalSearchResults_optionalSearchResults_User>());
+          isA<GetOptionalSearchResults_optionalSearchResults__User>());
       final user = result.optionalSearchResults[2]
-          as GetOptionalSearchResults_optionalSearchResults_User;
+          as GetOptionalSearchResults_optionalSearchResults__User;
       expect(user.id, "user1");
       expect(user.name, "Alice");
     });
@@ -610,7 +610,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       final post = result.optionalSearchResults[0]
-          as GetOptionalSearchResults_optionalSearchResults_Post;
+          as GetOptionalSearchResults_optionalSearchResults__Post;
       expect(post.title, "Test Updated");
     });
   });
@@ -654,9 +654,9 @@ void main() {
       expect(result.searchResultsFullyOptional?.length, 2);
 
       expect(result.searchResultsFullyOptional?[0],
-          isA<GetSearchResultsFullyOptional_searchResultsFullyOptional_Comment>());
+          isA<GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment>());
       final comment = result.searchResultsFullyOptional?[0]
-          as GetSearchResultsFullyOptional_searchResultsFullyOptional_Comment;
+          as GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment;
       expect(comment.id, "comment1");
       expect(comment.text, "Hello");
 
@@ -784,7 +784,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       final comment = result.searchResultsFullyOptional?[0]
-          as GetSearchResultsFullyOptional_searchResultsFullyOptional_Comment;
+          as GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment;
       expect(comment.text, "Hello Modified");
     });
   });
