@@ -230,11 +230,11 @@ void main() {
       expect(vehicle0.description, "A reliable sedan");
 
       expect(result.vehiclesRequired[0],
-          isA<GetVehiclesRequired_vehiclesRequired_Car>());
+          isA<GetVehiclesRequired_vehiclesRequired__Car>());
       final car = result.vehiclesRequired[0]
-          as GetVehiclesRequired_vehiclesRequired_Car;
+          as GetVehiclesRequired_vehiclesRequired__Car;
       expect(car.doors, 4);
-      expect(car.typename, "Car");
+      expect(car.$__typename, "Car");
 
       // Test shared fields via interface reference
       final vehicle1 = result.vehiclesRequired[1];
@@ -244,11 +244,11 @@ void main() {
       expect(vehicle1.description, "A classic bike");
 
       expect(result.vehiclesRequired[1],
-          isA<GetVehiclesRequired_vehiclesRequired_Motorcycle>());
+          isA<GetVehiclesRequired_vehiclesRequired__Motorcycle>());
       final moto = result.vehiclesRequired[1]
-          as GetVehiclesRequired_vehiclesRequired_Motorcycle;
+          as GetVehiclesRequired_vehiclesRequired__Motorcycle;
       expect(moto.hasSidecar, false);
-      expect(moto.typename, "Motorcycle");
+      expect(moto.$__typename, "Motorcycle");
 
       // Test shared fields via interface reference
       final vehicle2 = result.vehiclesRequired[2];
@@ -258,11 +258,11 @@ void main() {
       expect(vehicle2.description, "A mountain bike");
 
       expect(result.vehiclesRequired[2],
-          isA<GetVehiclesRequired_vehiclesRequired_Bicycle>());
+          isA<GetVehiclesRequired_vehiclesRequired__Bicycle>());
       final bike = result.vehiclesRequired[2]
-          as GetVehiclesRequired_vehiclesRequired_Bicycle;
+          as GetVehiclesRequired_vehiclesRequired__Bicycle;
       expect(bike.gears, 21);
-      expect(bike.typename, "Bicycle");
+      expect(bike.$__typename, "Bicycle");
     });
 
     test('vehiclesRequired deserialize empty list', () {
@@ -322,11 +322,11 @@ void main() {
       expect(vehicle0.description, "An efficient car");
 
       expect(result.vehiclesOptional![0],
-          isA<GetVehiclesOptional_vehiclesOptional_Car>());
+          isA<GetVehiclesOptional_vehiclesOptional__Car>());
       final car = result.vehiclesOptional![0]
-          as GetVehiclesOptional_vehiclesOptional_Car;
+          as GetVehiclesOptional_vehiclesOptional__Car;
       expect(car.doors, 4);
-      expect(car.typename, "Car");
+      expect(car.$__typename, "Car");
 
       // Test shared fields via interface reference
       final vehicle1 = result.vehiclesOptional![1];
@@ -336,11 +336,11 @@ void main() {
       expect(vehicle1.description, "A sport bike");
 
       expect(result.vehiclesOptional![1],
-          isA<GetVehiclesOptional_vehiclesOptional_Motorcycle>());
+          isA<GetVehiclesOptional_vehiclesOptional__Motorcycle>());
       final moto = result.vehiclesOptional![1]
-          as GetVehiclesOptional_vehiclesOptional_Motorcycle;
+          as GetVehiclesOptional_vehiclesOptional__Motorcycle;
       expect(moto.hasSidecar, false);
-      expect(moto.typename, "Motorcycle");
+      expect(moto.$__typename, "Motorcycle");
     });
 
     test('vehiclesOptional deserialize null', () {
@@ -391,9 +391,9 @@ void main() {
 
       expect(result.optionalVehicles[0], isNotNull);
       expect(result.optionalVehicles[0],
-          isA<GetOptionalVehicles_optionalVehicles_Car>());
+          isA<GetOptionalVehicles_optionalVehicles__Car>());
       final car = result.optionalVehicles[0]
-          as GetOptionalVehicles_optionalVehicles_Car;
+          as GetOptionalVehicles_optionalVehicles__Car;
       expect(car.id, "car3");
       expect(car.brand, "Ford");
       expect(car.speed, 160);
@@ -404,9 +404,9 @@ void main() {
 
       expect(result.optionalVehicles[2], isNotNull);
       expect(result.optionalVehicles[2],
-          isA<GetOptionalVehicles_optionalVehicles_Motorcycle>());
+          isA<GetOptionalVehicles_optionalVehicles__Motorcycle>());
       final moto = result.optionalVehicles[2]
-          as GetOptionalVehicles_optionalVehicles_Motorcycle;
+          as GetOptionalVehicles_optionalVehicles__Motorcycle;
       expect(moto.id, "moto3");
       expect(moto.brand, "Ducati");
       expect(moto.speed, 240);
@@ -446,9 +446,9 @@ void main() {
 
       expect(result.vehiclesFullyOptional![0], isNotNull);
       expect(result.vehiclesFullyOptional![0],
-          isA<GetVehiclesFullyOptional_vehiclesFullyOptional_Car>());
+          isA<GetVehiclesFullyOptional_vehiclesFullyOptional__Car>());
       final car = result.vehiclesFullyOptional![0]
-          as GetVehiclesFullyOptional_vehiclesFullyOptional_Car;
+          as GetVehiclesFullyOptional_vehiclesFullyOptional__Car;
       expect(car.id, "car4");
       expect(car.brand, "BMW");
       expect(car.speed, 220);
@@ -505,37 +505,37 @@ void main() {
       expect(result.vehiclesWithArgs.length, 3);
 
       expect(result.vehiclesWithArgs[0],
-          isA<GetVehiclesWithArgs_vehiclesWithArgs_Car>());
+          isA<GetVehiclesWithArgs_vehiclesWithArgs__Car>());
       final car = result.vehiclesWithArgs[0]
-          as GetVehiclesWithArgs_vehiclesWithArgs_Car;
+          as GetVehiclesWithArgs_vehiclesWithArgs__Car;
       expect(car.id, "car5");
       expect(car.brand, "Mercedes");
       expect(car.speed, 250);
       expect(car.description, "Short desc");
       expect(car.doors, 2);
-      expect(car.typename, "Car");
+      expect(car.$__typename, "Car");
 
       expect(result.vehiclesWithArgs[1],
-          isA<GetVehiclesWithArgs_vehiclesWithArgs_Motorcycle>());
+          isA<GetVehiclesWithArgs_vehiclesWithArgs__Motorcycle>());
       final moto = result.vehiclesWithArgs[1]
-          as GetVehiclesWithArgs_vehiclesWithArgs_Motorcycle;
+          as GetVehiclesWithArgs_vehiclesWithArgs__Motorcycle;
       expect(moto.id, "moto5");
       expect(moto.brand, "Kawasaki");
       expect(moto.speed, 230);
       expect(moto.description, "Short desc");
       expect(moto.hasSidecar, true);
-      expect(moto.typename, "Motorcycle");
+      expect(moto.$__typename, "Motorcycle");
 
       expect(result.vehiclesWithArgs[2],
-          isA<GetVehiclesWithArgs_vehiclesWithArgs_Bicycle>());
+          isA<GetVehiclesWithArgs_vehiclesWithArgs__Bicycle>());
       final bike = result.vehiclesWithArgs[2]
-          as GetVehiclesWithArgs_vehiclesWithArgs_Bicycle;
+          as GetVehiclesWithArgs_vehiclesWithArgs__Bicycle;
       expect(bike.id, "bike5");
       expect(bike.brand, "Giant");
       expect(bike.speed, 25);
       expect(bike.description, "Short desc");
       expect(bike.gears, 18);
-      expect(bike.typename, "Bicycle");
+      expect(bike.$__typename, "Bicycle");
     });
 
     test('vehiclesWithArgs toJson', () {
@@ -572,9 +572,9 @@ void main() {
 
       expect(result.vehiclesRequired.length, 3);
       expect(result.vehiclesRequired[0],
-          isA<GetVehiclesRequired_vehiclesRequired_Car>());
+          isA<GetVehiclesRequired_vehiclesRequired__Car>());
       final car1 = result.vehiclesRequired[0]
-          as GetVehiclesRequired_vehiclesRequired_Car;
+          as GetVehiclesRequired_vehiclesRequired__Car;
       expect(car1.brand, "Toyota");
 
       final hasChanged = Completer<bool>();
@@ -593,7 +593,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       final car2 = result.vehiclesRequired[0]
-          as GetVehiclesRequired_vehiclesRequired_Car;
+          as GetVehiclesRequired_vehiclesRequired__Car;
       expect(car2.brand, "Toyota Updated");
     });
 
@@ -608,7 +608,7 @@ void main() {
       );
 
       expect(result.vehiclesRequired[0],
-          isA<GetVehiclesRequired_vehiclesRequired_Car>());
+          isA<GetVehiclesRequired_vehiclesRequired__Car>());
 
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
@@ -626,7 +626,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       expect(result.vehiclesRequired[0],
-          isA<GetVehiclesRequired_vehiclesRequired_Motorcycle>());
+          isA<GetVehiclesRequired_vehiclesRequired__Motorcycle>());
     });
 
     test('vehiclesRequired length change', () async {
@@ -745,7 +745,7 @@ void main() {
 
       expect(result.vehiclesWithArgs.length, 1);
       final car1 = result.vehiclesWithArgs[0]
-          as GetVehiclesWithArgs_vehiclesWithArgs_Car;
+          as GetVehiclesWithArgs_vehiclesWithArgs__Car;
       expect(car1.description, "Initial desc");
 
       final hasChanged = Completer<bool>();
@@ -777,7 +777,7 @@ void main() {
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
       final car2 = result.vehiclesWithArgs[0]
-          as GetVehiclesWithArgs_vehiclesWithArgs_Car;
+          as GetVehiclesWithArgs_vehiclesWithArgs__Car;
       expect(car2.description, "Updated desc");
     });
   });

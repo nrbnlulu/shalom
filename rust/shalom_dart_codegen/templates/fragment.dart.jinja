@@ -1,11 +1,9 @@
 {% include "macros" %}
 
-{% set fragment_name = fragment.context.context.name %}
-{% set fragment_selections = fragment.context.context.type_defs %}
-{% set root_type = fragment.context.context.root_type %}
+{% set fragment_name = context.fragment.name %}
+{% set typedefs = context.fragment.typedefs %}
 {% set op_variables = None %}
 {% set op_variables_exist = false %}
-{% set fragment_used_fragments_names = root_type.used_fragments %}
 
 {% include "selection_macros" %}
 
@@ -13,111 +11,65 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: {{fragment_name}}
 
-import "{{ schema_import_path }}";
+import "{{ context.schema_import_path }}";
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
 {{ custom_scalar_imports_macro(custom_scalar_imports) }}
 
-{% for import_path in generate_fragment_imports(fragment_file_path, fragment.context.context.used_fragments) -%}
+{% for import_path in generate_fragment_imports(context.fragment_file_path) -%}
 import '{{ import_path }}';
 {% endfor %}
 
 // Generate abstract fragment class
-abstract class {{ fragment_name }}{{ implements_used_fragments(fragment_used_fragments_names) }} {
-    {% for field in root_type.selections -%}
-    {{ type_name_for_selection(field) }} get {{ field.name }};
+abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.root_type.used_fragments) }} {
+    {% for field in context.fragment.root_type.selections if field.name != "__typename" -%}
+        {{ type_name_for_selection(field) }} get {{ field.name }};
     {% endfor %}
 
   Map<String, dynamic> toJson();
 
 }
 
-// Generate data classes for nested object selections
-{% for selection_name, selection in fragment_selections.selection_objects | items %}
-    {# Skip union/interface member objects - they'll be generated in UNION/INTERFACE DEFINITIONS #}
-    {% if selection.parent_multitype_fullname %}
-        {# This is a union or interface member, skip it here #}
-    {% elif selection.kind == "Object" and selection_name != fragment_name %}
-        {{ selection_object_definition(selection_name, selection) }}
-    {% elif selection.kind == "List" and selection.of_kind.kind == "Object" %}
-        {# List of objects - generate the object class for list items #}
-        {{ selection_object_definition(selection_name, selection.of_kind) }}
-    {% endif %}
+// ------------ START OBJECT DEFINITIONS -------------
+{% for name, obj in typedefs.objects | items -%}
+    {{ selection_object_definition(obj) }}
 {% endfor %}
+// ------------ END OBJECT DEFINITIONS -------------
 
-// ------------ UNION DEFINITIONS -------------
 
-{# First generate union member object classes #}
-{% set union_types = fragment.context.context.union_types %}
-{% for union_full_name, union_selection in union_types | items %}
-    {# Skip the root union type of the fragment itself - it's just the abstract class #}
-    {% if union_full_name != fragment_name %}
-    {% for type_condition, obj_selection in union_selection.inline_fragments | items %}
-        {# Generate union member object using the unified macro with shared selections #}
-        {% set member_full_name = union_full_name ~ "_" ~ type_condition %}
-        {# Look up the full Selection from context which includes arguments #}
-        {% set member_selection = fragment.context.context.type_defs.selection_objects[member_full_name] %}
-        {# We need to create a wrapper that passes shared_selections to selection_object_impl #}
-        class {{ member_full_name }} extends {{ union_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
-            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_multi_type_member=true, shared_selections=union_selection.shared_selections) }}
+// ------------ START UNION DEFINITIONS -------------
+
+{% for union_full_name, union_selection in typedefs.unions | items -%}
+    {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
+    {# generate sealed classes #}
+    {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
+    
+    {# generate subsets #}
+    {% for concrete_subset in concretes -%}
+        class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+            {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections) }}
         }
     {% endfor %}
-
-    {# Generate fallback class if needed #}
-    {% if union_selection.has_fallback %}
-        {% set fallback_full_name = union_full_name ~ "_Fallback" %}
-        class {{ fallback_full_name }} extends {{ union_full_name }} {
-            {{ selection_interface_fallback_impl(fallback_full_name, union_selection) }}
-        }
-    {% endif %}
-    {% endif %}
-{% endfor %}
-
-{# Then generate union sealed classes #}
-{% for selection_name, selection in fragment_selections.union_selections | items %}
-    {# Skip the root union type of the fragment itself #}
-    {% if selection_name != fragment_name %}
-    {{ multi_type_selection_definition(selection_name, selection) }}
-    {% endif %}
 {% endfor %}
 
 // ------------ END UNION DEFINITIONS -------------
 
 // ------------ INTERFACE DEFINITIONS -------------
 
-{# First generate interface member object classes #}
-{% set interface_types = fragment.context.context.interface_types %}
-{% for interface_full_name, interface_selection in interface_types | items %}
-    {# Skip the root interface type of the fragment itself - it's just the abstract class #}
-    {% if interface_full_name != fragment_name %}
-    {% for type_condition, obj_selection in interface_selection.inline_fragments | items %}
-        {# Generate interface member object using the unified macro with shared selections #}
-        {% set member_full_name = interface_full_name ~ "_" ~ type_condition %}
-        {# Look up the full Selection from context which includes arguments #}
-        {% set member_selection = fragment.context.context.type_defs.selection_objects[member_full_name] %}
-        class {{ member_full_name }} extends {{ interface_full_name }}{{ implements_used_fragments(obj_selection.used_fragments) }}  {
-            {{ selection_object_impl(member_full_name, member_selection, false, obj_selection.full_name, is_multi_type_member=true, shared_selections=interface_selection.shared_selections) }}
+{% for iface_path_name, iface_selection in typedefs.interfaces | items %}
+    {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
+    {# generate sealed classes #}
+    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
+    
+    {# generate subsets #}
+    {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
+    {% for concrete_subset in concretes -%}
+        class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+            {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections) }}
         }
     {% endfor %}
-
-    {# Generate fallback class if needed #}
-    {% if interface_selection.has_fallback %}
-        {% set fallback_full_name = interface_full_name ~ "_Fallback" %}
-        class {{ fallback_full_name }} extends {{ interface_full_name }} {
-            {{ selection_interface_fallback_impl(fallback_full_name, interface_selection) }}
-        }
-    {% endif %}
-    {% endif %}
 {% endfor %}
-
-{# Then generate interface abstract classes #}
-{% for selection_name, selection in fragment_selections.interface_selections | items %}
-    {# Skip the root interface type of the fragment itself #}
-    {% if selection_name != fragment_name %}
-    {{ multi_type_selection_definition(selection_name, selection) }}
-    {% endif %}
-{% endfor %}
-
+    
 // ------------ END INTERFACE DEFINITIONS -------------
 
 {{ generate_multi_type_list_extensions(multi_type_list_selections) }}

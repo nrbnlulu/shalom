@@ -128,7 +128,7 @@ fn resolve_object(
         .iter()
         .map(|iface| iface.to_string())
         .collect::<HashSet<_>>();
-    let object = Node::new(ObjectType {
+    let object = Arc::new(ObjectType {
         name: name.clone(),
         description,
         fields,
@@ -198,12 +198,18 @@ fn resolve_interface(
     if context.get_type(&name).is_some() {
         return;
     }
-    let mut fields = HashSet::new();
+    let mut fields = HashMap::new();
     for (name, field) in origin.fields.iter() {
         let name = name.to_string();
         let description = field.description.as_ref().map(|v| v.to_string());
         let field_definition = SchemaFieldCommon::new(name.clone(), &field.ty, description);
-        fields.insert(field_definition);
+        fields.insert(
+            name.to_string(),
+            SchemaObjectFieldDefinition {
+                arguments: vec![],
+                field: field_definition,
+            },
+        );
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
     let implements_interfaces = origin
@@ -211,7 +217,7 @@ fn resolve_interface(
         .iter()
         .map(|iface| iface.to_string())
         .collect::<HashSet<_>>();
-    let interface = Node::new(InterfaceType {
+    let interface = Arc::new(InterfaceType {
         name: name.clone(),
         description,
         fields,
