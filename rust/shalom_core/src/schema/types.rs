@@ -1,6 +1,7 @@
 use std::{
     collections::HashSet,
     hash::{Hash, Hasher},
+    sync::Arc,
 };
 
 use apollo_compiler::{
@@ -21,13 +22,14 @@ type GlobalName = String;
 /// The souNodee location is that of the "main" definition.
 pub enum GraphQLAny {
     Scalar(Node<ScalarType>),
-    Object(Node<ObjectType>),
-    Interface(Node<InterfaceType>),
+    Object(Arc<ObjectType>),
+    Interface(Arc<InterfaceType>),
     Union(Node<UnionType>),
     Enum(Node<EnumType>),
     InputObject(Node<InputObjectType>),
     List { of_type: ListInnerTypeWrapper },
 }
+
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct ListInnerTypeWrapper {
     pub is_optional: bool,
@@ -35,16 +37,16 @@ pub struct ListInnerTypeWrapper {
 }
 
 impl GraphQLAny {
-    pub fn object(&self) -> Option<Node<ObjectType>> {
+    pub fn object(&self) -> Option<Arc<ObjectType>> {
         match self {
-            GraphQLAny::Object(obj) => Some(Node::clone(obj)),
+            GraphQLAny::Object(obj) => Some(Arc::clone(obj)),
             _ => None,
         }
     }
 
-    pub fn interface(&self) -> Option<Node<InterfaceType>> {
+    pub fn interface(&self) -> Option<Arc<InterfaceType>> {
         match self {
-            GraphQLAny::Interface(interface) => Some(Node::clone(interface)),
+            GraphQLAny::Interface(interface) => Some(Arc::clone(interface)),
             _ => None,
         }
     }
@@ -88,6 +90,10 @@ impl GraphQLAny {
             _ => todo!("Unsupported type"),
         }
     }
+
+    pub fn implements_interface(&self, iface_name: &str, ctx: &SchemaContext) -> bool {
+        ctx.is_type_implementing_interface(&self.name(), iface_name)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -118,9 +124,12 @@ impl ScalarType {
         self.name == "ID"
     }
 }
-pub trait Implementor {
+pub trait SchemaObjectLike {
+    fn name(&self) -> &str;
     fn implements_interfaces(&self) -> &HashSet<GlobalName>;
+    fn fields(&self) -> &HashMap<String, SchemaObjectFieldDefinition>;
 }
+pub type SharedSchemaObjectLike = Arc<dyn SchemaObjectLike>;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ObjectType {
@@ -136,9 +145,15 @@ impl ObjectType {
         self.fields.get(name)
     }
 }
-impl Implementor for ObjectType {
+impl SchemaObjectLike for ObjectType {
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn implements_interfaces(&self) -> &HashSet<GlobalName> {
         &self.implements_interfaces
+    }
+    fn fields(&self) -> &HashMap<String, SchemaObjectFieldDefinition> {
+        &self.fields
     }
 }
 
@@ -153,16 +168,22 @@ pub struct InterfaceType {
     pub description: Option<String>,
     pub name: String,
     pub implements_interfaces: HashSet<GlobalName>,
-    pub fields: HashSet<SchemaFieldCommon>,
+    pub fields: HashMap<String, SchemaObjectFieldDefinition>,
 }
 impl Hash for InterfaceType {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.name.hash(state);
     }
 }
-impl Implementor for InterfaceType {
+impl SchemaObjectLike for InterfaceType {
+    fn name(&self) -> &str {
+        &self.name
+    }
     fn implements_interfaces(&self) -> &HashSet<GlobalName> {
         &self.implements_interfaces
+    }
+    fn fields(&self) -> &HashMap<String, SchemaObjectFieldDefinition> {
+        &self.fields
     }
 }
 
@@ -324,7 +345,6 @@ impl Eq for SchemaFieldCommon {}
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
 pub struct SchemaObjectFieldDefinition {
-    #[serde(skip_serializing)]
     pub arguments: Vec<InputFieldDefinition>,
     pub field: SchemaFieldCommon,
 }

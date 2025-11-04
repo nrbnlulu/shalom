@@ -1,31 +1,49 @@
 use std::path::PathBuf;
-use std::{collections::HashMap, sync::Arc};
+use std::rc::Rc;
+use std::sync::Arc;
 
-use serde::Serialize;
+use apollo_compiler::Node;
+use serde::{Deserialize, Serialize};
 
-use super::types::{
-    get_selections_with_fragments_distinct, FullPathName, Selection, SharedInterfaceSelection,
-    SharedUnionSelection,
+use crate::context::SharedShalomGlobalContext;
+use crate::operation::context::{ExecutableContext, TypeDefs};
+use crate::operation::parse::{
+    inject_typename_in_selection_set, parse_obj_like_from_selection_set,
 };
+use crate::operation::types::ObjectLikeCommon;
 
-use crate::context::ShalomGlobalContext;
-use crate::operation::context::TypeDefs;
-use crate::operation::types::SelectionKind;
-pub type SharedFragmentContext = Arc<FragmentContext>;
+/// inline fragments should generally be generated in the same file
+/// that they are declared and can't be used across the project (well they have no name)
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct InlineFragment {
+    #[serde(flatten)]
+    pub common: ObjectLikeCommon,
+}
+pub type SharedInlineFrag = Rc<InlineFragment>;
+
+impl InlineFragment {
+    pub fn new(common: ObjectLikeCommon) -> Self {
+        InlineFragment { common }
+    }
+
+    pub fn merge(&mut self, other: InlineFragment) {
+        self.common.merge(other.common);
+    }
+}
+
+pub type FragName = String;
 
 #[derive(Debug, Serialize)]
 pub struct FragmentContext {
-    pub name: String,
+    pub name: FragName,
     pub fragment_raw: String,
     #[serde(skip_serializing)]
     pub file_path: PathBuf,
-    pub type_defs: TypeDefs,
-    pub root_type: Option<Selection>,
-    pub used_fragments: Vec<SharedFragmentContext>,
+    pub typedefs: TypeDefs,
+    pub root_type: Option<ObjectLikeCommon>,
     pub type_condition: String,
-    union_types: HashMap<FullPathName, SharedUnionSelection>,
-    interface_types: HashMap<FullPathName, SharedInterfaceSelection>,
 }
+pub type SharedFragmentContext = Arc<FragmentContext>;
 
 impl FragmentContext {
     pub fn new(
@@ -38,12 +56,9 @@ impl FragmentContext {
             name,
             file_path,
             fragment_raw,
-            type_defs: TypeDefs::new(),
+            typedefs: TypeDefs::new(),
             root_type: None,
-            used_fragments: Vec::new(),
             type_condition,
-            union_types: HashMap::new(),
-            interface_types: HashMap::new(),
         }
     }
 
@@ -55,58 +70,62 @@ impl FragmentContext {
         &self.type_condition
     }
 
-    pub fn set_root_type(&mut self, root_type: Selection) {
-        self.root_type = Some(root_type);
+    pub fn set_on_type(&mut self, root_type: ObjectLikeCommon) {
+        self.root_type.replace(root_type);
     }
 
-    pub fn add_used_fragment(&mut self, fragment: SharedFragmentContext) {
-        self.used_fragments.push(fragment);
-    }
-
-    pub fn get_used_fragments(&self) -> &Vec<SharedFragmentContext> {
-        &self.used_fragments
-    }
-
-    pub fn get_root_type(&self) -> Option<&Selection> {
-        self.root_type.as_ref()
-    }
-    /// return the selections of this fragment and every fragment that exist in the root selection object,
-    /// with duplicates removed by field name
-    pub fn get_flat_selections(&self, global_ctx: &ShalomGlobalContext) -> Vec<Selection> {
-        if let Some(root_type) = self.root_type.as_ref() {
-            if let SelectionKind::Object(obj) = &root_type.kind {
-                return get_selections_with_fragments_distinct(
-                    obj.selections.clone().into_inner(),
-                    obj.get_used_fragments(),
-                    global_ctx,
-                );
-            }
-        }
-        Vec::new()
-    }
-
-    pub fn add_union_type(&mut self, name: String, union_selection: SharedUnionSelection) {
-        self.union_types.entry(name).or_insert(union_selection);
-    }
-
-    pub fn get_union_types(&self) -> &HashMap<FullPathName, SharedUnionSelection> {
-        &self.union_types
-    }
-
-    pub fn add_interface_type(
-        &mut self,
-        name: String,
-        interface_selection: SharedInterfaceSelection,
-    ) {
-        self.interface_types
-            .entry(name)
-            .or_insert(interface_selection);
-    }
-
-    pub fn get_interface_types(&self) -> &HashMap<FullPathName, SharedInterfaceSelection> {
-        &self.interface_types
+    pub fn get_on_type(&self) -> &ObjectLikeCommon {
+        self.root_type.as_ref().unwrap()
     }
 }
 
 unsafe impl Send for FragmentContext {}
 unsafe impl Sync for FragmentContext {}
+
+impl ExecutableContext for FragmentContext {
+    fn name(&self) -> &str {
+        self.get_fragment_name()
+    }
+    fn typedefs(&self) -> &TypeDefs {
+        &self.typedefs
+    }
+    fn typedefs_mut(&mut self) -> &mut TypeDefs {
+        &mut self.typedefs
+    }
+
+    fn has_variables(&self) -> bool {
+        false
+    }
+    fn get_variable(&self, _name: &str) -> Option<&crate::operation::context::OperationVariable> {
+        None // Fragments don't have variables
+    }
+
+    fn get_root(&self) -> &ObjectLikeCommon {
+        self.get_on_type()
+    }
+}
+
+pub(crate) fn parse_fragment(
+    global_ctx: &SharedShalomGlobalContext,
+    mut fragment: Node<apollo_compiler::executable::Fragment>,
+    fragment_ctx: &mut FragmentContext,
+) -> anyhow::Result<()> {
+    // Inject __typename into union and interface selections
+    let schema = &global_ctx.schema_ctx.schema;
+    let fragment_mut = fragment.make_mut();
+    inject_typename_in_selection_set(schema, &mut fragment_mut.selection_set, global_ctx);
+
+    let selection_set = &fragment.selection_set;
+    let type_name = fragment.type_condition();
+    let frag_name = fragment_ctx.name.clone();
+    let obj_like = parse_obj_like_from_selection_set(
+        fragment_ctx,
+        global_ctx,
+        &frag_name,
+        type_name.to_string().clone(),
+        selection_set,
+    );
+
+    fragment_ctx.set_on_type(obj_like);
+    Ok(())
+}

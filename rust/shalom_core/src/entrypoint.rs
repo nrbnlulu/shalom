@@ -67,7 +67,7 @@ pub fn parse_document(
     operation: &str,
     source_path: &PathBuf,
 ) -> anyhow::Result<HashMap<String, SharedOpCtx>> {
-    crate::operation::parse::parse_document(global_ctx, operation, source_path)
+    crate::operation::parse::parse_document_impl(global_ctx, operation, source_path)
 }
 
 /// Load configuration from directory or use defaults
@@ -129,18 +129,17 @@ fn extract_fragment_definitions(
 ) -> anyhow::Result<HashMap<String, FragmentDefInitial>> {
     let mut all_fragment_defs = HashMap::new();
 
-    for (doc, file, _content) in parsed_docs {
+    for (doc, file_path, _content) in parsed_docs {
         for (name, fragment_def) in doc.fragments.iter() {
             let fragment_name = name.to_string();
             let type_condition = fragment_def.type_condition().to_string();
 
             // Extract fragment SDL for later injection
             let fragment_sdl = format!("{}", fragment_def);
-
             let frag_ctx = FragmentContext::new(
                 fragment_name.clone(),
                 fragment_sdl.clone(),
-                file.clone(),
+                file_path.clone(),
                 type_condition,
             );
 
@@ -363,7 +362,7 @@ fn parse_and_register_fragments(
 
     for name in order {
         if let Some((mut frag_ctx, frag_node)) = final_fragment_defs.remove(&name) {
-            crate::operation::parse::parse_fragment(global_ctx, frag_node, &mut frag_ctx)?;
+            crate::operation::fragments::parse_fragment(global_ctx, frag_node, &mut frag_ctx)?;
             // Register fragment immediately after parsing so it's available for subsequent fragments
             let mut single_fragment = HashMap::new();
             single_fragment.insert(name, frag_ctx);
@@ -401,7 +400,7 @@ fn parse_and_register_operations(
             .cloned()
             .unwrap_or_else(|| fs::read_to_string(file).unwrap());
 
-        let operations = crate::operation::parse::parse_document(global_ctx, &content, file)?;
+        let operations = crate::operation::parse::parse_document_impl(global_ctx, &content, file)?;
         all_operations.extend(operations);
     }
 

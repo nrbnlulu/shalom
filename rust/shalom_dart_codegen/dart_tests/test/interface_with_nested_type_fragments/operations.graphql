@@ -1,0 +1,44 @@
+# Fragments on concrete types
+fragment FooFrag on Foo {
+    fooField
+    fooValue
+}
+
+fragment BarFrag on Bar {
+    barField
+    barValue
+}
+
+fragment BazFrag on Baz {
+    bazField
+    bazValue
+}
+
+# Fragment on interface that spreads concrete type fragments
+fragment NodeGlobalFrag on Node {
+    __typename
+    id
+    createdAt
+    ...FooFrag
+    ...BarFrag
+    ...BazFrag
+}
+
+# Query uses only the interface fragment
+query NodeGlobalQuery($id: ID!) {
+    node(id: $id) {
+        ...NodeGlobalFrag
+    }
+}
+
+query NodeGlobalQueryOpt($id: ID!) {
+    nodeOpt(id: $id) {
+        ...NodeGlobalFrag
+    }
+}
+
+query NodesGlobalQuery {
+    nodes {
+        ...NodeGlobalFrag
+    }
+}

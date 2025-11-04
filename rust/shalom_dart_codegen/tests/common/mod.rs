@@ -1,21 +1,47 @@
 use shalom_dart_codegen::CodegenOptions;
 use std::path::{Path, PathBuf};
 
-use log::info;
+use log::{info, warn};
+
+use glob::glob;
 
 fn tests_path() -> PathBuf {
-    let f = file!();
-    PathBuf::from(f)
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .parent()
-        .unwrap()
-        .join("dart_tests")
-        .join("test")
+    let mut current_dir = PathBuf::from(file!());
+
+    // Traverse up the directory tree
+    while let Some(parent) = current_dir.clone().parent() {
+        // Construct the glob pattern: "[parent_path]/dart_tests"
+        // This pattern checks for "dart_tests" directly inside the parent directory.
+        let glob_pattern = parent.join("dart_tests");
+
+        // Convert the PathBuf to a string
+        let pattern_str = glob_pattern
+            .to_str()
+            .expect("Path to glob pattern is not valid UTF-8");
+
+        // Execute the glob search
+        if let Ok(mut entries) = glob(pattern_str) {
+            // Check if any matching entry (the dart_tests folder) was found
+            if let Some(Ok(dart_tests_path)) = entries.next() {
+                // Return the found path joined with the "test" subdirectory
+                return dart_tests_path.join("test");
+            }
+        }
+
+        // Move to the next parent directory for the next iteration
+        // The loop continues the "recursive" search by moving one level up.
+        current_dir = parent.to_path_buf();
+
+        // Stop if we reach the root directory
+        if current_dir == parent.parent().unwrap_or(parent) {
+            break;
+        }
+    }
+
+    panic!(
+        "Could not find the 'dart_tests/test' directory by searching up from {}",
+        file!()
+    );
 }
 
 /// creates a test folder specific for the given usecase
@@ -49,6 +75,24 @@ fn run_codegen(cwd: &Path, strict: bool) {
     .unwrap()
 }
 
+fn is_dart_available() -> bool {
+    let dart;
+    #[cfg(target_os = "windows")]
+    {
+        dart = "dart.bat";
+    }
+    #[cfg(not(target_os = "windows"))]
+    {
+        dart = "dart";
+    }
+
+    std::process::Command::new(dart)
+        .arg("--version")
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
+}
+
 pub fn run_dart_tests_for_usecase(usecase: &str) {
     match simple_logger::init() {
         Ok(_) => println!("Logger initialized"),
@@ -57,6 +101,12 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
     let usecase_test_dir =
         ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
     run_codegen(&usecase_test_dir, true);
+
+    if !is_dart_available() {
+        warn!("⚠️  Dart SDK not found. Skipping Dart tests for '{usecase}'. Install Dart SDK to run these tests.");
+        println!("⚠️  Dart SDK not found. Skipping Dart tests for '{usecase}'.");
+        return;
+    }
 
     let dart;
     #[cfg(target_os = "windows")]
