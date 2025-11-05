@@ -200,7 +200,12 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
             ctx.typedefs_mut().add_used_fragment(frag.clone());
 
             let frag_root = frag.get_root();
-            if obj_like.schema_typename == frag_root.schema_typename {
+            if obj_like.schema_typename == frag_root.schema_typename
+                || global_ctx.schema_ctx.is_type_implementing_interface(
+                    &obj_like.schema_typename,
+                    &frag_root.schema_typename,
+                )
+            {
                 // if this fragment is of the same type that it is used on we just add it on the used_fragments
                 obj_like.add_used_fragment(fragment_name.clone());
             } else {
