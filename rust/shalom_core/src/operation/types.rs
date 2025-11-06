@@ -339,7 +339,7 @@ impl ObjectLikeCommon {
                 root_type_name,
                 &current_obj.schema_typename,
             ) {
-                resolved_selections.extend(current_obj.selections.clone());
+                resolved_selections.extend(current_obj.selections.iter().cloned());
             }
 
             // used frags are directly on this type
@@ -350,7 +350,7 @@ impl ObjectLikeCommon {
                     root_type_name,
                     &frag_root.schema_typename,
                 ) {
-                    resolved_selections.extend(frag_root.selections.clone());
+                    resolved_selections.extend(frag_root.selections.iter().cloned());
                     recursive_inner(root_type_name, resolved_selections, frag_root, ctx);
                 }
             }
@@ -361,7 +361,7 @@ impl ObjectLikeCommon {
                     .schema_ctx
                     .is_type_same_or_implementing_interface(root_type_name, on_type)
                 {
-                    resolved_selections.extend(inline_frag.common.selections.clone());
+                    resolved_selections.extend(inline_frag.common.selections.iter().cloned());
                     recursive_inner(
                         root_type_name,
                         resolved_selections,
@@ -378,7 +378,6 @@ impl ObjectLikeCommon {
 
         let mut selections = HashSet::new();
         recursive_inner(&self.schema_typename, &mut selections, self, ctx);
-        trace!("selections are {:?}", selections);
         selections
     }
 }
