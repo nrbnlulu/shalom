@@ -8,7 +8,6 @@ use std::{
 use indexmap::IndexMap;
 
 use apollo_compiler::Node;
-use log::trace;
 use serde::{Deserialize, Serialize};
 
 use crate::{
