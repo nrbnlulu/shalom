@@ -210,6 +210,17 @@ impl SchemaContext {
         }
     }
 
+    pub fn is_type_same_or_implementing_interface(
+        &self,
+        type_name: &str,
+        interface_name: &str,
+    ) -> bool {
+        if type_name == interface_name {
+            return true;
+        }
+        self.is_type_implementing_interface(type_name, interface_name)
+    }
+
     pub fn get_concrete_implementors_of_interface(&self, iface: &String) -> HashSet<String> {
         let mut ret = HashSet::new();
         let types = self.types.lock().unwrap();
