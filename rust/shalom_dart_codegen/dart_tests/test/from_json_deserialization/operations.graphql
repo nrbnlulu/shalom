@@ -1,0 +1,143 @@
+query GetUser {
+  user {
+    id
+    name
+    email
+    age
+    tags
+    optionalTags
+  }
+}
+
+query GetUserOpt {
+  userOpt {
+    id
+    name
+    email
+  }
+}
+
+query GetProduct {
+  product {
+    id
+    name
+    price
+    inStock
+    category
+    relatedProducts {
+      id
+      name
+      price
+    }
+  }
+}
+
+query GetProductOpt {
+  productOpt {
+    id
+    name
+    price
+  }
+}
+
+query GetSearchResult {
+  searchResult {
+    __typename
+    ... on User {
+      id
+      name
+      email
+    }
+    ... on Product {
+      id
+      name
+      price
+    }
+  }
+}
+
+query GetSearchResultOpt {
+  searchResultOpt {
+    __typename
+    ... on User {
+      id
+      name
+    }
+    ... on Product {
+      id
+      name
+    }
+  }
+}
+
+query GetAnimal {
+  animal {
+    __typename
+    id
+    name
+    sound
+    ... on Dog {
+      breed
+    }
+    ... on Cat {
+      furColor
+    }
+  }
+}
+
+query GetAnimalOpt {
+  animalOpt {
+    __typename
+    id
+    name
+    ... on Dog {
+      breed
+    }
+  }
+}
+
+query GetSettings {
+  settings {
+    id
+    theme
+    lastUpdated
+    notifications
+  }
+}
+
+query GetUserWithFragment {
+  user {
+    ...UserFields
+    age
+  }
+}
+
+query GetProductWithFragment {
+  product {
+    ...ProductDetails
+    inStock
+    relatedProducts {
+      ...ProductDetails
+    }
+  }
+}
+
+query GetNestedLists {
+  product {
+    id
+    name
+    price
+    inStock
+    category
+    relatedProducts {
+      id
+      name
+      price
+      relatedProducts {
+        id
+        name
+        price
+      }
+    }
+  }
+}

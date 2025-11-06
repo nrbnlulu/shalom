@@ -1,0 +1,8 @@
+type Query {
+  simpleObject: SimpleObject!
+}
+
+type SimpleObject {
+  id: ID!
+  value: String!
+}

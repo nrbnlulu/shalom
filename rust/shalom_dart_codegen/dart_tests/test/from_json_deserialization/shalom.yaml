@@ -1,0 +1,8 @@
+schema_path: ./schema.graphql
+operations_paths: 
+  - ./operations.graphql
+
+custom_scalars:
+  DateTime:
+    import_path: "package:my_app/scalars.dart"
+    symbol_name: "DateTimeScalar"

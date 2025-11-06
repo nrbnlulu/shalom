@@ -1,0 +1,67 @@
+type Query {
+  user: User!
+  userOpt: User
+  product: Product!
+  productOpt: Product
+  searchResult: SearchResult!
+  searchResultOpt: SearchResult
+  animal: Animal!
+  animalOpt: Animal
+  settings: Settings!
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  age: Int
+  tags: [String!]!
+  optionalTags: [String!]
+}
+
+type Product {
+  id: ID!
+  name: String!
+  price: Float!
+  inStock: Boolean!
+  category: Category!
+  relatedProducts: [Product!]!
+}
+
+enum Category {
+  ELECTRONICS
+  CLOTHING
+  FOOD
+  BOOKS
+}
+
+union SearchResult = User | Product
+
+interface Animal {
+  id: ID!
+  name: String!
+  sound: String!
+}
+
+type Dog implements Animal {
+  id: ID!
+  name: String!
+  sound: String!
+  breed: String!
+}
+
+type Cat implements Animal {
+  id: ID!
+  name: String!
+  sound: String!
+  furColor: String!
+}
+
+scalar DateTime
+
+type Settings {
+  id: ID!
+  theme: String!
+  lastUpdated: DateTime!
+  notifications: Boolean!
+}

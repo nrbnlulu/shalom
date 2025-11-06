@@ -1,0 +1,12 @@
+fragment UserFields on User {
+  id
+  name
+  email
+}
+
+fragment ProductDetails on Product {
+  id
+  name
+  price
+  category
+}

@@ -129,3 +129,18 @@ fn test_fragment_id_on_non_root_field_dart() {
 fn test_interface_with_nested_type_fragments_dart() {
     run_dart_tests_for_usecase("interface_with_nested_type_fragments");
 }
+
+#[test]
+fn test_from_json_deserialization_dart() {
+    run_dart_tests_for_usecase("from_json_deserialization");
+}
+
+#[test]
+fn test_experimental_annotation_dart() {
+    run_dart_tests_for_usecase("experimental_annotation");
+}
+
+#[test]
+fn test_meta_dependency_validation() {
+    run_dart_tests_for_usecase("meta_dependency_validation");
+}
