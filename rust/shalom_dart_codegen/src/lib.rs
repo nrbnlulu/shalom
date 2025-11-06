@@ -325,6 +325,7 @@ impl SymbolName for RuntimeSymbolDefinition {
         }
     }
 }
+
 #[derive(Debug, Clone)]
 pub struct CodegenOptions {
     pub pwd: Option<PathBuf>,
@@ -765,8 +766,20 @@ impl FragmentEnv<'_> {
         fragment_ctx: SharedFragmentContext,
     ) -> anyhow::Result<Self> {
         let mut env = Environment::new();
-        register_default_template_fns(&mut env, ctx)?;
-        register_executable_fns(&mut env, ctx, fragment_ctx)?;
+        let ctx_clone = ctx.clone();
+        register_default_template_fns(&mut env, &ctx_clone)?;
+        let frag_ctx_clone = fragment_ctx.clone();
+        register_executable_fns(&mut env, ctx, frag_ctx_clone)?;
+        let frag_ctx_clone1 = fragment_ctx.clone();
+        let ctx_clone1 = ctx.clone();
+
+        env.add_function("frag_root_shared_selections", move || {
+            let selections = frag_ctx_clone1
+                .get_root()
+                .get_all_selections_that_apply_on_this_type_only(&ctx_clone1);
+            minijinja::value::Value::from_serialize(selections)
+        });
+
         Ok(FragmentEnv { env })
     }
 

@@ -309,7 +309,6 @@ impl ObjectLikeCommon {
         &self,
         ctx: &ShalomGlobalContext,
     ) -> HashSet<FieldSelection> {
-        // Convert HashSet to Vec for building the final result
         let mut selections = self.selections.clone();
 
         for frag_name in &self.used_fragments {
@@ -322,6 +321,62 @@ impl ObjectLikeCommon {
         for obj in self.type_cond_selections.values() {
             selections.extend(obj.get_all_selections_distinct(ctx));
         }
+        selections
+    }
+
+    pub fn get_all_selections_that_apply_on_this_type_only(
+        &self,
+        ctx: &ShalomGlobalContext,
+    ) -> HashSet<FieldSelection> {
+        fn recursive_inner(
+            root_type_name: &str,
+            resolved_selections: &mut HashSet<FieldSelection>,
+            current_obj: &ObjectLikeCommon,
+            ctx: &ShalomGlobalContext,
+        ) {
+            if ctx.schema_ctx.is_type_same_or_implementing_interface(
+                root_type_name,
+                &current_obj.schema_typename,
+            ) {
+                resolved_selections.extend(current_obj.selections.iter().cloned());
+            }
+
+            // used frags are directly on this type
+            for used_frag in current_obj.used_fragments.iter() {
+                let fragment = ctx.get_fragment_strict(used_frag);
+                let frag_root = fragment.get_on_type();
+                if ctx.schema_ctx.is_type_same_or_implementing_interface(
+                    root_type_name,
+                    &frag_root.schema_typename,
+                ) {
+                    resolved_selections.extend(frag_root.selections.iter().cloned());
+                    recursive_inner(root_type_name, resolved_selections, frag_root, ctx);
+                }
+            }
+            // these should also be safe to expand here
+            // since this type implements them
+            for (on_type, inline_frag) in current_obj.used_inline_frags.iter() {
+                if ctx
+                    .schema_ctx
+                    .is_type_same_or_implementing_interface(root_type_name, on_type)
+                {
+                    resolved_selections.extend(inline_frag.common.selections.iter().cloned());
+                    recursive_inner(
+                        root_type_name,
+                        resolved_selections,
+                        &inline_frag.common,
+                        ctx,
+                    );
+                }
+            }
+            // type conditioned selections should not be expanded here since
+            // even if you selected a selections that applies to the root type but
+            // in a type condition, you won't get it in the graphql response if
+            // the resolved type is other than that type condition concrete.
+        }
+
+        let mut selections = HashSet::new();
+        recursive_inner(&self.schema_typename, &mut selections, self, ctx);
         selections
     }
 }
