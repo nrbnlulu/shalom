@@ -58,10 +58,7 @@ pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
     }
 }
 
-pub fn parse_schema(
-    schema: &str,
-    enable_generic_results: bool,
-) -> anyhow::Result<SharedSchemaContext> {
+pub fn parse_schema(schema: &str, config: &ShalomConfig) -> anyhow::Result<SharedSchemaContext> {
     schema::resolver::resolve(schema, enable_generic_results)
 }
 

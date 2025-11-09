@@ -23,6 +23,9 @@
             {{ctx}}.addChangedRecord({{normalized_id}});
         }
 
+        {# Create/get the result object first - this is where nested fields will be written #}
+        final {{selection_name}}$resultObject = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
+
         {# Normalize data field if present #}
         final {{selection_name}}$dataRaw = ({{raw_sym}} as JsonObject)["{{data_field}}"];
         if ({{selection_name}}$dataRaw != null) {
@@ -33,8 +36,8 @@
                 {{"variables,"  if object_like_needs_variables(selection)}}
                 this$cached: {{selection_name}}$dataCached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{selection_name}}$dataCached.normalizedID()): {{selection_name}}$dataCached,
                 this$fieldName: "{{data_field}}",
-                parent$record: {{this_normalized_record}},
-                parent$normalizedID: {{this_normalized_id}}
+                parent$record: {{selection_name}}$resultObject,
+                parent$normalizedID: {{normalized_id}}
             );
         }
 
@@ -48,13 +51,10 @@
                 {{"variables,"  if op_variables_exist}}
                 this$cached: {{selection_name}}$errorCached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{selection_name}}$errorCached.normalizedID()): {{selection_name}}$errorCached,
                 this$fieldName: "{{error_field}}",
-                parent$record: {{this_normalized_record}},
-                parent$normalizedID: {{this_normalized_id}}
+                parent$record: {{selection_name}}$resultObject,
+                parent$normalizedID: {{normalized_id}}
             );
         }
-
-        {# Store as embedded object (generic results are not normalized by ID) #}
-        {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
     {% elif selection.kind == "Object" %}
         {# object selections can be subscribed to,
             but will only get updates for null<->some changes. sub fields should be subscribed by themself

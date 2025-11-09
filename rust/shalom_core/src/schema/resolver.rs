@@ -1,4 +1,5 @@
 use crate::schema::types::SchemaObjectFieldDefinition;
+use crate::shalom_config::ShalomConfig;
 
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{
@@ -24,7 +25,7 @@ const DEFAULT_SCALAR_TYPES: [(&str, &str); 8] = [
     ("Time", "A time."),
 ];
 
-pub(crate) fn resolve(schema: &str, enable_generic_results: bool) -> Result<SharedSchemaContext> {
+pub(crate) fn resolve(schema: &str, config: &ShalomConfig) -> Result<SharedSchemaContext> {
     let mut initial_types = HashMap::new();
 
     // Add the default scalar types
@@ -57,12 +58,7 @@ pub(crate) fn resolve(schema: &str, enable_generic_results: bool) -> Result<Shar
         debug!("Resolving type: {name:?}");
         match type_ {
             apollo_schema::ExtendedType::Object(object) => {
-                resolve_object(
-                    ctx.clone(),
-                    name.to_string(),
-                    object.clone(),
-                    enable_generic_results,
-                );
+                resolve_object(ctx.clone(), name.to_string(), object.clone(), config)
             }
             apollo_schema::ExtendedType::Scalar(scalar) => {
                 let name = scalar.name.to_string();
@@ -109,7 +105,7 @@ fn resolve_object(
     context: SharedSchemaContext,
     name: String,
     origin: apollo_compiler::Node<apollo_schema::ObjectType>,
-    enable_generic_results: bool,
+    config: &ShalomConfig,
 ) {
     // Check if the type is already resolved
     if context.get_type(&name).is_some() {
@@ -117,7 +113,7 @@ fn resolve_object(
     }
 
     // Check for @genericResult directive if the feature is enabled
-    if enable_generic_results {
+    if config.enable_generic_results {
         if let Some(directive) = origin.directives.get("genericResult") {
             resolve_generic_result(context, name, origin.clone(), directive);
             return;
@@ -364,7 +360,7 @@ mod tests {
             }
         "#
         .to_string();
-        let ctx = resolve(&schema, false).unwrap();
+        let ctx = resolve(&schema, &ShalomConfig::default()).unwrap();
 
         let object = ctx.get_type(&"Query".to_string());
         assert!(object.is_some());

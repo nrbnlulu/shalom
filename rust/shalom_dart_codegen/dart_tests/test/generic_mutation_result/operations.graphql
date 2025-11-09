@@ -1,22 +1,40 @@
 fragment GlobalErrorFrag on ErrorInterface {
-  message
-  ... on UnauthorizedError {
-    code
-  }
-  ... on ValidationError {
-    field
-  }
+    message
+    ... on UnauthorizedError {
+        code
+    }
+    ... on ValidationError {
+        field
+    }
 }
 
 mutation UpdateUser($id: ID!, $name: String!) {
-  updateUser(id: $id, name: $name) {
-    data {
-      id
-      name
-      email
+    updateUser(id: $id, name: $name) {
+        data {
+            id
+            name
+            email
+        }
+        error {
+            ...GlobalErrorFrag
+        }
     }
-    error {
-      ...GlobalErrorFrag
+}
+
+mutation DeleteUser($id: ID!) {
+    deleteUser(id: $id) {
+        success
+        error {
+            ...GlobalErrorFrag
+        }
     }
-  }
+}
+
+mutation ScheduleTask($taskId: ID!, $scheduledAt: DateTime!) {
+    scheduleTask(taskId: $taskId, scheduledAt: $scheduledAt) {
+        scheduledAt
+        error {
+            ...GlobalErrorFrag
+        }
+    }
 }
