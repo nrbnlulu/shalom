@@ -328,6 +328,61 @@ null
     {% endif %}
 {% endmacro %}
 
+{# Recursive macro for deserializing selection values from JSON (not from cache) #}
+{% macro _deserialize_selection_from_json_macro(value_symbol, selection, is_optional=false) -%}
+    {% if selection.kind == "Scalar" %}
+        {% if selection.is_custom_scalar %}
+            {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
+            {% if is_optional %}
+                {{ value_symbol }} == null ? null : {{ scalar_impl }}.deserialize({{ value_symbol }})
+            {% else %}
+                {{ scalar_impl }}.deserialize({{ value_symbol }})
+            {% endif %}
+        {% else %}
+            {% if is_optional %}
+                {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
+            {% else %}
+                {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}
+            {% endif %}
+        {% endif %}
+    {% elif selection.kind == "Object" %}
+        {% if is_optional -%}
+            {{value_symbol}} == null ? null :
+        {% endif -%}
+        {{ selection.path_name }}.fromJson({{ value_symbol }} as JsonObject)
+    {% elif selection.kind == "Union" %}
+        {% if is_optional %}
+            {{ value_symbol }} == null ? null :
+        {% endif -%}
+        {{ selection.path_name }}.fromJson({{ value_symbol }} as JsonObject)
+    {% elif selection.kind == "Interface" %}
+        {% if is_optional %}
+            {{ value_symbol }} == null ? null :
+        {% endif -%}
+        {{ selection.path_name }}.fromJson({{ value_symbol }} as JsonObject)
+    {% elif selection.kind == "Enum" %}
+        {% set typename = selection.concrete_type.name %}
+        {% if is_optional %}
+            {{ value_symbol }} == null ? null : {{ typename }}.fromString({{ value_symbol }})
+        {% else %}
+            {{ typename }}.fromString({{ value_symbol }})
+        {% endif %}
+    {% elif selection.kind == "List" %}
+        {% set inner_selection = selection.of_kind %}
+        {# List - recursively deserialize each item via the macro #}
+        {% if is_optional -%}
+            {{ value_symbol }} == null ? null :
+        {% endif -%}
+            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_json_macro("e", inner_selection, inner_selection.is_optional) }}).toList()
+    {% else %}
+        {% if is_optional %}
+            {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?
+        {% else %}
+            {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
 
 {# Recursive macro for serializing selection values #}
 {% macro _serialize_selection_value_macro(value_symbol, selection, is_optional=false) %}
@@ -616,6 +671,21 @@ null
     {% endfor %}
     };
     }
+
+    @experimental
+    static {{ typename }} fromJson(JsonObject data) {
+        {% for selection in selections if selection.name != "__typename" -%}
+            {% set raw_value_symbol = "data['" + selection.name + "']" -%}
+            final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
+        {% endfor -%}
+        return {{ typename }}(
+            {% for selection in selections -%}
+                {% if selection.name != "__typename" %}
+                    {{selection.name}}: {{selection.name}}$value,
+                {% endif %}
+            {% endfor -%}
+        );
+    }
 {% endmacro %}
 
 {% macro selection_object_definition(object) -%}
@@ -696,6 +766,19 @@ null
                     default:
                         throw Exception("Unknown __typename: $typename for {{ selection.schema_typename }}");
                 }
+            }
+        }
+
+        @experimental
+        static {{ full_name }} fromJson(JsonObject data) {
+            final typename = data["__typename"] as String;
+            switch (typename) {
+                {% for concrete in possible_concretes %}
+                case "{{ concrete.schema_typename }}":
+                    return {{ concrete.path_name }}.fromJson(data);
+                {% endfor %}
+                default:
+                    throw Exception("Unknown __typename: $typename for {{ full_name }}");
             }
         }
 

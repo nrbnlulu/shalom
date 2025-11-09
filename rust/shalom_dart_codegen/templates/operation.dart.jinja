@@ -13,6 +13,7 @@ import "{{ context.schema_import_path }}";
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 {% for import_path in generate_fragment_imports(context.operation.file_path) -%}
