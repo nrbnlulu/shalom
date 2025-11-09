@@ -28,6 +28,7 @@ pub enum GraphQLAny {
     Enum(Node<EnumType>),
     InputObject(Node<InputObjectType>),
     List { of_type: ListInnerTypeWrapper },
+    GenericResult(Arc<GenericResultType>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Hash, Serialize, Deserialize)]
@@ -68,6 +69,13 @@ impl GraphQLAny {
     pub fn enum_(&self) -> Option<Node<EnumType>> {
         match self {
             GraphQLAny::Enum(enum_) => Some(Node::clone(enum_)),
+            _ => None,
+        }
+    }
+
+    pub fn generic_result(&self) -> Option<Arc<GenericResultType>> {
+        match self {
+            GraphQLAny::GenericResult(gr) => Some(Arc::clone(gr)),
             _ => None,
         }
     }
@@ -221,6 +229,27 @@ impl Hash for EnumType {
 pub struct EnumValueDefinition {
     pub description: Option<String>,
     pub value: String,
+}
+
+/// Represents a GraphQL type marked with @genericResult directive
+/// This type will be generated as a generic MutationResult<T, E> in Dart
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct GenericResultType {
+    pub description: Option<String>,
+    pub name: String,
+    pub data_field: String,
+    pub error_field: String,
+    pub error_fragment: String,
+    /// The actual type of the data field from the schema
+    pub data_type: UnresolvedType,
+    /// The actual type of the error field from the schema
+    pub error_type: UnresolvedType,
+}
+
+impl Hash for GenericResultType {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

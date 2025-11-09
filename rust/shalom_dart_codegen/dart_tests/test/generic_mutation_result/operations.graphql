@@ -1,0 +1,22 @@
+fragment GlobalErrorFrag on ErrorInterface {
+  message
+  ... on UnauthorizedError {
+    code
+  }
+  ... on ValidationError {
+    field
+  }
+}
+
+mutation UpdateUser($id: ID!, $name: String!) {
+  updateUser(id: $id, name: $name) {
+    data {
+      id
+      name
+      email
+    }
+    error {
+      ...GlobalErrorFrag
+    }
+  }
+}

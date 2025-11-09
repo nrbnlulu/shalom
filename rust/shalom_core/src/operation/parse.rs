@@ -359,6 +359,17 @@ where
                     is_optional,
                     selection_set,
                 )),
+                GraphQLAny::GenericResult(_) => {
+                    // GenericResult types are parsed as objects - they have fields like regular objects
+                    // The codegen will handle them specially by generating MutationResult<T, E>
+                    SelectionKind::Object(parse_object_selection(
+                        ctx,
+                        global_ctx,
+                        path,
+                        is_optional,
+                        selection_set,
+                    ))
+                }
                 GraphQLAny::Enum(_enum) => {
                     SelectionKind::Enum(parse_enum_selection(is_optional, _enum))
                 }

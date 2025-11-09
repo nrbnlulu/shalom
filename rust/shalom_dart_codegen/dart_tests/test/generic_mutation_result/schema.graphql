@@ -1,0 +1,42 @@
+directive @genericResult(
+  dataField: String!
+  errorField: String!
+  errorFragment: String!
+) on OBJECT
+
+interface ErrorInterface {
+  message: String!
+}
+
+type UnauthorizedError implements ErrorInterface {
+  message: String!
+  code: String!
+}
+
+type ValidationError implements ErrorInterface {
+  message: String!
+  field: String!
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+}
+
+type UpdateUserMutationResult @genericResult(
+  dataField: "data"
+  errorField: "error"
+  errorFragment: "GlobalErrorFrag"
+) {
+  data: User
+  error: ErrorInterface
+}
+
+type Mutation {
+  updateUser(id: ID!, name: String!): UpdateUserMutationResult!
+}
+
+type Query {
+  user(id: ID!): User
+}
