@@ -330,7 +330,24 @@ null
 
 {# Recursive macro for deserializing selection values from JSON (not from cache) #}
 {% macro _deserialize_selection_from_json_macro(value_symbol, selection, is_optional=false) -%}
-    {% if selection.kind == "Scalar" %}
+    {% if selection.kind == "Object" and is_schema_typename_generic_result(selection.schema_typename) %}
+        {# Special handling for generic result types - construct MutationResult directly #}
+        {% set data_field = get_generic_result_data_field(selection.schema_typename) %}
+        {% set error_field = get_generic_result_error_field(selection.schema_typename) %}
+        {% set data_path = selection.path_name ~ "_" ~ data_field %}
+        {% set error_path = selection.path_name ~ "_" ~ error_field %}
+        {% if is_optional %}
+            {{ value_symbol }} == null ? null :
+        {% endif %}
+        MutationResult<{{ data_path }}?, {{ error_path }}?>(
+            data: ({{ value_symbol }} as JsonObject)["{{ data_field }}"] != null
+                ? {{ data_path }}.fromJson(({{ value_symbol }} as JsonObject)["{{ data_field }}"] as JsonObject)
+                : null,
+            error: ({{ value_symbol }} as JsonObject)["{{ error_field }}"] != null
+                ? {{ error_path }}.fromJson(({{ value_symbol }} as JsonObject)["{{ error_field }}"] as JsonObject)
+                : null
+        )
+    {% elif selection.kind == "Scalar" %}
         {% if selection.is_custom_scalar %}
             {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
             {% if is_optional %}
