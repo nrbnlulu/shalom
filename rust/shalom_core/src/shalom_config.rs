@@ -24,6 +24,9 @@ pub struct ShalomConfig {
     pub custom_scalars: HashMap<String, CustomScalarDefinition>,
     #[serde(default)]
     pub schema_output_path: Option<PathBuf>,
+    /// Enable generic MutationResult type for types marked with @genericResult directive
+    #[serde(default)]
+    pub enable_generic_results: bool,
     #[serde(skip)]
     pub project_root: PathBuf,
 }
@@ -33,6 +36,7 @@ impl Default for ShalomConfig {
         Self {
             custom_scalars: HashMap::new(),
             schema_output_path: None,
+            enable_generic_results: false,
             project_root: current_dir().unwrap(),
         }
     }

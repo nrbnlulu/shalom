@@ -2,6 +2,11 @@ mod common;
 use crate::common::run_dart_tests_for_usecase;
 
 #[test]
+fn test_generic_mutation_result_dart() {
+    run_dart_tests_for_usecase("generic_mutation_result");
+}
+
+#[test]
 fn test_simple_scalars_dart() {
     run_dart_tests_for_usecase("simple_scalars");
 }
