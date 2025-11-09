@@ -14,6 +14,7 @@
 import "{{ context.schema_import_path }}";
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart' show experimental;
 {{ custom_scalar_imports_macro(context.custom_scalar_imports) }}
 
 {% for import_path in generate_fragment_imports(context.fragment_file_path) -%}
@@ -43,7 +44,7 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
     {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
     {# generate sealed classes #}
     {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
-    
+
     {# generate subsets #}
     {% for concrete_subset in concretes -%}
         class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
@@ -60,7 +61,7 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
     {# generate sealed classes #}
     {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
-    
+
     {# generate subsets #}
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
     {% for concrete_subset in concretes -%}
@@ -69,7 +70,7 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
         }
     {% endfor %}
 {% endfor %}
-    
+
 // ------------ END INTERFACE DEFINITIONS -------------
 
 {{ generate_multi_type_list_extensions(multi_type_list_selections) }}
