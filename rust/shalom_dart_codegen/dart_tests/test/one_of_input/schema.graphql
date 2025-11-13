@@ -1,0 +1,16 @@
+directive @oneOf on INPUT_OBJECT
+
+input TestOneOf @oneOf {
+    a: String!
+    b: Int!
+    c: Boolean!
+}
+
+type Result {
+    id: ID!
+    value: String!
+}
+
+type Query {
+    test(input: TestOneOf!): Result!
+}

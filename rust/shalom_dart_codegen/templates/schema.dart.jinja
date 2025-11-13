@@ -34,9 +34,68 @@ import 'package:shalom_core/shalom_core.dart';
 {% endfor %}
 // ------------ END Enum DEFINITIONS -------------
 // ------------ Input DEFINITIONS -------------
+{% macro serialization_expr(wrapper, var_name, ctx) %}
+{% set ty = wrapper.ty %}
+{% if ty.kind == 'List' %}
+{{ var_name }}.map((e) => {{ serialization_expr(wrapper.ty.of_type, 'e', ctx) | trim }}).toList()
+{% else %}
+{% if ty.kind == 'Enum' %}
+{{ var_name }}.name
+{% elif ty.kind == 'InputObject' %}
+{{ var_name }}.toJson()
+{% elif ty.kind == 'Scalar' %}
+{% if is_custom_scalar(ty.name) %}
+{{ var_name }}.toJson()
+{% else %}
+{{ var_name }}
+{% endif %}
+{% else %}
+throw UnimplementedError('Unsupported type for serialization: {{ ty.kind }}');
+{% endif %}
+{% endif %}
+{% endmacro %}
 {% for _, input_object in schema.context.types.inputs | items %}
 {% set typename = input_object.name %}
+{% if input_object.is_one_of %}
+{{docstring(input_object.description)}}
+sealed class {{ typename }} {
+  JsonObject toJson();
+
+  {% for name, field in input_object.fields | items -%}
+  {{docstring(field.common.description)}}
+  static {{ typename }} {{ name }}({{ type_name_for_input_field(field) | replace('?', '') }} value) => _{{ typename }}_{{ name }}(value);
+  {% endfor -%}
+
+  @override
+  String toString() {
+    return toJson().toString();
+  }
+}
+{% for name, field in input_object.fields | items -%}
+{{docstring(field.common.description)}}
+class _{{ typename }}_{{ name }} implements {{ typename }} {
+  final {{ type_name_for_input_field(field) | replace('?', '') }} value;
+
+  const _{{ typename }}_{{ name }}(this.value);
+
+  @override
+  JsonObject toJson() {
+    {% set resolved = resolve_field_type(field.common) %}
+    return { '{{ name }}': {{ serialization_expr(resolved, 'value', schema.context) | trim }} };
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is _{{ typename }}_{{ name }} && value == other.value);
+
+  @override
+  int get hashCode => value.hashCode ^ runtimeType.hashCode;
+}
+{% endfor -%}
+{% else %}
 {% set fields_requiring_initializer_list = get_fields_requiring_initializer_list(input_object.fields) %}
+{{docstring(input_object.description)}}
 class {{ typename }} {
     {% for name, field in input_object.fields | items -%}
         final {{ type_name_for_input_field(field) }} {{ name }};
@@ -67,6 +126,6 @@ class {{ typename }} {
 
   {{ updateWith_macro(input_object.fields, typename) }}
 }
-
+{% endif %}
 {% endfor %}
 // ------------ END Input DEFINITIONS -------------

@@ -1,0 +1,6 @@
+query TestQuery($input: TestOneOf!) {
+    test(input: $input) {
+        id
+        value
+    }
+}
