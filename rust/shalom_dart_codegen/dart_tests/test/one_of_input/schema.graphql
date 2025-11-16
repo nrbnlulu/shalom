@@ -1,9 +1,9 @@
 directive @oneOf on INPUT_OBJECT
 
 input TestOneOf @oneOf {
-    a: String!
-    b: Int!
-    c: Boolean!
+    a: String
+    b: Int
+    c: Boolean
 }
 
 enum SomeEnum {
@@ -12,10 +12,10 @@ enum SomeEnum {
 }
 
 input ComplexOneOf @oneOf {
-    scalarField: String!
-    objectField: ResultInput!
-    listField: [Int!]!
-    enumField: SomeEnum!
+    scalarField: String
+    objectField: ResultInput
+    listField: [Int!]
+    enumField: SomeEnum
 }
 
 input ResultInput {

@@ -42,7 +42,7 @@ sealed class {{ typename }} {
   JsonObject toJson();
 
   {% for field_name, field in input_object.fields | items -%}
-  static {{ typename }} {{ field_name }}({{ type_name_for_input_field(field) }} value) => _{{ typename }}_{{ field_name }}(value);
+  static {{ typename }} {{ field_name }}({{ type_name_for_one_of_input_field(field) }} value) => _{{ typename }}_{{ field_name }}(value);
 
   {% endfor -%}
   @override
@@ -53,7 +53,7 @@ sealed class {{ typename }} {
 
 {% for field_name, field in input_object.fields | items %}
 class _{{ typename }}_{{ field_name }} implements {{ typename }} {
-  final {{ type_name_for_input_field(field) }} value;
+  final {{ type_name_for_one_of_input_field(field) }} value;
 
   const _{{ typename }}_{{ field_name }}(this.value);
 
