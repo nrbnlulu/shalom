@@ -6,6 +6,18 @@ input TestOneOf @oneOf {
     c: Boolean!
 }
 
+enum SomeEnum {
+    A
+    B
+}
+
+input ComplexOneOf @oneOf {
+    scalarField: String!
+    objectField: Result!
+    listField: [Int!]!
+    enumField: SomeEnum!
+}
+
 type Result {
     id: ID!
     value: String!
@@ -13,4 +25,6 @@ type Result {
 
 type Query {
     test(input: TestOneOf!): Result!
+    testList(input: [TestOneOf!]!): String!
+    testComplex(input: ComplexOneOf!): String!
 }

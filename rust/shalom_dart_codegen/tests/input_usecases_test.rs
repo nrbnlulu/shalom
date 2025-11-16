@@ -57,3 +57,8 @@ fn test_required_inputs_with_defaults_dart() {
 fn test_input_list_with_defaults_dart() {
     run_dart_tests_for_usecase("input_list_with_defaults");
 }
+
+#[test]
+fn test_one_of_input_dart() {
+    run_dart_tests_for_usecase("one_of_input");
+}

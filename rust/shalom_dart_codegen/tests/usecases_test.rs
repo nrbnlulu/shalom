@@ -129,8 +129,3 @@ fn test_fragment_id_on_non_root_field_dart() {
 fn test_interface_with_nested_type_fragments_dart() {
     run_dart_tests_for_usecase("interface_with_nested_type_fragments");
 }
-
-#[test]
-fn test_one_of_input_dart() {
-    run_dart_tests_for_usecase("one_of_input");
-}
