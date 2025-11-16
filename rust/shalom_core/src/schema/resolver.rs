@@ -182,10 +182,12 @@ fn resolve_input(
         fields.insert(name, input_field_definition);
     }
     let description = origin.description.as_ref().map(|v| v.to_string());
+    let is_one_of = origin.directives.iter().any(|d| d.name == "oneOf");
     let input_object = InputObjectType {
         description,
         name: name.clone(),
         fields,
+        is_one_of,
     };
     context.add_input(name, Node::new(input_object)).unwrap();
 }
