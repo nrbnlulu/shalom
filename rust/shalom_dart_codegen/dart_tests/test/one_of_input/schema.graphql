@@ -13,9 +13,14 @@ enum SomeEnum {
 
 input ComplexOneOf @oneOf {
     scalarField: String!
-    objectField: Result!
+    objectField: ResultInput!
     listField: [Int!]!
     enumField: SomeEnum!
+}
+
+input ResultInput {
+    id: ID!
+    value: String!
 }
 
 type Result {

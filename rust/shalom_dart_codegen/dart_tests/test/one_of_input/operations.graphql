@@ -4,3 +4,11 @@ query TestQuery($input: TestOneOf!) {
         value
     }
 }
+
+query TestListQuery($input: [TestOneOf!]!) {
+    testList(input: $input)
+}
+
+query TestComplexQuery($input: ComplexOneOf!) {
+    testComplex(input: $input)
+}

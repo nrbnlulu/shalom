@@ -1,4 +1,4 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, camel_case_types
 {% include "macros" %}
 {% if schema.context.types.inputs | length > 0 %}
 import 'package:shalom_core/shalom_core.dart';
@@ -36,6 +36,43 @@ import 'package:shalom_core/shalom_core.dart';
 // ------------ Input DEFINITIONS -------------
 {% for _, input_object in schema.context.types.inputs | items %}
 {% set typename = input_object.name %}
+{% if input_object.is_one_of %}
+{{docstring(input_object.description)}}
+sealed class {{ typename }} {
+  JsonObject toJson();
+
+  {% for field_name, field in input_object.fields | items -%}
+  static {{ typename }} {{ field_name }}({{ type_name_for_input_field(field) }} value) => _{{ typename }}_{{ field_name }}(value);
+
+  {% endfor -%}
+  @override
+  String toString() {
+    return toJson().toString();
+  }
+}
+
+{% for field_name, field in input_object.fields | items %}
+class _{{ typename }}_{{ field_name }} implements {{ typename }} {
+  final {{ type_name_for_input_field(field) }} value;
+
+  const _{{ typename }}_{{ field_name }}(this.value);
+
+  @override
+  JsonObject toJson() {
+    {% set field_ty = resolve_field_type(field.common).ty -%}
+    return {'{{ field_name }}': {{ _serialize_field_value_macro("value", field_ty, false) }}};
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is _{{ typename }}_{{ field_name }} && value == other.value);
+
+  @override
+  int get hashCode => value.hashCode ^ runtimeType.hashCode;
+}
+
+{% endfor %}
+{% else %}
 {% set fields_requiring_initializer_list = get_fields_requiring_initializer_list(input_object.fields) %}
 
 {{docstring(input_object.description)}}
@@ -70,5 +107,6 @@ class {{ typename }} {
   {{ updateWith_macro(input_object.fields, typename) }}
 }
 
+{% endif %}
 {% endfor %}
 // ------------ END Input DEFINITIONS -------------
