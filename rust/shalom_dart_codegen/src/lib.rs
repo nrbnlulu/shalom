@@ -166,8 +166,7 @@ mod ext_jinja_fns {
         let field = field.0;
         let resolved_type = field.common.unresolved_type.resolve(&ctx.schema_ctx);
         // For oneOf fields, always treat as non-optional since exactly one must be present
-        let res = resolve_schema_typename(&resolved_type.ty, false, ctx);
-        res
+        resolve_schema_typename(&resolved_type.ty, false, ctx)
     }
 
     pub fn parse_field_default_value_deserializer(
