@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:shalom_core/shalom_core.dart';
 // Add this import for reliable Set comparison
 import 'package:collection/collection.dart';
@@ -27,77 +28,115 @@ class ShalomClient {
   Stream<GraphQLResponse<T>> request<T>({
     required Requestable<T> requestable,
     HeadersType? headers,
-  }) async* {
+  }) {
     final meta = requestable.getRequestMeta();
+    final controller = StreamController<GraphQLResponse<T>>();
 
-    // Helper for comparing subscription key sets
-    // Using static const to avoid repeated allocations
+    // Track the current cache subscription
+    Set<String>? currentSubRefs;
+    StreamSubscription<ShalomCtx>? cacheSubscription;
+    StreamSubscription<GraphQLResponse<JsonObject>>? linkSubscription;
 
-    await for (final res
-        in link.request(request: meta.request, headers: headers)) {
-      switch (res) {
-        case GraphQLData():
-          {
-            // 1. Initial load from the network response
-            final (deserialized, initialSubRefs) =
-                meta.loadFn(data: res.data, ctx: ctx);
+    // Track the last network response for reusing errors/extensions in cache updates
+    GraphQLData<JsonObject>? lastNetworkResponse;
 
-            // 2. Yield the initial data from the network
-            yield GraphQLData(
-                data: deserialized,
-                errors: res.errors,
-                extensions: res.extensions);
-
-            // This variable will track the keys we are currently subscribed to
-            var currentSubRefs = initialSubRefs;
-
-            // 3. Start a loop to manage cache subscriptions.
-            // This loop will restart if the subscription keys change.
-            while (currentSubRefs.isNotEmpty) {
-              // 4. Subscribe to the *current* set of keys
-              final cacheStream =
-                  ctx.subscribe(currentSubRefs).streamController.stream;
-
-              // 5. Listen for cache updates
-              await for (final _ in cacheStream) {
-                // 6. On update, get fresh data and potentially *new* keys
-                final (fromCacheData, newKeys) = meta.fromCacheFn(ctx);
-
-                // 7. Yield the fresh data from the cache
-                yield GraphQLData(
-                    data: fromCacheData,
-                    errors:
-                        res.errors, // Re-use errors from original network res
-                    extensions: res.extensions // Re-use extensions
-                    );
-
-                // 8. Check if the keys this data depends on have changed
-                if (!_keyEquals.equals(newKeys, currentSubRefs)) {
-                  // 9. If keys differ, update our tracking variable...
-                  currentSubRefs = newKeys;
-
-                  // ...and break the inner 'await for' loop.
-                  // This causes the outer 'while' loop to re-evaluate.
-                  // If currentSubRefs is now empty, the while loop exits.
-                  // If it's non-empty, the while loop restarts,
-                  // subscribing to the *new* set of keys.
-                  break;
-                }
-              }
-            }
-          }
-        case LinkExceptionResponse():
-          {
-            // Just forward link errors
-            yield LinkExceptionResponse(res.errors);
-          }
-        case GraphQLError():
-          {
-            // Just forward GraphQL errors
-            yield GraphQLError(errors: res.errors, extensions: res.extensions);
-          }
+    void updateCacheSubscription(Set<String> newRefs) {
+      if (_keyEquals.equals(newRefs, currentSubRefs)) {
+        return;
       }
+
+      // Cancel old subscription
+      cacheSubscription?.cancel();
+      currentSubRefs = newRefs;
+
+      if (newRefs.isEmpty) {
+        return;
+      }
+
+      // Subscribe to new cache keys
+      cacheSubscription = ctx.subscribe(newRefs).streamController.stream.listen(
+        (_) {
+          if (controller.isClosed) return;
+
+          // Get fresh data from cache
+          final (fromCacheData, updatedRefs) = meta.fromCacheFn(ctx);
+
+          // Yield the fresh data from the cache
+          controller.add(GraphQLData(
+            data: fromCacheData,
+            errors: lastNetworkResponse?.errors,
+            extensions: lastNetworkResponse?.extensions,
+          ));
+
+          // Update subscription if dependencies changed
+          updateCacheSubscription(updatedRefs);
+        },
+        onError: (error) {
+          if (!controller.isClosed) {
+            controller.addError(error);
+          }
+        },
+      );
     }
+
+    // Subscribe to link stream
+    linkSubscription =
+        link.request(request: meta.request, headers: headers).listen(
+      (response) {
+        if (controller.isClosed) return;
+
+        switch (response) {
+          case GraphQLData():
+            {
+              // Load from the network response
+              final (deserialized, initialSubRefs) =
+                  meta.loadFn(data: response.data, ctx: ctx);
+
+              // Store for cache updates
+              lastNetworkResponse = response;
+
+              // Yield the initial data from the network
+              controller.add(GraphQLData(
+                data: deserialized,
+                errors: response.errors,
+                extensions: response.extensions,
+              ));
+
+              // Set up or update cache subscription
+              updateCacheSubscription(initialSubRefs);
+            }
+          case LinkExceptionResponse():
+            {
+              // Just forward link errors
+              controller.add(LinkExceptionResponse(response.errors));
+            }
+          case GraphQLError():
+            {
+              // Just forward GraphQL errors
+              controller.add(GraphQLError(
+                  errors: response.errors, extensions: response.extensions));
+            }
+        }
+      },
+      onError: (error) {
+        if (!controller.isClosed) {
+          controller.addError(error);
+        }
+      },
+      onDone: () {
+        if (!controller.isClosed) {
+          controller.close();
+        }
+      },
+    );
+
+    // Set up cleanup when subscription is cancelled
+    controller.onCancel = () {
+      linkSubscription?.cancel();
+      cacheSubscription?.cancel();
+    };
+
+    return controller.stream;
   }
 
   /// don't subscribe to changes of this operation and just get the initial data

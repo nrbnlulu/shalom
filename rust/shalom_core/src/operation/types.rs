@@ -1,7 +1,8 @@
 use std::{
-    cell::{Cell, RefCell},
     collections::{HashMap, HashSet},
+    hash::Hasher,
     rc::Rc,
+    sync::Arc,
 };
 
 use indexmap::IndexMap;
@@ -11,57 +12,15 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     context::ShalomGlobalContext,
-    operation::context::OperationVariable,
-    schema::types::{EnumType, InterfaceType, ScalarType, UnionType},
+    operation::{
+        context::OperationVariable,
+        fragments::{FragName, InlineFragment},
+    },
+    schema::types::{EnumType, GraphQLAny, InterfaceType, ScalarType, UnionType},
 };
 
 /// the name of i.e object in a graphql query based on the parent fields.
 pub type FullPathName = String;
-
-/// Helper function to get all selections including fragments, with deduplication by field name.
-///
-/// This function takes direct selections and recursively expands all fragment selections,
-/// ensuring that fields with the same name are not duplicated. This is particularly important
-/// when fragments on interfaces and their implementations share field names.
-///
-/// # Arguments
-/// * `direct_selections` - The direct selections from an object or fragment
-/// * `fragment_names` - Names of fragments to expand
-/// * `ctx` - The global context containing fragment definitions
-///
-/// # Returns
-/// A vector of distinct selections (by field name), preserving the order of first occurrence
-pub fn get_selections_with_fragments_distinct(
-    direct_selections: Vec<Selection>,
-    fragment_names: Vec<FragName>,
-    ctx: &ShalomGlobalContext,
-) -> Vec<Selection> {
-    let mut selections = direct_selections;
-    let mut seen_names: HashSet<String> = HashSet::new();
-
-    // Track names from direct selections
-    for selection in &selections {
-        seen_names.insert(selection.self_selection_name().clone());
-    }
-
-    // Process fragments
-    let mut fragments = fragment_names;
-    while !fragments.is_empty() {
-        let fragment = ctx.get_fragment_strict(&fragments.pop().unwrap());
-        let fragment_selections = fragment.get_flat_selections(ctx);
-
-        // Only add fragment selections if we haven't seen their name before
-        for fragment_selection in fragment_selections {
-            let name = fragment_selection.self_selection_name().clone();
-            if !seen_names.contains(&name) {
-                seen_names.insert(name);
-                selections.push(fragment_selection);
-            }
-        }
-    }
-
-    selections
-}
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(tag = "name")]
@@ -72,7 +31,7 @@ pub enum OperationType {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-pub struct SelectionCommon {
+pub struct FieldSelectionCommon {
     pub name: String,
     pub description: Option<String>,
 }
@@ -115,21 +74,34 @@ pub struct FieldArgument {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Selection {
+pub struct FieldSelection {
     #[serde(flatten)]
-    pub selection_common: SelectionCommon,
+    pub selection_common: FieldSelectionCommon,
     #[serde(flatten)]
     pub kind: SelectionKind,
     pub arguments: Vec<FieldArgument>,
 }
 
-impl Selection {
+impl std::hash::Hash for FieldSelection {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.self_selection_name().hash(state);
+    }
+}
+impl std::cmp::PartialEq for FieldSelection {
+    fn eq(&self, other: &Self) -> bool {
+        self.self_selection_name() == other.self_selection_name()
+    }
+}
+
+impl std::cmp::Eq for FieldSelection {}
+
+impl FieldSelection {
     pub fn new(
-        selection_common: SelectionCommon,
+        selection_common: FieldSelectionCommon,
         kind: SelectionKind,
         arguments: Vec<FieldArgument>,
     ) -> Self {
-        Selection {
+        FieldSelection {
             selection_common,
             kind,
             arguments,
@@ -162,7 +134,7 @@ impl Selection {
     }
 }
 
-pub type SharedSelection = Rc<Selection>;
+pub type SharedSelection = Rc<FieldSelection>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(tag = "kind")]
@@ -204,93 +176,228 @@ impl ScalarSelection {
         })
     }
 }
-type FragName = String;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ObjectLikeCommon {
+    /// name that we generate in order to normalize types across the selection tree.
+    /// the is usually would be `{parent}_{schema_typename}`
+    pub path_name: String,
+    pub schema_typename: String,
+    /// selections that apply to all types in this object-like
+    /// in interfaces / union this can be thought as shared selections
+    pub selections: HashSet<FieldSelection>,
+    /// fragment spreads
+    pub used_fragments: HashSet<FragName>,
+    /// inline fragments used in this object-like
+    pub used_inline_frags: HashMap<String, InlineFragment>,
+    /// type conditioned selections - stores selections for specific types
+    pub type_cond_selections: HashMap<String, ObjectLikeCommon>,
+}
+
+impl ObjectLikeCommon {
+    pub fn new(path_name: String, schema_typename: String) -> Self {
+        ObjectLikeCommon {
+            path_name,
+            schema_typename,
+            used_fragments: HashSet::new(),
+            used_inline_frags: HashMap::new(),
+            type_cond_selections: HashMap::new(),
+            selections: HashSet::new(),
+        }
+    }
+    pub fn get_selection(&self, name: &str) -> Option<&FieldSelection> {
+        self.selections
+            .iter()
+            .find(|s| s.self_selection_name() == name)
+    }
+    pub fn merge(&mut self, other: ObjectLikeCommon) {
+        if self.schema_typename == other.schema_typename {
+            // the same type just extend selections (HashSet handles deduplication)
+            self.used_fragments.extend(other.used_fragments);
+            self.used_inline_frags.extend(other.used_inline_frags);
+            self.selections.extend(other.selections);
+        } else {
+            // different type - store as type condition, merge if already exists
+            if let Some(existing) = self.type_cond_selections.get_mut(&other.schema_typename) {
+                existing.merge(other);
+            } else {
+                self.type_cond_selections
+                    .insert(other.schema_typename.clone(), other);
+            }
+        }
+    }
+
+    pub fn add_selection(&mut self, selection: FieldSelection) {
+        // HashSet automatically handles deduplication based on Hash/Eq implementation
+        self.selections.insert(selection);
+    }
+    /// finds a field with a name
+    pub fn contains_field(&self, name: &str) -> bool {
+        self.selections
+            .iter()
+            .any(|s| s.self_selection_name() == name)
+    }
+
+    /// Check if __typename is selected either at the top level or in all inline fragments
+    pub fn has_typename_selection(&self, ctx: &ShalomGlobalContext) -> bool {
+        // Check shared selections for __typename
+        let has_shared_typename = self.contains_field("__typename");
+
+        if has_shared_typename {
+            return true;
+        }
+
+        let this_ty = ctx.schema_ctx.get_type_strict(&self.schema_typename);
+        for frag in self.used_inline_frags.values() {
+            if !frag.common.contains_field("__typename") {
+                continue;
+            }
+
+            if frag.common.schema_typename == self.schema_typename {
+                return true;
+            }
+
+            let frag_ty = ctx.schema_ctx.get_type_strict(&frag.common.schema_typename);
+            if let GraphQLAny::Interface(_) = frag_ty {
+                if this_ty.implements_interface(&frag.common.schema_typename, &ctx.schema_ctx) {
+                    return true;
+                }
+            };
+        }
+        // now check for frag spreads
+        for frag_name in self.used_fragments.iter() {
+            let frag = ctx.get_fragment_strict(frag_name);
+            let common = frag.get_on_type();
+            if !common.contains_field("__typename") {
+                continue;
+            }
+
+            if common.schema_typename == self.schema_typename {
+                return true;
+            }
+
+            let frag_ty = ctx.schema_ctx.get_type_strict(&common.schema_typename);
+            if let GraphQLAny::Interface(_) = frag_ty {
+                if this_ty.implements_interface(&common.schema_typename, &ctx.schema_ctx) {
+                    return true;
+                }
+            };
+        }
+
+        false
+    }
+    pub fn add_used_fragment(&mut self, name: FragName) {
+        self.used_fragments.insert(name);
+    }
+    pub fn get_used_fragments(&self) -> &HashSet<FragName> {
+        &self.used_fragments
+    }
+
+    pub fn add_inline_fragment(&mut self, frag: InlineFragment) {
+        if let Some(exists) = self.used_inline_frags.get_mut(&frag.common.path_name) {
+            // merge the existing one with this one
+            exists.merge(frag);
+        } else {
+            self.used_inline_frags
+                .insert(frag.common.path_name.clone(), frag);
+        }
+    }
+
+    /// return all selections for an object including the fragment selections
+    /// for the current selection object, with duplicates removed by field name
+    pub fn get_all_selections_distinct(
+        &self,
+        ctx: &ShalomGlobalContext,
+    ) -> HashSet<FieldSelection> {
+        let mut selections = self.selections.clone();
+
+        for frag_name in &self.used_fragments {
+            let fragment = ctx.get_fragment_strict(frag_name);
+            selections.extend(fragment.get_on_type().get_all_selections_distinct(ctx));
+        }
+        for inline_frag in self.used_inline_frags.values() {
+            selections.extend(inline_frag.common.get_all_selections_distinct(ctx));
+        }
+        for obj in self.type_cond_selections.values() {
+            selections.extend(obj.get_all_selections_distinct(ctx));
+        }
+        selections
+    }
+
+    pub fn get_all_selections_that_apply_on_this_type_only(
+        &self,
+        ctx: &ShalomGlobalContext,
+    ) -> HashSet<FieldSelection> {
+        fn recursive_inner(
+            root_type_name: &str,
+            resolved_selections: &mut HashSet<FieldSelection>,
+            current_obj: &ObjectLikeCommon,
+            ctx: &ShalomGlobalContext,
+        ) {
+            if ctx.schema_ctx.is_type_same_or_implementing_interface(
+                root_type_name,
+                &current_obj.schema_typename,
+            ) {
+                resolved_selections.extend(current_obj.selections.iter().cloned());
+            }
+
+            // used frags are directly on this type
+            for used_frag in current_obj.used_fragments.iter() {
+                let fragment = ctx.get_fragment_strict(used_frag);
+                let frag_root = fragment.get_on_type();
+                if ctx.schema_ctx.is_type_same_or_implementing_interface(
+                    root_type_name,
+                    &frag_root.schema_typename,
+                ) {
+                    resolved_selections.extend(frag_root.selections.iter().cloned());
+                    recursive_inner(root_type_name, resolved_selections, frag_root, ctx);
+                }
+            }
+            // these should also be safe to expand here
+            // since this type implements them
+            for (on_type, inline_frag) in current_obj.used_inline_frags.iter() {
+                if ctx
+                    .schema_ctx
+                    .is_type_same_or_implementing_interface(root_type_name, on_type)
+                {
+                    resolved_selections.extend(inline_frag.common.selections.iter().cloned());
+                    recursive_inner(
+                        root_type_name,
+                        resolved_selections,
+                        &inline_frag.common,
+                        ctx,
+                    );
+                }
+            }
+            // type conditioned selections should not be expanded here since
+            // even if you selected a selections that applies to the root type but
+            // in a type condition, you won't get it in the graphql response if
+            // the resolved type is other than that type condition concrete.
+        }
+
+        let mut selections = HashSet::new();
+        recursive_inner(&self.schema_typename, &mut selections, self, ctx);
+        selections
+    }
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct ObjectSelection {
-    pub full_name: String,
-    pub concrete_typename: String,
     pub is_optional: bool,
-    pub selections: RefCell<Vec<Selection>>,
-    pub used_fragments: RefCell<Vec<FragName>>,
-    pub parent_multitype_fullname: Option<String>,
+    #[serde(flatten)]
+    pub common: ObjectLikeCommon,
 }
 
 pub type SharedObjectSelection = Rc<ObjectSelection>;
 
 impl ObjectSelection {
-    pub fn new(
-        is_optional: bool,
-        full_name: String,
-        concrete_typename: String,
-        parent_multitype_fullname: Option<String>,
-    ) -> SharedObjectSelection {
+    pub fn new(is_optional: bool, common: ObjectLikeCommon) -> SharedObjectSelection {
         let ret = ObjectSelection {
-            full_name,
-            concrete_typename,
             is_optional,
-            selections: RefCell::new(Vec::new()),
-            used_fragments: RefCell::new(Vec::new()),
-            parent_multitype_fullname,
+            common,
         };
 
         Rc::new(ret)
-    }
-    pub fn add_selection(&self, selection: Selection) {
-        let selection_name = selection.self_selection_name();
-
-        // Check if a selection with this name already exists (for deduplication)
-        let already_exists = self
-            .selections
-            .borrow()
-            .iter()
-            .any(|s| s.self_selection_name() == selection_name);
-
-        if already_exists {
-            // Skip duplicate selections to avoid field conflicts from fragment expansion
-            return;
-        }
-        self.selections.borrow_mut().push(selection);
-    }
-
-    pub fn add_used_fragment(&self, name: FragName) {
-        self.used_fragments.borrow_mut().push(name);
-    }
-    pub fn get_used_fragments(&self) -> Vec<FragName> {
-        self.used_fragments.borrow().clone()
-    }
-
-    /// return all selections for an object including the fragment selections
-    /// for the current selection object, with duplicates removed by field name
-    pub fn get_all_selections_distinct(&self, ctx: &ShalomGlobalContext) -> Vec<Selection> {
-        get_selections_with_fragments_distinct(
-            self.selections.borrow().clone(),
-            self.used_fragments.borrow().clone(),
-            ctx,
-        )
-    }
-
-    pub fn get_id_selection(&self) -> Option<Selection> {
-        self.selections
-            .borrow()
-            .iter()
-            .find(|s| s.self_selection_name() == "id")
-            .cloned()
-    }
-
-    /// Get the id selection, including those from used fragments
-    pub fn get_id_selection_with_fragments(&self, ctx: &ShalomGlobalContext) -> Option<Selection> {
-        // First check in direct selections
-        if let Some(id_sel) = self.get_id_selection() {
-            return Some(id_sel);
-        }
-
-        // If not found, check in fragment selections
-        let all_selections = self.get_all_selections_distinct(ctx);
-        all_selections
-            .iter()
-            .find(|s| s.self_selection_name() == "id")
-            .cloned()
     }
 }
 
@@ -322,107 +429,28 @@ pub type SharedListSelection = Rc<ListSelection>;
 /// Common fields and behavior shared between Union and Interface selections
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MultiTypeSelectionCommon {
-    pub full_name: String,
-    /// name of the union or uniterface
-    pub schema_typename: String,
     pub is_optional: bool,
-    /// Selections that apply to all types (e.g., __typename)
-    pub shared_selections: RefCell<Vec<Selection>>,
-    /// Inline fragment selections grouped by type condition
-    pub inline_fragments: RefCell<HashMap<String, SharedObjectSelection>>,
-    /// Whether to generate a fallback class for uncovered types
-    pub has_fallback: Cell<bool>,
-    /// Fragments spread at the union/interface level (not inside inline fragments)
-    pub shared_fragments: RefCell<Vec<String>>,
+    #[serde(flatten)]
+    pub common: ObjectLikeCommon,
+    pub possible_concrete_types: HashSet<String>,
 }
 
 impl MultiTypeSelectionCommon {
-    pub fn new(full_name: String, schema_typename: String, is_optional: bool) -> Self {
+    pub fn new(
+        is_optional: bool,
+        common: ObjectLikeCommon,
+        possible_concrete_types: HashSet<String>,
+    ) -> Self {
         MultiTypeSelectionCommon {
-            full_name,
-            schema_typename,
             is_optional,
-            shared_selections: RefCell::new(Vec::new()),
-            inline_fragments: RefCell::new(HashMap::new()),
-            has_fallback: Cell::new(false),
-            shared_fragments: RefCell::new(Vec::new()),
+            common,
+            possible_concrete_types,
         }
-    }
-
-    pub fn add_shared_selection(&self, selection: Selection) {
-        // Check if a selection with this name already exists to avoid duplicates
-        let selection_name = selection.self_selection_name();
-        let already_exists = self
-            .shared_selections
-            .borrow()
-            .iter()
-            .any(|s| s.self_selection_name() == selection_name);
-
-        if !already_exists {
-            self.shared_selections.borrow_mut().push(selection);
-        }
-    }
-
-    pub fn add_inline_fragment(
-        &self,
-        type_condition: String,
-        object_selection: SharedObjectSelection,
-    ) {
-        self.inline_fragments
-            .borrow_mut()
-            .insert(type_condition, object_selection);
-    }
-
-    pub fn add_shared_fragment(&self, fragment_name: String) {
-        self.shared_fragments.borrow_mut().push(fragment_name);
-    }
-
-    /// Check if __typename is selected either at the top level or in all inline fragments
-    pub fn has_typename_selection(&self) -> bool {
-        // Check shared selections for __typename
-        let has_shared_typename = self
-            .shared_selections
-            .borrow()
-            .iter()
-            .any(|s| s.self_selection_name() == "__typename");
-
-        if has_shared_typename {
-            return true;
-        }
-
-        // Check if all inline fragments have __typename
-        let fragments = self.inline_fragments.borrow();
-        if fragments.is_empty() {
-            return false;
-        }
-
-        fragments.values().all(|obj| {
-            obj.selections
-                .borrow()
-                .iter()
-                .any(|s| s.self_selection_name() == "__typename")
-        })
     }
 }
 pub trait MultiTypeSelection {
     /// Get all possible types for this multi-type selection (union members or interface implementations)
-    fn get_all_members(&self, ctx: &ShalomGlobalContext) -> Vec<String>;
-
-    /// Check if we need a fallback class by comparing all possible types with covered inline fragments
-    fn should_generate_fallback(&self, ctx: &ShalomGlobalContext) -> bool {
-        let all_members_set: std::collections::HashSet<String> =
-            self.get_all_members(ctx).into_iter().collect();
-        let covered_types: std::collections::HashSet<String> = self
-            .common()
-            .inline_fragments
-            .borrow()
-            .keys()
-            .cloned()
-            .collect();
-
-        // If not all multitype members are covered, we need a fallback
-        !all_members_set.is_subset(&covered_types)
-    }
+    fn get_all_direct_schema_subsets_typenames(&self, ctx: &ShalomGlobalContext) -> Vec<String>;
 
     /// Get the common fields shared across all types
     fn common(&self) -> &MultiTypeSelectionCommon;
@@ -439,20 +467,24 @@ pub type SharedUnionSelection = Rc<UnionSelection>;
 
 impl UnionSelection {
     pub fn new(
-        full_name: String,
-        schema_typename: String,
         union_type: Node<UnionType>,
+        object_common: ObjectLikeCommon,
         is_optional: bool,
+        possible_concrete_types: HashSet<String>,
     ) -> SharedUnionSelection {
         Rc::new(UnionSelection {
-            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional),
+            common: MultiTypeSelectionCommon::new(
+                is_optional,
+                object_common,
+                possible_concrete_types,
+            ),
             union_type,
         })
     }
 }
 
 impl MultiTypeSelection for UnionSelection {
-    fn get_all_members(&self, _ctx: &ShalomGlobalContext) -> Vec<String> {
+    fn get_all_direct_schema_subsets_typenames(&self, _ctx: &ShalomGlobalContext) -> Vec<String> {
         self.union_type.members.iter().cloned().collect()
     }
 
@@ -465,27 +497,31 @@ impl MultiTypeSelection for UnionSelection {
 pub struct InterfaceSelection {
     #[serde(flatten)]
     pub common: MultiTypeSelectionCommon,
-    pub interface_type: Node<InterfaceType>,
+    pub interface_type: Arc<InterfaceType>,
 }
 
 pub type SharedInterfaceSelection = Rc<InterfaceSelection>;
 
 impl InterfaceSelection {
     pub fn new(
-        full_name: String,
-        schema_typename: String,
-        interface_type: Node<InterfaceType>,
+        interface_type: Arc<InterfaceType>,
+        object_common: ObjectLikeCommon,
         is_optional: bool,
+        possible_concrete_types: HashSet<String>,
     ) -> SharedInterfaceSelection {
         Rc::new(InterfaceSelection {
-            common: MultiTypeSelectionCommon::new(full_name, schema_typename, is_optional),
+            common: MultiTypeSelectionCommon::new(
+                is_optional,
+                object_common,
+                possible_concrete_types,
+            ),
             interface_type,
         })
     }
 }
 
 impl MultiTypeSelection for InterfaceSelection {
-    fn get_all_members(&self, ctx: &ShalomGlobalContext) -> Vec<String> {
+    fn get_all_direct_schema_subsets_typenames(&self, ctx: &ShalomGlobalContext) -> Vec<String> {
         let types = ctx.schema_ctx.schema.types.iter();
         let interface_name = &self.interface_type.name;
 

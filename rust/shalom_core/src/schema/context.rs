@@ -1,6 +1,7 @@
-use crate::schema::types::{GraphQLAny, Implementor};
+use crate::schema::types::{GraphQLAny, SchemaObjectLike};
 use apollo_compiler::{validation::Valid, Node};
 use serde::{Serialize, Serializer};
+use std::collections::HashSet;
 use std::fmt::Debug;
 use std::{
     collections::HashMap,
@@ -23,8 +24,8 @@ where
 #[derive(Debug, Serialize, Clone)]
 pub(crate) struct SchemaTypesCtx {
     inputs: HashMap<String, Node<InputObjectType>>,
-    objects: HashMap<String, Node<ObjectType>>,
-    interfaces: HashMap<String, Node<InterfaceType>>,
+    objects: HashMap<String, Arc<ObjectType>>,
+    interfaces: HashMap<String, Arc<InterfaceType>>,
     unions: HashMap<String, Node<UnionType>>,
     enums: HashMap<String, Node<EnumType>>,
     scalars: HashMap<String, Node<ScalarType>>,
@@ -57,11 +58,11 @@ impl SchemaTypesCtx {
         self.inputs.insert(name, type_);
     }
 
-    pub fn add_object(&mut self, name: String, type_: Node<ObjectType>) {
+    pub fn add_object(&mut self, name: String, type_: Arc<ObjectType>) {
         self.objects.insert(name, type_);
     }
 
-    pub fn add_interface(&mut self, name: String, type_: Node<InterfaceType>) {
+    pub fn add_interface(&mut self, name: String, type_: Arc<InterfaceType>) {
         self.interfaces.insert(name, type_);
     }
 
@@ -129,13 +130,19 @@ impl SchemaContext {
         let types_ctx = self.types.lock().unwrap();
         types_ctx.get_any(name)
     }
+    pub fn get_type_strict(&self, name: &String) -> GraphQLAny {
+        let types_ctx = self.types.lock().unwrap();
+        types_ctx
+            .get_any(name)
+            .unwrap_or_else(|| panic!("Type {} not found", name))
+    }
 
     pub fn get_scalar(&self, name: &str) -> Option<Node<ScalarType>> {
         let types_ctx = self.types.lock().unwrap();
         types_ctx.scalars.get(name).cloned()
     }
 
-    pub fn get_interface(&self, name: &str) -> Option<Node<InterfaceType>> {
+    pub fn get_interface(&self, name: &str) -> Option<Arc<InterfaceType>> {
         let types_ctx = self.types.lock().unwrap();
         types_ctx.interfaces.get(name).cloned()
     }
@@ -145,7 +152,7 @@ impl SchemaContext {
         types_ctx.unions.get(name).cloned()
     }
 
-    pub fn add_object(&self, name: String, type_: Node<ObjectType>) -> anyhow::Result<()> {
+    pub fn add_object(&self, name: String, type_: Arc<ObjectType>) -> anyhow::Result<()> {
         let mut types_ctx = self
             .types
             .lock()
@@ -176,7 +183,7 @@ impl SchemaContext {
         Ok(())
     }
 
-    pub fn add_interface(&self, name: String, type_: Node<InterfaceType>) -> anyhow::Result<()> {
+    pub fn add_interface(&self, name: String, type_: Arc<InterfaceType>) -> anyhow::Result<()> {
         let mut types_ctx = self.get_types();
         types_ctx.add_interface(name, type_);
         Ok(())
@@ -203,12 +210,45 @@ impl SchemaContext {
         }
     }
 
-    pub fn is_type_implements_node(&self, type_name: &str) -> bool {
-        self.is_type_implementing_interface(type_name, "Node")
+    pub fn is_type_same_or_implementing_interface(
+        &self,
+        type_name: &str,
+        interface_name: &str,
+    ) -> bool {
+        if type_name == interface_name {
+            return true;
+        }
+        self.is_type_implementing_interface(type_name, interface_name)
+    }
+
+    pub fn get_concrete_implementors_of_interface(&self, iface: &String) -> HashSet<String> {
+        let mut ret = HashSet::new();
+        let types = self.types.lock().unwrap();
+        for object in types.objects.values() {
+            if object.implements_interfaces.contains(iface) {
+                ret.insert(object.name.clone());
+            }
+        }
+        ret
+    }
+    pub fn get_possible_concretes_for_union(&self, union_type: &UnionType) -> HashSet<String> {
+        let mut ret = HashSet::new();
+        for member in &union_type.members {
+            match self.get_type_strict(member) {
+                GraphQLAny::Interface(iface) => {
+                    ret.extend(self.get_concrete_implementors_of_interface(&iface.name));
+                }
+                GraphQLAny::Object(obj) => {
+                    ret.insert(obj.name.clone());
+                }
+                _ => (),
+            }
+        }
+        ret
     }
 }
 
-fn check_implements_recursive<I: Implementor>(
+fn check_implements_recursive<I: SchemaObjectLike>(
     implementor: &I,
     target_interface: &str,
     types_ctx: &SchemaTypesCtx,
@@ -228,4 +268,5 @@ fn check_implements_recursive<I: Implementor>(
     }
     false
 }
+
 pub type SharedSchemaContext = Arc<SchemaContext>;

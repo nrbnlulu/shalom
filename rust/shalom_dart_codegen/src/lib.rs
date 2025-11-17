@@ -2,14 +2,15 @@ use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
-use serde::Serialize;
 use shalom_core::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
     operation::{
-        context::SharedOpCtx,
-        fragments::SharedFragmentContext,
-        parse::ExecutableContext,
-        types::{dart_type_for_scalar, Selection, SelectionKind},
+        context::{ExecutableContext, OperationContext, SharedOpCtx},
+        fragments::{FragmentContext, SharedFragmentContext},
+        types::{
+            dart_type_for_scalar, FieldSelection, ObjectLikeCommon, SelectionKind,
+            SharedListSelection,
+        },
     },
     schema::{
         context::SchemaContext,
@@ -19,7 +20,7 @@ use shalom_core::{
 };
 
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     fs,
     hash::{DefaultHasher, Hash, Hasher},
     path::{Path, PathBuf},
@@ -84,9 +85,9 @@ mod ext_jinja_fns {
 
             SelectionKind::Object(object) => {
                 if object.is_optional {
-                    format!("{}?", object.full_name)
+                    format!("{}?", object.common.path_name)
                 } else {
-                    object.full_name.clone()
+                    object.common.path_name.clone()
                 }
             }
             SelectionKind::Enum(enum_) => {
@@ -98,16 +99,16 @@ mod ext_jinja_fns {
             }
             SelectionKind::Union(union) => {
                 if union.common.is_optional {
-                    format!("{}?", union.common.full_name)
+                    format!("{}?", union.common.common.path_name)
                 } else {
-                    union.common.full_name.clone()
+                    union.common.common.path_name.clone()
                 }
             }
             SelectionKind::Interface(interface) => {
                 if interface.common.is_optional {
-                    format!("{}?", interface.common.full_name)
+                    format!("{}?", interface.common.common.path_name)
                 } else {
-                    interface.common.full_name.clone()
+                    interface.common.common.path_name.clone()
                 }
             }
         }
@@ -115,7 +116,7 @@ mod ext_jinja_fns {
 
     pub fn type_name_for_selection(
         ctx: &SharedShalomGlobalContext,
-        selection: ViaDeserialize<Selection>,
+        selection: ViaDeserialize<FieldSelection>,
     ) -> String {
         type_name_for_kind_impl(ctx, &selection.0.kind)
     }
@@ -324,6 +325,7 @@ impl SymbolName for RuntimeSymbolDefinition {
         }
     }
 }
+
 #[derive(Debug, Clone)]
 pub struct CodegenOptions {
     pub pwd: Option<PathBuf>,
@@ -343,32 +345,6 @@ struct FragmentEnv<'a> {
     env: Environment<'a>,
 }
 
-/// Helper function to find pubspec.yaml and extract package name
-fn find_pubspec_and_package_name(start_path: &Path) -> Result<(PathBuf, String), String> {
-    let mut current_dir = start_path.parent();
-
-    while let Some(dir) = current_dir {
-        let potential_pubspec = dir.join("pubspec.yaml");
-        if potential_pubspec.exists() {
-            let pubspec_content = fs::read_to_string(&potential_pubspec)
-                .map_err(|e| format!("Failed to read pubspec.yaml: {}", e))?;
-
-            let package_name = pubspec_content
-                .lines()
-                .find(|line| line.trim_start().starts_with("name:"))
-                .and_then(|line| line.split(':').nth(1))
-                .map(|name| name.trim().to_string())
-                .ok_or_else(|| "Could not find 'name:' field in pubspec.yaml".to_string())?;
-
-            return Ok((potential_pubspec, package_name));
-        }
-        current_dir = dir.parent();
-    }
-
-    Err("No pubspec.yaml found".to_string())
-}
-
-// TODO: might not be good to create an environment for every operation. as it will recreate templates.
 fn register_default_template_fns<'a>(
     env: &mut Environment<'a>,
     ctx: &SharedShalomGlobalContext,
@@ -391,6 +367,7 @@ fn register_default_template_fns<'a>(
     env.add_function("panic", move |a: &str| -> minijinja::Value {
         panic!("{a}");
     });
+
     let ctx_clone = ctx.clone();
     env.add_function("type_name_for_selection", move |a: _| {
         ext_jinja_fns::type_name_for_selection(&ctx_clone, a)
@@ -447,63 +424,6 @@ fn register_default_template_fns<'a>(
         },
     );
 
-    let schema_ctx = ctx.schema_ctx.clone();
-    env.add_function("is_type_implements_node", move |type_name: &str| {
-        schema_ctx.is_type_implements_node(type_name)
-    });
-
-    let global_ctx = ctx.clone();
-    env.add_function(
-        "generate_fragment_imports",
-        move |current_file_path: String,
-              direct_fragments: Vec<minijinja::Value>|
-              -> Result<Vec<String>, minijinja::Error> {
-            // Recursively collect all fragment dependencies
-            let mut all_imports = Vec::new();
-            let mut visited = std::collections::HashSet::new();
-            let mut queue = std::collections::VecDeque::new();
-
-            // Start with direct fragments
-            for frag_val in direct_fragments {
-                if let Ok(name_val) = frag_val.get_attr("name") {
-                    if let Some(frag_name) = name_val.as_str() {
-                        queue.push_back(frag_name.to_string());
-                    }
-                }
-            }
-
-            while let Some(frag_name) = queue.pop_front() {
-                // Skip if already visited
-                if visited.contains(&frag_name) {
-                    continue;
-                }
-                visited.insert(frag_name.clone());
-
-                // Calculate import path for this fragment
-                let import_path =
-                    calculate_fragment_import_path(&global_ctx, &current_file_path, &frag_name)
-                        .map_err(|e| {
-                            minijinja::Error::new(
-                                minijinja::ErrorKind::InvalidOperation,
-                                e.to_string(),
-                            )
-                        })?;
-                all_imports.push(import_path);
-
-                // Get the fragment and add its dependencies to the queue
-                if let Some(frag) = global_ctx.get_fragment(&frag_name) {
-                    for nested_frag in frag.get_used_fragments() {
-                        if !visited.contains(&nested_frag.name) {
-                            queue.push_back(nested_frag.name.clone());
-                        }
-                    }
-                }
-            }
-
-            Ok(all_imports)
-        },
-    );
-
     env.add_function(
         "get_field_name_with_args",
         |name: &str, args: ViaDeserialize<Vec<shalom_core::operation::types::FieldArgument>>| {
@@ -516,23 +436,12 @@ fn register_default_template_fns<'a>(
 
 /// if the operation contains variables and the selection is from this operation
 /// i.e not from a fragment returns true.
-fn selection_kind_uses_variables<T: ExecutableContext>(
-    ctx: &T,
-    selection_kind: &shalom_core::operation::types::SelectionKind,
-) -> bool {
-    use shalom_core::operation::types::SelectionKind;
+fn object_like_needs_variables<T: ExecutableContext>(ctx: &T, obj_like: &ObjectLikeCommon) -> bool {
     if !ctx.has_variables() {
         return false;
     }
-    match selection_kind {
-        SelectionKind::Object(obj) => ctx.get_object_selection(&obj.full_name).is_some(),
-        SelectionKind::List(list) => selection_kind_uses_variables(ctx, &list.of_kind),
-        SelectionKind::Union(union) => ctx.get_union_types().contains_key(&union.common.full_name),
-        SelectionKind::Interface(interface) => ctx
-            .get_interface_types()
-            .contains_key(&interface.common.full_name),
-        _ => false,
-    }
+    ctx.get_selection(&obj_like.path_name).is_some()
+        || ctx.get_root().path_name == obj_like.path_name
 }
 
 fn get_field_name_with_args(
@@ -594,26 +503,21 @@ impl SchemaEnv<'_> {
 /// Collects all multi-type (interface/union) list selections from all selection objects.
 /// Returns a HashMap where the key is the full field name (e.g., "vehiclesRequired")
 /// and the value is the list selection containing the multi-type.
-fn collect_multi_type_list_selections<T>(executable_ctx: &T) -> Vec<Selection>
+fn collect_multi_type_list_selections<T>(executable_ctx: &T) -> Vec<SharedListSelection>
 where
     T: ExecutableContext,
 {
-    let union_types = executable_ctx.get_union_types();
-    let interface_types = executable_ctx.get_interface_types();
+    let typedefs = executable_ctx.typedefs();
     let mut multitype_list_selections = Vec::new();
 
-    for fullname in union_types.keys() {
-        if let Some(selection) = executable_ctx.get_list_selection(fullname) {
-            if matches!(selection.kind, SelectionKind::List(_)) {
-                multitype_list_selections.push(selection.clone());
-            }
+    for fullname in typedefs.unions.keys() {
+        if let Some(selection) = typedefs.get_list_selection(fullname) {
+            multitype_list_selections.push(selection.clone());
         }
     }
-    for fullname in interface_types.keys() {
-        if let Some(selection) = executable_ctx.get_list_selection(fullname) {
-            if matches!(selection.kind, SelectionKind::List(_)) {
-                multitype_list_selections.push(selection.clone());
-            }
+    for fullname in typedefs.interfaces.keys() {
+        if let Some(selection) = typedefs.get_list_selection(fullname) {
+            multitype_list_selections.push(selection.clone());
         }
     }
 
@@ -628,59 +532,170 @@ fn register_executable_fns<'a, T>(
 where
     T: ExecutableContext + 'static,
 {
-    let ctx_clone1 = ctx.clone();
-    let executable_ctx_clone1 = executable_ctx.clone();
+    let ctx_clone3 = ctx.clone();
+    env.add_function(
+        "get_all_selections_distinct",
+        move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
+            let selections = obj_like.0.get_all_selections_distinct(&ctx_clone3);
+            minijinja::Value::from_serialize(&selections)
+        },
+    );
 
-    env.add_function("is_type_implements_node", move |full_name: &str| {
-        if let Some(selection) =
-            executable_ctx_clone1.get_selection(&full_name.to_string(), &ctx_clone1)
-        {
-            match &selection.kind {
-                SelectionKind::Object(object_selection) => ctx_clone1
-                    .schema_ctx
-                    .is_type_implements_node(&object_selection.concrete_typename),
-                _ => false,
+    let executable_ctx_clone3 = executable_ctx.clone();
+    env.add_function(
+        "object_like_needs_variables",
+        move |selection: ViaDeserialize<ObjectLikeCommon>| -> bool {
+            object_like_needs_variables(executable_ctx_clone3.as_ref(), &selection.0)
+        },
+    );
+
+    let executable_ctx_clone = executable_ctx.clone();
+    env.add_function(
+        "generate_fragment_imports",
+        move |current_file_path: String| {
+            let mut res = Vec::new();
+            for frag in executable_ctx_clone.typedefs().flatten_used_fragments() {
+                res.push(
+                    calculate_fragment_import_path(&current_file_path, &frag).unwrap_or_else(|_| panic!("Failed to calculate import path for fragment: {}; current file: {}",
+                        frag.name(),
+                        current_file_path)),
+                );
             }
-        } else {
-            false
+            minijinja::Value::from_serialize(res)
+        },
+    );
+
+    let executable_ctx_clone2 = executable_ctx.clone();
+
+    fn collect_selections_for_concrete(
+        resolve_to: &mut ObjectLikeCommon,
+        other_obj: &ObjectLikeCommon,
+        global_ctx: &ShalomGlobalContext,
+    ) {
+        if resolve_to.schema_typename == other_obj.schema_typename
+            || global_ctx.schema_ctx.is_type_implementing_interface(
+                &resolve_to.schema_typename,
+                &other_obj.schema_typename,
+            )
+        {
+            // this object is a subset or same as the other we can safely flatten other's selections here.
+            resolve_to.selections.extend(other_obj.selections.clone());
+
+            for frag_name in &other_obj.used_fragments {
+                let fragment = global_ctx.get_fragment_strict(frag_name);
+                let frag_on_type = &fragment.get_on_type().schema_typename;
+
+                if frag_on_type == &resolve_to.schema_typename {
+                    // Fragment is exactly on this concrete type - add it to used_fragments
+                    resolve_to.used_fragments.insert(frag_name.clone());
+                } else if global_ctx
+                    .schema_ctx
+                    .is_type_implementing_interface(&resolve_to.schema_typename, frag_on_type)
+                {
+                    // Fragment is on an interface this type implements
+                    // Recursively collect fragments from it but don't add to used_fragments
+                    collect_selections_for_concrete(resolve_to, fragment.get_on_type(), global_ctx);
+                }
+            }
+
+            for frag in other_obj.used_inline_frags.values() {
+                // flatten inlinefrag selections directly on here
+                collect_selections_for_concrete(resolve_to, &frag.common, global_ctx);
+            }
+        } else if !resolve_to.contains_field("__typename") {
+            let typename_selection = other_obj
+                .get_selection("__typename")
+                .cloned()
+                .unwrap_or_else(|| {
+                    panic!(
+                        "unions and interfaces MUST select __typename. {} didn't!",
+                        other_obj.path_name
+                    )
+                });
+            resolve_to.selections.insert(typename_selection);
         }
-    });
+
+        // Also traverse type condition selections to find matching concrete types
+        info!(
+            "[collect_selections_for_concrete] Traversing {} type_cond_selections",
+            other_obj.type_cond_selections.len()
+        );
+        for (type_cond_name, type_cond_obj) in &other_obj.type_cond_selections {
+            info!(
+                "  Processing type_cond: {} (schema: {})",
+                type_cond_name, type_cond_obj.schema_typename
+            );
+            collect_selections_for_concrete(resolve_to, type_cond_obj, global_ctx);
+        }
+    }
 
     let ctx_clone2 = ctx.clone();
-    let executable_ctx_clone2 = executable_ctx.clone();
+
     env.add_function(
-        "get_id_selection",
-        move |full_name: &str| -> Option<minijinja::Value> {
-            let selection =
-                executable_ctx_clone2.get_selection(&full_name.to_string(), &ctx_clone2)?;
-            match &selection.kind {
-                SelectionKind::Object(object_selection) => object_selection
-                    .get_id_selection_with_fragments(&ctx_clone2)
-                    .map(minijinja::Value::from_serialize),
-                _ => None,
+        "multitype_selection_resolved_concretes",
+        move |fullname: &str| {
+            let fullname = fullname.to_string();
+            let multitype = executable_ctx_clone2
+                .typedefs()
+                .get_multitype_selection(&fullname)
+                .unwrap_or_else(|| panic!("{fullname} not found"));
+
+            let mut ret = Vec::new();
+            for concrete_typename in &multitype.common().possible_concrete_types {
+                let concrete_path = format!("{fullname}__{concrete_typename}");
+                let mut resolved =
+                    ObjectLikeCommon::new(concrete_path.clone(), concrete_typename.clone());
+                collect_selections_for_concrete(
+                    &mut resolved,
+                    &multitype.common().common,
+                    &ctx_clone2,
+                );
+                info!(
+                    "[multitype_selection_resolved_concretes] Concrete type '{}' final used_fragments: {:?}",
+                    concrete_typename, resolved.used_fragments
+                );
+                resolved.selections = resolved.get_all_selections_distinct(&ctx_clone2);
+                info!(
+                    "[multitype_selection_resolved_concretes] After expansion, '{}' has {} selections",
+                    concrete_typename, resolved.selections.len()
+                );
+                ret.push(resolved);
             }
+            minijinja::Value::from_serialize(ret)
+        },
+    );
+
+    let executable_ctx_clone3 = executable_ctx.clone();
+
+    env.add_function(
+        "template_log",
+        move |a: &minijinja::Value| -> minijinja::Value {
+            let template_name = &executable_ctx_clone3.get_root().path_name;
+            info!("in template for {template_name}: {a}");
+            minijinja::Value::from(0)
         },
     );
 
     let ctx_clone3 = ctx.clone();
-    let executable_ctx_clone3 = executable_ctx.clone();
-    env.add_function("get_all_selections_distinct", move |object_name: &str| {
-        let object_selection =
-            executable_ctx_clone3.get_selection(&object_name.to_string(), &ctx_clone3);
-        let selections = match &object_selection.unwrap().kind {
-            SelectionKind::Object(object_selection) => {
-                object_selection.get_all_selections_distinct(&ctx_clone3)
-            }
-            _ => panic!("Expected object selection"),
-        };
-        minijinja::Value::from_serialize(selections)
-    });
-
-    let executable_ctx_clone3 = executable_ctx.clone();
     env.add_function(
-        "selection_kind_uses_variables",
-        move |selection: ViaDeserialize<shalom_core::operation::types::SelectionKind>| -> bool {
-            selection_kind_uses_variables(executable_ctx_clone3.as_ref(), &selection.0)
+        "get_interface_level_fragments",
+        move |selection_schema_typename: &str,
+              used_fragments: ViaDeserialize<HashSet<String>>|
+              -> minijinja::Value {
+            // Filter fragments to only include those defined on the interface/union type itself
+            // Not on concrete implementors
+            let filtered: HashSet<String> = used_fragments
+                .0
+                .iter()
+                .filter(|frag_name| {
+                    let fragment = ctx_clone3.get_fragment_strict(frag_name);
+                    let frag_on_type = &fragment.get_on_type().schema_typename;
+                    // Only include if fragment is on the same type as the selection
+                    frag_on_type == selection_schema_typename
+                })
+                .cloned()
+                .collect();
+            minijinja::Value::from_serialize(filtered)
         },
     );
 
@@ -693,92 +708,55 @@ impl OperationEnv<'_> {
         register_default_template_fns(&mut env, ctx)?;
         register_executable_fns(&mut env, ctx, op_ctx.clone())?;
 
-        // Override get_id_selection for operations to also search in used fragments
-        let ctx_clone = ctx.clone();
-        let op_ctx_clone = op_ctx.clone();
-        env.add_function(
-            "get_id_selection",
-            move |full_name: &str| -> Option<minijinja::Value> {
-                // First try to find in the operation context
-                let selection = op_ctx_clone.get_selection(&full_name.to_string(), &ctx_clone)?;
-                match &selection.kind {
-                    SelectionKind::Object(object_selection) => object_selection
-                        .get_id_selection_with_fragments(&ctx_clone)
-                        .map(minijinja::Value::from_serialize),
-                    _ => None,
-                }
-            },
-        );
-
         // Add function to check if a selection is defined in a fragment (not in the operation itself)
-        let ctx_clone2 = ctx.clone();
         let op_ctx_clone2 = op_ctx.clone();
         env.add_function(
             "is_selection_from_fragment",
-            move |full_name: &str| -> bool {
+            move |path_name: &str| -> bool {
+                let path_name = path_name.to_string();
                 // Check if the selection exists in the operation's own typedefs
                 // First check if it's in the operation's own selections
-                if op_ctx_clone2
-                    .get_object_selection(&full_name.to_string())
-                    .is_some()
-                {
+                if op_ctx_clone2.get_selection(&path_name).is_some() {
                     return false;
                 }
-                if op_ctx_clone2
-                    .get_union_selection(&full_name.to_string())
-                    .is_some()
-                {
-                    return false;
-                }
-                if op_ctx_clone2
-                    .get_interface_selection(&full_name.to_string())
-                    .is_some()
-                {
-                    return false;
-                }
-
                 // If not found in operation but exists in get_selection (which searches fragments),
                 // then it must be from a fragment
-                assert!(
-                    op_ctx_clone2
-                        .get_selection(&full_name.to_string(), &ctx_clone2)
-                        .is_some(),
-                    "is_selection_from_fragment: failed to find selection"
+                for frag in op_ctx_clone2.typedefs.flatten_used_fragments() {
+                    if frag.get_selection(&path_name).is_some() {
+                        return true;
+                    }
+                }
+                panic!(
+                    "is_selection_from_fragment: failed to find selection {}",
+                    path_name
                 );
-                true
             },
         );
-
         Ok(OperationEnv { env })
     }
 
-    fn render_operation<S: Serialize, T: Serialize>(
+    fn render_operation(
         &self,
-        operations_ctx: S,
-        schema_ctx: T,
+        operation_ctx: &OperationContext,
         custom_scalar_imports: HashMap<String, String>,
         schema_import_path: String,
-        multi_type_list_selections: Vec<Selection>,
+        multi_type_list_selections: Vec<SharedListSelection>,
     ) -> String {
         let template = self.env.get_template("operation").unwrap();
-        let mut context = HashMap::new();
-
-        context.insert("schema", context! { context => schema_ctx });
-        context.insert("operation", context! { context => operations_ctx });
-        context.insert(
-            "custom_scalar_imports",
-            minijinja::Value::from(custom_scalar_imports),
-        );
-        context.insert(
-            "schema_import_path",
-            minijinja::Value::from(schema_import_path),
-        );
-        context.insert(
-            "multi_type_list_selections",
-            minijinja::Value::from_serialize(&multi_type_list_selections),
-        );
-
-        template.render(&context).unwrap()
+        let mut resolved_query = operation_ctx.query.clone();
+        for frag in operation_ctx.typedefs.flatten_used_fragments() {
+            resolved_query.push_str(format!("\n {}", frag.fragment_raw).as_str());
+        }
+        let ctx = context! {
+            context => context!{
+                operation => operation_ctx,
+                custom_scalar_imports => custom_scalar_imports,
+                schema_import_path => schema_import_path,
+                multi_type_list_selections => multi_type_list_selections,
+                resolved_query => resolved_query
+            }
+        };
+        template.render(&ctx).unwrap()
     }
 }
 
@@ -788,40 +766,46 @@ impl FragmentEnv<'_> {
         fragment_ctx: SharedFragmentContext,
     ) -> anyhow::Result<Self> {
         let mut env = Environment::new();
-        register_default_template_fns(&mut env, ctx)?;
-        register_executable_fns(&mut env, ctx, fragment_ctx)?;
+        let ctx_clone = ctx.clone();
+        register_default_template_fns(&mut env, &ctx_clone)?;
+        let frag_ctx_clone = fragment_ctx.clone();
+        register_executable_fns(&mut env, ctx, frag_ctx_clone)?;
+        let frag_ctx_clone1 = fragment_ctx.clone();
+        let ctx_clone1 = ctx.clone();
+
+        env.add_function("frag_root_shared_selections", move || {
+            let selections = frag_ctx_clone1
+                .get_root()
+                .get_all_selections_that_apply_on_this_type_only(&ctx_clone1);
+            minijinja::value::Value::from_serialize(selections)
+        });
+
         Ok(FragmentEnv { env })
     }
 
-    fn render_fragment<S: Serialize, T: Serialize>(
+    fn render_fragment(
         &self,
-        fragment_ctx: S,
-        schema_ctx: T,
+        fragment_ctx: SharedFragmentContext,
         custom_scalar_imports: HashMap<String, String>,
         schema_path: String,
-        fragment_file_path: PathBuf,
-        multi_type_list_selections: Vec<Selection>,
+        multi_type_list_selections: Vec<SharedListSelection>,
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
-        let mut context = HashMap::new();
 
-        context.insert("schema", context! { context => schema_ctx });
-        context.insert("fragment", context! { context => fragment_ctx });
-        context.insert(
-            "custom_scalar_imports",
-            minijinja::Value::from(custom_scalar_imports),
-        );
-        context.insert("schema_import_path", minijinja::Value::from(schema_path));
-        context.insert(
-            "fragment_file_path",
-            minijinja::Value::from(fragment_file_path.to_string_lossy().to_string()),
-        );
-        context.insert(
-            "multi_type_list_selections",
-            minijinja::Value::from_serialize(&multi_type_list_selections),
-        );
+        // Extract file_path as a string since it's skipped during serialization
+        let fragment_file_path = fragment_ctx.file_path.to_string_lossy().to_string();
 
-        template.render(&context).unwrap()
+        let ctx = context! {
+            context => context!{
+                fragment => fragment_ctx,
+                fragment_file_path => fragment_file_path,
+                schema_import_path => schema_path,
+                custom_scalar_imports => custom_scalar_imports,
+                multi_type_list_selections => multi_type_list_selections,
+            }
+        };
+
+        template.render(&ctx).unwrap()
     }
 }
 
@@ -866,25 +850,17 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
 
 /// Calculate the import path for a fragment from an operation file
 fn calculate_fragment_import_path(
-    global_ctx: &SharedShalomGlobalContext,
     operation_file_path: &str,
-    frag_name: &str,
+    fragment: &FragmentContext,
 ) -> anyhow::Result<String> {
     let op_path = PathBuf::from(operation_file_path);
-    let fragment = global_ctx
-        .get_fragment(frag_name)
-        .ok_or_else(|| anyhow::anyhow!("Fragment '{}' not found", frag_name))?;
 
-    // Find pubspec.yaml for both operation and fragment
-    let (op_pubspec, _op_package) =
-        find_pubspec_and_package_name(&op_path).map_err(|e| anyhow::anyhow!("{}", e))?;
-    let (frag_pubspec, frag_package) =
-        find_pubspec_and_package_name(&fragment.file_path).map_err(|e| anyhow::anyhow!("{}", e))?;
+    let frag_name = &fragment.name;
 
     // Get the directory containing operation file
     let op_dir = op_path
         .parent()
-        .ok_or_else(|| anyhow::anyhow!("Invalid operation file path"))?;
+        .ok_or_else(|| anyhow::anyhow!("Invalid operation file path {}", operation_file_path))?;
 
     // Calculate the __graphql__ directory for the operation
     let op_graphql_dir = op_dir.join("__graphql__");
@@ -909,23 +885,6 @@ fn calculate_fragment_import_path(
     if op_graphql_dir == frag_parent_dir.join("__graphql__") {
         log::debug!("Same directory, using simple relative import");
         return Ok(format!("{}.shalom.dart", frag_name));
-    }
-
-    // If in different packages, use package import
-    if op_pubspec != frag_pubspec {
-        let frag_package_root = frag_pubspec
-            .parent()
-            .ok_or_else(|| anyhow::anyhow!("Invalid pubspec.yaml path"))?;
-
-        let relative_path = frag_generated_path
-            .strip_prefix(frag_package_root)
-            .map_err(|e| anyhow::anyhow!("Fragment path is not within package root: {}", e))?;
-
-        return Ok(format!(
-            "package:{}/{}",
-            frag_package,
-            relative_path.to_string_lossy().replace('\\', "/")
-        ));
     }
 
     // Same package, different directories - use relative path from operation __graphql__ dir
@@ -968,8 +927,7 @@ fn generate_operations_file(
     let multi_type_list_selections = collect_multi_type_list_selections(operation.as_ref());
 
     let rendered_content = op_env.render_operation(
-        operation,
-        ctx.schema_ctx.clone(),
+        &operation,
         custom_scalar_imports,
         get_schema_import_path(&operation_file_path, ctx),
         multi_type_list_selections,
@@ -988,17 +946,14 @@ fn generate_fragment_file(
     custom_scalar_imports: HashMap<String, String>,
 ) -> anyhow::Result<()> {
     let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone())?;
-    let fragment_file_path = fragment_ctx.file_path.clone();
 
     // Collect multi-type list selections
     let multi_type_list_selections = collect_multi_type_list_selections(fragment_ctx.as_ref());
 
     let generated_content = fragment_env.render_fragment(
-        context! { context => fragment_ctx },
-        context! { context => &ctx.schema_ctx },
+        fragment_ctx.clone(),
         custom_scalar_imports,
         get_schema_import_path(&fragment_ctx.file_path, ctx),
-        fragment_file_path,
         multi_type_list_selections,
     );
 
