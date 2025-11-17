@@ -2,6 +2,7 @@ import 'package:shalom_core/shalom_core.dart';
 // Add this import for reliable Set comparison
 import 'package:collection/collection.dart';
 
+
 typedef HeadersType = List<(String, String)>;
 
 abstract class GraphQLLink {
