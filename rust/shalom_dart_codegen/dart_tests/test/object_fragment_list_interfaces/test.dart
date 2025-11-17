@@ -112,197 +112,212 @@ void main() {
     };
 
     test(
-        'objectFragmentListInterfacesRequired - Object with fragment containing list of interfaces deserializes',
-        () {
-      final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-      final result = GetLibraryWithCollectionResponse.fromResponse(
-        libraryData,
-        variables: variables,
-      );
+      'objectFragmentListInterfacesRequired - Object with fragment containing list of interfaces deserializes',
+      () {
+        final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
+        final result = GetLibraryWithCollectionResponse.fromResponse(
+          libraryData,
+          variables: variables,
+        );
 
-      // Test access to top-level object fields
-      expect(result.library?.id, "lib1");
-      expect(result.library?.name, "Central Library");
+        // Test access to top-level object fields
+        expect(result.library?.id, "lib1");
+        expect(result.library?.name, "Central Library");
 
-      // Test access to nested object fields
-      expect(result.library?.collection.id, "col1");
-      expect(result.library?.collection.title, "Best of 2024");
-      expect(result.library?.collection.description, "Top media from 2024");
+        // Test access to nested object fields
+        expect(result.library?.collection.id, "col1");
+        expect(result.library?.collection.title, "Best of 2024");
+        expect(result.library?.collection.description, "Top media from 2024");
 
-      // Test access to fragment fields - list of interfaces
-      expect(result.library?.collection.items, isNotNull);
-      expect(result.library?.collection.items.length, 3);
+        // Test access to fragment fields - list of interfaces
+        expect(result.library?.collection.items, isNotNull);
+        expect(result.library?.collection.items.length, 3);
 
-      // Test first item (Book)
-      final book = result.library?.collection.items[0];
-      expect(book, isA<CollectionDetailsFrag_items__Book>());
-      if (book is CollectionDetailsFrag_items__Book) {
-        expect(book.$__typename, "Book");
-        expect(book.id, "book1");
-        expect(book.title, "The Great Novel");
-        expect(book.year, 2024);
-        expect(book.author, "Jane Doe");
-        expect(book.pages, 450);
-      }
+        // Test first item (Book)
+        final book = result.library?.collection.items[0];
+        expect(book, isA<CollectionDetailsFrag_items__Book>());
+        if (book is CollectionDetailsFrag_items__Book) {
+          expect(book.$__typename, "Book");
+          expect(book.id, "book1");
+          expect(book.title, "The Great Novel");
+          expect(book.year, 2024);
+          expect(book.author, "Jane Doe");
+          expect(book.pages, 450);
+        }
 
-      // Test second item (Movie)
-      final movie = result.library?.collection.items[1];
-      expect(movie, isA<CollectionDetailsFrag_items__Movie>());
-      if (movie is CollectionDetailsFrag_items__Movie) {
-        expect(movie.$__typename, "Movie");
-        expect(movie.id, "movie1");
-        expect(movie.title, "Epic Adventure");
-        expect(movie.year, 2024);
-        expect(movie.director, "John Smith");
-        expect(movie.duration, 150);
-      }
+        // Test second item (Movie)
+        final movie = result.library?.collection.items[1];
+        expect(movie, isA<CollectionDetailsFrag_items__Movie>());
+        if (movie is CollectionDetailsFrag_items__Movie) {
+          expect(movie.$__typename, "Movie");
+          expect(movie.id, "movie1");
+          expect(movie.title, "Epic Adventure");
+          expect(movie.year, 2024);
+          expect(movie.director, "John Smith");
+          expect(movie.duration, 150);
+        }
 
-      // Test third item (Music)
-      final music = result.library?.collection.items[2];
-      expect(music, isA<CollectionDetailsFrag_items__Music>());
-      if (music is CollectionDetailsFrag_items__Music) {
-        expect(music.$__typename, "Music");
-        expect(music.id, "music1");
-        expect(music.title, "Summer Hits");
-        expect(music.year, 2024);
-        expect(music.artist, "The Band");
-        expect(music.genre, "Pop");
-      }
+        // Test third item (Music)
+        final music = result.library?.collection.items[2];
+        expect(music, isA<CollectionDetailsFrag_items__Music>());
+        if (music is CollectionDetailsFrag_items__Music) {
+          expect(music.$__typename, "Music");
+          expect(music.id, "music1");
+          expect(music.title, "Summer Hits");
+          expect(music.year, 2024);
+          expect(music.artist, "The Band");
+          expect(music.genre, "Pop");
+        }
 
-      // Test fragment scalar fields
-      expect(result.library?.collection.curator, "Alice Johnson");
-      expect(result.library?.collection.createdAt, "2024-01-15");
-    });
-
-    test(
-        'objectFragmentListInterfacesOptional - Optional fields are accessible',
-        () {
-      final variables = GetLibraryWithCollectionVariables(libraryId: "lib2");
-      final result = GetLibraryWithCollectionResponse.fromResponse(
-        libraryDataNoDescription,
-        variables: variables,
-      );
-
-      // Verify optional description field can be null
-      expect(result.library?.collection.description, null);
-
-      // Verify list still works with single item
-      expect(result.library?.collection.items.length, 1);
-
-      final book = result.library?.collection.items[0];
-      expect(book, isA<CollectionDetailsFrag_items__Book>());
-      if (book is CollectionDetailsFrag_items__Book) {
-        expect(book.$__typename, "Book");
-        expect(book.author, "F. Scott Fitzgerald");
-        expect(book.pages, 180);
-      }
-    });
+        // Test fragment scalar fields
+        expect(result.library?.collection.curator, "Alice Johnson");
+        expect(result.library?.collection.createdAt, "2024-01-15");
+      },
+    );
 
     test(
-        'objectFragmentListInterfacesCacheNormalization - Cache updates work with nested fragment and list of interfaces',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
+      'objectFragmentListInterfacesOptional - Optional fields are accessible',
+      () {
+        final variables = GetLibraryWithCollectionVariables(libraryId: "lib2");
+        final result = GetLibraryWithCollectionResponse.fromResponse(
+          libraryDataNoDescription,
+          variables: variables,
+        );
 
-      var (result, updateCtx) =
-          GetLibraryWithCollectionResponse.fromResponseImpl(
-        libraryData,
-        ctx,
-        variables,
-      );
+        // Verify optional description field can be null
+        expect(result.library?.collection.description, null);
 
-      final hasChanged = Completer<bool>();
+        // Verify list still works with single item
+        expect(result.library?.collection.items.length, 1);
 
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetLibraryWithCollectionResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      // Update with changed library name
-      final nextResult = GetLibraryWithCollectionResponse.fromResponse(
-        libraryDataUpdated,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.library?.name, "Central Library - Updated");
-
-      // Verify list of interfaces is still accessible after cache update
-      expect(result.library?.collection.items.length, 3);
-
-      // Verify items through type checking
-      final item0 = result.library?.collection.items[0];
-      if (item0 is CollectionDetailsFrag_items__Book) {
-        expect(item0.id, "book1");
-      }
-
-      final item1 = result.library?.collection.items[1];
-      if (item1 is CollectionDetailsFrag_items__Movie) {
-        expect(item1.id, "movie1");
-      }
-
-      final item2 = result.library?.collection.items[2];
-      if (item2 is CollectionDetailsFrag_items__Music) {
-        expect(item2.id, "music1");
-      }
-
-      // Verify fragment fields are accessible
-      expect(result.library?.collection.curator, "Alice Johnson");
-      expect(result.library?.collection.createdAt, "2024-01-15");
-    });
+        final book = result.library?.collection.items[0];
+        expect(book, isA<CollectionDetailsFrag_items__Book>());
+        if (book is CollectionDetailsFrag_items__Book) {
+          expect(book.$__typename, "Book");
+          expect(book.author, "F. Scott Fitzgerald");
+          expect(book.pages, 180);
+        }
+      },
+    );
 
     test(
-        'objectFragmentListInterfacesEquals - Equality works with fragment and list of interfaces',
-        () {
-      final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-      final result1 = GetLibraryWithCollectionResponse.fromResponse(
-        libraryData,
-        variables: variables,
-      );
-      final result2 = GetLibraryWithCollectionResponse.fromResponse(
-        libraryData,
-        variables: variables,
-      );
+      'objectFragmentListInterfacesCacheNormalization - Cache updates work with nested fragment and list of interfaces',
+      () async {
+        final ctx = ShalomCtx.withCapacity();
+        final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
 
-      expect(result1, equals(result2));
+        var (
+          result,
+          updateCtx,
+        ) = GetLibraryWithCollectionResponse.fromResponseImpl(
+          libraryData,
+          ctx,
+          variables,
+        );
 
-      // Verify nested objects with fragments are also equal
-      expect(result1.library?.collection, equals(result2.library?.collection));
+        final hasChanged = Completer<bool>();
 
-      // Verify list items are equal
-      expect(result1.library?.collection.items,
-          equals(result2.library?.collection.items));
-    });
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetLibraryWithCollectionResponse.fromCache(
+            newCtx,
+            variables,
+          );
+          hasChanged.complete(true);
+        });
+
+        // Update with changed library name
+        final nextResult = GetLibraryWithCollectionResponse.fromResponse(
+          libraryDataUpdated,
+          ctx: ctx,
+          variables: variables,
+        );
+
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+        expect(result.library?.name, "Central Library - Updated");
+
+        // Verify list of interfaces is still accessible after cache update
+        expect(result.library?.collection.items.length, 3);
+
+        // Verify items through type checking
+        final item0 = result.library?.collection.items[0];
+        if (item0 is CollectionDetailsFrag_items__Book) {
+          expect(item0.id, "book1");
+        }
+
+        final item1 = result.library?.collection.items[1];
+        if (item1 is CollectionDetailsFrag_items__Movie) {
+          expect(item1.id, "movie1");
+        }
+
+        final item2 = result.library?.collection.items[2];
+        if (item2 is CollectionDetailsFrag_items__Music) {
+          expect(item2.id, "music1");
+        }
+
+        // Verify fragment fields are accessible
+        expect(result.library?.collection.curator, "Alice Johnson");
+        expect(result.library?.collection.createdAt, "2024-01-15");
+      },
+    );
 
     test(
-        'objectFragmentListInterfacesToJson - Serialization includes fragment fields and list of interfaces',
-        () {
-      final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-      final result = GetLibraryWithCollectionResponse.fromResponse(
-        libraryData,
-        variables: variables,
-      );
-      final json = result.toJson();
+      'objectFragmentListInterfacesEquals - Equality works with fragment and list of interfaces',
+      () {
+        final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
+        final result1 = GetLibraryWithCollectionResponse.fromResponse(
+          libraryData,
+          variables: variables,
+        );
+        final result2 = GetLibraryWithCollectionResponse.fromResponse(
+          libraryData,
+          variables: variables,
+        );
 
-      expect(json, libraryData);
+        expect(result1, equals(result2));
 
-      // Verify fragment fields are properly serialized
-      expect(json["library"]?["collection"]?["curator"], "Alice Johnson");
-      expect(json["library"]?["collection"]?["createdAt"], "2024-01-15");
+        // Verify nested objects with fragments are also equal
+        expect(
+          result1.library?.collection,
+          equals(result2.library?.collection),
+        );
 
-      // Verify list of interfaces is properly serialized
-      final items = json["library"]?["collection"]?["items"] as List?;
-      expect(items?.length, 3);
-      expect(items?[0]?["__typename"], "Book");
-      expect(items?[0]?["author"], "Jane Doe");
-      expect(items?[1]?["__typename"], "Movie");
-      expect(items?[1]?["director"], "John Smith");
-      expect(items?[2]?["__typename"], "Music");
-      expect(items?[2]?["artist"], "The Band");
-    });
+        // Verify list items are equal
+        expect(
+          result1.library?.collection.items,
+          equals(result2.library?.collection.items),
+        );
+      },
+    );
+
+    test(
+      'objectFragmentListInterfacesToJson - Serialization includes fragment fields and list of interfaces',
+      () {
+        final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
+        final result = GetLibraryWithCollectionResponse.fromResponse(
+          libraryData,
+          variables: variables,
+        );
+        final json = result.toJson();
+
+        expect(json, libraryData);
+
+        // Verify fragment fields are properly serialized
+        expect(json["library"]?["collection"]?["curator"], "Alice Johnson");
+        expect(json["library"]?["collection"]?["createdAt"], "2024-01-15");
+
+        // Verify list of interfaces is properly serialized
+        final items = json["library"]?["collection"]?["items"] as List?;
+        expect(items?.length, 3);
+        expect(items?[0]?["__typename"], "Book");
+        expect(items?[0]?["author"], "Jane Doe");
+        expect(items?[1]?["__typename"], "Movie");
+        expect(items?[1]?["director"], "John Smith");
+        expect(items?[2]?["__typename"], "Music");
+        expect(items?[2]?["artist"], "The Band");
+      },
+    );
   });
 
   group('Object Fragment List Interfaces - GetLibraryWithCollectionPartial',
@@ -370,127 +385,145 @@ void main() {
     };
 
     test(
-        'objectFragmentListInterfacesRequired - Partial query without description field',
-        () {
-      final variables =
-          GetLibraryWithCollectionPartialVariables(libraryId: "lib3");
-      final result = GetLibraryWithCollectionPartialResponse.fromResponse(
-        partialData,
-        variables: variables,
-      );
+      'objectFragmentListInterfacesRequired - Partial query without description field',
+      () {
+        final variables = GetLibraryWithCollectionPartialVariables(
+          libraryId: "lib3",
+        );
+        final result = GetLibraryWithCollectionPartialResponse.fromResponse(
+          partialData,
+          variables: variables,
+        );
 
-      expect(result.library?.id, "lib3");
-      expect(result.library?.name, "Academic Library");
-      expect(result.library?.collection.title, "Research Papers");
+        expect(result.library?.id, "lib3");
+        expect(result.library?.name, "Academic Library");
+        expect(result.library?.collection.title, "Research Papers");
 
-      // Verify fragment fields including list of interfaces
-      expect(result.library?.collection.items.length, 2);
+        // Verify fragment fields including list of interfaces
+        expect(result.library?.collection.items.length, 2);
 
-      final book1 = result.library?.collection.items[0];
-      expect(book1, isA<CollectionDetailsFrag_items__Book>());
-      if (book1 is CollectionDetailsFrag_items__Book) {
-        expect(book1.title, "Advanced Physics");
-        expect(book1.author, "Dr. Smith");
-      }
+        final book1 = result.library?.collection.items[0];
+        expect(book1, isA<CollectionDetailsFrag_items__Book>());
+        if (book1 is CollectionDetailsFrag_items__Book) {
+          expect(book1.title, "Advanced Physics");
+          expect(book1.author, "Dr. Smith");
+        }
 
-      final book2 = result.library?.collection.items[1];
-      expect(book2, isA<CollectionDetailsFrag_items__Book>());
-      if (book2 is CollectionDetailsFrag_items__Book) {
-        expect(book2.title, "Modern Chemistry");
-        expect(book2.author, "Dr. Jones");
-      }
+        final book2 = result.library?.collection.items[1];
+        expect(book2, isA<CollectionDetailsFrag_items__Book>());
+        if (book2 is CollectionDetailsFrag_items__Book) {
+          expect(book2.title, "Modern Chemistry");
+          expect(book2.author, "Dr. Jones");
+        }
 
-      expect(result.library?.collection.curator, "Prof. Anderson");
-    });
-
-    test(
-        'objectFragmentListInterfacesOptional - List of interfaces with single type',
-        () {
-      final variables =
-          GetLibraryWithCollectionPartialVariables(libraryId: "lib3");
-      final result = GetLibraryWithCollectionPartialResponse.fromResponse(
-        partialData,
-        variables: variables,
-      );
-
-      // Verify all items in the list are of the same interface implementation
-      final allBooks = result.library?.collection.items
-          .every((item) => item is CollectionDetailsFrag_items__Book);
-      expect(allBooks, true);
-    });
+        expect(result.library?.collection.curator, "Prof. Anderson");
+      },
+    );
 
     test(
-        'objectFragmentListInterfacesCacheNormalization - Partial query cache updates',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables =
-          GetLibraryWithCollectionPartialVariables(libraryId: "lib3");
+      'objectFragmentListInterfacesOptional - List of interfaces with single type',
+      () {
+        final variables = GetLibraryWithCollectionPartialVariables(
+          libraryId: "lib3",
+        );
+        final result = GetLibraryWithCollectionPartialResponse.fromResponse(
+          partialData,
+          variables: variables,
+        );
 
-      var (result, updateCtx) =
-          GetLibraryWithCollectionPartialResponse.fromResponseImpl(
-        partialData,
-        ctx,
-        variables,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetLibraryWithCollectionPartialResponse.fromCache(
-            newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetLibraryWithCollectionPartialResponse.fromResponse(
-        partialDataUpdated,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.library?.collection.title, "Research Papers - Updated");
-
-      // Verify list is preserved
-      expect(result.library?.collection.items.length, 2);
-    });
-
-    test('objectFragmentListInterfacesEquals - Equality with partial query',
-        () {
-      final variables =
-          GetLibraryWithCollectionPartialVariables(libraryId: "lib3");
-      final result1 = GetLibraryWithCollectionPartialResponse.fromResponse(
-        partialData,
-        variables: variables,
-      );
-      final result2 = GetLibraryWithCollectionPartialResponse.fromResponse(
-        partialData,
-        variables: variables,
-      );
-
-      expect(result1, equals(result2));
-      expect(result1.library?.collection.items,
-          equals(result2.library?.collection.items));
-    });
+        // Verify all items in the list are of the same interface implementation
+        final allBooks = result.library?.collection.items.every(
+          (item) => item is CollectionDetailsFrag_items__Book,
+        );
+        expect(allBooks, true);
+      },
+    );
 
     test(
-        'objectFragmentListInterfacesToJson - Serialization with partial query',
-        () {
-      final variables =
-          GetLibraryWithCollectionPartialVariables(libraryId: "lib3");
-      final result = GetLibraryWithCollectionPartialResponse.fromResponse(
-        partialData,
-        variables: variables,
-      );
-      final json = result.toJson();
+      'objectFragmentListInterfacesCacheNormalization - Partial query cache updates',
+      () async {
+        final ctx = ShalomCtx.withCapacity();
+        final variables = GetLibraryWithCollectionPartialVariables(
+          libraryId: "lib3",
+        );
 
-      expect(json, partialData);
+        var (
+          result,
+          updateCtx,
+        ) = GetLibraryWithCollectionPartialResponse.fromResponseImpl(
+          partialData,
+          ctx,
+          variables,
+        );
 
-      final items = json["library"]?["collection"]?["items"] as List?;
-      expect(items?.length, 2);
-      expect(items?[0]?["author"], "Dr. Smith");
-      expect(items?[1]?["author"], "Dr. Jones");
-    });
+        final hasChanged = Completer<bool>();
+
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetLibraryWithCollectionPartialResponse.fromCache(
+            newCtx,
+            variables,
+          );
+          hasChanged.complete(true);
+        });
+
+        final nextResult = GetLibraryWithCollectionPartialResponse.fromResponse(
+          partialDataUpdated,
+          ctx: ctx,
+          variables: variables,
+        );
+
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+        expect(result.library?.collection.title, "Research Papers - Updated");
+
+        // Verify list is preserved
+        expect(result.library?.collection.items.length, 2);
+      },
+    );
+
+    test(
+      'objectFragmentListInterfacesEquals - Equality with partial query',
+      () {
+        final variables = GetLibraryWithCollectionPartialVariables(
+          libraryId: "lib3",
+        );
+        final result1 = GetLibraryWithCollectionPartialResponse.fromResponse(
+          partialData,
+          variables: variables,
+        );
+        final result2 = GetLibraryWithCollectionPartialResponse.fromResponse(
+          partialData,
+          variables: variables,
+        );
+
+        expect(result1, equals(result2));
+        expect(
+          result1.library?.collection.items,
+          equals(result2.library?.collection.items),
+        );
+      },
+    );
+
+    test(
+      'objectFragmentListInterfacesToJson - Serialization with partial query',
+      () {
+        final variables = GetLibraryWithCollectionPartialVariables(
+          libraryId: "lib3",
+        );
+        final result = GetLibraryWithCollectionPartialResponse.fromResponse(
+          partialData,
+          variables: variables,
+        );
+        final json = result.toJson();
+
+        expect(json, partialData);
+
+        final items = json["library"]?["collection"]?["items"] as List?;
+        expect(items?.length, 2);
+        expect(items?[0]?["author"], "Dr. Smith");
+        expect(items?[1]?["author"], "Dr. Jones");
+      },
+    );
   });
 }

@@ -6,9 +6,7 @@ void main() {
   group("required inputs with defaults", () {
     test("requiredInputWithDefaultsRequired", () {
       final req = RequestGetData(
-        variables: GetDataVariables(
-          input: RequiredInputWithDefaults(),
-        ),
+        variables: GetDataVariables(input: RequiredInputWithDefaults()),
       ).toRequest();
       expect(req.variables, {
         "input": {"id": "default_id", "name": "default_name", "count": 42},
@@ -18,8 +16,10 @@ void main() {
     test("requiredInputWithDefaultsOverride", () {
       final req = RequestGetData(
         variables: GetDataVariables(
-          input:
-              RequiredInputWithDefaults(id: "custom_id", name: "custom_name"),
+          input: RequiredInputWithDefaults(
+            id: "custom_id",
+            name: "custom_name",
+          ),
         ),
       ).toRequest();
       expect(req.variables, {
@@ -29,8 +29,11 @@ void main() {
 
     test("toJson", () {
       final input = RequiredInputWithDefaults();
-      expect(input.toJson(),
-          {"id": "default_id", "name": "default_name", "count": 42});
+      expect(input.toJson(), {
+        "id": "default_id",
+        "name": "default_name",
+        "count": 42,
+      });
     });
 
     test("equals", () {
