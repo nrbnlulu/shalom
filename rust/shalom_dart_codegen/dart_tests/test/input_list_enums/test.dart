@@ -26,8 +26,9 @@ void main() {
       expect(newVariables.foo, [Gender.FEMALE, Gender.ANDRIGONOS]);
       expect(newVariables == variables, false);
 
-      final request =
-          RequestInputListEnumRequired(variables: variables).toRequest();
+      final request = RequestInputListEnumRequired(
+        variables: variables,
+      ).toRequest();
       expect(request.variables, {
         'foo': ['MALE', 'FEMALE', 'ANDRIGONOS'],
       });

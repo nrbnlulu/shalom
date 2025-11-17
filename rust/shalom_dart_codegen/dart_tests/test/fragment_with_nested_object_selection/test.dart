@@ -35,115 +35,121 @@ void main() {
     };
 
     test(
-        'fragmentWithNestedObjectRequired - Fragment with nested object deserializes',
-        () {
-      final variables = GetPostWithDetailsVariables(postId: "post1");
-      final result = GetPostWithDetailsResponse.fromResponse(
-        postWithDetailsData,
-        variables: variables,
-      );
+      'fragmentWithNestedObjectRequired - Fragment with nested object deserializes',
+      () {
+        final variables = GetPostWithDetailsVariables(postId: "post1");
+        final result = GetPostWithDetailsResponse.fromResponse(
+          postWithDetailsData,
+          variables: variables,
+        );
 
-      // Test access to top-level fields
-      expect(result.post?.id, "post1");
-      expect(result.post?.title, "GraphQL Best Practices");
-      expect(result.post?.content, "Content about GraphQL...");
+        // Test access to top-level fields
+        expect(result.post?.id, "post1");
+        expect(result.post?.title, "GraphQL Best Practices");
+        expect(result.post?.content, "Content about GraphQL...");
 
-      // Test access to nested object fields defined in fragment
-      expect(result.post?.author.id, "author1");
-      expect(result.post?.author.name, "Alice Johnson");
-      expect(result.post?.author.email, "alice@example.com");
-      expect(result.post?.author.bio, "GraphQL enthusiast");
-    });
-
-    test(
-        'fragmentWithNestedObjectOptional - Nested object fields are accessible',
-        () {
-      final variables = GetPostWithDetailsVariables(postId: "post1");
-      final result = GetPostWithDetailsResponse.fromResponse(
-        postWithDetailsData,
-        variables: variables,
-      );
-
-      // Verify nested object can be accessed and used
-      final author = result.post?.author;
-      expect(author?.id, "author1");
-      expect(author?.name, "Alice Johnson");
-
-      // Verify optional field in nested object
-      expect(author?.bio, "GraphQL enthusiast");
-    });
+        // Test access to nested object fields defined in fragment
+        expect(result.post?.author.id, "author1");
+        expect(result.post?.author.name, "Alice Johnson");
+        expect(result.post?.author.email, "alice@example.com");
+        expect(result.post?.author.bio, "GraphQL enthusiast");
+      },
+    );
 
     test(
-        'fragmentWithNestedObjectCacheNormalization - Cache updates work with nested objects',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetPostWithDetailsVariables(postId: "post1");
+      'fragmentWithNestedObjectOptional - Nested object fields are accessible',
+      () {
+        final variables = GetPostWithDetailsVariables(postId: "post1");
+        final result = GetPostWithDetailsResponse.fromResponse(
+          postWithDetailsData,
+          variables: variables,
+        );
 
-      var (result, updateCtx) = GetPostWithDetailsResponse.fromResponseImpl(
-        postWithDetailsData,
-        ctx,
-        variables,
-      );
+        // Verify nested object can be accessed and used
+        final author = result.post?.author;
+        expect(author?.id, "author1");
+        expect(author?.name, "Alice Johnson");
 
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetPostWithDetailsResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      // Update with changed title
-      final nextResult = GetPostWithDetailsResponse.fromResponse(
-        postWithDetailsDataChangedTitle,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.post?.title, "GraphQL Advanced Practices");
-
-      // Verify nested object is still accessible after cache update
-      expect(result.post?.author.id, "author1");
-      expect(result.post?.author.name, "Alice Johnson");
-    });
-
-    test('fragmentWithNestedObjectEquals - Equality works with nested objects',
-        () {
-      final variables = GetPostWithDetailsVariables(postId: "post1");
-      final result1 = GetPostWithDetailsResponse.fromResponse(
-        postWithDetailsData,
-        variables: variables,
-      );
-      final result2 = GetPostWithDetailsResponse.fromResponse(
-        postWithDetailsData,
-        variables: variables,
-      );
-
-      expect(result1, equals(result2));
-      expect(result1.hashCode, equals(result2.hashCode));
-
-      // Verify nested objects are also equal
-      expect(result1.post?.author, equals(result2.post?.author));
-    });
+        // Verify optional field in nested object
+        expect(author?.bio, "GraphQL enthusiast");
+      },
+    );
 
     test(
-        'fragmentWithNestedObjectToJson - Serialization includes nested objects',
-        () {
-      final variables = GetPostWithDetailsVariables(postId: "post1");
-      final result = GetPostWithDetailsResponse.fromResponse(
-        postWithDetailsData,
-        variables: variables,
-      );
-      final json = result.toJson();
+      'fragmentWithNestedObjectCacheNormalization - Cache updates work with nested objects',
+      () async {
+        final ctx = ShalomCtx.withCapacity();
+        final variables = GetPostWithDetailsVariables(postId: "post1");
 
-      expect(json, postWithDetailsData);
+        var (result, updateCtx) = GetPostWithDetailsResponse.fromResponseImpl(
+          postWithDetailsData,
+          ctx,
+          variables,
+        );
 
-      // Verify nested object is properly serialized
-      expect(json["post"]?["author"]?["id"], "author1");
-      expect(json["post"]?["author"]?["name"], "Alice Johnson");
-    });
+        final hasChanged = Completer<bool>();
+
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetPostWithDetailsResponse.fromCache(newCtx, variables);
+          hasChanged.complete(true);
+        });
+
+        // Update with changed title
+        final nextResult = GetPostWithDetailsResponse.fromResponse(
+          postWithDetailsDataChangedTitle,
+          ctx: ctx,
+          variables: variables,
+        );
+
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+        expect(result.post?.title, "GraphQL Advanced Practices");
+
+        // Verify nested object is still accessible after cache update
+        expect(result.post?.author.id, "author1");
+        expect(result.post?.author.name, "Alice Johnson");
+      },
+    );
+
+    test(
+      'fragmentWithNestedObjectEquals - Equality works with nested objects',
+      () {
+        final variables = GetPostWithDetailsVariables(postId: "post1");
+        final result1 = GetPostWithDetailsResponse.fromResponse(
+          postWithDetailsData,
+          variables: variables,
+        );
+        final result2 = GetPostWithDetailsResponse.fromResponse(
+          postWithDetailsData,
+          variables: variables,
+        );
+
+        expect(result1, equals(result2));
+        expect(result1.hashCode, equals(result2.hashCode));
+
+        // Verify nested objects are also equal
+        expect(result1.post?.author, equals(result2.post?.author));
+      },
+    );
+
+    test(
+      'fragmentWithNestedObjectToJson - Serialization includes nested objects',
+      () {
+        final variables = GetPostWithDetailsVariables(postId: "post1");
+        final result = GetPostWithDetailsResponse.fromResponse(
+          postWithDetailsData,
+          variables: variables,
+        );
+        final json = result.toJson();
+
+        expect(json, postWithDetailsData);
+
+        // Verify nested object is properly serialized
+        expect(json["post"]?["author"]?["id"], "author1");
+        expect(json["post"]?["author"]?["name"], "Alice Johnson");
+      },
+    );
   });
 
   group('Fragment With Nested Object Selection - UserProfileFrag', () {
@@ -184,65 +190,68 @@ void main() {
     };
 
     test(
-        'fragmentWithNestedObjectRequired - Second fragment with nested object',
-        () {
-      final variables = GetUserWithProfileVariables(userId: "user1");
-      final result = GetUserWithProfileResponse.fromResponse(
-        userWithProfileData,
-        variables: variables,
-      );
+      'fragmentWithNestedObjectRequired - Second fragment with nested object',
+      () {
+        final variables = GetUserWithProfileVariables(userId: "user1");
+        final result = GetUserWithProfileResponse.fromResponse(
+          userWithProfileData,
+          variables: variables,
+        );
 
-      expect(result.user?.id, "user1");
-      expect(result.user?.username, "johndoe");
-      expect(result.user?.profile.id, "profile1");
-      expect(result.user?.profile.displayName, "John Doe");
-      expect(result.user?.profile.avatar, "https://example.com/avatar.jpg");
-    });
-
-    test(
-        'fragmentWithNestedObjectOptional - Nested object with optional fields',
-        () {
-      final variables = GetUserWithProfileVariables(userId: "user2");
-      final result = GetUserWithProfileResponse.fromResponse(
-        userWithProfileNoAvatar,
-        variables: variables,
-      );
-
-      expect(result.user?.profile.id, "profile2");
-      expect(result.user?.profile.displayName, "Jane Doe");
-      expect(result.user?.profile.avatar, null);
-    });
+        expect(result.user?.id, "user1");
+        expect(result.user?.username, "johndoe");
+        expect(result.user?.profile.id, "profile1");
+        expect(result.user?.profile.displayName, "John Doe");
+        expect(result.user?.profile.avatar, "https://example.com/avatar.jpg");
+      },
+    );
 
     test(
-        'fragmentWithNestedObjectCacheNormalization - Cache updates with second fragment',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetUserWithProfileVariables(userId: "user1");
+      'fragmentWithNestedObjectOptional - Nested object with optional fields',
+      () {
+        final variables = GetUserWithProfileVariables(userId: "user2");
+        final result = GetUserWithProfileResponse.fromResponse(
+          userWithProfileNoAvatar,
+          variables: variables,
+        );
 
-      var (result, updateCtx) = GetUserWithProfileResponse.fromResponseImpl(
-        userWithProfileData,
-        ctx,
-        variables,
-      );
+        expect(result.user?.profile.id, "profile2");
+        expect(result.user?.profile.displayName, "Jane Doe");
+        expect(result.user?.profile.avatar, null);
+      },
+    );
 
-      final hasChanged = Completer<bool>();
+    test(
+      'fragmentWithNestedObjectCacheNormalization - Cache updates with second fragment',
+      () async {
+        final ctx = ShalomCtx.withCapacity();
+        final variables = GetUserWithProfileVariables(userId: "user1");
 
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetUserWithProfileResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
+        var (result, updateCtx) = GetUserWithProfileResponse.fromResponseImpl(
+          userWithProfileData,
+          ctx,
+          variables,
+        );
 
-      final nextResult = GetUserWithProfileResponse.fromResponse(
-        userWithProfileDataChanged,
-        ctx: ctx,
-        variables: variables,
-      );
+        final hasChanged = Completer<bool>();
 
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.user?.profile.displayName, "John D.");
-    });
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetUserWithProfileResponse.fromCache(newCtx, variables);
+          hasChanged.complete(true);
+        });
+
+        final nextResult = GetUserWithProfileResponse.fromResponse(
+          userWithProfileDataChanged,
+          ctx: ctx,
+          variables: variables,
+        );
+
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+        expect(result.user?.profile.displayName, "John D.");
+      },
+    );
 
     test('fragmentWithNestedObjectEquals - Equality with second fragment', () {
       final variables = GetUserWithProfileVariables(userId: "user1");
@@ -260,18 +269,20 @@ void main() {
       expect(result1.user?.profile, equals(result2.user?.profile));
     });
 
-    test('fragmentWithNestedObjectToJson - Serialization with second fragment',
-        () {
-      final variables = GetUserWithProfileVariables(userId: "user1");
-      final result = GetUserWithProfileResponse.fromResponse(
-        userWithProfileData,
-        variables: variables,
-      );
-      final json = result.toJson();
+    test(
+      'fragmentWithNestedObjectToJson - Serialization with second fragment',
+      () {
+        final variables = GetUserWithProfileVariables(userId: "user1");
+        final result = GetUserWithProfileResponse.fromResponse(
+          userWithProfileData,
+          variables: variables,
+        );
+        final json = result.toJson();
 
-      expect(json, userWithProfileData);
-      expect(json["user"]?["profile"]?["id"], "profile1");
-      expect(json["user"]?["profile"]?["displayName"], "John Doe");
-    });
+        expect(json, userWithProfileData);
+        expect(json["user"]?["profile"]?["id"], "profile1");
+        expect(json["user"]?["profile"]?["displayName"], "John Doe");
+      },
+    );
   });
 }

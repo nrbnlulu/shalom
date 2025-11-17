@@ -15,8 +15,8 @@ void main() {
       "id": "cat1",
       "name": "Whiskers",
       "age": 3,
-      "meowVolume": 8
-    }
+      "meowVolume": 8,
+    },
   };
 
   final dogData = {
@@ -25,19 +25,21 @@ void main() {
       "id": "dog1",
       "name": "Buddy",
       "age": 5,
-      "breed": "Golden Retriever"
-    }
+      "breed": "Golden Retriever",
+    },
   };
 
   final birdData = {
-    "animal": {"__typename": "Bird", "id": "bird1", "name": "Tweety", "age": 2}
+    "animal": {"__typename": "Bird", "id": "bird1", "name": "Tweety", "age": 2},
   };
 
   group('Test fragments on interface - required', () {
     test('fragmentsOnInterfaceRequired - Cat', () {
       final variables = GetAnimalVariables(id: "cat1");
-      final result =
-          GetAnimalResponse.fromResponse(catData, variables: variables);
+      final result = GetAnimalResponse.fromResponse(
+        catData,
+        variables: variables,
+      );
 
       expect(result.animal, isA<GetAnimal_animal__Cat>());
       expect(result.animal, isA<AnimalBasicInfo>());
@@ -58,8 +60,10 @@ void main() {
 
     test('fragmentsOnInterfaceRequired - Dog', () {
       final variables = GetAnimalVariables(id: "dog1");
-      final result =
-          GetAnimalResponse.fromResponse(dogData, variables: variables);
+      final result = GetAnimalResponse.fromResponse(
+        dogData,
+        variables: variables,
+      );
 
       expect(result.animal, isA<GetAnimal_animal__Dog>());
       expect(result.animal, isA<AnimalBasicInfo>());
@@ -80,8 +84,10 @@ void main() {
 
     test('fragmentsOnInterfaceRequired - Bird (no inline fragment)', () {
       final variables = GetAnimalVariables(id: "bird1");
-      final result =
-          GetAnimalResponse.fromResponse(birdData, variables: variables);
+      final result = GetAnimalResponse.fromResponse(
+        birdData,
+        variables: variables,
+      );
 
       expect(result.animal, isA<GetAnimal_animal__Bird>());
       expect(result.animal, isA<AnimalBasicInfo>());
@@ -101,51 +107,69 @@ void main() {
 
     test('equals - Cat', () {
       final variables = GetAnimalVariables(id: "cat1");
-      final result1 =
-          GetAnimalResponse.fromResponse(catData, variables: variables);
-      final result2 =
-          GetAnimalResponse.fromResponse(catData, variables: variables);
+      final result1 = GetAnimalResponse.fromResponse(
+        catData,
+        variables: variables,
+      );
+      final result2 = GetAnimalResponse.fromResponse(
+        catData,
+        variables: variables,
+      );
       expect(result1, equals(result2));
     });
 
     test('equals - Dog', () {
       final variables = GetAnimalVariables(id: "dog1");
-      final result1 =
-          GetAnimalResponse.fromResponse(dogData, variables: variables);
-      final result2 =
-          GetAnimalResponse.fromResponse(dogData, variables: variables);
+      final result1 = GetAnimalResponse.fromResponse(
+        dogData,
+        variables: variables,
+      );
+      final result2 = GetAnimalResponse.fromResponse(
+        dogData,
+        variables: variables,
+      );
       expect(result1, equals(result2));
     });
 
     test('not equals - different types', () {
       final variables = GetAnimalVariables(id: "test");
-      final result1 =
-          GetAnimalResponse.fromResponse(catData, variables: variables);
-      final result2 =
-          GetAnimalResponse.fromResponse(dogData, variables: variables);
+      final result1 = GetAnimalResponse.fromResponse(
+        catData,
+        variables: variables,
+      );
+      final result2 = GetAnimalResponse.fromResponse(
+        dogData,
+        variables: variables,
+      );
       expect(result1, isNot(equals(result2)));
     });
 
     test('toJson - Cat', () {
       final variables = GetAnimalVariables(id: "cat1");
-      final initial =
-          GetAnimalResponse.fromResponse(catData, variables: variables);
+      final initial = GetAnimalResponse.fromResponse(
+        catData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, catData);
     });
 
     test('toJson - Dog', () {
       final variables = GetAnimalVariables(id: "dog1");
-      final initial =
-          GetAnimalResponse.fromResponse(dogData, variables: variables);
+      final initial = GetAnimalResponse.fromResponse(
+        dogData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, dogData);
     });
 
     test('toJson - Bird', () {
       final variables = GetAnimalVariables(id: "bird1");
-      final initial =
-          GetAnimalResponse.fromResponse(birdData, variables: variables);
+      final initial = GetAnimalResponse.fromResponse(
+        birdData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, birdData);
     });
@@ -157,8 +181,8 @@ void main() {
       "id": "cat2",
       "name": "Mittens",
       "age": 4,
-      "meowVolume": 6
-    }
+      "meowVolume": 6,
+    },
   };
 
   final animalOptNullData = {"animalOpt": null};
@@ -166,8 +190,10 @@ void main() {
   group('Test fragments on interface - optional', () {
     test('fragmentsOnInterfaceOptional - Cat', () {
       final variables = GetAnimalOptVariables(id: "cat2");
-      final result =
-          GetAnimalOptResponse.fromResponse(catOptData, variables: variables);
+      final result = GetAnimalOptResponse.fromResponse(
+        catOptData,
+        variables: variables,
+      );
 
       expect(result.animalOpt, isNotNull);
       expect(result.animalOpt, isA<GetAnimalOpt_animalOpt__Cat>());
@@ -188,41 +214,55 @@ void main() {
 
     test('fragmentsOnInterfaceOptional - null', () {
       final variables = GetAnimalOptVariables(id: "none");
-      final result = GetAnimalOptResponse.fromResponse(animalOptNullData,
-          variables: variables);
+      final result = GetAnimalOptResponse.fromResponse(
+        animalOptNullData,
+        variables: variables,
+      );
       expect(result.animalOpt, isNull);
     });
 
     test('equals - with value', () {
       final variables = GetAnimalOptVariables(id: "cat2");
-      final result1 =
-          GetAnimalOptResponse.fromResponse(catOptData, variables: variables);
-      final result2 =
-          GetAnimalOptResponse.fromResponse(catOptData, variables: variables);
+      final result1 = GetAnimalOptResponse.fromResponse(
+        catOptData,
+        variables: variables,
+      );
+      final result2 = GetAnimalOptResponse.fromResponse(
+        catOptData,
+        variables: variables,
+      );
       expect(result1, equals(result2));
     });
 
     test('equals - null', () {
       final variables = GetAnimalOptVariables(id: "none");
-      final result1 = GetAnimalOptResponse.fromResponse(animalOptNullData,
-          variables: variables);
-      final result2 = GetAnimalOptResponse.fromResponse(animalOptNullData,
-          variables: variables);
+      final result1 = GetAnimalOptResponse.fromResponse(
+        animalOptNullData,
+        variables: variables,
+      );
+      final result2 = GetAnimalOptResponse.fromResponse(
+        animalOptNullData,
+        variables: variables,
+      );
       expect(result1, equals(result2));
     });
 
     test('toJson - with value', () {
       final variables = GetAnimalOptVariables(id: "cat2");
-      final initial =
-          GetAnimalOptResponse.fromResponse(catOptData, variables: variables);
+      final initial = GetAnimalOptResponse.fromResponse(
+        catOptData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, catOptData);
     });
 
     test('toJson - null', () {
       final variables = GetAnimalOptVariables(id: "none");
-      final initial = GetAnimalOptResponse.fromResponse(animalOptNullData,
-          variables: variables);
+      final initial = GetAnimalOptResponse.fromResponse(
+        animalOptNullData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, animalOptNullData);
     });
@@ -234,15 +274,17 @@ void main() {
       "id": "bird2",
       "name": "Polly",
       "age": 3,
-      "wingspan": 45.5
-    }
+      "wingspan": 45.5,
+    },
   };
 
   group('Test fragments on interface - all types covered (no fallback)', () {
     test('fragmentsOnInterfaceAllTypes - Bird with inline fragment', () {
       final variables = GetAnimalAllTypesVariables(id: "bird2");
-      final result = GetAnimalAllTypesResponse.fromResponse(birdAllTypesData,
-          variables: variables);
+      final result = GetAnimalAllTypesResponse.fromResponse(
+        birdAllTypesData,
+        variables: variables,
+      );
 
       expect(result.animal, isA<GetAnimalAllTypes_animal__Bird>());
       expect(result.animal, isA<AnimalBasicInfo>());
@@ -263,18 +305,24 @@ void main() {
 
     test('toJson - Bird', () {
       final variables = GetAnimalAllTypesVariables(id: "bird2");
-      final initial = GetAnimalAllTypesResponse.fromResponse(birdAllTypesData,
-          variables: variables);
+      final initial = GetAnimalAllTypesResponse.fromResponse(
+        birdAllTypesData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, birdAllTypesData);
     });
 
     test('equals - Bird', () {
       final variables = GetAnimalAllTypesVariables(id: "bird2");
-      final result1 = GetAnimalAllTypesResponse.fromResponse(birdAllTypesData,
-          variables: variables);
-      final result2 = GetAnimalAllTypesResponse.fromResponse(birdAllTypesData,
-          variables: variables);
+      final result1 = GetAnimalAllTypesResponse.fromResponse(
+        birdAllTypesData,
+        variables: variables,
+      );
+      final result2 = GetAnimalAllTypesResponse.fromResponse(
+        birdAllTypesData,
+        variables: variables,
+      );
       expect(result1, equals(result2));
     });
   });
@@ -286,17 +334,17 @@ void main() {
         "id": "cat3",
         "name": "Shadow",
         "age": 2,
-        "meowVolume": 7
+        "meowVolume": 7,
       },
       {
         "__typename": "Dog",
         "id": "dog3",
         "name": "Max",
         "age": 6,
-        "breed": "Beagle"
+        "breed": "Beagle",
       },
-      {"__typename": "Bird", "id": "bird3", "name": "Chirpy", "age": 1}
-    ]
+      {"__typename": "Bird", "id": "bird3", "name": "Chirpy", "age": 1},
+    ],
   };
 
   group('Test fragments on interface - list', () {
@@ -484,8 +532,8 @@ void main() {
           "id": "animal1",
           "name": "OldName",
           "age": 2,
-          "meowVolume": 5
-        }
+          "meowVolume": 5,
+        },
       };
 
       var (result, updateCtx) = GetAnimalResponse.fromResponseImpl(
@@ -512,8 +560,8 @@ void main() {
           "id": "animal1",
           "name": "NewName",
           "age": 3,
-          "meowVolume": 9
-        }
+          "meowVolume": 9,
+        },
       };
 
       final nextResult = GetAnimalResponse.fromResponse(

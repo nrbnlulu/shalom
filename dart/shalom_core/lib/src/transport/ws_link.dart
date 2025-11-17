@@ -231,13 +231,12 @@ class WebSocketLink extends GraphQLLink {
     if (errors != null) {
       parsedErrors = errors.map((e) => e as JsonObject).toList();
     }
+    final data = payload['data'] as JsonObject?;
 
-    if (payload.containsKey('data')) {
-      final data = payload['data'] as JsonObject?;
-
+    if (data != null) {
       $handler.controller.add(
         GraphQLData(
-          data: data ?? {},
+          data: data,
           errors: parsedErrors,
           extensions: extensions,
         ),

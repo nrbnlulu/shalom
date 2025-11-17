@@ -15,22 +15,22 @@ void main() {
         "__typename": "User",
         "id": "user1",
         "name": "Alice",
-        "email": "alice@example.com"
+        "email": "alice@example.com",
       },
       {
         "__typename": "Post",
         "id": "post1",
         "title": "Hello World",
         "content": "First post",
-        "author": "Bob"
+        "author": "Bob",
       },
       {
         "__typename": "Comment",
         "id": "comment1",
         "text": "Great!",
-        "author": "Charlie"
-      }
-    ]
+        "author": "Charlie",
+      },
+    ],
   };
 
   final searchResultsRequiredDataChanged = {
@@ -39,22 +39,22 @@ void main() {
         "__typename": "User",
         "id": "user1",
         "name": "Alice Updated",
-        "email": "alice@example.com"
+        "email": "alice@example.com",
       },
       {
         "__typename": "Post",
         "id": "post1",
         "title": "Hello World",
         "content": "First post",
-        "author": "Bob"
+        "author": "Bob",
       },
       {
         "__typename": "Comment",
         "id": "comment1",
         "text": "Great!",
-        "author": "Charlie"
-      }
-    ]
+        "author": "Charlie",
+      },
+    ],
   };
 
   final searchResultsRequiredTypeChanged = {
@@ -64,22 +64,22 @@ void main() {
         "id": "user1",
         "title": "Now a post",
         "content": "Changed type",
-        "author": "Alice"
+        "author": "Alice",
       },
       {
         "__typename": "Post",
         "id": "post1",
         "title": "Hello World",
         "content": "First post",
-        "author": "Bob"
+        "author": "Bob",
       },
       {
         "__typename": "Comment",
         "id": "comment1",
         "text": "Great!",
-        "author": "Charlie"
-      }
-    ]
+        "author": "Charlie",
+      },
+    ],
   };
 
   final searchResultsRequiredLengthChanged = {
@@ -88,16 +88,16 @@ void main() {
         "__typename": "User",
         "id": "user1",
         "name": "Alice",
-        "email": "alice@example.com"
+        "email": "alice@example.com",
       },
       {
         "__typename": "Post",
         "id": "post1",
         "title": "Hello World",
         "content": "First post",
-        "author": "Bob"
-      }
-    ]
+        "author": "Bob",
+      },
+    ],
   };
 
   final searchResultsRequiredIdChanged = {
@@ -106,21 +106,21 @@ void main() {
         "__typename": "User",
         "id": "user1",
         "name": "Alice",
-        "email": "alice@example.com"
+        "email": "alice@example.com",
       },
       {
         "__typename": "User",
         "id": "user2",
         "name": "David",
-        "email": "david@example.com"
+        "email": "david@example.com",
       },
       {
         "__typename": "Comment",
         "id": "comment1",
         "text": "Great!",
-        "author": "Charlie"
-      }
-    ]
+        "author": "Charlie",
+      },
+    ],
   };
 
   final searchResultsRequiredEmptyData = {"searchResultsRequired": []};
@@ -128,11 +128,14 @@ void main() {
   group('List of Unions Required - [SearchResult!]!', () {
     test('searchResultsRequired deserialize mixed types', () {
       final result = GetSearchResultsRequiredResponse.fromResponse(
-          searchResultsRequiredData);
+        searchResultsRequiredData,
+      );
       expect(result.searchResultsRequired.length, 3);
 
-      expect(result.searchResultsRequired[0],
-          isA<GetSearchResultsRequired_searchResultsRequired__User>());
+      expect(
+        result.searchResultsRequired[0],
+        isA<GetSearchResultsRequired_searchResultsRequired__User>(),
+      );
       final user = result.searchResultsRequired[0]
           as GetSearchResultsRequired_searchResultsRequired__User;
       expect(user.id, "user1");
@@ -140,8 +143,10 @@ void main() {
       expect(user.email, "alice@example.com");
       expect(user.$__typename, "User");
 
-      expect(result.searchResultsRequired[1],
-          isA<GetSearchResultsRequired_searchResultsRequired__Post>());
+      expect(
+        result.searchResultsRequired[1],
+        isA<GetSearchResultsRequired_searchResultsRequired__Post>(),
+      );
       final post = result.searchResultsRequired[1]
           as GetSearchResultsRequired_searchResultsRequired__Post;
       expect(post.id, "post1");
@@ -150,8 +155,10 @@ void main() {
       expect(post.author, "Bob");
       expect(post.$__typename, "Post");
 
-      expect(result.searchResultsRequired[2],
-          isA<GetSearchResultsRequired_searchResultsRequired__Comment>());
+      expect(
+        result.searchResultsRequired[2],
+        isA<GetSearchResultsRequired_searchResultsRequired__Comment>(),
+      );
       final comment = result.searchResultsRequired[2]
           as GetSearchResultsRequired_searchResultsRequired__Comment;
       expect(comment.id, "comment1");
@@ -162,75 +169,89 @@ void main() {
 
     test('searchResultsRequired deserialize empty list', () {
       final result = GetSearchResultsRequiredResponse.fromResponse(
-          searchResultsRequiredEmptyData);
+        searchResultsRequiredEmptyData,
+      );
       expect(result.searchResultsRequired, []);
     });
 
     test('searchResultsRequired toJson', () {
       final initial = GetSearchResultsRequiredResponse.fromResponse(
-          searchResultsRequiredData);
+        searchResultsRequiredData,
+      );
       final json = initial.toJson();
       expect(json, searchResultsRequiredData);
     });
 
     test('searchResultsRequired toJson empty list', () {
       final initial = GetSearchResultsRequiredResponse.fromResponse(
-          searchResultsRequiredEmptyData);
+        searchResultsRequiredEmptyData,
+      );
       final json = initial.toJson();
       expect(json, searchResultsRequiredEmptyData);
     });
 
     test('searchResultsRequired equals', () {
       final result1 = GetSearchResultsRequiredResponse.fromResponse(
-          searchResultsRequiredData);
+        searchResultsRequiredData,
+      );
       final result2 = GetSearchResultsRequiredResponse.fromResponse(
-          searchResultsRequiredData);
+        searchResultsRequiredData,
+      );
       final result3 = GetSearchResultsRequiredResponse.fromResponse(
-          searchResultsRequiredDataChanged);
+        searchResultsRequiredDataChanged,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
     });
 
-    test('searchResultsRequired cacheNormalization - inner field change',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetSearchResultsRequiredResponse.fromResponseImpl(
-        searchResultsRequiredData,
-        ctx,
-      );
+    test(
+      'searchResultsRequired cacheNormalization - inner field change',
+      () async {
+        final ctx = ShalomCtx.withCapacity();
+        var (
+          result,
+          updateCtx,
+        ) = GetSearchResultsRequiredResponse.fromResponseImpl(
+          searchResultsRequiredData,
+          ctx,
+        );
 
-      final hasChanged = Completer<bool>();
+        final hasChanged = Completer<bool>();
 
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultsRequiredResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetSearchResultsRequiredResponse.fromCache(newCtx);
+          hasChanged.complete(true);
+        });
 
-      final nextResult = GetSearchResultsRequiredResponse.fromResponse(
-        searchResultsRequiredDataChanged,
-        ctx: ctx,
-      );
+        final nextResult = GetSearchResultsRequiredResponse.fromResponse(
+          searchResultsRequiredDataChanged,
+          ctx: ctx,
+        );
 
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      final user = result.searchResultsRequired[0]
-          as GetSearchResultsRequired_searchResultsRequired__User;
-      expect(user.name, "Alice Updated");
-    });
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+        final user = result.searchResultsRequired[0]
+            as GetSearchResultsRequired_searchResultsRequired__User;
+        expect(user.name, "Alice Updated");
+      },
+    );
 
     test('searchResultsRequired cacheNormalization - type change', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetSearchResultsRequiredResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetSearchResultsRequiredResponse.fromResponseImpl(
         searchResultsRequiredData,
         ctx,
       );
 
-      expect(result.searchResultsRequired[0],
-          isA<GetSearchResultsRequired_searchResultsRequired__User>());
+      expect(
+        result.searchResultsRequired[0],
+        isA<GetSearchResultsRequired_searchResultsRequired__User>(),
+      );
 
       final hasChanged = Completer<bool>();
 
@@ -247,70 +268,79 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.searchResultsRequired[0],
-          isA<GetSearchResultsRequired_searchResultsRequired__Post>());
+      expect(
+        result.searchResultsRequired[0],
+        isA<GetSearchResultsRequired_searchResultsRequired__Post>(),
+      );
       final post = result.searchResultsRequired[0]
           as GetSearchResultsRequired_searchResultsRequired__Post;
       expect(post.title, "Now a post");
     });
 
-    test('searchResultsRequired cacheNormalization - list length changed',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetSearchResultsRequiredResponse.fromResponseImpl(
-        searchResultsRequiredData,
-        ctx,
-      );
+    test(
+      'searchResultsRequired cacheNormalization - list length changed',
+      () async {
+        final ctx = ShalomCtx.withCapacity();
+        var (
+          result,
+          updateCtx,
+        ) = GetSearchResultsRequiredResponse.fromResponseImpl(
+          searchResultsRequiredData,
+          ctx,
+        );
 
-      final hasChanged = Completer<bool>();
+        final hasChanged = Completer<bool>();
 
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultsRequiredResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetSearchResultsRequiredResponse.fromCache(newCtx);
+          hasChanged.complete(true);
+        });
 
-      final nextResult = GetSearchResultsRequiredResponse.fromResponse(
-        searchResultsRequiredLengthChanged,
-        ctx: ctx,
-      );
+        final nextResult = GetSearchResultsRequiredResponse.fromResponse(
+          searchResultsRequiredLengthChanged,
+          ctx: ctx,
+        );
 
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.searchResultsRequired.length, 2);
-    });
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+        expect(result.searchResultsRequired.length, 2);
+      },
+    );
 
     test(
-        'searchResultsRequired cacheNormalization - object ID changed at index',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetSearchResultsRequiredResponse.fromResponseImpl(
-        searchResultsRequiredData,
-        ctx,
-      );
+      'searchResultsRequired cacheNormalization - object ID changed at index',
+      () async {
+        final ctx = ShalomCtx.withCapacity();
+        var (
+          result,
+          updateCtx,
+        ) = GetSearchResultsRequiredResponse.fromResponseImpl(
+          searchResultsRequiredData,
+          ctx,
+        );
 
-      final hasChanged = Completer<bool>();
+        final hasChanged = Completer<bool>();
 
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultsRequiredResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetSearchResultsRequiredResponse.fromCache(newCtx);
+          hasChanged.complete(true);
+        });
 
-      final nextResult = GetSearchResultsRequiredResponse.fromResponse(
-        searchResultsRequiredIdChanged,
-        ctx: ctx,
-      );
+        final nextResult = GetSearchResultsRequiredResponse.fromResponse(
+          searchResultsRequiredIdChanged,
+          ctx: ctx,
+        );
 
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      final user = result.searchResultsRequired[1]
-          as GetSearchResultsRequired_searchResultsRequired__User;
-      expect(user.id, "user2");
-      expect(user.name, "David");
-    });
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+        final user = result.searchResultsRequired[1]
+            as GetSearchResultsRequired_searchResultsRequired__User;
+        expect(user.id, "user2");
+        expect(user.name, "David");
+      },
+    );
   });
 
   // Test data for optional list
@@ -320,15 +350,15 @@ void main() {
         "__typename": "User",
         "id": "user1",
         "name": "Alice",
-        "email": "alice@example.com"
+        "email": "alice@example.com",
       },
       {
         "__typename": "Comment",
         "id": "comment1",
         "text": "Nice!",
-        "author": "Bob"
-      }
-    ]
+        "author": "Bob",
+      },
+    ],
   };
 
   final searchResultsOptionalDataChanged = {
@@ -337,15 +367,15 @@ void main() {
         "__typename": "User",
         "id": "user1",
         "name": "Alice Modified",
-        "email": "alice@example.com"
+        "email": "alice@example.com",
       },
       {
         "__typename": "Comment",
         "id": "comment1",
         "text": "Nice!",
-        "author": "Bob"
-      }
-    ]
+        "author": "Bob",
+      },
+    ],
   };
 
   final searchResultsOptionalNullData = {"searchResultsOptional": null};
@@ -354,18 +384,23 @@ void main() {
   group('List of Unions Optional - [SearchResult!]', () {
     test('searchResultsOptional deserialize', () {
       final result = GetSearchResultsOptionalResponse.fromResponse(
-          searchResultsOptionalData);
+        searchResultsOptionalData,
+      );
       expect(result.searchResultsOptional?.length, 2);
 
-      expect(result.searchResultsOptional?[0],
-          isA<GetSearchResultsOptional_searchResultsOptional__User>());
+      expect(
+        result.searchResultsOptional?[0],
+        isA<GetSearchResultsOptional_searchResultsOptional__User>(),
+      );
       final user = result.searchResultsOptional?[0]
           as GetSearchResultsOptional_searchResultsOptional__User;
       expect(user.id, "user1");
       expect(user.name, "Alice");
 
-      expect(result.searchResultsOptional?[1],
-          isA<GetSearchResultsOptional_searchResultsOptional__Comment>());
+      expect(
+        result.searchResultsOptional?[1],
+        isA<GetSearchResultsOptional_searchResultsOptional__Comment>(),
+      );
       final comment = result.searchResultsOptional?[1]
           as GetSearchResultsOptional_searchResultsOptional__Comment;
       expect(comment.id, "comment1");
@@ -374,46 +409,55 @@ void main() {
 
     test('searchResultsOptional deserialize null', () {
       final result = GetSearchResultsOptionalResponse.fromResponse(
-          searchResultsOptionalNullData);
+        searchResultsOptionalNullData,
+      );
       expect(result.searchResultsOptional, isNull);
     });
 
     test('searchResultsOptional deserialize empty list', () {
       final result = GetSearchResultsOptionalResponse.fromResponse(
-          searchResultsOptionalEmptyData);
+        searchResultsOptionalEmptyData,
+      );
       expect(result.searchResultsOptional, []);
     });
 
     test('searchResultsOptional toJson', () {
       final initial = GetSearchResultsOptionalResponse.fromResponse(
-          searchResultsOptionalData);
+        searchResultsOptionalData,
+      );
       final json = initial.toJson();
       expect(json, searchResultsOptionalData);
     });
 
     test('searchResultsOptional toJson null', () {
       final initial = GetSearchResultsOptionalResponse.fromResponse(
-          searchResultsOptionalNullData);
+        searchResultsOptionalNullData,
+      );
       final json = initial.toJson();
       expect(json, searchResultsOptionalNullData);
     });
 
     test('searchResultsOptional toJson empty list', () {
       final initial = GetSearchResultsOptionalResponse.fromResponse(
-          searchResultsOptionalEmptyData);
+        searchResultsOptionalEmptyData,
+      );
       final json = initial.toJson();
       expect(json, searchResultsOptionalEmptyData);
     });
 
     test('searchResultsOptional equals', () {
       final result1 = GetSearchResultsOptionalResponse.fromResponse(
-          searchResultsOptionalData);
+        searchResultsOptionalData,
+      );
       final result2 = GetSearchResultsOptionalResponse.fromResponse(
-          searchResultsOptionalData);
+        searchResultsOptionalData,
+      );
       final result3 = GetSearchResultsOptionalResponse.fromResponse(
-          searchResultsOptionalNullData);
+        searchResultsOptionalNullData,
+      );
       final result4 = GetSearchResultsOptionalResponse.fromResponse(
-          searchResultsOptionalNullData);
+        searchResultsOptionalNullData,
+      );
 
       expect(result1, equals(result2));
       expect(result3, equals(result4));
@@ -422,8 +466,10 @@ void main() {
 
     test('searchResultsOptional cacheNormalization - null to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetSearchResultsOptionalResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetSearchResultsOptionalResponse.fromResponseImpl(
         searchResultsOptionalNullData,
         ctx,
       );
@@ -450,8 +496,10 @@ void main() {
 
     test('searchResultsOptional cacheNormalization - some to null', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetSearchResultsOptionalResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetSearchResultsOptionalResponse.fromResponseImpl(
         searchResultsOptionalData,
         ctx,
       );
@@ -478,8 +526,10 @@ void main() {
 
     test('searchResultsOptional cacheNormalization - some to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetSearchResultsOptionalResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetSearchResultsOptionalResponse.fromResponseImpl(
         searchResultsOptionalData,
         ctx,
       );
@@ -513,16 +563,16 @@ void main() {
         "id": "post1",
         "title": "Test",
         "content": "Content",
-        "author": "Author"
+        "author": "Author",
       },
       null,
       {
         "__typename": "User",
         "id": "user1",
         "name": "Alice",
-        "email": "alice@example.com"
-      }
-    ]
+        "email": "alice@example.com",
+      },
+    ],
   };
 
   final optionalSearchResultsDataChanged = {
@@ -532,26 +582,29 @@ void main() {
         "id": "post1",
         "title": "Test Updated",
         "content": "Content",
-        "author": "Author"
+        "author": "Author",
       },
       null,
       {
         "__typename": "User",
         "id": "user1",
         "name": "Alice",
-        "email": "alice@example.com"
-      }
-    ]
+        "email": "alice@example.com",
+      },
+    ],
   };
 
   group('Optional Unions in List - [SearchResult]!', () {
     test('optionalSearchResults deserialize with nulls', () {
       final result = GetOptionalSearchResultsResponse.fromResponse(
-          optionalSearchResultsData);
+        optionalSearchResultsData,
+      );
       expect(result.optionalSearchResults.length, 3);
 
-      expect(result.optionalSearchResults[0],
-          isA<GetOptionalSearchResults_optionalSearchResults__Post>());
+      expect(
+        result.optionalSearchResults[0],
+        isA<GetOptionalSearchResults_optionalSearchResults__Post>(),
+      );
       final post = result.optionalSearchResults[0]
           as GetOptionalSearchResults_optionalSearchResults__Post;
       expect(post.id, "post1");
@@ -559,8 +612,10 @@ void main() {
 
       expect(result.optionalSearchResults[1], isNull);
 
-      expect(result.optionalSearchResults[2],
-          isA<GetOptionalSearchResults_optionalSearchResults__User>());
+      expect(
+        result.optionalSearchResults[2],
+        isA<GetOptionalSearchResults_optionalSearchResults__User>(),
+      );
       final user = result.optionalSearchResults[2]
           as GetOptionalSearchResults_optionalSearchResults__User;
       expect(user.id, "user1");
@@ -569,18 +624,22 @@ void main() {
 
     test('optionalSearchResults toJson', () {
       final initial = GetOptionalSearchResultsResponse.fromResponse(
-          optionalSearchResultsData);
+        optionalSearchResultsData,
+      );
       final json = initial.toJson();
       expect(json, optionalSearchResultsData);
     });
 
     test('optionalSearchResults equals', () {
       final result1 = GetOptionalSearchResultsResponse.fromResponse(
-          optionalSearchResultsData);
+        optionalSearchResultsData,
+      );
       final result2 = GetOptionalSearchResultsResponse.fromResponse(
-          optionalSearchResultsData);
+        optionalSearchResultsData,
+      );
       final result3 = GetOptionalSearchResultsResponse.fromResponse(
-          optionalSearchResultsDataChanged);
+        optionalSearchResultsDataChanged,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -588,8 +647,10 @@ void main() {
 
     test('optionalSearchResults cacheNormalization', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetOptionalSearchResultsResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetOptionalSearchResultsResponse.fromResponseImpl(
         optionalSearchResultsData,
         ctx,
       );
@@ -622,10 +683,10 @@ void main() {
         "__typename": "Comment",
         "id": "comment1",
         "text": "Hello",
-        "author": "Alice"
+        "author": "Alice",
       },
-      null
-    ]
+      null,
+    ],
   };
 
   final searchResultsFullyOptionalDataChanged = {
@@ -634,27 +695,30 @@ void main() {
         "__typename": "Comment",
         "id": "comment1",
         "text": "Hello Modified",
-        "author": "Alice"
+        "author": "Alice",
       },
-      null
-    ]
+      null,
+    ],
   };
 
   final searchResultsFullyOptionalNullData = {
-    "searchResultsFullyOptional": null
+    "searchResultsFullyOptional": null,
   };
   final searchResultsFullyOptionalEmptyData = {
-    "searchResultsFullyOptional": []
+    "searchResultsFullyOptional": [],
   };
 
   group('Fully Optional - [SearchResult]', () {
     test('searchResultsFullyOptional deserialize with nulls', () {
       final result = GetSearchResultsFullyOptionalResponse.fromResponse(
-          searchResultsFullyOptionalData);
+        searchResultsFullyOptionalData,
+      );
       expect(result.searchResultsFullyOptional?.length, 2);
 
-      expect(result.searchResultsFullyOptional?[0],
-          isA<GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment>());
+      expect(
+        result.searchResultsFullyOptional?[0],
+        isA<GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment>(),
+      );
       final comment = result.searchResultsFullyOptional?[0]
           as GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment;
       expect(comment.id, "comment1");
@@ -665,127 +729,146 @@ void main() {
 
     test('searchResultsFullyOptional deserialize null', () {
       final result = GetSearchResultsFullyOptionalResponse.fromResponse(
-          searchResultsFullyOptionalNullData);
+        searchResultsFullyOptionalNullData,
+      );
       expect(result.searchResultsFullyOptional, isNull);
     });
 
     test('searchResultsFullyOptional deserialize empty list', () {
       final result = GetSearchResultsFullyOptionalResponse.fromResponse(
-          searchResultsFullyOptionalEmptyData);
+        searchResultsFullyOptionalEmptyData,
+      );
       expect(result.searchResultsFullyOptional, []);
     });
 
     test('searchResultsFullyOptional toJson', () {
       final initial = GetSearchResultsFullyOptionalResponse.fromResponse(
-          searchResultsFullyOptionalData);
+        searchResultsFullyOptionalData,
+      );
       final json = initial.toJson();
       expect(json, searchResultsFullyOptionalData);
     });
 
     test('searchResultsFullyOptional toJson null', () {
       final initial = GetSearchResultsFullyOptionalResponse.fromResponse(
-          searchResultsFullyOptionalNullData);
+        searchResultsFullyOptionalNullData,
+      );
       final json = initial.toJson();
       expect(json, searchResultsFullyOptionalNullData);
     });
 
     test('searchResultsFullyOptional equals', () {
       final result1 = GetSearchResultsFullyOptionalResponse.fromResponse(
-          searchResultsFullyOptionalData);
+        searchResultsFullyOptionalData,
+      );
       final result2 = GetSearchResultsFullyOptionalResponse.fromResponse(
-          searchResultsFullyOptionalData);
+        searchResultsFullyOptionalData,
+      );
       final result3 = GetSearchResultsFullyOptionalResponse.fromResponse(
-          searchResultsFullyOptionalNullData);
+        searchResultsFullyOptionalNullData,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
     });
 
-    test('searchResultsFullyOptional cacheNormalization - null to some',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetSearchResultsFullyOptionalResponse.fromResponseImpl(
-        searchResultsFullyOptionalNullData,
-        ctx,
-      );
+    test(
+      'searchResultsFullyOptional cacheNormalization - null to some',
+      () async {
+        final ctx = ShalomCtx.withCapacity();
+        var (
+          result,
+          updateCtx,
+        ) = GetSearchResultsFullyOptionalResponse.fromResponseImpl(
+          searchResultsFullyOptionalNullData,
+          ctx,
+        );
 
-      expect(result.searchResultsFullyOptional, isNull);
+        expect(result.searchResultsFullyOptional, isNull);
 
-      final hasChanged = Completer<bool>();
+        final hasChanged = Completer<bool>();
 
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultsFullyOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetSearchResultsFullyOptionalResponse.fromCache(newCtx);
+          hasChanged.complete(true);
+        });
 
-      final nextResult = GetSearchResultsFullyOptionalResponse.fromResponse(
-        searchResultsFullyOptionalData,
-        ctx: ctx,
-      );
+        final nextResult = GetSearchResultsFullyOptionalResponse.fromResponse(
+          searchResultsFullyOptionalData,
+          ctx: ctx,
+        );
 
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.searchResultsFullyOptional?.length, 2);
-    });
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+        expect(result.searchResultsFullyOptional?.length, 2);
+      },
+    );
 
-    test('searchResultsFullyOptional cacheNormalization - some to null',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetSearchResultsFullyOptionalResponse.fromResponseImpl(
-        searchResultsFullyOptionalData,
-        ctx,
-      );
+    test(
+      'searchResultsFullyOptional cacheNormalization - some to null',
+      () async {
+        final ctx = ShalomCtx.withCapacity();
+        var (
+          result,
+          updateCtx,
+        ) = GetSearchResultsFullyOptionalResponse.fromResponseImpl(
+          searchResultsFullyOptionalData,
+          ctx,
+        );
 
-      expect(result.searchResultsFullyOptional, isNotNull);
+        expect(result.searchResultsFullyOptional, isNotNull);
 
-      final hasChanged = Completer<bool>();
+        final hasChanged = Completer<bool>();
 
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultsFullyOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetSearchResultsFullyOptionalResponse.fromCache(newCtx);
+          hasChanged.complete(true);
+        });
 
-      final nextResult = GetSearchResultsFullyOptionalResponse.fromResponse(
-        searchResultsFullyOptionalNullData,
-        ctx: ctx,
-      );
+        final nextResult = GetSearchResultsFullyOptionalResponse.fromResponse(
+          searchResultsFullyOptionalNullData,
+          ctx: ctx,
+        );
 
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.searchResultsFullyOptional, isNull);
-    });
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+        expect(result.searchResultsFullyOptional, isNull);
+      },
+    );
 
-    test('searchResultsFullyOptional cacheNormalization - some to some',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetSearchResultsFullyOptionalResponse.fromResponseImpl(
-        searchResultsFullyOptionalData,
-        ctx,
-      );
+    test(
+      'searchResultsFullyOptional cacheNormalization - some to some',
+      () async {
+        final ctx = ShalomCtx.withCapacity();
+        var (
+          result,
+          updateCtx,
+        ) = GetSearchResultsFullyOptionalResponse.fromResponseImpl(
+          searchResultsFullyOptionalData,
+          ctx,
+        );
 
-      final hasChanged = Completer<bool>();
+        final hasChanged = Completer<bool>();
 
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultsFullyOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetSearchResultsFullyOptionalResponse.fromCache(newCtx);
+          hasChanged.complete(true);
+        });
 
-      final nextResult = GetSearchResultsFullyOptionalResponse.fromResponse(
-        searchResultsFullyOptionalDataChanged,
-        ctx: ctx,
-      );
+        final nextResult = GetSearchResultsFullyOptionalResponse.fromResponse(
+          searchResultsFullyOptionalDataChanged,
+          ctx: ctx,
+        );
 
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      final comment = result.searchResultsFullyOptional?[0]
-          as GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment;
-      expect(comment.text, "Hello Modified");
-    });
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+        final comment = result.searchResultsFullyOptional?[0]
+            as GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment;
+        expect(comment.text, "Hello Modified");
+      },
+    );
   });
 }

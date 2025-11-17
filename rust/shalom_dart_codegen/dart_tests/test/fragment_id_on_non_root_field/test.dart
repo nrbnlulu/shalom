@@ -102,10 +102,7 @@ void main() {
 
       test('with error present', () {
         final variables = UpdateUserVariables(
-          input: UpdateUserInput(
-            id: "user1",
-            email: Some("invalid-email"),
-          ),
+          input: UpdateUserInput(id: "user1", email: Some("invalid-email")),
         );
         final result = UpdateUserResponse.fromResponse(
           updateUserErrorData,
@@ -116,18 +113,17 @@ void main() {
         expect(result.updateUser.data, null);
         expect(result.updateUser.error?.code, "VALIDATION_ERROR");
         expect(result.updateUser.error?.message, "Invalid email format");
-        expect(result.updateUser.error?.details,
-            "The email must contain @ symbol");
+        expect(
+          result.updateUser.error?.details,
+          "The email must contain @ symbol",
+        );
       });
     });
 
     group('fragmentOptional - Both fields present', () {
       test('with both data and error', () {
         final variables = UpdateUserVariables(
-          input: UpdateUserInput(
-            id: "user1",
-            name: Some("Bob Jones"),
-          ),
+          input: UpdateUserInput(id: "user1", name: Some("Bob Jones")),
         );
         final result = UpdateUserResponse.fromResponse(
           updateUserBothData,
@@ -169,10 +165,7 @@ void main() {
 
       test('different responses', () {
         final variables = UpdateUserVariables(
-          input: UpdateUserInput(
-            id: "user1",
-            name: Some("Alice Smith"),
-          ),
+          input: UpdateUserInput(id: "user1", name: Some("Alice Smith")),
         );
         final result1 = UpdateUserResponse.fromResponse(
           updateUserSuccessData,
@@ -208,10 +201,7 @@ void main() {
 
       test('with error present', () {
         final variables = UpdateUserVariables(
-          input: UpdateUserInput(
-            id: "user1",
-            email: Some("invalid"),
-          ),
+          input: UpdateUserInput(id: "user1", email: Some("invalid")),
         );
         final result = UpdateUserResponse.fromResponse(
           updateUserErrorData,
@@ -235,8 +225,10 @@ void main() {
         );
 
         // First, fetch user with GetUser query
-        var (getUserResult, getUserUpdateCtx) =
-            GetUserResponse.fromResponseImpl(
+        var (
+          getUserResult,
+          getUserUpdateCtx,
+        ) = GetUserResponse.fromResponseImpl(
           getUserData,
           ctx,
           GetUserVariables(id: "user1"),
@@ -250,8 +242,10 @@ void main() {
         final hasChanged = Completer<bool>();
         final sub = ctx.subscribe(getUserUpdateCtx.dependantRecords);
         sub.streamController.stream.listen((newCtx) {
-          getUserResult =
-              GetUserResponse.fromCache(newCtx, GetUserVariables(id: "user1"));
+          getUserResult = GetUserResponse.fromCache(
+            newCtx,
+            GetUserVariables(id: "user1"),
+          );
           hasChanged.complete(true);
         });
 
@@ -280,10 +274,7 @@ void main() {
       test('null to data updates correctly', () async {
         final ctx = ShalomCtx.withCapacity();
         final variables = UpdateUserVariables(
-          input: UpdateUserInput(
-            id: "user1",
-            email: Some("invalid"),
-          ),
+          input: UpdateUserInput(id: "user1", email: Some("invalid")),
         );
 
         // Start with error (data is null)
