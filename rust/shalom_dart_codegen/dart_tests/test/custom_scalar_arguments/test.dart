@@ -127,8 +127,9 @@ void main() {
         pointData: PointDataOptCoordsInput(name: "Location M"),
       );
 
-      final req =
-          RequestUpdatePointWithOptCoords(variables: variables).toRequest();
+      final req = RequestUpdatePointWithOptCoords(
+        variables: variables,
+      ).toRequest();
       expect(req.variables, {
         "pointData": {"coords": "POINT (0, 0)", "name": "Location M"},
       });

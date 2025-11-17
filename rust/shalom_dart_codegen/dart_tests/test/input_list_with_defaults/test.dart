@@ -9,9 +9,7 @@ void main() {
     group("required", () {
       test("default", () {
         final req = RequestProcessList(
-          variables: ProcessListVariables(
-            input: ListInput(),
-          ),
+          variables: ProcessListVariables(input: ListInput()),
         ).toRequest();
         expect(req.variables, {
           "input": {"items": []},
@@ -20,13 +18,11 @@ void main() {
 
       test("override", () {
         final req = RequestProcessList(
-          variables: ProcessListVariables(
-            input: ListInput(items: ["a", "b"]),
-          ),
+          variables: ProcessListVariables(input: ListInput(items: ["a", "b"])),
         ).toRequest();
         expect(req.variables, {
           "input": {
-            "items": ["a", "b"]
+            "items": ["a", "b"],
           },
         });
       });
@@ -48,59 +44,68 @@ void main() {
 
     group("cache normalization", () {
       test(
-          'operation with default argument is not affected by operation with arguments',
-          () async {
-        // Make operation, listen for cache updates,
-        // make another query with different parameters,
-        // verify listener is NOT called
+        'operation with default argument is not affected by operation with arguments',
+        () async {
+          // Make operation, listen for cache updates,
+          // make another query with different parameters,
+          // verify listener is NOT called
 
-        final ctx = ShalomCtx.withCapacity();
-        final variablesDefault =
-            ProcessListVariables(input: ListInput()); // uses default items: []
-        final variablesDifferent =
-            ProcessListVariables(input: ListInput(items: ["c"]));
+          final ctx = ShalomCtx.withCapacity();
+          final variablesDefault = ProcessListVariables(
+            input: ListInput(),
+          ); // uses default items: []
+          final variablesDifferent = ProcessListVariables(
+            input: ListInput(items: ["c"]),
+          );
 
-        // First query with defaults
-        var (resultDefault, updateCtxDefault) =
-            ProcessListResponse.fromResponseImpl(
-          data1,
-          ctx,
-          variablesDefault,
-        );
+          // First query with defaults
+          var (
+            resultDefault,
+            updateCtxDefault,
+          ) = ProcessListResponse.fromResponseImpl(
+            data1,
+            ctx,
+            variablesDefault,
+          );
 
-        expect(resultDefault.toJson(), data1);
+          expect(resultDefault.toJson(), data1);
 
-        final defaultGotUpdate = Completer<bool>();
+          final defaultGotUpdate = Completer<bool>();
 
-        // sub updateCtxDefault -> true defaultGotUpdate
-        final sub1 = ctx.subscribe(updateCtxDefault.dependantRecords);
-        sub1.streamController.stream.listen((newCtx) {
-          defaultGotUpdate.complete(true);
-        });
+          // sub updateCtxDefault -> true defaultGotUpdate
+          final sub1 = ctx.subscribe(updateCtxDefault.dependantRecords);
+          sub1.streamController.stream.listen((newCtx) {
+            defaultGotUpdate.complete(true);
+          });
 
-        // make query for second parameters
-        final _ = ProcessListResponse.fromResponse(
-          data2,
-          ctx: ctx,
-          variables: variablesDifferent,
-        );
+          // make query for second parameters
+          final _ = ProcessListResponse.fromResponse(
+            data2,
+            ctx: ctx,
+            variables: variablesDifferent,
+          );
 
-        void checkCacheUpdate() async {
-          // Wait for listenerDefault to be called
-          await defaultGotUpdate.future.timeout(Duration(milliseconds: 500));
-        }
+          void checkCacheUpdate() async {
+            // Wait for listenerDefault to be called
+            await defaultGotUpdate.future.timeout(Duration(milliseconds: 500));
+          }
 
-        // check that listener was not called
-        expect(checkCacheUpdate, throwsA(isA<TimeoutException>()));
+          // check that listener was not called
+          expect(checkCacheUpdate, throwsA(isA<TimeoutException>()));
 
-        // first query should remain unchanged
-        expect(ProcessListResponse.fromCache(ctx, variablesDefault).toJson(),
-            data1);
+          // first query should remain unchanged
+          expect(
+            ProcessListResponse.fromCache(ctx, variablesDefault).toJson(),
+            data1,
+          );
 
-        // second query should be updated
-        expect(ProcessListResponse.fromCache(ctx, variablesDifferent).toJson(),
-            data2);
-      });
+          // second query should be updated
+          expect(
+            ProcessListResponse.fromCache(ctx, variablesDifferent).toJson(),
+            data2,
+          );
+        },
+      );
 
       test('cache notifications happen', () async {
         // Make operation, listen for cache updates,
@@ -108,16 +113,13 @@ void main() {
         // verify listener is called
 
         final ctx = ShalomCtx.withCapacity();
-        final variablesDefault =
-            ProcessListVariables(input: ListInput()); // uses default items: []
+        final variablesDefault = ProcessListVariables(
+          input: ListInput(),
+        ); // uses default items: []
 
         // First query with defaults
         var (resultDefault, updateCtxDefault) =
-            ProcessListResponse.fromResponseImpl(
-          data1,
-          ctx,
-          variablesDefault,
-        );
+            ProcessListResponse.fromResponseImpl(data1, ctx, variablesDefault);
         expect(resultDefault.toJson(), data1);
 
         // Set up listener
@@ -125,8 +127,10 @@ void main() {
 
         final subDefault = ctx.subscribe(updateCtxDefault.dependantRecords);
         subDefault.streamController.stream.listen((newCtx) {
-          final updated =
-              ProcessListResponse.fromCache(newCtx, variablesDefault);
+          final updated = ProcessListResponse.fromCache(
+            newCtx,
+            variablesDefault,
+          );
           expect(updated.toJson(), data2);
           completerDefault.complete(true);
         });
@@ -142,8 +146,10 @@ void main() {
         await completerDefault.future.timeout(Duration(seconds: 1));
 
         // Check that cache is updated correctly
-        final cachedDefaultAfterUpdate =
-            ProcessListResponse.fromCache(ctx, variablesDefault);
+        final cachedDefaultAfterUpdate = ProcessListResponse.fromCache(
+          ctx,
+          variablesDefault,
+        );
 
         expect(cachedDefaultAfterUpdate.toJson(), data2);
       });
