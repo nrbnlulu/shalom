@@ -37,6 +37,8 @@ dependencies:
   dio: ^5.0.0
   shalom_core:
     path: ../../../dart/shalom_core
+  flutter_riverpod: ^3.0.3
+  riverpod: ^3.0.3
 
 dev_dependencies:
   flutter_test:
