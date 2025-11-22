@@ -1,16 +1,23 @@
 name: shalom_core
-description: A starting point for Dart libraries or applications.
-version: 1.0.0
-# repository: https://github.com/my_org/my_repo
+description: GraphQL client for flutter
+documentation: https://github.com/nrbnlulu/shalom
+repository: https://github.com/nrbnlulu/shalom
+homepage: https://github.com/nrbnlulu/shalom
+topics:
+  - graphql-codegen
+  - graphql-client
+  - graphql
+  
+version: "0.1.0"
 
 environment:
     sdk: ">=3.0.0 <4.0.0"
 
 # Add regular dependencies here.
 dependencies:
-    collection: ^1.18.0
-    async: ">=2.11.0"
-    meta: ^1.16.0
+    collection: ">=1.18.0 <3.0.0"
+    async: ">=2.11.0 <3.0.0"
+    meta: ">=1.15.0 <2.0.0"
 
 dev_dependencies:
     lints: ^4.0.0
