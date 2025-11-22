@@ -1,1 +1,1 @@
-check the swapi example under ./examples
+../../README.md
