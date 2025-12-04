@@ -43,7 +43,7 @@
                 {{ctx}}.addChangedRecord({{normalized_id}});
             }
         } else {
-            {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
+            {{this_normalized_record}}[{{normalized_key}}] = shalom_core.getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
         }
     {% elif selection.kind == "Interface" or selection.kind == "Union" -%}
         if ({{cached_sym}} == null){
@@ -71,7 +71,7 @@
                 {{ctx}}.addChangedRecord({{normalized_id}});
             }
         } else {
-            {{this_normalized_record}}[{{normalized_key}}] = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
+            {{this_normalized_record}}[{{normalized_key}}] = shalom_core.getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
         }
     {% elif selection.kind == "List" %}
         {% set inner_selection = selection.of_kind %}
@@ -440,10 +440,10 @@ null
                         parent$record[this$fieldName] = this$NormalizedRecord;
                         ctx.addChangedRecord(this$normalizedID);
                     } else {
-                        this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+                        this$NormalizedRecord = shalom_core.getOrCreateObject(parent$record, this$fieldName);
                     }
                 {% else %}
-                    this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
+                    this$NormalizedRecord = shalom_core.getOrCreateObject(parent$record, this$fieldName);
                 {% endif %}
             } else {
                 {% if is_multi_type_member -%}
@@ -514,7 +514,7 @@ null
         {% endfor -%}
     }
     {% if not is_root_selection -%}
-    static {{typename}} fromCached(NormalizedRecordData data, shalom_core.ShalomCtx ctx{% if op_variables_exist  %}, {{ operation_name }}Variables variables{% endif %}) {
+    static {{typename}} fromCached(shalom_core.NormalizedRecordData data, shalom_core.ShalomCtx ctx{% if op_variables_exist  %}, {{ operation_name }}Variables variables{% endif %}) {
     {% else -%}
     static {{typename}} fromCache(shalom_core.ShalomCtx ctx{% if object_like_needs_variables(selection_object) -%}, {{ operation_name }}Variables variables{% endif %}) {
     {% endif -%}
@@ -676,7 +676,7 @@ null
             }
         }
 
-        static {{ full_name }} fromCached(NormalizedRecordData data, shalom_core.ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}) {
+        static {{ full_name }} fromCached(shalom_core.NormalizedRecordData data, shalom_core.ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}) {
             if (data is String) {
                 // Normalized {{ selection.schema_typename }}: data is the cache key, fetch the actual record
                 final actualData = ctx.getCachedRecord(data);

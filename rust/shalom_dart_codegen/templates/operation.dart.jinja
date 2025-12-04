@@ -76,7 +76,7 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
 
 {{ generate_multi_type_list_extensions(multi_type_list_selections) }}
 
-class Request{{ operation_name }} extends Requestable<{{operation_name}}Response>{
+class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_name}}Response>{
     {% if op_variables_exist %}
     final {{ operation_name }}Variables variables;
     {% endif %}
