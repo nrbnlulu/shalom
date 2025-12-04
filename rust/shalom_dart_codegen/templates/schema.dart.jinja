@@ -1,7 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, camel_case_types
 {% include "macros" %}
 {% if schema.context.types.inputs | length > 0 %}
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom_core/shalom_core.dart' as shalom_core;
 {% endif %}
 {{ custom_scalar_imports_macro(custom_scalar_imports) }}
 
@@ -39,7 +39,7 @@ import 'package:shalom_core/shalom_core.dart';
 {% if input_object.is_one_of %}
 {{docstring(input_object.description)}}
 sealed class {{ typename }} {
-  JsonObject toJson();
+  shalom_core.JsonObject toJson();
 
   {% for field_name, field in input_object.fields | items -%}
   static {{ typename }} {{ field_name }}({{ type_name_for_one_of_input_field(field) }} value) => _{{ typename }}_{{ field_name }}(value);
@@ -58,7 +58,7 @@ class _{{ typename }}_{{ field_name }} implements {{ typename }} {
   const _{{ typename }}_{{ field_name }}(this.value);
 
   @override
-  JsonObject toJson() {
+  shalom_core.JsonObject toJson() {
     {% set field_ty = resolve_field_type(field.common).ty -%}
     return {'{{ field_name }}': {{ _serialize_field_value_macro("value", field_ty, false) }}};
   }
@@ -93,8 +93,8 @@ class {{ typename }} {
         }
     ){{ field_initialization_initializers(input_object.fields) }};
 
-    JsonObject toJson() {
-        JsonObject data = {};
+    shalom_core.JsonObject toJson() {
+        shalom_core.JsonObject data = {};
         {{ toJson_macro(input_object.fields) }}
         return data;
     }
