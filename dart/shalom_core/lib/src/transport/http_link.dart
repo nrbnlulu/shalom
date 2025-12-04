@@ -145,17 +145,15 @@ class HttpLink extends GraphQLLink {
   /// Parses the transport layer response into a GraphQLResponse
   GraphQLResponse<JsonObject> _parseResponse(JsonObject response) {
     try {
-      // Check for data field
-      final $hasData = response.containsKey('data');
-      final $data = response['data'];
+      final data = response['data'];
 
       // Check for errors field
-      final $errors = response['errors'];
-      List<JsonObject>? $parsedErrors;
+      final errors = response['errors'];
+      List<JsonObject>? parsedErrors;
 
-      if ($errors != null) {
-        if ($errors is List) {
-          $parsedErrors = $errors.map((e) => e as JsonObject).toList();
+      if (errors != null) {
+        if (errors is List) {
+          parsedErrors = errors.map((e) => e as JsonObject).toList();
         } else {
           return LinkExceptionResponse([
             ShalomTransportException(
@@ -167,45 +165,40 @@ class HttpLink extends GraphQLLink {
       }
 
       // Check for extensions field
-      final $extensionsRaw = response['extensions'];
+      final extensionsRaw = response['extensions'];
       final JsonObject? $extensions =
-          $extensionsRaw != null && $extensionsRaw is Map
-              ? Map<String, dynamic>.from($extensionsRaw)
+          extensionsRaw != null && extensionsRaw is Map
+              ? Map<String, dynamic>.from(extensionsRaw)
               : null;
 
       // According to GraphQL spec:
-      // - If data is present (even if null), it's a valid response
-      // - If data is not present, errors must be present
-      if ($hasData) {
-        // Handle data field - it can be null, a map, or other types
-        JsonObject $dataMap;
-        if ($data == null) {
-          $dataMap = <String, dynamic>{};
-        } else if ($data is Map) {
-          $dataMap = Map<String, dynamic>.from($data);
+      // - If data is not null, it's a valid response
+      // - If data is null or absent, errors must be present
+      if (data != null) {
+        // Handle data field - it must be a map
+        if (data is Map) {
+          return GraphQLData(
+            data: data as JsonObject,
+            errors: parsedErrors,
+            extensions: $extensions,
+          );
         } else {
           // Invalid data type
           return LinkExceptionResponse([
             ShalomTransportException(
-              message: 'Invalid data format: expected JSON object or null',
+              message: 'Invalid data format: expected JSON object',
               code: 'INVALID_RESPONSE_FORMAT',
             ),
           ]);
         }
-
-        return GraphQLData(
-          data: $dataMap,
-          errors: $parsedErrors,
-          extensions: $extensions,
-        );
-      } else if ($parsedErrors != null) {
-        // No data field, but has errors - this is a GraphQL error response
+      } else if (parsedErrors != null) {
+        // No valid data, but has errors - this is a GraphQL error response
         return GraphQLError(
-          errors: $parsedErrors,
+          errors: parsedErrors,
           extensions: $extensions,
         );
       } else {
-        // Neither data nor errors - invalid response
+        // Neither valid data nor errors - invalid response
         return LinkExceptionResponse([
           ShalomTransportException(
             message: 'Invalid GraphQL response: missing both data and errors',

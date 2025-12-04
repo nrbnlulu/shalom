@@ -9,16 +9,12 @@ void main() {
       "__typename": "Product",
       "id": "prod-123",
       "name": "Laptop",
-      "price": 999
+      "price": 999,
     },
   };
 
   final productDataNoPrice = {
-    "product": {
-      "__typename": "Product",
-      "id": "prod-123",
-      "name": "Laptop",
-    },
+    "product": {"__typename": "Product", "id": "prod-123", "name": "Laptop"},
   };
 
   group('Test object selection with __typename - Required', () {
@@ -53,7 +49,7 @@ void main() {
       "__typename": "Product",
       "id": "prod-456",
       "name": "Mouse",
-      "price": 25
+      "price": 25,
     },
   };
 
@@ -108,7 +104,7 @@ void main() {
           "__typename": "Product",
           "id": "1",
           "name": "Item",
-          "price": 100
+          "price": 100,
         },
       };
 
@@ -117,7 +113,7 @@ void main() {
           "__typename": "DifferentType",
           "id": "1",
           "name": "Item",
-          "price": 100
+          "price": 100,
         },
       };
 
@@ -132,7 +128,7 @@ void main() {
           "__typename": "Product",
           "id": "1",
           "name": "Item",
-          "price": 100
+          "price": 100,
         },
       };
 
@@ -141,7 +137,7 @@ void main() {
           "__typename": "Product",
           "id": "1",
           "name": "Item",
-          "price": 100
+          "price": 100,
         },
       };
 

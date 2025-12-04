@@ -1,17 +1,19 @@
-// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast
+// ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
 import "../schema.shalom.dart";
 
 import 'package:shalom_core/shalom_core.dart';
 import 'package:collection/collection.dart';
+import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 
 // ------------ OBJECT DEFINITIONS -------------
 
 class GetFilmsResponse {
-  /// class members
+  static String G__typename = "query";
 
+  /// class members
   final GetFilms_allFilms? allFilms;
 
   // keywordargs constructor
@@ -26,7 +28,6 @@ class GetFilmsResponse {
     final allFilms$normalizedID =
         "${this$normalizedID}.${allFilmsNormalized$Key}";
     ctx.addDependantRecords({allFilms$normalizedID});
-
     final allFilms$cached = this$NormalizedRecord[allFilmsNormalized$Key];
     final allFilms$raw = data["allFilms"];
     if (allFilms$raw != null) {
@@ -85,6 +86,13 @@ class GetFilmsResponse {
     final GetFilms_allFilms? allFilms$value =
         allFilms$raw == null
             ? null
+            : (allFilms$raw is NormalizedObjectRecord)
+            ? GetFilms_allFilms.fromCached(
+              ctx.getCachedRecord(
+                (allFilms$raw as NormalizedObjectRecord).normalizedID(),
+              ),
+              ctx,
+            )
             : GetFilms_allFilms.fromCached(allFilms$raw, ctx);
     return GetFilmsResponse(allFilms: allFilms$value);
   }
@@ -112,16 +120,26 @@ class GetFilmsResponse {
   }
 
   @override
-  int get hashCode => allFilms.hashCode;
+  int get hashCode => Object.hashAll([allFilms, GetFilmsResponse.G__typename]);
 
   JsonObject toJson() {
     return {'allFilms': this.allFilms?.toJson()};
   }
+
+  @experimental
+  static GetFilmsResponse fromJson(JsonObject data) {
+    final GetFilms_allFilms? allFilms$value =
+        data['allFilms'] == null
+            ? null
+            : GetFilms_allFilms.fromJson(data['allFilms'] as JsonObject);
+    return GetFilmsResponse(allFilms: allFilms$value);
+  }
 }
 
 class GetFilms_allFilms {
-  /// class members
+  static String G__typename = "FilmsConnection";
 
+  /// class members
   final List<GetFilms_allFilms_films?>? films;
 
   // keywordargs constructor
@@ -162,11 +180,9 @@ class GetFilms_allFilms {
       );
       ctx.addDependantRecord(this$normalizedID);
     }
-
     final filmsNormalized$Key = "films";
     final films$normalizedID = "${this$normalizedID}.${filmsNormalized$Key}";
     ctx.addDependantRecords({films$normalizedID});
-
     final films$cached = this$NormalizedRecord[filmsNormalized$Key];
     final films$raw = data["films"];
     if (films$raw != null) {
@@ -183,7 +199,7 @@ class GetFilms_allFilms {
       for (int i = 0; i < films$rawList.length; i++) {
         final item$raw = films$rawList[i];
         final item$cached = films$cachedList?.elementAtOrNull(i);
-        final item$normalizedKey = "$i";
+        final item$normalizedKey = "films$i";
 
         if (item$raw != null) {
           if (item$cached == null) {
@@ -259,6 +275,13 @@ class GetFilms_allFilms {
                   (e) =>
                       e == null
                           ? null
+                          : (e is NormalizedObjectRecord)
+                          ? GetFilms_allFilms_films.fromCached(
+                            ctx.getCachedRecord(
+                              (e as NormalizedObjectRecord).normalizedID(),
+                            ),
+                            ctx,
+                          )
                           : GetFilms_allFilms_films.fromCached(e, ctx),
                 )
                 .toList();
@@ -273,19 +296,36 @@ class GetFilms_allFilms {
   }
 
   @override
-  int get hashCode => films.hashCode;
+  int get hashCode => Object.hashAll([films, GetFilms_allFilms.G__typename]);
 
   JsonObject toJson() {
     return {'films': this.films?.map((e) => e?.toJson()).toList()};
   }
+
+  @experimental
+  static GetFilms_allFilms fromJson(JsonObject data) {
+    final List<GetFilms_allFilms_films?>? films$value =
+        data['films'] == null
+            ? null
+            : (data['films'] as List<dynamic>)
+                .map(
+                  (e) =>
+                      e == null
+                          ? null
+                          : GetFilms_allFilms_films.fromJson(e as JsonObject),
+                )
+                .toList();
+    return GetFilms_allFilms(films: films$value);
+  }
 }
 
 class GetFilms_allFilms_films {
+  static String G__typename = "Film";
+
   /// class members
+  final String? director;
 
   final String? title;
-
-  final String? director;
 
   final String? releaseDate;
 
@@ -293,9 +333,9 @@ class GetFilms_allFilms_films {
 
   // keywordargs constructor
   GetFilms_allFilms_films({
-    this.title,
-
     this.director,
+
+    this.title,
 
     this.releaseDate,
 
@@ -337,12 +377,11 @@ class GetFilms_allFilms_films {
       );
       ctx.addDependantRecord(this$normalizedID);
     }
-
-    final titleNormalized$Key = "title";
-    final title$normalizedID = "${this$normalizedID}.${titleNormalized$Key}";
     final directorNormalized$Key = "director";
     final director$normalizedID =
         "${this$normalizedID}.${directorNormalized$Key}";
+    final titleNormalized$Key = "title";
+    final title$normalizedID = "${this$normalizedID}.${titleNormalized$Key}";
     final releaseDateNormalized$Key = "releaseDate";
     final releaseDate$normalizedID =
         "${this$normalizedID}.${releaseDateNormalized$Key}";
@@ -350,29 +389,11 @@ class GetFilms_allFilms_films {
     final episodeID$normalizedID =
         "${this$normalizedID}.${episodeIDNormalized$Key}";
     ctx.addDependantRecords({
-      title$normalizedID,
       director$normalizedID,
+      title$normalizedID,
       releaseDate$normalizedID,
       episodeID$normalizedID,
     });
-
-    final title$cached = this$NormalizedRecord[titleNormalized$Key];
-    final title$raw = data["title"];
-    if (title$raw != null) {
-      if (title$cached != title$raw) {
-        ctx.addChangedRecord(title$normalizedID);
-      }
-      this$NormalizedRecord[titleNormalized$Key] = title$raw;
-    } else if (data.containsKey("title") && title$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[titleNormalized$Key] = null;
-      ctx.addChangedRecord(title$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[titleNormalized$Key] = null;
-    }
-
     final director$cached = this$NormalizedRecord[directorNormalized$Key];
     final director$raw = data["director"];
     if (director$raw != null) {
@@ -389,7 +410,22 @@ class GetFilms_allFilms_films {
       // data is null and cache is null, do nothing.
       this$NormalizedRecord[directorNormalized$Key] = null;
     }
+    final title$cached = this$NormalizedRecord[titleNormalized$Key];
+    final title$raw = data["title"];
+    if (title$raw != null) {
+      if (title$cached != title$raw) {
+        ctx.addChangedRecord(title$normalizedID);
+      }
+      this$NormalizedRecord[titleNormalized$Key] = title$raw;
+    } else if (data.containsKey("title") && title$cached != null) {
+      // if this field was null in the response and key exists clear the cache.
 
+      this$NormalizedRecord[titleNormalized$Key] = null;
+      ctx.addChangedRecord(title$normalizedID);
+    } else {
+      // data is null and cache is null, do nothing.
+      this$NormalizedRecord[titleNormalized$Key] = null;
+    }
     final releaseDate$cached = this$NormalizedRecord[releaseDateNormalized$Key];
     final releaseDate$raw = data["releaseDate"];
     if (releaseDate$raw != null) {
@@ -406,7 +442,6 @@ class GetFilms_allFilms_films {
       // data is null and cache is null, do nothing.
       this$NormalizedRecord[releaseDateNormalized$Key] = null;
     }
-
     final episodeID$cached = this$NormalizedRecord[episodeIDNormalized$Key];
     final episodeID$raw = data["episodeID"];
     if (episodeID$raw != null) {
@@ -429,18 +464,18 @@ class GetFilms_allFilms_films {
     NormalizedRecordData data,
     ShalomCtx ctx,
   ) {
-    final title$raw = data["title"];
-    final String? title$value = title$raw as String?;
     final director$raw = data["director"];
     final String? director$value = director$raw as String?;
+    final title$raw = data["title"];
+    final String? title$value = title$raw as String?;
     final releaseDate$raw = data["releaseDate"];
     final String? releaseDate$value = releaseDate$raw as String?;
     final episodeID$raw = data["episodeID"];
     final int? episodeID$value = episodeID$raw as int?;
     return GetFilms_allFilms_films(
-      title: title$value,
-
       director: director$value,
+
+      title: title$value,
 
       releaseDate: releaseDate$value,
 
@@ -452,25 +487,52 @@ class GetFilms_allFilms_films {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is GetFilms_allFilms_films &&
-            title == other.title &&
             director == other.director &&
+            title == other.title &&
             releaseDate == other.releaseDate &&
             episodeID == other.episodeID);
   }
 
   @override
-  int get hashCode => Object.hashAll([title, director, releaseDate, episodeID]);
+  int get hashCode => Object.hashAll([
+    director,
+
+    title,
+
+    releaseDate,
+
+    episodeID,
+
+    GetFilms_allFilms_films.G__typename,
+  ]);
 
   JsonObject toJson() {
     return {
-      'title': this.title,
-
       'director': this.director,
+
+      'title': this.title,
 
       'releaseDate': this.releaseDate,
 
       'episodeID': this.episodeID,
     };
+  }
+
+  @experimental
+  static GetFilms_allFilms_films fromJson(JsonObject data) {
+    final String? director$value = data['director'] as String?;
+    final String? title$value = data['title'] as String?;
+    final String? releaseDate$value = data['releaseDate'] as String?;
+    final int? episodeID$value = data['episodeID'] as int?;
+    return GetFilms_allFilms_films(
+      director: director$value,
+
+      title: title$value,
+
+      releaseDate: releaseDate$value,
+
+      episodeID: episodeID$value,
+    );
   }
 }
 
@@ -484,13 +546,18 @@ class GetFilms_allFilms_films {
 
 // ------------ END INTERFACE DEFINITIONS -------------
 
+// ------------ MULTI-TYPE LIST EXTENSIONS -------------
+
+// ------------ END MULTI-TYPE LIST EXTENSIONS -------------
+
 class RequestGetFilms extends Requestable<GetFilmsResponse> {
   RequestGetFilms();
   @override
   RequestMeta<GetFilmsResponse> getRequestMeta() {
     JsonObject variablesJson = {};
     final request = Request(
-      query: r"""query GetFilms {
+      query: r"""
+            query GetFilms {
   allFilms {
     films {
       title
@@ -500,7 +567,7 @@ class RequestGetFilms extends Requestable<GetFilmsResponse> {
     }
   }
 }
-""",
+            """,
       variables: variablesJson,
       opType: OperationType.Query,
       opName: 'GetFilms',

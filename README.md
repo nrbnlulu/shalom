@@ -1,6 +1,6 @@
 # shalom
 
-### (WIP 🚧) GraphQL client for dart and flutter.
+note that shalom is currently in beta, while the public API's are not expected to change much, the internal behaviour might. 
 
 ### Installation
 
@@ -47,7 +47,8 @@ Watch for changes in GraphQL files (`.graphql` and `.gql`) and automatically reg
 ```bash
 shalom watch [OPTIONS]
 ```
-
+### Examples 
+- [swapi-flutter](./examples/flutter/swapi/README.md)
 ### How to: Custom scalars 
 1. make sure to add shalom.yml in project root.
 its content should look like this

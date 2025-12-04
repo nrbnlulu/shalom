@@ -18,7 +18,7 @@ void main() {
         "brand": "Toyota",
         "speed": 180,
         "description": "A reliable sedan",
-        "doors": 4
+        "doors": 4,
       },
       {
         "__typename": "Motorcycle",
@@ -26,7 +26,7 @@ void main() {
         "brand": "Harley",
         "speed": 200,
         "description": "A classic bike",
-        "hasSidecar": false
+        "hasSidecar": false,
       },
       {
         "__typename": "Bicycle",
@@ -34,9 +34,9 @@ void main() {
         "brand": "Trek",
         "speed": 30,
         "description": "A mountain bike",
-        "gears": 21
-      }
-    ]
+        "gears": 21,
+      },
+    ],
   };
 
   final vehiclesRequiredDataChanged = {
@@ -47,7 +47,7 @@ void main() {
         "brand": "Toyota Updated",
         "speed": 180,
         "description": "A reliable sedan",
-        "doors": 4
+        "doors": 4,
       },
       {
         "__typename": "Motorcycle",
@@ -55,7 +55,7 @@ void main() {
         "brand": "Harley",
         "speed": 200,
         "description": "A classic bike",
-        "hasSidecar": false
+        "hasSidecar": false,
       },
       {
         "__typename": "Bicycle",
@@ -63,9 +63,9 @@ void main() {
         "brand": "Trek",
         "speed": 30,
         "description": "A mountain bike",
-        "gears": 21
-      }
-    ]
+        "gears": 21,
+      },
+    ],
   };
 
   final vehiclesRequiredTypeChanged = {
@@ -76,7 +76,7 @@ void main() {
         "brand": "Changed to Motorcycle",
         "speed": 220,
         "description": "Now a bike",
-        "hasSidecar": true
+        "hasSidecar": true,
       },
       {
         "__typename": "Motorcycle",
@@ -84,7 +84,7 @@ void main() {
         "brand": "Harley",
         "speed": 200,
         "description": "A classic bike",
-        "hasSidecar": false
+        "hasSidecar": false,
       },
       {
         "__typename": "Bicycle",
@@ -92,9 +92,9 @@ void main() {
         "brand": "Trek",
         "speed": 30,
         "description": "A mountain bike",
-        "gears": 21
-      }
-    ]
+        "gears": 21,
+      },
+    ],
   };
 
   final vehiclesRequiredLengthChanged = {
@@ -105,7 +105,7 @@ void main() {
         "brand": "Toyota",
         "speed": 180,
         "description": "A reliable sedan",
-        "doors": 4
+        "doors": 4,
       },
       {
         "__typename": "Motorcycle",
@@ -113,9 +113,9 @@ void main() {
         "brand": "Harley",
         "speed": 200,
         "description": "A classic bike",
-        "hasSidecar": false
-      }
-    ]
+        "hasSidecar": false,
+      },
+    ],
   };
 
   final vehiclesRequiredEmptyData = {"vehiclesRequired": []};
@@ -129,7 +129,7 @@ void main() {
         "brand": "Honda",
         "speed": 170,
         "description": "An efficient car",
-        "doors": 4
+        "doors": 4,
       },
       {
         "__typename": "Motorcycle",
@@ -137,9 +137,9 @@ void main() {
         "brand": "Yamaha",
         "speed": 210,
         "description": "A sport bike",
-        "hasSidecar": false
-      }
-    ]
+        "hasSidecar": false,
+      },
+    ],
   };
 
   final vehiclesOptionalNullData = {"vehiclesOptional": null};
@@ -153,7 +153,7 @@ void main() {
         "brand": "Ford",
         "speed": 160,
         "description": "A truck",
-        "doors": 2
+        "doors": 2,
       },
       null,
       {
@@ -162,9 +162,9 @@ void main() {
         "brand": "Ducati",
         "speed": 240,
         "description": "A racing bike",
-        "hasSidecar": false
-      }
-    ]
+        "hasSidecar": false,
+      },
+    ],
   };
 
   // Test data for fully optional [Vehicle]
@@ -176,10 +176,10 @@ void main() {
         "brand": "BMW",
         "speed": 220,
         "description": "A luxury car",
-        "doors": 4
+        "doors": 4,
       },
-      null
-    ]
+      null,
+    ],
   };
 
   final vehiclesFullyOptionalNullData = {"vehiclesFullyOptional": null};
@@ -193,7 +193,7 @@ void main() {
         "brand": "Mercedes",
         "speed": 250,
         "description": "Short desc",
-        "doors": 2
+        "doors": 2,
       },
       {
         "__typename": "Motorcycle",
@@ -201,7 +201,7 @@ void main() {
         "brand": "Kawasaki",
         "speed": 230,
         "description": "Short desc",
-        "hasSidecar": true
+        "hasSidecar": true,
       },
       {
         "__typename": "Bicycle",
@@ -209,17 +209,18 @@ void main() {
         "brand": "Giant",
         "speed": 25,
         "description": "Short desc",
-        "gears": 18
-      }
-    ]
+        "gears": 18,
+      },
+    ],
   };
 
   group('List of Interfaces Required - [Vehicle!]!', () {
     test('vehiclesRequired deserialize mixed types', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
       final result = GetVehiclesRequiredResponse.fromResponse(
-          vehiclesRequiredData,
-          variables: variables);
+        vehiclesRequiredData,
+        variables: variables,
+      );
       expect(result.vehiclesRequired.length, 3);
 
       // Test shared fields via interface reference
@@ -229,8 +230,10 @@ void main() {
       expect(vehicle0.speed, 180);
       expect(vehicle0.description, "A reliable sedan");
 
-      expect(result.vehiclesRequired[0],
-          isA<GetVehiclesRequired_vehiclesRequired__Car>());
+      expect(
+        result.vehiclesRequired[0],
+        isA<GetVehiclesRequired_vehiclesRequired__Car>(),
+      );
       final car = result.vehiclesRequired[0]
           as GetVehiclesRequired_vehiclesRequired__Car;
       expect(car.doors, 4);
@@ -243,8 +246,10 @@ void main() {
       expect(vehicle1.speed, 200);
       expect(vehicle1.description, "A classic bike");
 
-      expect(result.vehiclesRequired[1],
-          isA<GetVehiclesRequired_vehiclesRequired__Motorcycle>());
+      expect(
+        result.vehiclesRequired[1],
+        isA<GetVehiclesRequired_vehiclesRequired__Motorcycle>(),
+      );
       final moto = result.vehiclesRequired[1]
           as GetVehiclesRequired_vehiclesRequired__Motorcycle;
       expect(moto.hasSidecar, false);
@@ -257,8 +262,10 @@ void main() {
       expect(vehicle2.speed, 30);
       expect(vehicle2.description, "A mountain bike");
 
-      expect(result.vehiclesRequired[2],
-          isA<GetVehiclesRequired_vehiclesRequired__Bicycle>());
+      expect(
+        result.vehiclesRequired[2],
+        isA<GetVehiclesRequired_vehiclesRequired__Bicycle>(),
+      );
       final bike = result.vehiclesRequired[2]
           as GetVehiclesRequired_vehiclesRequired__Bicycle;
       expect(bike.gears, 21);
@@ -268,16 +275,18 @@ void main() {
     test('vehiclesRequired deserialize empty list', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
       final result = GetVehiclesRequiredResponse.fromResponse(
-          vehiclesRequiredEmptyData,
-          variables: variables);
+        vehiclesRequiredEmptyData,
+        variables: variables,
+      );
       expect(result.vehiclesRequired.length, 0);
     });
 
     test('vehiclesRequired toJson', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
       final initial = GetVehiclesRequiredResponse.fromResponse(
-          vehiclesRequiredData,
-          variables: variables);
+        vehiclesRequiredData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, vehiclesRequiredData);
     });
@@ -285,22 +294,26 @@ void main() {
     test('vehiclesRequired equals', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
       final result1 = GetVehiclesRequiredResponse.fromResponse(
-          vehiclesRequiredData,
-          variables: variables);
+        vehiclesRequiredData,
+        variables: variables,
+      );
       final result2 = GetVehiclesRequiredResponse.fromResponse(
-          vehiclesRequiredData,
-          variables: variables);
+        vehiclesRequiredData,
+        variables: variables,
+      );
       expect(result1, equals(result2));
     });
 
     test('vehiclesRequired not equals different data', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
       final result1 = GetVehiclesRequiredResponse.fromResponse(
-          vehiclesRequiredData,
-          variables: variables);
+        vehiclesRequiredData,
+        variables: variables,
+      );
       final result2 = GetVehiclesRequiredResponse.fromResponse(
-          vehiclesRequiredDataChanged,
-          variables: variables);
+        vehiclesRequiredDataChanged,
+        variables: variables,
+      );
       expect(result1, isNot(equals(result2)));
     });
   });
@@ -309,8 +322,9 @@ void main() {
     test('vehiclesOptional deserialize with data', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
       final result = GetVehiclesOptionalResponse.fromResponse(
-          vehiclesOptionalData,
-          variables: variables);
+        vehiclesOptionalData,
+        variables: variables,
+      );
       expect(result.vehiclesOptional, isNotNull);
       expect(result.vehiclesOptional!.length, 2);
 
@@ -321,8 +335,10 @@ void main() {
       expect(vehicle0.speed, 170);
       expect(vehicle0.description, "An efficient car");
 
-      expect(result.vehiclesOptional![0],
-          isA<GetVehiclesOptional_vehiclesOptional__Car>());
+      expect(
+        result.vehiclesOptional![0],
+        isA<GetVehiclesOptional_vehiclesOptional__Car>(),
+      );
       final car = result.vehiclesOptional![0]
           as GetVehiclesOptional_vehiclesOptional__Car;
       expect(car.doors, 4);
@@ -335,8 +351,10 @@ void main() {
       expect(vehicle1.speed, 210);
       expect(vehicle1.description, "A sport bike");
 
-      expect(result.vehiclesOptional![1],
-          isA<GetVehiclesOptional_vehiclesOptional__Motorcycle>());
+      expect(
+        result.vehiclesOptional![1],
+        isA<GetVehiclesOptional_vehiclesOptional__Motorcycle>(),
+      );
       final moto = result.vehiclesOptional![1]
           as GetVehiclesOptional_vehiclesOptional__Motorcycle;
       expect(moto.hasSidecar, false);
@@ -346,16 +364,18 @@ void main() {
     test('vehiclesOptional deserialize null', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
       final result = GetVehiclesOptionalResponse.fromResponse(
-          vehiclesOptionalNullData,
-          variables: variables);
+        vehiclesOptionalNullData,
+        variables: variables,
+      );
       expect(result.vehiclesOptional, isNull);
     });
 
     test('vehiclesOptional toJson with data', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
       final initial = GetVehiclesOptionalResponse.fromResponse(
-          vehiclesOptionalData,
-          variables: variables);
+        vehiclesOptionalData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, vehiclesOptionalData);
     });
@@ -363,8 +383,9 @@ void main() {
     test('vehiclesOptional toJson null', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
       final initial = GetVehiclesOptionalResponse.fromResponse(
-          vehiclesOptionalNullData,
-          variables: variables);
+        vehiclesOptionalNullData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, vehiclesOptionalNullData);
     });
@@ -372,11 +393,13 @@ void main() {
     test('vehiclesOptional equals', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
       final result1 = GetVehiclesOptionalResponse.fromResponse(
-          vehiclesOptionalData,
-          variables: variables);
+        vehiclesOptionalData,
+        variables: variables,
+      );
       final result2 = GetVehiclesOptionalResponse.fromResponse(
-          vehiclesOptionalData,
-          variables: variables);
+        vehiclesOptionalData,
+        variables: variables,
+      );
       expect(result1, equals(result2));
     });
   });
@@ -385,13 +408,16 @@ void main() {
     test('optionalVehicles deserialize with nulls', () {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
       final result = GetOptionalVehiclesResponse.fromResponse(
-          optionalVehiclesData,
-          variables: variables);
+        optionalVehiclesData,
+        variables: variables,
+      );
       expect(result.optionalVehicles.length, 3);
 
       expect(result.optionalVehicles[0], isNotNull);
-      expect(result.optionalVehicles[0],
-          isA<GetOptionalVehicles_optionalVehicles__Car>());
+      expect(
+        result.optionalVehicles[0],
+        isA<GetOptionalVehicles_optionalVehicles__Car>(),
+      );
       final car = result.optionalVehicles[0]
           as GetOptionalVehicles_optionalVehicles__Car;
       expect(car.id, "car3");
@@ -403,8 +429,10 @@ void main() {
       expect(result.optionalVehicles[1], isNull);
 
       expect(result.optionalVehicles[2], isNotNull);
-      expect(result.optionalVehicles[2],
-          isA<GetOptionalVehicles_optionalVehicles__Motorcycle>());
+      expect(
+        result.optionalVehicles[2],
+        isA<GetOptionalVehicles_optionalVehicles__Motorcycle>(),
+      );
       final moto = result.optionalVehicles[2]
           as GetOptionalVehicles_optionalVehicles__Motorcycle;
       expect(moto.id, "moto3");
@@ -417,8 +445,9 @@ void main() {
     test('optionalVehicles toJson', () {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
       final initial = GetOptionalVehiclesResponse.fromResponse(
-          optionalVehiclesData,
-          variables: variables);
+        optionalVehiclesData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, optionalVehiclesData);
     });
@@ -426,11 +455,13 @@ void main() {
     test('optionalVehicles equals', () {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
       final result1 = GetOptionalVehiclesResponse.fromResponse(
-          optionalVehiclesData,
-          variables: variables);
+        optionalVehiclesData,
+        variables: variables,
+      );
       final result2 = GetOptionalVehiclesResponse.fromResponse(
-          optionalVehiclesData,
-          variables: variables);
+        optionalVehiclesData,
+        variables: variables,
+      );
       expect(result1, equals(result2));
     });
   });
@@ -439,14 +470,17 @@ void main() {
     test('vehiclesFullyOptional deserialize with data and nulls', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
       final result = GetVehiclesFullyOptionalResponse.fromResponse(
-          vehiclesFullyOptionalData,
-          variables: variables);
+        vehiclesFullyOptionalData,
+        variables: variables,
+      );
       expect(result.vehiclesFullyOptional, isNotNull);
       expect(result.vehiclesFullyOptional!.length, 2);
 
       expect(result.vehiclesFullyOptional![0], isNotNull);
-      expect(result.vehiclesFullyOptional![0],
-          isA<GetVehiclesFullyOptional_vehiclesFullyOptional__Car>());
+      expect(
+        result.vehiclesFullyOptional![0],
+        isA<GetVehiclesFullyOptional_vehiclesFullyOptional__Car>(),
+      );
       final car = result.vehiclesFullyOptional![0]
           as GetVehiclesFullyOptional_vehiclesFullyOptional__Car;
       expect(car.id, "car4");
@@ -461,16 +495,18 @@ void main() {
     test('vehiclesFullyOptional deserialize null list', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
       final result = GetVehiclesFullyOptionalResponse.fromResponse(
-          vehiclesFullyOptionalNullData,
-          variables: variables);
+        vehiclesFullyOptionalNullData,
+        variables: variables,
+      );
       expect(result.vehiclesFullyOptional, isNull);
     });
 
     test('vehiclesFullyOptional toJson with data', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
       final initial = GetVehiclesFullyOptionalResponse.fromResponse(
-          vehiclesFullyOptionalData,
-          variables: variables);
+        vehiclesFullyOptionalData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, vehiclesFullyOptionalData);
     });
@@ -478,8 +514,9 @@ void main() {
     test('vehiclesFullyOptional toJson null', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
       final initial = GetVehiclesFullyOptionalResponse.fromResponse(
-          vehiclesFullyOptionalNullData,
-          variables: variables);
+        vehiclesFullyOptionalNullData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, vehiclesFullyOptionalNullData);
     });
@@ -487,11 +524,13 @@ void main() {
     test('vehiclesFullyOptional equals', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
       final result1 = GetVehiclesFullyOptionalResponse.fromResponse(
-          vehiclesFullyOptionalData,
-          variables: variables);
+        vehiclesFullyOptionalData,
+        variables: variables,
+      );
       final result2 = GetVehiclesFullyOptionalResponse.fromResponse(
-          vehiclesFullyOptionalData,
-          variables: variables);
+        vehiclesFullyOptionalData,
+        variables: variables,
+      );
       expect(result1, equals(result2));
     });
   });
@@ -500,12 +539,15 @@ void main() {
     test('vehiclesWithArgs deserialize all types', () {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
       final result = GetVehiclesWithArgsResponse.fromResponse(
-          vehiclesWithArgsData,
-          variables: variables);
+        vehiclesWithArgsData,
+        variables: variables,
+      );
       expect(result.vehiclesWithArgs.length, 3);
 
-      expect(result.vehiclesWithArgs[0],
-          isA<GetVehiclesWithArgs_vehiclesWithArgs__Car>());
+      expect(
+        result.vehiclesWithArgs[0],
+        isA<GetVehiclesWithArgs_vehiclesWithArgs__Car>(),
+      );
       final car = result.vehiclesWithArgs[0]
           as GetVehiclesWithArgs_vehiclesWithArgs__Car;
       expect(car.id, "car5");
@@ -515,8 +557,10 @@ void main() {
       expect(car.doors, 2);
       expect(car.$__typename, "Car");
 
-      expect(result.vehiclesWithArgs[1],
-          isA<GetVehiclesWithArgs_vehiclesWithArgs__Motorcycle>());
+      expect(
+        result.vehiclesWithArgs[1],
+        isA<GetVehiclesWithArgs_vehiclesWithArgs__Motorcycle>(),
+      );
       final moto = result.vehiclesWithArgs[1]
           as GetVehiclesWithArgs_vehiclesWithArgs__Motorcycle;
       expect(moto.id, "moto5");
@@ -526,8 +570,10 @@ void main() {
       expect(moto.hasSidecar, true);
       expect(moto.$__typename, "Motorcycle");
 
-      expect(result.vehiclesWithArgs[2],
-          isA<GetVehiclesWithArgs_vehiclesWithArgs__Bicycle>());
+      expect(
+        result.vehiclesWithArgs[2],
+        isA<GetVehiclesWithArgs_vehiclesWithArgs__Bicycle>(),
+      );
       final bike = result.vehiclesWithArgs[2]
           as GetVehiclesWithArgs_vehiclesWithArgs__Bicycle;
       expect(bike.id, "bike5");
@@ -541,8 +587,9 @@ void main() {
     test('vehiclesWithArgs toJson', () {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
       final initial = GetVehiclesWithArgsResponse.fromResponse(
-          vehiclesWithArgsData,
-          variables: variables);
+        vehiclesWithArgsData,
+        variables: variables,
+      );
       final json = initial.toJson();
       expect(json, vehiclesWithArgsData);
     });
@@ -550,11 +597,13 @@ void main() {
     test('vehiclesWithArgs equals', () {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
       final result1 = GetVehiclesWithArgsResponse.fromResponse(
-          vehiclesWithArgsData,
-          variables: variables);
+        vehiclesWithArgsData,
+        variables: variables,
+      );
       final result2 = GetVehiclesWithArgsResponse.fromResponse(
-          vehiclesWithArgsData,
-          variables: variables);
+        vehiclesWithArgsData,
+        variables: variables,
+      );
       expect(result1, equals(result2));
     });
   });
@@ -571,8 +620,10 @@ void main() {
       );
 
       expect(result.vehiclesRequired.length, 3);
-      expect(result.vehiclesRequired[0],
-          isA<GetVehiclesRequired_vehiclesRequired__Car>());
+      expect(
+        result.vehiclesRequired[0],
+        isA<GetVehiclesRequired_vehiclesRequired__Car>(),
+      );
       final car1 = result.vehiclesRequired[0]
           as GetVehiclesRequired_vehiclesRequired__Car;
       expect(car1.brand, "Toyota");
@@ -607,8 +658,10 @@ void main() {
         variables,
       );
 
-      expect(result.vehiclesRequired[0],
-          isA<GetVehiclesRequired_vehiclesRequired__Car>());
+      expect(
+        result.vehiclesRequired[0],
+        isA<GetVehiclesRequired_vehiclesRequired__Car>(),
+      );
 
       final hasChanged = Completer<bool>();
       final sub = ctx.subscribe(updateCtx.dependantRecords);
@@ -625,8 +678,10 @@ void main() {
 
       await hasChanged.future.timeout(Duration(seconds: 1));
       expect(result, equals(nextResult));
-      expect(result.vehiclesRequired[0],
-          isA<GetVehiclesRequired_vehiclesRequired__Motorcycle>());
+      expect(
+        result.vehiclesRequired[0],
+        isA<GetVehiclesRequired_vehiclesRequired__Motorcycle>(),
+      );
     });
 
     test('vehiclesRequired length change', () async {
@@ -732,9 +787,9 @@ void main() {
             "brand": "Mercedes",
             "speed": 250,
             "description": "Initial desc",
-            "doors": 2
-          }
-        ]
+            "doors": 2,
+          },
+        ],
       };
 
       var (result, updateCtx) = GetVehiclesWithArgsResponse.fromResponseImpl(
@@ -763,9 +818,9 @@ void main() {
             "brand": "Mercedes",
             "speed": 250,
             "description": "Updated desc",
-            "doors": 2
-          }
-        ]
+            "doors": 2,
+          },
+        ],
       };
 
       final nextResult = GetVehiclesWithArgsResponse.fromResponse(
@@ -833,7 +888,7 @@ void main() {
             "brand": "Toyota",
             "speed": 180,
             "description": "A reliable sedan",
-            "doors": 4
+            "doors": 4,
           },
           {
             "__typename": "Motorcycle",
@@ -841,9 +896,9 @@ void main() {
             "brand": "Harley",
             "speed": 200,
             "description": "A classic bike",
-            "hasSidecar": false
-          }
-        ]
+            "hasSidecar": false,
+          },
+        ],
       };
 
       final result = GetVehiclesRequiredResponse.fromResponse(
@@ -864,7 +919,7 @@ void main() {
             "brand": "Toyota",
             "speed": 180,
             "description": "A reliable sedan",
-            "doors": 4
+            "doors": 4,
           },
           {
             "__typename": "Car",
@@ -872,7 +927,7 @@ void main() {
             "brand": "Honda",
             "speed": 200,
             "description": "A sporty coupe",
-            "doors": 2
+            "doors": 2,
           },
           {
             "__typename": "Motorcycle",
@@ -880,9 +935,9 @@ void main() {
             "brand": "Harley",
             "speed": 200,
             "description": "A classic bike",
-            "hasSidecar": false
-          }
-        ]
+            "hasSidecar": false,
+          },
+        ],
       };
 
       final result = GetVehiclesRequiredResponse.fromResponse(

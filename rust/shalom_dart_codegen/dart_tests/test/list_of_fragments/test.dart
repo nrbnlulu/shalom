@@ -32,7 +32,8 @@ void main() {
   group('List of Fragments - Required List with Single Fragment', () {
     test('listFragmentRequired - deserialize list with fragment', () {
       final result = GetUsersRequiredWithFragmentResponse.fromResponse(
-          usersRequiredFragmentData);
+        usersRequiredFragmentData,
+      );
       expect(result.usersRequired.length, 3);
       expect(result.usersRequired[0].id, "1");
       expect(result.usersRequired[0].name, "Alice");
@@ -43,20 +44,23 @@ void main() {
 
     test('listFragmentRequired - deserialize empty list', () {
       final result = GetUsersRequiredWithFragmentResponse.fromResponse(
-          usersRequiredFragmentEmptyData);
+        usersRequiredFragmentEmptyData,
+      );
       expect(result.usersRequired, []);
     });
 
     test('listFragmentRequired - toJson', () {
       final initial = GetUsersRequiredWithFragmentResponse.fromResponse(
-          usersRequiredFragmentData);
+        usersRequiredFragmentData,
+      );
       final json = initial.toJson();
       expect(json, usersRequiredFragmentData);
     });
 
     test('listFragmentRequired - toJson with empty list', () {
       final initial = GetUsersRequiredWithFragmentResponse.fromResponse(
-          usersRequiredFragmentEmptyData);
+        usersRequiredFragmentEmptyData,
+      );
       final json = initial.toJson();
       expect(json, usersRequiredFragmentEmptyData);
     });
@@ -64,14 +68,17 @@ void main() {
     test('listFragmentRequired - equals', () {
       final ctx = ShalomCtx.withCapacity();
       final result1 = GetUsersRequiredWithFragmentResponse.fromResponse(
-          usersRequiredFragmentData,
-          ctx: ctx);
+        usersRequiredFragmentData,
+        ctx: ctx,
+      );
       final result2 = GetUsersRequiredWithFragmentResponse.fromResponse(
-          usersRequiredFragmentData,
-          ctx: ctx);
+        usersRequiredFragmentData,
+        ctx: ctx,
+      );
       final result3 = GetUsersRequiredWithFragmentResponse.fromResponse(
-          usersRequiredFragmentDataChanged,
-          ctx: ctx);
+        usersRequiredFragmentDataChanged,
+        ctx: ctx,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -79,8 +86,10 @@ void main() {
 
     test('listFragmentRequired - cacheNormalization', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetUsersRequiredWithFragmentResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetUsersRequiredWithFragmentResponse.fromResponseImpl(
         usersRequiredFragmentData,
         ctx,
       );
@@ -124,7 +133,8 @@ void main() {
   group('List of Fragments - Optional List with Single Fragment', () {
     test('listFragmentOptional - deserialize list with fragment', () {
       final result = GetUsersOptionalWithFragmentResponse.fromResponse(
-          usersOptionalFragmentData);
+        usersOptionalFragmentData,
+      );
       expect(result.usersOptional?.length, 2);
       expect(result.usersOptional?[0].id, "1");
       expect(result.usersOptional?[0].name, "Alice");
@@ -132,26 +142,30 @@ void main() {
 
     test('listFragmentOptional - deserialize null list', () {
       final result = GetUsersOptionalWithFragmentResponse.fromResponse(
-          usersOptionalFragmentNullData);
+        usersOptionalFragmentNullData,
+      );
       expect(result.usersOptional, isNull);
     });
 
     test('listFragmentOptional - deserialize empty list', () {
       final result = GetUsersOptionalWithFragmentResponse.fromResponse(
-          usersOptionalFragmentEmptyData);
+        usersOptionalFragmentEmptyData,
+      );
       expect(result.usersOptional, []);
     });
 
     test('listFragmentOptional - toJson', () {
       final initial = GetUsersOptionalWithFragmentResponse.fromResponse(
-          usersOptionalFragmentData);
+        usersOptionalFragmentData,
+      );
       final json = initial.toJson();
       expect(json, usersOptionalFragmentData);
     });
 
     test('listFragmentOptional - toJson with null', () {
       final initial = GetUsersOptionalWithFragmentResponse.fromResponse(
-          usersOptionalFragmentNullData);
+        usersOptionalFragmentNullData,
+      );
       final json = initial.toJson();
       expect(json, usersOptionalFragmentNullData);
     });
@@ -159,14 +173,17 @@ void main() {
     test('listFragmentOptional - equals', () {
       final ctx = ShalomCtx.withCapacity();
       final result1 = GetUsersOptionalWithFragmentResponse.fromResponse(
-          usersOptionalFragmentData,
-          ctx: ctx);
+        usersOptionalFragmentData,
+        ctx: ctx,
+      );
       final result2 = GetUsersOptionalWithFragmentResponse.fromResponse(
-          usersOptionalFragmentData,
-          ctx: ctx);
+        usersOptionalFragmentData,
+        ctx: ctx,
+      );
       final result3 = GetUsersOptionalWithFragmentResponse.fromResponse(
-          usersOptionalFragmentNullData,
-          ctx: ctx);
+        usersOptionalFragmentNullData,
+        ctx: ctx,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -174,8 +191,10 @@ void main() {
 
     test('listFragmentOptional - cacheNormalization null to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetUsersOptionalWithFragmentResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetUsersOptionalWithFragmentResponse.fromResponseImpl(
         usersOptionalFragmentNullData,
         ctx,
       );
@@ -200,8 +219,10 @@ void main() {
 
     test('listFragmentOptional - cacheNormalization some to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetUsersOptionalWithFragmentResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetUsersOptionalWithFragmentResponse.fromResponseImpl(
         usersOptionalFragmentData,
         ctx,
       );
@@ -232,14 +253,14 @@ void main() {
         "name": "Alice",
         "email": "alice@example.com",
         "bio": "Software Engineer",
-        "age": 30
+        "age": 30,
       },
       {
         "id": "2",
         "name": "Bob",
         "email": "bob@example.com",
         "bio": "Designer",
-        "age": 25
+        "age": 25,
       },
     ],
   };
@@ -251,14 +272,14 @@ void main() {
         "name": "Alice",
         "email": "alice@example.com",
         "bio": "Senior Software Engineer",
-        "age": 31
+        "age": 31,
       },
       {
         "id": "2",
         "name": "Bob",
         "email": "bob@example.com",
         "bio": "Designer",
-        "age": 25
+        "age": 25,
       },
     ],
   };
@@ -266,7 +287,8 @@ void main() {
   group('List of Fragments - Multiple Fragments', () {
     test('multipleFragmentsRequired - deserialize', () {
       final result = GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
-          usersMultipleFragmentsData);
+        usersMultipleFragmentsData,
+      );
       expect(result.usersRequired.length, 2);
       expect(result.usersRequired[0].id, "1");
       expect(result.usersRequired[0].name, "Alice");
@@ -278,7 +300,8 @@ void main() {
     test('multipleFragmentsRequired - toJson', () {
       final initial =
           GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
-              usersMultipleFragmentsData);
+        usersMultipleFragmentsData,
+      );
       final json = initial.toJson();
       expect(json, usersMultipleFragmentsData);
     });
@@ -287,16 +310,19 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final result1 =
           GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
-              usersMultipleFragmentsData,
-              ctx: ctx);
+        usersMultipleFragmentsData,
+        ctx: ctx,
+      );
       final result2 =
           GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
-              usersMultipleFragmentsData,
-              ctx: ctx);
+        usersMultipleFragmentsData,
+        ctx: ctx,
+      );
       final result3 =
           GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
-              usersMultipleFragmentsDataChanged,
-              ctx: ctx);
+        usersMultipleFragmentsDataChanged,
+        ctx: ctx,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -304,8 +330,10 @@ void main() {
 
     test('multipleFragmentsRequired - cacheNormalization', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetUsersRequiredWithMultipleFragmentsResponse.fromResponseImpl(
         usersMultipleFragmentsData,
         ctx,
       );
@@ -314,8 +342,9 @@ void main() {
 
       final sub = ctx.subscribe(updateCtx.dependantRecords);
       sub.streamController.stream.listen((newCtx) {
-        result =
-            GetUsersRequiredWithMultipleFragmentsResponse.fromCache(newCtx);
+        result = GetUsersRequiredWithMultipleFragmentsResponse.fromCache(
+          newCtx,
+        );
         hasChanged.complete(true);
       });
 
@@ -339,14 +368,14 @@ void main() {
         "name": "Alice",
         "email": "alice@example.com",
         "age": 30,
-        "bio": "Developer"
+        "bio": "Developer",
       },
       {
         "id": "2",
         "name": "Bob",
         "email": "bob@example.com",
         "age": 25,
-        "bio": "Designer"
+        "bio": "Designer",
       },
     ],
   };
@@ -358,14 +387,14 @@ void main() {
         "name": "Alice Updated",
         "email": "alice@example.com",
         "age": 31,
-        "bio": "Senior Developer"
+        "bio": "Senior Developer",
       },
       {
         "id": "2",
         "name": "Bob",
         "email": "bob@example.com",
         "age": 25,
-        "bio": "Designer"
+        "bio": "Designer",
       },
     ],
   };
@@ -373,7 +402,8 @@ void main() {
   group('List of Fragments - Fragment with Additional Fields', () {
     test('fragmentWithFieldsRequired - deserialize', () {
       final result = GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
-          usersFragmentAndFieldsData);
+        usersFragmentAndFieldsData,
+      );
       expect(result.usersRequired.length, 2);
       expect(result.usersRequired[0].id, "1");
       expect(result.usersRequired[0].name, "Alice");
@@ -385,7 +415,8 @@ void main() {
     test('fragmentWithFieldsRequired - toJson', () {
       final initial =
           GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
-              usersFragmentAndFieldsData);
+        usersFragmentAndFieldsData,
+      );
       final json = initial.toJson();
       expect(json, usersFragmentAndFieldsData);
     });
@@ -394,16 +425,19 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final result1 =
           GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
-              usersFragmentAndFieldsData,
-              ctx: ctx);
+        usersFragmentAndFieldsData,
+        ctx: ctx,
+      );
       final result2 =
           GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
-              usersFragmentAndFieldsData,
-              ctx: ctx);
+        usersFragmentAndFieldsData,
+        ctx: ctx,
+      );
       final result3 =
           GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
-              usersFragmentAndFieldsDataChanged,
-              ctx: ctx);
+        usersFragmentAndFieldsDataChanged,
+        ctx: ctx,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -411,8 +445,10 @@ void main() {
 
     test('fragmentWithFieldsRequired - cacheNormalization', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetUsersRequiredWithFragmentAndFieldsResponse.fromResponseImpl(
         usersFragmentAndFieldsData,
         ctx,
       );
@@ -421,8 +457,9 @@ void main() {
 
       final sub = ctx.subscribe(updateCtx.dependantRecords);
       sub.streamController.stream.listen((newCtx) {
-        result =
-            GetUsersRequiredWithFragmentAndFieldsResponse.fromCache(newCtx);
+        result = GetUsersRequiredWithFragmentAndFieldsResponse.fromCache(
+          newCtx,
+        );
         hasChanged.complete(true);
       });
 
@@ -446,13 +483,13 @@ void main() {
         "id": "post1",
         "title": "GraphQL Guide",
         "published": true,
-        "author": {"id": "1", "name": "Alice", "email": "alice@example.com"}
+        "author": {"id": "1", "name": "Alice", "email": "alice@example.com"},
       },
       {
         "id": "post2",
         "title": "Dart Tips",
         "published": false,
-        "author": {"id": "2", "name": "Bob", "email": "bob@example.com"}
+        "author": {"id": "2", "name": "Bob", "email": "bob@example.com"},
       },
     ],
   };
@@ -466,14 +503,14 @@ void main() {
         "author": {
           "id": "1",
           "name": "Alice Updated",
-          "email": "alice@example.com"
-        }
+          "email": "alice@example.com",
+        },
       },
       {
         "id": "post2",
         "title": "Dart Tips",
         "published": false,
-        "author": {"id": "2", "name": "Bob", "email": "bob@example.com"}
+        "author": {"id": "2", "name": "Bob", "email": "bob@example.com"},
       },
     ],
   };
@@ -481,7 +518,8 @@ void main() {
   group('List of Fragments - Nested Object with Fragment', () {
     test('nestedFragmentRequired - deserialize', () {
       final result = GetPostsWithAuthorFragmentResponse.fromResponse(
-          postsWithAuthorFragmentData);
+        postsWithAuthorFragmentData,
+      );
       expect(result.posts.length, 2);
       expect(result.posts[0].id, "post1");
       expect(result.posts[0].title, "GraphQL Guide");
@@ -493,7 +531,8 @@ void main() {
 
     test('nestedFragmentRequired - toJson', () {
       final initial = GetPostsWithAuthorFragmentResponse.fromResponse(
-          postsWithAuthorFragmentData);
+        postsWithAuthorFragmentData,
+      );
       final json = initial.toJson();
       expect(json, postsWithAuthorFragmentData);
     });
@@ -501,14 +540,17 @@ void main() {
     test('nestedFragmentRequired - equals', () {
       final ctx = ShalomCtx.withCapacity();
       final result1 = GetPostsWithAuthorFragmentResponse.fromResponse(
-          postsWithAuthorFragmentData,
-          ctx: ctx);
+        postsWithAuthorFragmentData,
+        ctx: ctx,
+      );
       final result2 = GetPostsWithAuthorFragmentResponse.fromResponse(
-          postsWithAuthorFragmentData,
-          ctx: ctx);
+        postsWithAuthorFragmentData,
+        ctx: ctx,
+      );
       final result3 = GetPostsWithAuthorFragmentResponse.fromResponse(
-          postsWithAuthorFragmentDataChanged,
-          ctx: ctx);
+        postsWithAuthorFragmentDataChanged,
+        ctx: ctx,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -516,8 +558,10 @@ void main() {
 
     test('nestedFragmentRequired - cacheNormalization', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetPostsWithAuthorFragmentResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetPostsWithAuthorFragmentResponse.fromResponseImpl(
         postsWithAuthorFragmentData,
         ctx,
       );
@@ -549,14 +593,14 @@ void main() {
         "title": "GraphQL Basics",
         "published": true,
         "content": "Content 1",
-        "tags": ["graphql", "basics"]
+        "tags": ["graphql", "basics"],
       },
       {
         "id": "post2",
         "title": "Advanced Topics",
         "published": false,
         "content": "Content 2",
-        "tags": ["advanced", "topics"]
+        "tags": ["advanced", "topics"],
       },
     ],
   };
@@ -568,14 +612,14 @@ void main() {
         "title": "GraphQL Basics Updated",
         "published": true,
         "content": "Content 1 Updated",
-        "tags": ["graphql", "basics", "updated"]
+        "tags": ["graphql", "basics", "updated"],
       },
       {
         "id": "post2",
         "title": "Advanced Topics",
         "published": false,
         "content": "Content 2",
-        "tags": ["advanced", "topics"]
+        "tags": ["advanced", "topics"],
       },
     ],
   };
@@ -585,7 +629,8 @@ void main() {
   group('List of Fragments - Optional List with Multiple Fragments', () {
     test('optionalMultipleFragments - deserialize', () {
       final result = GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
-          postsOptionalMultipleFragmentsData);
+        postsOptionalMultipleFragmentsData,
+      );
       expect(result.postsOptional?.length, 2);
       expect(result.postsOptional?[0].id, "post1");
       expect(result.postsOptional?[0].title, "GraphQL Basics");
@@ -596,14 +641,16 @@ void main() {
 
     test('optionalMultipleFragments - deserialize null', () {
       final result = GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
-          postsOptionalMultipleFragmentsNullData);
+        postsOptionalMultipleFragmentsNullData,
+      );
       expect(result.postsOptional, isNull);
     });
 
     test('optionalMultipleFragments - toJson', () {
       final initial =
           GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
-              postsOptionalMultipleFragmentsData);
+        postsOptionalMultipleFragmentsData,
+      );
       final json = initial.toJson();
       expect(json, postsOptionalMultipleFragmentsData);
     });
@@ -612,16 +659,19 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final result1 =
           GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
-              postsOptionalMultipleFragmentsData,
-              ctx: ctx);
+        postsOptionalMultipleFragmentsData,
+        ctx: ctx,
+      );
       final result2 =
           GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
-              postsOptionalMultipleFragmentsData,
-              ctx: ctx);
+        postsOptionalMultipleFragmentsData,
+        ctx: ctx,
+      );
       final result3 =
           GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
-              postsOptionalMultipleFragmentsNullData,
-              ctx: ctx);
+        postsOptionalMultipleFragmentsNullData,
+        ctx: ctx,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -629,8 +679,10 @@ void main() {
 
     test('optionalMultipleFragments - cacheNormalization', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetPostsOptionalWithMultipleFragmentsResponse.fromResponseImpl(
         postsOptionalMultipleFragmentsData,
         ctx,
       );
@@ -639,8 +691,9 @@ void main() {
 
       final sub = ctx.subscribe(updateCtx.dependantRecords);
       sub.streamController.stream.listen((newCtx) {
-        result =
-            GetPostsOptionalWithMultipleFragmentsResponse.fromCache(newCtx);
+        result = GetPostsOptionalWithMultipleFragmentsResponse.fromCache(
+          newCtx,
+        );
         hasChanged.complete(true);
       });
 
@@ -661,8 +714,10 @@ void main() {
   group('List of Fragments - Cache Normalization with Partial Selection', () {
     test('partialFragmentCacheNormalization - no overlapping deps', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetUsersRequiredPartialFragmentResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetUsersRequiredPartialFragmentResponse.fromResponseImpl(
         usersRequiredFragmentData,
         ctx,
       );
@@ -682,21 +737,21 @@ void main() {
             "name": "Alice",
             "email": "alice@example.com",
             "age": 31,
-            "bio": "Updated bio"
+            "bio": "Updated bio",
           },
           {
             "id": "2",
             "name": "Bob",
             "email": "bob@example.com",
             "age": 26,
-            "bio": "Updated bio"
+            "bio": "Updated bio",
           },
           {
             "id": "3",
             "name": "Charlie",
             "email": "charlie@example.com",
             "age": 36,
-            "bio": "Updated bio"
+            "bio": "Updated bio",
           },
         ],
       };

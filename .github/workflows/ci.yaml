@@ -30,7 +30,7 @@ jobs:
               uses: flutter-actions/setup-flutter@v4
               with:
                   channel: stable
-                  version: 3.29.2
+                  version: 3.38.1
 
             - name: Install Task
               uses: arduino/setup-task@v2

@@ -11,23 +11,24 @@ import "__graphql__/GetStatusesFullyOptional.shalom.dart";
 void main() {
   // Test data for required list
   final statusesRequiredData = {
-    "statusesRequired": ["PENDING", "PROCESSING", "COMPLETED"]
+    "statusesRequired": ["PENDING", "PROCESSING", "COMPLETED"],
   };
 
   final statusesRequiredDataChanged = {
-    "statusesRequired": ["FAILED", "PROCESSING", "COMPLETED"]
+    "statusesRequired": ["FAILED", "PROCESSING", "COMPLETED"],
   };
 
   final statusesRequiredLengthChanged = {
-    "statusesRequired": ["PENDING", "PROCESSING"]
+    "statusesRequired": ["PENDING", "PROCESSING"],
   };
 
   final statusesRequiredEmptyData = {"statusesRequired": []};
 
   group('List of Enums Required - [Status!]!', () {
     test('statusesRequired deserialize', () {
-      final result =
-          GetStatusesRequiredResponse.fromResponse(statusesRequiredData);
+      final result = GetStatusesRequiredResponse.fromResponse(
+        statusesRequiredData,
+      );
       expect(result.statusesRequired.length, 3);
       expect(result.statusesRequired[0], Status.PENDING);
       expect(result.statusesRequired[1], Status.PROCESSING);
@@ -35,32 +36,38 @@ void main() {
     });
 
     test('statusesRequired deserialize empty list', () {
-      final result =
-          GetStatusesRequiredResponse.fromResponse(statusesRequiredEmptyData);
+      final result = GetStatusesRequiredResponse.fromResponse(
+        statusesRequiredEmptyData,
+      );
       expect(result.statusesRequired, []);
     });
 
     test('statusesRequired toJson', () {
-      final initial =
-          GetStatusesRequiredResponse.fromResponse(statusesRequiredData);
+      final initial = GetStatusesRequiredResponse.fromResponse(
+        statusesRequiredData,
+      );
       final json = initial.toJson();
       expect(json, statusesRequiredData);
     });
 
     test('statusesRequired toJson empty list', () {
-      final initial =
-          GetStatusesRequiredResponse.fromResponse(statusesRequiredEmptyData);
+      final initial = GetStatusesRequiredResponse.fromResponse(
+        statusesRequiredEmptyData,
+      );
       final json = initial.toJson();
       expect(json, statusesRequiredEmptyData);
     });
 
     test('statusesRequired equals', () {
-      final result1 =
-          GetStatusesRequiredResponse.fromResponse(statusesRequiredData);
-      final result2 =
-          GetStatusesRequiredResponse.fromResponse(statusesRequiredData);
-      final result3 =
-          GetStatusesRequiredResponse.fromResponse(statusesRequiredDataChanged);
+      final result1 = GetStatusesRequiredResponse.fromResponse(
+        statusesRequiredData,
+      );
+      final result2 = GetStatusesRequiredResponse.fromResponse(
+        statusesRequiredData,
+      );
+      final result3 = GetStatusesRequiredResponse.fromResponse(
+        statusesRequiredDataChanged,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -119,11 +126,11 @@ void main() {
 
   // Test data for optional list
   final statusesOptionalData = {
-    "statusesOptional": ["COMPLETED", "FAILED"]
+    "statusesOptional": ["COMPLETED", "FAILED"],
   };
 
   final statusesOptionalDataChanged = {
-    "statusesOptional": ["PENDING", "FAILED"]
+    "statusesOptional": ["PENDING", "FAILED"],
   };
 
   final statusesOptionalNullData = {"statusesOptional": null};
@@ -131,55 +138,65 @@ void main() {
 
   group('List of Enums Optional - [Status!]', () {
     test('statusesOptional deserialize', () {
-      final result =
-          GetStatusesOptionalResponse.fromResponse(statusesOptionalData);
+      final result = GetStatusesOptionalResponse.fromResponse(
+        statusesOptionalData,
+      );
       expect(result.statusesOptional?.length, 2);
       expect(result.statusesOptional?[0], Status.COMPLETED);
       expect(result.statusesOptional?[1], Status.FAILED);
     });
 
     test('statusesOptional deserialize null', () {
-      final result =
-          GetStatusesOptionalResponse.fromResponse(statusesOptionalNullData);
+      final result = GetStatusesOptionalResponse.fromResponse(
+        statusesOptionalNullData,
+      );
       expect(result.statusesOptional, isNull);
     });
 
     test('statusesOptional deserialize empty list', () {
-      final result =
-          GetStatusesOptionalResponse.fromResponse(statusesOptionalEmptyData);
+      final result = GetStatusesOptionalResponse.fromResponse(
+        statusesOptionalEmptyData,
+      );
       expect(result.statusesOptional, []);
     });
 
     test('statusesOptional toJson', () {
-      final initial =
-          GetStatusesOptionalResponse.fromResponse(statusesOptionalData);
+      final initial = GetStatusesOptionalResponse.fromResponse(
+        statusesOptionalData,
+      );
       final json = initial.toJson();
       expect(json, statusesOptionalData);
     });
 
     test('statusesOptional toJson null', () {
-      final initial =
-          GetStatusesOptionalResponse.fromResponse(statusesOptionalNullData);
+      final initial = GetStatusesOptionalResponse.fromResponse(
+        statusesOptionalNullData,
+      );
       final json = initial.toJson();
       expect(json, statusesOptionalNullData);
     });
 
     test('statusesOptional toJson empty list', () {
-      final initial =
-          GetStatusesOptionalResponse.fromResponse(statusesOptionalEmptyData);
+      final initial = GetStatusesOptionalResponse.fromResponse(
+        statusesOptionalEmptyData,
+      );
       final json = initial.toJson();
       expect(json, statusesOptionalEmptyData);
     });
 
     test('statusesOptional equals', () {
-      final result1 =
-          GetStatusesOptionalResponse.fromResponse(statusesOptionalData);
-      final result2 =
-          GetStatusesOptionalResponse.fromResponse(statusesOptionalData);
-      final result3 =
-          GetStatusesOptionalResponse.fromResponse(statusesOptionalNullData);
-      final result4 =
-          GetStatusesOptionalResponse.fromResponse(statusesOptionalNullData);
+      final result1 = GetStatusesOptionalResponse.fromResponse(
+        statusesOptionalData,
+      );
+      final result2 = GetStatusesOptionalResponse.fromResponse(
+        statusesOptionalData,
+      );
+      final result3 = GetStatusesOptionalResponse.fromResponse(
+        statusesOptionalNullData,
+      );
+      final result4 = GetStatusesOptionalResponse.fromResponse(
+        statusesOptionalNullData,
+      );
 
       expect(result1, equals(result2));
       expect(result3, equals(result4));
@@ -268,17 +285,18 @@ void main() {
 
   // Test data for optional items in list
   final optionalStatusesData = {
-    "optionalStatuses": ["PROCESSING", null, "COMPLETED"]
+    "optionalStatuses": ["PROCESSING", null, "COMPLETED"],
   };
 
   final optionalStatusesDataChanged = {
-    "optionalStatuses": ["PENDING", null, "COMPLETED"]
+    "optionalStatuses": ["PENDING", null, "COMPLETED"],
   };
 
   group('Optional Enums in List - [Status]!', () {
     test('optionalStatuses deserialize with nulls', () {
-      final result =
-          GetOptionalStatusesResponse.fromResponse(optionalStatusesData);
+      final result = GetOptionalStatusesResponse.fromResponse(
+        optionalStatusesData,
+      );
       expect(result.optionalStatuses.length, 3);
       expect(result.optionalStatuses[0], Status.PROCESSING);
       expect(result.optionalStatuses[1], isNull);
@@ -286,19 +304,23 @@ void main() {
     });
 
     test('optionalStatuses toJson', () {
-      final initial =
-          GetOptionalStatusesResponse.fromResponse(optionalStatusesData);
+      final initial = GetOptionalStatusesResponse.fromResponse(
+        optionalStatusesData,
+      );
       final json = initial.toJson();
       expect(json, optionalStatusesData);
     });
 
     test('optionalStatuses equals', () {
-      final result1 =
-          GetOptionalStatusesResponse.fromResponse(optionalStatusesData);
-      final result2 =
-          GetOptionalStatusesResponse.fromResponse(optionalStatusesData);
-      final result3 =
-          GetOptionalStatusesResponse.fromResponse(optionalStatusesDataChanged);
+      final result1 = GetOptionalStatusesResponse.fromResponse(
+        optionalStatusesData,
+      );
+      final result2 = GetOptionalStatusesResponse.fromResponse(
+        optionalStatusesData,
+      );
+      final result3 = GetOptionalStatusesResponse.fromResponse(
+        optionalStatusesDataChanged,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -332,11 +354,11 @@ void main() {
 
   // Test data for fully optional
   final statusesFullyOptionalData = {
-    "statusesFullyOptional": ["FAILED", null]
+    "statusesFullyOptional": ["FAILED", null],
   };
 
   final statusesFullyOptionalDataChanged = {
-    "statusesFullyOptional": ["COMPLETED", null]
+    "statusesFullyOptional": ["COMPLETED", null],
   };
 
   final statusesFullyOptionalNullData = {"statusesFullyOptional": null};
@@ -345,7 +367,8 @@ void main() {
   group('Fully Optional - [Status]', () {
     test('statusesFullyOptional deserialize with nulls', () {
       final result = GetStatusesFullyOptionalResponse.fromResponse(
-          statusesFullyOptionalData);
+        statusesFullyOptionalData,
+      );
       expect(result.statusesFullyOptional?.length, 2);
       expect(result.statusesFullyOptional?[0], Status.FAILED);
       expect(result.statusesFullyOptional?[1], isNull);
@@ -353,37 +376,44 @@ void main() {
 
     test('statusesFullyOptional deserialize null', () {
       final result = GetStatusesFullyOptionalResponse.fromResponse(
-          statusesFullyOptionalNullData);
+        statusesFullyOptionalNullData,
+      );
       expect(result.statusesFullyOptional, isNull);
     });
 
     test('statusesFullyOptional deserialize empty list', () {
       final result = GetStatusesFullyOptionalResponse.fromResponse(
-          statusesFullyOptionalEmptyData);
+        statusesFullyOptionalEmptyData,
+      );
       expect(result.statusesFullyOptional, []);
     });
 
     test('statusesFullyOptional toJson', () {
       final initial = GetStatusesFullyOptionalResponse.fromResponse(
-          statusesFullyOptionalData);
+        statusesFullyOptionalData,
+      );
       final json = initial.toJson();
       expect(json, statusesFullyOptionalData);
     });
 
     test('statusesFullyOptional toJson null', () {
       final initial = GetStatusesFullyOptionalResponse.fromResponse(
-          statusesFullyOptionalNullData);
+        statusesFullyOptionalNullData,
+      );
       final json = initial.toJson();
       expect(json, statusesFullyOptionalNullData);
     });
 
     test('statusesFullyOptional equals', () {
       final result1 = GetStatusesFullyOptionalResponse.fromResponse(
-          statusesFullyOptionalData);
+        statusesFullyOptionalData,
+      );
       final result2 = GetStatusesFullyOptionalResponse.fromResponse(
-          statusesFullyOptionalData);
+        statusesFullyOptionalData,
+      );
       final result3 = GetStatusesFullyOptionalResponse.fromResponse(
-          statusesFullyOptionalNullData);
+        statusesFullyOptionalNullData,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -391,8 +421,10 @@ void main() {
 
     test('statusesFullyOptional cacheNormalization - null to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetStatusesFullyOptionalResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetStatusesFullyOptionalResponse.fromResponseImpl(
         statusesFullyOptionalNullData,
         ctx,
       );
@@ -419,8 +451,10 @@ void main() {
 
     test('statusesFullyOptional cacheNormalization - some to null', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetStatusesFullyOptionalResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetStatusesFullyOptionalResponse.fromResponseImpl(
         statusesFullyOptionalData,
         ctx,
       );
@@ -447,8 +481,10 @@ void main() {
 
     test('statusesFullyOptional cacheNormalization - some to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetStatusesFullyOptionalResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetStatusesFullyOptionalResponse.fromResponseImpl(
         statusesFullyOptionalData,
         ctx,
       );

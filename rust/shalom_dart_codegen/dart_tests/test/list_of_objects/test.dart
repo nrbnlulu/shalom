@@ -22,7 +22,7 @@ void main() {
         "id": "1",
         "name": "Alice Updated",
         "email": "alice@example.com",
-        "age": 31
+        "age": 31,
       },
       {"id": "2", "name": "Bob", "email": "bob@example.com", "age": 25},
       {"id": "3", "name": "Charlie", "email": "charlie@example.com", "age": 35},
@@ -59,8 +59,9 @@ void main() {
     });
 
     test('usersRequired deserialize with empty list', () {
-      final result =
-          GetUsersRequiredResponse.fromResponse(usersRequiredEmptyData);
+      final result = GetUsersRequiredResponse.fromResponse(
+        usersRequiredEmptyData,
+      );
       expect(result.usersRequired, []);
     });
 
@@ -71,21 +72,27 @@ void main() {
     });
 
     test('usersRequired toJson with empty list', () {
-      final initial =
-          GetUsersRequiredResponse.fromResponse(usersRequiredEmptyData);
+      final initial = GetUsersRequiredResponse.fromResponse(
+        usersRequiredEmptyData,
+      );
       final json = initial.toJson();
       expect(json, usersRequiredEmptyData);
     });
 
     test('usersRequired equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 =
-          GetUsersRequiredResponse.fromResponse(usersRequiredData, ctx: ctx);
-      final result2 =
-          GetUsersRequiredResponse.fromResponse(usersRequiredData, ctx: ctx);
+      final result1 = GetUsersRequiredResponse.fromResponse(
+        usersRequiredData,
+        ctx: ctx,
+      );
+      final result2 = GetUsersRequiredResponse.fromResponse(
+        usersRequiredData,
+        ctx: ctx,
+      );
       final result3 = GetUsersRequiredResponse.fromResponse(
-          usersRequiredDataChanged,
-          ctx: ctx);
+        usersRequiredDataChanged,
+        ctx: ctx,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -142,37 +149,41 @@ void main() {
       expect(result.usersRequired.length, 2);
     });
 
-    test('usersRequired cacheNormalization - object ID changed at index',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetUsersRequiredResponse.fromResponseImpl(
-        usersRequiredData,
-        ctx,
-      );
+    test(
+      'usersRequired cacheNormalization - object ID changed at index',
+      () async {
+        final ctx = ShalomCtx.withCapacity();
+        var (result, updateCtx) = GetUsersRequiredResponse.fromResponseImpl(
+          usersRequiredData,
+          ctx,
+        );
 
-      final hasChanged = Completer<bool>();
+        final hasChanged = Completer<bool>();
 
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetUsersRequiredResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
+        final sub = ctx.subscribe(updateCtx.dependantRecords);
+        sub.streamController.stream.listen((newCtx) {
+          result = GetUsersRequiredResponse.fromCache(newCtx);
+          hasChanged.complete(true);
+        });
 
-      final nextResult = GetUsersRequiredResponse.fromResponse(
-        usersRequiredDataIdChanged,
-        ctx: ctx,
-      );
+        final nextResult = GetUsersRequiredResponse.fromResponse(
+          usersRequiredDataIdChanged,
+          ctx: ctx,
+        );
 
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.usersRequired[1].id, "4");
-      expect(result.usersRequired[1].name, "David");
-    });
+        await hasChanged.future.timeout(Duration(seconds: 1));
+        expect(result, equals(nextResult));
+        expect(result.usersRequired[1].id, "4");
+        expect(result.usersRequired[1].name, "David");
+      },
+    );
 
     test('usersRequired cacheNormalization - no overlapping deps', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) =
-          GetUsersRequiredPartialResponse.fromResponseImpl(
+      var (
+        result,
+        updateCtx,
+      ) = GetUsersRequiredPartialResponse.fromResponseImpl(
         usersRequiredData,
         ctx,
       );
@@ -191,19 +202,19 @@ void main() {
             "id": "1",
             "name": "Alice",
             "email": "alice_updated@example.com",
-            "age": 31
+            "age": 31,
           },
           {
             "id": "2",
             "name": "Bob",
             "email": "bob_updated@example.com",
-            "age": 26
+            "age": 26,
           },
           {
             "id": "3",
             "name": "Charlie",
             "email": "charlie_updated@example.com",
-            "age": 36
+            "age": 36,
           },
         ],
       };
@@ -224,14 +235,14 @@ void main() {
             "id": "1",
             "name": "Alice Changed",
             "email": "alice@example.com",
-            "age": 30
+            "age": 30,
           },
           {"id": "2", "name": "Bob", "email": "bob@example.com", "age": 25},
           {
             "id": "3",
             "name": "Charlie",
             "email": "charlie@example.com",
-            "age": 35
+            "age": 35,
           },
         ],
       };
@@ -273,14 +284,16 @@ void main() {
     });
 
     test('usersOptional deserialize with null', () {
-      final result =
-          GetUsersOptionalResponse.fromResponse(usersOptionalNullData);
+      final result = GetUsersOptionalResponse.fromResponse(
+        usersOptionalNullData,
+      );
       expect(result.usersOptional, isNull);
     });
 
     test('usersOptional deserialize with empty list', () {
-      final result =
-          GetUsersOptionalResponse.fromResponse(usersOptionalEmptyData);
+      final result = GetUsersOptionalResponse.fromResponse(
+        usersOptionalEmptyData,
+      );
       expect(result.usersOptional, []);
     });
 
@@ -291,31 +304,39 @@ void main() {
     });
 
     test('usersOptional toJson with null', () {
-      final initial =
-          GetUsersOptionalResponse.fromResponse(usersOptionalNullData);
+      final initial = GetUsersOptionalResponse.fromResponse(
+        usersOptionalNullData,
+      );
       final json = initial.toJson();
       expect(json, usersOptionalNullData);
     });
 
     test('usersOptional toJson with empty list', () {
-      final initial =
-          GetUsersOptionalResponse.fromResponse(usersOptionalEmptyData);
+      final initial = GetUsersOptionalResponse.fromResponse(
+        usersOptionalEmptyData,
+      );
       final json = initial.toJson();
       expect(json, usersOptionalEmptyData);
     });
 
     test('usersOptional equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 =
-          GetUsersOptionalResponse.fromResponse(usersOptionalData, ctx: ctx);
-      final result2 =
-          GetUsersOptionalResponse.fromResponse(usersOptionalData, ctx: ctx);
+      final result1 = GetUsersOptionalResponse.fromResponse(
+        usersOptionalData,
+        ctx: ctx,
+      );
+      final result2 = GetUsersOptionalResponse.fromResponse(
+        usersOptionalData,
+        ctx: ctx,
+      );
       final result3 = GetUsersOptionalResponse.fromResponse(
-          usersOptionalNullData,
-          ctx: ctx);
+        usersOptionalNullData,
+        ctx: ctx,
+      );
       final result4 = GetUsersOptionalResponse.fromResponse(
-          usersOptionalNullData,
-          ctx: ctx);
+        usersOptionalNullData,
+        ctx: ctx,
+      );
 
       expect(result1, equals(result2));
       expect(result3, equals(result4));
@@ -428,13 +449,18 @@ void main() {
 
     test('optionalUsers equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 =
-          GetOptionalUsersResponse.fromResponse(optionalUsersData, ctx: ctx);
-      final result2 =
-          GetOptionalUsersResponse.fromResponse(optionalUsersData, ctx: ctx);
+      final result1 = GetOptionalUsersResponse.fromResponse(
+        optionalUsersData,
+        ctx: ctx,
+      );
+      final result2 = GetOptionalUsersResponse.fromResponse(
+        optionalUsersData,
+        ctx: ctx,
+      );
       final result3 = GetOptionalUsersResponse.fromResponse(
-          optionalUsersDataChanged,
-          ctx: ctx);
+        optionalUsersDataChanged,
+        ctx: ctx,
+      );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));

@@ -76,8 +76,9 @@ void main() {
       ),
     );
     expect(variablesUpdated.order.status, Some<Status?>(Status.COMPLETED));
-    final req =
-        RequestEnumInputObjectOptional(variables: variables).toRequest();
+    final req = RequestEnumInputObjectOptional(
+      variables: variables,
+    ).toRequest();
     expect(req.variables, {
       "order": {"status": null, "timeLeft": 2},
     });

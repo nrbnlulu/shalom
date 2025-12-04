@@ -17,7 +17,9 @@ class DioTransport extends ShalomHttpTransport {
     dio.Response response;
 
     // Convert HeadersType (List of tuples) to Map for Dio
-    final headersMap = headers != null ? Map.fromEntries(headers) : null;
+    final headersMap = headers !=null? Map.fromEntries(headers.map(
+        (e) => MapEntry(e.$1, e.$2)
+    )): null;
 
     if (method == HttpMethod.GET) {
       response = await dioClient.get(
