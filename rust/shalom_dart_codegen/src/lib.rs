@@ -166,14 +166,7 @@ mod ext_jinja_fns {
         let field = field.0;
         let resolved_type = field.common.unresolved_type.resolve(&ctx.schema_ctx);
         // For oneOf fields, always treat as non-optional since exactly one must be present
-        let mut res = resolve_schema_typename(&resolved_type.ty, false, ctx);
-
-        // If the field is maybe, wrap in shalom_core.Maybe
-        if field.is_maybe {
-            res = format!("shalom_core.Maybe<{}>", res);
-        }
-
-        res
+        resolve_schema_typename(&resolved_type.ty, false, ctx)
     }
 
     pub fn parse_field_default_value_deserializer(
