@@ -159,6 +159,16 @@ mod ext_jinja_fns {
         }
     }
 
+    pub fn type_name_for_one_of_input_field(
+        ctx: &SharedShalomGlobalContext,
+        field: ViaDeserialize<InputFieldDefinition>,
+    ) -> String {
+        let field = field.0;
+        let resolved_type = field.common.unresolved_type.resolve(&ctx.schema_ctx);
+        // For oneOf fields, always treat as non-optional since exactly one must be present
+        resolve_schema_typename(&resolved_type.ty, false, ctx)
+    }
+
     pub fn parse_field_default_value_deserializer(
         ctx: &SharedShalomGlobalContext,
         field: ViaDeserialize<InputFieldDefinition>,
@@ -376,6 +386,11 @@ fn register_default_template_fns<'a>(
     let ctx_clone = ctx.clone();
     env.add_function("type_name_for_input_field", move |a: _| {
         ext_jinja_fns::type_name_for_input_field(&ctx_clone, a)
+    });
+
+    let ctx_clone = ctx.clone();
+    env.add_function("type_name_for_one_of_input_field", move |a: _| {
+        ext_jinja_fns::type_name_for_one_of_input_field(&ctx_clone, a)
     });
 
     let ctx_clone = ctx.clone();
