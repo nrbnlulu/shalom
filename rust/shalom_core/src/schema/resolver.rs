@@ -166,6 +166,7 @@ fn resolve_input(
     if context.get_type(&name).is_some() {
         return;
     }
+    let is_one_of = origin.directives.iter().any(|d| d.name == "oneOf");
     let mut fields = HashMap::new();
     for (name, field) in origin.fields.iter() {
         let description = field.description.as_ref().map(|v| v.to_string());
@@ -186,6 +187,7 @@ fn resolve_input(
         description,
         name: name.clone(),
         fields,
+        is_one_of,
     };
     context.add_input(name, Node::new(input_object)).unwrap();
 }

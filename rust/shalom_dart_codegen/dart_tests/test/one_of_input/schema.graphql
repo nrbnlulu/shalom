@@ -1,0 +1,35 @@
+directive @oneOf on INPUT_OBJECT
+
+input TestOneOf @oneOf {
+    a: String
+    b: Int
+    c: Boolean
+}
+
+enum SomeEnum {
+    A
+    B
+}
+
+input ComplexOneOf @oneOf {
+    scalarField: String
+    objectField: ResultInput
+    listField: [Int!]
+    enumField: SomeEnum
+}
+
+input ResultInput {
+    id: ID!
+    value: String!
+}
+
+type Result {
+    id: ID!
+    value: String!
+}
+
+type Query {
+    test(input: TestOneOf!): Result!
+    testList(input: [TestOneOf!]!): String!
+    testComplex(input: ComplexOneOf!): String!
+}

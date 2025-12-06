@@ -228,18 +228,21 @@ pub struct InputObjectType {
     pub description: Option<String>,
     pub name: String,
     pub fields: HashMap<String, InputFieldDefinition>,
+    pub is_one_of: bool,
 }
 
 impl Hash for InputObjectType {
     fn hash<H: Hasher>(&self, state: &mut H) {
         self.name.hash(state);
+        self.is_one_of.hash(state);
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", content = "data")]
 pub enum UnresolvedTypeKind {
-    Named { name: String },
-    List { of_type: Box<UnresolvedType> },
+    Named(String),
+    List(Box<UnresolvedType>),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -251,7 +254,7 @@ pub struct UnresolvedType {
 impl UnresolvedType {
     pub fn ty_name(&self) -> String {
         match &self.kind {
-            UnresolvedTypeKind::Named { name } => name.clone(),
+            UnresolvedTypeKind::Named(name) => name.clone(),
             _ => {
                 unimplemented!("lists have not been implemented")
             }
@@ -262,12 +265,12 @@ impl UnresolvedType {
         let is_optional = !ty.is_non_null();
 
         let unresolved_kind = match ty {
-            RawType::Named(name) | RawType::NonNullNamed(name) => UnresolvedTypeKind::Named {
-                name: name.to_string(),
-            },
-            RawType::List(inner) | RawType::NonNullList(inner) => UnresolvedTypeKind::List {
-                of_type: Box::new(UnresolvedType::new(inner)),
-            },
+            RawType::Named(name) | RawType::NonNullNamed(name) => {
+                UnresolvedTypeKind::Named(name.to_string())
+            }
+            RawType::List(inner) | RawType::NonNullList(inner) => {
+                UnresolvedTypeKind::List(Box::new(UnresolvedType::new(inner)))
+            }
         };
 
         Self {
@@ -278,11 +281,11 @@ impl UnresolvedType {
 
     pub fn resolve(&self, ctx: &SchemaContext) -> ResolvedType {
         match &self.kind {
-            UnresolvedTypeKind::Named { name } => ResolvedType {
+            UnresolvedTypeKind::Named(name) => ResolvedType {
                 is_optional: self.is_optional,
                 ty: ctx.get_type(name).unwrap(),
             },
-            UnresolvedTypeKind::List { of_type } => {
+            UnresolvedTypeKind::List(of_type) => {
                 let inner_resolved = of_type.resolve(ctx);
                 ResolvedType {
                     is_optional: self.is_optional,
