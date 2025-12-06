@@ -153,7 +153,7 @@ mod ext_jinja_fns {
         let res = resolve_schema_typename(&resolved_type.ty, is_optional, ctx);
 
         if field.is_maybe {
-            format!("Maybe<{res}>")
+            format!("shalom_core.Maybe<{res}>")
         } else {
             res
         }

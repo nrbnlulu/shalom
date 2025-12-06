@@ -73,15 +73,15 @@ import '{{path}}' as {{ namespace_alias }};
     {% endif %}
 {% endmacro %}
 
-{% macro _deserialize_field_macro(field_name, field, hashmap_sym) %}
+{% macro _deserialize_field_macro(field_name, field, hashmap_sym) -%}
     {% set field_ty = resolve_field_type(field.common).ty %}
     {% if field.is_optional and field.default_value is none %}
         final {{ field_name }}Value = {{ hashmap_sym }}["{{ field_name }}"];
         final {{ type_name_for_input_field(field) }} {{ field_name }};
         if ({{ field_name }}Value == null) {
-            {{ field_name }} = const None();
+            {{ field_name }} = const shalom_core.None();
         } else {
-            {{ field_name }} = Some({{ _deserialize_field_value_macro(field_name + "Value", field_ty, true) }});
+            {{ field_name }} = const shalom_core.Some({{ _deserialize_field_value_macro(field_name + "Value", field_ty, true) }});
         }
     {% else %}
         {% if field.is_optional %}
@@ -112,7 +112,7 @@ import '{{path}}' as {{ namespace_alias }};
     {
         {% for name, field in fields | items -%}
             {% if field.is_optional -%}
-                Maybe<{{type_name_for_input_field(field)}}> {{name}} = const None()
+                shalom_core.Maybe<{{type_name_for_input_field(field)}}> {{name}} = const shalom_core.None()
             {% else -%}
                 {{type_name_for_input_field(field)}}? {{name}}
             {% endif -%}
@@ -124,8 +124,8 @@ import '{{path}}' as {{ namespace_alias }};
         {% if field.is_optional -%}
             {# Optional field - it is wrapped in a Maybe #}
             final {{name}}$next = switch ({{name}}) {
-                Some() => {{name}}.value,
-                None() => this.{{name}}
+                shalom_core.Some() => {{name}}.value,
+                shalom_core.None() => this.{{name}}
             };
         {% else -%}
             {# Required field - use null check #}
@@ -134,12 +134,12 @@ import '{{path}}' as {{ namespace_alias }};
     {% endfor %}
     return {{typename}}(
         {% for name, field in fields | items %}
-            {{name}}: 
+            {{name}}:
                 {%- if field.is_maybe -%}
-                    {{name}}$next.isSome() ? Some({{name}}$next.some()) : const None()
+                    {{name}}$next.isSome() ? shalom_core.Some({{name}}$next.some()) : const shalom_core.None()
                 {# this is an optional field with non null default and needs initializer list so we need to use Some() in the constructor -#}
                 {% elif field.is_optional and parse_field_default_value_deserializer(field) != "null" and name in fields_requiring_initializer_list -%}
-                    Some({{name}}$next)
+                    shalom_core.Some({{name}}$next)
                 {%- else -%}
                     {{name}}$next
                 {%- endif -%}{{"," if not loop.last}}
@@ -160,7 +160,7 @@ import '{{path}}' as {{ namespace_alias }};
             {% if field.is_maybe or not field.is_optional -%}
                 {{type_name_for_input_field(field)}}? {{ name }}
             {% else -%}
-                Maybe<{{type_name_for_input_field(field)}}> {{ name }} = const None()
+                shalom_core.Maybe<{{type_name_for_input_field(field)}}> {{ name }} = const shalom_core.None()
             {% endif -%}
         {% endif -%}
     {% else -%}
@@ -175,7 +175,7 @@ import '{{path}}' as {{ namespace_alias }};
             {# Optional field #}
             {% if field.is_maybe %}
                 {# Optional field without default - standard Maybe pattern #}
-                this.{{ name }} = const None()
+                this.{{ name }} = const shalom_core.None()
             {% else %}
                 {# Optional field that have a default value #}
                 {% if field.default_value is not none -%}

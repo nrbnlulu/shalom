@@ -11,7 +11,7 @@ import "{{ context.schema_import_path }}";
 {{ custom_scalar_imports_macro(context.custom_scalar_imports) }}
 {% set OP_TYPE = context.operation.op_ty.name|upper %}
 
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom_core/shalom_core.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
 
@@ -76,7 +76,7 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
 
 {{ generate_multi_type_list_extensions(multi_type_list_selections) }}
 
-class Request{{ operation_name }} extends Requestable<{{operation_name}}Response>{
+class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_name}}Response>{
     {% if op_variables_exist %}
     final {{ operation_name }}Variables variables;
     {% endif %}
@@ -89,24 +89,24 @@ class Request{{ operation_name }} extends Requestable<{{operation_name}}Response
         {% endif %}
     );
     @override
-    RequestMeta<{{operation_name}}Response> getRequestMeta(){
-        JsonObject variablesJson = {% if op_variables_exist %} variables.toJson() {% else %} {}  {% endif %};
-        final request = Request(
+    shalom_core.RequestMeta<{{operation_name}}Response> getRequestMeta(){
+        shalom_core.JsonObject variablesJson = {% if op_variables_exist %} variables.toJson() {% else %} {}  {% endif %};
+        final request = shalom_core.Request(
             query: r"""
             {{context.resolved_query}}
             """,
             variables: variablesJson,
-            opType: OperationType.{{ context.operation.op_ty.name }},
+            opType: shalom_core.OperationType.{{ context.operation.op_ty.name }},
             opName: '{{ operation_name }}',
         );
-        return RequestMeta(
+        return shalom_core.RequestMeta(
             request: request,
-            loadFn: ({required JsonObject data, required ShalomCtx ctx}){
+            loadFn: ({required shalom_core.JsonObject data, required shalom_core.ShalomCtx ctx}){
                 final (deserialized, updatedCtx) = {{operation_name}}Response.fromResponseImpl(data, ctx{% if op_variables_exist %}, variables{% endif %});
                 return (deserialized, updatedCtx.dependantRecords);
             },
-            fromCacheFn: (ShalomCtx ctx){
-                final updateCtx = CacheUpdateContext(shalomContext: ctx);
+            fromCacheFn: (shalom_core.ShalomCtx ctx){
+                final updateCtx = shalom_core.CacheUpdateContext(shalomContext: ctx);
                 final deserialized = {{operation_name}}Response.fromCache(ctx{% if op_variables_exist %}, variables{% endif %});
                 return (deserialized, updateCtx.dependantRecords);
             }
@@ -135,8 +135,8 @@ class {{ operation_name }}Variables {
         }
     ){{ field_initialization_initializers(op_variables) }};
 
-    JsonObject toJson() {
-        JsonObject data = {};
+    shalom_core.JsonObject toJson() {
+        shalom_core.JsonObject data = {};
         {{ toJson_macro(op_variables) }}
         return data;
     }
