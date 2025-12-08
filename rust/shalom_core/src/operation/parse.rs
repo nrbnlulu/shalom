@@ -524,6 +524,71 @@ pub(crate) fn inject_typename_in_selection_set(
     }
 }
 
+pub(crate) fn inject_id_in_selection_set(
+    schema: &Schema,
+    selection_set: &mut apollo_executable::SelectionSet,
+    global_ctx: &ShalomGlobalContext,
+) {
+    // Check if this selection set is for an object type that has an id field
+    let type_name = selection_set.ty.to_string();
+    let type_info = global_ctx.schema_ctx.get_type(&type_name);
+
+    let has_id_field = type_info
+        .and_then(|t| {
+            if let crate::schema::types::GraphQLAny::Object(obj) = t {
+                Some(obj.fields.contains_key("id"))
+            } else if let crate::schema::types::GraphQLAny::Interface(interface) = t {
+                Some(interface.fields.contains_key("id"))
+            } else {
+                None
+            }
+        })
+        .unwrap_or(false);
+
+    if has_id_field {
+        // Check if id is already selected
+        let has_id_selection = selection_set.selections.iter().any(|sel| {
+            if let apollo_executable::Selection::Field(field) = sel {
+                field.name.as_str() == "id"
+            } else {
+                false
+            }
+        });
+
+        // Inject id if not present
+        if !has_id_selection {
+            trace!("Injecting id into {} selection", type_name);
+            let id_name = Name::new("id").unwrap();
+            let id_field = selection_set
+                .new_field(schema, id_name)
+                .expect("Failed to inject id");
+
+            // Actually push the field to the selection set
+            use apollo_executable::Selection;
+            selection_set.push(Selection::Field(id_field.into()));
+        }
+    }
+
+    // Recursively process all selections
+    for selection in selection_set.selections.iter_mut() {
+        match selection {
+            apollo_executable::Selection::Field(field) => {
+                if !field.selection_set.selections.is_empty() {
+                    let field_mut = field.make_mut();
+                    inject_id_in_selection_set(schema, &mut field_mut.selection_set, global_ctx);
+                }
+            }
+            apollo_executable::Selection::InlineFragment(inline_fragment) => {
+                let inline_mut = inline_fragment.make_mut();
+                inject_id_in_selection_set(schema, &mut inline_mut.selection_set, global_ctx);
+            }
+            apollo_executable::Selection::FragmentSpread(_) => {
+                // Fragment spreads are handled separately
+            }
+        }
+    }
+}
+
 pub(crate) fn get_used_fragments_from_fragment(
     fragment: &Node<apollo_compiler::executable::Fragment>,
 ) -> Vec<String> {
@@ -558,10 +623,12 @@ fn parse_operation(
     file_path: PathBuf,
 ) -> anyhow::Result<SharedOpCtx> {
     // Inject __typename into union and interface selections
+    // and inject id into object selections that have an id field
     let schema = &global_ctx.schema_ctx.schema;
     {
         let op_mut = op.make_mut();
         inject_typename_in_selection_set(schema, &mut op_mut.selection_set, global_ctx);
+        inject_id_in_selection_set(schema, &mut op_mut.selection_set, global_ctx);
     }
     let op_type = parse_operation_type(op.operation_type);
     let query = op.to_string();

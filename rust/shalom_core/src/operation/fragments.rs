@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use crate::context::SharedShalomGlobalContext;
 use crate::operation::context::{ExecutableContext, TypeDefs};
 use crate::operation::parse::{
-    inject_typename_in_selection_set, parse_obj_like_from_selection_set,
+    inject_id_in_selection_set, inject_typename_in_selection_set, parse_obj_like_from_selection_set,
 };
 use crate::operation::types::ObjectLikeCommon;
 
@@ -111,9 +111,11 @@ pub(crate) fn parse_fragment(
     fragment_ctx: &mut FragmentContext,
 ) -> anyhow::Result<()> {
     // Inject __typename into union and interface selections
+    // and inject id into object selections that have an id field
     let schema = &global_ctx.schema_ctx.schema;
     let fragment_mut = fragment.make_mut();
     inject_typename_in_selection_set(schema, &mut fragment_mut.selection_set, global_ctx);
+    inject_id_in_selection_set(schema, &mut fragment_mut.selection_set, global_ctx);
 
     let selection_set = &fragment.selection_set;
     let type_name = fragment.type_condition();
