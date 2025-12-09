@@ -1,4 +1,4 @@
-use shalom_dart_codegen::{CodegenOptions, get_dart_command};
+use shalom_dart_codegen::{get_dart_command, CodegenOptions};
 use std::path::{Path, PathBuf};
 
 use log::info;
@@ -74,7 +74,6 @@ fn run_codegen(cwd: &Path, strict: bool) {
     })
     .unwrap()
 }
-
 
 pub fn run_dart_tests_for_usecase(usecase: &str) {
     match simple_logger::init() {
