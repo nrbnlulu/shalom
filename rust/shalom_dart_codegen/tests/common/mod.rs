@@ -1,4 +1,4 @@
-use shalom_dart_codegen::CodegenOptions;
+use shalom_dart_codegen::{CodegenOptions, get_dart_command};
 use std::path::{Path, PathBuf};
 
 use log::info;
@@ -75,40 +75,6 @@ fn run_codegen(cwd: &Path, strict: bool) {
     .unwrap()
 }
 
-fn get_dart_command() -> Result<String, String> {
-    let dart;
-    #[cfg(target_os = "windows")]
-    {
-        dart = "dart.bat";
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        dart = "dart";
-    }
-
-    // Check if dart is available
-    if std::process::Command::new(dart)
-        .arg("--version")
-        .output()
-        .map(|output| output.status.success())
-        .unwrap_or(false)
-    {
-        return Ok(dart.to_string());
-    }
-
-    // Check if fvm dart is available
-    if std::process::Command::new("fvm")
-        .arg("dart")
-        .arg("--version")
-        .output()
-        .map(|output| output.status.success())
-        .unwrap_or(false)
-    {
-        return Ok("fvm dart".to_string());
-    }
-
-    Err("Dart SDK not found. Please install Dart SDK or FVM.".to_string())
-}
 
 pub fn run_dart_tests_for_usecase(usecase: &str) {
     match simple_logger::init() {
