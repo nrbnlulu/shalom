@@ -1,7 +1,7 @@
 use shalom_dart_codegen::CodegenOptions;
 use std::path::{Path, PathBuf};
 
-use log::{info, warn};
+use log::info;
 
 use glob::glob;
 
@@ -75,7 +75,7 @@ fn run_codegen(cwd: &Path, strict: bool) {
     .unwrap()
 }
 
-fn is_dart_available() -> bool {
+fn get_dart_command() -> Result<String, String> {
     let dart;
     #[cfg(target_os = "windows")]
     {
@@ -86,11 +86,28 @@ fn is_dart_available() -> bool {
         dart = "dart";
     }
 
-    std::process::Command::new(dart)
+    // Check if dart is available
+    if std::process::Command::new(dart)
         .arg("--version")
         .output()
         .map(|output| output.status.success())
         .unwrap_or(false)
+    {
+        return Ok(dart.to_string());
+    }
+
+    // Check if fvm dart is available
+    if std::process::Command::new("fvm")
+        .arg("dart")
+        .arg("--version")
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
+    {
+        return Ok("fvm dart".to_string());
+    }
+
+    Err("Dart SDK not found. Please install Dart SDK or FVM.".to_string())
 }
 
 pub fn run_dart_tests_for_usecase(usecase: &str) {
@@ -102,24 +119,24 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
         ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
     run_codegen(&usecase_test_dir, true);
 
-    if !is_dart_available() {
-        warn!("⚠️  Dart SDK not found. Skipping Dart tests for '{usecase}'. Install Dart SDK to run these tests.");
-        println!("⚠️  Dart SDK not found. Skipping Dart tests for '{usecase}'.");
-        return;
-    }
-
-    let dart;
-    #[cfg(target_os = "windows")]
-    {
-        dart = "dart.bat";
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        dart = "dart";
-    }
+    let dart = match get_dart_command() {
+        Ok(cmd) => cmd,
+        Err(e) => {
+            panic!("⚠️  {e}. install dart");
+        }
+    };
 
     let dart_test_root = tests_path().join("..");
-    let mut dart_fmt = std::process::Command::new(dart);
+    let dart_parts: Vec<&str> = dart.split_whitespace().collect();
+    let mut dart_fmt = if dart_parts.len() > 1 {
+        let mut cmd = std::process::Command::new(dart_parts[0]);
+        for part in &dart_parts[1..] {
+            cmd.arg(part);
+        }
+        cmd
+    } else {
+        std::process::Command::new(&dart)
+    };
     let output = dart_fmt
         .current_dir(&dart_test_root)
         .arg("format")
@@ -131,7 +148,15 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
         String::from_utf8_lossy(&output.stderr)
     );
 
-    let mut dart_test = std::process::Command::new(dart);
+    let mut dart_test = if dart_parts.len() > 1 {
+        let mut cmd = std::process::Command::new(dart_parts[0]);
+        for part in &dart_parts[1..] {
+            cmd.arg(part);
+        }
+        cmd
+    } else {
+        std::process::Command::new(&dart)
+    };
     dart_test
         .current_dir(&dart_test_root)
         .arg("test")
