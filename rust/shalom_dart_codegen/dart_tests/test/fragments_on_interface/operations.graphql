@@ -1,5 +1,4 @@
 fragment AnimalBasicInfo on Animal {
-    id
     name
     age
 }
@@ -15,7 +14,6 @@ fragment DogDetails on Dog {
 query GetAnimal($id: ID!) {
     animal(id: $id) {
         ...AnimalBasicInfo
-        __typename
         ... on Cat {
             ...CatDetails
         }
@@ -28,7 +26,6 @@ query GetAnimal($id: ID!) {
 query GetAnimalOpt($id: ID!) {
     animalOpt(id: $id) {
         ...AnimalBasicInfo
-        __typename
         ... on Cat {
             ...CatDetails
         }
@@ -41,7 +38,6 @@ query GetAnimalOpt($id: ID!) {
 query GetAnimals {
     animals {
         ...AnimalBasicInfo
-        __typename
         ... on Cat {
             ...CatDetails
         }
@@ -54,7 +50,6 @@ query GetAnimals {
 query GetAnimalAllTypes($id: ID!) {
     animal(id: $id) {
         ...AnimalBasicInfo
-        __typename
         ... on Cat {
             ...CatDetails
         }

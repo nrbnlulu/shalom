@@ -117,6 +117,9 @@ pub(crate) fn parse_fragment(
     inject_typename_in_selection_set(schema, &mut fragment_mut.selection_set, global_ctx);
     inject_id_in_selection_set(schema, &mut fragment_mut.selection_set, global_ctx);
 
+    // Update fragment_raw with the injected fields
+    fragment_ctx.fragment_raw = fragment.to_string();
+
     let selection_set = &fragment.selection_set;
     let type_name = fragment.type_condition();
     let frag_name = fragment_ctx.name.clone();

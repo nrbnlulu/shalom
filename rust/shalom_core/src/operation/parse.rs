@@ -468,11 +468,13 @@ pub(crate) fn inject_typename_in_selection_set(
 
     let is_union_or_interface = type_info
         .map(|t| {
-            matches!(
-                t,
-                crate::schema::types::GraphQLAny::Union(_)
-                    | crate::schema::types::GraphQLAny::Interface(_)
-            )
+            if t.union().is_some() || t.interface().is_some() {
+                return true;
+            }
+            if let GraphQLAny::List { of_type } = t {
+                return of_type.ty.union().is_some() || of_type.ty.interface().is_some();
+            }
+            false
         })
         .unwrap_or(false);
 
@@ -524,6 +526,15 @@ pub(crate) fn inject_typename_in_selection_set(
     }
 }
 
+fn gql_any_can_select_field(gql_any: &GraphQLAny, f_name: &str) -> bool {
+    match gql_any {
+        GraphQLAny::Interface(i) => i.fields.contains_key(f_name),
+        GraphQLAny::Object(o) => o.fields.contains_key(f_name),
+        GraphQLAny::List { of_type } => gql_any_can_select_field(&of_type.ty, f_name),
+        _ => false,
+    }
+}
+
 pub(crate) fn inject_id_in_selection_set(
     schema: &Schema,
     selection_set: &mut apollo_executable::SelectionSet,
@@ -533,19 +544,11 @@ pub(crate) fn inject_id_in_selection_set(
     let type_name = selection_set.ty.to_string();
     let type_info = global_ctx.schema_ctx.get_type(&type_name);
 
-    let has_id_field = type_info
-        .and_then(|t| {
-            if let crate::schema::types::GraphQLAny::Object(obj) = t {
-                Some(obj.fields.contains_key("id"))
-            } else if let crate::schema::types::GraphQLAny::Interface(interface) = t {
-                Some(interface.fields.contains_key("id"))
-            } else {
-                None
-            }
-        })
+    let can_select_id = type_info
+        .map(|t| gql_any_can_select_field(&t, "id"))
         .unwrap_or(false);
 
-    if has_id_field {
+    if can_select_id {
         // Check if id is already selected
         let has_id_selection = selection_set.selections.iter().any(|sel| {
             if let apollo_executable::Selection::Field(field) = sel {
