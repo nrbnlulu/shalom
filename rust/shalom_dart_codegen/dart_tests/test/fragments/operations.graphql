@@ -5,7 +5,6 @@ fragment UserInfoFrag on User {
 }
 
 fragment PostDetailsFrag on Post {
-    id
     title
     published
 }
@@ -56,4 +55,3 @@ query GetPostWithAuthor($postId: ID!) {
         }
     }
 }
-

@@ -7,7 +7,7 @@ query GetStringOptional {
 }
 
 query GetID {
-    id
+    idField
 }
 
 query GetIDOptional {
