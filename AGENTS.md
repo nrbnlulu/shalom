@@ -1,6 +1,36 @@
 ### Preface
 This repo contains the code for "Shalom" a graphql codegen library for dart and flutter.
 
+
+#### Generic Mutation Result (opt-in feature)
+A new feature has been implemented to support generic `MutationResult<TData, TError>` types for GraphQL operations. This reduces code duplication for mutation result types that follow the common pattern of having `data` and `error` fields.
+
+**Key Features:**
+- Configure with `enable_generic_results: true` in `shalom.yml`
+- Mark schema types with `@genericResult` directive
+- Generates a single generic `MutationResult<TData, TError>` class
+- Provides helper methods: `isSuccess`, `hasError`
+- Centralizes error handling across mutations
+
+**Usage Example:**
+```graphql
+directive @genericResult(
+  dataField: String!
+  errorField: String!
+  errorFragment: String!
+) on OBJECT
+
+type UpdateUserMutationResult @genericResult(
+  dataField: "data"
+  errorField: "error"
+  errorFragment: "GlobalErrorFrag"
+) {
+  data: User
+  error: ErrorInterface
+}
+```
+
+
 ### Architecture
 graphql parsing and codegen are implemented in rust under
 - /rust/shalom_core - for core graphql document parsing
