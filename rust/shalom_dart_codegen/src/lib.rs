@@ -1066,34 +1066,83 @@ fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContex
     info!("Generated {}", generation_target.display());
 }
 
-fn format_generated_files(pwd: &Path) -> Result<()> {
+pub fn get_dart_command() -> Result<String, String> {
+    let dart;
     #[cfg(target_os = "windows")]
     {
-        let output = Command::new("powershell")
-            .arg("-Command")
-            .arg("Get-ChildItem -Recurse -Filter '*.shalom.dart' | ForEach-Object { dart format $_.FullName }")
-            .current_dir(pwd)
-            .output()?;
-        if !output.status.success() {
-            error!(
-                "Failed to format files: {}",
-                String::from_utf8_lossy(&output.stderr)
-            );
-        }
+        dart = "dart.bat";
     }
     #[cfg(not(target_os = "windows"))]
     {
-        let output = Command::new("sh")
-            .arg("-c")
-            .arg("find . -type f -name '*.shalom.dart' -print0 | xargs -0 dart format")
-            .current_dir(pwd)
-            .output()?;
-        if !output.status.success() {
-            error!(
-                "Failed to format files: {}",
-                String::from_utf8_lossy(&output.stderr)
-            );
+        dart = "dart";
+    }
+
+    // Check if dart is available
+    if std::process::Command::new(dart)
+        .arg("--version")
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
+    {
+        return Ok(dart.to_string());
+    }
+
+    // Check if fvm dart is available
+    if std::process::Command::new("fvm")
+        .arg("dart")
+        .arg("--version")
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
+    {
+        return Ok("fvm dart".to_string());
+    }
+
+    Err("Dart SDK not found. Please install Dart SDK or FVM.".to_string())
+}
+
+fn format_generated_files(pwd: &Path) -> Result<()> {
+    let dart_cmd = get_dart_command().map_err(|e| anyhow::anyhow!(e))?;
+
+    // Split the dart command in case it's "fvm dart"
+    let dart_parts: Vec<&str> = dart_cmd.split_whitespace().collect();
+    let dart_cmd = dart_parts[0];
+    let mut dart_args = dart_parts[1..].to_vec();
+    dart_args.push("format");
+
+    // Find all shalom.dart files using glob
+    let pattern = pwd.join("**/*.shalom.dart");
+    let pattern_str = pattern
+        .to_str()
+        .ok_or_else(|| anyhow::anyhow!("Invalid path pattern"))?;
+
+    for entry in glob::glob(pattern_str)? {
+        match entry {
+            Ok(path) => {
+                let mut cmd = Command::new(dart_cmd);
+
+                // Add any additional args (like "fvm" if using fvm dart)
+                for arg in &dart_args {
+                    cmd.arg(arg);
+                }
+
+                // Add the file to format
+                cmd.arg(&path).current_dir(pwd);
+
+                let output = cmd.output()?;
+                if !output.status.success() {
+                    error!(
+                        "Failed to format file {}: {}",
+                        path.display(),
+                        String::from_utf8_lossy(&output.stderr)
+                    );
+                }
+            }
+            Err(e) => {
+                error!("Glob error: {}", e);
+            }
         }
     }
+
     Ok(())
 }

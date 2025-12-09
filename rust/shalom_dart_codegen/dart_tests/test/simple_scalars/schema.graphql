@@ -3,7 +3,7 @@ type Query {
     intOptional: Int
     string: String!
     stringOptional: String
-    id: ID!
+    idField: ID!
     idOptional: ID
     float: Float!
     floatOptional: Float

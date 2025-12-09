@@ -1,7 +1,5 @@
 query GetVehiclesRequired($maxLength: Int!) {
     vehiclesRequired {
-        __typename
-        id
         brand
         speed
         description(maxLength: $maxLength)

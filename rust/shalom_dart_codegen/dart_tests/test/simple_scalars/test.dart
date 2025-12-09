@@ -31,9 +31,9 @@ void main() {
       expect(result.stringOptional, isNull);
     });
 
-    test('ID', () {
-      final result = GetIDResponse.fromResponse({'id': 'testID'});
-      expect(result.id, 'testID');
+    test('idField', () {
+      final result = GetIDResponse.fromResponse({'idField': 'testID'});
+      expect(result.idField, 'testID');
     });
 
     test('IDOptional', () {
@@ -125,7 +125,7 @@ void main() {
     });
 
     test("ID", () {
-      final data = {"id": "fooID"};
+      final data = {"idField": "fooID"};
       final initial = GetIDResponse.fromResponse(data);
       final json = initial.toJson();
       expect(json, data);
@@ -233,10 +233,10 @@ void main() {
     });
 
     test('ID ==', () {
-      final a = GetIDResponse.fromResponse({'id': 'test'});
-      final b = GetIDResponse.fromResponse({'id': 'test'});
+      final a = GetIDResponse.fromResponse({'idField': 'test'});
+      final b = GetIDResponse.fromResponse({'idField': 'test'});
       expect(a == b, true);
-      final c = GetIDResponse.fromResponse({'id': 'other'});
+      final c = GetIDResponse.fromResponse({'idField': 'other'});
       expect(a == c, false);
     });
 

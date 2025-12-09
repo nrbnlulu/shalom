@@ -1,26 +1,21 @@
-
 query GetListingOpt {
-   listingOpt {
-    id 
-    name
-    price
-   }
+    listingOpt {
+        id
+        name
+        price
+    }
 }
-
 
 query GetListing {
-   listing {
-    id 
-    name
-    price
-   }
+    listing {
+        id
+        name
+        price
+    }
 }
-
 
 query GetListingNoPrice {
-   listing {
-    id 
-    name
-   }
+    listing {
+        name
+    }
 }
-

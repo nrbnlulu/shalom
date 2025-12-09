@@ -12,15 +12,12 @@ use log::{debug, info};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-const DEFAULT_SCALAR_TYPES: [(&str, &str); 8] = [
+const DEFAULT_SCALAR_TYPES: [(&str, &str); 5] = [
     ("String", "A UTF‐8 character sequence."),
     ("Int", "A signed 32‐bit integer."),
     ("Float", "A signed double-precision floating-point value."),
     ("Boolean", "true or false."),
     ("ID", "A unique identifier."),
-    ("Date", "A date and time."),
-    ("DateTime", "A date and time."),
-    ("Time", "A time."),
 ];
 
 pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
