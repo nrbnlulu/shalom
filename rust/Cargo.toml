@@ -2,7 +2,7 @@
 [workspace]
 members = [
     "./shalom_dart_codegen",
-    "./shalom_core", "shalom_runtime",
+    "./shalom_core",
 ]
 resolver = "2"
 
