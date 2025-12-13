@@ -12,7 +12,5 @@ glob = {workspace = true}
 kash = {workspace = true}
 serde = {workspace = true}
 serde_json = {workspace = true}
-minijinja = {workspace = true}
 indexmap = { version = "2", features = ["serde"] }
-
 serde_yaml = "0.9"
