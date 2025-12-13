@@ -13,7 +13,7 @@ pub enum CachedScalar {
 
 #[derive(Debug)]
 pub struct CachedObject {
-    fields: Vec<(String, Box<CacheEntry>)>,
+    fields: HashMap<String, Box<CacheEntry>>,
 }
 
 
@@ -32,6 +32,6 @@ pub enum CacheEntry {
     Ref(CacheRef),
 }
 
-pub struct Cache {
+pub struct NormalizedCache {
     entries: HashMap<String, CacheEntry>
 }

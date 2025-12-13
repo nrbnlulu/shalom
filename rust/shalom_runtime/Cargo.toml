@@ -9,3 +9,5 @@ simple_logger = {workspace = true}
 log = {workspace = true}
 serde = {workspace = true}
 serde_json = {workspace = true}
+tokio = "1.48.0"
+tokio-stream = "0.1.17"
