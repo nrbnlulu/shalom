@@ -33,6 +33,50 @@ import 'package:shalom_core/shalom_core.dart' as shalom_core;
       }
 {% endfor %}
 // ------------ END Enum DEFINITIONS -------------
+
+// ------------ Generic Result Types -------------
+{% if schema.context.types.generic_results | length > 0 %}
+/// Generic mutation result type for handling data and error responses.
+/// This class is generated for types marked with @genericResult directive.
+class MutationResult<TData, TError> {
+  final TData? data;
+  final TError? error;
+
+  const MutationResult({
+    this.data,
+    this.error,
+  });
+
+  /// Returns true if the result has data and no error
+  bool get isSuccess => data != null && error == null;
+
+  /// Returns true if the result has an error
+  bool get hasError => error != null;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is MutationResult<TData, TError> &&
+        other.data == data &&
+        other.error == error;
+  }
+
+  @override
+  int get hashCode => Object.hash(data, error);
+
+  @override
+  String toString() => 'MutationResult(data: $data, error: $error)';
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (data != null) 'data': (data as dynamic).toJson(),
+      if (error != null) 'error': (error as dynamic).toJson(),
+    };
+  }
+}
+{% endif %}
+// ------------ END Generic Result Types -------------
+
 // ------------ Input DEFINITIONS -------------
 {% for _, input_object in schema.context.types.inputs | items %}
 {% set typename = input_object.name %}

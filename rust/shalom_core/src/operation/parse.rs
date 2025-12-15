@@ -247,6 +247,68 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
     }
 }
 
+pub(crate) fn parse_generic_result_selection<T: ExecutableContext>(
+    ctx: &mut T,
+    global_ctx: &SharedShalomGlobalContext,
+    path: &String,
+    is_optional: bool,
+    selection_set: &apollo_compiler::executable::SelectionSet,
+    generic_result: &std::sync::Arc<crate::schema::types::GenericResultType>,
+) -> SharedObjectSelection {
+    trace!("Parsing generic result selection {:?}", generic_result.name);
+    trace!("Path is {:?}", path);
+    trace!(
+        "Data field: {}, Error field: {}",
+        generic_result.data_field,
+        generic_result.error_field
+    );
+
+    let schema_typename = generic_result.name.clone();
+    let mut obj_like = ObjectLikeCommon::new(path.clone(), schema_typename);
+
+    // Manually parse data and error fields from the selection set
+    trace!(
+        "Processing {} selections in generic result",
+        selection_set.selections.len()
+    );
+    for selection in selection_set.selections.iter() {
+        if let apollo_executable::Selection::Field(field) = selection {
+            let f_name = field.name.to_string();
+            trace!("Found field: {}", f_name);
+
+            // Only process fields that are the data or error fields
+            if f_name == generic_result.data_field || f_name == generic_result.error_field {
+                trace!("Processing generic result field: {}", f_name);
+                let f_type = field.ty();
+                let description = field
+                    .definition
+                    .description
+                    .as_deref()
+                    .map(|s| s.to_string());
+                let field_path = full_path_name(&f_name, path);
+                let args = parse_field_arguments(ctx, field);
+                let selection_common = FieldSelectionCommon {
+                    name: f_name.clone(),
+                    description,
+                };
+
+                let field_selection = parse_field_selection_set(
+                    ctx,
+                    &field_path,
+                    global_ctx,
+                    selection_common,
+                    &field.selection_set,
+                    f_type,
+                    args,
+                );
+                obj_like.add_selection(field_selection);
+            }
+        }
+    }
+
+    ObjectSelection::new(is_optional, obj_like)
+}
+
 pub(crate) fn parse_object_selection<T: ExecutableContext>(
     ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
@@ -335,16 +397,18 @@ pub(crate) fn parse_interface_selection<T: ExecutableContext>(
     InterfaceSelection::new(interface_type, obj_like, is_optional, possible_concretes)
 }
 
-pub(crate) fn parse_selection_kind<T>(
+pub(crate) fn parse_selection_kind<T: ExecutableContext>(
     ctx: &mut T,
     global_ctx: &SharedShalomGlobalContext,
     path: &String,
     selection_set: &apollo_executable::SelectionSet,
     field_type_orig: &FieldTypeOrig,
-) -> SelectionKind
-where
-    T: ExecutableContext,
-{
+) -> SelectionKind {
+    trace!(
+        "parse_selection_kind: path={}, field_type={:?}",
+        path,
+        field_type_orig
+    );
     let is_optional = !field_type_orig.is_non_null();
     match field_type_orig {
         FieldTypeOrig::Named(name) | FieldTypeOrig::NonNullNamed(name) => {
@@ -359,6 +423,18 @@ where
                     is_optional,
                     selection_set,
                 )),
+                GraphQLAny::GenericResult(gr) => {
+                    // GenericResult types need special handling since they're not normal objects
+                    // We manually parse the data and error fields
+                    SelectionKind::Object(parse_generic_result_selection(
+                        ctx,
+                        global_ctx,
+                        path,
+                        is_optional,
+                        selection_set,
+                        &gr,
+                    ))
+                }
                 GraphQLAny::Enum(_enum) => {
                     SelectionKind::Enum(parse_enum_selection(is_optional, _enum))
                 }

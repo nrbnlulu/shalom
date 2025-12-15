@@ -1,0 +1,11 @@
+custom_scalars:
+    DateTime:
+        graphql_name: "DateTime"
+        output_type:
+            import_path: "package:dart_tests/date_time.dart"
+            symbol_name: "DateTime"
+        impl_symbol:
+            import_path: "package:dart_tests/date_time.dart"
+            symbol_name: "dateTimeScalarImpl"
+
+enable_generic_results: true

@@ -12,7 +12,50 @@
 
 {# Macro to normalize a selection in cache - handles Object, Union, List, Scalar, etc. #}
 {% macro normalize_selection_in_cache(selection, selection_name, cached_sym, raw_sym, normalized_key, normalized_id, this_normalized_record, this_normalized_id, ctx="ctx") -%}
-    {% if selection.kind == "Object" %}
+    {% if selection.kind == "Object" and is_schema_typename_generic_result(selection.schema_typename) %}
+        {# Special handling for generic result types - normalize data and error fields separately #}
+        {% set data_field = get_generic_result_data_field(selection.schema_typename) %}
+        {% set error_field = get_generic_result_error_field(selection.schema_typename) %}
+        {% set data_path = selection.path_name ~ "_" ~ data_field %}
+        {% set error_path = selection.path_name ~ "_" ~ error_field %}
+
+        if ({{cached_sym}} == null){
+            {{ctx}}.addChangedRecord({{normalized_id}});
+        }
+
+        {# Create/get the result object first - this is where nested fields will be written #}
+        final {{selection_name}}$resultObject = getOrCreateObject({{this_normalized_record}}, {{normalized_key}});
+
+        {# Normalize data field if present #}
+        final {{selection_name}}$dataRaw = ({{raw_sym}} as JsonObject)["{{data_field}}"];
+        if ({{selection_name}}$dataRaw != null) {
+            final {{selection_name}}$dataCached = {{cached_sym}} != null ? ({{cached_sym}} as JsonObject)["{{data_field}}"] : null;
+            {{data_path}}.normalize$inCache(
+                {{selection_name}}$dataRaw as JsonObject,
+                {{ctx}},
+                {{"variables,"  if object_like_needs_variables(selection)}}
+                this$cached: {{selection_name}}$dataCached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{selection_name}}$dataCached.normalizedID()): {{selection_name}}$dataCached,
+                this$fieldName: "{{data_field}}",
+                parent$record: {{selection_name}}$resultObject,
+                parent$normalizedID: {{normalized_id}}
+            );
+        }
+
+        {# Normalize error field if present #}
+        final {{selection_name}}$errorRaw = ({{raw_sym}} as JsonObject)["{{error_field}}"];
+        if ({{selection_name}}$errorRaw != null) {
+            final {{selection_name}}$errorCached = {{cached_sym}} != null ? ({{cached_sym}} as JsonObject)["{{error_field}}"] : null;
+            {{error_path}}.normalize$inCache(
+                {{selection_name}}$errorRaw as JsonObject,
+                {{ctx}},
+                {{"variables,"  if op_variables_exist}}
+                this$cached: {{selection_name}}$errorCached is NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord({{selection_name}}$errorCached.normalizedID()): {{selection_name}}$errorCached,
+                this$fieldName: "{{error_field}}",
+                parent$record: {{selection_name}}$resultObject,
+                parent$normalizedID: {{normalized_id}}
+            );
+        }
+    {% elif selection.kind == "Object" %}
         {# object selections can be subscribed to,
             but will only get updates for null<->some changes. sub fields should be subscribed by themself
            if this object is normalized and the id has changed we should also notify for change
@@ -201,7 +244,27 @@ null
 
 {# Recursive macro for deserializing selection values #}
 {% macro _deserialize_selection_from_cache_macro(value_symbol, selection, is_optional=false, op_variables=[]) -%}
-    {% if selection.kind == "Scalar" %}
+    {% if selection.kind == "Object" and is_schema_typename_generic_result(selection.schema_typename) %}
+        {# Special handling for generic result types - construct MutationResult directly #}
+        {% set data_field = get_generic_result_data_field(selection.schema_typename) %}
+        {% set error_field = get_generic_result_error_field(selection.schema_typename) %}
+        {% set error_fragment = get_generic_result_error_fragment_name(selection.schema_typename) %}
+        {% set data_path = selection.path_name ~ "_" ~ data_field %}
+        {% set error_path = selection.path_name ~ "_" ~ error_field %}
+        {% if is_optional %}
+            {{ value_symbol }} == null ? null :
+        {% endif %}
+        MutationResult<{{ data_path }}?, {{ error_path }}?>(
+            data: ({{ value_symbol }} as JsonObject)["{{ data_field }}"] != null
+                ? {{ data_path }}.fromCached(({{ value_symbol }} as JsonObject)["{{ data_field }}"], ctx{% if op_variables_exist %}, variables{% endif %})
+                : null,
+            error: ({{ value_symbol }} as JsonObject)["{{ error_field }}"] != null
+                ? (({{ value_symbol }} as JsonObject)["{{ error_field }}"] is NormalizedObjectRecord
+                    ? {{ error_path }}.fromCached((({{ value_symbol }} as JsonObject)["{{ error_field }}"] as NormalizedObjectRecord).normalizedID(), ctx{% if op_variables_exist %}, variables{% endif %})
+                    : {{ error_path }}.fromCached(({{ value_symbol }} as JsonObject)["{{ error_field }}"], ctx{% if op_variables_exist %}, variables{% endif %}))
+                : null
+        )
+    {% elif selection.kind == "Scalar" %}
         {% if selection.is_custom_scalar %}
             {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
             {% if is_optional %}
@@ -267,7 +330,24 @@ null
 
 {# Recursive macro for deserializing selection values from JSON (not from cache) #}
 {% macro _deserialize_selection_from_json_macro(value_symbol, selection, is_optional=false) -%}
-    {% if selection.kind == "Scalar" %}
+    {% if selection.kind == "Object" and is_schema_typename_generic_result(selection.schema_typename) %}
+        {# Special handling for generic result types - construct MutationResult directly #}
+        {% set data_field = get_generic_result_data_field(selection.schema_typename) %}
+        {% set error_field = get_generic_result_error_field(selection.schema_typename) %}
+        {% set data_path = selection.path_name ~ "_" ~ data_field %}
+        {% set error_path = selection.path_name ~ "_" ~ error_field %}
+        {% if is_optional %}
+            {{ value_symbol }} == null ? null :
+        {% endif %}
+        MutationResult<{{ data_path }}?, {{ error_path }}?>(
+            data: ({{ value_symbol }} as JsonObject)["{{ data_field }}"] != null
+                ? {{ data_path }}.fromJson(({{ value_symbol }} as JsonObject)["{{ data_field }}"] as JsonObject)
+                : null,
+            error: ({{ value_symbol }} as JsonObject)["{{ error_field }}"] != null
+                ? {{ error_path }}.fromJson(({{ value_symbol }} as JsonObject)["{{ error_field }}"] as JsonObject)
+                : null
+        )
+    {% elif selection.kind == "Scalar" %}
         {% if selection.is_custom_scalar %}
             {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
             {% if is_optional %}
