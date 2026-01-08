@@ -1,8 +1,10 @@
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::path::PathBuf;
+use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 
 use serde_json::{Map, Value};
+use tokio_stream::Stream;
 use tokio_stream::StreamExt;
 
 use shalom_core::context::SharedShalomGlobalContext;
@@ -16,7 +18,7 @@ use crate::link::{GraphQLLink, GraphQLResponse, OperationType as LinkOperationTy
 use crate::normalization::NormalizationResult;
 use crate::read::CacheReader;
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct RuntimeConfig;
 
 #[derive(Debug, Clone, Default)]
@@ -32,13 +34,42 @@ impl RefObject {
     }
 }
 
-#[derive(Debug, Clone)]
+impl From<Vec<String>> for RefObject {
+    fn from(refs: Vec<String>) -> Self {
+        Self {
+            refs: refs.into_iter().collect(),
+        }
+    }
+}
+
+impl From<HashSet<String>> for RefObject {
+    fn from(refs: HashSet<String>) -> Self {
+        Self { refs }
+    }
+}
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct RuntimeResponse {
     pub data: Value,
 }
 
+pub type RuntimeResponseStream =
+    Pin<Box<dyn Stream<Item = anyhow::Result<RuntimeResponse>> + Send>>;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SubscriptionId(u64);
+
+impl From<u64> for SubscriptionId {
+    fn from(value: u64) -> Self {
+        Self(value)
+    }
+}
+
+impl From<SubscriptionId> for u64 {
+    fn from(value: SubscriptionId) -> Self {
+        value.0
+    }
+}
 
 struct SubscriptionState {
     op_ctx: SharedOpCtx,
@@ -143,9 +174,7 @@ impl ShalomRuntime {
         variables: Option<Map<String, Value>>,
         refs: Vec<String>,
     ) -> SubscriptionId {
-        let refs = RefObject {
-            refs: refs.into_iter().collect(),
-        };
+        let refs: RefObject = refs.into();
         let mut manager = self
             .subscriptions
             .lock()
@@ -219,6 +248,19 @@ impl ShalomRuntime {
         query: String,
         variables: Option<Map<String, Value>>,
     ) -> anyhow::Result<RuntimeResponse> {
+        let mut stream = self.request_stream(query, variables)?;
+        match stream.next().await {
+            Some(Ok(response)) => Ok(response),
+            Some(Err(err)) => Err(err),
+            None => Err(anyhow::anyhow!("link stream closed without response")),
+        }
+    }
+
+    pub fn request_stream(
+        &self,
+        query: String,
+        variables: Option<Map<String, Value>>,
+    ) -> anyhow::Result<RuntimeResponseStream> {
         let link = self
             .link
             .as_ref()
@@ -233,23 +275,28 @@ impl ShalomRuntime {
             operation_type: to_link_operation_type(op_ctx.op_type()),
         };
 
-        let mut stream = link.execute(request, None);
-        match stream.next().await {
-            Some(GraphQLResponse::Data { data, .. }) => {
-                let result = self.normalize(&op_ctx, Value::Object(data), variables.as_ref())?;
-                Ok(RuntimeResponse { data: result.data })
-            }
-            Some(GraphQLResponse::Error { errors, .. }) => Err(anyhow::anyhow!(
-                "graphql errors: {}",
-                serde_json::to_string(&errors).unwrap_or_else(|_| "<unserializable>".to_string())
-            )),
-            Some(GraphQLResponse::TransportError(err)) => Err(anyhow::anyhow!(
-                "transport error {}: {}",
-                err.code,
-                err.message
-            )),
-            None => Err(anyhow::anyhow!("link stream closed without response")),
-        }
+        let runtime = self.clone();
+        let vars = variables.clone();
+        let op_ctx = op_ctx.clone();
+        let stream = link
+            .execute(request, None)
+            .map(move |response| match response {
+                GraphQLResponse::Data { data, .. } => runtime
+                    .normalize(&op_ctx, Value::Object(data), vars.as_ref())
+                    .map(|result| RuntimeResponse { data: result.data }),
+                GraphQLResponse::Error { errors, .. } => Err(anyhow::anyhow!(
+                    "graphql errors: {}",
+                    serde_json::to_string(&errors)
+                        .unwrap_or_else(|_| "<unserializable>".to_string())
+                )),
+                GraphQLResponse::TransportError(err) => Err(anyhow::anyhow!(
+                    "transport error {}: {}",
+                    err.code,
+                    err.message
+                )),
+            });
+
+        Ok(Box::pin(stream))
     }
 
     fn read_from_cache(
@@ -270,11 +317,14 @@ impl ShalomRuntime {
             .lock()
             .expect("operations lock poisoned")
             .insert(op_id.clone(), op_ctx.clone());
+        let mut vars_map = self
+            .operation_vars
+            .lock()
+            .expect("operation vars lock poisoned");
         if let Some(vars) = variables {
-            self.operation_vars
-                .lock()
-                .expect("operation vars lock poisoned")
-                .insert(op_id, vars.clone());
+            vars_map.insert(op_id, vars.clone());
+        } else {
+            vars_map.remove(&op_id);
         }
     }
 
@@ -310,9 +360,14 @@ impl ShalomRuntime {
             .next()
             .map(|(name, ctx)| (name.clone(), ctx.clone()))
             .expect("operation missing");
-        if !global_ctx.operation_exists(&name) {
-            global_ctx.register_operations(operations.clone());
+        if global_ctx.operation_exists(&name) {
+            let existing = global_ctx
+                .get_operation(&name)
+                .ok_or_else(|| anyhow::anyhow!("operation {name} not found"))?;
+            self.remember_operation(&existing, None);
+            return Ok(existing);
         }
+        global_ctx.register_operations(operations.clone());
         self.remember_operation(&op_ctx, None);
         Ok(op_ctx)
     }

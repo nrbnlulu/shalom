@@ -7,4 +7,6 @@ pub mod read;
 pub mod runtime;
 pub mod selection;
 
-pub use runtime::{RefObject, RuntimeConfig, RuntimeResponse, ShalomRuntime, SubscriptionId};
+pub use runtime::{
+    RefObject, RuntimeConfig, RuntimeResponse, RuntimeResponseStream, ShalomRuntime, SubscriptionId,
+};

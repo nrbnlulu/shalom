@@ -335,6 +335,7 @@ make sure that the rust backend is ready for this and implement needed api in th
   - `normalization`: response normalization + metadata injection + change tracking.
   - `execution`: orchestration layer (links + cache + streams).
   - `link`: HTTP + WS framing (no networking).
+  - `host`: request/response bridge for host languages (outgoing request stream + response sink).
 - `shalom_dart`
   - Glue crate exposing runtime to Dart via FRB.
   - API surface: execute op, normalize response, subscribe/unsubscribe.
@@ -369,17 +370,19 @@ make sure that the rust backend is ready for this and implement needed api in th
 - Done: `ShalomRuntime` public API (`normalize` + cache access) and cache tests wired through it.
 - Done: Rust cache tests covering all listed use cases (scalars, enums, objects, unions/interfaces, fragments, lists, inputs).
 - Done: cache reader for rebuilding responses from normalized cache + runtime subscription updates (`subscribe` + `drain_updates`).
+- Done: runtime init from schema SDL + fragment SDLs with host link stub for request/response orchestration.
+- Done: request/subscribe public API exposed via `shalom_dart` (FRB entrypoints).
 - Done: moved link modules into `shalom_runtime` (HTTP implemented, WS stubbed).
-- Partial: execution engine exists for normalization only; streaming/link orchestration still missing.
+- Partial: runtime `request` uses host link for first response; full streaming orchestration still missing.
 - Partial: GC helpers exist (subscription tracker + eviction), not yet wired into runtime.
-- Partial: `shalom_dart` crate (wraps `ShalomRuntime`, no FRB bindings yet).
+- Partial: `shalom_dart` crate (FRB bindings exist, but Dart-side wiring still pending).
 - Partial: Dart tests updated only with a runtime metadata sanity case.
 
 ## TODO
-- Implement runtime execution/stream wiring (links → normalizer → update stream); use native stream or SPSC channel.
+- Implement runtime execution/stream wiring (links → normalizer → update stream); use native stream or SPSC channel for streaming ops.
 - Wire subscription bookkeeping into runtime and GC eviction pass based on active refs.
 - Implement GraphQL WS protocol state machine in `shalom_runtime::link`.
-- Wire `shalom_dart` with `flutter_rust_bridge` and expose subscription APIs.
+- Wire Dart transport to the host link request stream + response sink.
 - Migrate existing Dart tests/codegen off Dart-side normalization to runtime metadata.
 
 ## Next Steps
