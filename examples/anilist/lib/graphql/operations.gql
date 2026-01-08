@@ -1,0 +1,57 @@
+fragment MediaCard on Media {
+    id
+    title {
+        romaji
+        english
+    }
+    coverImage {
+        large
+    }
+    episodes
+    format
+}
+
+fragment CharacterCard on Character {
+    id
+    name {
+        full
+    }
+    image {
+        large
+    }
+}
+
+query GetAnimePage($page: Int!, $perPage: Int!) {
+    Page(page: $page, perPage: $perPage) {
+        pageInfo {
+            currentPage
+            hasNextPage
+            lastPage
+        }
+        media(type: ANIME, sort: POPULARITY_DESC) {
+            ...MediaCard
+        }
+    }
+}
+
+query GetAnimeDetails($id: Int!, $page: Int!, $perPage: Int!) {
+    Media(id: $id, type: ANIME) {
+        ...MediaCard
+        description(asHtml: false)
+        streamingEpisodes {
+            title
+            site
+            url
+            thumbnail
+        }
+        characters(page: $page, perPage: $perPage) {
+            pageInfo {
+                currentPage
+                hasNextPage
+            }
+            nodes {
+                ...CharacterCard
+            }
+        }
+    }
+}
