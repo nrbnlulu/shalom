@@ -8,6 +8,10 @@ crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
 flutter_rust_bridge = "=2.11.1"
+shalom_runtime = { path = "../../shalom_runtime" }
+serde_json = "1.0"
+tokio-stream = "0.1.17"
+anyhow = "1.0"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(frb_expand)'] }

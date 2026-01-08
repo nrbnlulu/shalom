@@ -373,20 +373,18 @@ make sure that the rust backend is ready for this and implement needed api in th
 - Done: runtime init from schema SDL + fragment SDLs with host link stub for request/response orchestration.
 - Done: request/subscribe public API exposed via `shalom_dart` (FRB entrypoints).
 - Done: moved link modules into `shalom_runtime` (HTTP implemented, WS stubbed).
-- Partial: runtime `request` uses host link for first response; full streaming orchestration still missing.
+- Done: runtime request streaming (link → normalize → response stream) with tests.
 - Partial: GC helpers exist (subscription tracker + eviction), not yet wired into runtime.
 - Partial: `shalom_dart` crate (FRB bindings exist, but Dart-side wiring still pending).
 - Partial: Dart tests updated only with a runtime metadata sanity case.
 
 ## TODO
-- Implement runtime execution/stream wiring (links → normalizer → update stream); use native stream or SPSC channel for streaming ops.
 - Wire subscription bookkeeping into runtime and GC eviction pass based on active refs.
 - Implement GraphQL WS protocol state machine in `shalom_runtime::link`.
 - Wire Dart transport to the host link request stream + response sink.
 - Migrate existing Dart tests/codegen off Dart-side normalization to runtime metadata.
 
 ## Next Steps
-- Implement runtime execution stream wiring (links → normalizer → update stream).
 - Add GC bookkeeping and eviction pass.
 - Flesh out WebSocket link state machine (graphql-transport-ws).
 - Update Dart codegen/tests to consume runtime metadata.
