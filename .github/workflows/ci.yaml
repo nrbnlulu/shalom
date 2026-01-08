@@ -43,7 +43,6 @@ jobs:
                   cd rust/shalom_dart_codegen/dart_tests/
                   flutter packages get
 
-
             - name: Test
               run: |
                   task test
@@ -55,4 +54,40 @@ jobs:
             - name: Lint
               if: runner.os == 'Linux'
               run: task lint
-              
+
+    swapi-example:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v3
+
+            - name: Set up Rust
+              uses: actions-rs/toolchain@v1
+              with:
+                  toolchain: 1.89.0
+                  override: true
+
+            - name: Setup Flutter SDK
+              uses: flutter-actions/setup-flutter@v4
+              with:
+                  channel: stable
+                  version: 3.38.1
+
+            - name: Build shalom CLI
+              run: |
+                  cd rust
+                  cargo build -p shalom_dart_codegen
+
+            - name: Run codegen for SWAPI example
+              run: |
+                  ./rust/target/debug/shalom generate --path examples/flutter/swapi
+
+            - name: Install SWAPI dependencies
+              run: |
+                  cd examples/flutter/swapi
+                  flutter pub get
+
+            - name: Build SWAPI example
+              run: |
+                  cd examples/flutter/swapi
+                  flutter build web

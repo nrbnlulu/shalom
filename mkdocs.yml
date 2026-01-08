@@ -1,0 +1,46 @@
+site_name: Shalom
+site_description: GraphQL codegen for Dart and Flutter
+repo_url: https://github.com/nrbnlulu/shalom
+repo_name: nrbnlulu/shalom
+
+theme:
+    name: material
+    language: en
+    font:
+        text: JetBrains Mono
+        code: JetBrains Mono
+    features:
+        - navigation.instant
+        - navigation.sections
+        - navigation.top
+        - content.code.copy
+    palette:
+        - scheme: slate
+          primary: black
+          accent: green
+
+extra_css:
+    - styles/terminal.css
+
+extra_javascript:
+    - scripts/cursor.js
+
+markdown_extensions:
+    - admonition
+    - footnotes
+    - tables
+    - toc:
+          permalink: true
+    - pymdownx.highlight:
+          anchor_linenums: true
+          line_spans: __span
+          pygments_lang_class: true
+    - pymdownx.inlinehilite
+    - pymdownx.snippets
+    - pymdownx.superfences
+
+nav:
+    - Home: index.md
+    - Installation: installation.md
+    - Quickstart: quickstart.md
+    - Custom Scalars: custom-scalars.md
