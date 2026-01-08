@@ -27,9 +27,6 @@
 import "../schema.shalom.dart";
 
 
-import 'package:swapi/custom_scalars.dart' as yublpab;
-
-
 
 
 
@@ -505,15 +502,15 @@ class GetFilmsResponse   {
     
     
     /// class members
+    final String? releaseDate;
+        
+    final String id;
+        
     final int? episodeID;
         
     final String? director;
         
     final String? title;
-        
-    final String id;
-        
-    final yublpab.SwapiDate? releaseDate;
         
     
 
@@ -522,6 +519,12 @@ class GetFilmsResponse   {
     // keywordargs constructor
      GetFilms_allFilms_films(
         {
+                 this.releaseDate,
+        
+        
+                required this.id,
+        
+        
                  this.episodeID,
         
         
@@ -529,12 +532,6 @@ class GetFilmsResponse   {
         
         
                  this.title,
-        
-        
-                required this.id,
-        
-        
-                 this.releaseDate,
         }
         
     );
@@ -571,25 +568,79 @@ class GetFilmsResponse   {
                 this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
                 ctx.addDependantRecord(this$normalizedID);
             }
+        final releaseDateNormalized$Key = "releaseDate";
+            final releaseDate$normalizedID = "${this$normalizedID}.${ releaseDateNormalized$Key }";
+        final idNormalized$Key = "id";
+            final id$normalizedID = "${this$normalizedID}.${ idNormalized$Key }";
         final episodeIDNormalized$Key = "episodeID";
             final episodeID$normalizedID = "${this$normalizedID}.${ episodeIDNormalized$Key }";
         final directorNormalized$Key = "director";
             final director$normalizedID = "${this$normalizedID}.${ directorNormalized$Key }";
         final titleNormalized$Key = "title";
             final title$normalizedID = "${this$normalizedID}.${ titleNormalized$Key }";
-        final idNormalized$Key = "id";
-            final id$normalizedID = "${this$normalizedID}.${ idNormalized$Key }";
-        final releaseDateNormalized$Key = "releaseDate";
-            final releaseDate$normalizedID = "${this$normalizedID}.${ releaseDateNormalized$Key }";
         ctx.addDependantRecords(
             {
+            releaseDate$normalizedID  ,
+            id$normalizedID  ,
             episodeID$normalizedID  ,
             director$normalizedID  ,
-            title$normalizedID  ,
-            id$normalizedID  ,
-            releaseDate$normalizedID  
+            title$normalizedID  
             }
         );
+        final releaseDate$cached = this$NormalizedRecord[releaseDateNormalized$Key];
+            final releaseDate$raw = data["releaseDate"];
+            if (releaseDate$raw != null){
+                
+        
+        if (
+            
+    
+        
+            releaseDate$cached != releaseDate$raw
+        
+    
+
+        ){
+            ctx.addChangedRecord(releaseDate$normalizedID);
+        }
+        this$NormalizedRecord[releaseDateNormalized$Key] = releaseDate$raw;
+    
+            } else if (data.containsKey("releaseDate") && releaseDate$cached != null){
+                    // if this field was null in the response and key exists clear the cache.
+
+                    this$NormalizedRecord[releaseDateNormalized$Key] = null;
+                    ctx.addChangedRecord(releaseDate$normalizedID);
+            } else {
+                // data is null and cache is null, do nothing.
+                this$NormalizedRecord[releaseDateNormalized$Key] = null;
+            }
+        final id$cached = this$NormalizedRecord[idNormalized$Key];
+            final id$raw = data["id"];
+            if (id$raw != null){
+                
+        
+        if (
+            
+    
+        
+            id$cached != id$raw
+        
+    
+
+        ){
+            ctx.addChangedRecord(id$normalizedID);
+        }
+        this$NormalizedRecord[idNormalized$Key] = id$raw;
+    
+            } else if (data.containsKey("id") && id$cached != null){
+                    // if this field was null in the response and key exists clear the cache.
+
+                    this$NormalizedRecord[idNormalized$Key] = null;
+                    ctx.addChangedRecord(id$normalizedID);
+            } else {
+                // data is null and cache is null, do nothing.
+                this$NormalizedRecord[idNormalized$Key] = null;
+            }
         final episodeID$cached = this$NormalizedRecord[episodeIDNormalized$Key];
             final episodeID$raw = data["episodeID"];
             if (episodeID$raw != null){
@@ -671,63 +722,27 @@ class GetFilmsResponse   {
                 // data is null and cache is null, do nothing.
                 this$NormalizedRecord[titleNormalized$Key] = null;
             }
-        final id$cached = this$NormalizedRecord[idNormalized$Key];
-            final id$raw = data["id"];
-            if (id$raw != null){
-                
-        
-        if (
-            
-    
-        
-            id$cached != id$raw
-        
-    
-
-        ){
-            ctx.addChangedRecord(id$normalizedID);
-        }
-        this$NormalizedRecord[idNormalized$Key] = id$raw;
-    
-            } else if (data.containsKey("id") && id$cached != null){
-                    // if this field was null in the response and key exists clear the cache.
-
-                    this$NormalizedRecord[idNormalized$Key] = null;
-                    ctx.addChangedRecord(id$normalizedID);
-            } else {
-                // data is null and cache is null, do nothing.
-                this$NormalizedRecord[idNormalized$Key] = null;
-            }
-        final releaseDate$cached = this$NormalizedRecord[releaseDateNormalized$Key];
-            final releaseDate$raw = data["releaseDate"];
-            if (releaseDate$raw != null){
-                
-        
-        if (
-            
-    
-        
-            releaseDate$cached != releaseDate$raw
-        
-    
-
-        ){
-            ctx.addChangedRecord(releaseDate$normalizedID);
-        }
-        this$NormalizedRecord[releaseDateNormalized$Key] = releaseDate$raw;
-    
-            } else if (data.containsKey("releaseDate") && releaseDate$cached != null){
-                    // if this field was null in the response and key exists clear the cache.
-
-                    this$NormalizedRecord[releaseDateNormalized$Key] = null;
-                    ctx.addChangedRecord(releaseDate$normalizedID);
-            } else {
-                // data is null and cache is null, do nothing.
-                this$NormalizedRecord[releaseDateNormalized$Key] = null;
-            }
         }
     static GetFilms_allFilms_films fromCached(shalom_core.NormalizedRecordData data, shalom_core.ShalomCtx ctx) {
-    final episodeID$raw = data["episodeID"];
+    final releaseDate$raw = data["releaseDate"];
+            final String? releaseDate$value = 
+        
+            
+                releaseDate$raw as String?
+            
+        
+    
+;
+        final id$raw = data["id"];
+            final String id$value = 
+        
+            
+                id$raw as String
+            
+        
+    
+;
+        final episodeID$raw = data["episodeID"];
             final int? episodeID$value = 
         
             
@@ -754,25 +769,13 @@ class GetFilmsResponse   {
         
     
 ;
-        final id$raw = data["id"];
-            final String id$value = 
-        
-            
-                id$raw as String
-            
-        
-    
-;
-        final releaseDate$raw = data["releaseDate"];
-            final yublpab.SwapiDate? releaseDate$value = 
-        
-            
-                releaseDate$raw == null ? null : yublpab.swapiDateScalarImpl.deserialize(releaseDate$raw)
-            
-        
-    
-;
         return GetFilms_allFilms_films(
+            
+                    releaseDate: releaseDate$value,
+                
+            
+                    id: id$value,
+                
             
                     episodeID: episodeID$value,
                 
@@ -782,12 +785,6 @@ class GetFilmsResponse   {
             
                     title: title$value,
                 
-            
-                    id: id$value,
-                
-            
-                    releaseDate: releaseDate$value,
-                
             );
     }
     @override
@@ -795,6 +792,20 @@ class GetFilmsResponse   {
         return identical(this, other) ||
             
             (other is GetFilms_allFilms_films &&
+                    
+    
+        
+            releaseDate == other.releaseDate
+        
+    
+ &&
+                    
+    
+        
+            id == other.id
+        
+    
+ &&
                     
     
         
@@ -815,20 +826,6 @@ class GetFilmsResponse   {
             title == other.title
         
     
- &&
-                    
-    
-        
-            id == other.id
-        
-    
- &&
-                    
-    
-        
-            releaseDate == other.releaseDate
-        
-    
  
                     );
             
@@ -839,15 +836,15 @@ class GetFilmsResponse   {
     
         Object.hashAll([
         
+                releaseDate,
+        
+                id,
+        
                 episodeID,
         
                 director,
         
                 title,
-        
-                id,
-        
-                releaseDate,
         
         GetFilms_allFilms_films.G__typename
         ]);
@@ -855,6 +852,36 @@ class GetFilmsResponse   {
 
     shalom_core.JsonObject toJson() {
     return {
+    
+        
+        
+        'releaseDate':
+            
+                
+    
+        
+            this.releaseDate
+        
+    
+
+            
+        ,
+        
+    
+        
+        
+        'id':
+            
+                
+    
+        
+            this.id
+        
+    
+
+            
+        ,
+        
     
         
         
@@ -901,44 +928,27 @@ class GetFilmsResponse   {
         ,
         
     
-        
-        
-        'id':
-            
-                
-    
-        
-            this.id
-        
-    
-
-            
-        ,
-        
-    
-        
-        
-        'releaseDate':
-            
-                
-    
-        
-            
-            
-                this.releaseDate == null ? null : yublpab.swapiDateScalarImpl.serialize(this.releaseDate!)
-            
-        
-    
-
-            
-        ,
-        
-    
     };
     }
 
     @experimental
     static GetFilms_allFilms_films fromJson(shalom_core.JsonObject data) {
+        final String? releaseDate$value = 
+        
+            
+                data['releaseDate'] as String?
+            
+        
+    
+;
+        final String id$value = 
+        
+            
+                data['id'] as String
+            
+        
+    
+;
         final int? episodeID$value = 
         
             
@@ -963,23 +973,13 @@ class GetFilmsResponse   {
         
     
 ;
-        final String id$value = 
-        
-            
-                data['id'] as String
-            
-        
-    
-;
-        final yublpab.SwapiDate? releaseDate$value = 
-        
-            
-                data['releaseDate'] == null ? null : yublpab.swapiDateScalarImpl.deserialize(data['releaseDate'])
-            
-        
-    
-;
         return GetFilms_allFilms_films(
+            
+                    releaseDate: releaseDate$value,
+                
+            
+                    id: id$value,
+                
             
                     episodeID: episodeID$value,
                 
@@ -988,12 +988,6 @@ class GetFilmsResponse   {
                 
             
                     title: title$value,
-                
-            
-                    id: id$value,
-                
-            
-                    releaseDate: releaseDate$value,
                 
             );
     }

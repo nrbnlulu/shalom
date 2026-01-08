@@ -1,48 +1,51 @@
 # Quickstart
 
-This walkthrough is a hands-on tutorial for the SWAPI Flutter example in
-`examples/flutter/swapi`. The same approach works for any Dart or Flutter app.
+This walkthrough is a hands-on tutorial for the AniList Flutter example in
+`examples/anilist`. The same approach works for any Dart or Flutter app.
 
 ## 1. Add your schema and operations
 
-The SWAPI example keeps these files in `examples/flutter/swapi/lib`. They are
+The AniList example keeps these files in `examples/anilist/lib/graphql`. They are
 already checked in, so you can open and inspect them:
 
 ```graphql
-# examples/flutter/swapi/lib/schema.graphql (excerpt)
-schema {
-  query: Query
+# examples/anilist/lib/graphql/schema.graphql (excerpt)
+type Page {
+  pageInfo: PageInfo
+  media: [Media]
 }
 
-scalar Date
-
-type Query {
-  allFilms: FilmConnection
-}
-
-type FilmConnection {
-  films: [Film]
-}
-
-type Film {
-  id: ID
-  title: String
-  director: String
-  episodeID: Int
-  releaseDate: Date
+type PageInfo {
+  currentPage: Int
+  lastPage: Int
+  hasNextPage: Boolean
 }
 ```
 
 ```graphql
-# examples/flutter/swapi/lib/operations.gql
-query GetFilms {
-  allFilms {
-    films {
-      id
-      title
-      director
-      episodeID
-      releaseDate
+# examples/anilist/lib/graphql/operations.gql
+fragment MediaCard on Media {
+  id
+  title {
+    romaji
+    english
+  }
+  coverImage {
+    large
+  }
+  episodes
+  format
+}
+
+query GetAnimePage($page: Int!, $perPage: Int!) {
+  Page(page: $page, perPage: $perPage) {
+    pageInfo {
+      currentPage
+      hasNextPage
+      lastPage
+    }
+    media(type: ANIME, sort: POPULARITY_DESC) {
+      ...MediaCard
     }
   }
 }
@@ -50,42 +53,30 @@ query GetFilms {
 
 ## 2. (Optional) Add `shalom.yml`
 
-The SWAPI example keeps generated Dart files in `lib` and registers a custom
-scalar for `Date`:
+The AniList example keeps generated Dart files in `lib`:
 
 ```yml
 schema_output_path: "./lib"
-
-custom_scalars:
-  Date:
-    graphql_name: "Date"
-    output_type:
-      import_path: "package:swapi/custom_scalars.dart"
-      symbol_name: "SwapiDate"
-    impl_symbol:
-      import_path: "package:swapi/custom_scalars.dart"
-      symbol_name: "swapiDateScalarImpl"
+custom_scalars: {}
 ```
-
-See the scalar implementation in `examples/flutter/swapi/lib/custom_scalars.dart`.
 
 ## 3. Run codegen
 
 ```bash
-shalom generate --path examples/flutter/swapi
+shalom generate --path examples/anilist
 ```
 
-Shalom will emit Dart files under `__graphql__` in your Dart package.
+Shalom will emit Dart files under `lib/graphql/__graphql__` for this example.
 
 ## 4. Create a client and request data
 
-The SWAPI example wires the client like this:
+The AniList example wires the client like this:
 
 ```dart
 final transport = DioTransport(dioClient);
 final httpLink = HttpLink(
   transportLayer: transport,
-  url: 'https://swapi-graphql.netlify.app/graphql',
+  url: 'https://graphql.anilist.co/',
 );
 final ctx = ShalomCtx.withCapacity();
 final client = ShalomClient(ctx: ctx, link: httpLink);
@@ -94,7 +85,11 @@ final client = ShalomClient(ctx: ctx, link: httpLink);
 Then issue a request using the generated request class:
 
 ```dart
-yield* client.request(requestable: RequestGetFilms());
+final response = await client.requestOnce(
+  requestable: RequestGetAnimePage(
+    variables: GetAnimePageVariables(page: 1, perPage: 10),
+  ),
+);
 ```
 
 ## 5. Read typed data
@@ -102,9 +97,9 @@ yield* client.request(requestable: RequestGetFilms());
 The generated response exposes your selections as typed fields:
 
 ```dart
-switch (result) {
+switch (response) {
   case GraphQLData():
-    final films = result.data.allFilms?.films;
+    final media = response.data.Page?.media;
     // Build UI from the list
   case GraphQLError():
     // handle GraphQL errors
@@ -118,7 +113,7 @@ switch (result) {
 From the example directory:
 
 ```bash
-cd examples/flutter/swapi
+cd examples/anilist
 flutter run
 ```
 

@@ -55,7 +55,7 @@ jobs:
               if: runner.os == 'Linux'
               run: task lint
 
-    swapi-example:
+    anilist-example:
         runs-on: ubuntu-latest
         steps:
             - name: Checkout repository
@@ -78,16 +78,16 @@ jobs:
                   cd rust
                   cargo build -p shalom_dart_codegen
 
-            - name: Run codegen for SWAPI example
+            - name: Run codegen for AniList example
               run: |
-                  ./rust/target/debug/shalom generate --path examples/flutter/swapi
+                  ./rust/target/debug/shalom generate --path examples/anilist
 
-            - name: Install SWAPI dependencies
+            - name: Install AniList dependencies
               run: |
-                  cd examples/flutter/swapi
+                  cd examples/anilist
                   flutter pub get
 
-            - name: Build SWAPI example
+            - name: Build AniList example
               run: |
-                  cd examples/flutter/swapi
+                  cd examples/anilist
                   flutter build web

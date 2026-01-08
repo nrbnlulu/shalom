@@ -41,7 +41,7 @@ change output paths.
 
 ## Optional configuration
 
-The SWAPI example keeps generated files under `lib` with a minimal config:
+The AniList example keeps generated files under `lib` with a minimal config:
 
 ```yml
 schema_output_path: "./lib"

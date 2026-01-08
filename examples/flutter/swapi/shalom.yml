@@ -1,1 +1,2 @@
 schema_output_path: "./lib"
+custom_scalars: {}

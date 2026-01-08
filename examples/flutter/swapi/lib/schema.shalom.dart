@@ -20,9 +20,6 @@
 
 
 
-import 'package:swapi/custom_scalars.dart' as yublpab;
-
-
 
 
 

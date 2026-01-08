@@ -12,4 +12,4 @@ Shalom is a minimal GraphQL library for Dart and Flutter.
 
 
 
-See the Flutter SWAPI example at `examples/flutter/swapi` for a full working app.
+See the Flutter AniList example at `examples/anilist` for a full working app.

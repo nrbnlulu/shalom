@@ -1,16 +1,21 @@
-# anilist
+# AniList Example
 
-A new Flutter project.
+This example shows how to use Shalom with the AniList GraphQL API. It queries
+popular anime series, supports pagination, and shows a detail screen with
+streaming episodes and characters.
 
-## Getting Started
+## Run the demo
 
-This project is a starting point for a Flutter application.
+From the repo root:
 
-A few resources to get you started if this is your first Flutter project:
+```bash
+./rust/target/debug/shalom generate --path examples/anilist
+```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Then:
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+```bash
+cd examples/anilist
+flutter pub get
+flutter run
+```
