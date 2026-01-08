@@ -1,18 +1,20 @@
 # Quickstart
 
-This walkthrough uses the SWAPI Flutter example in `examples/flutter/swapi` as a
-reference. The same approach works for any Dart or Flutter app.
+This walkthrough is a hands-on tutorial for the SWAPI Flutter example in
+`examples/flutter/swapi`. The same approach works for any Dart or Flutter app.
 
 ## 1. Add your schema and operations
 
-The SWAPI example keeps these files in `examples/flutter/swapi/lib`. Start by
-creating a schema and an operation file there:
+The SWAPI example keeps these files in `examples/flutter/swapi/lib`. They are
+already checked in, so you can open and inspect them:
 
 ```graphql
-# examples/flutter/swapi/lib/schema.graphql
+# examples/flutter/swapi/lib/schema.graphql (excerpt)
 schema {
   query: Query
 }
+
+scalar Date
 
 type Query {
   allFilms: FilmConnection
@@ -27,7 +29,7 @@ type Film {
   title: String
   director: String
   episodeID: Int
-  releaseDate: String
+  releaseDate: Date
 }
 ```
 
@@ -48,14 +50,24 @@ query GetFilms {
 
 ## 2. (Optional) Add `shalom.yml`
 
-If you want to control where generated files land, add a minimal config. The
-SWAPI example keeps generated Dart files in `lib`:
+The SWAPI example keeps generated Dart files in `lib` and registers a custom
+scalar for `Date`:
 
 ```yml
 schema_output_path: "./lib"
+
+custom_scalars:
+  Date:
+    graphql_name: "Date"
+    output_type:
+      import_path: "package:swapi/custom_scalars.dart"
+      symbol_name: "SwapiDate"
+    impl_symbol:
+      import_path: "package:swapi/custom_scalars.dart"
+      symbol_name: "swapiDateScalarImpl"
 ```
 
-This is the same setup used by the SWAPI example.
+See the scalar implementation in `examples/flutter/swapi/lib/custom_scalars.dart`.
 
 ## 3. Run codegen
 
@@ -101,7 +113,17 @@ switch (result) {
 }
 ```
 
-## 6. Why streams?
+## 6. Run the example app
+
+From the example directory:
+
+```bash
+cd examples/flutter/swapi
+flutter run
+```
+
+## 7. Why streams?
 
 Shalom normalizes response data, so changes in one operation can update the cached
-data used by another. Using streams lets your UI react to those updates.
+data used by another. Using streams lets your UI react to those updates. See
+`normalized-cache.md` for details.

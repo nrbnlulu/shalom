@@ -30,6 +30,12 @@ class _PointScalarImpl implements CustomScalarImpl<Point> {
   @override
   Point deserialize(dynamic raw) {
     if (raw is Map<String, dynamic>) {
+      if (!raw.containsKey('x')) {
+        throw FormatException("Point expects field 'x' but it was missing.");
+      }
+      if (!raw.containsKey('y')) {
+        throw FormatException("Point expects field 'y' but it was missing.");
+      }
       if (raw['x'] is! int || raw['y'] is! int) {
         throw FormatException("Point expects integer fields 'x' and 'y'.");
       }

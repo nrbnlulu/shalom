@@ -43,4 +43,5 @@ nav:
     - Home: index.md
     - Installation: installation.md
     - Quickstart: quickstart.md
+    - Normalized Cache: normalized-cache.md
     - Custom Scalars: custom-scalars.md
