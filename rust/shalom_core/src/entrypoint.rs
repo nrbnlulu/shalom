@@ -70,6 +70,28 @@ pub fn parse_document(
     crate::operation::parse::parse_document_impl(global_ctx, operation, source_path)
 }
 
+pub fn register_fragments_from_document(
+    global_ctx: &SharedShalomGlobalContext,
+    source: &str,
+    doc_path: &PathBuf,
+) -> anyhow::Result<()> {
+    let schema = global_ctx.schema_ctx.schema.clone();
+    let mut parser = apollo_compiler::parser::Parser::new();
+    let doc = parser
+        .parse_executable(&schema, source, doc_path)
+        .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
+    let doc = doc.validate(&schema).expect("doc is not valid");
+    let doc = doc.into_inner();
+
+    let parsed_docs = vec![(doc, doc_path.clone(), source.to_string())];
+    let fragment_defs = extract_fragment_definitions(&parsed_docs)?;
+    if fragment_defs.is_empty() {
+        return Ok(());
+    }
+    let order = build_fragment_dependencies(&fragment_defs)?;
+    parse_and_register_fragments(fragment_defs, order, global_ctx)
+}
+
 /// Load configuration from directory or use defaults
 fn load_config(pwd: &Option<PathBuf>) -> anyhow::Result<ShalomConfig> {
     match pwd {

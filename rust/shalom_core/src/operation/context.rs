@@ -195,6 +195,9 @@ impl OperationContext {
     pub fn get_operation_name(&self) -> &str {
         &self.operation_name
     }
+    pub fn op_type(&self) -> OperationType {
+        self.op_ty.clone()
+    }
     pub fn has_variables(&self) -> bool {
         !self.variables.is_empty()
     }

@@ -22,7 +22,7 @@ use crate::{
 /// the name of i.e object in a graphql query based on the parent fields.
 pub type FullPathName = String;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(tag = "name")]
 pub enum OperationType {
     Query,
