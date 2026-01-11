@@ -2,9 +2,11 @@ use serde_json::{Map, Value};
 
 use shalom_core::context::SharedShalomGlobalContext;
 use shalom_core::operation::context::{ExecutableContext, SharedOpCtx};
+use shalom_core::operation::fragments::SharedFragmentContext;
 use shalom_core::operation::types::{FieldSelection, SelectionKind};
+use shalom_core::schema::types::GraphQLAny;
 
-use crate::cache::{CacheRecord, CacheValue, NormalizedCache};
+use crate::cache::{CacheRecord, CacheValue, NormalizedCache, RefKind};
 use crate::selection::{
     field_cache_key, field_path_segment, resolve_multitype_selections, resolve_object_selections,
 };
@@ -60,6 +62,25 @@ impl<'a> CacheReader<'a> {
         }
 
         Ok(Value::Object(output))
+    }
+
+    pub fn read_fragment(
+        &self,
+        fragment: &SharedFragmentContext,
+        root_ref: &str,
+    ) -> anyhow::Result<Value> {
+        let (cached_value, ref_kind) = if let Some(locator) = self.cache.ref_locator(root_ref) {
+            match self.cache.resolve_locator(locator) {
+                Some(value) => (value, RefKind::Path),
+                None => return Ok(Value::Null),
+            }
+        } else if self.cache.get(root_ref).is_some() {
+            (CacheValue::Ref(root_ref.to_string()), RefKind::Id)
+        } else {
+            return Ok(Value::Null);
+        };
+
+        self.read_root_object(fragment, &cached_value, root_ref, ref_kind)
     }
 
     fn read_field(
@@ -247,6 +268,103 @@ impl<'a> CacheReader<'a> {
             output.push(value);
         }
         Ok(Value::Array(output))
+    }
+
+    fn read_root_object(
+        &self,
+        fragment: &SharedFragmentContext,
+        cached_value: &CacheValue,
+        object_ref_key: &str,
+        ref_kind: RefKind,
+    ) -> anyhow::Result<Value> {
+        let (record, _entity_key) = match cached_value {
+            CacheValue::Ref(key) => match self.cache.get(key) {
+                Some(record) => (record.clone(), Some(key.clone())),
+                None => return Ok(Value::Null),
+            },
+            CacheValue::Object(record) => (record.clone(), None),
+            CacheValue::Scalar(value) if value.is_null() => {
+                return Ok(Value::Null);
+            }
+            _ => {
+                return Err(anyhow::anyhow!(
+                    "unexpected cache value for fragment {}",
+                    fragment.get_fragment_name()
+                ));
+            }
+        };
+
+        let root_common = fragment.get_on_type();
+        let (selections, is_union_interface) = match self
+            .global_ctx
+            .schema_ctx
+            .get_type_strict(&root_common.schema_typename)
+        {
+            GraphQLAny::Union(_) => {
+                let typename = cached_typename_from_record(&record)
+                    .ok_or_else(|| anyhow::anyhow!("union selection missing __typename"))?;
+                (
+                    resolve_multitype_selections(root_common, &typename, &self.global_ctx),
+                    true,
+                )
+            }
+            GraphQLAny::Interface(_) => {
+                let typename = cached_typename_from_record(&record)
+                    .ok_or_else(|| anyhow::anyhow!("interface selection missing __typename"))?;
+                (
+                    resolve_multitype_selections(root_common, &typename, &self.global_ctx),
+                    true,
+                )
+            }
+            _ => (
+                resolve_object_selections(root_common, &self.global_ctx),
+                false,
+            ),
+        };
+
+        let mut output = Map::new();
+        let mut ref_meta = Map::new();
+        match ref_kind {
+            RefKind::Id => {
+                ref_meta.insert("id".to_string(), Value::String(object_ref_key.to_string()));
+            }
+            RefKind::Path => {
+                ref_meta.insert(
+                    "path".to_string(),
+                    Value::String(object_ref_key.to_string()),
+                );
+            }
+        }
+        output.insert("__ref".to_string(), Value::Object(ref_meta));
+
+        for selection in selections {
+            let field_name = selection.self_selection_name().clone();
+            let cache_key = field_cache_key(&field_name, &selection.arguments, self.variables);
+            let field_segment =
+                field_path_segment(&field_name, &selection.arguments, self.variables);
+            let field_ref_key = format!("{}_{}", object_ref_key, field_segment);
+            let cached_value = record.get(&cache_key);
+
+            let value =
+                self.read_field(&selection, cached_value, object_ref_key, &field_segment)?;
+
+            output.insert(field_name.clone(), value);
+            if field_name != "__typename" {
+                output.insert(
+                    format!("__ref_{}", field_name),
+                    Value::String(field_ref_key),
+                );
+            }
+        }
+
+        if is_union_interface && cached_typename_from_record(&record).is_none() {
+            return Err(anyhow::anyhow!(
+                "missing __typename for fragment {}",
+                fragment.get_fragment_name()
+            ));
+        }
+
+        Ok(Value::Object(output))
     }
 }
 

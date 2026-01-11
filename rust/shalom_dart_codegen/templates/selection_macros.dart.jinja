@@ -558,6 +558,9 @@ null
             // if ctx not provider we create dummy one
             return fromResponseImpl(data, ctx ?? shalom_core.ShalomCtx.withCapacity(){{if_op_variables(", variables")}}).$1;
         }
+
+        static const shalom_core.FromCache<{{typename}}> cacheBuilder =
+            {{typename}}FromCache();
     {% endif -%}
 
     @override

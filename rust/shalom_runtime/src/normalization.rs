@@ -10,7 +10,7 @@ use shalom_core::{
     },
 };
 
-use crate::cache::{CacheKey, CacheRecord, CacheValue, NormalizedCache};
+use crate::cache::{CacheKey, CacheLocator, CacheRecord, CacheValue, NormalizedCache};
 use crate::selection::{
     field_cache_key, field_path_segment, resolve_multitype_selections, resolve_object_selections,
 };
@@ -62,6 +62,7 @@ impl<'a> Normalizer<'a> {
         let mut next_root = cached_root.clone();
         let selections = resolve_object_selections(op_ctx.get_root(), &self.global_ctx);
         let mut output = Map::new();
+        let root_locator = CacheLocator::root(root_key.clone());
 
         for selection in selections {
             let field_name = selection.self_selection_name().clone();
@@ -72,6 +73,7 @@ impl<'a> Normalizer<'a> {
                 field_path_segment(&field_name, &selection.arguments, self.variables);
             let field_ref_key = format!("{}_{}", root_key, field_segment);
             let cached_value = cached_root.get(&field_cache_key);
+            let field_locator = root_locator.child_field(field_cache_key.clone());
 
             let normalized = self.normalize_field(
                 &selection,
@@ -82,6 +84,8 @@ impl<'a> Normalizer<'a> {
                 &field_segment,
                 &field_ref_key,
                 raw_obj.contains_key(&field_name),
+                &field_cache_key,
+                &field_locator,
             )?;
 
             output.insert(field_name.clone(), normalized);
@@ -111,6 +115,8 @@ impl<'a> Normalizer<'a> {
         field_segment: &str,
         field_ref_key: &str,
         has_field: bool,
+        field_cache_key: &str,
+        field_locator: &CacheLocator,
     ) -> anyhow::Result<Value> {
         match &selection.kind {
             SelectionKind::Scalar(_) | SelectionKind::Enum(_) => {
@@ -124,11 +130,7 @@ impl<'a> Normalizer<'a> {
                     self.changed.insert(field_ref_key.to_string());
                 }
                 parent_record.insert(
-                    field_cache_key(
-                        selection.self_selection_name(),
-                        &selection.arguments,
-                        self.variables,
-                    ),
+                    field_cache_key.to_string(),
                     CacheValue::Scalar(raw_value.clone()),
                 );
                 Ok(raw_value.clone())
@@ -140,14 +142,8 @@ impl<'a> Normalizer<'a> {
                     if changed {
                         self.changed.insert(field_ref_key.to_string());
                     }
-                    parent_record.insert(
-                        field_cache_key(
-                            selection.self_selection_name(),
-                            &selection.arguments,
-                            self.variables,
-                        ),
-                        CacheValue::Scalar(Value::Null),
-                    );
+                    parent_record
+                        .insert(field_cache_key.to_string(), CacheValue::Scalar(Value::Null));
                     return Ok(Value::Null);
                 }
 
@@ -169,13 +165,10 @@ impl<'a> Normalizer<'a> {
                         parent_ref_key,
                         field_segment,
                         field_ref_key,
+                        field_locator,
                     )?;
                     parent_record.insert(
-                        field_cache_key(
-                            selection.self_selection_name(),
-                            &selection.arguments,
-                            self.variables,
-                        ),
+                        field_cache_key.to_string(),
                         CacheValue::List(normalized.cache),
                     );
                     Value::Array(normalized.output)
@@ -189,14 +182,8 @@ impl<'a> Normalizer<'a> {
                     if changed {
                         self.changed.insert(field_ref_key.to_string());
                     }
-                    parent_record.insert(
-                        field_cache_key(
-                            selection.self_selection_name(),
-                            &selection.arguments,
-                            self.variables,
-                        ),
-                        CacheValue::Scalar(Value::Null),
-                    );
+                    parent_record
+                        .insert(field_cache_key.to_string(), CacheValue::Scalar(Value::Null));
                     return Ok(Value::Null);
                 }
 
@@ -207,12 +194,6 @@ impl<'a> Normalizer<'a> {
                     )
                 })?;
 
-                let field_cache_key = field_cache_key(
-                    selection.self_selection_name(),
-                    &selection.arguments,
-                    self.variables,
-                );
-
                 let (value, cache_value, object_ref_key, entity_key, is_union_interface) = self
                     .normalize_object_field(
                         selection,
@@ -220,6 +201,7 @@ impl<'a> Normalizer<'a> {
                         cached_value,
                         parent_ref_key,
                         field_segment,
+                        field_locator.clone(),
                     )?;
 
                 let had_value = matches!(
@@ -255,7 +237,7 @@ impl<'a> Normalizer<'a> {
                     }
                 }
 
-                parent_record.insert(field_cache_key, cache_value);
+                parent_record.insert(field_cache_key.to_string(), cache_value);
                 Ok(value)
             }
         }
@@ -269,6 +251,7 @@ impl<'a> Normalizer<'a> {
         parent_ref_key: &str,
         field_segment: &str,
         field_ref_key: &str,
+        list_locator: &CacheLocator,
     ) -> anyhow::Result<ListNormalization> {
         let mut out = Vec::with_capacity(raw_list.len());
         let mut new_cache_list = Vec::with_capacity(raw_list.len());
@@ -276,6 +259,7 @@ impl<'a> Normalizer<'a> {
         for (idx, raw_item) in raw_list.iter().enumerate() {
             let item_segment = format!("{}[{}]", field_segment, idx);
             let item_cached = cached_list.and_then(|items| items.get(idx));
+            let item_locator = list_locator.child_index(idx);
             let item_value = match &list_sel.of_kind {
                 SelectionKind::Scalar(_) | SelectionKind::Enum(_) => {
                     new_cache_list.push(CacheValue::Scalar(raw_item.clone()));
@@ -302,6 +286,7 @@ impl<'a> Normalizer<'a> {
                                 item_cached,
                                 parent_ref_key,
                                 &item_segment,
+                                item_locator.clone(),
                             )?;
                         new_cache_list.push(cache_value);
                         value
@@ -327,6 +312,7 @@ impl<'a> Normalizer<'a> {
                             parent_ref_key,
                             &item_segment,
                             &item_ref_key,
+                            &item_locator,
                         )?;
                         new_cache_list.push(CacheValue::List(normalized.cache));
                         Value::Array(normalized.output)
@@ -358,6 +344,7 @@ impl<'a> Normalizer<'a> {
         cached_value: Option<&CacheValue>,
         parent_ref_key: &str,
         field_segment: &str,
+        object_locator: CacheLocator,
     ) -> anyhow::Result<(Value, CacheValue, CacheKey, Option<CacheKey>, bool)> {
         let (typename, selections, is_union_interface) = match &selection.kind {
             SelectionKind::Object(obj) => (
@@ -405,6 +392,11 @@ impl<'a> Normalizer<'a> {
             entity_key.clone().unwrap_or(path_key.clone())
         };
 
+        if is_union_interface || entity_key.is_none() {
+            self.cache
+                .record_ref(object_ref_key.clone(), object_locator.clone());
+        }
+
         let cached_record = match cached_value {
             Some(CacheValue::Ref(key)) => {
                 if entity_key.as_ref() == Some(key) {
@@ -428,6 +420,12 @@ impl<'a> Normalizer<'a> {
         }
         output.insert("__ref".to_string(), Value::Object(ref_meta));
 
+        let record_locator = if let Some(entity_key) = &entity_key {
+            CacheLocator::root(entity_key.clone())
+        } else {
+            object_locator.clone()
+        };
+
         for selection in selections {
             let field_name = selection.self_selection_name().clone();
             let raw_value = raw_obj.get(&field_name).cloned().unwrap_or(Value::Null);
@@ -437,6 +435,7 @@ impl<'a> Normalizer<'a> {
                 field_path_segment(&field_name, &selection.arguments, self.variables);
             let field_ref_key = format!("{}_{}", object_ref_key, field_segment);
             let cached_value = cached_record.as_ref().and_then(|r| r.get(&field_cache_key));
+            let field_locator = record_locator.child_field(field_cache_key.clone());
 
             let normalized = self.normalize_field(
                 &selection,
@@ -447,6 +446,8 @@ impl<'a> Normalizer<'a> {
                 &field_segment,
                 &field_ref_key,
                 raw_obj.contains_key(&field_name),
+                &field_cache_key,
+                &field_locator,
             )?;
 
             output.insert(field_name.clone(), normalized);

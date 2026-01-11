@@ -316,9 +316,13 @@ This runtime-driven model:
 ok now the client api should look like so.
 
 - init runtime: provide the schema SDL (as a string for now), a root link and a config (for now we don't anything in the config I think but..) and a list of all the fragment SDL's. the codegen of the target language (for now dart only) can auto generate an init runtime for each schema it finds (for now we only support one schema).
-- client calls runtime.request(query: "<query SDL>", variables: vars) and gets a response with injected refs as json.
-- if the client decides it wants to subscribe to an object it will call `runtime.subscribe(operation_id, list_of_refs)` the runtime will watch for changes in those refs, and once found it will "execute" against the cache (internally) for all the selections (if its not a scalar) under the root ref that was provided based on the operation_id parsed SDL.  
-- for flutter i.e we can have a stream builder for each runtime subscription, it will internally accept a runtime (can be fetched from the context) and any type that implements `FromCache` (since dart doesn't have static "traits" i.e overrides that returns Self we need to do a trick with a method that returns a builder of Self) the codegen can automatically generate the FromCache thing and ITF might also auto inject the type. OFC the type that we use in that we use must be the correct type of the root ref. ideally we should encourege just using fragments for `RefSubscriptionWdiget`s.
+- client calls runtime.request(query: "<query SDL>", variables: vars) and gets a response with 1. (ideally) graphql data with the injected cache refs, 2. the id for that operation SDL (note that even if we fire the same query twice, thats the same id).
+
+- if the client decides it wants to subscribe to an object it will call `runtime.subscribe(subscribeable_id (the operation / fragment sdl id), list_of_refs)` the runtime will watch for changes in those refs, and once found it will "execute" against the cache (internally) for all the selections (if its not a scalar) under the root ref.
+
+- for flutter i.e we can have a stream builder for each runtime subscription, it will internally accept a runtime (can be fetched from the context) and any type that implements `FromCache` (which is root operation types and fragments) (since dart doesn't have static "traits" i.e overrides that returns Self we need to do a trick with a method that returns a builder of Self) the codegen can automatically generate the FromCache thing on it.
+OFC the type that we use in that we use must be the correct type of the root ref. 
+
 
 make sure that the rust backend is ready for this and implement needed api in the flutter_rust_bridge codegen.
 

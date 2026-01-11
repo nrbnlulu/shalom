@@ -27,8 +27,28 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
         {{ type_name_for_selection(field) }} get {{ field.name }};
     {% endfor %}
 
+  static const shalom_core.FromCache<{{ fragment_name }}> cacheBuilder =
+      {{ fragment_name }}FromCache();
+
   Map<String, dynamic> toJson();
 
+}
+
+class {{ fragment_name }}Impl implements {{ fragment_name }} {
+  {{ selection_object_impl(fragment_name ~ "Impl", context.fragment.root_type, is_root_selection=false, full_name=context.fragment.root_type.path_name, shared_selections=frag_root_shared_selections()) }}
+}
+
+class {{ fragment_name }}FromCache
+    implements shalom_core.FromCache<{{ fragment_name }}> {
+  const {{ fragment_name }}FromCache();
+
+  @override
+  String get subscriberGlobalID => '{{ fragment_name }}';
+
+  @override
+  {{ fragment_name }} fromCache(shalom_core.JsonObject data) {
+    return {{ fragment_name }}Impl.fromJson(data);
+  }
 }
 
 // ------------ START OBJECT DEFINITIONS -------------

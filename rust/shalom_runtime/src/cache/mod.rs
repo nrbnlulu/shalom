@@ -22,15 +22,62 @@ impl CacheValue {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RefKind {
+    Id,
+    Path,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum LocatorSegment {
+    Field(CacheKey),
+    Index(usize),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct CacheLocator {
+    pub base: CacheKey,
+    pub path: Vec<LocatorSegment>,
+}
+
+impl CacheLocator {
+    pub fn root(base: CacheKey) -> Self {
+        Self {
+            base,
+            path: Vec::new(),
+        }
+    }
+
+    pub fn child_field(&self, key: CacheKey) -> Self {
+        let mut path = self.path.clone();
+        path.push(LocatorSegment::Field(key));
+        Self {
+            base: self.base.clone(),
+            path,
+        }
+    }
+
+    pub fn child_index(&self, index: usize) -> Self {
+        let mut path = self.path.clone();
+        path.push(LocatorSegment::Index(index));
+        Self {
+            base: self.base.clone(),
+            path,
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct NormalizedCache {
     entries: HashMap<CacheKey, CacheRecord>,
+    ref_index: HashMap<CacheKey, CacheLocator>,
 }
 
 impl NormalizedCache {
     pub fn new() -> Self {
         Self {
             entries: HashMap::new(),
+            ref_index: HashMap::new(),
         }
     }
 
@@ -56,5 +103,29 @@ impl NormalizedCache {
 
     pub fn keys(&self) -> impl Iterator<Item = &CacheKey> {
         self.entries.keys()
+    }
+
+    pub fn record_ref(&mut self, key: CacheKey, locator: CacheLocator) {
+        self.ref_index.insert(key, locator);
+    }
+
+    pub fn ref_locator(&self, key: &str) -> Option<&CacheLocator> {
+        self.ref_index.get(key)
+    }
+
+    pub fn resolve_locator(&self, locator: &CacheLocator) -> Option<CacheValue> {
+        let mut current = CacheValue::Object(self.entries.get(&locator.base)?.clone());
+        for segment in &locator.path {
+            current = match (segment, current) {
+                (LocatorSegment::Field(key), CacheValue::Object(record)) => {
+                    record.get(key).cloned()?
+                }
+                (LocatorSegment::Index(idx), CacheValue::List(items)) => {
+                    items.get(*idx).cloned()?
+                }
+                _ => return None,
+            };
+        }
+        Some(current)
     }
 }

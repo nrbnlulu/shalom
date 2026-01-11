@@ -6,74 +6,82 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+// These functions are ignored because they are not marked as `pub`: `parse_config`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`
 
-            
+Future<RuntimeHandle> initRuntime({
+  required String schemaSdl,
+  required List<String> fragmentSdls,
+  String? configJson,
+}) => RustLib.instance.api.crateApiRuntimeInitRuntime(
+  schemaSdl: schemaSdl,
+  fragmentSdls: fragmentSdls,
+  configJson: configJson,
+);
 
-            Future<RuntimeHandle>  initRuntime({required String schemaSdl , required List<String> fragmentSdls , required RuntimeConfig config }) => RustLib.instance.api.crateApiRuntimeInitRuntime(schemaSdl: schemaSdl, fragmentSdls: fragmentSdls, config: config);
+Stream<String> listenRequests({required RuntimeHandle handle}) =>
+    RustLib.instance.api.crateApiRuntimeListenRequests(handle: handle);
 
-Future<UnboundedReceiverStreamRequestEnvelope?>  takeRequestStream({required RuntimeHandle handle }) => RustLib.instance.api.crateApiRuntimeTakeRequestStream(handle: handle);
+Future<String> request({
+  required RuntimeHandle handle,
+  required String query,
+  String? variablesJson,
+}) => RustLib.instance.api.crateApiRuntimeRequest(
+  handle: handle,
+  query: query,
+  variablesJson: variablesJson,
+);
 
-Future<RuntimeResponse>  request({required RuntimeHandle handle , required String query , MapStringValue? variables }) => RustLib.instance.api.crateApiRuntimeRequest(handle: handle, query: query, variables: variables);
+Future<void> pushResponse({
+  required RuntimeHandle handle,
+  required BigInt requestId,
+  required String responseJson,
+}) => RustLib.instance.api.crateApiRuntimePushResponse(
+  handle: handle,
+  requestId: requestId,
+  responseJson: responseJson,
+);
 
-Future<void>  pushResponse({required RuntimeHandle handle , required BigInt requestId , required GraphQlResponse response }) => RustLib.instance.api.crateApiRuntimePushResponse(handle: handle, requestId: requestId, response: response);
+Future<void> pushTransportError({
+  required RuntimeHandle handle,
+  required BigInt requestId,
+  required String message,
+  required String code,
+  String? detailsJson,
+}) => RustLib.instance.api.crateApiRuntimePushTransportError(
+  handle: handle,
+  requestId: requestId,
+  message: message,
+  code: code,
+  detailsJson: detailsJson,
+);
 
-Future<BigInt>  subscribe({required RuntimeHandle handle , required String operationId , required List<String> refs }) => RustLib.instance.api.crateApiRuntimeSubscribe(handle: handle, operationId: operationId, refs: refs);
+Future<BigInt> subscribe({
+  required RuntimeHandle handle,
+  required String targetId,
+  String? rootRef,
+  required List<String> refs,
+}) => RustLib.instance.api.crateApiRuntimeSubscribe(
+  handle: handle,
+  targetId: targetId,
+  rootRef: rootRef,
+  refs: refs,
+);
 
-Future<List<RuntimeResponse>>  drainUpdates({required RuntimeHandle handle , required BigInt subscriptionId }) => RustLib.instance.api.crateApiRuntimeDrainUpdates(handle: handle, subscriptionId: subscriptionId);
+Stream<String> listenUpdates({
+  required RuntimeHandle handle,
+  required BigInt subscriptionId,
+}) => RustLib.instance.api.crateApiRuntimeListenUpdates(
+  handle: handle,
+  subscriptionId: subscriptionId,
+);
 
-Future<void>  unsubscribe({required RuntimeHandle handle , required BigInt subscriptionId }) => RustLib.instance.api.crateApiRuntimeUnsubscribe(handle: handle, subscriptionId: subscriptionId);
+Future<void> unsubscribe({
+  required RuntimeHandle handle,
+  required BigInt subscriptionId,
+}) => RustLib.instance.api.crateApiRuntimeUnsubscribe(
+  handle: handle,
+  subscriptionId: subscriptionId,
+);
 
-            
-                // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<GraphQLResponse>>
-                abstract class GraphQlResponse implements RustOpaqueInterface {
-                    
-
-                    
-                }
-                
-
-
-                // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Map < String , Value >>>
-                abstract class MapStringValue implements RustOpaqueInterface {
-                    
-
-                    
-                }
-                
-
-
-                // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeConfig>>
-                abstract class RuntimeConfig implements RustOpaqueInterface {
-                    
-
-                    
-                }
-                
-
-
-                // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>>
-                abstract class RuntimeHandle implements RustOpaqueInterface {
-                    
-
-                    
-                }
-                
-
-
-                // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeResponse>>
-                abstract class RuntimeResponse implements RustOpaqueInterface {
-                    
-
-                    
-                }
-                
-
-
-                // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<UnboundedReceiverStream < RequestEnvelope >>>
-                abstract class UnboundedReceiverStreamRequestEnvelope implements RustOpaqueInterface {
-                    
-
-                    
-                }
-                
-            
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>>
+abstract class RuntimeHandle implements RustOpaqueInterface {}

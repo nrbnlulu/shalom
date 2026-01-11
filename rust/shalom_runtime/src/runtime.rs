@@ -1,19 +1,23 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::pin::Pin;
 use std::sync::{Arc, Mutex};
 
 use serde_json::{Map, Value};
+use tokio::sync::mpsc;
 use tokio_stream::Stream;
 use tokio_stream::StreamExt;
+use tokio_stream::wrappers::UnboundedReceiverStream;
 
 use shalom_core::context::SharedShalomGlobalContext;
 use shalom_core::entrypoint::{parse_document, parse_schema, register_fragments_from_document};
 use shalom_core::operation::context::SharedOpCtx;
+use shalom_core::operation::fragments::SharedFragmentContext;
 use shalom_core::shalom_config::ShalomConfig;
 
 use crate::cache::NormalizedCache;
 use crate::execution::ExecutionEngine;
+use crate::gc::{SubscriptionTracker, collect_garbage};
 use crate::link::{GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request};
 use crate::normalization::NormalizationResult;
 use crate::read::CacheReader;
@@ -51,6 +55,8 @@ impl From<HashSet<String>> for RefObject {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct RuntimeResponse {
     pub data: Value,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub operation_id: Option<String>,
 }
 
 pub type RuntimeResponseStream =
@@ -72,10 +78,20 @@ impl From<SubscriptionId> for u64 {
 }
 
 struct SubscriptionState {
-    op_ctx: SharedOpCtx,
+    target: SubscriptionTarget,
     variables: Option<Map<String, Value>>,
     keys: HashSet<String>,
-    queue: VecDeque<RuntimeResponse>,
+    sender: mpsc::UnboundedSender<RuntimeResponse>,
+    receiver: Option<mpsc::UnboundedReceiver<RuntimeResponse>>,
+}
+
+#[derive(Clone)]
+enum SubscriptionTarget {
+    Operation(SharedOpCtx),
+    Fragment {
+        fragment: SharedFragmentContext,
+        root_ref: String,
+    },
 }
 
 #[derive(Default)]
@@ -88,6 +104,7 @@ struct SubscriptionManager {
 pub struct ShalomRuntime {
     engine: ExecutionEngine,
     subscriptions: Arc<Mutex<SubscriptionManager>>,
+    subscription_tracker: Arc<Mutex<SubscriptionTracker>>,
     operations: Arc<Mutex<HashMap<String, SharedOpCtx>>>,
     operation_vars: Arc<Mutex<HashMap<String, Map<String, Value>>>>,
     link: Option<Arc<dyn GraphQLLink>>,
@@ -131,6 +148,7 @@ impl ShalomRuntime {
         Self {
             engine,
             subscriptions: Arc::new(Mutex::new(SubscriptionManager::default())),
+            subscription_tracker: Arc::new(Mutex::new(SubscriptionTracker::new())),
             operations: Arc::new(Mutex::new(HashMap::new())),
             operation_vars: Arc::new(Mutex::new(HashMap::new())),
             link: None,
@@ -155,26 +173,42 @@ impl ShalomRuntime {
 
     pub fn subscribe(
         &self,
-        operation_id: &str,
+        target_id: &str,
+        root_ref: Option<String>,
         refs: Vec<String>,
     ) -> anyhow::Result<SubscriptionId> {
-        let op_ctx = self.operation_ctx(operation_id)?;
+        if let Some(root_ref) = root_ref {
+            let fragment = self
+                .engine
+                .global_ctx()
+                .get_fragment(target_id)
+                .ok_or_else(|| anyhow::anyhow!("fragment {target_id} not found"))?;
+            return Ok(self.subscribe_with_target(
+                SubscriptionTarget::Fragment { fragment, root_ref },
+                None,
+                refs,
+            ));
+        }
+
+        let op_ctx = self.operation_ctx(target_id)?;
         let variables = self
             .operation_vars
             .lock()
             .expect("operation vars lock poisoned")
-            .get(operation_id)
+            .get(target_id)
             .cloned();
-        Ok(self.subscribe_with_ctx(op_ctx, variables, refs))
+        Ok(self.subscribe_with_target(SubscriptionTarget::Operation(op_ctx), variables, refs))
     }
 
-    fn subscribe_with_ctx(
+    fn subscribe_with_target(
         &self,
-        op_ctx: SharedOpCtx,
+        target: SubscriptionTarget,
         variables: Option<Map<String, Value>>,
         refs: Vec<String>,
     ) -> SubscriptionId {
         let refs: RefObject = refs.into();
+        let keys = refs.refs.clone();
+        let (sender, receiver) = mpsc::unbounded_channel();
         let mut manager = self
             .subscriptions
             .lock()
@@ -184,37 +218,72 @@ impl ShalomRuntime {
         manager.subscriptions.insert(
             id,
             SubscriptionState {
-                op_ctx,
+                target,
                 variables,
                 keys: refs.refs,
-                queue: VecDeque::new(),
+                sender,
+                receiver: Some(receiver),
             },
         );
+        drop(manager);
+        self.subscription_tracker
+            .lock()
+            .expect("subscription tracker lock poisoned")
+            .subscribe(keys);
         id
     }
 
     pub fn unsubscribe(&self, id: SubscriptionId) {
-        let mut manager = self
-            .subscriptions
-            .lock()
-            .expect("subscription manager lock poisoned");
-        manager.subscriptions.remove(&id);
-    }
-
-    pub fn drain_updates(&self, id: SubscriptionId) -> Vec<RuntimeResponse> {
-        let mut manager = self
-            .subscriptions
-            .lock()
-            .expect("subscription manager lock poisoned");
-        if let Some(state) = manager.subscriptions.get_mut(&id) {
-            state.queue.drain(..).collect()
-        } else {
-            Vec::new()
+        let keys = {
+            let mut manager = self
+                .subscriptions
+                .lock()
+                .expect("subscription manager lock poisoned");
+            manager.subscriptions.remove(&id).map(|state| state.keys)
+        };
+        if let Some(keys) = keys {
+            self.subscription_tracker
+                .lock()
+                .expect("subscription tracker lock poisoned")
+                .unsubscribe(keys);
         }
     }
 
+    pub fn collect_garbage(&self) -> Vec<String> {
+        let active_keys = self
+            .subscription_tracker
+            .lock()
+            .expect("subscription tracker lock poisoned")
+            .active_keys();
+        let cache = self.cache();
+        let mut cache = cache.lock().expect("normalized cache lock poisoned");
+        collect_garbage(&mut cache, &active_keys)
+    }
+
+    pub fn subscription_stream(&self, id: SubscriptionId) -> anyhow::Result<RuntimeResponseStream> {
+        let receiver = {
+            let mut manager = self
+                .subscriptions
+                .lock()
+                .expect("subscription manager lock poisoned");
+            manager
+                .subscriptions
+                .get_mut(&id)
+                .and_then(|state| state.receiver.take())
+                .ok_or_else(|| {
+                    anyhow::anyhow!("subscription {id:?} not found or already streaming")
+                })?
+        };
+        let stream = UnboundedReceiverStream::new(receiver).map(Ok);
+        Ok(Box::pin(stream))
+    }
+
     fn notify_subscribers(&self, changed: &HashSet<String>) -> anyhow::Result<()> {
-        let affected: Vec<(SubscriptionId, SharedOpCtx, Option<Map<String, Value>>)> = {
+        let affected: Vec<(
+            SubscriptionId,
+            SubscriptionTarget,
+            Option<Map<String, Value>>,
+        )> = {
             let manager = self
                 .subscriptions
                 .lock()
@@ -223,20 +292,45 @@ impl ShalomRuntime {
                 .subscriptions
                 .iter()
                 .filter(|(_, state)| state.keys.iter().any(|key| changed.contains(key)))
-                .map(|(id, state)| (*id, state.op_ctx.clone(), state.variables.clone()))
+                .map(|(id, state)| (*id, state.target.clone(), state.variables.clone()))
                 .collect()
         };
 
-        for (id, op_ctx, variables) in affected {
-            let response = self.read_from_cache(&op_ctx, variables.as_ref())?;
+        for (id, target, variables) in affected {
+            let response = match &target {
+                SubscriptionTarget::Operation(op_ctx) => {
+                    self.read_from_cache(op_ctx, variables.as_ref())?
+                }
+                SubscriptionTarget::Fragment { fragment, root_ref } => {
+                    self.read_fragment_from_cache(fragment, root_ref)?
+                }
+            };
             let refs = RefObject::from_response(&response.data);
-            let mut manager = self
-                .subscriptions
-                .lock()
-                .expect("subscription manager lock poisoned");
-            if let Some(state) = manager.subscriptions.get_mut(&id) {
-                state.keys = refs.refs;
-                state.queue.push_back(response);
+            let mut old_keys = None;
+            let mut removed = false;
+            {
+                let mut manager = self
+                    .subscriptions
+                    .lock()
+                    .expect("subscription manager lock poisoned");
+                if let Some(state) = manager.subscriptions.get_mut(&id) {
+                    old_keys = Some(state.keys.clone());
+                    state.keys = refs.refs.clone();
+                    if state.sender.send(response).is_err() {
+                        manager.subscriptions.remove(&id);
+                        removed = true;
+                    }
+                }
+            }
+            if let Some(old_keys) = old_keys {
+                let mut tracker = self
+                    .subscription_tracker
+                    .lock()
+                    .expect("subscription tracker lock poisoned");
+                tracker.unsubscribe(old_keys);
+                if !removed {
+                    tracker.subscribe(refs.refs.clone());
+                }
             }
         }
 
@@ -267,6 +361,7 @@ impl ShalomRuntime {
             .ok_or_else(|| anyhow::anyhow!("runtime has no root link configured"))?;
         let op_ctx = self.register_operation_from_query(&query)?;
         let operation_name = op_ctx.get_operation_name().to_string();
+        let operation_id = operation_name.clone();
         let variables_map = variables.clone().unwrap_or_default();
         let request = Request {
             query,
@@ -283,7 +378,10 @@ impl ShalomRuntime {
             .map(move |response| match response {
                 GraphQLResponse::Data { data, .. } => runtime
                     .normalize(&op_ctx, Value::Object(data), vars.as_ref())
-                    .map(|result| RuntimeResponse { data: result.data }),
+                    .map(|result| RuntimeResponse {
+                        data: result.data,
+                        operation_id: Some(operation_id.clone()),
+                    }),
                 GraphQLResponse::Error { errors, .. } => Err(anyhow::anyhow!(
                     "graphql errors: {}",
                     serde_json::to_string(&errors)
@@ -308,7 +406,25 @@ impl ShalomRuntime {
         let cache_guard = cache.lock().expect("normalized cache lock poisoned");
         let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, variables);
         let data = reader.read_operation(op_ctx)?;
-        Ok(RuntimeResponse { data })
+        Ok(RuntimeResponse {
+            data,
+            operation_id: Some(op_ctx.get_operation_name().to_string()),
+        })
+    }
+
+    fn read_fragment_from_cache(
+        &self,
+        fragment: &SharedFragmentContext,
+        root_ref: &str,
+    ) -> anyhow::Result<RuntimeResponse> {
+        let cache = self.cache();
+        let cache_guard = cache.lock().expect("normalized cache lock poisoned");
+        let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, None);
+        let data = reader.read_fragment(fragment, root_ref)?;
+        Ok(RuntimeResponse {
+            data,
+            operation_id: Some(fragment.get_fragment_name().to_string()),
+        })
     }
 
     fn remember_operation(&self, op_ctx: &SharedOpCtx, variables: Option<&Map<String, Value>>) {

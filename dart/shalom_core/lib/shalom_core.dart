@@ -33,6 +33,8 @@ export 'src/transport/ws_messages.dart'
         WsCloseCodes,
         parseWsMessage,
         parseWsMessageFromJson;
+export 'src/runtime_cache.dart'
+    show FromCache, RuntimeSubscriptionClient, collectRuntimeRefs;
 
 class CacheUpdateContext {
   final ShalomCtx shalomContext;

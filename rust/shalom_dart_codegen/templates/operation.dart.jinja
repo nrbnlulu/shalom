@@ -31,6 +31,19 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
     {{ selection_object_impl(response_class_name, context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name, shared_selections=context.operation.root_type.selections) }}
 }
 
+class {{ response_class_name }}FromCache
+    implements shalom_core.FromCache<{{ response_class_name }}> {
+  const {{ response_class_name }}FromCache();
+
+  @override
+  String get subscriberGlobalID => '{{ operation_name }}';
+
+  @override
+  {{ response_class_name }} fromCache(shalom_core.JsonObject data) {
+    return {{ response_class_name }}.fromJson(data);
+  }
+}
+
 
 {% for name, obj in typedefs.objects | items %}
     {{ selection_object_definition(obj) }}

@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 
 use serde_json::{Map, Value, json};
+use tokio::runtime::Builder;
+use tokio_stream::StreamExt;
 
 use shalom_core::context::ShalomGlobalContext;
 use shalom_core::entrypoint::{parse_document, parse_schema, register_fragments_from_document};
@@ -40,14 +42,24 @@ fn subscribe(runtime: &ShalomRuntime, op_ctx: &SharedOpCtx, data: &Value) -> Sub
         .into_iter()
         .collect::<Vec<_>>();
     runtime
-        .subscribe(op_ctx.get_operation_name(), refs)
+        .subscribe(op_ctx.get_operation_name(), None, refs)
         .expect("subscribe")
 }
 
 fn single_update(runtime: &ShalomRuntime, id: SubscriptionId) -> Value {
-    let updates = runtime.drain_updates(id);
-    assert_eq!(updates.len(), 1, "expected a single subscription update");
-    updates.into_iter().next().expect("missing update").data
+    let mut stream = runtime
+        .subscription_stream(id)
+        .expect("subscription stream");
+    let tokio_rt = Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .expect("tokio runtime");
+    let response = tokio_rt
+        .block_on(async { stream.next().await })
+        .expect("missing update")
+        .expect("subscription error");
+    runtime.unsubscribe(id);
+    response.data
 }
 
 fn record(runtime: &ShalomRuntime, key: &str) -> CacheRecord {
@@ -1724,5 +1736,124 @@ mod input_list_enum {
             vars(&[("statuses", json!(["OPEN", "CLOSED"]))]),
             "result_statuses:[OPEN,CLOSED]",
         );
+    }
+}
+
+mod fragment_subscriptions {
+    use super::*;
+
+    #[test]
+    fn test_fragment_subscription_by_id() {
+        let schema = r#"
+            type Query { person: Person }
+            type Person { id: ID!, name: String }
+        "#;
+        let operation = r#"
+            fragment PersonFrag on Person { id name }
+            query GetPerson { person { ...PersonFrag } }
+        "#;
+        let (runtime, op_ctx) = build_ctx(schema, operation);
+        let initial = normalize(
+            &runtime,
+            &op_ctx,
+            json!({ "person": { "id": "1", "name": "Ana" } }),
+            None,
+        );
+        let person = initial
+            .data
+            .get("person")
+            .and_then(|value| value.as_object())
+            .expect("person missing");
+        let root_ref = person
+            .get("__ref")
+            .and_then(|value| value.as_object())
+            .and_then(|meta| meta.get("id"))
+            .and_then(|value| value.as_str())
+            .expect("person ref id missing")
+            .to_string();
+        let name_ref = person
+            .get("__ref_name")
+            .and_then(|value| value.as_str())
+            .expect("person name ref missing")
+            .to_string();
+        let sub_id = runtime
+            .subscribe("PersonFrag", Some(root_ref), vec![name_ref])
+            .expect("subscribe");
+        normalize(
+            &runtime,
+            &op_ctx,
+            json!({ "person": { "id": "1", "name": "Bea" } }),
+            None,
+        );
+
+        let data = single_update(&runtime, sub_id);
+        let obj = data.as_object().expect("fragment data object");
+        let meta = obj
+            .get("__ref")
+            .and_then(|v| v.as_object())
+            .expect("ref meta");
+        assert_eq!(meta.get("id"), Some(&json!("Person:1")));
+        assert_eq!(obj.get("name"), Some(&json!("Bea")));
+        assert_eq!(obj.get("__ref_name"), Some(&json!("Person:1_name")));
+    }
+
+    #[test]
+    fn test_fragment_subscription_by_path() {
+        let schema = r#"
+            type Query { person: Person }
+            type Person { id: ID!, pet: Pet }
+            type Pet { name: String }
+        "#;
+        let operation = r#"
+            fragment PetFrag on Pet { name }
+            query GetPerson { person { id pet { ...PetFrag } } }
+        "#;
+        let (runtime, op_ctx) = build_ctx(schema, operation);
+        let initial = normalize(
+            &runtime,
+            &op_ctx,
+            json!({ "person": { "id": "1", "pet": { "name": "Coco" } } }),
+            None,
+        );
+        let person = initial
+            .data
+            .get("person")
+            .and_then(|value| value.as_object())
+            .expect("person missing");
+        let pet = person
+            .get("pet")
+            .and_then(|value| value.as_object())
+            .expect("pet missing");
+        let root_ref = pet
+            .get("__ref")
+            .and_then(|value| value.as_object())
+            .and_then(|meta| meta.get("path"))
+            .and_then(|value| value.as_str())
+            .expect("pet ref path missing")
+            .to_string();
+        let name_ref = pet
+            .get("__ref_name")
+            .and_then(|value| value.as_str())
+            .expect("pet name ref missing")
+            .to_string();
+        let sub_id = runtime
+            .subscribe("PetFrag", Some(root_ref), vec![name_ref])
+            .expect("subscribe");
+        normalize(
+            &runtime,
+            &op_ctx,
+            json!({ "person": { "id": "1", "pet": { "name": "Milo" } } }),
+            None,
+        );
+
+        let data = single_update(&runtime, sub_id);
+        let obj = data.as_object().expect("fragment data object");
+        let meta = obj
+            .get("__ref")
+            .and_then(|v| v.as_object())
+            .expect("ref meta");
+        assert_eq!(meta.get("path"), Some(&json!("Person:1_pet")));
+        assert_eq!(obj.get("name"), Some(&json!("Milo")));
+        assert_eq!(obj.get("__ref_name"), Some(&json!("Person:1_pet_name")));
     }
 }

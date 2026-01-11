@@ -43,6 +43,7 @@ where `x` is the kind of use case you are testing, for example `objectRequired`,
         - cache normilization (meaning that the inputs are CORRECTLY used to deduce the normalized key for the queried fields)
 
 when you are done, make sure all tests pass using `task test` and all lints pass using `task lint` (check Taskfile.yml to see what they do if needed).
+We use `fvm exec dart` for Dart commands in this repo, including flutter_rust_bridge codegen.
 
 ### Testing Interfaces and Unions
 
