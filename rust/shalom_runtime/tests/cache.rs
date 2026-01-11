@@ -10,7 +10,7 @@ use shalom_core::operation::context::SharedOpCtx;
 use shalom_core::shalom_config::ShalomConfig;
 use shalom_runtime::cache::{CacheRecord, CacheValue};
 use shalom_runtime::normalization::NormalizationResult;
-use shalom_runtime::{RefObject, ShalomRuntime, SubscriptionId};
+use shalom_runtime::{ShalomRuntime, SubscriptionId};
 
 fn build_ctx(schema: &str, operation: &str) -> (ShalomRuntime, SharedOpCtx) {
     let schema_ctx = parse_schema(schema).expect("schema parse failed");
@@ -36,17 +36,18 @@ fn normalize(
         .expect("normalize")
 }
 
-fn subscribe(runtime: &ShalomRuntime, op_ctx: &SharedOpCtx, data: &Value) -> SubscriptionId {
-    let refs = RefObject::from_response(data)
-        .refs
-        .into_iter()
-        .collect::<Vec<_>>();
+fn subscribe(
+    runtime: &ShalomRuntime,
+    op_ctx: &SharedOpCtx,
+    result: &NormalizationResult,
+) -> SubscriptionId {
+    let refs = result.used_refs.iter().cloned().collect::<Vec<_>>();
     runtime
         .subscribe(op_ctx.get_operation_name(), None, refs)
         .expect("subscribe")
 }
 
-fn single_update(runtime: &ShalomRuntime, id: SubscriptionId) -> Value {
+fn yield_update_sync(runtime: &ShalomRuntime, id: SubscriptionId) -> Value {
     let mut stream = runtime
         .subscription_stream(id)
         .expect("subscription stream");
@@ -176,10 +177,10 @@ mod scalars {
         "#;
         let (global_ctx, op_ctx) = build_ctx(schema, operation);
         let initial = normalize(&global_ctx, &op_ctx, json!({ "value": 1 }), None);
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(&global_ctx, &op_ctx, json!({ "value": 2 }), None);
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         assert_eq!(data.get("value"), Some(&json!(2)));
     }
 }
@@ -245,7 +246,7 @@ mod custom_scalars {
             json!({ "point": "POINT (1,1)" }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -253,7 +254,7 @@ mod custom_scalars {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         assert_eq!(data.get("point"), Some(&json!("POINT (2,2)")));
     }
 }
@@ -304,10 +305,10 @@ mod enums {
         "#;
         let (global_ctx, op_ctx) = build_ctx(schema, operation);
         let initial = normalize(&global_ctx, &op_ctx, json!({ "status": "OPEN" }), None);
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(&global_ctx, &op_ctx, json!({ "status": "CLOSED" }), None);
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         assert_eq!(data.get("status"), Some(&json!("CLOSED")));
     }
 }
@@ -375,7 +376,7 @@ mod object_selection {
             json!({ "user": { "id": "u1", "name": "Ada", "age": 30 } }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -383,7 +384,7 @@ mod object_selection {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         let user = data
             .get("user")
             .and_then(|value| value.as_object())
@@ -458,7 +459,7 @@ mod nested_objects {
             json!({ "user": { "id": "u1", "profile": { "age": 32, "bio": "Rustacean" } } }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -466,7 +467,7 @@ mod nested_objects {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         let user = data
             .get("user")
             .and_then(|value| value.as_object())
@@ -509,13 +510,7 @@ mod unions {
 
         let root = root_record(&global_ctx);
         expect_ref(root.get("search").expect("search missing"), "User:u1");
-        let search = result
-            .data
-            .get("search")
-            .and_then(|v| v.as_object())
-            .expect("search missing");
-        let ref_meta = search.get("__ref").and_then(|v| v.as_object()).unwrap();
-        assert_eq!(ref_meta.get("path"), Some(&json!("ROOT_QUERY_search")));
+        assert!(result.used_refs.contains("ROOT_QUERY_search"));
     }
 
     #[test]
@@ -571,7 +566,7 @@ mod unions {
             json!({ "search": { "__typename": "User", "id": "u1", "name": "Ada" } }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -579,7 +574,7 @@ mod unions {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         let search = data
             .get("search")
             .and_then(|value| value.as_object())
@@ -616,14 +611,7 @@ mod interfaces {
             None,
         );
 
-        let node = result
-            .data
-            .get("node")
-            .and_then(|v| v.as_object())
-            .expect("node missing");
-        let ref_meta = node.get("__ref").and_then(|v| v.as_object()).unwrap();
-        assert_eq!(ref_meta.get("path"), Some(&json!("ROOT_QUERY_node")));
-        assert!(ref_meta.get("id").is_none());
+        assert!(result.used_refs.contains("ROOT_QUERY_node"));
         assert!(has_record(&global_ctx, "User:u1"));
     }
 
@@ -678,7 +666,7 @@ mod interfaces {
             json!({ "node": { "__typename": "User", "id": "u1", "name": "Ada" } }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -686,7 +674,7 @@ mod interfaces {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         let node = data
             .get("node")
             .and_then(|value| value.as_object())
@@ -799,7 +787,7 @@ mod fragments {
             }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -813,7 +801,7 @@ mod fragments {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         let post = data
             .get("post")
             .and_then(|value| value.as_object())
@@ -871,10 +859,10 @@ mod list_of_scalars {
         "#;
         let (global_ctx, op_ctx) = build_ctx(schema, operation);
         let initial = normalize(&global_ctx, &op_ctx, json!({ "tags": ["a", "b"] }), None);
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(&global_ctx, &op_ctx, json!({ "tags": ["a", "c"] }), None);
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         assert_eq!(data.get("tags"), Some(&json!(["a", "c"])));
     }
 }
@@ -945,7 +933,7 @@ mod list_of_custom_scalars {
             json!({ "points": ["POINT (1,1)", "POINT (2,2)"] }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -953,7 +941,7 @@ mod list_of_custom_scalars {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         assert_eq!(
             data.get("points"),
             Some(&json!(["POINT (1,1)", "POINT (3,3)"]))
@@ -1028,7 +1016,7 @@ mod list_of_objects {
             }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -1041,7 +1029,7 @@ mod list_of_objects {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         let users = data
             .get("users")
             .and_then(|value| value.as_array())
@@ -1120,7 +1108,7 @@ mod list_of_enums {
             json!({ "statuses": ["OPEN", "CLOSED"] }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -1128,7 +1116,7 @@ mod list_of_enums {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         assert_eq!(data.get("statuses"), Some(&json!(["OPEN", "OPEN"])));
     }
 }
@@ -1234,7 +1222,7 @@ mod list_of_unions {
             }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -1247,7 +1235,7 @@ mod list_of_unions {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         let results = data
             .get("results")
             .and_then(|value| value.as_array())
@@ -1355,7 +1343,7 @@ mod list_of_interfaces {
             }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -1367,7 +1355,7 @@ mod list_of_interfaces {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         let nodes = data
             .get("nodes")
             .and_then(|value| value.as_array())
@@ -1445,7 +1433,7 @@ mod list_of_fragments {
             json!({ "users": [{ "id": "u1", "name": "Ada" }] }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -1453,7 +1441,7 @@ mod list_of_fragments {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         let users = data
             .get("users")
             .and_then(|value| value.as_array())
@@ -1530,7 +1518,7 @@ mod nested_list {
             json!({ "matrix": [[1, 2], [3, 4]] }),
             None,
         );
-        let sub_id = subscribe(&global_ctx, &op_ctx, &initial.data);
+        let sub_id = subscribe(&global_ctx, &op_ctx, &initial);
         normalize(
             &global_ctx,
             &op_ctx,
@@ -1538,7 +1526,7 @@ mod nested_list {
             None,
         );
 
-        let data = single_update(&global_ctx, sub_id);
+        let data = yield_update_sync(&global_ctx, sub_id);
         assert_eq!(data.get("matrix"), Some(&json!([[1, 3], [3, 4]])));
     }
 }
@@ -1742,6 +1730,18 @@ mod input_list_enum {
 mod fragment_subscriptions {
     use super::*;
 
+    fn used_refs_from_value(value: &Value) -> Vec<String> {
+        let raw = match value {
+            Value::Object(map) => map.get("__used_refs").expect("used refs missing"),
+            _ => value,
+        };
+        raw.as_array()
+            .expect("used refs must be a list")
+            .iter()
+            .map(|entry| entry.as_str().expect("used ref must be string").to_string())
+            .collect()
+    }
+
     #[test]
     fn test_fragment_subscription_by_id() {
         let schema = r#"
@@ -1749,7 +1749,7 @@ mod fragment_subscriptions {
             type Person { id: ID!, name: String }
         "#;
         let operation = r#"
-            fragment PersonFrag on Person { id name }
+            fragment PersonFrag on Person @subscribeable { id name }
             query GetPerson { person { ...PersonFrag } }
         "#;
         let (runtime, op_ctx) = build_ctx(schema, operation);
@@ -1759,26 +1759,19 @@ mod fragment_subscriptions {
             json!({ "person": { "id": "1", "name": "Ana" } }),
             None,
         );
-        let person = initial
-            .data
-            .get("person")
-            .and_then(|value| value.as_object())
-            .expect("person missing");
-        let root_ref = person
-            .get("__ref")
-            .and_then(|value| value.as_object())
-            .and_then(|meta| meta.get("id"))
+        let data = initial.data;
+        let person = data.get("person").expect("person missing");
+        let person_obj = person.as_object().expect("person missing");
+        let anchor_ref = person_obj
+            .get("__ref_anchor")
             .and_then(|value| value.as_str())
-            .expect("person ref id missing")
+            .expect("anchor ref missing")
             .to_string();
-        let name_ref = person
-            .get("__ref_name")
-            .and_then(|value| value.as_str())
-            .expect("person name ref missing")
-            .to_string();
+        let used_refs = used_refs_from_value(person);
         let sub_id = runtime
-            .subscribe("PersonFrag", Some(root_ref), vec![name_ref])
+            .subscribe("PersonFrag", Some(anchor_ref.clone()), used_refs)
             .expect("subscribe");
+        // trigger an update
         normalize(
             &runtime,
             &op_ctx,
@@ -1786,15 +1779,9 @@ mod fragment_subscriptions {
             None,
         );
 
-        let data = single_update(&runtime, sub_id);
+        let data = yield_update_sync(&runtime, sub_id);
         let obj = data.as_object().expect("fragment data object");
-        let meta = obj
-            .get("__ref")
-            .and_then(|v| v.as_object())
-            .expect("ref meta");
-        assert_eq!(meta.get("id"), Some(&json!("Person:1")));
         assert_eq!(obj.get("name"), Some(&json!("Bea")));
-        assert_eq!(obj.get("__ref_name"), Some(&json!("Person:1_name")));
     }
 
     #[test]
@@ -1805,7 +1792,7 @@ mod fragment_subscriptions {
             type Pet { name: String }
         "#;
         let operation = r#"
-            fragment PetFrag on Pet { name }
+            fragment PetFrag on Pet @subscribeable { name }
             query GetPerson { person { id pet { ...PetFrag } } }
         "#;
         let (runtime, op_ctx) = build_ctx(schema, operation);
@@ -1815,29 +1802,19 @@ mod fragment_subscriptions {
             json!({ "person": { "id": "1", "pet": { "name": "Coco" } } }),
             None,
         );
-        let person = initial
-            .data
-            .get("person")
-            .and_then(|value| value.as_object())
-            .expect("person missing");
-        let pet = person
-            .get("pet")
-            .and_then(|value| value.as_object())
-            .expect("pet missing");
-        let root_ref = pet
-            .get("__ref")
-            .and_then(|value| value.as_object())
-            .and_then(|meta| meta.get("path"))
+        let data = initial.data;
+        let person = data.get("person").expect("person missing");
+        let person_obj = person.as_object().expect("person missing");
+        let pet = person_obj.get("pet").expect("pet missing");
+        let pet_obj = pet.as_object().expect("pet missing");
+        let root_ref = pet_obj
+            .get("__ref_anchor")
             .and_then(|value| value.as_str())
-            .expect("pet ref path missing")
+            .expect("anchor ref missing")
             .to_string();
-        let name_ref = pet
-            .get("__ref_name")
-            .and_then(|value| value.as_str())
-            .expect("pet name ref missing")
-            .to_string();
+        let used_refs = used_refs_from_value(pet);
         let sub_id = runtime
-            .subscribe("PetFrag", Some(root_ref), vec![name_ref])
+            .subscribe("PetFrag", Some(root_ref.clone()), used_refs)
             .expect("subscribe");
         normalize(
             &runtime,
@@ -1846,14 +1823,11 @@ mod fragment_subscriptions {
             None,
         );
 
-        let data = single_update(&runtime, sub_id);
+        let data = yield_update_sync(&runtime, sub_id);
         let obj = data.as_object().expect("fragment data object");
-        let meta = obj
-            .get("__ref")
-            .and_then(|v| v.as_object())
-            .expect("ref meta");
-        assert_eq!(meta.get("path"), Some(&json!("Person:1_pet")));
+        let updated_refs = used_refs_from_value(&data);
+        assert!(!updated_refs.is_empty());
+        assert_eq!(obj.get("__ref_anchor"), Some(&json!(root_ref)));
         assert_eq!(obj.get("name"), Some(&json!("Milo")));
-        assert_eq!(obj.get("__ref_name"), Some(&json!("Person:1_pet_name")));
     }
 }

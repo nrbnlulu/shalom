@@ -32,9 +32,10 @@ pub struct RefObject {
 
 impl RefObject {
     pub fn from_response(data: &Value) -> Self {
-        let mut refs = HashSet::new();
-        collect_refs(data, &mut refs);
-        Self { refs }
+        match used_refs_from_response(data) {
+            Ok(Some(refs)) => Self { refs },
+            _ => Self::default(),
+        }
     }
 }
 
@@ -173,7 +174,7 @@ impl ShalomRuntime {
 
     pub fn subscribe(
         &self,
-        target_id: &str,
+        subscribeable_id: &str,
         root_ref: Option<String>,
         refs: Vec<String>,
     ) -> anyhow::Result<SubscriptionId> {
@@ -181,8 +182,8 @@ impl ShalomRuntime {
             let fragment = self
                 .engine
                 .global_ctx()
-                .get_fragment(target_id)
-                .ok_or_else(|| anyhow::anyhow!("fragment {target_id} not found"))?;
+                .get_fragment(subscribeable_id)
+                .ok_or_else(|| anyhow::anyhow!("fragment {subscribeable_id} not found"))?;
             return Ok(self.subscribe_with_target(
                 SubscriptionTarget::Fragment { fragment, root_ref },
                 None,
@@ -190,12 +191,12 @@ impl ShalomRuntime {
             ));
         }
 
-        let op_ctx = self.operation_ctx(target_id)?;
+        let op_ctx = self.operation_ctx(subscribeable_id)?;
         let variables = self
             .operation_vars
             .lock()
             .expect("operation vars lock poisoned")
-            .get(target_id)
+            .get(subscribeable_id)
             .cloned();
         Ok(self.subscribe_with_target(SubscriptionTarget::Operation(op_ctx), variables, refs))
     }
@@ -305,7 +306,7 @@ impl ShalomRuntime {
                     self.read_fragment_from_cache(fragment, root_ref)?
                 }
             };
-            let refs = RefObject::from_response(&response.data);
+            let new_refs = used_refs_from_response(&response.data)?;
             let mut old_keys = None;
             let mut removed = false;
             {
@@ -315,7 +316,9 @@ impl ShalomRuntime {
                     .expect("subscription manager lock poisoned");
                 if let Some(state) = manager.subscriptions.get_mut(&id) {
                     old_keys = Some(state.keys.clone());
-                    state.keys = refs.refs.clone();
+                    if let Some(refs) = new_refs.as_ref() {
+                        state.keys = refs.clone();
+                    }
                     if state.sender.send(response).is_err() {
                         manager.subscriptions.remove(&id);
                         removed = true;
@@ -327,9 +330,11 @@ impl ShalomRuntime {
                     .subscription_tracker
                     .lock()
                     .expect("subscription tracker lock poisoned");
-                tracker.unsubscribe(old_keys);
-                if !removed {
-                    tracker.subscribe(refs.refs.clone());
+                if removed {
+                    tracker.unsubscribe(old_keys);
+                } else if let Some(refs) = new_refs {
+                    tracker.unsubscribe(old_keys);
+                    tracker.subscribe(refs);
                 }
             }
         }
@@ -405,7 +410,12 @@ impl ShalomRuntime {
         let cache = self.cache();
         let cache_guard = cache.lock().expect("normalized cache lock poisoned");
         let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, variables);
-        let data = reader.read_operation(op_ctx)?;
+        let result = reader.read_operation(op_ctx)?;
+        let data = if op_ctx.is_subscribeable() {
+            inject_entrypoint_metadata(result.data, &result.used_refs, None)
+        } else {
+            result.data
+        };
         Ok(RuntimeResponse {
             data,
             operation_id: Some(op_ctx.get_operation_name().to_string()),
@@ -420,7 +430,12 @@ impl ShalomRuntime {
         let cache = self.cache();
         let cache_guard = cache.lock().expect("normalized cache lock poisoned");
         let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, None);
-        let data = reader.read_fragment(fragment, root_ref)?;
+        let result = reader.read_fragment(fragment, root_ref)?;
+        let data = if fragment.is_subscribeable() {
+            inject_entrypoint_metadata(result.data, &result.used_refs, Some(root_ref))
+        } else {
+            result.data
+        };
         Ok(RuntimeResponse {
             data,
             operation_id: Some(fragment.get_fragment_name().to_string()),
@@ -519,59 +534,47 @@ fn to_link_operation_type(
     }
 }
 
-fn collect_refs(value: &Value, refs: &mut HashSet<String>) {
-    match value {
-        Value::Object(map) => {
-            if let Some(meta) = map.get("__ref").and_then(|value| value.as_object()) {
-                if let Some(id) = meta.get("id").and_then(|value| value.as_str()) {
-                    refs.insert(id.to_string());
-                }
-                if let Some(path) = meta.get("path").and_then(|value| value.as_str()) {
-                    refs.insert(path.to_string());
-                }
-            }
-            for (key, value) in map {
-                if key == "__ref" {
-                    continue;
-                }
-                if key.starts_with("__ref_") {
-                    if let Some(id) = value.as_str() {
-                        refs.insert(id.to_string());
-                    }
-                    continue;
-                }
-                if let Value::Array(items) = value {
-                    if let Some(list_ref) = map
-                        .get(&format!("__ref_{}", key))
-                        .and_then(|value| value.as_str())
-                    {
-                        collect_list_refs(list_ref, items, refs);
-                    }
-                }
-                collect_refs(value, refs);
-            }
-        }
-        Value::Array(items) => {
-            for item in items {
-                collect_refs(item, refs);
-            }
-        }
-        _ => {}
+fn used_refs_from_response(data: &Value) -> anyhow::Result<Option<HashSet<String>>> {
+    let map = match data.as_object() {
+        Some(map) => map,
+        None => return Ok(None),
+    };
+    let raw = match map.get("__used_refs") {
+        Some(value) => value,
+        None => return Ok(None),
+    };
+    let list = raw
+        .as_array()
+        .ok_or_else(|| anyhow::anyhow!("__used_refs must be a list"))?;
+    let mut refs = HashSet::with_capacity(list.len());
+    for value in list {
+        let value = value
+            .as_str()
+            .ok_or_else(|| anyhow::anyhow!("__used_refs entries must be strings"))?;
+        refs.insert(value.to_string());
     }
+    Ok(Some(refs))
 }
 
-fn collect_list_refs(list_ref: &str, items: &[Value], refs: &mut HashSet<String>) {
-    for (idx, item) in items.iter().enumerate() {
-        match item {
-            Value::Array(inner) => {
-                let item_ref = format!("{list_ref}[{idx}]");
-                refs.insert(item_ref.clone());
-                collect_list_refs(&item_ref, inner, refs);
-            }
-            Value::Object(_) => {
-                collect_refs(item, refs);
-            }
-            _ => {}
+fn inject_entrypoint_metadata(
+    mut data: Value,
+    used_refs: &HashSet<String>,
+    ref_anchor: Option<&str>,
+) -> Value {
+    if let Value::Object(map) = &mut data {
+        map.insert("__used_refs".to_string(), used_refs_to_value(used_refs));
+        if let Some(anchor) = ref_anchor {
+            map.insert(
+                "__ref_anchor".to_string(),
+                Value::String(anchor.to_string()),
+            );
         }
     }
+    data
+}
+
+fn used_refs_to_value(used_refs: &HashSet<String>) -> Value {
+    let mut refs: Vec<_> = used_refs.iter().cloned().collect();
+    refs.sort();
+    Value::Array(refs.into_iter().map(Value::String).collect())
 }

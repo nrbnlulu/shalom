@@ -58,6 +58,56 @@ pub fn resolve_multitype_selections(
     selections.into_iter().collect()
 }
 
+pub fn selection_has_subscribeable_fragment(
+    selection: &FieldSelection,
+    ctx: &SharedShalomGlobalContext,
+) -> bool {
+    fn object_has_subscribeable_fragment(
+        common: &shalom_core::operation::types::ObjectLikeCommon,
+        ctx: &SharedShalomGlobalContext,
+        visited: &mut HashSet<String>,
+    ) -> bool {
+        for frag_name in &common.used_fragments {
+            if !visited.insert(frag_name.clone()) {
+                continue;
+            }
+            if let Some(fragment) = ctx.get_fragment(frag_name) {
+                if fragment.is_subscribeable() {
+                    return true;
+                }
+            }
+        }
+
+        for inline in common.used_inline_frags.values() {
+            if object_has_subscribeable_fragment(&inline.common, ctx, visited) {
+                return true;
+            }
+        }
+
+        for type_cond in common.type_cond_selections.values() {
+            if object_has_subscribeable_fragment(type_cond, ctx, visited) {
+                return true;
+            }
+        }
+
+        false
+    }
+
+    let mut visited = HashSet::new();
+    match &selection.kind {
+        shalom_core::operation::types::SelectionKind::Object(obj) => {
+            object_has_subscribeable_fragment(&obj.common, ctx, &mut visited)
+        }
+        shalom_core::operation::types::SelectionKind::Union(union) => {
+            object_has_subscribeable_fragment(&union.common.common, ctx, &mut visited)
+        }
+        shalom_core::operation::types::SelectionKind::Interface(interface) => {
+            object_has_subscribeable_fragment(&interface.common.common, ctx, &mut visited)
+        }
+        _ => false,
+    }
+}
+
 pub fn field_cache_key(
     field_name: &str,
     args: &[FieldArgument],

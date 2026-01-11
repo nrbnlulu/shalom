@@ -168,6 +168,7 @@ pub struct OperationContext {
     pub typedefs: TypeDefs,
     root_type: Option<ObjectLikeCommon>,
     op_ty: OperationType,
+    subscribeable: bool,
 }
 
 unsafe impl Send for OperationContext {}
@@ -180,6 +181,7 @@ impl OperationContext {
         query: String,
         file_path: PathBuf,
         op_ty: OperationType,
+        subscribeable: bool,
     ) -> Self {
         OperationContext {
             schema,
@@ -190,6 +192,7 @@ impl OperationContext {
             typedefs: TypeDefs::new(),
             root_type: None,
             op_ty,
+            subscribeable,
         }
     }
     pub fn get_operation_name(&self) -> &str {
@@ -197,6 +200,9 @@ impl OperationContext {
     }
     pub fn op_type(&self) -> OperationType {
         self.op_ty.clone()
+    }
+    pub fn is_subscribeable(&self) -> bool {
+        self.subscribeable
     }
     pub fn has_variables(&self) -> bool {
         !self.variables.is_empty()

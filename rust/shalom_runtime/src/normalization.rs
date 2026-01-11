@@ -13,12 +13,14 @@ use shalom_core::{
 use crate::cache::{CacheKey, CacheLocator, CacheRecord, CacheValue, NormalizedCache};
 use crate::selection::{
     field_cache_key, field_path_segment, resolve_multitype_selections, resolve_object_selections,
+    selection_has_subscribeable_fragment,
 };
 
 #[derive(Debug, Default)]
 pub struct NormalizationResult {
     pub data: Value,
     pub changed: HashSet<CacheKey>,
+    pub used_refs: HashSet<CacheKey>,
 }
 
 pub struct Normalizer<'a> {
@@ -26,6 +28,7 @@ pub struct Normalizer<'a> {
     cache: &'a mut NormalizedCache,
     variables: Option<&'a Map<String, Value>>,
     changed: HashSet<CacheKey>,
+    used_refs: HashSet<CacheKey>,
 }
 
 impl<'a> Normalizer<'a> {
@@ -39,6 +42,7 @@ impl<'a> Normalizer<'a> {
             cache,
             variables,
             changed: HashSet::new(),
+            used_refs: HashSet::new(),
         }
     }
 
@@ -74,6 +78,9 @@ impl<'a> Normalizer<'a> {
             let field_ref_key = format!("{}_{}", root_key, field_segment);
             let cached_value = cached_root.get(&field_cache_key);
             let field_locator = root_locator.child_field(field_cache_key.clone());
+            if field_name != "__typename" {
+                self.used_refs.insert(field_ref_key.clone());
+            }
 
             let normalized = self.normalize_field(
                 &selection,
@@ -89,19 +96,20 @@ impl<'a> Normalizer<'a> {
             )?;
 
             output.insert(field_name.clone(), normalized);
-            if field_name != "__typename" {
-                output.insert(
-                    format!("__ref_{}", field_name),
-                    Value::String(field_ref_key),
-                );
-            }
         }
 
+        if op_ctx.is_subscribeable() {
+            output.insert(
+                "__used_refs".to_string(),
+                used_refs_to_value(&self.used_refs),
+            );
+        }
         self.cache.insert(root_key, next_root);
 
         Ok(NormalizationResult {
             data: Value::Object(output),
             changed: self.changed,
+            used_refs: self.used_refs,
         })
     }
 
@@ -305,6 +313,7 @@ impl<'a> Normalizer<'a> {
                             _ => None,
                         });
                         let item_ref_key = format!("{}_{}", parent_ref_key, item_segment);
+                        self.used_refs.insert(item_ref_key.clone());
                         let normalized = self.normalize_list(
                             inner_list,
                             inner_raw,
@@ -391,6 +400,14 @@ impl<'a> Normalizer<'a> {
         } else {
             entity_key.clone().unwrap_or(path_key.clone())
         };
+        let include_fragment_meta =
+            selection_has_subscribeable_fragment(selection, &self.global_ctx);
+        let before_refs = if include_fragment_meta {
+            Some(self.used_refs.clone())
+        } else {
+            None
+        };
+        self.used_refs.insert(object_ref_key.clone());
 
         if is_union_interface || entity_key.is_none() {
             self.cache
@@ -412,14 +429,6 @@ impl<'a> Normalizer<'a> {
         let mut next_record = cached_record.clone().unwrap_or_default();
         let mut output = Map::new();
 
-        let mut ref_meta = Map::new();
-        if is_union_interface || entity_key.is_none() {
-            ref_meta.insert("path".to_string(), Value::String(object_ref_key.clone()));
-        } else {
-            ref_meta.insert("id".to_string(), Value::String(object_ref_key.clone()));
-        }
-        output.insert("__ref".to_string(), Value::Object(ref_meta));
-
         let record_locator = if let Some(entity_key) = &entity_key {
             CacheLocator::root(entity_key.clone())
         } else {
@@ -436,6 +445,9 @@ impl<'a> Normalizer<'a> {
             let field_ref_key = format!("{}_{}", object_ref_key, field_segment);
             let cached_value = cached_record.as_ref().and_then(|r| r.get(&field_cache_key));
             let field_locator = record_locator.child_field(field_cache_key.clone());
+            if field_name != "__typename" {
+                self.used_refs.insert(field_ref_key.clone());
+            }
 
             let normalized = self.normalize_field(
                 &selection,
@@ -451,12 +463,16 @@ impl<'a> Normalizer<'a> {
             )?;
 
             output.insert(field_name.clone(), normalized);
-            if field_name != "__typename" {
-                output.insert(
-                    format!("__ref_{}", field_name),
-                    Value::String(field_ref_key),
-                );
-            }
+        }
+
+        if let Some(before_refs) = before_refs {
+            let object_refs: HashSet<_> =
+                self.used_refs.difference(&before_refs).cloned().collect();
+            output.insert("__used_refs".to_string(), used_refs_to_value(&object_refs));
+            output.insert(
+                "__ref_anchor".to_string(),
+                Value::String(object_ref_key.clone()),
+            );
         }
 
         let cache_value = if let Some(entity_key) = entity_key.clone() {
@@ -516,6 +532,12 @@ fn list_item_identity(value: &CacheValue, idx: usize) -> String {
         CacheValue::Object(_) => format!("inline:{idx}"),
         CacheValue::List(_) => format!("list:{idx}"),
     }
+}
+
+fn used_refs_to_value(used_refs: &HashSet<CacheKey>) -> Value {
+    let mut refs: Vec<_> = used_refs.iter().cloned().collect();
+    refs.sort();
+    Value::Array(refs.into_iter().map(Value::String).collect())
 }
 
 fn selection_common_for_list_item() -> shalom_core::operation::types::FieldSelectionCommon {

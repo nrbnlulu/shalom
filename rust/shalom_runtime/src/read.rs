@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use serde_json::{Map, Value};
 
 use shalom_core::context::SharedShalomGlobalContext;
@@ -6,10 +8,17 @@ use shalom_core::operation::fragments::SharedFragmentContext;
 use shalom_core::operation::types::{FieldSelection, SelectionKind};
 use shalom_core::schema::types::GraphQLAny;
 
-use crate::cache::{CacheRecord, CacheValue, NormalizedCache, RefKind};
+use crate::cache::{CacheRecord, CacheValue, NormalizedCache};
 use crate::selection::{
     field_cache_key, field_path_segment, resolve_multitype_selections, resolve_object_selections,
+    selection_has_subscribeable_fragment,
 };
+
+#[derive(Debug, Clone)]
+pub struct ReadResult {
+    pub data: Value,
+    pub used_refs: HashSet<String>,
+}
 
 pub struct CacheReader<'a> {
     global_ctx: SharedShalomGlobalContext,
@@ -30,7 +39,17 @@ impl<'a> CacheReader<'a> {
         }
     }
 
-    pub fn read_operation(&self, op_ctx: &SharedOpCtx) -> anyhow::Result<Value> {
+    pub fn read_operation(&self, op_ctx: &SharedOpCtx) -> anyhow::Result<ReadResult> {
+        let mut used_refs = HashSet::new();
+        let data = self.read_operation_value(op_ctx, &mut used_refs)?;
+        Ok(ReadResult { data, used_refs })
+    }
+
+    fn read_operation_value(
+        &self,
+        op_ctx: &SharedOpCtx,
+        used_refs: &mut HashSet<String>,
+    ) -> anyhow::Result<Value> {
         let root_key = match op_ctx.op_type() {
             shalom_core::operation::types::OperationType::Query => "ROOT_QUERY",
             shalom_core::operation::types::OperationType::Mutation => "ROOT_MUTATION",
@@ -50,15 +69,19 @@ impl<'a> CacheReader<'a> {
             let field_ref_key = format!("{}_{}", root_key, field_segment);
             let cached_value = root_record.get(&cache_key);
 
-            let value = self.read_field(&selection, cached_value, &root_key, &field_segment)?;
+            if field_name != "__typename" {
+                used_refs.insert(field_ref_key);
+            }
+
+            let value = self.read_field(
+                &selection,
+                cached_value,
+                &root_key,
+                &field_segment,
+                used_refs,
+            )?;
 
             output.insert(field_name.clone(), value);
-            if field_name != "__typename" {
-                output.insert(
-                    format!("__ref_{}", field_name),
-                    Value::String(field_ref_key),
-                );
-            }
         }
 
         Ok(Value::Object(output))
@@ -68,19 +91,30 @@ impl<'a> CacheReader<'a> {
         &self,
         fragment: &SharedFragmentContext,
         root_ref: &str,
+    ) -> anyhow::Result<ReadResult> {
+        let mut used_refs = HashSet::new();
+        let data = self.read_fragment_value(fragment, root_ref, &mut used_refs)?;
+        Ok(ReadResult { data, used_refs })
+    }
+
+    fn read_fragment_value(
+        &self,
+        fragment: &SharedFragmentContext,
+        root_ref: &str,
+        used_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
-        let (cached_value, ref_kind) = if let Some(locator) = self.cache.ref_locator(root_ref) {
+        let cached_value = if let Some(locator) = self.cache.ref_locator(root_ref) {
             match self.cache.resolve_locator(locator) {
-                Some(value) => (value, RefKind::Path),
+                Some(value) => value,
                 None => return Ok(Value::Null),
             }
         } else if self.cache.get(root_ref).is_some() {
-            (CacheValue::Ref(root_ref.to_string()), RefKind::Id)
+            CacheValue::Ref(root_ref.to_string())
         } else {
             return Ok(Value::Null);
         };
 
-        self.read_root_object(fragment, &cached_value, root_ref, ref_kind)
+        self.read_root_object(fragment, &cached_value, root_ref, used_refs)
     }
 
     fn read_field(
@@ -89,6 +123,7 @@ impl<'a> CacheReader<'a> {
         cached_value: Option<&CacheValue>,
         parent_ref_key: &str,
         field_segment: &str,
+        used_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         match &selection.kind {
             SelectionKind::Scalar(_) | SelectionKind::Enum(_) => match cached_value {
@@ -102,7 +137,15 @@ impl<'a> CacheReader<'a> {
             SelectionKind::List(list_sel) => match cached_value {
                 Some(CacheValue::Scalar(value)) if value.is_null() => Ok(Value::Null),
                 Some(CacheValue::List(items)) => {
-                    self.read_list(list_sel, items, parent_ref_key, field_segment)
+                    let list_ref_key = format!("{}_{}", parent_ref_key, field_segment);
+                    self.read_list(
+                        list_sel,
+                        items,
+                        parent_ref_key,
+                        field_segment,
+                        &list_ref_key,
+                        used_refs,
+                    )
                 }
                 Some(_) => Err(anyhow::anyhow!(
                     "expected list for field {}",
@@ -118,6 +161,7 @@ impl<'a> CacheReader<'a> {
                         cached_value.expect("cache value checked"),
                         parent_ref_key,
                         field_segment,
+                        used_refs,
                     ),
                     Some(_) => Err(anyhow::anyhow!(
                         "expected object for field {}",
@@ -135,6 +179,7 @@ impl<'a> CacheReader<'a> {
         cached_value: &CacheValue,
         parent_ref_key: &str,
         field_segment: &str,
+        used_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let (record, entity_key) = match cached_value {
             CacheValue::Ref(key) => (
@@ -193,15 +238,16 @@ impl<'a> CacheReader<'a> {
         } else {
             entity_key.clone().unwrap_or(path_key.clone())
         };
+        let include_fragment_meta =
+            selection_has_subscribeable_fragment(selection, &self.global_ctx);
+        let before_refs = if include_fragment_meta {
+            Some(used_refs.clone())
+        } else {
+            None
+        };
+        used_refs.insert(object_ref_key.clone());
 
         let mut output = Map::new();
-        let mut ref_meta = Map::new();
-        if is_union_interface || entity_key.is_none() {
-            ref_meta.insert("path".to_string(), Value::String(object_ref_key.clone()));
-        } else {
-            ref_meta.insert("id".to_string(), Value::String(object_ref_key.clone()));
-        }
-        output.insert("__ref".to_string(), Value::Object(ref_meta));
 
         for selection in selections {
             let field_name = selection.self_selection_name().clone();
@@ -211,16 +257,27 @@ impl<'a> CacheReader<'a> {
             let field_ref_key = format!("{}_{}", object_ref_key, field_segment);
             let cached_value = record.get(&cache_key);
 
-            let value =
-                self.read_field(&selection, cached_value, &object_ref_key, &field_segment)?;
+            if field_name != "__typename" {
+                used_refs.insert(field_ref_key);
+            }
+            let value = self.read_field(
+                &selection,
+                cached_value,
+                &object_ref_key,
+                &field_segment,
+                used_refs,
+            )?;
 
             output.insert(field_name.clone(), value);
-            if field_name != "__typename" {
-                output.insert(
-                    format!("__ref_{}", field_name),
-                    Value::String(field_ref_key),
-                );
-            }
+        }
+
+        if let Some(before_refs) = before_refs {
+            let object_refs: HashSet<_> = used_refs.difference(&before_refs).cloned().collect();
+            output.insert("__used_refs".to_string(), used_refs_to_value(&object_refs));
+            output.insert(
+                "__ref_anchor".to_string(),
+                Value::String(object_ref_key.clone()),
+            );
         }
 
         Ok(Value::Object(output))
@@ -232,6 +289,8 @@ impl<'a> CacheReader<'a> {
         cached_items: &[CacheValue],
         parent_ref_key: &str,
         field_segment: &str,
+        list_ref_key: &str,
+        used_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let mut output = Vec::with_capacity(cached_items.len());
         for (idx, cached_item) in cached_items.iter().enumerate() {
@@ -254,13 +313,23 @@ impl<'a> CacheReader<'a> {
                         cached_item,
                         parent_ref_key,
                         &item_segment,
+                        used_refs,
                     )?,
                     _ => return Err(anyhow::anyhow!("expected object list item at {idx}")),
                 },
                 SelectionKind::List(inner_list) => match cached_item {
                     CacheValue::Scalar(value) if value.is_null() => Value::Null,
                     CacheValue::List(inner_items) => {
-                        self.read_list(inner_list, inner_items, parent_ref_key, &item_segment)?
+                        let item_ref_key = format!("{list_ref_key}[{idx}]");
+                        used_refs.insert(item_ref_key.clone());
+                        self.read_list(
+                            inner_list,
+                            inner_items,
+                            parent_ref_key,
+                            &item_segment,
+                            &item_ref_key,
+                            used_refs,
+                        )?
                     }
                     _ => return Err(anyhow::anyhow!("expected nested list item at {idx}")),
                 },
@@ -275,7 +344,7 @@ impl<'a> CacheReader<'a> {
         fragment: &SharedFragmentContext,
         cached_value: &CacheValue,
         object_ref_key: &str,
-        ref_kind: RefKind,
+        used_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let (record, _entity_key) = match cached_value {
             CacheValue::Ref(key) => match self.cache.get(key) {
@@ -323,19 +392,7 @@ impl<'a> CacheReader<'a> {
         };
 
         let mut output = Map::new();
-        let mut ref_meta = Map::new();
-        match ref_kind {
-            RefKind::Id => {
-                ref_meta.insert("id".to_string(), Value::String(object_ref_key.to_string()));
-            }
-            RefKind::Path => {
-                ref_meta.insert(
-                    "path".to_string(),
-                    Value::String(object_ref_key.to_string()),
-                );
-            }
-        }
-        output.insert("__ref".to_string(), Value::Object(ref_meta));
+        used_refs.insert(object_ref_key.to_string());
 
         for selection in selections {
             let field_name = selection.self_selection_name().clone();
@@ -345,16 +402,18 @@ impl<'a> CacheReader<'a> {
             let field_ref_key = format!("{}_{}", object_ref_key, field_segment);
             let cached_value = record.get(&cache_key);
 
-            let value =
-                self.read_field(&selection, cached_value, object_ref_key, &field_segment)?;
+            if field_name != "__typename" {
+                used_refs.insert(field_ref_key);
+            }
+            let value = self.read_field(
+                &selection,
+                cached_value,
+                object_ref_key,
+                &field_segment,
+                used_refs,
+            )?;
 
             output.insert(field_name.clone(), value);
-            if field_name != "__typename" {
-                output.insert(
-                    format!("__ref_{}", field_name),
-                    Value::String(field_ref_key),
-                );
-            }
         }
 
         if is_union_interface && cached_typename_from_record(&record).is_none() {
@@ -380,4 +439,10 @@ fn selection_common_for_list_item() -> shalom_core::operation::types::FieldSelec
         name: "__item".to_string(),
         description: None,
     }
+}
+
+fn used_refs_to_value(used_refs: &HashSet<String>) -> Value {
+    let mut refs: Vec<_> = used_refs.iter().cloned().collect();
+    refs.sort();
+    Value::Array(refs.into_iter().map(Value::String).collect())
 }

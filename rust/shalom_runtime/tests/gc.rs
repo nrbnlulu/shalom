@@ -8,7 +8,7 @@ use shalom_core::operation::context::SharedOpCtx;
 use shalom_core::shalom_config::ShalomConfig;
 use shalom_runtime::cache::{CacheRecord, CacheValue, NormalizedCache};
 use shalom_runtime::gc::{SubscriptionTracker, collect_garbage};
-use shalom_runtime::{RefObject, ShalomRuntime};
+use shalom_runtime::ShalomRuntime;
 
 fn make_entity(name: &str) -> CacheRecord {
     let mut record = CacheRecord::new();
@@ -99,10 +99,7 @@ fn runtime_gc_respects_subscription_tracker() {
             None,
         )
         .expect("normalize response");
-    let mut refs = RefObject::from_response(&result.data)
-        .refs
-        .into_iter()
-        .collect::<Vec<_>>();
+    let mut refs = result.used_refs.iter().cloned().collect::<Vec<_>>();
     refs.push("Temp:1_field".to_string());
     let subscription = runtime
         .subscribe(op_ctx.get_operation_name(), None, refs)

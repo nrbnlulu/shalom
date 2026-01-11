@@ -83,7 +83,7 @@ person(name: "foo") {
         { "name": "cocky" },
         { "name": "baz" }
       ],
-      "country_birth:true": { "__ref": "Country:4324" }
+      "country_birth:true": { "$ref": "Country:4324" }
     }
   },
   "Country:4324": {
@@ -92,6 +92,8 @@ person(name: "foo") {
   }
 }
 ```
+
+Note: `$ref` is a conceptual placeholder for `CacheValue::Ref`.
 
 ---
 
@@ -147,9 +149,9 @@ These are currently implemented in Dart and must be ported to Rust:
 3. Runtime returns:
 
    * the **raw GraphQL response data**
-   * injected metadata (see below)
+   * optional `__used_refs` (entrypoints only, see below)
 4. Client deserializes the response using its generated types
-5. Clients (e.g. Flutter widgets) use the returned metadata to subscribe to updates
+5. Clients (e.g. Flutter widgets) use `__used_refs` to subscribe to updates
 
 ---
 
@@ -164,11 +166,13 @@ Currently, cache updates are delegated to `client.request`, which forces:
 
 This is prohibitively expensive for large queries.
 
-### New approach: injected subscription metadata
+### New approach: entrypoint-level used refs
 
-The runtime returns **normal response data**, plus **metadata fields** that allow clients to subscribe to **specific cache locations**.
+The runtime returns **normal response data**, plus a **single `__used_refs` field** on
+entrypoints (operations and fragments marked `@subscribeable`). This field contains every
+cache ref needed to subscribe to all selections in the entrypoint.
 
-This metadata is explicitly designed to be used by **Flutter (and other clients)** to:
+`__used_refs` is explicitly designed to be used by **Flutter (and other clients)** to:
 
 * subscribe to field-level changes
 * rebuild only affected widgets
@@ -182,14 +186,12 @@ Injected fields are **not part of the GraphQL schema** and are reserved by the r
 
 ### Reserved fields
 
-* `__ref`
-  Object-level subscription metadata
+* `__used_refs`
+  A list of all cache refs used by the entrypoint response
 
-* `__ref_<field>`
-  Subscription key for a scalar or subfield
-
-* `__ref_<listField>`
-  Subscription key for list structural changes
+* `__ref_anchor`
+  Present only on `@subscribeable` fragment responses, contains the root ref key used to
+  anchor the fragment selection
 
 ---
 
@@ -200,19 +202,19 @@ The runtime must trigger updates when:
 ### 1. Union / interface object identity changes
 
 * If `__typename` changes between writes
-* Notify the object-level `__ref`
+* Notify the object-level ref key
 * If the object has an `id`, entity subscribers must also be notified
 
 ### 2. Scalar field changes
 
-* Notify `__ref_<field>`
+* Notify the field ref key
 
 ### 3. List structural changes
 
 * Length changes
 * Reordering
 * Pagination merges
-* Notify `__ref_<listField>`
+* Notify the list field ref key
 
 Item-level field changes must notify only the item’s own refs unless structure changes.
 
@@ -223,50 +225,30 @@ Item-level field changes must notify only the item’s own refs unless structure
 ```json
 {
   "person": {
-    "__ref": { "path": "ROOT_QUERY_person$name:foo" },
-
     "name": "foo",
-    "__ref_name": "ROOT_QUERY_person$name:foo_name",
-
     "pets": [
       {
-        "name": "cocky",
-        "__ref": { "path": "ROOT_QUERY_person$name:foo_pets$first:5[0]" }
+        "name": "cocky"
       },
       {
-        "name": "baz",
-        "__ref": { "path": "ROOT_QUERY_person$name:foo_pets$first:5[1]" }
+        "name": "baz"
       }
     ],
-    "__ref_pets": "ROOT_QUERY_person$name:foo_pets$first:5",
-
     "country": {
-      "__ref": { "id": "Country:4324" },
       "id": 4324,
-      "name": "Israel",
-      "__ref_name": "Country:4324_name"
+      "name": "Israel"
     }
-  }
+  },
+  "__used_refs": [
+    "ROOT_QUERY_person$name:foo",
+    "ROOT_QUERY_person$name:foo_name",
+    "ROOT_QUERY_person$name:foo_pets$first:5",
+    "ROOT_QUERY_person$name:foo_pets$first:5[0]",
+    "ROOT_QUERY_person$name:foo_pets$first:5[1]",
+    "Country:4324",
+    "Country:4324_name"
+  ]
 }
-```
-
-### Important clarification about `country`
-
-* `country` is **NOT** a union or interface
-* Therefore:
-
-  * It **MUST NOT** include a `path` field
-  * It **ONLY** includes an `id`
-* The `id` **must be the canonical entity key**:
-
-```json
-"__ref": { "id": "Country:4324" }
-```
-
-Paths are required only for:
-
-* non-entity objects
-* union / interface objects whose concrete type may change
 
 ---
 
@@ -276,11 +258,7 @@ The Rust runtime is responsible for **cache garbage collection**.
 
 ### GC model
 
-* Clients subscribe to cache locations using subscription keys derived from:
-
-  * `__ref`
-  * `__ref_<field>`
-  * `__ref_<listField>`
+* Clients subscribe to cache locations using the `__used_refs` list.
 * The runtime maintains reference counts (or equivalent bookkeeping) for active subscriptions.
 
 ### GC behavior
@@ -316,9 +294,9 @@ This runtime-driven model:
 ok now the client api should look like so.
 
 - init runtime: provide the schema SDL (as a string for now), a root link and a config (for now we don't anything in the config I think but..) and a list of all the fragment SDL's. the codegen of the target language (for now dart only) can auto generate an init runtime for each schema it finds (for now we only support one schema).
-- client calls runtime.request(query: "<query SDL>", variables: vars) and gets a response with 1. (ideally) graphql data with the injected cache refs, 2. the id for that operation SDL (note that even if we fire the same query twice, thats the same id).
+- client calls runtime.request(query: "<query SDL>", variables: vars) and gets a response with 1. graphql data, 2. `__used_refs` (only if the entrypoint is `@subscribeable`), 3. the id for that operation SDL (note that even if we fire the same query twice, thats the same id).
 
-- if the client decides it wants to subscribe to an object it will call `runtime.subscribe(subscribeable_id (the operation / fragment sdl id), list_of_refs)` the runtime will watch for changes in those refs, and once found it will "execute" against the cache (internally) for all the selections (if its not a scalar) under the root ref.
+- if the client decides it wants to subscribe to an object it will call `runtime.subscribe(subscribeable_id (the operation / fragment sdl id), list_of_refs)` where `list_of_refs` is `__used_refs`. the runtime will watch for changes in those refs, and once found it will "execute" against the cache (internally) for all the selections (if its not a scalar) under the root ref.
 
 - for flutter i.e we can have a stream builder for each runtime subscription, it will internally accept a runtime (can be fetched from the context) and any type that implements `FromCache` (which is root operation types and fragments) (since dart doesn't have static "traits" i.e overrides that returns Self we need to do a trick with a method that returns a builder of Self) the codegen can automatically generate the FromCache thing on it.
 OFC the type that we use in that we use must be the correct type of the root ref. 
@@ -326,10 +304,27 @@ OFC the type that we use in that we use must be the correct type of the root ref
 
 make sure that the rust backend is ready for this and implement needed api in the flutter_rust_bridge codegen.
 
+### Subscribeable entrypoints
+
+Operations and fragments must opt-in to subscription metadata using `@subscribeable`.
+
+Example:
+
+```graphql
+query Foo @subscribeable {
+  person { id name }
+}
+
+fragment FriendFragment on Person @subscribeable {
+  id
+  name
+}
+```
+
 
 ## Goals
 - Move normalization, cache management, and update signaling into Rust runtime.
-- Emit metadata fields (`__ref`, `__ref_<field>`) for fine-grained client subscriptions.
+- Emit `__used_refs` for fine-grained client subscriptions (entrypoints only).
 - Keep transport logic in Rust orchestration layer without performing network I/O.
 - Provide a Dart/Flutter bridge entry point (via `flutter_rust_bridge` later).
 
@@ -349,19 +344,19 @@ make sure that the rust backend is ready for this and implement needed api in th
   - Root: `ROOT_QUERY`, `ROOT_MUTATION`, `ROOT_SUBSCRIPTION`.
   - Entity: `<TypeName>:<id>`.
   - Field cache key (for storage): `field_arg:val_arg2:val2` (args joined by `_`).
-  - Path key (for metadata): `parent_field$arg:val` (args joined by `$`).
+  - Path key (for refs): `parent_field$arg:val` (args joined by `$`).
 - Objects:
   - With `id`: store under `<Type>:<id>`; parent stores `Ref(<Type>:<id>)`.
   - Without `id`: store inline in parent record.
 - Metadata injection:
-  - `__ref`: `{id: "<Type>:<id>"}` for entities, `{path: "<path>"}` for inline/union/interface.
-  - `__ref_<field>`: `<object_ref_key>_<field_segment>` for scalar/object/list fields.
+  - `__used_refs`: list of cache ref keys used by the entrypoint response (only when `@subscribeable`).
+  - `__ref_anchor`: fragment root ref key (only for `@subscribeable` fragments).
 
 ## Update Semantics (Runtime)
-- Scalar field change → notify `__ref_<field>`.
-- List structural change (length/order) → notify `__ref_<listField>`.
-- Union/interface typename change → notify object-level `__ref` (path) and new entity key if present.
-- Object ref change (null ↔ some, entity ref swap) → notify `__ref_<field>`.
+- Scalar field change → notify the field ref key.
+- List structural change (length/order) → notify the list field ref key.
+- Union/interface typename change → notify object ref key (path) and new entity key if present.
+- Object ref change (null ↔ some, entity ref swap) → notify the field ref key.
 
 ## Garbage Collection (Planned)
 - Maintain subscription ref counts for keys emitted in metadata.
@@ -370,7 +365,7 @@ make sure that the rust backend is ready for this and implement needed api in th
 
 ## Progress
 - Done: `NormalizedCache` + `CacheValue` structures in `shalom_runtime`.
-- Done: normalization + metadata injection + change tracking in Rust.
+- Done: normalization + used refs collection + change tracking in Rust.
 - Done: `ShalomRuntime` public API (`normalize` + cache access) and cache tests wired through it.
 - Done: Rust cache tests covering all listed use cases (scalars, enums, objects, unions/interfaces, fragments, lists, inputs).
 - Done: cache reader for rebuilding responses from normalized cache + runtime subscription updates (`subscribe` + `drain_updates`).
