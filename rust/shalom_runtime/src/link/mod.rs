@@ -24,6 +24,7 @@ pub struct Request {
     pub variables: Map<String, Value>,
     pub operation_name: String,
     pub operation_type: OperationType,
+    pub headers: Option<Headers>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -48,5 +49,5 @@ pub enum GraphQLResponse {
 }
 
 pub trait GraphQLLink: Send + Sync {
-    fn execute(&self, request: Request, headers: Option<Headers>) -> LinkStream;
+    fn execute(&self, request: Request) -> LinkStream;
 }

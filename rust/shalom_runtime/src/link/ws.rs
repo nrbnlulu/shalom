@@ -52,7 +52,7 @@ impl WebSocketLink {
 }
 
 impl GraphQLLink for WebSocketLink {
-    fn execute(&self, _request: Request, _headers: Option<Headers>) -> LinkStream {
+    fn execute(&self, _request: Request) -> LinkStream {
         let err = GraphQLResponse::TransportError(TransportError {
             message: "WebSocketLink execution is not implemented yet".to_string(),
             code: "UNSUPPORTED".to_string(),

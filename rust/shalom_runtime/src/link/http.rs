@@ -134,13 +134,13 @@ impl HttpLink {
 }
 
 impl GraphQLLink for HttpLink {
-    fn execute(&self, request: Request, headers: Option<Headers>) -> LinkStream {
+    fn execute(&self, request: Request) -> LinkStream {
         let transport = self.transport.clone();
         let url = self.url.clone();
         let use_get = self.use_get;
         let mut final_headers = self.default_headers.clone();
-        if let Some(extra_headers) = headers {
-            final_headers.extend(extra_headers);
+        if let Some(extra_headers) = request.headers.as_ref() {
+            final_headers.extend(extra_headers.clone());
         }
         Self::ensure_accept_header(&mut final_headers);
 
