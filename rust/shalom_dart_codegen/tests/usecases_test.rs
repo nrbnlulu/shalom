@@ -134,3 +134,8 @@ fn test_interface_with_nested_type_fragments_dart() {
 fn test_one_of_input_dart() {
     run_dart_tests_for_usecase("one_of_input");
 }
+
+#[test]
+fn test_runtime_metadata_dart() {
+    run_dart_tests_for_usecase("runtime_metadata");
+}

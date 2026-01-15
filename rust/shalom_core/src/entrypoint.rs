@@ -59,7 +59,17 @@ pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
 }
 
 pub fn parse_schema(schema: &str) -> anyhow::Result<SharedSchemaContext> {
-    schema::resolver::resolve(schema)
+    let schema = ensure_subscribeable_directive(schema);
+    schema::resolver::resolve(&schema)
+}
+
+fn ensure_subscribeable_directive(schema: &str) -> String {
+    const DIRECTIVE_DEF: &str =
+        "directive @subscribeable on QUERY | MUTATION | SUBSCRIPTION | FRAGMENT_DEFINITION";
+    if schema.contains("directive @subscribeable") {
+        return schema.to_string();
+    }
+    format!("{schema}\n\n{DIRECTIVE_DEF}\n")
 }
 
 pub fn parse_document(
@@ -68,6 +78,28 @@ pub fn parse_document(
     source_path: &PathBuf,
 ) -> anyhow::Result<HashMap<String, SharedOpCtx>> {
     crate::operation::parse::parse_document_impl(global_ctx, operation, source_path)
+}
+
+pub fn register_fragments_from_document(
+    global_ctx: &SharedShalomGlobalContext,
+    source: &str,
+    doc_path: &PathBuf,
+) -> anyhow::Result<()> {
+    let schema = global_ctx.schema_ctx.schema.clone();
+    let mut parser = apollo_compiler::parser::Parser::new();
+    let doc = parser
+        .parse_executable(&schema, source, doc_path)
+        .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
+    let doc = doc.validate(&schema).expect("doc is not valid");
+    let doc = doc.into_inner();
+
+    let parsed_docs = vec![(doc, doc_path.clone(), source.to_string())];
+    let fragment_defs = extract_fragment_definitions(&parsed_docs)?;
+    if fragment_defs.is_empty() {
+        return Ok(());
+    }
+    let order = build_fragment_dependencies(&fragment_defs)?;
+    parse_and_register_fragments(fragment_defs, order, global_ctx)
 }
 
 /// Load configuration from directory or use defaults
@@ -133,6 +165,7 @@ fn extract_fragment_definitions(
         for (name, fragment_def) in doc.fragments.iter() {
             let fragment_name = name.to_string();
             let type_condition = fragment_def.type_condition().to_string();
+            let subscribeable = has_subscribeable_directive(&fragment_def.directives);
 
             // Extract fragment SDL for later injection
             let fragment_sdl = format!("{}", fragment_def);
@@ -141,6 +174,7 @@ fn extract_fragment_definitions(
                 fragment_sdl.clone(),
                 file_path.clone(),
                 type_condition,
+                subscribeable,
             );
 
             if all_fragment_defs.contains_key(&fragment_name) {
@@ -159,6 +193,13 @@ fn extract_fragment_definitions(
     }
 
     Ok(all_fragment_defs)
+}
+
+fn has_subscribeable_directive(directives: &apollo_compiler::ast::DirectiveList) -> bool {
+    directives
+        .0
+        .iter()
+        .any(|directive| directive.name.as_str() == "subscribeable")
 }
 
 /// Build fragment dependency tree and return topologically sorted order

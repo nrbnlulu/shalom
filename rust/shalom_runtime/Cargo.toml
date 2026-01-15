@@ -1,0 +1,16 @@
+[package]
+name = "shalom_runtime"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+shalom_core = { version = "0.1.0", path = "../shalom_core" }
+simple_logger = {workspace = true}
+log = {workspace = true}
+serde = {workspace = true}
+serde_json = {workspace = true}
+tokio = { version = "1.48.0", features = ["rt", "macros", "sync"] }
+tokio-stream = "0.1.17"
+anyhow = {workspace = true}
+async-trait = "0.1.89"
+async-stream = "0.3.6"

@@ -3,42 +3,35 @@
 version: "3"
 
 vars:
-  GREETING: Hello, World!
-  DART_BIN:
-    sh: |
-      if command -v fvm &> /dev/null; then
-        echo "fvm dart"
-      else
-        echo "dart"
-      fi
+    GREETING: Hello, World!
 
 tasks:
-  default:
-    cmds:
-      - echo "{{.GREETING}}"
-    silent: true
+    default:
+        cmds:
+            - echo "{{.GREETING}}"
+        silent: true
 
-  fmt:
-    cmds:
-      - cd rust && cargo fmt
-      - cd rust/shalom_dart_codegen/dart_tests && {{.DART_BIN}} format ./test ./lib
-      - '{{.DART_BIN}} format ./dart'
+    fmt:
+        cmds:
+            - cd rust && cargo fmt
+            - cd rust/shalom_dart_codegen/dart_tests && fvm exec dart format ./test ./lib
+            - fvm exec dart format ./dart
 
-  fix:
-    cmds:
-      - cd rust && cargo fmt
-      - cd rust && cargo clippy --fix --allow-dirty
+    fix:
+        cmds:
+            - cd rust && cargo fmt
+            - cd rust && cargo clippy --fix --allow-dirty
 
-  lint:
-    cmds:
-      - cd rust && cargo fmt -- --check
-      - cd rust && cargo clippy -- -D warnings
-      - cd rust/shalom_dart_codegen/dart_tests && find . -type f -name "*.dart" -not -path "*/__graphql__/*" | xargs {{.DART_BIN}} format --set-exit-if-changed
-      - cd rust/shalom_dart_codegen/dart_tests && {{.DART_BIN}} analyze ./test ./lib
-      - cd dart/shalom_core && {{.DART_BIN}} analyze ./test ./lib
-      - typos
+    lint:
+        cmds:
+            - cd rust && cargo fmt -- --check
+            - cd rust && cargo clippy -- -D warnings
+            - cd rust/shalom_dart_codegen/dart_tests && find . -type f -name "*.dart" -not -path "*/__graphql__/*" | xargs fvm exec dart format --set-exit-if-changed
+            - cd rust/shalom_dart_codegen/dart_tests && fvm exec dart analyze ./test ./lib
+            - cd dart/shalom_core && fvm exec dart analyze ./test ./lib
+            - typos
 
-  test:
-    cmds:
-      - cd rust && cargo test -- --test-threads=2
-      - cd dart/shalom_core && {{.DART_BIN}} test
+    test:
+        cmds:
+            - cd rust && cargo test -- --test-threads=2
+            - cd dart/shalom_core && fvm exec dart test
