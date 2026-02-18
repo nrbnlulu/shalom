@@ -65,48 +65,25 @@ class _{{ typename }}_{{ field_name }} implements {{ typename }} {
   }
 
 
-    @override
-    bool operator ==(Object other) {
-        return identical(this, other) ||
-            {% if input_object.fields | length > 0 -%}
-                (other is {{ typename }} &&
-                    {% for fname, f in input_object.fields | items -%}
-                        {% set field_type = resolve_field_type(f.common) %}
-                        {% if field_type.ty == "List" %}
-                            const DeepCollectionEquality().equals(
-                                {{ fname }},
-                                other.{{ fname }}
-                            )                        
-                        {% else %}
-                            {{ fname }} == other.{{ fname }}
-                        {% endif %}
-                        {{ "&&" if not loop.last }}
-                    {% endfor -%}
-                );
-            {% else -%}
-            (other is {{ typename }});
-            {% endif %}
-    }
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || (other is _{{ typename }}_{{ field_name }} &&
+      {% set field_ty = resolve_field_type(field.common).ty -%}
+      {% if field_ty.kind == "List" -%}
+          const DeepCollectionEquality().equals(value, other.value)
+      {%- else -%}
+          value == other.value
+      {%- endif -%}
+      );
 
-    @override
-    int get hashCode => 
-        {% if input_object.fields | length > 0 -%}
-            Object.hash(
-                runtimeType,
-                {% for fname, f in input_object.fields | items -%}
-                    {% set field_type = resolve_field_type(f.common) %}
-                    {% if field_type.ty == "List" %}
-                        const DeepCollectionEquality().hash(fname)
-                    {% else %}
-                        {{fname}}.hashCode
-                    {% endif %}
-                    {{ "," if not loop.last }}
-                {% endfor -%}
-            );
-        {% else -%}
-            runtimeType.hashCode;
-        {% endif %}
-
+  @override
+  int get hashCode =>
+      {% set field_ty = resolve_field_type(field.common).ty -%}
+      {% if field_ty.kind == "List" -%}
+          const DeepCollectionEquality().hash(value) ^ runtimeType.hashCode;
+      {%- else -%}
+          value.hashCode ^ runtimeType.hashCode;
+      {%- endif %}
 }
 
 {% endfor %}
@@ -149,15 +126,12 @@ class {{ typename }} {
             {% if input_object.fields | length > 0 -%}
                 (other is {{ typename }} &&
                     {% for fname, f in input_object.fields | items -%}
-                        {% set field_type = resolve_field_type(f.common) %}
-                        {% if field_type.ty == "List" %}
-                            const DeepCollectionEquality().equals(
-                                {{ fname }},
-                                other.{{ fname }}
-                            )                        
-                        {% else %}
+                        {% set field_ty = resolve_field_type(f.common).ty -%}
+                        {% if field_ty.kind == "List" -%}
+                            const DeepCollectionEquality().equals({{ fname }}, other.{{ fname }})
+                        {%- else -%}
                             {{ fname }} == other.{{ fname }}
-                        {% endif %}
+                        {%- endif %}
                         {{ "&&" if not loop.last }}
                     {% endfor -%}
                 );
@@ -167,20 +141,18 @@ class {{ typename }} {
     }
 
     @override
-    int get hashCode => 
+    int get hashCode =>
         {% if input_object.fields | length > 0 -%}
-            Object.hash(
-                runtimeType,
+            Object.hashAll([
                 {% for fname, f in input_object.fields | items -%}
-                    {% set field_type = resolve_field_type(f.common) %}
-                    {% if field_type.ty == "List" %}
-                        const DeepCollectionEquality().hash({{ fname }})
-                    {% else %}
-                        {{ fname }}
-                    {% endif %}
-                    {{ "," if not loop.last }}
-                {% endfor -%}
-            );
+                    {% set field_ty = resolve_field_type(f.common).ty -%}
+                    {% if field_ty.kind == "List" -%}
+                        const DeepCollectionEquality().hash({{ fname }}),
+                    {%- else -%}
+                        {{ fname }},
+                    {%- endif %}
+                {% endfor %}
+            ]);
         {% else -%}
             runtimeType.hashCode;
         {% endif %}
