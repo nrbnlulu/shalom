@@ -2,6 +2,7 @@
 {% include "macros" %}
 {% if schema.context.types.inputs | length > 0 %}
 import 'package:shalom_core/shalom_core.dart' as shalom_core;
+import 'package:collection/collection.dart';
 {% endif %}
 {{ custom_scalar_imports_macro(custom_scalar_imports) }}
 
@@ -63,12 +64,49 @@ class _{{ typename }}_{{ field_name }} implements {{ typename }} {
     return {'{{ field_name }}': {{ _serialize_field_value_macro("value", field_ty, false) }}};
   }
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) || (other is _{{ typename }}_{{ field_name }} && value == other.value);
 
-  @override
-  int get hashCode => value.hashCode ^ runtimeType.hashCode;
+    @override
+    bool operator ==(Object other) {
+        return identical(this, other) ||
+            {% if input_object.fields | length > 0 -%}
+                (other is {{ typename }} &&
+                    {% for fname, f in input_object.fields | items -%}
+                        {% set field_type = resolve_field_type(f.common) %}
+                        {% if field_type.ty == "List" %}
+                            const DeepCollectionEquality().equals(
+                                {{ fname }},
+                                other.{{ fname }}
+                            )                        
+                        {% else %}
+                            {{ fname }} == other.{{ fname }}
+                        {% endif %}
+                        {{ "&&" if not loop.last }}
+                    {% endfor -%}
+                );
+            {% else -%}
+            (other is {{ typename }});
+            {% endif %}
+    }
+
+    @override
+    int get hashCode => 
+        {% if input_object.fields | length > 0 -%}
+            Object.hash(
+                runtimeType,
+                {% for fname, f in input_object.fields | items -%}
+                    {% set field_type = resolve_field_type(f.common) %}
+                    {% if field_type.ty == "List" %}
+                        const DeepCollectionEquality().hash(fname)
+                    {% else %}
+                        {{fname}}.hashCode
+                    {% endif %}
+                    {{ "," if not loop.last }}
+                {% endfor -%}
+            );
+        {% else -%}
+            runtimeType.hashCode;
+        {% endif %}
+
 }
 
 {% endfor %}
@@ -103,6 +141,49 @@ class {{ typename }} {
     String toString() {
         return toJson().toString();
     }
+
+
+    @override
+    bool operator ==(Object other) {
+        return identical(this, other) ||
+            {% if input_object.fields | length > 0 -%}
+                (other is {{ typename }} &&
+                    {% for fname, f in input_object.fields | items -%}
+                        {% set field_type = resolve_field_type(f.common) %}
+                        {% if field_type.ty == "List" %}
+                            const DeepCollectionEquality().equals(
+                                {{ fname }},
+                                other.{{ fname }}
+                            )                        
+                        {% else %}
+                            {{ fname }} == other.{{ fname }}
+                        {% endif %}
+                        {{ "&&" if not loop.last }}
+                    {% endfor -%}
+                );
+            {% else -%}
+            (other is {{ typename }});
+            {% endif %}
+    }
+
+    @override
+    int get hashCode => 
+        {% if input_object.fields | length > 0 -%}
+            Object.hash(
+                runtimeType,
+                {% for fname, f in input_object.fields | items -%}
+                    {% set field_type = resolve_field_type(f.common) %}
+                    {% if field_type.ty == "List" %}
+                        const DeepCollectionEquality().hash({{ fname }})
+                    {% else %}
+                        {{ fname }}
+                    {% endif %}
+                    {{ "," if not loop.last }}
+                {% endfor -%}
+            );
+        {% else -%}
+            runtimeType.hashCode;
+        {% endif %}
 
   {{ updateWith_macro(input_object.fields, typename) }}
 }

@@ -9,6 +9,81 @@ import "__graphql__/schema.shalom.dart";
 import "__graphql__/GetOrder.shalom.dart";
 
 void main() {
+  group("equals (==)", () {
+    group("Order (required fields)", () {
+      test("same values are equal", () {
+        final a = Order(name: "shalom", price: 300.0, quantity: 2);
+        final b = Order(name: "shalom", price: 300.0, quantity: 2);
+        expect(a == b, isTrue);
+        expect(a.hashCode == b.hashCode, isTrue);
+      });
+      test("different values are not equal", () {
+        final a = Order(name: "shalom", price: 300.0, quantity: 2);
+        final b = Order(name: "other", price: 300.0, quantity: 2);
+        expect(a == b, isFalse);
+      });
+    });
+
+    group("OrderOpt (optional no default / Maybe)", () {
+      test("both None are equal", () {
+        final a = OrderOpt();
+        final b = OrderOpt();
+        expect(a == b, isTrue);
+      });
+      test("same Some values are equal", () {
+        final a = OrderOpt(name: Some("shalom"), price: Some(10.0));
+        final b = OrderOpt(name: Some("shalom"), price: Some(10.0));
+        expect(a == b, isTrue);
+      });
+      test("different values are not equal", () {
+        final a = OrderOpt(name: Some("shalom"));
+        final b = OrderOpt(name: Some("other"));
+        expect(a == b, isFalse);
+      });
+      test("Some vs None are not equal", () {
+        final a = OrderOpt(name: Some("shalom"));
+        final b = OrderOpt();
+        expect(a == b, isFalse);
+      });
+    });
+
+    group("OrderOptWithNullDefaults", () {
+      test("defaults are equal", () {
+        final a = OrderOptWithNullDefaults();
+        final b = OrderOptWithNullDefaults();
+        expect(a == b, isTrue);
+      });
+      test("same values are equal", () {
+        final a = OrderOptWithNullDefaults(name: "shalom");
+        final b = OrderOptWithNullDefaults(name: "shalom");
+        expect(a == b, isTrue);
+      });
+      test("different values are not equal", () {
+        final a = OrderOptWithNullDefaults(name: "shalom");
+        final b = OrderOptWithNullDefaults(name: "other");
+        expect(a == b, isFalse);
+      });
+    });
+
+    group("OrderOptWithSomeDefaults", () {
+      test("defaults are equal", () {
+        final a = OrderOptWithSomeDefaults();
+        final b = OrderOptWithSomeDefaults();
+        expect(a == b, isTrue);
+      });
+      test("overridden values are equal", () {
+        final a = OrderOptWithSomeDefaults(name: "custom");
+        final b = OrderOptWithSomeDefaults(name: "custom");
+        expect(a == b, isTrue);
+      });
+      test("different values are not equal", () {
+        final a = OrderOptWithSomeDefaults(name: "custom");
+        final b = OrderOptWithSomeDefaults();
+        expect(a == b, isFalse);
+      });
+    });
+  });
+
   group("required input objects", () {
     test("RequiredArguments", () {
       final req = RequestCreateOrderRequest(

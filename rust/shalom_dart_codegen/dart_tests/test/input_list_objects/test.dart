@@ -7,6 +7,43 @@ import '__graphql__/InputListOfOptionalObjectsWithNullDefaultMutation.shalom.dar
 import '__graphql__/InputObjectContainingListOfObjectsMutation.shalom.dart';
 
 void main() {
+  group('Input equality (==)', () {
+    test('MyInputObject equality', () {
+      final obj1 = MyInputObject(id: "1", name: "Test", value: 42);
+      final obj2 = MyInputObject(id: "1", name: "Test", value: 42);
+      expect(obj1 == obj2, isTrue);
+      expect(obj1.hashCode == obj2.hashCode, isTrue);
+
+      final obj3 = MyInputObject(id: "1", name: "Different", value: 42);
+      expect(obj1 == obj3, isFalse);
+    });
+
+    test('ContainerInput with list equality', () {
+      final a = ContainerInput(
+        title: "Test",
+        nestedItems: [MyInputObject(id: "1", name: "A", value: 1)],
+      );
+      final b = ContainerInput(
+        title: "Test",
+        nestedItems: [MyInputObject(id: "1", name: "A", value: 1)],
+      );
+      expect(a == b, isTrue);
+      expect(a.hashCode == b.hashCode, isTrue);
+    });
+
+    test('ContainerInput with different lists', () {
+      final a = ContainerInput(
+        title: "Test",
+        nestedItems: [MyInputObject(id: "1", name: "A", value: 1)],
+      );
+      final b = ContainerInput(
+        title: "Test",
+        nestedItems: [MyInputObject(id: "2", name: "B", value: 2)],
+      );
+      expect(a == b, isFalse);
+    });
+  });
+
   group('Input List of Objects Tests', () {
     final sampleObject1 = MyInputObject(
       id: "1",
