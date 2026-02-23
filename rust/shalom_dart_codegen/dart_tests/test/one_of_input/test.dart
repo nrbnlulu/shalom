@@ -162,6 +162,19 @@ void main() {
       expect(inputScalar == inputEnum, isFalse);
     });
 
+    test('listField equality with same elements', () {
+      final a = ComplexOneOf.listField([1, 2, 3]);
+      final b = ComplexOneOf.listField([1, 2, 3]);
+      expect(a == b, isTrue);
+      expect(a.hashCode == b.hashCode, isTrue);
+    });
+
+    test('listField equality with different elements', () {
+      final a = ComplexOneOf.listField([1, 2, 3]);
+      final b = ComplexOneOf.listField([4, 5, 6]);
+      expect(a == b, isFalse);
+    });
+
     test('toJson scalarField', () {
       final input = ComplexOneOf.scalarField('test');
       expect(input.toJson(), equals({'scalarField': 'test'}));

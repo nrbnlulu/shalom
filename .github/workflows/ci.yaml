@@ -43,16 +43,12 @@ jobs:
                   cd rust/shalom_dart_codegen/dart_tests/
                   flutter packages get
 
-
             - name: Test
               run: |
                   task test
 
-            - name: Install typos
-              run: |
-                  cargo install typos-cli
-
+            - name: "typos"
+              uses: crate-ci/typos@v1.43.5
             - name: Lint
               if: runner.os == 'Linux'
               run: task lint
-              
