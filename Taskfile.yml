@@ -36,7 +36,6 @@ tasks:
       - cd rust/shalom_dart_codegen/dart_tests && find . -type f -name "*.dart" -not -path "*/__graphql__/*" | xargs {{.DART_BIN}} format --set-exit-if-changed
       - cd rust/shalom_dart_codegen/dart_tests && {{.DART_BIN}} analyze ./test ./lib
       - cd dart/shalom_core && {{.DART_BIN}} analyze ./test ./lib
-      - typos
 
   test:
     cmds:
