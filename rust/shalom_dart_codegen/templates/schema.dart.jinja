@@ -43,7 +43,7 @@ sealed class {{ typename }} {
   shalom_core.JsonObject toJson();
 
   {% for field_name, field in input_object.fields | items -%}
-  static {{ typename }} {{ field_name }}({{ type_name_for_one_of_input_field(field) }} value) => _{{ typename }}_{{ field_name }}(value);
+  static {{ typename }} {{ field_name }}({{ type_name_for_one_of_input_field(field) }} value) => {{ typename }}${{ field_name }}(value);
 
   {% endfor -%}
   @override
@@ -53,10 +53,10 @@ sealed class {{ typename }} {
 }
 
 {% for field_name, field in input_object.fields | items %}
-class _{{ typename }}_{{ field_name }} implements {{ typename }} {
+class {{ typename }}${{ field_name }} implements {{ typename }} {
   final {{ type_name_for_one_of_input_field(field) }} value;
 
-  const _{{ typename }}_{{ field_name }}(this.value);
+  const {{ typename }}${{ field_name }}(this.value);
 
   @override
   shalom_core.JsonObject toJson() {
@@ -67,7 +67,7 @@ class _{{ typename }}_{{ field_name }} implements {{ typename }} {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || (other is _{{ typename }}_{{ field_name }} &&
+      identical(this, other) || (other is {{ typename }}${{ field_name }} &&
       {% set field_ty = resolve_field_type(field.common).ty -%}
       {% if field_ty.kind == "List" -%}
           const DeepCollectionEquality().equals(value, other.value)
