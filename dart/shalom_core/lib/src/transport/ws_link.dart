@@ -3,6 +3,7 @@ import 'dart:convert' show json;
 import 'dart:developer' show log;
 
 import 'package:shalom_core/shalom_core.dart';
+import 'package:uuid/uuid.dart';
 
 /// Implementation of GraphQL WebSocket protocol as specified in:
 /// https://github.com/enisdenjo/graphql-ws/blob/master/PROTOCOL.md
@@ -451,9 +452,11 @@ class WebSocketLink extends GraphQLLink {
     }
   }
 
+  static final _uuid = Uuid();
+
   /// Generate a unique operation ID
   String _generateOperationId() {
-    return DateTime.now().microsecondsSinceEpoch.toString();
+    return _uuid.v4();
   }
 
   /// Get the connection acknowledgement payload
