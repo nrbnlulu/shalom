@@ -5,6 +5,16 @@ import 'package:collection/collection.dart';
 
 typedef HeadersType = List<(String, String)>;
 
+enum FetchPolicy {
+  /// Fetch from network only. Does not read from or write to the cache,
+  /// and does not listen for cache updates.
+  networkOnly,
+
+  /// Fetch from network, write the result to the cache, then listen for
+  /// cache updates.
+  networkFirst,
+}
+
 abstract class GraphQLLink {
   const GraphQLLink();
   Stream<GraphQLResponse<JsonObject>> request({
@@ -27,6 +37,7 @@ class ShalomClient {
   Stream<GraphQLResponse<T>> request<T>({
     required Requestable<T> requestable,
     HeadersType? headers,
+    FetchPolicy fetchPolicy = FetchPolicy.networkFirst,
   }) {
     final meta = requestable.getRequestMeta();
     final controller = StreamController<GraphQLResponse<T>>();
@@ -40,6 +51,8 @@ class ShalomClient {
     GraphQLData<JsonObject>? lastNetworkResponse;
 
     void updateCacheSubscription(Set<String> newRefs) {
+      if (fetchPolicy == FetchPolicy.networkOnly) return;
+
       if (_keyEquals.equals(newRefs, currentSubRefs)) {
         return;
       }
@@ -87,22 +100,34 @@ class ShalomClient {
         switch (response) {
           case GraphQLData():
             {
-              // Load from the network response
-              final (deserialized, initialSubRefs) =
-                  meta.loadFn(data: response.data, ctx: ctx);
+              if (fetchPolicy == FetchPolicy.networkOnly) {
+                // Deserialize without touching the cache
+                final (deserialized, _) =
+                    meta.loadFn(data: response.data, ctx: ctx);
 
-              // Store for cache updates
-              lastNetworkResponse = response;
+                controller.add(GraphQLData(
+                  data: deserialized,
+                  errors: response.errors,
+                  extensions: response.extensions,
+                ));
+              } else {
+                // Load from the network response and write to cache
+                final (deserialized, initialSubRefs) =
+                    meta.loadFn(data: response.data, ctx: ctx);
 
-              // Yield the initial data from the network
-              controller.add(GraphQLData(
-                data: deserialized,
-                errors: response.errors,
-                extensions: response.extensions,
-              ));
+                // Store for cache updates
+                lastNetworkResponse = response;
 
-              // Set up or update cache subscription
-              updateCacheSubscription(initialSubRefs);
+                // Yield the initial data from the network
+                controller.add(GraphQLData(
+                  data: deserialized,
+                  errors: response.errors,
+                  extensions: response.extensions,
+                ));
+
+                // Set up or update cache subscription
+                updateCacheSubscription(initialSubRefs);
+              }
             }
           case LinkExceptionResponse():
             {
