@@ -8,7 +8,9 @@ use std::{
     sync::{Arc, Mutex, MutexGuard},
 };
 
-use super::types::{EnumType, InputObjectType, InterfaceType, ObjectType, ScalarType, UnionType};
+use super::types::{
+    EnumType, GenericResultType, InputObjectType, InterfaceType, ObjectType, ScalarType, UnionType,
+};
 
 fn serialize_schema_types<S>(
     schema_types: &Mutex<SchemaTypesCtx>,
@@ -29,6 +31,7 @@ pub(crate) struct SchemaTypesCtx {
     unions: HashMap<String, Node<UnionType>>,
     enums: HashMap<String, Node<EnumType>>,
     scalars: HashMap<String, Node<ScalarType>>,
+    generic_results: HashMap<String, Arc<GenericResultType>>,
 }
 impl SchemaTypesCtx {
     fn new() -> Self {
@@ -39,6 +42,7 @@ impl SchemaTypesCtx {
             unions: HashMap::new(),
             enums: HashMap::new(),
             scalars: HashMap::new(),
+            generic_results: HashMap::new(),
         }
     }
 
@@ -50,6 +54,7 @@ impl SchemaTypesCtx {
             GraphQLAny::Union(v) => self.add_union(name, v.clone()),
             GraphQLAny::Enum(v) => self.add_enum(name, v.clone()),
             GraphQLAny::Scalar(v) => self.add_scalar(name, v.clone()),
+            GraphQLAny::GenericResult(v) => self.add_generic_result(name, v.clone()),
             GraphQLAny::List { .. } => todo!("List types not supported in add_any"),
         };
     }
@@ -78,6 +83,14 @@ impl SchemaTypesCtx {
         self.scalars.insert(name, type_);
     }
 
+    pub fn add_generic_result(&mut self, name: String, type_: Arc<GenericResultType>) {
+        self.generic_results.insert(name, type_);
+    }
+
+    pub fn get_generic_result(&self, name: &str) -> Option<&Arc<GenericResultType>> {
+        self.generic_results.get(name)
+    }
+
     pub fn get_any(&self, name: &String) -> Option<GraphQLAny> {
         if let Some(v) = self.inputs.get(name) {
             return Some(GraphQLAny::InputObject(v.clone()));
@@ -96,6 +109,9 @@ impl SchemaTypesCtx {
         }
         if let Some(v) = self.scalars.get(name) {
             return Some(GraphQLAny::Scalar(v.clone()));
+        }
+        if let Some(v) = self.generic_results.get(name) {
+            return Some(GraphQLAny::GenericResult(v.clone()));
         }
         None
     }
@@ -175,6 +191,21 @@ impl SchemaContext {
         let mut types_ctx = self.get_types();
         types_ctx.add_enum(name, type_);
         Ok(())
+    }
+
+    pub fn add_generic_result(
+        &self,
+        name: String,
+        type_: Arc<GenericResultType>,
+    ) -> anyhow::Result<()> {
+        let mut types_ctx = self.get_types();
+        types_ctx.add_generic_result(name, type_);
+        Ok(())
+    }
+
+    pub fn get_generic_result(&self, name: &str) -> Option<Arc<GenericResultType>> {
+        let types_ctx = self.get_types();
+        types_ctx.get_generic_result(name).cloned()
     }
 
     pub fn add_input(&self, name: String, type_: Node<InputObjectType>) -> anyhow::Result<()> {

@@ -1,9 +1,11 @@
 use crate::schema::types::SchemaObjectFieldDefinition;
+use crate::shalom_config::ShalomConfig;
 
 use super::context::{SchemaContext, SharedSchemaContext};
 use super::types::{
-    EnumType, EnumValueDefinition, GraphQLAny, InputFieldDefinition, InputObjectType,
-    InterfaceType, ObjectType, ScalarType, SchemaFieldCommon, UnionType,
+    EnumType, EnumValueDefinition, GenericResultType, GraphQLAny, InputFieldDefinition,
+    InputObjectType, InterfaceType, ObjectType, ScalarType, SchemaFieldCommon, UnionType,
+    UnresolvedType,
 };
 use anyhow::Result;
 use apollo_compiler::{self};
@@ -20,7 +22,7 @@ const DEFAULT_SCALAR_TYPES: [(&str, &str); 5] = [
     ("ID", "A unique identifier."),
 ];
 
-pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
+pub(crate) fn resolve(schema: &str, config: &ShalomConfig) -> Result<SharedSchemaContext> {
     let mut initial_types = HashMap::new();
 
     // Add the default scalar types
@@ -53,7 +55,7 @@ pub(crate) fn resolve(schema: &str) -> Result<SharedSchemaContext> {
         debug!("Resolving type: {name:?}");
         match type_ {
             apollo_schema::ExtendedType::Object(object) => {
-                resolve_object(ctx.clone(), name.to_string(), object.clone());
+                resolve_object(ctx.clone(), name.to_string(), object.clone(), config)
             }
             apollo_schema::ExtendedType::Scalar(scalar) => {
                 let name = scalar.name.to_string();
@@ -100,11 +102,21 @@ fn resolve_object(
     context: SharedSchemaContext,
     name: String,
     origin: apollo_compiler::Node<apollo_schema::ObjectType>,
+    config: &ShalomConfig,
 ) {
     // Check if the type is already resolved
     if context.get_type(&name).is_some() {
         return;
     }
+
+    // Check for @genericResult directive if the feature is enabled
+    if config.enable_generic_results {
+        if let Some(directive) = origin.directives.get("genericResult") {
+            resolve_generic_result(context, name, origin.clone(), directive);
+            return;
+        }
+    }
+
     let mut fields = HashMap::new();
     for (name, field) in origin.fields.iter() {
         let name = name.to_string();
@@ -132,6 +144,91 @@ fn resolve_object(
         implements_interfaces,
     });
     context.add_object(name.clone(), object).unwrap();
+}
+
+fn resolve_generic_result(
+    context: SharedSchemaContext,
+    name: String,
+    origin: apollo_compiler::Node<apollo_schema::ObjectType>,
+    directive: &apollo_compiler::Node<apollo_compiler::ast::Directive>,
+) {
+    use apollo_compiler::ast::Value;
+
+    // Extract directive arguments
+    let data_field = directive
+        .arguments
+        .iter()
+        .find(|arg| arg.name.as_str() == "dataField")
+        .and_then(|arg| {
+            if let Value::String(s) = &*arg.value {
+                Some(s.as_str())
+            } else {
+                None
+            }
+        })
+        .unwrap_or("data")
+        .to_string();
+
+    let error_field = directive
+        .arguments
+        .iter()
+        .find(|arg| arg.name.as_str() == "errorField")
+        .and_then(|arg| {
+            if let Value::String(s) = &*arg.value {
+                Some(s.as_str())
+            } else {
+                None
+            }
+        })
+        .unwrap_or("error")
+        .to_string();
+
+    let error_fragment = directive
+        .arguments
+        .iter()
+        .find(|arg| arg.name.as_str() == "errorFragment")
+        .and_then(|arg| {
+            if let Value::String(s) = &*arg.value {
+                Some(s.to_string())
+            } else {
+                None
+            }
+        })
+        .expect(&format!(
+            "@genericResult directive on type '{}' must have errorFragment argument",
+            name
+        ));
+
+    // Get field types
+    let data_field_def = origin.fields.get(data_field.as_str()).expect(&format!(
+        "Field '{}' not found on type '{}'",
+        data_field, name
+    ));
+    let error_field_def = origin.fields.get(error_field.as_str()).expect(&format!(
+        "Field '{}' not found on type '{}'",
+        error_field, name
+    ));
+
+    let description = origin.description.as_ref().map(|v| v.to_string());
+
+    let data_type = UnresolvedType::new(&data_field_def.ty);
+    let error_type = UnresolvedType::new(&error_field_def.ty);
+
+    let generic_result = Arc::new(GenericResultType {
+        description,
+        name: name.clone(),
+        data_field,
+        error_field,
+        error_fragment,
+        data_type,
+        error_type,
+    });
+
+    context
+        .add_generic_result(name.clone(), generic_result.clone())
+        .unwrap();
+    // Note: add_type doesn't exist, but add_generic_result already adds it to the types map
+    // The SchemaTypesCtx::get_any method will find it through get_generic_result
 }
 
 #[allow(unused)]
@@ -262,7 +359,7 @@ mod tests {
             }
         "#
         .to_string();
-        let ctx = resolve(&schema).unwrap();
+        let ctx = resolve(&schema, &ShalomConfig::default()).unwrap();
 
         let object = ctx.get_type(&"Query".to_string());
         assert!(object.is_some());

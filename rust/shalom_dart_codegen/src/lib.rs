@@ -84,10 +84,44 @@ mod ext_jinja_fns {
             }
 
             SelectionKind::Object(object) => {
-                if object.is_optional {
-                    format!("{}?", object.common.path_name)
+                // Check if this object is a generic result type
+                if is_schema_typename_generic_result(&object.common.schema_typename, ctx) {
+                    let data_field =
+                        get_generic_result_data_field(&object.common.schema_typename, ctx);
+                    let error_field =
+                        get_generic_result_error_field(&object.common.schema_typename, ctx);
+
+                    // Find the data and error field selections
+                    let data_type = object
+                        .common
+                        .selections
+                        .iter()
+                        .find(|s| s.selection_common.name == data_field)
+                        .map(|data_sel| type_name_for_kind_impl(ctx, &data_sel.kind))
+                        .unwrap_or_else(|| "dynamic".to_string());
+
+                    let error_type = object
+                        .common
+                        .selections
+                        .iter()
+                        .find(|s| s.selection_common.name == error_field)
+                        .map(|error_sel| type_name_for_kind_impl(ctx, &error_sel.kind))
+                        .unwrap_or_else(|| "dynamic".to_string());
+
+                    let generic_type = format!("MutationResult<{}, {}>", data_type, error_type);
+
+                    if object.is_optional {
+                        format!("{}?", generic_type)
+                    } else {
+                        generic_type
+                    }
                 } else {
-                    object.common.path_name.clone()
+                    // Regular object, not a generic result
+                    if object.is_optional {
+                        format!("{}?", object.common.path_name)
+                    } else {
+                        object.common.path_name.clone()
+                    }
                 }
             }
             SelectionKind::Enum(enum_) => {
@@ -134,6 +168,11 @@ mod ext_jinja_fns {
                 let inner = resolve_schema_typename(&of_type.ty, of_type.is_optional, ctx);
                 format!("List<{inner}>")
             }
+            GraphQLAny::GenericResult(gr) => {
+                // Generic results should not appear in input types
+                // This is mainly for completeness
+                gr.name.clone()
+            }
             _ => panic!("Unsupported type: {:?}", ty),
         };
         // scalars optionals are handled in `resolve_scalar_typename`
@@ -141,6 +180,70 @@ mod ext_jinja_fns {
             typename.push('?')
         }
         typename
+    }
+
+    pub fn is_schema_typename_generic_result(
+        schema_typename: &str,
+        ctx: &SharedShalomGlobalContext,
+    ) -> bool {
+        ctx.schema_ctx
+            .get_type(&schema_typename.to_string())
+            .map(|t| matches!(t, GraphQLAny::GenericResult(_)))
+            .unwrap_or(false)
+    }
+
+    pub fn is_generic_result_type(type_name: &str, ctx: &SharedShalomGlobalContext) -> bool {
+        ctx.schema_ctx
+            .get_type(&type_name.to_string())
+            .map(|t| matches!(t, GraphQLAny::GenericResult(_)))
+            .unwrap_or(false)
+    }
+
+    pub fn resolve_generic_result_error_fragment(
+        generic_result: &str,
+        ctx: &SharedShalomGlobalContext,
+    ) -> String {
+        if let Some(gr) = ctx.schema_ctx.get_generic_result(generic_result) {
+            gr.error_fragment.clone()
+        } else {
+            "ErrorFragment".to_string()
+        }
+    }
+
+    /// Get the data field name for a generic result type
+    pub fn get_generic_result_data_field(
+        schema_typename: &str,
+        ctx: &SharedShalomGlobalContext,
+    ) -> String {
+        if let Some(gr) = ctx.schema_ctx.get_generic_result(schema_typename) {
+            gr.data_field.clone()
+        } else {
+            "data".to_string()
+        }
+    }
+
+    /// Get the error field name for a generic result type
+    pub fn get_generic_result_error_field(
+        schema_typename: &str,
+        ctx: &SharedShalomGlobalContext,
+    ) -> String {
+        if let Some(gr) = ctx.schema_ctx.get_generic_result(schema_typename) {
+            gr.error_field.clone()
+        } else {
+            "error".to_string()
+        }
+    }
+
+    /// Get the error fragment name for a generic result type
+    pub fn get_generic_result_error_fragment_name(
+        schema_typename: &str,
+        ctx: &SharedShalomGlobalContext,
+    ) -> String {
+        if let Some(gr) = ctx.schema_ctx.get_generic_result(schema_typename) {
+            gr.error_fragment.clone()
+        } else {
+            "ErrorFragment".to_string()
+        }
     }
 
     pub fn type_name_for_input_field(
@@ -355,10 +458,62 @@ struct FragmentEnv<'a> {
     env: Environment<'a>,
 }
 
-fn register_default_template_fns<'a>(
-    env: &mut Environment<'a>,
+fn register_default_template_fns(
+    env: &mut Environment<'_>,
     ctx: &SharedShalomGlobalContext,
 ) -> anyhow::Result<()> {
+    use ext_jinja_fns::{
+        get_generic_result_data_field, get_generic_result_error_field,
+        get_generic_result_error_fragment_name, is_generic_result_type,
+        is_schema_typename_generic_result, resolve_generic_result_error_fragment,
+    };
+
+    // Generic result helpers
+    let ctx_clone_gr0 = ctx.clone();
+    env.add_function(
+        "is_schema_typename_generic_result",
+        move |schema_typename: String| -> bool {
+            is_schema_typename_generic_result(&schema_typename, &ctx_clone_gr0)
+        },
+    );
+
+    let ctx_clone_gr1 = ctx.clone();
+    env.add_function("is_generic_result_type", move |type_name: String| -> bool {
+        is_generic_result_type(&type_name, &ctx_clone_gr1)
+    });
+
+    let ctx_clone_gr2 = ctx.clone();
+    env.add_function(
+        "resolve_generic_result_error_fragment",
+        move |generic_result: String| -> String {
+            resolve_generic_result_error_fragment(&generic_result, &ctx_clone_gr2)
+        },
+    );
+
+    let ctx_clone_gr3 = ctx.clone();
+    env.add_function(
+        "get_generic_result_data_field",
+        move |schema_typename: String| -> String {
+            get_generic_result_data_field(&schema_typename, &ctx_clone_gr3)
+        },
+    );
+
+    let ctx_clone_gr4 = ctx.clone();
+    env.add_function(
+        "get_generic_result_error_field",
+        move |schema_typename: String| -> String {
+            get_generic_result_error_field(&schema_typename, &ctx_clone_gr4)
+        },
+    );
+
+    let ctx_clone_gr5 = ctx.clone();
+    env.add_function(
+        "get_generic_result_error_fragment_name",
+        move |schema_typename: String| -> String {
+            get_generic_result_error_fragment_name(&schema_typename, &ctx_clone_gr5)
+        },
+    );
+
     env.set_undefined_behavior(minijinja::UndefinedBehavior::Strict);
     env.set_debug(true);
     env.add_template(

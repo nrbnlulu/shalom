@@ -58,8 +58,8 @@ pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
     }
 }
 
-pub fn parse_schema(schema: &str) -> anyhow::Result<SharedSchemaContext> {
-    schema::resolver::resolve(schema)
+pub fn parse_schema(schema: &str, config: &ShalomConfig) -> anyhow::Result<SharedSchemaContext> {
+    schema::resolver::resolve(schema, enable_generic_results)
 }
 
 pub fn parse_document(
@@ -423,7 +423,7 @@ pub fn parse_directory(
 
     // Parse schema
     let schema_raw = fs::read_to_string(&files.schema)?;
-    let schema_parsed = parse_schema(&schema_raw)?;
+    let schema_parsed = parse_schema(&schema_raw, config.enable_generic_results)?;
 
     // Create global context
     let global_ctx = ShalomGlobalContext::new(schema_parsed, config, files.schema.clone());

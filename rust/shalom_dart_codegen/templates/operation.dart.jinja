@@ -33,7 +33,10 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
 
 
 {% for name, obj in typedefs.objects | items %}
-    {{ selection_object_definition(obj) }}
+    {# Skip generating class if this is a generic result type #}
+    {% if not is_schema_typename_generic_result(obj.schema_typename) %}
+        {{ selection_object_definition(obj) }}
+    {% endif %}
 {% endfor %}
 
 // ------------ END OBJECT DEFINITIONS -------------
