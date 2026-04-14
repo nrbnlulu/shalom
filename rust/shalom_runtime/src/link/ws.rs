@@ -53,11 +53,8 @@ impl WebSocketLink {
 
 impl GraphQLLink for WebSocketLink {
     fn execute(&self, _request: Request) -> LinkStream {
-        let err = GraphQLResponse::TransportError(TransportError {
-            message: "WebSocketLink execution is not implemented yet".to_string(),
-            code: "UNSUPPORTED".to_string(),
-            details: None,
-        });
+       
+        self.
         Box::pin(tokio_stream::iter(vec![err]))
     }
 }
