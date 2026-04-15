@@ -1,7 +1,4 @@
-import 'normelized_cache.dart' show RecordID;
-
-import 'shalom_ctx.dart' show ShalomCtx;
-
+typedef HeadersType = List<(String, String)>;
 typedef JsonObject = Map<String, dynamic>;
 
 // ignore: constant_identifier_names
@@ -26,18 +23,12 @@ class Request {
 
 class RequestMeta<T> {
   final Request request;
-
-  /// if success returns the deserialized data + set of cache keys to subscribe to
-  final (T, Set<RecordID>) Function({
-    required JsonObject data,
-    required ShalomCtx ctx,
-  }) loadFn;
-  final (T, Set<RecordID>) Function(ShalomCtx ctx) fromCacheFn;
+  final T Function(JsonObject data) parseFn;
   const RequestMeta({
     required this.request,
-    required this.loadFn,
-    required this.fromCacheFn,
-  });
+    required this.parseFn,
+  }
+);
 }
 
 class Response {
@@ -116,8 +107,8 @@ class Some<T> implements Maybe<T> {
 
 class OperationContext<TVars> {
   final TVars? variables;
-  final ShalomCtx shalomCtx;
-  const OperationContext({this.variables, required this.shalomCtx});
+  
+  const OperationContext({this.variables, });
 }
 
 class ShalomTransportException implements Exception {

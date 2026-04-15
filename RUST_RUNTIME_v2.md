@@ -5,7 +5,7 @@
 The runtime is split into three layers:
 
 1. **`shalom_runtime`** — pure logic: cache, normalization, subscriptions. Zero networking.
-2. **`shalom_dart` (Rust crate)** — FRB bridge. Exposes an opaque `RuntimeHandle` that owns the runtime + transport bridge.
+2. **`dart/shalom/rust` (Rust crate)** — FRB bridge. Exposes an opaque `RuntimeHandle` that owns the runtime + transport bridge.
 3. **Dart (`ShalomRuntimeClient`)** — owns all networking (HTTP, WS). Routes transport via existing Dart links.
 
 The key invariant: **Rust never touches sockets.** Dart owns networking. Rust orchestrates.
@@ -24,7 +24,7 @@ The key invariant: **Rust never touches sockets.** Dart owns networking. Rust or
 └─────────────────────────────────────────────────────┘
                                                      │
 ┌─────────────────────────────────────────────────────┤
-│  shalom_dart (Rust crate)                           │
+│  dart/shalom/rust (Rust crate)                      │
 │                                                     │
 │  RuntimeHandle                                      │
 │  ├── ShalomRuntime       (cache + subscriptions)   │
@@ -184,26 +184,43 @@ of cache keys and fires whenever any of them changes.
 ### Flow
 
 ```
-1. widget calls: runtime.request("query Foo @subscribeable { ... }", vars)
-   → returns RuntimeResponse { data, operation_id, __used_refs: [...] }
+1. client.requestStream(requestable)
+   → link.request(req) → server response JSON
+   → rust: normalize(op, vars, data) → (used_refs, data_with_refs)
+   → yield GraphQLData(parseFn(data))     // typed result to caller
 
-2. widget renders initial data from `data`
+2. caller receives initial result + used_refs (from __used_refs in data)
 
-3. widget calls: sub_id = runtime.subscribe("Foo", used_refs)
-   → Rust stores (refs_set, op_ctx, vars) for this sub_id
+3. sub_id = runtime.subscribe(op_name, root_ref=null, used_refs)
+   → Rust stores (op_ctx, vars, current_refs_set, stream_sender)
    → returns SubscriptionId
 
-4. widget calls: runtime.listen_updates(sub_id)
-   → returns Stream<RuntimeResponse>
+4. listen_updates(sub_id) → Stream<RuntimeResponse>
 
-5. any cache write that touches keys in refs_set:
-   → rust re-reads "Foo" from cache
-   → emits new RuntimeResponse to sub_id stream
-   → widget StreamBuilder rebuilds
+5. any cache write that touches a key in current_refs_set:
+   → rust re-reads op from cache → (new_data, new_used_refs)
+   → current_refs_set ← new_used_refs   // atomic swap, handles stale-ref cleanup
+   → emit new_data to stream_sender
 
 6. widget unmounts: runtime.unsubscribe(sub_id)
-   → Rust removes ref counts → GC eligible
+   → Rust removes subscription → GC eligible
 ```
+
+### Stale-ref cleanup (no explicit hierarchy needed)
+
+When a list shrinks (e.g. episode goes from 3→2 characters), the character refs
+for the removed item are still in `current_refs_set`. The next cache write to the
+list slot fires; the re-read traverses only 2 characters; `new_used_refs` omits
+the removed character's refs. `current_refs_set` is swapped to `new_used_refs`,
+so future writes to the stale character refs no longer match the subscription.
+
+At worst one spurious notification fires before the swap completes (if the stale
+ref is written concurrently). The re-read produces the same correct result both
+times. This is acceptable — subscriptions are idempotent under repeated identical
+emits.
+
+**There is no need for prefix matching or parent-pointer tracking.** The re-read
+is the single source of truth for which refs are relevant.
 
 ### For WS GraphQL subscriptions
 
@@ -244,12 +261,57 @@ class ShalomRuntimeClient {
     _activeRequests[envelope.id] = sub;
   }
 
-  Future<RuntimeRequestResult> request({required String query, Map<String, dynamic>? variables});
+  // Typed streaming request. Takes a Requestable<T> (generated per operation).
+  // Fetches via the link, normalizes each response in Rust, yields GraphQLResponse<T>.
+  Stream<GraphQLResponse<T>> requestStream<T>(Requestable<T> requestable);
+
+  // Low-level: subscribe to cache-level updates for a set of refs.
+  // Returns a stream that emits whenever any watched ref changes in the Rust cache.
+  // The subscription's watched set is updated on every re-read (stale refs are
+  // automatically dropped — no caller action needed).
   Stream<Map<String, dynamic>> subscribe({required String operationId, required List<String> refs});
   Stream<Map<String, dynamic>> subscribeFragment({required String fragmentName, required String rootRef, required List<String> refs});
   Future<void> dispose();
 }
 ```
+
+### `requestStream` internal flow
+
+```
+requestStream(requestable)
+  meta = requestable.getRequestMeta()
+  for each GraphQLData from link.request(meta.request):
+    json = frb.request(handle, meta.request.query, meta.request.variables)
+         // ^ Rust normalizes; json contains __used_refs
+    yield GraphQLData(meta.parseFn(json))
+```
+
+The Rust `request` FRB function already handles the full normalize-and-respond
+cycle. `requestStream` is a thin Dart wrapper that:
+1. Converts `Requestable` → raw query + variables
+2. Calls the existing FRB `request` function
+3. Applies `parseFn` to the returned JSON for type safety
+
+### Testing with a dummy link
+
+For codegen tests, inject a `MockGraphQLLink` that yields preset
+`GraphQLResponse<JsonObject>` values. The real transport bridge (`_bindTransport`)
+handles routing regardless of link implementation.
+
+```dart
+class MockGraphQLLink extends GraphQLLink {
+  final List<GraphQLResponse<JsonObject>> responses;
+  MockGraphQLLink(this.responses);
+
+  @override
+  Stream<GraphQLResponse<JsonObject>> request({required Request request, HeadersType? headers}) =>
+      Stream.fromIterable(responses);
+}
+```
+
+Tests then call `ShalomRuntimeClient.init(schema, fragments, MockGraphQLLink([...]))`
+and exercise `requestStream` / `subscribe` against the live Rust runtime with
+controlled data.
 
 ---
 
@@ -335,30 +397,35 @@ FRB's `StreamSink<T>` is the Rust side of a Dart `Stream`. Rules:
 - [x] `RuntimeHandle` opaque type with FRB bindings
 - [x] `ShalomRuntimeClient` Dart wrapper with transport dispatch
 - [x] `push_response` / `push_transport_error` FRB functions
+- [x] **Fix `HostLink`**: added outbound `UnboundedSender<RequestEnvelope>`, implemented `take_request_stream()`, `send_response()`, `complete()`.
+- [x] **Decouple `ShalomRuntime` from link**: removed `link` field and parameter from `ShalomRuntime::init()`. Link wiring is now `RuntimeHandle`'s job.
+- [x] **Add `complete_transport` FRB function**: implemented to signal that a transport operation is done.
+- [x] **Implement WS sans-IO state machine**: implemented `graphql-transport-ws` pure Rust parser/framer in `ws.rs` and exposed to Dart via FRB.
+- [x] **Wire GC into runtime lifecycle**: `collect_garbage()` is now called during `unsubscribe` and when streams end.
 
 ### In Progress / Next
 
-- [ ] **Fix `HostLink`**: add outbound `UnboundedSender<RequestEnvelope>`, implement
-  `take_request_stream()`, `send_response()`, `complete()`. Current `host.rs`
-  references these but they are not fully implemented.
+- [ ] **`requestStream(Requestable<T>)`**: Add typed streaming request to
+  `ShalomRuntimeClient`. Takes a `Requestable<T>`, calls the existing FRB
+  `request` fn, applies `parseFn`, yields `Stream<GraphQLResponse<T>>`.
 
-- [ ] **Decouple `ShalomRuntime` from link**: remove `link: Option<Arc<dyn GraphQLLink>>`
-  field and the `link` parameter from `ShalomRuntime::init()`. The runtime must
-  not know about transport. Link wiring is `RuntimeHandle`'s job.
+- [ ] **`subscribe` ref-set update on re-read**: When a watched ref fires, Rust
+  must re-read the full operation from cache, replace `current_refs` with
+  `new_used_refs` (atomic swap), and emit the new result. This ensures stale refs
+  (e.g. removed list items) are automatically cleaned up without explicit hierarchy
+  tracking.
 
-- [ ] **Add `complete_transport` FRB function**: Dart must be able to signal that
-  a transport operation is done (drops the `tx`, closes the per-op rx stream).
+- [ ] **`MockGraphQLLink` test helper**: A `GraphQLLink` that yields a preset
+  sequence of `GraphQLResponse<JsonObject>`. Used by codegen tests to drive
+  `ShalomRuntimeClient` without a real network.
+
+- [ ] **Cache normalization tests** (using real Rust runtime + mock link): For
+  each codegen test case (`simple_scalars`, etc.), add a group that:
+  1. Inits `ShalomRuntimeClient` with `MockGraphQLLink`
+  2. Calls `requestStream(requestable)` → gets initial typed result
+  3. Pushes a second response through the mock link with changed data
+  4. Subscribes to cache updates → verifies typed result reflects new cache state
 
 - [ ] **Remove `HttpLink` / `HttpTransport` from `shalom_runtime`**: Dart owns
   all transport. These abstractions live in the wrong crate. Delete or move to a
   `shalom_native` crate for future native transport support.
-
-- [ ] **Implement WS sans-IO state machine**: a pure Rust
-  `graphql-transport-ws` message parser/framer that Dart's `ws_link.dart` can
-  call into for protocol handling. Dart keeps all socket I/O.
-
-- [ ] **Wire GC into runtime lifecycle**: call `collect_garbage()` periodically
-  (or after `unsubscribe`) based on `subscription_tracker` active keys.
-
-- [ ] **Migrate Dart tests**: update existing codegen tests to go through the
-  runtime metadata path (`__used_refs`) rather than Dart-side normalization.

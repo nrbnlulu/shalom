@@ -1,4 +1,4 @@
-use shalom_dart_codegen::{get_dart_command, CodegenOptions};
+use shalom_dart_codegen::{get_dart_command, get_flutter_command, CodegenOptions};
 use std::path::{Path, PathBuf};
 
 use log::info;
@@ -132,4 +132,52 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
 
     assert!(output.status.success(), "❌ Dart tests failed\n {out_std}");
     info!("✔️ Dart tests passed\n {out_std}");
+}
+
+/// Run `test_runtime.dart` for [usecase] using `flutter test` if that file
+/// exists. Skips silently when Flutter is unavailable or the file is absent.
+pub fn run_runtime_tests_for_usecase(usecase: &str) {
+    let runtime_test = tests_path()
+        .join(usecase)
+        .join("test_runtime.dart");
+
+    if !runtime_test.exists() {
+        return;
+    }
+
+    let flutter = match get_flutter_command() {
+        Ok(cmd) => cmd,
+        Err(e) => {
+            eprintln!("⚠️  Skipping runtime tests for {usecase}: {e}");
+            return;
+        }
+    };
+
+    let dart_test_root = tests_path().join("..");
+    let flutter_parts: Vec<&str> = flutter.split_whitespace().collect();
+
+    let mut flutter_test = if flutter_parts.len() > 1 {
+        let mut cmd = std::process::Command::new(flutter_parts[0]);
+        for part in &flutter_parts[1..] {
+            cmd.arg(part);
+        }
+        cmd
+    } else {
+        std::process::Command::new(&flutter)
+    };
+
+    flutter_test
+        .current_dir(&dart_test_root)
+        .arg("test")
+        .arg(format!("test/{usecase}/test_runtime.dart"));
+
+    info!("Running command: {flutter_test:?} inside {dart_test_root:?}");
+    let output = flutter_test.output().unwrap();
+    let out_std = String::from_utf8_lossy(&output.stdout);
+
+    assert!(
+        output.status.success(),
+        "❌ Runtime tests failed for {usecase}\n {out_std}"
+    );
+    info!("✔️ Runtime tests passed for {usecase}\n {out_std}");
 }

@@ -408,159 +408,14 @@ null
         {% endfor %}
     );
 
-    static void normalize$inCache(shalom_core.JsonObject data,
-            shalom_core.CacheUpdateContext ctx,
-            {% if op_variables_exist %} {{ operation_name }}Variables variables,{% endif %}
-            {% if not is_root_selection -%}
-                {
-                /// can be just the selection name but also may include serialized arguments.
-                required shalom_core.RecordID  this$fieldName,
-                required shalom_core.JsonObject? this$cached,
-                required shalom_core.JsonObject parent$record,
-                required shalom_core.RecordID parent$normalizedID
-                }
-            {% endif -%}
-            ){
-        {% if is_root_selection -%}
-            final String this$normalizedID = "ROOT_{{OP_TYPE}}";
-            final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord("ROOT_{{OP_TYPE}}");
-        {% else %}
-            String this$normalizedID;
-            shalom_core.JsonObject this$NormalizedRecord;
-            {# TODO:(#GH-85) #}
-            final shalom_core.RecordID? this$normalizedID_temp = data["id"] as shalom_core.RecordID?;
-            if (this$normalizedID_temp == null) {
-                this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-                {% if is_multi_type_member -%}
-                {# multi_type_members might previously stored a keyed object and thus the parent record might actually include an shalom_core.NormalizedObjectRecord #}
-                    if (parent$record[this$fieldName] is shalom_core.NormalizedObjectRecord) {
-                        // since it previously had and id and now we don't have, we can deduce that this is a different type
-                        // and we should create a new object directly.
-                        this$NormalizedRecord = {};
-                        parent$record[this$fieldName] = this$NormalizedRecord;
-                        ctx.addChangedRecord(this$normalizedID);
-                    } else {
-                        this$NormalizedRecord = shalom_core.getOrCreateObject(parent$record, this$fieldName);
-                    }
-                {% else %}
-                    this$NormalizedRecord = shalom_core.getOrCreateObject(parent$record, this$fieldName);
-                {% endif %}
-            } else {
-                {% if is_multi_type_member -%}
-                    {#
-                        since the object is normalized like so
-                        ```json
-                        "ROOT_QUERY.some_field": "{<id>, <typename>}"
-                        ```
-                        and subscribers that might listen to
-                        `<sometype>:<id>` key. and they won't get updated when the type / id has changed.
-                        since the subscribers does listen to the field path i.e `ROOT_QUERY.some_field` we emit changes on that path if an id or typename has changed.
-                    #}
-                    final normalized$objRecord = shalom_core.NormalizedObjectRecord(typename: data["__typename"], id: this$normalizedID_temp!);
-                    // if id or typename changed we mark the whole selection as changed.
-                    if (this$cached != null && this$cached is shalom_core.NormalizedObjectRecord && this$cached as shalom_core.NormalizedObjectRecord != normalized$objRecord){
-                        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-                    }
-                    parent$record[this$fieldName] = normalized$objRecord;
-                    this$normalizedID = normalized$objRecord.normalizedID();
-                {% else %}
-                    final normalized$objRecord = shalom_core.NormalizedObjectRecord(typename: "{{selection_object.schema_typename}}", id: this$normalizedID_temp!);
-                    if (this$cached != null && this$cached is shalom_core.NormalizedObjectRecord && this$cached as shalom_core.NormalizedObjectRecord != normalized$objRecord){
-                        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-                    }
-                    parent$record[this$fieldName] = normalized$objRecord;
-                    this$normalizedID = normalized$objRecord.normalizedID();
-                {% endif -%}
-                this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(this$normalizedID);
-                ctx.addDependantRecord(this$normalizedID);
-            }
-        {% endif -%}
-
-        {% for selection in selections -%}
-            final {{selection.name}}Normalized$Key = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
-            final {{selection.name}}$normalizedID = "${this$normalizedID}.${ {{selection.name}}Normalized$Key }";
-        {% endfor -%}
-        ctx.addDependantRecords(
-            {
-            {% for selection in selections -%}
-                {{selection.name}}$normalizedID  {{"," if not loop.last}}
-            {% endfor -%}
-            }
-        );
-        {% for selection in selections -%}
-            final {{selection.name}}$cached = this$NormalizedRecord[{{selection.name}}Normalized$Key];
-            final {{selection.name}}$raw = data["{{selection.name}}"];
-            if ({{selection.name}}$raw != null){
-                {{ normalize_selection_in_cache(
-                    selection,
-                    selection.name,
-                    selection.name + "$cached",
-                    selection.name + "$raw",
-                    selection.name + "Normalized$Key",
-                    selection.name + "$normalizedID",
-                    "this$NormalizedRecord",
-                    "this$normalizedID",
-                    "ctx"
-                ) }}
-            } else if (data.containsKey("{{selection.name}}") && {{selection.name}}$cached != null){
-                    // if this field was null in the response and key exists clear the cache.
-
-                    this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
-                    ctx.addChangedRecord({{selection.name}}$normalizedID);
-            } else {
-                // data is null and cache is null, do nothing.
-                this$NormalizedRecord[{{selection.name}}Normalized$Key] = null;
-            }
-        {% endfor -%}
-    }
-    {% if not is_root_selection -%}
-    static {{typename}} fromCached(shalom_core.NormalizedRecordData data, shalom_core.ShalomCtx ctx{% if op_variables_exist  %}, {{ operation_name }}Variables variables{% endif %}) {
-    {% else -%}
-    static {{typename}} fromCache(shalom_core.ShalomCtx ctx{% if object_like_needs_variables(selection_object) -%}, {{ operation_name }}Variables variables{% endif %}) {
-    {% endif -%}
-        {% if is_root_selection -%}
-            final data = ctx.getCachedRecord("ROOT_{{OP_TYPE}}");
-        {% endif -%}
-        {% for selection in selections if selection.name != "__typename" -%}
-            {% set raw_value_symbol = selection.name + '$raw' -%}
-            {% if selection.arguments | length > 0 -%}
-                final {{selection.name}}$cacheKey = {{ generate_cache_key_with_args(selection.name, selection.arguments) }};
-                final {{raw_value_symbol}} = data[{{selection.name}}$cacheKey];
-            {% else -%}
-                final {{raw_value_symbol}} = data["{{selection.name}}"];
-            {% endif -%}
-            final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_cache_macro(raw_value_symbol, selection, selection.is_optional, op_variables) }};
-        {% endfor -%}
-        return {{ typename }}(
-            {% for selection in selections -%}
-                {% if selection.name != "__typename" %}
-                    {{selection.name}}: {{selection.name}}$value,
-                {% endif %}
-            {% endfor -%}
-        );
-    }
     {% if is_root_selection -%}
-        static ({{typename}}, shalom_core.CacheUpdateContext)  fromResponseImpl(shalom_core.JsonObject data, shalom_core.ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}){
-            // first update the cache
-            final updateCtx = shalom_core.CacheUpdateContext(shalomContext: ctx);
-            {% set root_selection = selections | first -%}
-
-            normalize$inCache(
-                data,
-                updateCtx,
-                {{if_op_variables("variables")}}
-            );
-            ctx.invalidateRefs(updateCtx.changedRecords);
-            return (fromCache(ctx{{if_op_variables(", variables")}}), updateCtx);
+        {% set op_variables = context.operation.variables %}
+        {% set op_variables_exist = op_variables | length > 0 %}
+        static {{typename}} fromResponse(shalom_core.JsonObject data, {shalom_core.ShalomCtx? ctx{% if op_variables_exist %}, {{ operation_name }}Variables? variables{% endif %}}){
+            return fromJson(data);
         }
 
-        static {{typename}} fromResponse(shalom_core.JsonObject data, {shalom_core.ShalomCtx? ctx{% if op_variables_exist %}, required {{ operation_name }}Variables variables{% endif %}}){
-            // if ctx not provider we create dummy one
-            return fromResponseImpl(data, ctx ?? shalom_core.ShalomCtx.withCapacity(){{if_op_variables(", variables")}}).$1;
-        }
-
-        static const shalom_core.FromCache<{{typename}}> cacheBuilder =
-            {{typename}}FromCache();
+        static const shalom_core.FromCache<{{typename}}> cacheBuilder = {{typename}}FromCache();
     {% endif -%}
 
     @override
@@ -647,88 +502,20 @@ null
         String get $__typename;
         const {{ full_name }}();
 
-        static void normalize$inCache(
-            shalom_core.JsonObject data,
-            shalom_core.CacheUpdateContext ctx,
-            {% if op_variables_exist %}{{ operation_name }}Variables variables,{% endif %}
-            {
-                required shalom_core.RecordID this$fieldName,
-                required shalom_core.JsonObject parent$record,
-                required shalom_core.RecordID parent$normalizedID,
-                required shalom_core.JsonObject? this$cached
-            }
-        ) {
-            final typename = data["__typename"] as String;
-            final this$cachedResolved = this$cached is shalom_core.NormalizedObjectRecord ? ctx.shalomContext.getCachedRecord((this$cached as shalom_core.NormalizedObjectRecord).normalizedID()): this$cached;
-            switch (typename) {
-                {% for concrete in possible_concretes %}
-                    case "{{ concrete.schema_typename }}":
-                        {{ concrete.path_name }}.normalize$inCache(
-                            data,
-                            ctx,
-                            {% if op_variables_exist %}variables,{% endif %}
-                            this$cached: this$cachedResolved,
-                            this$fieldName: this$fieldName,
-                            parent$record: parent$record,
-                            parent$normalizedID: parent$normalizedID
-                        );
-                        break;
-                {% endfor %}
-                default:
-                    throw Exception("Unknown __typename: $typename for  {{ full_name }}");
-            }
-        }
-
-        static {{ full_name }} fromCached(shalom_core.NormalizedRecordData data, shalom_core.ShalomCtx ctx{% if op_variables_exist %}, {{ operation_name }}Variables variables{% endif %}) {
-            if (data is String) {
-                // Normalized {{ selection.schema_typename }}: data is the cache key, fetch the actual record
-                final actualData = ctx.getCachedRecord(data);
-                if (actualData == null) {
-                    throw Exception("Cached record not found for key: $data");
-                }
-                final typename = actualData["__typename"] as String;
-                switch (typename) {
-                    {% for concrete in possible_concretes %}
-                    case "{{ concrete.schema_typename }}":
-                        return {{ concrete.path_name }}.fromCached(actualData, ctx{{if_op_variables(", variables")}});
-                    {% endfor %}
-                    default:
-                        throw Exception("Unknown __typename: $typename for {{ selection.schema_typename }}");
-                }
-            } else {
-                // Non-normalized {{ selection.schema_typename }}: data is the shalom_core.JsonObject directly
-                final typename = data["__typename"] as String;
-                switch (typename) {
-                    {% for concrete in possible_concretes %}
-                    case "{{ concrete.schema_typename }}":
-                        return {{ concrete.path_name }}.fromCached(data, ctx{{if_op_variables(", variables")}});
-                    {% endfor %}
-                    default:
-                        throw Exception("Unknown __typename: $typename for {{ selection.schema_typename }}");
-                }
-            }
-        }
+        shalom_core.JsonObject toJson();
 
         @experimental
         static {{ full_name }} fromJson(shalom_core.JsonObject data) {
-            final typename = data["__typename"] as String;
-            switch (typename) {
-                {% for concrete in possible_concretes %}
-                case "{{ concrete.schema_typename }}":
-                    return {{ concrete.path_name }}.fromJson(data);
+            final typename = data['__typename'] as String;
+            switch(typename) {
+                {% for concrete in possible_concretes -%}
+                    case '{{ concrete.schema_typename }}':
+                        return {{ concrete.path_name }}.fromJson(data);
                 {% endfor %}
                 default:
-                    throw Exception("Unknown __typename: $typename for {{ full_name }}");
+                    throw Exception("Unknown typename $typename");
             }
         }
-
-        shalom_core.JsonObject toJson();
-
-        @override
-        bool operator ==(Object other);
-
-        @override
-        int get hashCode;
     }
 {% endmacro %}
 

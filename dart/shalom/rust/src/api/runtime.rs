@@ -4,8 +4,8 @@ use crate::frb_generated::StreamSink;
 use flutter_rust_bridge::frb;
 use tokio_stream::StreamExt;
 
-use shalom_runtime::link::host::HostLink;
-use shalom_runtime::link::{GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request};
+use shalom_runtime::sansio_protocols::host::HostLink;
+use shalom_runtime::sansio_protocols::{GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request};
 use shalom_runtime::{RuntimeConfig, RuntimeResponse, RuntimeResponseStream, ShalomRuntime, SubscriptionId};
 
 // Re-exported so that `frb_generated.rs` (which does `use crate::api::runtime::*`) can
@@ -145,7 +145,7 @@ pub fn push_transport_error(
     details_json: Option<String>,
 ) -> anyhow::Result<()> {
     let details = parse_optional_json(details_json)?;
-    let response = GraphQLResponse::TransportError(shalom_runtime::link::TransportError {
+    let response = GraphQLResponse::TransportError(shalom_runtime::sansio_protocols::TransportError {
         message,
         code,
         details,

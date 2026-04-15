@@ -1,9 +1,14 @@
 mod common;
-use crate::common::run_dart_tests_for_usecase;
+use crate::common::{run_dart_tests_for_usecase, run_runtime_tests_for_usecase};
 
 #[test]
 fn test_simple_scalars_dart() {
     run_dart_tests_for_usecase("simple_scalars");
+}
+
+#[test]
+fn test_simple_scalars_runtime_dart() {
+    run_runtime_tests_for_usecase("simple_scalars");
 }
 
 #[test]

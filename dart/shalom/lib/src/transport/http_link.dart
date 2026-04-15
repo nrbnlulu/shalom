@@ -37,7 +37,7 @@ class HttpLink extends GraphQLLink {
   /// [url] - The GraphQL endpoint URL
   /// [useGet] - Whether to use GET requests (only for queries, not mutations). Defaults to false.
   /// [defaultHeaders] - Default headers to include with every request
-  const HttpLink({
+  HttpLink({
     required this.transportLayer,
     required this.url,
     this.useGet = false,

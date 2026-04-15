@@ -114,15 +114,7 @@ class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_na
         );
         return shalom_core.RequestMeta(
             request: request,
-            loadFn: ({required shalom_core.JsonObject data, required shalom_core.ShalomCtx ctx}){
-                final (deserialized, updatedCtx) = {{operation_name}}Response.fromResponseImpl(data, ctx{% if op_variables_exist %}, variables{% endif %});
-                return (deserialized, updatedCtx.dependantRecords);
-            },
-            fromCacheFn: (shalom_core.ShalomCtx ctx){
-                final updateCtx = shalom_core.CacheUpdateContext(shalomContext: ctx);
-                final deserialized = {{operation_name}}Response.fromCache(ctx{% if op_variables_exist %}, variables{% endif %});
-                return (deserialized, updateCtx.dependantRecords);
-            }
+            parseFn: (shalom_core.JsonObject data) => {{operation_name}}Response.fromJson(data),
         );
     }
 }

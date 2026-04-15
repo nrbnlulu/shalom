@@ -1,3 +1,4 @@
+import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:test/test.dart';
 import "__graphql__/GetBoolean.shalom.dart";
 import "__graphql__/GetBooleanOptional.shalom.dart";
@@ -300,6 +301,147 @@ void main() {
       expect(a == b, true);
       final c = GetIntOptionalResponse.fromResponse({'intOptional': null});
       expect(a == c, false);
+    });
+  });
+
+  // Rust runtime handles normalization; these tests verify the generated
+  // FromCache implementation correctly reads back what the runtime provides.
+  group('Scalars Cache Normalization', () {
+    // collectRuntimeRefs parses the __used_refs the Rust runtime injects into responses.
+    test('collectRuntimeRefs extracts scalar refs', () {
+      final data = {
+        'string': 'hello',
+        '__used_refs': ['ROOT_QUERY_string'],
+      };
+      final refs = shalom_core.collectRuntimeRefs(data);
+      expect(refs, contains('ROOT_QUERY_string'));
+    });
+
+    // subscriberGlobalID is how the Rust runtime routes cache-update payloads
+    // to the correct FromCache handler — must match the operation name exactly.
+    test('String cacheBuilder subscriberGlobalID', () {
+      expect(GetStringResponse.cacheBuilder.subscriberGlobalID, 'GetString');
+    });
+    test('StringOptional cacheBuilder subscriberGlobalID', () {
+      expect(GetStringOptionalResponse.cacheBuilder.subscriberGlobalID,
+          'GetStringOptional');
+    });
+    test('ID cacheBuilder subscriberGlobalID', () {
+      expect(GetIDResponse.cacheBuilder.subscriberGlobalID, 'GetID');
+    });
+    test('IDOptional cacheBuilder subscriberGlobalID', () {
+      expect(GetIDOptionalResponse.cacheBuilder.subscriberGlobalID,
+          'GetIDOptional');
+    });
+    test('Float cacheBuilder subscriberGlobalID', () {
+      expect(GetFloatResponse.cacheBuilder.subscriberGlobalID, 'GetFloat');
+    });
+    test('FloatOptional cacheBuilder subscriberGlobalID', () {
+      expect(GetFloatOptionalResponse.cacheBuilder.subscriberGlobalID,
+          'GetFloatOptional');
+    });
+    test('Boolean cacheBuilder subscriberGlobalID', () {
+      expect(GetBooleanResponse.cacheBuilder.subscriberGlobalID, 'GetBoolean');
+    });
+    test('BooleanOptional cacheBuilder subscriberGlobalID', () {
+      expect(GetBooleanOptionalResponse.cacheBuilder.subscriberGlobalID,
+          'GetBooleanOptional');
+    });
+    test('Int cacheBuilder subscriberGlobalID', () {
+      expect(GetIntResponse.cacheBuilder.subscriberGlobalID, 'GetInt');
+    });
+    test('IntOptional cacheBuilder subscriberGlobalID', () {
+      expect(GetIntOptionalResponse.cacheBuilder.subscriberGlobalID,
+          'GetIntOptional');
+    });
+
+    // fromCache deserializes the payload the Rust runtime emits on a cache update.
+    test('String fromCache', () {
+      final result =
+          GetStringResponse.cacheBuilder.fromCache({'string': 'updated'});
+      expect(result.string, 'updated');
+    });
+
+    test('StringOptional fromCache (non-null)', () {
+      final result = GetStringOptionalResponse.cacheBuilder
+          .fromCache({'stringOptional': 'updated'});
+      expect(result.stringOptional, 'updated');
+    });
+
+    test('StringOptional fromCache (null)', () {
+      final result = GetStringOptionalResponse.cacheBuilder
+          .fromCache({'stringOptional': null});
+      expect(result.stringOptional, isNull);
+    });
+
+    test('ID fromCache', () {
+      final result =
+          GetIDResponse.cacheBuilder.fromCache({'idField': 'id-updated'});
+      expect(result.idField, 'id-updated');
+    });
+
+    test('IDOptional fromCache (non-null)', () {
+      final result = GetIDOptionalResponse.cacheBuilder
+          .fromCache({'idOptional': 'id-opt-updated'});
+      expect(result.idOptional, 'id-opt-updated');
+    });
+
+    test('IDOptional fromCache (null)', () {
+      final result =
+          GetIDOptionalResponse.cacheBuilder.fromCache({'idOptional': null});
+      expect(result.idOptional, isNull);
+    });
+
+    test('Float fromCache', () {
+      final result = GetFloatResponse.cacheBuilder.fromCache({'float': 9.99});
+      expect(result.float, 9.99);
+    });
+
+    test('FloatOptional fromCache (non-null)', () {
+      final result = GetFloatOptionalResponse.cacheBuilder
+          .fromCache({'floatOptional': 7.77});
+      expect(result.floatOptional, 7.77);
+    });
+
+    test('FloatOptional fromCache (null)', () {
+      final result = GetFloatOptionalResponse.cacheBuilder
+          .fromCache({'floatOptional': null});
+      expect(result.floatOptional, isNull);
+    });
+
+    test('Boolean fromCache', () {
+      final result =
+          GetBooleanResponse.cacheBuilder.fromCache({'boolean': false});
+      expect(result.boolean, false);
+    });
+
+    test('BooleanOptional fromCache (non-null)', () {
+      final result = GetBooleanOptionalResponse.cacheBuilder
+          .fromCache({'booleanOptional': true});
+      expect(result.booleanOptional, true);
+    });
+
+    test('BooleanOptional fromCache (null)', () {
+      final result = GetBooleanOptionalResponse.cacheBuilder
+          .fromCache({'booleanOptional': null});
+      expect(result.booleanOptional, isNull);
+    });
+
+    test('Int fromCache', () {
+      final result = GetIntResponse.cacheBuilder.fromCache({'intField': 999});
+      expect(result.intField, 999);
+    });
+
+    test('IntOptional fromCache (non-null)', () {
+      final result =
+          GetIntOptionalResponse.cacheBuilder.fromCache({'intOptional': 42});
+      expect(result.intOptional, 42);
+    });
+
+    test('IntOptional fromCache (null)', () {
+      final result =
+          GetIntOptionalResponse.cacheBuilder.fromCache({'intOptional': null});
+      expect(result.intOptional, isNull);
     });
   });
 }

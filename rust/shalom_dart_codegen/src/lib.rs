@@ -1101,6 +1101,38 @@ pub fn get_dart_command() -> Result<String, String> {
     Err("Dart SDK not found. Please install Dart SDK or FVM.".to_string())
 }
 
+/// Returns the command to invoke `flutter test`. Prefers `fvm flutter` when
+/// fvm is available, falls back to `flutter` directly.
+pub fn get_flutter_command() -> Result<String, String> {
+    // Prefer fvm flutter
+    if std::process::Command::new("fvm")
+        .arg("flutter")
+        .arg("--version")
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
+    {
+        return Ok("fvm flutter".to_string());
+    }
+
+    let flutter = if cfg!(target_os = "windows") {
+        "flutter.bat"
+    } else {
+        "flutter"
+    };
+
+    if std::process::Command::new(flutter)
+        .arg("--version")
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
+    {
+        return Ok(flutter.to_string());
+    }
+
+    Err("Flutter SDK not found. Please install Flutter SDK or FVM.".to_string())
+}
+
 fn format_generated_files(pwd: &Path) -> Result<()> {
     let dart_cmd = get_dart_command().map_err(|e| anyhow::anyhow!(e))?;
 

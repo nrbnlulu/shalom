@@ -78,10 +78,10 @@ person(name: "foo") {
 ```json
 {
     "ROOT_QUERY": {
-        "person_name:foo": {
+        "person(name: 'foo')": {
             "name": "foo",
-            "pets_first:5": [{ "name": "cocky" }, { "name": "baz" }],
-            "country_birth:true": { "$ref": "Country:4324" }
+            "pets(first: 5)": [{ "name": "cocky" }, { "name": "baz" }],
+            "country(birth:true)": { "$ref": "Country:4324" }
         }
     },
     "Country:4324": {
@@ -122,7 +122,7 @@ These are currently implemented in Dart and must be ported to Rust:
 
 ---
 
-## 3. `shalom_dart` crate
+## 3. `dart/shalom/rust` crate
 
 - Integrates Dart / Flutter with `shalom_runtime`
 - Uses `flutter_rust_bridge`

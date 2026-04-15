@@ -1,7 +1,7 @@
 use flutter_rust_bridge::frb;
 use serde_json::Value;
 
-use shalom_runtime::link::ws::{WsEvent, WsStateMachine};
+use shalom_runtime::sansio_protocols::ws::{WsEvent, WsStateMachine};
 
 /// Dart-facing wrapper around `WsStateMachine`.
 ///
@@ -59,7 +59,7 @@ impl WsLinkEvent {
                 payload_json: opt_value_to_json(payload),
             },
             WsEvent::OperationResponse { op_id, response } => {
-                use shalom_runtime::link::GraphQLResponse;
+                use shalom_runtime::sansio_protocols::GraphQLResponse;
                 match response {
                     GraphQLResponse::Data { data, errors, extensions } => {
                         Self::OperationResponse {

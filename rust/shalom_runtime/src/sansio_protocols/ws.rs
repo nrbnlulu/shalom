@@ -16,7 +16,7 @@ use std::collections::HashMap;
 use serde::Deserialize;
 use serde_json::{Map, Value, json};
 
-use crate::link::GraphQLResponse;
+use crate::sansio_protocols::GraphQLResponse;
 
 // ─── Incoming message types ──────────────────────────────────────────────────
 

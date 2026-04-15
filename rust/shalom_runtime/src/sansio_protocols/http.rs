@@ -3,7 +3,7 @@ use std::sync::Arc;
 use async_trait::async_trait;
 use serde_json::{Map, Value};
 
-use crate::link::{
+use crate::sansio_protocols::{
     GraphQLLink, GraphQLResponse, Headers, LinkStream, OperationType, Request, TransportError,
 };
 use tokio::sync::mpsc;

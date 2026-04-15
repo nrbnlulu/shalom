@@ -1,8 +1,8 @@
 use serde_json::{Value, json};
 use tokio_stream::StreamExt;
 
-use shalom_runtime::link::{GraphQLLink, GraphQLResponse, OperationType, Request};
-use shalom_runtime::link::host::HostLink;
+use shalom_runtime::sansio_protocols::{GraphQLLink, GraphQLResponse, OperationType, Request};
+use shalom_runtime::sansio_protocols::host::HostLink;
 use shalom_runtime::{RuntimeConfig, RuntimeResponseStream, ShalomRuntime};
 
 /// Build a `RuntimeResponseStream` wiring `link` to `runtime` for `query`.

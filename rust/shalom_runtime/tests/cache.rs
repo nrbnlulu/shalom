@@ -1830,4 +1830,54 @@ mod fragment_subscriptions {
         assert_eq!(obj.get("__ref_anchor"), Some(&json!(root_ref)));
         assert_eq!(obj.get("name"), Some(&json!("Milo")));
     }
+
+    #[test]
+    fn test_updates_across_different_operations() {
+        let schema = r#"
+            type Query { 
+                sharedValue: Int 
+                otherValue: String
+            }
+        "#;
+        
+        let operations = r#"
+            query Op1 { sharedValue }
+            query Op2 { sharedValue otherValue }
+        "#;
+
+        let schema_ctx = parse_schema(schema).unwrap();
+        let config = ShalomConfig::default();
+        let global_ctx = ShalomGlobalContext::new(schema_ctx, config, std::path::PathBuf::from(""));
+        let ops = parse_document(&global_ctx, operations, &std::path::PathBuf::from("ops.graphql")).unwrap();
+        
+        let op1 = ops.get("Op1").unwrap().clone();
+        let op2 = ops.get("Op2").unwrap().clone();
+
+        let runtime = ShalomRuntime::new(global_ctx);
+
+        let result1 = normalize(&runtime, &op1, serde_json::json!({ "sharedValue": 42 }), None);
+        assert!(result1.changed.contains("ROOT_QUERY_sharedValue"));
+        
+        let used_refs_vec: Vec<String> = result1.used_refs.into_iter().collect();
+        let sub_id = runtime.subscribe("Op1", None, used_refs_vec).unwrap();
+        let mut updates = runtime.subscription_stream(sub_id).unwrap();
+
+        let result2 = normalize(&runtime, &op2, serde_json::json!({ "sharedValue": 99, "otherValue": "hello" }), None);
+        assert!(result2.changed.contains("ROOT_QUERY_sharedValue"));
+        assert!(result2.changed.contains("ROOT_QUERY_otherValue"));
+
+        let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+        rt.block_on(async {
+            use tokio_stream::StreamExt;
+            let update = updates.next().await.expect("Stream should yield").expect("Stream error");
+            
+            assert_eq!(
+                update.data,
+                serde_json::json!({
+                    "sharedValue": 99
+                })
+            );
+            assert_eq!(update.operation_id.as_deref(), Some("Op1"));
+        });
+    }
 }

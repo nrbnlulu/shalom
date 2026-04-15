@@ -4,8 +4,8 @@ use async_trait::async_trait;
 use serde_json::{Map, Value, json};
 use tokio_stream::StreamExt;
 
-use shalom_runtime::link::http::{HttpLink, HttpMethod, HttpTransport};
-use shalom_runtime::link::{
+use shalom_runtime::sansio_protocols::http::{HttpLink, HttpMethod, HttpTransport};
+use shalom_runtime::sansio_protocols::{
     GraphQLLink, GraphQLResponse, Headers, OperationType, Request, TransportError,
 };
 

@@ -50,6 +50,29 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
     return RuntimeRequestResult(data: envelope.data, operationId: operationId);
   }
 
+  /// Fetch a typed result via [requestable]. The Rust runtime normalizes the
+  /// response into the cache and embeds [__used_refs] into the returned data.
+  /// Use [requestTyped] or [subscribeTyped] after this to set up cache updates.
+  Stream<core.GraphQLResponse<T>> requestStream<T>(
+    core.Requestable<T> requestable,
+  ) async* {
+    final meta = requestable.getRequestMeta();
+    final req = meta.request;
+    try {
+      final variablesJson =
+          req.variables.isEmpty ? null : jsonEncode(req.variables);
+      final payload = await frb.request(
+        handle: _handle,
+        query: req.query,
+        variablesJson: variablesJson,
+      );
+      final envelope = _RuntimeEnvelope.fromJson(payload);
+      yield core.GraphQLData(data: meta.parseFn(envelope.data));
+    } on Exception catch (e) {
+      yield core.LinkExceptionResponse([e]);
+    }
+  }
+
   Future<RuntimeTypedResult<T>> requestTyped<T>({
     required String query,
     Map<String, dynamic>? variables,
@@ -124,6 +147,28 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
       rootRef: rootRef,
       refs: refs.toList(growable: false),
     );
+  }
+
+  /// Like [subscribeTyped] but waits for the Rust subscription to be fully
+  /// registered before returning the update stream. This ensures that cache
+  /// writes triggered immediately after the call are guaranteed to be observed.
+  Future<Stream<T>> setupSubscription<T>({
+    required core.FromCache<T> fromCache,
+    required Iterable<String> refs,
+    String? rootRef,
+  }) async {
+    final subscriptionId = await frb.subscribe(
+      handle: _handle,
+      targetId: fromCache.subscriberGlobalID,
+      rootRef: rootRef,
+      refs: refs.toList(growable: false),
+    );
+    return frb
+        .listenUpdates(handle: _handle, subscriptionId: subscriptionId)
+        .map((payload) {
+      final envelope = _RuntimeEnvelope.fromJson(payload);
+      return fromCache.fromCache(envelope.data);
+    });
   }
 
   Stream<T> subscribeTyped<T>({
