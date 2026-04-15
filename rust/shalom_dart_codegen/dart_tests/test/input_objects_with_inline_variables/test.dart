@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 import '__graphql__/RefreshToken.shalom.dart';
 import '__graphql__/RefreshTokenWithVariable.shalom.dart';
 import '__graphql__/UpdateUser.shalom.dart';

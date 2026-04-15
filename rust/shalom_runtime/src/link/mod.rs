@@ -1,6 +1,6 @@
 pub mod host;
 pub mod http;
-pub mod ws;
+pub mod ws; // reserved for future native WS transport
 
 use std::pin::Pin;
 

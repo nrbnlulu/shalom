@@ -18,7 +18,6 @@ use shalom_core::shalom_config::ShalomConfig;
 use crate::cache::NormalizedCache;
 use crate::execution::ExecutionEngine;
 use crate::gc::{SubscriptionTracker, collect_garbage};
-use crate::link::{GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request};
 use crate::normalization::NormalizationResult;
 use crate::read::CacheReader;
 
@@ -108,7 +107,6 @@ pub struct ShalomRuntime {
     subscription_tracker: Arc<Mutex<SubscriptionTracker>>,
     operations: Arc<Mutex<HashMap<String, SharedOpCtx>>>,
     operation_vars: Arc<Mutex<HashMap<String, Map<String, Value>>>>,
-    link: Option<Arc<dyn GraphQLLink>>,
 }
 
 impl ShalomRuntime {
@@ -121,7 +119,6 @@ impl ShalomRuntime {
         schema_sdl: &str,
         fragments: Vec<String>,
         _config: RuntimeConfig,
-        link: Arc<dyn GraphQLLink>,
     ) -> anyhow::Result<Self> {
         let schema_ctx = parse_schema(schema_sdl)?;
         let config = ShalomConfig::default();
@@ -136,9 +133,7 @@ impl ShalomRuntime {
             register_fragments_with_duplicates(&global_ctx, &fragment, &path)?;
         }
 
-        let mut runtime = Self::new(global_ctx);
-        runtime.link = Some(link);
-        Ok(runtime)
+        Ok(Self::new(global_ctx))
     }
 
     pub fn with_cache(
@@ -152,7 +147,6 @@ impl ShalomRuntime {
             subscription_tracker: Arc::new(Mutex::new(SubscriptionTracker::new())),
             operations: Arc::new(Mutex::new(HashMap::new())),
             operation_vars: Arc::new(Mutex::new(HashMap::new())),
-            link: None,
         }
     }
 
@@ -342,66 +336,6 @@ impl ShalomRuntime {
         Ok(())
     }
 
-    pub async fn request(
-        &self,
-        query: String,
-        variables: Option<Map<String, Value>>,
-    ) -> anyhow::Result<RuntimeResponse> {
-        let mut stream = self.request_stream(query, variables)?;
-        match stream.next().await {
-            Some(Ok(response)) => Ok(response),
-            Some(Err(err)) => Err(err),
-            None => Err(anyhow::anyhow!("link stream closed without response")),
-        }
-    }
-
-    pub fn request_stream(
-        &self,
-        query: String,
-        variables: Option<Map<String, Value>>,
-    ) -> anyhow::Result<RuntimeResponseStream> {
-        let link = self
-            .link
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("runtime has no root link configured"))?;
-        let op_ctx = self.register_operation_from_query(&query)?;
-        let operation_name = op_ctx.get_operation_name().to_string();
-        let operation_id = operation_name.clone();
-        let variables_map = variables.clone().unwrap_or_default();
-        let request = Request {
-            query,
-            variables: variables_map,
-            operation_name,
-            operation_type: to_link_operation_type(op_ctx.op_type()),
-        };
-
-        let runtime = self.clone();
-        let vars = variables.clone();
-        let op_ctx = op_ctx.clone();
-        let stream = link
-            .execute(request, None)
-            .map(move |response| match response {
-                GraphQLResponse::Data { data, .. } => runtime
-                    .normalize(&op_ctx, Value::Object(data), vars.as_ref())
-                    .map(|result| RuntimeResponse {
-                        data: result.data,
-                        operation_id: Some(operation_id.clone()),
-                    }),
-                GraphQLResponse::Error { errors, .. } => Err(anyhow::anyhow!(
-                    "graphql errors: {}",
-                    serde_json::to_string(&errors)
-                        .unwrap_or_else(|_| "<unserializable>".to_string())
-                )),
-                GraphQLResponse::TransportError(err) => Err(anyhow::anyhow!(
-                    "transport error {}: {}",
-                    err.code,
-                    err.message
-                )),
-            });
-
-        Ok(Box::pin(stream))
-    }
-
     fn read_from_cache(
         &self,
         op_ctx: &SharedOpCtx,
@@ -475,7 +409,7 @@ impl ShalomRuntime {
             .ok_or_else(|| anyhow::anyhow!("operation {operation_id} not found"))
     }
 
-    fn register_operation_from_query(&self, query: &str) -> anyhow::Result<SharedOpCtx> {
+    pub fn register_operation_from_query(&self, query: &str) -> anyhow::Result<SharedOpCtx> {
         let global_ctx = self.engine.global_ctx();
         let path = PathBuf::from("request.graphql");
         let _ = register_fragments_with_duplicates(&global_ctx, query, &path)?;
@@ -518,18 +452,6 @@ fn register_fragments_with_duplicates(
             } else {
                 Err(err)
             }
-        }
-    }
-}
-
-fn to_link_operation_type(
-    op_type: shalom_core::operation::types::OperationType,
-) -> LinkOperationType {
-    match op_type {
-        shalom_core::operation::types::OperationType::Query => LinkOperationType::Query,
-        shalom_core::operation::types::OperationType::Mutation => LinkOperationType::Mutation,
-        shalom_core::operation::types::OperationType::Subscription => {
-            LinkOperationType::Subscription
         }
     }
 }

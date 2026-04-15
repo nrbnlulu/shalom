@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart' as dio;
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 
 class DioTransport extends ShalomHttpTransport {
   final dio.Dio dioClient;

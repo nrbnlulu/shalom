@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 import 'package:swapi/state.dart';
 import '__graphql__/GetFilms.shalom.dart';
 

@@ -1,6 +1,6 @@
 import "dart:async";
 
-import "package:shalom_core/shalom_core.dart";
+import "package:shalom/shalom.dart";
 import 'package:test/test.dart';
 import "__graphql__/schema.shalom.dart";
 import "__graphql__/UpdateUser.shalom.dart";

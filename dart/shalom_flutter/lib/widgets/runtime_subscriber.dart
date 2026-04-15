@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:shalom_core/shalom_core.dart' as shalom_core;
+import 'package:shalom/shalom.dart' as shalom_core;
 
 class RuntimeSubscriberWidget<T> extends StatefulWidget {
   final shalom_core.RuntimeSubscriptionClient runtime;

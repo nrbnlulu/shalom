@@ -5,7 +5,6 @@ use serde_json::{Map, Value, json};
 use tokio_stream::StreamExt;
 
 use shalom_runtime::link::http::{HttpLink, HttpMethod, HttpTransport};
-use shalom_runtime::link::ws::WebSocketLink;
 use shalom_runtime::link::{
     GraphQLLink, GraphQLResponse, Headers, OperationType, Request, TransportError,
 };
@@ -57,6 +56,7 @@ fn request(operation_type: OperationType) -> Request {
         variables: Map::new(),
         operation_name: "Test".to_string(),
         operation_type,
+        headers: None,
     }
 }
 
@@ -73,7 +73,7 @@ async fn http_link_uses_get_for_queries_when_configured() {
         vec![],
     );
 
-    let mut stream = link.execute(request(OperationType::Query), None);
+    let mut stream = link.execute(request(OperationType::Query));
     let _ = stream.next().await;
 
     let captured = captured.lock().expect("lock");
@@ -100,7 +100,7 @@ async fn http_link_posts_for_mutations_with_json_headers() {
         vec![],
     );
 
-    let mut stream = link.execute(request(OperationType::Mutation), None);
+    let mut stream = link.execute(request(OperationType::Mutation));
     let _ = stream.next().await;
 
     let captured = captured.lock().expect("lock");
@@ -129,7 +129,7 @@ async fn http_link_parses_error_response() {
         vec![],
     );
 
-    let mut stream = link.execute(request(OperationType::Query), None);
+    let mut stream = link.execute(request(OperationType::Query));
     let message = stream.next().await.expect("missing message");
 
     match message {
@@ -137,41 +137,5 @@ async fn http_link_parses_error_response() {
             assert_eq!(errors.len(), 1);
         }
         other => panic!("unexpected response: {other:?}"),
-    }
-}
-
-#[tokio::test]
-async fn websocket_link_returns_unsupported() {
-    let link = WebSocketLink::new(
-        Arc::new(DummyWsTransport {}),
-        "wss://example.test/graphql".to_string(),
-        None,
-        None,
-    );
-    let mut stream = link.execute(request(OperationType::Subscription), None);
-    let message = stream.next().await.expect("missing message");
-    match message {
-        GraphQLResponse::TransportError(err) => {
-            assert_eq!(err.code, "UNSUPPORTED");
-        }
-        other => panic!("unexpected response: {other:?}"),
-    }
-}
-
-struct DummyWsTransport;
-
-#[async_trait]
-impl shalom_runtime::link::ws::WebSocketTransport for DummyWsTransport {
-    async fn connect(
-        &self,
-        _url: &str,
-        _protocols: &[&str],
-        _headers: Option<Headers>,
-    ) -> Result<shalom_runtime::link::ws::TransportHandle, TransportError> {
-        Err(TransportError {
-            message: "not used".to_string(),
-            code: "UNSUPPORTED".to_string(),
-            details: None,
-        })
     }
 }

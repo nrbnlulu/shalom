@@ -11,6 +11,9 @@ tasks:
             - echo "{{.GREETING}}"
         silent: true
 
+    generate_rust_bindings:
+        cmds:
+            - cd dart/shalom && fvm exec flutter_rust_bridge_codegen generate
     fmt:
         cmds:
             - cd rust && cargo fmt
@@ -28,10 +31,10 @@ tasks:
             - cd rust && cargo clippy -- -D warnings
             - cd rust/shalom_dart_codegen/dart_tests && find . -type f -name "*.dart" -not -path "*/__graphql__/*" | xargs fvm exec dart format --set-exit-if-changed
             - cd rust/shalom_dart_codegen/dart_tests && fvm exec dart analyze ./test ./lib
-            - cd dart/shalom_core && fvm exec dart analyze ./test ./lib
+            - cd dart/shalom && fvm exec dart analyze ./test ./lib
             - typos
 
     test:
         cmds:
             - cd rust && cargo test -- --test-threads=2
-            - cd dart/shalom_core && fvm exec dart test
+            - cd dart/shalom && fvm exec dart test

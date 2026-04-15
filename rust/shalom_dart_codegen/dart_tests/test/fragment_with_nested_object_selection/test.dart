@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 import '__graphql__/GetPostWithDetails.shalom.dart';
 import '__graphql__/GetUserWithProfile.shalom.dart';
 

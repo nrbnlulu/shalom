@@ -11,7 +11,7 @@ import "{{ context.schema_import_path }}";
 {{ custom_scalar_imports_macro(context.custom_scalar_imports) }}
 {% set OP_TYPE = context.operation.op_ty.name|upper %}
 
-import 'package:shalom_core/shalom_core.dart' as shalom_core;
+import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
 

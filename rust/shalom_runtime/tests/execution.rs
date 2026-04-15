@@ -1,9 +1,49 @@
-use serde_json::json;
+use serde_json::{Value, json};
 use tokio_stream::StreamExt;
 
-use shalom_runtime::link::GraphQLResponse;
+use shalom_runtime::link::{GraphQLLink, GraphQLResponse, OperationType, Request};
 use shalom_runtime::link::host::HostLink;
-use shalom_runtime::{RuntimeConfig, ShalomRuntime};
+use shalom_runtime::{RuntimeConfig, RuntimeResponseStream, ShalomRuntime};
+
+/// Build a `RuntimeResponseStream` wiring `link` to `runtime` for `query`.
+/// This mirrors what `RuntimeHandle::request_stream` does in `shalom_dart`.
+fn make_request_stream(
+    runtime: &ShalomRuntime,
+    link: &HostLink,
+    query: String,
+) -> anyhow::Result<RuntimeResponseStream> {
+    let op_ctx = runtime.register_operation_from_query(&query)?;
+    let operation_name = op_ctx.get_operation_name().to_string();
+    let operation_id = operation_name.clone();
+    let request = Request {
+        query,
+        variables: Default::default(),
+        operation_name,
+        operation_type: OperationType::Query,
+        headers: None,
+    };
+
+    let runtime = runtime.clone();
+    let stream = link
+        .execute(request)
+        .map(move |response| match response {
+            GraphQLResponse::Data { data, .. } => runtime
+                .normalize(&op_ctx, Value::Object(data), None)
+                .map(|result| shalom_runtime::RuntimeResponse {
+                    data: result.data,
+                    operation_id: Some(operation_id.clone()),
+                }),
+            GraphQLResponse::Error { errors, .. } => Err(anyhow::anyhow!(
+                "graphql errors: {}",
+                serde_json::to_string(&errors).unwrap_or_default()
+            )),
+            GraphQLResponse::TransportError(err) => {
+                Err(anyhow::anyhow!("transport error {}: {}", err.code, err.message))
+            }
+        });
+
+    Ok(Box::pin(stream))
+}
 
 #[tokio::test]
 async fn request_stream_normalizes_each_response() {
@@ -11,13 +51,16 @@ async fn request_stream_normalizes_each_response() {
         type Query { value: Int }
     "#;
     let link = HostLink::new();
-    let runtime = ShalomRuntime::init(schema, Vec::new(), RuntimeConfig::default(), link.clone())
+    let runtime = ShalomRuntime::init(schema, Vec::new(), RuntimeConfig::default())
         .expect("runtime init");
     let mut outgoing = link.take_request_stream().expect("request stream missing");
 
-    let mut responses = runtime
-        .request_stream("query TestOp @subscribeable { value }".to_string(), None)
-        .expect("request stream");
+    let mut responses = make_request_stream(
+        &runtime,
+        &link,
+        "query TestOp @subscribeable { value }".to_string(),
+    )
+    .expect("request stream");
 
     let envelope = outgoing.next().await.expect("request missing");
     assert_eq!(envelope.request.operation_name, "TestOp");

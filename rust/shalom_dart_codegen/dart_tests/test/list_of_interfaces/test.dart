@@ -1,6 +1,6 @@
 import "dart:async";
 
-import "package:shalom_core/shalom_core.dart";
+import "package:shalom/shalom.dart";
 import 'package:test/test.dart';
 import "__graphql__/GetVehiclesRequired.shalom.dart";
 import "__graphql__/GetVehiclesOptional.shalom.dart";

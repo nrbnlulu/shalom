@@ -1,7 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, camel_case_types
 {% include "macros" %}
 {% if schema.context.types.inputs | length > 0 %}
-import 'package:shalom_core/shalom_core.dart' as shalom_core;
+import 'package:shalom/shalom.dart' as shalom_core;
 {% endif %}
 {{ custom_scalar_imports_macro(custom_scalar_imports) }}
 

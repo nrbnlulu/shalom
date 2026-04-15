@@ -2,7 +2,7 @@
 
 import "../schema.shalom.dart";
 
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
 

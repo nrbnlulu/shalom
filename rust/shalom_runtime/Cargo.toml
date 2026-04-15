@@ -14,3 +14,4 @@ tokio-stream = "0.1.17"
 anyhow = {workspace = true}
 async-trait = "0.1.89"
 async-stream = "0.3.6"
+dashmap = "6"

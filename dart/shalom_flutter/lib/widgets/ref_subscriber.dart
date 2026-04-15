@@ -2,7 +2,7 @@ import 'package:flutter/src/widgets/framework.dart';
 
 import 'package:flutter/widgets.dart'
     show BuildContext, StatelessWidget, Widget;
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 
 /// this is an internal widget and should prob not be used by users
 /// this would later on be used by the codegen to generate UseQuery / UseFragment widgets

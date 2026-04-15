@@ -1,5 +1,5 @@
 import 'package:riverpod/riverpod.dart';
-import 'package:shalom_core/shalom_core.dart'
+import 'package:shalom/shalom.dart'
     show ShalomClient, ShalomCtx, HttpLink;
 import 'package:dio/dio.dart' as dio;
 import 'package:swapi/__graphql__/GetFilms.shalom.dart' show RequestGetFilms;
