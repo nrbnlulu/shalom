@@ -32,6 +32,22 @@ type Query {
 }
 ''';
 
+// Queries use @subscribeable so the Rust runtime injects __used_refs into
+// responses, enabling cache-update subscriptions.
+const _qGetString = 'query GetString @subscribeable { string }';
+const _qGetStringOptional =
+    'query GetStringOptional @subscribeable { stringOptional }';
+const _qGetInt = 'query GetInt @subscribeable { intField }';
+const _qGetIntOptional = 'query GetIntOptional @subscribeable { intOptional }';
+const _qGetFloat = 'query GetFloat @subscribeable { float }';
+const _qGetFloatOptional =
+    'query GetFloatOptional @subscribeable { floatOptional }';
+const _qGetBoolean = 'query GetBoolean @subscribeable { boolean }';
+const _qGetBooleanOptional =
+    'query GetBooleanOptional @subscribeable { booleanOptional }';
+const _qGetID = 'query GetID @subscribeable { idField }';
+const _qGetIDOptional = 'query GetIDOptional @subscribeable { idOptional }';
+
 Future<ShalomRuntimeClient> _makeClient(
   List<GraphQLResponse<JsonObject>> responses,
 ) {
@@ -54,12 +70,12 @@ void main() {
         GraphQLData(data: {'string': 'updated'}),
       ]);
 
-      final meta = RequestGetString().getRequestMeta();
       final initial = await client.requestTyped(
-        query: meta.request.query,
+        query: _qGetString,
         fromCache: GetStringResponse.cacheBuilder,
       );
       expect(initial.data.string, 'initial');
+      expect(initial.refs, isNotEmpty);
 
       final updates = await client.setupSubscription(
         fromCache: GetStringResponse.cacheBuilder,
@@ -70,7 +86,7 @@ void main() {
       // which fires the subscription.
       unawaited(
         client.requestTyped(
-          query: meta.request.query,
+          query: _qGetString,
           fromCache: GetStringResponse.cacheBuilder,
         ),
       );
@@ -88,9 +104,8 @@ void main() {
         GraphQLData(data: {'stringOptional': 'world'}),
       ]);
 
-      final meta = RequestGetStringOptional().getRequestMeta();
       final initial = await client.requestTyped(
-        query: meta.request.query,
+        query: _qGetStringOptional,
         fromCache: GetStringOptionalResponse.cacheBuilder,
       );
       expect(initial.data.stringOptional, 'hello');
@@ -102,7 +117,7 @@ void main() {
 
       unawaited(
         client.requestTyped(
-          query: meta.request.query,
+          query: _qGetStringOptional,
           fromCache: GetStringOptionalResponse.cacheBuilder,
         ),
       );
@@ -119,9 +134,8 @@ void main() {
         GraphQLData(data: {'stringOptional': null}),
       ]);
 
-      final meta = RequestGetStringOptional().getRequestMeta();
       final initial = await client.requestTyped(
-        query: meta.request.query,
+        query: _qGetStringOptional,
         fromCache: GetStringOptionalResponse.cacheBuilder,
       );
       expect(initial.data.stringOptional, 'something');
@@ -133,7 +147,7 @@ void main() {
 
       unawaited(
         client.requestTyped(
-          query: meta.request.query,
+          query: _qGetStringOptional,
           fromCache: GetStringOptionalResponse.cacheBuilder,
         ),
       );
@@ -150,9 +164,8 @@ void main() {
         GraphQLData(data: {'intField': 42}),
       ]);
 
-      final meta = RequestGetInt().getRequestMeta();
       final initial = await client.requestTyped(
-        query: meta.request.query,
+        query: _qGetInt,
         fromCache: GetIntResponse.cacheBuilder,
       );
       expect(initial.data.intField, 1);
@@ -164,7 +177,7 @@ void main() {
 
       unawaited(
         client.requestTyped(
-          query: meta.request.query,
+          query: _qGetInt,
           fromCache: GetIntResponse.cacheBuilder,
         ),
       );
@@ -181,9 +194,8 @@ void main() {
         GraphQLData(data: {'float': 9.9}),
       ]);
 
-      final meta = RequestGetFloat().getRequestMeta();
       final initial = await client.requestTyped(
-        query: meta.request.query,
+        query: _qGetFloat,
         fromCache: GetFloatResponse.cacheBuilder,
       );
       expect(initial.data.float, 1.1);
@@ -195,7 +207,7 @@ void main() {
 
       unawaited(
         client.requestTyped(
-          query: meta.request.query,
+          query: _qGetFloat,
           fromCache: GetFloatResponse.cacheBuilder,
         ),
       );
@@ -212,9 +224,8 @@ void main() {
         GraphQLData(data: {'boolean': false}),
       ]);
 
-      final meta = RequestGetBoolean().getRequestMeta();
       final initial = await client.requestTyped(
-        query: meta.request.query,
+        query: _qGetBoolean,
         fromCache: GetBooleanResponse.cacheBuilder,
       );
       expect(initial.data.boolean, true);
@@ -226,7 +237,7 @@ void main() {
 
       unawaited(
         client.requestTyped(
-          query: meta.request.query,
+          query: _qGetBoolean,
           fromCache: GetBooleanResponse.cacheBuilder,
         ),
       );
@@ -243,9 +254,8 @@ void main() {
         GraphQLData(data: {'idField': 'id-2'}),
       ]);
 
-      final meta = RequestGetID().getRequestMeta();
       final initial = await client.requestTyped(
-        query: meta.request.query,
+        query: _qGetID,
         fromCache: GetIDResponse.cacheBuilder,
       );
       expect(initial.data.idField, 'id-1');
@@ -257,7 +267,7 @@ void main() {
 
       unawaited(
         client.requestTyped(
-          query: meta.request.query,
+          query: _qGetID,
           fromCache: GetIDResponse.cacheBuilder,
         ),
       );
@@ -274,9 +284,8 @@ void main() {
         GraphQLData(data: {'intOptional': null}),
       ]);
 
-      final meta = RequestGetIntOptional().getRequestMeta();
       final initial = await client.requestTyped(
-        query: meta.request.query,
+        query: _qGetIntOptional,
         fromCache: GetIntOptionalResponse.cacheBuilder,
       );
       expect(initial.data.intOptional, 10);
@@ -288,7 +297,7 @@ void main() {
 
       unawaited(
         client.requestTyped(
-          query: meta.request.query,
+          query: _qGetIntOptional,
           fromCache: GetIntOptionalResponse.cacheBuilder,
         ),
       );
@@ -305,9 +314,8 @@ void main() {
         GraphQLData(data: {'booleanOptional': null}),
       ]);
 
-      final meta = RequestGetBooleanOptional().getRequestMeta();
       final initial = await client.requestTyped(
-        query: meta.request.query,
+        query: _qGetBooleanOptional,
         fromCache: GetBooleanOptionalResponse.cacheBuilder,
       );
       expect(initial.data.booleanOptional, true);
@@ -319,7 +327,7 @@ void main() {
 
       unawaited(
         client.requestTyped(
-          query: meta.request.query,
+          query: _qGetBooleanOptional,
           fromCache: GetBooleanOptionalResponse.cacheBuilder,
         ),
       );
@@ -336,9 +344,8 @@ void main() {
         GraphQLData(data: {'floatOptional': null}),
       ]);
 
-      final meta = RequestGetFloatOptional().getRequestMeta();
       final initial = await client.requestTyped(
-        query: meta.request.query,
+        query: _qGetFloatOptional,
         fromCache: GetFloatOptionalResponse.cacheBuilder,
       );
       expect(initial.data.floatOptional, 3.14);
@@ -350,7 +357,7 @@ void main() {
 
       unawaited(
         client.requestTyped(
-          query: meta.request.query,
+          query: _qGetFloatOptional,
           fromCache: GetFloatOptionalResponse.cacheBuilder,
         ),
       );
@@ -367,9 +374,8 @@ void main() {
         GraphQLData(data: {'idOptional': null}),
       ]);
 
-      final meta = RequestGetIDOptional().getRequestMeta();
       final initial = await client.requestTyped(
-        query: meta.request.query,
+        query: _qGetIDOptional,
         fromCache: GetIDOptionalResponse.cacheBuilder,
       );
       expect(initial.data.idOptional, 'some-id');
@@ -381,7 +387,7 @@ void main() {
 
       unawaited(
         client.requestTyped(
-          query: meta.request.query,
+          query: _qGetIDOptional,
           fromCache: GetIDOptionalResponse.cacheBuilder,
         ),
       );

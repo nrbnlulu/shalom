@@ -87,7 +87,7 @@ pub fn init_runtime(
     fragment_sdls: Vec<String>,
     config_json: Option<String>,
 ) -> anyhow::Result<RuntimeHandle> {
-    let link = HostLink::new();
+    let link = Arc::new(HostLink::new());
     let config = parse_config(config_json)?;
     let runtime = ShalomRuntime::init(&schema_sdl, fragment_sdls, config)?;
     Ok(RuntimeHandle { runtime, link })

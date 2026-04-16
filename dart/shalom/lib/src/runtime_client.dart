@@ -198,7 +198,10 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
     _disposed = true;
     final stream = _requestStream;
     if (stream != null) {
-      await stream.cancel();
+      // Don't await: the Rust listen_requests task is blocked on its next
+      // item and won't acknowledge the cancellation until the channel closes.
+      // Fire-and-forget — the FRB runtime will clean up when the handle drops.
+      unawaited(stream.cancel());
     }
     final subs = _activeRequests.values.toList(growable: false);
     _activeRequests.clear();
