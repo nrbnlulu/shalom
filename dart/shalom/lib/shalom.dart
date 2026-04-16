@@ -1,5 +1,8 @@
 
 
+import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart' show ExternalLibrary;
+import 'package:shalom/src/rust/frb_generated.dart' as rs;
+
 import 'src/normelized_cache.dart';
 import 'src/shalom_core_base.dart';
 import 'src/shalom_ctx.dart' show ShalomCtx;
@@ -75,4 +78,11 @@ JsonObject getOrCreateObject(JsonObject onObject, RecordID field) {
     onObject[field] = ret;
     return ret;
   }
+}
+
+Future<void> init(String nativeLibPath) async {
+    await rs.RustLib.init(
+      externalLibrary: ExternalLibrary.open(nativeLibPath),
+    );
+
 }

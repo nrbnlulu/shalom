@@ -5,8 +5,9 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:shalom/shalom.dart';
+import 'package:shalom/shalom.dart' as shalom;
+import 'package:test/test.dart';
 
 String get _nativeLibPath {
   if (Platform.isLinux) return 'build/native_assets/linux/libshalom.so';
@@ -23,7 +24,7 @@ class _MockLink extends GraphQLLink {
   final Queue<GraphQLResponse<JsonObject>> _queue;
 
   _MockLink(List<GraphQLResponse<JsonObject>> responses)
-      : _queue = Queue.from(responses);
+    : _queue = Queue.from(responses);
 
   @override
   Stream<GraphQLResponse<JsonObject>> request({
@@ -118,9 +119,7 @@ Future<ShalomRuntimeClient> _makeClient(
 
 void main() {
   setUpAll(() async {
-    await RustLib.init(
-      externalLibrary: ExternalLibrary.open(_nativeLibPath),
-    );
+    await shalom.init(_nativeLibPath);
   });
 
   test('runtime initialises without error', () async {
@@ -130,13 +129,14 @@ void main() {
 
   test('requestTyped returns normalized data from cache', () async {
     final client = await _makeClient([
-      GraphQLData(data: {
-        'user': {'id': '1', 'name': 'Alice'},
-      }),
+      GraphQLData(
+        data: {
+          'user': {'id': '1', 'name': 'Alice'},
+        },
+      ),
     ]);
 
-    const query =
-        'query GetUser @subscribeable { user(id: "1") { id name } }';
+    const query = 'query GetUser @subscribeable { user(id: "1") { id name } }';
     const fromCache = _UserFromCache('GetUser');
 
     final result = await client.requestTyped(
@@ -165,13 +165,17 @@ void main() {
     () async {
       final client = await _makeClient([
         // First request (GetUser) — initial data.
-        GraphQLData(data: {
-          'user': {'id': '1', 'name': 'Alice'},
-        }),
+        GraphQLData(
+          data: {
+            'user': {'id': '1', 'name': 'Alice'},
+          },
+        ),
         // Second request (GetUserDetails) — updated name on the same entity.
-        GraphQLData(data: {
-          'user': {'id': '1', 'name': 'Bob'},
-        }),
+        GraphQLData(
+          data: {
+            'user': {'id': '1', 'name': 'Bob'},
+          },
+        ),
       ]);
 
       const qGetUser =
@@ -204,8 +208,7 @@ void main() {
         ),
       );
 
-      final updated =
-          await updates.first.timeout(const Duration(seconds: 5));
+      final updated = await updates.first.timeout(const Duration(seconds: 5));
       expect(updated['name'], 'Bob');
 
       await client.dispose();
@@ -218,60 +221,58 @@ void main() {
   // GetUser watches "User:1" entity keys. GetPost writes to "Post:1" entity
   // keys. These sets are disjoint => the GetUser subscription must NOT fire.
   // -------------------------------------------------------------------------
-  test(
-    'two unrelated operations do not cross-trigger subscriptions',
-    () async {
-      final client = await _makeClient([
-        // GetUser — sets up the subscription we are watching.
-        GraphQLData(data: {
+  test('two unrelated operations do not cross-trigger subscriptions', () async {
+    final client = await _makeClient([
+      // GetUser — sets up the subscription we are watching.
+      GraphQLData(
+        data: {
           'user': {'id': '1', 'name': 'Alice'},
-        }),
-        // GetPost — a completely different entity; should NOT wake GetUser.
-        GraphQLData(data: {
+        },
+      ),
+      // GetPost — a completely different entity; should NOT wake GetUser.
+      GraphQLData(
+        data: {
           'post': {'id': '1', 'title': 'Hello World'},
-        }),
-      ]);
+        },
+      ),
+    ]);
 
-      const qGetUser =
-          'query GetUser @subscribeable { user(id: "1") { id name } }';
-      const qGetPost =
-          'query GetPost @subscribeable { post(id: "1") { id title } }';
-      const fromCacheGetUser = _UserFromCache('GetUser');
-      const fromCacheGetPost = _PostFromCache();
+    const qGetUser =
+        'query GetUser @subscribeable { user(id: "1") { id name } }';
+    const qGetPost =
+        'query GetPost @subscribeable { post(id: "1") { id title } }';
+    const fromCacheGetUser = _UserFromCache('GetUser');
+    const fromCacheGetPost = _PostFromCache();
 
-      // Normalize the user response.
-      final initial = await client.requestTyped(
-        query: qGetUser,
-        fromCache: fromCacheGetUser,
-      );
-      expect(initial.refs, isNotEmpty);
+    // Normalize the user response.
+    final initial = await client.requestTyped(
+      query: qGetUser,
+      fromCache: fromCacheGetUser,
+    );
+    expect(initial.refs, isNotEmpty);
 
-      final updates = await client.setupSubscription(
-        fromCache: fromCacheGetUser,
-        refs: initial.refs,
-      );
+    final updates = await client.setupSubscription(
+      fromCache: fromCacheGetUser,
+      refs: initial.refs,
+    );
 
-      // Normalize a Post — unrelated entity.
-      unawaited(
-        client.requestTyped(
-          query: qGetPost,
-          fromCache: fromCacheGetPost,
-        ),
-      );
+    // Normalize a Post — unrelated entity.
+    unawaited(
+      client.requestTyped(query: qGetPost, fromCache: fromCacheGetPost),
+    );
 
-      // Give the runtime time to process and confirm NO update was emitted.
-      bool gotUpdate = false;
-      final sub = updates.listen((_) => gotUpdate = true);
-      await Future<void>.delayed(const Duration(milliseconds: 500));
-      await sub.cancel();
+    // Give the runtime time to process and confirm NO update was emitted.
+    bool gotUpdate = false;
+    final sub = updates.listen((_) => gotUpdate = true);
+    await Future<void>.delayed(const Duration(milliseconds: 500));
+    await sub.cancel();
 
-      expect(
-        gotUpdate,
-        isFalse,
-        reason: 'Post write should not trigger User subscription',
-      );
+    expect(
+      gotUpdate,
+      isFalse,
+      reason: 'Post write should not trigger User subscription',
+    );
 
-      await client.dispose();
-    },
-  );
+    await client.dispose();
+  });
 }
