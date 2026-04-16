@@ -1,4 +1,4 @@
-package com.example.shalom_dart_example
+package com.example.shalom_example
 
 import io.flutter.embedding.android.FlutterActivity
 

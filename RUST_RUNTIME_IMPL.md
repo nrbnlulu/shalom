@@ -372,7 +372,7 @@ fragment FriendFragment on Person @subscribeable {
 - Done: Rust cache tests covering all listed use cases (scalars, enums, objects, unions/interfaces, fragments, lists, inputs).
 - Done: cache reader for rebuilding responses from normalized cache + runtime subscription updates (`subscribe` + `drain_updates`).
 - Done: runtime init from schema SDL + fragment SDLs with host link stub for request/response orchestration.
-- Done: request/subscribe public API exposed via `shalom_dart` (FRB entrypoints).
+- Done: request/subscribe public API exposed via `dart/shalom` (FRB entrypoints).
 - Done: moved link modules into `shalom_runtime` (HTTP implemented, WS stubbed).
 - Done: runtime request streaming (link → normalize → response stream) with tests.
 - Partial: GC helpers exist (subscription tracker + eviction), not yet wired into runtime.

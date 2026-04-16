@@ -2,9 +2,18 @@
 
 import 'dart:async';
 import 'dart:collection';
+import 'dart:io';
 
+import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shalom/shalom.dart';
+
+String get _nativeLibPath {
+  if (Platform.isLinux) return 'build/native_assets/linux/libshalom.so';
+  if (Platform.isMacOS) return 'build/native_assets/macos/libshalom.dylib';
+  if (Platform.isWindows) return 'build/native_assets/windows/shalom.dll';
+  throw UnsupportedError('Unsupported platform: ${Platform.operatingSystem}');
+}
 
 // ---------------------------------------------------------------------------
 // Inline mock link — no codegen helpers needed in this package.
@@ -109,7 +118,9 @@ Future<ShalomRuntimeClient> _makeClient(
 
 void main() {
   setUpAll(() async {
-    await RustLib.init();
+    await RustLib.init(
+      externalLibrary: ExternalLibrary.open(_nativeLibPath),
+    );
   });
 
   test('runtime initialises without error', () async {

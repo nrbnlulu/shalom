@@ -1,5 +1,5 @@
 [package]
-name = "shalom_dart"
+name = "shalom"
 version = "0.1.0"
 edition = "2021"
 
