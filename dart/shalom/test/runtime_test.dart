@@ -1,18 +1,15 @@
-// ignore_for_file: avoid_print
-
 import 'dart:async';
 import 'dart:collection';
 import 'dart:io';
 
-import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:shalom/shalom.dart';
 import 'package:shalom/shalom.dart' as shalom;
 import 'package:test/test.dart';
 
 String get _nativeLibPath {
-  if (Platform.isLinux) return 'build/native_assets/linux/libshalom.so';
-  if (Platform.isMacOS) return 'build/native_assets/macos/libshalom.dylib';
-  if (Platform.isWindows) return 'build/native_assets/windows/shalom.dll';
+  if (Platform.isLinux) return '.dart_tool/lib/libshalom_ffi.so';
+  if (Platform.isMacOS) return '.dart_tool/lib/libshalom_ffi.dylib';
+  if (Platform.isWindows) return '.dart_tool/lib/shalom_ffi.dll';
   throw UnsupportedError('Unsupported platform: ${Platform.operatingSystem}');
 }
 
@@ -256,15 +253,20 @@ void main() {
       refs: initial.refs,
     );
 
-    // Normalize a Post — unrelated entity.
-    unawaited(
-      client.requestTyped(query: qGetPost, fromCache: fromCacheGetPost),
-    );
+    // Normalize a Post — unrelated entity. Must run BEFORE subscribing to
+    // `updates`: FRB holds the handle lock for the entire listen_updates
+    // async function, so starting the listener first would deadlock requestTyped.
+    // The Rust subscription is already registered and its channel is live, so
+    // any incorrect notification is buffered and detected after we subscribe.
+    await client.requestTyped(query: qGetPost, fromCache: fromCacheGetPost);
 
-    // Give the runtime time to process and confirm NO update was emitted.
+    // Now subscribe and check: no buffered update should be present.
+    // Do NOT await sub.cancel() — that waits for the Rust listen_updates loop
+    // to exit, which blocks until the subscription channel receives data.
+    // Instead cancel without awaiting (mirroring how Stream.first works).
     bool gotUpdate = false;
     final sub = updates.listen((_) => gotUpdate = true);
-    await Future<void>.delayed(const Duration(milliseconds: 500));
+    await Future<void>.delayed(const Duration(milliseconds: 100));
     await sub.cancel();
 
     expect(
