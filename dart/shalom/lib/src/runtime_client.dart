@@ -59,8 +59,9 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
     final meta = requestable.getRequestMeta();
     final req = meta.request;
     try {
-      final variablesJson =
-          req.variables.isEmpty ? null : jsonEncode(req.variables);
+      final variablesJson = req.variables.isEmpty
+          ? null
+          : jsonEncode(req.variables);
       final payload = await frb.request(
         handle: _handle,
         query: req.query,
@@ -89,86 +90,32 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
     );
   }
 
-  Stream<Map<String, dynamic>> subscribe({
-    required String operationId,
-    required List<String> refs,
-  }) async* {
-    final subscriptionId = await frb.subscribe(
-      handle: _handle,
-      targetId: operationId,
-      rootRef: null,
-      refs: refs,
-    );
-    final updates = frb.listenUpdates(
-      handle: _handle,
-      subscriptionId: subscriptionId,
-    );
-    await for (final payload in updates) {
-      final envelope = _RuntimeEnvelope.fromJson(payload);
-      yield envelope.data;
-    }
-  }
-
-  Stream<Map<String, dynamic>> subscribeFragment({
-    required String fragmentName,
-    required String rootRef,
-    required List<String> refs,
-  }) async* {
-    final subscriptionId = await frb.subscribe(
-      handle: _handle,
-      targetId: fragmentName,
-      rootRef: rootRef,
-      refs: refs,
-    );
-    final updates = frb.listenUpdates(
-      handle: _handle,
-      subscriptionId: subscriptionId,
-    );
-    await for (final payload in updates) {
-      final envelope = _RuntimeEnvelope.fromJson(payload);
-      yield envelope.data;
-    }
-  }
-
-  @override
-  Stream<core.JsonObject> subscribeToRefs({
-    required String targetId,
-    required Iterable<String> refs,
-    String? rootRef,
-  }) {
-    if (rootRef == null) {
-      return subscribe(
-        operationId: targetId,
-        refs: refs.toList(growable: false),
-      );
-    }
-    return subscribeFragment(
-      fragmentName: targetId,
-      rootRef: rootRef,
-      refs: refs.toList(growable: false),
-    );
-  }
 
   /// Like [subscribeTyped] but waits for the Rust subscription to be fully
   /// registered before returning the update stream. This ensures that cache
   /// writes triggered immediately after the call are guaranteed to be observed.
-  Future<Stream<T>> setupSubscription<T>({
+  Stream<T> subscribe<T>({
     required core.FromCache<T> fromCache,
     required Iterable<String> refs,
     String? rootRef,
-  }) async {
-    final subscriptionId = await frb.subscribe(
+  }) async* {
+    final subId = frb.initSubscription(
       handle: _handle,
       targetId: fromCache.subscriberGlobalID,
       rootRef: rootRef,
       refs: refs.toList(growable: false),
     );
-    return frb
-        .listenUpdates(handle: _handle, subscriptionId: subscriptionId)
-        .map((payload) {
-      final envelope = _RuntimeEnvelope.fromJson(payload);
-      return fromCache.fromCache(envelope.data);
-    });
+    try {
+      await for (final res in frb.subscribe(
+        handle: _handle,
+        subscriptionId: subId,
+      )) {
+        final envelope = _RuntimeEnvelope.fromJson(res);
+        yield fromCache.fromCache(envelope.data);
+      }
+    } finally {
+      await frb.unsubscribe(subscriptionId: subId, handle: _handle);
+    }
   }
 
   Stream<T> subscribeTyped<T>({

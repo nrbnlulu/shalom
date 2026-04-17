@@ -228,7 +228,7 @@ impl ShalomRuntime {
         id
     }
 
-    pub fn unsubscribe(&self, id: SubscriptionId) {
+    pub fn unsubscribe(&self, id: &SubscriptionId) {
         let keys = {
             let mut manager = self
                 .subscriptions
@@ -255,7 +255,7 @@ impl ShalomRuntime {
         collect_garbage(&mut cache, &active_keys)
     }
 
-    pub fn subscription_stream(&self, id: SubscriptionId) -> anyhow::Result<RuntimeResponseStream> {
+    pub fn subscription_stream(&self, id: &SubscriptionId) -> anyhow::Result<RuntimeResponseStream> {
         let receiver = {
             let mut manager = self
                 .subscriptions

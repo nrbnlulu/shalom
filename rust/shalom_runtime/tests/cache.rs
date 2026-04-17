@@ -49,7 +49,7 @@ fn subscribe(
 
 fn yield_update_sync(runtime: &ShalomRuntime, id: SubscriptionId) -> Value {
     let mut stream = runtime
-        .subscription_stream(id)
+        .subscription_stream(&id)
         .expect("subscription stream");
     let tokio_rt = Builder::new_current_thread()
         .enable_all()
@@ -59,7 +59,7 @@ fn yield_update_sync(runtime: &ShalomRuntime, id: SubscriptionId) -> Value {
         .block_on(async { stream.next().await })
         .expect("missing update")
         .expect("subscription error");
-    runtime.unsubscribe(id);
+    runtime.unsubscribe(&id);
     response.data
 }
 
@@ -1860,7 +1860,7 @@ mod fragment_subscriptions {
         
         let used_refs_vec: Vec<String> = result1.used_refs.into_iter().collect();
         let sub_id = runtime.subscribe("Op1", None, used_refs_vec).unwrap();
-        let mut updates = runtime.subscription_stream(sub_id).unwrap();
+        let mut updates = runtime.subscription_stream(&sub_id).unwrap();
 
         let result2 = normalize(&runtime, &op2, serde_json::json!({ "sharedValue": 99, "otherValue": "hello" }), None);
         assert!(result2.changed.contains("ROOT_QUERY_sharedValue"));

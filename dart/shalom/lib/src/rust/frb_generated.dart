@@ -68,11 +68,11 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => 582265386;
+  int get rustContentHash => -1332930301;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
-        stem: 'shalom',
+        stem: 'shalom_ffi',
         ioDirectory: 'rust/target/release/',
         webPrefix: 'pkg/',
       );
@@ -96,12 +96,14 @@ abstract class RustLibApi extends BaseApi {
     String? configJson,
   });
 
-  Stream<String> crateApiRuntimeListenRequests({required RuntimeHandle handle});
-
-  Stream<String> crateApiRuntimeListenUpdates({
+  BigInt crateApiRuntimeInitSubscription({
     required RuntimeHandle handle,
-    required BigInt subscriptionId,
+    required String targetId,
+    String? rootRef,
+    required List<String> refs,
   });
+
+  Stream<String> crateApiRuntimeListenRequests({required RuntimeHandle handle});
 
   Future<void> crateApiRuntimePushResponse({
     required RuntimeHandle handle,
@@ -123,11 +125,9 @@ abstract class RustLibApi extends BaseApi {
     String? variablesJson,
   });
 
-  Future<BigInt> crateApiRuntimeSubscribe({
+  Stream<String> crateApiRuntimeSubscribe({
     required RuntimeHandle handle,
-    required String targetId,
-    String? rootRef,
-    required List<String> refs,
+    required BigInt subscriptionId,
   });
 
   Future<void> crateApiRuntimeUnsubscribe({
@@ -343,6 +343,43 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
+  BigInt crateApiRuntimeInitSubscription({
+    required RuntimeHandle handle,
+    required String targetId,
+    String? rootRef,
+    required List<String> refs,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(targetId, serializer);
+          sse_encode_opt_String(rootRef, serializer);
+          sse_encode_list_String(refs, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_u_64,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiRuntimeInitSubscriptionConstMeta,
+        argValues: [handle, targetId, rootRef, refs],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiRuntimeInitSubscriptionConstMeta =>
+      const TaskConstMeta(
+        debugName: "init_subscription",
+        argNames: ["handle", "targetId", "rootRef", "refs"],
+      );
+
+  @override
   Stream<String> crateApiRuntimeListenRequests({
     required RuntimeHandle handle,
   }) {
@@ -360,7 +397,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
-              funcId: 6,
+              funcId: 7,
               port: port_,
             );
           },
@@ -381,49 +418,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(
         debugName: "listen_requests",
         argNames: ["handle", "sink"],
-      );
-
-  @override
-  Stream<String> crateApiRuntimeListenUpdates({
-    required RuntimeHandle handle,
-    required BigInt subscriptionId,
-  }) {
-    final sink = RustStreamSink<String>();
-    unawaited(
-      handler.executeNormal(
-        NormalTask(
-          callFfi: (port_) {
-            final serializer = SseSerializer(generalizedFrbRustBinding);
-            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-              handle,
-              serializer,
-            );
-            sse_encode_u_64(subscriptionId, serializer);
-            sse_encode_StreamSink_String_Sse(sink, serializer);
-            pdeCallFfi(
-              generalizedFrbRustBinding,
-              serializer,
-              funcId: 7,
-              port: port_,
-            );
-          },
-          codec: SseCodec(
-            decodeSuccessData: sse_decode_unit,
-            decodeErrorData: sse_decode_AnyhowException,
-          ),
-          constMeta: kCrateApiRuntimeListenUpdatesConstMeta,
-          argValues: [handle, subscriptionId, sink],
-          apiImpl: this,
-        ),
-      ),
-    );
-    return sink.stream;
-  }
-
-  TaskConstMeta get kCrateApiRuntimeListenUpdatesConstMeta =>
-      const TaskConstMeta(
-        debugName: "listen_updates",
-        argNames: ["handle", "subscriptionId", "sink"],
       );
 
   @override
@@ -550,44 +544,45 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  Future<BigInt> crateApiRuntimeSubscribe({
+  Stream<String> crateApiRuntimeSubscribe({
     required RuntimeHandle handle,
-    required String targetId,
-    String? rootRef,
-    required List<String> refs,
+    required BigInt subscriptionId,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
-          final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-            handle,
-            serializer,
-          );
-          sse_encode_String(targetId, serializer);
-          sse_encode_opt_String(rootRef, serializer);
-          sse_encode_list_String(refs, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 11,
-            port: port_,
-          );
-        },
-        codec: SseCodec(
-          decodeSuccessData: sse_decode_u_64,
-          decodeErrorData: sse_decode_AnyhowException,
+    final sink = RustStreamSink<String>();
+    unawaited(
+      handler.executeNormal(
+        NormalTask(
+          callFfi: (port_) {
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+              handle,
+              serializer,
+            );
+            sse_encode_StreamSink_String_Sse(sink, serializer);
+            sse_encode_u_64(subscriptionId, serializer);
+            pdeCallFfi(
+              generalizedFrbRustBinding,
+              serializer,
+              funcId: 11,
+              port: port_,
+            );
+          },
+          codec: SseCodec(
+            decodeSuccessData: sse_decode_unit,
+            decodeErrorData: sse_decode_AnyhowException,
+          ),
+          constMeta: kCrateApiRuntimeSubscribeConstMeta,
+          argValues: [handle, sink, subscriptionId],
+          apiImpl: this,
         ),
-        constMeta: kCrateApiRuntimeSubscribeConstMeta,
-        argValues: [handle, targetId, rootRef, refs],
-        apiImpl: this,
       ),
     );
+    return sink.stream;
   }
 
   TaskConstMeta get kCrateApiRuntimeSubscribeConstMeta => const TaskConstMeta(
     debugName: "subscribe",
-    argNames: ["handle", "targetId", "rootRef", "refs"],
+    argNames: ["handle", "sink", "subscriptionId"],
   );
 
   @override

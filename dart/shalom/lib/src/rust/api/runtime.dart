@@ -65,22 +65,22 @@ Future<void> completeTransport({
   requestId: requestId,
 );
 
-Future<BigInt> subscribe({
+BigInt initSubscription({
   required RuntimeHandle handle,
   required String targetId,
   String? rootRef,
   required List<String> refs,
-}) => RustLib.instance.api.crateApiRuntimeSubscribe(
+}) => RustLib.instance.api.crateApiRuntimeInitSubscription(
   handle: handle,
   targetId: targetId,
   rootRef: rootRef,
   refs: refs,
 );
 
-Stream<String> listenUpdates({
+Stream<String> subscribe({
   required RuntimeHandle handle,
   required BigInt subscriptionId,
-}) => RustLib.instance.api.crateApiRuntimeListenUpdates(
+}) => RustLib.instance.api.crateApiRuntimeSubscribe(
   handle: handle,
   subscriptionId: subscriptionId,
 );

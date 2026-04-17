@@ -114,7 +114,7 @@ fn runtime_gc_respects_subscription_tracker() {
     let evicted = runtime.collect_garbage();
     assert!(!evicted.contains(&"Temp:1".to_string()));
 
-    runtime.unsubscribe(subscription);
+    runtime.unsubscribe(&subscription);
     let evicted = runtime.collect_garbage();
     assert!(evicted.contains(&"Temp:1".to_string()));
 }

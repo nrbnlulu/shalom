@@ -5,8 +5,12 @@ use flutter_rust_bridge::frb;
 use tokio_stream::StreamExt;
 
 use shalom_runtime::sansio_protocols::host::HostLink;
-use shalom_runtime::sansio_protocols::{GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request};
-use shalom_runtime::{RuntimeConfig, RuntimeResponse, RuntimeResponseStream, ShalomRuntime, SubscriptionId};
+use shalom_runtime::sansio_protocols::{
+    GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request,
+};
+use shalom_runtime::{
+    RuntimeConfig, RuntimeResponse, RuntimeResponseStream, ShalomRuntime, SubscriptionId,
+};
 
 // Re-exported so that `frb_generated.rs` (which does `use crate::api::runtime::*`) can
 // reference these types by name in the generated codec impls.
@@ -69,9 +73,7 @@ impl RuntimeHandle {
     }
 }
 
-fn to_link_op_type(
-    op_type: shalom_core::operation::types::OperationType,
-) -> LinkOperationType {
+fn to_link_op_type(op_type: shalom_core::operation::types::OperationType) -> LinkOperationType {
     match op_type {
         shalom_core::operation::types::OperationType::Query => LinkOperationType::Query,
         shalom_core::operation::types::OperationType::Mutation => LinkOperationType::Mutation,
@@ -145,11 +147,12 @@ pub fn push_transport_error(
     details_json: Option<String>,
 ) -> anyhow::Result<()> {
     let details = parse_optional_json(details_json)?;
-    let response = GraphQLResponse::TransportError(shalom_runtime::sansio_protocols::TransportError {
-        message,
-        code,
-        details,
-    });
+    let response =
+        GraphQLResponse::TransportError(shalom_runtime::sansio_protocols::TransportError {
+            message,
+            code,
+            details,
+        });
     handle.link.send_response(request_id, response)
 }
 
@@ -160,8 +163,8 @@ pub fn complete_transport(handle: &RuntimeHandle, request_id: u64) {
     handle.link.complete(request_id);
 }
 
-#[frb]
-pub fn subscribe(
+#[frb(sync)]
+pub fn init_subscription(
     handle: &RuntimeHandle,
     target_id: String,
     root_ref: Option<String>,
@@ -170,19 +173,17 @@ pub fn subscribe(
     handle
         .runtime
         .subscribe(&target_id, root_ref, refs)
-        .map(u64::from)
+        .map(|o| o.into())
 }
 
 #[frb]
-pub async fn listen_updates(
+pub async fn subscribe(
     handle: &RuntimeHandle,
-    subscription_id: u64,
     sink: StreamSink<String>,
+    subscription_id: u64,
 ) -> anyhow::Result<()> {
-    let mut stream = handle
-        .runtime
-        .subscription_stream(SubscriptionId::from(subscription_id))?;
-    let result = async {
+    let mut stream = handle.runtime.subscription_stream(&subscription_id)?;
+    let result: anyhow::Result<()> = async {
         while let Some(response) = stream.next().await {
             let response = response?;
             let payload = response_to_json(response)?;
@@ -193,9 +194,7 @@ pub async fn listen_updates(
         Ok(())
     }
     .await;
-    handle
-        .runtime
-        .unsubscribe(SubscriptionId::from(subscription_id));
+    handle.runtime.unsubscribe(&sub_id);
     handle.runtime.collect_garbage();
     result
 }
@@ -204,7 +203,7 @@ pub async fn listen_updates(
 pub fn unsubscribe(handle: &RuntimeHandle, subscription_id: u64) {
     handle
         .runtime
-        .unsubscribe(SubscriptionId::from(subscription_id));
+        .unsubscribe(&SubscriptionId::from(subscription_id));
     // Run GC after unsubscribing so cache entries with no active watchers
     // are evicted promptly rather than accumulating.
     handle.runtime.collect_garbage();
