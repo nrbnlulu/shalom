@@ -66,7 +66,7 @@ type Post {
 // Minimal FromCache implementations used for tests 2-4.
 // ---------------------------------------------------------------------------
 
-class _UserFromCache extends FromCache<Map<String, dynamic>> {
+class _UserFromCache extends RefSubscriptionListenable<Map<String, dynamic>> {
   const _UserFromCache(this.queryName);
 
   final String queryName;
@@ -82,7 +82,7 @@ class _UserFromCache extends FromCache<Map<String, dynamic>> {
   }
 }
 
-class _PostFromCache extends FromCache<Map<String, dynamic>> {
+class _PostFromCache extends RefSubscriptionListenable<Map<String, dynamic>> {
   const _PostFromCache();
 
   @override
@@ -248,7 +248,7 @@ void main() {
     );
     expect(initial.refs, isNotEmpty);
 
-    final updates = await client.setupSubscription(
+    final updates = await client.subscribeToRefs(
       fromCache: fromCacheGetUser,
       refs: initial.refs,
     );

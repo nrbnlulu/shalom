@@ -77,7 +77,7 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
   Future<RuntimeTypedResult<T>> requestTyped<T>({
     required String query,
     Map<String, dynamic>? variables,
-    required core.FromCache<T> fromCache,
+    required core.RefSubscriptionListenable<T> fromCache,
   }) async {
     final result = await request(query: query, variables: variables);
     final parsed = fromCache.fromCache(result.data);
@@ -94,8 +94,8 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
   /// Like [subscribeTyped] but waits for the Rust subscription to be fully
   /// registered before returning the update stream. This ensures that cache
   /// writes triggered immediately after the call are guaranteed to be observed.
-  Stream<T> subscribe<T>({
-    required core.FromCache<T> fromCache,
+  Stream<T> subscribeToRefs<T>({
+    required core.RefSubscriptionListenable<T> fromCache,
     required Iterable<String> refs,
     String? rootRef,
   }) async* {
@@ -118,25 +118,6 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
     }
   }
 
-  Stream<T> subscribeTyped<T>({
-    required core.FromCache<T> fromCache,
-    required Iterable<String> refs,
-    String? rootRef,
-  }) async* {
-    final updates = rootRef == null
-        ? subscribe(
-            operationId: fromCache.subscriberGlobalID,
-            refs: refs.toList(growable: false),
-          )
-        : subscribeFragment(
-            fragmentName: fromCache.subscriberGlobalID,
-            rootRef: rootRef,
-            refs: refs.toList(growable: false),
-          );
-    await for (final payload in updates) {
-      yield fromCache.fromCache(payload);
-    }
-  }
 
   Future<void> dispose() async {
     if (_disposed) {

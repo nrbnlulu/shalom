@@ -30,7 +30,7 @@ export 'src/transport/ws_transport.dart' show WebSocketTransport, MessageSender;
 export 'src/transport/web_socket_transport.dart' show WebSocketPackageTransport;
 export 'src/rust/api/ws.dart' show WsSansIo;
 export 'src/runtime_cache.dart'
-    show FromCache, RuntimeSubscriptionClient, collectRuntimeRefs;
+    show RefSubscriptionListenable, RuntimeSubscriptionClient, collectRuntimeRefs;
 
 class CacheUpdateContext {
   final ShalomCtx shalomContext;

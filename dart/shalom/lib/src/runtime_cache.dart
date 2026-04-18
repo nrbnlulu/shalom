@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'shalom_core_base.dart' show JsonObject;
 
-abstract class FromCache<T> {
-  const FromCache();
+abstract class RefSubscriptionListenable<T> {
+  const RefSubscriptionListenable();
 
   /// Global identifier used by the runtime to resolve operations/fragments.
   String get subscriberGlobalID;
@@ -12,8 +12,8 @@ abstract class FromCache<T> {
 }
 
 abstract class RuntimeSubscriptionClient {
-  Stream<JsonObject> subscribeToRefs({
-    required String targetId,
+  Stream<T> subscribeToRefs<T>({
+    required RefSubscriptionListenable<T> fromCache,
     required Iterable<String> refs,
     String? rootRef,
   });
