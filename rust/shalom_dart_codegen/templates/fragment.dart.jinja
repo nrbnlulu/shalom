@@ -27,8 +27,6 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
         {{ type_name_for_selection(field) }} get {{ field.name }};
     {% endfor %}
 
-  static const shalom_core.FromCache<{{ fragment_name }}> cacheBuilder =
-      {{ fragment_name }}FromCache();
 
   Map<String, dynamic> toJson();
 

@@ -83,6 +83,12 @@ fn to_link_op_type(op_type: shalom_core::operation::types::OperationType) -> Lin
     }
 }
 
+#[flutter_rust_bridge::frb(init)]
+pub fn init_app() {
+    // Default utilities - feel free to customize
+    flutter_rust_bridge::setup_default_user_utils();
+}
+
 #[frb]
 pub fn init_runtime(
     schema_sdl: String,
@@ -110,22 +116,6 @@ pub async fn listen_requests(
         }
     }
     Ok(())
-}
-
-#[frb]
-pub async fn request(
-    handle: &RuntimeHandle,
-    query: String,
-    variables_json: Option<String>,
-) -> anyhow::Result<String> {
-    let variables = parse_variables(variables_json)?;
-    let mut stream = handle.request_stream(query, variables)?;
-    let response = match stream.next().await {
-        Some(Ok(r)) => r,
-        Some(Err(e)) => return Err(e),
-        None => return Err(anyhow::anyhow!("link stream closed without response")),
-    };
-    response_to_json(response)
 }
 
 #[frb]
@@ -177,25 +167,27 @@ pub fn init_subscription(
 }
 
 #[frb]
-pub async fn subscribe(
+pub async fn request_op(
     handle: &RuntimeHandle,
+    operation: String,
+    variables_json: Option<String>,
     sink: StreamSink<String>,
-    subscription_id: u64,
 ) -> anyhow::Result<()> {
-    let mut stream = handle.runtime.subscription_stream(&subscription_id)?;
+    let variables = parse_variables(variables_json)?;
+    let mut stream = handle.request_stream(operation, variables)?;
     let result: anyhow::Result<()> = async {
         while let Some(response) = stream.next().await {
             let response = response?;
             let payload = response_to_json(response)?;
             if sink.add(payload).is_err() {
+                handle.runtime.unsubscribe(id);
+                log::info!("sink closed, unsubscribing");
                 break;
             }
         }
         Ok(())
     }
     .await;
-    handle.runtime.unsubscribe(&sub_id);
-    handle.runtime.collect_garbage();
     result
 }
 

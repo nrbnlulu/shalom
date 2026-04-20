@@ -45,6 +45,12 @@ class NewWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
+    final clientValue = ref.watch(shalomRuntimeProvider);
+    if (clientValue.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    final client = clientValue.value!;
+    client.subscribeToRefs
     final result = ref.watch(filmsProvider);
     return result.when(
       data: (result) {

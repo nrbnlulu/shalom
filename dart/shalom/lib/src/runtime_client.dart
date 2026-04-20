@@ -1,14 +1,28 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:shalom/shalom.dart' as core;
+import 'package:shalom/src/shalom_core_base.dart' show JsonObject, GraphQLResponse, Requestable;
+import 'package:shalom/src/transport/link.dart' show GraphQLLink;
 
-import 'rust/api/runtime.dart' as frb;
+import 'rust/api/runtime.dart' as rs_runtime;
 
-class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
-  final frb.RuntimeHandle _handle;
-  final core.GraphQLLink _link;
-  final Map<int, StreamSubscription<core.GraphQLResponse<core.JsonObject>>>
+Set<String> collectRuntimeRefs(JsonObject data) {
+  final refs = <String>{};
+  final raw = data['__used_refs'];
+  if (raw is List) {
+    for (final entry in raw) {
+      if (entry is String) {
+        refs.add(entry);
+      }
+    }
+  }
+  return refs;
+}
+
+class ShalomRuntimeClient {
+  final rs_runtime.RuntimeHandle _handle;
+  final GraphQLLink _link;
+  final Map<int, StreamSubscription<GraphQLResponse<JsonObject>>>
   _activeRequests = {};
   StreamSubscription<String>? _requestStream;
   bool _disposed = false;
@@ -22,7 +36,7 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
     required core.GraphQLLink link,
   }) async {
     final configJson = config == null ? null : jsonEncode(config);
-    final handle = await frb.initRuntime(
+    final handle = await rs_runtime.initRuntime(
       schemaSdl: schemaSdl,
       fragmentSdls: fragmentSdls,
       configJson: configJson,
@@ -32,27 +46,6 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
     return client;
   }
 
-  Future<RuntimeRequestResult> request({
-    required String query,
-    Map<String, dynamic>? variables,
-  }) async {
-    final variablesJson = variables == null ? null : jsonEncode(variables);
-    final payload = await frb.request(
-      handle: _handle,
-      query: query,
-      variablesJson: variablesJson,
-    );
-    final envelope = _RuntimeEnvelope.fromJson(payload);
-    final operationId = envelope.operationId;
-    if (operationId == null) {
-      throw FormatException('runtime response missing operation_id');
-    }
-    return RuntimeRequestResult(data: envelope.data, operationId: operationId);
-  }
-
-  /// Fetch a typed result via [requestable]. The Rust runtime normalizes the
-  /// response into the cache and embeds [__used_refs] into the returned data.
-  /// Use [requestTyped] or [subscribeTyped] after this to set up cache updates.
   Stream<core.GraphQLResponse<T>> requestStream<T>(
     core.Requestable<T> requestable,
   ) async* {
@@ -62,7 +55,7 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
       final variablesJson = req.variables.isEmpty
           ? null
           : jsonEncode(req.variables);
-      final payload = await frb.request(
+      final payload = await rs_runtime.request(
         handle: _handle,
         query: req.query,
         variablesJson: variablesJson,
@@ -75,49 +68,80 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
   }
 
   Future<RuntimeTypedResult<T>> requestTyped<T>({
-    required String query,
-    Map<String, dynamic>? variables,
-    required core.RefSubscriptionListenable<T> fromCache,
+    required core.Requestable<T> requestable,
   }) async {
-    final result = await request(query: query, variables: variables);
-    final parsed = fromCache.fromCache(result.data);
-    final refs = core.collectRuntimeRefs(result.data);
+    final meta = requestable.getRequestMeta();
+    final req = meta.request;
+    final variablesJson = req.variables.isEmpty
+        ? null
+        : jsonEncode(req.variables);
+    final payload = await rs_runtime.request(
+      handle: _handle,
+      query: req.query,
+      variablesJson: variablesJson,
+    );
+    final envelope = _RuntimeEnvelope.fromJson(payload);
+    if (envelope.operationId == null) {
+      throw FormatException('runtime response missing operation_id');
+    }
+    final refs = core.collectRuntimeRefs(envelope.data);
     return RuntimeTypedResult(
-      data: parsed,
-      rawData: result.data,
-      operationId: result.operationId,
+      data: meta.parseFn(envelope.data),
+      rawData: envelope.data,
+      operationId: envelope.operationId!,
       refs: refs,
     );
   }
 
-
-  /// Like [subscribeTyped] but waits for the Rust subscription to be fully
-  /// registered before returning the update stream. This ensures that cache
-  /// writes triggered immediately after the call are guaranteed to be observed.
-  Stream<T> subscribeToRefs<T>({
-    required core.RefSubscriptionListenable<T> fromCache,
-    required Iterable<String> refs,
-    String? rootRef,
-  }) async* {
-    final subId = frb.initSubscription(
+  Stream<T> request<T>({required Requestable<T> requestable}) async* {
+    final meta = requestable.getRequestMeta();
+    final networkResults = _link.request(
+      request: meta.request,
+    );
+    
+    final subId = rs_runtime.initSubscription(
       handle: _handle,
-      targetId: fromCache.subscriberGlobalID,
-      rootRef: rootRef,
-      refs: refs.toList(growable: false),
+      targetId: meta.request.opName,
+      rootRef: null,
     );
     try {
-      await for (final res in frb.subscribe(
+      await for (final res in rs_runtime.subscribe(
         handle: _handle,
         subscriptionId: subId,
       )) {
         final envelope = _RuntimeEnvelope.fromJson(res);
-        yield fromCache.fromCache(envelope.data);
+        yield meta.parseFn(envelope.data);
       }
     } finally {
-      await frb.unsubscribe(subscriptionId: subId, handle: _handle);
+      await rs_runtime.unsubscribe(subscriptionId: subId, handle: _handle);
     }
   }
 
+  @override
+  Stream<T> subscribeFragment<T>({
+    required String targetId,
+    required String rootRef,
+    required T Function(JsonObject) fromJson,
+    required Iterable<String> refs,
+  }) async* {
+    final subId = rs_runtime.initSubscription(
+      handle: _handle,
+      targetId: targetId,
+      rootRef: rootRef,
+      refs: refs.toList(growable: false),
+    );
+    try {
+      await for (final res in rs_runtime.subscribe(
+        handle: _handle,
+        subscriptionId: subId,
+      )) {
+        final envelope = _RuntimeEnvelope.fromJson(res);
+        yield fromJson(envelope.data);
+      }
+    } finally {
+      await rs_runtime.unsubscribe(subscriptionId: subId, handle: _handle);
+    }
+  }
 
   Future<void> dispose() async {
     if (_disposed) {
@@ -139,7 +163,7 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
   }
 
   void _bindRequests() {
-    final stream = frb.listenRequests(handle: _handle);
+    final stream = rs_runtime.listenRequests(handle: _handle);
     _requestStream = stream.listen(_handleRequestEnvelope, onError: (_) {});
   }
 
@@ -165,7 +189,7 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
           onError: (error) => _dispatchTransportError(envelope.id, error),
           onDone: () {
             _activeRequests.remove(envelope.id);
-            frb.completeTransport(
+            rs_runtime.completeTransport(
               handle: _handle,
               requestId: BigInt.from(envelope.id),
             );
@@ -176,7 +200,7 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
 
   void _dispatchResponse(
     int requestId,
-    core.GraphQLResponse<core.JsonObject> response,
+    core.GraphQLResponse<JsonObject> response,
   ) {
     switch (response) {
       case core.GraphQLData():
@@ -200,7 +224,7 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
   }
 
   Future<void> _pushResponse(int requestId, Map<String, dynamic> payload) {
-    return frb.pushResponse(
+    return rs_runtime.pushResponse(
       handle: _handle,
       requestId: BigInt.from(requestId),
       responseJson: jsonEncode(payload),
@@ -210,7 +234,7 @@ class ShalomRuntimeClient implements core.RuntimeSubscriptionClient {
   void _dispatchTransportError(int requestId, Object error) {
     final transport = _toTransportError(error);
     unawaited(
-      frb.pushTransportError(
+      rs_runtime.pushTransportError(
         handle: _handle,
         requestId: BigInt.from(requestId),
         message: transport.message,
@@ -280,15 +304,6 @@ class _RequestEnvelope {
         throw FormatException('unknown operation type: $raw');
     }
   }
-}
-
-class RuntimeRequestResult {
-  final Map<String, dynamic> data;
-  final String operationId;
-
-  const RuntimeRequestResult({required this.data, required this.operationId});
-
-  Set<String> collectRefs() => core.collectRuntimeRefs(data);
 }
 
 class RuntimeTypedResult<T> {

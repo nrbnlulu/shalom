@@ -63,37 +63,42 @@ type Post {
 ''';
 
 // ---------------------------------------------------------------------------
-// Minimal FromCache implementations used for tests 2-4.
+// Requestable implementations used for tests 2-4.
 // ---------------------------------------------------------------------------
 
-class _UserFromCache extends RefSubscriptionListenable<Map<String, dynamic>> {
-  const _UserFromCache(this.queryName);
+class _UserRequestable extends Requestable<Map<String, dynamic>> {
+  final String opName;
+  final String query;
 
-  final String queryName;
-
-  @override
-  String get subscriberGlobalID => queryName;
+  const _UserRequestable(this.opName, this.query);
 
   @override
-  Map<String, dynamic> fromCache(JsonObject data) {
-    final user = data['user'];
-    if (user is Map<String, dynamic>) return user;
-    return const {};
-  }
+  RequestMeta<Map<String, dynamic>> getRequestMeta() => RequestMeta(
+    request: Request(
+      query: query,
+      variables: {},
+      opType: OperationType.Query,
+      opName: opName,
+    ),
+    parseFn: (data) => (data['user'] as Map<String, dynamic>?) ?? {},
+  );
 }
 
-class _PostFromCache extends RefSubscriptionListenable<Map<String, dynamic>> {
-  const _PostFromCache();
+class _PostRequestable extends Requestable<Map<String, dynamic>> {
+  final String query;
+
+  const _PostRequestable(this.query);
 
   @override
-  String get subscriberGlobalID => 'GetPost';
-
-  @override
-  Map<String, dynamic> fromCache(JsonObject data) {
-    final post = data['post'];
-    if (post is Map<String, dynamic>) return post;
-    return const {};
-  }
+  RequestMeta<Map<String, dynamic>> getRequestMeta() => RequestMeta(
+    request: Request(
+      query: query,
+      variables: {},
+      opType: OperationType.Query,
+      opName: 'GetPost',
+    ),
+    parseFn: (data) => (data['post'] as Map<String, dynamic>?) ?? {},
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -133,13 +138,12 @@ void main() {
       ),
     ]);
 
-    const query = 'query GetUser @subscribeable { user(id: "1") { id name } }';
-    const fromCache = _UserFromCache('GetUser');
-
-    final result = await client.requestTyped(
-      query: query,
-      fromCache: fromCache,
+    const requestable = _UserRequestable(
+      'GetUser',
+      'query GetUser @subscribeable { user(id: "1") { id name } }',
     );
+
+    final result = await client.requestTyped(requestable: requestable);
 
     expect(result.data['id'], '1');
     expect(result.data['name'], 'Alice');
@@ -175,34 +179,29 @@ void main() {
         ),
       ]);
 
-      const qGetUser =
-          'query GetUser @subscribeable { user(id: "1") { id name } }';
-      const qGetUserDetails =
-          'query GetUserDetails @subscribeable { user(id: "1") { id name } }';
-      const fromCacheGetUser = _UserFromCache('GetUser');
-      const fromCacheGetUserDetails = _UserFromCache('GetUserDetails');
+      const reqGetUser = _UserRequestable(
+        'GetUser',
+        'query GetUser @subscribeable { user(id: "1") { id name } }',
+      );
+      const reqGetUserDetails = _UserRequestable(
+        'GetUserDetails',
+        'query GetUserDetails @subscribeable { user(id: "1") { id name } }',
+      );
 
       // Normalize the first response into the cache.
-      final initial = await client.requestTyped(
-        query: qGetUser,
-        fromCache: fromCacheGetUser,
-      );
+      final initial = await client.requestTyped(requestable: reqGetUser);
       expect(initial.data['name'], 'Alice');
       expect(initial.refs, isNotEmpty);
 
-      // Set up subscription BEFORE the second write so we don't miss the
-      // update. setupSubscription awaits full registration before returning.
-      final updates = await client.setupSubscription(
-        fromCache: fromCacheGetUser,
+      // Set up subscription BEFORE the second write so we don't miss the update.
+      final updates = client.subscribeToRefs(
+        requestable: reqGetUser,
         refs: initial.refs,
       );
 
       // Fire the second operation. It writes to the same "User:1" entity.
       unawaited(
-        client.requestTyped(
-          query: qGetUserDetails,
-          fromCache: fromCacheGetUserDetails,
-        ),
+        client.requestTyped(requestable: reqGetUserDetails),
       );
 
       final updated = await updates.first.timeout(const Duration(seconds: 5));
@@ -234,22 +233,20 @@ void main() {
       ),
     ]);
 
-    const qGetUser =
-        'query GetUser @subscribeable { user(id: "1") { id name } }';
-    const qGetPost =
-        'query GetPost @subscribeable { post(id: "1") { id title } }';
-    const fromCacheGetUser = _UserFromCache('GetUser');
-    const fromCacheGetPost = _PostFromCache();
+    const reqGetUser = _UserRequestable(
+      'GetUser',
+      'query GetUser @subscribeable { user(id: "1") { id name } }',
+    );
+    const reqGetPost = _PostRequestable(
+      'query GetPost @subscribeable { post(id: "1") { id title } }',
+    );
 
     // Normalize the user response.
-    final initial = await client.requestTyped(
-      query: qGetUser,
-      fromCache: fromCacheGetUser,
-    );
+    final initial = await client.requestTyped(requestable: reqGetUser);
     expect(initial.refs, isNotEmpty);
 
-    final updates = await client.subscribeToRefs(
-      fromCache: fromCacheGetUser,
+    final updates = client.subscribeToRefs(
+      requestable: reqGetUser,
       refs: initial.refs,
     );
 
@@ -258,7 +255,7 @@ void main() {
     // async function, so starting the listener first would deadlock requestTyped.
     // The Rust subscription is already registered and its channel is live, so
     // any incorrect notification is buffered and detected after we subscribe.
-    await client.requestTyped(query: qGetPost, fromCache: fromCacheGetPost);
+    await client.requestTyped(requestable: reqGetPost);
 
     // Now subscribe and check: no buffered update should be present.
     // Do NOT await sub.cancel() — that waits for the Rust listen_updates loop

@@ -239,7 +239,22 @@ class ShalomRuntimeClient {
 
   static Future<ShalomRuntimeClient> init({
     required String schemaSdl,
-    required List<String> fragmentSdls,
+    required List<String> @runtime2[@RUST_RUNTIME_v2.md](file:///run/media/dev/33da92da-1869-46ee-a0c1-fd5c4c9049e5/@home/dev/1tb_desktop/1tboss/shalom/RUST_RUNTIME_v2.md) @runtim[@RUST_RUNTIME_IMPL.md](file:///run/media/dev/33da92da-1869-46ee-a0c1-fd5c4c9049e5/@home/dev/1tb_desktop/1tboss/shalom/RUST_RUNTIME_IMPL.md) .fragmentSdls,
+    no need for class {{ response_class_name }}FromCache
+    implements shalom_core.FromCache<{{ response_class_name }}> {
+        const {{ response_class_name }}FromCache();
+        
+      @override
+  String get subscriberGlobalID => '{{ operation_name }}';
+  
+      @override
+  {{ response_class_name }} fromCache(shalom_core.JsonObject data) {
+      return {{ response_class_name }}.fromJson(data);
+  }
+    }
+    
+    
+ we can also just use @symbol Requestable[@Requestable](file:///run/media/dev/33da92da-1869-46ee-a0c1-fd5c4c9049e5/@home/dev/1tb_desktop/1tboss/shalom/dart/shalom/lib/src/shalom_core_base.dart?symbol=Requestable#L45:48) with minor modifications
     required GraphQLLink link,
   }) async {
     final handle = await rlib.initRuntime(schemaSdl: schemaSdl, ...);

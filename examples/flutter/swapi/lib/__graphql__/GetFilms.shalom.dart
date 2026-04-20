@@ -2,7 +2,7 @@
 
 import "../schema.shalom.dart";
 
-import 'package:shalom/shalom.dart';
+import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
 
@@ -19,98 +19,8 @@ class GetFilmsResponse {
   // keywordargs constructor
   GetFilmsResponse({this.allFilms});
 
-  static void normalize$inCache(JsonObject data, CacheUpdateContext ctx) {
-    final String this$normalizedID = "ROOT_QUERY";
-    final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(
-      "ROOT_QUERY",
-    );
-    final allFilmsNormalized$Key = "allFilms";
-    final allFilms$normalizedID =
-        "${this$normalizedID}.${allFilmsNormalized$Key}";
-    ctx.addDependantRecords({allFilms$normalizedID});
-    final allFilms$cached = this$NormalizedRecord[allFilmsNormalized$Key];
-    final allFilms$raw = data["allFilms"];
-    if (allFilms$raw != null) {
-      if (allFilms$cached == null) {
-        ctx.addChangedRecord(allFilms$normalizedID);
-      }
-
-      GetFilms_allFilms.normalize$inCache(
-        allFilms$raw as JsonObject,
-        ctx,
-
-        this$cached:
-            allFilms$cached is NormalizedObjectRecord
-                ? ctx.shalomContext.getCachedRecord(
-                  allFilms$cached.normalizedID(),
-                )
-                : allFilms$cached,
-        this$fieldName: allFilmsNormalized$Key,
-        parent$record: this$NormalizedRecord,
-        parent$normalizedID: this$normalizedID,
-      );
-
-      final allFilms$id = (allFilms$raw as JsonObject)["id"] as RecordID?;
-      if (allFilms$id != null) {
-        final allFilms$normalized = NormalizedObjectRecord(
-          typename: "FilmsConnection",
-          id: allFilms$id,
-        );
-        this$NormalizedRecord[allFilmsNormalized$Key] = allFilms$normalized;
-
-        if (allFilms$cached != null &&
-            allFilms$cached is NormalizedObjectRecord &&
-            allFilms$cached != allFilms$normalized) {
-          ctx.addChangedRecord(allFilms$normalizedID);
-        }
-      } else {
-        this$NormalizedRecord[allFilmsNormalized$Key] = getOrCreateObject(
-          this$NormalizedRecord,
-          allFilmsNormalized$Key,
-        );
-      }
-    } else if (data.containsKey("allFilms") && allFilms$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[allFilmsNormalized$Key] = null;
-      ctx.addChangedRecord(allFilms$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[allFilmsNormalized$Key] = null;
-    }
-  }
-
-  static GetFilmsResponse fromCache(ShalomCtx ctx) {
-    final data = ctx.getCachedRecord("ROOT_QUERY");
-    final allFilms$raw = data["allFilms"];
-    final GetFilms_allFilms? allFilms$value =
-        allFilms$raw == null
-            ? null
-            : (allFilms$raw is NormalizedObjectRecord)
-            ? GetFilms_allFilms.fromCached(
-              ctx.getCachedRecord(
-                (allFilms$raw as NormalizedObjectRecord).normalizedID(),
-              ),
-              ctx,
-            )
-            : GetFilms_allFilms.fromCached(allFilms$raw, ctx);
-    return GetFilmsResponse(allFilms: allFilms$value);
-  }
-
-  static (GetFilmsResponse, CacheUpdateContext) fromResponseImpl(
-    JsonObject data,
-    ShalomCtx ctx,
-  ) {
-    // first update the cache
-    final updateCtx = CacheUpdateContext(shalomContext: ctx);
-    normalize$inCache(data, updateCtx);
-    ctx.invalidateRefs(updateCtx.changedRecords);
-    return (fromCache(ctx), updateCtx);
-  }
-
-  static GetFilmsResponse fromResponse(JsonObject data, {ShalomCtx? ctx}) {
-    // if ctx not provider we create dummy one
-    return fromResponseImpl(data, ctx ?? ShalomCtx.withCapacity()).$1;
+  static GetFilmsResponse fromResponse(shalom_core.JsonObject data) {
+    return fromJson(data);
   }
 
   @override
@@ -122,16 +32,18 @@ class GetFilmsResponse {
   @override
   int get hashCode => Object.hashAll([allFilms, GetFilmsResponse.G__typename]);
 
-  JsonObject toJson() {
+  shalom_core.JsonObject toJson() {
     return {'allFilms': this.allFilms?.toJson()};
   }
 
   @experimental
-  static GetFilmsResponse fromJson(JsonObject data) {
+  static GetFilmsResponse fromJson(shalom_core.JsonObject data) {
     final GetFilms_allFilms? allFilms$value =
         data['allFilms'] == null
             ? null
-            : GetFilms_allFilms.fromJson(data['allFilms'] as JsonObject);
+            : GetFilms_allFilms.fromJson(
+              data['allFilms'] as shalom_core.JsonObject,
+            );
     return GetFilmsResponse(allFilms: allFilms$value);
   }
 }
@@ -145,149 +57,6 @@ class GetFilms_allFilms {
   // keywordargs constructor
   GetFilms_allFilms({this.films});
 
-  static void normalize$inCache(
-    JsonObject data,
-    CacheUpdateContext ctx, {
-
-    /// can be just the selection name but also may include serialized arguments.
-    required RecordID this$fieldName,
-    required JsonObject? this$cached,
-    required JsonObject parent$record,
-    required RecordID parent$normalizedID,
-  }) {
-    String this$normalizedID;
-    JsonObject this$NormalizedRecord;
-
-    final RecordID? this$normalizedID_temp = data["id"] as RecordID?;
-    if (this$normalizedID_temp == null) {
-      this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-
-      this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
-    } else {
-      final normalized$objRecord = NormalizedObjectRecord(
-        typename: "FilmsConnection",
-        id: this$normalizedID_temp!,
-      );
-      if (this$cached != null &&
-          this$cached is NormalizedObjectRecord &&
-          this$cached as NormalizedObjectRecord != normalized$objRecord) {
-        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-      }
-      parent$record[this$fieldName] = normalized$objRecord;
-      this$normalizedID = normalized$objRecord.normalizedID();
-      this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(
-        this$normalizedID,
-      );
-      ctx.addDependantRecord(this$normalizedID);
-    }
-    final filmsNormalized$Key = "films";
-    final films$normalizedID = "${this$normalizedID}.${filmsNormalized$Key}";
-    ctx.addDependantRecords({films$normalizedID});
-    final films$cached = this$NormalizedRecord[filmsNormalized$Key];
-    final films$raw = data["films"];
-    if (films$raw != null) {
-      final films$rawList = films$raw as List<dynamic>;
-      final films$cachedList = films$cached as List<dynamic>?;
-
-      if (films$cachedList == null ||
-          films$cachedList.length != films$rawList.length) {
-        ctx.addChangedRecord(films$normalizedID);
-      }
-
-      final films$normalizedList = <dynamic>[];
-
-      for (int i = 0; i < films$rawList.length; i++) {
-        final item$raw = films$rawList[i];
-        final item$cached = films$cachedList?.elementAtOrNull(i);
-        final item$normalizedKey = "films$i";
-
-        if (item$raw != null) {
-          if (item$cached == null) {
-            ctx.addChangedRecord(films$normalizedID);
-          }
-
-          GetFilms_allFilms_films.normalize$inCache(
-            item$raw as JsonObject,
-            ctx,
-
-            this$cached:
-                item$cached is NormalizedObjectRecord
-                    ? ctx.shalomContext.getCachedRecord(
-                      item$cached.normalizedID(),
-                    )
-                    : item$cached,
-            this$fieldName: item$normalizedKey,
-            parent$record: this$NormalizedRecord,
-            parent$normalizedID: this$normalizedID,
-          );
-
-          final films$item$id = (item$raw as JsonObject)["id"] as RecordID?;
-          if (films$item$id != null) {
-            final films$item$normalized = NormalizedObjectRecord(
-              typename: "Film",
-              id: films$item$id,
-            );
-            this$NormalizedRecord[item$normalizedKey] = films$item$normalized;
-
-            if (item$cached != null &&
-                item$cached is NormalizedObjectRecord &&
-                item$cached != films$item$normalized) {
-              ctx.addChangedRecord(films$normalizedID);
-            }
-          } else {
-            this$NormalizedRecord[item$normalizedKey] = getOrCreateObject(
-              this$NormalizedRecord,
-              item$normalizedKey,
-            );
-          }
-        } else {
-          if (item$cached != null) {
-            ctx.addChangedRecord(films$normalizedID);
-          }
-          this$NormalizedRecord[item$normalizedKey] = null;
-        }
-
-        films$normalizedList.add(this$NormalizedRecord[item$normalizedKey]);
-      }
-
-      this$NormalizedRecord[filmsNormalized$Key] = films$normalizedList;
-    } else if (data.containsKey("films") && films$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[filmsNormalized$Key] = null;
-      ctx.addChangedRecord(films$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[filmsNormalized$Key] = null;
-    }
-  }
-
-  static GetFilms_allFilms fromCached(
-    NormalizedRecordData data,
-    ShalomCtx ctx,
-  ) {
-    final films$raw = data["films"];
-    final List<GetFilms_allFilms_films?>? films$value =
-        films$raw == null
-            ? null
-            : (films$raw as List<dynamic>)
-                .map(
-                  (e) =>
-                      e == null
-                          ? null
-                          : (e is NormalizedObjectRecord)
-                          ? GetFilms_allFilms_films.fromCached(
-                            ctx.getCachedRecord(
-                              (e as NormalizedObjectRecord).normalizedID(),
-                            ),
-                            ctx,
-                          )
-                          : GetFilms_allFilms_films.fromCached(e, ctx),
-                )
-                .toList();
-    return GetFilms_allFilms(films: films$value);
-  }
-
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
@@ -298,12 +67,12 @@ class GetFilms_allFilms {
   @override
   int get hashCode => Object.hashAll([films, GetFilms_allFilms.G__typename]);
 
-  JsonObject toJson() {
+  shalom_core.JsonObject toJson() {
     return {'films': this.films?.map((e) => e?.toJson()).toList()};
   }
 
   @experimental
-  static GetFilms_allFilms fromJson(JsonObject data) {
+  static GetFilms_allFilms fromJson(shalom_core.JsonObject data) {
     final List<GetFilms_allFilms_films?>? films$value =
         data['films'] == null
             ? null
@@ -312,7 +81,9 @@ class GetFilms_allFilms {
                   (e) =>
                       e == null
                           ? null
-                          : GetFilms_allFilms_films.fromJson(e as JsonObject),
+                          : GetFilms_allFilms_films.fromJson(
+                            e as shalom_core.JsonObject,
+                          ),
                 )
                 .toList();
     return GetFilms_allFilms(films: films$value);
@@ -323,215 +94,86 @@ class GetFilms_allFilms_films {
   static String G__typename = "Film";
 
   /// class members
-  final String? director;
-
   final String? title;
 
-  final String? releaseDate;
+  final String? director;
+
+  final String id;
 
   final int? episodeID;
 
+  final String? releaseDate;
+
   // keywordargs constructor
   GetFilms_allFilms_films({
-    this.director,
-
     this.title,
 
-    this.releaseDate,
+    this.director,
+
+    required this.id,
 
     this.episodeID,
+
+    this.releaseDate,
   });
-
-  static void normalize$inCache(
-    JsonObject data,
-    CacheUpdateContext ctx, {
-
-    /// can be just the selection name but also may include serialized arguments.
-    required RecordID this$fieldName,
-    required JsonObject? this$cached,
-    required JsonObject parent$record,
-    required RecordID parent$normalizedID,
-  }) {
-    String this$normalizedID;
-    JsonObject this$NormalizedRecord;
-
-    final RecordID? this$normalizedID_temp = data["id"] as RecordID?;
-    if (this$normalizedID_temp == null) {
-      this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-
-      this$NormalizedRecord = getOrCreateObject(parent$record, this$fieldName);
-    } else {
-      final normalized$objRecord = NormalizedObjectRecord(
-        typename: "Film",
-        id: this$normalizedID_temp!,
-      );
-      if (this$cached != null &&
-          this$cached is NormalizedObjectRecord &&
-          this$cached as NormalizedObjectRecord != normalized$objRecord) {
-        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-      }
-      parent$record[this$fieldName] = normalized$objRecord;
-      this$normalizedID = normalized$objRecord.normalizedID();
-      this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(
-        this$normalizedID,
-      );
-      ctx.addDependantRecord(this$normalizedID);
-    }
-    final directorNormalized$Key = "director";
-    final director$normalizedID =
-        "${this$normalizedID}.${directorNormalized$Key}";
-    final titleNormalized$Key = "title";
-    final title$normalizedID = "${this$normalizedID}.${titleNormalized$Key}";
-    final releaseDateNormalized$Key = "releaseDate";
-    final releaseDate$normalizedID =
-        "${this$normalizedID}.${releaseDateNormalized$Key}";
-    final episodeIDNormalized$Key = "episodeID";
-    final episodeID$normalizedID =
-        "${this$normalizedID}.${episodeIDNormalized$Key}";
-    ctx.addDependantRecords({
-      director$normalizedID,
-      title$normalizedID,
-      releaseDate$normalizedID,
-      episodeID$normalizedID,
-    });
-    final director$cached = this$NormalizedRecord[directorNormalized$Key];
-    final director$raw = data["director"];
-    if (director$raw != null) {
-      if (director$cached != director$raw) {
-        ctx.addChangedRecord(director$normalizedID);
-      }
-      this$NormalizedRecord[directorNormalized$Key] = director$raw;
-    } else if (data.containsKey("director") && director$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[directorNormalized$Key] = null;
-      ctx.addChangedRecord(director$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[directorNormalized$Key] = null;
-    }
-    final title$cached = this$NormalizedRecord[titleNormalized$Key];
-    final title$raw = data["title"];
-    if (title$raw != null) {
-      if (title$cached != title$raw) {
-        ctx.addChangedRecord(title$normalizedID);
-      }
-      this$NormalizedRecord[titleNormalized$Key] = title$raw;
-    } else if (data.containsKey("title") && title$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[titleNormalized$Key] = null;
-      ctx.addChangedRecord(title$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[titleNormalized$Key] = null;
-    }
-    final releaseDate$cached = this$NormalizedRecord[releaseDateNormalized$Key];
-    final releaseDate$raw = data["releaseDate"];
-    if (releaseDate$raw != null) {
-      if (releaseDate$cached != releaseDate$raw) {
-        ctx.addChangedRecord(releaseDate$normalizedID);
-      }
-      this$NormalizedRecord[releaseDateNormalized$Key] = releaseDate$raw;
-    } else if (data.containsKey("releaseDate") && releaseDate$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[releaseDateNormalized$Key] = null;
-      ctx.addChangedRecord(releaseDate$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[releaseDateNormalized$Key] = null;
-    }
-    final episodeID$cached = this$NormalizedRecord[episodeIDNormalized$Key];
-    final episodeID$raw = data["episodeID"];
-    if (episodeID$raw != null) {
-      if (episodeID$cached != episodeID$raw) {
-        ctx.addChangedRecord(episodeID$normalizedID);
-      }
-      this$NormalizedRecord[episodeIDNormalized$Key] = episodeID$raw;
-    } else if (data.containsKey("episodeID") && episodeID$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[episodeIDNormalized$Key] = null;
-      ctx.addChangedRecord(episodeID$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[episodeIDNormalized$Key] = null;
-    }
-  }
-
-  static GetFilms_allFilms_films fromCached(
-    NormalizedRecordData data,
-    ShalomCtx ctx,
-  ) {
-    final director$raw = data["director"];
-    final String? director$value = director$raw as String?;
-    final title$raw = data["title"];
-    final String? title$value = title$raw as String?;
-    final releaseDate$raw = data["releaseDate"];
-    final String? releaseDate$value = releaseDate$raw as String?;
-    final episodeID$raw = data["episodeID"];
-    final int? episodeID$value = episodeID$raw as int?;
-    return GetFilms_allFilms_films(
-      director: director$value,
-
-      title: title$value,
-
-      releaseDate: releaseDate$value,
-
-      episodeID: episodeID$value,
-    );
-  }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is GetFilms_allFilms_films &&
-            director == other.director &&
             title == other.title &&
-            releaseDate == other.releaseDate &&
-            episodeID == other.episodeID);
+            director == other.director &&
+            id == other.id &&
+            episodeID == other.episodeID &&
+            releaseDate == other.releaseDate);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    director,
-
     title,
 
-    releaseDate,
+    director,
+
+    id,
 
     episodeID,
+
+    releaseDate,
 
     GetFilms_allFilms_films.G__typename,
   ]);
 
-  JsonObject toJson() {
+  shalom_core.JsonObject toJson() {
     return {
-      'director': this.director,
-
       'title': this.title,
 
-      'releaseDate': this.releaseDate,
+      'director': this.director,
+
+      'id': this.id,
 
       'episodeID': this.episodeID,
+
+      'releaseDate': this.releaseDate,
     };
   }
 
   @experimental
-  static GetFilms_allFilms_films fromJson(JsonObject data) {
-    final String? director$value = data['director'] as String?;
+  static GetFilms_allFilms_films fromJson(shalom_core.JsonObject data) {
     final String? title$value = data['title'] as String?;
-    final String? releaseDate$value = data['releaseDate'] as String?;
+    final String? director$value = data['director'] as String?;
+    final String id$value = data['id'] as String;
     final int? episodeID$value = data['episodeID'] as int?;
+    final String? releaseDate$value = data['releaseDate'] as String?;
     return GetFilms_allFilms_films(
-      director: director$value,
-
       title: title$value,
 
-      releaseDate: releaseDate$value,
+      director: director$value,
+
+      id: id$value,
 
       episodeID: episodeID$value,
+
+      releaseDate: releaseDate$value,
     );
   }
 }
@@ -550,12 +192,12 @@ class GetFilms_allFilms_films {
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-class RequestGetFilms extends Requestable<GetFilmsResponse> {
+class RequestGetFilms extends shalom_core.Requestable<GetFilmsResponse> {
   RequestGetFilms();
   @override
-  RequestMeta<GetFilmsResponse> getRequestMeta() {
-    JsonObject variablesJson = {};
-    final request = Request(
+  shalom_core.RequestMeta<GetFilmsResponse> getRequestMeta() {
+    shalom_core.JsonObject variablesJson = {};
+    final request = shalom_core.Request(
       query: r"""
             query GetFilms {
   allFilms {
@@ -564,28 +206,18 @@ class RequestGetFilms extends Requestable<GetFilmsResponse> {
       director
       releaseDate
       episodeID
+      id
     }
   }
 }
             """,
       variables: variablesJson,
-      opType: OperationType.Query,
+      opType: shalom_core.OperationType.Query,
       opName: 'GetFilms',
     );
-    return RequestMeta(
+    return shalom_core.RequestMeta(
       request: request,
-      loadFn: ({required JsonObject data, required ShalomCtx ctx}) {
-        final (deserialized, updatedCtx) = GetFilmsResponse.fromResponseImpl(
-          data,
-          ctx,
-        );
-        return (deserialized, updatedCtx.dependantRecords);
-      },
-      fromCacheFn: (ShalomCtx ctx) {
-        final updateCtx = CacheUpdateContext(shalomContext: ctx);
-        final deserialized = GetFilmsResponse.fromCache(ctx);
-        return (deserialized, updateCtx.dependantRecords);
-      },
+      parseFn: (shalom_core.JsonObject data) => GetFilmsResponse.fromJson(data),
     );
   }
 }
