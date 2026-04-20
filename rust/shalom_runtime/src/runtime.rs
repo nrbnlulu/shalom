@@ -336,7 +336,7 @@ impl ShalomRuntime {
         Ok(())
     }
 
-    fn read_from_cache(
+    pub fn read_from_cache(
         &self,
         op_ctx: &SharedOpCtx,
         variables: Option<&Map<String, Value>>,

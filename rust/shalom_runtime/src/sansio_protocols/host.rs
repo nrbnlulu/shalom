@@ -76,19 +76,23 @@ impl HostLink {
     }
 
     /// Route a response from Dart back to the waiting Rust stream.
+    ///
+    /// Silently ignores calls for requests that have already been completed
+    /// (`complete` was called first). This handles the inherent Dart→Rust
+    /// ordering race between `push_response` and `complete_transport` when both
+    /// are fire-and-forget from the same `onData`/`onDone` callback pair.
     pub fn send_response(
         &self,
         request_id: u64,
         response: GraphQLResponse,
     ) -> anyhow::Result<()> {
-        match self.response_senders.get(&request_id) {
-            Some(sender) => sender.send(response).map_err(|_| {
-                anyhow::anyhow!("response channel closed for request {request_id}")
-            }),
-            None => Err(anyhow::anyhow!(
-                "no active request with id {request_id}"
-            )),
+        if let Some(sender) = self.response_senders.get(&request_id) {
+            // Ignore send errors: the receiver was dropped if request_op
+            // exited early (e.g. sink closed by .first cancellation).
+            let _ = sender.send(response);
         }
+        // Missing entry = request already completed; treat as no-op.
+        Ok(())
     }
 
     /// Signal that all responses for `request_id` have been delivered.

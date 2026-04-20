@@ -1,10 +1,22 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:shalom/src/shalom_core_base.dart' show JsonObject, GraphQLResponse, Requestable;
+import 'package:shalom/src/shalom_core_base.dart'
+    show
+        GraphQLData,
+        GraphQLError,
+        GraphQLResponse,
+        JsonObject,
+        LinkExceptionResponse,
+        OperationType,
+        Request,
+        Requestable,
+        ShalomTransportException;
 import 'package:shalom/src/transport/link.dart' show GraphQLLink;
 
 import 'rust/api/runtime.dart' as rs_runtime;
+
+export 'rust/api/runtime.dart' show NetworkPolicy;
 
 Set<String> collectRuntimeRefs(JsonObject data) {
   final refs = <String>{};
@@ -33,7 +45,7 @@ class ShalomRuntimeClient {
     required String schemaSdl,
     required List<String> fragmentSdls,
     Map<String, dynamic>? config,
-    required core.GraphQLLink link,
+    required GraphQLLink link,
   }) async {
     final configJson = config == null ? null : jsonEncode(config);
     final handle = await rs_runtime.initRuntime(
@@ -46,101 +58,86 @@ class ShalomRuntimeClient {
     return client;
   }
 
-  Stream<core.GraphQLResponse<T>> requestStream<T>(
-    core.Requestable<T> requestable,
-  ) async* {
-    final meta = requestable.getRequestMeta();
-    final req = meta.request;
-    try {
-      final variablesJson = req.variables.isEmpty
-          ? null
-          : jsonEncode(req.variables);
-      final payload = await rs_runtime.request(
-        handle: _handle,
-        query: req.query,
-        variablesJson: variablesJson,
-      );
-      final envelope = _RuntimeEnvelope.fromJson(payload);
-      yield core.GraphQLData(data: meta.parseFn(envelope.data));
-    } on Exception catch (e) {
-      yield core.LinkExceptionResponse([e]);
-    }
-  }
-
   Future<RuntimeTypedResult<T>> requestTyped<T>({
-    required core.Requestable<T> requestable,
+    required Requestable<T> requestable,
   }) async {
     final meta = requestable.getRequestMeta();
     final req = meta.request;
-    final variablesJson = req.variables.isEmpty
-        ? null
-        : jsonEncode(req.variables);
-    final payload = await rs_runtime.request(
-      handle: _handle,
-      query: req.query,
-      variablesJson: variablesJson,
-    );
+    final variablesJson =
+        req.variables.isEmpty ? null : jsonEncode(req.variables);
+
+    final payload = await rs_runtime
+        .requestOp(
+          handle: _handle,
+          operation: req.query,
+          variablesJson: variablesJson,
+          networkPolicy: rs_runtime.NetworkPolicy.networkOnly,
+        )
+        .first;
+
     final envelope = _RuntimeEnvelope.fromJson(payload);
-    if (envelope.operationId == null) {
-      throw FormatException('runtime response missing operation_id');
-    }
-    final refs = core.collectRuntimeRefs(envelope.data);
+    final refs = collectRuntimeRefs(envelope.data);
     return RuntimeTypedResult(
       data: meta.parseFn(envelope.data),
       rawData: envelope.data,
-      operationId: envelope.operationId!,
+      operationId: envelope.operationId ?? req.opName,
       refs: refs,
     );
   }
 
-  Stream<T> request<T>({required Requestable<T> requestable}) async* {
+  /// Subscribe to cache updates for the given refs.
+  ///
+  /// Emits a new value (parsed via [requestable]'s parseFn) whenever any of
+  /// [refs] is written by a subsequent operation.
+  Stream<T> subscribeToRefs<T>({
+    required Requestable<T> requestable,
+    required Set<String> refs,
+  }) {
     final meta = requestable.getRequestMeta();
-    final networkResults = _link.request(
-      request: meta.request,
-    );
-    
-    final subId = rs_runtime.initSubscription(
-      handle: _handle,
-      targetId: meta.request.opName,
-      rootRef: null,
-    );
-    try {
-      await for (final res in rs_runtime.subscribe(
-        handle: _handle,
-        subscriptionId: subId,
-      )) {
-        final envelope = _RuntimeEnvelope.fromJson(res);
-        yield meta.parseFn(envelope.data);
-      }
-    } finally {
-      await rs_runtime.unsubscribe(subscriptionId: subId, handle: _handle);
-    }
-  }
+    // subId is assigned lazily in onListen so the Rust subscription is only
+    // registered when a consumer actually starts listening. This avoids a
+    // spurious notify_subscribers fire during a concurrent requestTyped call
+    // that shares ROOT_QUERY in its changed keys.
+    BigInt? subId;
 
-  @override
-  Stream<T> subscribeFragment<T>({
-    required String targetId,
-    required String rootRef,
-    required T Function(JsonObject) fromJson,
-    required Iterable<String> refs,
-  }) async* {
-    final subId = rs_runtime.initSubscription(
-      handle: _handle,
-      targetId: targetId,
-      rootRef: rootRef,
-      refs: refs.toList(growable: false),
-    );
-    try {
-      await for (final res in rs_runtime.subscribe(
+    // Use StreamController so onCancel can call unsubscribe *before* waiting
+    // for the inner FRB stream to close. Calling unsubscribe drops the Rust
+    // sender, which makes stream.next() return None and lets the Rust task
+    // exit on its own — avoiding a circular wait.
+    final controller = StreamController<T>();
+    controller.onListen = () {
+      subId = rs_runtime.initSubscription(
         handle: _handle,
-        subscriptionId: subId,
-      )) {
-        final envelope = _RuntimeEnvelope.fromJson(res);
-        yield fromJson(envelope.data);
-      }
-    } finally {
-      await rs_runtime.unsubscribe(subscriptionId: subId, handle: _handle);
-    }
+        targetId: meta.request.opName,
+        rootRef: null,
+        refs: refs.toList(growable: false),
+      );
+      rs_runtime
+          .listenSubscription(handle: _handle, subscriptionId: subId!)
+          .listen(
+            (payload) {
+              if (controller.isClosed) return;
+              try {
+                final envelope = _RuntimeEnvelope.fromJson(payload);
+                controller.add(meta.parseFn(envelope.data));
+              } catch (e, st) {
+                controller.addError(e, st);
+              }
+            },
+            onError: (Object e, StackTrace st) {
+              if (!controller.isClosed) controller.addError(e, st);
+            },
+            onDone: () {
+              if (!controller.isClosed) controller.close();
+            },
+          );
+    };
+    controller.onCancel = () {
+      final id = subId;
+      if (id == null) return null;
+      return rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
+    };
+    return controller.stream;
   }
 
   Future<void> dispose() async {
@@ -150,9 +147,6 @@ class ShalomRuntimeClient {
     _disposed = true;
     final stream = _requestStream;
     if (stream != null) {
-      // Don't await: the Rust listen_requests task is blocked on its next
-      // item and won't acknowledge the cancellation until the channel closes.
-      // Fire-and-forget — the FRB runtime will clean up when the handle drops.
       unawaited(stream.cancel());
     }
     final subs = _activeRequests.values.toList(growable: false);
@@ -176,34 +170,44 @@ class ShalomRuntimeClient {
     if (previous != null) {
       unawaited(previous.cancel());
     }
-    final request = core.Request(
+    final request = Request(
       query: envelope.query,
       variables: envelope.variables,
       opType: envelope.operationType,
       opName: envelope.operationName,
     );
+
+    // Track the last push future so we can chain completeTransport after it.
+    // This prevents a race where complete_transport drops the Rust sender
+    // before push_response has been processed.
+    Future<void>? lastPush;
+
     final subscription = _link
         .request(request: request)
         .listen(
-          (response) => _dispatchResponse(envelope.id, response),
+          (response) {
+            lastPush = _dispatchResponse(envelope.id, response);
+          },
           onError: (error) => _dispatchTransportError(envelope.id, error),
           onDone: () {
             _activeRequests.remove(envelope.id);
-            rs_runtime.completeTransport(
-              handle: _handle,
-              requestId: BigInt.from(envelope.id),
-            );
+            (lastPush ?? Future<void>.value()).then((_) {
+              unawaited(rs_runtime.completeTransport(
+                handle: _handle,
+                requestId: BigInt.from(envelope.id),
+              ));
+            });
           },
         );
     _activeRequests[envelope.id] = subscription;
   }
 
-  void _dispatchResponse(
+  Future<void> _dispatchResponse(
     int requestId,
-    core.GraphQLResponse<JsonObject> response,
+    GraphQLResponse<JsonObject> response,
   ) {
     switch (response) {
-      case core.GraphQLData():
+      case GraphQLData():
         final payload = <String, dynamic>{'data': response.data};
         if (response.errors != null) {
           payload['errors'] = response.errors;
@@ -211,15 +215,16 @@ class ShalomRuntimeClient {
         if (response.extensions != null) {
           payload['extensions'] = response.extensions;
         }
-        unawaited(_pushResponse(requestId, payload));
-      case core.GraphQLError():
+        return _pushResponse(requestId, payload);
+      case GraphQLError():
         final payload = <String, dynamic>{'errors': response.errors};
         if (response.extensions != null) {
           payload['extensions'] = response.extensions;
         }
-        unawaited(_pushResponse(requestId, payload));
-      case core.LinkExceptionResponse():
+        return _pushResponse(requestId, payload);
+      case LinkExceptionResponse():
         _dispatchTransportError(requestId, response.errors);
+        return Future<void>.value();
     }
   }
 
@@ -250,7 +255,7 @@ class _RequestEnvelope {
   final String query;
   final Map<String, dynamic> variables;
   final String operationName;
-  final core.OperationType operationType;
+  final OperationType operationType;
 
   const _RequestEnvelope({
     required this.id,
@@ -292,14 +297,14 @@ class _RequestEnvelope {
     );
   }
 
-  static core.OperationType _parseOperationType(String raw) {
+  static OperationType _parseOperationType(String raw) {
     switch (raw) {
       case 'Query':
-        return core.OperationType.Query;
+        return OperationType.Query;
       case 'Mutation':
-        return core.OperationType.Mutation;
+        return OperationType.Mutation;
       case 'Subscription':
-        return core.OperationType.Subscription;
+        return OperationType.Subscription;
       default:
         throw FormatException('unknown operation type: $raw');
     }
@@ -365,27 +370,27 @@ class _TransportError {
 }
 
 _TransportError _toTransportError(Object error) {
-  if (error is core.ShalomTransportException) {
+  if (error is ShalomTransportException) {
     return _TransportError(
       message: error.message,
       code: error.code,
-      detailsJson: error.details == null ? null : jsonEncode(error.details),
+      detailsJson:
+          error.details == null ? null : jsonEncode(error.details),
     );
   }
   if (error is List<Exception>) {
     if (error.isNotEmpty) {
       final first = error.first;
-      if (first is core.ShalomTransportException) {
+      if (first is ShalomTransportException) {
         return _TransportError(
           message: first.message,
           code: first.code,
-          detailsJson: first.details == null ? null : jsonEncode(first.details),
+          detailsJson:
+              first.details == null ? null : jsonEncode(first.details),
         );
       }
     }
-    final message = error.isEmpty
-        ? 'Unknown transport error'
-        : error.join('; ');
+    final message = error.isEmpty ? 'Unknown transport error' : error.join('; ');
     return _TransportError(message: message, code: 'LINK_ERROR');
   }
   return _TransportError(message: error.toString(), code: 'LINK_ERROR');

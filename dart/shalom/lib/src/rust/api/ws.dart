@@ -8,105 +8,79 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'ws.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `from_ws_event`, `opt_value_to_json`
+            // These functions are ignored because they are not marked as `pub`: `from_ws_event`, `opt_value_to_json`
 
-/// Create a new sans-IO state machine.
+
+            /// Create a new sans-IO state machine.
 ///
 /// `connection_params_json` — optional JSON object forwarded as the
 /// `connection_init` payload (e.g. `{"Authorization":"Bearer …"}`).
-WsSansIo createWsSansIo({String? connectionParamsJson}) => RustLib.instance.api
-    .crateApiWsCreateWsSansIo(connectionParamsJson: connectionParamsJson);
+WsSansIo  createWsSansIo({String? connectionParamsJson }) => RustLib.instance.api.crateApiWsCreateWsSansIo(connectionParamsJson: connectionParamsJson);
 
 /// The `connection_init` frame to send immediately after the socket opens.
-String wsConnectionInitFrame({required WsSansIo sansio}) =>
-    RustLib.instance.api.crateApiWsWsConnectionInitFrame(sansio: sansio);
+String  wsConnectionInitFrame({required WsSansIo sansio }) => RustLib.instance.api.crateApiWsWsConnectionInitFrame(sansio: sansio);
 
 /// Build a `subscribe` frame for a new operation and register it internally.
 ///
 /// `variables_json` — optional JSON object of operation variables.
-String wsSubscribeFrame({
-  required WsSansIo sansio,
-  required String opId,
-  required String query,
-  String? variablesJson,
-  String? operationName,
-}) => RustLib.instance.api.crateApiWsWsSubscribeFrame(
-  sansio: sansio,
-  opId: opId,
-  query: query,
-  variablesJson: variablesJson,
-  operationName: operationName,
-);
+String  wsSubscribeFrame({required WsSansIo sansio , required String opId , required String query , String? variablesJson , String? operationName }) => RustLib.instance.api.crateApiWsWsSubscribeFrame(sansio: sansio, opId: opId, query: query, variablesJson: variablesJson, operationName: operationName);
 
 /// Build a `complete` frame to cancel an in-flight operation.
-String wsCompleteFrame({required WsSansIo sansio, required String opId}) =>
-    RustLib.instance.api.crateApiWsWsCompleteFrame(sansio: sansio, opId: opId);
+String  wsCompleteFrame({required WsSansIo sansio , required String opId }) => RustLib.instance.api.crateApiWsWsCompleteFrame(sansio: sansio, opId: opId);
 
 /// Build a `pong` frame in response to a server `ping`.
 ///
 /// `payload_json` — the payload from the `PingReceived` event, if any.
-String wsPongFrame({required WsSansIo sansio, String? payloadJson}) => RustLib
-    .instance
-    .api
-    .crateApiWsWsPongFrame(sansio: sansio, payloadJson: payloadJson);
+String  wsPongFrame({required WsSansIo sansio , String? payloadJson }) => RustLib.instance.api.crateApiWsWsPongFrame(sansio: sansio, payloadJson: payloadJson);
 
 /// Build a `ping` frame to send to the server.
-String wsPingFrame() => RustLib.instance.api.crateApiWsWsPingFrame();
+String  wsPingFrame() => RustLib.instance.api.crateApiWsWsPingFrame();
 
 /// Process a raw text frame received from the server.
 ///
 /// Returns a list of typed events for Dart to dispatch on.
 /// On a protocol error returns `Err` — caller should close the socket.
-List<WsLinkEvent> wsOnMessage({
-  required WsSansIo sansio,
-  required String raw,
-}) => RustLib.instance.api.crateApiWsWsOnMessage(sansio: sansio, raw: raw);
+List<WsLinkEvent>  wsOnMessage({required WsSansIo sansio , required String raw }) => RustLib.instance.api.crateApiWsWsOnMessage(sansio: sansio, raw: raw);
 
 /// Reset connection state for reconnect. Preserves active operation ids.
-void wsReset({required WsSansIo sansio}) =>
-    RustLib.instance.api.crateApiWsWsReset(sansio: sansio);
+void  wsReset({required WsSansIo sansio }) => RustLib.instance.api.crateApiWsWsReset(sansio: sansio);
 
 /// Whether the connection has been acknowledged.
-bool wsIsConnected({required WsSansIo sansio}) =>
-    RustLib.instance.api.crateApiWsWsIsConnected(sansio: sansio);
+bool  wsIsConnected({required WsSansIo sansio }) => RustLib.instance.api.crateApiWsWsIsConnected(sansio: sansio);
 
 /// All currently registered operation ids (active + pending-reconnect).
-List<String> wsActiveOperationIds({required WsSansIo sansio}) =>
-    RustLib.instance.api.crateApiWsWsActiveOperationIds(sansio: sansio);
+List<String>  wsActiveOperationIds({required WsSansIo sansio }) => RustLib.instance.api.crateApiWsWsActiveOperationIds(sansio: sansio);
 
-// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<WsSansIo>>
-abstract class WsSansIo implements RustOpaqueInterface {}
+            
+                // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<WsSansIo>>
+                abstract class WsSansIo implements RustOpaqueInterface {
+                    
+
+                    
+                }
+                
 
 @freezed
-sealed class WsLinkEvent with _$WsLinkEvent {
-  const WsLinkEvent._();
+                sealed class WsLinkEvent with _$WsLinkEvent  {
+                    const WsLinkEvent._();
 
-  /// Connection acknowledged — safe to flush pending operations.
-  const factory WsLinkEvent.connected() = WsLinkEvent_Connected;
+                     /// Connection acknowledged — safe to flush pending operations.
+const factory WsLinkEvent.connected() = WsLinkEvent_Connected;
+ /// Server sent a Ping.  Send back the frame from `ws_pong_frame()`.
+/// `payload_json` is the raw ping payload (JSON object or null string).
+const factory WsLinkEvent.pingReceived({   String? payloadJson , }) = WsLinkEvent_PingReceived;
+ /// A data / error payload arrived for `op_id`.
+/// `data_json`       — JSON object (`{"field":…}`) or null.
+/// `errors_json`     — JSON array  (`[{"message":…}]`) or null.
+/// `extensions_json` — JSON object or null.
+const factory WsLinkEvent.operationResponse({   required String opId ,  String? dataJson ,  String? errorsJson ,  String? extensionsJson , }) = WsLinkEvent_OperationResponse;
+ /// The server has finished sending data for `op_id`.
+const factory WsLinkEvent.operationComplete({   required String opId , }) = WsLinkEvent_OperationComplete;
+ /// Protocol violation — close the WebSocket with `code`.
+const factory WsLinkEvent.protocolError({   required int code ,  required String reason , }) = WsLinkEvent_ProtocolError;
 
-  /// Server sent a Ping.  Send back the frame from `ws_pong_frame()`.
-  /// `payload_json` is the raw ping payload (JSON object or null string).
-  const factory WsLinkEvent.pingReceived({String? payloadJson}) =
-      WsLinkEvent_PingReceived;
+                    
 
-  /// A data / error payload arrived for `op_id`.
-  /// `data_json`       — JSON object (`{"field":…}`) or null.
-  /// `errors_json`     — JSON array  (`[{"message":…}]`) or null.
-  /// `extensions_json` — JSON object or null.
-  const factory WsLinkEvent.operationResponse({
-    required String opId,
-    String? dataJson,
-    String? errorsJson,
-    String? extensionsJson,
-  }) = WsLinkEvent_OperationResponse;
-
-  /// The server has finished sending data for `op_id`.
-  const factory WsLinkEvent.operationComplete({required String opId}) =
-      WsLinkEvent_OperationComplete;
-
-  /// Protocol violation — close the WebSocket with `code`.
-  const factory WsLinkEvent.protocolError({
-    required int code,
-    required String reason,
-  }) = WsLinkEvent_ProtocolError;
-}
+                    
+                }
+            

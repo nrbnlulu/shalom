@@ -12,8 +12,6 @@ use shalom_runtime::{
     RuntimeConfig, RuntimeResponse, RuntimeResponseStream, ShalomRuntime, SubscriptionId,
 };
 
-// Re-exported so that `frb_generated.rs` (which does `use crate::api::runtime::*`) can
-// reference these types by name in the generated codec impls.
 pub use serde_json::{Map, Value};
 
 #[frb(opaque)]
@@ -24,9 +22,7 @@ pub struct RuntimeHandle {
 
 impl RuntimeHandle {
     /// Build the stream of normalized responses for a given query+variables.
-    /// The link is invoked here, in the handle, rather than inside ShalomRuntime,
-    /// so that ShalomRuntime remains transport-agnostic.
-    /// Not exposed via FRB — used internally by the `request` function.
+    /// Transport-agnostic: the link is invoked here so ShalomRuntime stays pure.
     pub(crate) fn request_stream(
         &self,
         query: String,
@@ -83,9 +79,20 @@ fn to_link_op_type(op_type: shalom_core::operation::types::OperationType) -> Lin
     }
 }
 
+fn extract_refs_from_data(data: &Value) -> Vec<String> {
+    let Some(map) = data.as_object() else {
+        return vec![];
+    };
+    let Some(Value::Array(arr)) = map.get("__used_refs") else {
+        return vec![];
+    };
+    arr.iter()
+        .filter_map(|v| v.as_str().map(str::to_string))
+        .collect()
+}
+
 #[flutter_rust_bridge::frb(init)]
 pub fn init_app() {
-    // Default utilities - feel free to customize
     flutter_rust_bridge::setup_default_user_utils();
 }
 
@@ -147,7 +154,6 @@ pub fn push_transport_error(
 }
 
 /// Signal that all responses for `request_id` have been delivered.
-/// Drops the sender, which closes the Rust-side stream for that operation.
 #[frb]
 pub fn complete_transport(handle: &RuntimeHandle, request_id: u64) {
     handle.link.complete(request_id);
@@ -166,29 +172,158 @@ pub fn init_subscription(
         .map(|o| o.into())
 }
 
+/// Stream cache-update notifications for an existing subscription.
+#[frb]
+pub async fn listen_subscription(
+    handle: &RuntimeHandle,
+    subscription_id: u64,
+    sink: StreamSink<String>,
+) -> anyhow::Result<()> {
+    let id = SubscriptionId::from(subscription_id);
+    let mut stream = handle.runtime.subscription_stream(&id)?;
+    while let Some(item) = stream.next().await {
+        let response = item?;
+        let payload = response_to_json(response)?;
+        if sink.add(payload).is_err() {
+            break;
+        }
+    }
+    Ok(())
+}
+
+pub enum NetworkPolicy {
+    /// Fetch from network only; no cache subscription is set up.
+    NetworkOnly,
+    /// Fetch from network, emit the first response, then keep the stream alive
+    /// via a cache subscription so subsequent writes to the same refs re-emit.
+    NetworkFirst,
+    /// Emit cached data immediately (if available), then do a network fetch.
+    /// A cache subscription is set up so any future write to those refs re-emits.
+    CacheFirst,
+}
+
 #[frb]
 pub async fn request_op(
     handle: &RuntimeHandle,
     operation: String,
     variables_json: Option<String>,
+    network_policy: NetworkPolicy,
     sink: StreamSink<String>,
 ) -> anyhow::Result<()> {
     let variables = parse_variables(variables_json)?;
-    let mut stream = handle.request_stream(operation, variables)?;
-    let result: anyhow::Result<()> = async {
-        while let Some(response) = stream.next().await {
-            let response = response?;
-            let payload = response_to_json(response)?;
-            if sink.add(payload).is_err() {
-                handle.runtime.unsubscribe(id);
-                log::info!("sink closed, unsubscribing");
-                break;
+
+    match network_policy {
+        NetworkPolicy::NetworkOnly => {
+            let mut stream = handle.request_stream(operation, variables)?;
+            while let Some(item) = stream.next().await {
+                let response = item?;
+                if sink.add(response_to_json(response)?).is_err() {
+                    break;
+                }
             }
         }
-        Ok(())
+
+        NetworkPolicy::NetworkFirst => {
+            let mut stream = handle.request_stream(operation.clone(), variables.clone())?;
+
+            // Emit first network response, then transition to cache subscription.
+            let first = match stream.next().await {
+                Some(r) => r?,
+                None => return Ok(()),
+            };
+            let refs = extract_refs_from_data(&first.data);
+            let op_id = first
+                .operation_id
+                .clone()
+                .unwrap_or_else(|| operation.clone());
+
+            if sink.add(response_to_json(first)?).is_err() {
+                return Ok(());
+            }
+
+            let sub_id = SubscriptionId::from(
+                handle
+                    .runtime
+                    .subscribe(&op_id, None, refs)
+                    .map(u64::from)?,
+            );
+            let mut sub_stream = handle.runtime.subscription_stream(&sub_id)?;
+
+            while let Some(item) = sub_stream.next().await {
+                let response = item?;
+                if sink.add(response_to_json(response)?).is_err() {
+                    break;
+                }
+            }
+            handle.runtime.unsubscribe(&sub_id);
+            handle.runtime.collect_garbage();
+        }
+
+        NetworkPolicy::CacheFirst => {
+            let op_ctx = handle.runtime.register_operation_from_query(&operation)?;
+            let op_id = op_ctx.get_operation_name().to_string();
+            let vars_map = variables.clone();
+
+            // Try cache first.
+            let maybe_cached = handle
+                .runtime
+                .read_from_cache(&op_ctx, vars_map.as_ref())
+                .ok();
+
+            let initial_refs = maybe_cached
+                .as_ref()
+                .map(|r| extract_refs_from_data(&r.data))
+                .unwrap_or_default();
+
+            let sub_id = SubscriptionId::from(
+                handle
+                    .runtime
+                    .subscribe(&op_id, None, initial_refs)
+                    .map(u64::from)?,
+            );
+
+            if let Some(cached) = maybe_cached {
+                if sink.add(response_to_json(cached)?).is_err() {
+                    handle.runtime.unsubscribe(&sub_id);
+                    handle.runtime.collect_garbage();
+                    return Ok(());
+                }
+            }
+
+            // Drive the network stream for normalization; deliver via subscription.
+            let mut net_stream = handle.request_stream(operation, variables)?;
+            let mut sub_stream = handle.runtime.subscription_stream(&sub_id)?;
+            let mut net_done = false;
+
+            loop {
+                tokio::select! {
+                    net_opt = net_stream.next(), if !net_done => {
+                        match net_opt {
+                            None => net_done = true,
+                            Some(Err(e)) => return Err(e),
+                            Some(Ok(_)) => {} // normalization is a side effect of request_stream
+                        }
+                    }
+                    sub_opt = sub_stream.next() => {
+                        match sub_opt {
+                            None => break,
+                            Some(Ok(update)) => {
+                                if sink.add(response_to_json(update)?).is_err() {
+                                    break;
+                                }
+                            }
+                            Some(Err(e)) => return Err(e),
+                        }
+                    }
+                }
+            }
+
+            handle.runtime.unsubscribe(&sub_id);
+            handle.runtime.collect_garbage();
+        }
     }
-    .await;
-    result
+
+    Ok(())
 }
 
 #[frb]
@@ -196,8 +331,6 @@ pub fn unsubscribe(handle: &RuntimeHandle, subscription_id: u64) {
     handle
         .runtime
         .unsubscribe(&SubscriptionId::from(subscription_id));
-    // Run GC after unsubscribing so cache entries with no active watchers
-    // are evicted promptly rather than accumulating.
     handle.runtime.collect_garbage();
 }
 

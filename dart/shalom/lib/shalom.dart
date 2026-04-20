@@ -5,7 +5,6 @@ import 'package:shalom/src/rust/frb_generated.dart' as rs;
 
 import 'src/shalom_core_base.dart';
 
-export 'src/rust/api/simple.dart';
 export 'src/rust/frb_generated.dart' show RustLib;
 export 'src/runtime_client.dart';
 
@@ -19,8 +18,7 @@ export 'src/transport/ws_link.dart' show WebSocketLink;
 export 'src/transport/ws_transport.dart' show WebSocketTransport, MessageSender;
 export 'src/transport/web_socket_transport.dart' show WebSocketPackageTransport;
 export 'src/rust/api/ws.dart' show WsSansIo;
-export 'src/runtime_cache.dart'
-    show RuntimeSubscriptionClient, collectRuntimeRefs;
+export 'src/runtime_cache.dart' show collectRuntimeRefs;
 
 
 

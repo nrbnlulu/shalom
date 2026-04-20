@@ -43,6 +43,7 @@ class Response {
 }
 
 abstract class Requestable<T> {
+  const Requestable();
   RequestMeta<T> getRequestMeta();
   Request toRequest() => getRequestMeta().request;
 }
