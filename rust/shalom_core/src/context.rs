@@ -5,11 +5,8 @@ use crate::{
     operation::fragments::{FragmentContext, SharedFragmentContext},
     schema::context::SharedSchemaContext,
 };
-use std::{
-    collections::HashMap,
-    path::PathBuf,
-    sync::{Arc, Mutex},
-};
+use parking_lot::Mutex;
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
 
 #[derive(Debug)]
 pub struct ShalomGlobalContext {
@@ -39,8 +36,8 @@ impl ShalomGlobalContext {
     }
 
     pub fn register_operations(&self, operations_update: HashMap<String, SharedOpCtx>) {
-        let mut operations = self.operations.lock().unwrap();
-        let fragments = self.fragments.lock().unwrap();
+        let mut operations = self.operations.lock();
+        let fragments = self.fragments.lock();
         for (name, _) in operations_update.iter() {
             if operations.contains_key(name) {
                 panic!("Operation with name {} already exists", name);
@@ -60,11 +57,11 @@ impl ShalomGlobalContext {
     }
 
     pub fn get_operation(&self, name: &str) -> Option<SharedOpCtx> {
-        self.operations.lock().unwrap().get(name).cloned()
+        self.operations.lock().get(name).cloned()
     }
 
     pub fn operations(&self) -> Vec<(String, SharedOpCtx)> {
-        let operations = self.operations.lock().unwrap();
+        let operations = self.operations.lock();
         operations
             .iter()
             .map(|(name, op)| (name.clone(), op.clone()))
@@ -80,7 +77,7 @@ impl ShalomGlobalContext {
     }
 
     pub fn operation_exists(&self, name: &str) -> bool {
-        let operations = self.operations.lock().unwrap();
+        let operations = self.operations.lock();
         operations.contains_key(name)
     }
 
@@ -88,8 +85,8 @@ impl ShalomGlobalContext {
         &self,
         fragments_update: HashMap<String, FragmentContext>,
     ) -> anyhow::Result<()> {
-        let mut fragments = self.fragments.lock().unwrap();
-        let operations = self.operations.lock().unwrap();
+        let mut fragments = self.fragments.lock();
+        let operations = self.operations.lock();
         for (name, _) in fragments_update.iter() {
             if fragments.contains_key(name) {
                 return Err(anyhow::anyhow!(
@@ -118,20 +115,20 @@ impl ShalomGlobalContext {
     }
 
     pub fn get_fragment(&self, name: &str) -> Option<SharedFragmentContext> {
-        self.fragments.lock().unwrap().get(name).cloned()
+        self.fragments.lock().get(name).cloned()
     }
     pub fn get_fragment_strict(&self, name: &str) -> SharedFragmentContext {
         self.get_fragment(name).unwrap_or_else(|| {
             panic!(
                 "fragment not found {}.\n available fragments: {:?}",
                 name,
-                self.fragments.lock().unwrap().keys()
+                self.fragments.lock().keys()
             )
         })
     }
 
     pub fn fragments(&self) -> Vec<(String, SharedFragmentContext)> {
-        let fragments = self.fragments.lock().unwrap();
+        let fragments = self.fragments.lock();
         fragments
             .iter()
             .map(|(name, frag)| (name.clone(), frag.clone()))
@@ -139,7 +136,7 @@ impl ShalomGlobalContext {
     }
 
     pub fn fragment_exists(&self, name: &str) -> bool {
-        let fragments = self.fragments.lock().unwrap();
+        let fragments = self.fragments.lock();
         fragments.contains_key(name)
     }
 }

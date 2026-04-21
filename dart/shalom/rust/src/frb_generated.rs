@@ -591,16 +591,15 @@ fn wire__crate__api__runtime__request_op_impl(
     )
 }
 fn wire__crate__api__runtime__unsubscribe_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "unsubscribe",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
         move || {
             let message = unsafe {
@@ -617,30 +616,28 @@ fn wire__crate__api__runtime__unsubscribe_impl(
             >>::sse_decode(&mut deserializer);
             let api_subscription_id = <u64>::sse_decode(&mut deserializer);
             deserializer.end();
-            move |context| {
-                transform_result_sse::<_, ()>((move || {
-                    let mut api_handle_guard = None;
-                    let decode_indices_ =
-                        flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
-                            flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                                &api_handle,
-                                0,
-                                false,
-                            ),
-                        ]);
-                    for i in decode_indices_ {
-                        match i {
-                            0 => api_handle_guard = Some(api_handle.lockable_decode_sync_ref()),
-                            _ => unreachable!(),
-                        }
+            transform_result_sse::<_, ()>((move || {
+                let mut api_handle_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_handle,
+                            0,
+                            false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_handle_guard = Some(api_handle.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
                     }
-                    let api_handle_guard = api_handle_guard.unwrap();
-                    let output_ok = Result::<_, ()>::Ok({
-                        crate::api::runtime::unsubscribe(&*api_handle_guard, api_subscription_id);
-                    })?;
-                    Ok(output_ok)
-                })())
-            }
+                }
+                let api_handle_guard = api_handle_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok({
+                    crate::api::runtime::unsubscribe(&*api_handle_guard, api_subscription_id);
+                })?;
+                Ok(output_ok)
+            })())
         },
     )
 }
@@ -1334,7 +1331,6 @@ fn pde_ffi_dispatcher_primary_impl(
             wire__crate__api__runtime__push_transport_error_impl(port, ptr, rust_vec_len, data_len)
         }
         10 => wire__crate__api__runtime__request_op_impl(port, ptr, rust_vec_len, data_len),
-        11 => wire__crate__api__runtime__unsubscribe_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -1349,6 +1345,7 @@ fn pde_ffi_dispatcher_sync_impl(
     match func_id {
         2 => wire__crate__api__ws__create_ws_sans_io_impl(ptr, rust_vec_len, data_len),
         5 => wire__crate__api__runtime__init_subscription_impl(ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__runtime__unsubscribe_impl(ptr, rust_vec_len, data_len),
         12 => wire__crate__api__ws__ws_active_operation_ids_impl(ptr, rust_vec_len, data_len),
         13 => wire__crate__api__ws__ws_complete_frame_impl(ptr, rust_vec_len, data_len),
         14 => wire__crate__api__ws__ws_connection_init_frame_impl(ptr, rust_vec_len, data_len),

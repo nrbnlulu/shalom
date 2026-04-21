@@ -67,7 +67,6 @@ fn record(runtime: &ShalomRuntime, key: &str) -> CacheRecord {
     runtime
         .cache()
         .lock()
-        .expect("normalized cache lock poisoned")
         .get(key)
         .cloned()
         .unwrap_or_else(|| panic!("record {key} missing"))
@@ -77,7 +76,6 @@ fn has_record(runtime: &ShalomRuntime, key: &str) -> bool {
     runtime
         .cache()
         .lock()
-        .expect("normalized cache lock poisoned")
         .get(key)
         .is_some()
 }
@@ -510,7 +508,7 @@ mod unions {
 
         let root = root_record(&global_ctx);
         expect_ref(root.get("search").expect("search missing"), "User:u1");
-        assert!(result.used_refs.contains("ROOT_QUERY_search"));
+        assert!(result.used_refs.contains("ROOT_QUERY.search"));
     }
 
     #[test]
@@ -611,7 +609,7 @@ mod interfaces {
             None,
         );
 
-        assert!(result.used_refs.contains("ROOT_QUERY_node"));
+        assert!(result.used_refs.contains("ROOT_QUERY.node"));
         assert!(has_record(&global_ctx, "User:u1"));
     }
 
@@ -1856,15 +1854,15 @@ mod fragment_subscriptions {
         let runtime = ShalomRuntime::new(global_ctx);
 
         let result1 = normalize(&runtime, &op1, serde_json::json!({ "sharedValue": 42 }), None);
-        assert!(result1.changed.contains("ROOT_QUERY_sharedValue"));
+        assert!(result1.changed.contains("ROOT_QUERY.sharedValue"));
         
         let used_refs_vec: Vec<String> = result1.used_refs.into_iter().collect();
         let sub_id = runtime.subscribe("Op1", None, used_refs_vec).unwrap();
         let mut updates = runtime.subscription_stream(&sub_id).unwrap();
 
         let result2 = normalize(&runtime, &op2, serde_json::json!({ "sharedValue": 99, "otherValue": "hello" }), None);
-        assert!(result2.changed.contains("ROOT_QUERY_sharedValue"));
-        assert!(result2.changed.contains("ROOT_QUERY_otherValue"));
+        assert!(result2.changed.contains("ROOT_QUERY.sharedValue"));
+        assert!(result2.changed.contains("ROOT_QUERY.otherValue"));
 
         let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
         rt.block_on(async {

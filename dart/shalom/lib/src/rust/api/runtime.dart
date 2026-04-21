@@ -6,49 +6,107 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
+// These functions are ignored because they are not marked as `pub`: `extract_refs_from_data`, `parse_config`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `request_stream`, `response_to_json`, `to_link_op_type`
 
-            // These functions are ignored because they are not marked as `pub`: `extract_refs_from_data`, `parse_config`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `request_stream`, `response_to_json`, `to_link_op_type`
+Future<RuntimeHandle> initRuntime({
+  required String schemaSdl,
+  required List<String> fragmentSdls,
+  String? configJson,
+}) => RustLib.instance.api.crateApiRuntimeInitRuntime(
+  schemaSdl: schemaSdl,
+  fragmentSdls: fragmentSdls,
+  configJson: configJson,
+);
 
+Stream<String> listenRequests({required RuntimeHandle handle}) =>
+    RustLib.instance.api.crateApiRuntimeListenRequests(handle: handle);
 
-            Future<RuntimeHandle>  initRuntime({required String schemaSdl , required List<String> fragmentSdls , String? configJson }) => RustLib.instance.api.crateApiRuntimeInitRuntime(schemaSdl: schemaSdl, fragmentSdls: fragmentSdls, configJson: configJson);
+Future<void> pushResponse({
+  required RuntimeHandle handle,
+  required BigInt requestId,
+  required String responseJson,
+}) => RustLib.instance.api.crateApiRuntimePushResponse(
+  handle: handle,
+  requestId: requestId,
+  responseJson: responseJson,
+);
 
-Stream<String>  listenRequests({required RuntimeHandle handle }) => RustLib.instance.api.crateApiRuntimeListenRequests(handle: handle);
-
-Future<void>  pushResponse({required RuntimeHandle handle , required BigInt requestId , required String responseJson }) => RustLib.instance.api.crateApiRuntimePushResponse(handle: handle, requestId: requestId, responseJson: responseJson);
-
-Future<void>  pushTransportError({required RuntimeHandle handle , required BigInt requestId , required String message , required String code , String? detailsJson }) => RustLib.instance.api.crateApiRuntimePushTransportError(handle: handle, requestId: requestId, message: message, code: code, detailsJson: detailsJson);
+Future<void> pushTransportError({
+  required RuntimeHandle handle,
+  required BigInt requestId,
+  required String message,
+  required String code,
+  String? detailsJson,
+}) => RustLib.instance.api.crateApiRuntimePushTransportError(
+  handle: handle,
+  requestId: requestId,
+  message: message,
+  code: code,
+  detailsJson: detailsJson,
+);
 
 /// Signal that all responses for `request_id` have been delivered.
-Future<void>  completeTransport({required RuntimeHandle handle , required BigInt requestId }) => RustLib.instance.api.crateApiRuntimeCompleteTransport(handle: handle, requestId: requestId);
+Future<void> completeTransport({
+  required RuntimeHandle handle,
+  required BigInt requestId,
+}) => RustLib.instance.api.crateApiRuntimeCompleteTransport(
+  handle: handle,
+  requestId: requestId,
+);
 
-BigInt  initSubscription({required RuntimeHandle handle , required String targetId , String? rootRef , required List<String> refs }) => RustLib.instance.api.crateApiRuntimeInitSubscription(handle: handle, targetId: targetId, rootRef: rootRef, refs: refs);
+BigInt initSubscription({
+  required RuntimeHandle handle,
+  required String targetId,
+  String? rootRef,
+  required List<String> refs,
+}) => RustLib.instance.api.crateApiRuntimeInitSubscription(
+  handle: handle,
+  targetId: targetId,
+  rootRef: rootRef,
+  refs: refs,
+);
+
+void unsubscribe({
+  required RuntimeHandle handle,
+  required BigInt subscriptionId,
+}) => RustLib.instance.api.crateApiRuntimeUnsubscribe(
+  handle: handle,
+  subscriptionId: subscriptionId,
+);
 
 /// Stream cache-update notifications for an existing subscription.
-Stream<String>  listenSubscription({required RuntimeHandle handle , required BigInt subscriptionId }) => RustLib.instance.api.crateApiRuntimeListenSubscription(handle: handle, subscriptionId: subscriptionId);
+Stream<String> listenSubscription({
+  required RuntimeHandle handle,
+  required BigInt subscriptionId,
+}) => RustLib.instance.api.crateApiRuntimeListenSubscription(
+  handle: handle,
+  subscriptionId: subscriptionId,
+);
 
-Stream<String>  requestOp({required RuntimeHandle handle , required String operation , String? variablesJson , required NetworkPolicy networkPolicy }) => RustLib.instance.api.crateApiRuntimeRequestOp(handle: handle, operation: operation, variablesJson: variablesJson, networkPolicy: networkPolicy);
+Stream<String> requestOp({
+  required RuntimeHandle handle,
+  required String operation,
+  String? variablesJson,
+  required NetworkPolicy networkPolicy,
+}) => RustLib.instance.api.crateApiRuntimeRequestOp(
+  handle: handle,
+  operation: operation,
+  variablesJson: variablesJson,
+  networkPolicy: networkPolicy,
+);
 
-Future<void>  unsubscribe({required RuntimeHandle handle , required BigInt subscriptionId }) => RustLib.instance.api.crateApiRuntimeUnsubscribe(handle: handle, subscriptionId: subscriptionId);
-
-            
-                // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>>
-                abstract class RuntimeHandle implements RustOpaqueInterface {
-                    
-
-                    
-                }
-                
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>>
+abstract class RuntimeHandle implements RustOpaqueInterface {}
 
 enum NetworkPolicy {
-                    /// Fetch from network only; no cache subscription is set up.
-networkOnly,
-/// Fetch from network, emit the first response, then keep the stream alive
-/// via a cache subscription so subsequent writes to the same refs re-emit.
-networkFirst,
-/// Emit cached data immediately (if available), then do a network fetch.
-/// A cache subscription is set up so any future write to those refs re-emits.
-cacheFirst,
-                    ;
-                    
-                }
-            
+  /// Fetch from network only; no cache subscription is set up.
+  networkOnly,
+
+  /// Fetch from network, emit the first response, then keep the stream alive
+  /// via a cache subscription so subsequent writes to the same refs re-emit.
+  networkFirst,
+
+  /// Emit cached data immediately (if available), then do a network fetch.
+  /// A cache subscription is set up so any future write to those refs re-emits.
+  cacheFirst,
+}

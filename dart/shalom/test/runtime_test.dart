@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:shalom/shalom.dart';
 import 'package:shalom/shalom.dart' as shalom;
+import 'package:shalom/src/runtime_client.dart' show collectRuntimeRefs;
 import 'package:test/test.dart';
 
 String get _nativeLibPath {
@@ -14,7 +15,7 @@ String get _nativeLibPath {
 }
 
 // ---------------------------------------------------------------------------
-// Inline mock link — no codegen helpers needed in this package.
+// Inline mock link.
 // ---------------------------------------------------------------------------
 
 class _MockLink extends GraphQLLink {
@@ -38,10 +39,7 @@ class _MockLink extends GraphQLLink {
 }
 
 // ---------------------------------------------------------------------------
-// Schema used by all tests.
-//
-// User has an `id` field => entity key = "User:<id>" in the normalized cache.
-// Post  has an `id` field => entity key = "Post:<id>".
+// Schema.
 // ---------------------------------------------------------------------------
 
 const _schemaSdl = '''
@@ -54,6 +52,12 @@ type Query {
 type User {
   id: ID!
   name: String!
+  pet: Pet
+}
+
+type Pet {
+  id: ID!
+  name: String!
 }
 
 type Post {
@@ -63,7 +67,7 @@ type Post {
 ''';
 
 // ---------------------------------------------------------------------------
-// Requestable implementations used for tests 2-4.
+// Requestables.
 // ---------------------------------------------------------------------------
 
 class _UserRequestable extends Requestable<Map<String, dynamic>> {
@@ -129,7 +133,10 @@ void main() {
     await client.dispose();
   });
 
-  test('requestTyped returns normalized data from cache', () async {
+  // -------------------------------------------------------------------------
+  // 2. request() returns normalized data from the network (NetworkFirst).
+  // -------------------------------------------------------------------------
+  test('request returns normalized data from network', () async {
     final client = await _makeClient([
       GraphQLData(
         data: {
@@ -143,35 +150,26 @@ void main() {
       'query GetUser @subscribeable { user(id: "1") { id name } }',
     );
 
-    final result = await client.requestTyped(requestable: requestable);
+    final data = await client.request(requestable: requestable).first;
 
-    expect(result.data['id'], '1');
-    expect(result.data['name'], 'Alice');
-    // @subscribeable ensures __used_refs are injected.
-    expect(result.refs, isNotEmpty);
+    expect(data['id'], '1');
+    expect(data['name'], 'Alice');
 
     await client.dispose();
   });
 
   // -------------------------------------------------------------------------
   // 3. Two operations sharing the same entity DO trigger a subscription update.
-  //
-  // GetUser and GetUserDetails both return user id="1". Because entity-key
-  // normalization merges them into the same "User:1" cache entry, a second
-  // write (from GetUserDetails) mutates keys that GetUser's subscription
-  // watches, and the subscription fires.
   // -------------------------------------------------------------------------
   test(
     'two operations for the same entity update a @subscribeable subscription',
     () async {
       final client = await _makeClient([
-        // First request (GetUser) — initial data.
         GraphQLData(
           data: {
             'user': {'id': '1', 'name': 'Alice'},
           },
         ),
-        // Second request (GetUserDetails) — updated name on the same entity.
         GraphQLData(
           data: {
             'user': {'id': '1', 'name': 'Bob'},
@@ -188,44 +186,42 @@ void main() {
         'query GetUserDetails @subscribeable { user(id: "1") { id name } }',
       );
 
-      // Normalize the first response into the cache.
-      final initial = await client.requestTyped(requestable: reqGetUser);
-      expect(initial.data['name'], 'Alice');
-      expect(initial.refs, isNotEmpty);
+      // Collect up to 2 emissions from the GetUser stream.
+      final results = <Map<String, dynamic>>[];
+      final secondReceived = Completer<void>();
 
-      // Set up subscription BEFORE the second write so we don't miss the update.
-      final updates = client.subscribeToRefs(
-        requestable: reqGetUser,
-        refs: initial.refs,
-      );
+      final sub = client.request(requestable: reqGetUser).listen((data) {
+        results.add(data);
+        if (results.length == 1) {
+          // First emission (Alice) received — now trigger the second write.
+          unawaited(
+            client.request(requestable: reqGetUserDetails).first,
+          );
+        } else if (results.length >= 2) {
+          if (!secondReceived.isCompleted) secondReceived.complete();
+        }
+      });
 
-      // Fire the second operation. It writes to the same "User:1" entity.
-      unawaited(
-        client.requestTyped(requestable: reqGetUserDetails),
-      );
+      await secondReceived.future.timeout(const Duration(seconds: 5));
+      await sub.cancel();
 
-      final updated = await updates.first.timeout(const Duration(seconds: 5));
-      expect(updated['name'], 'Bob');
+      expect(results[0]['name'], 'Alice');
+      expect(results[1]['name'], 'Bob');
 
       await client.dispose();
     },
   );
 
   // -------------------------------------------------------------------------
-  // 4. Two unrelated operations do NOT trigger each other's subscription.
-  //
-  // GetUser watches "User:1" entity keys. GetPost writes to "Post:1" entity
-  // keys. These sets are disjoint => the GetUser subscription must NOT fire.
+  // 4. Two unrelated operations do NOT cross-trigger subscriptions.
   // -------------------------------------------------------------------------
   test('two unrelated operations do not cross-trigger subscriptions', () async {
     final client = await _makeClient([
-      // GetUser — sets up the subscription we are watching.
       GraphQLData(
         data: {
           'user': {'id': '1', 'name': 'Alice'},
         },
       ),
-      // GetPost — a completely different entity; should NOT wake GetUser.
       GraphQLData(
         data: {
           'post': {'id': '1', 'title': 'Hello World'},
@@ -241,28 +237,23 @@ void main() {
       'query GetPost @subscribeable { post(id: "1") { id title } }',
     );
 
-    // Normalize the user response.
-    final initial = await client.requestTyped(requestable: reqGetUser);
-    expect(initial.refs, isNotEmpty);
-
-    final updates = client.subscribeToRefs(
-      requestable: reqGetUser,
-      refs: initial.refs,
-    );
-
-    // Normalize a Post — unrelated entity. Must run BEFORE subscribing to
-    // `updates`: FRB holds the handle lock for the entire listen_updates
-    // async function, so starting the listener first would deadlock requestTyped.
-    // The Rust subscription is already registered and its channel is live, so
-    // any incorrect notification is buffered and detected after we subscribe.
-    await client.requestTyped(requestable: reqGetPost);
-
-    // Now subscribe and check: no buffered update should be present.
-    // Do NOT await sub.cancel() — that waits for the Rust listen_updates loop
-    // to exit, which blocks until the subscription channel receives data.
-    // Instead cancel without awaiting (mirroring how Stream.first works).
+    // Keep the user stream alive with listen() so the cache subscription stays
+    // registered while we trigger the unrelated Post write.
+    final firstReceived = Completer<void>();
     bool gotUpdate = false;
-    final sub = updates.listen((_) => gotUpdate = true);
+    final sub = client.request(requestable: reqGetUser).listen((data) {
+      if (!firstReceived.isCompleted) {
+        firstReceived.complete(); // initial network response
+      } else {
+        gotUpdate = true; // any subsequent cache update would be a bug
+      }
+    });
+
+    await firstReceived.future.timeout(const Duration(seconds: 5));
+
+    // Trigger an unrelated Post write.
+    await client.request(requestable: reqGetPost).first;
+
     await Future<void>.delayed(const Duration(milliseconds: 100));
     await sub.cancel();
 
@@ -271,6 +262,91 @@ void main() {
       isFalse,
       reason: 'Post write should not trigger User subscription',
     );
+
+    await client.dispose();
+  });
+
+  // -------------------------------------------------------------------------
+  // 5. subscribeToFragment fires when a @subscribeable fragment's entity
+  //    is updated by a subsequent operation.
+  //
+  // The pet sub-object carries __ref_anchor (e.g. "Pet:14") and __used_refs
+  // because PetFrag is @subscribeable. The fragment is inlined in the
+  // operation document so the GraphQL validator accepts it.
+  // -------------------------------------------------------------------------
+  test('subscribeToFragment fires when fragment entity is updated', () async {
+    // PetFrag is inlined in each query document so the GraphQL validator
+    // accepts it (fragments must be referenced within the same document).
+    const petFragDef = '''
+      fragment PetFrag on Pet @subscribeable {
+        id
+        name
+      }
+    ''';
+    const getUserQuery = '''
+      $petFragDef
+      query GetUser @subscribeable {
+        user(id: "1") {
+          id
+          name
+          pet { ...PetFrag }
+        }
+      }
+    ''';
+
+    final client = await _makeClient([
+      GraphQLData(
+        data: {
+          'user': {
+            'id': '1',
+            'name': 'Alice',
+            'pet': {'id': '14', 'name': 'Rex'},
+          },
+        },
+      ),
+      GraphQLData(
+        data: {
+          'user': {
+            'id': '1',
+            'name': 'Alice',
+            'pet': {'id': '14', 'name': 'Max'},
+          },
+        },
+      ),
+    ]);
+
+    const reqGetUser = _UserRequestable('GetUser', getUserQuery);
+
+    // Fetch initial data. parseFn returns data['user'], which includes the
+    // pet sub-object with __ref_anchor and __used_refs injected by @subscribeable.
+    final userMap = await client
+        .request(requestable: reqGetUser)
+        .first
+        .timeout(const Duration(seconds: 5));
+
+    final petData = userMap['pet'] as Map<String, dynamic>?;
+    expect(petData, isNotNull, reason: 'pet should be in response');
+
+    final petRef = petData!['__ref_anchor'] as String?;
+    expect(petRef, isNotNull, reason: '__ref_anchor injected by @subscribeable');
+    expect(petRef, 'Pet:14');
+
+    final petRefs = collectRuntimeRefs(petData);
+    expect(petRefs, isNotEmpty, reason: '__used_refs injected by @subscribeable');
+
+    // Set up fragment subscription BEFORE the second write.
+    final petUpdates = client.subscribeToFragment<Map<String, dynamic>>(
+      fragmentName: 'PetFrag',
+      rootRef: petRef!,
+      refs: petRefs.toList(),
+      parseFn: (data) => data,
+    );
+
+    // Trigger the second fetch (updates Pet:14.name to "Max").
+    unawaited(client.request(requestable: reqGetUser).first);
+
+    final updatedPet = await petUpdates.first.timeout(const Duration(seconds: 5));
+    expect(updatedPet['name'], 'Max');
 
     await client.dispose();
   });

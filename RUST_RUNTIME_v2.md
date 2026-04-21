@@ -48,8 +48,8 @@ so in the example above the result from the runtime might look as follows (this 
             "icon": "fake url",
             "__used_refs": [
                 "<cache_repr_of_the_entity>",
-                "<cache_repr_of_the_entity>_name",
-                "<cache_repr_of_the_entity>_icon"
+                "<cache_repr_of_the_entity>.name",
+                "<cache_repr_of_the_entity>.icon"
                 // here we don't have pet refs since the fragment of pet is the owner of these refs.
             ]
         }
@@ -62,7 +62,7 @@ so in the example above the result from the runtime might look as follows (this 
 - types that dont have a required `id` or `_id` field of type String! of Int! are not allowed to use the `@subscribeable` directive thus if i.e `Pet` had no id so user used refs would have included the refs of post fragment like so
 
 ```json
-"<cache_repr_of_the_entity>_pet_name",
+"<cache_repr_of_the_entity>.pet.name",
 ```
 
 etc..
@@ -160,7 +160,7 @@ the cache update to the upper subscribeble if present.
             "name": "yossi",
             "bestFriend": {...}
             "__used_refs": [
-                "User:123_bestFriend"
+                "User:123.bestFriend"
             ]
         }
     ],
@@ -185,3 +185,27 @@ cache might look like
 ```
 
 and if `User:123.bestFriend` changed to i.e `User:12` or another pet, we will rerender this subscription.
+
+---
+
+### Known Considerations
+
+#### Field Arguments in Cache Keys
+
+GraphQL fields can have arguments (e.g., `avatar(size: SMALL)`). Cache refs for fields with arguments must include a stable, hashed representation of those arguments to avoid key collisions.
+
+Without this, `User:1.avatar(size:SMALL)` and `User:1.avatar(size:LARGE)` would map to the same cache key and overwrite each other.
+
+The cache ref format for fields with arguments should be:
+
+```
+User:1.avatar({"size":"SMALL"})
+```
+
+Arguments should be serialized in a deterministic (key-sorted) JSON form so that `{size: SMALL, format: PNG}` and `{format: PNG, size: SMALL}` produce the same key.
+
+#### Double-Dispose Race Condition
+
+In Flutter/Dart, during navigation transitions a widget may be disposed and a new one immediately built for the same data. This can cause the refcount for a cache entry to briefly hit zero and trigger eviction — right before the new widget increments the refcount again.
+
+Fix: implement a short **linger timer** (1–5 seconds) after a refcount reaches zero before actually purging the entry from the cache. If the refcount is incremented again within the linger window, cancel the eviction. This makes GC eventually-consistent rather than immediate.

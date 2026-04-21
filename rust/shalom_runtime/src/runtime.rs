@@ -1,7 +1,8 @@
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::pin::Pin;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use parking_lot::Mutex;
 
 use serde_json::{Map, Value};
 use tokio::sync::mpsc;
@@ -188,9 +189,7 @@ impl ShalomRuntime {
         let op_ctx = self.operation_ctx(subscribeable_id)?;
         let variables = self
             .operation_vars
-            .lock()
-            .expect("operation vars lock poisoned")
-            .get(subscribeable_id)
+            .lock().get(subscribeable_id)
             .cloned();
         Ok(self.subscribe_with_target(SubscriptionTarget::Operation(op_ctx), variables, refs))
     }
@@ -206,8 +205,7 @@ impl ShalomRuntime {
         let (sender, receiver) = mpsc::unbounded_channel();
         let mut manager = self
             .subscriptions
-            .lock()
-            .expect("subscription manager lock poisoned");
+            .lock();
         let id = SubscriptionId(manager.next_id);
         manager.next_id += 1;
         manager.subscriptions.insert(
@@ -222,9 +220,7 @@ impl ShalomRuntime {
         );
         drop(manager);
         self.subscription_tracker
-            .lock()
-            .expect("subscription tracker lock poisoned")
-            .subscribe(keys);
+            .lock().subscribe(keys);
         id
     }
 
@@ -232,26 +228,21 @@ impl ShalomRuntime {
         let keys = {
             let mut manager = self
                 .subscriptions
-                .lock()
-                .expect("subscription manager lock poisoned");
+                .lock();
             manager.subscriptions.remove(&id).map(|state| state.keys)
         };
         if let Some(keys) = keys {
             self.subscription_tracker
-                .lock()
-                .expect("subscription tracker lock poisoned")
-                .unsubscribe(keys);
+                .lock().unsubscribe(keys);
         }
     }
 
     pub fn collect_garbage(&self) -> Vec<String> {
         let active_keys = self
             .subscription_tracker
-            .lock()
-            .expect("subscription tracker lock poisoned")
-            .active_keys();
+            .lock().active_keys();
         let cache = self.cache();
-        let mut cache = cache.lock().expect("normalized cache lock poisoned");
+        let mut cache = cache.lock();
         collect_garbage(&mut cache, &active_keys)
     }
 
@@ -259,8 +250,7 @@ impl ShalomRuntime {
         let receiver = {
             let mut manager = self
                 .subscriptions
-                .lock()
-                .expect("subscription manager lock poisoned");
+                .lock();
             manager
                 .subscriptions
                 .get_mut(&id)
@@ -281,8 +271,7 @@ impl ShalomRuntime {
         )> = {
             let manager = self
                 .subscriptions
-                .lock()
-                .expect("subscription manager lock poisoned");
+                .lock();
             manager
                 .subscriptions
                 .iter()
@@ -306,8 +295,7 @@ impl ShalomRuntime {
             {
                 let mut manager = self
                     .subscriptions
-                    .lock()
-                    .expect("subscription manager lock poisoned");
+                    .lock();
                 if let Some(state) = manager.subscriptions.get_mut(&id) {
                     old_keys = Some(state.keys.clone());
                     if let Some(refs) = new_refs.as_ref() {
@@ -322,8 +310,7 @@ impl ShalomRuntime {
             if let Some(old_keys) = old_keys {
                 let mut tracker = self
                     .subscription_tracker
-                    .lock()
-                    .expect("subscription tracker lock poisoned");
+                    .lock();
                 if removed {
                     tracker.unsubscribe(old_keys);
                 } else if let Some(refs) = new_refs {
@@ -342,7 +329,7 @@ impl ShalomRuntime {
         variables: Option<&Map<String, Value>>,
     ) -> anyhow::Result<RuntimeResponse> {
         let cache = self.cache();
-        let cache_guard = cache.lock().expect("normalized cache lock poisoned");
+        let cache_guard = cache.lock();
         let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, variables);
         let result = reader.read_operation(op_ctx)?;
         let data = if op_ctx.is_subscribeable() {
@@ -362,7 +349,7 @@ impl ShalomRuntime {
         root_ref: &str,
     ) -> anyhow::Result<RuntimeResponse> {
         let cache = self.cache();
-        let cache_guard = cache.lock().expect("normalized cache lock poisoned");
+        let cache_guard = cache.lock();
         let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, None);
         let result = reader.read_fragment(fragment, root_ref)?;
         let data = if fragment.is_subscribeable() {
@@ -379,13 +366,10 @@ impl ShalomRuntime {
     fn remember_operation(&self, op_ctx: &SharedOpCtx, variables: Option<&Map<String, Value>>) {
         let op_id = op_ctx.get_operation_name().to_string();
         self.operations
-            .lock()
-            .expect("operations lock poisoned")
-            .insert(op_id.clone(), op_ctx.clone());
+            .lock().insert(op_id.clone(), op_ctx.clone());
         let mut vars_map = self
             .operation_vars
-            .lock()
-            .expect("operation vars lock poisoned");
+            .lock();
         if let Some(vars) = variables {
             vars_map.insert(op_id, vars.clone());
         } else {
@@ -396,9 +380,7 @@ impl ShalomRuntime {
     fn operation_ctx(&self, operation_id: &str) -> anyhow::Result<SharedOpCtx> {
         if let Some(op_ctx) = self
             .operations
-            .lock()
-            .expect("operations lock poisoned")
-            .get(operation_id)
+            .lock().get(operation_id)
             .cloned()
         {
             return Ok(op_ctx);

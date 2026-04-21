@@ -172,6 +172,12 @@ pub fn init_subscription(
         .map(|o| o.into())
 }
 
+#[frb(sync)]
+pub fn unsubscribe(handle: &RuntimeHandle, subscription_id: u64) {
+    let id = SubscriptionId::from(subscription_id);
+    handle.runtime.unsubscribe(&id);
+}
+
 /// Stream cache-update notifications for an existing subscription.
 #[frb]
 pub async fn listen_subscription(
@@ -180,7 +186,11 @@ pub async fn listen_subscription(
     sink: StreamSink<String>,
 ) -> anyhow::Result<()> {
     let id = SubscriptionId::from(subscription_id);
-    let mut stream = handle.runtime.subscription_stream(&id)?;
+    // If the subscription was already unsubscribed (e.g. cancelled before
+    // this task started), treat it as a clean empty stream.
+    let Ok(mut stream) = handle.runtime.subscription_stream(&id) else {
+        return Ok(());
+    };
     while let Some(item) = stream.next().await {
         let response = item?;
         let payload = response_to_json(response)?;
@@ -326,13 +336,6 @@ pub async fn request_op(
     Ok(())
 }
 
-#[frb]
-pub fn unsubscribe(handle: &RuntimeHandle, subscription_id: u64) {
-    handle
-        .runtime
-        .unsubscribe(&SubscriptionId::from(subscription_id));
-    handle.runtime.collect_garbage();
-}
 
 fn parse_config(config_json: Option<String>) -> anyhow::Result<RuntimeConfig> {
     let json = match config_json {

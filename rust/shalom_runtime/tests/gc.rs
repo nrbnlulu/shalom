@@ -107,7 +107,7 @@ fn runtime_gc_respects_subscription_tracker() {
 
     {
         let cache = runtime.cache();
-        let mut cache = cache.lock().expect("cache lock poisoned");
+        let mut cache = cache.lock();
         cache.insert("Temp:1".to_string(), make_entity("Temp:1"));
     }
 

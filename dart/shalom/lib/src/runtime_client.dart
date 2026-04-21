@@ -58,59 +58,101 @@ class ShalomRuntimeClient {
     return client;
   }
 
-  Future<RuntimeTypedResult<T>> requestTyped<T>({
-    required Requestable<T> requestable,
-  }) async {
+  /// Fetch via network then keep the stream alive via a cache subscription.
+  ///
+  /// The first emission is the normalized network response. Subsequent
+  /// emissions are triggered by cache writes to any ref touched by this
+  /// operation. Cancelling the returned stream unsubscribes immediately.
+  Stream<T> request<T>({required Requestable<T> requestable}) {
     final meta = requestable.getRequestMeta();
     final req = meta.request;
     final variablesJson =
         req.variables.isEmpty ? null : jsonEncode(req.variables);
 
-    final payload = await rs_runtime
-        .requestOp(
-          handle: _handle,
-          operation: req.query,
-          variablesJson: variablesJson,
-          networkPolicy: rs_runtime.NetworkPolicy.networkOnly,
-        )
-        .first;
+    BigInt? subId;
+    final controller = StreamController<T>();
 
-    final envelope = _RuntimeEnvelope.fromJson(payload);
-    final refs = collectRuntimeRefs(envelope.data);
-    return RuntimeTypedResult(
-      data: meta.parseFn(envelope.data),
-      rawData: envelope.data,
-      operationId: envelope.operationId ?? req.opName,
-      refs: refs,
-    );
+    controller.onListen = () {
+      // Fire-and-forget async setup: fetch once then subscribe for updates.
+      Future.microtask(() async {
+        try {
+          final payload = await rs_runtime
+              .requestOp(
+                handle: _handle,
+                operation: req.query,
+                variablesJson: variablesJson,
+                networkPolicy: rs_runtime.NetworkPolicy.networkOnly,
+              )
+              .first;
+          if (controller.isClosed) return;
+
+          final envelope = _RuntimeEnvelope.fromJson(payload);
+          final refs = collectRuntimeRefs(envelope.data);
+          controller.add(meta.parseFn(envelope.data));
+
+          subId = rs_runtime.initSubscription(
+            handle: _handle,
+            targetId: req.opName,
+            rootRef: null,
+            refs: refs.toList(growable: false),
+          );
+          rs_runtime
+              .listenSubscription(handle: _handle, subscriptionId: subId!)
+              .listen(
+                (p) {
+                  if (controller.isClosed) return;
+                  try {
+                    controller.add(
+                      meta.parseFn(_RuntimeEnvelope.fromJson(p).data),
+                    );
+                  } catch (e, st) {
+                    controller.addError(e, st);
+                  }
+                },
+                onError: (Object e, StackTrace st) {
+                  if (!controller.isClosed) controller.addError(e, st);
+                },
+                onDone: () {
+                  if (!controller.isClosed) controller.close();
+                },
+              );
+        } catch (e, st) {
+          if (!controller.isClosed) controller.addError(e, st);
+        }
+      });
+    };
+
+    controller.onCancel = () {
+      final id = subId;
+      if (id == null) return;
+      rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
+    };
+
+    return controller.stream;
   }
 
-  /// Subscribe to cache updates for the given refs.
+  /// Subscribe to cache updates for a specific fragment on a specific entity.
   ///
-  /// Emits a new value (parsed via [requestable]'s parseFn) whenever any of
-  /// [refs] is written by a subsequent operation.
-  Stream<T> subscribeToRefs<T>({
-    required Requestable<T> requestable,
-    required Set<String> refs,
+  /// [fragmentName] must match the name of a `@subscribeable` fragment defined
+  /// in the `fragmentSdls` passed to [init].
+  /// [rootRef] is the cache key of the entity (e.g. `"User:1"`).
+  /// [refs] are the fine-grained cache keys the fragment watches; typically
+  /// obtained from a prior response's `__used_refs` field on the fragment object.
+  /// [parseFn] converts the raw fragment data map to [T].
+  Stream<T> subscribeToFragment<T>({
+    required String fragmentName,
+    required String rootRef,
+    required List<String> refs,
+    required T Function(Map<String, dynamic>) parseFn,
   }) {
-    final meta = requestable.getRequestMeta();
-    // subId is assigned lazily in onListen so the Rust subscription is only
-    // registered when a consumer actually starts listening. This avoids a
-    // spurious notify_subscribers fire during a concurrent requestTyped call
-    // that shares ROOT_QUERY in its changed keys.
     BigInt? subId;
-
-    // Use StreamController so onCancel can call unsubscribe *before* waiting
-    // for the inner FRB stream to close. Calling unsubscribe drops the Rust
-    // sender, which makes stream.next() return None and lets the Rust task
-    // exit on its own — avoiding a circular wait.
     final controller = StreamController<T>();
     controller.onListen = () {
       subId = rs_runtime.initSubscription(
         handle: _handle,
-        targetId: meta.request.opName,
-        rootRef: null,
-        refs: refs.toList(growable: false),
+        targetId: fragmentName,
+        rootRef: rootRef,
+        refs: refs,
       );
       rs_runtime
           .listenSubscription(handle: _handle, subscriptionId: subId!)
@@ -119,7 +161,7 @@ class ShalomRuntimeClient {
               if (controller.isClosed) return;
               try {
                 final envelope = _RuntimeEnvelope.fromJson(payload);
-                controller.add(meta.parseFn(envelope.data));
+                controller.add(parseFn(envelope.data));
               } catch (e, st) {
                 controller.addError(e, st);
               }
@@ -309,20 +351,6 @@ class _RequestEnvelope {
         throw FormatException('unknown operation type: $raw');
     }
   }
-}
-
-class RuntimeTypedResult<T> {
-  final T data;
-  final Map<String, dynamic> rawData;
-  final String operationId;
-  final Set<String> refs;
-
-  const RuntimeTypedResult({
-    required this.data,
-    required this.rawData,
-    required this.operationId,
-    required this.refs,
-  });
 }
 
 class _RuntimeEnvelope {

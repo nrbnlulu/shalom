@@ -1,6 +1,7 @@
 use std::collections::HashSet;
 use std::pin::Pin;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use parking_lot::Mutex;
 
 use serde_json::{Map, Value};
 use tokio_stream::Stream;
@@ -50,7 +51,7 @@ impl ExecutionEngine {
         data: Value,
         variables: Option<&Map<String, Value>>,
     ) -> anyhow::Result<NormalizationResult> {
-        let mut cache = self.cache.lock().expect("normalized cache lock poisoned");
+        let mut cache = self.cache.lock();
         Normalizer::new(self.global_ctx.clone(), &mut cache, variables)
             .normalize_operation(op_ctx, data)
     }

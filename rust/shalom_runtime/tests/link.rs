@@ -1,4 +1,5 @@
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
+use parking_lot::Mutex;
 
 use async_trait::async_trait;
 use serde_json::{Map, Value, json};
@@ -41,7 +42,7 @@ impl HttpTransport for DummyTransport {
         data: Map<String, Value>,
         headers: Headers,
     ) -> Result<Map<String, Value>, TransportError> {
-        let mut captured = self.captured.lock().expect("lock");
+        let mut captured = self.captured.lock();
         captured.method = Some(method);
         captured.url = Some(url.to_string());
         captured.data = Some(data);
@@ -76,7 +77,7 @@ async fn http_link_uses_get_for_queries_when_configured() {
     let mut stream = link.execute(request(OperationType::Query));
     let _ = stream.next().await;
 
-    let captured = captured.lock().expect("lock");
+    let captured = captured.lock();
     assert!(matches!(captured.method, Some(HttpMethod::Get)));
     assert_eq!(
         captured.url.as_deref(),
@@ -103,7 +104,7 @@ async fn http_link_posts_for_mutations_with_json_headers() {
     let mut stream = link.execute(request(OperationType::Mutation));
     let _ = stream.next().await;
 
-    let captured = captured.lock().expect("lock");
+    let captured = captured.lock();
     assert!(matches!(captured.method, Some(HttpMethod::Post)));
     assert!(
         captured

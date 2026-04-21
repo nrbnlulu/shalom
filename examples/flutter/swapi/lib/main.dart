@@ -50,7 +50,7 @@ class NewWidget extends ConsumerWidget {
       return const Center(child: CircularProgressIndicator());
     }
     final client = clientValue.value!;
-    client.subscribeToRefs
+    client.request
     final result = ref.watch(filmsProvider);
     return result.when(
       data: (result) {

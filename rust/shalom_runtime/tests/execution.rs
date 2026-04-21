@@ -101,6 +101,6 @@ async fn request_stream_normalizes_each_response() {
         .get("__used_refs")
         .and_then(|value| value.as_array())
         .expect("used refs missing");
-    assert!(used_refs.contains(&json!("ROOT_QUERY_value")));
+    assert!(used_refs.contains(&json!("ROOT_QUERY.value")));
     assert_eq!(second.data.get("value"), Some(&json!(2)));
 }

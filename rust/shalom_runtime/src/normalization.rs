@@ -29,6 +29,7 @@ pub struct Normalizer<'a> {
     variables: Option<&'a Map<String, Value>>,
     changed: HashSet<CacheKey>,
     used_refs: HashSet<CacheKey>,
+    claimed_refs: HashSet<CacheKey>,
 }
 
 impl<'a> Normalizer<'a> {
@@ -43,6 +44,7 @@ impl<'a> Normalizer<'a> {
             variables,
             changed: HashSet::new(),
             used_refs: HashSet::new(),
+            claimed_refs: HashSet::new(),
         }
     }
 
@@ -75,7 +77,7 @@ impl<'a> Normalizer<'a> {
                 field_cache_key(&field_name, &selection.arguments, self.variables);
             let field_segment =
                 field_path_segment(&field_name, &selection.arguments, self.variables);
-            let field_ref_key = format!("{}_{}", root_key, field_segment);
+            let field_ref_key = format!("{}.{}", root_key, field_segment);
             let cached_value = cached_root.get(&field_cache_key);
             let field_locator = root_locator.child_field(field_cache_key.clone());
             if field_name != "__typename" {
@@ -99,10 +101,12 @@ impl<'a> Normalizer<'a> {
         }
 
         if op_ctx.is_subscribeable() {
-            output.insert(
-                "__used_refs".to_string(),
-                used_refs_to_value(&self.used_refs),
-            );
+            let root_refs: HashSet<_> = self
+                .used_refs
+                .difference(&self.claimed_refs)
+                .cloned()
+                .collect();
+            output.insert("__used_refs".to_string(), used_refs_to_value(&root_refs));
         }
         self.cache.insert(root_key, next_root);
 
@@ -312,7 +316,7 @@ impl<'a> Normalizer<'a> {
                             CacheValue::List(items) => Some(items.as_slice()),
                             _ => None,
                         });
-                        let item_ref_key = format!("{}_{}", parent_ref_key, item_segment);
+                        let item_ref_key = format!("{}.{}", parent_ref_key, item_segment);
                         self.used_refs.insert(item_ref_key.clone());
                         let normalized = self.normalize_list(
                             inner_list,
@@ -394,7 +398,7 @@ impl<'a> Normalizer<'a> {
 
         let id_value = raw_obj.get("id").and_then(coerce_id);
         let entity_key = id_value.map(|id| format!("{typename}:{id}"));
-        let path_key = format!("{}_{}", parent_ref_key, field_segment);
+        let path_key = format!("{}.{}", parent_ref_key, field_segment);
         let object_ref_key = if is_union_interface || entity_key.is_none() {
             path_key.clone()
         } else {
@@ -442,7 +446,7 @@ impl<'a> Normalizer<'a> {
                 field_cache_key(&field_name, &selection.arguments, self.variables);
             let field_segment =
                 field_path_segment(&field_name, &selection.arguments, self.variables);
-            let field_ref_key = format!("{}_{}", object_ref_key, field_segment);
+            let field_ref_key = format!("{}.{}", object_ref_key, field_segment);
             let cached_value = cached_record.as_ref().and_then(|r| r.get(&field_cache_key));
             let field_locator = record_locator.child_field(field_cache_key.clone());
             if field_name != "__typename" {
@@ -466,8 +470,10 @@ impl<'a> Normalizer<'a> {
         }
 
         if let Some(before_refs) = before_refs {
+            let raw_diff: HashSet<_> = self.used_refs.difference(&before_refs).cloned().collect();
             let object_refs: HashSet<_> =
-                self.used_refs.difference(&before_refs).cloned().collect();
+                raw_diff.difference(&self.claimed_refs).cloned().collect();
+            self.claimed_refs.extend(object_refs.iter().cloned());
             output.insert("__used_refs".to_string(), used_refs_to_value(&object_refs));
             output.insert(
                 "__ref_anchor".to_string(),

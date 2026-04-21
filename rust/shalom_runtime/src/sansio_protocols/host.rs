@@ -17,7 +17,7 @@
 //!    receiver-side stream inside Rust.
 
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::Mutex;
+use parking_lot::Mutex;
 
 use dashmap::DashMap;
 use serde::Serialize;
@@ -69,9 +69,7 @@ impl HostLink {
         &self,
     ) -> Option<impl tokio_stream::Stream<Item = RequestEnvelope>> {
         self.request_rx
-            .lock()
-            .expect("request_rx lock poisoned")
-            .take()
+            .lock().take()
             .map(UnboundedReceiverStream::new)
     }
 
