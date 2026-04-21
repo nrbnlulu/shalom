@@ -39,11 +39,10 @@ fn normalize(
 fn subscribe(
     runtime: &ShalomRuntime,
     op_ctx: &SharedOpCtx,
-    result: &NormalizationResult,
+    _result: &NormalizationResult,
 ) -> SubscriptionId {
-    let refs = result.used_refs.iter().cloned().collect::<Vec<_>>();
     runtime
-        .subscribe(op_ctx.get_operation_name(), None, refs)
+        .subscribe_fragment(op_ctx.get_operation_name(), None)
         .expect("subscribe")
 }
 
@@ -1765,9 +1764,8 @@ mod fragment_subscriptions {
             .and_then(|value| value.as_str())
             .expect("anchor ref missing")
             .to_string();
-        let used_refs = used_refs_from_value(person);
         let sub_id = runtime
-            .subscribe("PersonFrag", Some(anchor_ref.clone()), used_refs)
+            .subscribe_fragment("PersonFrag", Some(anchor_ref.clone()))
             .expect("subscribe");
         // trigger an update
         normalize(
@@ -1810,9 +1808,8 @@ mod fragment_subscriptions {
             .and_then(|value| value.as_str())
             .expect("anchor ref missing")
             .to_string();
-        let used_refs = used_refs_from_value(pet);
         let sub_id = runtime
-            .subscribe("PetFrag", Some(root_ref.clone()), used_refs)
+            .subscribe_fragment("PetFrag", Some(root_ref.clone()))
             .expect("subscribe");
         normalize(
             &runtime,
@@ -1856,8 +1853,7 @@ mod fragment_subscriptions {
         let result1 = normalize(&runtime, &op1, serde_json::json!({ "sharedValue": 42 }), None);
         assert!(result1.changed.contains("ROOT_QUERY.sharedValue"));
         
-        let used_refs_vec: Vec<String> = result1.used_refs.into_iter().collect();
-        let sub_id = runtime.subscribe("Op1", None, used_refs_vec).unwrap();
+        let sub_id = runtime.subscribe_fragment("Op1", None).unwrap();
         let mut updates = runtime.subscription_stream(&sub_id).unwrap();
 
         let result2 = normalize(&runtime, &op2, serde_json::json!({ "sharedValue": 99, "otherValue": "hello" }), None);

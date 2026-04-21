@@ -232,9 +232,8 @@ fn wire__crate__api__runtime__init_subscription_impl(
             let api_handle = <RustOpaqueMoi<
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>,
             >>::sse_decode(&mut deserializer);
-            let api_target_id = <String>::sse_decode(&mut deserializer);
-            let api_root_ref = <Option<String>>::sse_decode(&mut deserializer);
-            let api_refs = <Vec<String>>::sse_decode(&mut deserializer);
+            let api_target_name = <String>::sse_decode(&mut deserializer);
+            let api_anchor = <Option<String>>::sse_decode(&mut deserializer);
             deserializer.end();
             transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
                 (move || {
@@ -256,9 +255,8 @@ fn wire__crate__api__runtime__init_subscription_impl(
                     let api_handle_guard = api_handle_guard.unwrap();
                     let output_ok = crate::api::runtime::init_subscription(
                         &*api_handle_guard,
-                        api_target_id,
-                        api_root_ref,
-                        api_refs,
+                        api_target_name,
+                        api_anchor,
                     )?;
                     Ok(output_ok)
                 })(),

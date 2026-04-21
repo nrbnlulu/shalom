@@ -167,18 +167,22 @@ impl ShalomRuntime {
         Ok(result)
     }
 
-    pub fn subscribe(
+    pub fn subscribe_fragment(
         &self,
-        subscribeable_id: &str,
-        root_ref: Option<String>,
-        refs: Vec<String>,
+        target_name: &str,
+        anchor: Option<String>,
     ) -> anyhow::Result<SubscriptionId> {
-        if let Some(root_ref) = root_ref {
+        if let Some(root_ref) = anchor {
             let fragment = self
                 .engine
                 .global_ctx()
-                .get_fragment(subscribeable_id)
-                .ok_or_else(|| anyhow::anyhow!("fragment {subscribeable_id} not found"))?;
+                .get_fragment(target_name)
+                .ok_or_else(|| anyhow::anyhow!("fragment {target_name} not found"))?;
+            let refs = self
+                .read_fragment_from_cache(&fragment, &root_ref)
+                .ok()
+                .and_then(|r| used_refs_from_response(&r.data).ok().flatten())
+                .unwrap_or_default();
             return Ok(self.subscribe_with_target(
                 SubscriptionTarget::Fragment { fragment, root_ref },
                 None,
@@ -186,11 +190,16 @@ impl ShalomRuntime {
             ));
         }
 
-        let op_ctx = self.operation_ctx(subscribeable_id)?;
+        let op_ctx = self.operation_ctx(target_name)?;
         let variables = self
             .operation_vars
-            .lock().get(subscribeable_id)
+            .lock().get(target_name)
             .cloned();
+        let refs = self
+            .read_from_cache(&op_ctx, variables.as_ref())
+            .ok()
+            .and_then(|r| used_refs_from_response(&r.data).ok().flatten())
+            .unwrap_or_default();
         Ok(self.subscribe_with_target(SubscriptionTarget::Operation(op_ctx), variables, refs))
     }
 
@@ -198,10 +207,9 @@ impl ShalomRuntime {
         &self,
         target: SubscriptionTarget,
         variables: Option<Map<String, Value>>,
-        refs: Vec<String>,
+        refs: HashSet<String>,
     ) -> SubscriptionId {
-        let refs: RefObject = refs.into();
-        let keys = refs.refs.clone();
+        let keys = refs.clone();
         let (sender, receiver) = mpsc::unbounded_channel();
         let mut manager = self
             .subscriptions
@@ -213,7 +221,7 @@ impl ShalomRuntime {
             SubscriptionState {
                 target,
                 variables,
-                keys: refs.refs,
+                keys: refs,
                 sender,
                 receiver: Some(receiver),
             },
@@ -275,7 +283,9 @@ impl ShalomRuntime {
             manager
                 .subscriptions
                 .iter()
-                .filter(|(_, state)| state.keys.iter().any(|key| changed.contains(key)))
+                .filter(|(_, state)| {
+                    state.keys.is_empty() || state.keys.iter().any(|key| changed.contains(key))
+                })
                 .map(|(id, state)| (*id, state.target.clone(), state.variables.clone()))
                 .collect()
         };

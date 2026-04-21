@@ -87,14 +87,11 @@ class ShalomRuntimeClient {
           if (controller.isClosed) return;
 
           final envelope = _RuntimeEnvelope.fromJson(payload);
-          final refs = collectRuntimeRefs(envelope.data);
           controller.add(meta.parseFn(envelope.data));
 
           subId = rs_runtime.initSubscription(
             handle: _handle,
-            targetId: req.opName,
-            rootRef: null,
-            refs: refs.toList(growable: false),
+            targetName: req.opName,
           );
           rs_runtime
               .listenSubscription(handle: _handle, subscriptionId: subId!)
@@ -135,14 +132,11 @@ class ShalomRuntimeClient {
   ///
   /// [fragmentName] must match the name of a `@subscribeable` fragment defined
   /// in the `fragmentSdls` passed to [init].
-  /// [rootRef] is the cache key of the entity (e.g. `"User:1"`).
-  /// [refs] are the fine-grained cache keys the fragment watches; typically
-  /// obtained from a prior response's `__used_refs` field on the fragment object.
+  /// [rootRef] is the cache key anchor of the entity (e.g. `"User:1"`).
   /// [parseFn] converts the raw fragment data map to [T].
   Stream<T> subscribeToFragment<T>({
     required String fragmentName,
     required String rootRef,
-    required List<String> refs,
     required T Function(Map<String, dynamic>) parseFn,
   }) {
     BigInt? subId;
@@ -150,9 +144,8 @@ class ShalomRuntimeClient {
     controller.onListen = () {
       subId = rs_runtime.initSubscription(
         handle: _handle,
-        targetId: fragmentName,
-        rootRef: rootRef,
-        refs: refs,
+        targetName: fragmentName,
+        anchor: rootRef,
       );
       rs_runtime
           .listenSubscription(handle: _handle, subscriptionId: subId!)

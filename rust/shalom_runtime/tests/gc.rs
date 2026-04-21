@@ -92,29 +92,28 @@ fn runtime_gc_respects_subscription_tracker() {
     "#;
     let (runtime, op_ctx) = build_runtime(schema, operation);
 
-    let result = runtime
+    runtime
         .normalize(
             &op_ctx,
             json!({ "user": { "id": "1", "name": "Ana" } }),
             None,
         )
         .expect("normalize response");
-    let mut refs = result.used_refs.iter().cloned().collect::<Vec<_>>();
-    refs.push("Temp:1_field".to_string());
     let subscription = runtime
-        .subscribe(op_ctx.get_operation_name(), None, refs)
+        .subscribe_fragment(op_ctx.get_operation_name(), None)
         .expect("subscribe");
 
     {
         let cache = runtime.cache();
         let mut cache = cache.lock();
-        cache.insert("Temp:1".to_string(), make_entity("Temp:1"));
+        cache.insert("Orphan:1".to_string(), make_entity("Orphan:1"));
     }
 
     let evicted = runtime.collect_garbage();
-    assert!(!evicted.contains(&"Temp:1".to_string()));
+    assert!(evicted.contains(&"Orphan:1".to_string()), "orphan entity should be evicted");
+    assert!(runtime.cache().lock().get("User:1").is_some(), "User:1 should be kept by ROOT_QUERY");
 
     runtime.unsubscribe(&subscription);
     let evicted = runtime.collect_garbage();
-    assert!(evicted.contains(&"Temp:1".to_string()));
+    assert!(!evicted.contains(&"User:1".to_string()), "User:1 still kept by ROOT_QUERY ref");
 }

@@ -338,7 +338,6 @@ void main() {
     final petUpdates = client.subscribeToFragment<Map<String, dynamic>>(
       fragmentName: 'PetFrag',
       rootRef: petRef!,
-      refs: petRefs.toList(),
       parseFn: (data) => data,
     );
 

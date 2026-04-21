@@ -95,9 +95,8 @@ abstract class RustLibApi extends BaseApi {
 
   BigInt crateApiRuntimeInitSubscription({
     required RuntimeHandle handle,
-    required String targetId,
-    String? rootRef,
-    required List<String> refs,
+    required String targetName,
+    String? anchor,
   });
 
   Stream<String> crateApiRuntimeListenRequests({required RuntimeHandle handle});
@@ -320,9 +319,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @override
   BigInt crateApiRuntimeInitSubscription({
     required RuntimeHandle handle,
-    required String targetId,
-    String? rootRef,
-    required List<String> refs,
+    required String targetName,
+    String? anchor,
   }) {
     return handler.executeSync(
       SyncTask(
@@ -332,9 +330,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             handle,
             serializer,
           );
-          sse_encode_String(targetId, serializer);
-          sse_encode_opt_String(rootRef, serializer);
-          sse_encode_list_String(refs, serializer);
+          sse_encode_String(targetName, serializer);
+          sse_encode_opt_String(anchor, serializer);
           return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5)!;
         },
         codec: SseCodec(
@@ -342,7 +339,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiRuntimeInitSubscriptionConstMeta,
-        argValues: [handle, targetId, rootRef, refs],
+        argValues: [handle, targetName, anchor],
         apiImpl: this,
       ),
     );
@@ -351,7 +348,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiRuntimeInitSubscriptionConstMeta =>
       const TaskConstMeta(
         debugName: "init_subscription",
-        argNames: ["handle", "targetId", "rootRef", "refs"],
+        argNames: ["handle", "targetName", "anchor"],
       );
 
   @override

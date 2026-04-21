@@ -79,17 +79,6 @@ fn to_link_op_type(op_type: shalom_core::operation::types::OperationType) -> Lin
     }
 }
 
-fn extract_refs_from_data(data: &Value) -> Vec<String> {
-    let Some(map) = data.as_object() else {
-        return vec![];
-    };
-    let Some(Value::Array(arr)) = map.get("__used_refs") else {
-        return vec![];
-    };
-    arr.iter()
-        .filter_map(|v| v.as_str().map(str::to_string))
-        .collect()
-}
 
 #[flutter_rust_bridge::frb(init)]
 pub fn init_app() {
@@ -162,13 +151,12 @@ pub fn complete_transport(handle: &RuntimeHandle, request_id: u64) {
 #[frb(sync)]
 pub fn init_subscription(
     handle: &RuntimeHandle,
-    target_id: String,
-    root_ref: Option<String>,
-    refs: Vec<String>,
+    target_name: String,
+    anchor: Option<String>,
 ) -> anyhow::Result<u64> {
     handle
         .runtime
-        .subscribe(&target_id, root_ref, refs)
+        .subscribe_fragment(&target_name, anchor)
         .map(|o| o.into())
 }
 
@@ -241,7 +229,6 @@ pub async fn request_op(
                 Some(r) => r?,
                 None => return Ok(()),
             };
-            let refs = extract_refs_from_data(&first.data);
             let op_id = first
                 .operation_id
                 .clone()
@@ -254,7 +241,7 @@ pub async fn request_op(
             let sub_id = SubscriptionId::from(
                 handle
                     .runtime
-                    .subscribe(&op_id, None, refs)
+                    .subscribe_fragment(&op_id, None)
                     .map(u64::from)?,
             );
             let mut sub_stream = handle.runtime.subscription_stream(&sub_id)?;
@@ -280,15 +267,10 @@ pub async fn request_op(
                 .read_from_cache(&op_ctx, vars_map.as_ref())
                 .ok();
 
-            let initial_refs = maybe_cached
-                .as_ref()
-                .map(|r| extract_refs_from_data(&r.data))
-                .unwrap_or_default();
-
             let sub_id = SubscriptionId::from(
                 handle
                     .runtime
-                    .subscribe(&op_id, None, initial_refs)
+                    .subscribe_fragment(&op_id, None)
                     .map(u64::from)?,
             );
 

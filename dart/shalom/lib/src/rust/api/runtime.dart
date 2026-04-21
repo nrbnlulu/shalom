@@ -6,7 +6,7 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `extract_refs_from_data`, `parse_config`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `request_stream`, `response_to_json`, `to_link_op_type`
+// These functions are ignored because they are not marked as `pub`: `parse_config`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `request_stream`, `response_to_json`, `to_link_op_type`
 
 Future<RuntimeHandle> initRuntime({
   required String schemaSdl,
@@ -56,14 +56,12 @@ Future<void> completeTransport({
 
 BigInt initSubscription({
   required RuntimeHandle handle,
-  required String targetId,
-  String? rootRef,
-  required List<String> refs,
+  required String targetName,
+  String? anchor,
 }) => RustLib.instance.api.crateApiRuntimeInitSubscription(
   handle: handle,
-  targetId: targetId,
-  rootRef: rootRef,
-  refs: refs,
+  targetName: targetName,
+  anchor: anchor,
 );
 
 void unsubscribe({
