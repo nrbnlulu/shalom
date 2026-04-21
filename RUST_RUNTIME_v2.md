@@ -209,3 +209,174 @@ Arguments should be serialized in a deterministic (key-sorted) JSON form so that
 In Flutter/Dart, during navigation transitions a widget may be disposed and a new one immediately built for the same data. This can cause the refcount for a cache entry to briefly hit zero and trigger eviction — right before the new widget increments the refcount again.
 
 Fix: implement a short **linger timer** (1–5 seconds) after a refcount reaches zero before actually purging the entry from the cache. If the refcount is incremented again within the linger window, cancel the eviction. This makes GC eventually-consistent rather than immediate.
+
+---
+
+### Flutter client addoption
+
+flutter client would have its own abstractions in order to use shalom runtime with ease.
+like so:
+
+./**graphql**/users_widget.dart
+
+```dart
+// ignore_for_file: camel_case_types
+import 'dart:async';
+import 'package:flutter/widgets.dart';
+import 'package:shalom/shalom.dart' as shalom;
+import './__generated__/users.shalom.dart'; // Contains RequestMyOperation
+
+abstract class $UsersWidget extends StatefulWidget {
+  // Developer provides variables, base class handles the Requestable
+  final MyOperationVariables variables;
+
+  const $UsersWidget({
+    super.key,
+    required this.variables,
+  });
+
+  // Contract for the developer/mixin
+  Widget buildLoading(BuildContext context);
+  Widget buildError(BuildContext context, Object error);
+  Widget build(BuildContext context, MyOperationResponse data);
+
+  @override
+  State<$UsersWidget> createState() => _$UsersWidgetState();
+}
+
+class _$UsersWidgetState extends State<$UsersWidget> {
+  StreamSubscription<MyOperationResponse>? _subscription;
+  MyOperationResponse? _data;
+  Object? _error;
+  bool _isLoading = true;
+
+  @override
+  void didUpdateWidget($UsersWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // If variables change, we need a fresh subscription
+    if (widget.variables != oldWidget.variables) {
+      _subscribe();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _subscribe();
+  }
+
+  void _subscribe() {
+    final client = context.shalomClient;
+
+    // Create the Requestable internally using generated code
+    final requestable = RequestMyOperation(variables: widget.variables);
+
+    // Cancel old sub to trigger the "linger timer" for old refs in Rust
+    _subscription?.cancel();
+
+    _subscription = client
+        .request<MyOperationResponse>(requestable: requestable)
+        .listen(
+      (data) {
+        setState(() {
+          _data = data;
+          _isLoading = false;
+          _error = null;
+        });
+      },
+      onError: (error) {
+        setState(() {
+          _error = error;
+          _isLoading = false;
+        });
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading && _data == null) return widget.buildLoading(context);
+    if (_error != null) return widget.buildError(context, _error!);
+
+    // We have data, either from initial network fetch or cache update
+    return widget.build(context, _data!);
+  }
+}
+
+```
+
+./widgets.dart
+
+```dart
+// injected using the codegen
+import './__graphql__/users_widget.g.dart'
+
+
+@query(
+    '''
+    ($input: UsersFilter!) {
+        name
+        age
+    }
+    '''
+)
+class UsersWidget extends $UsersWidget {
+
+    @override
+    build(BuildContext context, AsyncValue<GraphQLResult<UsersResponse>> response) {
+        // ...
+    }
+
+}
+```
+
+#### usage with fragments
+
+```dart
+@query(
+    '''
+    ($input: UsersFilter!) {
+        name
+        age
+        bestFriend {
+            ...BestFriendWidget
+        }
+    }
+    '''
+)
+class UsersWidget extends $UsersWidget {
+
+    @override
+    build(BuildContext context, AsyncValue<GraphQLResult<UsersResponse>> response) {
+        // ...
+    }
+
+}
+```
+
+```dart
+@fragment(
+"""
+on BestFriend {
+    __typename
+    ... on User {
+        id
+        name
+    }
+    
+    ... on Pet {
+        PetFrag
+    }
+}
+""")
+class BestFriendWidget extends $BestFriend {
+
+}
+
+```
