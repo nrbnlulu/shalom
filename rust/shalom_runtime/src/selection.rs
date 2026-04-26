@@ -70,7 +70,7 @@ pub fn selection_get_observed_fragments(
     ) {
         for frag_name in &common.used_fragments {
             if let Some(fragment) = ctx.get_fragment(frag_name) {
-                if fragment.is_subscribeable() {
+                if fragment.is_observe() {
                     observed.push(frag_name.clone());
                 }
             }

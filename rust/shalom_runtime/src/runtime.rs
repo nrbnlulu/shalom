@@ -1,13 +1,14 @@
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::pin::Pin;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use parking_lot::Mutex;
+use std::time::Duration;
 
+use parking_lot::Mutex;
 use serde_json::{Map, Value};
 use tokio::sync::mpsc;
 use tokio_stream::Stream;
-use tokio_stream::StreamExt;
 use tokio_stream::wrappers::UnboundedReceiverStream;
 
 use shalom_core::context::SharedShalomGlobalContext;
@@ -22,39 +23,26 @@ use crate::gc::{SubscriptionTracker, collect_garbage};
 use crate::normalization::NormalizationResult;
 use crate::read::CacheReader;
 
+// ---------------------------------------------------------------------------
+// Public types
+// ---------------------------------------------------------------------------
+
 #[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
 pub struct RuntimeConfig;
-
-#[derive(Debug, Clone, Default)]
-pub struct RefObject {
-    pub refs: HashSet<String>,
-}
-
-impl RefObject {
-    pub fn from_response(_data: &Value) -> Self {
-        Self::default()
-    }
-}
-
-impl From<Vec<String>> for RefObject {
-    fn from(refs: Vec<String>) -> Self {
-        Self {
-            refs: refs.into_iter().collect(),
-        }
-    }
-}
-
-impl From<HashSet<String>> for RefObject {
-    fn from(refs: HashSet<String>) -> Self {
-        Self { refs }
-    }
-}
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct RuntimeResponse {
     pub data: Value,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operation_id: Option<String>,
+}
+
+/// An observed reference — identifies a fragment subscription by fragment name
+/// and cache anchor (e.g. `"User:1"`).
+#[derive(Debug, Clone)]
+pub struct ObservedRef {
+    pub observable_id: String,
+    pub anchor: String,
 }
 
 pub type RuntimeResponseStream =
@@ -64,31 +52,31 @@ pub type RuntimeResponseStream =
 pub struct SubscriptionId(u64);
 
 impl From<u64> for SubscriptionId {
-    fn from(value: u64) -> Self {
-        Self(value)
-    }
+    fn from(value: u64) -> Self { Self(value) }
 }
 
 impl From<SubscriptionId> for u64 {
-    fn from(value: SubscriptionId) -> Self {
-        value.0
-    }
+    fn from(value: SubscriptionId) -> Self { value.0 }
 }
+
+// ---------------------------------------------------------------------------
+// Internal subscription state
+// ---------------------------------------------------------------------------
 
 struct SubscriptionState {
     target: SubscriptionTarget,
     variables: Option<Map<String, Value>>,
     keys: HashSet<String>,
-    sender: mpsc::UnboundedSender<RuntimeResponse>,
-    receiver: Option<mpsc::UnboundedReceiver<RuntimeResponse>>,
+    sender: mpsc::UnboundedSender<anyhow::Result<RuntimeResponse>>,
+    receiver: Option<mpsc::UnboundedReceiver<anyhow::Result<RuntimeResponse>>>,
 }
 
 #[derive(Clone)]
-enum SubscriptionTarget {
+pub(crate) enum SubscriptionTarget {
     Operation(SharedOpCtx),
     Fragment {
         fragment: SharedFragmentContext,
-        root_ref: String,
+        anchor: String,
     },
 }
 
@@ -98,13 +86,29 @@ struct SubscriptionManager {
     subscriptions: HashMap<SubscriptionId, SubscriptionState>,
 }
 
+// ---------------------------------------------------------------------------
+// ShalomRuntime
+// ---------------------------------------------------------------------------
+
 #[derive(Clone)]
 pub struct ShalomRuntime {
     engine: ExecutionEngine,
     subscriptions: Arc<Mutex<SubscriptionManager>>,
     subscription_tracker: Arc<Mutex<SubscriptionTracker>>,
-    operations: Arc<Mutex<HashMap<String, SharedOpCtx>>>,
+    /// Variables remembered for each named operation (used to re-read on cache update).
     operation_vars: Arc<Mutex<HashMap<String, Map<String, Value>>>>,
+    /// Set to true when the runtime should stop background tasks.
+    shutdown: Arc<AtomicBool>,
+}
+
+impl Drop for ShalomRuntime {
+    fn drop(&mut self) {
+        // Only signal shutdown when this is the last clone keeping the
+        // shutdown flag alive (strong count reaches 1 = only the Arc itself).
+        if Arc::strong_count(&self.shutdown) == 1 {
+            self.shutdown.store(true, Ordering::Relaxed);
+        }
+    }
 }
 
 impl ShalomRuntime {
@@ -128,10 +132,25 @@ impl ShalomRuntime {
 
         for (idx, fragment) in fragments.into_iter().enumerate() {
             let path = PathBuf::from(format!("fragment_{idx}.graphql"));
-            register_fragments_with_duplicates(&global_ctx, &fragment, &path)?;
+            register_fragments_ignoring_duplicates(&global_ctx, &fragment, &path)?;
         }
 
-        Ok(Self::new(global_ctx))
+        let runtime = Self::new(global_ctx);
+
+        // Background GC sweep every 2 seconds.
+        let runtime_gc = runtime.clone();
+        tokio::spawn(async move {
+            let mut interval = tokio::time::interval(Duration::from_secs(2));
+            loop {
+                interval.tick().await;
+                if runtime_gc.shutdown.load(Ordering::Relaxed) {
+                    break;
+                }
+                runtime_gc.collect_garbage();
+            }
+        });
+
+        Ok(runtime)
     }
 
     pub fn with_cache(
@@ -143,8 +162,8 @@ impl ShalomRuntime {
             engine,
             subscriptions: Arc::new(Mutex::new(SubscriptionManager::default())),
             subscription_tracker: Arc::new(Mutex::new(SubscriptionTracker::new())),
-            operations: Arc::new(Mutex::new(HashMap::new())),
             operation_vars: Arc::new(Mutex::new(HashMap::new())),
+            shutdown: Arc::new(AtomicBool::new(false)),
         }
     }
 
@@ -152,49 +171,271 @@ impl ShalomRuntime {
         self.engine.cache()
     }
 
+    // -----------------------------------------------------------------------
+    // Registration
+    // -----------------------------------------------------------------------
+
+    /// Pre-register an operation SDL by name. Must be called before `request`.
+    pub fn register_operation(&self, document: &str) -> anyhow::Result<SharedOpCtx> {
+        let path = PathBuf::from("registered.graphql");
+        register_fragments_ignoring_duplicates(&self.engine.global_ctx(), document, &path)?;
+        let operations = parse_document(&self.engine.global_ctx(), document, &path)?;
+        if operations.is_empty() {
+            return Err(anyhow::anyhow!("no operations found in document"));
+        }
+        let mut result = None;
+        for (name, op_ctx) in &operations {
+            if !self.engine.global_ctx().operation_exists(name) {
+                self.engine.global_ctx().register_operations(
+                    std::iter::once((name.clone(), op_ctx.clone())).collect(),
+                );
+            }
+            result = Some(op_ctx.clone());
+        }
+        result.ok_or_else(|| anyhow::anyhow!("no operations registered"))
+    }
+
+    /// Pre-register a fragment SDL by name. Must be called before `observe_fragment`.
+    pub fn register_fragment(&self, document: &str) -> anyhow::Result<()> {
+        let path = PathBuf::from("registered_fragment.graphql");
+        register_fragments_ignoring_duplicates(&self.engine.global_ctx(), document, &path)
+    }
+
+    // -----------------------------------------------------------------------
+    // Subscriptions — V2 API
+    // -----------------------------------------------------------------------
+
+    /// Create a cache subscription for a pre-registered operation and return
+    /// its ID. The caller (FRB layer) is responsible for also triggering the
+    /// network request via the host link.
+    pub fn create_operation_subscription(
+        &self,
+        op_ctx: SharedOpCtx,
+        variables: Option<Map<String, Value>>,
+    ) -> SubscriptionId {
+        self.remember_operation_vars(&op_ctx, variables.as_ref());
+        let refs = self
+            .read_result_op(&op_ctx, variables.as_ref())
+            .map(|r| r.used_refs)
+            .unwrap_or_default();
+        self.subscribe_with_target(SubscriptionTarget::Operation(op_ctx), variables, refs)
+    }
+
+    /// Create a cache subscription for a pre-registered fragment at a specific
+    /// cache anchor. Emits the current cached value immediately if available.
+    pub fn observe_fragment(&self, observed_ref: ObservedRef) -> anyhow::Result<SubscriptionId> {
+        let fragment = self
+            .engine
+            .global_ctx()
+            .get_fragment(&observed_ref.observable_id)
+            .ok_or_else(|| {
+                anyhow::anyhow!("fragment '{}' not found", observed_ref.observable_id)
+            })?;
+
+        let anchor = observed_ref.anchor.clone();
+        let refs = self
+            .read_result_fragment(&fragment, &anchor)
+            .map(|r| r.used_refs)
+            .unwrap_or_default();
+
+        let sub_id = self.subscribe_with_target(
+            SubscriptionTarget::Fragment {
+                fragment: fragment.clone(),
+                anchor: anchor.clone(),
+            },
+            None,
+            refs,
+        );
+
+        // Emit current cached value immediately if the cache already has data.
+        if let Ok(response) = self.read_fragment_from_cache(&fragment, &anchor) {
+            let manager = self.subscriptions.lock();
+            if let Some(state) = manager.subscriptions.get(&sub_id) {
+                let _ = state.sender.send(Ok(response));
+            }
+        }
+
+        Ok(sub_id)
+    }
+
+    /// Rebind an existing fragment subscription to a new `ObservedRef`.
+    ///
+    /// - Same `observable_id`: fast anchor swap — increments new refs before
+    ///   decrementing old ones (no zero-refcount window), then pushes current
+    ///   cached value. Returns the SAME subscription ID so the stream stays alive.
+    /// - Different `observable_id`: full teardown + new subscription. Returns a
+    ///   NEW subscription ID; the Dart side must reconnect `listenSubscription`.
+    pub fn rebind_subscription(
+        &self,
+        id: SubscriptionId,
+        new_ref: ObservedRef,
+    ) -> anyhow::Result<SubscriptionId> {
+        // Snapshot current subscription info under the lock.
+        let (old_observable_id, _old_anchor, old_keys) = {
+            let manager = self.subscriptions.lock();
+            let state = manager
+                .subscriptions
+                .get(&id)
+                .ok_or_else(|| anyhow::anyhow!("subscription {id:?} not found"))?;
+            match &state.target {
+                SubscriptionTarget::Fragment { fragment, anchor } => (
+                    fragment.get_fragment_name().to_string(),
+                    anchor.clone(),
+                    state.keys.clone(),
+                ),
+                SubscriptionTarget::Operation(_) => {
+                    return Err(anyhow::anyhow!(
+                        "rebind_subscription is only valid for fragment subscriptions"
+                    ));
+                }
+            }
+        };
+
+        if old_observable_id == new_ref.observable_id {
+            // ---- Fast path: same fragment shape, only the anchor changes ----
+
+            let fragment = self
+                .engine
+                .global_ctx()
+                .get_fragment(&new_ref.observable_id)
+                .ok_or_else(|| {
+                    anyhow::anyhow!("fragment '{}' not found", new_ref.observable_id)
+                })?;
+            let new_anchor = new_ref.anchor.clone();
+
+            let new_keys = self
+                .read_result_fragment(&fragment, &new_anchor)
+                .map(|r| r.used_refs)
+                .unwrap_or_default();
+
+            // 1. Increment new refs FIRST — no zero-window for shared keys.
+            self.subscription_tracker.lock().subscribe(new_keys.clone());
+
+            // 2. Swap the subscription state.
+            let sender = {
+                let mut manager = self.subscriptions.lock();
+                match manager.subscriptions.get_mut(&id) {
+                    Some(state) => {
+                        state.target = SubscriptionTarget::Fragment {
+                            fragment: fragment.clone(),
+                            anchor: new_anchor.clone(),
+                        };
+                        state.keys = new_keys;
+                        state.sender.clone()
+                    }
+                    None => {
+                        // Subscription was cancelled between the snapshot and now.
+                        self.subscription_tracker.lock().unsubscribe(new_keys);
+                        return Err(anyhow::anyhow!("subscription {id:?} cancelled during rebind"));
+                    }
+                }
+            };
+
+            // 3. Decrement old refs SECOND.
+            self.subscription_tracker.lock().unsubscribe(old_keys);
+
+            // 4. Push current value for the new anchor.
+            if let Ok(response) = self.read_fragment_from_cache(&fragment, &new_anchor) {
+                let _ = sender.send(Ok(response));
+            }
+
+            Ok(id)
+        } else {
+            // ---- Slow path: different fragment type, full teardown + rebuild ----
+            self.unsubscribe(&id);
+            self.observe_fragment(new_ref)
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Normalization (called by the FRB request task)
+    // -----------------------------------------------------------------------
+
     pub fn normalize(
         &self,
         op_ctx: &SharedOpCtx,
         data: Value,
         variables: Option<&Map<String, Value>>,
     ) -> anyhow::Result<NormalizationResult> {
-        self.remember_operation(op_ctx, variables);
+        self.remember_operation_vars(op_ctx, variables);
         let result = self.engine.normalize_response(op_ctx, data, variables)?;
         self.notify_subscribers(&result.changed)?;
         Ok(result)
     }
 
-    pub fn subscribe_fragment(
-        &self,
-        target_name: &str,
-        anchor: Option<String>,
-    ) -> anyhow::Result<SubscriptionId> {
-        if let Some(root_ref) = anchor {
-            let fragment = self
-                .engine
-                .global_ctx()
-                .get_fragment(target_name)
-                .ok_or_else(|| anyhow::anyhow!("fragment {target_name} not found"))?;
-            let refs = self.read_result_fragment(&fragment, &root_ref)
-                .map(|r| r.used_refs)
-                .unwrap_or_default();
-            return Ok(self.subscribe_with_target(
-                SubscriptionTarget::Fragment { fragment, root_ref },
-                None,
-                refs,
-            ));
-        }
+    // -----------------------------------------------------------------------
+    // Subscription lifecycle
+    // -----------------------------------------------------------------------
 
-        let op_ctx = self.operation_ctx(target_name)?;
-        let variables = self
-            .operation_vars
-            .lock().get(target_name)
-            .cloned();
-        let refs = self.read_result_op(&op_ctx, variables.as_ref())
-            .map(|r| r.used_refs)
-            .unwrap_or_default();
-        Ok(self.subscribe_with_target(SubscriptionTarget::Operation(op_ctx), variables, refs))
+    pub fn unsubscribe(&self, id: &SubscriptionId) {
+        let keys = {
+            let mut manager = self.subscriptions.lock();
+            manager.subscriptions.remove(id).map(|state| state.keys)
+        };
+        if let Some(keys) = keys {
+            self.subscription_tracker.lock().unsubscribe(keys);
+        }
     }
+
+    pub fn collect_garbage(&self) -> Vec<String> {
+        let active_keys = self.subscription_tracker.lock().active_keys();
+        let cache = self.cache();
+        let mut cache = cache.lock();
+        collect_garbage(&mut cache, &active_keys)
+    }
+
+    pub fn subscription_stream(
+        &self,
+        id: &SubscriptionId,
+    ) -> anyhow::Result<RuntimeResponseStream> {
+        let receiver = {
+            let mut manager = self.subscriptions.lock();
+            manager
+                .subscriptions
+                .get_mut(id)
+                .and_then(|state| state.receiver.take())
+                .ok_or_else(|| {
+                    anyhow::anyhow!("subscription {id:?} not found or already streaming")
+                })?
+        };
+        Ok(Box::pin(UnboundedReceiverStream::new(receiver)))
+    }
+
+    /// Push a transport/network error to a subscription so the Dart side sees it.
+    pub fn push_subscription_error(&self, id: SubscriptionId, err: anyhow::Error) {
+        let manager = self.subscriptions.lock();
+        if let Some(state) = manager.subscriptions.get(&id) {
+            let _ = state.sender.send(Err(err));
+        }
+    }
+
+    // -----------------------------------------------------------------------
+    // Cache read helpers (pub for the FRB layer)
+    // -----------------------------------------------------------------------
+
+    pub fn read_from_cache(
+        &self,
+        op_ctx: &SharedOpCtx,
+        variables: Option<&Map<String, Value>>,
+    ) -> anyhow::Result<RuntimeResponse> {
+        let result = self.read_result_op(op_ctx, variables)?;
+        Ok(RuntimeResponse {
+            data: result.data,
+            operation_id: Some(op_ctx.get_operation_name().to_string()),
+        })
+    }
+
+    /// Look up a pre-registered (or remembered) operation by name.
+    pub fn operation_by_name(&self, name: &str) -> anyhow::Result<SharedOpCtx> {
+        self.engine
+            .global_ctx()
+            .get_operation(name)
+            .ok_or_else(|| anyhow::anyhow!("operation '{name}' not registered — call registerOperation first"))
+    }
+
+    // -----------------------------------------------------------------------
+    // Private helpers
+    // -----------------------------------------------------------------------
 
     fn subscribe_with_target(
         &self,
@@ -222,50 +463,14 @@ impl ShalomRuntime {
         id
     }
 
-    pub fn unsubscribe(&self, id: &SubscriptionId) {
-        let keys = {
-            let mut manager = self.subscriptions.lock();
-            manager.subscriptions.remove(id).map(|state| state.keys)
-        };
-        if let Some(keys) = keys {
-            self.subscription_tracker.lock().unsubscribe(keys);
-        }
-    }
-
-    pub fn collect_garbage(&self) -> Vec<String> {
-        let active_keys = self.subscription_tracker.lock().active_keys();
-        let cache = self.cache();
-        let mut cache = cache.lock();
-        collect_garbage(&mut cache, &active_keys)
-    }
-
-    pub fn subscription_stream(&self, id: &SubscriptionId) -> anyhow::Result<RuntimeResponseStream> {
-        let receiver = {
-            let mut manager = self.subscriptions.lock();
-            manager
-                .subscriptions
-                .get_mut(id)
-                .and_then(|state| state.receiver.take())
-                .ok_or_else(|| {
-                    anyhow::anyhow!("subscription {id:?} not found or already streaming")
-                })?
-        };
-        let stream = UnboundedReceiverStream::new(receiver).map(Ok);
-        Ok(Box::pin(stream))
-    }
-
     fn notify_subscribers(&self, changed: &HashSet<String>) -> anyhow::Result<()> {
-        let affected: Vec<(
-            SubscriptionId,
-            SubscriptionTarget,
-            Option<Map<String, Value>>,
-        )> = {
+        let affected: Vec<(SubscriptionId, SubscriptionTarget, Option<Map<String, Value>>)> = {
             let manager = self.subscriptions.lock();
             manager
                 .subscriptions
                 .iter()
                 .filter(|(_, state)| {
-                    state.keys.is_empty() || state.keys.iter().any(|key| changed.contains(key))
+                    state.keys.is_empty() || state.keys.iter().any(|k| changed.contains(k))
                 })
                 .map(|(id, state)| (*id, state.target.clone(), state.variables.clone()))
                 .collect()
@@ -275,32 +480,34 @@ impl ShalomRuntime {
             let (data, new_refs, operation_id) = match &target {
                 SubscriptionTarget::Operation(op_ctx) => {
                     let result = self.read_result_op(op_ctx, variables.as_ref())?;
-                    let op_id = op_ctx.get_operation_name().to_string();
-                    (result.data, result.used_refs, op_id)
+                    (result.data, result.used_refs, op_ctx.get_operation_name().to_string())
                 }
-                SubscriptionTarget::Fragment { fragment, root_ref } => {
-                    let result = self.read_result_fragment(fragment, root_ref)?;
-                    let frag_id = fragment.get_fragment_name().to_string();
-                    (result.data, result.used_refs, frag_id)
+                SubscriptionTarget::Fragment { fragment, anchor } => {
+                    let result = self.read_result_fragment(fragment, anchor)?;
+                    (result.data, result.used_refs, fragment.get_fragment_name().to_string())
                 }
             };
+
             let response = RuntimeResponse {
                 data,
                 operation_id: Some(operation_id),
             };
+
             let mut old_keys = None;
             let mut removed = false;
+
             {
                 let mut manager = self.subscriptions.lock();
                 if let Some(state) = manager.subscriptions.get_mut(&id) {
                     old_keys = Some(state.keys.clone());
                     state.keys = new_refs.clone();
-                    if state.sender.send(response).is_err() {
+                    if state.sender.send(Ok(response)).is_err() {
                         manager.subscriptions.remove(&id);
                         removed = true;
                     }
                 }
             }
+
             if let Some(old_keys) = old_keys {
                 let mut tracker = self.subscription_tracker.lock();
                 if removed {
@@ -313,30 +520,6 @@ impl ShalomRuntime {
         }
 
         Ok(())
-    }
-
-    pub fn read_from_cache(
-        &self,
-        op_ctx: &SharedOpCtx,
-        variables: Option<&Map<String, Value>>,
-    ) -> anyhow::Result<RuntimeResponse> {
-        let result = self.read_result_op(op_ctx, variables)?;
-        Ok(RuntimeResponse {
-            data: result.data,
-            operation_id: Some(op_ctx.get_operation_name().to_string()),
-        })
-    }
-
-    fn read_fragment_from_cache(
-        &self,
-        fragment: &SharedFragmentContext,
-        root_ref: &str,
-    ) -> anyhow::Result<RuntimeResponse> {
-        let result = self.read_result_fragment(fragment, root_ref)?;
-        Ok(RuntimeResponse {
-            data: result.data,
-            operation_id: Some(fragment.get_fragment_name().to_string()),
-        })
     }
 
     fn read_result_op(
@@ -361,58 +544,42 @@ impl ShalomRuntime {
         reader.read_fragment(fragment, root_ref)
     }
 
-    fn remember_operation(&self, op_ctx: &SharedOpCtx, variables: Option<&Map<String, Value>>) {
+    fn read_fragment_from_cache(
+        &self,
+        fragment: &SharedFragmentContext,
+        root_ref: &str,
+    ) -> anyhow::Result<RuntimeResponse> {
+        let result = self.read_result_fragment(fragment, root_ref)?;
+        Ok(RuntimeResponse {
+            data: result.data,
+            operation_id: Some(fragment.get_fragment_name().to_string()),
+        })
+    }
+
+    fn remember_operation_vars(
+        &self,
+        op_ctx: &SharedOpCtx,
+        variables: Option<&Map<String, Value>>,
+    ) {
         let op_id = op_ctx.get_operation_name().to_string();
-        self.operations.lock().insert(op_id.clone(), op_ctx.clone());
         let mut vars_map = self.operation_vars.lock();
-        if let Some(vars) = variables {
-            vars_map.insert(op_id, vars.clone());
-        } else {
-            vars_map.remove(&op_id);
+        match variables {
+            Some(vars) => {
+                vars_map.insert(op_id, vars.clone());
+            }
+            None => {
+                vars_map.remove(&op_id);
+            }
         }
-    }
-
-    fn operation_ctx(&self, operation_id: &str) -> anyhow::Result<SharedOpCtx> {
-        if let Some(op_ctx) = self.operations.lock().get(operation_id).cloned() {
-            return Ok(op_ctx);
-        }
-        let global_ctx = self.engine.global_ctx();
-        global_ctx
-            .get_operation(operation_id)
-            .ok_or_else(|| anyhow::anyhow!("operation {operation_id} not found"))
-    }
-
-    pub fn register_operation_from_query(&self, query: &str) -> anyhow::Result<SharedOpCtx> {
-        let global_ctx = self.engine.global_ctx();
-        let path = PathBuf::from("request.graphql");
-        let _ = register_fragments_with_duplicates(&global_ctx, query, &path)?;
-        let operations = parse_document(&global_ctx, query, &path)?;
-        if operations.len() != 1 {
-            return Err(anyhow::anyhow!(
-                "expected a single operation per request, found {}",
-                operations.len()
-            ));
-        }
-        let (name, op_ctx) = operations
-            .iter()
-            .next()
-            .map(|(name, ctx)| (name.clone(), ctx.clone()))
-            .expect("operation missing");
-        if global_ctx.operation_exists(&name) {
-            let existing = global_ctx
-                .get_operation(&name)
-                .ok_or_else(|| anyhow::anyhow!("operation {name} not found"))?;
-            self.remember_operation(&existing, None);
-            return Ok(existing);
-        }
-        global_ctx.register_operations(operations.clone());
-        self.remember_operation(&op_ctx, None);
-        Ok(op_ctx)
     }
 }
 
-fn register_fragments_with_duplicates(
-    global_ctx: &SharedShalomGlobalContext,
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+fn register_fragments_ignoring_duplicates(
+    global_ctx: &shalom_core::context::SharedShalomGlobalContext,
     sdl: &str,
     path: &PathBuf,
 ) -> anyhow::Result<()> {

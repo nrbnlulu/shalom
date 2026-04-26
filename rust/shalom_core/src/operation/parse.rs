@@ -634,7 +634,7 @@ fn parse_operation(
         inject_id_in_selection_set(schema, &mut op_mut.selection_set, global_ctx);
     }
     let op_type = parse_operation_type(op.operation_type);
-    let subscribeable = has_subscribeable_directive(&op.directives);
+    let observe = has_observe_directive(&op.directives);
     let query = op.to_string();
     let mut ctx = OperationContext::new(
         global_ctx.schema_ctx.clone(),
@@ -642,7 +642,7 @@ fn parse_operation(
         query,
         file_path,
         op_type,
-        subscribeable,
+        observe,
     );
     for variable in op.variables.iter() {
         let name = variable.name.to_string();
@@ -668,7 +668,7 @@ fn parse_operation(
     Ok(Arc::new(ctx))
 }
 
-fn has_subscribeable_directive(directives: &apollo_compiler::ast::DirectiveList) -> bool {
+fn has_observe_directive(directives: &apollo_compiler::ast::DirectiveList) -> bool {
     directives
         .0
         .iter()

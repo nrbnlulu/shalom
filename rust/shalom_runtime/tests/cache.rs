@@ -10,7 +10,7 @@ use shalom_core::operation::context::SharedOpCtx;
 use shalom_core::shalom_config::ShalomConfig;
 use shalom_runtime::cache::{CacheRecord, CacheValue};
 use shalom_runtime::normalization::NormalizationResult;
-use shalom_runtime::{ShalomRuntime, SubscriptionId};
+use shalom_runtime::{ObservedRef, ShalomRuntime, SubscriptionId};
 
 fn build_ctx(schema: &str, operation: &str) -> (ShalomRuntime, SharedOpCtx) {
     let schema_ctx = parse_schema(schema).expect("schema parse failed");
@@ -41,9 +41,7 @@ fn subscribe(
     op_ctx: &SharedOpCtx,
     _result: &NormalizationResult,
 ) -> SubscriptionId {
-    runtime
-        .subscribe_fragment(op_ctx.get_operation_name(), None)
-        .expect("subscribe")
+    runtime.create_operation_subscription(op_ctx.clone(), None)
 }
 
 fn yield_update_sync(runtime: &ShalomRuntime, id: SubscriptionId) -> Value {
@@ -1757,7 +1755,10 @@ mod fragment_subscriptions {
         let person_obj = person.as_object().expect("person object");
         let anchor_ref = anchor_from_observed_ref(person_obj, "PersonFrag").to_string();
         let sub_id = runtime
-            .subscribe_fragment("PersonFrag", Some(anchor_ref.clone()))
+            .observe_fragment(ObservedRef {
+                observable_id: "PersonFrag".to_string(),
+                anchor: anchor_ref.clone(),
+            })
             .expect("subscribe");
         // trigger an update
         normalize(
@@ -1797,7 +1798,10 @@ mod fragment_subscriptions {
         let pet_obj = pet.as_object().expect("pet object");
         let root_ref = anchor_from_observed_ref(pet_obj, "PetFrag").to_string();
         let sub_id = runtime
-            .subscribe_fragment("PetFrag", Some(root_ref.clone()))
+            .observe_fragment(ObservedRef {
+                observable_id: "PetFrag".to_string(),
+                anchor: root_ref.clone(),
+            })
             .expect("subscribe");
         normalize(
             &runtime,
@@ -1838,7 +1842,7 @@ mod fragment_subscriptions {
         let result1 = normalize(&runtime, &op1, serde_json::json!({ "sharedValue": 42 }), None);
         assert!(result1.changed.contains("ROOT_QUERY.sharedValue"));
         
-        let sub_id = runtime.subscribe_fragment("Op1", None).unwrap();
+        let sub_id = runtime.create_operation_subscription(op1.clone(), None);
         let mut updates = runtime.subscription_stream(&sub_id).unwrap();
 
         let result2 = normalize(&runtime, &op2, serde_json::json!({ "sharedValue": 99, "otherValue": "hello" }), None);

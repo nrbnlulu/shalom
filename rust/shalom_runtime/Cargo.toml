@@ -9,7 +9,7 @@ simple_logger = {workspace = true}
 log = {workspace = true}
 serde = {workspace = true}
 serde_json = {workspace = true}
-tokio = { version = "1.48.0", features = ["rt", "macros", "sync"] }
+tokio = { version = "1.48.0", features = ["rt", "macros", "sync", "time"] }
 tokio-stream = "0.1.17"
 anyhow = {workspace = true}
 async-trait = "0.1.89"

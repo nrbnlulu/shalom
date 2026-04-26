@@ -42,7 +42,7 @@ pub struct FragmentContext {
     pub typedefs: TypeDefs,
     pub root_type: Option<ObjectLikeCommon>,
     pub type_condition: String,
-    pub subscribeable: bool,
+    pub observe: bool,
 }
 pub type SharedFragmentContext = Arc<FragmentContext>;
 
@@ -52,7 +52,7 @@ impl FragmentContext {
         fragment_raw: String,
         file_path: PathBuf,
         type_condition: String,
-        subscribeable: bool,
+        observe: bool,
     ) -> Self {
         FragmentContext {
             name,
@@ -61,7 +61,7 @@ impl FragmentContext {
             typedefs: TypeDefs::new(),
             root_type: None,
             type_condition,
-            subscribeable,
+            observe,
         }
     }
 
@@ -81,8 +81,8 @@ impl FragmentContext {
         self.root_type.as_ref().unwrap()
     }
 
-    pub fn is_subscribeable(&self) -> bool {
-        self.subscribeable
+    pub fn is_observe(&self) -> bool {
+        self.observe
     }
 }
 

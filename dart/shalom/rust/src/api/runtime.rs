@@ -9,94 +9,223 @@ use shalom_runtime::sansio_protocols::{
     GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request,
 };
 use shalom_runtime::{
-    RuntimeConfig, RuntimeResponse, RuntimeResponseStream, ShalomRuntime, SubscriptionId,
+    ObservedRef, RuntimeConfig, RuntimeResponse, ShalomRuntime, SubscriptionId,
 };
 
 pub use serde_json::{Map, Value};
 
-#[frb(opaque)]
-pub struct RuntimeHandle {
-    runtime: ShalomRuntime,
-    link: Arc<HostLink>,
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+/// Dart-facing representation of an observed fragment reference.
+///
+/// `observable_id` is the fragment name; `anchor` is the cache key (e.g. `"User:1"`).
+#[frb]
+pub struct ObservedRefInput {
+    pub observable_id: String,
+    pub anchor: String,
 }
 
-impl RuntimeHandle {
-    /// Build the stream of normalized responses for a given query+variables.
-    /// Transport-agnostic: the link is invoked here so ShalomRuntime stays pure.
-    pub(crate) fn request_stream(
-        &self,
-        query: String,
-        variables: Option<Map<String, Value>>,
-    ) -> anyhow::Result<RuntimeResponseStream> {
-        let op_ctx = self.runtime.register_operation_from_query(&query)?;
-        let operation_name = op_ctx.get_operation_name().to_string();
-        let operation_id = operation_name.clone();
-        let variables_map = variables.clone().unwrap_or_default();
-        let request = Request {
-            query,
-            variables: variables_map,
-            operation_name,
-            operation_type: to_link_op_type(op_ctx.op_type()),
-            headers: None,
-        };
-
-        let runtime = self.runtime.clone();
-        let vars = variables;
-        let op_ctx = op_ctx.clone();
-        let stream = self
-            .link
-            .execute(request)
-            .map(move |response| match response {
-                GraphQLResponse::Data { data, .. } => runtime
-                    .normalize(&op_ctx, Value::Object(data), vars.as_ref())
-                    .map(|result| RuntimeResponse {
-                        data: result.data,
-                        operation_id: Some(operation_id.clone()),
-                    }),
-                GraphQLResponse::Error { errors, .. } => Err(anyhow::anyhow!(
-                    "graphql errors: {}",
-                    serde_json::to_string(&errors)
-                        .unwrap_or_else(|_| "<unserializable>".to_string())
-                )),
-                GraphQLResponse::TransportError(err) => Err(anyhow::anyhow!(
-                    "transport error {}: {}",
-                    err.code,
-                    err.message
-                )),
-            });
-
-        Ok(Box::pin(stream))
-    }
-}
-
-fn to_link_op_type(op_type: shalom_core::operation::types::OperationType) -> LinkOperationType {
-    match op_type {
-        shalom_core::operation::types::OperationType::Query => LinkOperationType::Query,
-        shalom_core::operation::types::OperationType::Mutation => LinkOperationType::Mutation,
-        shalom_core::operation::types::OperationType::Subscription => {
-            LinkOperationType::Subscription
+impl From<ObservedRefInput> for ObservedRef {
+    fn from(r: ObservedRefInput) -> Self {
+        ObservedRef {
+            observable_id: r.observable_id,
+            anchor: r.anchor,
         }
     }
 }
 
+#[frb(opaque)]
+pub struct RuntimeHandle {
+    pub(crate) runtime: ShalomRuntime,
+    pub(crate) link: Arc<HostLink>,
+}
+
+// ---------------------------------------------------------------------------
+// Init
+// ---------------------------------------------------------------------------
 
 #[flutter_rust_bridge::frb(init)]
 pub fn init_app() {
     flutter_rust_bridge::setup_default_user_utils();
 }
 
+/// Initialise the runtime with the schema SDL.
+/// Fragment and operation SDLs are registered separately via
+/// `register_operation` / `register_fragment` after init.
 #[frb]
 pub fn init_runtime(
     schema_sdl: String,
-    fragment_sdls: Vec<String>,
     config_json: Option<String>,
 ) -> anyhow::Result<RuntimeHandle> {
     let link = Arc::new(HostLink::new());
     let config = parse_config(config_json)?;
-    let runtime = ShalomRuntime::init(&schema_sdl, fragment_sdls, config)?;
+    let runtime = ShalomRuntime::init(&schema_sdl, Vec::new(), config)?;
     Ok(RuntimeHandle { runtime, link })
 }
 
+// ---------------------------------------------------------------------------
+// Registration
+// ---------------------------------------------------------------------------
+
+/// Pre-register a query/mutation SDL so it can be executed by name via `request`.
+#[frb]
+pub fn register_operation(
+    handle: &RuntimeHandle,
+    document: String,
+) -> anyhow::Result<()> {
+    handle.runtime.register_operation(&document)?;
+    Ok(())
+}
+
+/// Pre-register a fragment SDL so it can be subscribed to via `observe_fragment`.
+#[frb]
+pub fn register_fragment(
+    handle: &RuntimeHandle,
+    document: String,
+) -> anyhow::Result<()> {
+    handle.runtime.register_fragment(&document)
+}
+
+// ---------------------------------------------------------------------------
+// Operation subscription (network + cache)
+// ---------------------------------------------------------------------------
+
+/// Trigger a network request for a pre-registered operation and open a cache
+/// subscription. Returns the subscription ID to pass to `listen_subscription`.
+///
+/// The network request is dispatched through the host link: Dart receives it
+/// via `listen_requests`, executes it, and sends the result back via
+/// `push_response` / `complete_transport`. Normalization triggers the
+/// subscription automatically.
+#[frb]
+pub async fn request(
+    handle: &RuntimeHandle,
+    name: String,
+    variables_json: Option<String>,
+) -> anyhow::Result<u64> {
+    let variables = parse_variables(variables_json)?;
+    let op_ctx = handle.runtime.operation_by_name(&name)?;
+    let sub_id = handle.runtime.create_operation_subscription(op_ctx.clone(), variables.clone());
+
+    // Spawn a task to drive the network round-trip and normalise the response.
+    // The normalisation side-effect triggers `notify_subscribers` which pushes
+    // data onto the subscription channel opened above.
+    let link = handle.link.clone();
+    let runtime = handle.runtime.clone();
+
+    tokio::spawn(async move {
+        let request = Request {
+            query: op_ctx.query.clone(),
+            variables: variables.clone().unwrap_or_default(),
+            operation_name: op_ctx.get_operation_name().to_string(),
+            operation_type: to_link_op_type(op_ctx.op_type()),
+            headers: None,
+        };
+
+        let mut stream = link.execute(request);
+        while let Some(response) = stream.next().await {
+            match response {
+                GraphQLResponse::Data { data, .. } => {
+                    if let Err(e) =
+                        runtime.normalize(&op_ctx, Value::Object(data), variables.as_ref())
+                    {
+                        runtime.push_subscription_error(sub_id, e);
+                        break;
+                    }
+                }
+                GraphQLResponse::Error { errors, .. } => {
+                    let msg = serde_json::to_string(&errors).unwrap_or_else(|_| "graphql errors".into());
+                    runtime.push_subscription_error(sub_id, anyhow::anyhow!("{}", msg));
+                    break;
+                }
+                GraphQLResponse::TransportError(err) => {
+                    runtime.push_subscription_error(
+                        sub_id,
+                        anyhow::anyhow!("{}: {}", err.code, err.message),
+                    );
+                    break;
+                }
+            }
+        }
+    });
+
+    Ok(sub_id.into())
+}
+
+// ---------------------------------------------------------------------------
+// Fragment subscription (cache-only)
+// ---------------------------------------------------------------------------
+
+/// Open a cache subscription for a pre-registered fragment at the given anchor.
+/// Returns the subscription ID to pass to `listen_subscription`.
+///
+/// Emits the current cached value immediately if available.
+#[frb(sync)]
+pub fn observe_fragment(
+    handle: &RuntimeHandle,
+    ref_input: ObservedRefInput,
+) -> anyhow::Result<u64> {
+    handle
+        .runtime
+        .observe_fragment(ref_input.into())
+        .map(u64::from)
+}
+
+/// Rebind an existing fragment subscription to a new `ObservedRefInput`.
+///
+/// - Same `observable_id`: fast anchor swap, same subscription ID returned.
+/// - Different `observable_id`: full teardown + new subscription, new ID returned.
+#[frb(sync)]
+pub fn rebind_subscription(
+    handle: &RuntimeHandle,
+    subscription_id: u64,
+    new_ref: ObservedRefInput,
+) -> anyhow::Result<u64> {
+    let id = SubscriptionId::from(subscription_id);
+    handle
+        .runtime
+        .rebind_subscription(id, new_ref.into())
+        .map(u64::from)
+}
+
+// ---------------------------------------------------------------------------
+// Subscription lifecycle
+// ---------------------------------------------------------------------------
+
+#[frb(sync)]
+pub fn unsubscribe(handle: &RuntimeHandle, subscription_id: u64) {
+    let id = SubscriptionId::from(subscription_id);
+    handle.runtime.unsubscribe(&id);
+}
+
+/// Stream cache-update notifications for an existing subscription.
+#[frb]
+pub async fn listen_subscription(
+    handle: &RuntimeHandle,
+    subscription_id: u64,
+    sink: StreamSink<String>,
+) -> anyhow::Result<()> {
+    let id = SubscriptionId::from(subscription_id);
+    let Ok(mut stream) = handle.runtime.subscription_stream(&id) else {
+        return Ok(());
+    };
+    while let Some(item) = stream.next().await {
+        let response = item?;
+        let payload = response_to_json(response)?;
+        if sink.add(payload).is_err() {
+            break;
+        }
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// Host link plumbing (unchanged from V1)
+// ---------------------------------------------------------------------------
+
+/// Stream of serialised request envelopes that Dart must execute and respond to.
 #[frb]
 pub async fn listen_requests(
     handle: &RuntimeHandle,
@@ -148,176 +277,19 @@ pub fn complete_transport(handle: &RuntimeHandle, request_id: u64) {
     handle.link.complete(request_id);
 }
 
-#[frb(sync)]
-pub fn init_subscription(
-    handle: &RuntimeHandle,
-    target_name: String,
-    anchor: Option<String>,
-) -> anyhow::Result<u64> {
-    handle
-        .runtime
-        .subscribe_fragment(&target_name, anchor)
-        .map(|o| o.into())
-}
+// ---------------------------------------------------------------------------
+// Private helpers
+// ---------------------------------------------------------------------------
 
-#[frb(sync)]
-pub fn unsubscribe(handle: &RuntimeHandle, subscription_id: u64) {
-    let id = SubscriptionId::from(subscription_id);
-    handle.runtime.unsubscribe(&id);
-}
-
-/// Stream cache-update notifications for an existing subscription.
-#[frb]
-pub async fn listen_subscription(
-    handle: &RuntimeHandle,
-    subscription_id: u64,
-    sink: StreamSink<String>,
-) -> anyhow::Result<()> {
-    let id = SubscriptionId::from(subscription_id);
-    // If the subscription was already unsubscribed (e.g. cancelled before
-    // this task started), treat it as a clean empty stream.
-    let Ok(mut stream) = handle.runtime.subscription_stream(&id) else {
-        return Ok(());
-    };
-    while let Some(item) = stream.next().await {
-        let response = item?;
-        let payload = response_to_json(response)?;
-        if sink.add(payload).is_err() {
-            break;
+fn to_link_op_type(op_type: shalom_core::operation::types::OperationType) -> LinkOperationType {
+    match op_type {
+        shalom_core::operation::types::OperationType::Query => LinkOperationType::Query,
+        shalom_core::operation::types::OperationType::Mutation => LinkOperationType::Mutation,
+        shalom_core::operation::types::OperationType::Subscription => {
+            LinkOperationType::Subscription
         }
     }
-    Ok(())
 }
-
-pub enum NetworkPolicy {
-    /// Fetch from network only; no cache subscription is set up.
-    NetworkOnly,
-    /// Fetch from network, emit the first response, then keep the stream alive
-    /// via a cache subscription so subsequent writes to the same refs re-emit.
-    NetworkFirst,
-    /// Emit cached data immediately (if available), then do a network fetch.
-    /// A cache subscription is set up so any future write to those refs re-emits.
-    CacheFirst,
-}
-
-#[frb]
-pub async fn request_op(
-    handle: &RuntimeHandle,
-    operation: String,
-    variables_json: Option<String>,
-    network_policy: NetworkPolicy,
-    sink: StreamSink<String>,
-) -> anyhow::Result<()> {
-    let variables = parse_variables(variables_json)?;
-
-    match network_policy {
-        NetworkPolicy::NetworkOnly => {
-            let mut stream = handle.request_stream(operation, variables)?;
-            while let Some(item) = stream.next().await {
-                let response = item?;
-                if sink.add(response_to_json(response)?).is_err() {
-                    break;
-                }
-            }
-        }
-
-        NetworkPolicy::NetworkFirst => {
-            let mut stream = handle.request_stream(operation.clone(), variables.clone())?;
-
-            // Emit first network response, then transition to cache subscription.
-            let first = match stream.next().await {
-                Some(r) => r?,
-                None => return Ok(()),
-            };
-            let op_id = first
-                .operation_id
-                .clone()
-                .unwrap_or_else(|| operation.clone());
-
-            if sink.add(response_to_json(first)?).is_err() {
-                return Ok(());
-            }
-
-            let sub_id = SubscriptionId::from(
-                handle
-                    .runtime
-                    .subscribe_fragment(&op_id, None)
-                    .map(u64::from)?,
-            );
-            let mut sub_stream = handle.runtime.subscription_stream(&sub_id)?;
-
-            while let Some(item) = sub_stream.next().await {
-                let response = item?;
-                if sink.add(response_to_json(response)?).is_err() {
-                    break;
-                }
-            }
-            handle.runtime.unsubscribe(&sub_id);
-            handle.runtime.collect_garbage();
-        }
-
-        NetworkPolicy::CacheFirst => {
-            let op_ctx = handle.runtime.register_operation_from_query(&operation)?;
-            let op_id = op_ctx.get_operation_name().to_string();
-            let vars_map = variables.clone();
-
-            // Try cache first.
-            let maybe_cached = handle
-                .runtime
-                .read_from_cache(&op_ctx, vars_map.as_ref())
-                .ok();
-
-            let sub_id = SubscriptionId::from(
-                handle
-                    .runtime
-                    .subscribe_fragment(&op_id, None)
-                    .map(u64::from)?,
-            );
-
-            if let Some(cached) = maybe_cached {
-                if sink.add(response_to_json(cached)?).is_err() {
-                    handle.runtime.unsubscribe(&sub_id);
-                    handle.runtime.collect_garbage();
-                    return Ok(());
-                }
-            }
-
-            // Drive the network stream for normalization; deliver via subscription.
-            let mut net_stream = handle.request_stream(operation, variables)?;
-            let mut sub_stream = handle.runtime.subscription_stream(&sub_id)?;
-            let mut net_done = false;
-
-            loop {
-                tokio::select! {
-                    net_opt = net_stream.next(), if !net_done => {
-                        match net_opt {
-                            None => net_done = true,
-                            Some(Err(e)) => return Err(e),
-                            Some(Ok(_)) => {} // normalization is a side effect of request_stream
-                        }
-                    }
-                    sub_opt = sub_stream.next() => {
-                        match sub_opt {
-                            None => break,
-                            Some(Ok(update)) => {
-                                if sink.add(response_to_json(update)?).is_err() {
-                                    break;
-                                }
-                            }
-                            Some(Err(e)) => return Err(e),
-                        }
-                    }
-                }
-            }
-
-            handle.runtime.unsubscribe(&sub_id);
-            handle.runtime.collect_garbage();
-        }
-    }
-
-    Ok(())
-}
-
 
 fn parse_config(config_json: Option<String>) -> anyhow::Result<RuntimeConfig> {
     let json = match config_json {
@@ -327,10 +299,12 @@ fn parse_config(config_json: Option<String>) -> anyhow::Result<RuntimeConfig> {
     if json.trim().is_empty() {
         return Ok(RuntimeConfig::default());
     }
-    serde_json::from_str(&json).map_err(|err| anyhow::anyhow!(err))
+    serde_json::from_str(&json).map_err(|e| anyhow::anyhow!(e))
 }
 
-fn parse_variables(variables_json: Option<String>) -> anyhow::Result<Option<Map<String, Value>>> {
+fn parse_variables(
+    variables_json: Option<String>,
+) -> anyhow::Result<Option<Map<String, Value>>> {
     let json = match variables_json {
         Some(json) => json,
         None => return Ok(None),
@@ -346,9 +320,9 @@ fn parse_variables(variables_json: Option<String>) -> anyhow::Result<Option<Map<
     }
 }
 
-fn parse_optional_json(details_json: Option<String>) -> anyhow::Result<Option<Value>> {
-    let json = match details_json {
-        Some(json) => json,
+fn parse_optional_json(json: Option<String>) -> anyhow::Result<Option<Value>> {
+    let json = match json {
+        Some(j) => j,
         None => return Ok(None),
     };
     if json.trim().is_empty() {
@@ -367,11 +341,7 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
     let data = match obj.get("data") {
         Some(Value::Object(map)) => Some(map.clone()),
         Some(Value::Null) | None => None,
-        Some(_) => {
-            return Err(anyhow::anyhow!(
-                "graphql response data must be an object or null"
-            ))
-        }
+        Some(_) => return Err(anyhow::anyhow!("graphql response data must be an object or null")),
     };
 
     let errors = match obj.get("errors") {
@@ -380,21 +350,13 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
             for item in list {
                 match item {
                     Value::Object(map) => parsed.push(map.clone()),
-                    _ => {
-                        return Err(anyhow::anyhow!(
-                            "graphql response errors must contain objects"
-                        ))
-                    }
+                    _ => return Err(anyhow::anyhow!("graphql response errors must contain objects")),
                 }
             }
             Some(parsed)
         }
         Some(Value::Null) | None => None,
-        Some(_) => {
-            return Err(anyhow::anyhow!(
-                "graphql response errors must be an array or null"
-            ))
-        }
+        Some(_) => return Err(anyhow::anyhow!("graphql response errors must be an array or null")),
     };
 
     let extensions = match obj.get("extensions") {
@@ -408,11 +370,7 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
     };
 
     if let Some(data) = data {
-        Ok(GraphQLResponse::Data {
-            data,
-            errors,
-            extensions,
-        })
+        Ok(GraphQLResponse::Data { data, errors, extensions })
     } else if let Some(errors) = errors {
         Ok(GraphQLResponse::Error { errors, extensions })
     } else {
@@ -423,5 +381,5 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
 }
 
 fn response_to_json(response: RuntimeResponse) -> anyhow::Result<String> {
-    serde_json::to_string(&response).map_err(|err| anyhow::anyhow!(err))
+    serde_json::to_string(&response).map_err(|e| anyhow::anyhow!(e))
 }

@@ -84,7 +84,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool dco_decode_bool(dynamic raw);
 
   @protected
-  int dco_decode_i_32(dynamic raw);
+  ObservedRefInput dco_decode_box_autoadd_observed_ref_input(dynamic raw);
 
   @protected
   List<String> dco_decode_list_String(dynamic raw);
@@ -96,7 +96,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<WsLinkEvent> dco_decode_list_ws_link_event(dynamic raw);
 
   @protected
-  NetworkPolicy dco_decode_network_policy(dynamic raw);
+  ObservedRefInput dco_decode_observed_ref_input(dynamic raw);
 
   @protected
   String? dco_decode_opt_String(dynamic raw);
@@ -176,7 +176,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
-  int sse_decode_i_32(SseDeserializer deserializer);
+  ObservedRefInput sse_decode_box_autoadd_observed_ref_input(
+    SseDeserializer deserializer,
+  );
 
   @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer);
@@ -188,7 +190,7 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<WsLinkEvent> sse_decode_list_ws_link_event(SseDeserializer deserializer);
 
   @protected
-  NetworkPolicy sse_decode_network_policy(SseDeserializer deserializer);
+  ObservedRefInput sse_decode_observed_ref_input(SseDeserializer deserializer);
 
   @protected
   String? sse_decode_opt_String(SseDeserializer deserializer);
@@ -210,6 +212,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   WsLinkEvent sse_decode_ws_link_event(SseDeserializer deserializer);
+
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer);
 
   @protected
   void sse_encode_AnyhowException(
@@ -279,7 +284,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
-  void sse_encode_i_32(int self, SseSerializer serializer);
+  void sse_encode_box_autoadd_observed_ref_input(
+    ObservedRefInput self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer);
@@ -297,7 +305,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
-  void sse_encode_network_policy(NetworkPolicy self, SseSerializer serializer);
+  void sse_encode_observed_ref_input(
+    ObservedRefInput self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_opt_String(String? self, SseSerializer serializer);
@@ -319,6 +330,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_ws_link_event(WsLinkEvent self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer);
 }
 
 // Section: wire_class

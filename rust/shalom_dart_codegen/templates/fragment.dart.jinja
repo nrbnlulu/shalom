@@ -4,6 +4,7 @@
 {% set typedefs = context.fragment.typedefs %}
 {% set op_variables = None %}
 {% set op_variables_exist = false %}
+{% set is_observe = context.fragment.observe %}
 
 {% include "selection_macros" %}
 
@@ -21,6 +22,223 @@ import 'package:meta/meta.dart' show experimental;
 import '{{ import_path }}';
 {% endfor %}
 
+{% if is_observe %}
+// ------------ V2 FRAGMENT WIDGET API -------------
+
+extension type {{ fragment_name }}Ref._(shalom_core.ObservedRefInput _inner) {
+  shalom_core.ObservedRefInput get toInput => _inner;
+}
+
+sealed class {{ fragment_name }}Data {
+  const {{ fragment_name }}Data();
+
+  @experimental
+  static {{ fragment_name }}Data fromCache(shalom_core.JsonObject data) {
+    {% if typedefs.unions | length > 0 or typedefs.interfaces | length > 0 %}
+    final typename = data['__typename'] as String?;
+    switch(typename) {
+      {% for union_full_name, union_selection in typedefs.unions | items %}
+        {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
+        {% for concrete in concretes -%}
+      case '{{ concrete.schema_typename }}':
+        return {{ fragment_name }}Data${{ concrete.schema_typename }}.fromJson(data);
+        {% endfor %}
+      {% endfor %}
+      {% for iface_path_name, iface_selection in typedefs.interfaces | items %}
+        {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
+        {% for concrete in concretes -%}
+      case '{{ concrete.schema_typename }}':
+        return {{ fragment_name }}Data${{ concrete.schema_typename }}.fromJson(data);
+        {% endfor %}
+      {% endfor %}
+      default:
+        return const {{ fragment_name }}Data$Unknown();
+    }
+    {% else %}
+    return {{ fragment_name }}Data$Impl.fromJson(data);
+    {% endif %}
+  }
+}
+
+{% if typedefs.unions | length == 0 and typedefs.interfaces | length == 0 %}
+final class {{ fragment_name }}Data$Impl extends {{ fragment_name }}Data {
+  {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
+    final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
+  {% endfor %}
+
+  const {{ fragment_name }}Data$Impl({
+    {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
+      required this.{{ selection.name }},
+    {% endfor %}
+  });
+
+  @override
+  bool operator ==(Object other) => identical(this, other) || (other is {{ fragment_name }}Data$Impl
+    {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
+      && {{ selection_equality_comparison_macro(selection, selection.name, "other." + selection.name) }}
+    {% endfor %}
+  );
+
+  @override
+  int get hashCode => Object.hash(
+    {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
+      {{ selection.name }},
+    {% endfor %}
+  );
+
+  @experimental
+  static {{ fragment_name }}Data$Impl fromJson(shalom_core.JsonObject data) {
+    {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
+      {% set raw_value_symbol = "data['" + selection.name + "']" -%}
+      final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
+    {% endfor -%}
+    return {{ fragment_name }}Data$Impl(
+      {% for selection in context.fragment.root_type.selections -%}
+        {% if selection.name != "__typename" %}
+          {{selection.name}}: {{selection.name}}$value,
+        {% endif %}
+      {% endfor -%}
+    );
+  }
+
+  shalom_core.JsonObject toJson() {
+    return {
+      {% for selection in context.fragment.root_type.selections if selection.name != "__typename" %}
+        '{{ selection.name }}': {% if selection.is_optional %}{{ _serialize_selection_value_macro("this." + selection.name, selection, true) }}{% else %}{{ _serialize_selection_value_macro("this." + selection.name, selection, false) }}{% endif %},
+      {% endfor %}
+    };
+  }
+}
+{% else %}
+{% for union_full_name, union_selection in typedefs.unions | items %}
+  {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
+  {% for concrete in concretes -%}
+final class {{ fragment_name }}Data${{ concrete.schema_typename }} extends {{ fragment_name }}Data {
+  {% for selection in concrete.selections if selection.name != "__typename" -%}
+    final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
+  {% endfor %}
+
+  const {{ fragment_name }}Data${{ concrete.schema_typename }}({
+    {% for selection in concrete.selections if selection.name != "__typename" -%}
+      required this.{{ selection.name }},
+    {% endfor %}
+  });
+
+  @experimental
+  static {{ fragment_name }}Data${{ concrete.schema_typename }} fromJson(shalom_core.JsonObject data) {
+    {% for selection in concrete.selections if selection.name != "__typename" -%}
+      {% set raw_value_symbol = "data['" + selection.name + "']" -%}
+      final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
+    {% endfor -%}
+    return {{ fragment_name }}Data${{ concrete.schema_typename }}(
+      {% for selection in concrete.selections -%}
+        {% if selection.name != "__typename" %}
+          {{selection.name}}: {{selection.name}}$value,
+        {% endif %}
+      {% endfor -%}
+    );
+  }
+}
+
+  {% endfor %}
+{% endfor %}
+{% for iface_path_name, iface_selection in typedefs.interfaces | items %}
+  {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
+  {% for concrete in concretes -%}
+final class {{ fragment_name }}Data${{ concrete.schema_typename }} extends {{ fragment_name }}Data {
+  {% for selection in concrete.selections if selection.name != "__typename" -%}
+    final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
+  {% endfor %}
+
+  const {{ fragment_name }}Data${{ concrete.schema_typename }}({
+    {% for selection in concrete.selections if selection.name != "__typename" -%}
+      required this.{{ selection.name }},
+    {% endfor %}
+  });
+
+  @experimental
+  static {{ fragment_name }}Data${{ concrete.schema_typename }} fromJson(shalom_core.JsonObject data) {
+    {% for selection in concrete.selections if selection.name != "__typename" -%}
+      {% set raw_value_symbol = "data['" + selection.name + "']" -%}
+      final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
+    {% endfor -%}
+    return {{ fragment_name }}Data${{ concrete.schema_typename }}(
+      {% for selection in concrete.selections -%}
+        {% if selection.name != "__typename" %}
+          {{selection.name}}: {{selection.name}}$value,
+        {% endif %}
+      {% endfor -%}
+    );
+  }
+}
+
+  {% endfor %}
+{% endfor %}
+{% endif %}
+
+final class {{ fragment_name }}Data$Unknown {
+  const {{ fragment_name }}Data$Unknown();
+}
+
+abstract class ${{ fragment_name }} extends StatefulWidget {
+  final {{ fragment_name }}Ref ref;
+  const ${{ fragment_name }}({super.key, required this.ref});
+
+  Widget buildData(BuildContext context, {{ fragment_name }}Data data);
+  Widget buildLoading(BuildContext context) => const SizedBox.shrink();
+  Widget buildError(BuildContext context, Object error) => ErrorWidget(error);
+
+  @override
+  State<${{ fragment_name }}> createState() => _${{ fragment_name }}State();
+}
+
+class _${{ fragment_name }}State extends State<${{ fragment_name }}> {
+  StreamSubscription<{{ fragment_name }}Data>? _sub;
+  {{ fragment_name }}Data? _data;
+  Object? _error;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _subscribe();
+  }
+
+  @override
+  void didUpdateWidget(covariant ${{ fragment_name }} oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.ref != oldWidget.ref) _subscribe();
+  }
+
+  void _subscribe() {
+    _sub?.cancel();
+    final client = ShalomScope.of(context);
+    _sub = client
+        .observeFragment<{{ fragment_name }}Data>(
+          ref: widget.ref.toInput,
+          decoder: {{ fragment_name }}Data.fromCache,
+        )
+        .listen(
+          (data) => setState(() { _data = data; _error = null; }),
+          onError: (e) => setState(() { _error = e; }),
+        );
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_error != null) return widget.buildError(context, _error!);
+    if (_data == null) return widget.buildLoading(context);
+    return widget.buildData(context, _data!);
+  }
+}
+
+// ------------ END V2 FRAGMENT WIDGET API -------------
+{% else %}
 // Generate abstract fragment class
 abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.root_type.used_fragments) }} {
     {% for field in frag_root_shared_selections() if field.name != "__typename" -%}
@@ -92,3 +310,4 @@ class {{ fragment_name }}FromCache
 // ------------ END INTERFACE DEFINITIONS -------------
 
 {{ generate_multi_type_list_extensions(multi_type_list_selections) }}
+{% endif %}

@@ -3,6 +3,7 @@
 {% set op_variables = context.operation.variables %}
 {% set op_variables_exist = context.operation.variables | length > 0 %}
 {% set typedefs = context.operation.typedefs %}
+{% set is_observe = context.operation.observe %}
 
 
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
@@ -75,6 +76,170 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
 
 {{ generate_multi_type_list_extensions(multi_type_list_selections) }}
 
+{% if is_observe %}
+// ------------ V2 WIDGET API -------------
+
+final class {{ operation_name }}Data {
+    {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
+        final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
+    {% endfor %}
+
+    const {{ operation_name }}Data({
+        {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
+            required this.{{ selection.name }},
+        {% endfor %}
+    });
+
+    @experimental
+    static {{ operation_name }}Data fromCache(shalom_core.JsonObject data) {
+        {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
+            {% set raw_value_symbol = "data['" + selection.name + "']" -%}
+            final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
+        {% endfor -%}
+        return {{ operation_name }}Data(
+            {% for selection in context.operation.root_type.selections -%}
+                {% if selection.name != "__typename" %}
+                    {{selection.name}}: {{selection.name}}$value,
+                {% endif %}
+            {% endfor -%}
+        );
+    }
+
+    shalom_core.JsonObject toJson() {
+        return {
+            {% for selection in context.operation.root_type.selections %}
+                {% set selection_name = selection.name %}
+                {% if selection_name == "__typename" %}
+                    "__typename": {{ response_class_name }}.G__typename,
+                {% else %}
+                    '{{ selection_name }}':
+                        {% if selection.is_optional %}
+                            {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}
+                        {% else %}
+                            {{ _serialize_selection_value_macro("this." + selection_name, selection, false) }}
+                        {% endif %}
+                    ,
+                {% endif %}
+            {% endfor %}
+        };
+    }
+}
+
+{% if op_variables_exist %}
+final class {{ operation_name }}Variables {
+    {% set typename = operation_name ~ 'Variables' %}
+    {% set fields_requiring_initializer_list = get_fields_requiring_initializer_list(op_variables) %}
+    {% for name, variable in op_variables | items %}
+        final {{ type_name_for_input_field(variable) }} {{ name }};
+    {% endfor %}
+
+    const {{ typename }}(
+        {
+        {% for name, field in op_variables | items -%}
+            {% if name not in fields_requiring_initializer_list -%}
+                {{input_field_constructor_initialization(name, field, required_initializer=false)}},
+            {% endif -%}
+        {% endfor -%}
+        {% for name, field in fields_requiring_initializer_list | items -%}
+            {{input_field_constructor_initialization(name, field, required_initializer=true)}},
+        {% endfor -%}
+        }
+    ){{ field_initialization_initializers(op_variables) }};
+
+    shalom_core.JsonObject toJson() {
+        shalom_core.JsonObject data = {};
+        {{ toJson_macro(op_variables) }}
+        return data;
+    }
+
+    @override
+    bool operator ==(Object other) {
+        return identical(this, other) || (other is {{ typename }}
+            {% for name, field in op_variables | items %}
+                && {{ selection_equality_comparison_macro(field, "this." + name, "other." + name) }}
+            {% endfor %}
+        );
+    }
+
+    @override
+    int get hashCode => Object.hash(
+        {% for name, field in op_variables | items %}
+            {{ name }},
+        {% endfor %}
+    );
+}
+{% endif %}
+
+abstract class ${{ operation_name }} extends StatefulWidget {
+    {% if op_variables_exist %}
+    final {{ operation_name }}Variables variables;
+    const ${{ operation_name }}({super.key, required this.variables});
+    {% else %}
+    const ${{ operation_name }}({super.key});
+    {% endif %}
+
+    Widget buildLoading(BuildContext context);
+    Widget buildError(BuildContext context, Object error);
+    Widget buildData(BuildContext context, {{ operation_name }}Data data);
+
+    @override
+    State<${{ operation_name }}> createState() => _${{ operation_name }}State();
+}
+
+class _${{ operation_name }}State extends State<${{ operation_name }}> {
+    StreamSubscription<{{ operation_name }}Data>? _sub;
+    {{ operation_name }}Data? _data;
+    Object? _error;
+
+    @override
+    void didChangeDependencies() {
+        super.didChangeDependencies();
+        _subscribe();
+    }
+
+    @override
+    void didUpdateWidget(covariant ${{ operation_name }} oldWidget) {
+        super.didUpdateWidget(oldWidget);
+        {% if op_variables_exist %}
+        if (widget.variables != oldWidget.variables) _subscribe();
+        {% endif %}
+    }
+
+    void _subscribe() {
+        _sub?.cancel();
+        final client = ShalomScope.of(context);
+        _sub = client
+            .observeOperation<{{ operation_name }}Data>(
+                name: '{{ operation_name }}',
+                {% if op_variables_exist %}
+                variables: widget.variables.toJson(),
+                {% else %}
+                variables: null,
+                {% endif %}
+                decoder: {{ operation_name }}Data.fromCache,
+            )
+            .listen(
+                (data) => setState(() { _data = data; _error = null; }),
+                onError: (e) => setState(() { _error = e; }),
+            );
+    }
+
+    @override
+    void dispose() {
+        _sub?.cancel();
+        super.dispose();
+    }
+
+    @override
+    Widget build(BuildContext context) {
+        if (_error != null) return widget.buildError(context, _error!);
+        if (_data == null) return widget.buildLoading(context);
+        return widget.buildData(context, _data!);
+    }
+}
+
+// ------------ END V2 WIDGET API -------------
+{% else %}
 class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_name}}Response>{
     {% if op_variables_exist %}
     final {{ operation_name }}Variables variables;
@@ -135,4 +300,5 @@ class {{ operation_name }}Variables {
     {{ updateWith_macro(op_variables, typename) }}
 
 }
+{% endif %}
 {% endif %}

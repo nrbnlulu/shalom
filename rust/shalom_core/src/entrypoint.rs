@@ -59,11 +59,11 @@ pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
 }
 
 pub fn parse_schema(schema: &str) -> anyhow::Result<SharedSchemaContext> {
-    let schema = ensure_subscribeable_directive(schema);
+    let schema = ensure_observe_directive(schema);
     schema::resolver::resolve(&schema)
 }
 
-fn ensure_subscribeable_directive(schema: &str) -> String {
+fn ensure_observe_directive(schema: &str) -> String {
     const DIRECTIVE_DEF: &str =
         "directive @observe on QUERY | MUTATION | SUBSCRIPTION | FRAGMENT_DEFINITION";
     if schema.contains("directive @observe") {
@@ -165,7 +165,7 @@ fn extract_fragment_definitions(
         for (name, fragment_def) in doc.fragments.iter() {
             let fragment_name = name.to_string();
             let type_condition = fragment_def.type_condition().to_string();
-            let subscribeable = has_subscribeable_directive(&fragment_def.directives);
+            let observe = has_observe_directive(&fragment_def.directives);
 
             // Extract fragment SDL for later injection
             let fragment_sdl = format!("{}", fragment_def);
@@ -174,7 +174,7 @@ fn extract_fragment_definitions(
                 fragment_sdl.clone(),
                 file_path.clone(),
                 type_condition,
-                subscribeable,
+                observe,
             );
 
             if all_fragment_defs.contains_key(&fragment_name) {
@@ -195,7 +195,7 @@ fn extract_fragment_definitions(
     Ok(all_fragment_defs)
 }
 
-fn has_subscribeable_directive(directives: &apollo_compiler::ast::DirectiveList) -> bool {
+fn has_observe_directive(directives: &apollo_compiler::ast::DirectiveList) -> bool {
     directives
         .0
         .iter()

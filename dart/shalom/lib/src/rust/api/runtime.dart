@@ -6,18 +6,99 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `parse_config`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `request_stream`, `response_to_json`, `to_link_op_type`
+// These functions are ignored because they are not marked as `pub`: `parse_config`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`
 
+/// Initialise the runtime with the schema SDL.
+/// Fragment and operation SDLs are registered separately via
+/// `register_operation` / `register_fragment` after init.
 Future<RuntimeHandle> initRuntime({
   required String schemaSdl,
-  required List<String> fragmentSdls,
   String? configJson,
 }) => RustLib.instance.api.crateApiRuntimeInitRuntime(
   schemaSdl: schemaSdl,
-  fragmentSdls: fragmentSdls,
   configJson: configJson,
 );
 
+/// Pre-register a query/mutation SDL so it can be executed by name via `request`.
+Future<void> registerOperation({
+  required RuntimeHandle handle,
+  required String document,
+}) => RustLib.instance.api.crateApiRuntimeRegisterOperation(
+  handle: handle,
+  document: document,
+);
+
+/// Pre-register a fragment SDL so it can be subscribed to via `observe_fragment`.
+Future<void> registerFragment({
+  required RuntimeHandle handle,
+  required String document,
+}) => RustLib.instance.api.crateApiRuntimeRegisterFragment(
+  handle: handle,
+  document: document,
+);
+
+/// Trigger a network request for a pre-registered operation and open a cache
+/// subscription. Returns the subscription ID to pass to `listen_subscription`.
+///
+/// The network request is dispatched through the host link: Dart receives it
+/// via `listen_requests`, executes it, and sends the result back via
+/// `push_response` / `complete_transport`. Normalization triggers the
+/// subscription automatically.
+Future<BigInt> request({
+  required RuntimeHandle handle,
+  required String name,
+  String? variablesJson,
+}) => RustLib.instance.api.crateApiRuntimeRequest(
+  handle: handle,
+  name: name,
+  variablesJson: variablesJson,
+);
+
+/// Open a cache subscription for a pre-registered fragment at the given anchor.
+/// Returns the subscription ID to pass to `listen_subscription`.
+///
+/// Emits the current cached value immediately if available.
+BigInt observeFragment({
+  required RuntimeHandle handle,
+  required ObservedRefInput refInput,
+}) => RustLib.instance.api.crateApiRuntimeObserveFragment(
+  handle: handle,
+  refInput: refInput,
+);
+
+/// Rebind an existing fragment subscription to a new `ObservedRefInput`.
+///
+/// - Same `observable_id`: fast anchor swap, same subscription ID returned.
+/// - Different `observable_id`: full teardown + new subscription, new ID returned.
+BigInt rebindSubscription({
+  required RuntimeHandle handle,
+  required BigInt subscriptionId,
+  required ObservedRefInput newRef,
+}) => RustLib.instance.api.crateApiRuntimeRebindSubscription(
+  handle: handle,
+  subscriptionId: subscriptionId,
+  newRef: newRef,
+);
+
+void unsubscribe({
+  required RuntimeHandle handle,
+  required BigInt subscriptionId,
+}) => RustLib.instance.api.crateApiRuntimeUnsubscribe(
+  handle: handle,
+  subscriptionId: subscriptionId,
+);
+
+/// Stream cache-update notifications for an existing subscription.
+Stream<String> listenSubscription({
+  required RuntimeHandle handle,
+  required BigInt subscriptionId,
+}) => RustLib.instance.api.crateApiRuntimeListenSubscription(
+  handle: handle,
+  subscriptionId: subscriptionId,
+);
+
+/// Stream of serialised request envelopes that Dart must execute and respond to.
 Stream<String> listenRequests({required RuntimeHandle handle}) =>
     RustLib.instance.api.crateApiRuntimeListenRequests(handle: handle);
 
@@ -54,57 +135,26 @@ Future<void> completeTransport({
   requestId: requestId,
 );
 
-BigInt initSubscription({
-  required RuntimeHandle handle,
-  required String targetName,
-  String? anchor,
-}) => RustLib.instance.api.crateApiRuntimeInitSubscription(
-  handle: handle,
-  targetName: targetName,
-  anchor: anchor,
-);
-
-void unsubscribe({
-  required RuntimeHandle handle,
-  required BigInt subscriptionId,
-}) => RustLib.instance.api.crateApiRuntimeUnsubscribe(
-  handle: handle,
-  subscriptionId: subscriptionId,
-);
-
-/// Stream cache-update notifications for an existing subscription.
-Stream<String> listenSubscription({
-  required RuntimeHandle handle,
-  required BigInt subscriptionId,
-}) => RustLib.instance.api.crateApiRuntimeListenSubscription(
-  handle: handle,
-  subscriptionId: subscriptionId,
-);
-
-Stream<String> requestOp({
-  required RuntimeHandle handle,
-  required String operation,
-  String? variablesJson,
-  required NetworkPolicy networkPolicy,
-}) => RustLib.instance.api.crateApiRuntimeRequestOp(
-  handle: handle,
-  operation: operation,
-  variablesJson: variablesJson,
-  networkPolicy: networkPolicy,
-);
-
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>>
 abstract class RuntimeHandle implements RustOpaqueInterface {}
 
-enum NetworkPolicy {
-  /// Fetch from network only; no cache subscription is set up.
-  networkOnly,
+/// Dart-facing representation of an observed fragment reference.
+///
+/// `observable_id` is the fragment name; `anchor` is the cache key (e.g. `"User:1"`).
+class ObservedRefInput {
+  final String observableId;
+  final String anchor;
 
-  /// Fetch from network, emit the first response, then keep the stream alive
-  /// via a cache subscription so subsequent writes to the same refs re-emit.
-  networkFirst,
+  const ObservedRefInput({required this.observableId, required this.anchor});
 
-  /// Emit cached data immediately (if available), then do a network fetch.
-  /// A cache subscription is set up so any future write to those refs re-emits.
-  cacheFirst,
+  @override
+  int get hashCode => observableId.hashCode ^ anchor.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ObservedRefInput &&
+          runtimeType == other.runtimeType &&
+          observableId == other.observableId &&
+          anchor == other.anchor;
 }

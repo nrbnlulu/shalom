@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:shalom/shalom.dart';
 import 'package:shalom/shalom.dart' as shalom;
-import 'package:shalom/src/runtime_client.dart' show collectRuntimeRefs;
 import 'package:test/test.dart';
 
 String get _nativeLibPath {
@@ -147,7 +146,7 @@ void main() {
 
     const requestable = _UserRequestable(
       'GetUser',
-      'query GetUser @subscribeable { user(id: "1") { id name } }',
+      'query GetUser @observe { user(id: "1") { id name } }',
     );
 
     final data = await client.request(requestable: requestable).first;
@@ -162,7 +161,7 @@ void main() {
   // 3. Two operations sharing the same entity DO trigger a subscription update.
   // -------------------------------------------------------------------------
   test(
-    'two operations for the same entity update a @subscribeable subscription',
+    'two operations for the same entity update a @observe subscription',
     () async {
       final client = await _makeClient([
         GraphQLData(
@@ -179,11 +178,11 @@ void main() {
 
       const reqGetUser = _UserRequestable(
         'GetUser',
-        'query GetUser @subscribeable { user(id: "1") { id name } }',
+        'query GetUser @observe { user(id: "1") { id name } }',
       );
       const reqGetUserDetails = _UserRequestable(
         'GetUserDetails',
-        'query GetUserDetails @subscribeable { user(id: "1") { id name } }',
+        'query GetUserDetails @observe { user(id: "1") { id name } }',
       );
 
       // Collect up to 2 emissions from the GetUser stream.
@@ -231,10 +230,10 @@ void main() {
 
     const reqGetUser = _UserRequestable(
       'GetUser',
-      'query GetUser @subscribeable { user(id: "1") { id name } }',
+      'query GetUser @observe { user(id: "1") { id name } }',
     );
     const reqGetPost = _PostRequestable(
-      'query GetPost @subscribeable { post(id: "1") { id title } }',
+      'query GetPost @observe { post(id: "1") { id title } }',
     );
 
     // Keep the user stream alive with listen() so the cache subscription stays
@@ -267,25 +266,22 @@ void main() {
   });
 
   // -------------------------------------------------------------------------
-  // 5. subscribeToFragment fires when a @subscribeable fragment's entity
+  // 5. subscribeToFragment fires when a @observe fragment's entity
   //    is updated by a subsequent operation.
   //
-  // The pet sub-object carries __ref_anchor (e.g. "Pet:14") and __used_refs
-  // because PetFrag is @subscribeable. The fragment is inlined in the
-  // operation document so the GraphQL validator accepts it.
+  // The fragment is inlined in the operation document so the GraphQL validator
+  // accepts it. The subscription tracks the Pet entity by its cache key.
   // -------------------------------------------------------------------------
   test('subscribeToFragment fires when fragment entity is updated', () async {
-    // PetFrag is inlined in each query document so the GraphQL validator
-    // accepts it (fragments must be referenced within the same document).
     const petFragDef = '''
-      fragment PetFrag on Pet @subscribeable {
+      fragment PetFrag on Pet @observe {
         id
         name
       }
     ''';
     const getUserQuery = '''
       $petFragDef
-      query GetUser @subscribeable {
+      query GetUser @observe {
         user(id: "1") {
           id
           name
@@ -317,8 +313,7 @@ void main() {
 
     const reqGetUser = _UserRequestable('GetUser', getUserQuery);
 
-    // Fetch initial data. parseFn returns data['user'], which includes the
-    // pet sub-object with __ref_anchor and __used_refs injected by @subscribeable.
+    // Fetch initial data.
     final userMap = await client
         .request(requestable: reqGetUser)
         .first
@@ -326,18 +321,13 @@ void main() {
 
     final petData = userMap['pet'] as Map<String, dynamic>?;
     expect(petData, isNotNull, reason: 'pet should be in response');
+    expect(petData!['name'], 'Rex');
 
-    final petRef = petData!['__ref_anchor'] as String?;
-    expect(petRef, isNotNull, reason: '__ref_anchor injected by @subscribeable');
-    expect(petRef, 'Pet:14');
-
-    final petRefs = collectRuntimeRefs(petData);
-    expect(petRefs, isNotEmpty, reason: '__used_refs injected by @subscribeable');
-
-    // Set up fragment subscription BEFORE the second write.
+    // Set up fragment subscription using the known cache key.
+    // Pet entities are normalized as "Pet:<id>".
     final petUpdates = client.subscribeToFragment<Map<String, dynamic>>(
       fragmentName: 'PetFrag',
-      rootRef: petRef!,
+      anchor: 'Pet:14',
       parseFn: (data) => data,
     );
 

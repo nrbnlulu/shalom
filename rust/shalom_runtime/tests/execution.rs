@@ -12,11 +12,11 @@ fn make_request_stream(
     link: &HostLink,
     query: String,
 ) -> anyhow::Result<RuntimeResponseStream> {
-    let op_ctx = runtime.register_operation_from_query(&query)?;
+    let op_ctx = runtime.register_operation(&query)?;
     let operation_name = op_ctx.get_operation_name().to_string();
     let operation_id = operation_name.clone();
     let request = Request {
-        query,
+        query: op_ctx.query.clone(),
         variables: Default::default(),
         operation_name,
         operation_type: OperationType::Query,

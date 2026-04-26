@@ -2,6 +2,10 @@ use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
+
+mod dart_scanner;
+pub use dart_scanner::{WidgetAnnotation, scan_dart_widgets};
+
 use shalom_core::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
     operation::{
@@ -449,272 +453,41 @@ fn register_default_template_fns<'a>(
     Ok(())
 }
 
-/// if the operation contains variables and the selection is from this operation
-/// i.e not from a fragment returns true.
-fn object_like_needs_variables<T: ExecutableContext>(ctx: &T, obj_like: &ObjectLikeCommon) -> bool {
-    if !ctx.has_variables() {
-        return false;
-    }
-    ctx.get_selection(&obj_like.path_name).is_some()
-        || ctx.get_root().path_name == obj_like.path_name
-}
-
-fn get_field_name_with_args(
-    field_name: &str,
-    args: &[shalom_core::operation::types::FieldArgument],
-) -> String {
-    if args.is_empty() {
-        field_name.to_string()
-    } else {
-        format!("{}_with_args", field_name)
-    }
-}
-
-/// Helper function to generate custom scalar imports from the global context.
-/// Returns a HashMap where the key is the import path and the value is a generated alias.
-fn generate_custom_scalar_imports(ctx: &SharedShalomGlobalContext) -> HashMap<String, String> {
-    let mut imports: HashMap<String, String> = HashMap::new();
-
-    for custom_scalar in ctx.get_custom_scalars().values() {
-        for symbol in [&custom_scalar.impl_symbol, &custom_scalar.output_type] {
-            if let Some(import_path) = &symbol.import_path {
-                let import_path_str = import_path.to_string_lossy().to_string();
-
-                imports.entry(import_path_str).or_insert_with(|| {
-                    let mut hasher: DefaultHasher = DefaultHasher::new();
-                    import_path.hash(&mut hasher);
-                    number_to_abc(hasher.finish() as u32)
-                });
-            }
-        }
-    }
-
-    imports
-}
-
-impl SchemaEnv<'_> {
-    fn new(ctx: &SharedShalomGlobalContext) -> anyhow::Result<Self> {
-        let mut env = Environment::new();
-        register_default_template_fns(&mut env, ctx)?;
-        Ok(Self { env })
-    }
-
-    fn render_schema(&self, ctx: &SharedShalomGlobalContext) -> String {
-        let template = self.env.get_template("schema").unwrap();
-
-        let custom_scalar_imports = generate_custom_scalar_imports(ctx);
-
-        let mut context = HashMap::new();
-        context.insert("schema", context! { context => &ctx.schema_ctx });
-        context.insert(
-            "custom_scalar_imports",
-            minijinja::Value::from(custom_scalar_imports),
-        );
-
-        template.render(&context).unwrap()
-    }
-}
-
-/// Collects all multi-type (interface/union) list selections from all selection objects.
-/// Returns a HashMap where the key is the full field name (e.g., "vehiclesRequired")
-/// and the value is the list selection containing the multi-type.
-fn collect_multi_type_list_selections<T>(executable_ctx: &T) -> Vec<SharedListSelection>
-where
-    T: ExecutableContext,
-{
-    let typedefs = executable_ctx.typedefs();
-    let mut multitype_list_selections = Vec::new();
-
-    for fullname in typedefs.unions.keys() {
-        if let Some(selection) = typedefs.get_list_selection(fullname) {
-            multitype_list_selections.push(selection.clone());
-        }
-    }
-    for fullname in typedefs.interfaces.keys() {
-        if let Some(selection) = typedefs.get_list_selection(fullname) {
-            multitype_list_selections.push(selection.clone());
-        }
-    }
-
-    multitype_list_selections
-}
-
-fn register_executable_fns<'a, T>(
-    env: &mut Environment<'a>,
-    ctx: &SharedShalomGlobalContext,
-    executable_ctx: Arc<T>,
-) -> anyhow::Result<()>
-where
-    T: ExecutableContext + 'static,
-{
-    let ctx_clone3 = ctx.clone();
-    env.add_function(
-        "get_all_selections_distinct",
-        move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
-            let selections = obj_like.0.get_all_selections_distinct(&ctx_clone3);
-            minijinja::Value::from_serialize(&selections)
-        },
-    );
-
-    let executable_ctx_clone3 = executable_ctx.clone();
-    env.add_function(
-        "object_like_needs_variables",
-        move |selection: ViaDeserialize<ObjectLikeCommon>| -> bool {
-            object_like_needs_variables(executable_ctx_clone3.as_ref(), &selection.0)
-        },
-    );
-
-    let executable_ctx_clone = executable_ctx.clone();
-    env.add_function(
-        "generate_fragment_imports",
-        move |current_file_path: String| {
-            let mut res = Vec::new();
-            for frag in executable_ctx_clone.typedefs().flatten_used_fragments() {
-                res.push(
-                    calculate_fragment_import_path(&current_file_path, &frag).unwrap_or_else(|_| panic!("Failed to calculate import path for fragment: {}; current file: {}",
-                        frag.name(),
-                        current_file_path)),
-                );
-            }
-            minijinja::Value::from_serialize(res)
-        },
-    );
-
-    let executable_ctx_clone2 = executable_ctx.clone();
-
-    fn collect_selections_for_concrete(
-        resolve_to: &mut ObjectLikeCommon,
-        other_obj: &ObjectLikeCommon,
-        global_ctx: &ShalomGlobalContext,
-    ) {
-        if resolve_to.schema_typename == other_obj.schema_typename
-            || global_ctx.schema_ctx.is_type_implementing_interface(
-                &resolve_to.schema_typename,
-                &other_obj.schema_typename,
-            )
-        {
-            // this object is a subset or same as the other we can safely flatten other's selections here.
-            resolve_to.selections.extend(other_obj.selections.clone());
-
-            for frag_name in &other_obj.used_fragments {
-                let fragment = global_ctx.get_fragment_strict(frag_name);
-                let frag_on_type = &fragment.get_on_type().schema_typename;
-
-                if frag_on_type == &resolve_to.schema_typename {
-                    // Fragment is exactly on this concrete type - add it to used_fragments
-                    resolve_to.used_fragments.insert(frag_name.clone());
-                } else if global_ctx
-                    .schema_ctx
-                    .is_type_implementing_interface(&resolve_to.schema_typename, frag_on_type)
-                {
-                    // Fragment is on an interface this type implements
-                    // Recursively collect fragments from it but don't add to used_fragments
-                    collect_selections_for_concrete(resolve_to, fragment.get_on_type(), global_ctx);
+/// Returns the name of the `@observe`d fragment used by this selection, if any.
+fn selection_observe_fragment_name(selection: &FieldSelection, ctx: &SharedShalomGlobalContext) -> Option<String> {
+    match &selection.kind {
+        SelectionKind::Object(obj) => {
+            for frag_name in &obj.common.used_fragments {
+                if let Some(fragment) = ctx.get_fragment(frag_name) {
+                    if fragment.is_observe() {
+                        return Some(frag_name.clone());
+                    }
                 }
             }
-
-            for frag in other_obj.used_inline_frags.values() {
-                // flatten inlinefrag selections directly on here
-                collect_selections_for_concrete(resolve_to, &frag.common, global_ctx);
+            None
+        }
+        SelectionKind::Union(union) => {
+            for frag_name in &union.common.common.used_fragments {
+                if let Some(fragment) = ctx.get_fragment(frag_name) {
+                    if fragment.is_observe() {
+                        return Some(frag_name.clone());
+                    }
+                }
             }
-        } else if !resolve_to.contains_field("__typename") {
-            let typename_selection = other_obj
-                .get_selection("__typename")
-                .cloned()
-                .unwrap_or_else(|| {
-                    panic!(
-                        "unions and interfaces MUST select __typename. {} didn't!",
-                        other_obj.path_name
-                    )
-                });
-            resolve_to.selections.insert(typename_selection);
+            None
         }
-
-        // Also traverse type condition selections to find matching concrete types
-        info!(
-            "[collect_selections_for_concrete] Traversing {} type_cond_selections",
-            other_obj.type_cond_selections.len()
-        );
-        for (type_cond_name, type_cond_obj) in &other_obj.type_cond_selections {
-            info!(
-                "  Processing type_cond: {} (schema: {})",
-                type_cond_name, type_cond_obj.schema_typename
-            );
-            collect_selections_for_concrete(resolve_to, type_cond_obj, global_ctx);
+        SelectionKind::Interface(interface) => {
+            for frag_name in &interface.common.common.used_fragments {
+                if let Some(fragment) = ctx.get_fragment(frag_name) {
+                    if fragment.is_observe() {
+                        return Some(frag_name.clone());
+                    }
+                }
+            }
+            None
         }
+        _ => None,
     }
-
-    let ctx_clone2 = ctx.clone();
-
-    env.add_function(
-        "multitype_selection_resolved_concretes",
-        move |fullname: &str| {
-            let fullname = fullname.to_string();
-            let multitype = executable_ctx_clone2
-                .typedefs()
-                .get_multitype_selection(&fullname)
-                .unwrap_or_else(|| panic!("{fullname} not found"));
-
-            let mut ret = Vec::new();
-            for concrete_typename in &multitype.common().possible_concrete_types {
-                let concrete_path = format!("{fullname}__{concrete_typename}");
-                let mut resolved =
-                    ObjectLikeCommon::new(concrete_path.clone(), concrete_typename.clone());
-                collect_selections_for_concrete(
-                    &mut resolved,
-                    &multitype.common().common,
-                    &ctx_clone2,
-                );
-                info!(
-                    "[multitype_selection_resolved_concretes] Concrete type '{}' final used_fragments: {:?}",
-                    concrete_typename, resolved.used_fragments
-                );
-                resolved.selections = resolved.get_all_selections_distinct(&ctx_clone2);
-                info!(
-                    "[multitype_selection_resolved_concretes] After expansion, '{}' has {} selections",
-                    concrete_typename, resolved.selections.len()
-                );
-                ret.push(resolved);
-            }
-            minijinja::Value::from_serialize(ret)
-        },
-    );
-
-    let executable_ctx_clone3 = executable_ctx.clone();
-
-    env.add_function(
-        "template_log",
-        move |a: &minijinja::Value| -> minijinja::Value {
-            let template_name = &executable_ctx_clone3.get_root().path_name;
-            info!("in template for {template_name}: {a}");
-            minijinja::Value::from(0)
-        },
-    );
-
-    let ctx_clone3 = ctx.clone();
-    env.add_function(
-        "get_interface_level_fragments",
-        move |selection_schema_typename: &str,
-              used_fragments: ViaDeserialize<HashSet<String>>|
-              -> minijinja::Value {
-            // Filter fragments to only include those defined on the interface/union type itself
-            // Not on concrete implementors
-            let filtered: HashSet<String> = used_fragments
-                .0
-                .iter()
-                .filter(|frag_name| {
-                    let fragment = ctx_clone3.get_fragment_strict(frag_name);
-                    let frag_on_type = &fragment.get_on_type().schema_typename;
-                    // Only include if fragment is on the same type as the selection
-                    frag_on_type == selection_schema_typename
-                })
-                .cloned()
-                .collect();
-            minijinja::Value::from_serialize(filtered)
-        },
-    );
-
-    Ok(())
 }
 
 impl OperationEnv<'_> {
@@ -990,7 +763,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
     let pwd = &ctx.config.project_root;
     info!("codegen started in working directory {}", pwd.display());
 
-    let template_env = SchemaEnv::new(&ctx)?;
+    let _template_env = SchemaEnv::new(&ctx)?;
 
     // Clean up unused operation files
     let existing_op_names =
@@ -1006,7 +779,6 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
                 .split(format!(".{}", END_OF_FILE).as_str())
                 .next()
                 .unwrap();
-            // Check if it's neither an operation nor a fragment
             if !ctx.operation_exists(resolved_name) && !ctx.fragment_exists(resolved_name) {
                 info!("deleting unused file {}", resolved_name);
                 fs::remove_file(entry)?;
@@ -1014,7 +786,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
         }
     }
 
-    generate_schema_file(&template_env, &ctx);
+    generate_schema_file(&_template_env, &ctx);
     let custom_scalar_imports = generate_custom_scalar_imports(&ctx);
 
     // Generate fragment files first (operations might depend on them)
@@ -1046,6 +818,18 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
             }
             error!("Failed to generate operation '{}' due to: {}", name, err);
         }
+    }
+
+    // V2: Scan Dart files for @query/@fragment annotations and generate sidecars
+    let widgets = scan_dart_widgets(pwd)?;
+    if !widgets.is_empty() {
+        info!("Found {} widget annotation(s) in Dart files", widgets.len());
+        generate_v2_widgets(&ctx, &widgets, custom_scalar_imports.clone())?;
+    }
+
+    // V2: Generate registration function in schema.shalom.dart
+    if !widgets.is_empty() {
+        generate_v2_registration_file(pwd, &widgets)?;
     }
 
     if options.fmt {
@@ -1176,5 +960,153 @@ fn format_generated_files(pwd: &Path) -> Result<()> {
         }
     }
 
+    Ok(())
+}
+
+// =========================================================================
+// V2: Dart widget scanning and generation
+// =========================================================================
+
+/// Generate sidecar files for each @query/@fragment annotated Dart widget.
+fn generate_v2_widgets(
+    ctx: &SharedShalomGlobalContext,
+    widgets: &[WidgetAnnotation],
+    custom_scalar_imports: HashMap<String, String>,
+) -> Result<()> {
+    for widget in widgets {
+        let res = if widget.is_query {
+            generate_v2_query_sidecar(ctx, widget, custom_scalar_imports.clone())
+        } else {
+            generate_v2_fragment_sidecar(ctx, widget, custom_scalar_imports.clone())
+        };
+        if let Err(err) = res {
+            error!(
+                "Failed to generate V2 sidecar for widget '{}' due to: {}",
+                widget.class_name, err
+            );
+        }
+    }
+    Ok(())
+}
+
+/// Generate a sidecar for a @query annotated widget.
+fn generate_v2_query_sidecar(
+    ctx: &SharedShalomGlobalContext,
+    widget: &WidgetAnnotation,
+    custom_scalar_imports: HashMap<String, String>,
+) -> Result<()> {
+    let full_sdl = format!(
+        "query {} @observe {}",
+        widget.class_name, widget.sdl
+    );
+
+    let path = PathBuf::from(format!("{}.dart", widget.class_name));
+    let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &path)?;
+    if operations.is_empty() {
+        return Err(anyhow::anyhow!("no operations parsed for {}", widget.class_name));
+    }
+
+    let (_name, op_ctx) = operations.into_iter().next().unwrap();
+
+    let op_env = OperationEnv::new(ctx, op_ctx.clone())?;
+    let multi_type_list_selections = collect_multi_type_list_selections(op_ctx.as_ref());
+
+    let rendered = op_env.render_operation(
+        &op_ctx,
+        custom_scalar_imports,
+        get_schema_import_path(&widget.source_path, ctx),
+        multi_type_list_selections,
+    );
+
+    let source_dir = widget.source_path.parent().ok_or_else(|| {
+        anyhow::anyhow!("Invalid source path: {:?}", widget.source_path)
+    })?;
+    let gen_dir = source_dir.join(GRAPHQL_DIRECTORY);
+    create_dir_if_not_exists(&gen_dir);
+    let gen_path = gen_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
+
+    fs::write(&gen_path, rendered)?;
+    info!("Generated V2 query sidecar: {}", gen_path.display());
+    Ok(())
+}
+
+/// Generate a sidecar for a @fragment annotated widget.
+fn generate_v2_fragment_sidecar(
+    ctx: &SharedShalomGlobalContext,
+    widget: &WidgetAnnotation,
+    custom_scalar_imports: HashMap<String, String>,
+) -> Result<()> {
+    let full_sdl = format!(
+        "fragment {} @observe {}",
+        widget.class_name, widget.sdl
+    );
+
+    let path = PathBuf::from(format!("{}.dart", widget.class_name));
+    shalom_core::entrypoint::register_fragments_from_document(ctx, &full_sdl, &path)?;
+
+    let fragment_ctx = ctx.get_fragment(&widget.class_name).ok_or_else(|| {
+        anyhow::anyhow!("fragment {} not found after registration", widget.class_name)
+    })?;
+
+    let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone())?;
+    let multi_type_list_selections = collect_multi_type_list_selections(fragment_ctx.as_ref());
+
+    let rendered = fragment_env.render_fragment(
+        fragment_ctx.clone(),
+        custom_scalar_imports,
+        get_schema_import_path(&widget.source_path, ctx),
+        multi_type_list_selections,
+    );
+
+    let source_dir = widget.source_path.parent().ok_or_else(|| {
+        anyhow::anyhow!("Invalid source path: {:?}", widget.source_path)
+    })?;
+    let gen_dir = source_dir.join(GRAPHQL_DIRECTORY);
+    create_dir_if_not_exists(&gen_dir);
+    let gen_path = gen_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
+
+    fs::write(&gen_path, rendered)?;
+    info!("Generated V2 fragment sidecar: {}", gen_path.display());
+    Ok(())
+}
+
+/// Generate the registration function in lib/__graphql__/shalom_init.shalom.dart
+fn generate_v2_registration_file(
+    root: &PathBuf,
+    widgets: &[WidgetAnnotation],
+) -> Result<()> {
+    let schema_dir = root.join(GRAPHQL_DIRECTORY);
+    create_dir_if_not_exists(&schema_dir);
+    let gen_path = schema_dir.join("shalom_init.shalom.dart");
+
+    let mut lines = Vec::new();
+    lines.push("// ignore_for_file: unused_import".to_string());
+    lines.push("import 'package:shalom/shalom.dart';".to_string());
+    lines.push(String::new());
+    lines.push("/// Register all @query and @fragment operations with the Shalom client.".to_string());
+    lines.push("void registerShalomDefinitions(ShalomRuntimeClient client) {".to_string());
+
+    for widget in widgets {
+        if widget.is_query {
+            lines.push(format!("  client.registerOperation("));
+            lines.push(format!("    name: '{}',", widget.class_name));
+            lines.push(format!("    document: r'''"));
+            lines.push(format!("query {} @observe {}", widget.class_name, widget.sdl));
+            lines.push("''',".to_string());
+            lines.push("  );".to_string());
+        } else {
+            lines.push(format!("  client.registerFragment("));
+            lines.push(format!("    name: '{}',", widget.class_name));
+            lines.push(format!("    document: r'''"));
+            lines.push(format!("fragment {} @observe {}", widget.class_name, widget.sdl));
+            lines.push("''',".to_string());
+            lines.push("  );".to_string());
+        }
+    }
+
+    lines.push("}".to_string());
+
+    fs::write(&gen_path, lines.join("\n"))?;
+    info!("Generated V2 registration file: {}", gen_path.display());
     Ok(())
 }

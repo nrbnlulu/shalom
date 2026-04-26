@@ -10,26 +10,16 @@ import 'package:shalom/src/shalom_core_base.dart'
         LinkExceptionResponse,
         OperationType,
         Request,
-        Requestable,
         ShalomTransportException;
 import 'package:shalom/src/transport/link.dart' show GraphQLLink;
 
 import 'rust/api/runtime.dart' as rs_runtime;
 
-export 'rust/api/runtime.dart' show NetworkPolicy;
+export 'rust/api/runtime.dart' show ObservedRefInput;
 
-Set<String> collectRuntimeRefs(JsonObject data) {
-  final refs = <String>{};
-  final raw = data['__used_refs'];
-  if (raw is List) {
-    for (final entry in raw) {
-      if (entry is String) {
-        refs.add(entry);
-      }
-    }
-  }
-  return refs;
-}
+// ---------------------------------------------------------------------------
+// ShalomRuntimeClient
+// ---------------------------------------------------------------------------
 
 class ShalomRuntimeClient {
   final rs_runtime.RuntimeHandle _handle;
@@ -41,16 +31,19 @@ class ShalomRuntimeClient {
 
   ShalomRuntimeClient._(this._handle, this._link);
 
+  /// Initialise the runtime with [schemaSdl].
+  ///
+  /// After init, register all operations and fragments via
+  /// [registerOperation] / [registerFragment] (or call the generated
+  /// `registerShalomDefinitions(client)` function).
   static Future<ShalomRuntimeClient> init({
     required String schemaSdl,
-    required List<String> fragmentSdls,
     Map<String, dynamic>? config,
     required GraphQLLink link,
   }) async {
     final configJson = config == null ? null : jsonEncode(config);
     final handle = await rs_runtime.initRuntime(
       schemaSdl: schemaSdl,
-      fragmentSdls: fragmentSdls,
       configJson: configJson,
     );
     final client = ShalomRuntimeClient._(handle, link);
@@ -58,50 +51,62 @@ class ShalomRuntimeClient {
     return client;
   }
 
-  /// Fetch via network then keep the stream alive via a cache subscription.
-  ///
-  /// The first emission is the normalized network response. Subsequent
-  /// emissions are triggered by cache writes to any ref touched by this
-  /// operation. Cancelling the returned stream unsubscribes immediately.
-  Stream<T> request<T>({required Requestable<T> requestable}) {
-    final meta = requestable.getRequestMeta();
-    final req = meta.request;
-    final variablesJson =
-        req.variables.isEmpty ? null : jsonEncode(req.variables);
+  // -------------------------------------------------------------------------
+  // Registration
+  // -------------------------------------------------------------------------
 
+  /// Pre-register a GraphQL operation SDL so it can be executed by name
+  /// via [request].
+  Future<void> registerOperation({required String document}) {
+    return rs_runtime.registerOperation(handle: _handle, document: document);
+  }
+
+  /// Pre-register a GraphQL fragment SDL so it can be subscribed to via
+  /// [subscribeToFragment].
+  Future<void> registerFragment({required String document}) {
+    return rs_runtime.registerFragment(handle: _handle, document: document);
+  }
+
+  // -------------------------------------------------------------------------
+  // Operation subscription — network + cache
+  // -------------------------------------------------------------------------
+
+  /// Trigger a network fetch for a pre-registered operation named [name] and
+  /// open a cache subscription. Returns a stream of decoded [T] values.
+  ///
+  /// The first emission arrives after the network response is normalised.
+  /// Subsequent emissions are triggered by cache writes to any ref touched by
+  /// this operation. Cancelling the returned stream unsubscribes immediately.
+  Stream<T> request<T>({
+    required String name,
+    Map<String, dynamic>? variables,
+    required T Function(JsonObject) decoder,
+  }) {
+    final variablesJson = variables == null ? null : jsonEncode(variables);
     BigInt? subId;
     final controller = StreamController<T>();
 
     controller.onListen = () {
-      // Fire-and-forget async setup: fetch once then subscribe for updates.
       Future.microtask(() async {
         try {
-          final payload = await rs_runtime
-              .requestOp(
-                handle: _handle,
-                operation: req.query,
-                variablesJson: variablesJson,
-                networkPolicy: rs_runtime.NetworkPolicy.networkOnly,
-              )
-              .first;
-          if (controller.isClosed) return;
-
-          final envelope = _RuntimeEnvelope.fromJson(payload);
-          controller.add(meta.parseFn(envelope.data));
-
-          subId = rs_runtime.initSubscription(
+          subId = await rs_runtime.request(
             handle: _handle,
-            targetName: req.opName,
+            name: name,
+            variablesJson: variablesJson,
           );
+          if (controller.isClosed) {
+            if (subId != null) {
+              rs_runtime.unsubscribe(handle: _handle, subscriptionId: subId!);
+            }
+            return;
+          }
           rs_runtime
               .listenSubscription(handle: _handle, subscriptionId: subId!)
               .listen(
-                (p) {
+                (payload) {
                   if (controller.isClosed) return;
                   try {
-                    controller.add(
-                      meta.parseFn(_RuntimeEnvelope.fromJson(p).data),
-                    );
+                    controller.add(decoder(_RuntimeEnvelope.fromJson(payload).data));
                   } catch (e, st) {
                     controller.addError(e, st);
                   }
@@ -128,33 +133,37 @@ class ShalomRuntimeClient {
     return controller.stream;
   }
 
-  /// Subscribe to cache updates for a specific fragment on a specific entity.
+  // -------------------------------------------------------------------------
+  // Fragment subscription — cache only
+  // -------------------------------------------------------------------------
+
+  /// Subscribe to cache updates for a pre-registered fragment at the anchor
+  /// identified by [ref].
   ///
-  /// [fragmentName] must match the name of a `@subscribeable` fragment defined
-  /// in the `fragmentSdls` passed to [init].
-  /// [rootRef] is the cache key anchor of the entity (e.g. `"User:1"`).
-  /// [parseFn] converts the raw fragment data map to [T].
+  /// Emits the current cached value immediately if available, then re-emits
+  /// whenever the underlying cache entries change.
   Stream<T> subscribeToFragment<T>({
-    required String fragmentName,
-    required String rootRef,
-    required T Function(Map<String, dynamic>) parseFn,
+    required rs_runtime.ObservedRefInput ref,
+    required T Function(JsonObject) decoder,
   }) {
     BigInt? subId;
     final controller = StreamController<T>();
+
     controller.onListen = () {
-      subId = rs_runtime.initSubscription(
-        handle: _handle,
-        targetName: fragmentName,
-        anchor: rootRef,
-      );
+      try {
+        subId = rs_runtime.observeFragment(handle: _handle, refInput: ref);
+      } catch (e, st) {
+        if (!controller.isClosed) controller.addError(e, st);
+        return;
+      }
+
       rs_runtime
           .listenSubscription(handle: _handle, subscriptionId: subId!)
           .listen(
             (payload) {
               if (controller.isClosed) return;
               try {
-                final envelope = _RuntimeEnvelope.fromJson(payload);
-                controller.add(parseFn(envelope.data));
+                controller.add(decoder(_RuntimeEnvelope.fromJson(payload).data));
               } catch (e, st) {
                 controller.addError(e, st);
               }
@@ -167,18 +176,81 @@ class ShalomRuntimeClient {
             },
           );
     };
+
     controller.onCancel = () {
       final id = subId;
-      if (id == null) return null;
-      return rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
+      if (id == null) return;
+      rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
     };
+
     return controller.stream;
   }
 
+  /// Rebind an existing fragment subscription identified by [subscriptionId]
+  /// to [newRef].
+  ///
+  /// - Same `observable_id`: fast anchor swap — the Rust side atomically swaps
+  ///   the anchor and pushes the new cached value. Returns the SAME
+  ///   [subscriptionId]; reconnect the [listenSubscription] stream if needed.
+  /// - Different `observable_id`: full teardown + new subscription. Returns a
+  ///   new subscription ID.
+  ///
+  /// Use [subscribeToFragment] directly if you don't need the optimised swap.
+  Stream<T> rebindFragmentSubscription<T>({
+    required BigInt subscriptionId,
+    required rs_runtime.ObservedRefInput newRef,
+    required T Function(JsonObject) decoder,
+  }) {
+    BigInt? newSubId;
+    final controller = StreamController<T>();
+
+    controller.onListen = () {
+      try {
+        newSubId = rs_runtime.rebindSubscription(
+          handle: _handle,
+          subscriptionId: subscriptionId,
+          newRef: newRef,
+        );
+      } catch (e, st) {
+        if (!controller.isClosed) controller.addError(e, st);
+        return;
+      }
+
+      rs_runtime
+          .listenSubscription(handle: _handle, subscriptionId: newSubId!)
+          .listen(
+            (payload) {
+              if (controller.isClosed) return;
+              try {
+                controller.add(decoder(_RuntimeEnvelope.fromJson(payload).data));
+              } catch (e, st) {
+                controller.addError(e, st);
+              }
+            },
+            onError: (Object e, StackTrace st) {
+              if (!controller.isClosed) controller.addError(e, st);
+            },
+            onDone: () {
+              if (!controller.isClosed) controller.close();
+            },
+          );
+    };
+
+    controller.onCancel = () {
+      final id = newSubId;
+      if (id == null) return;
+      rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
+    };
+
+    return controller.stream;
+  }
+
+  // -------------------------------------------------------------------------
+  // Dispose
+  // -------------------------------------------------------------------------
+
   Future<void> dispose() async {
-    if (_disposed) {
-      return;
-    }
+    if (_disposed) return;
     _disposed = true;
     final stream = _requestStream;
     if (stream != null) {
@@ -191,15 +263,17 @@ class ShalomRuntimeClient {
     }
   }
 
+  // -------------------------------------------------------------------------
+  // Host link plumbing (internal)
+  // -------------------------------------------------------------------------
+
   void _bindRequests() {
     final stream = rs_runtime.listenRequests(handle: _handle);
     _requestStream = stream.listen(_handleRequestEnvelope, onError: (_) {});
   }
 
   void _handleRequestEnvelope(String payload) {
-    if (_disposed) {
-      return;
-    }
+    if (_disposed) return;
     final envelope = _RequestEnvelope.fromJson(payload);
     final previous = _activeRequests.remove(envelope.id);
     if (previous != null) {
@@ -212,9 +286,6 @@ class ShalomRuntimeClient {
       opName: envelope.operationName,
     );
 
-    // Track the last push future so we can chain completeTransport after it.
-    // This prevents a race where complete_transport drops the Rust sender
-    // before push_response has been processed.
     Future<void>? lastPush;
 
     final subscription = _link
@@ -244,9 +315,7 @@ class ShalomRuntimeClient {
     switch (response) {
       case GraphQLData():
         final payload = <String, dynamic>{'data': response.data};
-        if (response.errors != null) {
-          payload['errors'] = response.errors;
-        }
+        if (response.errors != null) payload['errors'] = response.errors;
         if (response.extensions != null) {
           payload['extensions'] = response.extensions;
         }
@@ -285,6 +354,10 @@ class ShalomRuntimeClient {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Private helpers
+// ---------------------------------------------------------------------------
+
 class _RequestEnvelope {
   final int id;
   final String query;
@@ -303,21 +376,21 @@ class _RequestEnvelope {
   factory _RequestEnvelope.fromJson(String payload) {
     final decoded = jsonDecode(payload);
     if (decoded is! Map) {
-      throw FormatException('request envelope must be a JSON object');
+      throw const FormatException('request envelope must be a JSON object');
     }
     final idRaw = decoded['id'];
     if (idRaw is! num) {
-      throw FormatException('request envelope id must be a number');
+      throw const FormatException('request envelope id must be a number');
     }
     final requestRaw = decoded['request'];
     if (requestRaw is! Map) {
-      throw FormatException('request envelope request must be a JSON object');
+      throw const FormatException('request envelope request must be a JSON object');
     }
     final query = requestRaw['query'];
     final opName = requestRaw['operation_name'];
     final opTypeRaw = requestRaw['operation_type'];
     if (query is! String || opName is! String || opTypeRaw is! String) {
-      throw FormatException('request envelope has invalid request fields');
+      throw const FormatException('request envelope has invalid request fields');
     }
     final variablesRaw = requestRaw['variables'];
     final variables = variablesRaw is Map
@@ -332,49 +405,32 @@ class _RequestEnvelope {
     );
   }
 
-  static OperationType _parseOperationType(String raw) {
-    switch (raw) {
-      case 'Query':
-        return OperationType.Query;
-      case 'Mutation':
-        return OperationType.Mutation;
-      case 'Subscription':
-        return OperationType.Subscription;
-      default:
-        throw FormatException('unknown operation type: $raw');
-    }
-  }
+  static OperationType _parseOperationType(String raw) => switch (raw) {
+    'Query' => OperationType.Query,
+    'Mutation' => OperationType.Mutation,
+    'Subscription' => OperationType.Subscription,
+    _ => throw FormatException('unknown operation type: $raw'),
+  };
 }
 
 class _RuntimeEnvelope {
-  final Map<String, dynamic> data;
-  final String? operationId;
+  final JsonObject data;
 
-  const _RuntimeEnvelope({required this.data, required this.operationId});
+  const _RuntimeEnvelope({required this.data});
 
   factory _RuntimeEnvelope.fromJson(String payload) {
     final decoded = jsonDecode(payload);
     if (decoded is! Map) {
-      throw FormatException('runtime response must be a JSON object');
+      throw const FormatException('runtime response must be a JSON object');
     }
     if (decoded.containsKey('data')) {
       final dataRaw = decoded['data'];
       if (dataRaw is! Map) {
-        throw FormatException('runtime response data must be a JSON object');
+        throw const FormatException('runtime response data must be a JSON object');
       }
-      final operationIdRaw = decoded['operation_id'];
-      if (operationIdRaw != null && operationIdRaw is! String) {
-        throw FormatException('runtime response operation_id must be a string');
-      }
-      return _RuntimeEnvelope(
-        data: dataRaw.cast<String, dynamic>(),
-        operationId: operationIdRaw as String?,
-      );
+      return _RuntimeEnvelope(data: dataRaw.cast<String, dynamic>());
     }
-    return _RuntimeEnvelope(
-      data: decoded.cast<String, dynamic>(),
-      operationId: null,
-    );
+    return _RuntimeEnvelope(data: decoded.cast<String, dynamic>());
   }
 }
 
@@ -395,8 +451,7 @@ _TransportError _toTransportError(Object error) {
     return _TransportError(
       message: error.message,
       code: error.code,
-      detailsJson:
-          error.details == null ? null : jsonEncode(error.details),
+      detailsJson: error.details == null ? null : jsonEncode(error.details),
     );
   }
   if (error is List<Exception>) {
@@ -406,12 +461,12 @@ _TransportError _toTransportError(Object error) {
         return _TransportError(
           message: first.message,
           code: first.code,
-          detailsJson:
-              first.details == null ? null : jsonEncode(first.details),
+          detailsJson: first.details == null ? null : jsonEncode(first.details),
         );
       }
     }
-    final message = error.isEmpty ? 'Unknown transport error' : error.join('; ');
+    final message =
+        error.isEmpty ? 'Unknown transport error' : error.join('; ');
     return _TransportError(message: message, code: 'LINK_ERROR');
   }
   return _TransportError(message: error.toString(), code: 'LINK_ERROR');

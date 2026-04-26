@@ -99,9 +99,7 @@ fn runtime_gc_respects_subscription_tracker() {
             None,
         )
         .expect("normalize response");
-    let subscription = runtime
-        .subscribe_fragment(op_ctx.get_operation_name(), None)
-        .expect("subscribe");
+    let subscription = runtime.create_operation_subscription(op_ctx.clone(), None);
 
     {
         let cache = runtime.cache();

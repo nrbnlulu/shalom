@@ -1,0 +1,10 @@
+name: shalom_annotations
+description: Annotations for Shalom V2 Flutter codegen (@query, @fragment).
+version: 0.1.0
+repository: https://github.com/anomalyco/shalom
+
+environment:
+  sdk: ^3.5.0
+
+dependencies:
+  meta: ^1.12.0
