@@ -1546,7 +1546,7 @@ mod input_scalar {
             schema,
             operation,
             vars(&[("term", Value::String("foo".to_string()))]),
-            "result_term:foo",
+            r#"result({"term":"foo"})"#,
         );
     }
 }
@@ -1570,7 +1570,7 @@ mod input_custom_scalar {
             schema,
             operation,
             vars(&[("point", Value::String("POINT (1,2)".to_string()))]),
-            "result_point:POINT (1,2)",
+            r#"result({"point":"POINT (1,2)"})"#,
         );
     }
 }
@@ -1594,7 +1594,7 @@ mod input_object {
             schema,
             operation,
             vars(&[("filter", json!({ "limit": 10, "active": true }))]),
-            "result_filter:{active:true,limit:10}",
+            r#"result({"filter":{"active":true,"limit":10}})"#,
         );
     }
 }
@@ -1618,7 +1618,7 @@ mod input_enum {
             schema,
             operation,
             vars(&[("status", Value::String("OPEN".to_string()))]),
-            "result_status:OPEN",
+            r#"result({"status":"OPEN"})"#,
         );
     }
 }
@@ -1641,7 +1641,7 @@ mod input_list_scalar {
             schema,
             operation,
             vars(&[("values", json!([1, 2, 3]))]),
-            "result_values:[1,2,3]",
+            r#"result({"values":[1,2,3]})"#,
         );
     }
 }
@@ -1665,7 +1665,7 @@ mod input_list_custom_scalar {
             schema,
             operation,
             vars(&[("points", json!(["POINT (1,1)", "POINT (2,2)"]))]),
-            "result_points:[POINT (1,1),POINT (2,2)]",
+            r#"result({"points":["POINT (1,1)","POINT (2,2)"]})"#,
         );
     }
 }
@@ -1695,7 +1695,7 @@ mod input_list_object {
                     { "limit": 2, "active": false }
                 ]),
             )]),
-            "result_filters:[{active:true,limit:1},{active:false,limit:2}]",
+            r#"result({"filters":[{"active":true,"limit":1},{"active":false,"limit":2}]})"#,
         );
     }
 }
@@ -1719,7 +1719,7 @@ mod input_list_enum {
             schema,
             operation,
             vars(&[("statuses", json!(["OPEN", "CLOSED"]))]),
-            "result_statuses:[OPEN,CLOSED]",
+            r#"result({"statuses":["OPEN","CLOSED"]})"#,
         );
     }
 }
@@ -1727,16 +1727,12 @@ mod input_list_enum {
 mod fragment_subscriptions {
     use super::*;
 
-    fn used_refs_from_value(value: &Value) -> Vec<String> {
-        let raw = match value {
-            Value::Object(map) => map.get("__used_refs").expect("used refs missing"),
-            _ => value,
-        };
-        raw.as_array()
-            .expect("used refs must be a list")
-            .iter()
-            .map(|entry| entry.as_str().expect("used ref must be string").to_string())
-            .collect()
+    fn anchor_from_observed_ref<'a>(obj: &'a serde_json::Map<String, Value>, frag_name: &str) -> &'a str {
+        obj.get(&format!("${frag_name}"))
+            .and_then(|v| v.as_object())
+            .and_then(|o| o.get("anchor"))
+            .and_then(|v| v.as_str())
+            .unwrap_or_else(|| panic!("${frag_name} anchor missing"))
     }
 
     #[test]
@@ -1746,7 +1742,7 @@ mod fragment_subscriptions {
             type Person { id: ID!, name: String }
         "#;
         let operation = r#"
-            fragment PersonFrag on Person @subscribeable { id name }
+            fragment PersonFrag on Person @observe { id name }
             query GetPerson { person { ...PersonFrag } }
         "#;
         let (runtime, op_ctx) = build_ctx(schema, operation);
@@ -1758,12 +1754,8 @@ mod fragment_subscriptions {
         );
         let data = initial.data;
         let person = data.get("person").expect("person missing");
-        let person_obj = person.as_object().expect("person missing");
-        let anchor_ref = person_obj
-            .get("__ref_anchor")
-            .and_then(|value| value.as_str())
-            .expect("anchor ref missing")
-            .to_string();
+        let person_obj = person.as_object().expect("person object");
+        let anchor_ref = anchor_from_observed_ref(person_obj, "PersonFrag").to_string();
         let sub_id = runtime
             .subscribe_fragment("PersonFrag", Some(anchor_ref.clone()))
             .expect("subscribe");
@@ -1788,7 +1780,7 @@ mod fragment_subscriptions {
             type Pet { name: String }
         "#;
         let operation = r#"
-            fragment PetFrag on Pet @subscribeable { name }
+            fragment PetFrag on Pet @observe { name }
             query GetPerson { person { id pet { ...PetFrag } } }
         "#;
         let (runtime, op_ctx) = build_ctx(schema, operation);
@@ -1800,14 +1792,10 @@ mod fragment_subscriptions {
         );
         let data = initial.data;
         let person = data.get("person").expect("person missing");
-        let person_obj = person.as_object().expect("person missing");
+        let person_obj = person.as_object().expect("person object");
         let pet = person_obj.get("pet").expect("pet missing");
-        let pet_obj = pet.as_object().expect("pet missing");
-        let root_ref = pet_obj
-            .get("__ref_anchor")
-            .and_then(|value| value.as_str())
-            .expect("anchor ref missing")
-            .to_string();
+        let pet_obj = pet.as_object().expect("pet object");
+        let root_ref = anchor_from_observed_ref(pet_obj, "PetFrag").to_string();
         let sub_id = runtime
             .subscribe_fragment("PetFrag", Some(root_ref.clone()))
             .expect("subscribe");
@@ -1820,9 +1808,6 @@ mod fragment_subscriptions {
 
         let data = yield_update_sync(&runtime, sub_id);
         let obj = data.as_object().expect("fragment data object");
-        let updated_refs = used_refs_from_value(&data);
-        assert!(!updated_refs.is_empty());
-        assert_eq!(obj.get("__ref_anchor"), Some(&json!(root_ref)));
         assert_eq!(obj.get("name"), Some(&json!("Milo")));
     }
 

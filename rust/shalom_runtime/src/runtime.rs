@@ -31,11 +31,8 @@ pub struct RefObject {
 }
 
 impl RefObject {
-    pub fn from_response(data: &Value) -> Self {
-        match used_refs_from_response(data) {
-            Ok(Some(refs)) => Self { refs },
-            _ => Self::default(),
-        }
+    pub fn from_response(_data: &Value) -> Self {
+        Self::default()
     }
 }
 
@@ -178,10 +175,8 @@ impl ShalomRuntime {
                 .global_ctx()
                 .get_fragment(target_name)
                 .ok_or_else(|| anyhow::anyhow!("fragment {target_name} not found"))?;
-            let refs = self
-                .read_fragment_from_cache(&fragment, &root_ref)
-                .ok()
-                .and_then(|r| used_refs_from_response(&r.data).ok().flatten())
+            let refs = self.read_result_fragment(&fragment, &root_ref)
+                .map(|r| r.used_refs)
                 .unwrap_or_default();
             return Ok(self.subscribe_with_target(
                 SubscriptionTarget::Fragment { fragment, root_ref },
@@ -195,10 +190,8 @@ impl ShalomRuntime {
             .operation_vars
             .lock().get(target_name)
             .cloned();
-        let refs = self
-            .read_from_cache(&op_ctx, variables.as_ref())
-            .ok()
-            .and_then(|r| used_refs_from_response(&r.data).ok().flatten())
+        let refs = self.read_result_op(&op_ctx, variables.as_ref())
+            .map(|r| r.used_refs)
             .unwrap_or_default();
         Ok(self.subscribe_with_target(SubscriptionTarget::Operation(op_ctx), variables, refs))
     }
@@ -211,9 +204,7 @@ impl ShalomRuntime {
     ) -> SubscriptionId {
         let keys = refs.clone();
         let (sender, receiver) = mpsc::unbounded_channel();
-        let mut manager = self
-            .subscriptions
-            .lock();
+        let mut manager = self.subscriptions.lock();
         let id = SubscriptionId(manager.next_id);
         manager.next_id += 1;
         manager.subscriptions.insert(
@@ -227,28 +218,22 @@ impl ShalomRuntime {
             },
         );
         drop(manager);
-        self.subscription_tracker
-            .lock().subscribe(keys);
+        self.subscription_tracker.lock().subscribe(keys);
         id
     }
 
     pub fn unsubscribe(&self, id: &SubscriptionId) {
         let keys = {
-            let mut manager = self
-                .subscriptions
-                .lock();
-            manager.subscriptions.remove(&id).map(|state| state.keys)
+            let mut manager = self.subscriptions.lock();
+            manager.subscriptions.remove(id).map(|state| state.keys)
         };
         if let Some(keys) = keys {
-            self.subscription_tracker
-                .lock().unsubscribe(keys);
+            self.subscription_tracker.lock().unsubscribe(keys);
         }
     }
 
     pub fn collect_garbage(&self) -> Vec<String> {
-        let active_keys = self
-            .subscription_tracker
-            .lock().active_keys();
+        let active_keys = self.subscription_tracker.lock().active_keys();
         let cache = self.cache();
         let mut cache = cache.lock();
         collect_garbage(&mut cache, &active_keys)
@@ -256,12 +241,10 @@ impl ShalomRuntime {
 
     pub fn subscription_stream(&self, id: &SubscriptionId) -> anyhow::Result<RuntimeResponseStream> {
         let receiver = {
-            let mut manager = self
-                .subscriptions
-                .lock();
+            let mut manager = self.subscriptions.lock();
             manager
                 .subscriptions
-                .get_mut(&id)
+                .get_mut(id)
                 .and_then(|state| state.receiver.take())
                 .ok_or_else(|| {
                     anyhow::anyhow!("subscription {id:?} not found or already streaming")
@@ -277,9 +260,7 @@ impl ShalomRuntime {
             SubscriptionTarget,
             Option<Map<String, Value>>,
         )> = {
-            let manager = self
-                .subscriptions
-                .lock();
+            let manager = self.subscriptions.lock();
             manager
                 .subscriptions
                 .iter()
@@ -291,26 +272,29 @@ impl ShalomRuntime {
         };
 
         for (id, target, variables) in affected {
-            let response = match &target {
+            let (data, new_refs, operation_id) = match &target {
                 SubscriptionTarget::Operation(op_ctx) => {
-                    self.read_from_cache(op_ctx, variables.as_ref())?
+                    let result = self.read_result_op(op_ctx, variables.as_ref())?;
+                    let op_id = op_ctx.get_operation_name().to_string();
+                    (result.data, result.used_refs, op_id)
                 }
                 SubscriptionTarget::Fragment { fragment, root_ref } => {
-                    self.read_fragment_from_cache(fragment, root_ref)?
+                    let result = self.read_result_fragment(fragment, root_ref)?;
+                    let frag_id = fragment.get_fragment_name().to_string();
+                    (result.data, result.used_refs, frag_id)
                 }
             };
-            let new_refs = used_refs_from_response(&response.data)?;
+            let response = RuntimeResponse {
+                data,
+                operation_id: Some(operation_id),
+            };
             let mut old_keys = None;
             let mut removed = false;
             {
-                let mut manager = self
-                    .subscriptions
-                    .lock();
+                let mut manager = self.subscriptions.lock();
                 if let Some(state) = manager.subscriptions.get_mut(&id) {
                     old_keys = Some(state.keys.clone());
-                    if let Some(refs) = new_refs.as_ref() {
-                        state.keys = refs.clone();
-                    }
+                    state.keys = new_refs.clone();
                     if state.sender.send(response).is_err() {
                         manager.subscriptions.remove(&id);
                         removed = true;
@@ -318,14 +302,12 @@ impl ShalomRuntime {
                 }
             }
             if let Some(old_keys) = old_keys {
-                let mut tracker = self
-                    .subscription_tracker
-                    .lock();
+                let mut tracker = self.subscription_tracker.lock();
                 if removed {
                     tracker.unsubscribe(old_keys);
-                } else if let Some(refs) = new_refs {
+                } else {
                     tracker.unsubscribe(old_keys);
-                    tracker.subscribe(refs);
+                    tracker.subscribe(new_refs);
                 }
             }
         }
@@ -338,17 +320,9 @@ impl ShalomRuntime {
         op_ctx: &SharedOpCtx,
         variables: Option<&Map<String, Value>>,
     ) -> anyhow::Result<RuntimeResponse> {
-        let cache = self.cache();
-        let cache_guard = cache.lock();
-        let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, variables);
-        let result = reader.read_operation(op_ctx)?;
-        let data = if op_ctx.is_subscribeable() {
-            inject_entrypoint_metadata(result.data, &result.used_refs, None)
-        } else {
-            result.data
-        };
+        let result = self.read_result_op(op_ctx, variables)?;
         Ok(RuntimeResponse {
-            data,
+            data: result.data,
             operation_id: Some(op_ctx.get_operation_name().to_string()),
         })
     }
@@ -358,28 +332,39 @@ impl ShalomRuntime {
         fragment: &SharedFragmentContext,
         root_ref: &str,
     ) -> anyhow::Result<RuntimeResponse> {
-        let cache = self.cache();
-        let cache_guard = cache.lock();
-        let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, None);
-        let result = reader.read_fragment(fragment, root_ref)?;
-        let data = if fragment.is_subscribeable() {
-            inject_entrypoint_metadata(result.data, &result.used_refs, Some(root_ref))
-        } else {
-            result.data
-        };
+        let result = self.read_result_fragment(fragment, root_ref)?;
         Ok(RuntimeResponse {
-            data,
+            data: result.data,
             operation_id: Some(fragment.get_fragment_name().to_string()),
         })
     }
 
+    fn read_result_op(
+        &self,
+        op_ctx: &SharedOpCtx,
+        variables: Option<&Map<String, Value>>,
+    ) -> anyhow::Result<crate::read::ReadResult> {
+        let cache = self.cache();
+        let cache_guard = cache.lock();
+        let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, variables);
+        reader.read_operation(op_ctx)
+    }
+
+    fn read_result_fragment(
+        &self,
+        fragment: &SharedFragmentContext,
+        root_ref: &str,
+    ) -> anyhow::Result<crate::read::ReadResult> {
+        let cache = self.cache();
+        let cache_guard = cache.lock();
+        let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, None);
+        reader.read_fragment(fragment, root_ref)
+    }
+
     fn remember_operation(&self, op_ctx: &SharedOpCtx, variables: Option<&Map<String, Value>>) {
         let op_id = op_ctx.get_operation_name().to_string();
-        self.operations
-            .lock().insert(op_id.clone(), op_ctx.clone());
-        let mut vars_map = self
-            .operation_vars
-            .lock();
+        self.operations.lock().insert(op_id.clone(), op_ctx.clone());
+        let mut vars_map = self.operation_vars.lock();
         if let Some(vars) = variables {
             vars_map.insert(op_id, vars.clone());
         } else {
@@ -388,11 +373,7 @@ impl ShalomRuntime {
     }
 
     fn operation_ctx(&self, operation_id: &str) -> anyhow::Result<SharedOpCtx> {
-        if let Some(op_ctx) = self
-            .operations
-            .lock().get(operation_id)
-            .cloned()
-        {
+        if let Some(op_ctx) = self.operations.lock().get(operation_id).cloned() {
             return Ok(op_ctx);
         }
         let global_ctx = self.engine.global_ctx();
@@ -446,49 +427,4 @@ fn register_fragments_with_duplicates(
             }
         }
     }
-}
-
-fn used_refs_from_response(data: &Value) -> anyhow::Result<Option<HashSet<String>>> {
-    let map = match data.as_object() {
-        Some(map) => map,
-        None => return Ok(None),
-    };
-    let raw = match map.get("__used_refs") {
-        Some(value) => value,
-        None => return Ok(None),
-    };
-    let list = raw
-        .as_array()
-        .ok_or_else(|| anyhow::anyhow!("__used_refs must be a list"))?;
-    let mut refs = HashSet::with_capacity(list.len());
-    for value in list {
-        let value = value
-            .as_str()
-            .ok_or_else(|| anyhow::anyhow!("__used_refs entries must be strings"))?;
-        refs.insert(value.to_string());
-    }
-    Ok(Some(refs))
-}
-
-fn inject_entrypoint_metadata(
-    mut data: Value,
-    used_refs: &HashSet<String>,
-    ref_anchor: Option<&str>,
-) -> Value {
-    if let Value::Object(map) = &mut data {
-        map.insert("__used_refs".to_string(), used_refs_to_value(used_refs));
-        if let Some(anchor) = ref_anchor {
-            map.insert(
-                "__ref_anchor".to_string(),
-                Value::String(anchor.to_string()),
-            );
-        }
-    }
-    data
-}
-
-fn used_refs_to_value(used_refs: &HashSet<String>) -> Value {
-    let mut refs: Vec<_> = used_refs.iter().cloned().collect();
-    refs.sort();
-    Value::Array(refs.into_iter().map(Value::String).collect())
 }

@@ -672,7 +672,7 @@ fn has_subscribeable_directive(directives: &apollo_compiler::ast::DirectiveList)
     directives
         .0
         .iter()
-        .any(|directive| directive.name.as_str() == "subscribeable")
+        .any(|directive| directive.name.as_str() == "observe")
 }
 
 pub(crate) fn parse_document_impl(

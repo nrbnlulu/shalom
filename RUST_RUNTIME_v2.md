@@ -4,7 +4,7 @@ the rust runtime entitled
 
 - normalize data in the cache
 - track cache changes and update those who subscribe to these refs
-- gc whats not subscribed anymore
+- gc whats not observed anymore
 
 ### how it works
 
@@ -14,13 +14,14 @@ the rust runtime entitled
 - in order to execute operations and listen to normalized cache changes you need to have an operation like so:
 
 ```gql
-query MyOperation($input: UserFilter!) @subscribeable {
+query MyOperation($input: UserFilter!) @observe {
     users(filter: $input) {
+        email
         ...UserFrag
     }
 }
 
-fragment UserFrag on User @subscribeable {
+fragment UserFrag on User @observe {
     id
     name
     icon
@@ -29,7 +30,7 @@ fragment UserFrag on User @subscribeable {
     }
 }
 
-fragment PetFrag on Pet @subscribeable {
+fragment PetFrag on Pet @observe {
     id
     name
     ownerName
@@ -37,48 +38,124 @@ fragment PetFrag on Pet @subscribeable {
 }
 ```
 
-the subscribeable annotation means that the runtime would inject a `__used_refs` on each entry of that fragment. these used refs are corrolated to the amount of `@subscriabeable` refs used.
-so in the example above the result from the runtime might look as follows (this can be a rust struct of used_refs + data)
+the `observe` annotation means that the runtime would wrap data in a `ObservedValue` which will allow to listen to runtime changes.
+so every component must define exactly the fields that it needs to use.
+meaning that root component can't use fields that defined within fragments that are annotated with `@observe`
+
+```rs
+
+type FragmentName = Ustr;
+// used in order to be able to fetch the data of this ref directly from the normalized cache.
+// can look like this `QUERY.user(name: "yossi")`
+// if belongs to a fragment, this might look like so
+// `QUERY.user(name: "yossi").bestFriend(first: 2)$1` note that
+// you'd need to know where the operation variables was used and inject the actual value on fields where needed.
+// alternatively if `type BestFriend` had an id field we can just use its id like so `User:13` or `Pet:2` because it is normalized on the cache and we can directly fetch it without traversing the cache tree.
+type RefAnchor = String;
+
+struct ObservedRef{
+    // fragment or opeartion name (must be unique)
+    observeable_id: Ustr,
+    anchor: RefAnchor
+}
+
+enum GqlCacheExecutionValue{
+    Int(i64),
+    String(String),
+    ID(String),
+    Float(f64),
+    Boolean(bool),
+    SubSubscription((FragmentName, RefAnchor))
+    List(Vec<GqlCacheExecutionValue>)
+    Object(UstrMap<Box<GqlCacheExecutionValue>>)
+}
+```
+
+then when passed to the client language it will be serialized as json
 
 ```json
 {
     "users": [
         {
-            "name": "yossi",
-            "icon": "fake url",
-            "__used_refs": [
-                "<cache_repr_of_the_entity>",
-                "<cache_repr_of_the_entity>.name",
-                "<cache_repr_of_the_entity>.icon"
-                // here we don't have pet refs since the fragment of pet is the owner of these refs.
-            ]
+            "email": "yossi",
+            "$UserFrag": {
+                "observeable_id": "UserFrag",
+                "anchor": "User:23"
+            }
         }
     ],
-    "__used_refs": ["users(filters: {\"first\": 5})"]
 }
 ```
 
-- `cache_repr_of_the_entity` would be the id or \_id of `user` with the typename like so `User:1`
-- types that dont have a required `id` or `_id` field of type String! of Int! are not allowed to use the `@subscribeable` directive thus if i.e `Pet` had no id so user used refs would have included the refs of post fragment like so
+### Used Refs
 
-```json
-"<cache_repr_of_the_entity>.pet.name",
+every `@observe`d component would own a bunch of used refs that will be used by the normalization engine to push updates to that observeable
+these refs live in rust only, no reason for them to go outside rust.
+
+they might look like so (based on the above query):
+
+```
+[
+    "QUERY.users(filters: {\"first\": 5})",
+    "User:1.email",
+    "User:2.email",
+    "User:4.email",
+    "User:3.email",
+]
+```
+possible things that can cause an update to this observable
+- `QUERY.users(filters: {\"first\": 5})` was added / removed / rearanged.
+- any of the users email was changed (even tho we could have passed it to the fragment, we for some reason needed available in the root operation so we would also get updates for it)
+
+Note that we don't have refs of `UserFrag` since this fragment is `@observe` thus these refs are delegated to that fragment.
+the refs of `UserFrag` might look like
+
+```
+[
+   "User:1.email",
+   "User:1.id",
+   "User:1.icon",
+]
 ```
 
-etc..
+### Union / interfaces catch
 
-- now how the cache would look is like so
+the catch here is that since `PetFrag` is also `@observe` we actually would need to update it if the typename of this field changes. 
+but since the ref of then can be either `Pet:1` or `User:1` we also need to listen to changes for `<anchor>.__typeName` which the cache 
+anchor can be `User:1.pets(first: 2)$1`
+
+### Note on id / _id fields
+if a field has an id field we implicitly query this field even if the uesr's query didn't included it, since it provides much better performance / cache updates.
+
+### List - how to know if it got rearanged
+in order to check if a list entity was rearanged we have 2 strategies
+
+1. typename:id comparison
+2. for types that has no id, we traverse the db normalized result until we find a missmatch (if we find it) and if found we can return early and determaine that this field of type list needs an update (for who ever subscribes it)
+
+### Garbadge collection
+Sweep Epoch strategy:
+
+When a refcount hits zero, push its RefAnchor into a "pending eviction" queue with a timestamp.
+
+Run a single background interval (e.g., every 2 seconds) that drains the queue.
+
+If the item's refcount is still zero and the time elapsed is greater than your linger window, evict it.
+
+### how the cache would look is like so
 
 ```json
 {
-    "users(filters: {\"first\": 5})": [
-        "<id of user 1>"
-        "<id of user 2>"
-        "<id of user 3>"
-        "<id of user 4>"
-        "<id of user 5>"
-    ],
-    "User:143": {
+   "QUERY": {
+       "users(filters: {\"first\": 5})": [
+            "<id of user 1>"
+            "<id of user 2>"
+            "<id of user 3>"
+            "<id of user 4>"
+            "<id of user 5>"
+        ]
+   },
+   "User:143": {
         "name": "yossi",
         "age": 12,
         "pet": "Pet:14324"
@@ -108,85 +185,8 @@ version where pet has no id
 }
 ```
 
-now if `"users(filters: {\"first\": 5})"` key in cache got changed meaning that the order changed or resized, anyone who subscribed to this ref (would usually just be the root operation component) would get an update an rerender itself, which will re-read itself from the cache
+now if `"users(filters: {\"first\": 5})"` key in cache got changed meaning that the order changed or resized, anyone who observed to this ref (would usually just be the root operation component) would get an update an rerender itself, which will re-read itself from the cache
 and will drop the refcount for all the previouse refs that are not currently in the cache subscription if refcount reached to 0 we can evict this ref from the cache.
-
-when a fragment is on a union type i.e
-
-```gql
-union BestFriendUnion = Pet | User
-```
-
-and our query is like so
-
-```gql
-query MyOperation($input: UserFilter!) @subscribeable {
-    users(filter: $input) {
-        ...UserFrag
-    }
-}
-
-fragment UserFrag on User @subscribeable {
-    id
-    name
-    icon
-    bestFriend {
-        ...BestFriendFrag
-    }
-}
-
-# all types must have id (normalizeable)
-fragment BestFriendFrag on BestFriendUnion @subscribeable {
-    __typename
-    ... on User {
-        id
-        name
-    }
-
-    ... on Pet {
-        PetFrag
-    }
-}
-```
-
-if typename has changed then the whole subscribeable is invalid thus we delegate
-the cache update to the upper subscribeble if present.
-
-```json
-{
-    "users": [
-        {
-            "id": 123,
-            "name": "yossi",
-            "bestFriend": {...}
-            "__used_refs": [
-                "User:123.bestFriend"
-            ]
-        }
-    ],
-    "__used_refs": [
-        "Query.users(first:5)"
-    ]
-
-}
-```
-
-cache might look like
-
-```json
-{
-    "QUERY": {
-        "users(first:5)": ["User:123", "User:23"]
-    },
-    "User:123": {
-        "bestFriend": "Pet:13"
-    }
-}
-```
-
-and if `User:123.bestFriend` changed to i.e `User:12` or another pet, we will rerender this subscription.
-
----
 
 ### Known Considerations
 
@@ -204,179 +204,4 @@ User:1.avatar({"size":"SMALL"})
 
 Arguments should be serialized in a deterministic (key-sorted) JSON form so that `{size: SMALL, format: PNG}` and `{format: PNG, size: SMALL}` produce the same key.
 
-#### Double-Dispose Race Condition
 
-In Flutter/Dart, during navigation transitions a widget may be disposed and a new one immediately built for the same data. This can cause the refcount for a cache entry to briefly hit zero and trigger eviction — right before the new widget increments the refcount again.
-
-Fix: implement a short **linger timer** (1–5 seconds) after a refcount reaches zero before actually purging the entry from the cache. If the refcount is incremented again within the linger window, cancel the eviction. This makes GC eventually-consistent rather than immediate.
-
----
-
-### Flutter client addoption
-
-flutter client would have its own abstractions in order to use shalom runtime with ease.
-like so:
-
-./**graphql**/users_widget.dart
-
-```dart
-// ignore_for_file: camel_case_types
-import 'dart:async';
-import 'package:flutter/widgets.dart';
-import 'package:shalom/shalom.dart' as shalom;
-import './__generated__/users.shalom.dart'; // Contains RequestMyOperation
-
-abstract class $UsersWidget extends StatefulWidget {
-  // Developer provides variables, base class handles the Requestable
-  final MyOperationVariables variables;
-
-  const $UsersWidget({
-    super.key,
-    required this.variables,
-  });
-
-  // Contract for the developer/mixin
-  Widget buildLoading(BuildContext context);
-  Widget buildError(BuildContext context, Object error);
-  Widget build(BuildContext context, MyOperationResponse data);
-
-  @override
-  State<$UsersWidget> createState() => _$UsersWidgetState();
-}
-
-class _$UsersWidgetState extends State<$UsersWidget> {
-  StreamSubscription<MyOperationResponse>? _subscription;
-  MyOperationResponse? _data;
-  Object? _error;
-  bool _isLoading = true;
-
-  @override
-  void didUpdateWidget($UsersWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    // If variables change, we need a fresh subscription
-    if (widget.variables != oldWidget.variables) {
-      _subscribe();
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _subscribe();
-  }
-
-  void _subscribe() {
-    final client = context.shalomClient;
-
-    // Create the Requestable internally using generated code
-    final requestable = RequestMyOperation(variables: widget.variables);
-
-    // Cancel old sub to trigger the "linger timer" for old refs in Rust
-    _subscription?.cancel();
-
-    _subscription = client
-        .request<MyOperationResponse>(requestable: requestable)
-        .listen(
-      (data) {
-        setState(() {
-          _data = data;
-          _isLoading = false;
-          _error = null;
-        });
-      },
-      onError: (error) {
-        setState(() {
-          _error = error;
-          _isLoading = false;
-        });
-      },
-    );
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isLoading && _data == null) return widget.buildLoading(context);
-    if (_error != null) return widget.buildError(context, _error!);
-
-    // We have data, either from initial network fetch or cache update
-    return widget.build(context, _data!);
-  }
-}
-
-```
-
-./widgets.dart
-
-```dart
-// injected using the codegen
-import './__graphql__/users_widget.g.dart'
-
-
-@query(
-    '''
-    ($input: UsersFilter!) {
-        name
-        age
-    }
-    '''
-)
-class UsersWidget extends $UsersWidget {
-
-    @override
-    build(BuildContext context, AsyncValue<GraphQLResult<UsersResponse>> response) {
-        // ...
-    }
-
-}
-```
-
-#### usage with fragments
-
-```dart
-@query(
-    '''
-    ($input: UsersFilter!) {
-        name
-        age
-        bestFriend {
-            ...BestFriendWidget
-        }
-    }
-    '''
-)
-class UsersWidget extends $UsersWidget {
-
-    @override
-    build(BuildContext context, AsyncValue<GraphQLResult<UsersResponse>> response) {
-        // ...
-    }
-
-}
-```
-
-```dart
-@fragment(
-"""
-on BestFriend {
-    __typename
-    ... on User {
-        id
-        name
-    }
-    
-    ... on Pet {
-        PetFrag
-    }
-}
-""")
-class BestFriendWidget extends $BestFriend {
-
-}
-
-```

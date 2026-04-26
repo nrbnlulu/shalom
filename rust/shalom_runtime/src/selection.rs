@@ -58,184 +58,133 @@ pub fn resolve_multitype_selections(
     selections.into_iter().collect()
 }
 
-pub fn selection_has_subscribeable_fragment(
+/// Returns the names of all directly-used @observe fragments in this selection.
+pub fn selection_get_observed_fragments(
     selection: &FieldSelection,
     ctx: &SharedShalomGlobalContext,
-) -> bool {
-    fn object_has_subscribeable_fragment(
+) -> Vec<String> {
+    fn collect_observed(
         common: &shalom_core::operation::types::ObjectLikeCommon,
         ctx: &SharedShalomGlobalContext,
-        visited: &mut HashSet<String>,
-    ) -> bool {
+        observed: &mut Vec<String>,
+    ) {
         for frag_name in &common.used_fragments {
-            if !visited.insert(frag_name.clone()) {
-                continue;
-            }
             if let Some(fragment) = ctx.get_fragment(frag_name) {
                 if fragment.is_subscribeable() {
-                    return true;
+                    observed.push(frag_name.clone());
                 }
             }
         }
-
-        for inline in common.used_inline_frags.values() {
-            if object_has_subscribeable_fragment(&inline.common, ctx, visited) {
-                return true;
-            }
-        }
-
-        for type_cond in common.type_cond_selections.values() {
-            if object_has_subscribeable_fragment(type_cond, ctx, visited) {
-                return true;
-            }
-        }
-
-        false
     }
 
-    let mut visited = HashSet::new();
+    let mut observed = Vec::new();
     match &selection.kind {
         shalom_core::operation::types::SelectionKind::Object(obj) => {
-            object_has_subscribeable_fragment(&obj.common, ctx, &mut visited)
+            collect_observed(&obj.common, ctx, &mut observed)
         }
         shalom_core::operation::types::SelectionKind::Union(union) => {
-            object_has_subscribeable_fragment(&union.common.common, ctx, &mut visited)
+            collect_observed(&union.common.common, ctx, &mut observed)
         }
         shalom_core::operation::types::SelectionKind::Interface(interface) => {
-            object_has_subscribeable_fragment(&interface.common.common, ctx, &mut visited)
+            collect_observed(&interface.common.common, ctx, &mut observed)
         }
-        _ => false,
+        _ => {}
     }
+    observed
 }
 
+pub fn selection_has_observed_fragment(
+    selection: &FieldSelection,
+    ctx: &SharedShalomGlobalContext,
+) -> bool {
+    !selection_get_observed_fragments(selection, ctx).is_empty()
+}
+
+/// Cache key for a field: `fieldName` or `fieldName({"arg":"val",...})` (JSON, sorted keys).
 pub fn field_cache_key(
     field_name: &str,
     args: &[FieldArgument],
     vars: Option<&Map<String, Value>>,
 ) -> String {
     if args.is_empty() {
-        field_name.to_string()
-    } else {
-        let segments = args
-            .iter()
-            .map(|arg| {
-                format!(
-                    "{}:{}",
-                    arg.name,
-                    serialize_argument_value(&arg.value, vars)
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("_");
-        format!("{}_{}", field_name, segments)
+        return field_name.to_string();
     }
+    let mut sorted_args: Vec<(String, Value)> = args
+        .iter()
+        .map(|arg| (arg.name.clone(), arg_value_to_json(&arg.value, vars)))
+        .collect();
+    sorted_args.sort_by(|a, b| a.0.cmp(&b.0));
+    let obj: serde_json::Map<String, Value> = sorted_args
+        .into_iter()
+        .map(|(k, v)| (k, sort_json_value(v)))
+        .collect();
+    format!("{}({})", field_name, serde_json::to_string(&obj).expect("args to json"))
 }
 
+/// Path segment for a field — same format as `field_cache_key`.
 pub fn field_path_segment(
     field_name: &str,
     args: &[FieldArgument],
     vars: Option<&Map<String, Value>>,
 ) -> String {
-    if args.is_empty() {
-        field_name.to_string()
-    } else {
-        let segments = args
-            .iter()
-            .map(|arg| {
-                format!(
-                    "{}:{}",
-                    arg.name,
-                    serialize_argument_value(&arg.value, vars)
-                )
-            })
-            .collect::<Vec<_>>()
-            .join("$");
-        format!("{}${}", field_name, segments)
-    }
+    field_cache_key(field_name, args, vars)
 }
 
-pub fn serialize_argument_value(
-    arg_value: &ArgumentValue,
-    vars: Option<&Map<String, Value>>,
-) -> String {
+fn arg_value_to_json(arg_value: &ArgumentValue, vars: Option<&Map<String, Value>>) -> Value {
     match arg_value {
-        ArgumentValue::VariableUse(var) => serialize_variable_value(var, vars),
-        ArgumentValue::InlineValue { value } => match value {
-            InlineValueArg::Scalar { value } => {
-                if let Ok(parsed) = serde_json::from_str::<Value>(value) {
-                    serialize_json_value(&parsed)
-                } else {
-                    value.clone()
+        ArgumentValue::VariableUse(var) => {
+            let name = var.common.name.as_str();
+            if let Some(vars) = vars {
+                if let Some(val) = vars.get(name) {
+                    return val.clone();
                 }
             }
-            InlineValueArg::Enum { value } => value.clone(),
+            if let Some(default) = &var.default_value {
+                return serde_json::from_str::<Value>(&default.to_string())
+                    .unwrap_or(Value::Null);
+            }
+            if var.is_optional {
+                Value::Null
+            } else {
+                Value::Null
+            }
+        }
+        ArgumentValue::InlineValue { value } => match value {
+            InlineValueArg::Scalar { value } => {
+                serde_json::from_str::<Value>(value).unwrap_or(Value::String(value.clone()))
+            }
+            InlineValueArg::Enum { value } => Value::String(value.clone()),
             InlineValueArg::List { items, .. } => {
-                let inner = items
-                    .iter()
-                    .map(|item| serialize_argument_value(item, vars))
-                    .collect::<Vec<_>>()
-                    .join(",");
-                format!("[{}]", inner)
+                Value::Array(items.iter().map(|item| arg_value_to_json(item, vars)).collect())
             }
             InlineValueArg::Object { fields, .. } => {
-                let inner = fields
+                let map: serde_json::Map<String, Value> = fields
                     .iter()
-                    .map(|(name, value)| {
-                        format!("{}:{}", name, serialize_argument_value(value, vars))
-                    })
-                    .collect::<Vec<_>>()
-                    .join(",");
-                format!("{{{}}}", inner)
+                    .map(|(k, v)| (k.clone(), arg_value_to_json(v, vars)))
+                    .collect();
+                Value::Object(map)
             }
         },
     }
 }
 
-pub fn serialize_variable_value(
-    var: &shalom_core::schema::types::InputFieldDefinition,
-    vars: Option<&Map<String, Value>>,
-) -> String {
-    let name = var.common.name.as_str();
-    let entry = vars.and_then(|vars| vars.get(name));
-    if entry.is_none() {
-        if let Some(default_value) = &var.default_value {
-            return default_value.to_string();
+fn sort_json_value(value: Value) -> Value {
+    match value {
+        Value::Object(map) => {
+            let mut sorted: Vec<(String, Value)> = map.into_iter().collect();
+            sorted.sort_by(|a, b| a.0.cmp(&b.0));
+            Value::Object(
+                sorted
+                    .into_iter()
+                    .map(|(k, v)| (k, sort_json_value(v)))
+                    .collect(),
+            )
         }
-        if var.is_maybe {
-            return "None".to_string();
-        }
-        if var.is_optional {
-            return "null".to_string();
-        }
-        return "null".to_string();
+        Value::Array(items) => Value::Array(items.into_iter().map(sort_json_value).collect()),
+        other => other,
     }
-    let value = entry.unwrap();
-    serialize_json_value(value)
 }
 
 pub fn serialize_json_value(value: &Value) -> String {
-    match value {
-        Value::Null => "null".to_string(),
-        Value::Bool(b) => b.to_string(),
-        Value::Number(n) => n.to_string(),
-        Value::String(s) => s.clone(),
-        Value::Array(items) => {
-            let inner = items
-                .iter()
-                .map(serialize_json_value)
-                .collect::<Vec<_>>()
-                .join(",");
-            format!("[{}]", inner)
-        }
-        Value::Object(map) => {
-            let mut keys: Vec<&String> = map.keys().collect();
-            keys.sort();
-            let inner = keys
-                .into_iter()
-                .map(|key| format!("{}:{}", key, serialize_json_value(&map[key])))
-                .collect::<Vec<_>>()
-                .join(",");
-            format!("{{{}}}", inner)
-        }
-    }
+    serde_json::to_string(&sort_json_value(value.clone())).unwrap_or_default()
 }

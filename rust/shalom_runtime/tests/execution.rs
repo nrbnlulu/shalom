@@ -58,7 +58,7 @@ async fn request_stream_normalizes_each_response() {
     let mut responses = make_request_stream(
         &runtime,
         &link,
-        "query TestOp @subscribeable { value }".to_string(),
+        "query TestOp @observe { value }".to_string(),
     )
     .expect("request stream");
 
@@ -96,11 +96,5 @@ async fn request_stream_normalizes_each_response() {
         .expect("response error");
 
     assert_eq!(first.data.get("value"), Some(&json!(1)));
-    let used_refs = first
-        .data
-        .get("__used_refs")
-        .and_then(|value| value.as_array())
-        .expect("used refs missing");
-    assert!(used_refs.contains(&json!("ROOT_QUERY.value")));
     assert_eq!(second.data.get("value"), Some(&json!(2)));
 }

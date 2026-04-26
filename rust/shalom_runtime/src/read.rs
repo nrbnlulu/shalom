@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use serde_json::{Map, Value};
+use serde_json::{Map, Value, json};
 
 use shalom_core::context::SharedShalomGlobalContext;
 use shalom_core::operation::context::{ExecutableContext, SharedOpCtx};
@@ -11,7 +11,7 @@ use shalom_core::schema::types::GraphQLAny;
 use crate::cache::{CacheRecord, CacheValue, NormalizedCache};
 use crate::selection::{
     field_cache_key, field_path_segment, resolve_multitype_selections, resolve_object_selections,
-    selection_has_subscribeable_fragment,
+    selection_get_observed_fragments,
 };
 
 #[derive(Debug, Clone)]
@@ -249,9 +249,8 @@ impl<'a> CacheReader<'a> {
         } else {
             entity_key.clone().unwrap_or(path_key.clone())
         };
-        let include_fragment_meta =
-            selection_has_subscribeable_fragment(selection, &self.global_ctx);
-        let before_refs = if include_fragment_meta {
+        let observed_frags = selection_get_observed_fragments(selection, &self.global_ctx);
+        let before_refs = if !observed_frags.is_empty() {
             Some(used_refs.clone())
         } else {
             None
@@ -287,11 +286,12 @@ impl<'a> CacheReader<'a> {
             let raw_diff: HashSet<_> = used_refs.difference(&before_refs).cloned().collect();
             let object_refs: HashSet<_> = raw_diff.difference(claimed_refs).cloned().collect();
             claimed_refs.extend(object_refs.iter().cloned());
-            output.insert("__used_refs".to_string(), used_refs_to_value(&object_refs));
-            output.insert(
-                "__ref_anchor".to_string(),
-                Value::String(object_ref_key.clone()),
-            );
+            for frag_name in &observed_frags {
+                output.insert(
+                    format!("${frag_name}"),
+                    json!({ "observable_id": frag_name, "anchor": object_ref_key }),
+                );
+            }
         }
 
         Ok(Value::Object(output))
@@ -458,10 +458,4 @@ fn selection_common_for_list_item() -> shalom_core::operation::types::FieldSelec
         name: "__item".to_string(),
         description: None,
     }
-}
-
-fn used_refs_to_value(used_refs: &HashSet<String>) -> Value {
-    let mut refs: Vec<_> = used_refs.iter().cloned().collect();
-    refs.sort();
-    Value::Array(refs.into_iter().map(Value::String).collect())
 }

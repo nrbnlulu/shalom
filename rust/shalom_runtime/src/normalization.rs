@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use serde_json::{Map, Value};
+use serde_json::{Map, Value, json};
 
 use shalom_core::{
     context::SharedShalomGlobalContext,
@@ -13,7 +13,7 @@ use shalom_core::{
 use crate::cache::{CacheKey, CacheLocator, CacheRecord, CacheValue, NormalizedCache};
 use crate::selection::{
     field_cache_key, field_path_segment, resolve_multitype_selections, resolve_object_selections,
-    selection_has_subscribeable_fragment,
+    selection_get_observed_fragments,
 };
 
 #[derive(Debug, Default)]
@@ -100,14 +100,6 @@ impl<'a> Normalizer<'a> {
             output.insert(field_name.clone(), normalized);
         }
 
-        if op_ctx.is_subscribeable() {
-            let root_refs: HashSet<_> = self
-                .used_refs
-                .difference(&self.claimed_refs)
-                .cloned()
-                .collect();
-            output.insert("__used_refs".to_string(), used_refs_to_value(&root_refs));
-        }
         self.cache.insert(root_key, next_root);
 
         Ok(NormalizationResult {
@@ -404,9 +396,8 @@ impl<'a> Normalizer<'a> {
         } else {
             entity_key.clone().unwrap_or(path_key.clone())
         };
-        let include_fragment_meta =
-            selection_has_subscribeable_fragment(selection, &self.global_ctx);
-        let before_refs = if include_fragment_meta {
+        let observed_frags = selection_get_observed_fragments(selection, &self.global_ctx);
+        let before_refs = if !observed_frags.is_empty() {
             Some(self.used_refs.clone())
         } else {
             None
@@ -469,16 +460,19 @@ impl<'a> Normalizer<'a> {
             output.insert(field_name.clone(), normalized);
         }
 
+        // Inject $FragmentName refs for each directly-used @observe fragment.
+        // used_refs for the fragment are claimed so the parent won't double-track them.
         if let Some(before_refs) = before_refs {
             let raw_diff: HashSet<_> = self.used_refs.difference(&before_refs).cloned().collect();
             let object_refs: HashSet<_> =
                 raw_diff.difference(&self.claimed_refs).cloned().collect();
             self.claimed_refs.extend(object_refs.iter().cloned());
-            output.insert("__used_refs".to_string(), used_refs_to_value(&object_refs));
-            output.insert(
-                "__ref_anchor".to_string(),
-                Value::String(object_ref_key.clone()),
-            );
+            for frag_name in &observed_frags {
+                output.insert(
+                    format!("${frag_name}"),
+                    json!({ "observable_id": frag_name, "anchor": object_ref_key }),
+                );
+            }
         }
 
         let cache_value = if let Some(entity_key) = entity_key.clone() {
@@ -538,12 +532,6 @@ fn list_item_identity(value: &CacheValue, idx: usize) -> String {
         CacheValue::Object(_) => format!("inline:{idx}"),
         CacheValue::List(_) => format!("list:{idx}"),
     }
-}
-
-fn used_refs_to_value(used_refs: &HashSet<CacheKey>) -> Value {
-    let mut refs: Vec<_> = used_refs.iter().cloned().collect();
-    refs.sort();
-    Value::Array(refs.into_iter().map(Value::String).collect())
 }
 
 fn selection_common_for_list_item() -> shalom_core::operation::types::FieldSelectionCommon {

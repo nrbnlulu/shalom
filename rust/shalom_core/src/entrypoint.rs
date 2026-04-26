@@ -65,8 +65,8 @@ pub fn parse_schema(schema: &str) -> anyhow::Result<SharedSchemaContext> {
 
 fn ensure_subscribeable_directive(schema: &str) -> String {
     const DIRECTIVE_DEF: &str =
-        "directive @subscribeable on QUERY | MUTATION | SUBSCRIPTION | FRAGMENT_DEFINITION";
-    if schema.contains("directive @subscribeable") {
+        "directive @observe on QUERY | MUTATION | SUBSCRIPTION | FRAGMENT_DEFINITION";
+    if schema.contains("directive @observe") {
         return schema.to_string();
     }
     format!("{schema}\n\n{DIRECTIVE_DEF}\n")
@@ -199,7 +199,7 @@ fn has_subscribeable_directive(directives: &apollo_compiler::ast::DirectiveList)
     directives
         .0
         .iter()
-        .any(|directive| directive.name.as_str() == "subscribeable")
+        .any(|directive| directive.name.as_str() == "observe")
 }
 
 /// Build fragment dependency tree and return topologically sorted order
