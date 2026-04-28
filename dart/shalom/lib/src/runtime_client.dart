@@ -18,6 +18,21 @@ import 'rust/api/runtime.dart' as rs_runtime;
 export 'rust/api/runtime.dart' show ObservedRefInput;
 
 // ---------------------------------------------------------------------------
+// ObservedRefInput helpers (exported so codegen templates can use them via
+// `shalom_core.observedRefInputFromJson(...)`)
+// ---------------------------------------------------------------------------
+
+/// Deserialise an [ObservedRefInput] from a JSON map produced by the Rust cache.
+///
+/// The cache serialises refs as `{"observable_id": "...", "anchor": "..."}`.
+rs_runtime.ObservedRefInput observedRefInputFromJson(JsonObject json) {
+  return rs_runtime.ObservedRefInput(
+    observableId: json['observable_id'] as String,
+    anchor: json['anchor'] as String,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // ShalomRuntimeClient
 // ---------------------------------------------------------------------------
 

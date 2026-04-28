@@ -16,7 +16,7 @@ fn build_ctx(schema: &str, operation: &str) -> (ShalomRuntime, SharedOpCtx) {
     let schema_ctx = parse_schema(schema).expect("schema parse failed");
     let config = ShalomConfig::default();
     let global_ctx = ShalomGlobalContext::new(schema_ctx, config, PathBuf::from("schema.graphql"));
-    register_fragments_from_document(&global_ctx, operation, &PathBuf::from("ops.graphql"))
+    register_fragments_from_document(&global_ctx, operation, &PathBuf::from("ops.graphql"), false)
         .expect("register fragments");
     let ops = parse_document(&global_ctx, operation, &PathBuf::from("ops.graphql"))
         .expect("operation parse failed");
@@ -45,6 +45,13 @@ fn subscribe(
 }
 
 fn yield_update_sync(runtime: &ShalomRuntime, id: SubscriptionId) -> Value {
+    yield_nth_update_sync(runtime, id, 1)
+}
+
+/// Reads `n` items from the subscription stream and returns the last one.
+/// Use n=2 when `observe_fragment` already emitted an initial cache value.
+fn yield_nth_update_sync(runtime: &ShalomRuntime, id: SubscriptionId, n: usize) -> Value {
+    assert!(n >= 1);
     let mut stream = runtime
         .subscription_stream(&id)
         .expect("subscription stream");
@@ -52,12 +59,15 @@ fn yield_update_sync(runtime: &ShalomRuntime, id: SubscriptionId) -> Value {
         .enable_all()
         .build()
         .expect("tokio runtime");
-    let response = tokio_rt
-        .block_on(async { stream.next().await })
-        .expect("missing update")
-        .expect("subscription error");
+    let data = tokio_rt.block_on(async {
+        let mut last = None;
+        for _ in 0..n {
+            last = stream.next().await;
+        }
+        last
+    });
     runtime.unsubscribe(&id);
-    response.data
+    data.expect("missing update").expect("subscription error").data
 }
 
 fn record(runtime: &ShalomRuntime, key: &str) -> CacheRecord {
@@ -1768,7 +1778,8 @@ mod fragment_subscriptions {
             None,
         );
 
-        let data = yield_update_sync(&runtime, sub_id);
+        // n=2: observe_fragment emits initial cached value first, then the update
+        let data = yield_nth_update_sync(&runtime, sub_id, 2);
         let obj = data.as_object().expect("fragment data object");
         assert_eq!(obj.get("name"), Some(&json!("Bea")));
     }
@@ -1810,7 +1821,8 @@ mod fragment_subscriptions {
             None,
         );
 
-        let data = yield_update_sync(&runtime, sub_id);
+        // n=2: observe_fragment emits initial cached value first, then the update
+        let data = yield_nth_update_sync(&runtime, sub_id, 2);
         let obj = data.as_object().expect("fragment data object");
         assert_eq!(obj.get("name"), Some(&json!("Milo")));
     }

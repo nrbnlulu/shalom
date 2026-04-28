@@ -20,7 +20,11 @@ import 'package:meta/meta.dart' show experimental;
 {% for import_path in generate_fragment_imports(context.operation.file_path) -%}
 import '{{ import_path }}';
 {% endfor -%}
-
+{% if is_observe %}
+import 'dart:async' show StreamSubscription;
+import 'package:flutter/widgets.dart';
+import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+{% endif %}
 
 {% set operation_name = context.operation.operation_name %}
 
@@ -209,7 +213,7 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
         _sub?.cancel();
         final client = ShalomScope.of(context);
         _sub = client
-            .observeOperation<{{ operation_name }}Data>(
+            .request<{{ operation_name }}Data>(
                 name: '{{ operation_name }}',
                 {% if op_variables_exist %}
                 variables: widget.variables.toJson(),

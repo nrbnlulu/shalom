@@ -166,20 +166,23 @@ pub fn run_runtime_tests_for_usecase(usecase: &str) {
         std::process::Command::new(&flutter)
     };
 
-    // The FRB loader on Linux resolves the native library relative to CWD
-    // using `ioDirectory = "rust/target/release/"`, which won't match our
-    // test layout. Point it at the workspace debug build instead via the
-    // env var the loader checks first.
+    // The FRB loader resolves the native library via this env var.
+    // We point it at dart/shalom/.dart_tool/lib/ because that library was
+    // built by the FRB tooling and its content hash matches the Dart-side
+    // frb_generated.dart bindings.  Using target/debug/ causes a content-hash
+    // mismatch whenever the debug build is older than the last FRB codegen run.
     //
     // CARGO_MANIFEST_DIR = shalom/rust/shalom_dart_codegen/
     // workspace root     = shalom/          (two levels up)
-    // library dir        = shalom/target/debug/
+    // library dir        = shalom/dart/shalom/.dart_tool/lib/
     let workspace_target = Path::new(env!("CARGO_MANIFEST_DIR"))
         .parent() // shalom/rust/
         .and_then(|p| p.parent()) // shalom/
         .expect("CARGO_MANIFEST_DIR has no grandparent")
-        .join("target")
-        .join("debug");
+        .join("dart")
+        .join("shalom")
+        .join(".dart_tool")
+        .join("lib");
 
     flutter_test
         .current_dir(&dart_test_root)

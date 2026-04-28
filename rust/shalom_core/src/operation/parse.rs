@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 
@@ -683,10 +683,44 @@ pub(crate) fn parse_document_impl(
     let mut ret = HashMap::new();
     let schema = global_ctx.schema_ctx.schema.clone();
     let mut parser = apollo_compiler::parser::Parser::new();
-    let doc_orig = parser
+
+    // Parse without validation to discover which fragment spreads are used.
+    let doc_raw = parser
         .parse_executable(&schema, source, doc_path)
         .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
-    let doc_orig = doc_orig.validate(&schema).expect("doc is not valid");
+
+    if doc_raw.operations.is_empty() {
+        return Ok(ret);
+    }
+
+    // Collect direct fragment spreads referenced by all operations.
+    let mut initial_spreads: HashSet<String> = HashSet::new();
+    for operation in doc_raw.operations.iter() {
+        collect_fragment_spreads_into(&operation.selection_set.selections, &mut initial_spreads);
+    }
+
+    // Collect transitive fragment SDLs in dependency order (deps first).
+    let fragment_sdls =
+        collect_transitive_fragment_sdls(&initial_spreads, &doc_raw, global_ctx, &schema);
+
+    // Rebuild source as: sorted fragment SDLs + operations only (no inline fragment defs).
+    let mut combined = fragment_sdls.join("\n");
+    if !combined.is_empty() {
+        combined.push('\n');
+    }
+    for operation in doc_raw.operations.iter() {
+        combined.push_str(&operation.to_string());
+        combined.push('\n');
+    }
+
+    // Parse + validate once against the combined source.
+    let combined_doc = parser
+        .parse_executable(&schema, &combined, doc_path)
+        .map_err(|e| anyhow::anyhow!("Failed to parse combined document: {}", e))?;
+    let doc_orig = combined_doc
+        .validate(&schema)
+        .map_err(|e| anyhow::anyhow!("Failed to validate document: {}", e))?;
+
     if doc_orig.operations.anonymous.is_some() {
         unimplemented!("Anonymous operations are not supported")
     }
@@ -698,4 +732,86 @@ pub(crate) fn parse_document_impl(
         );
     }
     Ok(ret)
+}
+
+fn collect_fragment_spreads_into(
+    selections: &[apollo_executable::Selection],
+    out: &mut HashSet<String>,
+) {
+    for sel in selections {
+        match sel {
+            apollo_executable::Selection::Field(f) => {
+                collect_fragment_spreads_into(&f.selection_set.selections, out);
+            }
+            apollo_executable::Selection::FragmentSpread(s) => {
+                out.insert(s.fragment_name.to_string());
+            }
+            apollo_executable::Selection::InlineFragment(i) => {
+                collect_fragment_spreads_into(&i.selection_set.selections, out);
+            }
+        }
+    }
+}
+
+fn collect_transitive_fragment_sdls(
+    initial_spreads: &HashSet<String>,
+    source_doc: &apollo_compiler::ExecutableDocument,
+    global_ctx: &SharedShalomGlobalContext,
+    schema: &apollo_compiler::validation::Valid<apollo_compiler::Schema>,
+) -> Vec<String> {
+    let mut ordered: Vec<String> = Vec::new();
+    let mut visited: HashSet<String> = HashSet::new();
+    for name in initial_spreads {
+        collect_fragment_recursive(name, source_doc, global_ctx, schema, &mut visited, &mut ordered);
+    }
+    ordered
+}
+
+fn collect_fragment_recursive(
+    name: &str,
+    source_doc: &apollo_compiler::ExecutableDocument,
+    global_ctx: &SharedShalomGlobalContext,
+    schema: &apollo_compiler::validation::Valid<apollo_compiler::Schema>,
+    visited: &mut HashSet<String>,
+    ordered: &mut Vec<String>,
+) {
+    if visited.contains(name) {
+        return;
+    }
+    visited.insert(name.to_string());
+
+    // Prefer inline definitions from the source doc, then fall back to global ctx.
+    let (sdl, sub_spreads) = if let Some(frag_def) = source_doc.fragments.get(name) {
+        let sub = get_used_fragments_from_fragment(frag_def);
+        (frag_def.to_string(), sub)
+    } else if let Some(frag_ctx) = global_ctx.get_fragment(name) {
+        let sdl = frag_ctx.fragment_raw.clone();
+        let sub = extract_spreads_from_fragment_sdl(&sdl, schema);
+        (sdl, sub)
+    } else {
+        return; // not found — validation will surface the error
+    };
+
+    // Recurse on dependencies first (post-order = deps before dependents).
+    for sub in &sub_spreads {
+        collect_fragment_recursive(sub, source_doc, global_ctx, schema, visited, ordered);
+    }
+    ordered.push(sdl);
+}
+
+/// Re-parse a standalone fragment SDL string to find which fragments it spreads.
+fn extract_spreads_from_fragment_sdl(
+    sdl: &str,
+    schema: &apollo_compiler::validation::Valid<apollo_compiler::Schema>,
+) -> Vec<String> {
+    let fake_path = PathBuf::from("fragment.graphql");
+    let mut parser = apollo_compiler::parser::Parser::new();
+    match parser.parse_executable(schema, sdl, &fake_path) {
+        Ok(doc) => doc
+            .fragments
+            .values()
+            .flat_map(|f| get_used_fragments_from_fragment(f))
+            .collect(),
+        Err(_) => vec![],
+    }
 }

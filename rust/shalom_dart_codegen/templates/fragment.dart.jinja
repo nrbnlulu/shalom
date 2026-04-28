@@ -21,6 +21,11 @@ import 'package:meta/meta.dart' show experimental;
 {% for import_path in generate_fragment_imports(context.fragment_file_path) -%}
 import '{{ import_path }}';
 {% endfor %}
+{% if is_observe %}
+import 'dart:async' show StreamSubscription;
+import 'package:flutter/widgets.dart';
+import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+{% endif %}
 
 {% if is_observe %}
 // ------------ V2 FRAGMENT WIDGET API -------------
@@ -176,7 +181,7 @@ final class {{ fragment_name }}Data${{ concrete.schema_typename }} extends {{ fr
 {% endfor %}
 {% endif %}
 
-final class {{ fragment_name }}Data$Unknown {
+final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
   const {{ fragment_name }}Data$Unknown();
 }
 
@@ -213,7 +218,7 @@ class _${{ fragment_name }}State extends State<${{ fragment_name }}> {
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client
-        .observeFragment<{{ fragment_name }}Data>(
+        .subscribeToFragment<{{ fragment_name }}Data>(
           ref: widget.ref.toInput,
           decoder: {{ fragment_name }}Data.fromCache,
         )

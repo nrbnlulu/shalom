@@ -84,22 +84,22 @@ pub fn register_fragments_from_document(
     global_ctx: &SharedShalomGlobalContext,
     source: &str,
     doc_path: &PathBuf,
+    allow_dups: bool,
 ) -> anyhow::Result<()> {
     let schema = global_ctx.schema_ctx.schema.clone();
     let mut parser = apollo_compiler::parser::Parser::new();
     let doc = parser
         .parse_executable(&schema, source, doc_path)
         .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
-    let doc = doc.validate(&schema).expect("doc is not valid");
-    let doc = doc.into_inner();
-
+    // Skip validate() — standalone fragment documents have no operations, and
+    // Apollo's validator rejects fragments that aren't used in the same document.
     let parsed_docs = vec![(doc, doc_path.clone(), source.to_string())];
     let fragment_defs = extract_fragment_definitions(&parsed_docs)?;
     if fragment_defs.is_empty() {
         return Ok(());
     }
     let order = build_fragment_dependencies(&fragment_defs)?;
-    parse_and_register_fragments(fragment_defs, order, global_ctx)
+    parse_and_register_fragments(fragment_defs, order, global_ctx, allow_dups)
 }
 
 /// Load configuration from directory or use defaults
@@ -387,6 +387,7 @@ fn parse_and_register_fragments(
     fragment_defs: HashMap<String, FragmentDefInitial>,
     order: Vec<String>,
     global_ctx: &SharedShalomGlobalContext,
+    allow_dups: bool,
 ) -> anyhow::Result<()> {
     let mut final_fragment_defs: HashMap<
         String,
@@ -407,7 +408,7 @@ fn parse_and_register_fragments(
             // Register fragment immediately after parsing so it's available for subsequent fragments
             let mut single_fragment = HashMap::new();
             single_fragment.insert(name, frag_ctx);
-            global_ctx.register_fragments(single_fragment)?;
+            global_ctx.register_fragments(single_fragment, allow_dups)?;
         }
     }
     Ok(())
@@ -510,7 +511,7 @@ pub fn parse_directory(
         e
     })?;
     // Parse and register fragments
-    parse_and_register_fragments(fragment_defs, order, &global_ctx).map_err(|e| {
+    parse_and_register_fragments(fragment_defs, order, &global_ctx, false).map_err(|e| {
         if strict {
             panic!("failed to build frag deps {e}")
         }

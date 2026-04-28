@@ -23,7 +23,7 @@ fn build_runtime(schema: &str, operation: &str) -> (ShalomRuntime, SharedOpCtx) 
     let schema_ctx = parse_schema(schema).expect("schema parse failed");
     let config = ShalomConfig::default();
     let global_ctx = ShalomGlobalContext::new(schema_ctx, config, PathBuf::from("schema.graphql"));
-    register_fragments_from_document(&global_ctx, operation, &PathBuf::from("ops.graphql"))
+    register_fragments_from_document(&global_ctx, operation, &PathBuf::from("ops.graphql"), false)
         .expect("register fragments");
     let ops = parse_document(&global_ctx, operation, &PathBuf::from("ops.graphql"))
         .expect("operation parse failed");

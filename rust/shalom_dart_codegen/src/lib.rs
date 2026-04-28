@@ -450,6 +450,253 @@ fn register_default_template_fns<'a>(
         },
     );
 
+    let ctx_clone = ctx.clone();
+    env.add_function(
+        "selection_observe_fragment_name",
+        move |selection: ViaDeserialize<FieldSelection>| -> minijinja::Value {
+            match selection_observe_fragment_name(&selection.0, &ctx_clone) {
+                Some(name) => minijinja::Value::from(name),
+                None => minijinja::Value::from(false),
+            }
+        },
+    );
+
+    Ok(())
+}
+
+fn object_like_needs_variables<T: ExecutableContext>(ctx: &T, obj_like: &ObjectLikeCommon) -> bool {
+    if !ctx.has_variables() {
+        return false;
+    }
+    ctx.get_selection(&obj_like.path_name).is_some()
+        || ctx.get_root().path_name == obj_like.path_name
+}
+
+fn get_field_name_with_args(
+    field_name: &str,
+    args: &[shalom_core::operation::types::FieldArgument],
+) -> String {
+    if args.is_empty() {
+        field_name.to_string()
+    } else {
+        format!("{}_with_args", field_name)
+    }
+}
+
+fn generate_custom_scalar_imports(ctx: &SharedShalomGlobalContext) -> HashMap<String, String> {
+    let mut imports: HashMap<String, String> = HashMap::new();
+
+    for custom_scalar in ctx.get_custom_scalars().values() {
+        for symbol in [&custom_scalar.impl_symbol, &custom_scalar.output_type] {
+            if let Some(import_path) = &symbol.import_path {
+                let import_path_str = import_path.to_string_lossy().to_string();
+
+                imports.entry(import_path_str).or_insert_with(|| {
+                    let mut hasher: DefaultHasher = DefaultHasher::new();
+                    import_path.hash(&mut hasher);
+                    number_to_abc(hasher.finish() as u32)
+                });
+            }
+        }
+    }
+
+    imports
+}
+
+impl SchemaEnv<'_> {
+    fn new(ctx: &SharedShalomGlobalContext) -> anyhow::Result<Self> {
+        let mut env = Environment::new();
+        register_default_template_fns(&mut env, ctx)?;
+        Ok(Self { env })
+    }
+
+    fn render_schema(&self, ctx: &SharedShalomGlobalContext) -> String {
+        let template = self.env.get_template("schema").unwrap();
+
+        let custom_scalar_imports = generate_custom_scalar_imports(ctx);
+
+        let mut context = HashMap::new();
+        context.insert("schema", context! { context => &ctx.schema_ctx });
+        context.insert(
+            "custom_scalar_imports",
+            minijinja::Value::from(custom_scalar_imports),
+        );
+
+        template.render(&context).unwrap()
+    }
+}
+
+fn collect_multi_type_list_selections<T>(executable_ctx: &T) -> Vec<SharedListSelection>
+where
+    T: ExecutableContext,
+{
+    let typedefs = executable_ctx.typedefs();
+    let mut multitype_list_selections = Vec::new();
+
+    for fullname in typedefs.unions.keys() {
+        if let Some(selection) = typedefs.get_list_selection(fullname) {
+            multitype_list_selections.push(selection.clone());
+        }
+    }
+    for fullname in typedefs.interfaces.keys() {
+        if let Some(selection) = typedefs.get_list_selection(fullname) {
+            multitype_list_selections.push(selection.clone());
+        }
+    }
+
+    multitype_list_selections
+}
+
+fn register_executable_fns<'a, T>(
+    env: &mut Environment<'a>,
+    ctx: &SharedShalomGlobalContext,
+    executable_ctx: Arc<T>,
+) -> anyhow::Result<()>
+where
+    T: ExecutableContext + 'static,
+{
+    let ctx_clone3 = ctx.clone();
+    env.add_function(
+        "get_all_selections_distinct",
+        move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
+            let selections = obj_like.0.get_all_selections_distinct(&ctx_clone3);
+            minijinja::Value::from_serialize(&selections)
+        },
+    );
+
+    let executable_ctx_clone3 = executable_ctx.clone();
+    env.add_function(
+        "object_like_needs_variables",
+        move |selection: ViaDeserialize<ObjectLikeCommon>| -> bool {
+            object_like_needs_variables(executable_ctx_clone3.as_ref(), &selection.0)
+        },
+    );
+
+    let executable_ctx_clone = executable_ctx.clone();
+    env.add_function(
+        "generate_fragment_imports",
+        move |current_file_path: String| {
+            let mut res = Vec::new();
+            for frag in executable_ctx_clone.typedefs().flatten_used_fragments() {
+                res.push(
+                    calculate_fragment_import_path(&current_file_path, &frag).unwrap_or_else(|_| panic!("Failed to calculate import path for fragment: {}; current file: {}",
+                        frag.name(),
+                        current_file_path)),
+                );
+            }
+            minijinja::Value::from_serialize(res)
+        },
+    );
+
+    let executable_ctx_clone2 = executable_ctx.clone();
+
+    fn collect_selections_for_concrete(
+        resolve_to: &mut ObjectLikeCommon,
+        other_obj: &ObjectLikeCommon,
+        global_ctx: &ShalomGlobalContext,
+    ) {
+        if resolve_to.schema_typename == other_obj.schema_typename
+            || global_ctx.schema_ctx.is_type_implementing_interface(
+                &resolve_to.schema_typename,
+                &other_obj.schema_typename,
+            )
+        {
+            resolve_to.selections.extend(other_obj.selections.clone());
+
+            for frag_name in &other_obj.used_fragments {
+                let fragment = global_ctx.get_fragment_strict(frag_name);
+                let frag_on_type = &fragment.get_on_type().schema_typename;
+
+                if frag_on_type == &resolve_to.schema_typename {
+                    resolve_to.used_fragments.insert(frag_name.clone());
+                } else if global_ctx
+                    .schema_ctx
+                    .is_type_implementing_interface(&resolve_to.schema_typename, frag_on_type)
+                {
+                    collect_selections_for_concrete(resolve_to, fragment.get_on_type(), global_ctx);
+                }
+            }
+
+            for frag in other_obj.used_inline_frags.values() {
+                collect_selections_for_concrete(resolve_to, &frag.common, global_ctx);
+            }
+        } else if !resolve_to.contains_field("__typename") {
+            let typename_selection = other_obj
+                .get_selection("__typename")
+                .cloned()
+                .unwrap_or_else(|| {
+                    panic!(
+                        "unions and interfaces MUST select __typename. {} didn't!",
+                        other_obj.path_name
+                    )
+                });
+            resolve_to.selections.insert(typename_selection);
+        }
+
+        for (_type_cond_name, type_cond_obj) in &other_obj.type_cond_selections {
+            collect_selections_for_concrete(resolve_to, type_cond_obj, global_ctx);
+        }
+    }
+
+    let ctx_clone2 = ctx.clone();
+
+    env.add_function(
+        "multitype_selection_resolved_concretes",
+        move |fullname: &str| {
+            let fullname = fullname.to_string();
+            let multitype = executable_ctx_clone2
+                .typedefs()
+                .get_multitype_selection(&fullname)
+                .unwrap_or_else(|| panic!("{fullname} not found"));
+
+            let mut ret = Vec::new();
+            for concrete_typename in &multitype.common().possible_concrete_types {
+                let concrete_path = format!("{fullname}__{concrete_typename}");
+                let mut resolved =
+                    ObjectLikeCommon::new(concrete_path.clone(), concrete_typename.clone());
+                collect_selections_for_concrete(
+                    &mut resolved,
+                    &multitype.common().common,
+                    &ctx_clone2,
+                );
+                resolved.selections = resolved.get_all_selections_distinct(&ctx_clone2);
+                ret.push(resolved);
+            }
+            minijinja::Value::from_serialize(ret)
+        },
+    );
+
+    let executable_ctx_clone3 = executable_ctx.clone();
+
+    env.add_function(
+        "template_log",
+        move |a: &minijinja::Value| -> minijinja::Value {
+            let template_name = &executable_ctx_clone3.get_root().path_name;
+            info!("in template for {template_name}: {a}");
+            minijinja::Value::from(0)
+        },
+    );
+
+    let ctx_clone3 = ctx.clone();
+    env.add_function(
+        "get_interface_level_fragments",
+        move |selection_schema_typename: &str,
+              used_fragments: ViaDeserialize<HashSet<String>>|
+              -> minijinja::Value {
+            let filtered: HashSet<String> = used_fragments
+                .0
+                .iter()
+                .filter(|frag_name| {
+                    let fragment = ctx_clone3.get_fragment_strict(frag_name);
+                    let frag_on_type = &fragment.get_on_type().schema_typename;
+                    frag_on_type == selection_schema_typename
+                })
+                .cloned()
+                .collect();
+            minijinja::Value::from_serialize(filtered)
+        },
+    );
+
     Ok(())
 }
 
@@ -1042,7 +1289,7 @@ fn generate_v2_fragment_sidecar(
     );
 
     let path = PathBuf::from(format!("{}.dart", widget.class_name));
-    shalom_core::entrypoint::register_fragments_from_document(ctx, &full_sdl, &path)?;
+    shalom_core::entrypoint::register_fragments_from_document(ctx, &full_sdl, &path, false)?;
 
     let fragment_ctx = ctx.get_fragment(&widget.class_name).ok_or_else(|| {
         anyhow::anyhow!("fragment {} not found after registration", widget.class_name)
@@ -1083,24 +1330,18 @@ fn generate_v2_registration_file(
     lines.push("// ignore_for_file: unused_import".to_string());
     lines.push("import 'package:shalom/shalom.dart';".to_string());
     lines.push(String::new());
-    lines.push("/// Register all @query and @fragment operations with the Shalom client.".to_string());
-    lines.push("void registerShalomDefinitions(ShalomRuntimeClient client) {".to_string());
+    lines.push("/// Register all @Query and @Fragment operations with the Shalom client.".to_string());
+    lines.push("Future<void> registerShalomDefinitions(ShalomRuntimeClient client) async {".to_string());
 
     for widget in widgets {
         if widget.is_query {
-            lines.push(format!("  client.registerOperation("));
-            lines.push(format!("    name: '{}',", widget.class_name));
-            lines.push(format!("    document: r'''"));
+            lines.push("  await client.registerOperation(document: r'''".to_string());
             lines.push(format!("query {} @observe {}", widget.class_name, widget.sdl));
-            lines.push("''',".to_string());
-            lines.push("  );".to_string());
+            lines.push("''');".to_string());
         } else {
-            lines.push(format!("  client.registerFragment("));
-            lines.push(format!("    name: '{}',", widget.class_name));
-            lines.push(format!("    document: r'''"));
+            lines.push("  await client.registerFragment(document: r'''".to_string());
             lines.push(format!("fragment {} @observe {}", widget.class_name, widget.sdl));
-            lines.push("''',".to_string());
-            lines.push("  );".to_string());
+            lines.push("''');".to_string());
         }
     }
 

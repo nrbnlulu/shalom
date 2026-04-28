@@ -36,9 +36,10 @@ pub fn scan_dart_widgets(root: &PathBuf) -> Result<Vec<WidgetAnnotation>> {
 fn parse_widgets_from_content(content: &str, source_path: &PathBuf) -> Vec<WidgetAnnotation> {
     let mut results = Vec::new();
 
-    for (is_query, tag) in [(true, "@query"), (false, "@fragment")] {
+    // Match PascalCase (@Query / @Fragment from shalom_annotations)
+    for (is_query, tag) in [(true, r"@Query"), (false, r"@Fragment")] {
         let re = Regex::new(&format!(
-            r#"(?ms){}\s*\(\s*r("""|''')\s*(.*?)\s*(?:"""|''')\s*\)\s*\n\s*class\s+(\w+)"#,
+            r#"(?ms){}\s*\(\s*r?("""|''')\s*(.*?)\s*(?:"""|''')\s*\)\s*\n\s*class\s+(\w+)"#,
             tag
         ))
         .unwrap();

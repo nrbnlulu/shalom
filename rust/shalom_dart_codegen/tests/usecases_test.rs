@@ -144,3 +144,25 @@ fn test_one_of_input_dart() {
 fn test_runtime_metadata_dart() {
     run_dart_tests_for_usecase("runtime_metadata");
 }
+
+// -------------------------------------------------------------------------
+// V2 observe widget tests (annotation-based, flutter test)
+// -------------------------------------------------------------------------
+
+#[test]
+fn test_observe_query_widget() {
+    run_dart_tests_for_usecase("observe_query_widget");
+    run_runtime_tests_for_usecase("observe_query_widget");
+}
+
+#[test]
+fn test_observe_fragment_widget() {
+    run_dart_tests_for_usecase("observe_fragment_widget");
+    run_runtime_tests_for_usecase("observe_fragment_widget");
+}
+
+#[test]
+fn test_observe_union_fragment() {
+    run_dart_tests_for_usecase("observe_union_fragment");
+    run_runtime_tests_for_usecase("observe_union_fragment");
+}

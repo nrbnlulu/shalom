@@ -79,9 +79,9 @@ null
     {% set observe_frag = selection_observe_fragment_name(selection) %}
     {% if observe_frag %}
         {% if is_optional %}
-            {{ value_symbol }} == null ? null : {{ observe_frag }}Ref._(shalom_core.ObservedRefInput.fromJson({{ value_symbol }} as shalom_core.JsonObject))
+            {{ value_symbol }} == null ? null : {{ observe_frag }}Ref._(shalom_core.observedRefInputFromJson({{ value_symbol }} as shalom_core.JsonObject))
         {% else %}
-            {{ observe_frag }}Ref._(shalom_core.ObservedRefInput.fromJson({{ value_symbol }} as shalom_core.JsonObject))
+            {{ observe_frag }}Ref._(shalom_core.observedRefInputFromJson({{ value_symbol }} as shalom_core.JsonObject))
         {% endif %}
     {% elif selection.kind == "Scalar" %}
         {% if selection.is_custom_scalar %}

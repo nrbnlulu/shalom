@@ -132,23 +132,29 @@ impl ShalomRuntime {
 
         for (idx, fragment) in fragments.into_iter().enumerate() {
             let path = PathBuf::from(format!("fragment_{idx}.graphql"));
-            register_fragments_ignoring_duplicates(&global_ctx, &fragment, &path)?;
+            register_fragments_from_document(&global_ctx, &fragment, &path, true)?;
         }
 
         let runtime = Self::new(global_ctx);
 
         // Background GC sweep every 2 seconds.
+        // Use try_current() so this works both when called from inside a Tokio
+        // runtime (normal app path) and from a non-Tokio context such as
+        // FRB's threadpool (used in tests).  Without the guard, tokio::spawn
+        // panics: "there is no reactor running".
         let runtime_gc = runtime.clone();
-        tokio::spawn(async move {
-            let mut interval = tokio::time::interval(Duration::from_secs(2));
-            loop {
-                interval.tick().await;
-                if runtime_gc.shutdown.load(Ordering::Relaxed) {
-                    break;
+        if let Ok(handle) = tokio::runtime::Handle::try_current() {
+            handle.spawn(async move {
+                let mut interval = tokio::time::interval(Duration::from_secs(2));
+                loop {
+                    interval.tick().await;
+                    if runtime_gc.shutdown.load(Ordering::Relaxed) {
+                        break;
+                    }
+                    runtime_gc.collect_garbage();
                 }
-                runtime_gc.collect_garbage();
-            }
-        });
+            });
+        }
 
         Ok(runtime)
     }
@@ -178,7 +184,7 @@ impl ShalomRuntime {
     /// Pre-register an operation SDL by name. Must be called before `request`.
     pub fn register_operation(&self, document: &str) -> anyhow::Result<SharedOpCtx> {
         let path = PathBuf::from("registered.graphql");
-        register_fragments_ignoring_duplicates(&self.engine.global_ctx(), document, &path)?;
+        register_fragments_from_document(&self.engine.global_ctx(), document, &path, true)?;
         let operations = parse_document(&self.engine.global_ctx(), document, &path)?;
         if operations.is_empty() {
             return Err(anyhow::anyhow!("no operations found in document"));
@@ -198,7 +204,7 @@ impl ShalomRuntime {
     /// Pre-register a fragment SDL by name. Must be called before `observe_fragment`.
     pub fn register_fragment(&self, document: &str) -> anyhow::Result<()> {
         let path = PathBuf::from("registered_fragment.graphql");
-        register_fragments_ignoring_duplicates(&self.engine.global_ctx(), document, &path)
+        register_fragments_from_document(&self.engine.global_ctx(), document, &path, true)
     }
 
     // -----------------------------------------------------------------------
@@ -578,20 +584,3 @@ impl ShalomRuntime {
 // Helpers
 // ---------------------------------------------------------------------------
 
-fn register_fragments_ignoring_duplicates(
-    global_ctx: &shalom_core::context::SharedShalomGlobalContext,
-    sdl: &str,
-    path: &PathBuf,
-) -> anyhow::Result<()> {
-    match register_fragments_from_document(global_ctx, sdl, path) {
-        Ok(()) => Ok(()),
-        Err(err) => {
-            let msg = err.to_string();
-            if msg.contains("Fragment with name") && msg.contains("already exists") {
-                Ok(())
-            } else {
-                Err(err)
-            }
-        }
-    }
-}

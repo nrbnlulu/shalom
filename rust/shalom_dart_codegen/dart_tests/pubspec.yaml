@@ -35,10 +35,13 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   shalom:
-    path: ../../../dart/shalom 
+    path: ../../../dart/shalom
 
   shalom_flutter:
     path: ../../../dart/shalom_flutter
+
+  shalom_annotations:
+    path: ../../../dart/shalom_annotations
 
 dev_dependencies:
   flutter_test:

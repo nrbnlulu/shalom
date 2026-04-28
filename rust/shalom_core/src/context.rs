@@ -84,11 +84,15 @@ impl ShalomGlobalContext {
     pub fn register_fragments(
         &self,
         fragments_update: HashMap<String, FragmentContext>,
+        allow_dups: bool,
     ) -> anyhow::Result<()> {
         let mut fragments = self.fragments.lock();
         let operations = self.operations.lock();
         for (name, _) in fragments_update.iter() {
             if fragments.contains_key(name) {
+                if allow_dups {
+                    continue;
+                }
                 return Err(anyhow::anyhow!(
                     "Fragment with name {} already exists",
                     name
