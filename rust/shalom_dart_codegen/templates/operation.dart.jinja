@@ -20,11 +20,6 @@ import 'package:meta/meta.dart' show experimental;
 {% for import_path in generate_fragment_imports(context.operation.file_path) -%}
 import '{{ import_path }}';
 {% endfor -%}
-{% if is_observe %}
-import 'dart:async' show StreamSubscription;
-import 'package:flutter/widgets.dart';
-import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
-{% endif %}
 
 {% set operation_name = context.operation.operation_name %}
 
@@ -173,74 +168,6 @@ final class {{ operation_name }}Variables {
     );
 }
 {% endif %}
-
-abstract class ${{ operation_name }} extends StatefulWidget {
-    {% if op_variables_exist %}
-    final {{ operation_name }}Variables variables;
-    const ${{ operation_name }}({super.key, required this.variables});
-    {% else %}
-    const ${{ operation_name }}({super.key});
-    {% endif %}
-
-    Widget buildLoading(BuildContext context);
-    Widget buildError(BuildContext context, Object error);
-    Widget buildData(BuildContext context, {{ operation_name }}Data data);
-
-    @override
-    State<${{ operation_name }}> createState() => _${{ operation_name }}State();
-}
-
-class _${{ operation_name }}State extends State<${{ operation_name }}> {
-    StreamSubscription<{{ operation_name }}Data>? _sub;
-    {{ operation_name }}Data? _data;
-    Object? _error;
-
-    @override
-    void didChangeDependencies() {
-        super.didChangeDependencies();
-        _subscribe();
-    }
-
-    @override
-    void didUpdateWidget(covariant ${{ operation_name }} oldWidget) {
-        super.didUpdateWidget(oldWidget);
-        {% if op_variables_exist %}
-        if (widget.variables != oldWidget.variables) _subscribe();
-        {% endif %}
-    }
-
-    void _subscribe() {
-        _sub?.cancel();
-        final client = ShalomScope.of(context);
-        _sub = client
-            .request<{{ operation_name }}Data>(
-                name: '{{ operation_name }}',
-                {% if op_variables_exist %}
-                variables: widget.variables.toJson(),
-                {% else %}
-                variables: null,
-                {% endif %}
-                decoder: {{ operation_name }}Data.fromCache,
-            )
-            .listen(
-                (data) => setState(() { _data = data; _error = null; }),
-                onError: (e) => setState(() { _error = e; }),
-            );
-    }
-
-    @override
-    void dispose() {
-        _sub?.cancel();
-        super.dispose();
-    }
-
-    @override
-    Widget build(BuildContext context) {
-        if (_error != null) return widget.buildError(context, _error!);
-        if (_data == null) return widget.buildLoading(context);
-        return widget.buildData(context, _data!);
-    }
-}
 
 // ------------ END V2 WIDGET API -------------
 {% else %}

@@ -302,8 +302,9 @@ void main() {
       client.request<JsonObject>(name: 'GetUser', decoder: (d) => d).first,
     );
 
+    // skip(1): discard the immediate cache hit ('Rex'); await the update ('Max').
     final updatedPet =
-        await petUpdates.first.timeout(const Duration(seconds: 5));
+        await petUpdates.skip(1).first.timeout(const Duration(seconds: 5));
     expect(updatedPet['name'], 'Max');
 
     await client.dispose();
@@ -344,7 +345,9 @@ void main() {
       client.request<JsonObject>(name: 'FetchUser', decoder: (d) => d).first,
     );
 
-    final updated = await updates.first.timeout(const Duration(seconds: 5));
+    // skip(1): discard the immediate cache hit ('Initial'); await the update ('Updated').
+    final updated =
+        await updates.skip(1).first.timeout(const Duration(seconds: 5));
     expect(updated['name'], 'Updated');
 
     await client.dispose();

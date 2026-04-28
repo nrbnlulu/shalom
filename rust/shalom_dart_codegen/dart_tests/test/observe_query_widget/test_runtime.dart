@@ -5,7 +5,7 @@ import 'package:shalom/shalom.dart';
 import 'package:shalom/shalom.dart' as shalom;
 import 'package:shalom_flutter/shalom_flutter.dart';
 import '../helpers/mock_link.dart';
-import '__graphql__/GetUser.shalom.dart';
+import '__graphql__/GetUser.widget.shalom.dart';
 import '__graphql__/shalom_init.shalom.dart';
 
 const _schemaSdl = '''

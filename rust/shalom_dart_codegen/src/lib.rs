@@ -370,6 +370,11 @@ fn register_default_template_fns<'a>(
         include_str!("../templates/operation.dart.jinja"),
     )
     .unwrap();
+    env.add_template(
+        "operation_widget",
+        include_str!("../templates/operation_widget.dart.jinja"),
+    )
+    .unwrap();
 
     env.add_template("schema", include_str!("../templates/schema.dart.jinja"))?;
     env.add_template("fragment", include_str!("../templates/fragment.dart.jinja"))?;
@@ -770,6 +775,14 @@ impl OperationEnv<'_> {
         Ok(OperationEnv { env })
     }
 
+    fn render_widget(&self, operation_ctx: &OperationContext) -> String {
+        let template = self.env.get_template("operation_widget").unwrap();
+        let ctx = context! {
+            context => context!{ operation => operation_ctx }
+        };
+        template.render(&ctx).unwrap()
+    }
+
     fn render_operation(
         &self,
         operation_ctx: &OperationContext,
@@ -1026,7 +1039,12 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
                 .split(format!(".{}", END_OF_FILE).as_str())
                 .next()
                 .unwrap();
-            if !ctx.operation_exists(resolved_name) && !ctx.fragment_exists(resolved_name) {
+            // Also keep `.widget.shalom.dart` sidecars for existing operations.
+            let base_name = resolved_name.trim_end_matches(".widget");
+            if !ctx.operation_exists(resolved_name)
+                && !ctx.fragment_exists(resolved_name)
+                && !ctx.operation_exists(base_name)
+            {
                 info!("deleting unused file {}", resolved_name);
                 fs::remove_file(entry)?;
             }
@@ -1274,6 +1292,13 @@ fn generate_v2_query_sidecar(
 
     fs::write(&gen_path, rendered)?;
     info!("Generated V2 query sidecar: {}", gen_path.display());
+
+    // Generate the Flutter widget file (imports + re-exports the types file above).
+    let widget_rendered = op_env.render_widget(&op_ctx);
+    let widget_path = gen_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
+    fs::write(&widget_path, widget_rendered)?;
+    info!("Generated V2 widget sidecar: {}", widget_path.display());
+
     Ok(())
 }
 
