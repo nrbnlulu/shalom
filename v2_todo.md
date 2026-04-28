@@ -165,3 +165,108 @@ The existing tests fall into two categories:
 - [ ] `runtime_metadata`
 - [ ] `helpers`
 - [ ] `object_selection_with_typename`
+
+othis is how we should proceed with flutter tests:
+
+- we should have test for every possible flutter style tests
+meaning that we'd have a widget that uses `@Query` and we'd check that it actually accepts a result
+then we should have another test for a `@Query` with a `@Fragment` widget (probably something like zoo->animals relation where zoo is the query and we have `AnimalWidget` which is a `@Fragment`).
+- then we should keep the other dart only tests which will test edgecases for all the uniuque types and == operators etc.. 
+
+this way we have a minimal tests for flutter just for the unique behaviour we expect from flutter (interacting with the runtime using the codegen) and dart tests can stay focused and minimal. 
+
+one thing that we must verify is that the codegen code that generates the dart types is re-used for the flutter codegen. so that we don't need to test everything twice.
+
+start with the first test for `@Query` I'll revise this and you'd continute.
+
+[@lib](file:///run/media/dev/33da92da-1869-46ee-a0c1-fd5c4c9049e5/@home/dev/1tb_desktop/1tboss/shalom/rust/shalom_dart_codegen/dart_tests/lib/) concept is that [@observe_query_widget](file:///run/media/dev/33da92da-1869-46ee-a0c1-fd5c4c9049e5/@home/dev/1tb_desktop/1tboss/shalom/rust/shalom_dart_codegen/dart_tests/test/observe_query_widget/) would use the minimal flutter app in [@lib](file:///run/media/dev/33da92da-1869-46ee-a0c1-fd5c4c9049e5/@home/dev/1tb_desktop/1tboss/shalom/rust/shalom_dart_codegen/dart_tests/lib/) that would contain `/query/user_widget.dart` and `/query/users_screen.dart` and the generated code would reside there.  and we'd use proper flutter testing to check if the widget succesfully rendered with the rust runtime passing the data (mock link)
+
+---
+
+## Current Status (agent handoff 2026-04-28)
+
+### What's done
+
+The test structure has been fully split into two separate projects:
+
+**`flutter_tests/`** — Flutter-specific integration tests
+- Three test scenarios: `UserWidget` (`@Query`), `PetQuery`+`PetWidget` (`@Query`+`@Fragment`), `AnimalQuery`+`AnimalWidget` (`@Query`+union `@Fragment` on interface `Animal`)
+- All Dart files use the correct short-form SDL (body only, no `query Name(...)` prefix) and PascalCase import paths matching codegen output
+- Test files import from correct `../__graphql__/shalom_init.shalom.dart` (root of flutter_tests, not lib/)
+- `lib/main.dart` is a minimal valid Flutter app (no dot-shorthand syntax)
+
+**`dart_tests/`** — Pure Dart codegen tests (no Flutter widgets)
+- All Flutter files removed (`lib/main.dart`, `lib/query/`, `test/observe_*/test_runtime.dart`)
+- `test/observe_query_widget/GetUser.dart` added as a minimal `@Query` annotated class
+- `pubspec.yaml` cleaned: removed `shalom_flutter`/`flutter_test`, kept `flutter: sdk: flutter` (required transitively via shalom's flutter_rust_bridge dep)
+- `tests/usecases_test.rs` cleaned: removed `run_runtime_tests_for_usecase` import and dead test
+
+**`templates/operation.dart.jinja`**
+- Fixed `Variables.==` operator: now inlines list check using `field.common.type.kind.kind == "List"` instead of calling `selection_equality_comparison_macro` with an `InputFieldDefinition` (which has no top-level `kind`)
+
+### Current blocker — multiple Dart compile errors in flutter test
+
+Running `cargo test -p shalom_dart_codegen test_flutter_app` fails at `flutter test`. The codegen runs successfully but the generated Dart has these issues:
+
+**1. `{Fragment}Ref._` private constructor used across files**
+- `fragment.dart.jinja` generates `extension type AnimalWidgetRef._(ObservedRefInput _inner)` — the `._` constructor is Dart library-private
+- `selection_macros.dart.jinja` line 82/84 generates `AnimalWidgetRef._(shalom_core.observedRefInputFromJson(...))` from a different file
+- Fix: change `._` to a public named constructor (e.g. `.fromInput`) in the fragment template, and update the macro to match
+
+**2. `{Fragment}Ref.toJson()` missing**
+- `AnimalQueryData.toJson()` calls `this.animal?.toJson()` but `AnimalWidgetRef` has no `toJson()` method
+- Fix: add `shalom_core.JsonObject toJson() => _inner.toJson();` to the `{Fragment}Ref` extension type in `fragment.dart.jinja`
+
+**3. `Object.hash()` requires ≥2 args — single-field classes fail**
+- `AnimalWidgetData$Impl` (1 field: `id`) and `AnimalQueryVariables` (1 field: `id`) generate `Object.hash(id,)` which Dart rejects
+- Affected templates: `fragment.dart.jinja` line 88 and `operation.dart.jinja` line 168
+- Fix: change both to `Object.hashAll([...])` which works for any number of fields
+
+**4. Legacy object/interface class generates `implements AnimalWidget` in V2 mode**
+- `operation.dart.jinja` lines 51/68 call `implements_used_fragments(concrete_subset.used_fragments)` for union/interface concrete classes
+- In V2 mode, the fragment sidecar has no interface named `AnimalWidget` — that name belongs to the user's Flutter widget class
+- Error: `sealed class AnimalQuery_animal implements AnimalWidget` — `AnimalWidget` type not found
+- Fix: suppress `implements_used_fragments` when `is_observe` is true (add `and not is_observe` guard in the macro inside `selection_macros.dart.jinja`)
+- Also: `selection_object_impl.fromJson` uses `type_name_for_selection` for local variable types but deserializes to a `{Frag}Ref` type — these are inconsistent. Fix: use `type_name_for_selection_with_observe` for the local variable type declaration (line 289 of `selection_macros.dart.jinja`)
+
+**5. `AnimalWidgetData$Dog` / `AnimalWidgetData$Cat` not generated (most complex)**
+- `AnimalWidget` fragment is on interface `Animal` with `... on Dog { breed }` / `... on Cat { color }` inline fragments
+- `fragment.dart.jinja` has the right template logic (lines 118–181) to generate `Data$Dog`/`Data$Cat` from `typedefs.interfaces`
+- But `typedefs.interfaces` is empty for the `AnimalWidget` fragment — the shalom_core parser doesn't populate interface typedefs when the fragment root type is itself an interface
+- The QUERY sidecar (`AnimalQuery.shalom.dart`) DOES correctly generate `AnimalQuery_animal__Dog`/`AnimalQuery_animal__Cat`, so the parsing works for queries but not for fragments
+- Fix: investigate `shalom_core/src/operation/parse.rs` — `parse_obj_like_from_selection_set` handles inline fragments (lines 221–245) but for a fragment whose root IS an interface, the inline `... on Dog {}` merges into `obj_like.type_cond_selections` via `obj_like.merge(typed_obj)`. Check if `parse_fragment` in `fragments.rs` calls `parse_interface_selection` for the root type, or if it bypasses that and goes straight to `parse_obj_like_from_selection_set` which skips interface typedef registration.
+
+### Files modified this session
+
+| File | Change |
+|------|--------|
+| `rust/shalom_dart_codegen/src/lib.rs` | Fragment-before-query ordering in `generate_v2_widgets`; `@observe` placement fix using `replacen` |
+| `templates/operation.dart.jinja` | Fixed `Variables.==` operator (inlined list check) |
+| `flutter_tests/lib/query/user_widget.dart` | Short-form SDL, PascalCase widget sidecar import |
+| `flutter_tests/lib/fragment/pet_widget.dart` | PascalCase import |
+| `flutter_tests/lib/fragment/pet_query.dart` | Short-form SDL, correct widget sidecar import |
+| `flutter_tests/lib/union_fragment/animal_widget.dart` | PascalCase import |
+| `flutter_tests/lib/union_fragment/animal_query.dart` | Short-form SDL, correct widget sidecar import |
+| `flutter_tests/test/user_widget_test.dart` | Correct shalom_init path |
+| `flutter_tests/test/pet_widget_test.dart` | Correct shalom_init + PetQuery import paths |
+| `flutter_tests/test/animal_widget_test.dart` | Correct shalom_init + AnimalQuery import paths |
+| `flutter_tests/test/widget_test.dart` | Deleted |
+| `flutter_tests/lib/main.dart` | Replaced with minimal valid Flutter app |
+| `dart_tests/lib/main.dart` | Deleted |
+| `dart_tests/lib/query/` | Deleted (all Flutter widget files) |
+| `dart_tests/test/observe_*/test_runtime.dart` | Deleted (Flutter tests) |
+| `dart_tests/test/observe_query_widget/GetUser.dart` | Created (pure Dart `@Query` class) |
+| `dart_tests/pubspec.yaml` | Removed `shalom_flutter`/`flutter_test` |
+| `tests/usecases_test.rs` | Removed dead `run_runtime_tests_for_usecase` import + test |
+
+### Next steps for the next agent
+
+Apply fixes in this order (each is independent except #5 which requires Rust):
+
+1. **`fragment.dart.jinja`**: Change `._` → `.fromInput` in extension type constructor; add `toJson()` → `_inner.toJson()` method; change `Object.hash(...)` → `Object.hashAll([...])`
+2. **`operation.dart.jinja`**: Change `Object.hash(...)` → `Object.hashAll([...])`
+3. **`selection_macros.dart.jinja`**:
+   - Lines 82/84: change `Ref._(` → `Ref.fromInput(`
+   - Line 289 (`selection_object_impl.fromJson`): change `type_name_for_selection(selection)` → `type_name_for_selection_with_observe(selection)` for local variable type declarations
+   - `implements_used_fragments` macro (lines 3–10): add `and not is_observe` so it suppresses the `implements` clause for V2 operations
+4. **`shalom_core/src/operation/parse.rs` or `fragments.rs`**: Fix `AnimalWidgetData$Dog`/`Cat` generation — the fragment root type (`Animal`) is an interface, but `parse_fragment` doesn't register the interface typedef (`typedefs.interfaces`) the way `parse_field_selection` does for query fields. The inline fragments (`... on Dog`, `... on Cat`) in `parse_obj_like_from_selection_set` end up in `obj_like.type_cond_selections` but never get promoted to `ctx.typedefs_mut().interfaces`. Look at how `parse_interface_selection` is called for query fields (line 374–381 of parse.rs) — replicate that typedef registration for the fragment root when it is an interface type. 

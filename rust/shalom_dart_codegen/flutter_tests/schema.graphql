@@ -1,0 +1,29 @@
+type Query {
+  user(id: ID!): User
+  pet(id: ID!): Pet
+  animal(id: ID!): Animal
+}
+
+type User {
+  id: ID!
+  name: String!
+}
+
+type Pet {
+  id: ID!
+  name: String!
+}
+
+interface Animal {
+  id: ID!
+}
+
+type Dog implements Animal {
+  id: ID!
+  breed: String!
+}
+
+type Cat implements Animal {
+  id: ID!
+  color: String!
+}

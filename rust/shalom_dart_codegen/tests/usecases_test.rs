@@ -1,14 +1,9 @@
 mod common;
-use crate::common::{run_dart_tests_for_usecase, run_runtime_tests_for_usecase};
+use crate::common::run_dart_tests_for_usecase;
 
 #[test]
 fn test_simple_scalars_dart() {
     run_dart_tests_for_usecase("simple_scalars");
-}
-
-#[test]
-fn test_simple_scalars_runtime_dart() {
-    run_runtime_tests_for_usecase("simple_scalars");
 }
 
 #[test]
@@ -150,19 +145,6 @@ fn test_runtime_metadata_dart() {
 // -------------------------------------------------------------------------
 
 #[test]
-fn test_observe_query_widget() {
-    run_dart_tests_for_usecase("observe_query_widget");
-    run_runtime_tests_for_usecase("observe_query_widget");
-}
-
-#[test]
-fn test_observe_fragment_widget() {
-    run_dart_tests_for_usecase("observe_fragment_widget");
-    run_runtime_tests_for_usecase("observe_fragment_widget");
-}
-
-#[test]
-fn test_observe_union_fragment() {
-    run_dart_tests_for_usecase("observe_union_fragment");
-    run_runtime_tests_for_usecase("observe_union_fragment");
+fn test_flutter_app() {
+    common::run_flutter_app_tests();
 }

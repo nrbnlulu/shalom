@@ -155,7 +155,11 @@ final class {{ operation_name }}Variables {
     bool operator ==(Object other) {
         return identical(this, other) || (other is {{ typename }}
             {% for name, field in op_variables | items %}
-                && {{ selection_equality_comparison_macro(field, "this." + name, "other." + name) }}
+                && {% if field.common.type.kind.kind == "List" %}
+                    const ListEquality().equals(this.{{ name }}, other.{{ name }})
+                {% else %}
+                    this.{{ name }} == other.{{ name }}
+                {% endif %}
             {% endfor %}
         );
     }

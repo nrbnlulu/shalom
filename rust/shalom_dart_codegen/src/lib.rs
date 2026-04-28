@@ -1233,22 +1233,26 @@ fn format_generated_files(pwd: &Path) -> Result<()> {
 // =========================================================================
 
 /// Generate sidecar files for each @query/@fragment annotated Dart widget.
+/// Fragments are processed first so they are registered before queries that spread them.
 fn generate_v2_widgets(
     ctx: &SharedShalomGlobalContext,
     widgets: &[WidgetAnnotation],
     custom_scalar_imports: HashMap<String, String>,
 ) -> Result<()> {
-    for widget in widgets {
+    let fragments = widgets.iter().filter(|w| !w.is_query);
+    let queries = widgets.iter().filter(|w| w.is_query);
+
+    for widget in fragments.chain(queries) {
         let res = if widget.is_query {
             generate_v2_query_sidecar(ctx, widget, custom_scalar_imports.clone())
         } else {
             generate_v2_fragment_sidecar(ctx, widget, custom_scalar_imports.clone())
         };
         if let Err(err) = res {
-            error!(
-                "Failed to generate V2 sidecar for widget '{}' due to: {}",
+            return Err(anyhow::anyhow!(
+                "Failed to generate V2 sidecar for '{}': {}",
                 widget.class_name, err
-            );
+            ));
         }
     }
     Ok(())
@@ -1260,9 +1264,13 @@ fn generate_v2_query_sidecar(
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
 ) -> Result<()> {
+    // Insert @observe immediately before the selection-set opening brace so the
+    // directive lands in the correct position per the GraphQL grammar:
+    //   query Name VariableDefinitions? Directives? SelectionSet
     let full_sdl = format!(
-        "query {} @observe {}",
-        widget.class_name, widget.sdl
+        "query {} {}",
+        widget.class_name,
+        widget.sdl.replacen('{', "@observe {", 1)
     );
 
     let path = PathBuf::from(format!("{}.dart", widget.class_name));
@@ -1308,9 +1316,13 @@ fn generate_v2_fragment_sidecar(
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
 ) -> Result<()> {
+    // Insert @observe immediately before the selection-set opening brace so the
+    // directive lands in the correct position per the GraphQL grammar:
+    //   fragment Name TypeCondition Directives? SelectionSet
     let full_sdl = format!(
-        "fragment {} @observe {}",
-        widget.class_name, widget.sdl
+        "fragment {} {}",
+        widget.class_name,
+        widget.sdl.replacen('{', "@observe {", 1)
     );
 
     let path = PathBuf::from(format!("{}.dart", widget.class_name));
@@ -1361,11 +1373,19 @@ fn generate_v2_registration_file(
     for widget in widgets {
         if widget.is_query {
             lines.push("  await client.registerOperation(document: r'''".to_string());
-            lines.push(format!("query {} @observe {}", widget.class_name, widget.sdl));
+            lines.push(format!(
+                "query {} {}",
+                widget.class_name,
+                widget.sdl.replacen('{', "@observe {", 1)
+            ));
             lines.push("''');".to_string());
         } else {
             lines.push("  await client.registerFragment(document: r'''".to_string());
-            lines.push(format!("fragment {} @observe {}", widget.class_name, widget.sdl));
+            lines.push(format!(
+                "fragment {} {}",
+                widget.class_name,
+                widget.sdl.replacen('{', "@observe {", 1)
+            ));
             lines.push("''');".to_string());
         }
     }

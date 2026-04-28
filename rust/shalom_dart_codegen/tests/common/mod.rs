@@ -136,26 +136,37 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
 
 /// Run `test_runtime.dart` for [usecase] using `flutter test` if that file
 /// exists. Skips silently when Flutter is unavailable or the file is absent.
-pub fn run_runtime_tests_for_usecase(usecase: &str) {
-    let runtime_test = tests_path()
-        .join(usecase)
-        .join("test_runtime.dart");
-
-    if !runtime_test.exists() {
-        return;
+pub fn run_flutter_app_tests() {
+    match simple_logger::init() {
+        Ok(_) => println!("Logger initialized"),
+        Err(_) => {},
     }
+    
+    let mut current_dir = PathBuf::from(file!());
+    let mut flutter_tests_path = None;
+    while let Some(parent) = current_dir.clone().parent() {
+        let glob_pattern = parent.join("flutter_tests");
+        if let Ok(mut entries) = glob(glob_pattern.to_str().unwrap()) {
+            if let Some(Ok(path)) = entries.next() {
+                flutter_tests_path = Some(path);
+                break;
+            }
+        }
+        current_dir = parent.to_path_buf();
+        if current_dir == parent.parent().unwrap_or(parent) {
+            break;
+        }
+    }
+    let flutter_tests_dir = flutter_tests_path.expect("Could not find flutter_tests directory");
+
+    run_codegen(&flutter_tests_dir, true);
 
     let flutter = match get_flutter_command() {
         Ok(cmd) => cmd,
-        Err(e) => {
-            eprintln!("⚠️  Skipping runtime tests for {usecase}: {e}");
-            return;
-        }
+        Err(e) => panic!("⚠️  Skipping flutter tests: {e}"),
     };
 
-    let dart_test_root = tests_path().join("..");
     let flutter_parts: Vec<&str> = flutter.split_whitespace().collect();
-
     let mut flutter_test = if flutter_parts.len() > 1 {
         let mut cmd = std::process::Command::new(flutter_parts[0]);
         for part in &flutter_parts[1..] {
@@ -166,18 +177,9 @@ pub fn run_runtime_tests_for_usecase(usecase: &str) {
         std::process::Command::new(&flutter)
     };
 
-    // The FRB loader resolves the native library via this env var.
-    // We point it at dart/shalom/.dart_tool/lib/ because that library was
-    // built by the FRB tooling and its content hash matches the Dart-side
-    // frb_generated.dart bindings.  Using target/debug/ causes a content-hash
-    // mismatch whenever the debug build is older than the last FRB codegen run.
-    //
-    // CARGO_MANIFEST_DIR = shalom/rust/shalom_dart_codegen/
-    // workspace root     = shalom/          (two levels up)
-    // library dir        = shalom/dart/shalom/.dart_tool/lib/
     let workspace_target = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent() // shalom/rust/
-        .and_then(|p| p.parent()) // shalom/
+        .parent()
+        .and_then(|p| p.parent())
         .expect("CARGO_MANIFEST_DIR has no grandparent")
         .join("dart")
         .join("shalom")
@@ -185,21 +187,25 @@ pub fn run_runtime_tests_for_usecase(usecase: &str) {
         .join("lib");
 
     flutter_test
-        .current_dir(&dart_test_root)
+        .current_dir(&flutter_tests_dir)
         .env(
             "FRB_DART_LOAD_EXTERNAL_LIBRARY_NATIVE_LIB_DIR",
             workspace_target.to_str().expect("path is valid UTF-8"),
         )
-        .arg("test")
-        .arg(format!("test/{usecase}/test_runtime.dart"));
+        .arg("test");
 
-    info!("Running command: {flutter_test:?} inside {dart_test_root:?}");
+    info!("Running command: {flutter_test:?} inside {flutter_tests_dir:?}");
     let output = flutter_test.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
+    let err_std = String::from_utf8_lossy(&output.stderr);
 
+    if !output.status.success() {
+        println!("Stdout: {}", out_std);
+        println!("Stderr: {}", err_std);
+    }
     assert!(
         output.status.success(),
-        "❌ Runtime tests failed for {usecase}\n {out_std}"
+        "❌ Flutter tests failed\n {out_std}\n{err_std}"
     );
-    info!("✔️ Runtime tests passed for {usecase}\n {out_std}");
+    info!("✔️ Flutter tests passed\n {out_std}");
 }
