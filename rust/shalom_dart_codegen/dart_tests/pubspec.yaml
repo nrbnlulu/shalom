@@ -1,20 +1,18 @@
 name: dart_tests
 description: "Dart codegen tests for shalom_dart_codegen."
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+    sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
-  flutter:
-    sdk: flutter
-  shalom:
-    path: ../../../dart/shalom
-  shalom_annotations:
-    path: ../../../dart/shalom_annotations
+    shalom:
+        path: ../../../dart/shalom
+    shalom_annotations:
+        path: ../../../dart/shalom_annotations
 
 dev_dependencies:
-  test: ^1.25.15
-  lints: ^4.0.0
+    test: ^1.25.15
+    lints: ^4.0.0

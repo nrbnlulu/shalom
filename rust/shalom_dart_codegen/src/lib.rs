@@ -1115,18 +1115,25 @@ fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContex
     info!("Generated {}", generation_target.display());
 }
 
+fn is_fvm_installed() -> bool {
+    std::process::Command::new("fvm")
+        .arg("--version")
+        .output()
+        .map(|output| output.status.success())
+        .unwrap_or(false)
+}
+
 pub fn get_dart_command() -> Result<String, String> {
-    let dart;
-    #[cfg(target_os = "windows")]
-    {
-        dart = "dart.bat";
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        dart = "dart";
+    if is_fvm_installed() {
+        return Ok("fvm dart".to_string());
     }
 
-    // Check if dart is available
+    let dart = if cfg!(target_os = "windows") {
+        "dart.bat"
+    } else {
+        "dart"
+    };
+
     if std::process::Command::new(dart)
         .arg("--version")
         .output()
@@ -1136,31 +1143,13 @@ pub fn get_dart_command() -> Result<String, String> {
         return Ok(dart.to_string());
     }
 
-    // Check if fvm dart is available
-    if std::process::Command::new("fvm")
-        .arg("dart")
-        .arg("--version")
-        .output()
-        .map(|output| output.status.success())
-        .unwrap_or(false)
-    {
-        return Ok("fvm dart".to_string());
-    }
-
     Err("Dart SDK not found. Please install Dart SDK or FVM.".to_string())
 }
 
 /// Returns the command to invoke `flutter test`. Prefers `fvm flutter` when
 /// fvm is available, falls back to `flutter` directly.
 pub fn get_flutter_command() -> Result<String, String> {
-    // Prefer fvm flutter
-    if std::process::Command::new("fvm")
-        .arg("flutter")
-        .arg("--version")
-        .output()
-        .map(|output| output.status.success())
-        .unwrap_or(false)
-    {
+    if is_fvm_installed() {
         return Ok("fvm flutter".to_string());
     }
 
