@@ -1,4 +1,4 @@
-import 'dart:io' show Platform;
+import 'dart:io' show File, Platform;
 import 'package:shalom/shalom.dart' as shalom;
 
 String _nativeLibPath() {
@@ -24,4 +24,8 @@ String _nativeLibPath() {
 
 Future<void> initTestEnv() async {
   await shalom.init(_nativeLibPath());
+}
+
+String loadSchemaSdl() {
+  return File('lib/graphql/schema.graphql').readAsStringSync();
 }

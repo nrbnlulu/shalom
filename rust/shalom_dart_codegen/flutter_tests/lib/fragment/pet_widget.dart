@@ -13,9 +13,6 @@ class PetWidget extends $PetWidget {
 
   @override
   Widget buildData(BuildContext context, PetWidgetData data) {
-    if (data is PetWidgetData$Impl) {
-      return Text('pet: ${data.name}', textDirection: TextDirection.ltr);
-    }
-    return const SizedBox.shrink();
+    return Text('pet: ${data.name}', textDirection: TextDirection.ltr);
   }
 }

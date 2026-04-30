@@ -1359,24 +1359,25 @@ fn generate_v2_registration_file(
     lines.push("/// Register all @Query and @Fragment operations with the Shalom client.".to_string());
     lines.push("Future<void> registerShalomDefinitions(ShalomRuntimeClient client) async {".to_string());
 
-    for widget in widgets {
-        if widget.is_query {
-            lines.push("  await client.registerOperation(document: r'''".to_string());
-            lines.push(format!(
-                "query {} {}",
-                widget.class_name,
-                widget.sdl.replacen('{', "@observe {", 1)
-            ));
-            lines.push("''');".to_string());
-        } else {
-            lines.push("  await client.registerFragment(document: r'''".to_string());
-            lines.push(format!(
-                "fragment {} {}",
-                widget.class_name,
-                widget.sdl.replacen('{', "@observe {", 1)
-            ));
-            lines.push("''');".to_string());
-        }
+    // Register fragments before operations so that operations that spread fragments
+    // can be validated successfully by the runtime.
+    for widget in widgets.iter().filter(|w| !w.is_query) {
+        lines.push("  await client.registerFragment(document: r'''".to_string());
+        lines.push(format!(
+            "fragment {} {}",
+            widget.class_name,
+            widget.sdl.replacen('{', "@observe {", 1)
+        ));
+        lines.push("''');".to_string());
+    }
+    for widget in widgets.iter().filter(|w| w.is_query) {
+        lines.push("  await client.registerOperation(document: r'''".to_string());
+        lines.push(format!(
+            "query {} {}",
+            widget.class_name,
+            widget.sdl.replacen('{', "@observe {", 1)
+        ));
+        lines.push("''');".to_string());
     }
 
     lines.push("}".to_string());

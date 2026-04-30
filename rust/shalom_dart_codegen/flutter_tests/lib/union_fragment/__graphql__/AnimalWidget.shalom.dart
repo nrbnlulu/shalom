@@ -2,7 +2,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: AnimalWidget
 
-import "../../../__graphql__/schema.shalom.dart";
+import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
@@ -13,8 +13,12 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
-extension type AnimalWidgetRef._(shalom_core.ObservedRefInput _inner) {
+extension type AnimalWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
+  shalom_core.JsonObject toJson() => {
+    'observable_id': _inner.observableId,
+    'anchor': _inner.anchor,
+  };
 }
 
 sealed class AnimalWidgetData {
@@ -22,31 +26,44 @@ sealed class AnimalWidgetData {
 
   @experimental
   static AnimalWidgetData fromCache(shalom_core.JsonObject data) {
-    return AnimalWidgetData$Impl.fromJson(data);
+    final typename = data['__typename'] as String?;
+    switch (typename) {
+      case 'Dog':
+        return AnimalWidgetData$Dog.fromJson(data);
+      case 'Cat':
+        return AnimalWidgetData$Cat.fromJson(data);
+
+      default:
+        return const AnimalWidgetData$Unknown();
+    }
   }
 }
 
-final class AnimalWidgetData$Impl extends AnimalWidgetData {
+final class AnimalWidgetData$Dog extends AnimalWidgetData {
   final String id;
+  final String breed;
 
-  const AnimalWidgetData$Impl({required this.id});
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is AnimalWidgetData$Impl && id == other.id);
-
-  @override
-  int get hashCode => Object.hash(id);
+  const AnimalWidgetData$Dog({required this.id, required this.breed});
 
   @experimental
-  static AnimalWidgetData$Impl fromJson(shalom_core.JsonObject data) {
+  static AnimalWidgetData$Dog fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
-    return AnimalWidgetData$Impl(id: id$value);
+    final String breed$value = data['breed'] as String;
+    return AnimalWidgetData$Dog(id: id$value, breed: breed$value);
   }
+}
 
-  shalom_core.JsonObject toJson() {
-    return {'id': this.id};
+final class AnimalWidgetData$Cat extends AnimalWidgetData {
+  final String id;
+  final String color;
+
+  const AnimalWidgetData$Cat({required this.id, required this.color});
+
+  @experimental
+  static AnimalWidgetData$Cat fromJson(shalom_core.JsonObject data) {
+    final String id$value = data['id'] as String;
+    final String color$value = data['color'] as String;
+    return AnimalWidgetData$Cat(id: id$value, color: color$value);
   }
 }
 

@@ -1,8 +1,0 @@
-type Query {
-  pet(id: ID!): Pet
-}
-
-type Pet {
-  id: ID!
-  name: String!
-}

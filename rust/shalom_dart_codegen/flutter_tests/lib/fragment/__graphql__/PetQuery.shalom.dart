@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
-import "../../../__graphql__/schema.shalom.dart";
+import "../../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
@@ -42,46 +42,47 @@ class PetQueryResponse {
 
   @experimental
   static PetQueryResponse fromJson(shalom_core.JsonObject data) {
-    final PetQuery_pet? pet$value = data['pet'] == null
+    final PetWidgetRef? pet$value = data['pet'] == null
         ? null
-        : PetWidgetRef._(
+        : PetWidgetRef.fromInput(
             shalom_core.observedRefInputFromJson(
-              data['pet'] as shalom_core.JsonObject,
+              (data['pet'] as shalom_core.JsonObject)[r'$PetWidget']
+                  as shalom_core.JsonObject,
             ),
           );
     return PetQueryResponse(pet: pet$value);
   }
 }
 
-class PetQuery_pet implements PetWidget {
+class PetQuery_pet {
   static String G__typename = "Pet";
 
   /// class members
-  final String id;
-
   final String name;
 
+  final String id;
+
   // keywordargs constructor
-  PetQuery_pet({required this.id, required this.name});
+  PetQuery_pet({required this.name, required this.id});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is PetQuery_pet && id == other.id && name == other.name);
+        (other is PetQuery_pet && name == other.name && id == other.id);
   }
 
   @override
-  int get hashCode => Object.hashAll([id, name, PetQuery_pet.G__typename]);
+  int get hashCode => Object.hashAll([name, id, PetQuery_pet.G__typename]);
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'name': this.name};
+    return {'name': this.name, 'id': this.id};
   }
 
   @experimental
   static PetQuery_pet fromJson(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
-    return PetQuery_pet(id: id$value, name: name$value);
+    final String id$value = data['id'] as String;
+    return PetQuery_pet(name: name$value, id: id$value);
   }
 }
 
@@ -110,9 +111,10 @@ final class PetQueryData {
   static PetQueryData fromCache(shalom_core.JsonObject data) {
     final PetWidgetRef? pet$value = data['pet'] == null
         ? null
-        : PetWidgetRef._(
+        : PetWidgetRef.fromInput(
             shalom_core.observedRefInputFromJson(
-              data['pet'] as shalom_core.JsonObject,
+              (data['pet'] as shalom_core.JsonObject)[r'$PetWidget']
+                  as shalom_core.JsonObject,
             ),
           );
     return PetQueryData(pet: pet$value);
@@ -143,7 +145,7 @@ final class PetQueryVariables {
   }
 
   @override
-  int get hashCode => Object.hash(id);
+  int get hashCode => Object.hashAll([id]);
 }
 
 // ------------ END V2 WIDGET API -------------

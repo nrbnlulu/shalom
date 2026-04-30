@@ -10,7 +10,7 @@ use crate::operation::context::{ExecutableContext, TypeDefs};
 use crate::operation::parse::{
     inject_id_in_selection_set, inject_typename_in_selection_set, parse_obj_like_from_selection_set,
 };
-use crate::operation::types::ObjectLikeCommon;
+use crate::operation::types::{InterfaceSelection, ObjectLikeCommon};
 
 /// inline fragments should generally be generated in the same file
 /// that they are declared and can't be used across the project (well they have no name)
@@ -137,6 +137,19 @@ pub(crate) fn parse_fragment(
         type_name.to_string().clone(),
         selection_set,
     );
+
+    // If the fragment root type is an interface, register interface typedefs so the
+    // codegen template generates concrete subclasses (e.g. AnimalWidgetData$Dog).
+    if let Some(interface_type) = global_ctx.schema_ctx.get_interface(&type_name.to_string()) {
+        let possible_concretes = global_ctx
+            .schema_ctx
+            .get_concrete_implementors_of_interface(&interface_type.name);
+        let iface_selection =
+            InterfaceSelection::new(interface_type, obj_like.clone(), false, possible_concretes);
+        fragment_ctx
+            .typedefs_mut()
+            .add_interface_selection(frag_name.clone(), iface_selection);
+    }
 
     fragment_ctx.set_on_type(obj_like);
     Ok(())

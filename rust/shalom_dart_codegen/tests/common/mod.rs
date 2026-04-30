@@ -1,8 +1,5 @@
 use shalom_dart_codegen::{get_dart_command, get_flutter_command, CodegenOptions};
-use std::{
-    path::{Path, PathBuf},
-    sync::atomic::AtomicBool,
-};
+use std::path::{Path, PathBuf};
 
 use log::info;
 
@@ -78,9 +75,7 @@ fn run_codegen(cwd: &Path, strict: bool) {
     .unwrap()
 }
 
-lazy_static::lazy_static! {
-    static ref FLUTTER_TESTS_CODEGEN_RAN: AtomicBool = AtomicBool::new(false);
-}
+static FLUTTER_TESTS_CODEGEN: std::sync::Once = std::sync::Once::new();
 
 pub fn run_dart_tests_for_usecase(usecase: &str) {
     match simple_logger::init() {
@@ -156,7 +151,7 @@ pub fn run_fluttre_tests(usecase: &str) {
     let root_dir = &tests_dir.parent().unwrap();
 
     let dart_parts: Vec<&str> = dart.split_whitespace().collect();
-    if !FLUTTER_TESTS_CODEGEN_RAN.load(std::sync::atomic::Ordering::Relaxed) {
+    FLUTTER_TESTS_CODEGEN.call_once(|| {
         run_codegen(root_dir, true);
         let mut dart_fmt = if dart_parts.len() > 1 {
             let mut cmd = std::process::Command::new(dart_parts[0]);
@@ -168,7 +163,7 @@ pub fn run_fluttre_tests(usecase: &str) {
             std::process::Command::new(&dart)
         };
         let output = dart_fmt
-            .current_dir(&root_dir)
+            .current_dir(root_dir)
             .arg("format")
             .arg("./lib")
             .arg("./test")
@@ -178,8 +173,7 @@ pub fn run_fluttre_tests(usecase: &str) {
             "Running command: {dart_fmt:?} => {}",
             String::from_utf8_lossy(&output.stderr)
         );
-        FLUTTER_TESTS_CODEGEN_RAN.store(true, std::sync::atomic::Ordering::Relaxed);
-    }
+    });
 
     let flutter_cmd = get_flutter_command().unwrap();
     let flutter_parts: Vec<&str> = flutter_cmd.split_whitespace().collect();

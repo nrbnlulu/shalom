@@ -165,11 +165,11 @@ final class {{ operation_name }}Variables {
     }
 
     @override
-    int get hashCode => Object.hash(
+    int get hashCode => Object.hashAll([
         {% for name, field in op_variables | items %}
             {{ name }},
         {% endfor %}
-    );
+    ]);
 }
 {% endif %}
 

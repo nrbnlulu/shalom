@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
-import "../../../__graphql__/schema.shalom.dart";
+import "../../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
@@ -52,31 +52,31 @@ class UserWidget_user {
   static String G__typename = "User";
 
   /// class members
-  final String id;
-
   final String name;
 
+  final String id;
+
   // keywordargs constructor
-  UserWidget_user({required this.id, required this.name});
+  UserWidget_user({required this.name, required this.id});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UserWidget_user && id == other.id && name == other.name);
+        (other is UserWidget_user && name == other.name && id == other.id);
   }
 
   @override
-  int get hashCode => Object.hashAll([id, name, UserWidget_user.G__typename]);
+  int get hashCode => Object.hashAll([name, id, UserWidget_user.G__typename]);
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'name': this.name};
+    return {'name': this.name, 'id': this.id};
   }
 
   @experimental
   static UserWidget_user fromJson(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
-    return UserWidget_user(id: id$value, name: name$value);
+    final String id$value = data['id'] as String;
+    return UserWidget_user(name: name$value, id: id$value);
   }
 }
 
@@ -134,7 +134,7 @@ final class UserWidgetVariables {
   }
 
   @override
-  int get hashCode => Object.hash(id);
+  int get hashCode => Object.hashAll([id]);
 }
 
 // ------------ END V2 WIDGET API -------------
