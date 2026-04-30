@@ -9,7 +9,7 @@ class MockGraphQLLink extends GraphQLLink {
   final Queue<GraphQLResponse<JsonObject>> _queue;
 
   MockGraphQLLink(List<GraphQLResponse<JsonObject>> responses)
-      : _queue = Queue.from(responses);
+    : _queue = Queue.from(responses);
 
   @override
   Stream<GraphQLResponse<JsonObject>> request({

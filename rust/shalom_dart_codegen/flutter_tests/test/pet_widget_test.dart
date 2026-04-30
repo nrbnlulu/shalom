@@ -51,9 +51,11 @@ void main() {
     _client = await ShalomRuntimeClient.init(
       schemaSdl: _schemaSdl,
       link: MockGraphQLLink([
-        GraphQLData(data: {
-          'pet': {'id': '2', 'name': 'Rex'},
-        }),
+        GraphQLData(
+          data: {
+            'pet': {'id': '2', 'name': 'Rex'},
+          },
+        ),
       ]),
     );
     await registerShalomDefinitions(_client);

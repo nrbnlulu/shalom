@@ -52,9 +52,11 @@ void main() {
     _client = await ShalomRuntimeClient.init(
       schemaSdl: _schemaSdl,
       link: MockGraphQLLink([
-        GraphQLData(data: {
-          'user': {'id': '1', 'name': 'Alice'},
-        }),
+        GraphQLData(
+          data: {
+            'user': {'id': '1', 'name': 'Alice'},
+          },
+        ),
       ]),
     );
     await registerShalomDefinitions(_client);
@@ -64,7 +66,9 @@ void main() {
     await _client.dispose();
   });
 
-  testWidgets('UserWidget: shows loading state then renders user data', (tester) async {
+  testWidgets('UserWidget: shows loading state then renders user data', (
+    tester,
+  ) async {
     await tester.runAsync(
       () => tester.pumpWidget(
         ShalomProvider(

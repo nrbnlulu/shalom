@@ -22,7 +22,8 @@ class UserWidget extends $UserWidget {
       Text('error: $error', textDirection: TextDirection.ltr);
 
   @override
-  Widget buildData(BuildContext context, UserWidgetData data) =>
-      Text('name: ${data.user?.name ?? "(null)"}',
-          textDirection: TextDirection.ltr);
+  Widget buildData(BuildContext context, UserWidgetData data) => Text(
+    'name: ${data.user?.name ?? "(null)"}',
+    textDirection: TextDirection.ltr,
+  );
 }

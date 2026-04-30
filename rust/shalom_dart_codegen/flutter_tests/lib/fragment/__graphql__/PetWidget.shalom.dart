@@ -1,65 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: PetWidget
@@ -69,16 +7,9 @@ import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
 
-
-
-
-
-
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
-
-
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
@@ -91,115 +22,35 @@ sealed class PetWidgetData {
 
   @experimental
   static PetWidgetData fromCache(shalom_core.JsonObject data) {
-    
     return PetWidgetData$Impl.fromJson(data);
-    
   }
 }
 
-
 final class PetWidgetData$Impl extends PetWidgetData {
-  final 
-    
-        String
-     name;
-  final 
-    
-        String
-     id;
-  
+  final String name;
+  final String id;
 
-  const PetWidgetData$Impl({
-    required this.name,
-    required this.id,
-    
-  });
+  const PetWidgetData$Impl({required this.name, required this.id});
 
   @override
-  bool operator ==(Object other) => identical(this, other) || (other is PetWidgetData$Impl
-    && 
-    
-        
-            name == other.name
-        
-    
-
-    && 
-    
-        
-            id == other.id
-        
-    
-
-    
-  );
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PetWidgetData$Impl && name == other.name && id == other.id);
 
   @override
-  int get hashCode => Object.hash(
-    name,
-    id,
-    
-  );
+  int get hashCode => Object.hash(name, id);
 
   @experimental
   static PetWidgetData$Impl fromJson(shalom_core.JsonObject data) {
-    final 
-    
-        String
-     name$value = 
-    
-        
-            
-                data['name'] as String
-            
-        
-    
-;
-    final 
-    
-        String
-     id$value = 
-    
-        
-            
-                data['id'] as String
-            
-        
-    
-;
-    return PetWidgetData$Impl(
-      
-          name: name$value,
-        
-      
-          id: id$value,
-        
-      );
+    final String name$value = data['name'] as String;
+    final String id$value = data['id'] as String;
+    return PetWidgetData$Impl(name: name$value, id: id$value);
   }
 
   shalom_core.JsonObject toJson() {
-    return {
-      
-        'name': 
-    
-        
-            this.name
-        
-    
-,
-      
-        'id': 
-    
-        
-            this.id
-        
-    
-,
-      
-    };
+    return {'name': this.name, 'id': this.id};
   }
 }
-
 
 final class PetWidgetData$Unknown extends PetWidgetData {
   const PetWidgetData$Unknown();
@@ -243,8 +94,13 @@ class _$PetWidgetState extends State<$PetWidget> {
           decoder: PetWidgetData.fromCache,
         )
         .listen(
-          (data) => setState(() { _data = data; _error = null; }),
-          onError: (e) => setState(() { _error = e; }),
+          (data) => setState(() {
+            _data = data;
+            _error = null;
+          }),
+          onError: (e) => setState(() {
+            _error = e;
+          }),
         );
   }
 

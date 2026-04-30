@@ -24,6 +24,6 @@ class AnimalQuery extends $AnimalQuery {
   @override
   Widget buildData(BuildContext context, AnimalQueryData data) =>
       data.animal == null
-          ? const Text('no animal', textDirection: TextDirection.ltr)
-          : AnimalWidget(ref: data.animal!);
+      ? const Text('no animal', textDirection: TextDirection.ltr)
+      : AnimalWidget(ref: data.animal!);
 }

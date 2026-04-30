@@ -141,10 +141,10 @@ fn test_runtime_metadata_dart() {
 }
 
 // -------------------------------------------------------------------------
-// V2 observe widget tests (annotation-based, flutter test)
+// Flutter tests
 // -------------------------------------------------------------------------
 
 #[test]
 fn test_flutter_app() {
-    common::run_flutter_app_tests();
+    common::run_fluttre_tests("animal_widget_test.dart");
 }

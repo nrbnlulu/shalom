@@ -13,10 +13,10 @@ import '{{ operation_name }}.shalom.dart';
 
 abstract class ${{ operation_name }} extends StatefulWidget {
     {% if op_variables_exist %}
-    final {{ operation_name }}Variables variables;
-    const ${{ operation_name }}({super.key, required this.variables});
+        final {{ operation_name }}Variables variables;
+        const ${{ operation_name }}({super.key, required this.variables});
     {% else %}
-    const ${{ operation_name }}({super.key});
+        const ${{ operation_name }}({super.key});
     {% endif %}
 
     Widget buildLoading(BuildContext context);

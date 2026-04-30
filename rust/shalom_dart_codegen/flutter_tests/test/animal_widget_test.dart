@@ -51,13 +51,15 @@ void main() {
     _client = await ShalomRuntimeClient.init(
       schemaSdl: _schemaSdl,
       link: MockGraphQLLink([
-        GraphQLData(data: {
-          'animal': {
-            '__typename': 'Dog',
-            'id': '3',
-            'breed': 'Golden Retriever',
+        GraphQLData(
+          data: {
+            'animal': {
+              '__typename': 'Dog',
+              'id': '3',
+              'breed': 'Golden Retriever',
+            },
           },
-        }),
+        ),
       ]),
     );
     await registerShalomDefinitions(_client);
@@ -67,7 +69,9 @@ void main() {
     await _client.dispose();
   });
 
-  testWidgets('AnimalQuery: renders AnimalWidget (Dog) via ref', (tester) async {
+  testWidgets('AnimalQuery: renders AnimalWidget (Dog) via ref', (
+    tester,
+  ) async {
     await tester.runAsync(
       () => tester.pumpWidget(
         ShalomProvider(

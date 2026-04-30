@@ -22,8 +22,7 @@ class PetQuery extends $PetQuery {
       Text('error: $error', textDirection: TextDirection.ltr);
 
   @override
-  Widget buildData(BuildContext context, PetQueryData data) =>
-      data.pet == null
-          ? const Text('no pet', textDirection: TextDirection.ltr)
-          : PetWidget(ref: data.pet!);
+  Widget buildData(BuildContext context, PetQueryData data) => data.pet == null
+      ? const Text('no pet', textDirection: TextDirection.ltr)
+      : PetWidget(ref: data.pet!);
 }

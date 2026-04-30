@@ -1,18 +1,21 @@
 use shalom_dart_codegen::{get_dart_command, get_flutter_command, CodegenOptions};
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    sync::atomic::AtomicBool,
+};
 
 use log::info;
 
 use glob::glob;
 
-fn tests_path() -> PathBuf {
+fn tests_path(tests_dir_name: &str) -> PathBuf {
     let mut current_dir = PathBuf::from(file!());
 
     // Traverse up the directory tree
     while let Some(parent) = current_dir.clone().parent() {
         // Construct the glob pattern: "[parent_path]/dart_tests"
         // This pattern checks for "dart_tests" directly inside the parent directory.
-        let glob_pattern = parent.join("dart_tests");
+        let glob_pattern = parent.join(tests_dir_name);
 
         // Convert the PathBuf to a string
         let pattern_str = glob_pattern
@@ -46,7 +49,7 @@ fn tests_path() -> PathBuf {
 
 /// creates a test folder specific for the given usecase
 fn generate_dart_test(usecase: &str) -> anyhow::Result<()> {
-    let usecase_path = tests_path().join(usecase);
+    let usecase_path = tests_path("dart_tests").join(usecase);
     std::fs::create_dir_all(&usecase_path)?;
     let dart_test_file = usecase_path.join("test.dart");
     std::fs::write(
@@ -58,8 +61,8 @@ fn generate_dart_test(usecase: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-pub fn ensure_test_folder_exists(usecase: &str) -> anyhow::Result<PathBuf> {
-    let usecase_path = tests_path().join(usecase);
+pub fn ensure_test_folder_exists(tests_dir_name: &str, usecase: &str) -> anyhow::Result<PathBuf> {
+    let usecase_path = tests_path(tests_dir_name).join(usecase);
     if !usecase_path.exists() {
         generate_dart_test(usecase)?;
     }
@@ -75,13 +78,17 @@ fn run_codegen(cwd: &Path, strict: bool) {
     .unwrap()
 }
 
+lazy_static::lazy_static! {
+    static ref FLUTTER_TESTS_CODEGEN_RAN: AtomicBool = AtomicBool::new(false);
+}
+
 pub fn run_dart_tests_for_usecase(usecase: &str) {
     match simple_logger::init() {
         Ok(_) => println!("Logger initialized"),
         Err(e) => eprintln!("Error initializing logger: {e}"),
     }
     let usecase_test_dir =
-        ensure_test_folder_exists(usecase).expect("Failed to ensure test folder exists");
+        ensure_test_folder_exists("dart_tests", usecase).expect("Failed to ensure test folder exists");
     run_codegen(&usecase_test_dir, true);
 
     let dart = match get_dart_command() {
@@ -91,7 +98,7 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
         }
     };
 
-    let dart_test_root = tests_path().join("..");
+    let dart_test_root = tests_path("dart_tests").join("..");
     let dart_parts: Vec<&str> = dart.split_whitespace().collect();
     let mut dart_fmt = if dart_parts.len() > 1 {
         let mut cmd = std::process::Command::new(dart_parts[0]);
@@ -134,39 +141,49 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
     info!("✔️ Dart tests passed\n {out_std}");
 }
 
-/// Run `test_runtime.dart` for [usecase] using `flutter test` if that file
-/// exists. Skips silently when Flutter is unavailable or the file is absent.
-pub fn run_flutter_app_tests() {
+pub fn run_fluttre_tests(usecase: &str) {
     match simple_logger::init() {
         Ok(_) => println!("Logger initialized"),
-        Err(_) => {},
+        Err(e) => eprintln!("Error initializing logger: {e}"),
     }
-    
-    let mut current_dir = PathBuf::from(file!());
-    let mut flutter_tests_path = None;
-    while let Some(parent) = current_dir.clone().parent() {
-        let glob_pattern = parent.join("flutter_tests");
-        if let Ok(mut entries) = glob(glob_pattern.to_str().unwrap()) {
-            if let Some(Ok(path)) = entries.next() {
-                flutter_tests_path = Some(path);
-                break;
-            }
-        }
-        current_dir = parent.to_path_buf();
-        if current_dir == parent.parent().unwrap_or(parent) {
-            break;
-        }
-    }
-    let flutter_tests_dir = flutter_tests_path.expect("Could not find flutter_tests directory");
-
-    run_codegen(&flutter_tests_dir, true);
-
-    let flutter = match get_flutter_command() {
+    let tests_dir = tests_path("flutter_tests");
+    let dart = match get_dart_command() {
         Ok(cmd) => cmd,
-        Err(e) => panic!("⚠️  Skipping flutter tests: {e}"),
+        Err(e) => {
+            panic!("⚠️  {e}. install dart");
+        }
     };
+    let root_dir = &tests_dir.parent().unwrap();
 
-    let flutter_parts: Vec<&str> = flutter.split_whitespace().collect();
+    let dart_parts: Vec<&str> = dart.split_whitespace().collect();
+    if !FLUTTER_TESTS_CODEGEN_RAN.load(std::sync::atomic::Ordering::Relaxed) {
+        run_codegen(root_dir, true);
+        let mut dart_fmt = if dart_parts.len() > 1 {
+            let mut cmd = std::process::Command::new(dart_parts[0]);
+            for part in &dart_parts[1..] {
+                cmd.arg(part);
+            }
+            cmd
+        } else {
+            std::process::Command::new(&dart)
+        };
+        let output = dart_fmt
+            .current_dir(&root_dir)
+            .arg("format")
+            .arg("./lib")
+            .arg("./test")
+            .output()
+            .unwrap();
+        info!(
+            "Running command: {dart_fmt:?} => {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        FLUTTER_TESTS_CODEGEN_RAN.store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+
+    let flutter_cmd = get_flutter_command().unwrap();
+    let flutter_parts: Vec<&str> = flutter_cmd.split_whitespace().collect();
+
     let mut flutter_test = if flutter_parts.len() > 1 {
         let mut cmd = std::process::Command::new(flutter_parts[0]);
         for part in &flutter_parts[1..] {
@@ -174,38 +191,17 @@ pub fn run_flutter_app_tests() {
         }
         cmd
     } else {
-        std::process::Command::new(&flutter)
+        std::process::Command::new(&dart)
     };
-
-    let workspace_target = Path::new(env!("CARGO_MANIFEST_DIR"))
-        .parent()
-        .and_then(|p| p.parent())
-        .expect("CARGO_MANIFEST_DIR has no grandparent")
-        .join("dart")
-        .join("shalom")
-        .join(".dart_tool")
-        .join("lib");
-
     flutter_test
-        .current_dir(&flutter_tests_dir)
-        .env(
-            "FRB_DART_LOAD_EXTERNAL_LIBRARY_NATIVE_LIB_DIR",
-            workspace_target.to_str().expect("path is valid UTF-8"),
-        )
-        .arg("test");
-
-    info!("Running command: {flutter_test:?} inside {flutter_tests_dir:?}");
+        .current_dir(&root_dir)
+        .arg("test")
+        .arg(format!("test/{usecase}"));
+    info!("Running command: {flutter_test:?} for usecase: {usecase}");
     let output = flutter_test.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
-    let err_std = String::from_utf8_lossy(&output.stderr);
 
-    if !output.status.success() {
-        println!("Stdout: {}", out_std);
-        println!("Stderr: {}", err_std);
-    }
-    assert!(
-        output.status.success(),
-        "❌ Flutter tests failed\n {out_std}\n{err_std}"
-    );
+    assert!(output.status.success(), "❌ Flutter tests failed\n {out_std}");
     info!("✔️ Flutter tests passed\n {out_std}");
 }
+

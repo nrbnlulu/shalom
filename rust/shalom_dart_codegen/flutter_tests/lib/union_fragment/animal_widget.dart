@@ -19,9 +19,15 @@ class AnimalWidget extends $AnimalWidget {
   @override
   Widget buildData(BuildContext context, AnimalWidgetData data) {
     return switch (data) {
-      AnimalWidgetData$Dog(:final breed) => Text('dog: $breed', textDirection: TextDirection.ltr),
-      AnimalWidgetData$Cat(:final color) => Text('cat: $color', textDirection: TextDirection.ltr),
-      AnimalWidgetData$Unknown()         => const SizedBox.shrink(),
+      AnimalWidgetData$Dog(:final breed) => Text(
+        'dog: $breed',
+        textDirection: TextDirection.ltr,
+      ),
+      AnimalWidgetData$Cat(:final color) => Text(
+        'cat: $color',
+        textDirection: TextDirection.ltr,
+      ),
+      AnimalWidgetData$Unknown() => const SizedBox.shrink(),
     };
   }
 }
