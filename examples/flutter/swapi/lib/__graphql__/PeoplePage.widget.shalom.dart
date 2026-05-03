@@ -1,28 +1,28 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
 // Re-export all generated types so importers only need this file.
-export 'FilmsPage.shalom.dart';
+export 'PeoplePage.shalom.dart';
 
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
-import 'FilmsPage.shalom.dart';
+import 'PeoplePage.shalom.dart';
 
-abstract class $FilmsPage extends StatefulWidget {
-  final FilmsPageVariables variables;
-  const $FilmsPage({super.key, required this.variables});
+abstract class $PeoplePage extends StatefulWidget {
+  final PeoplePageVariables variables;
+  const $PeoplePage({super.key, required this.variables});
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
-  Widget buildData(BuildContext context, FilmsPageData data);
+  Widget buildData(BuildContext context, PeoplePageData data);
 
   @override
-  State<$FilmsPage> createState() => _$FilmsPageState();
+  State<$PeoplePage> createState() => _$PeoplePageState();
 }
 
-class _$FilmsPageState extends State<$FilmsPage> {
-  StreamSubscription<FilmsPageData>? _sub;
-  FilmsPageData? _data;
+class _$PeoplePageState extends State<$PeoplePage> {
+  StreamSubscription<PeoplePageData>? _sub;
+  PeoplePageData? _data;
   Object? _error;
 
   @override
@@ -32,7 +32,7 @@ class _$FilmsPageState extends State<$FilmsPage> {
   }
 
   @override
-  void didUpdateWidget(covariant $FilmsPage oldWidget) {
+  void didUpdateWidget(covariant $PeoplePage oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.variables != oldWidget.variables) _subscribe();
@@ -42,12 +42,12 @@ class _$FilmsPageState extends State<$FilmsPage> {
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client
-        .request<FilmsPageData>(
-          name: 'FilmsPage',
+        .request<PeoplePageData>(
+          name: 'PeoplePage',
 
           variables: widget.variables.toJson(),
 
-          decoder: FilmsPageData.fromCache,
+          decoder: PeoplePageData.fromCache,
         )
         .listen(
           (data) => setState(() {
