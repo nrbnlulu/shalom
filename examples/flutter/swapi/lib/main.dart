@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shalom/shalom.dart';
-import 'package:swapi/state.dart';
-import '__graphql__/GetFilms.shalom.dart';
+import 'package:shalom/shalom.dart' as shalom show Some;
+import 'package:swapi/__graphql__/FilmWidget.shalom.dart';
+import 'package:swapi/__graphql__/FilmsPage.widget.shalom.dart';
+import 'package:shalom_annotations/shalom_annotations.dart';
 
 // Type alias for the specific film type for better readability
 
@@ -22,92 +23,74 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
         ),
-        home: FilmsPage(),
+        home: FilmsPage(variables: FilmsPageVariables(first: shalom.Some(10)),),
       ),
     );
   }
 }
 
-class FilmsPage extends StatelessWidget {
-  const FilmsPage({super.key});
+@Query(r"""
+    ($after: String, $first: Int, $before: String, $last: Int){
+    allFilms(
+        after: $after
+        first: $first
+        before: $before
+        last: $last
+    ) {
+      films {
+        ...FilmWidget
+      }
+    }
+}
+""")
+class FilmsPage extends $FilmsPage {
+  const FilmsPage({super.key, required super.variables});
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildError(BuildContext context, Object error) {
+    return Text("error: $error");
+  }
+
+  @override
+  Widget buildLoading(BuildContext context) {
+    return CircularProgressIndicator();
+  }
+
+  @override
+  Widget buildData(BuildContext context, FilmsPageData data) {
     return Scaffold(
       appBar: AppBar(title: const Text('SWAPI Films')),
-      body: NewWidget(),
+      body: ListView.builder(
+        itemCount: data.allFilms?.films?.length ?? 0,
+        itemBuilder: (context, index) {
+          final film = data.allFilms?.films?[index];
+          return film != null ? FilmWidget(ref: film) : null;
+        },
+      ),
     );
   }
 }
 
-class NewWidget extends ConsumerWidget {
-  const NewWidget({super.key});
-
-  @override
-  Widget build(BuildContext context, ref) {
-    final clientValue = ref.watch(shalomRuntimeProvider);
-    if (clientValue.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+@Fragment(r"""
+    on Film {
+      title
+      director
+      episodeID
+      releaseDate
     }
-    final client = clientValue.value!;
-    client.request
-    final result = ref.watch(filmsProvider);
-    return result.when(
-      data: (result) {
-        switch (result) {
-          case GraphQLData():
-            {
-              final films = result.data.allFilms?.films;
-              if (films == null || films.isEmpty) {
-                return const Center(child: Text('No films found'));
-              }
-              return FilmsList(films: films);
-            }
-          case GraphQLError():
-            return Text("graphql errors: ${result.errors}");
-          case LinkExceptionResponse():
-            {
-              return Text("link errors: ${result.errors}");
-            }
-        }
-      },
-      error: (error, stackTrace) {
-        return Text("error: $error");
-      },
-      loading: () {
-        return const Center(child: CircularProgressIndicator());
-      },
-    );
-  }
-}
-
-class FilmsList extends StatelessWidget {
-  // Use the type alias 'FilmItem' for a cleaner signature
-  final List<GetFilms_allFilms_films?> films;
-
-  const FilmsList({super.key, required this.films});
+    """)
+class FilmWidget extends $FilmWidget {
+  const FilmWidget({super.key, required super.ref});
 
   @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      itemCount: films.length,
-      itemBuilder: (context, index) {
-        final film = films[index];
-
-        // Handle null items in the list gracefully
-        if (film == null) {
-          return const ListTile(title: Text('Invalid film data'));
-        }
-
-        return ListTile(
-          title: Text(film.title ?? 'No Title'),
-          subtitle: Text(
-            'Director: ${film.director ?? 'Unknown'}\nEpisode: ${film.episodeID ?? 'N/A'}',
-          ),
-          trailing: Text(film.releaseDate ?? 'Unknown Date'),
-          isThreeLine: true,
-        );
-      },
+  Widget buildData(BuildContext context, FilmWidgetData film) {
+    return ListTile(
+      title: Text(film.title ?? 'No Title'),
+      subtitle: Text(
+        'Director: ${film.director ?? 'Unknown'}\nEpisode: ${film.episodeID ?? 'N/A'}',
+      ),
+      trailing: Text(film.releaseDate ?? 'Unknown Date'),
+      isThreeLine: true,
     );
   }
 }
