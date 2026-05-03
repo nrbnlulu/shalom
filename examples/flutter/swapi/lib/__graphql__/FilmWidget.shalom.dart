@@ -1,3 +1,65 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: FilmWidget
@@ -7,83 +69,238 @@ import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
 
+
+
+
+
+
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+
+
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
 extension type FilmWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
-  shalom_core.JsonObject toJson() => {
-    'observable_id': _inner.observableId,
-    'anchor': _inner.anchor,
-  };
+  shalom_core.JsonObject toJson() => {'observable_id': _inner.observableId, 'anchor': _inner.anchor};
 }
 
+
+
+
+
 final class FilmWidgetData {
-  final String? title;
-  final int? episodeID;
-  final String? releaseDate;
-  final String? director;
-  final String id;
+  final 
+    
+        String?
+     title;
+  final 
+    
+        String?
+     director;
+  final 
+    
+        String
+     id;
+  final 
+    
+        int?
+     episodeID;
+  final 
+    
+        String?
+     releaseDate;
+  
 
   const FilmWidgetData({
     required this.title,
-    required this.episodeID,
-    required this.releaseDate,
     required this.director,
     required this.id,
+    required this.episodeID,
+    required this.releaseDate,
+    
   });
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is FilmWidgetData &&
-          title == other.title &&
-          episodeID == other.episodeID &&
-          releaseDate == other.releaseDate &&
-          director == other.director &&
-          id == other.id);
+  bool operator ==(Object other) => identical(this, other) || (other is FilmWidgetData
+    && 
+    
+        
+            title == other.title
+        
+    
+
+    && 
+    
+        
+            director == other.director
+        
+    
+
+    && 
+    
+        
+            id == other.id
+        
+    
+
+    && 
+    
+        
+            episodeID == other.episodeID
+        
+    
+
+    && 
+    
+        
+            releaseDate == other.releaseDate
+        
+    
+
+    
+  );
 
   @override
-  int get hashCode =>
-      Object.hashAll([title, episodeID, releaseDate, director, id]);
+  int get hashCode => Object.hashAll([
+    title,
+    director,
+    id,
+    episodeID,
+    releaseDate,
+    
+  ]);
 
   @experimental
   static FilmWidgetData fromCache(shalom_core.JsonObject data) {
-    final String? title$value = data['title'] as String?;
-    final int? episodeID$value = data['episodeID'] as int?;
-    final String? releaseDate$value = data['releaseDate'] as String?;
-    final String? director$value = data['director'] as String?;
-    final String id$value = data['id'] as String;
+    final 
+    
+        String?
+     title$value = 
+    
+        
+            
+                data['title'] as String?
+            
+        
+    
+;
+    final 
+    
+        String?
+     director$value = 
+    
+        
+            
+                data['director'] as String?
+            
+        
+    
+;
+    final 
+    
+        String
+     id$value = 
+    
+        
+            
+                data['id'] as String
+            
+        
+    
+;
+    final 
+    
+        int?
+     episodeID$value = 
+    
+        
+            
+                data['episodeID'] as int?
+            
+        
+    
+;
+    final 
+    
+        String?
+     releaseDate$value = 
+    
+        
+            
+                data['releaseDate'] as String?
+            
+        
+    
+;
     return FilmWidgetData(
-      title: title$value,
-
-      episodeID: episodeID$value,
-
-      releaseDate: releaseDate$value,
-
-      director: director$value,
-
-      id: id$value,
-    );
+      
+          title: title$value,
+        
+      
+          director: director$value,
+        
+      
+          id: id$value,
+        
+      
+          episodeID: episodeID$value,
+        
+      
+          releaseDate: releaseDate$value,
+        
+      );
   }
 
   shalom_core.JsonObject toJson() {
     return {
-      'title': this.title,
-
-      'episodeID': this.episodeID,
-
-      'releaseDate': this.releaseDate,
-
-      'director': this.director,
-
-      'id': this.id,
+      
+        'title': 
+    
+        
+            this.title
+        
+    
+,
+      
+        'director': 
+    
+        
+            this.director
+        
+    
+,
+      
+        'id': 
+    
+        
+            this.id
+        
+    
+,
+      
+        'episodeID': 
+    
+        
+            this.episodeID
+        
+    
+,
+      
+        'releaseDate': 
+    
+        
+            this.releaseDate
+        
+    
+,
+      
     };
   }
 }
+
 
 abstract class $FilmWidget extends StatefulWidget {
   final FilmWidgetRef ref;
@@ -123,14 +340,8 @@ class _$FilmWidgetState extends State<$FilmWidget> {
           decoder: FilmWidgetData.fromCache,
         )
         .listen(
-          (data) => setState(() {
-            _data = data;
-            _error = null;
-          }),
-          onError:
-              (e) => setState(() {
-                _error = e;
-              }),
+          (data) => setState(() { _data = data; _error = null; }),
+          onError: (e) => setState(() { _error = e; }),
         );
   }
 

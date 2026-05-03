@@ -89,7 +89,7 @@ abstract class RustLibApi extends BaseApi {
 
   Future<RuntimeHandle> crateApiRuntimeInitRuntime({
     required String schemaSdl,
-    String? configJson,
+    RuntimeConfigInput? config,
   });
 
   Stream<String> crateApiRuntimeListenRequests({required RuntimeHandle handle});
@@ -295,14 +295,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @override
   Future<RuntimeHandle> crateApiRuntimeInitRuntime({
     required String schemaSdl,
-    String? configJson,
+    RuntimeConfigInput? config,
   }) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(schemaSdl, serializer);
-          sse_encode_opt_String(configJson, serializer);
+          sse_encode_opt_box_autoadd_runtime_config_input(config, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -316,7 +316,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiRuntimeInitRuntimeConstMeta,
-        argValues: [schemaSdl, configJson],
+        argValues: [schemaSdl, config],
         apiImpl: this,
       ),
     );
@@ -324,7 +324,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiRuntimeInitRuntimeConstMeta => const TaskConstMeta(
     debugName: "init_runtime",
-    argNames: ["schemaSdl", "configJson"],
+    argNames: ["schemaSdl", "config"],
   );
 
   @override
@@ -1086,6 +1086,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  RuntimeConfigInput dco_decode_box_autoadd_runtime_config_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_runtime_config_input(raw);
+  }
+
+  @protected
   List<String> dco_decode_list_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_String).toList();
@@ -1119,6 +1125,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   String? dco_decode_opt_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_String(raw);
+  }
+
+  @protected
+  RuntimeConfigInput? dco_decode_opt_box_autoadd_runtime_config_input(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null
+        ? null
+        : dco_decode_box_autoadd_runtime_config_input(raw);
+  }
+
+  @protected
+  RuntimeConfigInput dco_decode_runtime_config_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.isNotEmpty)
+      throw Exception('unexpected arr length: expect 0 but see ${arr.length}');
+    return RuntimeConfigInput();
   }
 
   @protected
@@ -1301,6 +1326,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  RuntimeConfigInput sse_decode_box_autoadd_runtime_config_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_runtime_config_input(deserializer));
+  }
+
+  @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -1350,6 +1383,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     } else {
       return null;
     }
+  }
+
+  @protected
+  RuntimeConfigInput? sse_decode_opt_box_autoadd_runtime_config_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_runtime_config_input(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  RuntimeConfigInput sse_decode_runtime_config_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return RuntimeConfigInput();
   }
 
   @protected
@@ -1560,6 +1614,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_runtime_config_input(
+    RuntimeConfigInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_runtime_config_input(self, serializer);
+  }
+
+  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
@@ -1608,6 +1671,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     if (self != null) {
       sse_encode_String(self, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_runtime_config_input(
+    RuntimeConfigInput? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_runtime_config_input(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_runtime_config_input(
+    RuntimeConfigInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
   }
 
   @protected

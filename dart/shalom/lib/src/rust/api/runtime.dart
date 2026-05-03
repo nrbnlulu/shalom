@@ -6,7 +6,7 @@
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `parse_config`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`
+// These functions are ignored because they are not marked as `pub`: `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`
 
 /// Initialise the runtime with the schema SDL.
@@ -14,10 +14,10 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 /// `register_operation` / `register_fragment` after init.
 Future<RuntimeHandle> initRuntime({
   required String schemaSdl,
-  String? configJson,
+  RuntimeConfigInput? config,
 }) => RustLib.instance.api.crateApiRuntimeInitRuntime(
   schemaSdl: schemaSdl,
-  configJson: configJson,
+  config: config,
 );
 
 /// Pre-register a query/mutation SDL so it can be executed by name via `request`.
@@ -157,4 +157,18 @@ class ObservedRefInput {
           runtimeType == other.runtimeType &&
           observableId == other.observableId &&
           anchor == other.anchor;
+}
+
+/// Dart-facing runtime configuration.  Empty for now; fields will be added as
+/// the runtime gains configurable behaviour (e.g. GC tuning, cache limits).
+class RuntimeConfigInput {
+  const RuntimeConfigInput();
+
+  @override
+  int get hashCode => 0;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RuntimeConfigInput && runtimeType == other.runtimeType;
 }

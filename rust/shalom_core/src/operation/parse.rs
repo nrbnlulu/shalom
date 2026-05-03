@@ -624,18 +624,22 @@ fn parse_operation(
     mut op: Node<apollo_compiler::executable::Operation>,
     operation_name: String,
     file_path: PathBuf,
+    fragment_sdls: Vec<String>,
 ) -> anyhow::Result<SharedOpCtx> {
-    // Inject __typename into union and interface selections
-    // and inject id into object selections that have an id field
     let schema = &global_ctx.schema_ctx.schema;
+    let observe = has_observe_directive(&op.directives);
     {
         let op_mut = op.make_mut();
         inject_typename_in_selection_set(schema, &mut op_mut.selection_set, global_ctx);
         inject_id_in_selection_set(schema, &mut op_mut.selection_set, global_ctx);
+        op_mut.directives.0.retain(|d| d.name.as_str() != "observe");
     }
     let op_type = parse_operation_type(op.operation_type);
-    let observe = has_observe_directive(&op.directives);
-    let query = op.to_string();
+    let mut query = fragment_sdls.join("\n");
+    if !query.is_empty() {
+        query.push('\n');
+    }
+    query.push_str(&op.to_string());
     let mut ctx = OperationContext::new(
         global_ctx.schema_ctx.clone(),
         operation_name.clone(),
@@ -728,7 +732,7 @@ pub(crate) fn parse_document_impl(
         let name = name.to_string();
         ret.insert(
             name.clone(),
-            parse_operation(global_ctx, op.clone(), name, doc_path.clone())?,
+            parse_operation(global_ctx, op.clone(), name, doc_path.clone(), fragment_sdls.clone())?,
         );
     }
     Ok(ret)
@@ -782,8 +786,10 @@ fn collect_fragment_recursive(
 
     // Prefer inline definitions from the source doc, then fall back to global ctx.
     let (sdl, sub_spreads) = if let Some(frag_def) = source_doc.fragments.get(name) {
-        let sub = get_used_fragments_from_fragment(frag_def);
-        (frag_def.to_string(), sub)
+        let mut frag_clone = frag_def.clone();
+        frag_clone.make_mut().directives.0.retain(|d| d.name.as_str() != "observe");
+        let sub = get_used_fragments_from_fragment(&frag_clone);
+        (frag_clone.to_string(), sub)
     } else if let Some(frag_ctx) = global_ctx.get_fragment(name) {
         let sdl = frag_ctx.fragment_raw.clone();
         let sub = extract_spreads_from_fragment_sdl(&sdl, schema);

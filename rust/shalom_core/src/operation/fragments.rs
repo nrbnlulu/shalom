@@ -123,8 +123,9 @@ pub(crate) fn parse_fragment(
     let fragment_mut = fragment.make_mut();
     inject_typename_in_selection_set(schema, &mut fragment_mut.selection_set, global_ctx);
     inject_id_in_selection_set(schema, &mut fragment_mut.selection_set, global_ctx);
+    fragment_mut.directives.0.retain(|d| d.name.as_str() != "observe");
 
-    // Update fragment_raw with the injected fields
+    // Update fragment_raw with the injected fields (and @observe stripped for network use)
     fragment_ctx.fragment_raw = fragment.to_string();
 
     let selection_set = &fragment.selection_set;

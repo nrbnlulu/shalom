@@ -3,18 +3,15 @@ import 'package:shalom/shalom.dart';
 
 /// Register all @Query and @Fragment operations with the Shalom client.
 Future<void> registerShalomDefinitions(ShalomRuntimeClient client) async {
-  await client.registerFragment(
-    document: r'''
+  await client.registerFragment(document: r'''
 fragment FilmWidget on Film @observe {
       title
       director
       episodeID
       releaseDate
     }
-''',
-  );
-  await client.registerOperation(
-    document: r'''
+''');
+  await client.registerOperation(document: r'''
 query FilmsPage ($after: String, $first: Int, $before: String, $last: Int)@observe {
     allFilms(
         after: $after
@@ -27,6 +24,5 @@ query FilmsPage ($after: String, $first: Int, $before: String, $last: Int)@obser
       }
     }
 }
-''',
-  );
+''');
 }

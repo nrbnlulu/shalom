@@ -16,7 +16,7 @@ import 'package:shalom/src/transport/link.dart' show GraphQLLink;
 
 import 'rust/api/runtime.dart' as rs_runtime;
 
-export 'rust/api/runtime.dart' show ObservedRefInput;
+export 'rust/api/runtime.dart' show ObservedRefInput, RuntimeConfigInput;
 
 // ---------------------------------------------------------------------------
 // ObservedRefInput helpers (exported so codegen templates can use them via
@@ -54,14 +54,13 @@ class ShalomRuntimeClient {
   /// `registerShalomDefinitions(client)` function).
   static Future<ShalomRuntimeClient> init({
     required String schemaSdl,
-    Map<String, dynamic>? config,
+    rs_runtime.RuntimeConfigInput? config,
     required GraphQLLink link,
   }) async {
-    final configJson = config == null ? null : jsonEncode(config);
     if (!RustLib.instance.initialized) await RustLib.init();
     final handle = await rs_runtime.initRuntime(
       schemaSdl: schemaSdl,
-      configJson: configJson,
+      config: config,
     );
     final client = ShalomRuntimeClient._(handle, link);
     client._bindRequests();

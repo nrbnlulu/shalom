@@ -27,6 +27,11 @@ pub struct ObservedRefInput {
     pub anchor: String,
 }
 
+/// Dart-facing runtime configuration.  Empty for now; fields will be added as
+/// the runtime gains configurable behaviour (e.g. GC tuning, cache limits).
+#[frb]
+pub struct RuntimeConfigInput {}
+
 impl From<ObservedRefInput> for ObservedRef {
     fn from(r: ObservedRefInput) -> Self {
         ObservedRef {
@@ -57,11 +62,11 @@ pub fn init_app() {
 #[frb]
 pub fn init_runtime(
     schema_sdl: String,
-    config_json: Option<String>,
+    config: Option<RuntimeConfigInput>,
 ) -> anyhow::Result<RuntimeHandle> {
+    let _ = config; // no fields yet; reserved for future use
     let link = Arc::new(HostLink::new());
-    let config = parse_config(config_json)?;
-    let runtime = ShalomRuntime::init(&schema_sdl, Vec::new(), config)?;
+    let runtime = ShalomRuntime::init(&schema_sdl, Vec::new(), RuntimeConfig::default())?;
     Ok(RuntimeHandle { runtime, link })
 }
 
@@ -289,17 +294,6 @@ fn to_link_op_type(op_type: shalom_core::operation::types::OperationType) -> Lin
             LinkOperationType::Subscription
         }
     }
-}
-
-fn parse_config(config_json: Option<String>) -> anyhow::Result<RuntimeConfig> {
-    let json = match config_json {
-        Some(json) => json,
-        None => return Ok(RuntimeConfig::default()),
-    };
-    if json.trim().is_empty() {
-        return Ok(RuntimeConfig::default());
-    }
-    serde_json::from_str(&json).map_err(|e| anyhow::anyhow!(e))
 }
 
 fn parse_variables(
