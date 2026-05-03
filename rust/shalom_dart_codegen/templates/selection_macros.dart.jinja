@@ -13,7 +13,11 @@
 {% macro type_name_for_selection_with_observe(selection) -%}
     {% set observe_frag = selection_observe_fragment_name(selection) %}
     {% if observe_frag %}
-        {{ observe_frag }}Ref{% if selection.is_optional %}?{% endif %}
+        {% if selection.kind == "List" %}
+            List<{{ observe_frag }}Ref{% if selection.of_kind.is_optional %}?{% endif %}>{% if selection.is_optional %}?{% endif %}
+        {% else %}
+            {{ observe_frag }}Ref{% if selection.is_optional %}?{% endif %}
+        {% endif %}
     {% else %}
         {{ type_name_for_selection(selection) }}
     {% endif %}
@@ -79,7 +83,14 @@ null
     {% set observe_frag = selection_observe_fragment_name(selection) %}
     {% if observe_frag %}
         {# The Rust runtime stores the ObservedRef under "$FragmentName" inside the field object. #}
-        {% if is_optional %}
+        {% if selection.kind == "List" %}
+            {# List of observed-ref elements — map over the list and recurse into each element #}
+            {% set inner_selection = selection.of_kind %}
+            {% if is_optional -%}
+                {{ value_symbol }} == null ? null :
+            {% endif -%}
+            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_json_macro("e", inner_selection, inner_selection.is_optional) }}).toList()
+        {% elif is_optional %}
             {{ value_symbol }} == null ? null : {{ observe_frag }}Ref.fromInput(shalom_core.observedRefInputFromJson(({{ value_symbol }} as shalom_core.JsonObject)[r'${{ observe_frag }}'] as shalom_core.JsonObject))
         {% else %}
             {{ observe_frag }}Ref.fromInput(shalom_core.observedRefInputFromJson(({{ value_symbol }} as shalom_core.JsonObject)[r'${{ observe_frag }}'] as shalom_core.JsonObject))

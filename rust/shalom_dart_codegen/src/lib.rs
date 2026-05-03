@@ -705,9 +705,11 @@ where
     Ok(())
 }
 
-/// Returns the name of the `@observe`d fragment used by this selection, if any.
-fn selection_observe_fragment_name(selection: &FieldSelection, ctx: &SharedShalomGlobalContext) -> Option<String> {
-    match &selection.kind {
+/// Returns the name of the `@observe`d fragment for a `SelectionKind`, if any.
+/// For List selections, recurses into the element type.
+fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) -> Option<String> {
+    match kind {
+        SelectionKind::List(list) => observe_frag_for_kind(&list.of_kind, ctx),
         SelectionKind::Object(obj) => {
             for frag_name in &obj.common.used_fragments {
                 if let Some(fragment) = ctx.get_fragment(frag_name) {
@@ -740,6 +742,12 @@ fn selection_observe_fragment_name(selection: &FieldSelection, ctx: &SharedShalo
         }
         _ => None,
     }
+}
+
+/// Returns the name of the `@observe`d fragment used by this selection, if any.
+/// For List selections, returns the inner element's observed fragment name.
+fn selection_observe_fragment_name(selection: &FieldSelection, ctx: &SharedShalomGlobalContext) -> Option<String> {
+    observe_frag_for_kind(&selection.kind, ctx)
 }
 
 impl OperationEnv<'_> {
@@ -1348,7 +1356,7 @@ fn generate_v2_registration_file(
     root: &PathBuf,
     widgets: &[WidgetAnnotation],
 ) -> Result<()> {
-    let schema_dir = root.join(GRAPHQL_DIRECTORY);
+    let schema_dir = root.join("lib").join(GRAPHQL_DIRECTORY);
     create_dir_if_not_exists(&schema_dir);
     let gen_path = schema_dir.join("shalom_init.shalom.dart");
 

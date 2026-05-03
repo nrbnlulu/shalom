@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shalom/shalom.dart' as shalom show Some;
+import 'package:shalom_flutter/widgets/shalom_provider.dart';
 import 'package:swapi/__graphql__/FilmWidget.shalom.dart';
 import 'package:swapi/__graphql__/FilmsPage.widget.shalom.dart';
 import 'package:shalom_annotations/shalom_annotations.dart';
+import 'package:swapi/state.dart' show shalomRuntimeProvider;
 
 // Type alias for the specific film type for better readability
 
@@ -23,7 +25,25 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
           useMaterial3: true,
         ),
-        home: FilmsPage(variables: FilmsPageVariables(first: shalom.Some(10)),),
+        home: Consumer(
+          builder: (ctx, ref, child) {
+            final client = ref.watch(shalomRuntimeProvider);
+            if (client.isLoading) {
+              debugPrint("loading runtime...");
+              return const CircularProgressIndicator();
+            }
+            if (client.hasError) {
+              return Text("error: ${client.error}");
+            }
+
+            return ShalomProvider(
+              client: client.asData!.value,
+              child: FilmsPage(
+                variables: FilmsPageVariables(first: shalom.Some(10)),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
@@ -53,6 +73,7 @@ class FilmsPage extends $FilmsPage {
 
   @override
   Widget buildLoading(BuildContext context) {
+    debugPrint("loading films page");
     return CircularProgressIndicator();
   }
 

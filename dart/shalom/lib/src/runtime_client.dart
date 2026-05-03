@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:shalom/shalom.dart';
 import 'package:shalom/src/shalom_core_base.dart'
     show
         GraphQLData,
@@ -57,6 +58,7 @@ class ShalomRuntimeClient {
     required GraphQLLink link,
   }) async {
     final configJson = config == null ? null : jsonEncode(config);
+    if (!RustLib.instance.initialized) await RustLib.init();
     final handle = await rs_runtime.initRuntime(
       schemaSdl: schemaSdl,
       configJson: configJson,
@@ -121,7 +123,9 @@ class ShalomRuntimeClient {
                 (payload) {
                   if (controller.isClosed) return;
                   try {
-                    controller.add(decoder(_RuntimeEnvelope.fromJson(payload).data));
+                    controller.add(
+                      decoder(_RuntimeEnvelope.fromJson(payload).data),
+                    );
                   } catch (e, st) {
                     controller.addError(e, st);
                   }
@@ -178,7 +182,9 @@ class ShalomRuntimeClient {
             (payload) {
               if (controller.isClosed) return;
               try {
-                controller.add(decoder(_RuntimeEnvelope.fromJson(payload).data));
+                controller.add(
+                  decoder(_RuntimeEnvelope.fromJson(payload).data),
+                );
               } catch (e, st) {
                 controller.addError(e, st);
               }
@@ -237,7 +243,9 @@ class ShalomRuntimeClient {
             (payload) {
               if (controller.isClosed) return;
               try {
-                controller.add(decoder(_RuntimeEnvelope.fromJson(payload).data));
+                controller.add(
+                  decoder(_RuntimeEnvelope.fromJson(payload).data),
+                );
               } catch (e, st) {
                 controller.addError(e, st);
               }
@@ -313,10 +321,12 @@ class ShalomRuntimeClient {
           onDone: () {
             _activeRequests.remove(envelope.id);
             (lastPush ?? Future<void>.value()).then((_) {
-              unawaited(rs_runtime.completeTransport(
-                handle: _handle,
-                requestId: BigInt.from(envelope.id),
-              ));
+              unawaited(
+                rs_runtime.completeTransport(
+                  handle: _handle,
+                  requestId: BigInt.from(envelope.id),
+                ),
+              );
             });
           },
         );
@@ -399,13 +409,17 @@ class _RequestEnvelope {
     }
     final requestRaw = decoded['request'];
     if (requestRaw is! Map) {
-      throw const FormatException('request envelope request must be a JSON object');
+      throw const FormatException(
+        'request envelope request must be a JSON object',
+      );
     }
     final query = requestRaw['query'];
     final opName = requestRaw['operation_name'];
     final opTypeRaw = requestRaw['operation_type'];
     if (query is! String || opName is! String || opTypeRaw is! String) {
-      throw const FormatException('request envelope has invalid request fields');
+      throw const FormatException(
+        'request envelope has invalid request fields',
+      );
     }
     final variablesRaw = requestRaw['variables'];
     final variables = variablesRaw is Map
@@ -441,7 +455,9 @@ class _RuntimeEnvelope {
     if (decoded.containsKey('data')) {
       final dataRaw = decoded['data'];
       if (dataRaw is! Map) {
-        throw const FormatException('runtime response data must be a JSON object');
+        throw const FormatException(
+          'runtime response data must be a JSON object',
+        );
       }
       return _RuntimeEnvelope(data: dataRaw.cast<String, dynamic>());
     }
@@ -480,8 +496,9 @@ _TransportError _toTransportError(Object error) {
         );
       }
     }
-    final message =
-        error.isEmpty ? 'Unknown transport error' : error.join('; ');
+    final message = error.isEmpty
+        ? 'Unknown transport error'
+        : error.join('; ');
     return _TransportError(message: message, code: 'LINK_ERROR');
   }
   return _TransportError(message: error.toString(), code: 'LINK_ERROR');

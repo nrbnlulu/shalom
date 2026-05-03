@@ -22,9 +22,9 @@ export 'src/runtime_cache.dart' show collectRuntimeRefs;
 
 
 
-Future<void> init(String nativeLibPath) async {
+Future<void> init({String? nativeLibPath}) async {
     await rs.RustLib.init(
-      externalLibrary: ExternalLibrary.open(nativeLibPath),
+      externalLibrary: nativeLibPath != null ? ExternalLibrary.open(nativeLibPath) : null,
     );
 
 }
