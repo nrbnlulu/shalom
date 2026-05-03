@@ -36,7 +36,7 @@ void main() {
   group('Test fragments on interface - required', () {
     test('fragmentsOnInterfaceRequired - Cat', () {
       final variables = GetAnimalVariables(id: "cat1");
-      final result = GetAnimalResponse.fromResponse(
+      final result = GetAnimalResponse.fromJson(
         catData,
         variables: variables,
       );
@@ -60,7 +60,7 @@ void main() {
 
     test('fragmentsOnInterfaceRequired - Dog', () {
       final variables = GetAnimalVariables(id: "dog1");
-      final result = GetAnimalResponse.fromResponse(
+      final result = GetAnimalResponse.fromJson(
         dogData,
         variables: variables,
       );
@@ -84,7 +84,7 @@ void main() {
 
     test('fragmentsOnInterfaceRequired - Bird (no inline fragment)', () {
       final variables = GetAnimalVariables(id: "bird1");
-      final result = GetAnimalResponse.fromResponse(
+      final result = GetAnimalResponse.fromJson(
         birdData,
         variables: variables,
       );
@@ -107,11 +107,11 @@ void main() {
 
     test('equals - Cat', () {
       final variables = GetAnimalVariables(id: "cat1");
-      final result1 = GetAnimalResponse.fromResponse(
+      final result1 = GetAnimalResponse.fromJson(
         catData,
         variables: variables,
       );
-      final result2 = GetAnimalResponse.fromResponse(
+      final result2 = GetAnimalResponse.fromJson(
         catData,
         variables: variables,
       );
@@ -120,11 +120,11 @@ void main() {
 
     test('equals - Dog', () {
       final variables = GetAnimalVariables(id: "dog1");
-      final result1 = GetAnimalResponse.fromResponse(
+      final result1 = GetAnimalResponse.fromJson(
         dogData,
         variables: variables,
       );
-      final result2 = GetAnimalResponse.fromResponse(
+      final result2 = GetAnimalResponse.fromJson(
         dogData,
         variables: variables,
       );
@@ -133,11 +133,11 @@ void main() {
 
     test('not equals - different types', () {
       final variables = GetAnimalVariables(id: "test");
-      final result1 = GetAnimalResponse.fromResponse(
+      final result1 = GetAnimalResponse.fromJson(
         catData,
         variables: variables,
       );
-      final result2 = GetAnimalResponse.fromResponse(
+      final result2 = GetAnimalResponse.fromJson(
         dogData,
         variables: variables,
       );
@@ -146,7 +146,7 @@ void main() {
 
     test('toJson - Cat', () {
       final variables = GetAnimalVariables(id: "cat1");
-      final initial = GetAnimalResponse.fromResponse(
+      final initial = GetAnimalResponse.fromJson(
         catData,
         variables: variables,
       );
@@ -156,7 +156,7 @@ void main() {
 
     test('toJson - Dog', () {
       final variables = GetAnimalVariables(id: "dog1");
-      final initial = GetAnimalResponse.fromResponse(
+      final initial = GetAnimalResponse.fromJson(
         dogData,
         variables: variables,
       );
@@ -166,7 +166,7 @@ void main() {
 
     test('toJson - Bird', () {
       final variables = GetAnimalVariables(id: "bird1");
-      final initial = GetAnimalResponse.fromResponse(
+      final initial = GetAnimalResponse.fromJson(
         birdData,
         variables: variables,
       );
@@ -190,7 +190,7 @@ void main() {
   group('Test fragments on interface - optional', () {
     test('fragmentsOnInterfaceOptional - Cat', () {
       final variables = GetAnimalOptVariables(id: "cat2");
-      final result = GetAnimalOptResponse.fromResponse(
+      final result = GetAnimalOptResponse.fromJson(
         catOptData,
         variables: variables,
       );
@@ -214,7 +214,7 @@ void main() {
 
     test('fragmentsOnInterfaceOptional - null', () {
       final variables = GetAnimalOptVariables(id: "none");
-      final result = GetAnimalOptResponse.fromResponse(
+      final result = GetAnimalOptResponse.fromJson(
         animalOptNullData,
         variables: variables,
       );
@@ -223,11 +223,11 @@ void main() {
 
     test('equals - with value', () {
       final variables = GetAnimalOptVariables(id: "cat2");
-      final result1 = GetAnimalOptResponse.fromResponse(
+      final result1 = GetAnimalOptResponse.fromJson(
         catOptData,
         variables: variables,
       );
-      final result2 = GetAnimalOptResponse.fromResponse(
+      final result2 = GetAnimalOptResponse.fromJson(
         catOptData,
         variables: variables,
       );
@@ -236,11 +236,11 @@ void main() {
 
     test('equals - null', () {
       final variables = GetAnimalOptVariables(id: "none");
-      final result1 = GetAnimalOptResponse.fromResponse(
+      final result1 = GetAnimalOptResponse.fromJson(
         animalOptNullData,
         variables: variables,
       );
-      final result2 = GetAnimalOptResponse.fromResponse(
+      final result2 = GetAnimalOptResponse.fromJson(
         animalOptNullData,
         variables: variables,
       );
@@ -249,7 +249,7 @@ void main() {
 
     test('toJson - with value', () {
       final variables = GetAnimalOptVariables(id: "cat2");
-      final initial = GetAnimalOptResponse.fromResponse(
+      final initial = GetAnimalOptResponse.fromJson(
         catOptData,
         variables: variables,
       );
@@ -259,7 +259,7 @@ void main() {
 
     test('toJson - null', () {
       final variables = GetAnimalOptVariables(id: "none");
-      final initial = GetAnimalOptResponse.fromResponse(
+      final initial = GetAnimalOptResponse.fromJson(
         animalOptNullData,
         variables: variables,
       );
@@ -281,7 +281,7 @@ void main() {
   group('Test fragments on interface - all types covered (no fallback)', () {
     test('fragmentsOnInterfaceAllTypes - Bird with inline fragment', () {
       final variables = GetAnimalAllTypesVariables(id: "bird2");
-      final result = GetAnimalAllTypesResponse.fromResponse(
+      final result = GetAnimalAllTypesResponse.fromJson(
         birdAllTypesData,
         variables: variables,
       );
@@ -305,7 +305,7 @@ void main() {
 
     test('toJson - Bird', () {
       final variables = GetAnimalAllTypesVariables(id: "bird2");
-      final initial = GetAnimalAllTypesResponse.fromResponse(
+      final initial = GetAnimalAllTypesResponse.fromJson(
         birdAllTypesData,
         variables: variables,
       );
@@ -315,11 +315,11 @@ void main() {
 
     test('equals - Bird', () {
       final variables = GetAnimalAllTypesVariables(id: "bird2");
-      final result1 = GetAnimalAllTypesResponse.fromResponse(
+      final result1 = GetAnimalAllTypesResponse.fromJson(
         birdAllTypesData,
         variables: variables,
       );
-      final result2 = GetAnimalAllTypesResponse.fromResponse(
+      final result2 = GetAnimalAllTypesResponse.fromJson(
         birdAllTypesData,
         variables: variables,
       );
@@ -349,7 +349,7 @@ void main() {
 
   group('Test fragments on interface - list', () {
     test('fragmentsOnInterfaceList - mixed types', () {
-      final result = GetAnimalsResponse.fromResponse(animalsListData);
+      final result = GetAnimalsResponse.fromJson(animalsListData);
 
       expect(result.animals.length, 3);
       expect(result.animals[0], isA<GetAnimals_animals__Cat>());
@@ -384,14 +384,14 @@ void main() {
     });
 
     test('toJson - list', () {
-      final initial = GetAnimalsResponse.fromResponse(animalsListData);
+      final initial = GetAnimalsResponse.fromJson(animalsListData);
       final json = initial.toJson();
       expect(json, animalsListData);
     });
 
     test('equals - list', () {
-      final result1 = GetAnimalsResponse.fromResponse(animalsListData);
-      final result2 = GetAnimalsResponse.fromResponse(animalsListData);
+      final result1 = GetAnimalsResponse.fromJson(animalsListData);
+      final result2 = GetAnimalsResponse.fromJson(animalsListData);
       expect(result1, equals(result2));
     });
   });
@@ -401,7 +401,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetAnimalVariables(id: "animal1");
 
-      var (result, updateCtx) = GetAnimalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetAnimalResponse.fromJson(
         catData,
         ctx,
         variables,
@@ -417,7 +417,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetAnimalResponse.fromResponse(
+      final nextResult = GetAnimalResponse.fromJson(
         dogData,
         ctx: ctx,
         variables: variables,
@@ -433,7 +433,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetAnimalVariables(id: "animal1");
 
-      var (result, updateCtx) = GetAnimalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetAnimalResponse.fromJson(
         dogData,
         ctx,
         variables,
@@ -448,7 +448,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetAnimalResponse.fromResponse(
+      final nextResult = GetAnimalResponse.fromJson(
         birdData,
         ctx: ctx,
         variables: variables,
@@ -464,7 +464,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetAnimalOptVariables(id: "animal1");
 
-      var (result, updateCtx) = GetAnimalOptResponse.fromResponseImpl(
+      var (result, updateCtx) = GetAnimalOptResponse.fromJson(
         animalOptNullData,
         ctx,
         variables,
@@ -479,7 +479,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetAnimalOptResponse.fromResponse(
+      final nextResult = GetAnimalOptResponse.fromJson(
         catOptData,
         ctx: ctx,
         variables: variables,
@@ -495,7 +495,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetAnimalOptVariables(id: "animal1");
 
-      var (result, updateCtx) = GetAnimalOptResponse.fromResponseImpl(
+      var (result, updateCtx) = GetAnimalOptResponse.fromJson(
         catOptData,
         ctx,
         variables,
@@ -511,7 +511,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetAnimalOptResponse.fromResponse(
+      final nextResult = GetAnimalOptResponse.fromJson(
         animalOptNullData,
         ctx: ctx,
         variables: variables,
@@ -536,7 +536,7 @@ void main() {
         },
       };
 
-      var (result, updateCtx) = GetAnimalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetAnimalResponse.fromJson(
         initialCatData,
         ctx,
         variables,
@@ -564,7 +564,7 @@ void main() {
         },
       };
 
-      final nextResult = GetAnimalResponse.fromResponse(
+      final nextResult = GetAnimalResponse.fromJson(
         updatedCatData,
         ctx: ctx,
         variables: variables,

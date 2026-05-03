@@ -39,13 +39,13 @@ void main() {
   });
 
   group('TestQueryResponse', () {
-    test('fromResponse', () {
+    test('fromJson', () {
       final jsonResponse = {
         'test': {'id': '1', 'value': 'hello'}
       };
       final variables = TestQueryVariables(input: TestOneOf.a('test'));
       final response =
-          TestQueryResponse.fromResponse(jsonResponse, variables: variables);
+          TestQueryResponse.fromJson(jsonResponse, variables: variables);
       expect(response.test.id, '1');
       expect(response.test.value, 'hello');
     });
@@ -58,7 +58,7 @@ void main() {
         'test': {'id': '1', 'value': 'hello_a'}
       };
       final variablesA = TestQueryVariables(input: TestOneOf.a('test_a'));
-      TestQueryResponse.fromResponse(jsonResponseA,
+      TestQueryResponse.fromJson(jsonResponseA,
           ctx: ctx, variables: variablesA);
 
       // Second request with variant 'b' - should be cached separately
@@ -66,7 +66,7 @@ void main() {
         'test': {'id': '2', 'value': 'hello_b'}
       };
       final variablesB = TestQueryVariables(input: TestOneOf.b(42));
-      TestQueryResponse.fromResponse(jsonResponseB,
+      TestQueryResponse.fromJson(jsonResponseB,
           ctx: ctx, variables: variablesB);
 
       // Verify both responses are cached correctly
@@ -88,7 +88,7 @@ void main() {
         'test': {'id': '1', 'value': 'initial'}
       };
       final variables = TestQueryVariables(input: TestOneOf.a('test'));
-      var (result, updateCtx) = TestQueryResponse.fromResponseImpl(
+      var (result, updateCtx) = TestQueryResponse.fromJson(
         initialResponse,
         ctx,
         variables,
@@ -105,7 +105,7 @@ void main() {
       final updatedResponse = {
         'test': {'id': '1', 'value': 'updated'}
       };
-      final nextResult = TestQueryResponse.fromResponse(
+      final nextResult = TestQueryResponse.fromJson(
         updatedResponse,
         ctx: ctx,
         variables: variables,
@@ -138,11 +138,11 @@ void main() {
       });
     });
 
-    test('fromResponse', () {
+    test('fromJson', () {
       final jsonResponse = {'testList': 'success'};
       final variables = TestListQueryVariables(input: []);
-      final response = TestListQueryResponse.fromResponse(jsonResponse,
-          variables: variables);
+      final response =
+          TestListQueryResponse.fromJson(jsonResponse, variables: variables);
       expect(response.testList, 'success');
     });
   });
@@ -193,12 +193,12 @@ void main() {
   });
 
   group('TestComplexQueryResponse', () {
-    test('fromResponse', () {
+    test('fromJson', () {
       final jsonResponse = {'testComplex': 'success'};
       final variables = TestComplexQueryVariables(
         input: ComplexOneOf.scalarField('test'),
       );
-      final response = TestComplexQueryResponse.fromResponse(
+      final response = TestComplexQueryResponse.fromJson(
         jsonResponse,
         variables: variables,
       );
@@ -213,7 +213,7 @@ void main() {
       final variablesScalar = TestComplexQueryVariables(
         input: ComplexOneOf.scalarField('test'),
       );
-      final _ = TestComplexQueryResponse.fromResponse(
+      final _ = TestComplexQueryResponse.fromJson(
         jsonResponseScalar,
         ctx: ctx,
         variables: variablesScalar,
@@ -224,7 +224,7 @@ void main() {
       final variablesEnum = TestComplexQueryVariables(
         input: ComplexOneOf.enumField(SomeEnum.A),
       );
-      TestComplexQueryResponse.fromResponse(
+      TestComplexQueryResponse.fromJson(
         jsonResponseEnum,
         ctx: ctx,
         variables: variablesEnum,

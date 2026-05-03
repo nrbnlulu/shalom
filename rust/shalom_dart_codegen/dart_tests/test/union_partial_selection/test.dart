@@ -37,7 +37,7 @@ void main() {
   group('Test union partial selection - required (covered types)', () {
     test('deserialize EmailNotification', () {
       final variables = GetNotificationPartialVariables(id: "email1");
-      final result = GetNotificationPartialResponse.fromResponse(
+      final result = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
         variables: variables,
       );
@@ -57,7 +57,7 @@ void main() {
 
     test('deserialize SMSNotification', () {
       final variables = GetNotificationPartialVariables(id: "sms1");
-      final result = GetNotificationPartialResponse.fromResponse(
+      final result = GetNotificationPartialResponse.fromJson(
         smsNotificationData,
         variables: variables,
       );
@@ -76,7 +76,7 @@ void main() {
 
     test('serialize EmailNotification', () {
       final variables = GetNotificationPartialVariables(id: "email1");
-      final initial = GetNotificationPartialResponse.fromResponse(
+      final initial = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
         variables: variables,
       );
@@ -86,7 +86,7 @@ void main() {
 
     test('serialize SMSNotification', () {
       final variables = GetNotificationPartialVariables(id: "sms1");
-      final initial = GetNotificationPartialResponse.fromResponse(
+      final initial = GetNotificationPartialResponse.fromJson(
         smsNotificationData,
         variables: variables,
       );
@@ -96,11 +96,11 @@ void main() {
 
     test('equals EmailNotification', () {
       final variables = GetNotificationPartialVariables(id: "email1");
-      final result1 = GetNotificationPartialResponse.fromResponse(
+      final result1 = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
         variables: variables,
       );
-      final result2 = GetNotificationPartialResponse.fromResponse(
+      final result2 = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
         variables: variables,
       );
@@ -109,11 +109,11 @@ void main() {
 
     test('equals SMSNotification', () {
       final variables = GetNotificationPartialVariables(id: "sms1");
-      final result1 = GetNotificationPartialResponse.fromResponse(
+      final result1 = GetNotificationPartialResponse.fromJson(
         smsNotificationData,
         variables: variables,
       );
-      final result2 = GetNotificationPartialResponse.fromResponse(
+      final result2 = GetNotificationPartialResponse.fromJson(
         smsNotificationData,
         variables: variables,
       );
@@ -122,11 +122,11 @@ void main() {
 
     test('not equals different types', () {
       final variables = GetNotificationPartialVariables(id: "test");
-      final result1 = GetNotificationPartialResponse.fromResponse(
+      final result1 = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
         variables: variables,
       );
-      final result2 = GetNotificationPartialResponse.fromResponse(
+      final result2 = GetNotificationPartialResponse.fromJson(
         smsNotificationData,
         variables: variables,
       );
@@ -137,7 +137,7 @@ void main() {
   group('Test union partial selection - required (fallback types)', () {
     test('deserialize PushNotification (fallback)', () {
       final variables = GetNotificationPartialVariables(id: "push1");
-      final result = GetNotificationPartialResponse.fromResponse(
+      final result = GetNotificationPartialResponse.fromJson(
         pushNotificationData,
         variables: variables,
       );
@@ -153,7 +153,7 @@ void main() {
 
     test('deserialize WebhookNotification non directly selected', () {
       final variables = GetNotificationPartialVariables(id: "webhook1");
-      final result = GetNotificationPartialResponse.fromResponse(
+      final result = GetNotificationPartialResponse.fromJson(
         webhookNotificationData,
         variables: variables,
       );
@@ -169,7 +169,7 @@ void main() {
 
     test('serialize PushNotification (fallback)', () {
       final variables = GetNotificationPartialVariables(id: "push1");
-      final initial = GetNotificationPartialResponse.fromResponse(
+      final initial = GetNotificationPartialResponse.fromJson(
         pushNotificationData,
         variables: variables,
       );
@@ -179,11 +179,11 @@ void main() {
 
     test('equals fallback types', () {
       final variables = GetNotificationPartialVariables(id: "push1");
-      final result1 = GetNotificationPartialResponse.fromResponse(
+      final result1 = GetNotificationPartialResponse.fromJson(
         pushNotificationData,
         variables: variables,
       );
-      final result2 = GetNotificationPartialResponse.fromResponse(
+      final result2 = GetNotificationPartialResponse.fromJson(
         pushNotificationData,
         variables: variables,
       );
@@ -192,11 +192,11 @@ void main() {
 
     test('not equals fallback vs covered type', () {
       final variables = GetNotificationPartialVariables(id: "test");
-      final result1 = GetNotificationPartialResponse.fromResponse(
+      final result1 = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
         variables: variables,
       );
-      final result2 = GetNotificationPartialResponse.fromResponse(
+      final result2 = GetNotificationPartialResponse.fromJson(
         pushNotificationData,
         variables: variables,
       );
@@ -223,7 +223,7 @@ void main() {
   group('Test union partial selection - optional', () {
     test('deserialize EmailNotification', () {
       final variables = GetNotificationPartialOptVariables(id: "email2");
-      final result = GetNotificationPartialOptResponse.fromResponse(
+      final result = GetNotificationPartialOptResponse.fromJson(
         emailNotificationOptData,
         variables: variables,
       );
@@ -243,7 +243,7 @@ void main() {
 
     test('deserialize PushNotification (fallback)', () {
       final variables = GetNotificationPartialOptVariables(id: "push2");
-      final result = GetNotificationPartialOptResponse.fromResponse(
+      final result = GetNotificationPartialOptResponse.fromJson(
         pushNotificationOptData,
         variables: variables,
       );
@@ -260,7 +260,7 @@ void main() {
 
     test('deserialize null', () {
       final variables = GetNotificationPartialOptVariables(id: "null");
-      final result = GetNotificationPartialOptResponse.fromResponse(
+      final result = GetNotificationPartialOptResponse.fromJson(
         notificationOptNullData,
         variables: variables,
       );
@@ -269,7 +269,7 @@ void main() {
 
     test('serialize with value', () {
       final variables = GetNotificationPartialOptVariables(id: "email2");
-      final initial = GetNotificationPartialOptResponse.fromResponse(
+      final initial = GetNotificationPartialOptResponse.fromJson(
         emailNotificationOptData,
         variables: variables,
       );
@@ -279,7 +279,7 @@ void main() {
 
     test('serialize fallback', () {
       final variables = GetNotificationPartialOptVariables(id: "push2");
-      final initial = GetNotificationPartialOptResponse.fromResponse(
+      final initial = GetNotificationPartialOptResponse.fromJson(
         pushNotificationOptData,
         variables: variables,
       );
@@ -289,7 +289,7 @@ void main() {
 
     test('serialize null', () {
       final variables = GetNotificationPartialOptVariables(id: "null");
-      final initial = GetNotificationPartialOptResponse.fromResponse(
+      final initial = GetNotificationPartialOptResponse.fromJson(
         notificationOptNullData,
         variables: variables,
       );
@@ -303,7 +303,7 @@ void main() {
       final variables = GetNotificationPartialNoTopTypenameVariables(
         id: "email1",
       );
-      final result = GetNotificationPartialNoTopTypenameResponse.fromResponse(
+      final result = GetNotificationPartialNoTopTypenameResponse.fromJson(
         emailNotificationData,
         variables: variables,
       );
@@ -327,7 +327,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetNotificationPartialVariables(id: "test");
 
-      var (result, updateCtx) = GetNotificationPartialResponse.fromResponseImpl(
+      var (result, updateCtx) = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
         ctx,
         variables,
@@ -345,7 +345,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetNotificationPartialResponse.fromResponse(
+      final nextResult = GetNotificationPartialResponse.fromJson(
         smsNotificationData,
         ctx: ctx,
         variables: variables,
@@ -363,7 +363,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetNotificationPartialVariables(id: "test");
 
-      var (result, updateCtx) = GetNotificationPartialResponse.fromResponseImpl(
+      var (result, updateCtx) = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
         ctx,
         variables,
@@ -381,7 +381,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetNotificationPartialResponse.fromResponse(
+      final nextResult = GetNotificationPartialResponse.fromJson(
         pushNotificationData,
         ctx: ctx,
         variables: variables,
@@ -404,7 +404,7 @@ void main() {
         var (
           result,
           updateCtx,
-        ) = GetNotificationPartialResponse.fromResponseImpl(
+        ) = GetNotificationPartialResponse.fromJson(
           pushNotificationData,
           ctx,
           variables,
@@ -422,7 +422,7 @@ void main() {
           hasChanged.complete(true);
         });
 
-        final nextResult = GetNotificationPartialResponse.fromResponse(
+        final nextResult = GetNotificationPartialResponse.fromJson(
           webhookNotificationData,
           ctx: ctx,
           variables: variables,
@@ -444,7 +444,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetNotificationPartialOptResponse.fromResponseImpl(
+      ) = GetNotificationPartialOptResponse.fromJson(
         notificationOptNullData,
         ctx,
         variables,
@@ -459,7 +459,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetNotificationPartialOptResponse.fromResponse(
+      final nextResult = GetNotificationPartialOptResponse.fromJson(
         emailNotificationOptData,
         ctx: ctx,
         variables: variables,
@@ -477,7 +477,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetNotificationPartialOptResponse.fromResponseImpl(
+      ) = GetNotificationPartialOptResponse.fromJson(
         emailNotificationOptData,
         ctx,
         variables,
@@ -492,7 +492,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetNotificationPartialOptResponse.fromResponse(
+      final nextResult = GetNotificationPartialOptResponse.fromJson(
         pushNotificationOptData,
         ctx: ctx,
         variables: variables,
@@ -513,7 +513,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetNotificationPartialOptResponse.fromResponseImpl(
+      ) = GetNotificationPartialOptResponse.fromJson(
         pushNotificationOptData,
         ctx,
         variables,
@@ -528,7 +528,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetNotificationPartialOptResponse.fromResponse(
+      final nextResult = GetNotificationPartialOptResponse.fromJson(
         notificationOptNullData,
         ctx: ctx,
         variables: variables,

@@ -38,7 +38,7 @@ void main() {
   group('Test union selection - required', () {
     test('deserialize User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultResponse.fromResponse(
+      final result = GetSearchResultResponse.fromJson(
         userSearchData,
         variables: variables,
       );
@@ -53,7 +53,7 @@ void main() {
 
     test('deserialize Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultResponse.fromResponse(
+      final result = GetSearchResultResponse.fromJson(
         postSearchData,
         variables: variables,
       );
@@ -69,7 +69,7 @@ void main() {
 
     test('deserialize Comment', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultResponse.fromResponse(
+      final result = GetSearchResultResponse.fromJson(
         commentSearchData,
         variables: variables,
       );
@@ -84,7 +84,7 @@ void main() {
 
     test('serialize User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final initial = GetSearchResultResponse.fromResponse(
+      final initial = GetSearchResultResponse.fromJson(
         userSearchData,
         variables: variables,
       );
@@ -94,7 +94,7 @@ void main() {
 
     test('serialize Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final initial = GetSearchResultResponse.fromResponse(
+      final initial = GetSearchResultResponse.fromJson(
         postSearchData,
         variables: variables,
       );
@@ -104,11 +104,11 @@ void main() {
 
     test('equals User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultResponse.fromResponse(
+      final result1 = GetSearchResultResponse.fromJson(
         userSearchData,
         variables: variables,
       );
-      final result2 = GetSearchResultResponse.fromResponse(
+      final result2 = GetSearchResultResponse.fromJson(
         userSearchData,
         variables: variables,
       );
@@ -117,11 +117,11 @@ void main() {
 
     test('equals Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultResponse.fromResponse(
+      final result1 = GetSearchResultResponse.fromJson(
         postSearchData,
         variables: variables,
       );
-      final result2 = GetSearchResultResponse.fromResponse(
+      final result2 = GetSearchResultResponse.fromJson(
         postSearchData,
         variables: variables,
       );
@@ -130,11 +130,11 @@ void main() {
 
     test('not equals different types', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultResponse.fromResponse(
+      final result1 = GetSearchResultResponse.fromJson(
         userSearchData,
         variables: variables,
       );
-      final result2 = GetSearchResultResponse.fromResponse(
+      final result2 = GetSearchResultResponse.fromJson(
         postSearchData,
         variables: variables,
       );
@@ -156,7 +156,7 @@ void main() {
   group('Test union selection - optional', () {
     test('deserialize User', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final result = GetSearchResultOptResponse.fromResponse(
+      final result = GetSearchResultOptResponse.fromJson(
         userSearchOptData,
         variables: variables,
       );
@@ -171,7 +171,7 @@ void main() {
 
     test('deserialize null', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final result = GetSearchResultOptResponse.fromResponse(
+      final result = GetSearchResultOptResponse.fromJson(
         searchOptNullData,
         variables: variables,
       );
@@ -180,7 +180,7 @@ void main() {
 
     test('serialize with value', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final initial = GetSearchResultOptResponse.fromResponse(
+      final initial = GetSearchResultOptResponse.fromJson(
         userSearchOptData,
         variables: variables,
       );
@@ -190,7 +190,7 @@ void main() {
 
     test('serialize null', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final initial = GetSearchResultOptResponse.fromResponse(
+      final initial = GetSearchResultOptResponse.fromJson(
         searchOptNullData,
         variables: variables,
       );
@@ -204,7 +204,7 @@ void main() {
       final variables = GetSearchResultWithoutTopTypenameVariables(
         query: "test",
       );
-      final result = GetSearchResultWithoutTopTypenameResponse.fromResponse(
+      final result = GetSearchResultWithoutTopTypenameResponse.fromJson(
         userSearchData,
         variables: variables,
       );
@@ -228,7 +228,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetSearchResultVariables(query: "test");
 
-      var (result, updateCtx) = GetSearchResultResponse.fromResponseImpl(
+      var (result, updateCtx) = GetSearchResultResponse.fromJson(
         userSearchData,
         ctx,
         variables,
@@ -243,7 +243,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetSearchResultResponse.fromResponse(
+      final nextResult = GetSearchResultResponse.fromJson(
         postSearchData,
         ctx: ctx,
         variables: variables,
@@ -258,7 +258,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetSearchResultVariables(query: "test");
 
-      var (result, updateCtx) = GetSearchResultResponse.fromResponseImpl(
+      var (result, updateCtx) = GetSearchResultResponse.fromJson(
         postSearchData,
         ctx,
         variables,
@@ -273,7 +273,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetSearchResultResponse.fromResponse(
+      final nextResult = GetSearchResultResponse.fromJson(
         commentSearchData,
         ctx: ctx,
         variables: variables,
@@ -288,7 +288,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetSearchResultOptVariables(query: "test");
 
-      var (result, updateCtx) = GetSearchResultOptResponse.fromResponseImpl(
+      var (result, updateCtx) = GetSearchResultOptResponse.fromJson(
         searchOptNullData,
         ctx,
         variables,
@@ -303,7 +303,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetSearchResultOptResponse.fromResponse(
+      final nextResult = GetSearchResultOptResponse.fromJson(
         userSearchOptData,
         ctx: ctx,
         variables: variables,
@@ -318,7 +318,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetSearchResultOptVariables(query: "test");
 
-      var (result, updateCtx) = GetSearchResultOptResponse.fromResponseImpl(
+      var (result, updateCtx) = GetSearchResultOptResponse.fromJson(
         userSearchOptData,
         ctx,
         variables,
@@ -333,7 +333,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetSearchResultOptResponse.fromResponse(
+      final nextResult = GetSearchResultOptResponse.fromJson(
         searchOptNullData,
         ctx: ctx,
         variables: variables,

@@ -32,6 +32,7 @@ pub enum OperationType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FieldSelectionCommon {
+    #[serde(default)]
     pub name: String,
     pub description: Option<String>,
 }
@@ -79,6 +80,7 @@ pub struct FieldSelection {
     pub selection_common: FieldSelectionCommon,
     #[serde(flatten)]
     pub kind: SelectionKind,
+    #[serde(default)]
     pub arguments: Vec<FieldArgument>,
 }
 

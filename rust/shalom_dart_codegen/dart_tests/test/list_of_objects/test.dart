@@ -48,7 +48,7 @@ void main() {
 
   group('List of Objects Required', () {
     test('usersRequired deserialize', () {
-      final result = GetUsersRequiredResponse.fromResponse(usersRequiredData);
+      final result = GetUsersRequiredResponse.fromJson(usersRequiredData);
       expect(result.usersRequired.length, 3);
       expect(result.usersRequired[0].id, "1");
       expect(result.usersRequired[0].name, "Alice");
@@ -59,20 +59,20 @@ void main() {
     });
 
     test('usersRequired deserialize with empty list', () {
-      final result = GetUsersRequiredResponse.fromResponse(
+      final result = GetUsersRequiredResponse.fromJson(
         usersRequiredEmptyData,
       );
       expect(result.usersRequired, []);
     });
 
     test('usersRequired toJson', () {
-      final initial = GetUsersRequiredResponse.fromResponse(usersRequiredData);
+      final initial = GetUsersRequiredResponse.fromJson(usersRequiredData);
       final json = initial.toJson();
       expect(json, usersRequiredData);
     });
 
     test('usersRequired toJson with empty list', () {
-      final initial = GetUsersRequiredResponse.fromResponse(
+      final initial = GetUsersRequiredResponse.fromJson(
         usersRequiredEmptyData,
       );
       final json = initial.toJson();
@@ -81,15 +81,15 @@ void main() {
 
     test('usersRequired equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 = GetUsersRequiredResponse.fromResponse(
+      final result1 = GetUsersRequiredResponse.fromJson(
         usersRequiredData,
         ctx: ctx,
       );
-      final result2 = GetUsersRequiredResponse.fromResponse(
+      final result2 = GetUsersRequiredResponse.fromJson(
         usersRequiredData,
         ctx: ctx,
       );
-      final result3 = GetUsersRequiredResponse.fromResponse(
+      final result3 = GetUsersRequiredResponse.fromJson(
         usersRequiredDataChanged,
         ctx: ctx,
       );
@@ -100,7 +100,7 @@ void main() {
 
     test('usersRequired cacheNormalization - inner field change', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetUsersRequiredResponse.fromResponseImpl(
+      var (result, updateCtx) = GetUsersRequiredResponse.fromJson(
         usersRequiredData,
         ctx,
       );
@@ -113,7 +113,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetUsersRequiredResponse.fromResponse(
+      final nextResult = GetUsersRequiredResponse.fromJson(
         usersRequiredDataChanged,
         ctx: ctx,
       );
@@ -126,7 +126,7 @@ void main() {
 
     test('usersRequired cacheNormalization - list length changed', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetUsersRequiredResponse.fromResponseImpl(
+      var (result, updateCtx) = GetUsersRequiredResponse.fromJson(
         usersRequiredData,
         ctx,
       );
@@ -139,7 +139,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetUsersRequiredResponse.fromResponse(
+      final nextResult = GetUsersRequiredResponse.fromJson(
         usersRequiredDataLengthChanged,
         ctx: ctx,
       );
@@ -153,7 +153,7 @@ void main() {
       'usersRequired cacheNormalization - object ID changed at index',
       () async {
         final ctx = ShalomCtx.withCapacity();
-        var (result, updateCtx) = GetUsersRequiredResponse.fromResponseImpl(
+        var (result, updateCtx) = GetUsersRequiredResponse.fromJson(
           usersRequiredData,
           ctx,
         );
@@ -166,7 +166,7 @@ void main() {
           hasChanged.complete(true);
         });
 
-        final nextResult = GetUsersRequiredResponse.fromResponse(
+        final nextResult = GetUsersRequiredResponse.fromJson(
           usersRequiredDataIdChanged,
           ctx: ctx,
         );
@@ -183,7 +183,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetUsersRequiredPartialResponse.fromResponseImpl(
+      ) = GetUsersRequiredPartialResponse.fromJson(
         usersRequiredData,
         ctx,
       );
@@ -219,7 +219,7 @@ void main() {
         ],
       };
 
-      final _ = GetUsersRequiredResponse.fromResponse(
+      final _ = GetUsersRequiredResponse.fromJson(
         dataWithOnlyAgeChanged,
         ctx: ctx,
       );
@@ -247,7 +247,7 @@ void main() {
         ],
       };
 
-      final nextResult = GetUsersRequiredPartialResponse.fromResponse(
+      final nextResult = GetUsersRequiredPartialResponse.fromJson(
         dataWithNameChange,
         ctx: ctx,
       );
@@ -277,34 +277,34 @@ void main() {
 
   group('List of Objects Optional', () {
     test('usersOptional deserialize', () {
-      final result = GetUsersOptionalResponse.fromResponse(usersOptionalData);
+      final result = GetUsersOptionalResponse.fromJson(usersOptionalData);
       expect(result.usersOptional?.length, 2);
       expect(result.usersOptional?[0].id, "1");
       expect(result.usersOptional?[0].name, "Alice");
     });
 
     test('usersOptional deserialize with null', () {
-      final result = GetUsersOptionalResponse.fromResponse(
+      final result = GetUsersOptionalResponse.fromJson(
         usersOptionalNullData,
       );
       expect(result.usersOptional, isNull);
     });
 
     test('usersOptional deserialize with empty list', () {
-      final result = GetUsersOptionalResponse.fromResponse(
+      final result = GetUsersOptionalResponse.fromJson(
         usersOptionalEmptyData,
       );
       expect(result.usersOptional, []);
     });
 
     test('usersOptional toJson', () {
-      final initial = GetUsersOptionalResponse.fromResponse(usersOptionalData);
+      final initial = GetUsersOptionalResponse.fromJson(usersOptionalData);
       final json = initial.toJson();
       expect(json, usersOptionalData);
     });
 
     test('usersOptional toJson with null', () {
-      final initial = GetUsersOptionalResponse.fromResponse(
+      final initial = GetUsersOptionalResponse.fromJson(
         usersOptionalNullData,
       );
       final json = initial.toJson();
@@ -312,7 +312,7 @@ void main() {
     });
 
     test('usersOptional toJson with empty list', () {
-      final initial = GetUsersOptionalResponse.fromResponse(
+      final initial = GetUsersOptionalResponse.fromJson(
         usersOptionalEmptyData,
       );
       final json = initial.toJson();
@@ -321,19 +321,19 @@ void main() {
 
     test('usersOptional equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 = GetUsersOptionalResponse.fromResponse(
+      final result1 = GetUsersOptionalResponse.fromJson(
         usersOptionalData,
         ctx: ctx,
       );
-      final result2 = GetUsersOptionalResponse.fromResponse(
+      final result2 = GetUsersOptionalResponse.fromJson(
         usersOptionalData,
         ctx: ctx,
       );
-      final result3 = GetUsersOptionalResponse.fromResponse(
+      final result3 = GetUsersOptionalResponse.fromJson(
         usersOptionalNullData,
         ctx: ctx,
       );
-      final result4 = GetUsersOptionalResponse.fromResponse(
+      final result4 = GetUsersOptionalResponse.fromJson(
         usersOptionalNullData,
         ctx: ctx,
       );
@@ -345,7 +345,7 @@ void main() {
 
     test('usersOptional cacheNormalization - null to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetUsersOptionalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetUsersOptionalResponse.fromJson(
         usersOptionalNullData,
         ctx,
       );
@@ -358,7 +358,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetUsersOptionalResponse.fromResponse(
+      final nextResult = GetUsersOptionalResponse.fromJson(
         usersOptionalData,
         ctx: ctx,
       );
@@ -370,7 +370,7 @@ void main() {
 
     test('usersOptional cacheNormalization - some to null', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetUsersOptionalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetUsersOptionalResponse.fromJson(
         usersOptionalData,
         ctx,
       );
@@ -383,7 +383,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetUsersOptionalResponse.fromResponse(
+      final nextResult = GetUsersOptionalResponse.fromJson(
         usersOptionalNullData,
         ctx: ctx,
       );
@@ -395,7 +395,7 @@ void main() {
 
     test('usersOptional cacheNormalization - some to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetUsersOptionalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetUsersOptionalResponse.fromJson(
         usersOptionalData,
         ctx,
       );
@@ -408,7 +408,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetUsersOptionalResponse.fromResponse(
+      final nextResult = GetUsersOptionalResponse.fromJson(
         usersOptionalDataChanged,
         ctx: ctx,
       );
@@ -435,29 +435,29 @@ void main() {
 
   group('Optional Objects in List', () {
     test('optionalUsers deserialize', () {
-      final result = GetOptionalUsersResponse.fromResponse(optionalUsersData);
+      final result = GetOptionalUsersResponse.fromJson(optionalUsersData);
       expect(result.optionalUsers?.length, 2);
       expect(result.optionalUsers?[0]?.id, "1");
       expect(result.optionalUsers?[0]?.name, "Alice");
     });
 
     test('optionalUsers toJson', () {
-      final initial = GetOptionalUsersResponse.fromResponse(optionalUsersData);
+      final initial = GetOptionalUsersResponse.fromJson(optionalUsersData);
       final json = initial.toJson();
       expect(json, optionalUsersData);
     });
 
     test('optionalUsers equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 = GetOptionalUsersResponse.fromResponse(
+      final result1 = GetOptionalUsersResponse.fromJson(
         optionalUsersData,
         ctx: ctx,
       );
-      final result2 = GetOptionalUsersResponse.fromResponse(
+      final result2 = GetOptionalUsersResponse.fromJson(
         optionalUsersData,
         ctx: ctx,
       );
-      final result3 = GetOptionalUsersResponse.fromResponse(
+      final result3 = GetOptionalUsersResponse.fromJson(
         optionalUsersDataChanged,
         ctx: ctx,
       );
@@ -468,7 +468,7 @@ void main() {
 
     test('optionalUsers cacheNormalization', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetOptionalUsersResponse.fromResponseImpl(
+      var (result, updateCtx) = GetOptionalUsersResponse.fromJson(
         optionalUsersData,
         ctx,
       );
@@ -481,7 +481,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetOptionalUsersResponse.fromResponse(
+      final nextResult = GetOptionalUsersResponse.fromJson(
         optionalUsersDataChanged,
         ctx: ctx,
       );

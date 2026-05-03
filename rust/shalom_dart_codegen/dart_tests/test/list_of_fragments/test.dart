@@ -31,7 +31,7 @@ void main() {
 
   group('List of Fragments - Required List with Single Fragment', () {
     test('listFragmentRequired - deserialize list with fragment', () {
-      final result = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final result = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentData,
       );
       expect(result.usersRequired.length, 3);
@@ -43,14 +43,14 @@ void main() {
     });
 
     test('listFragmentRequired - deserialize empty list', () {
-      final result = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final result = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentEmptyData,
       );
       expect(result.usersRequired, []);
     });
 
     test('listFragmentRequired - toJson', () {
-      final initial = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final initial = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentData,
       );
       final json = initial.toJson();
@@ -58,7 +58,7 @@ void main() {
     });
 
     test('listFragmentRequired - toJson with empty list', () {
-      final initial = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final initial = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentEmptyData,
       );
       final json = initial.toJson();
@@ -67,15 +67,15 @@ void main() {
 
     test('listFragmentRequired - equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final result1 = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentData,
         ctx: ctx,
       );
-      final result2 = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final result2 = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentData,
         ctx: ctx,
       );
-      final result3 = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final result3 = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentDataChanged,
         ctx: ctx,
       );
@@ -89,7 +89,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetUsersRequiredWithFragmentResponse.fromResponseImpl(
+      ) = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentData,
         ctx,
       );
@@ -102,7 +102,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final nextResult = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentDataChanged,
         ctx: ctx,
       );
@@ -132,7 +132,7 @@ void main() {
 
   group('List of Fragments - Optional List with Single Fragment', () {
     test('listFragmentOptional - deserialize list with fragment', () {
-      final result = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final result = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentData,
       );
       expect(result.usersOptional?.length, 2);
@@ -141,21 +141,21 @@ void main() {
     });
 
     test('listFragmentOptional - deserialize null list', () {
-      final result = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final result = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentNullData,
       );
       expect(result.usersOptional, isNull);
     });
 
     test('listFragmentOptional - deserialize empty list', () {
-      final result = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final result = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentEmptyData,
       );
       expect(result.usersOptional, []);
     });
 
     test('listFragmentOptional - toJson', () {
-      final initial = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final initial = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentData,
       );
       final json = initial.toJson();
@@ -163,7 +163,7 @@ void main() {
     });
 
     test('listFragmentOptional - toJson with null', () {
-      final initial = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final initial = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentNullData,
       );
       final json = initial.toJson();
@@ -172,15 +172,15 @@ void main() {
 
     test('listFragmentOptional - equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final result1 = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentData,
         ctx: ctx,
       );
-      final result2 = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final result2 = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentData,
         ctx: ctx,
       );
-      final result3 = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final result3 = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentNullData,
         ctx: ctx,
       );
@@ -194,7 +194,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetUsersOptionalWithFragmentResponse.fromResponseImpl(
+      ) = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentNullData,
         ctx,
       );
@@ -207,7 +207,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final nextResult = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentData,
         ctx: ctx,
       );
@@ -222,7 +222,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetUsersOptionalWithFragmentResponse.fromResponseImpl(
+      ) = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentData,
         ctx,
       );
@@ -235,7 +235,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final nextResult = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentDataChanged,
         ctx: ctx,
       );
@@ -286,7 +286,7 @@ void main() {
 
   group('List of Fragments - Multiple Fragments', () {
     test('multipleFragmentsRequired - deserialize', () {
-      final result = GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
+      final result = GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsData,
       );
       expect(result.usersRequired.length, 2);
@@ -299,7 +299,7 @@ void main() {
 
     test('multipleFragmentsRequired - toJson', () {
       final initial =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
+          GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsData,
       );
       final json = initial.toJson();
@@ -309,17 +309,17 @@ void main() {
     test('multipleFragmentsRequired - equals', () {
       final ctx = ShalomCtx.withCapacity();
       final result1 =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
+          GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsData,
         ctx: ctx,
       );
       final result2 =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
+          GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsData,
         ctx: ctx,
       );
       final result3 =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
+          GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsDataChanged,
         ctx: ctx,
       );
@@ -333,7 +333,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetUsersRequiredWithMultipleFragmentsResponse.fromResponseImpl(
+      ) = GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsData,
         ctx,
       );
@@ -349,7 +349,7 @@ void main() {
       });
 
       final nextResult =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
+          GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsDataChanged,
         ctx: ctx,
       );
@@ -401,7 +401,7 @@ void main() {
 
   group('List of Fragments - Fragment with Additional Fields', () {
     test('fragmentWithFieldsRequired - deserialize', () {
-      final result = GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
+      final result = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsData,
       );
       expect(result.usersRequired.length, 2);
@@ -414,7 +414,7 @@ void main() {
 
     test('fragmentWithFieldsRequired - toJson', () {
       final initial =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
+          GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsData,
       );
       final json = initial.toJson();
@@ -424,17 +424,17 @@ void main() {
     test('fragmentWithFieldsRequired - equals', () {
       final ctx = ShalomCtx.withCapacity();
       final result1 =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
+          GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsData,
         ctx: ctx,
       );
       final result2 =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
+          GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsData,
         ctx: ctx,
       );
       final result3 =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
+          GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsDataChanged,
         ctx: ctx,
       );
@@ -448,7 +448,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetUsersRequiredWithFragmentAndFieldsResponse.fromResponseImpl(
+      ) = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsData,
         ctx,
       );
@@ -464,7 +464,7 @@ void main() {
       });
 
       final nextResult =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
+          GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsDataChanged,
         ctx: ctx,
       );
@@ -517,7 +517,7 @@ void main() {
 
   group('List of Fragments - Nested Object with Fragment', () {
     test('nestedFragmentRequired - deserialize', () {
-      final result = GetPostsWithAuthorFragmentResponse.fromResponse(
+      final result = GetPostsWithAuthorFragmentResponse.fromJson(
         postsWithAuthorFragmentData,
       );
       expect(result.posts.length, 2);
@@ -530,7 +530,7 @@ void main() {
     });
 
     test('nestedFragmentRequired - toJson', () {
-      final initial = GetPostsWithAuthorFragmentResponse.fromResponse(
+      final initial = GetPostsWithAuthorFragmentResponse.fromJson(
         postsWithAuthorFragmentData,
       );
       final json = initial.toJson();
@@ -539,15 +539,15 @@ void main() {
 
     test('nestedFragmentRequired - equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 = GetPostsWithAuthorFragmentResponse.fromResponse(
+      final result1 = GetPostsWithAuthorFragmentResponse.fromJson(
         postsWithAuthorFragmentData,
         ctx: ctx,
       );
-      final result2 = GetPostsWithAuthorFragmentResponse.fromResponse(
+      final result2 = GetPostsWithAuthorFragmentResponse.fromJson(
         postsWithAuthorFragmentData,
         ctx: ctx,
       );
-      final result3 = GetPostsWithAuthorFragmentResponse.fromResponse(
+      final result3 = GetPostsWithAuthorFragmentResponse.fromJson(
         postsWithAuthorFragmentDataChanged,
         ctx: ctx,
       );
@@ -561,7 +561,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetPostsWithAuthorFragmentResponse.fromResponseImpl(
+      ) = GetPostsWithAuthorFragmentResponse.fromJson(
         postsWithAuthorFragmentData,
         ctx,
       );
@@ -574,7 +574,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetPostsWithAuthorFragmentResponse.fromResponse(
+      final nextResult = GetPostsWithAuthorFragmentResponse.fromJson(
         postsWithAuthorFragmentDataChanged,
         ctx: ctx,
       );
@@ -628,7 +628,7 @@ void main() {
 
   group('List of Fragments - Optional List with Multiple Fragments', () {
     test('optionalMultipleFragments - deserialize', () {
-      final result = GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
+      final result = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsData,
       );
       expect(result.postsOptional?.length, 2);
@@ -640,7 +640,7 @@ void main() {
     });
 
     test('optionalMultipleFragments - deserialize null', () {
-      final result = GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
+      final result = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsNullData,
       );
       expect(result.postsOptional, isNull);
@@ -648,7 +648,7 @@ void main() {
 
     test('optionalMultipleFragments - toJson', () {
       final initial =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
+          GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsData,
       );
       final json = initial.toJson();
@@ -658,17 +658,17 @@ void main() {
     test('optionalMultipleFragments - equals', () {
       final ctx = ShalomCtx.withCapacity();
       final result1 =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
+          GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsData,
         ctx: ctx,
       );
       final result2 =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
+          GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsData,
         ctx: ctx,
       );
       final result3 =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
+          GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsNullData,
         ctx: ctx,
       );
@@ -682,7 +682,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetPostsOptionalWithMultipleFragmentsResponse.fromResponseImpl(
+      ) = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsData,
         ctx,
       );
@@ -698,7 +698,7 @@ void main() {
       });
 
       final nextResult =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
+          GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsDataChanged,
         ctx: ctx,
       );
@@ -717,7 +717,7 @@ void main() {
       var (
         result,
         updateCtx,
-      ) = GetUsersRequiredPartialFragmentResponse.fromResponseImpl(
+      ) = GetUsersRequiredPartialFragmentResponse.fromJson(
         usersRequiredFragmentData,
         ctx,
       );
@@ -756,7 +756,7 @@ void main() {
         ],
       };
 
-      final _ = GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
+      final _ = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         dataWithNonSelectedFieldsChanged,
         ctx: ctx,
       );
@@ -774,7 +774,7 @@ void main() {
         ],
       };
 
-      final nextResult = GetUsersRequiredPartialFragmentResponse.fromResponse(
+      final nextResult = GetUsersRequiredPartialFragmentResponse.fromJson(
         dataWithNameChange,
         ctx: ctx,
       );

@@ -225,15 +225,6 @@ null
         {% endfor %}
     );
 
-    {% if is_root_selection -%}
-        {% set op_variables = context.operation.variables %}
-        {% set op_variables_exist = op_variables | length > 0 %}
-        static {{typename}} fromResponse(shalom_core.JsonObject data{% if op_variables_exist %}, { {{ operation_name }}Variables? variables }{% endif %}){
-            return fromJson(data);
-        }
-
-    {% endif -%}
-
     @override
     bool operator ==(Object other) {
         return identical(this, other) ||

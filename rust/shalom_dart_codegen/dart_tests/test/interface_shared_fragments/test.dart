@@ -49,7 +49,7 @@ void main() {
   group('Test interface shared fragments - required', () {
     test('interfaceSharedFragmentsRequired - User', () {
       final variables = GetNodeVariables(id: "user1");
-      final result = GetNodeResponse.fromResponse(
+      final result = GetNodeResponse.fromJson(
         userData,
         variables: variables,
       );
@@ -83,7 +83,7 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - Post', () {
       final variables = GetNodeVariables(id: "post1");
-      final result = GetNodeResponse.fromResponse(
+      final result = GetNodeResponse.fromJson(
         postData,
         variables: variables,
       );
@@ -117,7 +117,7 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - Comment (fallback)', () {
       final variables = GetNodeVariables(id: "comment1");
-      final result = GetNodeResponse.fromResponse(
+      final result = GetNodeResponse.fromJson(
         commentData,
         variables: variables,
       );
@@ -140,11 +140,11 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - equals', () {
       final variables = GetNodeVariables(id: "user1");
-      final result1 = GetNodeResponse.fromResponse(
+      final result1 = GetNodeResponse.fromJson(
         userData,
         variables: variables,
       );
-      final result2 = GetNodeResponse.fromResponse(
+      final result2 = GetNodeResponse.fromJson(
         userData,
         variables: variables,
       );
@@ -154,7 +154,7 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - toJson', () {
       final variables = GetNodeVariables(id: "user1");
-      final result = GetNodeResponse.fromResponse(
+      final result = GetNodeResponse.fromJson(
         userData,
         variables: variables,
       );
@@ -192,7 +192,7 @@ void main() {
   group('Test interface shared fragments - optional', () {
     test('interfaceSharedFragmentsOptional - User', () {
       final variables = GetNodeOptVariables(id: "user1");
-      final result = GetNodeOptResponse.fromResponse(
+      final result = GetNodeOptResponse.fromJson(
         userOptData,
         variables: variables,
       );
@@ -226,7 +226,7 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - Post', () {
       final variables = GetNodeOptVariables(id: "post1");
-      final result = GetNodeOptResponse.fromResponse(
+      final result = GetNodeOptResponse.fromJson(
         postOptData,
         variables: variables,
       );
@@ -248,7 +248,7 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - null', () {
       final variables = GetNodeOptVariables(id: "null");
-      final result = GetNodeOptResponse.fromResponse(
+      final result = GetNodeOptResponse.fromJson(
         nodeOptNull,
         variables: variables,
       );
@@ -257,11 +257,11 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - equals', () {
       final variables = GetNodeOptVariables(id: "user1");
-      final result1 = GetNodeOptResponse.fromResponse(
+      final result1 = GetNodeOptResponse.fromJson(
         userOptData,
         variables: variables,
       );
-      final result2 = GetNodeOptResponse.fromResponse(
+      final result2 = GetNodeOptResponse.fromJson(
         userOptData,
         variables: variables,
       );
@@ -271,7 +271,7 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - toJson', () {
       final variables = GetNodeOptVariables(id: "user1");
-      final result = GetNodeOptResponse.fromResponse(
+      final result = GetNodeOptResponse.fromJson(
         userOptData,
         variables: variables,
       );
@@ -281,7 +281,7 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - toJson null', () {
       final variables = GetNodeOptVariables(id: "null");
-      final result = GetNodeOptResponse.fromResponse(
+      final result = GetNodeOptResponse.fromJson(
         nodeOptNull,
         variables: variables,
       );
@@ -295,7 +295,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetNodeVariables(id: "user1");
 
-      var (result, updateCtx) = GetNodeResponse.fromResponseImpl(
+      var (result, updateCtx) = GetNodeResponse.fromJson(
         userData,
         ctx,
         variables,
@@ -321,7 +321,7 @@ void main() {
         },
       };
 
-      final nextResult = GetNodeResponse.fromResponse(
+      final nextResult = GetNodeResponse.fromJson(
         updatedUserData,
         ctx: ctx,
         variables: variables,
@@ -341,7 +341,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetNodeVariables(id: "post1");
 
-      var (result, updateCtx) = GetNodeResponse.fromResponseImpl(
+      var (result, updateCtx) = GetNodeResponse.fromJson(
         postData,
         ctx,
         variables,
@@ -367,7 +367,7 @@ void main() {
         },
       };
 
-      final nextResult = GetNodeResponse.fromResponse(
+      final nextResult = GetNodeResponse.fromJson(
         updatedPostData,
         ctx: ctx,
         variables: variables,
@@ -389,7 +389,7 @@ void main() {
         final ctx = ShalomCtx.withCapacity();
         final variables = GetNodeOptVariables(id: "user1");
 
-        var (result, updateCtx) = GetNodeOptResponse.fromResponseImpl(
+        var (result, updateCtx) = GetNodeOptResponse.fromJson(
           nodeOptNull,
           ctx,
           variables,
@@ -403,7 +403,7 @@ void main() {
           hasChanged.complete(true);
         });
 
-        final nextResult = GetNodeOptResponse.fromResponse(
+        final nextResult = GetNodeOptResponse.fromJson(
           userOptData,
           ctx: ctx,
           variables: variables,
@@ -421,7 +421,7 @@ void main() {
         final ctx = ShalomCtx.withCapacity();
         final variables = GetNodeOptVariables(id: "user1");
 
-        var (result, updateCtx) = GetNodeOptResponse.fromResponseImpl(
+        var (result, updateCtx) = GetNodeOptResponse.fromJson(
           userOptData,
           ctx,
           variables,
@@ -435,7 +435,7 @@ void main() {
           hasChanged.complete(true);
         });
 
-        final nextResult = GetNodeOptResponse.fromResponse(
+        final nextResult = GetNodeOptResponse.fromJson(
           nodeOptNull,
           ctx: ctx,
           variables: variables,
@@ -479,7 +479,7 @@ void main() {
 
   group('Test interface shared fragments - list', () {
     test('interfaceSharedFragmentsList', () {
-      final result = GetNodesResponse.fromResponse(nodesData);
+      final result = GetNodesResponse.fromJson(nodesData);
 
       expect(result.nodes.length, 3);
 
@@ -508,13 +508,13 @@ void main() {
     });
 
     test('interfaceSharedFragmentsList - equals', () {
-      final result1 = GetNodesResponse.fromResponse(nodesData);
-      final result2 = GetNodesResponse.fromResponse(nodesData);
+      final result1 = GetNodesResponse.fromJson(nodesData);
+      final result2 = GetNodesResponse.fromJson(nodesData);
       expect(result1, equals(result2));
     });
 
     test('interfaceSharedFragmentsList - toJson', () {
-      final result = GetNodesResponse.fromResponse(nodesData);
+      final result = GetNodesResponse.fromJson(nodesData);
       final json = result.toJson();
       expect(json, nodesData);
     });
@@ -534,7 +534,7 @@ void main() {
   group('Test interface shared fragments - all types', () {
     test('interfaceSharedFragmentsAllTypes - Comment', () {
       final variables = GetNodeAllTypesVariables(id: "comment1");
-      final result = GetNodeAllTypesResponse.fromResponse(
+      final result = GetNodeAllTypesResponse.fromJson(
         commentAllTypesData,
         variables: variables,
       );
@@ -559,11 +559,11 @@ void main() {
 
     test('interfaceSharedFragmentsAllTypes - equals', () {
       final variables = GetNodeAllTypesVariables(id: "comment1");
-      final result1 = GetNodeAllTypesResponse.fromResponse(
+      final result1 = GetNodeAllTypesResponse.fromJson(
         commentAllTypesData,
         variables: variables,
       );
-      final result2 = GetNodeAllTypesResponse.fromResponse(
+      final result2 = GetNodeAllTypesResponse.fromJson(
         commentAllTypesData,
         variables: variables,
       );
@@ -573,7 +573,7 @@ void main() {
 
     test('interfaceSharedFragmentsAllTypes - toJson', () {
       final variables = GetNodeAllTypesVariables(id: "comment1");
-      final result = GetNodeAllTypesResponse.fromResponse(
+      final result = GetNodeAllTypesResponse.fromJson(
         commentAllTypesData,
         variables: variables,
       );

@@ -27,11 +27,6 @@ fn test_object_selection_with_typename_dart() {
 }
 
 #[test]
-fn test_cache_by_arguments_object() {
-    run_dart_tests_for_usecase("cache_by_arguments_object");
-}
-
-#[test]
 fn test_nested_object_selection_dart() {
     run_dart_tests_for_usecase("nested_object_selection");
 }

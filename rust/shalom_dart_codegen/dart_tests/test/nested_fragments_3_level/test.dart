@@ -28,7 +28,7 @@ void main() {
       'nestedFragmentsRequired - All fields accessible through nested fragments',
       () {
         final variables = SiteQueryVariables(siteId: "site1");
-        final result = SiteQueryResponse.fromResponse(
+        final result = SiteQueryResponse.fromJson(
           siteData,
           variables: variables,
         );
@@ -50,7 +50,7 @@ void main() {
     test('nestedFragmentsOptional - Null handling works correctly', () {
       final nullData = {"site": null};
       final variables = SiteQueryVariables(siteId: "site1");
-      final result = SiteQueryResponse.fromResponse(
+      final result = SiteQueryResponse.fromJson(
         nullData,
         variables: variables,
       );
@@ -60,11 +60,11 @@ void main() {
 
     test('equals - Equality works with nested fragments', () {
       final variables = SiteQueryVariables(siteId: "site1");
-      final result1 = SiteQueryResponse.fromResponse(
+      final result1 = SiteQueryResponse.fromJson(
         siteData,
         variables: variables,
       );
-      final result2 = SiteQueryResponse.fromResponse(
+      final result2 = SiteQueryResponse.fromJson(
         siteData,
         variables: variables,
       );
@@ -75,7 +75,7 @@ void main() {
 
     test('toJson - Serialization works with nested fragments', () {
       final variables = SiteQueryVariables(siteId: "site1");
-      final result = SiteQueryResponse.fromResponse(
+      final result = SiteQueryResponse.fromJson(
         siteData,
         variables: variables,
       );
@@ -90,7 +90,7 @@ void main() {
         final ctx = ShalomCtx.withCapacity();
         final variables = SiteQueryVariables(siteId: "site1");
 
-        var (result, updateCtx) = SiteQueryResponse.fromResponseImpl(
+        var (result, updateCtx) = SiteQueryResponse.fromJson(
           siteData,
           ctx,
           variables,
@@ -105,7 +105,7 @@ void main() {
         });
 
         // Update the site with a changed address
-        final nextResult = SiteQueryResponse.fromResponse(
+        final nextResult = SiteQueryResponse.fromJson(
           siteDataChangedAddress,
           ctx: ctx,
           variables: variables,

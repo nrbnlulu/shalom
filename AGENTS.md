@@ -55,7 +55,7 @@ For interfaces, test that common fields can be accessed through the interface ty
 
 ```dart
 test('interface example', () {
-  final result = GetAnimalResponse.fromResponse(lionData, variables: variables);
+  final result = GetAnimalResponse.fromJson(lionData, variables: variables);
   
   // 1. Access shared fields via the interface reference
   final animal = result.animal;
@@ -84,7 +84,7 @@ For unions, since Dart uses `sealed` classes (not abstract classes with getters)
 
 ```dart
 test('union example', () {
-  final result = GetSearchResultResponse.fromResponse(userData, variables: variables);
+  final result = GetSearchResultResponse.fromJson(userData, variables: variables);
   
   // 1. Check the concrete type
   expect(result.search, isA<GetSearchResult_search_User>());

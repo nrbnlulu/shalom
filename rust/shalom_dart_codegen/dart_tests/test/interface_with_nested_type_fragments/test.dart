@@ -41,7 +41,7 @@ void main() {
   group('Test interface with nested type fragments - required', () {
     test('interfaceWithNestedTypeFragmentsRequired - Foo', () {
       final variables = NodeGlobalQueryVariables(id: "foo1");
-      final result = NodeGlobalQueryResponse.fromResponse(
+      final result = NodeGlobalQueryResponse.fromJson(
         fooData,
         variables: variables,
       );
@@ -66,7 +66,7 @@ void main() {
 
     test('interfaceWithNestedTypeFragmentsRequired - Bar', () {
       final variables = NodeGlobalQueryVariables(id: "bar1");
-      final result = NodeGlobalQueryResponse.fromResponse(
+      final result = NodeGlobalQueryResponse.fromJson(
         barData,
         variables: variables,
       );
@@ -88,7 +88,7 @@ void main() {
 
     test('interfaceWithNestedTypeFragmentsRequired - Baz', () {
       final variables = NodeGlobalQueryVariables(id: "baz1");
-      final result = NodeGlobalQueryResponse.fromResponse(
+      final result = NodeGlobalQueryResponse.fromJson(
         bazData,
         variables: variables,
       );
@@ -110,11 +110,11 @@ void main() {
 
     test('equals - Foo', () {
       final variables = NodeGlobalQueryVariables(id: "foo1");
-      final result1 = NodeGlobalQueryResponse.fromResponse(
+      final result1 = NodeGlobalQueryResponse.fromJson(
         fooData,
         variables: variables,
       );
-      final result2 = NodeGlobalQueryResponse.fromResponse(
+      final result2 = NodeGlobalQueryResponse.fromJson(
         fooData,
         variables: variables,
       );
@@ -123,11 +123,11 @@ void main() {
 
     test('equals - Bar', () {
       final variables = NodeGlobalQueryVariables(id: "bar1");
-      final result1 = NodeGlobalQueryResponse.fromResponse(
+      final result1 = NodeGlobalQueryResponse.fromJson(
         barData,
         variables: variables,
       );
-      final result2 = NodeGlobalQueryResponse.fromResponse(
+      final result2 = NodeGlobalQueryResponse.fromJson(
         barData,
         variables: variables,
       );
@@ -136,11 +136,11 @@ void main() {
 
     test('not equals - different types', () {
       final variables = NodeGlobalQueryVariables(id: "test");
-      final result1 = NodeGlobalQueryResponse.fromResponse(
+      final result1 = NodeGlobalQueryResponse.fromJson(
         fooData,
         variables: variables,
       );
-      final result2 = NodeGlobalQueryResponse.fromResponse(
+      final result2 = NodeGlobalQueryResponse.fromJson(
         barData,
         variables: variables,
       );
@@ -149,7 +149,7 @@ void main() {
 
     test('toJson - Foo', () {
       final variables = NodeGlobalQueryVariables(id: "foo1");
-      final initial = NodeGlobalQueryResponse.fromResponse(
+      final initial = NodeGlobalQueryResponse.fromJson(
         fooData,
         variables: variables,
       );
@@ -159,7 +159,7 @@ void main() {
 
     test('toJson - Bar', () {
       final variables = NodeGlobalQueryVariables(id: "bar1");
-      final initial = NodeGlobalQueryResponse.fromResponse(
+      final initial = NodeGlobalQueryResponse.fromJson(
         barData,
         variables: variables,
       );
@@ -169,7 +169,7 @@ void main() {
 
     test('toJson - Baz', () {
       final variables = NodeGlobalQueryVariables(id: "baz1");
-      final initial = NodeGlobalQueryResponse.fromResponse(
+      final initial = NodeGlobalQueryResponse.fromJson(
         bazData,
         variables: variables,
       );
@@ -193,7 +193,7 @@ void main() {
   group('Test interface with nested type fragments - optional', () {
     test('interfaceWithNestedTypeFragmentsOptional - Foo', () {
       final variables = NodeGlobalQueryOptVariables(id: "foo2");
-      final result = NodeGlobalQueryOptResponse.fromResponse(
+      final result = NodeGlobalQueryOptResponse.fromJson(
         fooOptData,
         variables: variables,
       );
@@ -214,7 +214,7 @@ void main() {
 
     test('interfaceWithNestedTypeFragmentsOptional - null', () {
       final variables = NodeGlobalQueryOptVariables(id: "none");
-      final result = NodeGlobalQueryOptResponse.fromResponse(
+      final result = NodeGlobalQueryOptResponse.fromJson(
         nodeOptNullData,
         variables: variables,
       );
@@ -223,11 +223,11 @@ void main() {
 
     test('equals - with value', () {
       final variables = NodeGlobalQueryOptVariables(id: "foo2");
-      final result1 = NodeGlobalQueryOptResponse.fromResponse(
+      final result1 = NodeGlobalQueryOptResponse.fromJson(
         fooOptData,
         variables: variables,
       );
-      final result2 = NodeGlobalQueryOptResponse.fromResponse(
+      final result2 = NodeGlobalQueryOptResponse.fromJson(
         fooOptData,
         variables: variables,
       );
@@ -236,11 +236,11 @@ void main() {
 
     test('equals - null', () {
       final variables = NodeGlobalQueryOptVariables(id: "none");
-      final result1 = NodeGlobalQueryOptResponse.fromResponse(
+      final result1 = NodeGlobalQueryOptResponse.fromJson(
         nodeOptNullData,
         variables: variables,
       );
-      final result2 = NodeGlobalQueryOptResponse.fromResponse(
+      final result2 = NodeGlobalQueryOptResponse.fromJson(
         nodeOptNullData,
         variables: variables,
       );
@@ -249,7 +249,7 @@ void main() {
 
     test('toJson - with value', () {
       final variables = NodeGlobalQueryOptVariables(id: "foo2");
-      final initial = NodeGlobalQueryOptResponse.fromResponse(
+      final initial = NodeGlobalQueryOptResponse.fromJson(
         fooOptData,
         variables: variables,
       );
@@ -259,7 +259,7 @@ void main() {
 
     test('toJson - null', () {
       final variables = NodeGlobalQueryOptVariables(id: "none");
-      final initial = NodeGlobalQueryOptResponse.fromResponse(
+      final initial = NodeGlobalQueryOptResponse.fromJson(
         nodeOptNullData,
         variables: variables,
       );
@@ -296,7 +296,7 @@ void main() {
 
   group('Test interface with nested type fragments - list', () {
     test('interfaceWithNestedTypeFragmentsList - mixed types', () {
-      final result = NodesGlobalQueryResponse.fromResponse(nodesListData);
+      final result = NodesGlobalQueryResponse.fromJson(nodesListData);
 
       expect(result.nodes.length, 3);
       expect(result.nodes[0], isA<NodesGlobalQuery_nodes__Foo>());
@@ -331,14 +331,14 @@ void main() {
     });
 
     test('toJson - list', () {
-      final initial = NodesGlobalQueryResponse.fromResponse(nodesListData);
+      final initial = NodesGlobalQueryResponse.fromJson(nodesListData);
       final json = initial.toJson();
       expect(json, nodesListData);
     });
 
     test('equals - list', () {
-      final result1 = NodesGlobalQueryResponse.fromResponse(nodesListData);
-      final result2 = NodesGlobalQueryResponse.fromResponse(nodesListData);
+      final result1 = NodesGlobalQueryResponse.fromJson(nodesListData);
+      final result2 = NodesGlobalQueryResponse.fromJson(nodesListData);
       expect(result1, equals(result2));
     });
   });
@@ -348,7 +348,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = NodeGlobalQueryVariables(id: "node1");
 
-      var (result, updateCtx) = NodeGlobalQueryResponse.fromResponseImpl(
+      var (result, updateCtx) = NodeGlobalQueryResponse.fromJson(
         fooData,
         ctx,
         variables,
@@ -364,7 +364,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = NodeGlobalQueryResponse.fromResponse(
+      final nextResult = NodeGlobalQueryResponse.fromJson(
         barData,
         ctx: ctx,
         variables: variables,
@@ -380,7 +380,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = NodeGlobalQueryOptVariables(id: "node1");
 
-      var (result, updateCtx) = NodeGlobalQueryOptResponse.fromResponseImpl(
+      var (result, updateCtx) = NodeGlobalQueryOptResponse.fromJson(
         nodeOptNullData,
         ctx,
         variables,
@@ -395,7 +395,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = NodeGlobalQueryOptResponse.fromResponse(
+      final nextResult = NodeGlobalQueryOptResponse.fromJson(
         fooOptData,
         ctx: ctx,
         variables: variables,
@@ -411,7 +411,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = NodeGlobalQueryOptVariables(id: "node1");
 
-      var (result, updateCtx) = NodeGlobalQueryOptResponse.fromResponseImpl(
+      var (result, updateCtx) = NodeGlobalQueryOptResponse.fromJson(
         fooOptData,
         ctx,
         variables,
@@ -427,7 +427,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = NodeGlobalQueryOptResponse.fromResponse(
+      final nextResult = NodeGlobalQueryOptResponse.fromJson(
         nodeOptNullData,
         ctx: ctx,
         variables: variables,
@@ -452,7 +452,7 @@ void main() {
         },
       };
 
-      var (result, updateCtx) = NodeGlobalQueryResponse.fromResponseImpl(
+      var (result, updateCtx) = NodeGlobalQueryResponse.fromJson(
         initialFooData,
         ctx,
         variables,
@@ -480,7 +480,7 @@ void main() {
         },
       };
 
-      final nextResult = NodeGlobalQueryResponse.fromResponse(
+      final nextResult = NodeGlobalQueryResponse.fromJson(
         updatedFooData,
         ctx: ctx,
         variables: variables,

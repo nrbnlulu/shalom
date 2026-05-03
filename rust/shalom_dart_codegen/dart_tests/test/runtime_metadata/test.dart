@@ -3,7 +3,7 @@ import 'package:test/test.dart';
 import '__graphql__/GetPerson.shalom.dart';
 
 void main() {
-  test('runtime metadata is ignored by fromResponse', () {
+  test('runtime metadata is ignored by fromJson', () {
     final variables = GetPersonVariables(name: "foo");
     final data = {
       "person": {
@@ -18,7 +18,7 @@ void main() {
       ],
     };
 
-    final result = GetPersonResponse.fromResponse(data, variables: variables);
+    final result = GetPersonResponse.fromJson(data, variables: variables);
 
     expect(result.person?.id, "p1");
     expect(result.person?.name, "Foo");

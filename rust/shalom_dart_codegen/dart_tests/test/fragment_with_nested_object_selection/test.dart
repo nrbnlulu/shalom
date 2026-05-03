@@ -38,7 +38,7 @@ void main() {
       'fragmentWithNestedObjectRequired - Fragment with nested object deserializes',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromResponse(
+        final result = GetPostWithDetailsResponse.fromJson(
           postWithDetailsData,
           variables: variables,
         );
@@ -60,7 +60,7 @@ void main() {
       'fragmentWithNestedObjectOptional - Nested object fields are accessible',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromResponse(
+        final result = GetPostWithDetailsResponse.fromJson(
           postWithDetailsData,
           variables: variables,
         );
@@ -81,7 +81,7 @@ void main() {
         final ctx = ShalomCtx.withCapacity();
         final variables = GetPostWithDetailsVariables(postId: "post1");
 
-        var (result, updateCtx) = GetPostWithDetailsResponse.fromResponseImpl(
+        var (result, updateCtx) = GetPostWithDetailsResponse.fromJson(
           postWithDetailsData,
           ctx,
           variables,
@@ -96,7 +96,7 @@ void main() {
         });
 
         // Update with changed title
-        final nextResult = GetPostWithDetailsResponse.fromResponse(
+        final nextResult = GetPostWithDetailsResponse.fromJson(
           postWithDetailsDataChangedTitle,
           ctx: ctx,
           variables: variables,
@@ -116,11 +116,11 @@ void main() {
       'fragmentWithNestedObjectEquals - Equality works with nested objects',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result1 = GetPostWithDetailsResponse.fromResponse(
+        final result1 = GetPostWithDetailsResponse.fromJson(
           postWithDetailsData,
           variables: variables,
         );
-        final result2 = GetPostWithDetailsResponse.fromResponse(
+        final result2 = GetPostWithDetailsResponse.fromJson(
           postWithDetailsData,
           variables: variables,
         );
@@ -137,7 +137,7 @@ void main() {
       'fragmentWithNestedObjectToJson - Serialization includes nested objects',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromResponse(
+        final result = GetPostWithDetailsResponse.fromJson(
           postWithDetailsData,
           variables: variables,
         );
@@ -193,7 +193,7 @@ void main() {
       'fragmentWithNestedObjectRequired - Second fragment with nested object',
       () {
         final variables = GetUserWithProfileVariables(userId: "user1");
-        final result = GetUserWithProfileResponse.fromResponse(
+        final result = GetUserWithProfileResponse.fromJson(
           userWithProfileData,
           variables: variables,
         );
@@ -210,7 +210,7 @@ void main() {
       'fragmentWithNestedObjectOptional - Nested object with optional fields',
       () {
         final variables = GetUserWithProfileVariables(userId: "user2");
-        final result = GetUserWithProfileResponse.fromResponse(
+        final result = GetUserWithProfileResponse.fromJson(
           userWithProfileNoAvatar,
           variables: variables,
         );
@@ -227,7 +227,7 @@ void main() {
         final ctx = ShalomCtx.withCapacity();
         final variables = GetUserWithProfileVariables(userId: "user1");
 
-        var (result, updateCtx) = GetUserWithProfileResponse.fromResponseImpl(
+        var (result, updateCtx) = GetUserWithProfileResponse.fromJson(
           userWithProfileData,
           ctx,
           variables,
@@ -241,7 +241,7 @@ void main() {
           hasChanged.complete(true);
         });
 
-        final nextResult = GetUserWithProfileResponse.fromResponse(
+        final nextResult = GetUserWithProfileResponse.fromJson(
           userWithProfileDataChanged,
           ctx: ctx,
           variables: variables,
@@ -255,11 +255,11 @@ void main() {
 
     test('fragmentWithNestedObjectEquals - Equality with second fragment', () {
       final variables = GetUserWithProfileVariables(userId: "user1");
-      final result1 = GetUserWithProfileResponse.fromResponse(
+      final result1 = GetUserWithProfileResponse.fromJson(
         userWithProfileData,
         variables: variables,
       );
-      final result2 = GetUserWithProfileResponse.fromResponse(
+      final result2 = GetUserWithProfileResponse.fromJson(
         userWithProfileData,
         variables: variables,
       );
@@ -273,7 +273,7 @@ void main() {
       'fragmentWithNestedObjectToJson - Serialization with second fragment',
       () {
         final variables = GetUserWithProfileVariables(userId: "user1");
-        final result = GetUserWithProfileResponse.fromResponse(
+        final result = GetUserWithProfileResponse.fromJson(
           userWithProfileData,
           variables: variables,
         );

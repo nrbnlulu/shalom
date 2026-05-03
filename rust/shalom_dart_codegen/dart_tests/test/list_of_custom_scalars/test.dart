@@ -41,7 +41,7 @@ void main() {
 
   group('List of Custom Scalars Required - [Point!]!', () {
     test('pointsRequired deserialize', () {
-      final result = GetPointsRequiredResponse.fromResponse(pointsRequiredData);
+      final result = GetPointsRequiredResponse.fromJson(pointsRequiredData);
       expect(result.pointsRequired.length, 3);
       expect(result.pointsRequired[0].x, 1);
       expect(result.pointsRequired[0].y, 2);
@@ -52,14 +52,14 @@ void main() {
     });
 
     test('pointsRequired deserialize empty list', () {
-      final result = GetPointsRequiredResponse.fromResponse(
+      final result = GetPointsRequiredResponse.fromJson(
         pointsRequiredEmptyData,
       );
       expect(result.pointsRequired, []);
     });
 
     test('pointsRequired toJson', () {
-      final initial = GetPointsRequiredResponse.fromResponse(
+      final initial = GetPointsRequiredResponse.fromJson(
         pointsRequiredData,
       );
       final json = initial.toJson();
@@ -67,7 +67,7 @@ void main() {
     });
 
     test('pointsRequired toJson empty list', () {
-      final initial = GetPointsRequiredResponse.fromResponse(
+      final initial = GetPointsRequiredResponse.fromJson(
         pointsRequiredEmptyData,
       );
       final json = initial.toJson();
@@ -75,13 +75,13 @@ void main() {
     });
 
     test('pointsRequired equals', () {
-      final result1 = GetPointsRequiredResponse.fromResponse(
+      final result1 = GetPointsRequiredResponse.fromJson(
         pointsRequiredData,
       );
-      final result2 = GetPointsRequiredResponse.fromResponse(
+      final result2 = GetPointsRequiredResponse.fromJson(
         pointsRequiredData,
       );
-      final result3 = GetPointsRequiredResponse.fromResponse(
+      final result3 = GetPointsRequiredResponse.fromJson(
         pointsRequiredDataChanged,
       );
 
@@ -91,7 +91,7 @@ void main() {
 
     test('pointsRequired cacheNormalization - inner value change', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsRequiredResponse.fromResponseImpl(
+      var (result, updateCtx) = GetPointsRequiredResponse.fromJson(
         pointsRequiredData,
         ctx,
       );
@@ -104,7 +104,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetPointsRequiredResponse.fromResponse(
+      final nextResult = GetPointsRequiredResponse.fromJson(
         pointsRequiredDataChanged,
         ctx: ctx,
       );
@@ -116,7 +116,7 @@ void main() {
 
     test('pointsRequired cacheNormalization - list length changed', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsRequiredResponse.fromResponseImpl(
+      var (result, updateCtx) = GetPointsRequiredResponse.fromJson(
         pointsRequiredData,
         ctx,
       );
@@ -129,7 +129,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetPointsRequiredResponse.fromResponse(
+      final nextResult = GetPointsRequiredResponse.fromJson(
         pointsRequiredLengthChanged,
         ctx: ctx,
       );
@@ -164,7 +164,7 @@ void main() {
 
   group('List of Custom Scalars Optional - [Point!]', () {
     test('pointsOptional deserialize', () {
-      final result = GetPointsOptionalResponse.fromResponse(pointsOptionalData);
+      final result = GetPointsOptionalResponse.fromJson(pointsOptionalData);
       expect(result.pointsOptional?.length, 2);
       expect(result.pointsOptional?[0].x, 10);
       expect(result.pointsOptional?[0].y, 20);
@@ -173,21 +173,21 @@ void main() {
     });
 
     test('pointsOptional deserialize null', () {
-      final result = GetPointsOptionalResponse.fromResponse(
+      final result = GetPointsOptionalResponse.fromJson(
         pointsOptionalNullData,
       );
       expect(result.pointsOptional, isNull);
     });
 
     test('pointsOptional deserialize empty list', () {
-      final result = GetPointsOptionalResponse.fromResponse(
+      final result = GetPointsOptionalResponse.fromJson(
         pointsOptionalEmptyData,
       );
       expect(result.pointsOptional, []);
     });
 
     test('pointsOptional toJson', () {
-      final initial = GetPointsOptionalResponse.fromResponse(
+      final initial = GetPointsOptionalResponse.fromJson(
         pointsOptionalData,
       );
       final json = initial.toJson();
@@ -195,7 +195,7 @@ void main() {
     });
 
     test('pointsOptional toJson null', () {
-      final initial = GetPointsOptionalResponse.fromResponse(
+      final initial = GetPointsOptionalResponse.fromJson(
         pointsOptionalNullData,
       );
       final json = initial.toJson();
@@ -203,7 +203,7 @@ void main() {
     });
 
     test('pointsOptional toJson empty list', () {
-      final initial = GetPointsOptionalResponse.fromResponse(
+      final initial = GetPointsOptionalResponse.fromJson(
         pointsOptionalEmptyData,
       );
       final json = initial.toJson();
@@ -211,16 +211,16 @@ void main() {
     });
 
     test('pointsOptional equals', () {
-      final result1 = GetPointsOptionalResponse.fromResponse(
+      final result1 = GetPointsOptionalResponse.fromJson(
         pointsOptionalData,
       );
-      final result2 = GetPointsOptionalResponse.fromResponse(
+      final result2 = GetPointsOptionalResponse.fromJson(
         pointsOptionalData,
       );
-      final result3 = GetPointsOptionalResponse.fromResponse(
+      final result3 = GetPointsOptionalResponse.fromJson(
         pointsOptionalNullData,
       );
-      final result4 = GetPointsOptionalResponse.fromResponse(
+      final result4 = GetPointsOptionalResponse.fromJson(
         pointsOptionalNullData,
       );
 
@@ -231,7 +231,7 @@ void main() {
 
     test('pointsOptional cacheNormalization - null to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsOptionalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetPointsOptionalResponse.fromJson(
         pointsOptionalNullData,
         ctx,
       );
@@ -246,7 +246,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetPointsOptionalResponse.fromResponse(
+      final nextResult = GetPointsOptionalResponse.fromJson(
         pointsOptionalData,
         ctx: ctx,
       );
@@ -258,7 +258,7 @@ void main() {
 
     test('pointsOptional cacheNormalization - some to null', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsOptionalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetPointsOptionalResponse.fromJson(
         pointsOptionalData,
         ctx,
       );
@@ -273,7 +273,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetPointsOptionalResponse.fromResponse(
+      final nextResult = GetPointsOptionalResponse.fromJson(
         pointsOptionalNullData,
         ctx: ctx,
       );
@@ -285,7 +285,7 @@ void main() {
 
     test('pointsOptional cacheNormalization - some to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsOptionalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetPointsOptionalResponse.fromJson(
         pointsOptionalData,
         ctx,
       );
@@ -298,7 +298,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetPointsOptionalResponse.fromResponse(
+      final nextResult = GetPointsOptionalResponse.fromJson(
         pointsOptionalDataChanged,
         ctx: ctx,
       );
@@ -332,7 +332,7 @@ void main() {
 
   group('Optional Custom Scalars in List - [Point]!', () {
     test('optionalPoints deserialize with nulls', () {
-      final result = GetOptionalPointsResponse.fromResponse(optionalPointsData);
+      final result = GetOptionalPointsResponse.fromJson(optionalPointsData);
       expect(result.optionalPoints.length, 3);
       expect(result.optionalPoints[0]?.x, 100);
       expect(result.optionalPoints[0]?.y, 200);
@@ -342,7 +342,7 @@ void main() {
     });
 
     test('optionalPoints toJson', () {
-      final initial = GetOptionalPointsResponse.fromResponse(
+      final initial = GetOptionalPointsResponse.fromJson(
         optionalPointsData,
       );
       final json = initial.toJson();
@@ -350,13 +350,13 @@ void main() {
     });
 
     test('optionalPoints equals', () {
-      final result1 = GetOptionalPointsResponse.fromResponse(
+      final result1 = GetOptionalPointsResponse.fromJson(
         optionalPointsData,
       );
-      final result2 = GetOptionalPointsResponse.fromResponse(
+      final result2 = GetOptionalPointsResponse.fromJson(
         optionalPointsData,
       );
-      final result3 = GetOptionalPointsResponse.fromResponse(
+      final result3 = GetOptionalPointsResponse.fromJson(
         optionalPointsDataChanged,
       );
 
@@ -366,7 +366,7 @@ void main() {
 
     test('optionalPoints cacheNormalization', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetOptionalPointsResponse.fromResponseImpl(
+      var (result, updateCtx) = GetOptionalPointsResponse.fromJson(
         optionalPointsData,
         ctx,
       );
@@ -379,7 +379,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetOptionalPointsResponse.fromResponse(
+      final nextResult = GetOptionalPointsResponse.fromJson(
         optionalPointsDataChanged,
         ctx: ctx,
       );
@@ -414,7 +414,7 @@ void main() {
 
   group('Fully Optional - [Point]', () {
     test('pointsFullyOptional deserialize with nulls', () {
-      final result = GetPointsFullyOptionalResponse.fromResponse(
+      final result = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalData,
       );
       expect(result.pointsFullyOptional?.length, 2);
@@ -424,21 +424,21 @@ void main() {
     });
 
     test('pointsFullyOptional deserialize null', () {
-      final result = GetPointsFullyOptionalResponse.fromResponse(
+      final result = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalNullData,
       );
       expect(result.pointsFullyOptional, isNull);
     });
 
     test('pointsFullyOptional deserialize empty list', () {
-      final result = GetPointsFullyOptionalResponse.fromResponse(
+      final result = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalEmptyData,
       );
       expect(result.pointsFullyOptional, []);
     });
 
     test('pointsFullyOptional toJson', () {
-      final initial = GetPointsFullyOptionalResponse.fromResponse(
+      final initial = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalData,
       );
       final json = initial.toJson();
@@ -446,7 +446,7 @@ void main() {
     });
 
     test('pointsFullyOptional toJson null', () {
-      final initial = GetPointsFullyOptionalResponse.fromResponse(
+      final initial = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalNullData,
       );
       final json = initial.toJson();
@@ -454,13 +454,13 @@ void main() {
     });
 
     test('pointsFullyOptional equals', () {
-      final result1 = GetPointsFullyOptionalResponse.fromResponse(
+      final result1 = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalData,
       );
-      final result2 = GetPointsFullyOptionalResponse.fromResponse(
+      final result2 = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalData,
       );
-      final result3 = GetPointsFullyOptionalResponse.fromResponse(
+      final result3 = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalNullData,
       );
 
@@ -470,7 +470,7 @@ void main() {
 
     test('pointsFullyOptional cacheNormalization - null to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsFullyOptionalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalNullData,
         ctx,
       );
@@ -485,7 +485,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetPointsFullyOptionalResponse.fromResponse(
+      final nextResult = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalData,
         ctx: ctx,
       );
@@ -497,7 +497,7 @@ void main() {
 
     test('pointsFullyOptional cacheNormalization - some to null', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsFullyOptionalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalData,
         ctx,
       );
@@ -512,7 +512,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetPointsFullyOptionalResponse.fromResponse(
+      final nextResult = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalNullData,
         ctx: ctx,
       );
@@ -524,7 +524,7 @@ void main() {
 
     test('pointsFullyOptional cacheNormalization - some to some', () async {
       final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsFullyOptionalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalData,
         ctx,
       );
@@ -537,7 +537,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetPointsFullyOptionalResponse.fromResponse(
+      final nextResult = GetPointsFullyOptionalResponse.fromJson(
         pointsFullyOptionalDataChanged,
         ctx: ctx,
       );

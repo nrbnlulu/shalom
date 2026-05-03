@@ -62,7 +62,7 @@ void main() {
           var (
             resultDefault,
             updateCtxDefault,
-          ) = ProcessListResponse.fromResponseImpl(
+          ) = ProcessListResponse.fromJson(
             data1,
             ctx,
             variablesDefault,
@@ -79,7 +79,7 @@ void main() {
           });
 
           // make query for second parameters
-          final _ = ProcessListResponse.fromResponse(
+          final _ = ProcessListResponse.fromJson(
             data2,
             ctx: ctx,
             variables: variablesDifferent,
@@ -119,7 +119,7 @@ void main() {
 
         // First query with defaults
         var (resultDefault, updateCtxDefault) =
-            ProcessListResponse.fromResponseImpl(data1, ctx, variablesDefault);
+            ProcessListResponse.fromJson(data1, ctx, variablesDefault);
         expect(resultDefault.toJson(), data1);
 
         // Set up listener
@@ -136,7 +136,7 @@ void main() {
         });
 
         // Update cache for default query
-        ProcessListResponse.fromResponse(
+        ProcessListResponse.fromJson(
           data2,
           ctx: ctx,
           variables: variablesDefault,

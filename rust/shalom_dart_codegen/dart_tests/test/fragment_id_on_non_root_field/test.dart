@@ -86,7 +86,7 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result = UpdateUserResponse.fromResponse(
+        final result = UpdateUserResponse.fromJson(
           updateUserSuccessData,
           variables: variables,
         );
@@ -104,7 +104,7 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", email: Some("invalid-email")),
         );
-        final result = UpdateUserResponse.fromResponse(
+        final result = UpdateUserResponse.fromJson(
           updateUserErrorData,
           variables: variables,
         );
@@ -125,7 +125,7 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", name: Some("Bob Jones")),
         );
-        final result = UpdateUserResponse.fromResponse(
+        final result = UpdateUserResponse.fromJson(
           updateUserBothData,
           variables: variables,
         );
@@ -149,11 +149,11 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result1 = UpdateUserResponse.fromResponse(
+        final result1 = UpdateUserResponse.fromJson(
           updateUserSuccessData,
           variables: variables,
         );
-        final result2 = UpdateUserResponse.fromResponse(
+        final result2 = UpdateUserResponse.fromJson(
           updateUserSuccessData,
           variables: variables,
         );
@@ -167,11 +167,11 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", name: Some("Alice Smith")),
         );
-        final result1 = UpdateUserResponse.fromResponse(
+        final result1 = UpdateUserResponse.fromJson(
           updateUserSuccessData,
           variables: variables,
         );
-        final result2 = UpdateUserResponse.fromResponse(
+        final result2 = UpdateUserResponse.fromJson(
           updateUserErrorData,
           variables: variables,
         );
@@ -190,7 +190,7 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result = UpdateUserResponse.fromResponse(
+        final result = UpdateUserResponse.fromJson(
           updateUserSuccessData,
           variables: variables,
         );
@@ -203,7 +203,7 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", email: Some("invalid")),
         );
-        final result = UpdateUserResponse.fromResponse(
+        final result = UpdateUserResponse.fromJson(
           updateUserErrorData,
           variables: variables,
         );
@@ -228,7 +228,7 @@ void main() {
         var (
           getUserResult,
           getUserUpdateCtx,
-        ) = GetUserResponse.fromResponseImpl(
+        ) = GetUserResponse.fromJson(
           getUserData,
           ctx,
           GetUserVariables(id: "user1"),
@@ -250,7 +250,7 @@ void main() {
         });
 
         // Now update the user with UpdateUser mutation
-        final updateResult = UpdateUserResponse.fromResponse(
+        final updateResult = UpdateUserResponse.fromJson(
           updateUserChangedData,
           variables: variables,
           ctx: ctx,
@@ -278,7 +278,7 @@ void main() {
         );
 
         // Start with error (data is null)
-        var (result, updateCtx) = UpdateUserResponse.fromResponseImpl(
+        var (result, updateCtx) = UpdateUserResponse.fromJson(
           updateUserErrorData,
           ctx,
           variables,
@@ -296,7 +296,7 @@ void main() {
         });
 
         // Update to success (error becomes null, data is present)
-        final _ = UpdateUserResponse.fromResponse(
+        final _ = UpdateUserResponse.fromJson(
           updateUserSuccessData,
           variables: variables,
           ctx: ctx,

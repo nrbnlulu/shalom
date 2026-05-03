@@ -38,7 +38,7 @@ void main() {
 
   group('Nested Object Selection Required', () {
     test('nestedObjectSelectionRequired deserialize', () {
-      final result = GetListingWithUserResponse.fromResponse(
+      final result = GetListingWithUserResponse.fromJson(
         listingWithUserData,
       );
       expect(result.listing.id, "foo");
@@ -51,43 +51,18 @@ void main() {
     });
 
     test('nestedObjectSelectionRequired serialize', () {
-      final initial = GetListingWithUserResponse.fromResponse(
+      final initial = GetListingWithUserResponse.fromJson(
         listingWithUserData,
       );
       final json = initial.toJson();
       expect(json, listingWithUserData);
     });
 
-    test('nestedObjectSelectionRequired cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetListingWithUserResponse.fromResponseImpl(
-        listingWithUserData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetListingWithUserResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetListingWithUserResponse.fromResponse(
-        listingWithUserDataChangedPrice,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.listing.price, 110);
-    });
-
     test('nestedObjectSelectionRequired equals', () {
-      final result1 = GetListingWithUserResponse.fromResponse(
+      final result1 = GetListingWithUserResponse.fromJson(
         listingWithUserData,
       );
-      final result2 = GetListingWithUserResponse.fromResponse(
+      final result2 = GetListingWithUserResponse.fromJson(
         listingWithUserData,
       );
       expect(result1, equals(result2));
@@ -127,7 +102,7 @@ void main() {
     final listingOptNullData = {"listingOpt": null};
 
     test('nestedObjectSelectionOptional deserialize with value', () {
-      final result = GetListingOptWithUserResponse.fromResponse(
+      final result = GetListingOptWithUserResponse.fromJson(
         listingOptWithUserData,
       );
       expect(result.listingOpt?.id, "foo");
@@ -139,14 +114,14 @@ void main() {
     });
 
     test('nestedObjectSelectionOptional deserialize null value', () {
-      final result = GetListingOptWithUserResponse.fromResponse(
+      final result = GetListingOptWithUserResponse.fromJson(
         listingOptNullData,
       );
       expect(result.listingOpt, null);
     });
 
     test('nestedObjectSelectionOptional serialize with value', () {
-      final initial = GetListingOptWithUserResponse.fromResponse(
+      final initial = GetListingOptWithUserResponse.fromJson(
         listingOptWithUserData,
       );
       final json = initial.toJson();
@@ -154,115 +129,24 @@ void main() {
     });
 
     test('nestedObjectSelectionOptional serialize null', () {
-      final initial = GetListingOptWithUserResponse.fromResponse(
+      final initial = GetListingOptWithUserResponse.fromJson(
         listingOptNullData,
       );
       final json = initial.toJson();
       expect(json, listingOptNullData);
     });
 
-    test(
-      'nestedObjectSelectionOptional cacheNormalization null to some',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (
-          result,
-          updateCtx,
-        ) = GetListingOptWithUserResponse.fromResponseImpl(
-          listingOptNullData,
-          ctx,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetListingOptWithUserResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetListingOptWithUserResponse.fromResponse(
-          listingOptWithUserData,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-      },
-    );
-
-    test(
-      'nestedObjectSelectionOptional cacheNormalization some to none',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (
-          result,
-          updateCtx,
-        ) = GetListingOptWithUserResponse.fromResponseImpl(
-          listingOptWithUserData,
-          ctx,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetListingOptWithUserResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetListingOptWithUserResponse.fromResponse(
-          listingOptNullData,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-      },
-    );
-
-    test(
-      'nestedObjectSelectionOptional cacheNormalization some to some',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (
-          result,
-          updateCtx,
-        ) = GetListingOptWithUserResponse.fromResponseImpl(
-          listingOptWithUserData,
-          ctx,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetListingOptWithUserResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetListingOptWithUserResponse.fromResponse(
-          listingOptWithUserDataChangedPrice,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.listingOpt?.price, 110);
-      },
-    );
-
     test('nestedObjectSelectionOptional equals', () {
-      final result1 = GetListingOptWithUserResponse.fromResponse(
+      final result1 = GetListingOptWithUserResponse.fromJson(
         listingOptWithUserData,
       );
-      final result2 = GetListingOptWithUserResponse.fromResponse(
+      final result2 = GetListingOptWithUserResponse.fromJson(
         listingOptWithUserData,
       );
-      final result3 = GetListingOptWithUserResponse.fromResponse(
+      final result3 = GetListingOptWithUserResponse.fromJson(
         listingOptNullData,
       );
-      final result4 = GetListingOptWithUserResponse.fromResponse(
+      final result4 = GetListingOptWithUserResponse.fromJson(
         listingOptNullData,
       );
 
@@ -284,15 +168,6 @@ void main() {
       },
     };
 
-    final listingWithUserOptDataChangedPrice = {
-      "listing": {
-        "id": "foo",
-        "name": "video games",
-        "price": 110,
-        "userOpt": {"id": "user1", "name": "John Doe"},
-      },
-    };
-
     final listingWithUserOptNullData = {
       "listing": {
         "id": "bar",
@@ -305,7 +180,7 @@ void main() {
     test(
       'nestedObjectSelectionRootRequiredChildOptional deserialize child some',
       () {
-        final result = GetListingWithUserOptResponse.fromResponse(
+        final result = GetListingWithUserOptResponse.fromJson(
           listingWithUserOptData,
         );
         expect(result.listing.id, "foo");
@@ -319,7 +194,7 @@ void main() {
     test(
       'nestedObjectSelectionRootRequiredChildOptional deserialize child null',
       () {
-        final result = GetListingWithUserOptResponse.fromResponse(
+        final result = GetListingWithUserOptResponse.fromJson(
           listingWithUserOptNullData,
         );
         expect(result.listing.id, "bar");
@@ -332,7 +207,7 @@ void main() {
     test(
       'nestedObjectSelectionRootRequiredChildOptional serialize child some',
       () {
-        final initial = GetListingWithUserOptResponse.fromResponse(
+        final initial = GetListingWithUserOptResponse.fromJson(
           listingWithUserOptData,
         );
         final json = initial.toJson();
@@ -343,7 +218,7 @@ void main() {
     test(
       'nestedObjectSelectionRootRequiredChildOptional serialize child null',
       () {
-        final initial = GetListingWithUserOptResponse.fromResponse(
+        final initial = GetListingWithUserOptResponse.fromJson(
           listingWithUserOptNullData,
         );
         final json = initial.toJson();
@@ -351,48 +226,17 @@ void main() {
       },
     );
 
-    test(
-      'nestedObjectSelectionRootRequiredChildOptional cacheNormalization',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (
-          result,
-          updateCtx,
-        ) = GetListingWithUserOptResponse.fromResponseImpl(
-          listingWithUserOptData,
-          ctx,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetListingWithUserOptResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetListingWithUserOptResponse.fromResponse(
-          listingWithUserOptDataChangedPrice,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.listing.price, 110);
-      },
-    );
-
     test('nestedObjectSelectionRootRequiredChildOptional equals', () {
-      final result1 = GetListingWithUserOptResponse.fromResponse(
+      final result1 = GetListingWithUserOptResponse.fromJson(
         listingWithUserOptData,
       );
-      final result2 = GetListingWithUserOptResponse.fromResponse(
+      final result2 = GetListingWithUserOptResponse.fromJson(
         listingWithUserOptData,
       );
-      final result3 = GetListingWithUserOptResponse.fromResponse(
+      final result3 = GetListingWithUserOptResponse.fromJson(
         listingWithUserOptNullData,
       );
-      final result4 = GetListingWithUserOptResponse.fromResponse(
+      final result4 = GetListingWithUserOptResponse.fromJson(
         listingWithUserOptNullData,
       );
 
@@ -413,22 +257,12 @@ void main() {
         "userOpt": {"id": "user1", "name": "John Doe"},
       },
     };
-
-    final listingOptWithUserOptDataChangedPrice = {
-      "listingOpt": {
-        "id": "foo",
-        "name": "video games",
-        "price": 110,
-        "userOpt": {"id": "user1", "name": "John Doe"},
-      },
-    };
-
     final listingOptWithUserOptNullData = {"listingOpt": null};
 
     test(
       'nestedObjectSelectionRootOptionalChildOptional deserialize with value',
       () {
-        final result = GetListinOptWithUserOptResponse.fromResponse(
+        final result = GetListinOptWithUserOptResponse.fromJson(
           listingOptWithUserOptData,
         );
         expect(result.listingOpt?.id, "foo");
@@ -442,7 +276,7 @@ void main() {
     test(
       'nestedObjectSelectionRootOptionalChildOptional deserialize null value',
       () {
-        final result = GetListinOptWithUserOptResponse.fromResponse(
+        final result = GetListinOptWithUserOptResponse.fromJson(
           listingOptWithUserOptNullData,
         );
         expect(result.listingOpt, null);
@@ -452,7 +286,7 @@ void main() {
     test(
       'nestedObjectSelectionRootOptionalChildOptional serialize with value',
       () {
-        final initial = GetListinOptWithUserOptResponse.fromResponse(
+        final initial = GetListinOptWithUserOptResponse.fromJson(
           listingOptWithUserOptData,
         );
         final json = initial.toJson();
@@ -463,7 +297,7 @@ void main() {
     test(
       'nestedObjectSelectionRootOptionalChildOptional serialize null value',
       () {
-        final initial = GetListinOptWithUserOptResponse.fromResponse(
+        final initial = GetListinOptWithUserOptResponse.fromJson(
           listingOptWithUserOptNullData,
         );
         final json = initial.toJson();
@@ -471,48 +305,17 @@ void main() {
       },
     );
 
-    test(
-      'nestedObjectSelectionRootOptionalChildOptional cacheNormalization',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (
-          result,
-          updateCtx,
-        ) = GetListinOptWithUserOptResponse.fromResponseImpl(
-          listingOptWithUserOptData,
-          ctx,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetListinOptWithUserOptResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetListinOptWithUserOptResponse.fromResponse(
-          listingOptWithUserOptDataChangedPrice,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.listingOpt?.price, 110);
-      },
-    );
-
     test('nestedObjectSelectionRootOptionalChildOptional equals', () {
-      final result1 = GetListinOptWithUserOptResponse.fromResponse(
+      final result1 = GetListinOptWithUserOptResponse.fromJson(
         listingOptWithUserOptData,
       );
-      final result2 = GetListinOptWithUserOptResponse.fromResponse(
+      final result2 = GetListinOptWithUserOptResponse.fromJson(
         listingOptWithUserOptData,
       );
-      final result3 = GetListinOptWithUserOptResponse.fromResponse(
+      final result3 = GetListinOptWithUserOptResponse.fromJson(
         listingOptWithUserOptNullData,
       );
-      final result4 = GetListinOptWithUserOptResponse.fromResponse(
+      final result4 = GetListinOptWithUserOptResponse.fromJson(
         listingOptWithUserOptNullData,
       );
 

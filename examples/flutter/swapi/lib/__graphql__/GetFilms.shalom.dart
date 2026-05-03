@@ -19,7 +19,7 @@ class GetFilmsResponse {
   // keywordargs constructor
   GetFilmsResponse({this.allFilms});
 
-  static GetFilmsResponse fromResponse(shalom_core.JsonObject data) {
+  static GetFilmsResponse fromJson(shalom_core.JsonObject data) {
     return fromJson(data);
   }
 

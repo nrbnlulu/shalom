@@ -217,7 +217,7 @@ void main() {
   group('List of Interfaces Required - [Vehicle!]!', () {
     test('vehiclesRequired deserialize mixed types', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
-      final result = GetVehiclesRequiredResponse.fromResponse(
+      final result = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
         variables: variables,
       );
@@ -274,7 +274,7 @@ void main() {
 
     test('vehiclesRequired deserialize empty list', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
-      final result = GetVehiclesRequiredResponse.fromResponse(
+      final result = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredEmptyData,
         variables: variables,
       );
@@ -283,7 +283,7 @@ void main() {
 
     test('vehiclesRequired toJson', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
-      final initial = GetVehiclesRequiredResponse.fromResponse(
+      final initial = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
         variables: variables,
       );
@@ -293,11 +293,11 @@ void main() {
 
     test('vehiclesRequired equals', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
-      final result1 = GetVehiclesRequiredResponse.fromResponse(
+      final result1 = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
         variables: variables,
       );
-      final result2 = GetVehiclesRequiredResponse.fromResponse(
+      final result2 = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
         variables: variables,
       );
@@ -306,11 +306,11 @@ void main() {
 
     test('vehiclesRequired not equals different data', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
-      final result1 = GetVehiclesRequiredResponse.fromResponse(
+      final result1 = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
         variables: variables,
       );
-      final result2 = GetVehiclesRequiredResponse.fromResponse(
+      final result2 = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredDataChanged,
         variables: variables,
       );
@@ -321,7 +321,7 @@ void main() {
   group('List of Interfaces Optional - [Vehicle!]', () {
     test('vehiclesOptional deserialize with data', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
-      final result = GetVehiclesOptionalResponse.fromResponse(
+      final result = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalData,
         variables: variables,
       );
@@ -363,7 +363,7 @@ void main() {
 
     test('vehiclesOptional deserialize null', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
-      final result = GetVehiclesOptionalResponse.fromResponse(
+      final result = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalNullData,
         variables: variables,
       );
@@ -372,7 +372,7 @@ void main() {
 
     test('vehiclesOptional toJson with data', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
-      final initial = GetVehiclesOptionalResponse.fromResponse(
+      final initial = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalData,
         variables: variables,
       );
@@ -382,7 +382,7 @@ void main() {
 
     test('vehiclesOptional toJson null', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
-      final initial = GetVehiclesOptionalResponse.fromResponse(
+      final initial = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalNullData,
         variables: variables,
       );
@@ -392,11 +392,11 @@ void main() {
 
     test('vehiclesOptional equals', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
-      final result1 = GetVehiclesOptionalResponse.fromResponse(
+      final result1 = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalData,
         variables: variables,
       );
-      final result2 = GetVehiclesOptionalResponse.fromResponse(
+      final result2 = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalData,
         variables: variables,
       );
@@ -407,7 +407,7 @@ void main() {
   group('List of Interfaces Optional Items - [Vehicle]!', () {
     test('optionalVehicles deserialize with nulls', () {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
-      final result = GetOptionalVehiclesResponse.fromResponse(
+      final result = GetOptionalVehiclesResponse.fromJson(
         optionalVehiclesData,
         variables: variables,
       );
@@ -444,7 +444,7 @@ void main() {
 
     test('optionalVehicles toJson', () {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
-      final initial = GetOptionalVehiclesResponse.fromResponse(
+      final initial = GetOptionalVehiclesResponse.fromJson(
         optionalVehiclesData,
         variables: variables,
       );
@@ -454,11 +454,11 @@ void main() {
 
     test('optionalVehicles equals', () {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
-      final result1 = GetOptionalVehiclesResponse.fromResponse(
+      final result1 = GetOptionalVehiclesResponse.fromJson(
         optionalVehiclesData,
         variables: variables,
       );
-      final result2 = GetOptionalVehiclesResponse.fromResponse(
+      final result2 = GetOptionalVehiclesResponse.fromJson(
         optionalVehiclesData,
         variables: variables,
       );
@@ -469,7 +469,7 @@ void main() {
   group('List of Interfaces Fully Optional - [Vehicle]', () {
     test('vehiclesFullyOptional deserialize with data and nulls', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
-      final result = GetVehiclesFullyOptionalResponse.fromResponse(
+      final result = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalData,
         variables: variables,
       );
@@ -494,7 +494,7 @@ void main() {
 
     test('vehiclesFullyOptional deserialize null list', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
-      final result = GetVehiclesFullyOptionalResponse.fromResponse(
+      final result = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalNullData,
         variables: variables,
       );
@@ -503,7 +503,7 @@ void main() {
 
     test('vehiclesFullyOptional toJson with data', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
-      final initial = GetVehiclesFullyOptionalResponse.fromResponse(
+      final initial = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalData,
         variables: variables,
       );
@@ -513,7 +513,7 @@ void main() {
 
     test('vehiclesFullyOptional toJson null', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
-      final initial = GetVehiclesFullyOptionalResponse.fromResponse(
+      final initial = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalNullData,
         variables: variables,
       );
@@ -523,11 +523,11 @@ void main() {
 
     test('vehiclesFullyOptional equals', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
-      final result1 = GetVehiclesFullyOptionalResponse.fromResponse(
+      final result1 = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalData,
         variables: variables,
       );
-      final result2 = GetVehiclesFullyOptionalResponse.fromResponse(
+      final result2 = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalData,
         variables: variables,
       );
@@ -538,7 +538,7 @@ void main() {
   group('List of Interfaces With Arguments', () {
     test('vehiclesWithArgs deserialize all types', () {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
-      final result = GetVehiclesWithArgsResponse.fromResponse(
+      final result = GetVehiclesWithArgsResponse.fromJson(
         vehiclesWithArgsData,
         variables: variables,
       );
@@ -586,7 +586,7 @@ void main() {
 
     test('vehiclesWithArgs toJson', () {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
-      final initial = GetVehiclesWithArgsResponse.fromResponse(
+      final initial = GetVehiclesWithArgsResponse.fromJson(
         vehiclesWithArgsData,
         variables: variables,
       );
@@ -596,11 +596,11 @@ void main() {
 
     test('vehiclesWithArgs equals', () {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
-      final result1 = GetVehiclesWithArgsResponse.fromResponse(
+      final result1 = GetVehiclesWithArgsResponse.fromJson(
         vehiclesWithArgsData,
         variables: variables,
       );
-      final result2 = GetVehiclesWithArgsResponse.fromResponse(
+      final result2 = GetVehiclesWithArgsResponse.fromJson(
         vehiclesWithArgsData,
         variables: variables,
       );
@@ -613,7 +613,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
 
-      var (result, updateCtx) = GetVehiclesRequiredResponse.fromResponseImpl(
+      var (result, updateCtx) = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
         ctx,
         variables,
@@ -635,7 +635,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetVehiclesRequiredResponse.fromResponse(
+      final nextResult = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredDataChanged,
         ctx: ctx,
         variables: variables,
@@ -652,7 +652,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
 
-      var (result, updateCtx) = GetVehiclesRequiredResponse.fromResponseImpl(
+      var (result, updateCtx) = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
         ctx,
         variables,
@@ -670,7 +670,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetVehiclesRequiredResponse.fromResponse(
+      final nextResult = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredTypeChanged,
         ctx: ctx,
         variables: variables,
@@ -688,7 +688,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
 
-      var (result, updateCtx) = GetVehiclesRequiredResponse.fromResponseImpl(
+      var (result, updateCtx) = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
         ctx,
         variables,
@@ -703,7 +703,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetVehiclesRequiredResponse.fromResponse(
+      final nextResult = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredLengthChanged,
         ctx: ctx,
         variables: variables,
@@ -718,7 +718,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
 
-      var (result, updateCtx) = GetVehiclesOptionalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalNullData,
         ctx,
         variables,
@@ -733,7 +733,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetVehiclesOptionalResponse.fromResponse(
+      final nextResult = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalData,
         ctx: ctx,
         variables: variables,
@@ -749,7 +749,7 @@ void main() {
       final ctx = ShalomCtx.withCapacity();
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
 
-      var (result, updateCtx) = GetVehiclesOptionalResponse.fromResponseImpl(
+      var (result, updateCtx) = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalData,
         ctx,
         variables,
@@ -764,7 +764,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult = GetVehiclesOptionalResponse.fromResponse(
+      final nextResult = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalNullData,
         ctx: ctx,
         variables: variables,
@@ -792,7 +792,7 @@ void main() {
         ],
       };
 
-      var (result, updateCtx) = GetVehiclesWithArgsResponse.fromResponseImpl(
+      var (result, updateCtx) = GetVehiclesWithArgsResponse.fromJson(
         initialData,
         ctx,
         variables,
@@ -823,7 +823,7 @@ void main() {
         ],
       };
 
-      final nextResult = GetVehiclesWithArgsResponse.fromResponse(
+      final nextResult = GetVehiclesWithArgsResponse.fromJson(
         updatedData,
         ctx: ctx,
         variables: variables,
@@ -841,7 +841,7 @@ void main() {
     final variables = GetVehiclesRequiredVariables(maxLength: 100);
 
     test('vehiclesRequired filter to cars only', () {
-      final result = GetVehiclesRequiredResponse.fromResponse(
+      final result = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
         variables: variables,
       );
@@ -854,7 +854,7 @@ void main() {
     });
 
     test('vehiclesRequired filter to motorcycles only', () {
-      final result = GetVehiclesRequiredResponse.fromResponse(
+      final result = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
         variables: variables,
       );
@@ -867,7 +867,7 @@ void main() {
     });
 
     test('vehiclesRequired filter to bicycles only', () {
-      final result = GetVehiclesRequiredResponse.fromResponse(
+      final result = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
         variables: variables,
       );
@@ -901,7 +901,7 @@ void main() {
         ],
       };
 
-      final result = GetVehiclesRequiredResponse.fromResponse(
+      final result = GetVehiclesRequiredResponse.fromJson(
         dataWithNoBicycles,
         variables: variables,
       );
@@ -940,7 +940,7 @@ void main() {
         ],
       };
 
-      final result = GetVehiclesRequiredResponse.fromResponse(
+      final result = GetVehiclesRequiredResponse.fromJson(
         dataWithMultipleCars,
         variables: variables,
       );
