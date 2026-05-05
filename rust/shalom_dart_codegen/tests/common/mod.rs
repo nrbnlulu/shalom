@@ -71,6 +71,7 @@ fn run_codegen(cwd: &Path, strict: bool) {
         pwd: Some(cwd.to_path_buf()),
         strict,
         fmt: false,
+        gen_dir: None,
     })
     .unwrap()
 }

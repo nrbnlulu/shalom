@@ -12,12 +12,12 @@ pub struct WidgetAnnotation {
     pub source_path: PathBuf,
 }
 
-pub fn scan_dart_widgets(root: &PathBuf) -> Result<Vec<WidgetAnnotation>> {
+pub fn scan_dart_widgets(root: &PathBuf, gen_dir: &str) -> Result<Vec<WidgetAnnotation>> {
     let mut results = Vec::new();
 
     for entry in glob::glob(root.join("**/*.dart").to_str().unwrap())? {
         let entry = entry?;
-        if entry.to_string_lossy().contains("__graphql__") {
+        if entry.to_string_lossy().contains(gen_dir) {
             continue;
         }
         let content = match std::fs::read_to_string(&entry) {

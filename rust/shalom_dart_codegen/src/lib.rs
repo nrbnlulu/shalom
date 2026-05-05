@@ -345,6 +345,8 @@ pub struct CodegenOptions {
     pub pwd: Option<PathBuf>,
     pub strict: bool,
     pub fmt: bool,
+    /// Name of the subdirectory where generated files are placed (default: `__graphql__`).
+    pub gen_dir: Option<String>,
 }
 
 struct SchemaEnv<'a> {
@@ -556,6 +558,7 @@ fn register_executable_fns<'a, T>(
     env: &mut Environment<'a>,
     ctx: &SharedShalomGlobalContext,
     executable_ctx: Arc<T>,
+    gen_dir: String,
 ) -> anyhow::Result<()>
 where
     T: ExecutableContext + 'static,
@@ -584,7 +587,7 @@ where
             let mut res = Vec::new();
             for frag in executable_ctx_clone.typedefs().flatten_used_fragments() {
                 res.push(
-                    calculate_fragment_import_path(&current_file_path, &frag).unwrap_or_else(|_| panic!("Failed to calculate import path for fragment: {}; current file: {}",
+                    calculate_fragment_import_path(&current_file_path, &frag, &gen_dir).unwrap_or_else(|_| panic!("Failed to calculate import path for fragment: {}; current file: {}",
                         frag.name(),
                         current_file_path)),
                 );
@@ -751,10 +754,10 @@ fn selection_observe_fragment_name(selection: &FieldSelection, ctx: &SharedShalo
 }
 
 impl OperationEnv<'_> {
-    fn new(ctx: &SharedShalomGlobalContext, op_ctx: SharedOpCtx) -> anyhow::Result<Self> {
+    fn new(ctx: &SharedShalomGlobalContext, op_ctx: SharedOpCtx, gen_dir: &str) -> anyhow::Result<Self> {
         let mut env = Environment::new();
         register_default_template_fns(&mut env, ctx)?;
-        register_executable_fns(&mut env, ctx, op_ctx.clone())?;
+        register_executable_fns(&mut env, ctx, op_ctx.clone(), gen_dir.to_string())?;
 
         // Add function to check if a selection is defined in a fragment (not in the operation itself)
         let op_ctx_clone2 = op_ctx.clone();
@@ -820,12 +823,13 @@ impl FragmentEnv<'_> {
     fn new(
         ctx: &SharedShalomGlobalContext,
         fragment_ctx: SharedFragmentContext,
+        gen_dir: &str,
     ) -> anyhow::Result<Self> {
         let mut env = Environment::new();
         let ctx_clone = ctx.clone();
         register_default_template_fns(&mut env, &ctx_clone)?;
         let frag_ctx_clone = fragment_ctx.clone();
-        register_executable_fns(&mut env, ctx, frag_ctx_clone)?;
+        register_executable_fns(&mut env, ctx, frag_ctx_clone, gen_dir.to_string())?;
         let frag_ctx_clone1 = fragment_ctx.clone();
         let ctx_clone1 = ctx.clone();
 
@@ -898,8 +902,8 @@ fn get_schema_file_path(ctx: &ShalomGlobalContext) -> PathBuf {
     get_schema_output_dir(ctx).join(format!("schema.{}", END_OF_FILE))
 }
 
-fn get_generation_path_for_operation(document_path: &Path, operation_name: &str) -> PathBuf {
-    let p = document_path.parent().unwrap().join(GRAPHQL_DIRECTORY);
+fn get_generation_path_for_operation(document_path: &Path, operation_name: &str, gen_dir: &str) -> PathBuf {
+    let p = document_path.parent().unwrap().join(gen_dir);
     create_dir_if_not_exists(&p);
     p.join(format!("{}.{}", operation_name, END_OF_FILE))
 }
@@ -908,6 +912,7 @@ fn get_generation_path_for_operation(document_path: &Path, operation_name: &str)
 fn calculate_fragment_import_path(
     operation_file_path: &str,
     fragment: &FragmentContext,
+    gen_dir: &str,
 ) -> anyhow::Result<String> {
     let op_path = PathBuf::from(operation_file_path);
 
@@ -918,8 +923,8 @@ fn calculate_fragment_import_path(
         .parent()
         .ok_or_else(|| anyhow::anyhow!("Invalid operation file path {}", operation_file_path))?;
 
-    // Calculate the __graphql__ directory for the operation
-    let op_graphql_dir = op_dir.join("__graphql__");
+    // Calculate the generated-output directory for the operation
+    let op_graphql_dir = op_dir.join(gen_dir);
 
     // Calculate where the fragment will be generated
     let frag_parent_dir = fragment
@@ -927,7 +932,7 @@ fn calculate_fragment_import_path(
         .parent()
         .ok_or_else(|| anyhow::anyhow!("Invalid fragment file path"))?;
     let frag_generated_path = frag_parent_dir
-        .join("__graphql__")
+        .join(gen_dir)
         .join(format!("{}.shalom.dart", frag_name));
 
     log::debug!(
@@ -937,8 +942,8 @@ fn calculate_fragment_import_path(
         frag_generated_path
     );
 
-    // If in the same __graphql__ directory, use relative import
-    if op_graphql_dir == frag_parent_dir.join("__graphql__") {
+    // If in the same generated-output directory, use relative import
+    if op_graphql_dir == frag_parent_dir.join(gen_dir) {
         log::debug!("Same directory, using simple relative import");
         return Ok(format!("{}.shalom.dart", frag_name));
     }
@@ -955,15 +960,13 @@ fn calculate_fragment_import_path(
     Ok(import_path)
 }
 
-fn get_schema_import_path(relative_to: &Path, ctx: &ShalomGlobalContext) -> String {
-    // Calculate relative path from operation __graphql__ dir to schema file
+fn get_schema_import_path(relative_to: &Path, ctx: &ShalomGlobalContext, gen_dir: &str) -> String {
     let op_dir = relative_to.parent().unwrap();
-    let op_graphql_dir = op_dir.join("__graphql__");
+    let op_graphql_dir = op_dir.join(gen_dir);
     let schema_path = get_schema_file_path(ctx);
-    let schema_import_path = pathdiff::diff_paths(&schema_path, &op_graphql_dir)
+    pathdiff::diff_paths(&schema_path, &op_graphql_dir)
         .map(|p| p.to_string_lossy().replace('\\', "/"))
-        .unwrap_or_else(|| "schema.shalom.dart".to_string());
-    schema_import_path
+        .unwrap_or_else(|| "schema.shalom.dart".to_string())
 }
 
 fn generate_operations_file(
@@ -971,13 +974,12 @@ fn generate_operations_file(
     name: &str,
     operation: SharedOpCtx,
     custom_scalar_imports: HashMap<String, String>,
+    gen_dir: &str,
 ) -> anyhow::Result<()> {
-    let op_env = OperationEnv::new(ctx, operation.clone())?;
+    let op_env = OperationEnv::new(ctx, operation.clone(), gen_dir)?;
 
     let operation_file_path = operation.file_path.clone();
-    let generation_target = get_generation_path_for_operation(&operation_file_path, name);
-
-    // Calculate relative path from operation __graphql__ dir to schema file
+    let generation_target = get_generation_path_for_operation(&operation_file_path, name, gen_dir);
 
     // Collect multi-type list selections
     let multi_type_list_selections = collect_multi_type_list_selections(operation.as_ref());
@@ -985,7 +987,7 @@ fn generate_operations_file(
     let rendered_content = op_env.render_operation(
         &operation,
         custom_scalar_imports,
-        get_schema_import_path(&operation_file_path, ctx),
+        get_schema_import_path(&operation_file_path, ctx, gen_dir),
         multi_type_list_selections,
     );
     fs::write(&generation_target, rendered_content).unwrap();
@@ -1000,8 +1002,9 @@ fn generate_fragment_file(
     fragment_name: &str,
     fragment_ctx: SharedFragmentContext,
     custom_scalar_imports: HashMap<String, String>,
+    gen_dir: &str,
 ) -> anyhow::Result<()> {
-    let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone())?;
+    let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone(), gen_dir)?;
 
     // Collect multi-type list selections
     let multi_type_list_selections = collect_multi_type_list_selections(fragment_ctx.as_ref());
@@ -1009,15 +1012,14 @@ fn generate_fragment_file(
     let generated_content = fragment_env.render_fragment(
         fragment_ctx.clone(),
         custom_scalar_imports,
-        get_schema_import_path(&fragment_ctx.file_path, ctx),
+        get_schema_import_path(&fragment_ctx.file_path, ctx, gen_dir),
         multi_type_list_selections,
     );
 
-    // Generate fragment in __graphql__ subdirectory relative to where it's defined
     let fragment_source_dir = fragment_ctx.file_path.parent().ok_or_else(|| {
         anyhow::anyhow!("Invalid fragment file path: {:?}", fragment_ctx.file_path)
     })?;
-    let generation_dir = fragment_source_dir.join(GRAPHQL_DIRECTORY);
+    let generation_dir = fragment_source_dir.join(gen_dir);
     create_dir_if_not_exists(&generation_dir);
     let generation_path = generation_dir.join(format!("{}.{}", fragment_name, END_OF_FILE));
 
@@ -1029,6 +1031,8 @@ fn generate_fragment_file(
 pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
     let ctx = shalom_core::entrypoint::parse_directory(&options.pwd, options.strict)?;
     let pwd = &ctx.config.project_root;
+    let gen_dir_owned = options.gen_dir.unwrap_or_else(|| GRAPHQL_DIRECTORY.to_string());
+    let gen_dir = gen_dir_owned.as_str();
     info!("codegen started in working directory {}", pwd.display());
 
     let _template_env = SchemaEnv::new(&ctx)?;
@@ -1070,6 +1074,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
             &fragment_name,
             fragment_ctx,
             custom_scalar_imports.clone(),
+            gen_dir,
         );
         if let Err(err) = res {
             if options.strict {
@@ -1084,7 +1089,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
 
     // Generate operation files
     for (name, operation) in ctx.operations() {
-        let res = generate_operations_file(&ctx, &name, operation, custom_scalar_imports.clone());
+        let res = generate_operations_file(&ctx, &name, operation, custom_scalar_imports.clone(), gen_dir);
         if let Err(err) = res {
             if options.strict {
                 return Err(err);
@@ -1094,15 +1099,15 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
     }
 
     // V2: Scan Dart files for @query/@fragment annotations and generate sidecars
-    let widgets = scan_dart_widgets(pwd)?;
+    let widgets = scan_dart_widgets(pwd, gen_dir)?;
     if !widgets.is_empty() {
         info!("Found {} widget annotation(s) in Dart files", widgets.len());
-        generate_v2_widgets(&ctx, &widgets, custom_scalar_imports.clone())?;
+        generate_v2_widgets(&ctx, &widgets, custom_scalar_imports.clone(), gen_dir)?;
     }
 
     // V2: Generate registration function in schema.shalom.dart
     if !widgets.is_empty() {
-        generate_v2_registration_file(pwd, &widgets)?;
+        generate_v2_registration_file(pwd, &widgets, gen_dir)?;
     }
 
     if options.fmt {
@@ -1235,15 +1240,16 @@ fn generate_v2_widgets(
     ctx: &SharedShalomGlobalContext,
     widgets: &[WidgetAnnotation],
     custom_scalar_imports: HashMap<String, String>,
+    gen_dir: &str,
 ) -> Result<()> {
     let fragments = widgets.iter().filter(|w| !w.is_query);
     let queries = widgets.iter().filter(|w| w.is_query);
 
     for widget in fragments.chain(queries) {
         let res = if widget.is_query {
-            generate_v2_query_sidecar(ctx, widget, custom_scalar_imports.clone())
+            generate_v2_query_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
         } else {
-            generate_v2_fragment_sidecar(ctx, widget, custom_scalar_imports.clone())
+            generate_v2_fragment_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
         };
         if let Err(err) = res {
             return Err(anyhow::anyhow!(
@@ -1260,6 +1266,7 @@ fn generate_v2_query_sidecar(
     ctx: &SharedShalomGlobalContext,
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
+    gen_dir: &str,
 ) -> Result<()> {
     // Insert @observe immediately before the selection-set opening brace so the
     // directive lands in the correct position per the GraphQL grammar:
@@ -1278,29 +1285,29 @@ fn generate_v2_query_sidecar(
 
     let (_name, op_ctx) = operations.into_iter().next().unwrap();
 
-    let op_env = OperationEnv::new(ctx, op_ctx.clone())?;
+    let op_env = OperationEnv::new(ctx, op_ctx.clone(), gen_dir)?;
     let multi_type_list_selections = collect_multi_type_list_selections(op_ctx.as_ref());
 
     let rendered = op_env.render_operation(
         &op_ctx,
         custom_scalar_imports,
-        get_schema_import_path(&widget.source_path, ctx),
+        get_schema_import_path(&widget.source_path, ctx, gen_dir),
         multi_type_list_selections,
     );
 
     let source_dir = widget.source_path.parent().ok_or_else(|| {
         anyhow::anyhow!("Invalid source path: {:?}", widget.source_path)
     })?;
-    let gen_dir = source_dir.join(GRAPHQL_DIRECTORY);
-    create_dir_if_not_exists(&gen_dir);
-    let gen_path = gen_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
+    let out_dir = source_dir.join(gen_dir);
+    create_dir_if_not_exists(&out_dir);
+    let gen_path = out_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
 
     fs::write(&gen_path, rendered)?;
     info!("Generated V2 query sidecar: {}", gen_path.display());
 
     // Generate the Flutter widget file (imports + re-exports the types file above).
     let widget_rendered = op_env.render_widget(&op_ctx);
-    let widget_path = gen_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
+    let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
     fs::write(&widget_path, widget_rendered)?;
     info!("Generated V2 widget sidecar: {}", widget_path.display());
 
@@ -1312,6 +1319,7 @@ fn generate_v2_fragment_sidecar(
     ctx: &SharedShalomGlobalContext,
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
+    gen_dir: &str,
 ) -> Result<()> {
     // Insert @observe immediately before the selection-set opening brace so the
     // directive lands in the correct position per the GraphQL grammar:
@@ -1329,34 +1337,35 @@ fn generate_v2_fragment_sidecar(
         anyhow::anyhow!("fragment {} not found after registration", widget.class_name)
     })?;
 
-    let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone())?;
+    let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone(), gen_dir)?;
     let multi_type_list_selections = collect_multi_type_list_selections(fragment_ctx.as_ref());
 
     let rendered = fragment_env.render_fragment(
         fragment_ctx.clone(),
         custom_scalar_imports,
-        get_schema_import_path(&widget.source_path, ctx),
+        get_schema_import_path(&widget.source_path, ctx, gen_dir),
         multi_type_list_selections,
     );
 
     let source_dir = widget.source_path.parent().ok_or_else(|| {
         anyhow::anyhow!("Invalid source path: {:?}", widget.source_path)
     })?;
-    let gen_dir = source_dir.join(GRAPHQL_DIRECTORY);
-    create_dir_if_not_exists(&gen_dir);
-    let gen_path = gen_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
+    let out_dir = source_dir.join(gen_dir);
+    create_dir_if_not_exists(&out_dir);
+    let gen_path = out_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
 
     fs::write(&gen_path, rendered)?;
     info!("Generated V2 fragment sidecar: {}", gen_path.display());
     Ok(())
 }
 
-/// Generate the registration function in lib/__graphql__/shalom_init.shalom.dart
+/// Generate the registration function in lib/<gen_dir>/shalom_init.shalom.dart
 fn generate_v2_registration_file(
     root: &PathBuf,
     widgets: &[WidgetAnnotation],
+    gen_dir: &str,
 ) -> Result<()> {
-    let schema_dir = root.join("lib").join(GRAPHQL_DIRECTORY);
+    let schema_dir = root.join("lib").join(gen_dir);
     create_dir_if_not_exists(&schema_dir);
     let gen_path = schema_dir.join("shalom_init.shalom.dart");
 

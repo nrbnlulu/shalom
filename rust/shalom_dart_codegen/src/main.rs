@@ -33,6 +33,10 @@ enum Commands {
         /// Auto format generated Dart files after generation
         #[arg(short, long, default_value_t = false)]
         fmt: bool,
+
+        /// Name of the subdirectory where generated files are placed (default: __graphql__)
+        #[arg(long)]
+        gen_dir: Option<String>,
     },
     /// Watch for changes in GraphQL files and regenerate code
     Watch {
@@ -47,6 +51,10 @@ enum Commands {
         /// Auto format generated Dart files after generation
         #[arg(short, long, default_value_t = false)]
         fmt: bool,
+
+        /// Name of the subdirectory where generated files are placed (default: __graphql__)
+        #[arg(long)]
+        gen_dir: Option<String>,
     },
 }
 
@@ -58,16 +66,17 @@ fn main() -> Result<()> {
 
     let cli = Cli::parse();
     match cli.command {
-        Commands::Generate { path, strict, fmt } => {
+        Commands::Generate { path, strict, fmt, gen_dir } => {
             log::info!("Running code generation...");
             shalom_dart_codegen::codegen_entry_point(CodegenOptions {
                 pwd: path,
                 strict,
                 fmt,
+                gen_dir,
             })?;
             log::info!("Code generation completed successfully!");
         }
-        Commands::Watch { path, strict, fmt } => {
+        Commands::Watch { path, strict, fmt, gen_dir } => {
             log::info!("Starting watch mode...");
 
             // Add atomic flag to prevent concurrent codegen runs
@@ -84,6 +93,7 @@ fn main() -> Result<()> {
                         pwd: path.clone(),
                         strict,
                         fmt,
+                        gen_dir: gen_dir.clone(),
                     }) {
                         Ok(_) => log::info!("Initial code generation completed successfully!"),
                         Err(e) => log::error!("Initial code generation failed: {}", e),
@@ -137,6 +147,7 @@ fn main() -> Result<()> {
                                     pwd: path.clone(),
                                     strict,
                                     fmt,
+                                    gen_dir: gen_dir.clone(),
                                 }) {
                                     Ok(_) => log::info!("Code generation completed successfully!"),
                                     Err(e) => log::error!("Code generation failed: {}", e),
