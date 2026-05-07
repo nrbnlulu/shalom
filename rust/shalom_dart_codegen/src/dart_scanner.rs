@@ -8,6 +8,7 @@ pub enum WidgetKind {
     Query,
     Fragment,
     Mutation,
+    Subscription,
 }
 
 /// A widget annotation found in a Dart file.
@@ -44,9 +45,10 @@ fn parse_widgets_from_content(content: &str, source_path: &PathBuf) -> Vec<Widge
     let mut results = Vec::new();
 
     for (kind, tag) in [
-        (WidgetKind::Query,    r"@Query"),
-        (WidgetKind::Fragment, r"@Fragment"),
-        (WidgetKind::Mutation, r"@Mutation"),
+        (WidgetKind::Query,        r"@Query"),
+        (WidgetKind::Fragment,     r"@Fragment"),
+        (WidgetKind::Mutation,     r"@Mutation"),
+        (WidgetKind::Subscription, r"@Subscription"),
     ] {
         let re = Regex::new(&format!(
             r#"(?ms){}\s*\(\s*r?("""|''')\s*(.*?)\s*(?:"""|''')\s*\)\s*\n\s*class\s+(\w+)"#,

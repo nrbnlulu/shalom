@@ -1282,8 +1282,9 @@ fn generate_v2_widgets(
     let fragments = widgets.iter().filter(|w| w.widget_kind == WidgetKind::Fragment);
     let queries = widgets.iter().filter(|w| w.widget_kind == WidgetKind::Query);
     let mutations = widgets.iter().filter(|w| w.widget_kind == WidgetKind::Mutation);
+    let subscriptions = widgets.iter().filter(|w| w.widget_kind == WidgetKind::Subscription);
 
-    for widget in fragments.chain(queries).chain(mutations) {
+    for widget in fragments.chain(queries).chain(mutations).chain(subscriptions) {
         let res = match widget.widget_kind {
             WidgetKind::Query => {
                 generate_v2_query_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
@@ -1293,6 +1294,9 @@ fn generate_v2_widgets(
             }
             WidgetKind::Mutation => {
                 generate_v2_mutation_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
+            }
+            WidgetKind::Subscription => {
+                generate_v2_subscription_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
             }
         };
         if let Err(err) = res {
@@ -1449,6 +1453,55 @@ fn generate_v2_mutation_sidecar(
     Ok(())
 }
 
+/// Generate a sidecar for a @subscription annotated widget.
+fn generate_v2_subscription_sidecar(
+    ctx: &SharedShalomGlobalContext,
+    widget: &WidgetAnnotation,
+    custom_scalar_imports: HashMap<String, String>,
+    gen_dir: &str,
+) -> Result<()> {
+    let full_sdl = format!(
+        "subscription {} {}",
+        widget.class_name,
+        widget.sdl.replacen('{', "@observe {", 1)
+    );
+
+    let path = PathBuf::from(format!("{}.dart", widget.class_name));
+    let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &path)?;
+    if operations.is_empty() {
+        return Err(anyhow::anyhow!("no operations parsed for {}", widget.class_name));
+    }
+
+    let (_name, op_ctx) = operations.into_iter().next().unwrap();
+
+    let op_env = OperationEnv::new(ctx, op_ctx.clone(), gen_dir)?;
+    let multi_type_list_selections = collect_multi_type_list_selections(op_ctx.as_ref());
+
+    let rendered = op_env.render_operation(
+        &op_ctx,
+        custom_scalar_imports,
+        get_schema_import_path(&widget.source_path, ctx, gen_dir),
+        multi_type_list_selections,
+    );
+
+    let source_dir = widget.source_path.parent().ok_or_else(|| {
+        anyhow::anyhow!("Invalid source path: {:?}", widget.source_path)
+    })?;
+    let out_dir = source_dir.join(gen_dir);
+    create_dir_if_not_exists(&out_dir);
+    let gen_path = out_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
+
+    fs::write(&gen_path, rendered)?;
+    info!("Generated V2 subscription sidecar: {}", gen_path.display());
+
+    let widget_rendered = op_env.render_widget(&op_ctx);
+    let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
+    fs::write(&widget_path, widget_rendered)?;
+    info!("Generated V2 subscription widget sidecar: {}", widget_path.display());
+
+    Ok(())
+}
+
 /// Generate the registration function in lib/<gen_dir>/shalom_init.shalom.dart
 fn generate_v2_registration_file(
     root: &PathBuf,
@@ -1463,7 +1516,7 @@ fn generate_v2_registration_file(
     lines.push("// ignore_for_file: unused_import".to_string());
     lines.push("import 'package:shalom/shalom.dart';".to_string());
     lines.push(String::new());
-    lines.push("/// Register all @Query, @Fragment, and @Mutation operations with the Shalom client.".to_string());
+    lines.push("/// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.".to_string());
     lines.push("Future<void> registerShalomDefinitions(ShalomRuntimeClient client) async {".to_string());
 
     // Register fragments before operations so that operations that spread fragments
@@ -1490,6 +1543,15 @@ fn generate_v2_registration_file(
         lines.push("  await client.registerOperation(document: r'''".to_string());
         // Mutations do NOT get @observe — they are fire-and-forget, not reactive.
         lines.push(format!("mutation {} {}", widget.class_name, widget.sdl));
+        lines.push("''');".to_string());
+    }
+    for widget in widgets.iter().filter(|w| w.widget_kind == WidgetKind::Subscription) {
+        lines.push("  await client.registerOperation(document: r'''".to_string());
+        lines.push(format!(
+            "subscription {} {}",
+            widget.class_name,
+            widget.sdl.replacen('{', "@observe {", 1)
+        ));
         lines.push("''');".to_string());
     }
 

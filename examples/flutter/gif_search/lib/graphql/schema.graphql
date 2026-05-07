@@ -1,0 +1,48 @@
+type Album {
+  id: String!
+  name: String!
+  gifs: [Gif!]!
+}
+
+type AlbumEvent {
+  kind: AlbumEventKind!
+  album: Album!
+  gif: Gif
+}
+
+enum AlbumEventKind {
+  ALBUM_CREATED
+  GIF_ADDED_TO_ALBUM
+  GIF_REMOVED_FROM_ALBUM
+}
+
+type Gif {
+  id: String!
+  title: String!
+  url: String!
+  previewUrl: String
+}
+
+type GifSearchPage {
+  items: [Gif!]!
+  offset: Int!
+  limit: Int!
+  totalCount: Int
+  hasNextPage: Boolean!
+}
+
+type Mutation {
+  createAlbum(name: String!): Album!
+  addGifToAlbum(albumId: String!, gifId: String!, title: String!, url: String!, previewUrl: String = null): Album!
+  removeGifFromAlbum(albumId: String!, gifId: String!): Album!
+}
+
+type Query {
+  searchGifs(query: String!, offset: Int! = 0, limit: Int! = 20): GifSearchPage!
+  albums: [Album!]!
+  album(id: String!): Album
+}
+
+type Subscription {
+  albumEvents: AlbumEvent!
+}
