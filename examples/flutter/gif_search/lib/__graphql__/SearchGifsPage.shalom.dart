@@ -48,74 +48,73 @@ class SearchGifsPage_searchGifs {
   static String G__typename = "GifSearchPage";
 
   /// class members
-  final int offset;
-
   final int? totalCount;
-
-  final int limit;
-
-  final List<GifWidgetRef> items;
 
   final bool hasNextPage;
 
+  final List<GifWidgetRef> items;
+
+  final int limit;
+
+  final int offset;
+
   // keywordargs constructor
   SearchGifsPage_searchGifs({
-    required this.offset,
-
     this.totalCount,
 
-    required this.limit,
+    required this.hasNextPage,
 
     required this.items,
 
-    required this.hasNextPage,
+    required this.limit,
+
+    required this.offset,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is SearchGifsPage_searchGifs &&
-            offset == other.offset &&
             totalCount == other.totalCount &&
-            limit == other.limit &&
+            hasNextPage == other.hasNextPage &&
             const ListEquality().equals(items, other.items) &&
-            hasNextPage == other.hasNextPage);
+            limit == other.limit &&
+            offset == other.offset);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    offset,
-
     totalCount,
 
-    limit,
+    hasNextPage,
 
     items,
 
-    hasNextPage,
+    limit,
+
+    offset,
 
     SearchGifsPage_searchGifs.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'offset': this.offset,
-
       'totalCount': this.totalCount,
 
-      'limit': this.limit,
+      'hasNextPage': this.hasNextPage,
 
       'items': this.items.map((e) => e.toJson()).toList(),
 
-      'hasNextPage': this.hasNextPage,
+      'limit': this.limit,
+
+      'offset': this.offset,
     };
   }
 
   @experimental
   static SearchGifsPage_searchGifs fromJson(shalom_core.JsonObject data) {
-    final int offset$value = data['offset'] as int;
     final int? totalCount$value = data['totalCount'] as int?;
-    final int limit$value = data['limit'] as int;
+    final bool hasNextPage$value = data['hasNextPage'] as bool;
     final List<GifWidgetRef> items$value =
         (data['items'] as List<dynamic>)
             .map(
@@ -127,17 +126,18 @@ class SearchGifsPage_searchGifs {
               ),
             )
             .toList();
-    final bool hasNextPage$value = data['hasNextPage'] as bool;
+    final int limit$value = data['limit'] as int;
+    final int offset$value = data['offset'] as int;
     return SearchGifsPage_searchGifs(
-      offset: offset$value,
-
       totalCount: totalCount$value,
 
-      limit: limit$value,
+      hasNextPage: hasNextPage$value,
 
       items: items$value,
 
-      hasNextPage: hasNextPage$value,
+      limit: limit$value,
+
+      offset: offset$value,
     );
   }
 }
@@ -146,74 +146,74 @@ class SearchGifsPage_searchGifs_items {
   static String G__typename = "Gif";
 
   /// class members
-  final String? previewUrl;
+  final String title;
 
   final String url;
 
-  final String title;
-
   final String id;
+
+  final String? previewUrl;
 
   // keywordargs constructor
   SearchGifsPage_searchGifs_items({
-    this.previewUrl,
+    required this.title,
 
     required this.url,
 
-    required this.title,
-
     required this.id,
+
+    this.previewUrl,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is SearchGifsPage_searchGifs_items &&
-            previewUrl == other.previewUrl &&
-            url == other.url &&
             title == other.title &&
-            id == other.id);
+            url == other.url &&
+            id == other.id &&
+            previewUrl == other.previewUrl);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    previewUrl,
+    title,
 
     url,
 
-    title,
-
     id,
+
+    previewUrl,
 
     SearchGifsPage_searchGifs_items.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'previewUrl': this.previewUrl,
+      'title': this.title,
 
       'url': this.url,
 
-      'title': this.title,
-
       'id': this.id,
+
+      'previewUrl': this.previewUrl,
     };
   }
 
   @experimental
   static SearchGifsPage_searchGifs_items fromJson(shalom_core.JsonObject data) {
-    final String? previewUrl$value = data['previewUrl'] as String?;
-    final String url$value = data['url'] as String;
     final String title$value = data['title'] as String;
+    final String url$value = data['url'] as String;
     final String id$value = data['id'] as String;
+    final String? previewUrl$value = data['previewUrl'] as String?;
     return SearchGifsPage_searchGifs_items(
-      previewUrl: previewUrl$value,
+      title: title$value,
 
       url: url$value,
 
-      title: title$value,
-
       id: id$value,
+
+      previewUrl: previewUrl$value,
     );
   }
 }

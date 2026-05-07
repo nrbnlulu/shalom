@@ -23,14 +23,14 @@ extension type GifWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
 
 final class GifWidgetData {
   final String id;
-  final String title;
   final String? previewUrl;
+  final String title;
   final String url;
 
   const GifWidgetData({
     required this.id,
-    required this.title,
     required this.previewUrl,
+    required this.title,
     required this.url,
   });
 
@@ -39,25 +39,25 @@ final class GifWidgetData {
       identical(this, other) ||
       (other is GifWidgetData &&
           id == other.id &&
-          title == other.title &&
           previewUrl == other.previewUrl &&
+          title == other.title &&
           url == other.url);
 
   @override
-  int get hashCode => Object.hashAll([id, title, previewUrl, url]);
+  int get hashCode => Object.hashAll([id, previewUrl, title, url]);
 
   @experimental
   static GifWidgetData fromCache(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
-    final String title$value = data['title'] as String;
     final String? previewUrl$value = data['previewUrl'] as String?;
+    final String title$value = data['title'] as String;
     final String url$value = data['url'] as String;
     return GifWidgetData(
       id: id$value,
 
-      title: title$value,
-
       previewUrl: previewUrl$value,
+
+      title: title$value,
 
       url: url$value,
     );
@@ -67,9 +67,9 @@ final class GifWidgetData {
     return {
       'id': this.id,
 
-      'title': this.title,
-
       'previewUrl': this.previewUrl,
+
+      'title': this.title,
 
       'url': this.url,
     };

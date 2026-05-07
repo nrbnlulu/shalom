@@ -5,6 +5,7 @@ export 'PetQuery.shalom.dart';
 
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
+import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import 'PetQuery.shalom.dart';
 
@@ -48,6 +49,7 @@ class _$PetQueryState extends State<$PetQuery> {
           variables: widget.variables.toJson(),
 
           decoder: PetQueryData.fromCache,
+          executionPolicy: shalom_core.ExecutionPolicyInput.cacheFirst,
         )
         .listen(
           (data) => setState(() {

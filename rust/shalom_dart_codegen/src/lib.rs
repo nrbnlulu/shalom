@@ -1512,58 +1512,36 @@ fn generate_v2_registration_file(
     create_dir_if_not_exists(&schema_dir);
     let gen_path = schema_dir.join("shalom_init.shalom.dart");
 
-    let mut lines = Vec::new();
-    lines.push("// ignore_for_file: unused_import".to_string());
-    lines.push("import 'package:shalom/shalom.dart';".to_string());
-    lines.push(String::new());
-    lines.push("/// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.".to_string());
-    lines.push("Future<void> registerShalomDefinitions(ShalomRuntimeClient client) async {".to_string());
+    let with_observe = |sdl: &str| sdl.replacen('{', "@observe {", 1);
 
-    // Register fragments before operations so that operations that spread fragments
-    // can be validated successfully by the runtime.
-    for widget in widgets.iter().filter(|w| w.widget_kind == WidgetKind::Fragment) {
-        lines.push("  await client.registerFragment(document: r'''".to_string());
-        lines.push(format!(
-            "fragment {} {}",
-            widget.class_name,
-            widget.sdl.replacen('{', "@observe {", 1)
-        ));
-        lines.push("''');".to_string());
-    }
-    for widget in widgets
-        .iter()
-        .filter(|w| w.widget_kind == WidgetKind::Query)
-    {
-        lines.push("  await client.registerOperation(document: r'''".to_string());
-        lines.push(format!(
-            "query {} {}",
-            widget.class_name,
-            widget.sdl.replacen('{', "@observe {", 1)
-        ));
-        lines.push("''');".to_string());
-    }
-    for widget in widgets.iter().filter(|w| w.widget_kind == WidgetKind::Mutation) {
-        lines.push("  await client.registerOperation(document: r'''".to_string());
-        // Mutations do NOT get @observe — they are fire-and-forget, not reactive.
-        lines.push(format!("mutation {} {}", widget.class_name, widget.sdl));
-        lines.push("''');".to_string());
-    }
-    for widget in widgets
-        .iter()
-        .filter(|w| w.widget_kind == WidgetKind::Subscription)
-    {
-        lines.push("  await client.registerOperation(document: r'''".to_string());
-        lines.push(format!(
-            "subscription {} {}",
-            widget.class_name,
-            widget.sdl.replacen('{', "@observe {", 1)
-        ));
-        lines.push("''');".to_string());
-    }
+    let make_entries = |kind: WidgetKind, observe: bool| -> Vec<serde_json::Value> {
+        widgets
+            .iter()
+            .filter(|w| w.widget_kind == kind)
+            .map(|w| serde_json::json!({
+                "class_name": w.class_name,
+                // Mutations are fire-and-forget, not reactive — they don't get @observe.
+                "document": if observe { with_observe(&w.sdl) } else { w.sdl.clone() },
+            }))
+            .collect()
+    };
 
-    lines.push("}".to_string());
+    let fragments = make_entries(WidgetKind::Fragment, true);
+    let queries = make_entries(WidgetKind::Query, true);
+    let mutations = make_entries(WidgetKind::Mutation, false);
+    let subscriptions = make_entries(WidgetKind::Subscription, true);
 
-    fs::write(&gen_path, lines.join("\n"))?;
+    let mut env = Environment::new();
+    env.add_template("shalom_init", include_str!("../templates/shalom_init.dart.jinja"))?;
+    let template = env.get_template("shalom_init")?;
+    let rendered = template.render(context! {
+        fragments => fragments,
+        queries => queries,
+        mutations => mutations,
+        subscriptions => subscriptions,
+    })?;
+
+    fs::write(&gen_path, rendered)?;
     info!("Generated V2 registration file: {}", gen_path.display());
     Ok(())
 }

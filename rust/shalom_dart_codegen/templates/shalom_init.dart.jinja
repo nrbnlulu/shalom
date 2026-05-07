@@ -1,0 +1,18 @@
+// ignore_for_file: unused_import
+import 'package:shalom/shalom.dart';
+
+/// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
+Future<void> registerShalomDefinitions(ShalomRuntimeClient client) async {
+{% for w in fragments %}  await client.registerFragment(document: r'''
+fragment {{ w.class_name }} {{ w.document }}
+''');
+{% endfor %}{% for w in queries %}  await client.registerOperation(document: r'''
+query {{ w.class_name }} {{ w.document }}
+''');
+{% endfor %}{% for w in mutations %}  await client.registerOperation(document: r'''
+mutation {{ w.class_name }} {{ w.document }}
+''');
+{% endfor %}{% for w in subscriptions %}  await client.registerOperation(document: r'''
+subscription {{ w.class_name }} {{ w.document }}
+''');
+{% endfor %}}
