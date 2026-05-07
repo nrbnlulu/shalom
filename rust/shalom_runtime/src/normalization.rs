@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use serde_json::{Map, Value, json};
 
@@ -21,6 +21,10 @@ pub struct NormalizationResult {
     pub data: Value,
     pub changed: HashSet<CacheKey>,
     pub used_refs: HashSet<CacheKey>,
+    /// Populated only when the normalizer was created with `new_with_snapshot`.
+    /// Maps each top-level cache key written during this normalization to its
+    /// value *before* the write (None = key was absent).
+    pub snapshot: HashMap<CacheKey, Option<CacheRecord>>,
 }
 
 pub struct Normalizer<'a> {
@@ -30,6 +34,8 @@ pub struct Normalizer<'a> {
     changed: HashSet<CacheKey>,
     used_refs: HashSet<CacheKey>,
     claimed_refs: HashSet<CacheKey>,
+    capture_snapshot: bool,
+    snapshot: HashMap<CacheKey, Option<CacheRecord>>,
 }
 
 impl<'a> Normalizer<'a> {
@@ -45,6 +51,29 @@ impl<'a> Normalizer<'a> {
             changed: HashSet::new(),
             used_refs: HashSet::new(),
             claimed_refs: HashSet::new(),
+            capture_snapshot: false,
+            snapshot: HashMap::new(),
+        }
+    }
+
+    /// Same as `new` but snapshots the previous value of every top-level cache
+    /// key before overwriting it. The snapshot is returned in `NormalizationResult`.
+    pub fn new_with_snapshot(
+        global_ctx: SharedShalomGlobalContext,
+        cache: &'a mut NormalizedCache,
+        variables: Option<&'a Map<String, Value>>,
+    ) -> Self {
+        Self {
+            capture_snapshot: true,
+            snapshot: HashMap::new(),
+            ..Self::new(global_ctx, cache, variables)
+        }
+    }
+
+    /// Snapshot a top-level cache key the first time it is about to be written.
+    fn snapshot_key(&mut self, key: &str) {
+        if self.capture_snapshot && !self.snapshot.contains_key(key) {
+            self.snapshot.insert(key.to_string(), self.cache.get(key).cloned());
         }
     }
 
@@ -100,12 +129,14 @@ impl<'a> Normalizer<'a> {
             output.insert(field_name.clone(), normalized);
         }
 
+        self.snapshot_key(&root_key);
         self.cache.insert(root_key, next_root);
 
         Ok(NormalizationResult {
             data: Value::Object(output),
             changed: self.changed,
             used_refs: self.used_refs,
+            snapshot: self.snapshot,
         })
     }
 
@@ -476,6 +507,7 @@ impl<'a> Normalizer<'a> {
         }
 
         let cache_value = if let Some(entity_key) = entity_key.clone() {
+            self.snapshot_key(&entity_key);
             self.cache.insert(entity_key.clone(), next_record);
             CacheValue::Ref(entity_key)
         } else {

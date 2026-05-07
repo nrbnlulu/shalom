@@ -1,7 +1,7 @@
 // ignore_for_file: unused_import
 import 'package:shalom/shalom.dart';
 
-/// Register all @Query and @Fragment operations with the Shalom client.
+/// Register all @Query, @Fragment, and @Mutation operations with the Shalom client.
 Future<void> registerShalomDefinitions(ShalomRuntimeClient client) async {
   await client.registerFragment(document: r'''
 fragment PetWidget on Pet @observe {

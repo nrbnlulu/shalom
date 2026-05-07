@@ -55,4 +55,18 @@ impl ExecutionEngine {
         Normalizer::new(self.global_ctx.clone(), &mut cache, variables)
             .normalize_operation(op_ctx, data)
     }
+
+    /// Same as `normalize_response` but records the pre-write value of every
+    /// top-level cache key it touches.  The snapshot is returned in
+    /// `NormalizationResult::snapshot` and is used by optimistic rollback.
+    pub fn normalize_response_with_snapshot(
+        &self,
+        op_ctx: &SharedOpCtx,
+        data: Value,
+        variables: Option<&Map<String, Value>>,
+    ) -> anyhow::Result<NormalizationResult> {
+        let mut cache = self.cache.lock();
+        Normalizer::new_with_snapshot(self.global_ctx.clone(), &mut cache, variables)
+            .normalize_operation(op_ctx, data)
+    }
 }

@@ -8,6 +8,6 @@ pub mod runtime;
 pub mod selection;
 
 pub use runtime::{
-    ObservedRef, RuntimeConfig, RuntimeResponse, RuntimeResponseStream, ShalomRuntime,
-    SubscriptionId,
+    ObservedRef, OptimisticWriteId, RuntimeConfig, RuntimeResponse, RuntimeResponseStream,
+    ShalomRuntime, SubscriptionId,
 };

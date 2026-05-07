@@ -1,3 +1,65 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: PetWidget
@@ -7,45 +69,130 @@ import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
 
+
+
+
+
+
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+
+
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
 extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
-  shalom_core.JsonObject toJson() => {
-    'observable_id': _inner.observableId,
-    'anchor': _inner.anchor,
-  };
+  shalom_core.JsonObject toJson() => {'observable_id': _inner.observableId, 'anchor': _inner.anchor};
 }
 
+
+
+
+
 final class PetWidgetData {
-  final String id;
-  final String name;
+  final 
+    
+        String
+     name;
+  final 
+    
+        String
+     id;
+  
 
-  const PetWidgetData({required this.id, required this.name});
+  const PetWidgetData({
+    required this.name,
+    required this.id,
+    
+  });
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is PetWidgetData && id == other.id && name == other.name);
+  bool operator ==(Object other) => identical(this, other) || (other is PetWidgetData
+    && 
+    
+        
+            name == other.name
+        
+    
+
+    && 
+    
+        
+            id == other.id
+        
+    
+
+    
+  );
 
   @override
-  int get hashCode => Object.hashAll([id, name]);
+  int get hashCode => Object.hashAll([
+    name,
+    id,
+    
+  ]);
 
   @experimental
   static PetWidgetData fromCache(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
-    final String name$value = data['name'] as String;
-    return PetWidgetData(id: id$value, name: name$value);
+    final 
+    
+        String
+     name$value = 
+    
+        
+            
+                data['name'] as String
+            
+        
+    
+;
+    final 
+    
+        String
+     id$value = 
+    
+        
+            
+                data['id'] as String
+            
+        
+    
+;
+    return PetWidgetData(
+      
+          name: name$value,
+        
+      
+          id: id$value,
+        
+      );
   }
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'name': this.name};
+    return {
+      
+        'name': 
+    
+        
+            this.name
+        
+    
+,
+      
+        'id': 
+    
+        
+            this.id
+        
+    
+,
+      
+    };
   }
 }
+
 
 abstract class $PetWidget extends StatefulWidget {
   final PetWidgetRef ref;
@@ -85,13 +232,8 @@ class _$PetWidgetState extends State<$PetWidget> {
           decoder: PetWidgetData.fromCache,
         )
         .listen(
-          (data) => setState(() {
-            _data = data;
-            _error = null;
-          }),
-          onError: (e) => setState(() {
-            _error = e;
-          }),
+          (data) => setState(() { _data = data; _error = null; }),
+          onError: (e) => setState(() { _error = e; }),
         );
   }
 

@@ -298,8 +298,7 @@ void main() {
     });
 
     test('multipleFragmentsRequired - toJson', () {
-      final initial =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
+      final initial = GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsData,
       );
       final json = initial.toJson();
@@ -308,18 +307,15 @@ void main() {
 
     test('multipleFragmentsRequired - equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
+      final result1 = GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsData,
         ctx: ctx,
       );
-      final result2 =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
+      final result2 = GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsData,
         ctx: ctx,
       );
-      final result3 =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
+      final result3 = GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsDataChanged,
         ctx: ctx,
       );
@@ -348,8 +344,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
+      final nextResult = GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsDataChanged,
         ctx: ctx,
       );
@@ -413,8 +408,7 @@ void main() {
     });
 
     test('fragmentWithFieldsRequired - toJson', () {
-      final initial =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
+      final initial = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsData,
       );
       final json = initial.toJson();
@@ -423,18 +417,15 @@ void main() {
 
     test('fragmentWithFieldsRequired - equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
+      final result1 = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsData,
         ctx: ctx,
       );
-      final result2 =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
+      final result2 = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsData,
         ctx: ctx,
       );
-      final result3 =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
+      final result3 = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsDataChanged,
         ctx: ctx,
       );
@@ -463,8 +454,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
+      final nextResult = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsDataChanged,
         ctx: ctx,
       );
@@ -647,8 +637,7 @@ void main() {
     });
 
     test('optionalMultipleFragments - toJson', () {
-      final initial =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
+      final initial = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsData,
       );
       final json = initial.toJson();
@@ -657,18 +646,15 @@ void main() {
 
     test('optionalMultipleFragments - equals', () {
       final ctx = ShalomCtx.withCapacity();
-      final result1 =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
+      final result1 = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsData,
         ctx: ctx,
       );
-      final result2 =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
+      final result2 = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsData,
         ctx: ctx,
       );
-      final result3 =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
+      final result3 = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsNullData,
         ctx: ctx,
       );
@@ -697,8 +683,7 @@ void main() {
         hasChanged.complete(true);
       });
 
-      final nextResult =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
+      final nextResult = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsDataChanged,
         ctx: ctx,
       );

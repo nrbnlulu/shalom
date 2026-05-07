@@ -1,0 +1,12 @@
+type Query {
+  _placeholder: String
+}
+
+type User {
+  id: ID!
+  name: String!
+}
+
+type Mutation {
+  updateUserName(id: ID!, name: String!): User
+}

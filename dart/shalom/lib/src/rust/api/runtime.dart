@@ -55,6 +55,28 @@ Future<BigInt> request({
   variablesJson: variablesJson,
 );
 
+/// Write `data_json` to the cache as an optimistic response for the mutation
+/// named `op_name`.  Returns an opaque write ID.  Pass this to
+/// `rollback_optimistic` to undo the write.
+Future<BigInt> writeOptimistic({
+  required RuntimeHandle handle,
+  required String opName,
+  required String dataJson,
+}) => RustLib.instance.api.crateApiRuntimeWriteOptimistic(
+  handle: handle,
+  opName: opName,
+  dataJson: dataJson,
+);
+
+/// Undo a previous `write_optimistic` call.  No-op if the ID is not found.
+void rollbackOptimistic({
+  required RuntimeHandle handle,
+  required BigInt writeId,
+}) => RustLib.instance.api.crateApiRuntimeRollbackOptimistic(
+  handle: handle,
+  writeId: writeId,
+);
+
 /// Open a cache subscription for a pre-registered fragment at the given anchor.
 /// Returns the subscription ID to pass to `listen_subscription`.
 ///

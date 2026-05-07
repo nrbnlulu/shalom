@@ -1,0 +1,7 @@
+type Query {
+  _placeholder: String
+}
+
+type Mutation {
+  resetCache: Boolean
+}

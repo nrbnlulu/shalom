@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::pin::Pin;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -17,7 +17,7 @@ use shalom_core::operation::context::SharedOpCtx;
 use shalom_core::operation::fragments::SharedFragmentContext;
 use shalom_core::shalom_config::ShalomConfig;
 
-use crate::cache::NormalizedCache;
+use crate::cache::{CacheRecord, NormalizedCache};
 use crate::execution::ExecutionEngine;
 use crate::gc::{SubscriptionTracker, collect_garbage};
 use crate::normalization::NormalizationResult;
@@ -57,6 +57,27 @@ impl From<u64> for SubscriptionId {
 
 impl From<SubscriptionId> for u64 {
     fn from(value: SubscriptionId) -> Self { value.0 }
+}
+
+/// Opaque handle returned by `write_optimistic`; pass to `rollback_optimistic`
+/// to undo the cache write.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct OptimisticWriteId(u64);
+
+impl From<u64> for OptimisticWriteId {
+    fn from(value: u64) -> Self { Self(value) }
+}
+
+impl From<OptimisticWriteId> for u64 {
+    fn from(value: OptimisticWriteId) -> Self { value.0 }
+}
+
+struct OptimisticWrite {
+    /// Pre-write snapshot: top-level cache key → previous record (None = key was absent).
+    snapshot: HashMap<String, Option<CacheRecord>>,
+    /// The field-level ref keys that changed when this optimistic write was applied.
+    /// Used as the `changed` set when notifying subscribers during rollback.
+    changed_refs: HashSet<String>,
 }
 
 // ---------------------------------------------------------------------------
@@ -99,6 +120,10 @@ pub struct ShalomRuntime {
     operation_vars: Arc<Mutex<HashMap<String, Map<String, Value>>>>,
     /// Set to true when the runtime should stop background tasks.
     shutdown: Arc<AtomicBool>,
+    /// Pending optimistic writes keyed by their ID.
+    optimistic_writes: Arc<Mutex<HashMap<OptimisticWriteId, OptimisticWrite>>>,
+    /// Monotonic counter for generating `OptimisticWriteId`s.
+    next_optimistic_id: Arc<AtomicU64>,
 }
 
 impl Drop for ShalomRuntime {
@@ -170,6 +195,8 @@ impl ShalomRuntime {
             subscription_tracker: Arc::new(Mutex::new(SubscriptionTracker::new())),
             operation_vars: Arc::new(Mutex::new(HashMap::new())),
             shutdown: Arc::new(AtomicBool::new(false)),
+            optimistic_writes: Arc::new(Mutex::new(HashMap::new())),
+            next_optimistic_id: Arc::new(AtomicU64::new(0)),
         }
     }
 
@@ -367,6 +394,58 @@ impl ShalomRuntime {
         let result = self.engine.normalize_response(op_ctx, data, variables)?;
         self.notify_subscribers(&result.changed)?;
         Ok(result)
+    }
+
+    // -----------------------------------------------------------------------
+    // Optimistic writes
+    // -----------------------------------------------------------------------
+
+    /// Write `data` to the cache as an optimistic response for the mutation
+    /// named `op_name`.  Snapshots every top-level cache key before writing so
+    /// the change can be undone with `rollback_optimistic`.  Notifies all
+    /// affected subscribers immediately so the UI updates before the network
+    /// response arrives.
+    pub fn write_optimistic(
+        &self,
+        op_name: &str,
+        data: Value,
+    ) -> anyhow::Result<OptimisticWriteId> {
+        let op_ctx = self.operation_by_name(op_name)?;
+        let result = self
+            .engine
+            .normalize_response_with_snapshot(&op_ctx, data, None)?;
+        let id = OptimisticWriteId(self.next_optimistic_id.fetch_add(1, Ordering::Relaxed));
+        self.optimistic_writes.lock().insert(
+            id,
+            OptimisticWrite {
+                snapshot: result.snapshot,
+                changed_refs: result.changed.clone(),
+            },
+        );
+        self.notify_subscribers(&result.changed)?;
+        Ok(id)
+    }
+
+    /// Undo a previous `write_optimistic` call: restores all snapshotted cache
+    /// keys to their pre-write values and notifies affected subscribers.
+    /// No-op if `id` is not found (already rolled back or never written).
+    pub fn rollback_optimistic(&self, id: OptimisticWriteId) -> anyhow::Result<()> {
+        let write = match self.optimistic_writes.lock().remove(&id) {
+            Some(w) => w,
+            None => return Ok(()),
+        };
+        {
+            let cache = self.cache();
+            let mut cache = cache.lock();
+            for (key, maybe_record) in write.snapshot {
+                match maybe_record {
+                    Some(record) => cache.insert(key, record),
+                    None => { cache.remove(&key); }
+                }
+            }
+        }
+        self.notify_subscribers(&write.changed_refs)?;
+        Ok(())
     }
 
     // -----------------------------------------------------------------------

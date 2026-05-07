@@ -4,7 +4,7 @@ use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
 
 mod dart_scanner;
-pub use dart_scanner::{WidgetAnnotation, scan_dart_widgets};
+pub use dart_scanner::{WidgetAnnotation, WidgetKind, scan_dart_widgets};
 
 use shalom_core::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
@@ -375,6 +375,16 @@ fn register_default_template_fns<'a>(
     env.add_template(
         "operation_widget",
         include_str!("../templates/operation_widget.dart.jinja"),
+    )
+    .unwrap();
+    env.add_template(
+        "mutation",
+        include_str!("../templates/mutation.dart.jinja"),
+    )
+    .unwrap();
+    env.add_template(
+        "mutation_widget",
+        include_str!("../templates/mutation_widget.dart.jinja"),
     )
     .unwrap();
 
@@ -788,6 +798,33 @@ impl OperationEnv<'_> {
 
     fn render_widget(&self, operation_ctx: &OperationContext) -> String {
         let template = self.env.get_template("operation_widget").unwrap();
+        let ctx = context! {
+            context => context!{ operation => operation_ctx }
+        };
+        template.render(&ctx).unwrap()
+    }
+
+    fn render_mutation(
+        &self,
+        operation_ctx: &OperationContext,
+        custom_scalar_imports: HashMap<String, String>,
+        schema_import_path: String,
+        multi_type_list_selections: Vec<SharedListSelection>,
+    ) -> String {
+        let template = self.env.get_template("mutation").unwrap();
+        let ctx = context! {
+            context => context!{
+                operation => operation_ctx,
+                custom_scalar_imports => custom_scalar_imports,
+                schema_import_path => schema_import_path,
+                multi_type_list_selections => multi_type_list_selections,
+            }
+        };
+        template.render(&ctx).unwrap()
+    }
+
+    fn render_mutation_widget(&self, operation_ctx: &OperationContext) -> String {
+        let template = self.env.get_template("mutation_widget").unwrap();
         let ctx = context! {
             context => context!{ operation => operation_ctx }
         };
@@ -1242,14 +1279,21 @@ fn generate_v2_widgets(
     custom_scalar_imports: HashMap<String, String>,
     gen_dir: &str,
 ) -> Result<()> {
-    let fragments = widgets.iter().filter(|w| !w.is_query);
-    let queries = widgets.iter().filter(|w| w.is_query);
+    let fragments = widgets.iter().filter(|w| w.widget_kind == WidgetKind::Fragment);
+    let queries = widgets.iter().filter(|w| w.widget_kind == WidgetKind::Query);
+    let mutations = widgets.iter().filter(|w| w.widget_kind == WidgetKind::Mutation);
 
-    for widget in fragments.chain(queries) {
-        let res = if widget.is_query {
-            generate_v2_query_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
-        } else {
-            generate_v2_fragment_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
+    for widget in fragments.chain(queries).chain(mutations) {
+        let res = match widget.widget_kind {
+            WidgetKind::Query => {
+                generate_v2_query_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
+            }
+            WidgetKind::Fragment => {
+                generate_v2_fragment_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
+            }
+            WidgetKind::Mutation => {
+                generate_v2_mutation_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
+            }
         };
         if let Err(err) = res {
             return Err(anyhow::anyhow!(
@@ -1359,6 +1403,52 @@ fn generate_v2_fragment_sidecar(
     Ok(())
 }
 
+/// Generate a sidecar for a @mutation annotated class.
+fn generate_v2_mutation_sidecar(
+    ctx: &SharedShalomGlobalContext,
+    widget: &WidgetAnnotation,
+    custom_scalar_imports: HashMap<String, String>,
+    gen_dir: &str,
+) -> Result<()> {
+    // No @observe directive for mutations — they are fire-and-forget.
+    let full_sdl = format!("mutation {} {}", widget.class_name, widget.sdl);
+
+    let path = PathBuf::from(format!("{}.dart", widget.class_name));
+    let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &path)?;
+    if operations.is_empty() {
+        return Err(anyhow::anyhow!("no operations parsed for {}", widget.class_name));
+    }
+
+    let (_name, op_ctx) = operations.into_iter().next().unwrap();
+    let op_env = OperationEnv::new(ctx, op_ctx.clone(), gen_dir)?;
+    let multi_type_list_selections = collect_multi_type_list_selections(op_ctx.as_ref());
+
+    let source_dir = widget.source_path.parent().ok_or_else(|| {
+        anyhow::anyhow!("Invalid source path: {:?}", widget.source_path)
+    })?;
+    let out_dir = source_dir.join(gen_dir);
+    create_dir_if_not_exists(&out_dir);
+
+    // Data + Variables types file.
+    let rendered = op_env.render_mutation(
+        &op_ctx,
+        custom_scalar_imports,
+        get_schema_import_path(&widget.source_path, ctx, gen_dir),
+        multi_type_list_selections,
+    );
+    let gen_path = out_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
+    fs::write(&gen_path, rendered)?;
+    info!("Generated V2 mutation sidecar: {}", gen_path.display());
+
+    // $MutationName base class file.
+    let widget_rendered = op_env.render_mutation_widget(&op_ctx);
+    let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
+    fs::write(&widget_path, widget_rendered)?;
+    info!("Generated V2 mutation widget sidecar: {}", widget_path.display());
+
+    Ok(())
+}
+
 /// Generate the registration function in lib/<gen_dir>/shalom_init.shalom.dart
 fn generate_v2_registration_file(
     root: &PathBuf,
@@ -1373,12 +1463,12 @@ fn generate_v2_registration_file(
     lines.push("// ignore_for_file: unused_import".to_string());
     lines.push("import 'package:shalom/shalom.dart';".to_string());
     lines.push(String::new());
-    lines.push("/// Register all @Query and @Fragment operations with the Shalom client.".to_string());
+    lines.push("/// Register all @Query, @Fragment, and @Mutation operations with the Shalom client.".to_string());
     lines.push("Future<void> registerShalomDefinitions(ShalomRuntimeClient client) async {".to_string());
 
     // Register fragments before operations so that operations that spread fragments
     // can be validated successfully by the runtime.
-    for widget in widgets.iter().filter(|w| !w.is_query) {
+    for widget in widgets.iter().filter(|w| w.widget_kind == WidgetKind::Fragment) {
         lines.push("  await client.registerFragment(document: r'''".to_string());
         lines.push(format!(
             "fragment {} {}",
@@ -1387,13 +1477,19 @@ fn generate_v2_registration_file(
         ));
         lines.push("''');".to_string());
     }
-    for widget in widgets.iter().filter(|w| w.is_query) {
+    for widget in widgets.iter().filter(|w| w.widget_kind == WidgetKind::Query) {
         lines.push("  await client.registerOperation(document: r'''".to_string());
         lines.push(format!(
             "query {} {}",
             widget.class_name,
             widget.sdl.replacen('{', "@observe {", 1)
         ));
+        lines.push("''');".to_string());
+    }
+    for widget in widgets.iter().filter(|w| w.widget_kind == WidgetKind::Mutation) {
+        lines.push("  await client.registerOperation(document: r'''".to_string());
+        // Mutations do NOT get @observe — they are fire-and-forget, not reactive.
+        lines.push(format!("mutation {} {}", widget.class_name, widget.sdl));
         lines.push("''');".to_string());
     }
 

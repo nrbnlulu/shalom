@@ -9,7 +9,7 @@ use shalom_runtime::sansio_protocols::{
     GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request,
 };
 use shalom_runtime::{
-    ObservedRef, RuntimeConfig, RuntimeResponse, ShalomRuntime, SubscriptionId,
+    ObservedRef, OptimisticWriteId, RuntimeConfig, RuntimeResponse, ShalomRuntime, SubscriptionId,
 };
 
 pub use serde_json::{Map, Value};
@@ -157,6 +157,34 @@ pub async fn request(
     });
 
     Ok(sub_id.into())
+}
+
+// ---------------------------------------------------------------------------
+// Optimistic writes
+// ---------------------------------------------------------------------------
+
+/// Write `data_json` to the cache as an optimistic response for the mutation
+/// named `op_name`.  Returns an opaque write ID.  Pass this to
+/// `rollback_optimistic` to undo the write.
+#[frb]
+pub fn write_optimistic(
+    handle: &RuntimeHandle,
+    op_name: String,
+    data_json: String,
+) -> anyhow::Result<u64> {
+    let data: Value = serde_json::from_str(&data_json)?;
+    handle
+        .runtime
+        .write_optimistic(&op_name, data)
+        .map(u64::from)
+}
+
+/// Undo a previous `write_optimistic` call.  No-op if the ID is not found.
+#[frb(sync)]
+pub fn rollback_optimistic(handle: &RuntimeHandle, write_id: u64) -> anyhow::Result<()> {
+    handle
+        .runtime
+        .rollback_optimistic(OptimisticWriteId::from(write_id))
 }
 
 // ---------------------------------------------------------------------------

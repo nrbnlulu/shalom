@@ -153,3 +153,13 @@ fn test_flutter_user_widget() {
 fn test_flutter_pet_widget() {
     common::run_fluttre_tests("pet_widget_test.dart");
 }
+
+#[test]
+fn test_mutation_simple_dart() {
+    run_dart_tests_for_usecase("mutation_simple");
+}
+
+#[test]
+fn test_mutation_no_variables_dart() {
+    run_dart_tests_for_usecase("mutation_no_variables");
+}

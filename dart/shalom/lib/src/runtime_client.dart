@@ -152,6 +152,39 @@ class ShalomRuntimeClient {
   }
 
   // -------------------------------------------------------------------------
+  // Mutations
+  // -------------------------------------------------------------------------
+
+  /// Fire a pre-registered mutation named [name] and return the normalised
+  /// result as a one-shot [Future].  The mutation response is written into the
+  /// shared entity cache, triggering reactive updates on any query subscriptions
+  /// that watch the same entities.
+  Future<T> mutate<T>({
+    required String name,
+    Map<String, dynamic>? variables,
+    required T Function(JsonObject) decoder,
+  }) => request<T>(name: name, variables: variables, decoder: decoder).first;
+
+  /// Write [data] to the cache immediately as an optimistic response for the
+  /// mutation named [name].  Returns an opaque write ID that can be passed to
+  /// [rollbackOptimistic] to undo the write if the real response indicates
+  /// failure.
+  Future<BigInt> writeOptimistic({
+    required String name,
+    required JsonObject data,
+  }) => rs_runtime.writeOptimistic(
+    handle: _handle,
+    opName: name,
+    dataJson: jsonEncode(data),
+  );
+
+  /// Undo a previous [writeOptimistic] call, restoring the cache to its
+  /// pre-write state and re-notifying affected subscribers.  Idempotent — safe
+  /// to call more than once for the same [writeId].
+  void rollbackOptimistic(BigInt writeId) =>
+      rs_runtime.rollbackOptimistic(handle: _handle, writeId: writeId);
+
+  // -------------------------------------------------------------------------
   // Fragment subscription — cache only
   // -------------------------------------------------------------------------
 
