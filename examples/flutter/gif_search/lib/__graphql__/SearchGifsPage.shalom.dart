@@ -146,21 +146,21 @@ class SearchGifsPage_searchGifs_items {
   static String G__typename = "Gif";
 
   /// class members
-  final String title;
+  final String? previewUrl;
 
   final String url;
 
-  final String? previewUrl;
+  final String title;
 
   final String id;
 
   // keywordargs constructor
   SearchGifsPage_searchGifs_items({
-    required this.title,
+    this.previewUrl,
 
     required this.url,
 
-    this.previewUrl,
+    required this.title,
 
     required this.id,
   });
@@ -169,19 +169,19 @@ class SearchGifsPage_searchGifs_items {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is SearchGifsPage_searchGifs_items &&
-            title == other.title &&
-            url == other.url &&
             previewUrl == other.previewUrl &&
+            url == other.url &&
+            title == other.title &&
             id == other.id);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    title,
+    previewUrl,
 
     url,
 
-    previewUrl,
+    title,
 
     id,
 
@@ -190,11 +190,11 @@ class SearchGifsPage_searchGifs_items {
 
   shalom_core.JsonObject toJson() {
     return {
-      'title': this.title,
+      'previewUrl': this.previewUrl,
 
       'url': this.url,
 
-      'previewUrl': this.previewUrl,
+      'title': this.title,
 
       'id': this.id,
     };
@@ -202,16 +202,16 @@ class SearchGifsPage_searchGifs_items {
 
   @experimental
   static SearchGifsPage_searchGifs_items fromJson(shalom_core.JsonObject data) {
-    final String title$value = data['title'] as String;
-    final String url$value = data['url'] as String;
     final String? previewUrl$value = data['previewUrl'] as String?;
+    final String url$value = data['url'] as String;
+    final String title$value = data['title'] as String;
     final String id$value = data['id'] as String;
     return SearchGifsPage_searchGifs_items(
-      title: title$value,
+      previewUrl: previewUrl$value,
 
       url: url$value,
 
-      previewUrl: previewUrl$value,
+      title: title$value,
 
       id: id$value,
     );

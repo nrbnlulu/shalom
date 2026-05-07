@@ -732,7 +732,13 @@ pub(crate) fn parse_document_impl(
         let name = name.to_string();
         ret.insert(
             name.clone(),
-            parse_operation(global_ctx, op.clone(), name, doc_path.clone(), fragment_sdls.clone())?,
+            parse_operation(
+                global_ctx,
+                op.clone(),
+                name,
+                doc_path.clone(),
+                fragment_sdls.clone(),
+            )?,
         );
     }
     Ok(ret)
@@ -766,7 +772,14 @@ fn collect_transitive_fragment_sdls(
     let mut ordered: Vec<String> = Vec::new();
     let mut visited: HashSet<String> = HashSet::new();
     for name in initial_spreads {
-        collect_fragment_recursive(name, source_doc, global_ctx, schema, &mut visited, &mut ordered);
+        collect_fragment_recursive(
+            name,
+            source_doc,
+            global_ctx,
+            schema,
+            &mut visited,
+            &mut ordered,
+        );
     }
     ordered
 }
@@ -787,7 +800,11 @@ fn collect_fragment_recursive(
     // Prefer inline definitions from the source doc, then fall back to global ctx.
     let (sdl, sub_spreads) = if let Some(frag_def) = source_doc.fragments.get(name) {
         let mut frag_clone = frag_def.clone();
-        frag_clone.make_mut().directives.0.retain(|d| d.name.as_str() != "observe");
+        frag_clone
+            .make_mut()
+            .directives
+            .0
+            .retain(|d| d.name.as_str() != "observe");
         let sub = get_used_fragments_from_fragment(&frag_clone);
         (frag_clone.to_string(), sub)
     } else if let Some(frag_ctx) = global_ctx.get_fragment(name) {

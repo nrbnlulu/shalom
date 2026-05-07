@@ -1530,7 +1530,10 @@ fn generate_v2_registration_file(
         ));
         lines.push("''');".to_string());
     }
-    for widget in widgets.iter().filter(|w| w.widget_kind == WidgetKind::Query) {
+    for widget in widgets
+        .iter()
+        .filter(|w| w.widget_kind == WidgetKind::Query)
+    {
         lines.push("  await client.registerOperation(document: r'''".to_string());
         lines.push(format!(
             "query {} {}",
@@ -1545,7 +1548,10 @@ fn generate_v2_registration_file(
         lines.push(format!("mutation {} {}", widget.class_name, widget.sdl));
         lines.push("''');".to_string());
     }
-    for widget in widgets.iter().filter(|w| w.widget_kind == WidgetKind::Subscription) {
+    for widget in widgets
+        .iter()
+        .filter(|w| w.widget_kind == WidgetKind::Subscription)
+    {
         lines.push("  await client.registerOperation(document: r'''".to_string());
         lines.push(format!(
             "subscription {} {}",

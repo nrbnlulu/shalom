@@ -66,7 +66,12 @@ fn main() -> Result<()> {
 
     let cli = Cli::parse();
     match cli.command {
-        Commands::Generate { path, strict, fmt, gen_dir } => {
+        Commands::Generate {
+            path,
+            strict,
+            fmt,
+            gen_dir,
+        } => {
             log::info!("Running code generation...");
             shalom_dart_codegen::codegen_entry_point(CodegenOptions {
                 pwd: path,
@@ -76,7 +81,12 @@ fn main() -> Result<()> {
             })?;
             log::info!("Code generation completed successfully!");
         }
-        Commands::Watch { path, strict, fmt, gen_dir } => {
+        Commands::Watch {
+            path,
+            strict,
+            fmt,
+            gen_dir,
+        } => {
             log::info!("Starting watch mode...");
 
             // Add atomic flag to prevent concurrent codegen runs

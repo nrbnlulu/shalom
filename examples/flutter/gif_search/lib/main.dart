@@ -18,6 +18,25 @@ void main() {
   runApp(const ProviderScope(child: MyApp()));
 }
 
+mixin class QueryWidgetDefaults {
+  Widget buildLoading(BuildContext context) =>
+      const Center(child: CircularProgressIndicator());
+
+  Widget buildError(BuildContext context, Object error) {
+    debugPrint('Shalom query error in $runtimeType: $error');
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Text(
+          'Error: $error',
+          textAlign: TextAlign.center,
+          style: TextStyle(color: Theme.of(context).colorScheme.error),
+        ),
+      ),
+    );
+  }
+}
+
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
@@ -25,23 +44,26 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final clientAsync = ref.watch(shalomRuntimeProvider);
     return clientAsync.when(
-      loading: () => const MaterialApp(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
-      ),
-      error: (e, _) => MaterialApp(
-        home: Scaffold(body: Center(child: Text('Init error: $e'))),
-      ),
-      data: (client) => ShalomProvider(
-        client: client,
-        child: MaterialApp(
-          title: 'GIF Search',
-          theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-            useMaterial3: true,
+      loading:
+          () => const MaterialApp(
+            home: Scaffold(body: Center(child: CircularProgressIndicator())),
           ),
-          home: const HomePage(),
-        ),
-      ),
+      error:
+          (e, _) => MaterialApp(
+            home: Scaffold(body: Center(child: Text('Init error: $e'))),
+          ),
+      data:
+          (client) => ShalomProvider(
+            client: client,
+            child: MaterialApp(
+              title: 'GIF Search',
+              theme: ThemeData(
+                colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+                useMaterial3: true,
+              ),
+              home: const HomePage(),
+            ),
+          ),
     );
   }
 }
@@ -58,10 +80,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int _selectedIndex = 0;
 
-  static const _pages = [
-    _SearchTab(),
-    _AlbumsTab(),
-  ];
+  static const _pages = [_SearchTab(), _AlbumsTab()];
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +92,9 @@ class _HomePageState extends State<HomePage> {
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.photo_album), label: 'Albums'),
+            icon: Icon(Icons.photo_album),
+            label: 'Albums',
+          ),
         ],
       ),
     );
@@ -122,17 +143,43 @@ class _SearchTabState extends State<_SearchTab> {
             ),
           ),
           Expanded(
-            child: _currentQuery.isEmpty
-                ? const Center(child: Text('Enter a search term above'))
-                : SearchGifsPage(
-                    variables: SearchGifsPageVariables(
-                      query: _currentQuery,
-                      offset: 0,
-                      limit: 20,
+            child:
+                _currentQuery.isEmpty
+                    ? const Center(child: Text('Enter a search term above'))
+                    : SearchGifsPage(
+                      variables: SearchGifsPageVariables(
+                        query: _currentQuery,
+                        offset: 0,
+                        limit: 20,
+                      ),
                     ),
-                  ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Album picker — used by the add-to-album dialog ──────────────────────────
+
+class AlbumPickerQuery extends $AlbumsPage with QueryWidgetDefaults {
+  final void Function(AlbumWidgetData album) onSelected;
+
+  const AlbumPickerQuery({super.key, required this.onSelected});
+
+  @override
+  Widget buildData(BuildContext context, AlbumsPageData data) {
+    if (data.albums.isEmpty) {
+      return const Text('No albums yet. Create one first!');
+    }
+    final listHeight = (data.albums.length * 72.0).clamp(72.0, 360.0);
+    return SizedBox(
+      width: double.maxFinite,
+      height: listHeight,
+      child: ListView.builder(
+        itemCount: data.albums.length,
+        itemBuilder:
+            (context, i) => AlbumWidget(ref: data.albums[i], onTap: onSelected),
       ),
     );
   }
@@ -153,17 +200,12 @@ class _SearchTabState extends State<_SearchTab> {
     }
   }
 """)
-class SearchGifsPage extends $SearchGifsPage {
+class SearchGifsPage extends $SearchGifsPage with QueryWidgetDefaults {
   const SearchGifsPage({super.key, required super.variables});
 
   @override
   State<$SearchGifsPage> createState() => _SearchGifsPageState();
 
-  @override
-  Widget buildLoading(BuildContext context) => throw UnimplementedError();
-  @override
-  Widget buildError(BuildContext context, Object error) =>
-      throw UnimplementedError();
   @override
   Widget buildData(BuildContext context, SearchGifsPageData data) =>
       throw UnimplementedError();
@@ -221,13 +263,14 @@ class _SearchGifsPageState extends State<SearchGifsPage> {
       limit: widget.variables.limit,
     );
     try {
-      final data = await ShalomScope.of(context)
-          .request<SearchGifsPageData>(
-            name: 'SearchGifsPage',
-            variables: vars.toJson(),
-            decoder: SearchGifsPageData.fromCache,
-          )
-          .first;
+      final data =
+          await ShalomScope.of(context)
+              .request<SearchGifsPageData>(
+                name: 'SearchGifsPage',
+                variables: vars.toJson(),
+                decoder: SearchGifsPageData.fromCache,
+              )
+              .first;
       final page = data.searchGifs;
       final newRefs = page.items.whereType<GifWidgetRef>().toList();
       if (!mounted) return;
@@ -305,15 +348,16 @@ class GifWidget extends $GifWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
-        leading: gif.previewUrl != null
-            ? Image.network(
-                gif.previewUrl!,
-                width: 56,
-                height: 56,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
-              )
-            : const Icon(Icons.gif, size: 40),
+        leading:
+            gif.previewUrl != null
+                ? Image.network(
+                  gif.previewUrl!,
+                  width: 56,
+                  height: 56,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+                )
+                : const Icon(Icons.gif, size: 40),
         title: Text(gif.title),
         subtitle: Text(gif.url, maxLines: 1, overflow: TextOverflow.ellipsis),
         trailing: IconButton(
@@ -353,17 +397,12 @@ class _AlbumsTab extends StatelessWidget {
     }
   }
 """)
-class AlbumsPage extends $AlbumsPage {
+class AlbumsPage extends $AlbumsPage with QueryWidgetDefaults {
   const AlbumsPage({super.key});
 
   @override
   State<$AlbumsPage> createState() => _AlbumsPageState();
 
-  @override
-  Widget buildLoading(BuildContext context) => throw UnimplementedError();
-  @override
-  Widget buildError(BuildContext context, Object error) =>
-      throw UnimplementedError();
   @override
   Widget buildData(BuildContext context, AlbumsPageData data) =>
       throw UnimplementedError();
@@ -392,9 +431,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
         )
         .listen(
           (data) {
-            final newRefs = data.albums
-                .whereType<AlbumWidgetRef>()
-                .toList();
+            final newRefs = data.albums.whereType<AlbumWidgetRef>().toList();
             setState(() {
               _refs
                 ..clear()
@@ -403,10 +440,11 @@ class _AlbumsPageState extends State<AlbumsPage> {
               _error = null;
             });
           },
-          onError: (e) => setState(() {
-            _error = e;
-            _loading = false;
-          }),
+          onError:
+              (e) => setState(() {
+                _error = e;
+                _loading = false;
+              }),
         );
   }
 
@@ -424,17 +462,17 @@ class _AlbumsPageState extends State<AlbumsPage> {
         onPressed: () => _showCreateAlbumDialog(context),
         child: const Icon(Icons.add),
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
+      body:
+          _loading
+              ? const Center(child: CircularProgressIndicator())
+              : _error != null
               ? Center(child: Text('Error: $_error'))
               : _refs.isEmpty
-                  ? const Center(child: Text('No albums yet. Create one!'))
-                  : ListView.builder(
-                      itemCount: _refs.length,
-                      itemBuilder: (context, i) =>
-                          AlbumWidget(ref: _refs[i]),
-                    ),
+              ? const Center(child: Text('No albums yet. Create one!'))
+              : ListView.builder(
+                itemCount: _refs.length,
+                itemBuilder: (context, i) => AlbumWidget(ref: _refs[i]),
+              ),
     );
   }
 
@@ -459,7 +497,9 @@ class _AlbumsPageState extends State<AlbumsPage> {
   }
 """)
 class AlbumWidget extends $AlbumWidget {
-  const AlbumWidget({super.key, required super.ref});
+  final void Function(AlbumWidgetData album)? onTap;
+
+  const AlbumWidget({super.key, required super.ref, this.onTap});
 
   @override
   Widget buildLoading(BuildContext context) =>
@@ -472,22 +512,27 @@ class AlbumWidget extends $AlbumWidget {
   @override
   Widget buildData(BuildContext context, AlbumWidgetData album) {
     final gifCount = album.gifs.length;
+    final tap = onTap;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
         leading: const Icon(Icons.photo_album, size: 40),
         title: Text(album.name),
         subtitle: Text('$gifCount GIF${gifCount == 1 ? '' : 's'}'),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (_) => _AlbumDetailPage(
-              albumId: album.id,
-              albumName: album.name,
-              gifs: album.gifs,
-            ),
-          ),
-        ),
+        trailing: tap == null ? const Icon(Icons.chevron_right) : null,
+        onTap:
+            tap != null
+                ? () => tap(album)
+                : () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder:
+                        (_) => _AlbumDetailPage(
+                          albumId: album.id,
+                          albumName: album.name,
+                          gifs: album.gifs,
+                        ),
+                  ),
+                ),
       ),
     );
   }
@@ -605,13 +650,14 @@ class _CreateAlbumDialogState extends State<_CreateAlbumDialog> {
         ),
         FilledButton(
           onPressed: _loading ? null : _submit,
-          child: _loading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Create'),
+          child:
+              _loading
+                  ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                  : const Text('Create'),
         ),
       ],
     );
@@ -635,44 +681,48 @@ class _AlbumDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(albumName)),
-      body: gifs.isEmpty
-          ? const Center(child: Text('No GIFs in this album yet.'))
-          : ListView.builder(
-              itemCount: gifs.length,
-              itemBuilder: (context, i) {
-                final gif = gifs[i];
-                return ListTile(
-                  leading: const Icon(Icons.gif),
-                  title: Text(gif.title),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.remove_circle_outline),
-                    tooltip: 'Remove from album',
-                    onPressed: () => _removeGif(context, albumId, gif.id),
-                  ),
-                );
-              },
-            ),
+      body:
+          gifs.isEmpty
+              ? const Center(child: Text('No GIFs in this album yet.'))
+              : ListView.builder(
+                itemCount: gifs.length,
+                itemBuilder: (context, i) {
+                  final gif = gifs[i];
+                  return ListTile(
+                    leading: const Icon(Icons.gif),
+                    title: Text(gif.title),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.remove_circle_outline),
+                      tooltip: 'Remove from album',
+                      onPressed: () => _removeGif(context, albumId, gif.id),
+                    ),
+                  );
+                },
+              ),
     );
   }
 
   Future<void> _removeGif(
-      BuildContext context, String albumId, String gifId) async {
+    BuildContext context,
+    String albumId,
+    String gifId,
+  ) async {
     final client = ShalomScope.of(context);
     try {
-      await RemoveGifFromAlbumMutation(client).execute(
-        albumId: albumId,
-        gifId: gifId,
-      );
+      await RemoveGifFromAlbumMutation(
+        client,
+      ).execute(albumId: albumId, gifId: gifId);
       if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('GIF removed')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('GIF removed')));
         Navigator.of(context).pop();
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text('Error: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error: $e')));
       }
     }
   }
@@ -688,21 +738,12 @@ class _AddToAlbumDialog extends StatefulWidget {
 }
 
 class _AddToAlbumDialogState extends State<_AddToAlbumDialog> {
-  final _albumIdController = TextEditingController();
-  bool _loading = false;
+  bool _submitting = false;
   String? _error;
 
-  @override
-  void dispose() {
-    _albumIdController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submit() async {
-    final albumId = _albumIdController.text.trim();
-    if (albumId.isEmpty) return;
+  Future<void> _addToAlbum(AlbumWidgetData album) async {
     setState(() {
-      _loading = true;
+      _submitting = true;
       _error = null;
     });
     final client = ShalomScope.of(context);
@@ -710,21 +751,54 @@ class _AddToAlbumDialogState extends State<_AddToAlbumDialog> {
     final nav = Navigator.of(context);
     final gif = widget.gif;
     try {
-      await AddGifToAlbumMutation(client).execute(
-        albumId: albumId,
+      await AddGifToAlbumMutation(client).executeOptimistic(
+        (vars) {
+          final existingGifs =
+              album.gifs
+                  .map(
+                    (g) => AddGifToAlbumMutation_addGifToAlbum_gifs(
+                      id: g.id,
+                      title: g.title,
+                    ),
+                  )
+                  .toList();
+          final nextGifs =
+              existingGifs.any((g) => g.id == vars.gifId)
+                  ? existingGifs
+                  : [
+                    ...existingGifs,
+                    AddGifToAlbumMutation_addGifToAlbum_gifs(
+                      id: vars.gifId,
+                      title: vars.title,
+                    ),
+                  ];
+          return AddGifToAlbumMutationData(
+            addGifToAlbum: AddGifToAlbumMutation_addGifToAlbum(
+              id: vars.albumId,
+              name: album.name,
+              gifs: nextGifs,
+            ),
+          );
+        },
+        albumId: album.id,
         gifId: gif.id,
         title: gif.title,
         url: gif.url,
-        previewUrl: gif.previewUrl != null
-            ? shalom.Some(gif.previewUrl)
-            : const shalom.None(),
+        previewUrl:
+            gif.previewUrl != null
+                ? shalom.Some(gif.previewUrl)
+                : const shalom.None(),
       );
-      messenger.showSnackBar(const SnackBar(content: Text('GIF added to album')));
+      if (!mounted) return;
+      messenger.showSnackBar(
+        const SnackBar(content: Text('GIF added to album')),
+      );
       nav.pop();
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
-        _loading = false;
+        _submitting = false;
       });
     }
   }
@@ -732,39 +806,27 @@ class _AddToAlbumDialogState extends State<_AddToAlbumDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Add to Album'),
+      title: Text('Add "${widget.gif.title}" to Album'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('GIF: ${widget.gif.title}'),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _albumIdController,
-            autofocus: true,
-            decoration: const InputDecoration(labelText: 'Album ID'),
-            onSubmitted: (_) => _submit(),
-          ),
+          AlbumPickerQuery(onSelected: _submitting ? (_) {} : _addToAlbum),
           if (_error != null)
             Padding(
               padding: const EdgeInsets.only(top: 8),
               child: Text(_error!, style: const TextStyle(color: Colors.red)),
             ),
+          if (_submitting)
+            const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: LinearProgressIndicator(),
+            ),
         ],
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: _submitting ? null : () => Navigator.of(context).pop(),
           child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: _loading ? null : _submit,
-          child: _loading
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
-              : const Text('Add'),
         ),
       ],
     );

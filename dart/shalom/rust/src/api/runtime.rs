@@ -9,7 +9,8 @@ use shalom_runtime::sansio_protocols::{
     GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request,
 };
 use shalom_runtime::{
-    ObservedRef, OptimisticWriteId, RuntimeConfig, RuntimeResponse, ShalomRuntime, SubscriptionId,
+    ExecutionPolicy, ObservedRef, OptimisticWriteId, RuntimeConfig, RuntimeResponse, ShalomRuntime,
+    SubscriptionId,
 };
 
 pub use serde_json::{Map, Value};
@@ -31,6 +32,21 @@ pub struct ObservedRefInput {
 /// the runtime gains configurable behaviour (e.g. GC tuning, cache limits).
 #[frb]
 pub struct RuntimeConfigInput {}
+
+#[frb]
+pub enum ExecutionPolicyInput {
+    NetworkFirst,
+    CacheFirst,
+}
+
+impl From<ExecutionPolicyInput> for ExecutionPolicy {
+    fn from(value: ExecutionPolicyInput) -> Self {
+        match value {
+            ExecutionPolicyInput::NetworkFirst => ExecutionPolicy::NetworkFirst,
+            ExecutionPolicyInput::CacheFirst => ExecutionPolicy::CacheFirst,
+        }
+    }
+}
 
 impl From<ObservedRefInput> for ObservedRef {
     fn from(r: ObservedRefInput) -> Self {
@@ -76,20 +92,14 @@ pub fn init_runtime(
 
 /// Pre-register a query/mutation SDL so it can be executed by name via `request`.
 #[frb]
-pub fn register_operation(
-    handle: &RuntimeHandle,
-    document: String,
-) -> anyhow::Result<()> {
+pub fn register_operation(handle: &RuntimeHandle, document: String) -> anyhow::Result<()> {
     handle.runtime.register_operation(&document)?;
     Ok(())
 }
 
 /// Pre-register a fragment SDL so it can be subscribed to via `observe_fragment`.
 #[frb]
-pub fn register_fragment(
-    handle: &RuntimeHandle,
-    document: String,
-) -> anyhow::Result<()> {
+pub fn register_fragment(handle: &RuntimeHandle, document: String) -> anyhow::Result<()> {
     handle.runtime.register_fragment(&document)
 }
 
@@ -109,10 +119,13 @@ pub async fn request(
     handle: &RuntimeHandle,
     name: String,
     variables_json: Option<String>,
+    execution_policy: ExecutionPolicyInput,
 ) -> anyhow::Result<u64> {
     let variables = parse_variables(variables_json)?;
     let op_ctx = handle.runtime.operation_by_name(&name)?;
-    let sub_id = handle.runtime.create_operation_subscription(op_ctx.clone(), variables.clone());
+    let sub_id = handle
+        .runtime
+        .create_operation_subscription(op_ctx.clone(), variables.clone(), execution_policy.into());
 
     // Spawn a task to drive the network round-trip and normalise the response.
     // The normalisation side-effect triggers `notify_subscribers` which pushes
@@ -141,7 +154,8 @@ pub async fn request(
                     }
                 }
                 GraphQLResponse::Error { errors, .. } => {
-                    let msg = serde_json::to_string(&errors).unwrap_or_else(|_| "graphql errors".into());
+                    let msg =
+                        serde_json::to_string(&errors).unwrap_or_else(|_| "graphql errors".into());
                     runtime.push_subscription_error(sub_id, anyhow::anyhow!("{}", msg));
                     break;
                 }
@@ -324,9 +338,7 @@ fn to_link_op_type(op_type: shalom_core::operation::types::OperationType) -> Lin
     }
 }
 
-fn parse_variables(
-    variables_json: Option<String>,
-) -> anyhow::Result<Option<Map<String, Value>>> {
+fn parse_variables(variables_json: Option<String>) -> anyhow::Result<Option<Map<String, Value>>> {
     let json = match variables_json {
         Some(json) => json,
         None => return Ok(None),
@@ -363,7 +375,11 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
     let data = match obj.get("data") {
         Some(Value::Object(map)) => Some(map.clone()),
         Some(Value::Null) | None => None,
-        Some(_) => return Err(anyhow::anyhow!("graphql response data must be an object or null")),
+        Some(_) => {
+            return Err(anyhow::anyhow!(
+                "graphql response data must be an object or null"
+            ))
+        }
     };
 
     let errors = match obj.get("errors") {
@@ -372,13 +388,21 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
             for item in list {
                 match item {
                     Value::Object(map) => parsed.push(map.clone()),
-                    _ => return Err(anyhow::anyhow!("graphql response errors must contain objects")),
+                    _ => {
+                        return Err(anyhow::anyhow!(
+                            "graphql response errors must contain objects"
+                        ))
+                    }
                 }
             }
             Some(parsed)
         }
         Some(Value::Null) | None => None,
-        Some(_) => return Err(anyhow::anyhow!("graphql response errors must be an array or null")),
+        Some(_) => {
+            return Err(anyhow::anyhow!(
+                "graphql response errors must be an array or null"
+            ))
+        }
     };
 
     let extensions = match obj.get("extensions") {
@@ -392,7 +416,11 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
     };
 
     if let Some(data) = data {
-        Ok(GraphQLResponse::Data { data, errors, extensions })
+        Ok(GraphQLResponse::Data {
+            data,
+            errors,
+            extensions,
+        })
     } else if let Some(errors) = errors {
         Ok(GraphQLResponse::Error { errors, extensions })
     } else {

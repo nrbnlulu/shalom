@@ -83,8 +83,8 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
         Ok(_) => println!("Logger initialized"),
         Err(e) => eprintln!("Error initializing logger: {e}"),
     }
-    let usecase_test_dir =
-        ensure_test_folder_exists("dart_tests", usecase).expect("Failed to ensure test folder exists");
+    let usecase_test_dir = ensure_test_folder_exists("dart_tests", usecase)
+        .expect("Failed to ensure test folder exists");
     run_codegen(&usecase_test_dir, true);
 
     let dart = match get_dart_command() {
@@ -196,7 +196,9 @@ pub fn run_fluttre_tests(usecase: &str) {
     let output = flutter_test.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
 
-    assert!(output.status.success(), "❌ Flutter tests failed\n {out_std}");
+    assert!(
+        output.status.success(),
+        "❌ Flutter tests failed\n {out_std}"
+    );
     info!("✔️ Flutter tests passed\n {out_std}");
 }
-

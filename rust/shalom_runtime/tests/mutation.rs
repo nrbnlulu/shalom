@@ -1,8 +1,8 @@
-use serde_json::{json, Map, Value};
+use serde_json::{Map, Value, json};
 use tokio::runtime::Builder;
 use tokio_stream::StreamExt;
 
-use shalom_runtime::{ShalomRuntime, SubscriptionId};
+use shalom_runtime::{ExecutionPolicy, ShalomRuntime, SubscriptionId};
 
 // ---------------------------------------------------------------------------
 // Test schema + SDL helpers
@@ -36,15 +36,21 @@ const CREATE_MUTATION_OP: &str = r#"
 "#;
 
 fn make_runtime() -> ShalomRuntime {
-    let runtime = ShalomRuntime::init(SCHEMA, vec![], Default::default())
-        .expect("init runtime");
-    runtime.register_operation(QUERY_OP).expect("register query");
-    runtime.register_operation(MUTATION_OP).expect("register mutation");
+    let runtime = ShalomRuntime::init(SCHEMA, vec![], Default::default()).expect("init runtime");
+    runtime
+        .register_operation(QUERY_OP)
+        .expect("register query");
+    runtime
+        .register_operation(MUTATION_OP)
+        .expect("register mutation");
     runtime
 }
 
 fn vars(pairs: &[(&str, Value)]) -> Map<String, Value> {
-    pairs.iter().map(|(k, v)| (k.to_string(), v.clone())).collect()
+    pairs
+        .iter()
+        .map(|(k, v)| (k.to_string(), v.clone()))
+        .collect()
 }
 
 fn yield_update_sync(runtime: &ShalomRuntime, id: SubscriptionId) -> Value {
@@ -77,9 +83,17 @@ fn mutation_normalizes_shared_entity() {
     let query_op = runtime.operation_by_name("GetUser").unwrap();
     let query_vars = vars(&[("id", json!("1"))]);
     runtime
-        .normalize(&query_op, json!({ "user": { "id": "1", "name": "Alice" } }), Some(&query_vars))
+        .normalize(
+            &query_op,
+            json!({ "user": { "id": "1", "name": "Alice" } }),
+            Some(&query_vars),
+        )
         .expect("query normalize");
-    let sub_id = runtime.create_operation_subscription(query_op.clone(), Some(query_vars.clone()));
+    let sub_id = runtime.create_operation_subscription(
+        query_op.clone(),
+        Some(query_vars.clone()),
+        ExecutionPolicy::NetworkFirst,
+    );
 
     // Fire the mutation: updates User:1 name.
     let mutation_op = runtime.operation_by_name("UpdateUser").unwrap();
@@ -158,7 +172,11 @@ fn rollback_optimistic_restores_state() {
     ));
 
     // Subscribe AFTER the optimistic write so we can see the rollback.
-    let sub_id = runtime.create_operation_subscription(query_op.clone(), Some(query_vars));
+    let sub_id = runtime.create_operation_subscription(
+        query_op.clone(),
+        Some(query_vars),
+        ExecutionPolicy::NetworkFirst,
+    );
 
     // Roll back.
     runtime.rollback_optimistic(write_id).expect("rollback");

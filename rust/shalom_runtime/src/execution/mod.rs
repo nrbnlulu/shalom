@@ -1,7 +1,7 @@
+use parking_lot::Mutex;
 use std::collections::HashSet;
 use std::pin::Pin;
 use std::sync::Arc;
-use parking_lot::Mutex;
 
 use serde_json::{Map, Value};
 use tokio_stream::Stream;

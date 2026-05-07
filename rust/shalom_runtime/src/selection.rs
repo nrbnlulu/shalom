@@ -118,7 +118,11 @@ pub fn field_cache_key(
         .into_iter()
         .map(|(k, v)| (k, sort_json_value(v)))
         .collect();
-    format!("{}({})", field_name, serde_json::to_string(&obj).expect("args to json"))
+    format!(
+        "{}({})",
+        field_name,
+        serde_json::to_string(&obj).expect("args to json")
+    )
 }
 
 /// Path segment for a field — same format as `field_cache_key`.
@@ -140,8 +144,7 @@ fn arg_value_to_json(arg_value: &ArgumentValue, vars: Option<&Map<String, Value>
                 }
             }
             if let Some(default) = &var.default_value {
-                return serde_json::from_str::<Value>(&default.to_string())
-                    .unwrap_or(Value::Null);
+                return serde_json::from_str::<Value>(&default.to_string()).unwrap_or(Value::Null);
             }
             if var.is_optional {
                 Value::Null
@@ -154,9 +157,12 @@ fn arg_value_to_json(arg_value: &ArgumentValue, vars: Option<&Map<String, Value>
                 serde_json::from_str::<Value>(value).unwrap_or(Value::String(value.clone()))
             }
             InlineValueArg::Enum { value } => Value::String(value.clone()),
-            InlineValueArg::List { items, .. } => {
-                Value::Array(items.iter().map(|item| arg_value_to_json(item, vars)).collect())
-            }
+            InlineValueArg::List { items, .. } => Value::Array(
+                items
+                    .iter()
+                    .map(|item| arg_value_to_json(item, vars))
+                    .collect(),
+            ),
             InlineValueArg::Object { fields, .. } => {
                 let map: serde_json::Map<String, Value> = fields
                     .iter()

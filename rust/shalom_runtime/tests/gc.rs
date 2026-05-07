@@ -6,9 +6,9 @@ use shalom_core::context::ShalomGlobalContext;
 use shalom_core::entrypoint::{parse_document, parse_schema, register_fragments_from_document};
 use shalom_core::operation::context::SharedOpCtx;
 use shalom_core::shalom_config::ShalomConfig;
+use shalom_runtime::{ExecutionPolicy, ShalomRuntime};
 use shalom_runtime::cache::{CacheRecord, CacheValue, NormalizedCache};
 use shalom_runtime::gc::{SubscriptionTracker, collect_garbage};
-use shalom_runtime::ShalomRuntime;
 
 fn make_entity(name: &str) -> CacheRecord {
     let mut record = CacheRecord::new();
@@ -99,7 +99,8 @@ fn runtime_gc_respects_subscription_tracker() {
             None,
         )
         .expect("normalize response");
-    let subscription = runtime.create_operation_subscription(op_ctx.clone(), None);
+    let subscription =
+        runtime.create_operation_subscription(op_ctx.clone(), None, ExecutionPolicy::NetworkFirst);
 
     {
         let cache = runtime.cache();
@@ -108,10 +109,19 @@ fn runtime_gc_respects_subscription_tracker() {
     }
 
     let evicted = runtime.collect_garbage();
-    assert!(evicted.contains(&"Orphan:1".to_string()), "orphan entity should be evicted");
-    assert!(runtime.cache().lock().get("User:1").is_some(), "User:1 should be kept by ROOT_QUERY");
+    assert!(
+        evicted.contains(&"Orphan:1".to_string()),
+        "orphan entity should be evicted"
+    );
+    assert!(
+        runtime.cache().lock().get("User:1").is_some(),
+        "User:1 should be kept by ROOT_QUERY"
+    );
 
     runtime.unsubscribe(&subscription);
     let evicted = runtime.collect_garbage();
-    assert!(!evicted.contains(&"User:1".to_string()), "User:1 still kept by ROOT_QUERY ref");
+    assert!(
+        !evicted.contains(&"User:1".to_string()),
+        "User:1 still kept by ROOT_QUERY ref"
+    );
 }

@@ -73,7 +73,8 @@ impl<'a> Normalizer<'a> {
     /// Snapshot a top-level cache key the first time it is about to be written.
     fn snapshot_key(&mut self, key: &str) {
         if self.capture_snapshot && !self.snapshot.contains_key(key) {
-            self.snapshot.insert(key.to_string(), self.cache.get(key).cloned());
+            self.snapshot
+                .insert(key.to_string(), self.cache.get(key).cloned());
         }
     }
 

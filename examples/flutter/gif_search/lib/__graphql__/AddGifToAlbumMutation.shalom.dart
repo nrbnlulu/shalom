@@ -87,48 +87,48 @@ class AddGifToAlbumMutation_addGifToAlbum_gifs {
   static String G__typename = "Gif";
 
   /// class members
-  final String id;
-
   final String title;
+
+  final String id;
 
   // keywordargs constructor
   AddGifToAlbumMutation_addGifToAlbum_gifs({
-    required this.id,
-
     required this.title,
+
+    required this.id,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AddGifToAlbumMutation_addGifToAlbum_gifs &&
-            id == other.id &&
-            title == other.title);
+            title == other.title &&
+            id == other.id);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    id,
-
     title,
+
+    id,
 
     AddGifToAlbumMutation_addGifToAlbum_gifs.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'title': this.title};
+    return {'title': this.title, 'id': this.id};
   }
 
   @experimental
   static AddGifToAlbumMutation_addGifToAlbum_gifs fromJson(
     shalom_core.JsonObject data,
   ) {
-    final String id$value = data['id'] as String;
     final String title$value = data['title'] as String;
+    final String id$value = data['id'] as String;
     return AddGifToAlbumMutation_addGifToAlbum_gifs(
-      id: id$value,
-
       title: title$value,
+
+      id: id$value,
     );
   }
 }

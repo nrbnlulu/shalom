@@ -1,8 +1,8 @@
 use serde_json::{Value, json};
 use tokio_stream::StreamExt;
 
-use shalom_runtime::sansio_protocols::{GraphQLLink, GraphQLResponse, OperationType, Request};
 use shalom_runtime::sansio_protocols::host::HostLink;
+use shalom_runtime::sansio_protocols::{GraphQLLink, GraphQLResponse, OperationType, Request};
 use shalom_runtime::{RuntimeConfig, RuntimeResponseStream, ShalomRuntime};
 
 /// Build a `RuntimeResponseStream` wiring `link` to `runtime` for `query`.
@@ -24,23 +24,23 @@ fn make_request_stream(
     };
 
     let runtime = runtime.clone();
-    let stream = link
-        .execute(request)
-        .map(move |response| match response {
-            GraphQLResponse::Data { data, .. } => runtime
-                .normalize(&op_ctx, Value::Object(data), None)
-                .map(|result| shalom_runtime::RuntimeResponse {
-                    data: result.data,
-                    operation_id: Some(operation_id.clone()),
-                }),
-            GraphQLResponse::Error { errors, .. } => Err(anyhow::anyhow!(
-                "graphql errors: {}",
-                serde_json::to_string(&errors).unwrap_or_default()
-            )),
-            GraphQLResponse::TransportError(err) => {
-                Err(anyhow::anyhow!("transport error {}: {}", err.code, err.message))
-            }
-        });
+    let stream = link.execute(request).map(move |response| match response {
+        GraphQLResponse::Data { data, .. } => runtime
+            .normalize(&op_ctx, Value::Object(data), None)
+            .map(|result| shalom_runtime::RuntimeResponse {
+                data: result.data,
+                operation_id: Some(operation_id.clone()),
+            }),
+        GraphQLResponse::Error { errors, .. } => Err(anyhow::anyhow!(
+            "graphql errors: {}",
+            serde_json::to_string(&errors).unwrap_or_default()
+        )),
+        GraphQLResponse::TransportError(err) => Err(anyhow::anyhow!(
+            "transport error {}: {}",
+            err.code,
+            err.message
+        )),
+    });
 
     Ok(Box::pin(stream))
 }
@@ -51,8 +51,8 @@ async fn request_stream_normalizes_each_response() {
         type Query { value: Int }
     "#;
     let link = HostLink::new();
-    let runtime = ShalomRuntime::init(schema, Vec::new(), RuntimeConfig::default())
-        .expect("runtime init");
+    let runtime =
+        ShalomRuntime::init(schema, Vec::new(), RuntimeConfig::default()).expect("runtime init");
     let mut outgoing = link.take_request_stream().expect("request stream missing");
 
     let mut responses = make_request_stream(

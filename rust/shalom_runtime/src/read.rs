@@ -18,6 +18,7 @@ use crate::selection::{
 pub struct ReadResult {
     pub data: Value,
     pub used_refs: HashSet<String>,
+    pub missing_refs: HashSet<String>,
 }
 
 pub struct CacheReader<'a> {
@@ -42,9 +43,19 @@ impl<'a> CacheReader<'a> {
     pub fn read_operation(&self, op_ctx: &SharedOpCtx) -> anyhow::Result<ReadResult> {
         let mut used_refs = HashSet::new();
         let mut claimed_refs = HashSet::new();
-        let data = self.read_operation_value(op_ctx, &mut used_refs, &mut claimed_refs)?;
+        let mut missing_refs = HashSet::new();
+        let data = self.read_operation_value(
+            op_ctx,
+            &mut used_refs,
+            &mut claimed_refs,
+            &mut missing_refs,
+        )?;
         let root_refs: HashSet<_> = used_refs.difference(&claimed_refs).cloned().collect();
-        Ok(ReadResult { data, used_refs: root_refs })
+        Ok(ReadResult {
+            data,
+            used_refs: root_refs,
+            missing_refs,
+        })
     }
 
     fn read_operation_value(
@@ -52,6 +63,7 @@ impl<'a> CacheReader<'a> {
         op_ctx: &SharedOpCtx,
         used_refs: &mut HashSet<String>,
         claimed_refs: &mut HashSet<String>,
+        missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let root_key = match op_ctx.op_type() {
             shalom_core::operation::types::OperationType::Query => "ROOT_QUERY",
@@ -83,6 +95,7 @@ impl<'a> CacheReader<'a> {
                 &field_segment,
                 used_refs,
                 claimed_refs,
+                missing_refs,
             )?;
 
             output.insert(field_name.clone(), value);
@@ -98,9 +111,20 @@ impl<'a> CacheReader<'a> {
     ) -> anyhow::Result<ReadResult> {
         let mut used_refs = HashSet::new();
         let mut claimed_refs = HashSet::new();
-        let data = self.read_fragment_value(fragment, root_ref, &mut used_refs, &mut claimed_refs)?;
+        let mut missing_refs = HashSet::new();
+        let data = self.read_fragment_value(
+            fragment,
+            root_ref,
+            &mut used_refs,
+            &mut claimed_refs,
+            &mut missing_refs,
+        )?;
         let fragment_refs: HashSet<_> = used_refs.difference(&claimed_refs).cloned().collect();
-        Ok(ReadResult { data, used_refs: fragment_refs })
+        Ok(ReadResult {
+            data,
+            used_refs: fragment_refs,
+            missing_refs,
+        })
     }
 
     fn read_fragment_value(
@@ -109,19 +133,31 @@ impl<'a> CacheReader<'a> {
         root_ref: &str,
         used_refs: &mut HashSet<String>,
         claimed_refs: &mut HashSet<String>,
+        missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let cached_value = if let Some(locator) = self.cache.ref_locator(root_ref) {
             match self.cache.resolve_locator(locator) {
                 Some(value) => value,
-                None => return Ok(Value::Null),
+                None => {
+                    missing_refs.insert(root_ref.to_string());
+                    return Ok(Value::Null);
+                }
             }
         } else if self.cache.get(root_ref).is_some() {
             CacheValue::Ref(root_ref.to_string())
         } else {
+            missing_refs.insert(root_ref.to_string());
             return Ok(Value::Null);
         };
 
-        self.read_root_object(fragment, &cached_value, root_ref, used_refs, claimed_refs)
+        self.read_root_object(
+            fragment,
+            &cached_value,
+            root_ref,
+            used_refs,
+            claimed_refs,
+            missing_refs,
+        )
     }
 
     fn read_field(
@@ -132,7 +168,9 @@ impl<'a> CacheReader<'a> {
         field_segment: &str,
         used_refs: &mut HashSet<String>,
         claimed_refs: &mut HashSet<String>,
+        missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
+        let field_ref_key = format!("{}.{}", parent_ref_key, field_segment);
         match &selection.kind {
             SelectionKind::Scalar(_) | SelectionKind::Enum(_) => match cached_value {
                 Some(CacheValue::Scalar(value)) => Ok(value.clone()),
@@ -140,7 +178,10 @@ impl<'a> CacheReader<'a> {
                     "expected scalar for field {}",
                     selection.self_selection_name()
                 )),
-                None => Ok(Value::Null),
+                None => {
+                    missing_refs.insert(field_ref_key);
+                    Ok(Value::Null)
+                }
             },
             SelectionKind::List(list_sel) => match cached_value {
                 Some(CacheValue::Scalar(value)) if value.is_null() => Ok(Value::Null),
@@ -154,13 +195,17 @@ impl<'a> CacheReader<'a> {
                         &list_ref_key,
                         used_refs,
                         claimed_refs,
+                        missing_refs,
                     )
                 }
                 Some(_) => Err(anyhow::anyhow!(
                     "expected list for field {}",
                     selection.self_selection_name()
                 )),
-                None => Ok(Value::Null),
+                None => {
+                    missing_refs.insert(field_ref_key);
+                    Ok(Value::Null)
+                }
             },
             SelectionKind::Object(_) | SelectionKind::Union(_) | SelectionKind::Interface(_) => {
                 match cached_value {
@@ -172,12 +217,16 @@ impl<'a> CacheReader<'a> {
                         field_segment,
                         used_refs,
                         claimed_refs,
+                        missing_refs,
                     ),
                     Some(_) => Err(anyhow::anyhow!(
                         "expected object for field {}",
                         selection.self_selection_name()
                     )),
-                    None => Ok(Value::Null),
+                    None => {
+                        missing_refs.insert(field_ref_key);
+                        Ok(Value::Null)
+                    }
                 }
             }
         }
@@ -191,15 +240,16 @@ impl<'a> CacheReader<'a> {
         field_segment: &str,
         used_refs: &mut HashSet<String>,
         claimed_refs: &mut HashSet<String>,
+        missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let (record, entity_key) = match cached_value {
-            CacheValue::Ref(key) => (
-                self.cache
-                    .get(key)
-                    .cloned()
-                    .ok_or_else(|| anyhow::anyhow!("missing record for {key}"))?,
-                Some(key.clone()),
-            ),
+            CacheValue::Ref(key) => match self.cache.get(key) {
+                Some(record) => (record.clone(), Some(key.clone())),
+                None => {
+                    missing_refs.insert(key.clone());
+                    return Ok(Value::Null);
+                }
+            },
             CacheValue::Object(record) => (record.clone(), None),
             CacheValue::Scalar(value) if value.is_null() => {
                 return Ok(Value::Null);
@@ -277,6 +327,7 @@ impl<'a> CacheReader<'a> {
                 &field_segment,
                 used_refs,
                 claimed_refs,
+                missing_refs,
             )?;
 
             output.insert(field_name.clone(), value);
@@ -306,6 +357,7 @@ impl<'a> CacheReader<'a> {
         list_ref_key: &str,
         used_refs: &mut HashSet<String>,
         claimed_refs: &mut HashSet<String>,
+        missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let mut output = Vec::with_capacity(cached_items.len());
         for (idx, cached_item) in cached_items.iter().enumerate() {
@@ -330,6 +382,7 @@ impl<'a> CacheReader<'a> {
                         &item_segment,
                         used_refs,
                         claimed_refs,
+                        missing_refs,
                     )?,
                     _ => return Err(anyhow::anyhow!("expected object list item at {idx}")),
                 },
@@ -346,6 +399,7 @@ impl<'a> CacheReader<'a> {
                             &item_ref_key,
                             used_refs,
                             claimed_refs,
+                            missing_refs,
                         )?
                     }
                     _ => return Err(anyhow::anyhow!("expected nested list item at {idx}")),
@@ -363,11 +417,15 @@ impl<'a> CacheReader<'a> {
         object_ref_key: &str,
         used_refs: &mut HashSet<String>,
         claimed_refs: &mut HashSet<String>,
+        missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let (record, _entity_key) = match cached_value {
             CacheValue::Ref(key) => match self.cache.get(key) {
                 Some(record) => (record.clone(), Some(key.clone())),
-                None => return Ok(Value::Null),
+                None => {
+                    missing_refs.insert(key.clone());
+                    return Ok(Value::Null);
+                }
             },
             CacheValue::Object(record) => (record.clone(), None),
             CacheValue::Scalar(value) if value.is_null() => {
@@ -430,6 +488,7 @@ impl<'a> CacheReader<'a> {
                 &field_segment,
                 used_refs,
                 claimed_refs,
+                missing_refs,
             )?;
 
             output.insert(field_name.clone(), value);

@@ -138,6 +138,7 @@ abstract class RustLibApi extends BaseApi {
     required RuntimeHandle handle,
     required String name,
     String? variablesJson,
+    required ExecutionPolicyInput executionPolicy,
   });
 
   void crateApiRuntimeRollbackOptimistic({
@@ -655,6 +656,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required RuntimeHandle handle,
     required String name,
     String? variablesJson,
+    required ExecutionPolicyInput executionPolicy,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -666,6 +668,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
           sse_encode_String(name, serializer);
           sse_encode_opt_String(variablesJson, serializer);
+          sse_encode_execution_policy_input(executionPolicy, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -678,7 +681,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiRuntimeRequestConstMeta,
-        argValues: [handle, name, variablesJson],
+        argValues: [handle, name, variablesJson, executionPolicy],
         apiImpl: this,
       ),
     );
@@ -686,7 +689,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiRuntimeRequestConstMeta => const TaskConstMeta(
     debugName: "request",
-    argNames: ["handle", "name", "variablesJson"],
+    argNames: ["handle", "name", "variablesJson", "executionPolicy"],
   );
 
   @override
@@ -1176,6 +1179,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ExecutionPolicyInput dco_decode_execution_policy_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ExecutionPolicyInput.values[raw as int];
+  }
+
+  @protected
+  int dco_decode_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
   List<String> dco_decode_list_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return (raw as List<dynamic>).map(dco_decode_String).toList();
@@ -1418,6 +1433,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ExecutionPolicyInput sse_decode_execution_policy_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return ExecutionPolicyInput.values[inner];
+  }
+
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getInt32();
+  }
+
+  @protected
   List<String> sse_decode_list_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -1551,12 +1581,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       default:
         throw UnimplementedError('');
     }
-  }
-
-  @protected
-  int sse_decode_i_32(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getInt32();
   }
 
   @protected
@@ -1707,6 +1731,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_execution_policy_input(
+    ExecutionPolicyInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putInt32(self);
+  }
+
+  @protected
   void sse_encode_list_String(List<String> self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
@@ -1835,12 +1874,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         sse_encode_u_16(code, serializer);
         sse_encode_String(reason, serializer);
     }
-  }
-
-  @protected
-  void sse_encode_i_32(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putInt32(self);
   }
 }
 

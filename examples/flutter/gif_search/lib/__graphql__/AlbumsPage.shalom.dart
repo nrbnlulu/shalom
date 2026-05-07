@@ -55,33 +55,33 @@ class AlbumsPage_albums {
   static String G__typename = "Album";
 
   /// class members
-  final String id;
-
   final String name;
+
+  final String id;
 
   final List<AlbumWidget_gifs> gifs;
 
   // keywordargs constructor
-  AlbumsPage_albums({required this.id, required this.name, required this.gifs});
+  AlbumsPage_albums({required this.name, required this.id, required this.gifs});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AlbumsPage_albums &&
-            id == other.id &&
             name == other.name &&
+            id == other.id &&
             const ListEquality().equals(gifs, other.gifs));
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([id, name, gifs, AlbumsPage_albums.G__typename]);
+      Object.hashAll([name, id, gifs, AlbumsPage_albums.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'id': this.id,
-
       'name': this.name,
+
+      'id': this.id,
 
       'gifs': this.gifs.map((e) => e.toJson()).toList(),
     };
@@ -89,13 +89,13 @@ class AlbumsPage_albums {
 
   @experimental
   static AlbumsPage_albums fromJson(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    final String id$value = data['id'] as String;
     final List<AlbumWidget_gifs> gifs$value =
         (data['gifs'] as List<dynamic>)
             .map((e) => AlbumWidget_gifs.fromJson(e as shalom_core.JsonObject))
             .toList();
-    return AlbumsPage_albums(id: id$value, name: name$value, gifs: gifs$value);
+    return AlbumsPage_albums(name: name$value, id: id$value, gifs: gifs$value);
   }
 }
 

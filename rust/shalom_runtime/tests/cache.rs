@@ -10,7 +10,7 @@ use shalom_core::operation::context::SharedOpCtx;
 use shalom_core::shalom_config::ShalomConfig;
 use shalom_runtime::cache::{CacheRecord, CacheValue};
 use shalom_runtime::normalization::NormalizationResult;
-use shalom_runtime::{ObservedRef, ShalomRuntime, SubscriptionId};
+use shalom_runtime::{ExecutionPolicy, ObservedRef, ShalomRuntime, SubscriptionId};
 
 fn build_ctx(schema: &str, operation: &str) -> (ShalomRuntime, SharedOpCtx) {
     let schema_ctx = parse_schema(schema).expect("schema parse failed");
@@ -41,7 +41,7 @@ fn subscribe(
     op_ctx: &SharedOpCtx,
     _result: &NormalizationResult,
 ) -> SubscriptionId {
-    runtime.create_operation_subscription(op_ctx.clone(), None)
+    runtime.create_operation_subscription(op_ctx.clone(), None, ExecutionPolicy::NetworkFirst)
 }
 
 fn yield_update_sync(runtime: &ShalomRuntime, id: SubscriptionId) -> Value {
@@ -67,7 +67,9 @@ fn yield_nth_update_sync(runtime: &ShalomRuntime, id: SubscriptionId, n: usize) 
         last
     });
     runtime.unsubscribe(&id);
-    data.expect("missing update").expect("subscription error").data
+    data.expect("missing update")
+        .expect("subscription error")
+        .data
 }
 
 fn record(runtime: &ShalomRuntime, key: &str) -> CacheRecord {
@@ -80,11 +82,7 @@ fn record(runtime: &ShalomRuntime, key: &str) -> CacheRecord {
 }
 
 fn has_record(runtime: &ShalomRuntime, key: &str) -> bool {
-    runtime
-        .cache()
-        .lock()
-        .get(key)
-        .is_some()
+    runtime.cache().lock().get(key).is_some()
 }
 
 fn root_record(runtime: &ShalomRuntime) -> CacheRecord {
@@ -1735,7 +1733,10 @@ mod input_list_enum {
 mod fragment_subscriptions {
     use super::*;
 
-    fn anchor_from_observed_ref<'a>(obj: &'a serde_json::Map<String, Value>, frag_name: &str) -> &'a str {
+    fn anchor_from_observed_ref<'a>(
+        obj: &'a serde_json::Map<String, Value>,
+        frag_name: &str,
+    ) -> &'a str {
         obj.get(&format!("${frag_name}"))
             .and_then(|v| v.as_object())
             .and_then(|o| o.get("anchor"))
@@ -1835,7 +1836,7 @@ mod fragment_subscriptions {
                 otherValue: String
             }
         "#;
-        
+
         let operations = r#"
             query Op1 { sharedValue }
             query Op2 { sharedValue otherValue }
@@ -1844,28 +1845,51 @@ mod fragment_subscriptions {
         let schema_ctx = parse_schema(schema).unwrap();
         let config = ShalomConfig::default();
         let global_ctx = ShalomGlobalContext::new(schema_ctx, config, std::path::PathBuf::from(""));
-        let ops = parse_document(&global_ctx, operations, &std::path::PathBuf::from("ops.graphql")).unwrap();
-        
+        let ops = parse_document(
+            &global_ctx,
+            operations,
+            &std::path::PathBuf::from("ops.graphql"),
+        )
+        .unwrap();
+
         let op1 = ops.get("Op1").unwrap().clone();
         let op2 = ops.get("Op2").unwrap().clone();
 
         let runtime = ShalomRuntime::new(global_ctx);
 
-        let result1 = normalize(&runtime, &op1, serde_json::json!({ "sharedValue": 42 }), None);
+        let result1 = normalize(
+            &runtime,
+            &op1,
+            serde_json::json!({ "sharedValue": 42 }),
+            None,
+        );
         assert!(result1.changed.contains("ROOT_QUERY.sharedValue"));
-        
-        let sub_id = runtime.create_operation_subscription(op1.clone(), None);
+
+        let sub_id =
+            runtime.create_operation_subscription(op1.clone(), None, ExecutionPolicy::NetworkFirst);
         let mut updates = runtime.subscription_stream(&sub_id).unwrap();
 
-        let result2 = normalize(&runtime, &op2, serde_json::json!({ "sharedValue": 99, "otherValue": "hello" }), None);
+        let result2 = normalize(
+            &runtime,
+            &op2,
+            serde_json::json!({ "sharedValue": 99, "otherValue": "hello" }),
+            None,
+        );
         assert!(result2.changed.contains("ROOT_QUERY.sharedValue"));
         assert!(result2.changed.contains("ROOT_QUERY.otherValue"));
 
-        let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
         rt.block_on(async {
             use tokio_stream::StreamExt;
-            let update = updates.next().await.expect("Stream should yield").expect("Stream error");
-            
+            let update = updates
+                .next()
+                .await
+                .expect("Stream should yield")
+                .expect("Stream error");
+
             assert_eq!(
                 update.data,
                 serde_json::json!({

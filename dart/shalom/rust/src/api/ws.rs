@@ -61,18 +61,20 @@ impl WsLinkEvent {
             WsEvent::OperationResponse { op_id, response } => {
                 use shalom_runtime::sansio_protocols::GraphQLResponse;
                 match response {
-                    GraphQLResponse::Data { data, errors, extensions } => {
-                        Self::OperationResponse {
-                            op_id,
-                            data_json: serde_json::to_string(&data).ok(),
-                            errors_json: errors
-                                .as_deref()
-                                .and_then(|e| serde_json::to_string(e).ok()),
-                            extensions_json: extensions
-                                .as_ref()
-                                .and_then(|e| serde_json::to_string(e).ok()),
-                        }
-                    }
+                    GraphQLResponse::Data {
+                        data,
+                        errors,
+                        extensions,
+                    } => Self::OperationResponse {
+                        op_id,
+                        data_json: serde_json::to_string(&data).ok(),
+                        errors_json: errors
+                            .as_deref()
+                            .and_then(|e| serde_json::to_string(e).ok()),
+                        extensions_json: extensions
+                            .as_ref()
+                            .and_then(|e| serde_json::to_string(e).ok()),
+                    },
                     GraphQLResponse::Error { errors, extensions } => Self::OperationResponse {
                         op_id,
                         data_json: None,
@@ -102,9 +104,7 @@ impl WsLinkEvent {
 #[frb(sync)]
 pub fn create_ws_sans_io(connection_params_json: Option<String>) -> anyhow::Result<WsSansIo> {
     let params = match connection_params_json {
-        Some(s) if !s.trim().is_empty() => {
-            Some(serde_json::from_str::<Value>(&s)?)
-        }
+        Some(s) if !s.trim().is_empty() => Some(serde_json::from_str::<Value>(&s)?),
         _ => None,
     };
     Ok(WsSansIo {

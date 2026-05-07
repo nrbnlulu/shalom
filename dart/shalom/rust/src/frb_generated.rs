@@ -708,6 +708,8 @@ fn wire__crate__api__runtime__request_impl(
             >>::sse_decode(&mut deserializer);
             let api_name = <String>::sse_decode(&mut deserializer);
             let api_variables_json = <Option<String>>::sse_decode(&mut deserializer);
+            let api_execution_policy =
+                <crate::api::runtime::ExecutionPolicyInput>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
@@ -735,6 +737,7 @@ fn wire__crate__api__runtime__request_impl(
                             &*api_handle_guard,
                             api_name,
                             api_variables_json,
+                            api_execution_policy,
                         )
                         .await?;
                         Ok(output_ok)
@@ -1433,6 +1436,25 @@ impl SseDecode for bool {
     }
 }
 
+impl SseDecode for crate::api::runtime::ExecutionPolicyInput {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::api::runtime::ExecutionPolicyInput::NetworkFirst,
+            1 => crate::api::runtime::ExecutionPolicyInput::CacheFirst,
+            _ => unreachable!("Invalid variant for ExecutionPolicyInput: {}", inner),
+        };
+    }
+}
+
+impl SseDecode for i32 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_i32::<NativeEndian>().unwrap()
+    }
+}
+
 impl SseDecode for Vec<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -1590,13 +1612,6 @@ impl SseDecode for crate::api::ws::WsLinkEvent {
     }
 }
 
-impl SseDecode for i32 {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        deserializer.cursor.read_i32::<NativeEndian>().unwrap()
-    }
-}
-
 fn pde_ffi_dispatcher_primary_impl(
     func_id: i32,
     port: flutter_rust_bridge::for_generated::MessagePort,
@@ -1681,6 +1696,27 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<WsSansIo>> for WsSansIo {
     }
 }
 
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::runtime::ExecutionPolicyInput {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::NetworkFirst => 0.into_dart(),
+            Self::CacheFirst => 1.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::runtime::ExecutionPolicyInput
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::runtime::ExecutionPolicyInput>
+    for crate::api::runtime::ExecutionPolicyInput
+{
+    fn into_into_dart(self) -> crate::api::runtime::ExecutionPolicyInput {
+        self
+    }
+}
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::runtime::ObservedRefInput {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
@@ -1828,6 +1864,29 @@ impl SseEncode for bool {
     }
 }
 
+impl SseEncode for crate::api::runtime::ExecutionPolicyInput {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::api::runtime::ExecutionPolicyInput::NetworkFirst => 0,
+                crate::api::runtime::ExecutionPolicyInput::CacheFirst => 1,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
+impl SseEncode for i32 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_i32::<NativeEndian>(self).unwrap();
+    }
+}
+
 impl SseEncode for Vec<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -1963,13 +2022,6 @@ impl SseEncode for crate::api::ws::WsLinkEvent {
                 unimplemented!("");
             }
         }
-    }
-}
-
-impl SseEncode for i32 {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        serializer.cursor.write_i32::<NativeEndian>(self).unwrap();
     }
 }
 

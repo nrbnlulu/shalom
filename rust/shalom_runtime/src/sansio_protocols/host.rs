@@ -16,8 +16,8 @@
 //!    calls [`HostLink::complete`] and drops the sender — closing the
 //!    receiver-side stream inside Rust.
 
-use std::sync::atomic::{AtomicU64, Ordering};
 use parking_lot::Mutex;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use dashmap::DashMap;
 use serde::Serialize;
@@ -65,11 +65,10 @@ impl HostLink {
     ///
     /// Returns `None` if the stream has already been taken (i.e. another
     /// `listen_requests` call is already running).
-    pub fn take_request_stream(
-        &self,
-    ) -> Option<impl tokio_stream::Stream<Item = RequestEnvelope>> {
+    pub fn take_request_stream(&self) -> Option<impl tokio_stream::Stream<Item = RequestEnvelope>> {
         self.request_rx
-            .lock().take()
+            .lock()
+            .take()
             .map(UnboundedReceiverStream::new)
     }
 
@@ -79,11 +78,7 @@ impl HostLink {
     /// (`complete` was called first). This handles the inherent Dart→Rust
     /// ordering race between `push_response` and `complete_transport` when both
     /// are fire-and-forget from the same `onData`/`onDone` callback pair.
-    pub fn send_response(
-        &self,
-        request_id: u64,
-        response: GraphQLResponse,
-    ) -> anyhow::Result<()> {
+    pub fn send_response(&self, request_id: u64, response: GraphQLResponse) -> anyhow::Result<()> {
         if let Some(sender) = self.response_senders.get(&request_id) {
             // Ignore send errors: the receiver was dropped if request_op
             // exited early (e.g. sink closed by .first cancellation).

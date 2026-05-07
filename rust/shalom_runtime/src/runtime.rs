@@ -1,8 +1,8 @@
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::pin::Pin;
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::Duration;
 
 use parking_lot::Mutex;
@@ -43,6 +43,12 @@ pub struct RuntimeResponse {
 pub struct ObservedRef {
     pub observable_id: String,
     pub anchor: String,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ExecutionPolicy {
+    NetworkFirst,
+    CacheFirst,
 }
 
 pub type RuntimeResponseStream =
@@ -245,13 +251,32 @@ impl ShalomRuntime {
         &self,
         op_ctx: SharedOpCtx,
         variables: Option<Map<String, Value>>,
+        execution_policy: ExecutionPolicy,
     ) -> SubscriptionId {
         self.remember_operation_vars(&op_ctx, variables.as_ref());
-        let refs = self
-            .read_result_op(&op_ctx, variables.as_ref())
-            .map(|r| r.used_refs)
+        let initial = self.read_result_op(&op_ctx, variables.as_ref()).ok();
+        let refs = initial
+            .as_ref()
+            .map(|r| r.used_refs.clone())
             .unwrap_or_default();
-        self.subscribe_with_target(SubscriptionTarget::Operation(op_ctx), variables, refs)
+        let op_name = op_ctx.get_operation_name().to_string();
+        let id = self.subscribe_with_target(SubscriptionTarget::Operation(op_ctx), variables, refs);
+
+        if execution_policy == ExecutionPolicy::CacheFirst
+            && let Some(initial) = initial
+            && initial.missing_refs.is_empty()
+        {
+            let response = RuntimeResponse {
+                data: initial.data,
+                operation_id: Some(op_name),
+            };
+            let manager = self.subscriptions.lock();
+            if let Some(state) = manager.subscriptions.get(&id) {
+                let _ = state.sender.send(Ok(response));
+            }
+        }
+
+        id
     }
 
     /// Create a cache subscription for a pre-registered fragment at a specific
@@ -331,9 +356,7 @@ impl ShalomRuntime {
                 .engine
                 .global_ctx()
                 .get_fragment(&new_ref.observable_id)
-                .ok_or_else(|| {
-                    anyhow::anyhow!("fragment '{}' not found", new_ref.observable_id)
-                })?;
+                .ok_or_else(|| anyhow::anyhow!("fragment '{}' not found", new_ref.observable_id))?;
             let new_anchor = new_ref.anchor.clone();
 
             let new_keys = self
@@ -359,7 +382,9 @@ impl ShalomRuntime {
                     None => {
                         // Subscription was cancelled between the snapshot and now.
                         self.subscription_tracker.lock().unsubscribe(new_keys);
-                        return Err(anyhow::anyhow!("subscription {id:?} cancelled during rebind"));
+                        return Err(anyhow::anyhow!(
+                            "subscription {id:?} cancelled during rebind"
+                        ));
                     }
                 }
             };
@@ -440,7 +465,9 @@ impl ShalomRuntime {
             for (key, maybe_record) in write.snapshot {
                 match maybe_record {
                     Some(record) => cache.insert(key, record),
-                    None => { cache.remove(&key); }
+                    None => {
+                        cache.remove(&key);
+                    }
                 }
             }
         }
@@ -512,10 +539,9 @@ impl ShalomRuntime {
 
     /// Look up a pre-registered (or remembered) operation by name.
     pub fn operation_by_name(&self, name: &str) -> anyhow::Result<SharedOpCtx> {
-        self.engine
-            .global_ctx()
-            .get_operation(name)
-            .ok_or_else(|| anyhow::anyhow!("operation '{name}' not registered — call registerOperation first"))
+        self.engine.global_ctx().get_operation(name).ok_or_else(|| {
+            anyhow::anyhow!("operation '{name}' not registered — call registerOperation first")
+        })
     }
 
     // -----------------------------------------------------------------------
@@ -549,7 +575,11 @@ impl ShalomRuntime {
     }
 
     fn notify_subscribers(&self, changed: &HashSet<String>) -> anyhow::Result<()> {
-        let affected: Vec<(SubscriptionId, SubscriptionTarget, Option<Map<String, Value>>)> = {
+        let affected: Vec<(
+            SubscriptionId,
+            SubscriptionTarget,
+            Option<Map<String, Value>>,
+        )> = {
             let manager = self.subscriptions.lock();
             manager
                 .subscriptions
@@ -565,11 +595,19 @@ impl ShalomRuntime {
             let (data, new_refs, operation_id) = match &target {
                 SubscriptionTarget::Operation(op_ctx) => {
                     let result = self.read_result_op(op_ctx, variables.as_ref())?;
-                    (result.data, result.used_refs, op_ctx.get_operation_name().to_string())
+                    (
+                        result.data,
+                        result.used_refs,
+                        op_ctx.get_operation_name().to_string(),
+                    )
                 }
                 SubscriptionTarget::Fragment { fragment, anchor } => {
                     let result = self.read_result_fragment(fragment, anchor)?;
-                    (result.data, result.used_refs, fragment.get_fragment_name().to_string())
+                    (
+                        result.data,
+                        result.used_refs,
+                        fragment.get_fragment_name().to_string(),
+                    )
                 }
             };
 
@@ -662,4 +700,3 @@ impl ShalomRuntime {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-

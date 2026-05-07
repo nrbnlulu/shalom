@@ -14,34 +14,34 @@ class CreateAlbumMutation_createAlbum {
   static String G__typename = "Album";
 
   /// class members
-  final String id;
-
   final String name;
 
+  final String id;
+
   // keywordargs constructor
-  CreateAlbumMutation_createAlbum({required this.id, required this.name});
+  CreateAlbumMutation_createAlbum({required this.name, required this.id});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is CreateAlbumMutation_createAlbum &&
-            id == other.id &&
-            name == other.name);
+            name == other.name &&
+            id == other.id);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([id, name, CreateAlbumMutation_createAlbum.G__typename]);
+      Object.hashAll([name, id, CreateAlbumMutation_createAlbum.G__typename]);
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'name': this.name};
+    return {'name': this.name, 'id': this.id};
   }
 
   @experimental
   static CreateAlbumMutation_createAlbum fromJson(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
-    return CreateAlbumMutation_createAlbum(id: id$value, name: name$value);
+    final String id$value = data['id'] as String;
+    return CreateAlbumMutation_createAlbum(name: name$value, id: id$value);
   }
 }
 

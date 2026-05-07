@@ -5,6 +5,7 @@ export 'SearchGifsPage.shalom.dart';
 
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
+import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import 'SearchGifsPage.shalom.dart';
 
@@ -48,6 +49,7 @@ class _$SearchGifsPageState extends State<$SearchGifsPage> {
           variables: widget.variables.toJson(),
 
           decoder: SearchGifsPageData.fromCache,
+          executionPolicy: shalom_core.ExecutionPolicyInput.cacheFirst,
         )
         .listen(
           (data) => setState(() {

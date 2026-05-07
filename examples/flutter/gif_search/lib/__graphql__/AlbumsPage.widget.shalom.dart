@@ -5,6 +5,7 @@ export 'AlbumsPage.shalom.dart';
 
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
+import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import 'AlbumsPage.shalom.dart';
 
@@ -45,6 +46,7 @@ class _$AlbumsPageState extends State<$AlbumsPage> {
           variables: null,
 
           decoder: AlbumsPageData.fromCache,
+          executionPolicy: shalom_core.ExecutionPolicyInput.cacheFirst,
         )
         .listen(
           (data) => setState(() {

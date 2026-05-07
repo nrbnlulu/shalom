@@ -14,48 +14,48 @@ class RemoveGifFromAlbumMutation_removeGifFromAlbum {
   static String G__typename = "Album";
 
   /// class members
-  final String id;
-
   final String name;
+
+  final String id;
 
   // keywordargs constructor
   RemoveGifFromAlbumMutation_removeGifFromAlbum({
-    required this.id,
-
     required this.name,
+
+    required this.id,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is RemoveGifFromAlbumMutation_removeGifFromAlbum &&
-            id == other.id &&
-            name == other.name);
+            name == other.name &&
+            id == other.id);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    id,
-
     name,
+
+    id,
 
     RemoveGifFromAlbumMutation_removeGifFromAlbum.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'name': this.name};
+    return {'name': this.name, 'id': this.id};
   }
 
   @experimental
   static RemoveGifFromAlbumMutation_removeGifFromAlbum fromJson(
     shalom_core.JsonObject data,
   ) {
-    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    final String id$value = data['id'] as String;
     return RemoveGifFromAlbumMutation_removeGifFromAlbum(
-      id: id$value,
-
       name: name$value,
+
+      id: id$value,
     );
   }
 }

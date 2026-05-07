@@ -16,7 +16,8 @@ import 'package:shalom/src/transport/link.dart' show GraphQLLink;
 
 import 'rust/api/runtime.dart' as rs_runtime;
 
-export 'rust/api/runtime.dart' show ObservedRefInput, RuntimeConfigInput;
+export 'rust/api/runtime.dart'
+    show ExecutionPolicyInput, ObservedRefInput, RuntimeConfigInput;
 
 // ---------------------------------------------------------------------------
 // ObservedRefInput helpers (exported so codegen templates can use them via
@@ -97,6 +98,8 @@ class ShalomRuntimeClient {
     required String name,
     Map<String, dynamic>? variables,
     required T Function(JsonObject) decoder,
+    rs_runtime.ExecutionPolicyInput executionPolicy =
+        rs_runtime.ExecutionPolicyInput.networkFirst,
   }) {
     final variablesJson = variables == null ? null : jsonEncode(variables);
     BigInt? subId;
@@ -109,6 +112,7 @@ class ShalomRuntimeClient {
             handle: _handle,
             name: name,
             variablesJson: variablesJson,
+            executionPolicy: executionPolicy,
           );
           if (controller.isClosed) {
             if (subId != null) {
@@ -163,7 +167,12 @@ class ShalomRuntimeClient {
     required String name,
     Map<String, dynamic>? variables,
     required T Function(JsonObject) decoder,
-  }) => request<T>(name: name, variables: variables, decoder: decoder).first;
+  }) => request<T>(
+    name: name,
+    variables: variables,
+    decoder: decoder,
+    executionPolicy: rs_runtime.ExecutionPolicyInput.networkFirst,
+  ).first;
 
   /// Write [data] to the cache immediately as an optimistic response for the
   /// mutation named [name].  Returns an opaque write ID that can be passed to
@@ -410,6 +419,7 @@ class ShalomRuntimeClient {
     );
   }
 }
+
 
 // ---------------------------------------------------------------------------
 // Private helpers

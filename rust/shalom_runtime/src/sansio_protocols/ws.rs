@@ -206,12 +206,12 @@ impl WsStateMachine {
                     });
                 }
                 self.state = ConnectionState::Connected;
-                Ok(vec![WsEvent::Connected { ack_payload: payload }])
+                Ok(vec![WsEvent::Connected {
+                    ack_payload: payload,
+                }])
             }
 
-            IncomingMessage::Ping { payload } => {
-                Ok(vec![WsEvent::PingReceived { payload }])
-            }
+            IncomingMessage::Ping { payload } => Ok(vec![WsEvent::PingReceived { payload }]),
 
             IncomingMessage::Pong { .. } => {
                 // Pong received in response to our ping — no action needed from caller.
@@ -274,14 +274,11 @@ pub struct WsProtocolError {
 
 fn parse_graphql_payload(payload: Map<String, Value>) -> GraphQLResponse {
     let data = payload.get("data").and_then(|v| v.as_object()).cloned();
-    let errors = payload
-        .get("errors")
-        .and_then(|v| v.as_array())
-        .map(|arr| {
-            arr.iter()
-                .filter_map(|item| item.as_object().cloned())
-                .collect::<Vec<_>>()
-        });
+    let errors = payload.get("errors").and_then(|v| v.as_array()).map(|arr| {
+        arr.iter()
+            .filter_map(|item| item.as_object().cloned())
+            .collect::<Vec<_>>()
+    });
     let extensions = payload
         .get("extensions")
         .and_then(|v| v.as_object())
