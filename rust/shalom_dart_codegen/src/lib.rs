@@ -4,7 +4,7 @@ use log::{error, info};
 use minijinja::{context, value::ViaDeserialize, Environment};
 
 mod dart_scanner;
-pub use dart_scanner::{WidgetAnnotation, WidgetKind, scan_dart_widgets};
+pub use dart_scanner::{scan_dart_widgets, WidgetAnnotation, WidgetKind};
 
 use shalom_core::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
@@ -377,11 +377,8 @@ fn register_default_template_fns<'a>(
         include_str!("../templates/operation_widget.dart.jinja"),
     )
     .unwrap();
-    env.add_template(
-        "mutation",
-        include_str!("../templates/mutation.dart.jinja"),
-    )
-    .unwrap();
+    env.add_template("mutation", include_str!("../templates/mutation.dart.jinja"))
+        .unwrap();
     env.add_template(
         "mutation_widget",
         include_str!("../templates/mutation_widget.dart.jinja"),
@@ -759,12 +756,19 @@ fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) 
 
 /// Returns the name of the `@observe`d fragment used by this selection, if any.
 /// For List selections, returns the inner element's observed fragment name.
-fn selection_observe_fragment_name(selection: &FieldSelection, ctx: &SharedShalomGlobalContext) -> Option<String> {
+fn selection_observe_fragment_name(
+    selection: &FieldSelection,
+    ctx: &SharedShalomGlobalContext,
+) -> Option<String> {
     observe_frag_for_kind(&selection.kind, ctx)
 }
 
 impl OperationEnv<'_> {
-    fn new(ctx: &SharedShalomGlobalContext, op_ctx: SharedOpCtx, gen_dir: &str) -> anyhow::Result<Self> {
+    fn new(
+        ctx: &SharedShalomGlobalContext,
+        op_ctx: SharedOpCtx,
+        gen_dir: &str,
+    ) -> anyhow::Result<Self> {
         let mut env = Environment::new();
         register_default_template_fns(&mut env, ctx)?;
         register_executable_fns(&mut env, ctx, op_ctx.clone(), gen_dir.to_string())?;
@@ -939,7 +943,11 @@ fn get_schema_file_path(ctx: &ShalomGlobalContext) -> PathBuf {
     get_schema_output_dir(ctx).join(format!("schema.{}", END_OF_FILE))
 }
 
-fn get_generation_path_for_operation(document_path: &Path, operation_name: &str, gen_dir: &str) -> PathBuf {
+fn get_generation_path_for_operation(
+    document_path: &Path,
+    operation_name: &str,
+    gen_dir: &str,
+) -> PathBuf {
     let p = document_path.parent().unwrap().join(gen_dir);
     create_dir_if_not_exists(&p);
     p.join(format!("{}.{}", operation_name, END_OF_FILE))
@@ -1068,7 +1076,9 @@ fn generate_fragment_file(
 pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
     let ctx = shalom_core::entrypoint::parse_directory(&options.pwd, options.strict)?;
     let pwd = &ctx.config.project_root;
-    let gen_dir_owned = options.gen_dir.unwrap_or_else(|| GRAPHQL_DIRECTORY.to_string());
+    let gen_dir_owned = options
+        .gen_dir
+        .unwrap_or_else(|| GRAPHQL_DIRECTORY.to_string());
     let gen_dir = gen_dir_owned.as_str();
     info!("codegen started in working directory {}", pwd.display());
 
@@ -1126,7 +1136,13 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
 
     // Generate operation files
     for (name, operation) in ctx.operations() {
-        let res = generate_operations_file(&ctx, &name, operation, custom_scalar_imports.clone(), gen_dir);
+        let res = generate_operations_file(
+            &ctx,
+            &name,
+            operation,
+            custom_scalar_imports.clone(),
+            gen_dir,
+        );
         if let Err(err) = res {
             if options.strict {
                 return Err(err);
@@ -1279,12 +1295,24 @@ fn generate_v2_widgets(
     custom_scalar_imports: HashMap<String, String>,
     gen_dir: &str,
 ) -> Result<()> {
-    let fragments = widgets.iter().filter(|w| w.widget_kind == WidgetKind::Fragment);
-    let queries = widgets.iter().filter(|w| w.widget_kind == WidgetKind::Query);
-    let mutations = widgets.iter().filter(|w| w.widget_kind == WidgetKind::Mutation);
-    let subscriptions = widgets.iter().filter(|w| w.widget_kind == WidgetKind::Subscription);
+    let fragments = widgets
+        .iter()
+        .filter(|w| w.widget_kind == WidgetKind::Fragment);
+    let queries = widgets
+        .iter()
+        .filter(|w| w.widget_kind == WidgetKind::Query);
+    let mutations = widgets
+        .iter()
+        .filter(|w| w.widget_kind == WidgetKind::Mutation);
+    let subscriptions = widgets
+        .iter()
+        .filter(|w| w.widget_kind == WidgetKind::Subscription);
 
-    for widget in fragments.chain(queries).chain(mutations).chain(subscriptions) {
+    for widget in fragments
+        .chain(queries)
+        .chain(mutations)
+        .chain(subscriptions)
+    {
         let res = match widget.widget_kind {
             WidgetKind::Query => {
                 generate_v2_query_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
@@ -1295,14 +1323,18 @@ fn generate_v2_widgets(
             WidgetKind::Mutation => {
                 generate_v2_mutation_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
             }
-            WidgetKind::Subscription => {
-                generate_v2_subscription_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
-            }
+            WidgetKind::Subscription => generate_v2_subscription_sidecar(
+                ctx,
+                widget,
+                custom_scalar_imports.clone(),
+                gen_dir,
+            ),
         };
         if let Err(err) = res {
             return Err(anyhow::anyhow!(
                 "Failed to generate V2 sidecar for '{}': {}",
-                widget.class_name, err
+                widget.class_name,
+                err
             ));
         }
     }
@@ -1328,7 +1360,10 @@ fn generate_v2_query_sidecar(
     let path = PathBuf::from(format!("{}.dart", widget.class_name));
     let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &path)?;
     if operations.is_empty() {
-        return Err(anyhow::anyhow!("no operations parsed for {}", widget.class_name));
+        return Err(anyhow::anyhow!(
+            "no operations parsed for {}",
+            widget.class_name
+        ));
     }
 
     let (_name, op_ctx) = operations.into_iter().next().unwrap();
@@ -1343,9 +1378,10 @@ fn generate_v2_query_sidecar(
         multi_type_list_selections,
     );
 
-    let source_dir = widget.source_path.parent().ok_or_else(|| {
-        anyhow::anyhow!("Invalid source path: {:?}", widget.source_path)
-    })?;
+    let source_dir = widget
+        .source_path
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("Invalid source path: {:?}", widget.source_path))?;
     let out_dir = source_dir.join(gen_dir);
     create_dir_if_not_exists(&out_dir);
     let gen_path = out_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
@@ -1382,7 +1418,10 @@ fn generate_v2_fragment_sidecar(
     shalom_core::entrypoint::register_fragments_from_document(ctx, &full_sdl, &path, false)?;
 
     let fragment_ctx = ctx.get_fragment(&widget.class_name).ok_or_else(|| {
-        anyhow::anyhow!("fragment {} not found after registration", widget.class_name)
+        anyhow::anyhow!(
+            "fragment {} not found after registration",
+            widget.class_name
+        )
     })?;
 
     let fragment_env = FragmentEnv::new(ctx, fragment_ctx.clone(), gen_dir)?;
@@ -1395,9 +1434,10 @@ fn generate_v2_fragment_sidecar(
         multi_type_list_selections,
     );
 
-    let source_dir = widget.source_path.parent().ok_or_else(|| {
-        anyhow::anyhow!("Invalid source path: {:?}", widget.source_path)
-    })?;
+    let source_dir = widget
+        .source_path
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("Invalid source path: {:?}", widget.source_path))?;
     let out_dir = source_dir.join(gen_dir);
     create_dir_if_not_exists(&out_dir);
     let gen_path = out_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
@@ -1420,16 +1460,20 @@ fn generate_v2_mutation_sidecar(
     let path = PathBuf::from(format!("{}.dart", widget.class_name));
     let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &path)?;
     if operations.is_empty() {
-        return Err(anyhow::anyhow!("no operations parsed for {}", widget.class_name));
+        return Err(anyhow::anyhow!(
+            "no operations parsed for {}",
+            widget.class_name
+        ));
     }
 
     let (_name, op_ctx) = operations.into_iter().next().unwrap();
     let op_env = OperationEnv::new(ctx, op_ctx.clone(), gen_dir)?;
     let multi_type_list_selections = collect_multi_type_list_selections(op_ctx.as_ref());
 
-    let source_dir = widget.source_path.parent().ok_or_else(|| {
-        anyhow::anyhow!("Invalid source path: {:?}", widget.source_path)
-    })?;
+    let source_dir = widget
+        .source_path
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("Invalid source path: {:?}", widget.source_path))?;
     let out_dir = source_dir.join(gen_dir);
     create_dir_if_not_exists(&out_dir);
 
@@ -1448,7 +1492,10 @@ fn generate_v2_mutation_sidecar(
     let widget_rendered = op_env.render_mutation_widget(&op_ctx);
     let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
     fs::write(&widget_path, widget_rendered)?;
-    info!("Generated V2 mutation widget sidecar: {}", widget_path.display());
+    info!(
+        "Generated V2 mutation widget sidecar: {}",
+        widget_path.display()
+    );
 
     Ok(())
 }
@@ -1469,7 +1516,10 @@ fn generate_v2_subscription_sidecar(
     let path = PathBuf::from(format!("{}.dart", widget.class_name));
     let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &path)?;
     if operations.is_empty() {
-        return Err(anyhow::anyhow!("no operations parsed for {}", widget.class_name));
+        return Err(anyhow::anyhow!(
+            "no operations parsed for {}",
+            widget.class_name
+        ));
     }
 
     let (_name, op_ctx) = operations.into_iter().next().unwrap();
@@ -1484,9 +1534,10 @@ fn generate_v2_subscription_sidecar(
         multi_type_list_selections,
     );
 
-    let source_dir = widget.source_path.parent().ok_or_else(|| {
-        anyhow::anyhow!("Invalid source path: {:?}", widget.source_path)
-    })?;
+    let source_dir = widget
+        .source_path
+        .parent()
+        .ok_or_else(|| anyhow::anyhow!("Invalid source path: {:?}", widget.source_path))?;
     let out_dir = source_dir.join(gen_dir);
     create_dir_if_not_exists(&out_dir);
     let gen_path = out_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
@@ -1497,7 +1548,10 @@ fn generate_v2_subscription_sidecar(
     let widget_rendered = op_env.render_widget(&op_ctx);
     let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
     fs::write(&widget_path, widget_rendered)?;
-    info!("Generated V2 subscription widget sidecar: {}", widget_path.display());
+    info!(
+        "Generated V2 subscription widget sidecar: {}",
+        widget_path.display()
+    );
 
     Ok(())
 }
@@ -1518,11 +1572,13 @@ fn generate_v2_registration_file(
         widgets
             .iter()
             .filter(|w| w.widget_kind == kind)
-            .map(|w| serde_json::json!({
-                "class_name": w.class_name,
-                // Mutations are fire-and-forget, not reactive — they don't get @observe.
-                "document": if observe { with_observe(&w.sdl) } else { w.sdl.clone() },
-            }))
+            .map(|w| {
+                serde_json::json!({
+                    "class_name": w.class_name,
+                    // Mutations are fire-and-forget, not reactive — they don't get @observe.
+                    "document": if observe { with_observe(&w.sdl) } else { w.sdl.clone() },
+                })
+            })
             .collect()
     };
 
@@ -1532,7 +1588,10 @@ fn generate_v2_registration_file(
     let subscriptions = make_entries(WidgetKind::Subscription, true);
 
     let mut env = Environment::new();
-    env.add_template("shalom_init", include_str!("../templates/shalom_init.dart.jinja"))?;
+    env.add_template(
+        "shalom_init",
+        include_str!("../templates/shalom_init.dart.jinja"),
+    )?;
     let template = env.get_template("shalom_init")?;
     let rendered = template.render(context! {
         fragments => fragments,

@@ -123,7 +123,11 @@ fn write_optimistic_updates_cache() {
     let query_op = runtime.operation_by_name("GetUser").unwrap();
     let query_vars = vars(&[("id", json!("1"))]);
     runtime
-        .normalize(&query_op, json!({ "user": { "id": "1", "name": "Alice" } }), Some(&query_vars))
+        .normalize(
+            &query_op,
+            json!({ "user": { "id": "1", "name": "Alice" } }),
+            Some(&query_vars),
+        )
         .expect("seed");
     let sub_id = runtime.create_operation_subscription(query_op.clone(), Some(query_vars));
 
@@ -152,7 +156,11 @@ fn rollback_optimistic_restores_state() {
     let query_op = runtime.operation_by_name("GetUser").unwrap();
     let query_vars = vars(&[("id", json!("1"))]);
     runtime
-        .normalize(&query_op, json!({ "user": { "id": "1", "name": "Alice" } }), Some(&query_vars))
+        .normalize(
+            &query_op,
+            json!({ "user": { "id": "1", "name": "Alice" } }),
+            Some(&query_vars),
+        )
         .expect("seed");
 
     // Optimistic write.
@@ -201,8 +209,12 @@ fn rollback_optimistic_is_idempotent() {
         )
         .expect("write_optimistic");
 
-    runtime.rollback_optimistic(write_id).expect("first rollback");
-    runtime.rollback_optimistic(write_id).expect("second rollback should be no-op");
+    runtime
+        .rollback_optimistic(write_id)
+        .expect("first rollback");
+    runtime
+        .rollback_optimistic(write_id)
+        .expect("second rollback should be no-op");
 }
 
 // ---------------------------------------------------------------------------

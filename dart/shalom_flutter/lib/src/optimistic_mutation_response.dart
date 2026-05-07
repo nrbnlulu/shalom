@@ -10,9 +10,9 @@ class OptimisticMutationResponse<T> {
     required this.wasRolledBack,
     required ShalomRuntimeClient client,
     required BigInt writeId,
-  })  : _client = client,
-        _writeId = writeId,
-        _rolledBack = wasRolledBack;
+  }) : _client = client,
+       _writeId = writeId,
+       _rolledBack = wasRolledBack;
 
   /// The decoded server response.
   final T response;

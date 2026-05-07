@@ -33,9 +33,7 @@ final class ConnectionInitMessage extends WsMessage {
   }
 
   factory ConnectionInitMessage.fromJson(JsonObject json) {
-    return ConnectionInitMessage(
-      payload: json['payload'] as JsonObject?,
-    );
+    return ConnectionInitMessage(payload: json['payload'] as JsonObject?);
   }
 }
 
@@ -57,9 +55,7 @@ final class ConnectionAckMessage extends WsMessage {
   }
 
   factory ConnectionAckMessage.fromJson(JsonObject json) {
-    return ConnectionAckMessage(
-      payload: json['payload'] as JsonObject?,
-    );
+    return ConnectionAckMessage(payload: json['payload'] as JsonObject?);
   }
 }
 
@@ -82,9 +78,7 @@ final class PingMessage extends WsMessage {
   }
 
   factory PingMessage.fromJson(JsonObject json) {
-    return PingMessage(
-      payload: json['payload'] as JsonObject?,
-    );
+    return PingMessage(payload: json['payload'] as JsonObject?);
   }
 }
 
@@ -106,9 +100,7 @@ final class PongMessage extends WsMessage {
   }
 
   factory PongMessage.fromJson(JsonObject json) {
-    return PongMessage(
-      payload: json['payload'] as JsonObject?,
-    );
+    return PongMessage(payload: json['payload'] as JsonObject?);
   }
 }
 
@@ -119,18 +111,12 @@ final class SubscribeMessage extends WsMessage {
   final String id;
   final SubscribePayload payload;
 
-  const SubscribeMessage({
-    required this.id,
-    required this.payload,
-  }) : super('subscribe');
+  const SubscribeMessage({required this.id, required this.payload})
+    : super('subscribe');
 
   @override
   JsonObject toJson() {
-    return {
-      'id': id,
-      'type': type,
-      'payload': payload.toJson(),
-    };
+    return {'id': id, 'type': type, 'payload': payload.toJson()};
   }
 
   factory SubscribeMessage.fromJson(JsonObject json) {
@@ -199,18 +185,11 @@ final class NextMessage extends WsMessage {
   final String id;
   final JsonObject payload;
 
-  const NextMessage({
-    required this.id,
-    required this.payload,
-  }) : super('next');
+  const NextMessage({required this.id, required this.payload}) : super('next');
 
   @override
   JsonObject toJson() {
-    return {
-      'id': id,
-      'type': type,
-      'payload': payload,
-    };
+    return {'id': id, 'type': type, 'payload': payload};
   }
 
   factory NextMessage.fromJson(JsonObject json) {
@@ -229,18 +208,12 @@ final class ErrorMessage extends WsMessage {
   final String id;
   final List<JsonObject> payload;
 
-  const ErrorMessage({
-    required this.id,
-    required this.payload,
-  }) : super('error');
+  const ErrorMessage({required this.id, required this.payload})
+    : super('error');
 
   @override
   JsonObject toJson() {
-    return {
-      'id': id,
-      'type': type,
-      'payload': payload,
-    };
+    return {'id': id, 'type': type, 'payload': payload};
   }
 
   factory ErrorMessage.fromJson(JsonObject json) {
@@ -255,10 +228,7 @@ final class ErrorMessage extends WsMessage {
       errors = [];
     }
 
-    return ErrorMessage(
-      id: json['id'] as String,
-      payload: errors,
-    );
+    return ErrorMessage(id: json['id'] as String, payload: errors);
   }
 }
 
@@ -273,16 +243,11 @@ final class CompleteMessage extends WsMessage {
 
   @override
   JsonObject toJson() {
-    return {
-      'id': id,
-      'type': type,
-    };
+    return {'id': id, 'type': type};
   }
 
   factory CompleteMessage.fromJson(JsonObject json) {
-    return CompleteMessage(
-      id: json['id'] as String,
-    );
+    return CompleteMessage(id: json['id'] as String);
   }
 }
 

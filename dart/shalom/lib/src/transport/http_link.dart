@@ -3,8 +3,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:shalom/src/shalom_core_base.dart';
-import 'package:shalom/src/transport/link.dart'
-    show GraphQLLink, HeadersType;
+import 'package:shalom/src/transport/link.dart' show GraphQLLink, HeadersType;
 
 enum HttpMethod {
   // ignore: constant_identifier_names
@@ -56,8 +55,8 @@ class HttpLink extends GraphQLLink {
 
       final methodForThisRequest =
           useGet && request.opType == OperationType.Query
-              ? HttpMethod.GET
-              : HttpMethod.POST;
+          ? HttpMethod.GET
+          : HttpMethod.POST;
 
       // Prepare the request
       JsonObject requestBody;
@@ -168,8 +167,8 @@ class HttpLink extends GraphQLLink {
       final extensionsRaw = response['extensions'];
       final JsonObject? $extensions =
           extensionsRaw != null && extensionsRaw is Map
-              ? Map<String, dynamic>.from(extensionsRaw)
-              : null;
+          ? Map<String, dynamic>.from(extensionsRaw)
+          : null;
 
       // According to GraphQL spec:
       // - If data is not null, it's a valid response
@@ -193,10 +192,7 @@ class HttpLink extends GraphQLLink {
         }
       } else if (parsedErrors != null) {
         // No valid data, but has errors - this is a GraphQL error response
-        return GraphQLError(
-          errors: parsedErrors,
-          extensions: $extensions,
-        );
+        return GraphQLError(errors: parsedErrors, extensions: $extensions);
       } else {
         // Neither valid data nor errors - invalid response
         return LinkExceptionResponse([

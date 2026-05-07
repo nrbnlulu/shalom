@@ -24,11 +24,7 @@ class Request {
 class RequestMeta<T> {
   final Request request;
   final T Function(JsonObject data) parseFn;
-  const RequestMeta({
-    required this.request,
-    required this.parseFn,
-  }
-);
+  const RequestMeta({required this.request, required this.parseFn});
 }
 
 class Response {
@@ -108,8 +104,8 @@ class Some<T> implements Maybe<T> {
 
 class OperationContext<TVars> {
   final TVars? variables;
-  
-  const OperationContext({this.variables, });
+
+  const OperationContext({this.variables});
 }
 
 class ShalomTransportException implements Exception {

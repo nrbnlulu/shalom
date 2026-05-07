@@ -58,11 +58,15 @@ pub type RuntimeResponseStream =
 pub struct SubscriptionId(u64);
 
 impl From<u64> for SubscriptionId {
-    fn from(value: u64) -> Self { Self(value) }
+    fn from(value: u64) -> Self {
+        Self(value)
+    }
 }
 
 impl From<SubscriptionId> for u64 {
-    fn from(value: SubscriptionId) -> Self { value.0 }
+    fn from(value: SubscriptionId) -> Self {
+        value.0
+    }
 }
 
 /// Opaque handle returned by `write_optimistic`; pass to `rollback_optimistic`
@@ -71,11 +75,15 @@ impl From<SubscriptionId> for u64 {
 pub struct OptimisticWriteId(u64);
 
 impl From<u64> for OptimisticWriteId {
-    fn from(value: u64) -> Self { Self(value) }
+    fn from(value: u64) -> Self {
+        Self(value)
+    }
 }
 
 impl From<OptimisticWriteId> for u64 {
-    fn from(value: OptimisticWriteId) -> Self { value.0 }
+    fn from(value: OptimisticWriteId) -> Self {
+        value.0
+    }
 }
 
 struct OptimisticWrite {
@@ -225,9 +233,9 @@ impl ShalomRuntime {
         let mut result = None;
         for (name, op_ctx) in &operations {
             if !self.engine.global_ctx().operation_exists(name) {
-                self.engine.global_ctx().register_operations(
-                    std::iter::once((name.clone(), op_ctx.clone())).collect(),
-                );
+                self.engine
+                    .global_ctx()
+                    .register_operations(std::iter::once((name.clone(), op_ctx.clone())).collect());
             }
             result = Some(op_ctx.clone());
         }

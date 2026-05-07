@@ -6,9 +6,9 @@ use shalom_core::context::ShalomGlobalContext;
 use shalom_core::entrypoint::{parse_document, parse_schema, register_fragments_from_document};
 use shalom_core::operation::context::SharedOpCtx;
 use shalom_core::shalom_config::ShalomConfig;
-use shalom_runtime::{ExecutionPolicy, ShalomRuntime};
 use shalom_runtime::cache::{CacheRecord, CacheValue, NormalizedCache};
 use shalom_runtime::gc::{SubscriptionTracker, collect_garbage};
+use shalom_runtime::{ExecutionPolicy, ShalomRuntime};
 
 fn make_entity(name: &str) -> CacheRecord {
     let mut record = CacheRecord::new();

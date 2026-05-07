@@ -123,9 +123,11 @@ pub async fn request(
 ) -> anyhow::Result<u64> {
     let variables = parse_variables(variables_json)?;
     let op_ctx = handle.runtime.operation_by_name(&name)?;
-    let sub_id = handle
-        .runtime
-        .create_operation_subscription(op_ctx.clone(), variables.clone(), execution_policy.into());
+    let sub_id = handle.runtime.create_operation_subscription(
+        op_ctx.clone(),
+        variables.clone(),
+        execution_policy.into(),
+    );
 
     // Spawn a task to drive the network round-trip and normalise the response.
     // The normalisation side-effect triggers `notify_subscribers` which pushes

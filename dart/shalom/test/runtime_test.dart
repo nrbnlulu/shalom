@@ -124,59 +124,63 @@ void main() {
   // -------------------------------------------------------------------------
   // 3. request() re-emits when another operation writes to the same entity.
   // -------------------------------------------------------------------------
-  test('request re-emits when same entity is updated by another operation', () async {
-    final client = await _makeClient([
-      GraphQLData(
-        data: {
-          'user': {'id': '1', 'name': 'Alice'},
-        },
-      ),
-      GraphQLData(
-        data: {
-          'user': {'id': '1', 'name': 'Bob'},
-        },
-      ),
-    ]);
+  test(
+    'request re-emits when same entity is updated by another operation',
+    () async {
+      final client = await _makeClient([
+        GraphQLData(
+          data: {
+            'user': {'id': '1', 'name': 'Alice'},
+          },
+        ),
+        GraphQLData(
+          data: {
+            'user': {'id': '1', 'name': 'Bob'},
+          },
+        ),
+      ]);
 
-    const getUserQuery =
-        'query GetUser @observe { user(id: "1") { id name } }';
-    const getUserDetailsQuery =
-        'query GetUserDetails @observe { user(id: "1") { id name } }';
-    await client.registerOperation(document: getUserQuery);
-    await client.registerOperation(document: getUserDetailsQuery);
+      const getUserQuery =
+          'query GetUser @observe { user(id: "1") { id name } }';
+      const getUserDetailsQuery =
+          'query GetUserDetails @observe { user(id: "1") { id name } }';
+      await client.registerOperation(document: getUserQuery);
+      await client.registerOperation(document: getUserDetailsQuery);
 
-    final results = <JsonObject>[];
-    final secondReceived = Completer<void>();
+      final results = <JsonObject>[];
+      final secondReceived = Completer<void>();
 
-    final sub = client
-        .request<JsonObject>(
-          name: 'GetUser',
-          decoder: (d) => (d['user'] as Map<String, dynamic>?) ?? {},
-        )
-        .listen((data) {
-          results.add(data);
-          if (results.length == 1) {
-            unawaited(
-              client
-                  .request<JsonObject>(
-                    name: 'GetUserDetails',
-                    decoder: (d) => (d['user'] as Map<String, dynamic>?) ?? {},
-                  )
-                  .first,
-            );
-          } else if (results.length >= 2) {
-            if (!secondReceived.isCompleted) secondReceived.complete();
-          }
-        });
+      final sub = client
+          .request<JsonObject>(
+            name: 'GetUser',
+            decoder: (d) => (d['user'] as Map<String, dynamic>?) ?? {},
+          )
+          .listen((data) {
+            results.add(data);
+            if (results.length == 1) {
+              unawaited(
+                client
+                    .request<JsonObject>(
+                      name: 'GetUserDetails',
+                      decoder: (d) =>
+                          (d['user'] as Map<String, dynamic>?) ?? {},
+                    )
+                    .first,
+              );
+            } else if (results.length >= 2) {
+              if (!secondReceived.isCompleted) secondReceived.complete();
+            }
+          });
 
-    await secondReceived.future.timeout(const Duration(seconds: 5));
-    await sub.cancel();
+      await secondReceived.future.timeout(const Duration(seconds: 5));
+      await sub.cancel();
 
-    expect(results[0]['name'], 'Alice');
-    expect(results[1]['name'], 'Bob');
+      expect(results[0]['name'], 'Alice');
+      expect(results[1]['name'], 'Bob');
 
-    await client.dispose();
-  });
+      await client.dispose();
+    },
+  );
 
   // -------------------------------------------------------------------------
   // 4. Two unrelated operations do NOT cross-trigger subscriptions.
@@ -195,8 +199,7 @@ void main() {
       ),
     ]);
 
-    const getUserQuery =
-        'query GetUser @observe { user(id: "1") { id name } }';
+    const getUserQuery = 'query GetUser @observe { user(id: "1") { id name } }';
     const getPostQuery =
         'query GetPost @observe { post(id: "1") { id title } }';
     await client.registerOperation(document: getUserQuery);
@@ -250,7 +253,8 @@ void main() {
         name
       }
     ''';
-    const getUserQuery = '''
+    const getUserQuery =
+        '''
       $petFragDef
       query GetUser @observe {
         user(id: "1") {
@@ -303,8 +307,10 @@ void main() {
     );
 
     // skip(1): discard the immediate cache hit ('Rex'); await the update ('Max').
-    final updatedPet =
-        await petUpdates.skip(1).first.timeout(const Duration(seconds: 5));
+    final updatedPet = await petUpdates
+        .skip(1)
+        .first
+        .timeout(const Duration(seconds: 5));
     expect(updatedPet['name'], 'Max');
 
     await client.dispose();
@@ -313,69 +319,95 @@ void main() {
   // -------------------------------------------------------------------------
   // 6. subscribeToFragment with ObservedRefInput fires on entity update.
   // -------------------------------------------------------------------------
-  test('subscribeToFragment with ObservedRefInput emits immediately then re-emits', () async {
-    const fragDef = 'fragment UserFrag on User @observe { id name }';
-    const opDoc = '''
+  test(
+    'subscribeToFragment with ObservedRefInput emits immediately then re-emits',
+    () async {
+      const fragDef = 'fragment UserFrag on User @observe { id name }';
+      const opDoc =
+          '''
       $fragDef
       query FetchUser @observe { user(id: "7") { id name } }
     ''';
 
-    final client = await _makeClient([
-      GraphQLData(data: {'user': {'id': '7', 'name': 'Initial'}}),
-      GraphQLData(data: {'user': {'id': '7', 'name': 'Updated'}}),
-    ]);
+      final client = await _makeClient([
+        GraphQLData(
+          data: {
+            'user': {'id': '7', 'name': 'Initial'},
+          },
+        ),
+        GraphQLData(
+          data: {
+            'user': {'id': '7', 'name': 'Updated'},
+          },
+        ),
+      ]);
 
-    await client.registerFragment(document: fragDef);
-    await client.registerOperation(document: opDoc);
+      await client.registerFragment(document: fragDef);
+      await client.registerOperation(document: opDoc);
 
-    // Populate cache.
-    await client
-        .request<JsonObject>(name: 'FetchUser', decoder: (d) => d)
-        .first
-        .timeout(const Duration(seconds: 5));
+      // Populate cache.
+      await client
+          .request<JsonObject>(name: 'FetchUser', decoder: (d) => d)
+          .first
+          .timeout(const Duration(seconds: 5));
 
-    final ref = ObservedRefInput(observableId: 'UserFrag', anchor: 'User:7');
-    final updates = client.subscribeToFragment<JsonObject>(
-      ref: ref,
-      decoder: (d) => d,
-    );
+      final ref = ObservedRefInput(observableId: 'UserFrag', anchor: 'User:7');
+      final updates = client.subscribeToFragment<JsonObject>(
+        ref: ref,
+        decoder: (d) => d,
+      );
 
-    // Trigger the write.
-    unawaited(
-      client.request<JsonObject>(name: 'FetchUser', decoder: (d) => d).first,
-    );
+      // Trigger the write.
+      unawaited(
+        client.request<JsonObject>(name: 'FetchUser', decoder: (d) => d).first,
+      );
 
-    // skip(1): discard the immediate cache hit ('Initial'); await the update ('Updated').
-    final updated =
-        await updates.skip(1).first.timeout(const Duration(seconds: 5));
-    expect(updated['name'], 'Updated');
+      // skip(1): discard the immediate cache hit ('Initial'); await the update ('Updated').
+      final updated = await updates
+          .skip(1)
+          .first
+          .timeout(const Duration(seconds: 5));
+      expect(updated['name'], 'Updated');
 
-    await client.dispose();
-  });
+      await client.dispose();
+    },
+  );
 
   // -------------------------------------------------------------------------
   // 7. rebindFragmentSubscription swaps anchor, new stream emits new data.
   // -------------------------------------------------------------------------
   test('rebindFragmentSubscription delivers data from the new anchor', () async {
     const fragDef = 'fragment PetFrag on Pet @observe { id name }';
-    const op1 = '''
+    const op1 =
+        '''
       $fragDef
       query GetPet14 @observe { user(id: "1") { id pet { ...PetFrag } } }
     ''';
-    const op2 = '''
+    const op2 =
+        '''
       $fragDef
       query GetPet15 @observe { user(id: "2") { id pet { ...PetFrag } } }
     ''';
 
     final client = await _makeClient([
       // Populate Pet:14.
-      GraphQLData(data: {
-        'user': {'id': '1', 'pet': {'id': '14', 'name': 'Rex'}},
-      }),
+      GraphQLData(
+        data: {
+          'user': {
+            'id': '1',
+            'pet': {'id': '14', 'name': 'Rex'},
+          },
+        },
+      ),
       // Populate Pet:15.
-      GraphQLData(data: {
-        'user': {'id': '2', 'pet': {'id': '15', 'name': 'Fido'}},
-      }),
+      GraphQLData(
+        data: {
+          'user': {
+            'id': '2',
+            'pet': {'id': '15', 'name': 'Fido'},
+          },
+        },
+      ),
     ]);
 
     await client.registerFragment(document: fragDef);

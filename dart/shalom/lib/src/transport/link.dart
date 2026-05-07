@@ -11,11 +11,11 @@ import '../shalom_core_base.dart'
         Request,
         RequestMeta;
 
-
-
 abstract class GraphQLLink {
-  Stream<GraphQLResponse<JsonObject>> request(
-      {required Request request, HeadersType? headers});
+  Stream<GraphQLResponse<JsonObject>> request({
+    required Request request,
+    HeadersType? headers,
+  });
 }
 
 class ShalomClient {
@@ -30,40 +30,41 @@ class ShalomClient {
     StreamSubscription<GraphQLResponse<JsonObject>>? linkSubscription;
 
     controller.onListen = () {
-      linkSubscription =
-          link.request(request: meta.request, headers: headers).listen(
-        (response) {
-          if (controller.isClosed) return;
+      linkSubscription = link
+          .request(request: meta.request, headers: headers)
+          .listen(
+            (response) {
+              if (controller.isClosed) return;
 
-          switch (response) {
-            case GraphQLData(
-                :final data,
-                :final errors,
-                :final extensions
-              ):
-              final deserialized = meta.parseFn(data);
-              controller.add(GraphQLData(
-                  data: deserialized,
-                  errors: errors,
-                  extensions: extensions));
-            case GraphQLError(:final errors, :final extensions):
-              controller.add(GraphQLError(
-                  errors: errors, extensions: extensions));
-            case LinkExceptionResponse(:final errors):
-              controller.add(LinkExceptionResponse(errors));
-          }
-        },
-        onError: (error) {
-          if (!controller.isClosed) {
-            controller.addError(error);
-          }
-        },
-        onDone: () {
-          if (!controller.isClosed) {
-            controller.close();
-          }
-        },
-      );
+              switch (response) {
+                case GraphQLData(:final data, :final errors, :final extensions):
+                  final deserialized = meta.parseFn(data);
+                  controller.add(
+                    GraphQLData(
+                      data: deserialized,
+                      errors: errors,
+                      extensions: extensions,
+                    ),
+                  );
+                case GraphQLError(:final errors, :final extensions):
+                  controller.add(
+                    GraphQLError(errors: errors, extensions: extensions),
+                  );
+                case LinkExceptionResponse(:final errors):
+                  controller.add(LinkExceptionResponse(errors));
+              }
+            },
+            onError: (error) {
+              if (!controller.isClosed) {
+                controller.addError(error);
+              }
+            },
+            onDone: () {
+              if (!controller.isClosed) {
+                controller.close();
+              }
+            },
+          );
     };
 
     controller.onCancel = () {
@@ -77,13 +78,18 @@ class ShalomClient {
     required RequestMeta<T> meta,
     HeadersType? headers,
   }) async {
-    await for (final res
-        in link.request(request: meta.request, headers: headers)) {
+    await for (final res in link.request(
+      request: meta.request,
+      headers: headers,
+    )) {
       switch (res) {
         case GraphQLData(:final data, :final errors, :final extensions):
           final deserialized = meta.parseFn(data);
           return GraphQLData(
-              data: deserialized, errors: errors, extensions: extensions);
+            data: deserialized,
+            errors: errors,
+            extensions: extensions,
+          );
         case GraphQLError(:final errors, :final extensions):
           return GraphQLError(errors: errors, extensions: extensions);
         case LinkExceptionResponse(:final errors):
