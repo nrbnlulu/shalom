@@ -1,15 +1,30 @@
 // ignore_for_file: unused_import
 import 'package:shalom/shalom.dart';
 
-/// Register all @Query, @Fragment, and @Mutation operations with the Shalom client.
+/// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
 Future<void> registerShalomDefinitions(ShalomRuntimeClient client) async {
-  await client.registerFragment(document: r'''
+  await client.registerFragment(
+    document: r'''
 fragment PetWidget on Pet @observe {
   id
   name
 }
-''');
-  await client.registerFragment(document: r'''
+''',
+  );
+  await client.registerFragment(
+    document: r'''
+fragment ZooWidget on Zoo @observe {
+  id
+  name
+  cages {
+    id
+    name
+  }
+}
+''',
+  );
+  await client.registerFragment(
+    document: r'''
 fragment AnimalWidget on Animal @observe {
   id
   ... on Dog {
@@ -19,27 +34,43 @@ fragment AnimalWidget on Animal @observe {
     color
   }
 }
-''');
-  await client.registerOperation(document: r'''
+''',
+  );
+  await client.registerOperation(
+    document: r'''
 query PetQuery ($id: ID!) @observe {
   pet(id: $id) {
     ...PetWidget
   }
 }
-''');
-  await client.registerOperation(document: r'''
+''',
+  );
+  await client.registerOperation(
+    document: r'''
+query ZooQuery ($id: ID!) @observe {
+  zoo(id: $id) {
+    ...ZooWidget
+  }
+}
+''',
+  );
+  await client.registerOperation(
+    document: r'''
 query UserWidget ($id: ID!) @observe {
   user(id: $id) {
     id
     name
   }
 }
-''');
-  await client.registerOperation(document: r'''
+''',
+  );
+  await client.registerOperation(
+    document: r'''
 query AnimalQuery ($id: ID!) @observe {
   animal(id: $id) {
     ...AnimalWidget
   }
 }
-''');
+''',
+  );
 }

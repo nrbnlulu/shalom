@@ -1,28 +1,28 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
 // Re-export all generated types so importers only need this file.
-export 'AnimalQuery.shalom.dart';
+export 'ZooQuery.shalom.dart';
 
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
-import 'AnimalQuery.shalom.dart';
+import 'ZooQuery.shalom.dart';
 
-abstract class $AnimalQuery extends StatefulWidget {
-  final AnimalQueryVariables variables;
-  const $AnimalQuery({super.key, required this.variables});
+abstract class $ZooQuery extends StatefulWidget {
+  final ZooQueryVariables variables;
+  const $ZooQuery({super.key, required this.variables});
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
-  Widget buildData(BuildContext context, AnimalQueryData data);
+  Widget buildData(BuildContext context, ZooQueryData data);
 
   @override
-  State<$AnimalQuery> createState() => _$AnimalQueryState();
+  State<$ZooQuery> createState() => _$ZooQueryState();
 }
 
-class _$AnimalQueryState extends State<$AnimalQuery> {
-  StreamSubscription<AnimalQueryData>? _sub;
-  AnimalQueryData? _data;
+class _$ZooQueryState extends State<$ZooQuery> {
+  StreamSubscription<ZooQueryData>? _sub;
+  ZooQueryData? _data;
   Object? _error;
 
   @override
@@ -32,7 +32,7 @@ class _$AnimalQueryState extends State<$AnimalQuery> {
   }
 
   @override
-  void didUpdateWidget(covariant $AnimalQuery oldWidget) {
+  void didUpdateWidget(covariant $ZooQuery oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.variables != oldWidget.variables) _subscribe();
@@ -42,12 +42,12 @@ class _$AnimalQueryState extends State<$AnimalQuery> {
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client
-        .request<AnimalQueryData>(
-          name: 'AnimalQuery',
+        .request<ZooQueryData>(
+          name: 'ZooQuery',
 
           variables: widget.variables.toJson(),
 
-          decoder: AnimalQueryData.fromCache,
+          decoder: ZooQueryData.fromCache,
         )
         .listen(
           (data) => setState(() {

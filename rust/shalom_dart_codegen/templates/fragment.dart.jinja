@@ -137,6 +137,10 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 
 {% else %}
 {# Concrete object fragment: simple final class, no sealed/dispatch needed #}
+{% for name, obj in typedefs.objects | items %}
+{{ selection_object_definition(obj) }}
+{% endfor %}
+
 final class {{ fragment_name }}Data {
   {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
     final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};

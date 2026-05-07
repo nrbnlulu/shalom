@@ -1,122 +1,772 @@
+import 'dart:async' show StreamSubscription;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shalom/shalom.dart' as shalom show Some, None;
+import 'package:shalom_flutter/widgets/shalom_provider.dart';
+import 'package:shalom_annotations/shalom_annotations.dart';
+import 'package:gif_search/state.dart' show shalomRuntimeProvider;
+
+import 'package:gif_search/__graphql__/GifWidget.shalom.dart';
+import 'package:gif_search/__graphql__/AlbumWidget.shalom.dart';
+import 'package:gif_search/__graphql__/SearchGifsPage.widget.shalom.dart';
+import 'package:gif_search/__graphql__/AlbumsPage.widget.shalom.dart';
+import 'package:gif_search/__graphql__/CreateAlbumMutation.widget.shalom.dart';
+import 'package:gif_search/__graphql__/AddGifToAlbumMutation.widget.shalom.dart';
+import 'package:gif_search/__graphql__/RemoveGifFromAlbumMutation.widget.shalom.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends ConsumerWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final clientAsync = ref.watch(shalomRuntimeProvider);
+    return clientAsync.when(
+      loading: () => const MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      error: (e, _) => MaterialApp(
+        home: Scaffold(body: Center(child: Text('Init error: $e'))),
+      ),
+      data: (client) => ShalomProvider(
+        client: client,
+        child: MaterialApp(
+          title: 'GIF Search',
+          theme: ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+            useMaterial3: true,
+          ),
+          home: const HomePage(),
+        ),
+      ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+// ─── Home ─────────────────────────────────────────────────────────────────────
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _HomePageState extends State<HomePage> {
+  int _selectedIndex = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  static const _pages = [
+    _SearchTab(),
+    _AlbumsTab(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: IndexedStack(index: _selectedIndex, children: _pages),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (i) => setState(() => _selectedIndex = i),
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.photo_album), label: 'Albums'),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Search Tab ───────────────────────────────────────────────────────────────
+
+class _SearchTab extends StatefulWidget {
+  const _SearchTab();
+
+  @override
+  State<_SearchTab> createState() => _SearchTabState();
+}
+
+class _SearchTabState extends State<_SearchTab> {
+  final _controller = TextEditingController();
+  String _currentQuery = '';
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+      appBar: AppBar(title: const Text('GIF Search')),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: TextField(
+              controller: _controller,
+              decoration: const InputDecoration(
+                hintText: 'Search GIFs…',
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(),
+              ),
+              textInputAction: TextInputAction.search,
+              onSubmitted: (v) {
+                final q = v.trim();
+                if (q.isNotEmpty) setState(() => _currentQuery = q);
+              },
             ),
-          ],
+          ),
+          Expanded(
+            child: _currentQuery.isEmpty
+                ? const Center(child: Text('Enter a search term above'))
+                : SearchGifsPage(
+                    variables: SearchGifsPageVariables(
+                      query: _currentQuery,
+                      offset: 0,
+                      limit: 20,
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── SearchGifsPage query widget ──────────────────────────────────────────────
+
+@Query(r"""
+  ($query: String!, $offset: Int!, $limit: Int!) {
+    searchGifs(query: $query, offset: $offset, limit: $limit) {
+      items {
+        ...GifWidget
+      }
+      offset
+      limit
+      totalCount
+      hasNextPage
+    }
+  }
+""")
+class SearchGifsPage extends $SearchGifsPage {
+  const SearchGifsPage({super.key, required super.variables});
+
+  @override
+  State<$SearchGifsPage> createState() => _SearchGifsPageState();
+
+  @override
+  Widget buildLoading(BuildContext context) => throw UnimplementedError();
+  @override
+  Widget buildError(BuildContext context, Object error) =>
+      throw UnimplementedError();
+  @override
+  Widget buildData(BuildContext context, SearchGifsPageData data) =>
+      throw UnimplementedError();
+}
+
+class _SearchGifsPageState extends State<SearchGifsPage> {
+  final _scrollController = ScrollController();
+  final _refs = <GifWidgetRef>[];
+  bool _hasNextPage = true;
+  int _nextOffset = 0;
+  bool _isLoadingMore = false;
+  Object? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_refs.isEmpty && !_isLoadingMore) _loadPage(offset: 0);
+  }
+
+  @override
+  void didUpdateWidget(SearchGifsPage old) {
+    super.didUpdateWidget(old);
+    if (old.variables.query != widget.variables.query) {
+      setState(() {
+        _refs.clear();
+        _hasNextPage = true;
+        _nextOffset = 0;
+        _isLoadingMore = false;
+        _error = null;
+      });
+      _loadPage(offset: 0);
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200 &&
+        _hasNextPage &&
+        !_isLoadingMore) {
+      _loadPage(offset: _nextOffset);
+    }
+  }
+
+  Future<void> _loadPage({required int offset}) async {
+    setState(() => _isLoadingMore = true);
+    final vars = SearchGifsPageVariables(
+      query: widget.variables.query,
+      offset: offset,
+      limit: widget.variables.limit,
+    );
+    try {
+      final data = await ShalomScope.of(context)
+          .request<SearchGifsPageData>(
+            name: 'SearchGifsPage',
+            variables: vars.toJson(),
+            decoder: SearchGifsPageData.fromCache,
+          )
+          .first;
+      final page = data.searchGifs;
+      final newRefs = page.items.whereType<GifWidgetRef>().toList();
+      if (!mounted) return;
+      setState(() {
+        _refs.addAll(newRefs);
+        _hasNextPage = page.hasNextPage;
+        _nextOffset = _refs.length;
+        _isLoadingMore = false;
+        _error = null;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = e;
+        _isLoadingMore = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_error != null && _refs.isEmpty) {
+      return Center(child: Text('Error: $_error'));
+    }
+    if (_refs.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    return ListView.builder(
+      controller: _scrollController,
+      itemCount: _refs.length + (_isLoadingMore ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index == _refs.length) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
+        return GifWidget(ref: _refs[index]);
+      },
+    );
+  }
+}
+
+// ─── GifWidget fragment ───────────────────────────────────────────────────────
+
+@Fragment(r"""
+  on Gif {
+    id
+    title
+    url
+    previewUrl
+  }
+""")
+class GifWidget extends $GifWidget {
+  const GifWidget({super.key, required super.ref});
+
+  @override
+  Widget buildLoading(BuildContext context) =>
+      const ListTile(title: Text('Loading…'));
+
+  @override
+  Widget buildError(BuildContext context, Object error) =>
+      ListTile(title: Text('Error: $error'));
+
+  @override
+  Widget buildData(BuildContext context, GifWidgetData gif) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: ListTile(
+        leading: gif.previewUrl != null
+            ? Image.network(
+                gif.previewUrl!,
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+              )
+            : const Icon(Icons.gif, size: 40),
+        title: Text(gif.title),
+        subtitle: Text(gif.url, maxLines: 1, overflow: TextOverflow.ellipsis),
+        trailing: IconButton(
+          icon: const Icon(Icons.add_to_photos_outlined),
+          tooltip: 'Add to album',
+          onPressed: () => _showAddToAlbumDialog(context, gif),
         ),
       ),
+    );
+  }
+
+  void _showAddToAlbumDialog(BuildContext context, GifWidgetData gif) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => _AddToAlbumDialog(gif: gif),
+    );
+  }
+}
+
+// ─── Albums Tab ───────────────────────────────────────────────────────────────
+
+class _AlbumsTab extends StatelessWidget {
+  const _AlbumsTab();
+
+  @override
+  Widget build(BuildContext context) {
+    return const AlbumsPage();
+  }
+}
+
+// ─── AlbumsPage query widget ──────────────────────────────────────────────────
+
+@Query(r"""
+  {
+    albums {
+      ...AlbumWidget
+    }
+  }
+""")
+class AlbumsPage extends $AlbumsPage {
+  const AlbumsPage({super.key});
+
+  @override
+  State<$AlbumsPage> createState() => _AlbumsPageState();
+
+  @override
+  Widget buildLoading(BuildContext context) => throw UnimplementedError();
+  @override
+  Widget buildError(BuildContext context, Object error) =>
+      throw UnimplementedError();
+  @override
+  Widget buildData(BuildContext context, AlbumsPageData data) =>
+      throw UnimplementedError();
+}
+
+class _AlbumsPageState extends State<AlbumsPage> {
+  final _refs = <AlbumWidgetRef>[];
+  StreamSubscription<AlbumsPageData>? _sub;
+  Object? _error;
+  bool _loading = true;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_sub == null) _subscribe();
+  }
+
+  void _subscribe() {
+    _sub?.cancel();
+    setState(() => _loading = true);
+    _sub = ShalomScope.of(context)
+        .request<AlbumsPageData>(
+          name: 'AlbumsPage',
+          variables: null,
+          decoder: AlbumsPageData.fromCache,
+        )
+        .listen(
+          (data) {
+            final newRefs = data.albums
+                .whereType<AlbumWidgetRef>()
+                .toList();
+            setState(() {
+              _refs
+                ..clear()
+                ..addAll(newRefs);
+              _loading = false;
+              _error = null;
+            });
+          },
+          onError: (e) => setState(() {
+            _error = e;
+            _loading = false;
+          }),
+        );
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Albums')),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
+        onPressed: () => _showCreateAlbumDialog(context),
         child: const Icon(Icons.add),
       ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+              ? Center(child: Text('Error: $_error'))
+              : _refs.isEmpty
+                  ? const Center(child: Text('No albums yet. Create one!'))
+                  : ListView.builder(
+                      itemCount: _refs.length,
+                      itemBuilder: (context, i) =>
+                          AlbumWidget(ref: _refs[i]),
+                    ),
+    );
+  }
+
+  void _showCreateAlbumDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => _CreateAlbumDialog(onCreated: (_) => _subscribe()),
+    );
+  }
+}
+
+// ─── AlbumWidget fragment ─────────────────────────────────────────────────────
+
+@Fragment(r"""
+  on Album {
+    id
+    name
+    gifs {
+      id
+      title
+    }
+  }
+""")
+class AlbumWidget extends $AlbumWidget {
+  const AlbumWidget({super.key, required super.ref});
+
+  @override
+  Widget buildLoading(BuildContext context) =>
+      const ListTile(title: Text('Loading…'));
+
+  @override
+  Widget buildError(BuildContext context, Object error) =>
+      ListTile(title: Text('Error: $error'));
+
+  @override
+  Widget buildData(BuildContext context, AlbumWidgetData album) {
+    final gifCount = album.gifs.length;
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: ListTile(
+        leading: const Icon(Icons.photo_album, size: 40),
+        title: Text(album.name),
+        subtitle: Text('$gifCount GIF${gifCount == 1 ? '' : 's'}'),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => Navigator.of(context).push(
+          MaterialPageRoute<void>(
+            builder: (_) => _AlbumDetailPage(
+              albumId: album.id,
+              albumName: album.name,
+              gifs: album.gifs,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Mutations ────────────────────────────────────────────────────────────────
+
+@Mutation(r"""
+  ($name: String!) {
+    createAlbum(name: $name) {
+      id
+      name
+    }
+  }
+""")
+class CreateAlbumMutation extends $CreateAlbumMutation {
+  const CreateAlbumMutation(super.client);
+}
+
+@Mutation(r"""
+  ($albumId: String!, $gifId: String!, $title: String!, $url: String!, $previewUrl: String) {
+    addGifToAlbum(albumId: $albumId, gifId: $gifId, title: $title, url: $url, previewUrl: $previewUrl) {
+      id
+      name
+      gifs {
+        id
+        title
+      }
+    }
+  }
+""")
+class AddGifToAlbumMutation extends $AddGifToAlbumMutation {
+  const AddGifToAlbumMutation(super.client);
+}
+
+@Mutation(r"""
+  ($albumId: String!, $gifId: String!) {
+    removeGifFromAlbum(albumId: $albumId, gifId: $gifId) {
+      id
+      name
+    }
+  }
+""")
+class RemoveGifFromAlbumMutation extends $RemoveGifFromAlbumMutation {
+  const RemoveGifFromAlbumMutation(super.client);
+}
+
+// ─── Dialog Widgets ───────────────────────────────────────────────────────────
+
+class _CreateAlbumDialog extends StatefulWidget {
+  final void Function(CreateAlbumMutationData) onCreated;
+
+  const _CreateAlbumDialog({required this.onCreated});
+
+  @override
+  State<_CreateAlbumDialog> createState() => _CreateAlbumDialogState();
+}
+
+class _CreateAlbumDialogState extends State<_CreateAlbumDialog> {
+  final _nameController = TextEditingController();
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final client = ShalomScope.of(context);
+    final nav = Navigator.of(context);
+    try {
+      final data = await CreateAlbumMutation(client).execute(name: name);
+      widget.onCreated(data);
+      nav.pop();
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('New Album'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          TextField(
+            controller: _nameController,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Album name'),
+            onSubmitted: (_) => _submit(),
+          ),
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(_error!, style: const TextStyle(color: Colors.red)),
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _loading ? null : _submit,
+          child: _loading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Create'),
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Album Detail Page ────────────────────────────────────────────────────────
+
+class _AlbumDetailPage extends StatelessWidget {
+  final String albumId;
+  final String albumName;
+  final List<AlbumWidget_gifs> gifs;
+
+  const _AlbumDetailPage({
+    required this.albumId,
+    required this.albumName,
+    required this.gifs,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text(albumName)),
+      body: gifs.isEmpty
+          ? const Center(child: Text('No GIFs in this album yet.'))
+          : ListView.builder(
+              itemCount: gifs.length,
+              itemBuilder: (context, i) {
+                final gif = gifs[i];
+                return ListTile(
+                  leading: const Icon(Icons.gif),
+                  title: Text(gif.title),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.remove_circle_outline),
+                    tooltip: 'Remove from album',
+                    onPressed: () => _removeGif(context, albumId, gif.id),
+                  ),
+                );
+              },
+            ),
+    );
+  }
+
+  Future<void> _removeGif(
+      BuildContext context, String albumId, String gifId) async {
+    final client = ShalomScope.of(context);
+    try {
+      await RemoveGifFromAlbumMutation(client).execute(
+        albumId: albumId,
+        gifId: gifId,
+      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('GIF removed')),
+        );
+        Navigator.of(context).pop();
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text('Error: $e')));
+      }
+    }
+  }
+}
+
+class _AddToAlbumDialog extends StatefulWidget {
+  final GifWidgetData gif;
+
+  const _AddToAlbumDialog({required this.gif});
+
+  @override
+  State<_AddToAlbumDialog> createState() => _AddToAlbumDialogState();
+}
+
+class _AddToAlbumDialogState extends State<_AddToAlbumDialog> {
+  final _albumIdController = TextEditingController();
+  bool _loading = false;
+  String? _error;
+
+  @override
+  void dispose() {
+    _albumIdController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    final albumId = _albumIdController.text.trim();
+    if (albumId.isEmpty) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final client = ShalomScope.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final nav = Navigator.of(context);
+    final gif = widget.gif;
+    try {
+      await AddGifToAlbumMutation(client).execute(
+        albumId: albumId,
+        gifId: gif.id,
+        title: gif.title,
+        url: gif.url,
+        previewUrl: gif.previewUrl != null
+            ? shalom.Some(gif.previewUrl)
+            : const shalom.None(),
+      );
+      messenger.showSnackBar(const SnackBar(content: Text('GIF added to album')));
+      nav.pop();
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _loading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Add to Album'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('GIF: ${widget.gif.title}'),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _albumIdController,
+            autofocus: true,
+            decoration: const InputDecoration(labelText: 'Album ID'),
+            onSubmitted: (_) => _submit(),
+          ),
+          if (_error != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: Text(_error!, style: const TextStyle(color: Colors.red)),
+            ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: _loading ? null : _submit,
+          child: _loading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Add'),
+        ),
+      ],
     );
   }
 }

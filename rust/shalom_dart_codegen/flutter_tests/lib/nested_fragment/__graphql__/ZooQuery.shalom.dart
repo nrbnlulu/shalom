@@ -7,75 +7,90 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
-import 'PetWidget.shalom.dart';
+import 'ZooWidget.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class PetQueryResponse {
+class ZooQueryResponse {
   static String G__typename = "query";
 
   /// class members
-  final PetWidgetRef? pet;
+  final ZooWidgetRef? zoo;
 
   // keywordargs constructor
-  PetQueryResponse({this.pet});
+  ZooQueryResponse({this.zoo});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is PetQueryResponse && pet == other.pet);
+        (other is ZooQueryResponse && zoo == other.zoo);
   }
 
   @override
-  int get hashCode => Object.hashAll([pet, PetQueryResponse.G__typename]);
+  int get hashCode => Object.hashAll([zoo, ZooQueryResponse.G__typename]);
 
   shalom_core.JsonObject toJson() {
-    return {'pet': this.pet?.toJson()};
+    return {'zoo': this.zoo?.toJson()};
   }
 
   @experimental
-  static PetQueryResponse fromJson(shalom_core.JsonObject data) {
-    final PetWidgetRef? pet$value = data['pet'] == null
+  static ZooQueryResponse fromJson(shalom_core.JsonObject data) {
+    final ZooWidgetRef? zoo$value = data['zoo'] == null
         ? null
-        : PetWidgetRef.fromInput(
+        : ZooWidgetRef.fromInput(
             shalom_core.observedRefInputFromJson(
-              (data['pet'] as shalom_core.JsonObject)[r'$PetWidget']
+              (data['zoo'] as shalom_core.JsonObject)[r'$ZooWidget']
                   as shalom_core.JsonObject,
             ),
           );
-    return PetQueryResponse(pet: pet$value);
+    return ZooQueryResponse(zoo: zoo$value);
   }
 }
 
-class PetQuery_pet {
-  static String G__typename = "Pet";
+class ZooQuery_zoo {
+  static String G__typename = "Zoo";
 
   /// class members
   final String id;
 
   final String name;
 
+  final List<ZooWidget_cages> cages;
+
   // keywordargs constructor
-  PetQuery_pet({required this.id, required this.name});
+  ZooQuery_zoo({required this.id, required this.name, required this.cages});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is PetQuery_pet && id == other.id && name == other.name);
+        (other is ZooQuery_zoo &&
+            id == other.id &&
+            name == other.name &&
+            const ListEquality().equals(cages, other.cages));
   }
 
   @override
-  int get hashCode => Object.hashAll([id, name, PetQuery_pet.G__typename]);
+  int get hashCode =>
+      Object.hashAll([id, name, cages, ZooQuery_zoo.G__typename]);
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'name': this.name};
+    return {
+      'id': this.id,
+
+      'name': this.name,
+
+      'cages': this.cages.map((e) => e.toJson()).toList(),
+    };
   }
 
   @experimental
-  static PetQuery_pet fromJson(shalom_core.JsonObject data) {
+  static ZooQuery_zoo fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
-    return PetQuery_pet(id: id$value, name: name$value);
+    final List<ZooWidget_cages> cages$value = (data['cages'] as List<dynamic>)
+        .map((e) => ZooWidget_cages.fromJson(e as shalom_core.JsonObject))
+        .toList();
+    return ZooQuery_zoo(id: id$value, name: name$value, cages: cages$value);
   }
 }
 
@@ -95,33 +110,33 @@ class PetQuery_pet {
 
 // ------------ V2 WIDGET API -------------
 
-final class PetQueryData {
-  final PetWidgetRef? pet;
+final class ZooQueryData {
+  final ZooWidgetRef? zoo;
 
-  const PetQueryData({required this.pet});
+  const ZooQueryData({required this.zoo});
 
   @experimental
-  static PetQueryData fromCache(shalom_core.JsonObject data) {
-    final PetWidgetRef? pet$value = data['pet'] == null
+  static ZooQueryData fromCache(shalom_core.JsonObject data) {
+    final ZooWidgetRef? zoo$value = data['zoo'] == null
         ? null
-        : PetWidgetRef.fromInput(
+        : ZooWidgetRef.fromInput(
             shalom_core.observedRefInputFromJson(
-              (data['pet'] as shalom_core.JsonObject)[r'$PetWidget']
+              (data['zoo'] as shalom_core.JsonObject)[r'$ZooWidget']
                   as shalom_core.JsonObject,
             ),
           );
-    return PetQueryData(pet: pet$value);
+    return ZooQueryData(zoo: zoo$value);
   }
 
   shalom_core.JsonObject toJson() {
-    return {'pet': this.pet?.toJson()};
+    return {'zoo': this.zoo?.toJson()};
   }
 }
 
-final class PetQueryVariables {
+final class ZooQueryVariables {
   final String id;
 
-  const PetQueryVariables({required this.id});
+  const ZooQueryVariables({required this.id});
 
   shalom_core.JsonObject toJson() {
     shalom_core.JsonObject data = {};
@@ -134,7 +149,7 @@ final class PetQueryVariables {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is PetQueryVariables && this.id == other.id);
+        (other is ZooQueryVariables && this.id == other.id);
   }
 
   @override

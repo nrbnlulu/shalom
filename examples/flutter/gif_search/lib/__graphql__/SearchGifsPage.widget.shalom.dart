@@ -1,28 +1,28 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
 // Re-export all generated types so importers only need this file.
-export 'AnimalQuery.shalom.dart';
+export 'SearchGifsPage.shalom.dart';
 
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
-import 'AnimalQuery.shalom.dart';
+import 'SearchGifsPage.shalom.dart';
 
-abstract class $AnimalQuery extends StatefulWidget {
-  final AnimalQueryVariables variables;
-  const $AnimalQuery({super.key, required this.variables});
+abstract class $SearchGifsPage extends StatefulWidget {
+  final SearchGifsPageVariables variables;
+  const $SearchGifsPage({super.key, required this.variables});
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
-  Widget buildData(BuildContext context, AnimalQueryData data);
+  Widget buildData(BuildContext context, SearchGifsPageData data);
 
   @override
-  State<$AnimalQuery> createState() => _$AnimalQueryState();
+  State<$SearchGifsPage> createState() => _$SearchGifsPageState();
 }
 
-class _$AnimalQueryState extends State<$AnimalQuery> {
-  StreamSubscription<AnimalQueryData>? _sub;
-  AnimalQueryData? _data;
+class _$SearchGifsPageState extends State<$SearchGifsPage> {
+  StreamSubscription<SearchGifsPageData>? _sub;
+  SearchGifsPageData? _data;
   Object? _error;
 
   @override
@@ -32,7 +32,7 @@ class _$AnimalQueryState extends State<$AnimalQuery> {
   }
 
   @override
-  void didUpdateWidget(covariant $AnimalQuery oldWidget) {
+  void didUpdateWidget(covariant $SearchGifsPage oldWidget) {
     super.didUpdateWidget(oldWidget);
 
     if (widget.variables != oldWidget.variables) _subscribe();
@@ -42,21 +42,22 @@ class _$AnimalQueryState extends State<$AnimalQuery> {
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client
-        .request<AnimalQueryData>(
-          name: 'AnimalQuery',
+        .request<SearchGifsPageData>(
+          name: 'SearchGifsPage',
 
           variables: widget.variables.toJson(),
 
-          decoder: AnimalQueryData.fromCache,
+          decoder: SearchGifsPageData.fromCache,
         )
         .listen(
           (data) => setState(() {
             _data = data;
             _error = null;
           }),
-          onError: (e) => setState(() {
-            _error = e;
-          }),
+          onError:
+              (e) => setState(() {
+                _error = e;
+              }),
         );
   }
 

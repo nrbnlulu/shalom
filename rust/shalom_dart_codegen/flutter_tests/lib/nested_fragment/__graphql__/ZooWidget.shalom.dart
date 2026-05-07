@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// Fragment: PetWidget
+// Fragment: ZooWidget
 
 import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
@@ -13,7 +13,7 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
-extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
+extension type ZooWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
   shalom_core.JsonObject toJson() => {
     'observable_id': _inner.observableId,
@@ -21,47 +21,96 @@ extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   };
 }
 
-final class PetWidgetData {
+class ZooWidget_cages {
+  static String G__typename = "Cage";
+
+  /// class members
   final String id;
+
   final String name;
 
-  const PetWidgetData({required this.id, required this.name});
+  // keywordargs constructor
+  ZooWidget_cages({required this.id, required this.name});
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is PetWidgetData && id == other.id && name == other.name);
-
-  @override
-  int get hashCode => Object.hashAll([id, name]);
-
-  @experimental
-  static PetWidgetData fromCache(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
-    final String name$value = data['name'] as String;
-    return PetWidgetData(id: id$value, name: name$value);
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ZooWidget_cages && id == other.id && name == other.name);
   }
+
+  @override
+  int get hashCode => Object.hashAll([id, name, ZooWidget_cages.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'id': this.id, 'name': this.name};
   }
+
+  @experimental
+  static ZooWidget_cages fromJson(shalom_core.JsonObject data) {
+    final String id$value = data['id'] as String;
+    final String name$value = data['name'] as String;
+    return ZooWidget_cages(id: id$value, name: name$value);
+  }
 }
 
-abstract class $PetWidget extends StatefulWidget {
-  final PetWidgetRef ref;
-  const $PetWidget({super.key, required this.ref});
+final class ZooWidgetData {
+  final List<ZooWidget_cages> cages;
+  final String name;
+  final String id;
 
-  Widget buildData(BuildContext context, PetWidgetData data);
+  const ZooWidgetData({
+    required this.cages,
+    required this.name,
+    required this.id,
+  });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ZooWidgetData &&
+          const ListEquality().equals(cages, other.cages) &&
+          name == other.name &&
+          id == other.id);
+
+  @override
+  int get hashCode => Object.hashAll([cages, name, id]);
+
+  @experimental
+  static ZooWidgetData fromCache(shalom_core.JsonObject data) {
+    final List<ZooWidget_cages> cages$value = (data['cages'] as List<dynamic>)
+        .map((e) => ZooWidget_cages.fromJson(e as shalom_core.JsonObject))
+        .toList();
+    final String name$value = data['name'] as String;
+    final String id$value = data['id'] as String;
+    return ZooWidgetData(cages: cages$value, name: name$value, id: id$value);
+  }
+
+  shalom_core.JsonObject toJson() {
+    return {
+      'cages': this.cages.map((e) => e.toJson()).toList(),
+
+      'name': this.name,
+
+      'id': this.id,
+    };
+  }
+}
+
+abstract class $ZooWidget extends StatefulWidget {
+  final ZooWidgetRef ref;
+  const $ZooWidget({super.key, required this.ref});
+
+  Widget buildData(BuildContext context, ZooWidgetData data);
   Widget buildLoading(BuildContext context) => const SizedBox.shrink();
   Widget buildError(BuildContext context, Object error) => ErrorWidget(error);
 
   @override
-  State<$PetWidget> createState() => _$PetWidgetState();
+  State<$ZooWidget> createState() => _$ZooWidgetState();
 }
 
-class _$PetWidgetState extends State<$PetWidget> {
-  StreamSubscription<PetWidgetData>? _sub;
-  PetWidgetData? _data;
+class _$ZooWidgetState extends State<$ZooWidget> {
+  StreamSubscription<ZooWidgetData>? _sub;
+  ZooWidgetData? _data;
   Object? _error;
 
   @override
@@ -71,7 +120,7 @@ class _$PetWidgetState extends State<$PetWidget> {
   }
 
   @override
-  void didUpdateWidget(covariant $PetWidget oldWidget) {
+  void didUpdateWidget(covariant $ZooWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.ref != oldWidget.ref) _subscribe();
   }
@@ -80,9 +129,9 @@ class _$PetWidgetState extends State<$PetWidget> {
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client
-        .subscribeToFragment<PetWidgetData>(
+        .subscribeToFragment<ZooWidgetData>(
           ref: widget.ref.toInput,
-          decoder: PetWidgetData.fromCache,
+          decoder: ZooWidgetData.fromCache,
         )
         .listen(
           (data) => setState(() {

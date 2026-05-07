@@ -2,6 +2,18 @@ type Query {
   user(id: ID!): User
   pet(id: ID!): Pet
   animal(id: ID!): Animal
+  zoo(id: ID!): Zoo
+}
+
+type Zoo {
+  id: ID!
+  name: String!
+  cages: [Cage!]!
+}
+
+type Cage {
+  id: ID!
+  name: String!
 }
 
 type User {
