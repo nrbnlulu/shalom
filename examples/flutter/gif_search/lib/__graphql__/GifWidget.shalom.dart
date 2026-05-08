@@ -2,7 +2,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: GifWidget
 
-import "../schema.shalom.dart";
+import "../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
@@ -22,56 +22,56 @@ extension type GifWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
 }
 
 final class GifWidgetData {
-  final String id;
-  final String? previewUrl;
   final String title;
   final String url;
+  final String id;
+  final String? previewUrl;
 
   const GifWidgetData({
-    required this.id,
-    required this.previewUrl,
     required this.title,
     required this.url,
+    required this.id,
+    required this.previewUrl,
   });
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is GifWidgetData &&
-          id == other.id &&
-          previewUrl == other.previewUrl &&
           title == other.title &&
-          url == other.url);
+          url == other.url &&
+          id == other.id &&
+          previewUrl == other.previewUrl);
 
   @override
-  int get hashCode => Object.hashAll([id, previewUrl, title, url]);
+  int get hashCode => Object.hashAll([title, url, id, previewUrl]);
 
   @experimental
   static GifWidgetData fromCache(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
-    final String? previewUrl$value = data['previewUrl'] as String?;
     final String title$value = data['title'] as String;
     final String url$value = data['url'] as String;
+    final String id$value = data['id'] as String;
+    final String? previewUrl$value = data['previewUrl'] as String?;
     return GifWidgetData(
-      id: id$value,
-
-      previewUrl: previewUrl$value,
-
       title: title$value,
 
       url: url$value,
+
+      id: id$value,
+
+      previewUrl: previewUrl$value,
     );
   }
 
   shalom_core.JsonObject toJson() {
     return {
-      'id': this.id,
-
-      'previewUrl': this.previewUrl,
-
       'title': this.title,
 
       'url': this.url,
+
+      'id': this.id,
+
+      'previewUrl': this.previewUrl,
     };
   }
 }

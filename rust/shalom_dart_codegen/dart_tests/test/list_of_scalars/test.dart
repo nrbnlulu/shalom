@@ -1,6 +1,3 @@
-import "dart:async";
-
-import "package:shalom/shalom.dart";
 import 'package:test/test.dart';
 import "__graphql__/ListofScalarsRequired.shalom.dart";
 import "__graphql__/ListOfScalarsOptional.shalom.dart";
@@ -44,50 +41,6 @@ void main() {
       );
       final json = initial.toJson();
       expect(json, listOfScalarsRequiredEmptyData);
-    });
-
-    test('listOfScalarsRequired cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = ListofScalarsRequiredResponse.fromJson(
-        listOfScalarsRequiredData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = ListofScalarsRequiredResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = ListofScalarsRequiredResponse.fromJson(
-        listOfScalarsRequiredDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.listOfScalarsRequired, ['foo', 'bar', 'baz']);
-    });
-
-    test('listOfScalarsRequired equals', () {
-      final ctx = ShalomCtx.withCapacity();
-      final result1 = ListofScalarsRequiredResponse.fromJson(
-        listOfScalarsRequiredData,
-        ctx: ctx,
-      );
-      final result2 = ListofScalarsRequiredResponse.fromJson(
-        listOfScalarsRequiredData,
-        ctx: ctx,
-      );
-      final result3 = ListofScalarsRequiredResponse.fromJson(
-        listOfScalarsRequiredDataChanged,
-        ctx: ctx,
-      );
-
-      expect(result1, equals(result2));
-      expect(result1, isNot(equals(result3)));
     });
   });
 
@@ -144,55 +97,6 @@ void main() {
       );
       final json = initial.toJson();
       expect(json, listOfScalarsOptionalEmptyData);
-    });
-
-    test('listOfScalarsOptional cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = ListOfScalarsOptionalResponse.fromJson(
-        listOfScalarsOptionalData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = ListOfScalarsOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = ListOfScalarsOptionalResponse.fromJson(
-        listOfScalarsOptionalDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.listOfScalarsOptional, ['foo', 'bar', 'baz']);
-    });
-
-    test('listOfScalarsOptional equals', () {
-      final ctx = ShalomCtx.withCapacity();
-      final result1 = ListOfScalarsOptionalResponse.fromJson(
-        listOfScalarsOptionalData,
-        ctx: ctx,
-      );
-      final result2 = ListOfScalarsOptionalResponse.fromJson(
-        listOfScalarsOptionalData,
-        ctx: ctx,
-      );
-      final result3 = ListOfScalarsOptionalResponse.fromJson(
-        listOfScalarsOptionalNullData,
-        ctx: ctx,
-      );
-      final result4 = ListOfScalarsOptionalResponse.fromJson(
-        listOfScalarsOptionalNullData,
-        ctx: ctx,
-      );
-
-      expect(result1, equals(result2));
-      expect(result3, equals(result4));
-      expect(result1, isNot(equals(result3)));
     });
   });
 
@@ -253,58 +157,6 @@ void main() {
       );
       final json = initial.toJson();
       expect(json, listOfOptionalScalarsOptionalEmptyData);
-    });
-
-    test('listOfOptionalScalarsOptional cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = ListOfOptionalScalarsOptionalResponse.fromJson(
-        listOfOptionalScalarsOptionalData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = ListOfOptionalScalarsOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = ListOfOptionalScalarsOptionalResponse.fromJson(
-        listOfOptionalScalarsOptionalDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.listOfOptionalScalarsOptional, [4, 5, 6]);
-    });
-
-    test('listOfOptionalScalarsOptional equals', () {
-      final ctx = ShalomCtx.withCapacity();
-      final result1 = ListOfOptionalScalarsOptionalResponse.fromJson(
-        listOfOptionalScalarsOptionalData,
-        ctx: ctx,
-      );
-      final result2 = ListOfOptionalScalarsOptionalResponse.fromJson(
-        listOfOptionalScalarsOptionalData,
-        ctx: ctx,
-      );
-      final result3 = ListOfOptionalScalarsOptionalResponse.fromJson(
-        listOfOptionalScalarsOptionalNullData,
-        ctx: ctx,
-      );
-      final result4 = ListOfOptionalScalarsOptionalResponse.fromJson(
-        listOfOptionalScalarsOptionalNullData,
-        ctx: ctx,
-      );
-
-      expect(result1, equals(result2));
-      expect(result3, equals(result4));
-      expect(result1, isNot(equals(result3)));
     });
   });
 }

@@ -18,7 +18,7 @@ void main() {
       ],
     };
 
-    final result = GetPersonResponse.fromJson(data, variables: variables);
+    final result = GetPersonResponse.fromJson(data);
 
     expect(result.person?.id, "p1");
     expect(result.person?.name, "Foo");

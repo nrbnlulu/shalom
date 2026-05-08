@@ -1,6 +1,3 @@
-import "dart:async";
-
-import "package:shalom/shalom.dart";
 import 'package:test/test.dart';
 import "__graphql__/GetAnimal.shalom.dart";
 import "__graphql__/GetAnimalOpt.shalom.dart";
@@ -72,7 +69,6 @@ void main() {
       final variables = GetAnimalVariables(id: "lion1");
       final result = GetAnimalResponse.fromJson(
         lionData,
-        variables: variables,
       );
 
       final animal = result.animal;
@@ -89,7 +85,6 @@ void main() {
       final variables = GetAnimalVariables(id: "turtle1");
       final result = GetAnimalResponse.fromJson(
         turtleData,
-        variables: variables,
       );
 
       expect(result.animal, isA<GetAnimal_animal__Turtle>());
@@ -105,7 +100,6 @@ void main() {
       final variables = GetAnimalVariables(id: "dog1");
       final result = GetAnimalResponse.fromJson(
         dogData,
-        variables: variables,
       );
 
       expect(result.animal, isA<GetAnimal_animal__Dog>());
@@ -120,7 +114,6 @@ void main() {
       final variables = GetAnimalVariables(id: "lion1");
       final initial = GetAnimalResponse.fromJson(
         lionData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, lionData);
@@ -130,7 +123,6 @@ void main() {
       final variables = GetAnimalVariables(id: "turtle1");
       final initial = GetAnimalResponse.fromJson(
         turtleData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, turtleData);
@@ -140,7 +132,6 @@ void main() {
       final variables = GetAnimalVariables(id: "dog1");
       final initial = GetAnimalResponse.fromJson(
         dogData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, dogData);
@@ -150,11 +141,9 @@ void main() {
       final variables = GetAnimalVariables(id: "lion1");
       final result1 = GetAnimalResponse.fromJson(
         lionData,
-        variables: variables,
       );
       final result2 = GetAnimalResponse.fromJson(
         lionData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
@@ -163,11 +152,9 @@ void main() {
       final variables = GetAnimalVariables(id: "turtle1");
       final result1 = GetAnimalResponse.fromJson(
         turtleData,
-        variables: variables,
       );
       final result2 = GetAnimalResponse.fromJson(
         turtleData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
@@ -176,11 +163,9 @@ void main() {
       final variables = GetAnimalVariables(id: "test");
       final result1 = GetAnimalResponse.fromJson(
         lionData,
-        variables: variables,
       );
       final result2 = GetAnimalResponse.fromJson(
         turtleData,
-        variables: variables,
       );
       expect(result1, isNot(equals(result2)));
     });
@@ -203,7 +188,6 @@ void main() {
       final variables = GetAnimalOptVariables(id: "lion2");
       final result = GetAnimalOptResponse.fromJson(
         lionOptData,
-        variables: variables,
       );
 
       expect(result.animalOpt, isNotNull);
@@ -219,7 +203,6 @@ void main() {
       final variables = GetAnimalOptVariables(id: "none");
       final result = GetAnimalOptResponse.fromJson(
         animalOptNullData,
-        variables: variables,
       );
       expect(result.animalOpt, isNull);
     });
@@ -228,7 +211,6 @@ void main() {
       final variables = GetAnimalOptVariables(id: "lion2");
       final initial = GetAnimalOptResponse.fromJson(
         lionOptData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, lionOptData);
@@ -238,7 +220,6 @@ void main() {
       final variables = GetAnimalOptVariables(id: "none");
       final initial = GetAnimalOptResponse.fromJson(
         animalOptNullData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, animalOptNullData);
@@ -260,7 +241,6 @@ void main() {
       final variables = GetAnimalAllTypesVariables(id: "dog2");
       final result = GetAnimalAllTypesResponse.fromJson(
         dogAllTypesData,
-        variables: variables,
       );
 
       expect(result.animal, isA<GetAnimalAllTypes_animal__Dog>());
@@ -276,7 +256,6 @@ void main() {
       final variables = GetAnimalAllTypesVariables(id: "dog2");
       final initial = GetAnimalAllTypesResponse.fromJson(
         dogAllTypesData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, dogAllTypesData);
@@ -337,7 +316,6 @@ void main() {
       final variables = GetAnimalWithoutTopTypenameVariables(id: "lion1");
       final result = GetAnimalWithoutTopTypenameResponse.fromJson(
         lionData,
-        variables: variables,
       );
 
       expect(result.animal, isA<GetAnimalWithoutTopTypename_animal__Lion>());
@@ -347,134 +325,11 @@ void main() {
     });
   });
 
-  group('cacheNormalization', () {
-    test('Lion to Turtle', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetAnimalVariables(id: "animal1");
-
-      var (result, updateCtx) = GetAnimalResponse.fromJson(
-        lionData,
-        ctx,
-        variables,
-      );
-
-      expect(result.animal, isA<GetAnimal_animal__Lion>());
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetAnimalResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetAnimalResponse.fromJson(
-        turtleData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.animal, isA<GetAnimal_animal__Turtle>());
-    });
-
-    test('Turtle to Dog (fallback)', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetAnimalVariables(id: "animal1");
-
-      var (result, updateCtx) = GetAnimalResponse.fromJson(
-        turtleData,
-        ctx,
-        variables,
-      );
-
-      expect(result.animal, isA<GetAnimal_animal__Turtle>());
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetAnimalResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetAnimalResponse.fromJson(
-        dogData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.animal, isA<GetAnimal_animal__Dog>());
-    });
-
-    test('optional - null to Lion', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetAnimalOptVariables(id: "animal1");
-
-      var (result, updateCtx) = GetAnimalOptResponse.fromJson(
-        animalOptNullData,
-        ctx,
-        variables,
-      );
-
-      expect(result.animalOpt, isNull);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetAnimalOptResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetAnimalOptResponse.fromJson(
-        lionOptData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.animalOpt, isNotNull);
-    });
-
-    test('optional - Lion to null', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetAnimalOptVariables(id: "animal1");
-
-      var (result, updateCtx) = GetAnimalOptResponse.fromJson(
-        lionOptData,
-        ctx,
-        variables,
-      );
-
-      expect(result.animalOpt, isNotNull);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetAnimalOptResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetAnimalOptResponse.fromJson(
-        animalOptNullData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.animalOpt, isNull);
-    });
-  });
-
   group('Test interface with arguments', () {
     test('lionRequired', () {
       final variables = GetAnimalWithArgumentsVariables(id: "lion5", limit: 30);
       final result = GetAnimalWithArgumentsResponse.fromJson(
         lionWithArgsData,
-        variables: variables,
       );
 
       expect(result.animal, isA<GetAnimalWithArguments_animal__Lion>());
@@ -494,7 +349,6 @@ void main() {
       );
       final result = GetAnimalWithArgumentsResponse.fromJson(
         turtleWithArgsData,
-        variables: variables,
       );
 
       expect(result.animal, isA<GetAnimalWithArguments_animal__Turtle>());
@@ -511,7 +365,6 @@ void main() {
       final variables = GetAnimalWithArgumentsVariables(id: "dog5", limit: 20);
       final result = GetAnimalWithArgumentsResponse.fromJson(
         dogWithArgsData,
-        variables: variables,
       );
 
       expect(result.animal, isA<GetAnimalWithArguments_animal__Dog>());
@@ -528,11 +381,9 @@ void main() {
       final variables = GetAnimalWithArgumentsVariables(id: "lion5", limit: 30);
       final result1 = GetAnimalWithArgumentsResponse.fromJson(
         lionWithArgsData,
-        variables: variables,
       );
       final result2 = GetAnimalWithArgumentsResponse.fromJson(
         lionWithArgsData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
@@ -541,101 +392,9 @@ void main() {
       final variables = GetAnimalWithArgumentsVariables(id: "lion5", limit: 30);
       final initial = GetAnimalWithArgumentsResponse.fromJson(
         lionWithArgsData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, lionWithArgsData);
-    });
-
-    test('cacheNormalization - description field update', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetAnimalWithArgumentsVariables(
-        id: "animal5",
-        limit: 30,
-      );
-
-      final initialData = {
-        "animal": {
-          "__typename": "Lion",
-          "id": "animal5",
-          "legs": 4,
-          "sound": "Roar",
-          "description": "Initial description",
-          "furColor": "Golden",
-        },
-      };
-
-      var (result, updateCtx) = GetAnimalWithArgumentsResponse.fromJson(
-        initialData,
-        ctx,
-        variables,
-      );
-
-      expect(result.animal, isA<GetAnimalWithArguments_animal__Lion>());
-      final lion1 = result.animal as GetAnimalWithArguments_animal__Lion;
-      expect(lion1.description, "Initial description");
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetAnimalWithArgumentsResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final updatedData = {
-        "animal": {
-          "__typename": "Lion",
-          "id": "animal5",
-          "legs": 4,
-          "sound": "Roar",
-          "description": "Updated description",
-          "furColor": "Golden",
-        },
-      };
-
-      final nextResult = GetAnimalWithArgumentsResponse.fromJson(
-        updatedData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      final lion2 = result.animal as GetAnimalWithArguments_animal__Lion;
-      expect(lion2.description, "Updated description");
-    });
-
-    test('cacheNormalization - type change Lion to Dog', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetAnimalWithArgumentsVariables(
-        id: "animal6",
-        limit: 20,
-      );
-
-      var (result, updateCtx) = GetAnimalWithArgumentsResponse.fromJson(
-        lionWithArgsData,
-        ctx,
-        variables,
-      );
-
-      expect(result.animal, isA<GetAnimalWithArguments_animal__Lion>());
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetAnimalWithArgumentsResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetAnimalWithArgumentsResponse.fromJson(
-        dogWithArgsData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.animal, isA<GetAnimalWithArguments_animal__Dog>());
     });
   });
 }

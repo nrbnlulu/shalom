@@ -1,6 +1,3 @@
-import "dart:async";
-
-import "package:shalom/shalom.dart";
 import 'package:test/test.dart';
 import "__graphql__/schema.shalom.dart";
 import "__graphql__/GetStatusesRequired.shalom.dart";
@@ -71,56 +68,6 @@ void main() {
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
-    });
-
-    test('statusesRequired cacheNormalization - inner value change', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetStatusesRequiredResponse.fromJson(
-        statusesRequiredData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetStatusesRequiredResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetStatusesRequiredResponse.fromJson(
-        statusesRequiredDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.statusesRequired[0], Status.FAILED);
-    });
-
-    test('statusesRequired cacheNormalization - list length changed', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetStatusesRequiredResponse.fromJson(
-        statusesRequiredData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetStatusesRequiredResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetStatusesRequiredResponse.fromJson(
-        statusesRequiredLengthChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.statusesRequired.length, 2);
     });
   });
 
@@ -202,85 +149,6 @@ void main() {
       expect(result3, equals(result4));
       expect(result1, isNot(equals(result3)));
     });
-
-    test('statusesOptional cacheNormalization - null to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetStatusesOptionalResponse.fromJson(
-        statusesOptionalNullData,
-        ctx,
-      );
-
-      expect(result.statusesOptional, isNull);
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetStatusesOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetStatusesOptionalResponse.fromJson(
-        statusesOptionalData,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.statusesOptional?.length, 2);
-    });
-
-    test('statusesOptional cacheNormalization - some to null', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetStatusesOptionalResponse.fromJson(
-        statusesOptionalData,
-        ctx,
-      );
-
-      expect(result.statusesOptional, isNotNull);
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetStatusesOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetStatusesOptionalResponse.fromJson(
-        statusesOptionalNullData,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.statusesOptional, isNull);
-    });
-
-    test('statusesOptional cacheNormalization - some to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetStatusesOptionalResponse.fromJson(
-        statusesOptionalData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetStatusesOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetStatusesOptionalResponse.fromJson(
-        statusesOptionalDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.statusesOptional?[0], Status.PENDING);
-    });
   });
 
   // Test data for optional items in list
@@ -324,31 +192,6 @@ void main() {
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
-    });
-
-    test('optionalStatuses cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetOptionalStatusesResponse.fromJson(
-        optionalStatusesData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetOptionalStatusesResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetOptionalStatusesResponse.fromJson(
-        optionalStatusesDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.optionalStatuses[0], Status.PENDING);
     });
   });
 
@@ -417,94 +260,6 @@ void main() {
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
-    });
-
-    test('statusesFullyOptional cacheNormalization - null to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetStatusesFullyOptionalResponse.fromJson(
-        statusesFullyOptionalNullData,
-        ctx,
-      );
-
-      expect(result.statusesFullyOptional, isNull);
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetStatusesFullyOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetStatusesFullyOptionalResponse.fromJson(
-        statusesFullyOptionalData,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.statusesFullyOptional?.length, 2);
-    });
-
-    test('statusesFullyOptional cacheNormalization - some to null', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetStatusesFullyOptionalResponse.fromJson(
-        statusesFullyOptionalData,
-        ctx,
-      );
-
-      expect(result.statusesFullyOptional, isNotNull);
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetStatusesFullyOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetStatusesFullyOptionalResponse.fromJson(
-        statusesFullyOptionalNullData,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.statusesFullyOptional, isNull);
-    });
-
-    test('statusesFullyOptional cacheNormalization - some to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetStatusesFullyOptionalResponse.fromJson(
-        statusesFullyOptionalData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetStatusesFullyOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetStatusesFullyOptionalResponse.fromJson(
-        statusesFullyOptionalDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.statusesFullyOptional?[0], Status.COMPLETED);
     });
   });
 }

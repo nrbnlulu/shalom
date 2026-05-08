@@ -1,6 +1,3 @@
-import "dart:async";
-
-import "package:shalom/shalom.dart";
 import 'package:test/test.dart';
 import "__graphql__/GetVehiclesRequired.shalom.dart";
 import "__graphql__/GetVehiclesOptional.shalom.dart";
@@ -219,7 +216,6 @@ void main() {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
       final result = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
-        variables: variables,
       );
       expect(result.vehiclesRequired.length, 3);
 
@@ -276,7 +272,6 @@ void main() {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
       final result = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredEmptyData,
-        variables: variables,
       );
       expect(result.vehiclesRequired.length, 0);
     });
@@ -285,7 +280,6 @@ void main() {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
       final initial = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, vehiclesRequiredData);
@@ -295,11 +289,9 @@ void main() {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
       final result1 = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
-        variables: variables,
       );
       final result2 = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
@@ -308,11 +300,9 @@ void main() {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
       final result1 = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
-        variables: variables,
       );
       final result2 = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredDataChanged,
-        variables: variables,
       );
       expect(result1, isNot(equals(result2)));
     });
@@ -323,7 +313,6 @@ void main() {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
       final result = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalData,
-        variables: variables,
       );
       expect(result.vehiclesOptional, isNotNull);
       expect(result.vehiclesOptional!.length, 2);
@@ -365,7 +354,6 @@ void main() {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
       final result = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalNullData,
-        variables: variables,
       );
       expect(result.vehiclesOptional, isNull);
     });
@@ -374,7 +362,6 @@ void main() {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
       final initial = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, vehiclesOptionalData);
@@ -384,7 +371,6 @@ void main() {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
       final initial = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalNullData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, vehiclesOptionalNullData);
@@ -394,11 +380,9 @@ void main() {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
       final result1 = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalData,
-        variables: variables,
       );
       final result2 = GetVehiclesOptionalResponse.fromJson(
         vehiclesOptionalData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
@@ -409,7 +393,6 @@ void main() {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
       final result = GetOptionalVehiclesResponse.fromJson(
         optionalVehiclesData,
-        variables: variables,
       );
       expect(result.optionalVehicles.length, 3);
 
@@ -446,7 +429,6 @@ void main() {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
       final initial = GetOptionalVehiclesResponse.fromJson(
         optionalVehiclesData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, optionalVehiclesData);
@@ -456,11 +438,9 @@ void main() {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
       final result1 = GetOptionalVehiclesResponse.fromJson(
         optionalVehiclesData,
-        variables: variables,
       );
       final result2 = GetOptionalVehiclesResponse.fromJson(
         optionalVehiclesData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
@@ -471,7 +451,6 @@ void main() {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
       final result = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalData,
-        variables: variables,
       );
       expect(result.vehiclesFullyOptional, isNotNull);
       expect(result.vehiclesFullyOptional!.length, 2);
@@ -496,7 +475,6 @@ void main() {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
       final result = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalNullData,
-        variables: variables,
       );
       expect(result.vehiclesFullyOptional, isNull);
     });
@@ -505,7 +483,6 @@ void main() {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
       final initial = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, vehiclesFullyOptionalData);
@@ -515,7 +492,6 @@ void main() {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
       final initial = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalNullData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, vehiclesFullyOptionalNullData);
@@ -525,11 +501,9 @@ void main() {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
       final result1 = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalData,
-        variables: variables,
       );
       final result2 = GetVehiclesFullyOptionalResponse.fromJson(
         vehiclesFullyOptionalData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
@@ -540,7 +514,6 @@ void main() {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
       final result = GetVehiclesWithArgsResponse.fromJson(
         vehiclesWithArgsData,
-        variables: variables,
       );
       expect(result.vehiclesWithArgs.length, 3);
 
@@ -588,7 +561,6 @@ void main() {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
       final initial = GetVehiclesWithArgsResponse.fromJson(
         vehiclesWithArgsData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, vehiclesWithArgsData);
@@ -598,242 +570,11 @@ void main() {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
       final result1 = GetVehiclesWithArgsResponse.fromJson(
         vehiclesWithArgsData,
-        variables: variables,
       );
       final result2 = GetVehiclesWithArgsResponse.fromJson(
         vehiclesWithArgsData,
-        variables: variables,
       );
       expect(result1, equals(result2));
-    });
-  });
-
-  group('cacheNormalization', () {
-    test('vehiclesRequired field update', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetVehiclesRequiredVariables(maxLength: 50);
-
-      var (result, updateCtx) = GetVehiclesRequiredResponse.fromJson(
-        vehiclesRequiredData,
-        ctx,
-        variables,
-      );
-
-      expect(result.vehiclesRequired.length, 3);
-      expect(
-        result.vehiclesRequired[0],
-        isA<GetVehiclesRequired_vehiclesRequired__Car>(),
-      );
-      final car1 = result.vehiclesRequired[0]
-          as GetVehiclesRequired_vehiclesRequired__Car;
-      expect(car1.brand, "Toyota");
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetVehiclesRequiredResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetVehiclesRequiredResponse.fromJson(
-        vehiclesRequiredDataChanged,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      final car2 = result.vehiclesRequired[0]
-          as GetVehiclesRequired_vehiclesRequired__Car;
-      expect(car2.brand, "Toyota Updated");
-    });
-
-    test('vehiclesRequired type change', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetVehiclesRequiredVariables(maxLength: 50);
-
-      var (result, updateCtx) = GetVehiclesRequiredResponse.fromJson(
-        vehiclesRequiredData,
-        ctx,
-        variables,
-      );
-
-      expect(
-        result.vehiclesRequired[0],
-        isA<GetVehiclesRequired_vehiclesRequired__Car>(),
-      );
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetVehiclesRequiredResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetVehiclesRequiredResponse.fromJson(
-        vehiclesRequiredTypeChanged,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(
-        result.vehiclesRequired[0],
-        isA<GetVehiclesRequired_vehiclesRequired__Motorcycle>(),
-      );
-    });
-
-    test('vehiclesRequired length change', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetVehiclesRequiredVariables(maxLength: 50);
-
-      var (result, updateCtx) = GetVehiclesRequiredResponse.fromJson(
-        vehiclesRequiredData,
-        ctx,
-        variables,
-      );
-
-      expect(result.vehiclesRequired.length, 3);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetVehiclesRequiredResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetVehiclesRequiredResponse.fromJson(
-        vehiclesRequiredLengthChanged,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.vehiclesRequired.length, 2);
-    });
-
-    test('vehiclesOptional null to data', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetVehiclesOptionalVariables(maxLength: 50);
-
-      var (result, updateCtx) = GetVehiclesOptionalResponse.fromJson(
-        vehiclesOptionalNullData,
-        ctx,
-        variables,
-      );
-
-      expect(result.vehiclesOptional, isNull);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetVehiclesOptionalResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetVehiclesOptionalResponse.fromJson(
-        vehiclesOptionalData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.vehiclesOptional, isNotNull);
-      expect(result.vehiclesOptional!.length, 2);
-    });
-
-    test('vehiclesOptional data to null', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetVehiclesOptionalVariables(maxLength: 50);
-
-      var (result, updateCtx) = GetVehiclesOptionalResponse.fromJson(
-        vehiclesOptionalData,
-        ctx,
-        variables,
-      );
-
-      expect(result.vehiclesOptional, isNotNull);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetVehiclesOptionalResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetVehiclesOptionalResponse.fromJson(
-        vehiclesOptionalNullData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.vehiclesOptional, isNull);
-    });
-
-    test('vehiclesWithArgs with arguments cache update', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
-
-      final initialData = {
-        "vehiclesWithArgs": [
-          {
-            "__typename": "Car",
-            "id": "car5",
-            "brand": "Mercedes",
-            "speed": 250,
-            "description": "Initial desc",
-            "doors": 2,
-          },
-        ],
-      };
-
-      var (result, updateCtx) = GetVehiclesWithArgsResponse.fromJson(
-        initialData,
-        ctx,
-        variables,
-      );
-
-      expect(result.vehiclesWithArgs.length, 1);
-      final car1 = result.vehiclesWithArgs[0]
-          as GetVehiclesWithArgs_vehiclesWithArgs__Car;
-      expect(car1.description, "Initial desc");
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetVehiclesWithArgsResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final updatedData = {
-        "vehiclesWithArgs": [
-          {
-            "__typename": "Car",
-            "id": "car5",
-            "brand": "Mercedes",
-            "speed": 250,
-            "description": "Updated desc",
-            "doors": 2,
-          },
-        ],
-      };
-
-      final nextResult = GetVehiclesWithArgsResponse.fromJson(
-        updatedData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      final car2 = result.vehiclesWithArgs[0]
-          as GetVehiclesWithArgs_vehiclesWithArgs__Car;
-      expect(car2.description, "Updated desc");
     });
   });
 
@@ -843,7 +584,6 @@ void main() {
     test('vehiclesRequired filter to cars only', () {
       final result = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
-        variables: variables,
       );
 
       final cars = result.vehiclesRequired.cars.toList();
@@ -856,7 +596,6 @@ void main() {
     test('vehiclesRequired filter to motorcycles only', () {
       final result = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
-        variables: variables,
       );
 
       final motorcycles = result.vehiclesRequired.motorcycles.toList();
@@ -869,7 +608,6 @@ void main() {
     test('vehiclesRequired filter to bicycles only', () {
       final result = GetVehiclesRequiredResponse.fromJson(
         vehiclesRequiredData,
-        variables: variables,
       );
 
       final bicycles = result.vehiclesRequired.bicycles.toList();
@@ -903,7 +641,6 @@ void main() {
 
       final result = GetVehiclesRequiredResponse.fromJson(
         dataWithNoBicycles,
-        variables: variables,
       );
 
       final bicycles = result.vehiclesRequired.bicycles;
@@ -942,7 +679,6 @@ void main() {
 
       final result = GetVehiclesRequiredResponse.fromJson(
         dataWithMultipleCars,
-        variables: variables,
       );
 
       final cars = result.vehiclesRequired.cars.toList();

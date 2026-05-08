@@ -2,7 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shalom/shalom.dart';
 import 'package:shalom_flutter/shalom_flutter.dart';
-import '../__graphql__/shalom_init.shalom.dart';
+import '../lib/graphql/__graphql__/shalom_init.shalom.dart';
 import 'package:flutter_tests/fragment/pet_query.dart';
 import 'package:flutter_tests/fragment/__graphql__/PetQuery.shalom.dart';
 import 'helpers/mock_link.dart';

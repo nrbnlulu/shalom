@@ -1,9 +1,9 @@
 import 'package:flutter/services.dart';
+import 'package:gif_search/graphql/__graphql__/shalom_init.shalom.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:shalom/shalom.dart' show HttpLink, ShalomRuntimeClient;
 import 'package:dio/dio.dart' as dio;
 import 'package:gif_search/dio_transport.dart' show DioTransport;
-import 'package:gif_search/__graphql__/shalom_init.shalom.dart';
 
 const String _graphqlUrl = 'http://127.0.0.1:8000/graphql';
 

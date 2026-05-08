@@ -51,46 +51,46 @@ class ZooQuery_zoo {
   static String G__typename = "Zoo";
 
   /// class members
+  final List<ZooWidget_cages> cages;
+
   final String name;
 
   final String id;
 
-  final List<ZooWidget_cages> cages;
-
   // keywordargs constructor
-  ZooQuery_zoo({required this.name, required this.id, required this.cages});
+  ZooQuery_zoo({required this.cages, required this.name, required this.id});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is ZooQuery_zoo &&
+            const ListEquality().equals(cages, other.cages) &&
             name == other.name &&
-            id == other.id &&
-            const ListEquality().equals(cages, other.cages));
+            id == other.id);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([name, id, cages, ZooQuery_zoo.G__typename]);
+      Object.hashAll([cages, name, id, ZooQuery_zoo.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
+      'cages': this.cages.map((e) => e.toJson()).toList(),
+
       'name': this.name,
 
       'id': this.id,
-
-      'cages': this.cages.map((e) => e.toJson()).toList(),
     };
   }
 
   @experimental
   static ZooQuery_zoo fromJson(shalom_core.JsonObject data) {
-    final String name$value = data['name'] as String;
-    final String id$value = data['id'] as String;
     final List<ZooWidget_cages> cages$value = (data['cages'] as List<dynamic>)
         .map((e) => ZooWidget_cages.fromJson(e as shalom_core.JsonObject))
         .toList();
-    return ZooQuery_zoo(name: name$value, id: id$value, cages: cages$value);
+    final String name$value = data['name'] as String;
+    final String id$value = data['id'] as String;
+    return ZooQuery_zoo(cages: cages$value, name: name$value, id: id$value);
   }
 }
 

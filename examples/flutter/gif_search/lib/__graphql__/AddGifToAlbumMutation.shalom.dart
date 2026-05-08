@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
-import "../schema.shalom.dart";
+import "../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
@@ -14,48 +14,48 @@ class AddGifToAlbumMutation_addGifToAlbum {
   static String G__typename = "Album";
 
   /// class members
-  final String id;
-
   final String name;
 
   final List<AddGifToAlbumMutation_addGifToAlbum_gifs> gifs;
 
+  final String id;
+
   // keywordargs constructor
   AddGifToAlbumMutation_addGifToAlbum({
-    required this.id,
-
     required this.name,
 
     required this.gifs,
+
+    required this.id,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AddGifToAlbumMutation_addGifToAlbum &&
-            id == other.id &&
             name == other.name &&
-            const ListEquality().equals(gifs, other.gifs));
+            const ListEquality().equals(gifs, other.gifs) &&
+            id == other.id);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    id,
-
     name,
 
     gifs,
+
+    id,
 
     AddGifToAlbumMutation_addGifToAlbum.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'id': this.id,
-
       'name': this.name,
 
       'gifs': this.gifs.map((e) => e.toJson()).toList(),
+
+      'id': this.id,
     };
   }
 
@@ -63,7 +63,6 @@ class AddGifToAlbumMutation_addGifToAlbum {
   static AddGifToAlbumMutation_addGifToAlbum fromJson(
     shalom_core.JsonObject data,
   ) {
-    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
     final List<AddGifToAlbumMutation_addGifToAlbum_gifs> gifs$value =
         (data['gifs'] as List<dynamic>)
@@ -73,12 +72,13 @@ class AddGifToAlbumMutation_addGifToAlbum {
               ),
             )
             .toList();
+    final String id$value = data['id'] as String;
     return AddGifToAlbumMutation_addGifToAlbum(
-      id: id$value,
-
       name: name$value,
 
       gifs: gifs$value,
+
+      id: id$value,
     );
   }
 }

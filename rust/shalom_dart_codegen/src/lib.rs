@@ -1158,9 +1158,17 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
         generate_v2_widgets(&ctx, &widgets, custom_scalar_imports.clone(), gen_dir)?;
     }
 
-    // V2: Generate registration function in schema.shalom.dart
+    // V2: Generate registration function in gen_dir alongside generated schema files.
+    // When schema_output_path is configured (e.g. "./lib"), the schema lands directly
+    // in that dir, so gen_dir sits beneath it (lib/__graphql__/).
+    // Without schema_output_path, get_schema_output_dir already includes __graphql__.
     if !widgets.is_empty() {
-        generate_v2_registration_file(pwd, &widgets, gen_dir)?;
+        let schema_output_dir = if ctx.config.schema_output_path.is_some() {
+            get_schema_output_dir(&ctx).join(gen_dir)
+        } else {
+            get_schema_output_dir(&ctx)
+        };
+        generate_v2_registration_file(&schema_output_dir, &widgets)?;
     }
 
     if options.fmt {
@@ -1556,13 +1564,12 @@ fn generate_v2_subscription_sidecar(
     Ok(())
 }
 
-/// Generate the registration function in lib/<gen_dir>/shalom_init.shalom.dart
+/// Generate the registration function next to the schema file (in the schema output dir).
 fn generate_v2_registration_file(
-    root: &PathBuf,
+    schema_output_dir: &PathBuf,
     widgets: &[WidgetAnnotation],
-    gen_dir: &str,
 ) -> Result<()> {
-    let schema_dir = root.join("lib").join(gen_dir);
+    let schema_dir = schema_output_dir.clone();
     create_dir_if_not_exists(&schema_dir);
     let gen_path = schema_dir.join("shalom_init.shalom.dart");
 

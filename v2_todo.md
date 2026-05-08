@@ -115,8 +115,8 @@ Each layer depends on the one below it.
 ran via cargo in  shalom_dart_codegen/tests/usecase_tests.rs
 
 - [ ] dart tests => in shalom_dart_codegen/dart_tests/<usecase>/test.dart? (still not migrated all tests to v2) dart only tests should test fromJson, == operator, correct interface / union dispatching. and correct input types from/to Json as per INPUT_REQUIREMENTS.md 
-- [x] flutter tests => a simple flutter project that uses the `@Query` / `@Fragment` codegen api's (currently passing) 
-- [ ] flutter tests => `@Mutation` apis, we haven't decided how the mutation api would look like just yet.
+- [x] flutter tests => a simple flutter project that uses the `@Query` / `@Fragment` / `Subscription` codegen api's (currently passing) 
+- [ ] flutter tests => Mutation and Subscription
 
 
 

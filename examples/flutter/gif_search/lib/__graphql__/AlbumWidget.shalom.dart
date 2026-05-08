@@ -2,7 +2,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: AlbumWidget
 
-import "../schema.shalom.dart";
+import "../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
@@ -54,13 +54,13 @@ class AlbumWidget_gifs {
 }
 
 final class AlbumWidgetData {
-  final String name;
   final String id;
+  final String name;
   final List<AlbumWidget_gifs> gifs;
 
   const AlbumWidgetData({
-    required this.name,
     required this.id,
+    required this.name,
     required this.gifs,
   });
 
@@ -68,29 +68,29 @@ final class AlbumWidgetData {
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AlbumWidgetData &&
-          name == other.name &&
           id == other.id &&
+          name == other.name &&
           const ListEquality().equals(gifs, other.gifs));
 
   @override
-  int get hashCode => Object.hashAll([name, id, gifs]);
+  int get hashCode => Object.hashAll([id, name, gifs]);
 
   @experimental
   static AlbumWidgetData fromCache(shalom_core.JsonObject data) {
-    final String name$value = data['name'] as String;
     final String id$value = data['id'] as String;
+    final String name$value = data['name'] as String;
     final List<AlbumWidget_gifs> gifs$value =
         (data['gifs'] as List<dynamic>)
             .map((e) => AlbumWidget_gifs.fromJson(e as shalom_core.JsonObject))
             .toList();
-    return AlbumWidgetData(name: name$value, id: id$value, gifs: gifs$value);
+    return AlbumWidgetData(id: id$value, name: name$value, gifs: gifs$value);
   }
 
   shalom_core.JsonObject toJson() {
     return {
-      'name': this.name,
-
       'id': this.id,
+
+      'name': this.name,
 
       'gifs': this.gifs.map((e) => e.toJson()).toList(),
     };

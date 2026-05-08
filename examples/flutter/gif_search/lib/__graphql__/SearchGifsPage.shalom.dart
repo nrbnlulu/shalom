@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
-import "../schema.shalom.dart";
+import "../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
@@ -148,21 +148,21 @@ class SearchGifsPage_searchGifs_items {
   /// class members
   final String title;
 
-  final String url;
+  final String? previewUrl;
 
   final String id;
 
-  final String? previewUrl;
+  final String url;
 
   // keywordargs constructor
   SearchGifsPage_searchGifs_items({
     required this.title,
 
-    required this.url,
+    this.previewUrl,
 
     required this.id,
 
-    this.previewUrl,
+    required this.url,
   });
 
   @override
@@ -170,20 +170,20 @@ class SearchGifsPage_searchGifs_items {
     return identical(this, other) ||
         (other is SearchGifsPage_searchGifs_items &&
             title == other.title &&
-            url == other.url &&
+            previewUrl == other.previewUrl &&
             id == other.id &&
-            previewUrl == other.previewUrl);
+            url == other.url);
   }
 
   @override
   int get hashCode => Object.hashAll([
     title,
 
-    url,
+    previewUrl,
 
     id,
 
-    previewUrl,
+    url,
 
     SearchGifsPage_searchGifs_items.G__typename,
   ]);
@@ -192,28 +192,28 @@ class SearchGifsPage_searchGifs_items {
     return {
       'title': this.title,
 
-      'url': this.url,
+      'previewUrl': this.previewUrl,
 
       'id': this.id,
 
-      'previewUrl': this.previewUrl,
+      'url': this.url,
     };
   }
 
   @experimental
   static SearchGifsPage_searchGifs_items fromJson(shalom_core.JsonObject data) {
     final String title$value = data['title'] as String;
-    final String url$value = data['url'] as String;
-    final String id$value = data['id'] as String;
     final String? previewUrl$value = data['previewUrl'] as String?;
+    final String id$value = data['id'] as String;
+    final String url$value = data['url'] as String;
     return SearchGifsPage_searchGifs_items(
       title: title$value,
 
-      url: url$value,
+      previewUrl: previewUrl$value,
 
       id: id$value,
 
-      previewUrl: previewUrl$value,
+      url: url$value,
     );
   }
 }

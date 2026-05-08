@@ -188,10 +188,27 @@ pub fn run_fluttre_tests(usecase: &str) {
     } else {
         std::process::Command::new(&dart)
     };
+    // Find libshalom_ffi.so in the hooks_runner output directory so we can
+    // point FRB to the correct native library at test runtime.
+    let native_lib_dir = glob::glob(
+        root_dir
+            .join(".dart_tool/hooks_runner/shared/shalom/build/*/target/*/release/libshalom_ffi.so")
+            .to_str()
+            .unwrap(),
+    )
+    .ok()
+    .and_then(|mut it| it.next())
+    .and_then(|r| r.ok())
+    .and_then(|p| p.canonicalize().ok())
+    .and_then(|p| p.parent().map(|d| d.to_path_buf()));
+
     flutter_test
         .current_dir(&root_dir)
         .arg("test")
         .arg(format!("test/{usecase}"));
+    if let Some(dir) = native_lib_dir {
+        flutter_test.env("FRB_DART_LOAD_EXTERNAL_LIBRARY_NATIVE_LIB_DIR", dir);
+    }
     info!("Running command: {flutter_test:?} for usecase: {usecase}");
     let output = flutter_test.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);

@@ -1,6 +1,3 @@
-import "dart:async";
-
-import "package:shalom/shalom.dart";
 import 'package:test/test.dart';
 import "__graphql__/GetNotificationPartial.shalom.dart";
 import "__graphql__/GetNotificationPartialOpt.shalom.dart";
@@ -39,7 +36,6 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "email1");
       final result = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
-        variables: variables,
       );
 
       expect(
@@ -59,7 +55,6 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "sms1");
       final result = GetNotificationPartialResponse.fromJson(
         smsNotificationData,
-        variables: variables,
       );
 
       expect(
@@ -78,7 +73,6 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "email1");
       final initial = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, emailNotificationData);
@@ -88,7 +82,6 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "sms1");
       final initial = GetNotificationPartialResponse.fromJson(
         smsNotificationData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, smsNotificationData);
@@ -98,11 +91,9 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "email1");
       final result1 = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
-        variables: variables,
       );
       final result2 = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
@@ -111,11 +102,9 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "sms1");
       final result1 = GetNotificationPartialResponse.fromJson(
         smsNotificationData,
-        variables: variables,
       );
       final result2 = GetNotificationPartialResponse.fromJson(
         smsNotificationData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
@@ -124,11 +113,9 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "test");
       final result1 = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
-        variables: variables,
       );
       final result2 = GetNotificationPartialResponse.fromJson(
         smsNotificationData,
-        variables: variables,
       );
       expect(result1, isNot(equals(result2)));
     });
@@ -139,7 +126,6 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "push1");
       final result = GetNotificationPartialResponse.fromJson(
         pushNotificationData,
-        variables: variables,
       );
 
       expect(
@@ -155,7 +141,6 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "webhook1");
       final result = GetNotificationPartialResponse.fromJson(
         webhookNotificationData,
-        variables: variables,
       );
 
       expect(
@@ -171,7 +156,6 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "push1");
       final initial = GetNotificationPartialResponse.fromJson(
         pushNotificationData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, pushNotificationData);
@@ -181,11 +165,9 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "push1");
       final result1 = GetNotificationPartialResponse.fromJson(
         pushNotificationData,
-        variables: variables,
       );
       final result2 = GetNotificationPartialResponse.fromJson(
         pushNotificationData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
@@ -194,11 +176,9 @@ void main() {
       final variables = GetNotificationPartialVariables(id: "test");
       final result1 = GetNotificationPartialResponse.fromJson(
         emailNotificationData,
-        variables: variables,
       );
       final result2 = GetNotificationPartialResponse.fromJson(
         pushNotificationData,
-        variables: variables,
       );
       expect(result1, isNot(equals(result2)));
     });
@@ -225,7 +205,6 @@ void main() {
       final variables = GetNotificationPartialOptVariables(id: "email2");
       final result = GetNotificationPartialOptResponse.fromJson(
         emailNotificationOptData,
-        variables: variables,
       );
 
       expect(result.getNotificationOpt, isNotNull);
@@ -245,7 +224,6 @@ void main() {
       final variables = GetNotificationPartialOptVariables(id: "push2");
       final result = GetNotificationPartialOptResponse.fromJson(
         pushNotificationOptData,
-        variables: variables,
       );
 
       expect(result.getNotificationOpt, isNotNull);
@@ -262,7 +240,6 @@ void main() {
       final variables = GetNotificationPartialOptVariables(id: "null");
       final result = GetNotificationPartialOptResponse.fromJson(
         notificationOptNullData,
-        variables: variables,
       );
       expect(result.getNotificationOpt, isNull);
     });
@@ -271,7 +248,6 @@ void main() {
       final variables = GetNotificationPartialOptVariables(id: "email2");
       final initial = GetNotificationPartialOptResponse.fromJson(
         emailNotificationOptData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, emailNotificationOptData);
@@ -281,7 +257,6 @@ void main() {
       final variables = GetNotificationPartialOptVariables(id: "push2");
       final initial = GetNotificationPartialOptResponse.fromJson(
         pushNotificationOptData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, pushNotificationOptData);
@@ -291,7 +266,6 @@ void main() {
       final variables = GetNotificationPartialOptVariables(id: "null");
       final initial = GetNotificationPartialOptResponse.fromJson(
         notificationOptNullData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, notificationOptNullData);
@@ -305,7 +279,6 @@ void main() {
       );
       final result = GetNotificationPartialNoTopTypenameResponse.fromJson(
         emailNotificationData,
-        variables: variables,
       );
 
       expect(
@@ -320,223 +293,5 @@ void main() {
 
     // Note: Fallback test skipped - when __typename is only in inline fragments,
     // it's not in shared selections, so fallback class cannot properly handle unknown types
-  });
-
-  group('cacheNormalization', () {
-    test('EmailNotification to SMSNotification', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetNotificationPartialVariables(id: "test");
-
-      var (result, updateCtx) = GetNotificationPartialResponse.fromJson(
-        emailNotificationData,
-        ctx,
-        variables,
-      );
-
-      expect(
-        result.getNotification,
-        isA<GetNotificationPartial_getNotification__EmailNotification>(),
-      );
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetNotificationPartialResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetNotificationPartialResponse.fromJson(
-        smsNotificationData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(
-        result.getNotification,
-        isA<GetNotificationPartial_getNotification__SMSNotification>(),
-      );
-    });
-
-    test('EmailNotification to PushNotification (fallback)', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetNotificationPartialVariables(id: "test");
-
-      var (result, updateCtx) = GetNotificationPartialResponse.fromJson(
-        emailNotificationData,
-        ctx,
-        variables,
-      );
-
-      expect(
-        result.getNotification,
-        isA<GetNotificationPartial_getNotification__EmailNotification>(),
-      );
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetNotificationPartialResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetNotificationPartialResponse.fromJson(
-        pushNotificationData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(
-        result.getNotification,
-        isA<GetNotificationPartial_getNotification__PushNotification>(),
-      );
-    });
-
-    test(
-      'PushNotification (fallback) to WebhookNotification (fallback)',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        final variables = GetNotificationPartialVariables(id: "test");
-
-        var (
-          result,
-          updateCtx,
-        ) = GetNotificationPartialResponse.fromJson(
-          pushNotificationData,
-          ctx,
-          variables,
-        );
-
-        expect(
-          result.getNotification,
-          isA<GetNotificationPartial_getNotification__PushNotification>(),
-        );
-
-        final hasChanged = Completer<bool>();
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetNotificationPartialResponse.fromCache(newCtx, variables);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetNotificationPartialResponse.fromJson(
-          webhookNotificationData,
-          ctx: ctx,
-          variables: variables,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(
-          result.getNotification,
-          isA<GetNotificationPartial_getNotification__WebhookNotification>(),
-        );
-      },
-    );
-
-    test('optional - null to EmailNotification', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetNotificationPartialOptVariables(id: "test");
-
-      var (
-        result,
-        updateCtx,
-      ) = GetNotificationPartialOptResponse.fromJson(
-        notificationOptNullData,
-        ctx,
-        variables,
-      );
-
-      expect(result.getNotificationOpt, isNull);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetNotificationPartialOptResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetNotificationPartialOptResponse.fromJson(
-        emailNotificationOptData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.getNotificationOpt, isNotNull);
-    });
-
-    test('optional - EmailNotification to fallback', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetNotificationPartialOptVariables(id: "test");
-
-      var (
-        result,
-        updateCtx,
-      ) = GetNotificationPartialOptResponse.fromJson(
-        emailNotificationOptData,
-        ctx,
-        variables,
-      );
-
-      expect(result.getNotificationOpt, isNotNull);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetNotificationPartialOptResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetNotificationPartialOptResponse.fromJson(
-        pushNotificationOptData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(
-        result.getNotificationOpt,
-        isA<GetNotificationPartialOpt_getNotificationOpt__PushNotification>(),
-      );
-    });
-
-    test('optional - fallback to null', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetNotificationPartialOptVariables(id: "test");
-
-      var (
-        result,
-        updateCtx,
-      ) = GetNotificationPartialOptResponse.fromJson(
-        pushNotificationOptData,
-        ctx,
-        variables,
-      );
-
-      expect(result.getNotificationOpt, isNotNull);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetNotificationPartialOptResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetNotificationPartialOptResponse.fromJson(
-        notificationOptNullData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.getNotificationOpt, isNull);
-    });
   });
 }

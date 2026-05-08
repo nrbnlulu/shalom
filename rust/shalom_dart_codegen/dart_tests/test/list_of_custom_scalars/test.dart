@@ -1,6 +1,3 @@
-import "dart:async";
-
-import "package:shalom/shalom.dart";
 import 'package:test/test.dart';
 import "__graphql__/GetPointsRequired.shalom.dart";
 import "__graphql__/GetPointsOptional.shalom.dart";
@@ -87,56 +84,6 @@ void main() {
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
-    });
-
-    test('pointsRequired cacheNormalization - inner value change', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsRequiredResponse.fromJson(
-        pointsRequiredData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetPointsRequiredResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetPointsRequiredResponse.fromJson(
-        pointsRequiredDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.pointsRequired[0].x, 2);
-    });
-
-    test('pointsRequired cacheNormalization - list length changed', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsRequiredResponse.fromJson(
-        pointsRequiredData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetPointsRequiredResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetPointsRequiredResponse.fromJson(
-        pointsRequiredLengthChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.pointsRequired.length, 2);
     });
   });
 
@@ -228,85 +175,6 @@ void main() {
       expect(result3, equals(result4));
       expect(result1, isNot(equals(result3)));
     });
-
-    test('pointsOptional cacheNormalization - null to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsOptionalResponse.fromJson(
-        pointsOptionalNullData,
-        ctx,
-      );
-
-      expect(result.pointsOptional, isNull);
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetPointsOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetPointsOptionalResponse.fromJson(
-        pointsOptionalData,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.pointsOptional?.length, 2);
-    });
-
-    test('pointsOptional cacheNormalization - some to null', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsOptionalResponse.fromJson(
-        pointsOptionalData,
-        ctx,
-      );
-
-      expect(result.pointsOptional, isNotNull);
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetPointsOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetPointsOptionalResponse.fromJson(
-        pointsOptionalNullData,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.pointsOptional, isNull);
-    });
-
-    test('pointsOptional cacheNormalization - some to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsOptionalResponse.fromJson(
-        pointsOptionalData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetPointsOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetPointsOptionalResponse.fromJson(
-        pointsOptionalDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.pointsOptional?[0].x, 15);
-    });
   });
 
   // Test data for optional items in list
@@ -362,31 +230,6 @@ void main() {
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
-    });
-
-    test('optionalPoints cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetOptionalPointsResponse.fromJson(
-        optionalPointsData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetOptionalPointsResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetOptionalPointsResponse.fromJson(
-        optionalPointsDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.optionalPoints[0]?.x, 150);
     });
   });
 
@@ -466,85 +309,6 @@ void main() {
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
-    });
-
-    test('pointsFullyOptional cacheNormalization - null to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsFullyOptionalResponse.fromJson(
-        pointsFullyOptionalNullData,
-        ctx,
-      );
-
-      expect(result.pointsFullyOptional, isNull);
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetPointsFullyOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetPointsFullyOptionalResponse.fromJson(
-        pointsFullyOptionalData,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.pointsFullyOptional?.length, 2);
-    });
-
-    test('pointsFullyOptional cacheNormalization - some to null', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsFullyOptionalResponse.fromJson(
-        pointsFullyOptionalData,
-        ctx,
-      );
-
-      expect(result.pointsFullyOptional, isNotNull);
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetPointsFullyOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetPointsFullyOptionalResponse.fromJson(
-        pointsFullyOptionalNullData,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.pointsFullyOptional, isNull);
-    });
-
-    test('pointsFullyOptional cacheNormalization - some to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (result, updateCtx) = GetPointsFullyOptionalResponse.fromJson(
-        pointsFullyOptionalData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetPointsFullyOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetPointsFullyOptionalResponse.fromJson(
-        pointsFullyOptionalDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.pointsFullyOptional?[0]?.x, 8);
     });
   });
 }

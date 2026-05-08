@@ -23,7 +23,7 @@ String _nativeLibPath() {
 }
 
 Future<void> initTestEnv() async {
-  await shalom.init(_nativeLibPath());
+  await shalom.init(nativeLibPath: _nativeLibPath());
 }
 
 String loadSchemaSdl() {

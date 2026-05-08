@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
-import "../schema.shalom.dart";
+import "../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
@@ -14,48 +14,48 @@ class RemoveGifFromAlbumMutation_removeGifFromAlbum {
   static String G__typename = "Album";
 
   /// class members
-  final String name;
-
   final String id;
+
+  final String name;
 
   // keywordargs constructor
   RemoveGifFromAlbumMutation_removeGifFromAlbum({
-    required this.name,
-
     required this.id,
+
+    required this.name,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is RemoveGifFromAlbumMutation_removeGifFromAlbum &&
-            name == other.name &&
-            id == other.id);
+            id == other.id &&
+            name == other.name);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    name,
-
     id,
+
+    name,
 
     RemoveGifFromAlbumMutation_removeGifFromAlbum.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
-    return {'name': this.name, 'id': this.id};
+    return {'id': this.id, 'name': this.name};
   }
 
   @experimental
   static RemoveGifFromAlbumMutation_removeGifFromAlbum fromJson(
     shalom_core.JsonObject data,
   ) {
-    final String name$value = data['name'] as String;
     final String id$value = data['id'] as String;
+    final String name$value = data['name'] as String;
     return RemoveGifFromAlbumMutation_removeGifFromAlbum(
-      name: name$value,
-
       id: id$value,
+
+      name: name$value,
     );
   }
 }
