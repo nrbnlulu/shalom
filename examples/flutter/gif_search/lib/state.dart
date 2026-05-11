@@ -1,13 +1,12 @@
 import 'package:flutter/services.dart';
-import 'package:gif_search/graphql/__graphql__/shalom_init.shalom.dart';
-import 'package:riverpod/riverpod.dart';
 import 'package:shalom/shalom.dart' show HttpLink, ShalomRuntimeClient;
 import 'package:dio/dio.dart' as dio;
 import 'package:gif_search/dio_transport.dart' show DioTransport;
+import 'package:gif_search/graphql/__graphql__/shalom_init.shalom.dart';
 
-const String _graphqlUrl = 'http://127.0.0.1:8000/graphql';
+const String _graphqlUrl = 'http://127.0.0.1:7000/graphql';
 
-final shalomRuntimeProvider = FutureProvider((ref) async {
+Future<ShalomRuntimeClient> createShalomClient() async {
   final schemaSdl = await rootBundle.loadString('lib/graphql/schema.graphql');
 
   final dioClient = dio.Dio(
@@ -17,15 +16,12 @@ final shalomRuntimeProvider = FutureProvider((ref) async {
     ),
   );
   final transport = DioTransport(dioClient);
-  final httpLink = HttpLink(
-    transportLayer: transport,
-    url: _graphqlUrl,
-  );
+  final httpLink = HttpLink(transportLayer: transport, url: _graphqlUrl);
 
-  final runtime = await ShalomRuntimeClient.init(
+  final client = ShalomRuntimeClient.create(
     schemaSdl: schemaSdl,
     link: httpLink,
   );
-  await registerShalomDefinitions(runtime);
-  return runtime;
-});
+  registerShalomDefinitions(client);
+  return client;
+}

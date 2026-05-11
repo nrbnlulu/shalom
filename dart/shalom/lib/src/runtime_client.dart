@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
+    show ExternalLibrary;
 import 'package:shalom/shalom.dart';
 import 'package:shalom/src/shalom_core_base.dart'
     show
@@ -48,21 +50,36 @@ class ShalomRuntimeClient {
 
   ShalomRuntimeClient._(this._handle, this._link);
 
-  /// Initialise the runtime with [schemaSdl].
+  /// Initialize the Flutter-Rust bridge (loads the native library).
   ///
-  /// After init, register all operations and fragments via
-  /// [registerOperation] / [registerFragment] (or call the generated
-  /// `registerShalomDefinitions(client)` function).
-  static Future<ShalomRuntimeClient> init({
+  /// Call this once in `main()` before creating any links or the runtime:
+  /// ```dart
+  /// void main() async {
+  ///   WidgetsFlutterBinding.ensureInitialized();
+  ///   await ShalomRuntimeClient.initFlutterRustBridge();
+  ///   final client = ShalomRuntimeClient.create(schemaSdl: ..., link: ...);
+  ///   registerShalomDefinitions(client);
+  ///   runApp(ShalomProvider(client: client, child: const MyApp()));
+  /// }
+  /// ```
+  static Future<void> initFlutterRustBridge({String? nativeLibPath}) =>
+      RustLib.init(
+        externalLibrary: nativeLibPath != null
+            ? ExternalLibrary.open(nativeLibPath)
+            : null,
+      );
+
+  /// Create a runtime for [schemaSdl].  Synchronous — call after
+  /// [initFlutterRustBridge] has completed.
+  ///
+  /// Register operations/fragments via [registerOperation] /
+  /// [registerFragment] (or the generated `registerShalomDefinitions(client)`).
+  static ShalomRuntimeClient create({
     required String schemaSdl,
     rs_runtime.RuntimeConfigInput? config,
     required GraphQLLink link,
-  }) async {
-    if (!RustLib.instance.initialized) await RustLib.init();
-    final handle = await rs_runtime.initRuntime(
-      schemaSdl: schemaSdl,
-      config: config,
-    );
+  }) {
+    final handle = rs_runtime.initRuntime(schemaSdl: schemaSdl, config: config);
     final client = ShalomRuntimeClient._(handle, link);
     client._bindRequests();
     return client;
@@ -74,15 +91,13 @@ class ShalomRuntimeClient {
 
   /// Pre-register a GraphQL operation SDL so it can be executed by name
   /// via [request].
-  Future<void> registerOperation({required String document}) {
-    return rs_runtime.registerOperation(handle: _handle, document: document);
-  }
+  void registerOperation({required String document}) =>
+      rs_runtime.registerOperation(handle: _handle, document: document);
 
   /// Pre-register a GraphQL fragment SDL so it can be subscribed to via
   /// [subscribeToFragment].
-  Future<void> registerFragment({required String document}) {
-    return rs_runtime.registerFragment(handle: _handle, document: document);
-  }
+  void registerFragment({required String document}) =>
+      rs_runtime.registerFragment(handle: _handle, document: document);
 
   // -------------------------------------------------------------------------
   // Operation subscription — network + cache
@@ -120,26 +135,11 @@ class ShalomRuntimeClient {
             }
             return;
           }
-          rs_runtime
-              .listenSubscription(handle: _handle, subscriptionId: subId!)
-              .listen(
-                (payload) {
-                  if (controller.isClosed) return;
-                  try {
-                    controller.add(
-                      decoder(_RuntimeEnvelope.fromJson(payload).data),
-                    );
-                  } catch (e, st) {
-                    controller.addError(e, st);
-                  }
-                },
-                onError: (Object e, StackTrace st) {
-                  if (!controller.isClosed) controller.addError(e, st);
-                },
-                onDone: () {
-                  if (!controller.isClosed) controller.close();
-                },
-              );
+          _bindSubscriptionStream(
+            subId: subId!,
+            controller: controller,
+            decoder: decoder,
+          );
         } catch (e, st) {
           if (!controller.isClosed) controller.addError(e, st);
         }
@@ -217,26 +217,11 @@ class ShalomRuntimeClient {
         return;
       }
 
-      rs_runtime
-          .listenSubscription(handle: _handle, subscriptionId: subId!)
-          .listen(
-            (payload) {
-              if (controller.isClosed) return;
-              try {
-                controller.add(
-                  decoder(_RuntimeEnvelope.fromJson(payload).data),
-                );
-              } catch (e, st) {
-                controller.addError(e, st);
-              }
-            },
-            onError: (Object e, StackTrace st) {
-              if (!controller.isClosed) controller.addError(e, st);
-            },
-            onDone: () {
-              if (!controller.isClosed) controller.close();
-            },
-          );
+      _bindSubscriptionStream(
+        subId: subId!,
+        controller: controller,
+        decoder: decoder,
+      );
     };
 
     controller.onCancel = () {
@@ -278,26 +263,11 @@ class ShalomRuntimeClient {
         return;
       }
 
-      rs_runtime
-          .listenSubscription(handle: _handle, subscriptionId: newSubId!)
-          .listen(
-            (payload) {
-              if (controller.isClosed) return;
-              try {
-                controller.add(
-                  decoder(_RuntimeEnvelope.fromJson(payload).data),
-                );
-              } catch (e, st) {
-                controller.addError(e, st);
-              }
-            },
-            onError: (Object e, StackTrace st) {
-              if (!controller.isClosed) controller.addError(e, st);
-            },
-            onDone: () {
-              if (!controller.isClosed) controller.close();
-            },
-          );
+      _bindSubscriptionStream(
+        subId: newSubId!,
+        controller: controller,
+        decoder: decoder,
+      );
     };
 
     controller.onCancel = () {
@@ -325,6 +295,40 @@ class ShalomRuntimeClient {
     for (final sub in subs) {
       await sub.cancel();
     }
+  }
+
+  // -------------------------------------------------------------------------
+  // Private subscription helper
+  // -------------------------------------------------------------------------
+
+  void _bindSubscriptionStream<T>({
+    required BigInt subId,
+    required StreamController<T> controller,
+    required T Function(JsonObject) decoder,
+  }) {
+    rs_runtime
+        .listenSubscription(handle: _handle, subscriptionId: subId)
+        .listen(
+          (payload) {
+            if (controller.isClosed) return;
+            try {
+              final raw = jsonDecode(payload);
+              if (raw is Map && raw.containsKey('__error__')) {
+                controller.addError(Exception(raw['__error__'] as String));
+                return;
+              }
+              controller.add(decoder(_RuntimeEnvelope.fromJson(payload).data));
+            } catch (e, st) {
+              controller.addError(e, st);
+            }
+          },
+          onError: (Object e, StackTrace st) {
+            if (!controller.isClosed) controller.addError(e, st);
+          },
+          onDone: () {
+            if (!controller.isClosed) controller.close();
+          },
+        );
   }
 
   // -------------------------------------------------------------------------

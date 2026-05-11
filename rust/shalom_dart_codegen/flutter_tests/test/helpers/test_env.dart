@@ -1,5 +1,5 @@
 import 'dart:io' show File, Platform;
-import 'package:shalom/shalom.dart' as shalom;
+import 'package:shalom/shalom.dart' show ShalomRuntimeClient;
 
 String _nativeLibPath() {
   final libDir =
@@ -22,9 +22,8 @@ String _nativeLibPath() {
   throw UnsupportedError('Unsupported platform: ${Platform.operatingSystem}');
 }
 
-Future<void> initTestEnv() async {
-  await shalom.init(nativeLibPath: _nativeLibPath());
-}
+Future<void> initTestEnv() =>
+    ShalomRuntimeClient.initFlutterRustBridge(nativeLibPath: _nativeLibPath());
 
 String loadSchemaSdl() {
   return File('lib/graphql/schema.graphql').readAsStringSync();

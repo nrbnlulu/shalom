@@ -87,7 +87,7 @@ abstract class RustLibApi extends BaseApi {
 
   Future<void> crateApiRuntimeInitApp();
 
-  Future<RuntimeHandle> crateApiRuntimeInitRuntime({
+  RuntimeHandle crateApiRuntimeInitRuntime({
     required String schemaSdl,
     RuntimeConfigInput? config,
   });
@@ -124,12 +124,12 @@ abstract class RustLibApi extends BaseApi {
     required ObservedRefInput newRef,
   });
 
-  Future<void> crateApiRuntimeRegisterFragment({
+  void crateApiRuntimeRegisterFragment({
     required RuntimeHandle handle,
     required String document,
   });
 
-  Future<void> crateApiRuntimeRegisterOperation({
+  void crateApiRuntimeRegisterOperation({
     required RuntimeHandle handle,
     required String document,
   });
@@ -305,22 +305,17 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       const TaskConstMeta(debugName: "init_app", argNames: []);
 
   @override
-  Future<RuntimeHandle> crateApiRuntimeInitRuntime({
+  RuntimeHandle crateApiRuntimeInitRuntime({
     required String schemaSdl,
     RuntimeConfigInput? config,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(schemaSdl, serializer);
           sse_encode_opt_box_autoadd_runtime_config_input(config, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 4,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4)!;
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -576,25 +571,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiRuntimeRegisterFragment({
+  void crateApiRuntimeRegisterFragment({
     required RuntimeHandle handle,
     required String document,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
             handle,
             serializer,
           );
           sse_encode_String(document, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 11,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
@@ -614,25 +604,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiRuntimeRegisterOperation({
+  void crateApiRuntimeRegisterOperation({
     required RuntimeHandle handle,
     required String document,
   }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
             handle,
             serializer,
           );
           sse_encode_String(document, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 12,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 12)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,

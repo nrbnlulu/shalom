@@ -1,63 +1,43 @@
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart';
 
-/// An [InheritedWidget] that provides a [ShalomRuntimeClient] to its descendants.
-///
-/// Place this at the root of your widget tree:
-/// ```dart
-/// ShalomProvider(
-///   client: client,
-///   child: const MaterialApp(...),
-/// );
-/// ```
-///
-/// Access the client from any descendant:
-/// ```dart
-/// final client = ShalomScope.of(context);
-/// // or
-/// final client = context.shalom;
-/// ```
-class ShalomProvider extends InheritedWidget {
+/// Low-level [InheritedWidget] that stores a [ShalomRuntimeClient] in the
+/// widget tree.  Not intended for direct use — the generated `ShalomProvider`
+/// in `shalom_init.shalom.dart` wraps this and adds hot-reload support.
+class ShalomInheritedWidget extends InheritedWidget {
   final ShalomRuntimeClient client;
 
-  const ShalomProvider({super.key, required this.client, required super.child});
+  const ShalomInheritedWidget({
+    super.key,
+    required this.client,
+    required super.child,
+  });
 
   @override
-  bool updateShouldNotify(ShalomProvider oldWidget) {
-    return client != oldWidget.client;
-  }
+  bool updateShouldNotify(ShalomInheritedWidget oldWidget) =>
+      client != oldWidget.client;
 }
 
-/// Convenience accessor for [ShalomProvider].
-///
-/// `ShalomScope.of(context)` is equivalent to `ShalomProvider.of(context)`.
+/// Convenience accessor for [ShalomInheritedWidget].
 class ShalomScope {
   const ShalomScope._();
 
   /// Retrieves the nearest [ShalomRuntimeClient] from the given [BuildContext].
-  ///
-  /// Throws an assertion error if no [ShalomProvider] is found in the widget tree.
   static ShalomRuntimeClient of(BuildContext context) {
-    final ShalomProvider? result = context
-        .dependOnInheritedWidgetOfExactType<ShalomProvider>();
+    final result =
+        context.dependOnInheritedWidgetOfExactType<ShalomInheritedWidget>();
     assert(result != null, 'No ShalomProvider found in context');
     return result!.client;
   }
 
-  /// Retrieves the nearest [ShalomRuntimeClient] from the given [BuildContext],
-  /// or null if no [ShalomProvider] is found in the widget tree.
-  static ShalomRuntimeClient? maybeOf(BuildContext context) {
-    final ShalomProvider? result = context
-        .dependOnInheritedWidgetOfExactType<ShalomProvider>();
-    return result?.client;
-  }
+  /// Returns the nearest [ShalomRuntimeClient], or null if none is found.
+  static ShalomRuntimeClient? maybeOf(BuildContext context) => context
+      .dependOnInheritedWidgetOfExactType<ShalomInheritedWidget>()
+      ?.client;
 }
 
 /// Extension on [BuildContext] to easily access the [ShalomRuntimeClient].
 extension ShalomContextExtension on BuildContext {
-  /// Retrieves the nearest [ShalomRuntimeClient] from this context.
   ShalomRuntimeClient get shalomClient => ShalomScope.of(this);
-
-  /// Shorthand for [shalomClient].
   ShalomRuntimeClient get shalom => ShalomScope.of(this);
 }

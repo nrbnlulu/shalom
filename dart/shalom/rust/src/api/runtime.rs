@@ -75,7 +75,7 @@ pub fn init_app() {
 /// Initialise the runtime with the schema SDL.
 /// Fragment and operation SDLs are registered separately via
 /// `register_operation` / `register_fragment` after init.
-#[frb]
+#[frb(sync)]
 pub fn init_runtime(
     schema_sdl: String,
     config: Option<RuntimeConfigInput>,
@@ -91,14 +91,14 @@ pub fn init_runtime(
 // ---------------------------------------------------------------------------
 
 /// Pre-register a query/mutation SDL so it can be executed by name via `request`.
-#[frb]
+#[frb(sync)]
 pub fn register_operation(handle: &RuntimeHandle, document: String) -> anyhow::Result<()> {
     handle.runtime.register_operation(&document)?;
     Ok(())
 }
 
 /// Pre-register a fragment SDL so it can be subscribed to via `observe_fragment`.
-#[frb]
+#[frb(sync)]
 pub fn register_fragment(handle: &RuntimeHandle, document: String) -> anyhow::Result<()> {
     handle.runtime.register_fragment(&document)
 }
@@ -250,6 +250,10 @@ pub fn unsubscribe(handle: &RuntimeHandle, subscription_id: u64) {
 }
 
 /// Stream cache-update notifications for an existing subscription.
+///
+/// Errors from the cache (GraphQL errors, transport errors) are encoded as
+/// `{"__error__": "<message>"}` so Dart can route them to `addError` without
+/// relying on FRB's unhandled-future propagation path.
 #[frb]
 pub async fn listen_subscription(
     handle: &RuntimeHandle,
@@ -261,8 +265,13 @@ pub async fn listen_subscription(
         return Ok(());
     };
     while let Some(item) = stream.next().await {
-        let response = item?;
-        let payload = response_to_json(response)?;
+        let payload = match item {
+            Ok(response) => match response_to_json(response) {
+                Ok(p) => p,
+                Err(e) => serde_json::json!({ "__error__": e.to_string() }).to_string(),
+            },
+            Err(e) => serde_json::json!({ "__error__": e.to_string() }).to_string(),
+        };
         if sink.add(payload).is_err() {
             break;
         }

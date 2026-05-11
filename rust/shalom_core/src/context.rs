@@ -39,9 +39,6 @@ impl ShalomGlobalContext {
         let mut operations = self.operations.lock();
         let fragments = self.fragments.lock();
         for (name, _) in operations_update.iter() {
-            if operations.contains_key(name) {
-                panic!("Operation with name {} already exists", name);
-            }
             if fragments.contains_key(name) {
                 panic!(
                     "Operation name {} conflicts with existing fragment name",

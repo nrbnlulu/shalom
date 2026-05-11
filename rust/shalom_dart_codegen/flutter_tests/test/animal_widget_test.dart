@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shalom/shalom.dart';
-import 'package:shalom_flutter/shalom_flutter.dart';
 import '../lib/graphql/__graphql__/shalom_init.shalom.dart';
 import 'package:flutter_tests/union_fragment/animal_query.dart';
 import 'package:flutter_tests/union_fragment/__graphql__/AnimalQuery.shalom.dart';
@@ -16,7 +15,7 @@ void main() {
   late ShalomRuntimeClient _client;
 
   setUp(() async {
-    _client = await ShalomRuntimeClient.init(
+    _client = ShalomRuntimeClient.create(
       schemaSdl: loadSchemaSdl(),
       link: MockGraphQLLink([
         GraphQLData(
@@ -30,7 +29,7 @@ void main() {
         ),
       ]),
     );
-    await registerShalomDefinitions(_client);
+    registerShalomDefinitions(_client);
   });
 
   tearDown(() async {

@@ -382,7 +382,7 @@ schema = strawberry.Schema(
 
 
 def export_schema() -> None:
-    Path("schema.graphql").write_text(
+    Path("scm.graphql").write_text(
         schema.as_str(),
         encoding="utf-8",
     )
@@ -405,5 +405,5 @@ if __name__ == "__main__":
     uvicorn.run(
         app,
         host="127.0.0.1",
-        port=8000,
+        port=7000,
     )

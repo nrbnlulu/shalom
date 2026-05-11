@@ -1,18 +1,47 @@
 // ignore_for_file: unused_import
+import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart';
+import 'package:shalom_flutter/shalom_flutter.dart' show ShalomInheritedWidget;
 
 /// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
-Future<void> registerShalomDefinitions(ShalomRuntimeClient client) async {
-{% for w in fragments %}  await client.registerFragment(document: r'''
+void registerShalomDefinitions(ShalomRuntimeClient client) {
+{% for w in fragments %}  client.registerFragment(document: r'''
 fragment {{ w.class_name }} {{ w.document }}
 ''');
-{% endfor %}{% for w in queries %}  await client.registerOperation(document: r'''
+{% endfor %}{% for w in queries %}  client.registerOperation(document: r'''
 query {{ w.class_name }} {{ w.document }}
 ''');
-{% endfor %}{% for w in mutations %}  await client.registerOperation(document: r'''
+{% endfor %}{% for w in mutations %}  client.registerOperation(document: r'''
 mutation {{ w.class_name }} {{ w.document }}
 ''');
-{% endfor %}{% for w in subscriptions %}  await client.registerOperation(document: r'''
+{% endfor %}{% for w in subscriptions %}  client.registerOperation(document: r'''
 subscription {{ w.class_name }} {{ w.document }}
 ''');
 {% endfor %}}
+
+/// Generated [ShalomProvider] for this app.
+///
+/// Place this at the root of your widget tree.  On hot-reload it automatically
+/// re-registers all operations and fragments so that any SDL changes take effect
+/// without a full restart.
+class ShalomProvider extends StatefulWidget {
+  final ShalomRuntimeClient client;
+  final Widget child;
+
+  const ShalomProvider({super.key, required this.client, required this.child});
+
+  @override
+  State<ShalomProvider> createState() => _ShalomProviderState();
+}
+
+class _ShalomProviderState extends State<ShalomProvider> {
+  @override
+  void reassemble() {
+    super.reassemble();
+    registerShalomDefinitions(widget.client);
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      ShalomInheritedWidget(client: widget.client, child: widget.child);
+}

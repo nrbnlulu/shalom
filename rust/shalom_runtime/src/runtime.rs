@@ -176,24 +176,19 @@ impl ShalomRuntime {
 
         let runtime = Self::new(global_ctx);
 
-        // Background GC sweep every 2 seconds.
-        // Use try_current() so this works both when called from inside a Tokio
-        // runtime (normal app path) and from a non-Tokio context such as
-        // FRB's threadpool (used in tests).  Without the guard, tokio::spawn
-        // panics: "there is no reactor running".
+        // Background GC sweep every 2 seconds on a plain OS thread so it
+        // runs regardless of whether a Tokio runtime is active (e.g. during
+        // synchronous FRB init).
         let runtime_gc = runtime.clone();
-        if let Ok(handle) = tokio::runtime::Handle::try_current() {
-            handle.spawn(async move {
-                let mut interval = tokio::time::interval(Duration::from_secs(2));
-                loop {
-                    interval.tick().await;
-                    if runtime_gc.shutdown.load(Ordering::Relaxed) {
-                        break;
-                    }
-                    runtime_gc.collect_garbage();
+        std::thread::spawn(move || {
+            loop {
+                std::thread::sleep(Duration::from_secs(2));
+                if runtime_gc.shutdown.load(Ordering::Relaxed) {
+                    break;
                 }
-            });
-        }
+                runtime_gc.collect_garbage();
+            }
+        });
 
         Ok(runtime)
     }
@@ -232,11 +227,10 @@ impl ShalomRuntime {
         }
         let mut result = None;
         for (name, op_ctx) in &operations {
-            if !self.engine.global_ctx().operation_exists(name) {
-                self.engine
-                    .global_ctx()
-                    .register_operations(std::iter::once((name.clone(), op_ctx.clone())).collect());
-            }
+            // Always overwrite — supports hot-reload where the SDL may have changed.
+            self.engine
+                .global_ctx()
+                .register_operations(std::iter::once((name.clone(), op_ctx.clone())).collect());
             result = Some(op_ctx.clone());
         }
         result.ok_or_else(|| anyhow::anyhow!("no operations registered"))

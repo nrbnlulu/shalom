@@ -1,9 +1,11 @@
 // ignore_for_file: unused_import
+import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart';
+import 'package:shalom_flutter/shalom_flutter.dart' show ShalomInheritedWidget;
 
 /// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
-Future<void> registerShalomDefinitions(ShalomRuntimeClient client) async {
-  await client.registerFragment(
+void registerShalomDefinitions(ShalomRuntimeClient client) {
+  client.registerFragment(
     document: r'''
 fragment PetWidget on Pet @observe {
   id
@@ -11,7 +13,7 @@ fragment PetWidget on Pet @observe {
 }
 ''',
   );
-  await client.registerFragment(
+  client.registerFragment(
     document: r'''
 fragment ZooWidget on Zoo @observe {
   id
@@ -23,7 +25,7 @@ fragment ZooWidget on Zoo @observe {
 }
 ''',
   );
-  await client.registerFragment(
+  client.registerFragment(
     document: r'''
 fragment AnimalWidget on Animal @observe {
   id
@@ -36,7 +38,7 @@ fragment AnimalWidget on Animal @observe {
 }
 ''',
   );
-  await client.registerOperation(
+  client.registerOperation(
     document: r'''
 query PetQuery ($id: ID!) @observe {
   pet(id: $id) {
@@ -45,7 +47,7 @@ query PetQuery ($id: ID!) @observe {
 }
 ''',
   );
-  await client.registerOperation(
+  client.registerOperation(
     document: r'''
 query ZooQuery ($id: ID!) @observe {
   zoo(id: $id) {
@@ -54,7 +56,7 @@ query ZooQuery ($id: ID!) @observe {
 }
 ''',
   );
-  await client.registerOperation(
+  client.registerOperation(
     document: r'''
 query UserWidget ($id: ID!) @observe {
   user(id: $id) {
@@ -64,7 +66,7 @@ query UserWidget ($id: ID!) @observe {
 }
 ''',
   );
-  await client.registerOperation(
+  client.registerOperation(
     document: r'''
 query AnimalQuery ($id: ID!) @observe {
   animal(id: $id) {
@@ -73,4 +75,31 @@ query AnimalQuery ($id: ID!) @observe {
 }
 ''',
   );
+}
+
+/// Generated [ShalomProvider] for this app.
+///
+/// Place this at the root of your widget tree.  On hot-reload it automatically
+/// re-registers all operations and fragments so that any SDL changes take effect
+/// without a full restart.
+class ShalomProvider extends StatefulWidget {
+  final ShalomRuntimeClient client;
+  final Widget child;
+
+  const ShalomProvider({super.key, required this.client, required this.child});
+
+  @override
+  State<ShalomProvider> createState() => _ShalomProviderState();
+}
+
+class _ShalomProviderState extends State<ShalomProvider> {
+  @override
+  void reassemble() {
+    super.reassemble();
+    registerShalomDefinitions(widget.client);
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      ShalomInheritedWidget(client: widget.client, child: widget.child);
 }

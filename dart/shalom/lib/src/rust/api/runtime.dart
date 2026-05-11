@@ -12,7 +12,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 /// Initialise the runtime with the schema SDL.
 /// Fragment and operation SDLs are registered separately via
 /// `register_operation` / `register_fragment` after init.
-Future<RuntimeHandle> initRuntime({
+RuntimeHandle initRuntime({
   required String schemaSdl,
   RuntimeConfigInput? config,
 }) => RustLib.instance.api.crateApiRuntimeInitRuntime(
@@ -21,7 +21,7 @@ Future<RuntimeHandle> initRuntime({
 );
 
 /// Pre-register a query/mutation SDL so it can be executed by name via `request`.
-Future<void> registerOperation({
+void registerOperation({
   required RuntimeHandle handle,
   required String document,
 }) => RustLib.instance.api.crateApiRuntimeRegisterOperation(
@@ -30,7 +30,7 @@ Future<void> registerOperation({
 );
 
 /// Pre-register a fragment SDL so it can be subscribed to via `observe_fragment`.
-Future<void> registerFragment({
+void registerFragment({
   required RuntimeHandle handle,
   required String document,
 }) => RustLib.instance.api.crateApiRuntimeRegisterFragment(

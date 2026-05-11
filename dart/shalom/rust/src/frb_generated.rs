@@ -168,16 +168,15 @@ fn wire__crate__api__runtime__init_app_impl(
     )
 }
 fn wire__crate__api__runtime__init_runtime_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "init_runtime",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
         move || {
             let message = unsafe {
@@ -193,15 +192,12 @@ fn wire__crate__api__runtime__init_runtime_impl(
             let api_config =
                 <Option<crate::api::runtime::RuntimeConfigInput>>::sse_decode(&mut deserializer);
             deserializer.end();
-            move |context| {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || {
-                        let output_ok =
-                            crate::api::runtime::init_runtime(api_schema_sdl, api_config)?;
-                        Ok(output_ok)
-                    })(),
-                )
-            }
+            transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                (move || {
+                    let output_ok = crate::api::runtime::init_runtime(api_schema_sdl, api_config)?;
+                    Ok(output_ok)
+                })(),
+            )
         },
     )
 }
@@ -568,16 +564,15 @@ fn wire__crate__api__runtime__rebind_subscription_impl(
     )
 }
 fn wire__crate__api__runtime__register_fragment_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "register_fragment",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
         move || {
             let message = unsafe {
@@ -594,47 +589,42 @@ fn wire__crate__api__runtime__register_fragment_impl(
             >>::sse_decode(&mut deserializer);
             let api_document = <String>::sse_decode(&mut deserializer);
             deserializer.end();
-            move |context| {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || {
-                        let mut api_handle_guard = None;
-                        let decode_indices_ =
-                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
-                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                                    &api_handle,
-                                    0,
-                                    false,
-                                )],
-                            );
-                        for i in decode_indices_ {
-                            match i {
-                                0 => api_handle_guard = Some(api_handle.lockable_decode_sync_ref()),
-                                _ => unreachable!(),
-                            }
+            transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                (move || {
+                    let mut api_handle_guard = None;
+                    let decode_indices_ =
+                        flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                            flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                &api_handle,
+                                0,
+                                false,
+                            ),
+                        ]);
+                    for i in decode_indices_ {
+                        match i {
+                            0 => api_handle_guard = Some(api_handle.lockable_decode_sync_ref()),
+                            _ => unreachable!(),
                         }
-                        let api_handle_guard = api_handle_guard.unwrap();
-                        let output_ok = crate::api::runtime::register_fragment(
-                            &*api_handle_guard,
-                            api_document,
-                        )?;
-                        Ok(output_ok)
-                    })(),
-                )
-            }
+                    }
+                    let api_handle_guard = api_handle_guard.unwrap();
+                    let output_ok =
+                        crate::api::runtime::register_fragment(&*api_handle_guard, api_document)?;
+                    Ok(output_ok)
+                })(),
+            )
         },
     )
 }
 fn wire__crate__api__runtime__register_operation_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "register_operation",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
         move || {
             let message = unsafe {
@@ -651,33 +641,29 @@ fn wire__crate__api__runtime__register_operation_impl(
             >>::sse_decode(&mut deserializer);
             let api_document = <String>::sse_decode(&mut deserializer);
             deserializer.end();
-            move |context| {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || {
-                        let mut api_handle_guard = None;
-                        let decode_indices_ =
-                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
-                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                                    &api_handle,
-                                    0,
-                                    false,
-                                )],
-                            );
-                        for i in decode_indices_ {
-                            match i {
-                                0 => api_handle_guard = Some(api_handle.lockable_decode_sync_ref()),
-                                _ => unreachable!(),
-                            }
+            transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                (move || {
+                    let mut api_handle_guard = None;
+                    let decode_indices_ =
+                        flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                            flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                &api_handle,
+                                0,
+                                false,
+                            ),
+                        ]);
+                    for i in decode_indices_ {
+                        match i {
+                            0 => api_handle_guard = Some(api_handle.lockable_decode_sync_ref()),
+                            _ => unreachable!(),
                         }
-                        let api_handle_guard = api_handle_guard.unwrap();
-                        let output_ok = crate::api::runtime::register_operation(
-                            &*api_handle_guard,
-                            api_document,
-                        )?;
-                        Ok(output_ok)
-                    })(),
-                )
-            }
+                    }
+                    let api_handle_guard = api_handle_guard.unwrap();
+                    let output_ok =
+                        crate::api::runtime::register_operation(&*api_handle_guard, api_document)?;
+                    Ok(output_ok)
+                })(),
+            )
         },
     )
 }
@@ -1623,15 +1609,12 @@ fn pde_ffi_dispatcher_primary_impl(
     match func_id {
         1 => wire__crate__api__runtime__complete_transport_impl(port, ptr, rust_vec_len, data_len),
         3 => wire__crate__api__runtime__init_app_impl(port, ptr, rust_vec_len, data_len),
-        4 => wire__crate__api__runtime__init_runtime_impl(port, ptr, rust_vec_len, data_len),
         5 => wire__crate__api__runtime__listen_requests_impl(port, ptr, rust_vec_len, data_len),
         6 => wire__crate__api__runtime__listen_subscription_impl(port, ptr, rust_vec_len, data_len),
         8 => wire__crate__api__runtime__push_response_impl(port, ptr, rust_vec_len, data_len),
         9 => {
             wire__crate__api__runtime__push_transport_error_impl(port, ptr, rust_vec_len, data_len)
         }
-        11 => wire__crate__api__runtime__register_fragment_impl(port, ptr, rust_vec_len, data_len),
-        12 => wire__crate__api__runtime__register_operation_impl(port, ptr, rust_vec_len, data_len),
         13 => wire__crate__api__runtime__request_impl(port, ptr, rust_vec_len, data_len),
         16 => wire__crate__api__runtime__write_optimistic_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
@@ -1647,8 +1630,11 @@ fn pde_ffi_dispatcher_sync_impl(
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
         2 => wire__crate__api__ws__create_ws_sans_io_impl(ptr, rust_vec_len, data_len),
+        4 => wire__crate__api__runtime__init_runtime_impl(ptr, rust_vec_len, data_len),
         7 => wire__crate__api__runtime__observe_fragment_impl(ptr, rust_vec_len, data_len),
         10 => wire__crate__api__runtime__rebind_subscription_impl(ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__runtime__register_fragment_impl(ptr, rust_vec_len, data_len),
+        12 => wire__crate__api__runtime__register_operation_impl(ptr, rust_vec_len, data_len),
         14 => wire__crate__api__runtime__rollback_optimistic_impl(ptr, rust_vec_len, data_len),
         15 => wire__crate__api__runtime__unsubscribe_impl(ptr, rust_vec_len, data_len),
         17 => wire__crate__api__ws__ws_active_operation_ids_impl(ptr, rust_vec_len, data_len),

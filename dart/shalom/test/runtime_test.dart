@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'dart:io';
 
 import 'package:shalom/shalom.dart';
-import 'package:shalom/shalom.dart' as shalom;
 import 'package:test/test.dart';
 
 String get _nativeLibPath {
@@ -69,10 +68,8 @@ type Post {
 // Helpers.
 // ---------------------------------------------------------------------------
 
-Future<ShalomRuntimeClient> _makeClient(
-  List<GraphQLResponse<JsonObject>> responses,
-) {
-  return ShalomRuntimeClient.init(
+ShalomRuntimeClient _makeClient(List<GraphQLResponse<JsonObject>> responses) {
+  return ShalomRuntimeClient.create(
     schemaSdl: _schemaSdl,
     link: _MockLink(responses),
   );
@@ -84,11 +81,13 @@ Future<ShalomRuntimeClient> _makeClient(
 
 void main() {
   setUpAll(() async {
-    await shalom.init(_nativeLibPath);
+    await ShalomRuntimeClient.initFlutterRustBridge(
+      nativeLibPath: _nativeLibPath,
+    );
   });
 
   test('runtime initialises without error', () async {
-    final client = await _makeClient([]);
+    final client = _makeClient([]);
     await client.dispose();
   });
 
@@ -96,7 +95,7 @@ void main() {
   // 2. request() returns normalised data from the network.
   // -------------------------------------------------------------------------
   test('request returns normalized data from network', () async {
-    final client = await _makeClient([
+    final client = _makeClient([
       GraphQLData(
         data: {
           'user': {'id': '1', 'name': 'Alice'},
@@ -105,7 +104,7 @@ void main() {
     ]);
 
     const query = 'query GetUser @observe { user(id: "1") { id name } }';
-    await client.registerOperation(document: query);
+    client.registerOperation(document: query);
 
     final data = await client
         .request<JsonObject>(
@@ -127,7 +126,7 @@ void main() {
   test(
     'request re-emits when same entity is updated by another operation',
     () async {
-      final client = await _makeClient([
+      final client = _makeClient([
         GraphQLData(
           data: {
             'user': {'id': '1', 'name': 'Alice'},
@@ -144,8 +143,8 @@ void main() {
           'query GetUser @observe { user(id: "1") { id name } }';
       const getUserDetailsQuery =
           'query GetUserDetails @observe { user(id: "1") { id name } }';
-      await client.registerOperation(document: getUserQuery);
-      await client.registerOperation(document: getUserDetailsQuery);
+      client.registerOperation(document: getUserQuery);
+      client.registerOperation(document: getUserDetailsQuery);
 
       final results = <JsonObject>[];
       final secondReceived = Completer<void>();
@@ -186,7 +185,7 @@ void main() {
   // 4. Two unrelated operations do NOT cross-trigger subscriptions.
   // -------------------------------------------------------------------------
   test('two unrelated operations do not cross-trigger subscriptions', () async {
-    final client = await _makeClient([
+    final client = _makeClient([
       GraphQLData(
         data: {
           'user': {'id': '1', 'name': 'Alice'},
@@ -202,8 +201,8 @@ void main() {
     const getUserQuery = 'query GetUser @observe { user(id: "1") { id name } }';
     const getPostQuery =
         'query GetPost @observe { post(id: "1") { id title } }';
-    await client.registerOperation(document: getUserQuery);
-    await client.registerOperation(document: getPostQuery);
+    client.registerOperation(document: getUserQuery);
+    client.registerOperation(document: getPostQuery);
 
     final firstReceived = Completer<void>();
     bool gotUpdate = false;
@@ -265,7 +264,7 @@ void main() {
       }
     ''';
 
-    final client = await _makeClient([
+    final client = _makeClient([
       GraphQLData(
         data: {
           'user': {
@@ -286,8 +285,8 @@ void main() {
       ),
     ]);
 
-    await client.registerFragment(document: petFragDef);
-    await client.registerOperation(document: getUserQuery);
+    client.registerFragment(document: petFragDef);
+    client.registerOperation(document: getUserQuery);
 
     // Populate the cache.
     await client
@@ -329,7 +328,7 @@ void main() {
       query FetchUser @observe { user(id: "7") { id name } }
     ''';
 
-      final client = await _makeClient([
+      final client = _makeClient([
         GraphQLData(
           data: {
             'user': {'id': '7', 'name': 'Initial'},
@@ -342,8 +341,8 @@ void main() {
         ),
       ]);
 
-      await client.registerFragment(document: fragDef);
-      await client.registerOperation(document: opDoc);
+      client.registerFragment(document: fragDef);
+      client.registerOperation(document: opDoc);
 
       // Populate cache.
       await client
@@ -389,7 +388,7 @@ void main() {
       query GetPet15 @observe { user(id: "2") { id pet { ...PetFrag } } }
     ''';
 
-    final client = await _makeClient([
+    final client = _makeClient([
       // Populate Pet:14.
       GraphQLData(
         data: {
@@ -410,9 +409,9 @@ void main() {
       ),
     ]);
 
-    await client.registerFragment(document: fragDef);
-    await client.registerOperation(document: op1);
-    await client.registerOperation(document: op2);
+    client.registerFragment(document: fragDef);
+    client.registerOperation(document: op1);
+    client.registerOperation(document: op2);
 
     // Populate cache for both pets.
     await client

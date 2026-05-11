@@ -1,10 +1,11 @@
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shalom/shalom.dart' as shalom show Some, None;
-import 'package:shalom_flutter/widgets/shalom_provider.dart';
+import 'package:shalom/shalom.dart'
+    as shalom
+    show Some, None, ShalomRuntimeClient;
 import 'package:shalom_annotations/shalom_annotations.dart';
-import 'package:gif_search/state.dart' show shalomRuntimeProvider;
+import 'package:gif_search/graphql/__graphql__/shalom_init.shalom.dart';
+import 'package:gif_search/state.dart' show createShalomClient;
 
 import 'package:gif_search/__graphql__/GifWidget.shalom.dart';
 import 'package:gif_search/__graphql__/AlbumWidget.shalom.dart';
@@ -13,9 +14,13 @@ import 'package:gif_search/__graphql__/AlbumsPage.widget.shalom.dart';
 import 'package:gif_search/__graphql__/CreateAlbumMutation.widget.shalom.dart';
 import 'package:gif_search/__graphql__/AddGifToAlbumMutation.widget.shalom.dart';
 import 'package:gif_search/__graphql__/RemoveGifFromAlbumMutation.widget.shalom.dart';
+import 'package:shalom_flutter/widgets/shalom_provider.dart';
 
-void main() {
-  runApp(const ProviderScope(child: MyApp()));
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await shalom.ShalomRuntimeClient.initFlutterRustBridge();
+  final client = await createShalomClient();
+  runApp(ShalomProvider(client: client, child: const MyApp()));
 }
 
 mixin class QueryWidgetDefaults {
@@ -37,33 +42,18 @@ mixin class QueryWidgetDefaults {
   }
 }
 
-class MyApp extends ConsumerWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final clientAsync = ref.watch(shalomRuntimeProvider);
-    return clientAsync.when(
-      loading:
-          () => const MaterialApp(
-            home: Scaffold(body: Center(child: CircularProgressIndicator())),
-          ),
-      error:
-          (e, _) => MaterialApp(
-            home: Scaffold(body: Center(child: Text('Init error: $e'))),
-          ),
-      data:
-          (client) => ShalomProvider(
-            client: client,
-            child: MaterialApp(
-              title: 'GIF Search',
-              theme: ThemeData(
-                colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-                useMaterial3: true,
-              ),
-              home: const HomePage(),
-            ),
-          ),
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'GIF Search',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+        useMaterial3: true,
+      ),
+      home: const HomePage(),
     );
   }
 }
@@ -143,16 +133,15 @@ class _SearchTabState extends State<_SearchTab> {
             ),
           ),
           Expanded(
-            child:
-                _currentQuery.isEmpty
-                    ? const Center(child: Text('Enter a search term above'))
-                    : SearchGifsPage(
-                      variables: SearchGifsPageVariables(
-                        query: _currentQuery,
-                        offset: 0,
-                        limit: 20,
-                      ),
+            child: _currentQuery.isEmpty
+                ? const Center(child: Text('Enter a search term above'))
+                : SearchGifsPage(
+                    variables: SearchGifsPageVariables(
+                      query: _currentQuery,
+                      offset: 0,
+                      limit: 20,
                     ),
+                  ),
           ),
         ],
       ),
@@ -178,8 +167,8 @@ class AlbumPickerQuery extends $AlbumsPage with QueryWidgetDefaults {
       height: listHeight,
       child: ListView.builder(
         itemCount: data.albums.length,
-        itemBuilder:
-            (context, i) => AlbumWidget(ref: data.albums[i], onTap: onSelected),
+        itemBuilder: (context, i) =>
+            AlbumWidget(ref: data.albums[i], onTap: onSelected),
       ),
     );
   }
@@ -263,14 +252,13 @@ class _SearchGifsPageState extends State<SearchGifsPage> {
       limit: widget.variables.limit,
     );
     try {
-      final data =
-          await ShalomScope.of(context)
-              .request<SearchGifsPageData>(
-                name: 'SearchGifsPage',
-                variables: vars.toJson(),
-                decoder: SearchGifsPageData.fromCache,
-              )
-              .first;
+      final data = await ShalomScope.of(context)
+          .request<SearchGifsPageData>(
+            name: 'SearchGifsPage',
+            variables: vars.toJson(),
+            decoder: SearchGifsPageData.fromCache,
+          )
+          .first;
       final page = data.searchGifs;
       final newRefs = page.items.whereType<GifWidgetRef>().toList();
       if (!mounted) return;
@@ -348,16 +336,15 @@ class GifWidget extends $GifWidget {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: ListTile(
-        leading:
-            gif.previewUrl != null
-                ? Image.network(
-                  gif.previewUrl!,
-                  width: 56,
-                  height: 56,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
-                )
-                : const Icon(Icons.gif, size: 40),
+        leading: gif.previewUrl != null
+            ? Image.network(
+                gif.previewUrl!,
+                width: 56,
+                height: 56,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+              )
+            : const Icon(Icons.gif, size: 40),
         title: Text(gif.title),
         subtitle: Text(gif.url, maxLines: 1, overflow: TextOverflow.ellipsis),
         trailing: IconButton(
@@ -440,11 +427,10 @@ class _AlbumsPageState extends State<AlbumsPage> {
               _error = null;
             });
           },
-          onError:
-              (e) => setState(() {
-                _error = e;
-                _loading = false;
-              }),
+          onError: (e) => setState(() {
+            _error = e;
+            _loading = false;
+          }),
         );
   }
 
@@ -462,17 +448,16 @@ class _AlbumsPageState extends State<AlbumsPage> {
         onPressed: () => _showCreateAlbumDialog(context),
         child: const Icon(Icons.add),
       ),
-      body:
-          _loading
-              ? const Center(child: CircularProgressIndicator())
-              : _error != null
-              ? Center(child: Text('Error: $_error'))
-              : _refs.isEmpty
-              ? const Center(child: Text('No albums yet. Create one!'))
-              : ListView.builder(
-                itemCount: _refs.length,
-                itemBuilder: (context, i) => AlbumWidget(ref: _refs[i]),
-              ),
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : _error != null
+          ? Center(child: Text('Error: $_error'))
+          : _refs.isEmpty
+          ? const Center(child: Text('No albums yet. Create one!'))
+          : ListView.builder(
+              itemCount: _refs.length,
+              itemBuilder: (context, i) => AlbumWidget(ref: _refs[i]),
+            ),
     );
   }
 
@@ -520,19 +505,17 @@ class AlbumWidget extends $AlbumWidget {
         title: Text(album.name),
         subtitle: Text('$gifCount GIF${gifCount == 1 ? '' : 's'}'),
         trailing: tap == null ? const Icon(Icons.chevron_right) : null,
-        onTap:
-            tap != null
-                ? () => tap(album)
-                : () => Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder:
-                        (_) => _AlbumDetailPage(
-                          albumId: album.id,
-                          albumName: album.name,
-                          gifs: album.gifs,
-                        ),
+        onTap: tap != null
+            ? () => tap(album)
+            : () => Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) => _AlbumDetailPage(
+                    albumId: album.id,
+                    albumName: album.name,
+                    gifs: album.gifs,
                   ),
                 ),
+              ),
       ),
     );
   }
@@ -650,14 +633,13 @@ class _CreateAlbumDialogState extends State<_CreateAlbumDialog> {
         ),
         FilledButton(
           onPressed: _loading ? null : _submit,
-          child:
-              _loading
-                  ? const SizedBox(
-                    width: 16,
-                    height: 16,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                  : const Text('Create'),
+          child: _loading
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Create'),
         ),
       ],
     );
@@ -681,24 +663,23 @@ class _AlbumDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(albumName)),
-      body:
-          gifs.isEmpty
-              ? const Center(child: Text('No GIFs in this album yet.'))
-              : ListView.builder(
-                itemCount: gifs.length,
-                itemBuilder: (context, i) {
-                  final gif = gifs[i];
-                  return ListTile(
-                    leading: const Icon(Icons.gif),
-                    title: Text(gif.title),
-                    trailing: IconButton(
-                      icon: const Icon(Icons.remove_circle_outline),
-                      tooltip: 'Remove from album',
-                      onPressed: () => _removeGif(context, albumId, gif.id),
-                    ),
-                  );
-                },
-              ),
+      body: gifs.isEmpty
+          ? const Center(child: Text('No GIFs in this album yet.'))
+          : ListView.builder(
+              itemCount: gifs.length,
+              itemBuilder: (context, i) {
+                final gif = gifs[i];
+                return ListTile(
+                  leading: const Icon(Icons.gif),
+                  title: Text(gif.title),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.remove_circle_outline),
+                    tooltip: 'Remove from album',
+                    onPressed: () => _removeGif(context, albumId, gif.id),
+                  ),
+                );
+              },
+            ),
     );
   }
 
@@ -753,25 +734,23 @@ class _AddToAlbumDialogState extends State<_AddToAlbumDialog> {
     try {
       await AddGifToAlbumMutation(client).executeOptimistic(
         (vars) {
-          final existingGifs =
-              album.gifs
-                  .map(
-                    (g) => AddGifToAlbumMutation_addGifToAlbum_gifs(
-                      id: g.id,
-                      title: g.title,
-                    ),
-                  )
-                  .toList();
-          final nextGifs =
-              existingGifs.any((g) => g.id == vars.gifId)
-                  ? existingGifs
-                  : [
-                    ...existingGifs,
-                    AddGifToAlbumMutation_addGifToAlbum_gifs(
-                      id: vars.gifId,
-                      title: vars.title,
-                    ),
-                  ];
+          final existingGifs = album.gifs
+              .map(
+                (g) => AddGifToAlbumMutation_addGifToAlbum_gifs(
+                  id: g.id,
+                  title: g.title,
+                ),
+              )
+              .toList();
+          final nextGifs = existingGifs.any((g) => g.id == vars.gifId)
+              ? existingGifs
+              : [
+                  ...existingGifs,
+                  AddGifToAlbumMutation_addGifToAlbum_gifs(
+                    id: vars.gifId,
+                    title: vars.title,
+                  ),
+                ];
           return AddGifToAlbumMutationData(
             addGifToAlbum: AddGifToAlbumMutation_addGifToAlbum(
               id: vars.albumId,
@@ -784,10 +763,9 @@ class _AddToAlbumDialogState extends State<_AddToAlbumDialog> {
         gifId: gif.id,
         title: gif.title,
         url: gif.url,
-        previewUrl:
-            gif.previewUrl != null
-                ? shalom.Some(gif.previewUrl)
-                : const shalom.None(),
+        previewUrl: gif.previewUrl != null
+            ? shalom.Some(gif.previewUrl)
+            : const shalom.None(),
       );
       if (!mounted) return;
       messenger.showSnackBar(

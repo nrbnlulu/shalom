@@ -1,3 +1,65 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: GifWidget
@@ -7,74 +69,204 @@ import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
 
+
+
+
+
+
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+
+
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
 extension type GifWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
-  shalom_core.JsonObject toJson() => {
-    'observable_id': _inner.observableId,
-    'anchor': _inner.anchor,
-  };
+  shalom_core.JsonObject toJson() => {'observable_id': _inner.observableId, 'anchor': _inner.anchor};
 }
 
+
+
+
+
+
+
 final class GifWidgetData {
-  final String title;
-  final String url;
-  final String id;
-  final String? previewUrl;
+  final 
+    
+        String
+     title;
+  final 
+    
+        String?
+     previewUrl;
+  final 
+    
+        String
+     url;
+  final 
+    
+        String
+     id;
+  
 
   const GifWidgetData({
     required this.title,
+    required this.previewUrl,
     required this.url,
     required this.id,
-    required this.previewUrl,
+    
   });
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is GifWidgetData &&
-          title == other.title &&
-          url == other.url &&
-          id == other.id &&
-          previewUrl == other.previewUrl);
+  bool operator ==(Object other) => identical(this, other) || (other is GifWidgetData
+    && 
+    
+        
+            title == other.title
+        
+    
+
+    && 
+    
+        
+            previewUrl == other.previewUrl
+        
+    
+
+    && 
+    
+        
+            url == other.url
+        
+    
+
+    && 
+    
+        
+            id == other.id
+        
+    
+
+    
+  );
 
   @override
-  int get hashCode => Object.hashAll([title, url, id, previewUrl]);
+  int get hashCode => Object.hashAll([
+    title,
+    previewUrl,
+    url,
+    id,
+    
+  ]);
 
   @experimental
   static GifWidgetData fromCache(shalom_core.JsonObject data) {
-    final String title$value = data['title'] as String;
-    final String url$value = data['url'] as String;
-    final String id$value = data['id'] as String;
-    final String? previewUrl$value = data['previewUrl'] as String?;
+    final 
+    
+        String
+     title$value = 
+    
+        
+            
+                data['title'] as String
+            
+        
+    
+;
+    final 
+    
+        String?
+     previewUrl$value = 
+    
+        
+            
+                data['previewUrl'] as String?
+            
+        
+    
+;
+    final 
+    
+        String
+     url$value = 
+    
+        
+            
+                data['url'] as String
+            
+        
+    
+;
+    final 
+    
+        String
+     id$value = 
+    
+        
+            
+                data['id'] as String
+            
+        
+    
+;
     return GifWidgetData(
-      title: title$value,
-
-      url: url$value,
-
-      id: id$value,
-
-      previewUrl: previewUrl$value,
-    );
+      
+          title: title$value,
+        
+      
+          previewUrl: previewUrl$value,
+        
+      
+          url: url$value,
+        
+      
+          id: id$value,
+        
+      );
   }
 
   shalom_core.JsonObject toJson() {
     return {
-      'title': this.title,
-
-      'url': this.url,
-
-      'id': this.id,
-
-      'previewUrl': this.previewUrl,
+      
+        'title': 
+    
+        
+            this.title
+        
+    
+,
+      
+        'previewUrl': 
+    
+        
+            this.previewUrl
+        
+    
+,
+      
+        'url': 
+    
+        
+            this.url
+        
+    
+,
+      
+        'id': 
+    
+        
+            this.id
+        
+    
+,
+      
     };
   }
 }
+
 
 abstract class $GifWidget extends StatefulWidget {
   final GifWidgetRef ref;
@@ -114,14 +306,8 @@ class _$GifWidgetState extends State<$GifWidget> {
           decoder: GifWidgetData.fromCache,
         )
         .listen(
-          (data) => setState(() {
-            _data = data;
-            _error = null;
-          }),
-          onError:
-              (e) => setState(() {
-                _error = e;
-              }),
+          (data) => setState(() { _data = data; _error = null; }),
+          onError: (e) => setState(() { _error = e; }),
         );
   }
 
