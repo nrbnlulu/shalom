@@ -34,6 +34,12 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
     Object? _error;
 
     @override
+    void reassemble() {
+        super.reassemble();
+        setState(() { _data = null; _error = null; });
+    }
+
+    @override
     void didChangeDependencies() {
         super.didChangeDependencies();
         _subscribe();
@@ -48,6 +54,7 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
     }
 
     void _subscribe() {
+        debugPrint('[widget] {{ operation_name }}._subscribe called, mounted=$mounted');
         _sub?.cancel();
         final client = ShalomScope.of(context);
         _sub = client
@@ -64,6 +71,10 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
             .listen(
                 (data) => setState(() { _data = data; _error = null; }),
                 onError: (e) => setState(() { _error = e; }),
+                onDone: () {
+                    debugPrint('[widget] {{ operation_name }}.onDone fired, mounted=$mounted');
+                    if (mounted) _subscribe();
+                },
             );
     }
 

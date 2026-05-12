@@ -38,6 +38,17 @@ void registerFragment({
   document: document,
 );
 
+/// Replace the GraphQL schema with a new SDL string.
+///
+/// Clears all registered operations/fragments and invalidates the cache.
+/// Call this before `registerShalomDefinitions` on hot-reload when the schema
+/// file has changed.
+void reloadSchema({required RuntimeHandle handle, required String schemaSdl}) =>
+    RustLib.instance.api.crateApiRuntimeReloadSchema(
+      handle: handle,
+      schemaSdl: schemaSdl,
+    );
+
 /// Trigger a network request for a pre-registered operation and open a cache
 /// subscription. Returns the subscription ID to pass to `listen_subscription`.
 ///
@@ -114,6 +125,10 @@ void unsubscribe({
 );
 
 /// Stream cache-update notifications for an existing subscription.
+///
+/// Errors from the cache (GraphQL errors, transport errors) are encoded as
+/// `{"__error__": "<message>"}` so Dart can route them to `addError` without
+/// relying on FRB's unhandled-future propagation path.
 Stream<String> listenSubscription({
   required RuntimeHandle handle,
   required BigInt subscriptionId,

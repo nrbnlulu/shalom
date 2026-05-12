@@ -32,6 +32,12 @@ class _$ZooQueryState extends State<$ZooQuery> {
     Object? _error;
 
     @override
+    void reassemble() {
+        super.reassemble();
+        setState(() { _data = null; _error = null; });
+    }
+
+    @override
     void didChangeDependencies() {
         super.didChangeDependencies();
         _subscribe();
@@ -60,6 +66,7 @@ class _$ZooQueryState extends State<$ZooQuery> {
             .listen(
                 (data) => setState(() { _data = data; _error = null; }),
                 onError: (e) => setState(() { _error = e; }),
+                onDone: () { if (mounted) _subscribe(); },
             );
     }
 

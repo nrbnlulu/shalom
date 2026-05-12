@@ -103,6 +103,16 @@ pub fn register_fragment(handle: &RuntimeHandle, document: String) -> anyhow::Re
     handle.runtime.register_fragment(&document)
 }
 
+/// Replace the GraphQL schema with a new SDL string.
+///
+/// Clears all registered operations/fragments and invalidates the cache.
+/// Call this before `registerShalomDefinitions` on hot-reload when the schema
+/// file has changed.
+#[frb(sync)]
+pub fn reload_schema(handle: &RuntimeHandle, schema_sdl: String) -> anyhow::Result<()> {
+    handle.runtime.reload_schema(&schema_sdl)
+}
+
 // ---------------------------------------------------------------------------
 // Operation subscription (network + cache)
 // ---------------------------------------------------------------------------

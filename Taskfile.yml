@@ -16,7 +16,7 @@ tasks:
             - cd dart/shalom && fvm exec flutter_rust_bridge_codegen generate
     fmt:
         cmds:
-            - cd rust && cargo fmt
+            - cargo fmt --all
             - cd rust/shalom_dart_codegen/dart_tests && fvm exec dart format ./test ./lib
             - fvm exec dart format ./dart
 

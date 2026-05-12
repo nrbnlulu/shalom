@@ -205,10 +205,10 @@ class AnimalQueryResponse   {
         static AnimalQuery_animal fromJson(shalom_core.JsonObject data) {
             final typename = data['__typename'] as String;
             switch(typename) {
-                case 'Cat':
-                        return AnimalQuery_animal__Cat.fromJson(data);
                 case 'Dog':
                         return AnimalQuery_animal__Dog.fromJson(data);
+                case 'Cat':
+                        return AnimalQuery_animal__Cat.fromJson(data);
                 
                 default:
                     throw Exception("Unknown typename $typename");
@@ -218,6 +218,156 @@ class AnimalQueryResponse   {
 
 
     
+    class AnimalQuery_animal__Dog extends AnimalQuery_animal   {
+            
+    static String G__typename = "Dog";
+    
+    
+    /// class members
+    final 
+    
+        String
+     breed;
+        
+    
+    final 
+    
+        String
+     id;
+        
+    
+
+    
+    // Getter for typename (public accessor for static __typename field)
+    String get $__typename => G__typename;
+    
+
+    // keywordargs constructor
+    const AnimalQuery_animal__Dog(
+        {
+                required this.breed,
+        
+        
+                required this.id,
+        }
+        
+    );
+
+    @override
+    bool operator ==(Object other) {
+        return identical(this, other) ||
+            
+            (other is AnimalQuery_animal__Dog &&
+                    
+    
+        
+            breed == other.breed
+        
+    
+ &&
+                    
+    
+        
+            id == other.id
+        
+    
+ 
+                    );
+            
+    }
+
+    @override
+    int get hashCode =>
+    
+        Object.hashAll([
+        
+                breed,
+        
+                id,
+        
+        AnimalQuery_animal__Dog.G__typename
+        ]);
+    
+
+    shalom_core.JsonObject toJson() {
+    return {
+    
+        
+        
+        'breed':
+            
+                
+    
+        
+            this.breed
+        
+    
+
+            
+        ,
+        
+    
+        
+        
+        "__typename": AnimalQuery_animal__Dog.G__typename,
+        
+    
+        
+        
+        'id':
+            
+                
+    
+        
+            this.id
+        
+    
+
+            
+        ,
+        
+    
+    };
+    }
+
+    @experimental
+    static AnimalQuery_animal__Dog fromJson(shalom_core.JsonObject data) {
+        final 
+    
+        String
+     breed$value = 
+    
+        
+            
+                data['breed'] as String
+            
+        
+    
+;
+        final 
+    
+        String
+     id$value = 
+    
+        
+            
+                data['id'] as String
+            
+        
+    
+;
+        return AnimalQuery_animal__Dog(
+            
+                    breed: breed$value,
+                
+            
+            
+                    id: id$value,
+                
+            );
+    }
+
+        }
     class AnimalQuery_animal__Cat extends AnimalQuery_animal   {
             
     static String G__typename = "Cat";
@@ -229,12 +379,12 @@ class AnimalQueryResponse   {
         String
      color;
         
-    
     final 
     
         String
      id;
         
+    
     
 
     
@@ -309,11 +459,6 @@ class AnimalQueryResponse   {
     
         
         
-        "__typename": AnimalQuery_animal__Cat.G__typename,
-        
-    
-        
-        
         'id':
             
                 
@@ -325,6 +470,11 @@ class AnimalQueryResponse   {
 
             
         ,
+        
+    
+        
+        
+        "__typename": AnimalQuery_animal__Cat.G__typename,
         
     
     };
@@ -361,159 +511,9 @@ class AnimalQueryResponse   {
                     color: color$value,
                 
             
-            
-                    id: id$value,
-                
-            );
-    }
-
-        }
-    class AnimalQuery_animal__Dog extends AnimalQuery_animal   {
-            
-    static String G__typename = "Dog";
-    
-    
-    /// class members
-    final 
-    
-        String
-     id;
-        
-    
-    final 
-    
-        String
-     breed;
-        
-    
-
-    
-    // Getter for typename (public accessor for static __typename field)
-    String get $__typename => G__typename;
-    
-
-    // keywordargs constructor
-    const AnimalQuery_animal__Dog(
-        {
-                required this.id,
-        
-        
-                required this.breed,
-        }
-        
-    );
-
-    @override
-    bool operator ==(Object other) {
-        return identical(this, other) ||
-            
-            (other is AnimalQuery_animal__Dog &&
-                    
-    
-        
-            id == other.id
-        
-    
- &&
-                    
-    
-        
-            breed == other.breed
-        
-    
- 
-                    );
-            
-    }
-
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-                id,
-        
-                breed,
-        
-        AnimalQuery_animal__Dog.G__typename
-        ]);
-    
-
-    shalom_core.JsonObject toJson() {
-    return {
-    
-        
-        
-        'id':
-            
-                
-    
-        
-            this.id
-        
-    
-
-            
-        ,
-        
-    
-        
-        
-        "__typename": AnimalQuery_animal__Dog.G__typename,
-        
-    
-        
-        
-        'breed':
-            
-                
-    
-        
-            this.breed
-        
-    
-
-            
-        ,
-        
-    
-    };
-    }
-
-    @experimental
-    static AnimalQuery_animal__Dog fromJson(shalom_core.JsonObject data) {
-        final 
-    
-        String
-     id$value = 
-    
-        
-            
-                data['id'] as String
-            
-        
-    
-;
-        final 
-    
-        String
-     breed$value = 
-    
-        
-            
-                data['breed'] as String
-            
-        
-    
-;
-        return AnimalQuery_animal__Dog(
-            
                     id: id$value,
                 
             
-            
-                    breed: breed$value,
-                
             );
     }
 

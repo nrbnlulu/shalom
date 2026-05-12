@@ -35,6 +35,10 @@ impl SubscriptionTracker {
     pub fn active_keys(&self) -> HashSet<String> {
         self.counts.keys().cloned().collect()
     }
+
+    pub fn clear(&mut self) {
+        self.counts.clear();
+    }
 }
 
 pub fn collect_garbage(cache: &mut NormalizedCache, active_keys: &HashSet<String>) -> Vec<String> {

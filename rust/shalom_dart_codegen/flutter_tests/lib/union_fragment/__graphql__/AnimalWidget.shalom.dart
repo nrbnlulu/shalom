@@ -159,9 +159,9 @@ sealed class AnimalWidgetData {
 ;
     return AnimalWidgetData$Dog(
       
+      
           id: id$value,
         
-      
       
           breed: breed$value,
         
@@ -214,12 +214,12 @@ sealed class AnimalWidgetData {
 ;
     return AnimalWidgetData$Cat(
       
-      
           id: id$value,
         
       
           color: color$value,
         
+      
       );
   }
 }
@@ -251,6 +251,12 @@ class _$AnimalWidgetState extends State<$AnimalWidget> {
   Object? _error;
 
   @override
+  void reassemble() {
+    super.reassemble();
+    setState(() { _data = null; _error = null; });
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _subscribe();
@@ -273,6 +279,7 @@ class _$AnimalWidgetState extends State<$AnimalWidget> {
         .listen(
           (data) => setState(() { _data = data; _error = null; }),
           onError: (e) => setState(() { _error = e; }),
+          onDone: () { if (mounted) _subscribe(); },
         );
   }
 

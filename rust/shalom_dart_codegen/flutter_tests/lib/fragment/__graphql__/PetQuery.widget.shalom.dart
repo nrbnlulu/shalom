@@ -32,6 +32,12 @@ class _$PetQueryState extends State<$PetQuery> {
     Object? _error;
 
     @override
+    void reassemble() {
+        super.reassemble();
+        setState(() { _data = null; _error = null; });
+    }
+
+    @override
     void didChangeDependencies() {
         super.didChangeDependencies();
         _subscribe();
@@ -60,6 +66,7 @@ class _$PetQueryState extends State<$PetQuery> {
             .listen(
                 (data) => setState(() { _data = data; _error = null; }),
                 onError: (e) => setState(() { _error = e; }),
+                onDone: () { if (mounted) _subscribe(); },
             );
     }
 

@@ -28,17 +28,24 @@ pub enum ExecutionMessage {
 
 #[derive(Clone)]
 pub struct ExecutionEngine {
-    global_ctx: SharedShalomGlobalContext,
+    global_ctx: Arc<Mutex<SharedShalomGlobalContext>>,
     cache: Arc<Mutex<NormalizedCache>>,
 }
 
 impl ExecutionEngine {
     pub fn new(global_ctx: SharedShalomGlobalContext, cache: Arc<Mutex<NormalizedCache>>) -> Self {
-        Self { global_ctx, cache }
+        Self {
+            global_ctx: Arc::new(Mutex::new(global_ctx)),
+            cache,
+        }
     }
 
     pub fn global_ctx(&self) -> SharedShalomGlobalContext {
-        self.global_ctx.clone()
+        self.global_ctx.lock().clone()
+    }
+
+    pub fn replace_global_ctx(&self, new_ctx: SharedShalomGlobalContext) {
+        *self.global_ctx.lock() = new_ctx;
     }
 
     pub fn cache(&self) -> Arc<Mutex<NormalizedCache>> {
@@ -51,9 +58,9 @@ impl ExecutionEngine {
         data: Value,
         variables: Option<&Map<String, Value>>,
     ) -> anyhow::Result<NormalizationResult> {
+        let ctx = self.global_ctx();
         let mut cache = self.cache.lock();
-        Normalizer::new(self.global_ctx.clone(), &mut cache, variables)
-            .normalize_operation(op_ctx, data)
+        Normalizer::new(ctx, &mut cache, variables).normalize_operation(op_ctx, data)
     }
 
     /// Same as `normalize_response` but records the pre-write value of every
@@ -65,8 +72,8 @@ impl ExecutionEngine {
         data: Value,
         variables: Option<&Map<String, Value>>,
     ) -> anyhow::Result<NormalizationResult> {
+        let ctx = self.global_ctx();
         let mut cache = self.cache.lock();
-        Normalizer::new_with_snapshot(self.global_ctx.clone(), &mut cache, variables)
-            .normalize_operation(op_ctx, data)
+        Normalizer::new_with_snapshot(ctx, &mut cache, variables).normalize_operation(op_ctx, data)
     }
 }

@@ -184,6 +184,11 @@ class ZooQueryResponse   {
     /// class members
     final 
     
+        List<ZooWidget_cages>
+     cages;
+        
+    final 
+    
         String
      id;
         
@@ -192,11 +197,6 @@ class ZooQueryResponse   {
         String
      name;
         
-    final 
-    
-        List<ZooWidget_cages>
-     cages;
-        
     
 
     
@@ -204,13 +204,13 @@ class ZooQueryResponse   {
     // keywordargs constructor
      ZooQuery_zoo(
         {
+                required this.cages,
+        
+        
                 required this.id,
         
         
                 required this.name,
-        
-        
-                required this.cages,
         }
         
     );
@@ -220,6 +220,11 @@ class ZooQueryResponse   {
         return identical(this, other) ||
             
             (other is ZooQuery_zoo &&
+                    
+    
+        const ListEquality().equals(cages, other.cages)
+    
+ &&
                     
     
         
@@ -233,11 +238,6 @@ class ZooQueryResponse   {
             name == other.name
         
     
- &&
-                    
-    
-        const ListEquality().equals(cages, other.cages)
-    
  
                     );
             
@@ -248,11 +248,11 @@ class ZooQueryResponse   {
     
         Object.hashAll([
         
+                cages,
+        
                 id,
         
                 name,
-        
-                cages,
         
         ZooQuery_zoo.G__typename
         ]);
@@ -260,6 +260,28 @@ class ZooQueryResponse   {
 
     shalom_core.JsonObject toJson() {
     return {
+    
+        
+        
+        'cages':
+            
+                
+    
+        
+        
+            this.cages.map((e) => 
+    
+        
+            e.toJson()
+        
+    
+).toList()
+        
+    
+
+            
+        ,
+        
     
         
         
@@ -291,33 +313,25 @@ class ZooQueryResponse   {
         ,
         
     
-        
-        
-        'cages':
-            
-                
-    
-        
-        
-            this.cages.map((e) => 
-    
-        
-            e.toJson()
-        
-    
-).toList()
-        
-    
-
-            
-        ,
-        
-    
     };
     }
 
     @experimental
     static ZooQuery_zoo fromJson(shalom_core.JsonObject data) {
+        final 
+    
+        List<ZooWidget_cages>
+     cages$value = 
+    
+        
+        
+        (data['cages'] as List<dynamic>).map((e) => 
+    
+        ZooWidget_cages.fromJson(e as shalom_core.JsonObject)
+    
+).toList()
+    
+;
         final 
     
         String
@@ -342,29 +356,15 @@ class ZooQueryResponse   {
         
     
 ;
-        final 
-    
-        List<ZooWidget_cages>
-     cages$value = 
-    
-        
-        
-        (data['cages'] as List<dynamic>).map((e) => 
-    
-        ZooWidget_cages.fromJson(e as shalom_core.JsonObject)
-    
-).toList()
-    
-;
         return ZooQuery_zoo(
+            
+                    cages: cages$value,
+                
             
                     id: id$value,
                 
             
                     name: name$value,
-                
-            
-                    cages: cages$value,
                 
             );
     }

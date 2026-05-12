@@ -78,6 +78,13 @@ impl ShalomGlobalContext {
         operations.contains_key(name)
     }
 
+    /// Clear all registered operations and fragments. Used on schema hot-reload
+    /// so they can be re-registered against the new schema.
+    pub fn clear_registered(&self) {
+        self.operations.lock().clear();
+        self.fragments.lock().clear();
+    }
+
     pub fn register_fragments(
         &self,
         fragments_update: HashMap<String, FragmentContext>,

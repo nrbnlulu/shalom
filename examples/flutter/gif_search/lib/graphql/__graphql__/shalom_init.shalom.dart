@@ -3,27 +3,89 @@ import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomInheritedWidget;
 
+/// The GraphQL schema SDL inlined at code-generation time.
+///
+/// Use this to create the [ShalomRuntimeClient] — no async asset loading needed:
+/// ```dart
+/// final client = ShalomRuntimeClient.create(schemaSdl: kSchemaSdl, link: link);
+/// ```
+const String kSchemaSdl = r'''type Album {
+  id: String!
+  name: String!
+  gifs: [Gif!]!
+  tag: String!
+}
+
+type AlbumEvent {
+  kind: AlbumEventKind!
+  album: Album!
+  gif: Gif
+}
+
+enum AlbumEventKind {
+  ALBUM_CREATED
+  GIF_ADDED_TO_ALBUM
+  GIF_REMOVED_FROM_ALBUM
+}
+
+type Gif {
+  id: String!
+  title: String!
+  url: String!
+  previewUrl: String
+}
+
+type GifSearchPage {
+  items: [Gif!]!
+  offset: Int!
+  limit: Int!
+  totalCount: Int
+  hasNextPage: Boolean!
+}
+
+type Mutation {
+  createAlbum(name: String!): Album!
+  addGifToAlbum(albumId: String!, gifId: String!, title: String!, url: String!, previewUrl: String = null): Album!
+  removeGifFromAlbum(albumId: String!, gifId: String!): Album!
+}
+
+type Query {
+  searchGifs(query: String!, offset: Int! = 0, limit: Int! = 20): GifSearchPage!
+  albums: [Album!]!
+  album(id: String!): Album
+}
+
+type Subscription {
+  albumEvents: AlbumEvent!
+}''';
+
 /// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
 void registerShalomDefinitions(ShalomRuntimeClient client) {
-  client.registerFragment(document: r'''
+  client.registerFragment(
+    document: r'''
 fragment GifWidget on Gif @observe {
     id
     title
     url
     previewUrl
   }
-''');
-  client.registerFragment(document: r'''
+''',
+  );
+  client.registerFragment(
+    document: r'''
 fragment AlbumWidget on Album @observe {
     id
     name
+    tag
     gifs {
       id
       title
     }
   }
-''');
-  client.registerOperation(document: r'''
+''',
+  );
+  client.registerOperation(
+    document: r'''
 query SearchGifsPage ($query: String!, $offset: Int!, $limit: Int!) @observe {
     searchGifs(query: $query, offset: $offset, limit: $limit) {
       items {
@@ -35,23 +97,29 @@ query SearchGifsPage ($query: String!, $offset: Int!, $limit: Int!) @observe {
       hasNextPage
     }
   }
-''');
-  client.registerOperation(document: r'''
+''',
+  );
+  client.registerOperation(
+    document: r'''
 query AlbumsPage @observe {
     albums {
       ...AlbumWidget
     }
   }
-''');
-  client.registerOperation(document: r'''
+''',
+  );
+  client.registerOperation(
+    document: r'''
 mutation CreateAlbumMutation ($name: String!) {
     createAlbum(name: $name) {
       id
       name
     }
   }
-''');
-  client.registerOperation(document: r'''
+''',
+  );
+  client.registerOperation(
+    document: r'''
 mutation AddGifToAlbumMutation ($albumId: String!, $gifId: String!, $title: String!, $url: String!, $previewUrl: String) {
     addGifToAlbum(albumId: $albumId, gifId: $gifId, title: $title, url: $url, previewUrl: $previewUrl) {
       id
@@ -62,22 +130,25 @@ mutation AddGifToAlbumMutation ($albumId: String!, $gifId: String!, $title: Stri
       }
     }
   }
-''');
-  client.registerOperation(document: r'''
+''',
+  );
+  client.registerOperation(
+    document: r'''
 mutation RemoveGifFromAlbumMutation ($albumId: String!, $gifId: String!) {
     removeGifFromAlbum(albumId: $albumId, gifId: $gifId) {
       id
       name
     }
   }
-''');
+''',
+  );
 }
 
 /// Generated [ShalomProvider] for this app.
 ///
 /// Place this at the root of your widget tree.  On hot-reload it automatically
-/// re-registers all operations and fragments so that any SDL changes take effect
-/// without a full restart.
+/// reloads the schema and re-registers all operations and fragments so that any
+/// SDL changes take effect without a full restart.
 class ShalomProvider extends StatefulWidget {
   final ShalomRuntimeClient client;
   final Widget child;
@@ -92,6 +163,7 @@ class _ShalomProviderState extends State<ShalomProvider> {
   @override
   void reassemble() {
     super.reassemble();
+    widget.client.reloadSchema(schemaSdl: kSchemaSdl);
     registerShalomDefinitions(widget.client);
   }
 

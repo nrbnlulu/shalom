@@ -81,6 +81,11 @@ impl NormalizedCache {
         }
     }
 
+    pub fn clear(&mut self) {
+        self.entries.clear();
+        self.ref_index.clear();
+    }
+
     pub fn get(&self, key: &str) -> Option<&CacheRecord> {
         self.entries.get(key)
     }

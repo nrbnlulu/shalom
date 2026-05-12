@@ -85,6 +85,8 @@ class Album:
     id: str
     name: str
     gifs: list[Gif]
+    tag: str = "booz"
+
 
 
 @strawberry.type

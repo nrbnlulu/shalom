@@ -3,6 +3,14 @@ import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomInheritedWidget;
 
+/// The GraphQL schema SDL inlined at code-generation time.
+///
+/// Use this to create the [ShalomRuntimeClient] — no async asset loading needed:
+/// ```dart
+/// final client = ShalomRuntimeClient.create(schemaSdl: kSchemaSdl, link: link);
+/// ```
+const String kSchemaSdl = r'''{{ schema_sdl }}''';
+
 /// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
 void registerShalomDefinitions(ShalomRuntimeClient client) {
 {% for w in fragments %}  client.registerFragment(document: r'''
@@ -22,8 +30,8 @@ subscription {{ w.class_name }} {{ w.document }}
 /// Generated [ShalomProvider] for this app.
 ///
 /// Place this at the root of your widget tree.  On hot-reload it automatically
-/// re-registers all operations and fragments so that any SDL changes take effect
-/// without a full restart.
+/// reloads the schema and re-registers all operations and fragments so that any
+/// SDL changes take effect without a full restart.
 class ShalomProvider extends StatefulWidget {
   final ShalomRuntimeClient client;
   final Widget child;
@@ -38,6 +46,7 @@ class _ShalomProviderState extends State<ShalomProvider> {
   @override
   void reassemble() {
     super.reassemble();
+    widget.client.reloadSchema(schemaSdl: kSchemaSdl);
     registerShalomDefinitions(widget.client);
   }
 

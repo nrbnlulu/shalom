@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show debugPrint;
+
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
     show ExternalLibrary;
 import 'package:shalom/shalom.dart';
@@ -89,6 +91,17 @@ class ShalomRuntimeClient {
   // Registration
   // -------------------------------------------------------------------------
 
+  /// Replace the GraphQL schema with a new SDL.
+  ///
+  /// Clears all registered operations/fragments and invalidates the cache.
+  /// Call this on hot-reload before [registerOperation]/[registerFragment]
+  /// when the schema file itself has changed.
+  void reloadSchema({required String schemaSdl}) {
+    debugPrint('[shalom] reloadSchema called');
+    rs_runtime.reloadSchema(handle: _handle, schemaSdl: schemaSdl);
+    debugPrint('[shalom] reloadSchema done');
+  }
+
   /// Pre-register a GraphQL operation SDL so it can be executed by name
   /// via [request].
   void registerOperation({required String document}) =>
@@ -118,17 +131,21 @@ class ShalomRuntimeClient {
   }) {
     final variablesJson = variables == null ? null : jsonEncode(variables);
     BigInt? subId;
+    debugPrint('[shalom] request($name): StreamController created');
     final controller = StreamController<T>();
 
     controller.onListen = () {
+      debugPrint('[shalom] request($name): onListen fired');
       Future.microtask(() async {
         try {
+          debugPrint('[shalom] request($name): calling rs_runtime.request...');
           subId = await rs_runtime.request(
             handle: _handle,
             name: name,
             variablesJson: variablesJson,
             executionPolicy: executionPolicy,
           );
+          debugPrint('[shalom] request($name): got subId=$subId, controller.isClosed=${controller.isClosed}');
           if (controller.isClosed) {
             if (subId != null) {
               rs_runtime.unsubscribe(handle: _handle, subscriptionId: subId!);
@@ -141,12 +158,14 @@ class ShalomRuntimeClient {
             decoder: decoder,
           );
         } catch (e, st) {
+          debugPrint('[shalom] request($name): ERROR $e');
           if (!controller.isClosed) controller.addError(e, st);
         }
       });
     };
 
     controller.onCancel = () {
+      debugPrint('[shalom] request($name): onCancel fired, subId=$subId');
       final id = subId;
       if (id == null) return;
       rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
@@ -212,7 +231,9 @@ class ShalomRuntimeClient {
     controller.onListen = () {
       try {
         subId = rs_runtime.observeFragment(handle: _handle, refInput: ref);
+        debugPrint('[shalom] subscribeToFragment: observableId=${ref.observableId} anchor=${ref.anchor} subId=$subId');
       } catch (e, st) {
+        debugPrint('[shalom] subscribeToFragment ERROR: $e');
         if (!controller.isClosed) controller.addError(e, st);
         return;
       }
@@ -310,6 +331,7 @@ class ShalomRuntimeClient {
         .listenSubscription(handle: _handle, subscriptionId: subId)
         .listen(
           (payload) {
+            debugPrint('[shalom] sub payload: $payload');
             if (controller.isClosed) return;
             try {
               final raw = jsonDecode(payload);
@@ -317,15 +339,23 @@ class ShalomRuntimeClient {
                 controller.addError(Exception(raw['__error__'] as String));
                 return;
               }
-              controller.add(decoder(_RuntimeEnvelope.fromJson(payload).data));
+              final envelope = _RuntimeEnvelope.tryFromJson(payload);
+              if (envelope == null) {
+                debugPrint('[shalom] sub: null data payload, skipping');
+                return;
+              }
+              controller.add(decoder(envelope.data));
             } catch (e, st) {
+              debugPrint('[shalom] sub decode error: $e');
               controller.addError(e, st);
             }
           },
           onError: (Object e, StackTrace st) {
+            debugPrint('[shalom] sub stream error: $e');
             if (!controller.isClosed) controller.addError(e, st);
           },
           onDone: () {
+            debugPrint('[shalom] sub stream done');
             if (!controller.isClosed) controller.close();
           },
         );
@@ -342,6 +372,7 @@ class ShalomRuntimeClient {
 
   void _handleRequestEnvelope(String payload) {
     if (_disposed) return;
+    debugPrint('[shalom] _handleRequestEnvelope: $payload');
     final envelope = _RequestEnvelope.fromJson(payload);
     final previous = _activeRequests.remove(envelope.id);
     if (previous != null) {
@@ -492,13 +523,16 @@ class _RuntimeEnvelope {
 
   const _RuntimeEnvelope({required this.data});
 
-  factory _RuntimeEnvelope.fromJson(String payload) {
+  /// Returns null when the payload carries a null data field (cache miss — no
+  /// data available yet).  Callers must skip emission in that case.
+  static _RuntimeEnvelope? tryFromJson(String payload) {
     final decoded = jsonDecode(payload);
     if (decoded is! Map) {
       throw const FormatException('runtime response must be a JSON object');
     }
     if (decoded.containsKey('data')) {
       final dataRaw = decoded['data'];
+      if (dataRaw == null) return null; // cache empty — nothing to emit yet
       if (dataRaw is! Map) {
         throw const FormatException(
           'runtime response data must be a JSON object',
@@ -508,6 +542,10 @@ class _RuntimeEnvelope {
     }
     return _RuntimeEnvelope(data: decoded.cast<String, dynamic>());
   }
+
+  factory _RuntimeEnvelope.fromJson(String payload) =>
+      tryFromJson(payload) ??
+      (throw const FormatException('runtime response data must be a JSON object'));
 }
 
 class _TransportError {

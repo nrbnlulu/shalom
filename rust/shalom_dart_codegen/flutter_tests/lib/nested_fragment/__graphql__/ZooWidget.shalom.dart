@@ -238,27 +238,34 @@ class ZooWidget_cages   {
 final class ZooWidgetData {
   final 
     
+        String
+     name;
+  final 
+    
         List<ZooWidget_cages>
      cages;
   final 
     
         String
      id;
-  final 
-    
-        String
-     name;
   
 
   const ZooWidgetData({
+    required this.name,
     required this.cages,
     required this.id,
-    required this.name,
     
   });
 
   @override
   bool operator ==(Object other) => identical(this, other) || (other is ZooWidgetData
+    && 
+    
+        
+            name == other.name
+        
+    
+
     && 
     
         const ListEquality().equals(cages, other.cages)
@@ -271,26 +278,31 @@ final class ZooWidgetData {
         
     
 
-    && 
-    
-        
-            name == other.name
-        
-    
-
     
   );
 
   @override
   int get hashCode => Object.hashAll([
+    name,
     cages,
     id,
-    name,
     
   ]);
 
   @experimental
   static ZooWidgetData fromCache(shalom_core.JsonObject data) {
+    final 
+    
+        String
+     name$value = 
+    
+        
+            
+                data['name'] as String
+            
+        
+    
+;
     final 
     
         List<ZooWidget_cages>
@@ -317,33 +329,29 @@ final class ZooWidgetData {
         
     
 ;
-    final 
-    
-        String
-     name$value = 
-    
-        
-            
-                data['name'] as String
-            
-        
-    
-;
     return ZooWidgetData(
+      
+          name: name$value,
+        
       
           cages: cages$value,
         
       
           id: id$value,
         
-      
-          name: name$value,
-        
       );
   }
 
   shalom_core.JsonObject toJson() {
     return {
+      
+        'name': 
+    
+        
+            this.name
+        
+    
+,
       
         'cages': 
     
@@ -364,14 +372,6 @@ final class ZooWidgetData {
     
         
             this.id
-        
-    
-,
-      
-        'name': 
-    
-        
-            this.name
         
     
 ,
@@ -399,6 +399,12 @@ class _$ZooWidgetState extends State<$ZooWidget> {
   Object? _error;
 
   @override
+  void reassemble() {
+    super.reassemble();
+    setState(() { _data = null; _error = null; });
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _subscribe();
@@ -421,6 +427,7 @@ class _$ZooWidgetState extends State<$ZooWidget> {
         .listen(
           (data) => setState(() { _data = data; _error = null; }),
           onError: (e) => setState(() { _error = e; }),
+          onDone: () { if (mounted) _subscribe(); },
         );
   }
 

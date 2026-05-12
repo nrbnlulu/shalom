@@ -1168,7 +1168,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
         } else {
             get_schema_output_dir(&ctx)
         };
-        generate_v2_registration_file(&schema_output_dir, &widgets)?;
+        generate_v2_registration_file(&schema_output_dir, &widgets, &ctx)?;
     }
 
     if options.fmt {
@@ -1568,10 +1568,16 @@ fn generate_v2_subscription_sidecar(
 fn generate_v2_registration_file(
     schema_output_dir: &PathBuf,
     widgets: &[WidgetAnnotation],
+    ctx: &SharedShalomGlobalContext,
 ) -> Result<()> {
     let schema_dir = schema_output_dir.clone();
     create_dir_if_not_exists(&schema_dir);
     let gen_path = schema_dir.join("shalom_init.shalom.dart");
+
+    // Read the raw schema SDL so it can be inlined into the generated file.
+    // This avoids any runtime asset loading — the schema is part of the Dart
+    // source and is therefore available on hot reload.
+    let schema_sdl = fs::read_to_string(&ctx.schema_file_path).unwrap_or_default();
 
     let with_observe = |sdl: &str| sdl.replacen('{', "@observe {", 1);
 
@@ -1601,6 +1607,7 @@ fn generate_v2_registration_file(
     )?;
     let template = env.get_template("shalom_init")?;
     let rendered = template.render(context! {
+        schema_sdl => schema_sdl,
         fragments => fragments,
         queries => queries,
         mutations => mutations,

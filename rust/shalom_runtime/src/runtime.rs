@@ -225,13 +225,18 @@ impl ShalomRuntime {
         if operations.is_empty() {
             return Err(anyhow::anyhow!("no operations found in document"));
         }
+        let is_overwrite = operations
+            .keys()
+            .any(|name| self.engine.global_ctx().operation_exists(name));
         let mut result = None;
         for (name, op_ctx) in &operations {
-            // Always overwrite — supports hot-reload where the SDL may have changed.
             self.engine
                 .global_ctx()
                 .register_operations(std::iter::once((name.clone(), op_ctx.clone())).collect());
             result = Some(op_ctx.clone());
+        }
+        if is_overwrite {
+            self.invalidate_cache();
         }
         result.ok_or_else(|| anyhow::anyhow!("no operations registered"))
     }
@@ -239,7 +244,45 @@ impl ShalomRuntime {
     /// Pre-register a fragment SDL by name. Must be called before `observe_fragment`.
     pub fn register_fragment(&self, document: &str) -> anyhow::Result<()> {
         let path = PathBuf::from("registered_fragment.graphql");
-        register_fragments_from_document(&self.engine.global_ctx(), document, &path, true)
+        let is_overwrite = is_fragment_overwrite(&self.engine.global_ctx(), document);
+        register_fragments_from_document(&self.engine.global_ctx(), document, &path, true)?;
+        if is_overwrite {
+            self.invalidate_cache();
+        }
+        Ok(())
+    }
+
+    /// Replace the GraphQL schema with a freshly parsed one.
+    ///
+    /// Clears all registered operations and fragments (they will be re-registered
+    /// by the hot-reload `registerShalomDefinitions` call that follows) and
+    /// invalidates the cache so widgets restart with fresh data.
+    pub fn reload_schema(&self, schema_sdl: &str) -> anyhow::Result<()> {
+        let new_schema_ctx = parse_schema(schema_sdl)?;
+        let config = shalom_core::shalom_config::ShalomConfig::default();
+        let new_global_ctx = shalom_core::context::ShalomGlobalContext::new(
+            new_schema_ctx,
+            config,
+            std::path::PathBuf::from("schema.graphql"),
+        );
+        self.engine.replace_global_ctx(new_global_ctx);
+        self.invalidate_cache();
+        Ok(())
+    }
+
+    /// Clear the normalized cache and close all active subscriptions.
+    ///
+    /// Dropping each `SubscriptionState` drops its sender, which closes the
+    /// unbounded channel. The Dart side's `onDone` fires, and generated widgets
+    /// call `_subscribe()` again to restart with fresh data.
+    pub fn invalidate_cache(&self) {
+        self.cache().lock().clear();
+        let removed: Vec<SubscriptionState> = {
+            let mut manager = self.subscriptions.lock();
+            manager.subscriptions.drain().map(|(_, s)| s).collect()
+        };
+        self.subscription_tracker.lock().clear();
+        drop(removed);
     }
 
     // -----------------------------------------------------------------------
@@ -308,10 +351,17 @@ impl ShalomRuntime {
         );
 
         // Emit current cached value immediately if the cache already has data.
-        if let Ok(response) = self.read_fragment_from_cache(&fragment, &anchor) {
-            let manager = self.subscriptions.lock();
-            if let Some(state) = manager.subscriptions.get(&sub_id) {
-                let _ = state.sender.send(Ok(response));
+        // Skip if data is null — cache is empty, widget will wait for the next network push.
+        if let Ok(result) = self.read_result_fragment(&fragment, &anchor) {
+            if result.data != serde_json::Value::Null {
+                let response = RuntimeResponse {
+                    data: result.data,
+                    operation_id: Some(fragment.get_fragment_name().to_string()),
+                };
+                let manager = self.subscriptions.lock();
+                if let Some(state) = manager.subscriptions.get(&sub_id) {
+                    let _ = state.sender.send(Ok(response));
+                }
             }
         }
 
@@ -702,3 +752,21 @@ impl ShalomRuntime {
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
+
+/// Returns true if `document` contains any fragment whose name is already
+/// registered in `ctx`.  Used to decide whether to invalidate the cache on
+/// hot-reload re-registration.
+fn is_fragment_overwrite(
+    ctx: &shalom_core::context::SharedShalomGlobalContext,
+    document: &str,
+) -> bool {
+    // Quick text scan: fragment definitions start with `fragment <Name>`.
+    // We don't need full parsing here — a false positive (rare) just causes an
+    // extra (harmless) cache clear; a false negative would leave stale data.
+    for token in document.split_whitespace() {
+        if ctx.fragment_exists(token) {
+            return true;
+        }
+    }
+    false
+}

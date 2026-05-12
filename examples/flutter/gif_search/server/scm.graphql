@@ -2,6 +2,7 @@ type Album {
   id: String!
   name: String!
   gifs: [Gif!]!
+  tag: String!
 }
 
 type AlbumEvent {

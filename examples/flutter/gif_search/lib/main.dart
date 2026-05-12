@@ -19,7 +19,7 @@ import 'package:shalom_flutter/widgets/shalom_provider.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await shalom.ShalomRuntimeClient.initFlutterRustBridge();
-  final client = await createShalomClient();
+  final client = createShalomClient();
   runApp(ShalomProvider(client: client, child: const MyApp()));
 }
 
@@ -215,6 +215,18 @@ class _SearchGifsPageState extends State<SearchGifsPage> {
   }
 
   @override
+  void reassemble() {
+    super.reassemble();
+    setState(() {
+      _refs.clear();
+      _hasNextPage = true;
+      _nextOffset = 0;
+      _isLoadingMore = false;
+      _error = null;
+    });
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_refs.isEmpty && !_isLoadingMore) _loadPage(offset: 0);
@@ -402,6 +414,16 @@ class _AlbumsPageState extends State<AlbumsPage> {
   bool _loading = true;
 
   @override
+  void reassemble() {
+    super.reassemble();
+    setState(() {
+      _refs.clear();
+      _loading = true;
+      _error = null;
+    });
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_sub == null) _subscribe();
@@ -409,6 +431,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
 
   void _subscribe() {
     _sub?.cancel();
+    _sub = null;
     setState(() => _loading = true);
     _sub = ShalomScope.of(context)
         .request<AlbumsPageData>(
@@ -431,6 +454,10 @@ class _AlbumsPageState extends State<AlbumsPage> {
             _error = e;
             _loading = false;
           }),
+          onDone: () {
+            _sub = null;
+            if (mounted) _subscribe();
+          },
         );
   }
 
@@ -475,6 +502,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
   on Album {
     id
     name
+    tag
     gifs {
       id
       title
@@ -503,7 +531,7 @@ class AlbumWidget extends $AlbumWidget {
       child: ListTile(
         leading: const Icon(Icons.photo_album, size: 40),
         title: Text(album.name),
-        subtitle: Text('$gifCount GIF${gifCount == 1 ? '' : 's'}'),
+        subtitle: Text('$gifCount GIF${gifCount == 1 ? '' : 's'} TAG: ${album.tag}'),
         trailing: tap == null ? const Icon(Icons.chevron_right) : null,
         onTap: tap != null
             ? () => tap(album)
