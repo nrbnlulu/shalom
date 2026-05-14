@@ -920,7 +920,7 @@ static END_OF_FILE: &str = "shalom.dart";
 static GRAPHQL_DIRECTORY: &str = "__graphql__";
 
 /// Get the directory where the schema file should be generated
-fn get_schema_output_dir(ctx: &ShalomGlobalContext) -> PathBuf {
+fn get_schema_output_dir(ctx: &ShalomGlobalContext, gen_dir: &str) -> PathBuf {
     if let Some(schema_output_path) = &ctx.config.schema_output_path {
         // Use the configured schema output path (resolve relative to project root)
 
@@ -930,17 +930,17 @@ fn get_schema_output_dir(ctx: &ShalomGlobalContext) -> PathBuf {
             ctx.config.project_root.join(schema_output_path)
         }
     } else {
-        // Default to schema file's parent directory + __graphql__
+        // Default to schema file's parent directory + gen_dir
         ctx.schema_file_path
             .parent()
             .expect("Schema file must have a parent directory")
-            .join(GRAPHQL_DIRECTORY)
+            .join(gen_dir)
     }
 }
 
 /// Get the full path to the generated schema file
-fn get_schema_file_path(ctx: &ShalomGlobalContext) -> PathBuf {
-    get_schema_output_dir(ctx).join(format!("schema.{}", END_OF_FILE))
+fn get_schema_file_path(ctx: &ShalomGlobalContext, gen_dir: &str) -> PathBuf {
+    get_schema_output_dir(ctx, gen_dir).join(format!("schema.{}", END_OF_FILE))
 }
 
 fn get_generation_path_for_operation(
@@ -1008,7 +1008,7 @@ fn calculate_fragment_import_path(
 fn get_schema_import_path(relative_to: &Path, ctx: &ShalomGlobalContext, gen_dir: &str) -> String {
     let op_dir = relative_to.parent().unwrap();
     let op_graphql_dir = op_dir.join(gen_dir);
-    let schema_path = get_schema_file_path(ctx);
+    let schema_path = get_schema_file_path(ctx, gen_dir);
     pathdiff::diff_paths(&schema_path, &op_graphql_dir)
         .map(|p| p.to_string_lossy().replace('\\', "/"))
         .unwrap_or_else(|| "schema.shalom.dart".to_string())
@@ -1110,7 +1110,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
         }
     }
 
-    generate_schema_file(&_template_env, &ctx);
+    generate_schema_file(&_template_env, &ctx, gen_dir);
     let custom_scalar_imports = generate_custom_scalar_imports(&ctx);
 
     // Generate fragment files first (operations might depend on them)
@@ -1160,13 +1160,13 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
 
     // V2: Generate registration function in gen_dir alongside generated schema files.
     // When schema_output_path is configured (e.g. "./lib"), the schema lands directly
-    // in that dir, so gen_dir sits beneath it (lib/__graphql__/).
-    // Without schema_output_path, get_schema_output_dir already includes __graphql__.
+    // in that dir, so gen_dir sits beneath it (e.g. lib/my_gen_dir/).
+    // Without schema_output_path, get_schema_output_dir already includes gen_dir.
     if !widgets.is_empty() {
         let schema_output_dir = if ctx.config.schema_output_path.is_some() {
-            get_schema_output_dir(&ctx).join(gen_dir)
+            get_schema_output_dir(&ctx, gen_dir).join(gen_dir)
         } else {
-            get_schema_output_dir(&ctx)
+            get_schema_output_dir(&ctx, gen_dir)
         };
         generate_v2_registration_file(&schema_output_dir, &widgets, &ctx)?;
     }
@@ -1178,11 +1178,11 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
     Ok(())
 }
 
-fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContext) {
+fn generate_schema_file(template_env: &SchemaEnv, ctx: &SharedShalomGlobalContext, gen_dir: &str) {
     info!("rendering schema file");
 
     let rendered_content = template_env.render_schema(ctx);
-    let output_dir = get_schema_output_dir(ctx);
+    let output_dir = get_schema_output_dir(ctx, gen_dir);
     create_dir_if_not_exists(&output_dir);
     let generation_target = output_dir.join(format!("schema.{}", END_OF_FILE));
     fs::write(&generation_target, rendered_content).unwrap();
