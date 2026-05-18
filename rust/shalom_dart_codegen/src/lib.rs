@@ -1100,6 +1100,9 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
                 .unwrap();
             // Also keep `.widget.shalom.dart` sidecars for existing operations.
             let base_name = resolved_name.trim_end_matches(".widget");
+            if resolved_name == "schema" {
+                continue;
+            }
             if !ctx.operation_exists(resolved_name)
                 && !ctx.fragment_exists(resolved_name)
                 && !ctx.operation_exists(base_name)

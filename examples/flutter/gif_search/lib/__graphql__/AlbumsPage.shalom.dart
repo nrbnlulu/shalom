@@ -55,68 +55,68 @@ class AlbumsPage_albums {
   static String G__typename = "Album";
 
   /// class members
-  final String id;
-
-  final String name;
-
   final String tag;
 
   final List<AlbumWidget_gifs> gifs;
 
+  final String name;
+
+  final String id;
+
   // keywordargs constructor
   AlbumsPage_albums({
-    required this.id,
-
-    required this.name,
-
     required this.tag,
 
     required this.gifs,
+
+    required this.name,
+
+    required this.id,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AlbumsPage_albums &&
-            id == other.id &&
-            name == other.name &&
             tag == other.tag &&
-            const ListEquality().equals(gifs, other.gifs));
+            const ListEquality().equals(gifs, other.gifs) &&
+            name == other.name &&
+            id == other.id);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([id, name, tag, gifs, AlbumsPage_albums.G__typename]);
+      Object.hashAll([tag, gifs, name, id, AlbumsPage_albums.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'id': this.id,
-
-      'name': this.name,
-
       'tag': this.tag,
 
       'gifs': this.gifs.map((e) => e.toJson()).toList(),
+
+      'name': this.name,
+
+      'id': this.id,
     };
   }
 
   @experimental
   static AlbumsPage_albums fromJson(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
-    final String name$value = data['name'] as String;
     final String tag$value = data['tag'] as String;
     final List<AlbumWidget_gifs> gifs$value =
         (data['gifs'] as List<dynamic>)
             .map((e) => AlbumWidget_gifs.fromJson(e as shalom_core.JsonObject))
             .toList();
+    final String name$value = data['name'] as String;
+    final String id$value = data['id'] as String;
     return AlbumsPage_albums(
-      id: id$value,
-
-      name: name$value,
-
       tag: tag$value,
 
       gifs: gifs$value,
+
+      name: name$value,
+
+      id: id$value,
     );
   }
 }

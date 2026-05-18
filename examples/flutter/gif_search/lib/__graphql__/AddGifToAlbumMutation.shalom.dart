@@ -14,17 +14,17 @@ class AddGifToAlbumMutation_addGifToAlbum {
   static String G__typename = "Album";
 
   /// class members
-  final String name;
-
   final List<AddGifToAlbumMutation_addGifToAlbum_gifs> gifs;
+
+  final String name;
 
   final String id;
 
   // keywordargs constructor
   AddGifToAlbumMutation_addGifToAlbum({
-    required this.name,
-
     required this.gifs,
+
+    required this.name,
 
     required this.id,
   });
@@ -33,16 +33,16 @@ class AddGifToAlbumMutation_addGifToAlbum {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AddGifToAlbumMutation_addGifToAlbum &&
-            name == other.name &&
             const ListEquality().equals(gifs, other.gifs) &&
+            name == other.name &&
             id == other.id);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    name,
-
     gifs,
+
+    name,
 
     id,
 
@@ -51,9 +51,9 @@ class AddGifToAlbumMutation_addGifToAlbum {
 
   shalom_core.JsonObject toJson() {
     return {
-      'name': this.name,
-
       'gifs': this.gifs.map((e) => e.toJson()).toList(),
+
+      'name': this.name,
 
       'id': this.id,
     };
@@ -63,7 +63,6 @@ class AddGifToAlbumMutation_addGifToAlbum {
   static AddGifToAlbumMutation_addGifToAlbum fromJson(
     shalom_core.JsonObject data,
   ) {
-    final String name$value = data['name'] as String;
     final List<AddGifToAlbumMutation_addGifToAlbum_gifs> gifs$value =
         (data['gifs'] as List<dynamic>)
             .map(
@@ -72,11 +71,12 @@ class AddGifToAlbumMutation_addGifToAlbum {
               ),
             )
             .toList();
+    final String name$value = data['name'] as String;
     final String id$value = data['id'] as String;
     return AddGifToAlbumMutation_addGifToAlbum(
-      name: name$value,
-
       gifs: gifs$value,
+
+      name: name$value,
 
       id: id$value,
     );
