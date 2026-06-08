@@ -54,23 +54,16 @@ type Cat implements Animal {
 
 /// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
 void registerShalomDefinitions(ShalomRuntimeClient client) {
-  client.registerFragment(document: r'''
+  client.registerFragment(
+    document: r'''
 fragment PetWidget on Pet @observe {
   id
   name
 }
-''');
-  client.registerFragment(document: r'''
-fragment ZooWidget on Zoo @observe {
-  id
-  name
-  cages {
-    id
-    name
-  }
-}
-''');
-  client.registerFragment(document: r'''
+''',
+  );
+  client.registerFragment(
+    document: r'''
 fragment AnimalWidget on Animal @observe {
   id
   ... on Dog {
@@ -80,36 +73,57 @@ fragment AnimalWidget on Animal @observe {
     color
   }
 }
-''');
-  client.registerOperation(document: r'''
-query PetQuery ($id: ID!) @observe {
-  pet(id: $id) {
-    ...PetWidget
+''',
+  );
+  client.registerFragment(
+    document: r'''
+fragment ZooWidget on Zoo @observe {
+  id
+  name
+  cages {
+    id
+    name
   }
 }
-''');
-  client.registerOperation(document: r'''
-query ZooQuery ($id: ID!) @observe {
-  zoo(id: $id) {
-    ...ZooWidget
-  }
-}
-''');
-  client.registerOperation(document: r'''
+''',
+  );
+  client.registerOperation(
+    document: r'''
 query UserWidget ($id: ID!) @observe {
   user(id: $id) {
     id
     name
   }
 }
-''');
-  client.registerOperation(document: r'''
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query PetQuery ($id: ID!) @observe {
+  pet(id: $id) {
+    ...PetWidget
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
 query AnimalQuery ($id: ID!) @observe {
   animal(id: $id) {
     ...AnimalWidget
   }
 }
-''');
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query ZooQuery ($id: ID!) @observe {
+  zoo(id: $id) {
+    ...ZooWidget
+  }
+}
+''',
+  );
 }
 
 /// Generated [ShalomProvider] for this app.

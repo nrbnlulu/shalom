@@ -1,65 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: ZooWidget
@@ -69,317 +7,94 @@ import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
 
-
-
-
-
-
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
-
-
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
 extension type ZooWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
-  shalom_core.JsonObject toJson() => {'observable_id': _inner.observableId, 'anchor': _inner.anchor};
+  shalom_core.JsonObject toJson() => {
+    'observable_id': _inner.observableId,
+    'anchor': _inner.anchor,
+  };
 }
 
+class ZooWidget_cages {
+  static String G__typename = "Cage";
 
+  /// class members
+  final String name;
 
+  final String id;
 
+  // keywordargs constructor
+  ZooWidget_cages({required this.name, required this.id});
 
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ZooWidget_cages && name == other.name && id == other.id);
+  }
 
-class ZooWidget_cages   {
-        
-    static String G__typename = "Cage";
-    
-    
-    /// class members
-    final 
-    
-        String
-     id;
-        
-    final 
-    
-        String
-     name;
-        
-    
+  @override
+  int get hashCode => Object.hashAll([name, id, ZooWidget_cages.G__typename]);
 
-    
+  shalom_core.JsonObject toJson() {
+    return {'name': this.name, 'id': this.id};
+  }
 
-    // keywordargs constructor
-     ZooWidget_cages(
-        {
-                required this.id,
-        
-        
-                required this.name,
-        }
-        
-    );
-
-    @override
-    bool operator ==(Object other) {
-        return identical(this, other) ||
-            
-            (other is ZooWidget_cages &&
-                    
-    
-        
-            id == other.id
-        
-    
- &&
-                    
-    
-        
-            name == other.name
-        
-    
- 
-                    );
-            
-    }
-
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-                id,
-        
-                name,
-        
-        ZooWidget_cages.G__typename
-        ]);
-    
-
-    shalom_core.JsonObject toJson() {
-    return {
-    
-        
-        
-        'id':
-            
-                
-    
-        
-            this.id
-        
-    
-
-            
-        ,
-        
-    
-        
-        
-        'name':
-            
-                
-    
-        
-            this.name
-        
-    
-
-            
-        ,
-        
-    
-    };
-    }
-
-    @experimental
-    static ZooWidget_cages fromJson(shalom_core.JsonObject data) {
-        final 
-    
-        String
-     id$value = 
-    
-        
-            
-                data['id'] as String
-            
-        
-    
-;
-        final 
-    
-        String
-     name$value = 
-    
-        
-            
-                data['name'] as String
-            
-        
-    
-;
-        return ZooWidget_cages(
-            
-                    id: id$value,
-                
-            
-                    name: name$value,
-                
-            );
-    }
-
-    }
-
-
+  @experimental
+  static ZooWidget_cages fromJson(shalom_core.JsonObject data) {
+    final String name$value = data['name'] as String;
+    final String id$value = data['id'] as String;
+    return ZooWidget_cages(name: name$value, id: id$value);
+  }
+}
 
 final class ZooWidgetData {
-  final 
-    
-        String
-     name;
-  final 
-    
-        List<ZooWidget_cages>
-     cages;
-  final 
-    
-        String
-     id;
-  
+  final String id;
+  final String name;
+  final List<ZooWidget_cages> cages;
 
   const ZooWidgetData({
+    required this.id,
     required this.name,
     required this.cages,
-    required this.id,
-    
   });
 
   @override
-  bool operator ==(Object other) => identical(this, other) || (other is ZooWidgetData
-    && 
-    
-        
-            name == other.name
-        
-    
-
-    && 
-    
-        const ListEquality().equals(cages, other.cages)
-    
-
-    && 
-    
-        
-            id == other.id
-        
-    
-
-    
-  );
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ZooWidgetData &&
+          id == other.id &&
+          name == other.name &&
+          const ListEquality().equals(cages, other.cages));
 
   @override
-  int get hashCode => Object.hashAll([
-    name,
-    cages,
-    id,
-    
-  ]);
+  int get hashCode => Object.hashAll([id, name, cages]);
 
   @experimental
   static ZooWidgetData fromCache(shalom_core.JsonObject data) {
-    final 
-    
-        String
-     name$value = 
-    
-        
-            
-                data['name'] as String
-            
-        
-    
-;
-    final 
-    
-        List<ZooWidget_cages>
-     cages$value = 
-    
-        
-        
-        (data['cages'] as List<dynamic>).map((e) => 
-    
-        ZooWidget_cages.fromJson(e as shalom_core.JsonObject)
-    
-).toList()
-    
-;
-    final 
-    
-        String
-     id$value = 
-    
-        
-            
-                data['id'] as String
-            
-        
-    
-;
-    return ZooWidgetData(
-      
-          name: name$value,
-        
-      
-          cages: cages$value,
-        
-      
-          id: id$value,
-        
-      );
+    final String id$value = data['id'] as String;
+    final String name$value = data['name'] as String;
+    final List<ZooWidget_cages> cages$value = (data['cages'] as List<dynamic>)
+        .map((e) => ZooWidget_cages.fromJson(e as shalom_core.JsonObject))
+        .toList();
+    return ZooWidgetData(id: id$value, name: name$value, cages: cages$value);
   }
 
   shalom_core.JsonObject toJson() {
     return {
-      
-        'name': 
-    
-        
-            this.name
-        
-    
-,
-      
-        'cages': 
-    
-        
-        
-            this.cages.map((e) => 
-    
-        
-            e.toJson()
-        
-    
-).toList()
-        
-    
-,
-      
-        'id': 
-    
-        
-            this.id
-        
-    
-,
-      
+      'id': this.id,
+
+      'name': this.name,
+
+      'cages': this.cages.map((e) => e.toJson()).toList(),
     };
   }
 }
-
 
 abstract class $ZooWidget extends StatefulWidget {
   final ZooWidgetRef ref;
@@ -401,7 +116,10 @@ class _$ZooWidgetState extends State<$ZooWidget> {
   @override
   void reassemble() {
     super.reassemble();
-    setState(() { _data = null; _error = null; });
+    setState(() {
+      _data = null;
+      _error = null;
+    });
   }
 
   @override
@@ -425,9 +143,16 @@ class _$ZooWidgetState extends State<$ZooWidget> {
           decoder: ZooWidgetData.fromCache,
         )
         .listen(
-          (data) => setState(() { _data = data; _error = null; }),
-          onError: (e) => setState(() { _error = e; }),
-          onDone: () { if (mounted) _subscribe(); },
+          (data) => setState(() {
+            _data = data;
+            _error = null;
+          }),
+          onError: (e) => setState(() {
+            _error = e;
+          }),
+          onDone: () {
+            if (mounted) _subscribe();
+          },
         );
   }
 

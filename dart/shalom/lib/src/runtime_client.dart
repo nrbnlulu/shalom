@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart' show debugPrint;
-
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
     show ExternalLibrary;
 import 'package:shalom/shalom.dart';
@@ -22,6 +20,11 @@ import 'rust/api/runtime.dart' as rs_runtime;
 
 export 'rust/api/runtime.dart'
     show ExecutionPolicyInput, ObservedRefInput, RuntimeConfigInput;
+
+// Thin wrapper so this file compiles without a Flutter dependency.
+// In Flutter apps the real debugPrint throttles long lines; for our purposes
+// a plain print is sufficient.
+void debugPrint(String? message, {int? wrapWidth}) => print(message);
 
 // ---------------------------------------------------------------------------
 // ObservedRefInput helpers (exported so codegen templates can use them via
