@@ -1263,31 +1263,34 @@ fn format_generated_files(pwd: &Path) -> Result<()> {
         .to_str()
         .ok_or_else(|| anyhow::anyhow!("Invalid path pattern"))?;
 
+    let mut files = Vec::new();
     for entry in glob::glob(pattern_str)? {
         match entry {
             Ok(path) => {
-                let mut cmd = Command::new(dart_cmd);
-
-                // Add any additional args (like "fvm" if using fvm dart)
-                for arg in &dart_args {
-                    cmd.arg(arg);
-                }
-
-                // Add the file to format
-                cmd.arg(&path).current_dir(pwd);
-
-                let output = cmd.output()?;
-                if !output.status.success() {
-                    error!(
-                        "Failed to format file {}: {}",
-                        path.display(),
-                        String::from_utf8_lossy(&output.stderr)
-                    );
-                }
+                files.push(path);
             }
             Err(e) => {
                 error!("Glob error: {}", e);
             }
+        }
+    }
+
+    for chunk in files.chunks(100) {
+        let mut cmd = Command::new(dart_cmd);
+
+        // Add any additional args (like "fvm" if using fvm dart)
+        for arg in &dart_args {
+            cmd.arg(arg);
+        }
+
+        cmd.args(chunk).current_dir(pwd);
+
+        let output = cmd.output()?;
+        if !output.status.success() {
+            error!(
+                "Failed to format generated Dart files: {}",
+                String::from_utf8_lossy(&output.stderr)
+            );
         }
     }
 
@@ -1368,8 +1371,7 @@ fn generate_v2_query_sidecar(
         widget.sdl.replacen('{', "@observe {", 1)
     );
 
-    let path = PathBuf::from(format!("{}.dart", widget.class_name));
-    let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &path)?;
+    let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &widget.source_path)?;
     if operations.is_empty() {
         return Err(anyhow::anyhow!(
             "no operations parsed for {}",
@@ -1425,8 +1427,12 @@ fn generate_v2_fragment_sidecar(
         widget.sdl.replacen('{', "@observe {", 1)
     );
 
-    let path = PathBuf::from(format!("{}.dart", widget.class_name));
-    shalom_core::entrypoint::register_fragments_from_document(ctx, &full_sdl, &path, false)?;
+    shalom_core::entrypoint::register_fragments_from_document(
+        ctx,
+        &full_sdl,
+        &widget.source_path,
+        false,
+    )?;
 
     let fragment_ctx = ctx.get_fragment(&widget.class_name).ok_or_else(|| {
         anyhow::anyhow!(
@@ -1468,8 +1474,7 @@ fn generate_v2_mutation_sidecar(
     // No @observe directive for mutations — they are fire-and-forget.
     let full_sdl = format!("mutation {} {}", widget.class_name, widget.sdl);
 
-    let path = PathBuf::from(format!("{}.dart", widget.class_name));
-    let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &path)?;
+    let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &widget.source_path)?;
     if operations.is_empty() {
         return Err(anyhow::anyhow!(
             "no operations parsed for {}",
@@ -1524,8 +1529,7 @@ fn generate_v2_subscription_sidecar(
         widget.sdl.replacen('{', "@observe {", 1)
     );
 
-    let path = PathBuf::from(format!("{}.dart", widget.class_name));
-    let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &path)?;
+    let operations = shalom_core::entrypoint::parse_document(ctx, &full_sdl, &widget.source_path)?;
     if operations.is_empty() {
         return Err(anyhow::anyhow!(
             "no operations parsed for {}",

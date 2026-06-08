@@ -116,9 +116,7 @@ fn main() -> Result<()> {
 
             let watch_path = path.clone().unwrap_or_else(|| PathBuf::from("."));
 
-            let effective_gen_dir = gen_dir
-                .clone()
-                .unwrap_or_else(|| "__graphql__".to_string());
+            let effective_gen_dir = gen_dir.clone().unwrap_or_else(|| "__graphql__".to_string());
 
             log::info!(
                 "Watching {} for changes in .graphql, .gql, and .dart files...",
@@ -142,18 +140,15 @@ fn main() -> Result<()> {
                     Ok(events) => {
                         let has_relevant_changes = events.iter().any(|event| {
                             event.paths.iter().any(|path| {
-                                let ext = path
-                                    .extension()
-                                    .and_then(|e| e.to_str())
-                                    .unwrap_or("");
+                                let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
                                 if ext == "graphql" || ext == "gql" {
                                     return true;
                                 }
                                 // Dart source files, excluding generated output dirs
                                 if ext == "dart" {
-                                    return !path.components().any(|c| {
-                                        c.as_os_str() == effective_gen_dir.as_str()
-                                    });
+                                    return !path
+                                        .components()
+                                        .any(|c| c.as_os_str() == effective_gen_dir.as_str());
                                 }
                                 false
                             })
