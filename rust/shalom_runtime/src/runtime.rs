@@ -353,7 +353,7 @@ impl ShalomRuntime {
         // Emit current cached value immediately if the cache already has data.
         // Skip if data is null — cache is empty, widget will wait for the next network push.
         if let Ok(result) = self.read_result_fragment(&fragment, &anchor) {
-            if result.data != serde_json::Value::Null {
+            if result.data != serde_json::Value::Null && result.missing_refs.is_empty() {
                 let response = RuntimeResponse {
                     data: result.data,
                     operation_id: Some(fragment.get_fragment_name().to_string()),
@@ -445,8 +445,14 @@ impl ShalomRuntime {
             self.subscription_tracker.lock().unsubscribe(old_keys);
 
             // 4. Push current value for the new anchor.
-            if let Ok(response) = self.read_fragment_from_cache(&fragment, &new_anchor) {
-                let _ = sender.send(Ok(response));
+            if let Ok(result) = self.read_result_fragment(&fragment, &new_anchor) {
+                if result.data != serde_json::Value::Null && result.missing_refs.is_empty() {
+                    let response = RuntimeResponse {
+                        data: result.data,
+                        operation_id: Some(fragment.get_fragment_name().to_string()),
+                    };
+                    let _ = sender.send(Ok(response));
+                }
             }
 
             Ok(id)
@@ -644,29 +650,22 @@ impl ShalomRuntime {
         };
 
         for (id, target, variables) in affected {
-            let (data, new_refs, operation_id) = match &target {
+            let (result, operation_id) = match &target {
                 SubscriptionTarget::Operation(op_ctx) => {
                     let result = self.read_result_op(op_ctx, variables.as_ref())?;
-                    (
-                        result.data,
-                        result.used_refs,
-                        op_ctx.get_operation_name().to_string(),
-                    )
+                    (result, op_ctx.get_operation_name().to_string())
                 }
                 SubscriptionTarget::Fragment { fragment, anchor } => {
                     let result = self.read_result_fragment(fragment, anchor)?;
-                    (
-                        result.data,
-                        result.used_refs,
-                        fragment.get_fragment_name().to_string(),
-                    )
+                    (result, fragment.get_fragment_name().to_string())
                 }
             };
 
-            let response = RuntimeResponse {
-                data,
+            let new_refs = result.used_refs.clone();
+            let response = result.missing_refs.is_empty().then(|| RuntimeResponse {
+                data: result.data,
                 operation_id: Some(operation_id),
-            };
+            });
 
             let mut old_keys = None;
             let mut removed = false;
@@ -676,7 +675,10 @@ impl ShalomRuntime {
                 if let Some(state) = manager.subscriptions.get_mut(&id) {
                     old_keys = Some(state.keys.clone());
                     state.keys = new_refs.clone();
-                    if state.sender.send(Ok(response)).is_err() {
+                    if response
+                        .map(|response| state.sender.send(Ok(response)).is_err())
+                        .unwrap_or(false)
+                    {
                         manager.subscriptions.remove(&id);
                         removed = true;
                     }
@@ -717,18 +719,6 @@ impl ShalomRuntime {
         let cache_guard = cache.lock();
         let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, None);
         reader.read_fragment(fragment, root_ref)
-    }
-
-    fn read_fragment_from_cache(
-        &self,
-        fragment: &SharedFragmentContext,
-        root_ref: &str,
-    ) -> anyhow::Result<RuntimeResponse> {
-        let result = self.read_result_fragment(fragment, root_ref)?;
-        Ok(RuntimeResponse {
-            data: result.data,
-            operation_id: Some(fragment.get_fragment_name().to_string()),
-        })
     }
 
     fn remember_operation_vars(

@@ -129,7 +129,11 @@ fn write_optimistic_updates_cache() {
             Some(&query_vars),
         )
         .expect("seed");
-    let sub_id = runtime.create_operation_subscription(query_op.clone(), Some(query_vars));
+    let sub_id = runtime.create_operation_subscription(
+        query_op.clone(),
+        Some(query_vars),
+        ExecutionPolicy::NetworkFirst,
+    );
 
     // Write optimistic data for the mutation (before any network response).
     runtime

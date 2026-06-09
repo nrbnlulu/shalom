@@ -44,6 +44,7 @@ where `x` is the kind of use case you are testing, for example `objectRequired`,
 
 when you are done, make sure all tests pass using `task test` and all lints pass using `task lint` (check Taskfile.yml to see what they do if needed).
 We use `fvm exec dart` for Dart commands in this repo, including flutter_rust_bridge codegen.
+- never run cargo tests without limiting the amount of threads to 2 otherwise the pc will crash.
 
 ### Testing Interfaces and Unions
 

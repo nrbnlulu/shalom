@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::time::Duration;
 
 use serde_json::{Map, Value, json};
 use tokio::runtime::Builder;
@@ -1898,5 +1899,125 @@ mod fragment_subscriptions {
             );
             assert_eq!(update.operation_id.as_deref(), Some("Op1"));
         });
+    }
+}
+
+mod incomplete_cache_emissions {
+    use super::*;
+
+    #[test]
+    fn operation_update_is_skipped_when_cache_shape_is_incomplete() {
+        let schema = r#"
+            type Query {
+                siteActivationModeConfigs: [SiteActivationModeConfig!]!
+            }
+
+            type SiteActivationModeConfig {
+                id: ID!
+                name: String!
+                levels: [ActivationLevel!]!
+            }
+
+            type ActivationLevel {
+                name: String!
+                nvr: NvrActivationMode!
+            }
+
+            union NvrActivationMode = NvrActivationModeActive | NvrActivationModeNeutral
+
+            type NvrActivationModeActive {
+                systemType: String!
+                ignoredChannels: [Int!]!
+            }
+
+            type NvrActivationModeNeutral {
+                systemType: String!
+            }
+        "#;
+        let operations = r#"
+            query ShallowConfigs {
+                siteActivationModeConfigs {
+                    id
+                    name
+                }
+            }
+
+            query FullConfigs {
+                siteActivationModeConfigs {
+                    id
+                    name
+                    levels {
+                        name
+                        nvr {
+                            __typename
+                            ... on NvrActivationModeActive {
+                                systemType
+                                ignoredChannels
+                            }
+                            ... on NvrActivationModeNeutral {
+                                systemType
+                            }
+                        }
+                    }
+                }
+            }
+        "#;
+
+        let schema_ctx = parse_schema(schema).unwrap();
+        let config = ShalomConfig::default();
+        let global_ctx = ShalomGlobalContext::new(schema_ctx, config, std::path::PathBuf::from(""));
+        let ops = parse_document(
+            &global_ctx,
+            operations,
+            &std::path::PathBuf::from("ops.graphql"),
+        )
+        .unwrap();
+
+        let shallow_configs = ops.get("ShallowConfigs").unwrap().clone();
+        let full_configs = ops.get("FullConfigs").unwrap().clone();
+        let runtime = ShalomRuntime::new(global_ctx);
+
+        normalize(
+            &runtime,
+            &shallow_configs,
+            json!({
+                "siteActivationModeConfigs": [
+                    { "id": "cfg1", "name": "regular" }
+                ]
+            }),
+            None,
+        );
+
+        let sub_id = runtime.create_operation_subscription(
+            full_configs,
+            None,
+            ExecutionPolicy::NetworkFirst,
+        );
+        let mut updates = runtime.subscription_stream(&sub_id).unwrap();
+
+        normalize(
+            &runtime,
+            &shallow_configs,
+            json!({
+                "siteActivationModeConfigs": [
+                    { "id": "cfg1", "name": "regular changed" }
+                ]
+            }),
+            None,
+        );
+
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let update = rt.block_on(async {
+            tokio::time::timeout(Duration::from_millis(50), updates.next()).await
+        });
+        assert!(
+            update.is_err(),
+            "incomplete cached FullConfigs shape should not be emitted"
+        );
+
+        runtime.unsubscribe(&sub_id);
     }
 }
