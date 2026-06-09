@@ -29,6 +29,9 @@ class ZooWidget_cages {
 
   final String id;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
   ZooWidget_cages({required this.name, required this.id});
 
@@ -54,44 +57,44 @@ class ZooWidget_cages {
 }
 
 final class ZooWidgetData {
-  final String id;
   final String name;
   final List<ZooWidget_cages> cages;
+  final String id;
 
   const ZooWidgetData({
-    required this.id,
     required this.name,
     required this.cages,
+    required this.id,
   });
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is ZooWidgetData &&
-          id == other.id &&
           name == other.name &&
-          const ListEquality().equals(cages, other.cages));
+          const ListEquality().equals(cages, other.cages) &&
+          id == other.id);
 
   @override
-  int get hashCode => Object.hashAll([id, name, cages]);
+  int get hashCode => Object.hashAll([name, cages, id]);
 
   @experimental
   static ZooWidgetData fromCache(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
     final List<ZooWidget_cages> cages$value = (data['cages'] as List<dynamic>)
         .map((e) => ZooWidget_cages.fromJson(e as shalom_core.JsonObject))
         .toList();
-    return ZooWidgetData(id: id$value, name: name$value, cages: cages$value);
+    final String id$value = data['id'] as String;
+    return ZooWidgetData(name: name$value, cages: cages$value, id: id$value);
   }
 
   shalom_core.JsonObject toJson() {
     return {
-      'id': this.id,
-
       'name': this.name,
 
       'cages': this.cages.map((e) => e.toJson()).toList(),
+
+      'id': this.id,
     };
   }
 }

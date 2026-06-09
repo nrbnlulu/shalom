@@ -17,6 +17,9 @@ class ZooQueryResponse {
   /// class members
   final ZooWidgetRef? zoo;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
   ZooQueryResponse({this.zoo});
 
@@ -51,46 +54,49 @@ class ZooQuery_zoo {
   static String G__typename = "Zoo";
 
   /// class members
-  final String id;
-
   final String name;
 
   final List<ZooWidget_cages> cages;
 
+  final String id;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
-  ZooQuery_zoo({required this.id, required this.name, required this.cages});
+  ZooQuery_zoo({required this.name, required this.cages, required this.id});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is ZooQuery_zoo &&
-            id == other.id &&
             name == other.name &&
-            const ListEquality().equals(cages, other.cages));
+            const ListEquality().equals(cages, other.cages) &&
+            id == other.id);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([id, name, cages, ZooQuery_zoo.G__typename]);
+      Object.hashAll([name, cages, id, ZooQuery_zoo.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'id': this.id,
-
       'name': this.name,
 
       'cages': this.cages.map((e) => e.toJson()).toList(),
+
+      'id': this.id,
     };
   }
 
   @experimental
   static ZooQuery_zoo fromJson(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
     final List<ZooWidget_cages> cages$value = (data['cages'] as List<dynamic>)
         .map((e) => ZooWidget_cages.fromJson(e as shalom_core.JsonObject))
         .toList();
-    return ZooQuery_zoo(id: id$value, name: name$value, cages: cages$value);
+    final String id$value = data['id'] as String;
+    return ZooQuery_zoo(name: name$value, cages: cages$value, id: id$value);
   }
 }
 

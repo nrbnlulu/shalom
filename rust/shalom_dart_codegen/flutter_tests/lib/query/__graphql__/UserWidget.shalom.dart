@@ -16,6 +16,9 @@ class UserWidgetResponse {
   /// class members
   final UserWidget_user? user;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
   UserWidgetResponse({this.user});
 
@@ -45,31 +48,34 @@ class UserWidget_user {
   static String G__typename = "User";
 
   /// class members
-  final String name;
-
   final String id;
 
+  final String name;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
-  UserWidget_user({required this.name, required this.id});
+  UserWidget_user({required this.id, required this.name});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UserWidget_user && name == other.name && id == other.id);
+        (other is UserWidget_user && id == other.id && name == other.name);
   }
 
   @override
-  int get hashCode => Object.hashAll([name, id, UserWidget_user.G__typename]);
+  int get hashCode => Object.hashAll([id, name, UserWidget_user.G__typename]);
 
   shalom_core.JsonObject toJson() {
-    return {'name': this.name, 'id': this.id};
+    return {'id': this.id, 'name': this.name};
   }
 
   @experimental
   static UserWidget_user fromJson(shalom_core.JsonObject data) {
-    final String name$value = data['name'] as String;
     final String id$value = data['id'] as String;
-    return UserWidget_user(name: name$value, id: id$value);
+    final String name$value = data['name'] as String;
+    return UserWidget_user(id: id$value, name: name$value);
   }
 }
 

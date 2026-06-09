@@ -49,7 +49,6 @@ class _$ZooQueryState extends State<$ZooQuery> {
   }
 
   void _subscribe() {
-    debugPrint('[widget] ZooQuery._subscribe called, mounted=$mounted');
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client

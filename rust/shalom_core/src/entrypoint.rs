@@ -209,7 +209,11 @@ fn build_fragment_dependencies(
     let mut dependencies: HashMap<String, Vec<String>> = HashMap::new();
     for (name, def) in fragment_defs {
         let used = crate::operation::parse::get_used_fragments_from_fragment(&def.origin);
-        dependencies.insert(name.clone(), used);
+        let local_dependencies = used
+            .into_iter()
+            .filter(|used_name| fragment_defs.contains_key(used_name))
+            .collect();
+        dependencies.insert(name.clone(), local_dependencies);
     }
     trace!("before topological_sort");
     topological_sort(&dependencies).map_err(|e| {
@@ -599,4 +603,77 @@ pub fn collect_executables(
         }
     }
     Ok(ret)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::shalom_config::ShalomConfig;
+
+    fn test_context(schema: &str) -> SharedShalomGlobalContext {
+        let schema_ctx = parse_schema(schema).unwrap();
+        ShalomGlobalContext::new(
+            schema_ctx,
+            ShalomConfig {
+                project_root: std::env::temp_dir(),
+                ..Default::default()
+            },
+            PathBuf::from("schema.graphql"),
+        )
+    }
+
+    #[test]
+    fn register_fragment_can_spread_already_registered_fragment() {
+        let ctx = test_context(
+            r#"
+type Query {
+  user(id: ID!): User
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+}
+"#,
+        );
+        let source_path = PathBuf::from("fragment.dart");
+
+        register_fragments_from_document(
+            &ctx,
+            r#"
+fragment UserEmailFrag on User {
+  id
+  email
+}
+"#,
+            &source_path,
+            false,
+        )
+        .unwrap();
+
+        register_fragments_from_document(
+            &ctx,
+            r#"
+fragment UserDetailFrag on User {
+  id
+  name
+  ...UserEmailFrag
+}
+"#,
+            &source_path,
+            false,
+        )
+        .unwrap();
+
+        let detail = ctx.get_fragment_strict("UserDetailFrag");
+        assert!(detail.typedefs.get_used_fragment("UserEmailFrag").is_some());
+        assert_eq!(
+            detail
+                .get_on_type()
+                .get_all_selections_that_apply_on_this_type_only(&ctx)
+                .len(),
+            3
+        );
+    }
 }

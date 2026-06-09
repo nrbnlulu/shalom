@@ -49,7 +49,6 @@ class _$PetQueryState extends State<$PetQuery> {
   }
 
   void _subscribe() {
-    debugPrint('[widget] PetQuery._subscribe called, mounted=$mounted');
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client

@@ -49,7 +49,6 @@ class _$AnimalQueryState extends State<$AnimalQuery> {
   }
 
   void _subscribe() {
-    debugPrint('[widget] AnimalQuery._subscribe called, mounted=$mounted');
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client
