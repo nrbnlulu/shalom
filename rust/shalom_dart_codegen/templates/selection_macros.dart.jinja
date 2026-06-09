@@ -222,10 +222,8 @@ null
         {% endif %}
     {% endfor %}
 
-    {% if is_multi_type_member %}
     // Getter for typename (public accessor for static __typename field)
     String get $__typename => G__typename;
-    {% endif %}
 
     // keywordargs constructor
     {{ "const" if is_multi_type_member }} {{ typename }}(
