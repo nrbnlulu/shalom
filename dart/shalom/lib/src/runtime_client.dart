@@ -334,7 +334,6 @@ class ShalomRuntimeClient {
         .listenSubscription(handle: _handle, subscriptionId: subId)
         .listen(
           (payload) {
-            debugPrint('[shalom] sub payload: $payload');
             if (controller.isClosed) return;
             try {
               final raw = jsonDecode(payload);

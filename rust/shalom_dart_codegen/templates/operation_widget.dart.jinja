@@ -54,7 +54,6 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
     }
 
     void _subscribe() {
-        debugPrint('[widget] {{ operation_name }}._subscribe called, mounted=$mounted');
         _sub?.cancel();
         final client = ShalomScope.of(context);
         _sub = client

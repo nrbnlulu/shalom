@@ -49,7 +49,6 @@ class _$SearchGifsPageState extends State<$SearchGifsPage> {
   }
 
   void _subscribe() {
-    debugPrint('[widget] SearchGifsPage._subscribe called, mounted=$mounted');
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client

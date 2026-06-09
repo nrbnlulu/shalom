@@ -46,7 +46,6 @@ class _$AlbumsPageState extends State<$AlbumsPage> {
   }
 
   void _subscribe() {
-    debugPrint('[widget] AlbumsPage._subscribe called, mounted=$mounted');
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client
