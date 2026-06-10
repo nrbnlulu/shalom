@@ -3,6 +3,7 @@
 {% set op_variables = context.operation.variables %}
 {% set op_variables_exist = context.operation.variables | length > 0 %}
 {% set typedefs = context.operation.typedefs %}
+{% set is_observe = false %}
 
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
@@ -59,7 +60,7 @@ import '{{ import_path }}';
 
 final class {{ operation_name }}Data {
     {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
-        final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
+        final {{ type_name_for_selection(selection) }} {{ selection.name }};
     {% endfor %}
 
     const {{ operation_name }}Data({
@@ -72,7 +73,7 @@ final class {{ operation_name }}Data {
     static {{ operation_name }}Data fromCache(shalom_core.JsonObject data) {
         {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
             {% set raw_value_symbol = "data['" + selection.name + "']" -%}
-            final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
+            final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional, false) }};
         {% endfor -%}
         return {{ operation_name }}Data(
             {% for selection in context.operation.root_type.selections -%}

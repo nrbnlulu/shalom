@@ -79,8 +79,8 @@ null
 {% endmacro %}
 
 {# Recursive macro for deserializing selection values from JSON #}
-{% macro _deserialize_selection_from_json_macro(value_symbol, selection, is_optional=false) -%}
-    {% set observe_frag = selection_observe_fragment_name(selection) %}
+{% macro _deserialize_selection_from_json_macro(value_symbol, selection, is_optional=false, use_observe=true) -%}
+    {% set observe_frag = selection_observe_fragment_name(selection) if use_observe else none %}
     {% if observe_frag %}
         {# The Rust runtime stores the ObservedRef under "$FragmentName" inside the field object. #}
         {% if selection.kind == "List" %}
@@ -89,7 +89,7 @@ null
             {% if is_optional -%}
                 {{ value_symbol }} == null ? null :
             {% endif -%}
-            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_json_macro("e", inner_selection, inner_selection.is_optional) }}).toList()
+            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_json_macro("e", inner_selection, inner_selection.is_optional, use_observe) }}).toList()
         {% elif is_optional %}
             {{ value_symbol }} == null ? null : {{ observe_frag }}Ref.fromInput(shalom_core.observedRefInputFromJson(({{ value_symbol }} as shalom_core.JsonObject)[r'${{ observe_frag }}'] as shalom_core.JsonObject))
         {% else %}
@@ -138,7 +138,7 @@ null
         {% if is_optional -%}
             {{ value_symbol }} == null ? null :
         {% endif -%}
-            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_json_macro("e", inner_selection, inner_selection.is_optional) }}).toList()
+            ({{ value_symbol }} as List<dynamic>).map((e) => {{ _deserialize_selection_from_json_macro("e", inner_selection, inner_selection.is_optional, use_observe) }}).toList()
     {% else %}
         {% if is_optional %}
             {{ value_symbol }} as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}?

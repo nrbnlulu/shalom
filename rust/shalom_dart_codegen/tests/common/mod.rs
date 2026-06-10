@@ -137,7 +137,7 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
     info!("✔️ Dart tests passed\n {out_std}");
 }
 
-pub fn run_fluttre_tests(usecase: &str) {
+pub fn run_flutter_tests(usecase: &str) {
     match simple_logger::init() {
         Ok(_) => println!("Logger initialized"),
         Err(e) => eprintln!("Error initializing logger: {e}"),

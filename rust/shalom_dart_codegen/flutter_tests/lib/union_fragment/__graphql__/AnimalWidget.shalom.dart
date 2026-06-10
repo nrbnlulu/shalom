@@ -28,28 +28,14 @@ sealed class AnimalWidgetData {
   static AnimalWidgetData fromCache(shalom_core.JsonObject data) {
     final typename = data['__typename'] as String?;
     switch (typename) {
-      case 'Dog':
-        return AnimalWidgetData$Dog.fromJson(data);
       case 'Cat':
         return AnimalWidgetData$Cat.fromJson(data);
+      case 'Dog':
+        return AnimalWidgetData$Dog.fromJson(data);
 
       default:
         return const AnimalWidgetData$Unknown();
     }
-  }
-}
-
-final class AnimalWidgetData$Dog extends AnimalWidgetData {
-  final String breed;
-  final String id;
-
-  const AnimalWidgetData$Dog({required this.breed, required this.id});
-
-  @experimental
-  static AnimalWidgetData$Dog fromJson(shalom_core.JsonObject data) {
-    final String breed$value = data['breed'] as String;
-    final String id$value = data['id'] as String;
-    return AnimalWidgetData$Dog(breed: breed$value, id: id$value);
   }
 }
 
@@ -64,6 +50,20 @@ final class AnimalWidgetData$Cat extends AnimalWidgetData {
     final String color$value = data['color'] as String;
     final String id$value = data['id'] as String;
     return AnimalWidgetData$Cat(color: color$value, id: id$value);
+  }
+}
+
+final class AnimalWidgetData$Dog extends AnimalWidgetData {
+  final String id;
+  final String breed;
+
+  const AnimalWidgetData$Dog({required this.id, required this.breed});
+
+  @experimental
+  static AnimalWidgetData$Dog fromJson(shalom_core.JsonObject data) {
+    final String id$value = data['id'] as String;
+    final String breed$value = data['breed'] as String;
+    return AnimalWidgetData$Dog(id: id$value, breed: breed$value);
   }
 }
 

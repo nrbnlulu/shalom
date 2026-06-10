@@ -7,8 +7,9 @@
 // Re-export all generated types so importers only need this file.
 export '{{ operation_name }}.shalom.dart';
 
+import "{{ context.schema_import_path }}";
 import 'package:shalom/shalom.dart' as shalom_core;
-import 'package:shalom_flutter/shalom_flutter.dart' show OptimisticMutationResponse;
+import 'package:shalom/shalom.dart' show OptimisticMutationResponse;
 import '{{ operation_name }}.shalom.dart';
 
 abstract class ${{ operation_name }} {

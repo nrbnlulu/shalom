@@ -141,22 +141,22 @@ fn test_runtime_metadata_dart() {
 
 #[test]
 fn test_flutter_animal_widget() {
-    common::run_fluttre_tests("animal_widget_test.dart");
+    common::run_flutter_tests("animal_widget_test.dart");
 }
 
 #[test]
 fn test_flutter_user_widget() {
-    common::run_fluttre_tests("user_widget_test.dart");
+    common::run_flutter_tests("user_widget_test.dart");
 }
 
 #[test]
 fn test_flutter_pet_widget() {
-    common::run_fluttre_tests("pet_widget_test.dart");
+    common::run_flutter_tests("pet_widget_test.dart");
 }
 
 #[test]
 fn test_flutter_zoo_widget_nested_fragment() {
-    common::run_fluttre_tests("zoo_widget_test.dart");
+    common::run_flutter_tests("zoo_widget_test.dart");
 }
 
 #[test]

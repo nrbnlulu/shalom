@@ -144,7 +144,7 @@ pub(crate) fn parse_fragment(
 
     // If the fragment root type is an interface, register interface typedefs so the
     // codegen template generates concrete subclasses (e.g. AnimalWidgetData$Dog).
-    if let Some(interface_type) = global_ctx.schema_ctx.get_interface(&type_name.to_string()) {
+    if let Some(interface_type) = global_ctx.schema_ctx.get_interface(type_name.as_ref()) {
         let possible_concretes = global_ctx
             .schema_ctx
             .get_concrete_implementors_of_interface(&interface_type.name);

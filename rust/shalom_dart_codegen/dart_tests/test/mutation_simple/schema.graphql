@@ -5,8 +5,17 @@ type Query {
 type User {
   id: ID!
   name: String!
+  email: String!
+  profileImage: String!
+}
+
+input UpdateProfileInput {
+  id: ID!
+  email: String!
+  profileImage: String!
 }
 
 type Mutation {
   updateUserName(id: ID!, name: String!): User
+  updateUserProfile(input: UpdateProfileInput!): User!
 }

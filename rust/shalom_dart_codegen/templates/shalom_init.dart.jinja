@@ -1,7 +1,11 @@
 // ignore_for_file: unused_import
+{% if not is_pure_dart -%}
 import 'package:flutter/widgets.dart';
+{% endif -%}
 import 'package:shalom/shalom.dart';
+{% if not is_pure_dart -%}
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomInheritedWidget;
+{% endif %}
 
 /// The GraphQL schema SDL inlined at code-generation time.
 ///
@@ -27,6 +31,7 @@ subscription {{ w.class_name }} {{ w.document }}
 ''');
 {% endfor %}}
 
+{% if not is_pure_dart -%}
 /// Generated [ShalomProvider] for this app.
 ///
 /// Place this at the root of your widget tree.  On hot-reload it automatically
@@ -54,3 +59,4 @@ class _ShalomProviderState extends State<ShalomProvider> {
   Widget build(BuildContext context) =>
       ShalomInheritedWidget(client: widget.client, child: widget.child);
 }
+{% endif %}

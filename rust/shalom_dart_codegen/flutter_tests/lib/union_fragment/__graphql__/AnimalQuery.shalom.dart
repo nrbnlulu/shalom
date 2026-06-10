@@ -85,7 +85,6 @@ class AnimalQuery_animal__Cat extends AnimalQuery_animal {
   static String G__typename = "Cat";
 
   /// class members
-
   final String color;
 
   final String id;
@@ -110,9 +109,9 @@ class AnimalQuery_animal__Cat extends AnimalQuery_animal {
 
   shalom_core.JsonObject toJson() {
     return {
-      "__typename": AnimalQuery_animal__Cat.G__typename,
-
       'color': this.color,
+
+      "__typename": AnimalQuery_animal__Cat.G__typename,
 
       'id': this.id,
     };
@@ -130,33 +129,33 @@ class AnimalQuery_animal__Dog extends AnimalQuery_animal {
   static String G__typename = "Dog";
 
   /// class members
-  final String id;
-
   final String breed;
+
+  final String id;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  const AnimalQuery_animal__Dog({required this.id, required this.breed});
+  const AnimalQuery_animal__Dog({required this.breed, required this.id});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AnimalQuery_animal__Dog &&
-            id == other.id &&
-            breed == other.breed);
+            breed == other.breed &&
+            id == other.id);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([id, breed, AnimalQuery_animal__Dog.G__typename]);
+      Object.hashAll([breed, id, AnimalQuery_animal__Dog.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'id': this.id,
-
       'breed': this.breed,
+
+      'id': this.id,
 
       "__typename": AnimalQuery_animal__Dog.G__typename,
     };
@@ -164,9 +163,9 @@ class AnimalQuery_animal__Dog extends AnimalQuery_animal {
 
   @experimental
   static AnimalQuery_animal__Dog fromJson(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String breed$value = data['breed'] as String;
-    return AnimalQuery_animal__Dog(id: id$value, breed: breed$value);
+    final String id$value = data['id'] as String;
+    return AnimalQuery_animal__Dog(breed: breed$value, id: id$value);
   }
 }
 

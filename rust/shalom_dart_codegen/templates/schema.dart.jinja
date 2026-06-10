@@ -2,6 +2,7 @@
 {% include "macros" %}
 {% if schema.context.types.inputs | length > 0 %}
 import 'package:shalom/shalom.dart' as shalom_core;
+import 'package:collection/collection.dart';
 {% endif %}
 {{ custom_scalar_imports_macro(custom_scalar_imports) }}
 
@@ -103,6 +104,30 @@ class {{ typename }} {
     String toString() {
         return toJson().toString();
     }
+
+    @override
+    bool operator ==(Object other) {
+        return identical(this, other) || (other is {{ typename }}
+            {% for name, field in input_object.fields | items %}
+                && {% if field.common.type.kind.kind == "List" %}
+                    const DeepCollectionEquality().equals(this.{{ name }}, other.{{ name }})
+                {% else %}
+                    this.{{ name }} == other.{{ name }}
+                {% endif %}
+            {% endfor %}
+        );
+    }
+
+    @override
+    int get hashCode => Object.hashAll([
+        {% for name, field in input_object.fields | items %}
+            {% if field.common.type.kind.kind == "List" %}
+                const DeepCollectionEquality().hash({{ name }}),
+            {% else %}
+                {{ name }},
+            {% endif %}
+        {% endfor %}
+    ]);
 
   {{ updateWith_macro(input_object.fields, typename) }}
 }

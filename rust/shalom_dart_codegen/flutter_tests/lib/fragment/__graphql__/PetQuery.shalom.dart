@@ -54,34 +54,34 @@ class PetQuery_pet {
   static String G__typename = "Pet";
 
   /// class members
-  final String id;
-
   final String name;
+
+  final String id;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  PetQuery_pet({required this.id, required this.name});
+  PetQuery_pet({required this.name, required this.id});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is PetQuery_pet && id == other.id && name == other.name);
+        (other is PetQuery_pet && name == other.name && id == other.id);
   }
 
   @override
-  int get hashCode => Object.hashAll([id, name, PetQuery_pet.G__typename]);
+  int get hashCode => Object.hashAll([name, id, PetQuery_pet.G__typename]);
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'name': this.name};
+    return {'name': this.name, 'id': this.id};
   }
 
   @experimental
   static PetQuery_pet fromJson(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
-    return PetQuery_pet(id: id$value, name: name$value);
+    final String id$value = data['id'] as String;
+    return PetQuery_pet(name: name$value, id: id$value);
   }
 }
 

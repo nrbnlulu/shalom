@@ -199,7 +199,7 @@ impl OperationContext {
         &self.operation_name
     }
     pub fn op_type(&self) -> OperationType {
-        self.op_ty.clone()
+        self.op_ty
     }
     pub fn is_observe(&self) -> bool {
         self.observe

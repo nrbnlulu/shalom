@@ -833,7 +833,7 @@ fn extract_spreads_from_fragment_sdl(
         Ok(doc) => doc
             .fragments
             .values()
-            .flat_map(|f| get_used_fragments_from_fragment(f))
+            .flat_map(get_used_fragments_from_fragment)
             .collect(),
         Err(_) => vec![],
     }

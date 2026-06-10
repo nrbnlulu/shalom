@@ -827,10 +827,17 @@ impl OperationEnv<'_> {
         template.render(&ctx).unwrap()
     }
 
-    fn render_mutation_widget(&self, operation_ctx: &OperationContext) -> String {
+    fn render_mutation_facade(
+        &self,
+        operation_ctx: &OperationContext,
+        schema_import_path: String,
+    ) -> String {
         let template = self.env.get_template("mutation_widget").unwrap();
         let ctx = context! {
-            context => context!{ operation => operation_ctx }
+            context => context!{
+                operation => operation_ctx,
+                schema_import_path => schema_import_path,
+            }
         };
         template.render(&ctx).unwrap()
     }
@@ -890,6 +897,7 @@ impl FragmentEnv<'_> {
         custom_scalar_imports: HashMap<String, String>,
         schema_path: String,
         multi_type_list_selections: Vec<SharedListSelection>,
+        is_pure_dart: bool,
     ) -> String {
         let template = self.env.get_template("fragment").unwrap();
 
@@ -903,6 +911,7 @@ impl FragmentEnv<'_> {
                 schema_import_path => schema_path,
                 custom_scalar_imports => custom_scalar_imports,
                 multi_type_list_selections => multi_type_list_selections,
+                is_pure_dart => is_pure_dart,
             }
         };
 
@@ -914,6 +923,13 @@ fn create_dir_if_not_exists(path: &Path) {
     if !path.exists() {
         fs::create_dir_all(path).unwrap();
     }
+}
+
+fn project_is_pure_dart(project_root: &Path) -> bool {
+    let Ok(contents) = fs::read_to_string(project_root.join("pubspec.yaml")) else {
+        return true;
+    };
+    !contents.contains("sdk: flutter") && !contents.contains("shalom_flutter")
 }
 
 static END_OF_FILE: &str = "shalom.dart";
@@ -1043,7 +1059,7 @@ fn generate_operations_file(
 
 fn generate_fragment_file(
     ctx: &SharedShalomGlobalContext,
-    _pwd: &Path,
+    pwd: &Path,
     fragment_name: &str,
     fragment_ctx: SharedFragmentContext,
     custom_scalar_imports: HashMap<String, String>,
@@ -1059,6 +1075,7 @@ fn generate_fragment_file(
         custom_scalar_imports,
         get_schema_import_path(&fragment_ctx.file_path, ctx, gen_dir),
         multi_type_list_selections,
+        project_is_pure_dart(pwd),
     );
 
     let fragment_source_dir = fragment_ctx.file_path.parent().ok_or_else(|| {
@@ -1076,6 +1093,7 @@ fn generate_fragment_file(
 pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
     let ctx = shalom_core::entrypoint::parse_directory(&options.pwd, options.strict)?;
     let pwd = &ctx.config.project_root;
+    let is_pure_dart = project_is_pure_dart(pwd);
     let gen_dir_owned = options
         .gen_dir
         .unwrap_or_else(|| GRAPHQL_DIRECTORY.to_string());
@@ -1098,8 +1116,10 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
                 .split(format!(".{}", END_OF_FILE).as_str())
                 .next()
                 .unwrap();
-            // Also keep `.widget.shalom.dart` sidecars for existing operations.
-            let base_name = resolved_name.trim_end_matches(".widget");
+            // Also keep companion sidecars for existing operations.
+            let base_name = resolved_name
+                .trim_end_matches(".widget")
+                .trim_end_matches(".mutation");
             if resolved_name == "schema" {
                 continue;
             }
@@ -1158,7 +1178,13 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
     let widgets = scan_dart_widgets(pwd, gen_dir)?;
     if !widgets.is_empty() {
         info!("Found {} widget annotation(s) in Dart files", widgets.len());
-        generate_v2_widgets(&ctx, &widgets, custom_scalar_imports.clone(), gen_dir)?;
+        generate_v2_widgets(
+            &ctx,
+            &widgets,
+            custom_scalar_imports.clone(),
+            gen_dir,
+            is_pure_dart,
+        )?;
     }
 
     // V2: Generate registration function in gen_dir alongside generated schema files.
@@ -1171,7 +1197,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
         } else {
             get_schema_output_dir(&ctx, gen_dir)
         };
-        generate_v2_registration_file(&schema_output_dir, &widgets, &ctx)?;
+        generate_v2_registration_file(&schema_output_dir, &widgets, &ctx, is_pure_dart)?;
     }
 
     if options.fmt {
@@ -1308,6 +1334,7 @@ fn generate_v2_widgets(
     widgets: &[WidgetAnnotation],
     custom_scalar_imports: HashMap<String, String>,
     gen_dir: &str,
+    is_pure_dart: bool,
 ) -> Result<()> {
     let fragments = widgets
         .iter()
@@ -1331,9 +1358,13 @@ fn generate_v2_widgets(
             WidgetKind::Query => {
                 generate_v2_query_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
             }
-            WidgetKind::Fragment => {
-                generate_v2_fragment_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
-            }
+            WidgetKind::Fragment => generate_v2_fragment_sidecar(
+                ctx,
+                widget,
+                custom_scalar_imports.clone(),
+                gen_dir,
+                is_pure_dart,
+            ),
             WidgetKind::Mutation => {
                 generate_v2_mutation_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
             }
@@ -1417,15 +1448,17 @@ fn generate_v2_fragment_sidecar(
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
     gen_dir: &str,
+    is_pure_dart: bool,
 ) -> Result<()> {
     // Insert @observe immediately before the selection-set opening brace so the
     // directive lands in the correct position per the GraphQL grammar:
     //   fragment Name TypeCondition Directives? SelectionSet
-    let full_sdl = format!(
-        "fragment {} {}",
-        widget.class_name,
+    let sdl = if is_pure_dart {
+        widget.sdl.clone()
+    } else {
         widget.sdl.replacen('{', "@observe {", 1)
-    );
+    };
+    let full_sdl = format!("fragment {} {}", widget.class_name, sdl);
 
     shalom_core::entrypoint::register_fragments_from_document(
         ctx,
@@ -1449,6 +1482,7 @@ fn generate_v2_fragment_sidecar(
         custom_scalar_imports,
         get_schema_import_path(&widget.source_path, ctx, gen_dir),
         multi_type_list_selections,
+        is_pure_dart,
     );
 
     let source_dir = widget
@@ -1504,13 +1538,21 @@ fn generate_v2_mutation_sidecar(
     fs::write(&gen_path, rendered)?;
     info!("Generated V2 mutation sidecar: {}", gen_path.display());
 
-    // $MutationName base class file.
-    let widget_rendered = op_env.render_mutation_widget(&op_ctx);
-    let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
-    fs::write(&widget_path, widget_rendered)?;
+    // $MutationName client command/facade file.
+    let mutation_facade_rendered = op_env.render_mutation_facade(
+        &op_ctx,
+        get_schema_import_path(&widget.source_path, ctx, gen_dir),
+    );
+    let mutation_facade_path =
+        out_dir.join(format!("{}.mutation.{}", widget.class_name, END_OF_FILE));
+    fs::write(&mutation_facade_path, mutation_facade_rendered)?;
+    let stale_widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
+    if stale_widget_path.exists() {
+        fs::remove_file(&stale_widget_path)?;
+    }
     info!(
-        "Generated V2 mutation widget sidecar: {}",
-        widget_path.display()
+        "Generated V2 mutation facade sidecar: {}",
+        mutation_facade_path.display()
     );
 
     Ok(())
@@ -1573,11 +1615,12 @@ fn generate_v2_subscription_sidecar(
 
 /// Generate the registration function next to the schema file (in the schema output dir).
 fn generate_v2_registration_file(
-    schema_output_dir: &PathBuf,
+    schema_output_dir: &Path,
     widgets: &[WidgetAnnotation],
     ctx: &SharedShalomGlobalContext,
+    is_pure_dart: bool,
 ) -> Result<()> {
-    let schema_dir = schema_output_dir.clone();
+    let schema_dir = schema_output_dir.to_path_buf();
     create_dir_if_not_exists(&schema_dir);
     let gen_path = schema_dir.join("shalom_init.shalom.dart");
 
@@ -1596,7 +1639,7 @@ fn generate_v2_registration_file(
                 serde_json::json!({
                     "class_name": w.class_name,
                     // Mutations are fire-and-forget, not reactive — they don't get @observe.
-                    "document": if observe { with_observe(&w.sdl) } else { w.sdl.clone() },
+                    "document": if observe && !is_pure_dart { with_observe(&w.sdl) } else { w.sdl.clone() },
                 })
             })
             .collect()
@@ -1619,6 +1662,7 @@ fn generate_v2_registration_file(
         queries => queries,
         mutations => mutations,
         subscriptions => subscriptions,
+        is_pure_dart => is_pure_dart,
     })?;
 
     fs::write(&gen_path, rendered)?;

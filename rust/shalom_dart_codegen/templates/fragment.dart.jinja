@@ -4,7 +4,7 @@
 {% set typedefs = context.fragment.typedefs %}
 {% set op_variables = None %}
 {% set op_variables_exist = false %}
-{% set is_observe = context.fragment.observe %}
+{% set is_observe = context.fragment.observe and not context.is_pure_dart %}
 
 {% include "selection_macros" %}
 
