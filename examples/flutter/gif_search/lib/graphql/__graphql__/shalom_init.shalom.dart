@@ -63,25 +63,25 @@ type Subscription {
 void registerShalomDefinitions(ShalomRuntimeClient client) {
   client.registerFragment(
     document: r'''
-fragment GifWidget on Gif @observe {
+fragment AlbumWidget on Album @observe {
+  id
+  name
+  tag
+  gifs {
     id
     title
-    url
-    previewUrl
   }
+}
 ''',
   );
   client.registerFragment(
     document: r'''
-fragment AlbumWidget on Album @observe {
-    id
-    name
-    tag
-    gifs {
-      id
-      title
-    }
-  }
+fragment GifWidget on Gif @observe {
+  id
+  title
+  url
+  previewUrl
+}
 ''',
   );
   client.registerOperation(

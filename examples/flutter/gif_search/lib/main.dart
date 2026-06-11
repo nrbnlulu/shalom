@@ -1,5 +1,11 @@
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/material.dart';
+import 'package:media_kit/media_kit.dart' show MediaKit, Player, Media, PlaylistMode;
+import 'package:media_kit_video/media_kit_video.dart' show VideoController, Video, NoVideoControls;
+import 'package:gif_search/__graphql__/AddGifToAlbumMutation.mutation.shalom.dart' show $AddGifToAlbumMutation, AddGifToAlbumMutation_addGifToAlbum_gifs, AddGifToAlbumMutation_addGifToAlbum, AddGifToAlbumMutationData;
+import 'package:gif_search/__graphql__/CreateAlbumMutation.mutation.shalom.dart' show $CreateAlbumMutation;
+import 'package:gif_search/__graphql__/CreateAlbumMutation.shalom.dart' show CreateAlbumMutationData;
+import 'package:gif_search/__graphql__/RemoveGifFromAlbumMutation.mutation.shalom.dart' show $RemoveGifFromAlbumMutation;
 import 'package:shalom/shalom.dart'
     as shalom
     show Some, None, ShalomRuntimeClient;
@@ -11,13 +17,11 @@ import 'package:gif_search/__graphql__/GifWidget.shalom.dart';
 import 'package:gif_search/__graphql__/AlbumWidget.shalom.dart';
 import 'package:gif_search/__graphql__/SearchGifsPage.widget.shalom.dart';
 import 'package:gif_search/__graphql__/AlbumsPage.widget.shalom.dart';
-import 'package:gif_search/__graphql__/CreateAlbumMutation.widget.shalom.dart';
-import 'package:gif_search/__graphql__/AddGifToAlbumMutation.widget.shalom.dart';
-import 'package:gif_search/__graphql__/RemoveGifFromAlbumMutation.widget.shalom.dart';
 import 'package:shalom_flutter/widgets/shalom_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MediaKit.ensureInitialized();
   await shalom.ShalomRuntimeClient.initFlutterRustBridge();
   final client = createShalomClient();
   runApp(ShalomProvider(client: client, child: const MyApp()));
@@ -304,17 +308,18 @@ class _SearchGifsPageState extends State<SearchGifsPage> {
     if (_refs.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-    return ListView.builder(
+    return GridView.builder(
       controller: _scrollController,
+      padding: const EdgeInsets.all(4),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        crossAxisSpacing: 4,
+        mainAxisSpacing: 4,
+      ),
       itemCount: _refs.length + (_isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
         if (index == _refs.length) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: CircularProgressIndicator(),
-            ),
-          );
+          return const Center(child: CircularProgressIndicator());
         }
         return GifWidget(ref: _refs[index]);
       },
@@ -336,34 +341,64 @@ class GifWidget extends $GifWidget {
   const GifWidget({super.key, required super.ref});
 
   @override
-  Widget buildLoading(BuildContext context) =>
-      const ListTile(title: Text('Loading…'));
+  Widget buildLoading(BuildContext context) => const ColoredBox(
+        color: Color(0x22000000),
+        child: Center(child: CircularProgressIndicator()),
+      );
 
   @override
-  Widget buildError(BuildContext context, Object error) =>
-      ListTile(title: Text('Error: $error'));
+  Widget buildError(BuildContext context, Object error) => const ColoredBox(
+        color: Color(0x22000000),
+        child: Center(child: Icon(Icons.broken_image, size: 40)),
+      );
 
   @override
   Widget buildData(BuildContext context, GifWidgetData gif) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      child: ListTile(
-        leading: gif.previewUrl != null
-            ? Image.network(
-                gif.previewUrl!,
-                width: 56,
-                height: 56,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
-              )
-            : const Icon(Icons.gif, size: 40),
-        title: Text(gif.title),
-        subtitle: Text(gif.url, maxLines: 1, overflow: TextOverflow.ellipsis),
-        trailing: IconButton(
-          icon: const Icon(Icons.add_to_photos_outlined),
-          tooltip: 'Add to album',
-          onPressed: () => _showAddToAlbumDialog(context, gif),
-        ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          _GifCell(gif: gif),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Color(0xCC000000), Colors.transparent],
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(8, 16, 4, 4),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      gif.title,
+                      style: const TextStyle(color: Colors.white, fontSize: 11),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    icon: const Icon(
+                      Icons.add_to_photos_outlined,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    tooltip: 'Add to album',
+                    onPressed: () => _showAddToAlbumDialog(context, gif),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -374,6 +409,79 @@ class GifWidget extends $GifWidget {
       builder: (_) => _AddToAlbumDialog(gif: gif),
     );
   }
+}
+
+// ─── GIF cell — handles both animated GIF and video (MP4/WebM) ───────────────
+
+bool _isVideoUrl(String url) {
+  final lower = url.toLowerCase().split('?').first;
+  return lower.endsWith('.mp4') || lower.endsWith('.webm');
+}
+
+class _GifCell extends StatefulWidget {
+  final GifWidgetData gif;
+  const _GifCell({required this.gif});
+
+  @override
+  State<_GifCell> createState() => _GifCellState();
+}
+
+class _GifCellState extends State<_GifCell> {
+  Player? _player;
+  VideoController? _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    if (_isVideoUrl(widget.gif.url)) _initPlayer();
+  }
+
+  Future<void> _initPlayer() async {
+    final player = Player();
+    final controller = VideoController(player);
+    await player.setVolume(0);
+    await player.open(Media(widget.gif.url));
+    await player.setPlaylistMode(PlaylistMode.loop);
+    if (mounted) setState(() { _player = player; _controller = controller; });
+  }
+
+  @override
+  void dispose() {
+    _player?.dispose();
+    super.dispose();
+  }
+
+  Widget _placeholder() {
+    final preview = widget.gif.previewUrl;
+    if (preview != null) {
+      return Image.network(preview, fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const _BrokenGif());
+    }
+    return const _BrokenGif();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isVideoUrl(widget.gif.url)) {
+      final controller = _controller;
+      if (controller == null) return _placeholder();
+      return Video(controller: controller, controls: NoVideoControls);
+    }
+    return Image.network(
+      widget.gif.url,
+      fit: BoxFit.cover,
+      errorBuilder: (_, __, ___) => _placeholder(),
+    );
+  }
+}
+
+class _BrokenGif extends StatelessWidget {
+  const _BrokenGif();
+  @override
+  Widget build(BuildContext context) => const ColoredBox(
+        color: Color(0x22000000),
+        child: Center(child: Icon(Icons.broken_image, size: 36)),
+      );
 }
 
 // ─── Albums Tab ───────────────────────────────────────────────────────────────

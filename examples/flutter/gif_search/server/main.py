@@ -2,29 +2,43 @@
 from __future__ import annotations
 
 import asyncio
-import os
+import json
 import uuid
 from dataclasses import dataclass, field
 from enum import Enum
 from pathlib import Path
 from typing import AsyncGenerator, Optional
+from urllib.parse import quote_plus
 
 import httpx
 import strawberry
 import uvicorn
+from bs4 import BeautifulSoup
 from litestar import Litestar
 from strawberry.litestar import make_graphql_controller
 
 # ----------------------------
-# Config
+# Bing scraper config
 # ----------------------------
 
-KLIPY_API_KEY = os.environ.get("KLIPY_API_KEY")
+_BING_HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+        "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+    ),
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
-# KLIPY is Tenor-compatible enough for this demo.
-# Example:
-# GET https://api.klipy.com/v2/search?key=...&q=office&limit=20&pos=0
-KLIPY_SEARCH_URL = "https://api.klipy.com/v2/search"
+_BING_COOKIES = {
+    "SRCHHPGUSR": "ADLT=OFF",
+}
+
+_EXT_TO_KEY = {
+    ".gif": "gif_url",
+    ".mp4": "mp4_url",
+    ".webm": "webm_url",
+    ".webp": "webp_url",
+}
 
 
 # ----------------------------
@@ -130,101 +144,84 @@ def to_album(model: AlbumModel) -> Album:
 
 
 # ----------------------------
-# Klipy client
+# Bing scraper
 # ----------------------------
 
 
-def parse_klipy_gif(raw: dict) -> Gif:
-    """
-    Parses Tenor/KLIPY v2-style GIF response objects.
-    """
-    gif_id = str(raw.get("id") or uuid.uuid4())
-    title = (
-        raw.get("content_description")
-        or raw.get("title")
-        or raw.get("h1_title")
-        or "Untitled GIF"
+def _media_key(url: str) -> str:
+    lower = url.lower().split("?")[0]
+    for ext, key in _EXT_TO_KEY.items():
+        if lower.endswith(ext):
+            return key
+    return "gif_url"
+
+
+def _extract_gifs_from_html(html: str) -> list[dict]:
+    soup = BeautifulSoup(html, "html.parser")
+    items = []
+    for el in soup.find_all("a", class_="iusc"):
+        raw = el.get("m", "")
+        if not raw:
+            continue
+        try:
+            m = json.loads(raw)
+        except json.JSONDecodeError:
+            continue
+        entry: dict = {}
+        name = m.get("t") or m.get("desc")
+        if name:
+            entry["name"] = name
+        murl = m.get("murl", "")
+        if murl:
+            entry[_media_key(murl)] = murl
+        turl = m.get("turl", "")
+        if turl:
+            entry["preview_url"] = turl
+        if entry:
+            items.append(entry)
+    return items
+
+
+async def search_bing_gifs(query: str, offset: int, limit: int) -> GifSearchPage:
+    q = quote_plus(query)
+    first = offset + 1  # Bing uses 1-based start index
+    url = (
+        f"https://www.bing.com/images/search"
+        f"?q={q}&qft=+filterui:photo-animatedgif&form=IRFLTR&first={first}"
     )
 
-    media_formats = raw.get("media_formats") or {}
+    async with httpx.AsyncClient(
+        headers=_BING_HEADERS,
+        cookies=_BING_COOKIES,
+        timeout=15.0,
+        follow_redirects=True,
+    ) as client:
+        response = await client.get(url)
 
-    gif_format = (
-        media_formats.get("gif")
-        or media_formats.get("mediumgif")
-        or media_formats.get("tinygif")
-        or {}
-    )
+    response.raise_for_status()
+    raw_items = _extract_gifs_from_html(response.text)
 
-    preview_format = (
-        media_formats.get("tinygif")
-        or media_formats.get("nanogif")
-        or media_formats.get("gifpreview")
-        or gif_format
-        or {}
-    )
+    page_items = raw_items[:limit]
+    has_next_page = len(raw_items) > limit
 
-    url = gif_format.get("url") or raw.get("url") or ""
-    preview_url = preview_format.get("url") or url
-
-    return Gif(
-        id=gif_id,
-        title=title,
-        url=url,
-        preview_url=preview_url,
-    )
-
-
-async def search_klipy_gifs(query: str, offset: int, limit: int) -> GifSearchPage:
-    if not KLIPY_API_KEY:
-        raise RuntimeError("Missing KLIPY_API_KEY environment variable")
-
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        response = await client.get(
-            KLIPY_SEARCH_URL,
-            params={
-                # KLIPY/Tenor-compatible API uses `key`, not `api_key`.
-                "key": KLIPY_API_KEY,
-                "q": query,
-                "limit": limit,
-                # KLIPY/Tenor pagination is cursor-ish via `pos`.
-                # For this demo GraphQL API, we expose it as offset-based pagination.
-                "pos": str(offset),
-                "media_filter": "gif,tinygif,nanogif",
-                "contentfilter": "medium",
-            },
-            headers={
-                "accept": "application/json",
-                "user-agent": "strawberry-litestar-gif-demo/1.0",
-            },
+    gifs = []
+    for item in page_items:
+        gif_url = (
+            item.get("gif_url")
+            or item.get("mp4_url")
+            or item.get("webm_url")
+            or item.get("webp_url")
+            or ""
         )
-
-    content_type = response.headers.get("content-type", "")
-    body_preview = response.text[:500]
-
-    if response.status_code >= 400:
-        raise RuntimeError(
-            f"KLIPY request failed: status={response.status_code}, "
-            f"content_type={content_type}, body={body_preview!r}"
-        )
-
-    if "json" not in content_type.lower():
-        raise RuntimeError(
-            f"KLIPY returned non-JSON response: status={response.status_code}, "
-            f"content_type={content_type}, body={body_preview!r}"
-        )
-
-    payload = response.json()
-
-    raw_items = payload.get("results") or payload.get("data") or []
-    items = [parse_klipy_gif(item) for item in raw_items]
-
-    # KLIPY/Tenor v2 usually returns `next`.
-    # Because the API is cursor-ish, this demo cannot know total_count.
-    next_pos = payload.get("next")
-    has_next_page = bool(next_pos) and len(items) > 0
+        gifs.append(Gif(
+            id=str(uuid.uuid4()),
+            title=item.get("name") or "Untitled GIF",
+            url=gif_url,
+            preview_url=item.get("preview_url") or gif_url,
+        ))
 
     return GifSearchPage(
-        items=items,
+        items=gifs,
         offset=offset,
         limit=limit,
         total_count=None,
@@ -249,7 +246,7 @@ class Query:
         limit = max(1, min(limit, 50))
         offset = max(0, offset)
 
-        return await search_klipy_gifs(
+        return await search_bing_gifs(
             query=query,
             offset=offset,
             limit=limit,

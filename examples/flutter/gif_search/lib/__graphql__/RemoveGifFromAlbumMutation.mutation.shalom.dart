@@ -3,9 +3,9 @@
 // Re-export all generated types so importers only need this file.
 export 'RemoveGifFromAlbumMutation.shalom.dart';
 
+import "../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
-import 'package:shalom_flutter/shalom_flutter.dart'
-    show OptimisticMutationResponse;
+import 'package:shalom/shalom.dart' show OptimisticMutationResponse;
 import 'RemoveGifFromAlbumMutation.shalom.dart';
 
 abstract class $RemoveGifFromAlbumMutation {

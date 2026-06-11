@@ -17,6 +17,9 @@ class AlbumsPageResponse {
   /// class members
   final List<AlbumWidgetRef> albums;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
   AlbumsPageResponse({required this.albums});
 
@@ -57,21 +60,24 @@ class AlbumsPage_albums {
   /// class members
   final String tag;
 
-  final List<AlbumWidget_gifs> gifs;
+  final String id;
 
   final String name;
 
-  final String id;
+  final List<AlbumWidget_gifs> gifs;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
 
   // keywordargs constructor
   AlbumsPage_albums({
     required this.tag,
 
-    required this.gifs,
+    required this.id,
 
     required this.name,
 
-    required this.id,
+    required this.gifs,
   });
 
   @override
@@ -79,44 +85,44 @@ class AlbumsPage_albums {
     return identical(this, other) ||
         (other is AlbumsPage_albums &&
             tag == other.tag &&
-            const ListEquality().equals(gifs, other.gifs) &&
+            id == other.id &&
             name == other.name &&
-            id == other.id);
+            const ListEquality().equals(gifs, other.gifs));
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([tag, gifs, name, id, AlbumsPage_albums.G__typename]);
+      Object.hashAll([tag, id, name, gifs, AlbumsPage_albums.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
       'tag': this.tag,
 
-      'gifs': this.gifs.map((e) => e.toJson()).toList(),
+      'id': this.id,
 
       'name': this.name,
 
-      'id': this.id,
+      'gifs': this.gifs.map((e) => e.toJson()).toList(),
     };
   }
 
   @experimental
   static AlbumsPage_albums fromJson(shalom_core.JsonObject data) {
     final String tag$value = data['tag'] as String;
+    final String id$value = data['id'] as String;
+    final String name$value = data['name'] as String;
     final List<AlbumWidget_gifs> gifs$value =
         (data['gifs'] as List<dynamic>)
             .map((e) => AlbumWidget_gifs.fromJson(e as shalom_core.JsonObject))
             .toList();
-    final String name$value = data['name'] as String;
-    final String id$value = data['id'] as String;
     return AlbumsPage_albums(
       tag: tag$value,
 
-      gifs: gifs$value,
+      id: id$value,
 
       name: name$value,
 
-      id: id$value,
+      gifs: gifs$value,
     );
   }
 }
