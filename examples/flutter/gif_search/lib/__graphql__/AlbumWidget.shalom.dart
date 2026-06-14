@@ -25,48 +25,48 @@ class AlbumWidget_gifs {
   static String G__typename = "Gif";
 
   /// class members
-  final String title;
-
   final String id;
+
+  final String title;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  AlbumWidget_gifs({required this.title, required this.id});
+  AlbumWidget_gifs({required this.id, required this.title});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is AlbumWidget_gifs && title == other.title && id == other.id);
+        (other is AlbumWidget_gifs && id == other.id && title == other.title);
   }
 
   @override
-  int get hashCode => Object.hashAll([title, id, AlbumWidget_gifs.G__typename]);
+  int get hashCode => Object.hashAll([id, title, AlbumWidget_gifs.G__typename]);
 
   shalom_core.JsonObject toJson() {
-    return {'title': this.title, 'id': this.id};
+    return {'id': this.id, 'title': this.title};
   }
 
   @experimental
   static AlbumWidget_gifs fromJson(shalom_core.JsonObject data) {
-    final String title$value = data['title'] as String;
     final String id$value = data['id'] as String;
-    return AlbumWidget_gifs(title: title$value, id: id$value);
+    final String title$value = data['title'] as String;
+    return AlbumWidget_gifs(id: id$value, title: title$value);
   }
 }
 
 final class AlbumWidgetData {
   final String id;
-  final List<AlbumWidget_gifs> gifs;
   final String name;
   final String tag;
+  final List<AlbumWidget_gifs> gifs;
 
   const AlbumWidgetData({
     required this.id,
-    required this.gifs,
     required this.name,
     required this.tag,
+    required this.gifs,
   });
 
   @override
@@ -74,30 +74,30 @@ final class AlbumWidgetData {
       identical(this, other) ||
       (other is AlbumWidgetData &&
           id == other.id &&
-          const ListEquality().equals(gifs, other.gifs) &&
           name == other.name &&
-          tag == other.tag);
+          tag == other.tag &&
+          const ListEquality().equals(gifs, other.gifs));
 
   @override
-  int get hashCode => Object.hashAll([id, gifs, name, tag]);
+  int get hashCode => Object.hashAll([id, name, tag, gifs]);
 
   @experimental
   static AlbumWidgetData fromCache(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
+    final String name$value = data['name'] as String;
+    final String tag$value = data['tag'] as String;
     final List<AlbumWidget_gifs> gifs$value =
         (data['gifs'] as List<dynamic>)
             .map((e) => AlbumWidget_gifs.fromJson(e as shalom_core.JsonObject))
             .toList();
-    final String name$value = data['name'] as String;
-    final String tag$value = data['tag'] as String;
     return AlbumWidgetData(
       id: id$value,
-
-      gifs: gifs$value,
 
       name: name$value,
 
       tag: tag$value,
+
+      gifs: gifs$value,
     );
   }
 
@@ -105,11 +105,11 @@ final class AlbumWidgetData {
     return {
       'id': this.id,
 
-      'gifs': this.gifs.map((e) => e.toJson()).toList(),
-
       'name': this.name,
 
       'tag': this.tag,
+
+      'gifs': this.gifs.map((e) => e.toJson()).toList(),
     };
   }
 }

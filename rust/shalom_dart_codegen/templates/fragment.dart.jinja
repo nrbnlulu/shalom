@@ -35,6 +35,14 @@ extension type {{ fragment_name }}Ref.fromInput(shalom_core.ObservedRefInput _in
   shalom_core.JsonObject toJson() => {'observable_id': _inner.observableId, 'anchor': _inner.anchor};
 }
 
+abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.root_type.used_fragments) }} {
+  {% for field in frag_root_shared_selections() if field.name != "__typename" -%}
+    {{ type_name_for_selection_with_observe(field) }} get {{ field.name }};
+  {% endfor %}
+
+  shalom_core.JsonObject toJson();
+}
+
 {% set is_multi_type = typedefs.unions | length > 0 or typedefs.interfaces | length > 0 %}
 
 {% if is_multi_type %}

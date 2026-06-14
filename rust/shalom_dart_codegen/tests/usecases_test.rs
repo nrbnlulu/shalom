@@ -160,6 +160,11 @@ fn test_flutter_zoo_widget_nested_fragment() {
 }
 
 #[test]
+fn test_flutter_shared_fragment_subscription() {
+    common::run_flutter_tests("shared_fragment_subscription_test.dart");
+}
+
+#[test]
 fn test_mutation_simple_dart() {
     run_dart_tests_for_usecase("mutation_simple");
 }

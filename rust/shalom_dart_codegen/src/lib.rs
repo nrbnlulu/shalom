@@ -648,7 +648,7 @@ where
             resolve_to.selections.insert(typename_selection);
         }
 
-        for (_type_cond_name, type_cond_obj) in &other_obj.type_cond_selections {
+        for type_cond_obj in other_obj.type_cond_selections.values() {
             collect_selections_for_concrete(resolve_to, type_cond_obj, global_ctx);
         }
     }

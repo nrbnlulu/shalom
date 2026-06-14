@@ -14,9 +14,9 @@ class AddGifToAlbumMutation_addGifToAlbum {
   static String G__typename = "Album";
 
   /// class members
-  final String id;
-
   final List<AddGifToAlbumMutation_addGifToAlbum_gifs> gifs;
+
+  final String id;
 
   final String name;
 
@@ -25,9 +25,9 @@ class AddGifToAlbumMutation_addGifToAlbum {
 
   // keywordargs constructor
   AddGifToAlbumMutation_addGifToAlbum({
-    required this.id,
-
     required this.gifs,
+
+    required this.id,
 
     required this.name,
   });
@@ -36,16 +36,16 @@ class AddGifToAlbumMutation_addGifToAlbum {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AddGifToAlbumMutation_addGifToAlbum &&
-            id == other.id &&
             const ListEquality().equals(gifs, other.gifs) &&
+            id == other.id &&
             name == other.name);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    id,
-
     gifs,
+
+    id,
 
     name,
 
@@ -54,9 +54,9 @@ class AddGifToAlbumMutation_addGifToAlbum {
 
   shalom_core.JsonObject toJson() {
     return {
-      'id': this.id,
-
       'gifs': this.gifs.map((e) => e.toJson()).toList(),
+
+      'id': this.id,
 
       'name': this.name,
     };
@@ -66,7 +66,6 @@ class AddGifToAlbumMutation_addGifToAlbum {
   static AddGifToAlbumMutation_addGifToAlbum fromJson(
     shalom_core.JsonObject data,
   ) {
-    final String id$value = data['id'] as String;
     final List<AddGifToAlbumMutation_addGifToAlbum_gifs> gifs$value =
         (data['gifs'] as List<dynamic>)
             .map(
@@ -75,11 +74,12 @@ class AddGifToAlbumMutation_addGifToAlbum {
               ),
             )
             .toList();
+    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
     return AddGifToAlbumMutation_addGifToAlbum(
-      id: id$value,
-
       gifs: gifs$value,
+
+      id: id$value,
 
       name: name$value,
     );
@@ -90,51 +90,51 @@ class AddGifToAlbumMutation_addGifToAlbum_gifs {
   static String G__typename = "Gif";
 
   /// class members
-  final String title;
-
   final String id;
+
+  final String title;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
   AddGifToAlbumMutation_addGifToAlbum_gifs({
-    required this.title,
-
     required this.id,
+
+    required this.title,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AddGifToAlbumMutation_addGifToAlbum_gifs &&
-            title == other.title &&
-            id == other.id);
+            id == other.id &&
+            title == other.title);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    title,
-
     id,
+
+    title,
 
     AddGifToAlbumMutation_addGifToAlbum_gifs.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
-    return {'title': this.title, 'id': this.id};
+    return {'id': this.id, 'title': this.title};
   }
 
   @experimental
   static AddGifToAlbumMutation_addGifToAlbum_gifs fromJson(
     shalom_core.JsonObject data,
   ) {
-    final String title$value = data['title'] as String;
     final String id$value = data['id'] as String;
+    final String title$value = data['title'] as String;
     return AddGifToAlbumMutation_addGifToAlbum_gifs(
-      title: title$value,
-
       id: id$value,
+
+      title: title$value,
     );
   }
 }

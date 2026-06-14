@@ -1,8 +1,8 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// Fragment: GifWidget
+// Fragment: DogFrag
 
-import "../graphql/__graphql__/schema.shalom.dart";
+import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
@@ -13,7 +13,7 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
-extension type GifWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
+extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
   shalom_core.JsonObject toJson() => {
     'observable_id': _inner.observableId,
@@ -21,76 +21,66 @@ extension type GifWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   };
 }
 
-final class GifWidgetData {
-  final String title;
-  final String id;
-  final String url;
-  final String? previewUrl;
+abstract class DogFrag {
+  String get breed;
 
-  const GifWidgetData({
-    required this.title,
+  String get name;
+
+  String get id;
+
+  shalom_core.JsonObject toJson();
+}
+
+final class DogFragData {
+  final String id;
+  final String breed;
+  final String name;
+
+  const DogFragData({
     required this.id,
-    required this.url,
-    required this.previewUrl,
+    required this.breed,
+    required this.name,
   });
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is GifWidgetData &&
-          title == other.title &&
+      (other is DogFragData &&
           id == other.id &&
-          url == other.url &&
-          previewUrl == other.previewUrl);
+          breed == other.breed &&
+          name == other.name);
 
   @override
-  int get hashCode => Object.hashAll([title, id, url, previewUrl]);
+  int get hashCode => Object.hashAll([id, breed, name]);
 
   @experimental
-  static GifWidgetData fromCache(shalom_core.JsonObject data) {
-    final String title$value = data['title'] as String;
+  static DogFragData fromCache(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
-    final String url$value = data['url'] as String;
-    final String? previewUrl$value = data['previewUrl'] as String?;
-    return GifWidgetData(
-      title: title$value,
-
-      id: id$value,
-
-      url: url$value,
-
-      previewUrl: previewUrl$value,
-    );
+    final String breed$value = data['breed'] as String;
+    final String name$value = data['name'] as String;
+    return DogFragData(id: id$value, breed: breed$value, name: name$value);
   }
 
   shalom_core.JsonObject toJson() {
-    return {
-      'title': this.title,
-
-      'id': this.id,
-
-      'url': this.url,
-
-      'previewUrl': this.previewUrl,
-    };
+    return {'id': this.id, 'breed': this.breed, 'name': this.name};
   }
 }
 
-abstract class $GifWidget extends StatefulWidget {
-  final GifWidgetRef ref;
-  const $GifWidget({super.key, required this.ref});
+abstract class $DogFrag extends StatefulWidget {
+  final DogFragRef ref;
+  const $DogFrag({super.key, required this.ref});
 
-  Widget buildData(BuildContext context, GifWidgetData data);
+  Widget buildData(BuildContext context, DogFragData data);
   Widget buildLoading(BuildContext context) => const SizedBox.shrink();
   Widget buildError(BuildContext context, Object error) => ErrorWidget(error);
 
   @override
-  State<$GifWidget> createState() => _$GifWidgetState();
+  State<$DogFrag> createState() => _$DogFragState();
 }
 
-class _$GifWidgetState extends State<$GifWidget> {
-  StreamSubscription<GifWidgetData>? _sub;
-  GifWidgetData? _data;
+class _$DogFragState extends State<$DogFrag> {
+  StreamSubscription<DogFragData>? _sub;
+  DogFragData? _data;
   Object? _error;
 
   @override
@@ -109,7 +99,7 @@ class _$GifWidgetState extends State<$GifWidget> {
   }
 
   @override
-  void didUpdateWidget(covariant $GifWidget oldWidget) {
+  void didUpdateWidget(covariant $DogFrag oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.ref != oldWidget.ref) _subscribe();
   }
@@ -118,19 +108,18 @@ class _$GifWidgetState extends State<$GifWidget> {
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client
-        .subscribeToFragment<GifWidgetData>(
+        .subscribeToFragment<DogFragData>(
           ref: widget.ref.toInput,
-          decoder: GifWidgetData.fromCache,
+          decoder: DogFragData.fromCache,
         )
         .listen(
           (data) => setState(() {
             _data = data;
             _error = null;
           }),
-          onError:
-              (e) => setState(() {
-                _error = e;
-              }),
+          onError: (e) => setState(() {
+            _error = e;
+          }),
           onDone: () {
             if (mounted) _subscribe();
           },

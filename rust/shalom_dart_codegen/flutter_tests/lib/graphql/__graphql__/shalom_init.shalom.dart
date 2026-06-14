@@ -16,6 +16,11 @@ const String kSchemaSdl = r'''type Query {
   zoo(id: ID!): Zoo
 }
 
+type Subscription {
+  shelterAnimals: Animal!
+  streetAnimals: Animal!
+}
+
 type Zoo {
   id: ID!
   name: String!
@@ -43,11 +48,13 @@ interface Animal {
 
 type Dog implements Animal {
   id: ID!
+  name: String!
   breed: String!
 }
 
 type Cat implements Animal {
   id: ID!
+  name: String!
   color: String!
 }
 ''';
@@ -87,6 +94,14 @@ fragment ZooWidget on Zoo @observe {
 }
 ''',
   );
+  client.registerFragment(
+    document: r'''
+fragment DogFrag on Dog @observe {
+  name
+  breed
+}
+''',
+  );
   client.registerOperation(
     document: r'''
 query UserWidget ($id: ID!) @observe {
@@ -120,6 +135,24 @@ query AnimalQuery ($id: ID!) @observe {
 query ZooQuery ($id: ID!) @observe {
   zoo(id: $id) {
     ...ZooWidget
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+subscription ShelterSubscription @observe {
+  shelterAnimals {
+    ...DogFrag
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+subscription StreetSubscription @observe {
+  streetAnimals {
+    ...DogFrag
   }
 }
 ''',

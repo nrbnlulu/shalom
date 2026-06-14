@@ -1,7 +1,7 @@
 
 {# Macro to generate implements clause for used fragments #}
 {% macro implements_used_fragments(used_fragments) -%}
-{% if used_fragments | length > 0 and not is_observe %} implements
+{% if used_fragments | length > 0 %} implements
 {% for frag_name in used_fragments %}
     {{ frag_name }}
     {{", " if not loop.last}}

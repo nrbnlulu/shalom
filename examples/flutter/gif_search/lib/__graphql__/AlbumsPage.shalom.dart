@@ -58,71 +58,71 @@ class AlbumsPage_albums {
   static String G__typename = "Album";
 
   /// class members
-  final String tag;
-
   final String id;
+
+  final List<AlbumWidget_gifs> gifs;
 
   final String name;
 
-  final List<AlbumWidget_gifs> gifs;
+  final String tag;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
   AlbumsPage_albums({
-    required this.tag,
-
     required this.id,
+
+    required this.gifs,
 
     required this.name,
 
-    required this.gifs,
+    required this.tag,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AlbumsPage_albums &&
-            tag == other.tag &&
             id == other.id &&
+            const ListEquality().equals(gifs, other.gifs) &&
             name == other.name &&
-            const ListEquality().equals(gifs, other.gifs));
+            tag == other.tag);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([tag, id, name, gifs, AlbumsPage_albums.G__typename]);
+      Object.hashAll([id, gifs, name, tag, AlbumsPage_albums.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'tag': this.tag,
-
       'id': this.id,
+
+      'gifs': this.gifs.map((e) => e.toJson()).toList(),
 
       'name': this.name,
 
-      'gifs': this.gifs.map((e) => e.toJson()).toList(),
+      'tag': this.tag,
     };
   }
 
   @experimental
   static AlbumsPage_albums fromJson(shalom_core.JsonObject data) {
-    final String tag$value = data['tag'] as String;
     final String id$value = data['id'] as String;
-    final String name$value = data['name'] as String;
     final List<AlbumWidget_gifs> gifs$value =
         (data['gifs'] as List<dynamic>)
             .map((e) => AlbumWidget_gifs.fromJson(e as shalom_core.JsonObject))
             .toList();
+    final String name$value = data['name'] as String;
+    final String tag$value = data['tag'] as String;
     return AlbumsPage_albums(
-      tag: tag$value,
-
       id: id$value,
+
+      gifs: gifs$value,
 
       name: name$value,
 
-      gifs: gifs$value,
+      tag: tag$value,
     );
   }
 }

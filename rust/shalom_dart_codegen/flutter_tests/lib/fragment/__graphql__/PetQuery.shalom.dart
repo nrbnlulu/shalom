@@ -50,7 +50,7 @@ class PetQueryResponse {
   }
 }
 
-class PetQuery_pet {
+class PetQuery_pet implements PetWidget {
   static String G__typename = "Pet";
 
   /// class members

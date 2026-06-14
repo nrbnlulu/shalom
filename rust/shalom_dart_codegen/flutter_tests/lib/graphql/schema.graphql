@@ -5,6 +5,11 @@ type Query {
   zoo(id: ID!): Zoo
 }
 
+type Subscription {
+  shelterAnimals: Animal!
+  streetAnimals: Animal!
+}
+
 type Zoo {
   id: ID!
   name: String!
@@ -32,10 +37,12 @@ interface Animal {
 
 type Dog implements Animal {
   id: ID!
+  name: String!
   breed: String!
 }
 
 type Cat implements Animal {
   id: ID!
+  name: String!
   color: String!
 }
