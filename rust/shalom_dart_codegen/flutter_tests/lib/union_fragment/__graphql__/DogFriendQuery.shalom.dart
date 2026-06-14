@@ -7,96 +7,104 @@ import 'package:collection/collection.dart';
 import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
-import 'ZooWidget.shalom.dart';
+import 'DogWithFriendWidget.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class ZooQueryResponse {
+class DogFriendQueryResponse {
   static String G__typename = "query";
 
   /// class members
-  final ZooWidgetRef? zoo;
+  final DogWithFriendWidgetRef? dog;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  ZooQueryResponse({this.zoo});
+  DogFriendQueryResponse({this.dog});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is ZooQueryResponse && zoo == other.zoo);
+        (other is DogFriendQueryResponse && dog == other.dog);
   }
 
   @override
-  int get hashCode => Object.hashAll([zoo, ZooQueryResponse.G__typename]);
+  int get hashCode => Object.hashAll([dog, DogFriendQueryResponse.G__typename]);
 
   shalom_core.JsonObject toJson() {
-    return {'zoo': this.zoo?.toJson()};
+    return {'dog': this.dog?.toJson()};
   }
 
   @experimental
-  static ZooQueryResponse fromJson(shalom_core.JsonObject data) {
-    final ZooWidgetRef? zoo$value = data['zoo'] == null
+  static DogFriendQueryResponse fromJson(shalom_core.JsonObject data) {
+    final DogWithFriendWidgetRef? dog$value = data['dog'] == null
         ? null
-        : ZooWidgetRef.fromInput(
+        : DogWithFriendWidgetRef.fromInput(
             shalom_core.observedRefInputFromJson(
-              (data['zoo'] as shalom_core.JsonObject)[r'$ZooWidget']
+              (data['dog'] as shalom_core.JsonObject)[r'$DogWithFriendWidget']
                   as shalom_core.JsonObject,
             ),
           );
-    return ZooQueryResponse(zoo: zoo$value);
+    return DogFriendQueryResponse(dog: dog$value);
   }
 }
 
-class ZooQuery_zoo implements ZooWidget {
-  static String G__typename = "Zoo";
+class DogFriendQuery_dog implements DogWithFriendWidget {
+  static String G__typename = "Dog";
 
   /// class members
-  final String name;
-
   final String id;
 
-  final List<ZooWidget_cages> cages;
+  final DogWithFriendWidget_friend? friend;
+
+  final String breed;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  ZooQuery_zoo({required this.name, required this.id, required this.cages});
+  DogFriendQuery_dog({required this.id, this.friend, required this.breed});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is ZooQuery_zoo &&
-            name == other.name &&
+        (other is DogFriendQuery_dog &&
             id == other.id &&
-            const ListEquality().equals(cages, other.cages));
+            friend == other.friend &&
+            breed == other.breed);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([name, id, cages, ZooQuery_zoo.G__typename]);
+      Object.hashAll([id, friend, breed, DogFriendQuery_dog.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'name': this.name,
-
       'id': this.id,
 
-      'cages': this.cages.map((e) => e.toJson()).toList(),
+      'friend': this.friend?.toJson(),
+
+      'breed': this.breed,
     };
   }
 
   @experimental
-  static ZooQuery_zoo fromJson(shalom_core.JsonObject data) {
-    final String name$value = data['name'] as String;
+  static DogFriendQuery_dog fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
-    final List<ZooWidget_cages> cages$value = (data['cages'] as List<dynamic>)
-        .map((e) => ZooWidget_cages.fromJson(e as shalom_core.JsonObject))
-        .toList();
-    return ZooQuery_zoo(name: name$value, id: id$value, cages: cages$value);
+    final DogWithFriendWidget_friend? friend$value = data['friend'] == null
+        ? null
+        : DogWithFriendWidget_friend.fromJson(
+            data['friend'] as shalom_core.JsonObject,
+          );
+    final String breed$value = data['breed'] as String;
+    return DogFriendQuery_dog(
+      id: id$value,
+
+      friend: friend$value,
+
+      breed: breed$value,
+    );
   }
 }
 
@@ -116,33 +124,33 @@ class ZooQuery_zoo implements ZooWidget {
 
 // ------------ V2 WIDGET API -------------
 
-final class ZooQueryData {
-  final ZooWidgetRef? zoo;
+final class DogFriendQueryData {
+  final DogWithFriendWidgetRef? dog;
 
-  const ZooQueryData({required this.zoo});
+  const DogFriendQueryData({required this.dog});
 
   @experimental
-  static ZooQueryData fromCache(shalom_core.JsonObject data) {
-    final ZooWidgetRef? zoo$value = data['zoo'] == null
+  static DogFriendQueryData fromCache(shalom_core.JsonObject data) {
+    final DogWithFriendWidgetRef? dog$value = data['dog'] == null
         ? null
-        : ZooWidgetRef.fromInput(
+        : DogWithFriendWidgetRef.fromInput(
             shalom_core.observedRefInputFromJson(
-              (data['zoo'] as shalom_core.JsonObject)[r'$ZooWidget']
+              (data['dog'] as shalom_core.JsonObject)[r'$DogWithFriendWidget']
                   as shalom_core.JsonObject,
             ),
           );
-    return ZooQueryData(zoo: zoo$value);
+    return DogFriendQueryData(dog: dog$value);
   }
 
   shalom_core.JsonObject toJson() {
-    return {'zoo': this.zoo?.toJson()};
+    return {'dog': this.dog?.toJson()};
   }
 }
 
-final class ZooQueryVariables {
+final class DogFriendQueryVariables {
   final String id;
 
-  const ZooQueryVariables({required this.id});
+  const DogFriendQueryVariables({required this.id});
 
   shalom_core.JsonObject toJson() {
     shalom_core.JsonObject data = {};
@@ -155,7 +163,7 @@ final class ZooQueryVariables {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is ZooQueryVariables && this.id == other.id);
+        (other is DogFriendQueryVariables && this.id == other.id);
   }
 
   @override

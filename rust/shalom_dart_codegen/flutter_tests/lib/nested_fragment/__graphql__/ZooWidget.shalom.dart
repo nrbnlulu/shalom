@@ -22,11 +22,11 @@ extension type ZooWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
 }
 
 abstract class ZooWidget {
+  List<ZooWidget_cages> get cages;
+
   String get name;
 
   String get id;
-
-  List<ZooWidget_cages> get cages;
 
   shalom_core.JsonObject toJson();
 }

@@ -22,36 +22,36 @@ extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
 }
 
 abstract class PetWidget {
-  String get id;
-
   String get name;
+
+  String get id;
 
   shalom_core.JsonObject toJson();
 }
 
 final class PetWidgetData {
-  final String id;
   final String name;
+  final String id;
 
-  const PetWidgetData({required this.id, required this.name});
+  const PetWidgetData({required this.name, required this.id});
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is PetWidgetData && id == other.id && name == other.name);
+      (other is PetWidgetData && name == other.name && id == other.id);
 
   @override
-  int get hashCode => Object.hashAll([id, name]);
+  int get hashCode => Object.hashAll([name, id]);
 
   @experimental
   static PetWidgetData fromCache(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
-    return PetWidgetData(id: id$value, name: name$value);
+    final String id$value = data['id'] as String;
+    return PetWidgetData(name: name$value, id: id$value);
   }
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'name': this.name};
+    return {'name': this.name, 'id': this.id};
   }
 }
 

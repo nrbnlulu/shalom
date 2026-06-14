@@ -1,5 +1,6 @@
 ### Preface
 This repo contains the code for "Shalom" a graphql codegen library for dart and flutter.
+this file is not up to date with the v2 version of the codebase.
 
 ### Architecture
 graphql parsing and codegen are implemented in rust under

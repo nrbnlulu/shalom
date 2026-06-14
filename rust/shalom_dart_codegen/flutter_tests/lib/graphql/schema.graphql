@@ -3,6 +3,7 @@ type Query {
   pet(id: ID!): Pet
   animal(id: ID!): Animal
   zoo(id: ID!): Zoo
+  dog(id: ID!): Dog
 }
 
 type Subscription {
@@ -35,10 +36,17 @@ interface Animal {
   id: ID!
 }
 
+type Location {
+  lat: Float!
+  lng: Float!
+}
+
 type Dog implements Animal {
   id: ID!
   name: String!
   breed: String!
+  location: Location
+  friend: Animal
 }
 
 type Cat implements Animal {
