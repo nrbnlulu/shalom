@@ -42,6 +42,11 @@ fn test_cross_dir_fragments_dart() {
 }
 
 #[test]
+fn test_declarative_raw_fragments_dart() {
+    run_dart_tests_for_usecase("declarative_raw_fragments");
+}
+
+#[test]
 fn test_fragment_with_nested_object_selection_dart() {
     run_dart_tests_for_usecase("fragment_with_nested_object_selection");
 }

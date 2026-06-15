@@ -7,15 +7,19 @@ import 'package:shalom/shalom.dart';
 class ShalomInheritedWidget extends InheritedWidget {
   final ShalomRuntimeClient client;
 
+  /// Bumped post-frame so dependent widgets retry subscriptions after the Rust transport initializes.
+  final int generation;
+
   const ShalomInheritedWidget({
     super.key,
     required this.client,
+    this.generation = 0,
     required super.child,
   });
 
   @override
   bool updateShouldNotify(ShalomInheritedWidget oldWidget) =>
-      client != oldWidget.client;
+      client != oldWidget.client || generation != oldWidget.generation;
 }
 
 /// Convenience accessor for [ShalomInheritedWidget].

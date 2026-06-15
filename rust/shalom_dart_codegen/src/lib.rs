@@ -1631,6 +1631,106 @@ fn generate_v2_registration_file(
 
     let with_observe = |sdl: &str| sdl.replacen('{', "@observe {", 1);
 
+    fn push_fragment_dependencies(
+        fragment: SharedFragmentContext,
+        widget_fragment_names: &HashSet<String>,
+        visited: &mut HashSet<String>,
+        out: &mut Vec<serde_json::Value>,
+    ) {
+        if !visited.insert(fragment.name.clone()) {
+            return;
+        }
+
+        let mut dependencies = fragment
+            .typedefs
+            .get_used_fragments()
+            .values()
+            .cloned()
+            .collect::<Vec<_>>();
+        dependencies.sort_by(|a, b| a.name.cmp(&b.name));
+
+        for dependency in dependencies {
+            push_fragment_dependencies(dependency, widget_fragment_names, visited, out);
+        }
+
+        if !widget_fragment_names.contains(&fragment.name) {
+            out.push(serde_json::json!({
+                "document": fragment.fragment_raw.clone(),
+            }));
+        }
+    }
+
+    let mut raw_fragment_entries = Vec::new();
+    let mut visited_raw_fragments = HashSet::new();
+    let widget_fragment_names = widgets
+        .iter()
+        .filter(|w| w.widget_kind == WidgetKind::Fragment)
+        .map(|w| w.class_name.clone())
+        .collect::<HashSet<_>>();
+
+    for widget in widgets {
+        match widget.widget_kind {
+            WidgetKind::Fragment => {
+                if let Some(fragment) = ctx.get_fragment(&widget.class_name) {
+                    push_fragment_dependencies(
+                        fragment,
+                        &widget_fragment_names,
+                        &mut visited_raw_fragments,
+                        &mut raw_fragment_entries,
+                    );
+                }
+            }
+            WidgetKind::Query | WidgetKind::Mutation | WidgetKind::Subscription => {
+                let document = match widget.widget_kind {
+                    WidgetKind::Query => format!(
+                        "query {} {}",
+                        widget.class_name,
+                        if is_pure_dart {
+                            widget.sdl.clone()
+                        } else {
+                            with_observe(&widget.sdl)
+                        }
+                    ),
+                    WidgetKind::Mutation => {
+                        format!("mutation {} {}", widget.class_name, widget.sdl)
+                    }
+                    WidgetKind::Subscription => format!(
+                        "subscription {} {}",
+                        widget.class_name,
+                        if is_pure_dart {
+                            widget.sdl.clone()
+                        } else {
+                            with_observe(&widget.sdl)
+                        }
+                    ),
+                    WidgetKind::Fragment => unreachable!(),
+                };
+                let operations =
+                    shalom_core::entrypoint::parse_document(ctx, &document, &widget.source_path)?;
+                let mut operation_contexts = operations.into_values().collect::<Vec<_>>();
+                operation_contexts.sort_by(|a, b| a.name().cmp(b.name()));
+
+                for operation in operation_contexts {
+                    let mut fragments = operation
+                        .typedefs
+                        .get_used_fragments()
+                        .values()
+                        .cloned()
+                        .collect::<Vec<_>>();
+                    fragments.sort_by(|a, b| a.name.cmp(&b.name));
+                    for fragment in fragments {
+                        push_fragment_dependencies(
+                            fragment,
+                            &widget_fragment_names,
+                            &mut visited_raw_fragments,
+                            &mut raw_fragment_entries,
+                        );
+                    }
+                }
+            }
+        }
+    }
+
     let make_entries = |kind: WidgetKind, observe: bool| -> Vec<serde_json::Value> {
         widgets
             .iter()
@@ -1658,6 +1758,7 @@ fn generate_v2_registration_file(
     let template = env.get_template("shalom_init")?;
     let rendered = template.render(context! {
         schema_sdl => schema_sdl,
+        raw_fragments => raw_fragment_entries,
         fragments => fragments,
         queries => queries,
         mutations => mutations,

@@ -17,6 +17,10 @@ const String kSchemaSdl = r'''{{ schema_sdl }}''';
 
 /// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
 void registerShalomDefinitions(ShalomRuntimeClient client) {
+{% for w in raw_fragments %}  client.registerFragment(document: r'''
+{{ w.document }}
+''');
+{% endfor %}
 {% for w in fragments %}  client.registerFragment(document: r'''
 fragment {{ w.class_name }} {{ w.document }}
 ''');
