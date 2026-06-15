@@ -1,6 +1,5 @@
 ### Preface
 This repo contains the code for "Shalom" a graphql codegen library for dart and flutter.
-this file is not up to date with the v2 version of the codebase.
 
 ### Architecture
 graphql parsing and codegen are implemented in rust under
@@ -28,6 +27,7 @@ Every test case should include the following:
 - `xOptional`
 - 'xCacheNormalization' - ensures that the certain use case is working with the data normalizer, meaning that if the same node is fetched twice it would get updated in the cache.
 - `equals(==)`
+- 
 ` `toJson`
 where `x` is the kind of use case you are testing, for example `objectRequired`, `objectOptional`, `scalarRequired`, `scalarOptional`, etc.
  for a reference of a complete testcase see `rust/shalom_dart_codegen/dart_tests/test/object_selection/test.dart`

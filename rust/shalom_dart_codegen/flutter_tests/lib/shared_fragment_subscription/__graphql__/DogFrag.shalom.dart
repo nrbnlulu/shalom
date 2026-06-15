@@ -24,45 +24,45 @@ extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
 abstract class DogFrag {
   String get breed;
 
-  String get id;
-
   String get name;
+
+  String get id;
 
   shalom_core.JsonObject toJson();
 }
 
 final class DogFragData {
-  final String name;
   final String id;
   final String breed;
+  final String name;
 
   const DogFragData({
-    required this.name,
     required this.id,
     required this.breed,
+    required this.name,
   });
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is DogFragData &&
-          name == other.name &&
           id == other.id &&
-          breed == other.breed);
+          breed == other.breed &&
+          name == other.name);
 
   @override
-  int get hashCode => Object.hashAll([name, id, breed]);
+  int get hashCode => Object.hashAll([id, breed, name]);
 
   @experimental
   static DogFragData fromCache(shalom_core.JsonObject data) {
-    final String name$value = data['name'] as String;
     final String id$value = data['id'] as String;
     final String breed$value = data['breed'] as String;
-    return DogFragData(name: name$value, id: id$value, breed: breed$value);
+    final String name$value = data['name'] as String;
+    return DogFragData(id: id$value, breed: breed$value, name: name$value);
   }
 
   shalom_core.JsonObject toJson() {
-    return {'name': this.name, 'id': this.id, 'breed': this.breed};
+    return {'id': this.id, 'breed': this.breed, 'name': this.name};
   }
 }
 

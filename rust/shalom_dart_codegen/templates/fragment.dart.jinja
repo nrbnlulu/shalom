@@ -43,125 +43,7 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
   shalom_core.JsonObject toJson();
 }
 
-{# Always emit nested object class definitions before the data class, regardless of multi-type #}
-{% for name, obj in typedefs.objects | items %}
-{{ selection_object_definition(obj) }}
-{% endfor %}
-
-{# Inline sealed classes for nested union field selections (not the root type) #}
-{% for union_full_name, union_selection in typedefs.unions | items if union_full_name != fragment_name %}
-  {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
-sealed class {{ union_full_name }} {
-  const {{ union_full_name }}();
-  shalom_core.JsonObject toJson();
-  @experimental
-  static {{ union_full_name }} fromJson(shalom_core.JsonObject data) {
-    final typename = data['__typename'] as String;
-    switch(typename) {
-      {% for concrete in concretes -%}
-      case '{{ concrete.schema_typename }}':
-        return {{ union_full_name }}${{ concrete.schema_typename }}.fromJson(data);
-      {% endfor %}
-      default:
-        throw Exception("Unknown typename $typename");
-    }
-  }
-}
-  {% for concrete in concretes -%}
-final class {{ union_full_name }}${{ concrete.schema_typename }} extends {{ union_full_name }} {
-  {% for selection in concrete.selections if selection.name != "__typename" -%}
-    final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
-  {% endfor %}
-  const {{ union_full_name }}${{ concrete.schema_typename }}({
-    {% for selection in concrete.selections if selection.name != "__typename" -%}
-      required this.{{ selection.name }},
-    {% endfor %}
-  });
-  @override
-  shalom_core.JsonObject toJson() {
-    return {
-      '__typename': '{{ concrete.schema_typename }}',
-      {% for selection in concrete.selections if selection.name != "__typename" %}
-        '{{ selection.name }}': {{ _serialize_selection_value_macro("this." + selection.name, selection, selection.is_optional) }},
-      {% endfor %}
-    };
-  }
-  @experimental
-  static {{ union_full_name }}${{ concrete.schema_typename }} fromJson(shalom_core.JsonObject data) {
-    {% for selection in concrete.selections if selection.name != "__typename" -%}
-      {% set raw_value_symbol = "data['" + selection.name + "']" -%}
-      final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
-    {% endfor -%}
-    return {{ union_full_name }}${{ concrete.schema_typename }}(
-      {% for selection in concrete.selections -%}
-        {% if selection.name != "__typename" %}
-          {{selection.name}}: {{selection.name}}$value,
-        {% endif %}
-      {% endfor -%}
-    );
-  }
-}
-  {% endfor %}
-{% endfor %}
-
-{# Inline sealed classes for nested interface field selections (not the root type) #}
-{% for iface_path_name, iface_selection in typedefs.interfaces | items if iface_path_name != fragment_name %}
-  {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
-sealed class {{ iface_path_name }} {
-  const {{ iface_path_name }}();
-  shalom_core.JsonObject toJson();
-  @experimental
-  static {{ iface_path_name }} fromJson(shalom_core.JsonObject data) {
-    final typename = data['__typename'] as String;
-    switch(typename) {
-      {% for concrete in concretes -%}
-      case '{{ concrete.schema_typename }}':
-        return {{ iface_path_name }}${{ concrete.schema_typename }}.fromJson(data);
-      {% endfor %}
-      default:
-        throw Exception("Unknown typename $typename");
-    }
-  }
-}
-  {% for concrete in concretes -%}
-final class {{ iface_path_name }}${{ concrete.schema_typename }} extends {{ iface_path_name }} {
-  {% for selection in concrete.selections if selection.name != "__typename" -%}
-    final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
-  {% endfor %}
-  const {{ iface_path_name }}${{ concrete.schema_typename }}({
-    {% for selection in concrete.selections if selection.name != "__typename" -%}
-      required this.{{ selection.name }},
-    {% endfor %}
-  });
-  @override
-  shalom_core.JsonObject toJson() {
-    return {
-      '__typename': '{{ concrete.schema_typename }}',
-      {% for selection in concrete.selections if selection.name != "__typename" %}
-        '{{ selection.name }}': {{ _serialize_selection_value_macro("this." + selection.name, selection, selection.is_optional) }},
-      {% endfor %}
-    };
-  }
-  @experimental
-  static {{ iface_path_name }}${{ concrete.schema_typename }} fromJson(shalom_core.JsonObject data) {
-    {% for selection in concrete.selections if selection.name != "__typename" -%}
-      {% set raw_value_symbol = "data['" + selection.name + "']" -%}
-      final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
-    {% endfor -%}
-    return {{ iface_path_name }}${{ concrete.schema_typename }}(
-      {% for selection in concrete.selections -%}
-        {% if selection.name != "__typename" %}
-          {{selection.name}}: {{selection.name}}$value,
-        {% endif %}
-      {% endfor -%}
-    );
-  }
-}
-  {% endfor %}
-{% endfor %}
-
-{# is_multi_type is true only when the fragment root type itself is an interface or union #}
-{% set is_multi_type = fragment_name in typedefs.unions or fragment_name in typedefs.interfaces %}
+{% set is_multi_type = typedefs.unions | length > 0 or typedefs.interfaces | length > 0 %}
 
 {% if is_multi_type %}
 {# Interface/union fragment: sealed class with $TypeName subclasses + $Unknown #}
@@ -172,14 +54,14 @@ sealed class {{ fragment_name }}Data {
   static {{ fragment_name }}Data fromCache(shalom_core.JsonObject data) {
     final typename = data['__typename'] as String?;
     switch(typename) {
-      {% for union_full_name, union_selection in typedefs.unions | items if union_full_name == fragment_name %}
+      {% for union_full_name, union_selection in typedefs.unions | items %}
         {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
         {% for concrete in concretes -%}
       case '{{ concrete.schema_typename }}':
         return {{ fragment_name }}Data${{ concrete.schema_typename }}.fromJson(data);
         {% endfor %}
       {% endfor %}
-      {% for iface_path_name, iface_selection in typedefs.interfaces | items if iface_path_name == fragment_name %}
+      {% for iface_path_name, iface_selection in typedefs.interfaces | items %}
         {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
         {% for concrete in concretes -%}
       case '{{ concrete.schema_typename }}':
@@ -192,7 +74,7 @@ sealed class {{ fragment_name }}Data {
   }
 }
 
-{% for union_full_name, union_selection in typedefs.unions | items if union_full_name == fragment_name %}
+{% for union_full_name, union_selection in typedefs.unions | items %}
   {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
   {% for concrete in concretes -%}
 final class {{ fragment_name }}Data${{ concrete.schema_typename }} extends {{ fragment_name }}Data {
@@ -224,7 +106,7 @@ final class {{ fragment_name }}Data${{ concrete.schema_typename }} extends {{ fr
 
   {% endfor %}
 {% endfor %}
-{% for iface_path_name, iface_selection in typedefs.interfaces | items if iface_path_name == fragment_name %}
+{% for iface_path_name, iface_selection in typedefs.interfaces | items %}
   {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
   {% for concrete in concretes -%}
 final class {{ fragment_name }}Data${{ concrete.schema_typename }} extends {{ fragment_name }}Data {
@@ -263,6 +145,10 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 
 {% else %}
 {# Concrete object fragment: simple final class, no sealed/dispatch needed #}
+{% for name, obj in typedefs.objects | items %}
+{{ selection_object_definition(obj) }}
+{% endfor %}
+
 final class {{ fragment_name }}Data {
   {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
     final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};

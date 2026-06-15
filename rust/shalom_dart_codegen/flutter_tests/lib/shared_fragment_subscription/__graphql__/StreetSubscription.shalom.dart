@@ -70,55 +70,14 @@ sealed class StreetSubscription_streetAnimals {
   ) {
     final typename = data['__typename'] as String;
     switch (typename) {
-      case 'Cat':
-        return StreetSubscription_streetAnimals__Cat.fromJson(data);
       case 'Dog':
         return StreetSubscription_streetAnimals__Dog.fromJson(data);
+      case 'Cat':
+        return StreetSubscription_streetAnimals__Cat.fromJson(data);
 
       default:
         throw Exception("Unknown typename $typename");
     }
-  }
-}
-
-class StreetSubscription_streetAnimals__Cat
-    extends StreetSubscription_streetAnimals {
-  static String G__typename = "Cat";
-
-  /// class members
-
-  final String id;
-
-  // Getter for typename (public accessor for static __typename field)
-  String get $__typename => G__typename;
-
-  // keywordargs constructor
-  const StreetSubscription_streetAnimals__Cat({required this.id});
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is StreetSubscription_streetAnimals__Cat && id == other.id);
-  }
-
-  @override
-  int get hashCode =>
-      Object.hashAll([id, StreetSubscription_streetAnimals__Cat.G__typename]);
-
-  shalom_core.JsonObject toJson() {
-    return {
-      "__typename": StreetSubscription_streetAnimals__Cat.G__typename,
-
-      'id': this.id,
-    };
-  }
-
-  @experimental
-  static StreetSubscription_streetAnimals__Cat fromJson(
-    shalom_core.JsonObject data,
-  ) {
-    final String id$value = data['id'] as String;
-    return StreetSubscription_streetAnimals__Cat(id: id$value);
   }
 }
 
@@ -170,11 +129,11 @@ class StreetSubscription_streetAnimals__Dog
     return {
       'id': this.id,
 
-      "__typename": StreetSubscription_streetAnimals__Dog.G__typename,
-
       'breed': this.breed,
 
       'name': this.name,
+
+      "__typename": StreetSubscription_streetAnimals__Dog.G__typename,
     };
   }
 
@@ -192,6 +151,47 @@ class StreetSubscription_streetAnimals__Dog
 
       name: name$value,
     );
+  }
+}
+
+class StreetSubscription_streetAnimals__Cat
+    extends StreetSubscription_streetAnimals {
+  static String G__typename = "Cat";
+
+  /// class members
+
+  final String id;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
+  // keywordargs constructor
+  const StreetSubscription_streetAnimals__Cat({required this.id});
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is StreetSubscription_streetAnimals__Cat && id == other.id);
+  }
+
+  @override
+  int get hashCode =>
+      Object.hashAll([id, StreetSubscription_streetAnimals__Cat.G__typename]);
+
+  shalom_core.JsonObject toJson() {
+    return {
+      "__typename": StreetSubscription_streetAnimals__Cat.G__typename,
+
+      'id': this.id,
+    };
+  }
+
+  @experimental
+  static StreetSubscription_streetAnimals__Cat fromJson(
+    shalom_core.JsonObject data,
+  ) {
+    final String id$value = data['id'] as String;
+    return StreetSubscription_streetAnimals__Cat(id: id$value);
   }
 }
 
