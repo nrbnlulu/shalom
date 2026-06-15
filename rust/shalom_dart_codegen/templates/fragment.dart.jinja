@@ -50,7 +50,6 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
 sealed class {{ fragment_name }}Data {
   const {{ fragment_name }}Data();
 
-  @experimental
   static {{ fragment_name }}Data fromCache(shalom_core.JsonObject data) {
     final typename = data['__typename'] as String?;
     switch(typename) {
@@ -88,7 +87,6 @@ final class {{ fragment_name }}Data${{ concrete.schema_typename }} extends {{ fr
     {% endfor %}
   });
 
-  @experimental
   static {{ fragment_name }}Data${{ concrete.schema_typename }} fromJson(shalom_core.JsonObject data) {
     {% for selection in concrete.selections if selection.name != "__typename" -%}
       {% set raw_value_symbol = "data['" + selection.name + "']" -%}
