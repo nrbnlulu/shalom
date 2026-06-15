@@ -14,7 +14,6 @@ import "{{ context.schema_import_path }}";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 {% for import_path in generate_fragment_imports(context.operation.file_path) -%}
@@ -88,8 +87,7 @@ final class {{ operation_name }}Data {
             required this.{{ selection.name }},
         {% endfor %}
     });
-
-    @experimental
+    
     static {{ operation_name }}Data fromCache(shalom_core.JsonObject data) {
         {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
             {% set raw_value_symbol = "data['" + selection.name + "']" -%}

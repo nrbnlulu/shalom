@@ -4,7 +4,6 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 import 'DogFrag.shalom.dart';
@@ -38,7 +37,6 @@ class StreetSubscriptionResponse {
     return {'streetAnimals': this.streetAnimals.toJson()};
   }
 
-  @experimental
   static StreetSubscriptionResponse fromJson(shalom_core.JsonObject data) {
     final StreetSubscription_streetAnimals streetAnimals$value =
         StreetSubscription_streetAnimals.fromJson(
@@ -64,7 +62,6 @@ sealed class StreetSubscription_streetAnimals {
 
   shalom_core.JsonObject toJson();
 
-  @experimental
   static StreetSubscription_streetAnimals fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -131,13 +128,12 @@ class StreetSubscription_streetAnimals__Dog
 
       'breed': this.breed,
 
-      'name': this.name,
-
       "__typename": StreetSubscription_streetAnimals__Dog.G__typename,
+
+      'name': this.name,
     };
   }
 
-  @experimental
   static StreetSubscription_streetAnimals__Dog fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -159,7 +155,6 @@ class StreetSubscription_streetAnimals__Cat
   static String G__typename = "Cat";
 
   /// class members
-
   final String id;
 
   // Getter for typename (public accessor for static __typename field)
@@ -180,13 +175,12 @@ class StreetSubscription_streetAnimals__Cat
 
   shalom_core.JsonObject toJson() {
     return {
-      "__typename": StreetSubscription_streetAnimals__Cat.G__typename,
-
       'id': this.id,
+
+      "__typename": StreetSubscription_streetAnimals__Cat.G__typename,
     };
   }
 
-  @experimental
   static StreetSubscription_streetAnimals__Cat fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -208,7 +202,6 @@ final class StreetSubscriptionData {
 
   const StreetSubscriptionData({required this.streetAnimals});
 
-  @experimental
   static StreetSubscriptionData fromCache(shalom_core.JsonObject data) {
     final StreetSubscription_streetAnimals streetAnimals$value =
         StreetSubscription_streetAnimals.fromJson(

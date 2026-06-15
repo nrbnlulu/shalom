@@ -4,7 +4,6 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 
@@ -35,7 +34,6 @@ class UserWidgetResponse {
     return {'user': this.user?.toJson()};
   }
 
-  @experimental
   static UserWidgetResponse fromJson(shalom_core.JsonObject data) {
     final UserWidget_user? user$value = data['user'] == null
         ? null
@@ -48,34 +46,33 @@ class UserWidget_user {
   static String G__typename = "User";
 
   /// class members
-  final String id;
-
   final String name;
+
+  final String id;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  UserWidget_user({required this.id, required this.name});
+  UserWidget_user({required this.name, required this.id});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UserWidget_user && id == other.id && name == other.name);
+        (other is UserWidget_user && name == other.name && id == other.id);
   }
 
   @override
-  int get hashCode => Object.hashAll([id, name, UserWidget_user.G__typename]);
+  int get hashCode => Object.hashAll([name, id, UserWidget_user.G__typename]);
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'name': this.name};
+    return {'name': this.name, 'id': this.id};
   }
 
-  @experimental
   static UserWidget_user fromJson(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
-    return UserWidget_user(id: id$value, name: name$value);
+    final String id$value = data['id'] as String;
+    return UserWidget_user(name: name$value, id: id$value);
   }
 }
 
@@ -100,7 +97,6 @@ final class UserWidgetData {
 
   const UserWidgetData({required this.user});
 
-  @experimental
   static UserWidgetData fromCache(shalom_core.JsonObject data) {
     final UserWidget_user? user$value = data['user'] == null
         ? null

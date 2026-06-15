@@ -165,6 +165,11 @@ fn test_flutter_shared_fragment_subscription() {
 }
 
 #[test]
+fn test_flutter_animal_with_owner_widget() {
+    common::run_flutter_tests("animal_with_owner_widget_test.dart");
+}
+
+#[test]
 fn test_mutation_simple_dart() {
     run_dart_tests_for_usecase("mutation_simple");
 }

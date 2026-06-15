@@ -46,10 +46,16 @@ interface Animal {
   id: ID!
 }
 
+type Owner {
+  id: ID!
+  name: String!
+}
+
 type Dog implements Animal {
   id: ID!
   name: String!
   breed: String!
+  owner: Owner
 }
 
 type Cat implements Animal {
@@ -102,6 +108,22 @@ fragment DogFrag on Dog @observe {
 }
 ''',
   );
+  client.registerFragment(
+    document: r'''
+fragment AnimalWithOwnerWidget on Animal @observe {
+  id
+  ... on Dog {
+    breed
+    owner {
+      name
+    }
+  }
+  ... on Cat {
+    color
+  }
+}
+''',
+  );
   client.registerOperation(
     document: r'''
 query UserWidget ($id: ID!) @observe {
@@ -135,6 +157,15 @@ query AnimalQuery ($id: ID!) @observe {
 query ZooQuery ($id: ID!) @observe {
   zoo(id: $id) {
     ...ZooWidget
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query AnimalWithOwnerQuery ($id: ID!) @observe {
+  animal(id: $id) {
+    ...AnimalWithOwnerWidget
   }
 }
 ''',

@@ -4,7 +4,6 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 import 'ZooWidget.shalom.dart';
@@ -36,7 +35,6 @@ class ZooQueryResponse {
     return {'zoo': this.zoo?.toJson()};
   }
 
-  @experimental
   static ZooQueryResponse fromJson(shalom_core.JsonObject data) {
     final ZooWidgetRef? zoo$value = data['zoo'] == null
         ? null
@@ -54,49 +52,48 @@ class ZooQuery_zoo implements ZooWidget {
   static String G__typename = "Zoo";
 
   /// class members
-  final List<ZooWidget_cages> cages;
+  final String id;
 
   final String name;
 
-  final String id;
+  final List<ZooWidget_cages> cages;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  ZooQuery_zoo({required this.cages, required this.name, required this.id});
+  ZooQuery_zoo({required this.id, required this.name, required this.cages});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is ZooQuery_zoo &&
-            const ListEquality().equals(cages, other.cages) &&
+            id == other.id &&
             name == other.name &&
-            id == other.id);
+            const ListEquality().equals(cages, other.cages));
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([cages, name, id, ZooQuery_zoo.G__typename]);
+      Object.hashAll([id, name, cages, ZooQuery_zoo.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'cages': this.cages.map((e) => e.toJson()).toList(),
+      'id': this.id,
 
       'name': this.name,
 
-      'id': this.id,
+      'cages': this.cages.map((e) => e.toJson()).toList(),
     };
   }
 
-  @experimental
   static ZooQuery_zoo fromJson(shalom_core.JsonObject data) {
+    final String id$value = data['id'] as String;
+    final String name$value = data['name'] as String;
     final List<ZooWidget_cages> cages$value = (data['cages'] as List<dynamic>)
         .map((e) => ZooWidget_cages.fromJson(e as shalom_core.JsonObject))
         .toList();
-    final String name$value = data['name'] as String;
-    final String id$value = data['id'] as String;
-    return ZooQuery_zoo(cages: cages$value, name: name$value, id: id$value);
+    return ZooQuery_zoo(id: id$value, name: name$value, cages: cages$value);
   }
 }
 
@@ -121,7 +118,6 @@ final class ZooQueryData {
 
   const ZooQueryData({required this.zoo});
 
-  @experimental
   static ZooQueryData fromCache(shalom_core.JsonObject data) {
     final ZooWidgetRef? zoo$value = data['zoo'] == null
         ? null

@@ -5,7 +5,6 @@
 import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
@@ -22,9 +21,9 @@ extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
 }
 
 abstract class PetWidget {
-  String get id;
-
   String get name;
+
+  String get id;
 
   shalom_core.JsonObject toJson();
 }
@@ -43,7 +42,6 @@ final class PetWidgetData {
   @override
   int get hashCode => Object.hashAll([id, name]);
 
-  @experimental
   static PetWidgetData fromCache(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;

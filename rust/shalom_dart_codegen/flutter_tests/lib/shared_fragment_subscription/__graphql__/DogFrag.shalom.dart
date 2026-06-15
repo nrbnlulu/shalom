@@ -5,7 +5,6 @@
 import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
@@ -22,47 +21,46 @@ extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
 }
 
 abstract class DogFrag {
-  String get breed;
-
   String get name;
 
   String get id;
+
+  String get breed;
 
   shalom_core.JsonObject toJson();
 }
 
 final class DogFragData {
-  final String id;
   final String breed;
   final String name;
+  final String id;
 
   const DogFragData({
-    required this.id,
     required this.breed,
     required this.name,
+    required this.id,
   });
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is DogFragData &&
-          id == other.id &&
           breed == other.breed &&
-          name == other.name);
+          name == other.name &&
+          id == other.id);
 
   @override
-  int get hashCode => Object.hashAll([id, breed, name]);
+  int get hashCode => Object.hashAll([breed, name, id]);
 
-  @experimental
   static DogFragData fromCache(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String breed$value = data['breed'] as String;
     final String name$value = data['name'] as String;
-    return DogFragData(id: id$value, breed: breed$value, name: name$value);
+    final String id$value = data['id'] as String;
+    return DogFragData(breed: breed$value, name: name$value, id: id$value);
   }
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'breed': this.breed, 'name': this.name};
+    return {'breed': this.breed, 'name': this.name, 'id': this.id};
   }
 }
 

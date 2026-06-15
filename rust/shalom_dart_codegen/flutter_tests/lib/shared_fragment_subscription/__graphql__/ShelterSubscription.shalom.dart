@@ -4,7 +4,6 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 import 'DogFrag.shalom.dart';
@@ -38,7 +37,6 @@ class ShelterSubscriptionResponse {
     return {'shelterAnimals': this.shelterAnimals.toJson()};
   }
 
-  @experimental
   static ShelterSubscriptionResponse fromJson(shalom_core.JsonObject data) {
     final ShelterSubscription_shelterAnimals shelterAnimals$value =
         ShelterSubscription_shelterAnimals.fromJson(
@@ -64,7 +62,6 @@ sealed class ShelterSubscription_shelterAnimals {
 
   shalom_core.JsonObject toJson();
 
-  @experimental
   static ShelterSubscription_shelterAnimals fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -87,69 +84,68 @@ class ShelterSubscription_shelterAnimals__Dog
   static String G__typename = "Dog";
 
   /// class members
-  final String name;
-
   final String breed;
 
   final String id;
+
+  final String name;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
   const ShelterSubscription_shelterAnimals__Dog({
-    required this.name,
-
     required this.breed,
 
     required this.id,
+
+    required this.name,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is ShelterSubscription_shelterAnimals__Dog &&
-            name == other.name &&
             breed == other.breed &&
-            id == other.id);
+            id == other.id &&
+            name == other.name);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    name,
-
     breed,
 
     id,
+
+    name,
 
     ShelterSubscription_shelterAnimals__Dog.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'name': this.name,
-
       'breed': this.breed,
+
+      'id': this.id,
 
       "__typename": ShelterSubscription_shelterAnimals__Dog.G__typename,
 
-      'id': this.id,
+      'name': this.name,
     };
   }
 
-  @experimental
   static ShelterSubscription_shelterAnimals__Dog fromJson(
     shalom_core.JsonObject data,
   ) {
-    final String name$value = data['name'] as String;
     final String breed$value = data['breed'] as String;
     final String id$value = data['id'] as String;
+    final String name$value = data['name'] as String;
     return ShelterSubscription_shelterAnimals__Dog(
-      name: name$value,
-
       breed: breed$value,
 
       id: id$value,
+
+      name: name$value,
     );
   }
 }
@@ -186,7 +182,6 @@ class ShelterSubscription_shelterAnimals__Cat
     };
   }
 
-  @experimental
   static ShelterSubscription_shelterAnimals__Cat fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -208,7 +203,6 @@ final class ShelterSubscriptionData {
 
   const ShelterSubscriptionData({required this.shelterAnimals});
 
-  @experimental
   static ShelterSubscriptionData fromCache(shalom_core.JsonObject data) {
     final ShelterSubscription_shelterAnimals shelterAnimals$value =
         ShelterSubscription_shelterAnimals.fromJson(

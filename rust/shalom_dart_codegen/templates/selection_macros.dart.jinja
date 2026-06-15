@@ -282,8 +282,7 @@ null
     {% endfor %}
     };
     }
-
-    @experimental
+    
     static {{ typename }} fromJson(shalom_core.JsonObject data) {
         {% for selection in selections if selection.name != "__typename" -%}
             {% set raw_value_symbol = "data['" + selection.name + "']" -%}
@@ -319,8 +318,7 @@ null
         const {{ full_name }}();
 
         shalom_core.JsonObject toJson();
-
-        @experimental
+        
         static {{ full_name }} fromJson(shalom_core.JsonObject data) {
             final typename = data['__typename'] as String;
             switch(typename) {

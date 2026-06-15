@@ -4,7 +4,6 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 import 'PetWidget.shalom.dart';
@@ -36,7 +35,6 @@ class PetQueryResponse {
     return {'pet': this.pet?.toJson()};
   }
 
-  @experimental
   static PetQueryResponse fromJson(shalom_core.JsonObject data) {
     final PetWidgetRef? pet$value = data['pet'] == null
         ? null
@@ -77,7 +75,6 @@ class PetQuery_pet implements PetWidget {
     return {'name': this.name, 'id': this.id};
   }
 
-  @experimental
   static PetQuery_pet fromJson(shalom_core.JsonObject data) {
     final String name$value = data['name'] as String;
     final String id$value = data['id'] as String;
@@ -106,7 +103,6 @@ final class PetQueryData {
 
   const PetQueryData({required this.pet});
 
-  @experimental
   static PetQueryData fromCache(shalom_core.JsonObject data) {
     final PetWidgetRef? pet$value = data['pet'] == null
         ? null
