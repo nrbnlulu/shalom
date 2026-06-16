@@ -103,6 +103,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   List<WsLinkEvent> dco_decode_list_ws_link_event(dynamic raw);
 
   @protected
+  LogLevel dco_decode_log_level(dynamic raw);
+
+  @protected
   ObservedRefInput dco_decode_observed_ref_input(dynamic raw);
 
   @protected
@@ -216,6 +219,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   List<WsLinkEvent> sse_decode_list_ws_link_event(SseDeserializer deserializer);
+
+  @protected
+  LogLevel sse_decode_log_level(SseDeserializer deserializer);
 
   @protected
   ObservedRefInput sse_decode_observed_ref_input(SseDeserializer deserializer);
@@ -353,6 +359,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
     List<WsLinkEvent> self,
     SseSerializer serializer,
   );
+
+  @protected
+  void sse_encode_log_level(LogLevel self, SseSerializer serializer);
 
   @protected
   void sse_encode_observed_ref_input(

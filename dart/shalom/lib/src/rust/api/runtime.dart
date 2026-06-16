@@ -7,7 +7,11 @@ import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These functions are ignored because they are not marked as `pub`: `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`
+
+/// Set the global log level filter for all Rust-side logging.
+void setLogLevel({required LogLevel level}) =>
+    RustLib.instance.api.crateApiRuntimeSetLogLevel(level: level);
 
 /// Initialise the runtime with the schema SDL.
 /// Fragment and operation SDLs are registered separately via
@@ -178,6 +182,8 @@ Future<void> completeTransport({
 abstract class RuntimeHandle implements RustOpaqueInterface {}
 
 enum ExecutionPolicyInput { networkFirst, cacheFirst }
+
+enum LogLevel { error, warn, info, debug, trace }
 
 /// Dart-facing representation of an observed fragment reference.
 ///

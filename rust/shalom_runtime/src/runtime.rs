@@ -298,11 +298,12 @@ impl ShalomRuntime {
         variables: Option<Map<String, Value>>,
         execution_policy: ExecutionPolicy,
     ) -> SubscriptionId {
+        log::debug!("executing operation: {}", op_ctx.get_operation_name());
         self.remember_operation_vars(&op_ctx, variables.as_ref());
         let initial = self.read_result_op(&op_ctx, variables.as_ref()).ok();
         let refs = initial
             .as_ref()
-            .map(|r| r.used_refs.clone())
+            .map(subscription_refs_for_result)
             .unwrap_or_default();
         let op_name = op_ctx.get_operation_name().to_string();
         let id = self.subscribe_with_target(SubscriptionTarget::Operation(op_ctx), variables, refs);
@@ -661,10 +662,13 @@ impl ShalomRuntime {
                 }
             };
 
-            let new_refs = result.used_refs.clone();
-            let response = result.missing_refs.is_empty().then(|| RuntimeResponse {
-                data: result.data,
-                operation_id: Some(operation_id),
+            let new_refs = subscription_refs_for_result(&result);
+            let response = result.missing_refs.is_empty().then(|| {
+                log::debug!("result yielded for: {operation_id}");
+                RuntimeResponse {
+                    data: result.data,
+                    operation_id: Some(operation_id),
+                }
             });
 
             let mut old_keys = None;
@@ -759,4 +763,14 @@ fn is_fragment_overwrite(
         }
     }
     false
+}
+
+fn subscription_refs_for_result(result: &crate::read::ReadResult) -> HashSet<String> {
+    if result.missing_refs.is_empty() {
+        return result.used_refs.clone();
+    }
+
+    let mut refs = result.used_refs.clone();
+    refs.extend(result.missing_refs.iter().cloned());
+    refs
 }

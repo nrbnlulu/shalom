@@ -34,6 +34,33 @@ pub struct ObservedRefInput {
 pub struct RuntimeConfigInput {}
 
 #[frb]
+pub enum LogLevel {
+    Error,
+    Warn,
+    Info,
+    Debug,
+    Trace,
+}
+
+impl From<LogLevel> for log::LevelFilter {
+    fn from(level: LogLevel) -> Self {
+        match level {
+            LogLevel::Error => log::LevelFilter::Error,
+            LogLevel::Warn => log::LevelFilter::Warn,
+            LogLevel::Info => log::LevelFilter::Info,
+            LogLevel::Debug => log::LevelFilter::Debug,
+            LogLevel::Trace => log::LevelFilter::Trace,
+        }
+    }
+}
+
+/// Set the global log level filter for all Rust-side logging.
+#[frb(sync)]
+pub fn set_log_level(level: LogLevel) {
+    log::set_max_level(level.into());
+}
+
+#[frb]
 pub enum ExecutionPolicyInput {
     NetworkFirst,
     CacheFirst,

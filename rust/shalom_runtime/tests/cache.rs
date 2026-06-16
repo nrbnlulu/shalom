@@ -1830,6 +1830,108 @@ mod fragment_subscriptions {
     }
 
     #[test]
+    fn operation_with_observed_fragment_emits_after_warmed_entity_is_completed() {
+        let schema = r#"
+            type Query { site(id: ID!): Site }
+            type Site {
+                id: ID!
+                name: String!
+                routes: String!
+                equipment: [String!]!
+            }
+        "#;
+
+        let operations = r#"
+            fragment SiteInfo on Site @observe {
+                id
+                name
+                routes
+                equipment
+            }
+
+            query SiteSummary {
+                site(id: "1") {
+                    id
+                    name
+                }
+            }
+
+            query SiteDetails {
+                site(id: "1") {
+                    ...SiteInfo
+                }
+            }
+        "#;
+
+        let schema_ctx = parse_schema(schema).unwrap();
+        let config = ShalomConfig::default();
+        let global_ctx = ShalomGlobalContext::new(schema_ctx, config, std::path::PathBuf::from(""));
+        register_fragments_from_document(
+            &global_ctx,
+            operations,
+            &std::path::PathBuf::from("ops.graphql"),
+            false,
+        )
+        .expect("register fragments");
+        let ops = parse_document(
+            &global_ctx,
+            operations,
+            &std::path::PathBuf::from("ops.graphql"),
+        )
+        .unwrap();
+        let site_summary = ops.get("SiteSummary").unwrap().clone();
+        let site_details = ops.get("SiteDetails").unwrap().clone();
+        let runtime = ShalomRuntime::new(global_ctx);
+
+        normalize(
+            &runtime,
+            &site_summary,
+            json!({ "site": { "id": "1", "name": "North" } }),
+            None,
+        );
+
+        let sub_id =
+            runtime.create_operation_subscription(site_details, None, ExecutionPolicy::CacheFirst);
+        let mut updates = runtime.subscription_stream(&sub_id).unwrap();
+
+        normalize(
+            &runtime,
+            &ops.get("SiteDetails").unwrap().clone(),
+            json!({
+                "site": {
+                    "id": "1",
+                    "name": "North",
+                    "routes": "main",
+                    "equipment": ["horn"]
+                }
+            }),
+            None,
+        );
+
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let update = rt
+            .block_on(async {
+                tokio::time::timeout(Duration::from_millis(50), updates.next()).await
+            })
+            .expect("observed-fragment operation should emit when missing fields are filled")
+            .expect("stream should yield")
+            .expect("stream error");
+
+        assert_eq!(update.operation_id.as_deref(), Some("SiteDetails"));
+        let site = update
+            .data
+            .get("site")
+            .and_then(|value| value.as_object())
+            .expect("site object");
+        assert_eq!(anchor_from_observed_ref(site, "SiteInfo"), "Site:1",);
+
+        runtime.unsubscribe(&sub_id);
+    }
+
+    #[test]
     fn test_updates_across_different_operations() {
         let schema = r#"
             type Query { 

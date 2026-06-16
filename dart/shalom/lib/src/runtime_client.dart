@@ -67,12 +67,19 @@ class ShalomRuntimeClient {
   ///   runApp(ShalomProvider(client: client, child: const MyApp()));
   /// }
   /// ```
-  static Future<void> initFlutterRustBridge({String? nativeLibPath}) =>
-      RustLib.init(
-        externalLibrary: nativeLibPath != null
-            ? ExternalLibrary.open(nativeLibPath)
-            : null,
-      );
+  static Future<void> initFlutterRustBridge({
+    String? nativeLibPath,
+    rs_runtime.LogLevel? logLevel,
+  }) async {
+    await RustLib.init(
+      externalLibrary: nativeLibPath != null
+          ? ExternalLibrary.open(nativeLibPath)
+          : null,
+    );
+    if (logLevel != null) {
+      rs_runtime.setLogLevel(level: logLevel);
+    }
+  }
 
   /// Create a runtime for [schemaSdl].  Synchronous — call after
   /// [initFlutterRustBridge] has completed.
@@ -134,21 +141,18 @@ class ShalomRuntimeClient {
   }) {
     final variablesJson = variables == null ? null : jsonEncode(variables);
     BigInt? subId;
-    debugPrint('[shalom] request($name): StreamController created');
     final controller = StreamController<T>();
 
     controller.onListen = () {
-      debugPrint('[shalom] request($name): onListen fired');
       Future.microtask(() async {
         try {
-          debugPrint('[shalom] request($name): calling rs_runtime.request...');
+          debugPrint('[shalom] executing operation: $name');
           subId = await rs_runtime.request(
             handle: _handle,
             name: name,
             variablesJson: variablesJson,
             executionPolicy: executionPolicy,
           );
-          debugPrint('[shalom] request($name): got subId=$subId, controller.isClosed=${controller.isClosed}');
           if (controller.isClosed) {
             if (subId != null) {
               rs_runtime.unsubscribe(handle: _handle, subscriptionId: subId!);
@@ -159,6 +163,7 @@ class ShalomRuntimeClient {
             subId: subId!,
             controller: controller,
             decoder: decoder,
+            debugName: name,
           );
         } catch (e, st) {
           debugPrint('[shalom] request($name): ERROR $e');
@@ -329,6 +334,7 @@ class ShalomRuntimeClient {
     required BigInt subId,
     required StreamController<T> controller,
     required T Function(JsonObject) decoder,
+    String? debugName,
   }) {
     rs_runtime
         .listenSubscription(handle: _handle, subscriptionId: subId)
@@ -346,6 +352,7 @@ class ShalomRuntimeClient {
                 debugPrint('[shalom] sub: null data payload, skipping');
                 return;
               }
+              debugPrint('[shalom] result yielded: ${debugName ?? subId}');
               controller.add(decoder(envelope.data));
             } catch (e, st) {
               debugPrint('[shalom] sub decode error: $e');
