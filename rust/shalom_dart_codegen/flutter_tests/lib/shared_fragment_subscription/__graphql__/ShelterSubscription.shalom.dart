@@ -126,9 +126,9 @@ class ShelterSubscription_shelterAnimals__Dog
     return {
       'breed': this.breed,
 
-      'id': this.id,
-
       "__typename": ShelterSubscription_shelterAnimals__Dog.G__typename,
+
+      'id': this.id,
 
       'name': this.name,
     };
@@ -155,7 +155,6 @@ class ShelterSubscription_shelterAnimals__Cat
   static String G__typename = "Cat";
 
   /// class members
-
   final String id;
 
   // Getter for typename (public accessor for static __typename field)
@@ -176,9 +175,9 @@ class ShelterSubscription_shelterAnimals__Cat
 
   shalom_core.JsonObject toJson() {
     return {
-      "__typename": ShelterSubscription_shelterAnimals__Cat.G__typename,
-
       'id': this.id,
+
+      "__typename": ShelterSubscription_shelterAnimals__Cat.G__typename,
     };
   }
 

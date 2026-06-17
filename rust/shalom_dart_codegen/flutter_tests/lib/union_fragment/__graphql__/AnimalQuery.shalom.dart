@@ -126,42 +126,42 @@ class AnimalQuery_animal__Cat extends AnimalQuery_animal {
 
   /// class members
 
-  final String id;
-
   final String color;
+
+  final String id;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  const AnimalQuery_animal__Cat({required this.id, required this.color});
+  const AnimalQuery_animal__Cat({required this.color, required this.id});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AnimalQuery_animal__Cat &&
-            id == other.id &&
-            color == other.color);
+            color == other.color &&
+            id == other.id);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([id, color, AnimalQuery_animal__Cat.G__typename]);
+      Object.hashAll([color, id, AnimalQuery_animal__Cat.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
       "__typename": AnimalQuery_animal__Cat.G__typename,
 
-      'id': this.id,
-
       'color': this.color,
+
+      'id': this.id,
     };
   }
 
   static AnimalQuery_animal__Cat fromJson(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String color$value = data['color'] as String;
-    return AnimalQuery_animal__Cat(id: id$value, color: color$value);
+    final String id$value = data['id'] as String;
+    return AnimalQuery_animal__Cat(color: color$value, id: id$value);
   }
 }
 

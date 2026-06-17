@@ -13,11 +13,12 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import '{{ operation_name }}.shalom.dart';
 
 abstract class ${{ operation_name }} extends StatefulWidget {
+    final shalom_core.ExecutionPolicyInput executionPolicy;
     {% if op_variables_exist %}
         final {{ operation_name }}Variables variables;
-        const ${{ operation_name }}({super.key, required this.variables});
+        const ${{ operation_name }}({super.key, required this.variables, this.executionPolicy = .cacheFirst});
     {% else %}
-        const ${{ operation_name }}({super.key});
+        const ${{ operation_name }}({super.key, this.executionPolicy = .cacheFirst});
     {% endif %}
 
     Widget buildLoading(BuildContext context);
@@ -48,9 +49,7 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
     @override
     void didUpdateWidget(covariant ${{ operation_name }} oldWidget) {
         super.didUpdateWidget(oldWidget);
-        {% if op_variables_exist %}
-        if (widget.variables != oldWidget.variables) _subscribe();
-        {% endif %}
+        if (widget.executionPolicy != oldWidget.executionPolicy{% if op_variables_exist %} || widget.variables != oldWidget.variables{% endif %}) _subscribe();
     }
 
     void _subscribe() {
@@ -65,7 +64,7 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
                 variables: null,
                 {% endif %}
                 decoder: {{ operation_name }}Data.fromCache,
-                executionPolicy: shalom_core.ExecutionPolicyInput.cacheFirst,
+                executionPolicy: widget.executionPolicy,
             )
             .listen(
                 (data) => setState(() { _data = data; _error = null; }),

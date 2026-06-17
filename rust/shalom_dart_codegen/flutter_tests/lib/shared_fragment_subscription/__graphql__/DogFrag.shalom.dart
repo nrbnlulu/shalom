@@ -21,9 +21,9 @@ extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
 }
 
 abstract class DogFrag {
-  String get name;
-
   String get id;
+
+  String get name;
 
   String get breed;
 
@@ -32,13 +32,13 @@ abstract class DogFrag {
 
 final class DogFragData {
   final String breed;
-  final String name;
   final String id;
+  final String name;
 
   const DogFragData({
     required this.breed,
-    required this.name,
     required this.id,
+    required this.name,
   });
 
   @override
@@ -46,21 +46,21 @@ final class DogFragData {
       identical(this, other) ||
       (other is DogFragData &&
           breed == other.breed &&
-          name == other.name &&
-          id == other.id);
+          id == other.id &&
+          name == other.name);
 
   @override
-  int get hashCode => Object.hashAll([breed, name, id]);
+  int get hashCode => Object.hashAll([breed, id, name]);
 
   static DogFragData fromCache(shalom_core.JsonObject data) {
     final String breed$value = data['breed'] as String;
-    final String name$value = data['name'] as String;
     final String id$value = data['id'] as String;
-    return DogFragData(breed: breed$value, name: name$value, id: id$value);
+    final String name$value = data['name'] as String;
+    return DogFragData(breed: breed$value, id: id$value, name: name$value);
   }
 
   shalom_core.JsonObject toJson() {
-    return {'breed': this.breed, 'name': this.name, 'id': this.id};
+    return {'breed': this.breed, 'id': this.id, 'name': this.name};
   }
 }
 

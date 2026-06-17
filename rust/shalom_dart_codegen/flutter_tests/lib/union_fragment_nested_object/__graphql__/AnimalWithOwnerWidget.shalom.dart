@@ -34,43 +34,14 @@ sealed class AnimalWithOwnerWidgetData {
   static AnimalWithOwnerWidgetData fromCache(shalom_core.JsonObject data) {
     final typename = data['__typename'] as String?;
     switch (typename) {
-      case 'Dog':
-        return AnimalWithOwnerWidgetData$Dog.fromJson(data);
       case 'Cat':
         return AnimalWithOwnerWidgetData$Cat.fromJson(data);
+      case 'Dog':
+        return AnimalWithOwnerWidgetData$Dog.fromJson(data);
 
       default:
         return const AnimalWithOwnerWidgetData$Unknown();
     }
-  }
-}
-
-final class AnimalWithOwnerWidgetData$Dog extends AnimalWithOwnerWidgetData {
-  final AnimalWithOwnerWidget__Dog_owner? owner;
-  final String id;
-  final String breed;
-
-  const AnimalWithOwnerWidgetData$Dog({
-    required this.owner,
-    required this.id,
-    required this.breed,
-  });
-
-  static AnimalWithOwnerWidgetData$Dog fromJson(shalom_core.JsonObject data) {
-    final AnimalWithOwnerWidget__Dog_owner? owner$value = data['owner'] == null
-        ? null
-        : AnimalWithOwnerWidget__Dog_owner.fromJson(
-            data['owner'] as shalom_core.JsonObject,
-          );
-    final String id$value = data['id'] as String;
-    final String breed$value = data['breed'] as String;
-    return AnimalWithOwnerWidgetData$Dog(
-      owner: owner$value,
-
-      id: id$value,
-
-      breed: breed$value,
-    );
   }
 }
 
@@ -84,6 +55,35 @@ final class AnimalWithOwnerWidgetData$Cat extends AnimalWithOwnerWidgetData {
     final String id$value = data['id'] as String;
     final String color$value = data['color'] as String;
     return AnimalWithOwnerWidgetData$Cat(id: id$value, color: color$value);
+  }
+}
+
+final class AnimalWithOwnerWidgetData$Dog extends AnimalWithOwnerWidgetData {
+  final String breed;
+  final String id;
+  final AnimalWithOwnerWidget__Dog_owner? owner;
+
+  const AnimalWithOwnerWidgetData$Dog({
+    required this.breed,
+    required this.id,
+    required this.owner,
+  });
+
+  static AnimalWithOwnerWidgetData$Dog fromJson(shalom_core.JsonObject data) {
+    final String breed$value = data['breed'] as String;
+    final String id$value = data['id'] as String;
+    final AnimalWithOwnerWidget__Dog_owner? owner$value = data['owner'] == null
+        ? null
+        : AnimalWithOwnerWidget__Dog_owner.fromJson(
+            data['owner'] as shalom_core.JsonObject,
+          );
+    return AnimalWithOwnerWidgetData$Dog(
+      breed: breed$value,
+
+      id: id$value,
+
+      owner: owner$value,
+    );
   }
 }
 

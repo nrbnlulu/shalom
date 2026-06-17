@@ -10,8 +10,14 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import 'ZooQuery.shalom.dart';
 
 abstract class $ZooQuery extends StatefulWidget {
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
   final ZooQueryVariables variables;
-  const $ZooQuery({super.key, required this.variables});
+  const $ZooQuery({
+    super.key,
+    required this.variables,
+    this.executionPolicy = .cacheFirst,
+  });
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
@@ -44,8 +50,9 @@ class _$ZooQueryState extends State<$ZooQuery> {
   @override
   void didUpdateWidget(covariant $ZooQuery oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    if (widget.variables != oldWidget.variables) _subscribe();
+    if (widget.executionPolicy != oldWidget.executionPolicy ||
+        widget.variables != oldWidget.variables)
+      _subscribe();
   }
 
   void _subscribe() {
@@ -58,7 +65,7 @@ class _$ZooQueryState extends State<$ZooQuery> {
           variables: widget.variables.toJson(),
 
           decoder: ZooQueryData.fromCache,
-          executionPolicy: shalom_core.ExecutionPolicyInput.cacheFirst,
+          executionPolicy: widget.executionPolicy,
         )
         .listen(
           (data) => setState(() {

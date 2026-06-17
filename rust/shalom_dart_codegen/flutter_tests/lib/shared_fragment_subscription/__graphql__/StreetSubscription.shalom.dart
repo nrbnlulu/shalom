@@ -84,68 +84,68 @@ class StreetSubscription_streetAnimals__Dog
   static String G__typename = "Dog";
 
   /// class members
+  final String name;
+
   final String id;
 
   final String breed;
-
-  final String name;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
   const StreetSubscription_streetAnimals__Dog({
+    required this.name,
+
     required this.id,
 
     required this.breed,
-
-    required this.name,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is StreetSubscription_streetAnimals__Dog &&
+            name == other.name &&
             id == other.id &&
-            breed == other.breed &&
-            name == other.name);
+            breed == other.breed);
   }
 
   @override
   int get hashCode => Object.hashAll([
+    name,
+
     id,
 
     breed,
-
-    name,
 
     StreetSubscription_streetAnimals__Dog.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'id': this.id,
+      'name': this.name,
 
-      'breed': this.breed,
+      'id': this.id,
 
       "__typename": StreetSubscription_streetAnimals__Dog.G__typename,
 
-      'name': this.name,
+      'breed': this.breed,
     };
   }
 
   static StreetSubscription_streetAnimals__Dog fromJson(
     shalom_core.JsonObject data,
   ) {
+    final String name$value = data['name'] as String;
     final String id$value = data['id'] as String;
     final String breed$value = data['breed'] as String;
-    final String name$value = data['name'] as String;
     return StreetSubscription_streetAnimals__Dog(
+      name: name$value,
+
       id: id$value,
 
       breed: breed$value,
-
-      name: name$value,
     );
   }
 }
@@ -155,6 +155,7 @@ class StreetSubscription_streetAnimals__Cat
   static String G__typename = "Cat";
 
   /// class members
+
   final String id;
 
   // Getter for typename (public accessor for static __typename field)
@@ -175,9 +176,9 @@ class StreetSubscription_streetAnimals__Cat
 
   shalom_core.JsonObject toJson() {
     return {
-      'id': this.id,
-
       "__typename": StreetSubscription_streetAnimals__Cat.G__typename,
+
+      'id': this.id,
     };
   }
 

@@ -10,8 +10,14 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import 'UserWidget.shalom.dart';
 
 abstract class $UserWidget extends StatefulWidget {
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
   final UserWidgetVariables variables;
-  const $UserWidget({super.key, required this.variables});
+  const $UserWidget({
+    super.key,
+    required this.variables,
+    this.executionPolicy = .cacheFirst,
+  });
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
@@ -44,8 +50,9 @@ class _$UserWidgetState extends State<$UserWidget> {
   @override
   void didUpdateWidget(covariant $UserWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    if (widget.variables != oldWidget.variables) _subscribe();
+    if (widget.executionPolicy != oldWidget.executionPolicy ||
+        widget.variables != oldWidget.variables)
+      _subscribe();
   }
 
   void _subscribe() {
@@ -58,7 +65,7 @@ class _$UserWidgetState extends State<$UserWidget> {
           variables: widget.variables.toJson(),
 
           decoder: UserWidgetData.fromCache,
-          executionPolicy: shalom_core.ExecutionPolicyInput.cacheFirst,
+          executionPolicy: widget.executionPolicy,
         )
         .listen(
           (data) => setState(() {

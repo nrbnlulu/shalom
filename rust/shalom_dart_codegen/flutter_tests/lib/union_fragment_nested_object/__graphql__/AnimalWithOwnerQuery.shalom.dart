@@ -69,10 +69,10 @@ sealed class AnimalWithOwnerQuery_animal implements AnimalWithOwnerWidget {
   static AnimalWithOwnerQuery_animal fromJson(shalom_core.JsonObject data) {
     final typename = data['__typename'] as String;
     switch (typename) {
-      case 'Dog':
-        return AnimalWithOwnerQuery_animal__Dog.fromJson(data);
       case 'Cat':
         return AnimalWithOwnerQuery_animal__Cat.fromJson(data);
+      case 'Dog':
+        return AnimalWithOwnerQuery_animal__Dog.fromJson(data);
 
       default:
         throw Exception("Unknown typename $typename");
@@ -80,86 +80,10 @@ sealed class AnimalWithOwnerQuery_animal implements AnimalWithOwnerWidget {
   }
 }
 
-class AnimalWithOwnerQuery_animal__Dog extends AnimalWithOwnerQuery_animal {
-  static String G__typename = "Dog";
-
-  /// class members
-
-  final String breed;
-
-  final String id;
-
-  final AnimalWithOwnerWidget__Dog_owner? owner;
-
-  // Getter for typename (public accessor for static __typename field)
-  String get $__typename => G__typename;
-
-  // keywordargs constructor
-  const AnimalWithOwnerQuery_animal__Dog({
-    required this.breed,
-
-    required this.id,
-
-    this.owner,
-  });
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is AnimalWithOwnerQuery_animal__Dog &&
-            breed == other.breed &&
-            id == other.id &&
-            owner == other.owner);
-  }
-
-  @override
-  int get hashCode => Object.hashAll([
-    breed,
-
-    id,
-
-    owner,
-
-    AnimalWithOwnerQuery_animal__Dog.G__typename,
-  ]);
-
-  shalom_core.JsonObject toJson() {
-    return {
-      "__typename": AnimalWithOwnerQuery_animal__Dog.G__typename,
-
-      'breed': this.breed,
-
-      'id': this.id,
-
-      'owner': this.owner?.toJson(),
-    };
-  }
-
-  static AnimalWithOwnerQuery_animal__Dog fromJson(
-    shalom_core.JsonObject data,
-  ) {
-    final String breed$value = data['breed'] as String;
-    final String id$value = data['id'] as String;
-    final AnimalWithOwnerWidget__Dog_owner? owner$value = data['owner'] == null
-        ? null
-        : AnimalWithOwnerWidget__Dog_owner.fromJson(
-            data['owner'] as shalom_core.JsonObject,
-          );
-    return AnimalWithOwnerQuery_animal__Dog(
-      breed: breed$value,
-
-      id: id$value,
-
-      owner: owner$value,
-    );
-  }
-}
-
 class AnimalWithOwnerQuery_animal__Cat extends AnimalWithOwnerQuery_animal {
   static String G__typename = "Cat";
 
   /// class members
-
   final String id;
 
   final String color;
@@ -188,9 +112,9 @@ class AnimalWithOwnerQuery_animal__Cat extends AnimalWithOwnerQuery_animal {
 
   shalom_core.JsonObject toJson() {
     return {
-      "__typename": AnimalWithOwnerQuery_animal__Cat.G__typename,
-
       'id': this.id,
+
+      "__typename": AnimalWithOwnerQuery_animal__Cat.G__typename,
 
       'color': this.color,
     };
@@ -202,6 +126,80 @@ class AnimalWithOwnerQuery_animal__Cat extends AnimalWithOwnerQuery_animal {
     final String id$value = data['id'] as String;
     final String color$value = data['color'] as String;
     return AnimalWithOwnerQuery_animal__Cat(id: id$value, color: color$value);
+  }
+}
+
+class AnimalWithOwnerQuery_animal__Dog extends AnimalWithOwnerQuery_animal {
+  static String G__typename = "Dog";
+
+  /// class members
+  final AnimalWithOwnerWidget__Dog_owner? owner;
+
+  final String id;
+
+  final String breed;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
+  // keywordargs constructor
+  const AnimalWithOwnerQuery_animal__Dog({
+    this.owner,
+
+    required this.id,
+
+    required this.breed,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AnimalWithOwnerQuery_animal__Dog &&
+            owner == other.owner &&
+            id == other.id &&
+            breed == other.breed);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    owner,
+
+    id,
+
+    breed,
+
+    AnimalWithOwnerQuery_animal__Dog.G__typename,
+  ]);
+
+  shalom_core.JsonObject toJson() {
+    return {
+      'owner': this.owner?.toJson(),
+
+      "__typename": AnimalWithOwnerQuery_animal__Dog.G__typename,
+
+      'id': this.id,
+
+      'breed': this.breed,
+    };
+  }
+
+  static AnimalWithOwnerQuery_animal__Dog fromJson(
+    shalom_core.JsonObject data,
+  ) {
+    final AnimalWithOwnerWidget__Dog_owner? owner$value = data['owner'] == null
+        ? null
+        : AnimalWithOwnerWidget__Dog_owner.fromJson(
+            data['owner'] as shalom_core.JsonObject,
+          );
+    final String id$value = data['id'] as String;
+    final String breed$value = data['breed'] as String;
+    return AnimalWithOwnerQuery_animal__Dog(
+      owner: owner$value,
+
+      id: id$value,
+
+      breed: breed$value,
+    );
   }
 }
 

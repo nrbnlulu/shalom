@@ -10,7 +10,9 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import 'ShelterSubscription.shalom.dart';
 
 abstract class $ShelterSubscription extends StatefulWidget {
-  const $ShelterSubscription({super.key});
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
+  const $ShelterSubscription({super.key, this.executionPolicy = .cacheFirst});
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
@@ -43,6 +45,7 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
   @override
   void didUpdateWidget(covariant $ShelterSubscription oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.executionPolicy != oldWidget.executionPolicy) _subscribe();
   }
 
   void _subscribe() {
@@ -55,7 +58,7 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
           variables: null,
 
           decoder: ShelterSubscriptionData.fromCache,
-          executionPolicy: shalom_core.ExecutionPolicyInput.cacheFirst,
+          executionPolicy: widget.executionPolicy,
         )
         .listen(
           (data) => setState(() {

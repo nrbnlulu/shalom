@@ -10,7 +10,9 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import 'StreetSubscription.shalom.dart';
 
 abstract class $StreetSubscription extends StatefulWidget {
-  const $StreetSubscription({super.key});
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
+  const $StreetSubscription({super.key, this.executionPolicy = .cacheFirst});
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
@@ -43,6 +45,7 @@ class _$StreetSubscriptionState extends State<$StreetSubscription> {
   @override
   void didUpdateWidget(covariant $StreetSubscription oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.executionPolicy != oldWidget.executionPolicy) _subscribe();
   }
 
   void _subscribe() {
@@ -55,7 +58,7 @@ class _$StreetSubscriptionState extends State<$StreetSubscription> {
           variables: null,
 
           decoder: StreetSubscriptionData.fromCache,
-          executionPolicy: shalom_core.ExecutionPolicyInput.cacheFirst,
+          executionPolicy: widget.executionPolicy,
         )
         .listen(
           (data) => setState(() {

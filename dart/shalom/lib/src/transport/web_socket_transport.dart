@@ -46,7 +46,6 @@ class WebSocketPackageTransport implements WebSocketTransport {
           case ws.TextDataReceived(:final text):
             try {
               final decoded = decodeJson(text);
-              print("WebSocketPackageTransport received: $decoded");
               if (decoded is JsonObject) controller.add(decoded);
             } catch (_) {
               // Malformed frame — ws_link.dart will close on bad messages.
@@ -55,7 +54,6 @@ class WebSocketPackageTransport implements WebSocketTransport {
             // graphql-transport-ws uses text frames only; treat binary as text.
             try {
               final decoded = decodeJson(utf8.decode(data));
-              print("WebSocketPackageTransport received: $decoded");
               if (decoded is JsonObject) controller.add(decoded);
             } catch (_) {}
           case ws.CloseReceived():

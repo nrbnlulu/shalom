@@ -10,8 +10,14 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import 'AnimalQuery.shalom.dart';
 
 abstract class $AnimalQuery extends StatefulWidget {
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
   final AnimalQueryVariables variables;
-  const $AnimalQuery({super.key, required this.variables});
+  const $AnimalQuery({
+    super.key,
+    required this.variables,
+    this.executionPolicy = .cacheFirst,
+  });
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
@@ -44,8 +50,9 @@ class _$AnimalQueryState extends State<$AnimalQuery> {
   @override
   void didUpdateWidget(covariant $AnimalQuery oldWidget) {
     super.didUpdateWidget(oldWidget);
-
-    if (widget.variables != oldWidget.variables) _subscribe();
+    if (widget.executionPolicy != oldWidget.executionPolicy ||
+        widget.variables != oldWidget.variables)
+      _subscribe();
   }
 
   void _subscribe() {
@@ -58,7 +65,7 @@ class _$AnimalQueryState extends State<$AnimalQuery> {
           variables: widget.variables.toJson(),
 
           decoder: AnimalQueryData.fromCache,
-          executionPolicy: shalom_core.ExecutionPolicyInput.cacheFirst,
+          executionPolicy: widget.executionPolicy,
         )
         .listen(
           (data) => setState(() {
