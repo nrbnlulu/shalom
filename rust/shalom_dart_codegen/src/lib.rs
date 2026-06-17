@@ -237,8 +237,8 @@ mod ext_jinja_fns {
     pub fn get_fields_requiring_initializer_list(
         ctx: &SharedShalomGlobalContext,
         fields: ViaDeserialize<HashMap<String, InputFieldDefinition>>,
-    ) -> HashMap<String, InputFieldDefinition> {
-        let mut result = HashMap::new();
+    ) -> std::collections::BTreeMap<String, InputFieldDefinition> {
+        let mut result = std::collections::BTreeMap::new();
         for (name, field) in fields.iter() {
             // Only fields with default values need checking
             if field.default_value.is_none() {
@@ -696,9 +696,9 @@ where
     env.add_function(
         "get_interface_level_fragments",
         move |selection_schema_typename: &str,
-              used_fragments: ViaDeserialize<HashSet<String>>|
+              used_fragments: ViaDeserialize<std::collections::BTreeSet<String>>|
               -> minijinja::Value {
-            let filtered: HashSet<String> = used_fragments
+            let filtered: std::collections::BTreeSet<String> = used_fragments
                 .0
                 .iter()
                 .filter(|frag_name| {

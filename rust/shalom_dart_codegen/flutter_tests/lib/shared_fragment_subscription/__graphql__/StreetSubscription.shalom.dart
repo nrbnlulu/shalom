@@ -67,86 +67,14 @@ sealed class StreetSubscription_streetAnimals {
   ) {
     final typename = data['__typename'] as String;
     switch (typename) {
-      case 'Dog':
-        return StreetSubscription_streetAnimals__Dog.fromJson(data);
       case 'Cat':
         return StreetSubscription_streetAnimals__Cat.fromJson(data);
+      case 'Dog':
+        return StreetSubscription_streetAnimals__Dog.fromJson(data);
 
       default:
         throw Exception("Unknown typename $typename");
     }
-  }
-}
-
-class StreetSubscription_streetAnimals__Dog
-    extends StreetSubscription_streetAnimals
-    implements DogFrag {
-  static String G__typename = "Dog";
-
-  /// class members
-  final String name;
-
-  final String id;
-
-  final String breed;
-
-  // Getter for typename (public accessor for static __typename field)
-  String get $__typename => G__typename;
-
-  // keywordargs constructor
-  const StreetSubscription_streetAnimals__Dog({
-    required this.name,
-
-    required this.id,
-
-    required this.breed,
-  });
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is StreetSubscription_streetAnimals__Dog &&
-            name == other.name &&
-            id == other.id &&
-            breed == other.breed);
-  }
-
-  @override
-  int get hashCode => Object.hashAll([
-    name,
-
-    id,
-
-    breed,
-
-    StreetSubscription_streetAnimals__Dog.G__typename,
-  ]);
-
-  shalom_core.JsonObject toJson() {
-    return {
-      'name': this.name,
-
-      'id': this.id,
-
-      "__typename": StreetSubscription_streetAnimals__Dog.G__typename,
-
-      'breed': this.breed,
-    };
-  }
-
-  static StreetSubscription_streetAnimals__Dog fromJson(
-    shalom_core.JsonObject data,
-  ) {
-    final String name$value = data['name'] as String;
-    final String id$value = data['id'] as String;
-    final String breed$value = data['breed'] as String;
-    return StreetSubscription_streetAnimals__Dog(
-      name: name$value,
-
-      id: id$value,
-
-      breed: breed$value,
-    );
   }
 }
 
@@ -187,6 +115,79 @@ class StreetSubscription_streetAnimals__Cat
   ) {
     final String id$value = data['id'] as String;
     return StreetSubscription_streetAnimals__Cat(id: id$value);
+  }
+}
+
+class StreetSubscription_streetAnimals__Dog
+    extends StreetSubscription_streetAnimals
+    implements DogFrag {
+  static String G__typename = "Dog";
+
+  /// class members
+
+  final String breed;
+
+  final String id;
+
+  final String name;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
+  // keywordargs constructor
+  const StreetSubscription_streetAnimals__Dog({
+    required this.breed,
+
+    required this.id,
+
+    required this.name,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is StreetSubscription_streetAnimals__Dog &&
+            breed == other.breed &&
+            id == other.id &&
+            name == other.name);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    breed,
+
+    id,
+
+    name,
+
+    StreetSubscription_streetAnimals__Dog.G__typename,
+  ]);
+
+  shalom_core.JsonObject toJson() {
+    return {
+      "__typename": StreetSubscription_streetAnimals__Dog.G__typename,
+
+      'breed': this.breed,
+
+      'id': this.id,
+
+      'name': this.name,
+    };
+  }
+
+  static StreetSubscription_streetAnimals__Dog fromJson(
+    shalom_core.JsonObject data,
+  ) {
+    final String breed$value = data['breed'] as String;
+    final String id$value = data['id'] as String;
+    final String name$value = data['name'] as String;
+    return StreetSubscription_streetAnimals__Dog(
+      breed: breed$value,
+
+      id: id$value,
+
+      name: name$value,
+    );
   }
 }
 

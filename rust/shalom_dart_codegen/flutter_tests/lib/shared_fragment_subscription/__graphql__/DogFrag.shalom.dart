@@ -21,11 +21,11 @@ extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
 }
 
 abstract class DogFrag {
+  String get breed;
+
   String get id;
 
   String get name;
-
-  String get breed;
 
   shalom_core.JsonObject toJson();
 }

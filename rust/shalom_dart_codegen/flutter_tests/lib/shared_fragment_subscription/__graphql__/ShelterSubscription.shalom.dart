@@ -67,14 +67,54 @@ sealed class ShelterSubscription_shelterAnimals {
   ) {
     final typename = data['__typename'] as String;
     switch (typename) {
-      case 'Dog':
-        return ShelterSubscription_shelterAnimals__Dog.fromJson(data);
       case 'Cat':
         return ShelterSubscription_shelterAnimals__Cat.fromJson(data);
+      case 'Dog':
+        return ShelterSubscription_shelterAnimals__Dog.fromJson(data);
 
       default:
         throw Exception("Unknown typename $typename");
     }
+  }
+}
+
+class ShelterSubscription_shelterAnimals__Cat
+    extends ShelterSubscription_shelterAnimals {
+  static String G__typename = "Cat";
+
+  /// class members
+
+  final String id;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
+  // keywordargs constructor
+  const ShelterSubscription_shelterAnimals__Cat({required this.id});
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ShelterSubscription_shelterAnimals__Cat && id == other.id);
+  }
+
+  @override
+  int get hashCode =>
+      Object.hashAll([id, ShelterSubscription_shelterAnimals__Cat.G__typename]);
+
+  shalom_core.JsonObject toJson() {
+    return {
+      "__typename": ShelterSubscription_shelterAnimals__Cat.G__typename,
+
+      'id': this.id,
+    };
+  }
+
+  static ShelterSubscription_shelterAnimals__Cat fromJson(
+    shalom_core.JsonObject data,
+  ) {
+    final String id$value = data['id'] as String;
+    return ShelterSubscription_shelterAnimals__Cat(id: id$value);
   }
 }
 
@@ -84,6 +124,7 @@ class ShelterSubscription_shelterAnimals__Dog
   static String G__typename = "Dog";
 
   /// class members
+
   final String breed;
 
   final String id;
@@ -124,9 +165,9 @@ class ShelterSubscription_shelterAnimals__Dog
 
   shalom_core.JsonObject toJson() {
     return {
-      'breed': this.breed,
-
       "__typename": ShelterSubscription_shelterAnimals__Dog.G__typename,
+
+      'breed': this.breed,
 
       'id': this.id,
 
@@ -147,45 +188,6 @@ class ShelterSubscription_shelterAnimals__Dog
 
       name: name$value,
     );
-  }
-}
-
-class ShelterSubscription_shelterAnimals__Cat
-    extends ShelterSubscription_shelterAnimals {
-  static String G__typename = "Cat";
-
-  /// class members
-  final String id;
-
-  // Getter for typename (public accessor for static __typename field)
-  String get $__typename => G__typename;
-
-  // keywordargs constructor
-  const ShelterSubscription_shelterAnimals__Cat({required this.id});
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is ShelterSubscription_shelterAnimals__Cat && id == other.id);
-  }
-
-  @override
-  int get hashCode =>
-      Object.hashAll([id, ShelterSubscription_shelterAnimals__Cat.G__typename]);
-
-  shalom_core.JsonObject toJson() {
-    return {
-      'id': this.id,
-
-      "__typename": ShelterSubscription_shelterAnimals__Cat.G__typename,
-    };
-  }
-
-  static ShelterSubscription_shelterAnimals__Cat fromJson(
-    shalom_core.JsonObject data,
-  ) {
-    final String id$value = data['id'] as String;
-    return ShelterSubscription_shelterAnimals__Cat(id: id$value);
   }
 }
 

@@ -2,7 +2,7 @@ use crate::schema::types::{GraphQLAny, SchemaObjectLike};
 use apollo_compiler::{validation::Valid, Node};
 use parking_lot::{Mutex, MutexGuard};
 use serde::{Serialize, Serializer};
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use std::fmt::Debug;
 use std::{collections::HashMap, sync::Arc};
 
@@ -216,8 +216,8 @@ impl SchemaContext {
         self.is_type_implementing_interface(type_name, interface_name)
     }
 
-    pub fn get_concrete_implementors_of_interface(&self, iface: &String) -> HashSet<String> {
-        let mut ret = HashSet::new();
+    pub fn get_concrete_implementors_of_interface(&self, iface: &String) -> BTreeSet<String> {
+        let mut ret = BTreeSet::new();
         let types = self.types.lock();
         for object in types.objects.values() {
             if object.implements_interfaces.contains(iface) {
@@ -226,8 +226,8 @@ impl SchemaContext {
         }
         ret
     }
-    pub fn get_possible_concretes_for_union(&self, union_type: &UnionType) -> HashSet<String> {
-        let mut ret = HashSet::new();
+    pub fn get_possible_concretes_for_union(&self, union_type: &UnionType) -> BTreeSet<String> {
+        let mut ret = BTreeSet::new();
         for member in &union_type.members {
             match self.get_type_strict(member) {
                 GraphQLAny::Interface(iface) => {

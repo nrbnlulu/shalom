@@ -46,15 +46,15 @@ sealed class AnimalWithOwnerWidgetData {
 }
 
 final class AnimalWithOwnerWidgetData$Cat extends AnimalWithOwnerWidgetData {
-  final String id;
   final String color;
+  final String id;
 
-  const AnimalWithOwnerWidgetData$Cat({required this.id, required this.color});
+  const AnimalWithOwnerWidgetData$Cat({required this.color, required this.id});
 
   static AnimalWithOwnerWidgetData$Cat fromJson(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
     final String color$value = data['color'] as String;
-    return AnimalWithOwnerWidgetData$Cat(id: id$value, color: color$value);
+    final String id$value = data['id'] as String;
+    return AnimalWithOwnerWidgetData$Cat(color: color$value, id: id$value);
   }
 }
 
@@ -96,38 +96,38 @@ class AnimalWithOwnerWidget__Dog_owner {
   static String G__typename = "Owner";
 
   /// class members
-  final String name;
-
   final String id;
+
+  final String name;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  AnimalWithOwnerWidget__Dog_owner({required this.name, required this.id});
+  AnimalWithOwnerWidget__Dog_owner({required this.id, required this.name});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AnimalWithOwnerWidget__Dog_owner &&
-            name == other.name &&
-            id == other.id);
+            id == other.id &&
+            name == other.name);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([name, id, AnimalWithOwnerWidget__Dog_owner.G__typename]);
+      Object.hashAll([id, name, AnimalWithOwnerWidget__Dog_owner.G__typename]);
 
   shalom_core.JsonObject toJson() {
-    return {'name': this.name, 'id': this.id};
+    return {'id': this.id, 'name': this.name};
   }
 
   static AnimalWithOwnerWidget__Dog_owner fromJson(
     shalom_core.JsonObject data,
   ) {
-    final String name$value = data['name'] as String;
     final String id$value = data['id'] as String;
-    return AnimalWithOwnerWidget__Dog_owner(name: name$value, id: id$value);
+    final String name$value = data['name'] as String;
+    return AnimalWithOwnerWidget__Dog_owner(id: id$value, name: name$value);
   }
 }
 
