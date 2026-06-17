@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shalom/shalom.dart';
+import 'package:shalom/src/rust/api/runtime.dart' show ObserverInfo;
 
 import 'shalom_provider.dart';
 
@@ -28,8 +29,8 @@ const _kRefColor = Color(0xFF4EC9B0);
 const _kRefBg = Color(0xFF152820);
 const _kRefBorder = Color(0xFF2E6655);
 const _kSelectedBg = Color(0xFF0F3460);
-const _kSubBadgeBg = Color(0xFF1A2A1A);
-const _kSubBadgeColor = Color(0xFF6A9955);
+const _kObsBadgeBg = Color(0xFF1A2A1A);
+const _kObsBadgeColor = Color(0xFF6A9955);
 
 // ---------------------------------------------------------------------------
 // Panel tab
@@ -42,7 +43,7 @@ enum _PanelTab { queries, mutations, cache }
 // ---------------------------------------------------------------------------
 
 /// A debug panel that displays the live state of the Shalom normalized cache,
-/// with Apollo-style Queries / Mutations / Cache tabs and subscriber info.
+/// with Apollo-style Queries / Mutations / Cache tabs and observer info.
 class ShalomDebugPanel extends StatefulWidget {
   final ShalomRuntimeClient client;
   final Duration refreshInterval;
@@ -74,7 +75,8 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
   Map<String, dynamic> _rootQueryFields = {};
   Map<String, dynamic> _rootMutationFields = {};
   List<String> _allKeys = [];
-  Map<String, int> _subCounts = {};
+  Map<String, int> _obsCounts = {};
+  List<ObserverInfo> _allObservers = [];
 
   String? _selectedQueryField;
   String? _selectedMutationField;
@@ -111,13 +113,15 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
     final rootMutationFields = _parseRecord(
       widget.client.getCacheEntry('ROOT_MUTATION'),
     );
-    final subCounts = widget.client.getSubscriptionCounts();
+    final obsCounts = widget.client.getObserverCounts();
+    final allObservers = widget.client.getAllObservers();
     if (mounted) {
       setState(() {
         _allKeys = keys;
         _rootQueryFields = rootQueryFields;
         _rootMutationFields = rootMutationFields;
-        _subCounts = subCounts;
+        _obsCounts = obsCounts;
+        _allObservers = allObservers;
       });
     }
   }
@@ -216,10 +220,24 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
     }
   }
 
-  List<SubscriberInfo> get _currentSubscribers {
-    final key = _tab == _PanelTab.cache ? _selectedCacheKey : null;
-    if (key == null) return [];
-    return widget.client.getKeySubscribers(key);
+  /// Observers relevant to whatever is currently selected.
+  List<ObserverInfo> get _relevantObservers {
+    switch (_tab) {
+      case _PanelTab.queries:
+        // All query-type operation observers
+        return _allObservers
+            .where((o) => o.kind == 'operation' && o.opType == 'query')
+            .toList();
+      case _PanelTab.mutations:
+        // All mutation-type operation observers
+        return _allObservers
+            .where((o) => o.kind == 'operation' && o.opType == 'mutation')
+            .toList();
+      case _PanelTab.cache:
+        final key = _selectedCacheKey;
+        if (key == null) return [];
+        return widget.client.getKeyObservers(key);
+    }
   }
 
   // ---- Build ---------------------------------------------------------------
@@ -256,7 +274,8 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
                       _PanelTab.mutations => _rootMutationFields.length,
                       _PanelTab.cache => _allKeys.length,
                     },
-                    subCounts: _tab == _PanelTab.cache ? _subCounts : const {},
+                    // Observer badge only makes sense per-entity (Cache tab)
+                    obsCounts: _tab == _PanelTab.cache ? _obsCounts : const {},
                     emptyHint: switch (_tab) {
                       _PanelTab.queries => 'No active queries',
                       _PanelTab.mutations => 'No mutations in cache',
@@ -271,8 +290,7 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
                   child: _RightPane(
                     label: _selectedItem,
                     value: _rightValue,
-                    // Only show Subscribers tab in Cache mode
-                    subscribers: _tab == _PanelTab.cache ? _currentSubscribers : null,
+                    observers: _relevantObservers,
                     canGoBack: _history.isNotEmpty,
                     onGoBack: _goBack,
                     onNavigateToRef: _navigateToRef,
@@ -401,8 +419,7 @@ class _TabItem extends StatelessWidget {
               style: TextStyle(
                 color: selected ? Colors.white : Colors.white54,
                 fontSize: 12,
-                fontWeight:
-                    selected ? FontWeight.bold : FontWeight.normal,
+                fontWeight: selected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
             const SizedBox(height: 4),
@@ -428,7 +445,7 @@ class _LeftPane extends StatelessWidget {
   final String? selectedItem;
   final String filter;
   final int totalCount;
-  final Map<String, int> subCounts;
+  final Map<String, int> obsCounts;
   final String emptyHint;
   final ValueChanged<String> onFilterChanged;
   final ValueChanged<String> onItemSelected;
@@ -438,7 +455,7 @@ class _LeftPane extends StatelessWidget {
     required this.selectedItem,
     required this.filter,
     required this.totalCount,
-    required this.subCounts,
+    required this.obsCounts,
     required this.emptyHint,
     required this.onFilterChanged,
     required this.onItemSelected,
@@ -457,10 +474,7 @@ class _LeftPane extends StatelessWidget {
                 hintText: 'Filter…',
                 hintStyle: TextStyle(color: Colors.white38, fontSize: 11),
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 6,
-                ),
+                contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                 border: OutlineInputBorder(),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.white24),
@@ -478,10 +492,7 @@ class _LeftPane extends StatelessWidget {
                 ? Center(
                     child: Text(
                       emptyHint,
-                      style: const TextStyle(
-                        color: Colors.white38,
-                        fontSize: 11,
-                      ),
+                      style: const TextStyle(color: Colors.white38, fontSize: 11),
                     ),
                   )
                 : ListView.builder(
@@ -489,7 +500,7 @@ class _LeftPane extends StatelessWidget {
                     itemBuilder: (_, i) {
                       final item = items[i];
                       final selected = item == selectedItem;
-                      final subCount = subCounts[item];
+                      final obsCount = obsCounts[item];
 
                       final parenIdx = item.indexOf('(');
                       final displayName =
@@ -505,15 +516,12 @@ class _LeftPane extends StatelessWidget {
                             children: [
                               Expanded(
                                 child: Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
                                       displayName,
                                       style: TextStyle(
-                                        color: selected
-                                            ? _kKeyColor
-                                            : Colors.white70,
+                                        color: selected ? _kKeyColor : Colors.white70,
                                         fontSize: 11,
                                         fontFamily: 'monospace',
                                         fontWeight: selected
@@ -536,8 +544,8 @@ class _LeftPane extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                              if (subCount != null && subCount > 0)
-                                _SubBadge(count: subCount),
+                              if (obsCount != null && obsCount > 0)
+                                _ObsBadge(count: obsCount),
                             ],
                           ),
                         ),
@@ -563,29 +571,29 @@ class _LeftPane extends StatelessWidget {
   }
 }
 
-/// Small green badge showing subscriber count, e.g. `↑2`.
-class _SubBadge extends StatelessWidget {
+/// Green badge showing observer count — `👁 2`.
+class _ObsBadge extends StatelessWidget {
   final int count;
-  const _SubBadge({required this.count});
+  const _ObsBadge({required this.count});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
       decoration: BoxDecoration(
-        color: _kSubBadgeBg,
+        color: _kObsBadgeBg,
         borderRadius: BorderRadius.circular(3),
-        border: Border.all(color: _kSubBadgeColor),
+        border: Border.all(color: _kObsBadgeColor),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.people_outline, size: 9, color: _kSubBadgeColor),
+          const Icon(Icons.visibility_outlined, size: 9, color: _kObsBadgeColor),
           const SizedBox(width: 2),
           Text(
             '$count',
             style: const TextStyle(
-              color: _kSubBadgeColor,
+              color: _kObsBadgeColor,
               fontSize: 9,
               fontFamily: 'monospace',
               fontWeight: FontWeight.bold,
@@ -598,13 +606,13 @@ class _SubBadge extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Right pane — with Cached Data / Subscribers sub-tabs
+// Right pane — Cached Data / Observers sub-tabs
 // ---------------------------------------------------------------------------
 
 class _RightPane extends StatefulWidget {
   final String? label;
   final dynamic value;
-  final List<SubscriberInfo>? subscribers; // null = don't show tab
+  final List<ObserverInfo> observers;
   final bool canGoBack;
   final VoidCallback onGoBack;
   final void Function(String) onNavigateToRef;
@@ -612,7 +620,7 @@ class _RightPane extends StatefulWidget {
   const _RightPane({
     this.label,
     this.value,
-    this.subscribers,
+    required this.observers,
     required this.canGoBack,
     required this.onGoBack,
     required this.onNavigateToRef,
@@ -623,13 +631,12 @@ class _RightPane extends StatefulWidget {
 }
 
 class _RightPaneState extends State<_RightPane> {
-  bool _showSubscribers = false;
+  bool _showObservers = false;
 
   @override
   void didUpdateWidget(_RightPane old) {
     super.didUpdateWidget(old);
-    // Reset to Cached Data view when key changes
-    if (old.label != widget.label) _showSubscribers = false;
+    if (old.label != widget.label) _showObservers = false;
   }
 
   String _toRawJson(dynamic v) {
@@ -659,9 +666,8 @@ class _RightPaneState extends State<_RightPane> {
       );
     }
 
-    final subs = widget.subscribers;
-    final showSubTab = subs != null;
     final rawJson = _toRawJson(widget.value);
+    final obsCount = widget.observers.length;
 
     return Container(
       color: _kBg,
@@ -676,18 +682,11 @@ class _RightPaneState extends State<_RightPane> {
               children: [
                 if (widget.canGoBack) ...[
                   IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white70,
-                      size: 14,
-                    ),
+                    icon: const Icon(Icons.arrow_back, color: Colors.white70, size: 14),
                     onPressed: widget.onGoBack,
                     tooltip: 'Go back',
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 24,
-                      minHeight: 24,
-                    ),
+                    constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
                   ),
                   const SizedBox(width: 4),
                 ],
@@ -703,54 +702,45 @@ class _RightPaneState extends State<_RightPane> {
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                if (showSubTab && (subs?.isNotEmpty ?? false))
-                  Padding(
-                    padding: const EdgeInsets.only(right: 6),
-                    child: _SubBadge(count: subs!.length),
-                  ),
+                if (obsCount > 0) ...[
+                  _ObsBadge(count: obsCount),
+                  const SizedBox(width: 4),
+                ],
                 IconButton(
-                  icon: const Icon(
-                    Icons.copy,
-                    color: Colors.white38,
-                    size: 14,
-                  ),
+                  icon: const Icon(Icons.copy, color: Colors.white38, size: 14),
                   onPressed: () =>
                       Clipboard.setData(ClipboardData(text: rawJson)),
                   tooltip: 'Copy raw JSON',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 24,
-                    minHeight: 24,
-                  ),
+                  constraints: const BoxConstraints(minWidth: 24, minHeight: 24),
                 ),
               ],
             ),
           ),
-          // Sub-tabs (only in Cache mode)
-          if (showSubTab)
-            Container(
-              color: _kTabBg,
-              child: Row(
-                children: [
-                  _SubTabItem(
-                    label: 'Cached Data',
-                    selected: !_showSubscribers,
-                    onTap: () => setState(() => _showSubscribers = false),
-                  ),
-                  _SubTabItem(
-                    label: 'Subscribers',
-                    count: subs!.length,
-                    selected: _showSubscribers,
-                    onTap: () => setState(() => _showSubscribers = true),
-                  ),
-                ],
-              ),
+          // Sub-tabs: Cached Data | Observers (N)
+          Container(
+            color: _kTabBg,
+            child: Row(
+              children: [
+                _SubTabItem(
+                  label: 'Cached Data',
+                  selected: !_showObservers,
+                  onTap: () => setState(() => _showObservers = false),
+                ),
+                _SubTabItem(
+                  label: 'Observers',
+                  count: obsCount,
+                  selected: _showObservers,
+                  onTap: () => setState(() => _showObservers = true),
+                ),
+              ],
             ),
+          ),
           // Content
           Expanded(
-            child: _showSubscribers && showSubTab
-                ? _SubscriberList(
-                    subscribers: subs!,
+            child: _showObservers
+                ? _ObserverList(
+                    observers: widget.observers,
                     onNavigateToKey: widget.onNavigateToRef,
                   )
                 : SingleChildScrollView(
@@ -811,24 +801,24 @@ class _SubTabItem extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Subscriber list
+// Observer list
 // ---------------------------------------------------------------------------
 
-class _SubscriberList extends StatelessWidget {
-  final List<SubscriberInfo> subscribers;
+class _ObserverList extends StatelessWidget {
+  final List<ObserverInfo> observers;
   final void Function(String) onNavigateToKey;
 
-  const _SubscriberList({
-    required this.subscribers,
+  const _ObserverList({
+    required this.observers,
     required this.onNavigateToKey,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (subscribers.isEmpty) {
+    if (observers.isEmpty) {
       return const Center(
         child: Text(
-          'No active subscribers\n(entry may be GC\'d soon)',
+          'No active observers\n(entry may be GC\'d soon)',
           textAlign: TextAlign.center,
           style: TextStyle(color: Colors.white38, fontSize: 12),
         ),
@@ -836,28 +826,28 @@ class _SubscriberList extends StatelessWidget {
     }
     return ListView.separated(
       padding: const EdgeInsets.all(10),
-      itemCount: subscribers.length,
+      itemCount: observers.length,
       separatorBuilder: (_, __) =>
           const Divider(color: Color(0xFF333355), height: 12),
-      itemBuilder: (_, i) => _SubscriberCard(
-        info: subscribers[i],
+      itemBuilder: (_, i) => _ObserverCard(
+        info: observers[i],
         onNavigateToKey: onNavigateToKey,
       ),
     );
   }
 }
 
-class _SubscriberCard extends StatefulWidget {
-  final SubscriberInfo info;
+class _ObserverCard extends StatefulWidget {
+  final ObserverInfo info;
   final void Function(String) onNavigateToKey;
 
-  const _SubscriberCard({required this.info, required this.onNavigateToKey});
+  const _ObserverCard({required this.info, required this.onNavigateToKey});
 
   @override
-  State<_SubscriberCard> createState() => _SubscriberCardState();
+  State<_ObserverCard> createState() => _ObserverCardState();
 }
 
-class _SubscriberCardState extends State<_SubscriberCard> {
+class _ObserverCardState extends State<_ObserverCard> {
   bool _keysExpanded = false;
 
   @override
@@ -866,6 +856,7 @@ class _SubscriberCardState extends State<_SubscriberCard> {
     final isFragment = info.kind == 'fragment';
     final icon = isFragment ? Icons.account_tree_outlined : Icons.bolt_outlined;
     final kindColor = isFragment ? _kRefColor : const Color(0xFFDCDCAA);
+    final opTypeLabel = info.opType != null ? ' · ${info.opType}' : '';
 
     return Container(
       padding: const EdgeInsets.all(10),
@@ -894,7 +885,7 @@ class _SubscriberCardState extends State<_SubscriberCard> {
                 ),
               ),
               Text(
-                info.kind,
+                '${info.kind}$opTypeLabel',
                 style: const TextStyle(
                   color: _kMutedColor,
                   fontSize: 10,
@@ -962,7 +953,7 @@ class _SubscriberCardState extends State<_SubscriberCard> {
               ),
             ),
           ],
-          // Watched keys
+          // Watched keys (collapsible)
           const SizedBox(height: 6),
           GestureDetector(
             onTap: () => setState(() => _keysExpanded = !_keysExpanded),
@@ -974,7 +965,7 @@ class _SubscriberCardState extends State<_SubscriberCard> {
                   color: _kMutedColor,
                 ),
                 Text(
-                  'watches ${info.watchedKeys.length} key${info.watchedKeys.length == 1 ? '' : 's'}',
+                  'observes ${info.watchedKeys.length} key${info.watchedKeys.length == 1 ? '' : 's'}',
                   style: const TextStyle(
                     color: _kMutedColor,
                     fontSize: 11,
@@ -1044,10 +1035,7 @@ class _JsonValue extends StatelessWidget {
         return _RefChip(refKey: refKey, onTap: () => onNavigateToRef(refKey));
       }
       if (map.isEmpty) {
-        return const Text(
-          '{ }',
-          style: TextStyle(color: _kPunctColor, fontSize: 12),
-        );
+        return const Text('{ }', style: TextStyle(color: _kPunctColor, fontSize: 12));
       }
       return _JsonObjectNode(
         entries: map.entries.toList(),
@@ -1059,10 +1047,7 @@ class _JsonValue extends StatelessWidget {
     if (value is List) {
       final list = value as List;
       if (list.isEmpty) {
-        return const Text(
-          '[ ]',
-          style: TextStyle(color: _kPunctColor, fontSize: 12),
-        );
+        return const Text('[ ]', style: TextStyle(color: _kPunctColor, fontSize: 12));
       }
       return _JsonArrayNode(
         items: list,
@@ -1107,18 +1092,14 @@ class _JsonObjectNodeState extends State<_JsonObjectNode> {
       return _ExpandHeader(
         open: '{',
         close: '}',
-        summary:
-            '${widget.entries.length} field${widget.entries.length == 1 ? '' : 's'}',
+        summary: '${widget.entries.length} field${widget.entries.length == 1 ? '' : 's'}',
         onTap: () => setState(() => _expanded = true),
       );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _CollapseHeader(
-          bracket: '{',
-          onTap: () => setState(() => _expanded = false),
-        ),
+        _CollapseHeader(bracket: '{', onTap: () => setState(() => _expanded = false)),
         for (final e in widget.entries)
           _KeyValueRow(
             label: '"${e.key}"',
@@ -1126,10 +1107,7 @@ class _JsonObjectNodeState extends State<_JsonObjectNode> {
             depth: widget.depth + 1,
             onNavigateToRef: widget.onNavigateToRef,
           ),
-        const Text(
-          '}',
-          style: TextStyle(color: _kPunctColor, fontSize: 12),
-        ),
+        const Text('}', style: TextStyle(color: _kPunctColor, fontSize: 12)),
       ],
     );
   }
@@ -1167,18 +1145,14 @@ class _JsonArrayNodeState extends State<_JsonArrayNode> {
       return _ExpandHeader(
         open: '[',
         close: ']',
-        summary:
-            '${widget.items.length} item${widget.items.length == 1 ? '' : 's'}',
+        summary: '${widget.items.length} item${widget.items.length == 1 ? '' : 's'}',
         onTap: () => setState(() => _expanded = true),
       );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _CollapseHeader(
-          bracket: '[',
-          onTap: () => setState(() => _expanded = false),
-        ),
+        _CollapseHeader(bracket: '[', onTap: () => setState(() => _expanded = false)),
         for (var i = 0; i < widget.items.length; i++)
           _KeyValueRow(
             label: '$i',
@@ -1187,10 +1161,7 @@ class _JsonArrayNodeState extends State<_JsonArrayNode> {
             depth: widget.depth + 1,
             onNavigateToRef: widget.onNavigateToRef,
           ),
-        const Text(
-          ']',
-          style: TextStyle(color: _kPunctColor, fontSize: 12),
-        ),
+        const Text(']', style: TextStyle(color: _kPunctColor, fontSize: 12)),
       ],
     );
   }
@@ -1307,43 +1278,19 @@ class _JsonScalar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (value == null) {
-      return const Text(
-        'null',
-        style: TextStyle(
-          color: _kBoolNullColor,
-          fontSize: 12,
-          fontFamily: 'monospace',
-        ),
-      );
+      return const Text('null',
+          style: TextStyle(color: _kBoolNullColor, fontSize: 12, fontFamily: 'monospace'));
     }
     if (value is bool) {
-      return Text(
-        '$value',
-        style: const TextStyle(
-          color: _kBoolNullColor,
-          fontSize: 12,
-          fontFamily: 'monospace',
-        ),
-      );
+      return Text('$value',
+          style: const TextStyle(color: _kBoolNullColor, fontSize: 12, fontFamily: 'monospace'));
     }
     if (value is String) {
-      return Text(
-        '"$value"',
-        style: const TextStyle(
-          color: _kStringColor,
-          fontSize: 12,
-          fontFamily: 'monospace',
-        ),
-      );
+      return Text('"$value"',
+          style: const TextStyle(color: _kStringColor, fontSize: 12, fontFamily: 'monospace'));
     }
-    return Text(
-      '$value',
-      style: const TextStyle(
-        color: _kNumberColor,
-        fontSize: 12,
-        fontFamily: 'monospace',
-      ),
-    );
+    return Text('$value',
+        style: const TextStyle(color: _kNumberColor, fontSize: 12, fontFamily: 'monospace'));
   }
 }
 

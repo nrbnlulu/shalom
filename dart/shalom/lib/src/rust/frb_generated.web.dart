@@ -63,9 +63,9 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_WsSansIoPtr => wir
 
 @protected List<String> dco_decode_list_String(dynamic raw);
 
-@protected Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+@protected List<ObserverInfo> dco_decode_list_observer_info(dynamic raw);
 
-@protected List<SubscriberInfo> dco_decode_list_subscriber_info(dynamic raw);
+@protected Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
 @protected List<WsLinkEvent> dco_decode_list_ws_link_event(dynamic raw);
 
@@ -73,13 +73,13 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_WsSansIoPtr => wir
 
 @protected ObservedRefInput dco_decode_observed_ref_input(dynamic raw);
 
+@protected ObserverInfo dco_decode_observer_info(dynamic raw);
+
 @protected String? dco_decode_opt_String(dynamic raw);
 
 @protected RuntimeConfigInput? dco_decode_opt_box_autoadd_runtime_config_input(dynamic raw);
 
 @protected RuntimeConfigInput dco_decode_runtime_config_input(dynamic raw);
-
-@protected SubscriberInfo dco_decode_subscriber_info(dynamic raw);
 
 @protected int dco_decode_u_16(dynamic raw);
 
@@ -125,9 +125,9 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_WsSansIoPtr => wir
 
 @protected List<String> sse_decode_list_String(SseDeserializer deserializer);
 
-@protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+@protected List<ObserverInfo> sse_decode_list_observer_info(SseDeserializer deserializer);
 
-@protected List<SubscriberInfo> sse_decode_list_subscriber_info(SseDeserializer deserializer);
+@protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
 
 @protected List<WsLinkEvent> sse_decode_list_ws_link_event(SseDeserializer deserializer);
 
@@ -135,13 +135,13 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_WsSansIoPtr => wir
 
 @protected ObservedRefInput sse_decode_observed_ref_input(SseDeserializer deserializer);
 
+@protected ObserverInfo sse_decode_observer_info(SseDeserializer deserializer);
+
 @protected String? sse_decode_opt_String(SseDeserializer deserializer);
 
 @protected RuntimeConfigInput? sse_decode_opt_box_autoadd_runtime_config_input(SseDeserializer deserializer);
 
 @protected RuntimeConfigInput sse_decode_runtime_config_input(SseDeserializer deserializer);
-
-@protected SubscriberInfo sse_decode_subscriber_info(SseDeserializer deserializer);
 
 @protected int sse_decode_u_16(SseDeserializer deserializer);
 
@@ -187,9 +187,9 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_WsSansIoPtr => wir
 
 @protected void sse_encode_list_String(List<String> self, SseSerializer serializer);
 
-@protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer);
+@protected void sse_encode_list_observer_info(List<ObserverInfo> self, SseSerializer serializer);
 
-@protected void sse_encode_list_subscriber_info(List<SubscriberInfo> self, SseSerializer serializer);
+@protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer);
 
 @protected void sse_encode_list_ws_link_event(List<WsLinkEvent> self, SseSerializer serializer);
 
@@ -197,13 +197,13 @@ CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_WsSansIoPtr => wir
 
 @protected void sse_encode_observed_ref_input(ObservedRefInput self, SseSerializer serializer);
 
+@protected void sse_encode_observer_info(ObserverInfo self, SseSerializer serializer);
+
 @protected void sse_encode_opt_String(String? self, SseSerializer serializer);
 
 @protected void sse_encode_opt_box_autoadd_runtime_config_input(RuntimeConfigInput? self, SseSerializer serializer);
 
 @protected void sse_encode_runtime_config_input(RuntimeConfigInput self, SseSerializer serializer);
-
-@protected void sse_encode_subscriber_info(SubscriberInfo self, SseSerializer serializer);
 
 @protected void sse_encode_u_16(int self, SseSerializer serializer);
 

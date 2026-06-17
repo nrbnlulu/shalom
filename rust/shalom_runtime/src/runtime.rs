@@ -54,18 +54,20 @@ pub enum ExecutionPolicy {
 pub type RuntimeResponseStream =
     Pin<Box<dyn Stream<Item = anyhow::Result<RuntimeResponse>> + Send>>;
 
-/// Info about a single active subscription that watches a cache key.
+/// Info about a single active subscription / observer.
 #[derive(Debug, Clone)]
 pub struct KeySubscriberInfo {
     pub id: u64,
     /// `"operation"` or `"fragment"`
     pub kind: String,
     pub name: String,
-    /// For fragment subscriptions: the anchor cache key.
+    /// For operation observers: `"query"`, `"mutation"`, or `"subscription"`.
+    pub op_type: Option<String>,
+    /// For fragment observers: the anchor cache key.
     pub anchor: Option<String>,
-    /// Serialized JSON of the subscription variables, if any.
+    /// Serialized JSON of the observer's variables, if any.
     pub variables_json: Option<String>,
-    /// All cache keys this subscription is currently watching.
+    /// All cache keys this observer is currently watching.
     pub watched_keys: Vec<String>,
 }
 
@@ -604,45 +606,65 @@ impl ShalomRuntime {
         self.subscription_tracker.lock().counts().clone()
     }
 
-    /// Returns info about every active subscription that watches [key].
+    /// Returns info about every active observer that watches [key].
     pub fn key_subscribers(&self, key: &str) -> Vec<KeySubscriberInfo> {
         let manager = self.subscriptions.lock();
-        manager
-            .subscriptions
-            .iter()
-            .filter(|(_, state)| state.keys.contains(key))
-            .map(|(id, state)| {
-                let (kind, name, anchor) = match &state.target {
-                    SubscriptionTarget::Operation(op_ctx) => (
+        Self::build_observer_list(
+            manager.subscriptions.iter().filter(|(_, s)| s.keys.contains(key)),
+        )
+    }
+
+    /// Returns info about every active observer, regardless of which keys it watches.
+    pub fn all_observers(&self) -> Vec<KeySubscriberInfo> {
+        let manager = self.subscriptions.lock();
+        Self::build_observer_list(manager.subscriptions.iter())
+    }
+
+    fn build_observer_list<'a>(
+        iter: impl Iterator<Item = (&'a SubscriptionId, &'a SubscriptionState)>,
+    ) -> Vec<KeySubscriberInfo> {
+        iter.map(|(id, state)| {
+            let (kind, name, op_type, anchor) = match &state.target {
+                SubscriptionTarget::Operation(op_ctx) => {
+                    let op_type = match op_ctx.op_type() {
+                        shalom_core::operation::types::OperationType::Query => "query",
+                        shalom_core::operation::types::OperationType::Mutation => "mutation",
+                        shalom_core::operation::types::OperationType::Subscription => "subscription",
+                    };
+                    (
                         "operation",
                         op_ctx.get_operation_name().to_string(),
+                        Some(op_type.to_string()),
                         None,
-                    ),
-                    SubscriptionTarget::Fragment { fragment, anchor } => (
-                        "fragment",
-                        fragment.get_fragment_name().to_string(),
-                        Some(anchor.clone()),
-                    ),
-                };
-                let variables_json = state
-                    .variables
-                    .as_ref()
-                    .and_then(|v| serde_json::to_string(v).ok());
-                let watched_keys = {
-                    let mut keys: Vec<String> = state.keys.iter().cloned().collect();
-                    keys.sort();
-                    keys
-                };
-                KeySubscriberInfo {
-                    id: id.0,
-                    kind: kind.to_string(),
-                    name,
-                    anchor,
-                    variables_json,
-                    watched_keys,
+                    )
                 }
-            })
-            .collect()
+                SubscriptionTarget::Fragment { fragment, anchor } => (
+                    "fragment",
+                    fragment.get_fragment_name().to_string(),
+                    None,
+                    Some(anchor.clone()),
+                ),
+            };
+            let variables_json = state
+                .variables
+                .as_ref()
+                .and_then(|v| serde_json::to_string(v).ok());
+            let watched_keys = {
+                let mut keys: Vec<String> = state.keys.iter().cloned().collect();
+                keys.sort();
+                keys
+            };
+            KeySubscriberInfo {
+                id: id.0,
+                kind: kind.to_string(),
+                name,
+                op_type,
+                anchor,
+                variables_json,
+                watched_keys,
+            }
+        })
+        .collect()
     }
 
     // -----------------------------------------------------------------------

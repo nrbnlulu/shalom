@@ -490,45 +490,63 @@ fn response_to_json(response: RuntimeResponse) -> anyhow::Result<String> {
 // Subscriber info (FRB-facing DTO)
 // ---------------------------------------------------------------------------
 
-/// Info about a single subscription watching a cache key.
+/// Info about a single active observer (operation or fragment subscription).
 #[frb]
-pub struct SubscriberInfo {
+pub struct ObserverInfo {
     pub id: u64,
     /// `"operation"` or `"fragment"`
     pub kind: String,
     pub name: String,
-    /// For fragment subscriptions: the anchor cache key.
+    /// For operation observers: `"query"`, `"mutation"`, or `"subscription"`.
+    pub op_type: Option<String>,
+    /// For fragment observers: the anchor cache key.
     pub anchor: Option<String>,
-    /// Serialised JSON of subscription variables, if any.
+    /// Serialised JSON of the observer's variables, if any.
     pub variables_json: Option<String>,
-    /// All cache keys this subscription is currently watching.
+    /// All cache keys this observer is currently watching.
     pub watched_keys: Vec<String>,
 }
 
-/// Returns a JSON object mapping each cache key to its active subscriber count.
+fn to_observer_info(s: shalom_runtime::KeySubscriberInfo) -> ObserverInfo {
+    ObserverInfo {
+        id: s.id,
+        kind: s.kind,
+        name: s.name,
+        op_type: s.op_type,
+        anchor: s.anchor,
+        variables_json: s.variables_json,
+        watched_keys: s.watched_keys,
+    }
+}
+
+/// Returns a JSON object mapping each cache key to its active observer count.
 ///
 /// Example: `{"ROOT_QUERY": 2, "User:1": 1}`
 #[frb(sync)]
-pub fn get_subscription_counts(handle: &RuntimeHandle) -> String {
+pub fn get_observer_counts(handle: &RuntimeHandle) -> String {
     let counts = handle.runtime.subscription_counts();
     serde_json::to_string(&counts).unwrap_or_else(|_| "{}".to_string())
 }
 
-/// Returns info about every active subscription currently watching [key].
+/// Returns info about every observer currently watching [key].
 #[frb(sync)]
-pub fn get_key_subscribers(handle: &RuntimeHandle, key: String) -> Vec<SubscriberInfo> {
+pub fn get_key_observers(handle: &RuntimeHandle, key: String) -> Vec<ObserverInfo> {
     handle
         .runtime
         .key_subscribers(&key)
         .into_iter()
-        .map(|s| SubscriberInfo {
-            id: s.id,
-            kind: s.kind,
-            name: s.name,
-            anchor: s.anchor,
-            variables_json: s.variables_json,
-            watched_keys: s.watched_keys,
-        })
+        .map(to_observer_info)
+        .collect()
+}
+
+/// Returns info about ALL active observers across the entire runtime.
+#[frb(sync)]
+pub fn get_all_observers(handle: &RuntimeHandle) -> Vec<ObserverInfo> {
+    handle
+        .runtime
+        .all_observers()
+        .into_iter()
+        .map(to_observer_info)
         .collect()
 }
 

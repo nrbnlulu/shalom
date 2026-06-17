@@ -19,7 +19,7 @@ import 'package:shalom/src/transport/link.dart' show GraphQLLink;
 import 'rust/api/runtime.dart' as rs_runtime;
 
 export 'rust/api/runtime.dart'
-    show ExecutionPolicyInput, ObservedRefInput, RuntimeConfigInput, SubscriberInfo;
+    show ExecutionPolicyInput, ObservedRefInput, RuntimeConfigInput, ObserverInfo;
 
 // Thin wrapper so this file compiles without a Flutter dependency.
 // In Flutter apps the real debugPrint throttles long lines; for our purposes
@@ -478,16 +478,20 @@ class ShalomRuntimeClient {
   String? getCacheEntry(String key) =>
       rs_runtime.getCacheEntry(handle: _handle, key: key);
 
-  /// Returns a map of cache-key → active subscriber count.
-  Map<String, int> getSubscriptionCounts() {
-    final raw = rs_runtime.getSubscriptionCounts(handle: _handle);
+  /// Returns a map of cache-key → active observer count.
+  Map<String, int> getObserverCounts() {
+    final raw = rs_runtime.getObserverCounts(handle: _handle);
     final decoded = jsonDecode(raw) as Map<String, dynamic>;
     return decoded.map((k, v) => MapEntry(k, (v as num).toInt()));
   }
 
-  /// Returns info about every active subscription currently watching [key].
-  List<rs_runtime.SubscriberInfo> getKeySubscribers(String key) =>
-      rs_runtime.getKeySubscribers(handle: _handle, key: key);
+  /// Returns info about every active observer currently watching [key].
+  List<rs_runtime.ObserverInfo> getKeyObservers(String key) =>
+      rs_runtime.getKeyObservers(handle: _handle, key: key);
+
+  /// Returns info about ALL active observers in the runtime.
+  List<rs_runtime.ObserverInfo> getAllObservers() =>
+      rs_runtime.getAllObservers(handle: _handle);
 }
 
 // ---------------------------------------------------------------------------

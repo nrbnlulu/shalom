@@ -7,7 +7,7 @@ import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 
-            // These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`
+            // These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`, `to_observer_info`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`
 
 
@@ -80,13 +80,16 @@ Future<void>  pushTransportError({required RuntimeHandle handle , required BigIn
 /// Signal that all responses for `request_id` have been delivered.
 Future<void>  completeTransport({required RuntimeHandle handle , required BigInt requestId }) => RustLib.instance.api.crateApiRuntimeCompleteTransport(handle: handle, requestId: requestId);
 
-/// Returns a JSON object mapping each cache key to its active subscriber count.
+/// Returns a JSON object mapping each cache key to its active observer count.
 ///
 /// Example: `{"ROOT_QUERY": 2, "User:1": 1}`
-String  getSubscriptionCounts({required RuntimeHandle handle }) => RustLib.instance.api.crateApiRuntimeGetSubscriptionCounts(handle: handle);
+String  getObserverCounts({required RuntimeHandle handle }) => RustLib.instance.api.crateApiRuntimeGetObserverCounts(handle: handle);
 
-/// Returns info about every active subscription currently watching [key].
-List<SubscriberInfo>  getKeySubscribers({required RuntimeHandle handle , required String key }) => RustLib.instance.api.crateApiRuntimeGetKeySubscribers(handle: handle, key: key);
+/// Returns info about every observer currently watching [key].
+List<ObserverInfo>  getKeyObservers({required RuntimeHandle handle , required String key }) => RustLib.instance.api.crateApiRuntimeGetKeyObservers(handle: handle, key: key);
+
+/// Returns info about ALL active observers across the entire runtime.
+List<ObserverInfo>  getAllObservers({required RuntimeHandle handle }) => RustLib.instance.api.crateApiRuntimeGetAllObservers(handle: handle);
 
 /// Returns all keys currently stored in the normalized cache.
 List<String>  getCacheKeys({required RuntimeHandle handle }) => RustLib.instance.api.crateApiRuntimeGetCacheKeys(handle: handle);
@@ -150,6 +153,41 @@ final String anchor;
         
             }
 
+/// Info about a single active observer (operation or fragment subscription).
+class ObserverInfo  {
+                final BigInt id;
+/// `"operation"` or `"fragment"`
+final String kind;
+final String name;
+/// For operation observers: `"query"`, `"mutation"`, or `"subscription"`.
+final String? opType;
+/// For fragment observers: the anchor cache key.
+final String? anchor;
+/// Serialised JSON of the observer's variables, if any.
+final String? variablesJson;
+/// All cache keys this observer is currently watching.
+final List<String> watchedKeys;
+
+                const ObserverInfo({required this.id ,required this.kind ,required this.name ,this.opType ,this.anchor ,this.variablesJson ,required this.watchedKeys ,});
+
+                
+                
+
+                
+        @override
+        int get hashCode => id.hashCode^kind.hashCode^name.hashCode^opType.hashCode^anchor.hashCode^variablesJson.hashCode^watchedKeys.hashCode;
+        
+
+                
+        @override
+        bool operator ==(Object other) =>
+            identical(this, other) ||
+            other is ObserverInfo &&
+                runtimeType == other.runtimeType
+                && id == other.id&& kind == other.kind&& name == other.name&& opType == other.opType&& anchor == other.anchor&& variablesJson == other.variablesJson&& watchedKeys == other.watchedKeys;
+        
+            }
+
 /// Dart-facing runtime configuration.  Empty for now; fields will be added as
 /// the runtime gains configurable behaviour (e.g. GC tuning, cache limits).
 class RuntimeConfigInput  {
@@ -172,39 +210,6 @@ class RuntimeConfigInput  {
             other is RuntimeConfigInput &&
                 runtimeType == other.runtimeType
                 ;
-        
-            }
-
-/// Info about a single subscription watching a cache key.
-class SubscriberInfo  {
-                final BigInt id;
-/// `"operation"` or `"fragment"`
-final String kind;
-final String name;
-/// For fragment subscriptions: the anchor cache key.
-final String? anchor;
-/// Serialised JSON of subscription variables, if any.
-final String? variablesJson;
-/// All cache keys this subscription is currently watching.
-final List<String> watchedKeys;
-
-                const SubscriberInfo({required this.id ,required this.kind ,required this.name ,this.anchor ,this.variablesJson ,required this.watchedKeys ,});
-
-                
-                
-
-                
-        @override
-        int get hashCode => id.hashCode^kind.hashCode^name.hashCode^anchor.hashCode^variablesJson.hashCode^watchedKeys.hashCode;
-        
-
-                
-        @override
-        bool operator ==(Object other) =>
-            identical(this, other) ||
-            other is SubscriberInfo &&
-                runtimeType == other.runtimeType
-                && id == other.id&& kind == other.kind&& name == other.name&& anchor == other.anchor&& variablesJson == other.variablesJson&& watchedKeys == other.watchedKeys;
         
             }
             
