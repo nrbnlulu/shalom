@@ -8,6 +8,6 @@ pub mod sansio_protocols;
 pub mod selection;
 
 pub use runtime::{
-    ExecutionPolicy, ObservedRef, OptimisticWriteId, RuntimeConfig, RuntimeResponse,
-    RuntimeResponseStream, ShalomRuntime, SubscriptionId,
+    ExecutionPolicy, KeySubscriberInfo, ObservedRef, OptimisticWriteId, RuntimeConfig,
+    RuntimeResponse, RuntimeResponseStream, ShalomRuntime, SubscriptionId,
 };

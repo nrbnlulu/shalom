@@ -19,7 +19,7 @@ import 'package:shalom/src/transport/link.dart' show GraphQLLink;
 import 'rust/api/runtime.dart' as rs_runtime;
 
 export 'rust/api/runtime.dart'
-    show ExecutionPolicyInput, ObservedRefInput, RuntimeConfigInput;
+    show ExecutionPolicyInput, ObservedRefInput, RuntimeConfigInput, SubscriberInfo;
 
 // Thin wrapper so this file compiles without a Flutter dependency.
 // In Flutter apps the real debugPrint throttles long lines; for our purposes
@@ -462,6 +462,32 @@ class ShalomRuntimeClient {
       ),
     );
   }
+
+  // -------------------------------------------------------------------------
+  // Debug / cache inspection
+  // -------------------------------------------------------------------------
+
+  /// Returns all keys currently stored in the normalized cache, sorted
+  /// alphabetically.
+  List<String> getCacheKeys() => rs_runtime.getCacheKeys(handle: _handle);
+
+  /// Returns a pretty-printed JSON string for the cache entry at [key],
+  /// or `null` if the key is not present.
+  ///
+  /// Refs in the cache are serialised as `{"__ref": "<key>"}`.
+  String? getCacheEntry(String key) =>
+      rs_runtime.getCacheEntry(handle: _handle, key: key);
+
+  /// Returns a map of cache-key → active subscriber count.
+  Map<String, int> getSubscriptionCounts() {
+    final raw = rs_runtime.getSubscriptionCounts(handle: _handle);
+    final decoded = jsonDecode(raw) as Map<String, dynamic>;
+    return decoded.map((k, v) => MapEntry(k, (v as num).toInt()));
+  }
+
+  /// Returns info about every active subscription currently watching [key].
+  List<rs_runtime.SubscriberInfo> getKeySubscribers(String key) =>
+      rs_runtime.getKeySubscribers(handle: _handle, key: key);
 }
 
 // ---------------------------------------------------------------------------

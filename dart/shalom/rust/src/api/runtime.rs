@@ -481,3 +481,103 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
 fn response_to_json(response: RuntimeResponse) -> anyhow::Result<String> {
     serde_json::to_string(&response).map_err(|e| anyhow::anyhow!(e))
 }
+
+// ---------------------------------------------------------------------------
+// Debug / cache inspection
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Subscriber info (FRB-facing DTO)
+// ---------------------------------------------------------------------------
+
+/// Info about a single subscription watching a cache key.
+#[frb]
+pub struct SubscriberInfo {
+    pub id: u64,
+    /// `"operation"` or `"fragment"`
+    pub kind: String,
+    pub name: String,
+    /// For fragment subscriptions: the anchor cache key.
+    pub anchor: Option<String>,
+    /// Serialised JSON of subscription variables, if any.
+    pub variables_json: Option<String>,
+    /// All cache keys this subscription is currently watching.
+    pub watched_keys: Vec<String>,
+}
+
+/// Returns a JSON object mapping each cache key to its active subscriber count.
+///
+/// Example: `{"ROOT_QUERY": 2, "User:1": 1}`
+#[frb(sync)]
+pub fn get_subscription_counts(handle: &RuntimeHandle) -> String {
+    let counts = handle.runtime.subscription_counts();
+    serde_json::to_string(&counts).unwrap_or_else(|_| "{}".to_string())
+}
+
+/// Returns info about every active subscription currently watching [key].
+#[frb(sync)]
+pub fn get_key_subscribers(handle: &RuntimeHandle, key: String) -> Vec<SubscriberInfo> {
+    handle
+        .runtime
+        .key_subscribers(&key)
+        .into_iter()
+        .map(|s| SubscriberInfo {
+            id: s.id,
+            kind: s.kind,
+            name: s.name,
+            anchor: s.anchor,
+            variables_json: s.variables_json,
+            watched_keys: s.watched_keys,
+        })
+        .collect()
+}
+
+// ---------------------------------------------------------------------------
+// Cache inspection
+// ---------------------------------------------------------------------------
+
+/// Returns all keys currently stored in the normalized cache.
+#[frb(sync)]
+pub fn get_cache_keys(handle: &RuntimeHandle) -> Vec<String> {
+    let cache = handle.runtime.cache();
+    let cache = cache.lock();
+    let mut keys: Vec<String> = cache.keys().cloned().collect();
+    keys.sort();
+    keys
+}
+
+/// Returns a pretty-printed JSON string for the cache entry at [key],
+/// or `None` if the key is not present.
+///
+/// `CacheValue::Ref` entries are serialised as `{"__ref": "<key>"}`.
+#[frb(sync)]
+pub fn get_cache_entry(handle: &RuntimeHandle, key: String) -> Option<String> {
+    let cache = handle.runtime.cache();
+    let cache = cache.lock();
+    let record = cache.get(&key)?;
+    let json_map: serde_json::Map<String, Value> = record
+        .iter()
+        .map(|(k, v)| (k.clone(), cache_value_to_json(v)))
+        .collect();
+    serde_json::to_string_pretty(&Value::Object(json_map)).ok()
+}
+
+fn cache_value_to_json(value: &shalom_runtime::cache::CacheValue) -> Value {
+    use shalom_runtime::cache::CacheValue;
+    match value {
+        CacheValue::Scalar(v) => v.clone(),
+        CacheValue::List(items) => Value::Array(items.iter().map(cache_value_to_json).collect()),
+        CacheValue::Object(record) => {
+            let map: serde_json::Map<String, Value> = record
+                .iter()
+                .map(|(k, v)| (k.clone(), cache_value_to_json(v)))
+                .collect();
+            Value::Object(map)
+        }
+        CacheValue::Ref(key) => {
+            let mut map = serde_json::Map::new();
+            map.insert("__ref".to_string(), Value::String(key.clone()));
+            Value::Object(map)
+        }
+    }
+}

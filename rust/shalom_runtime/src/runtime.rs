@@ -54,6 +54,21 @@ pub enum ExecutionPolicy {
 pub type RuntimeResponseStream =
     Pin<Box<dyn Stream<Item = anyhow::Result<RuntimeResponse>> + Send>>;
 
+/// Info about a single active subscription that watches a cache key.
+#[derive(Debug, Clone)]
+pub struct KeySubscriberInfo {
+    pub id: u64,
+    /// `"operation"` or `"fragment"`
+    pub kind: String,
+    pub name: String,
+    /// For fragment subscriptions: the anchor cache key.
+    pub anchor: Option<String>,
+    /// Serialized JSON of the subscription variables, if any.
+    pub variables_json: Option<String>,
+    /// All cache keys this subscription is currently watching.
+    pub watched_keys: Vec<String>,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SubscriptionId(u64);
 
@@ -578,6 +593,56 @@ impl ShalomRuntime {
         if let Some(state) = manager.subscriptions.get(&id) {
             let _ = state.sender.send(Err(err));
         }
+    }
+
+    // -----------------------------------------------------------------------
+    // Debug / inspection helpers (pub for the FRB layer)
+    // -----------------------------------------------------------------------
+
+    /// Returns a map of cache-key → active subscriber count.
+    pub fn subscription_counts(&self) -> HashMap<String, usize> {
+        self.subscription_tracker.lock().counts().clone()
+    }
+
+    /// Returns info about every active subscription that watches [key].
+    pub fn key_subscribers(&self, key: &str) -> Vec<KeySubscriberInfo> {
+        let manager = self.subscriptions.lock();
+        manager
+            .subscriptions
+            .iter()
+            .filter(|(_, state)| state.keys.contains(key))
+            .map(|(id, state)| {
+                let (kind, name, anchor) = match &state.target {
+                    SubscriptionTarget::Operation(op_ctx) => (
+                        "operation",
+                        op_ctx.get_operation_name().to_string(),
+                        None,
+                    ),
+                    SubscriptionTarget::Fragment { fragment, anchor } => (
+                        "fragment",
+                        fragment.get_fragment_name().to_string(),
+                        Some(anchor.clone()),
+                    ),
+                };
+                let variables_json = state
+                    .variables
+                    .as_ref()
+                    .and_then(|v| serde_json::to_string(v).ok());
+                let watched_keys = {
+                    let mut keys: Vec<String> = state.keys.iter().cloned().collect();
+                    keys.sort();
+                    keys
+                };
+                KeySubscriberInfo {
+                    id: id.0,
+                    kind: kind.to_string(),
+                    name,
+                    anchor,
+                    variables_json,
+                    watched_keys,
+                }
+            })
+            .collect()
     }
 
     // -----------------------------------------------------------------------

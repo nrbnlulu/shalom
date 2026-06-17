@@ -18,6 +18,7 @@ import 'package:gif_search/__graphql__/AlbumWidget.shalom.dart';
 import 'package:gif_search/__graphql__/SearchGifsPage.widget.shalom.dart';
 import 'package:gif_search/__graphql__/AlbumsPage.widget.shalom.dart';
 import 'package:shalom_flutter/widgets/shalom_provider.dart';
+import 'package:shalom_flutter/widgets/debug_panel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +59,30 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const HomePage(),
+    );
+  }
+}
+
+// ─── Debug button ─────────────────────────────────────────────────────────────
+
+class _DebugButton extends StatelessWidget {
+  const _DebugButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final client = ShalomScope.of(context);
+    return IconButton(
+      icon: const Icon(Icons.bug_report_outlined),
+      tooltip: 'Cache Inspector',
+      onPressed: () => Navigator.of(context).push(
+        MaterialPageRoute<void>(
+          fullscreenDialog: true,
+          builder: (_) => Scaffold(
+            appBar: AppBar(title: const Text('Cache Inspector')),
+            body: ShalomDebugPanel(client: client),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -117,7 +142,10 @@ class _SearchTabState extends State<_SearchTab> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('GIF Search')),
+      appBar: AppBar(
+        title: const Text('GIF Search'),
+        actions: const [_DebugButton()],
+      ),
       body: Column(
         children: [
           Padding(
@@ -578,7 +606,10 @@ class _AlbumsPageState extends State<AlbumsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Albums')),
+      appBar: AppBar(
+        title: const Text('Albums'),
+        actions: const [_DebugButton()],
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCreateAlbumDialog(context),
         child: const Icon(Icons.add),

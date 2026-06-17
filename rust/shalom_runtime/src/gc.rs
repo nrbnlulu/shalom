@@ -36,6 +36,10 @@ impl SubscriptionTracker {
         self.counts.keys().cloned().collect()
     }
 
+    pub fn counts(&self) -> &HashMap<String, usize> {
+        &self.counts
+    }
+
     pub fn clear(&mut self) {
         self.counts.clear();
     }
