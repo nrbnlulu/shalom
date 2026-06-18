@@ -4,7 +4,6 @@ import "../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 import 'AlbumWidget.shalom.dart';
@@ -37,30 +36,28 @@ class AlbumsPageResponse {
     return {'albums': this.albums.map((e) => e.toJson()).toList()};
   }
 
-  @experimental
   static AlbumsPageResponse fromJson(shalom_core.JsonObject data) {
-    final List<AlbumWidgetRef> albums$value =
-        (data['albums'] as List<dynamic>)
-            .map(
-              (e) => AlbumWidgetRef.fromInput(
-                shalom_core.observedRefInputFromJson(
-                  (e as shalom_core.JsonObject)[r'$AlbumWidget']
-                      as shalom_core.JsonObject,
-                ),
-              ),
-            )
-            .toList();
+    final List<AlbumWidgetRef> albums$value = (data['albums'] as List<dynamic>)
+        .map(
+          (e) => AlbumWidgetRef.fromInput(
+            shalom_core.observedRefInputFromJson(
+              (e as shalom_core.JsonObject)[r'$AlbumWidget']
+                  as shalom_core.JsonObject,
+            ),
+          ),
+        )
+        .toList();
     return AlbumsPageResponse(albums: albums$value);
   }
 }
 
-class AlbumsPage_albums {
+class AlbumsPage_albums implements AlbumWidget {
   static String G__typename = "Album";
 
   /// class members
-  final String id;
-
   final List<AlbumWidget_gifs> gifs;
+
+  final String id;
 
   final String name;
 
@@ -71,9 +68,9 @@ class AlbumsPage_albums {
 
   // keywordargs constructor
   AlbumsPage_albums({
-    required this.id,
-
     required this.gifs,
+
+    required this.id,
 
     required this.name,
 
@@ -84,21 +81,21 @@ class AlbumsPage_albums {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is AlbumsPage_albums &&
-            id == other.id &&
             const ListEquality().equals(gifs, other.gifs) &&
+            id == other.id &&
             name == other.name &&
             tag == other.tag);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([id, gifs, name, tag, AlbumsPage_albums.G__typename]);
+      Object.hashAll([gifs, id, name, tag, AlbumsPage_albums.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
-      'id': this.id,
-
       'gifs': this.gifs.map((e) => e.toJson()).toList(),
+
+      'id': this.id,
 
       'name': this.name,
 
@@ -106,19 +103,17 @@ class AlbumsPage_albums {
     };
   }
 
-  @experimental
   static AlbumsPage_albums fromJson(shalom_core.JsonObject data) {
+    final List<AlbumWidget_gifs> gifs$value = (data['gifs'] as List<dynamic>)
+        .map((e) => AlbumWidget_gifs.fromJson(e as shalom_core.JsonObject))
+        .toList();
     final String id$value = data['id'] as String;
-    final List<AlbumWidget_gifs> gifs$value =
-        (data['gifs'] as List<dynamic>)
-            .map((e) => AlbumWidget_gifs.fromJson(e as shalom_core.JsonObject))
-            .toList();
     final String name$value = data['name'] as String;
     final String tag$value = data['tag'] as String;
     return AlbumsPage_albums(
-      id: id$value,
-
       gifs: gifs$value,
+
+      id: id$value,
 
       name: name$value,
 
@@ -143,24 +138,25 @@ class AlbumsPage_albums {
 
 // ------------ V2 WIDGET API -------------
 
-final class AlbumsPageData {
+final class AlbumsPageData implements shalom_core.OperationInterface {
   final List<AlbumWidgetRef> albums;
 
   const AlbumsPageData({required this.albums});
 
-  @experimental
+  @override
+  String operation$Name() => 'AlbumsPage';
+
   static AlbumsPageData fromCache(shalom_core.JsonObject data) {
-    final List<AlbumWidgetRef> albums$value =
-        (data['albums'] as List<dynamic>)
-            .map(
-              (e) => AlbumWidgetRef.fromInput(
-                shalom_core.observedRefInputFromJson(
-                  (e as shalom_core.JsonObject)[r'$AlbumWidget']
-                      as shalom_core.JsonObject,
-                ),
-              ),
-            )
-            .toList();
+    final List<AlbumWidgetRef> albums$value = (data['albums'] as List<dynamic>)
+        .map(
+          (e) => AlbumWidgetRef.fromInput(
+            shalom_core.observedRefInputFromJson(
+              (e as shalom_core.JsonObject)[r'$AlbumWidget']
+                  as shalom_core.JsonObject,
+            ),
+          ),
+        )
+        .toList();
     return AlbumsPageData(albums: albums$value);
   }
 

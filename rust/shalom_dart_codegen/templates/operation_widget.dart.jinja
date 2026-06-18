@@ -13,6 +13,8 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import '{{ operation_name }}.shalom.dart';
 
 abstract class ${{ operation_name }} extends StatefulWidget {
+    String operation$Name() => '{{ operation_name }}';
+
     final shalom_core.ExecutionPolicyInput executionPolicy;
     {% if op_variables_exist %}
         final {{ operation_name }}Variables variables;
@@ -49,7 +51,9 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
     @override
     void didUpdateWidget(covariant ${{ operation_name }} oldWidget) {
         super.didUpdateWidget(oldWidget);
-        if (widget.executionPolicy != oldWidget.executionPolicy{% if op_variables_exist %} || widget.variables != oldWidget.variables{% endif %}) _subscribe();
+        if (widget.executionPolicy != oldWidget.executionPolicy{% if op_variables_exist %} || widget.variables != oldWidget.variables{% endif %}) {
+            _subscribe();
+        }
     }
 
     void _subscribe() {
@@ -57,7 +61,7 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
         final client = ShalomScope.of(context);
         _sub = client
             .request<{{ operation_name }}Data>(
-                name: '{{ operation_name }}',
+                name: widget.operation$Name(),
                 {% if op_variables_exist %}
                 variables: widget.variables.toJson(),
                 {% else %}

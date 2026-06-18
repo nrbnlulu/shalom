@@ -86,12 +86,23 @@ async def publish_album_event(event: "AlbumEvent") -> None:
 # ----------------------------
 
 
-@strawberry.type
-class Gif:
-    id: str
+@strawberry.interface
+class GifInterface:
     title: str
     url: str
     preview_url: Optional[str] = None
+
+
+@strawberry.type
+class PreviewGif(GifInterface):
+    """A gif from search results — no server-assigned id yet."""
+    pass
+
+
+@strawberry.type
+class Gif(GifInterface):
+    """A gif saved to an album — server-assigned id."""
+    id: str
 
 
 @strawberry.type
@@ -102,10 +113,9 @@ class Album:
     tag: str = "booz"
 
 
-
 @strawberry.type
 class GifSearchPage:
-    items: list[Gif]
+    items: list[PreviewGif]
     offset: int
     limit: int
     total_count: Optional[int]
@@ -133,6 +143,10 @@ def to_gif(model: GifModel) -> Gif:
         url=model.url,
         preview_url=model.preview_url,
     )
+
+
+def to_preview_gif(title: str, url: str, preview_url: Optional[str]) -> PreviewGif:
+    return PreviewGif(title=title, url=url, preview_url=preview_url)
 
 
 def to_album(model: AlbumModel) -> Album:
@@ -213,8 +227,7 @@ async def search_bing_gifs(query: str, offset: int, limit: int) -> GifSearchPage
             or item.get("webp_url")
             or ""
         )
-        gifs.append(Gif(
-            id=str(uuid.uuid4()),
+        gifs.append(to_preview_gif(
             title=item.get("name") or "Untitled GIF",
             url=gif_url,
             preview_url=item.get("preview_url") or gif_url,
@@ -291,28 +304,28 @@ class Mutation:
     async def add_gif_to_album(
         self,
         album_id: str,
-        gif_id: str,
         title: str,
         url: str,
         preview_url: Optional[str] = None,
-    ) -> Album:
-        gif_model = GifModel(
-            id=gif_id,
-            title=title,
-            url=url,
-            preview_url=preview_url,
-        )
-
+    ) -> Gif:
         async with state_lock:
             album_model = albums_by_id.get(album_id)
 
             if not album_model:
                 raise ValueError(f"Album not found: {album_id}")
 
-            # De-dupe by GIF id inside the album.
-            if not any(existing.id == gif_id for existing in album_model.gifs):
-                album_model.gifs.append(gif_model)
+            # De-dupe by URL — return existing gif if already in album.
+            existing = next((g for g in album_model.gifs if g.url == url), None)
+            if existing is not None:
+                return to_gif(existing)
 
+            gif_model = GifModel(
+                id=str(uuid.uuid4()),
+                title=title,
+                url=url,
+                preview_url=preview_url,
+            )
+            album_model.gifs.append(gif_model)
             album = to_album(album_model)
             gif = to_gif(gif_model)
 
@@ -324,7 +337,7 @@ class Mutation:
             )
         )
 
-        return album
+        return gif
 
     @strawberry.mutation
     async def remove_gif_from_album(
@@ -381,10 +394,10 @@ schema = strawberry.Schema(
 
 
 def export_schema() -> None:
-    Path("scm.graphql").write_text(
-        schema.as_str(),
-        encoding="utf-8",
-    )
+    sdl = schema.as_str()
+    Path("scm.graphql").write_text(sdl, encoding="utf-8")
+    dart_schema = Path(__file__).parent.parent / "lib" / "graphql" / "schema.graphql"
+    dart_schema.write_text(sdl, encoding="utf-8")
 
 
 # Export every time the file is imported/run.

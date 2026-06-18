@@ -1740,6 +1740,8 @@ mod fragment_subscriptions {
     ) -> &'a str {
         obj.get(&format!("${frag_name}"))
             .and_then(|v| v.as_object())
+            .and_then(|o| o.get("__shalom_observed_ref"))
+            .and_then(|v| v.as_object())
             .and_then(|o| o.get("anchor"))
             .and_then(|v| v.as_str())
             .unwrap_or_else(|| panic!("${frag_name} anchor missing"))

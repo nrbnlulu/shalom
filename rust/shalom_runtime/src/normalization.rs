@@ -502,7 +502,12 @@ impl<'a> Normalizer<'a> {
             for frag_name in &observed_frags {
                 output.insert(
                     format!("${frag_name}"),
-                    json!({ "observable_id": frag_name, "anchor": object_ref_key }),
+                    json!({
+                        "__shalom_observed_ref": {
+                            "observable_id": frag_name,
+                            "anchor": object_ref_key,
+                        }
+                    }),
                 );
             }
         }

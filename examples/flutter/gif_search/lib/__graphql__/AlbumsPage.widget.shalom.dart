@@ -10,7 +10,11 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import 'AlbumsPage.shalom.dart';
 
 abstract class $AlbumsPage extends StatefulWidget {
-  const $AlbumsPage({super.key});
+  String operation$Name() => 'AlbumsPage';
+
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
+  const $AlbumsPage({super.key, this.executionPolicy = .cacheFirst});
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
@@ -43,6 +47,9 @@ class _$AlbumsPageState extends State<$AlbumsPage> {
   @override
   void didUpdateWidget(covariant $AlbumsPage oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (widget.executionPolicy != oldWidget.executionPolicy) {
+      _subscribe();
+    }
   }
 
   void _subscribe() {
@@ -50,22 +57,21 @@ class _$AlbumsPageState extends State<$AlbumsPage> {
     final client = ShalomScope.of(context);
     _sub = client
         .request<AlbumsPageData>(
-          name: 'AlbumsPage',
+          name: widget.operation$Name(),
 
           variables: null,
 
           decoder: AlbumsPageData.fromCache,
-          executionPolicy: shalom_core.ExecutionPolicyInput.cacheFirst,
+          executionPolicy: widget.executionPolicy,
         )
         .listen(
           (data) => setState(() {
             _data = data;
             _error = null;
           }),
-          onError:
-              (e) => setState(() {
-                _error = e;
-              }),
+          onError: (e) => setState(() {
+            _error = e;
+          }),
           onDone: () {
             debugPrint('[widget] AlbumsPage.onDone fired, mounted=$mounted');
             if (mounted) _subscribe();

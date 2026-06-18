@@ -4,7 +4,6 @@ import "../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 
@@ -40,7 +39,6 @@ class CreateAlbumMutation_createAlbum {
     return {'id': this.id, 'name': this.name};
   }
 
-  @experimental
   static CreateAlbumMutation_createAlbum fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
@@ -64,12 +62,14 @@ class CreateAlbumMutation_createAlbum {
 
 // ------------ MUTATION DATA + VARIABLES -------------
 
-final class CreateAlbumMutationData {
+final class CreateAlbumMutationData implements shalom_core.OperationInterface {
   final CreateAlbumMutation_createAlbum createAlbum;
 
   const CreateAlbumMutationData({required this.createAlbum});
 
-  @experimental
+  @override
+  String operation$Name() => 'CreateAlbumMutation';
+
   static CreateAlbumMutationData fromCache(shalom_core.JsonObject data) {
     final CreateAlbumMutation_createAlbum createAlbum$value =
         CreateAlbumMutation_createAlbum.fromJson(

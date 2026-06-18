@@ -10,6 +10,7 @@ import 'package:shalom/src/shalom_core_base.dart'
         GraphQLError,
         GraphQLResponse,
         JsonObject,
+        OperationInterface,
         LinkExceptionResponse,
         OperationType,
         Request,
@@ -19,7 +20,11 @@ import 'package:shalom/src/transport/link.dart' show GraphQLLink;
 import 'rust/api/runtime.dart' as rs_runtime;
 
 export 'rust/api/runtime.dart'
-    show ExecutionPolicyInput, ObservedRefInput, RuntimeConfigInput, ObserverInfo;
+    show
+        ExecutionPolicyInput,
+        ObservedRefInput,
+        RuntimeConfigInput,
+        ObserverInfo;
 
 // Thin wrapper so this file compiles without a Flutter dependency.
 // In Flutter apps the real debugPrint throttles long lines; for our purposes
@@ -33,11 +38,13 @@ void debugPrint(String? message, {int? wrapWidth}) => print(message);
 
 /// Deserialise an [ObservedRefInput] from a JSON map produced by the Rust cache.
 ///
-/// The cache serialises refs as `{"observable_id": "...", "anchor": "..."}`.
+/// The cache serialises refs under `__shalom_observed_ref`, a reserved key that
+/// GraphQL user fields cannot use.
 rs_runtime.ObservedRefInput observedRefInputFromJson(JsonObject json) {
+  final refJson = (json['__shalom_observed_ref'] as JsonObject?) ?? json;
   return rs_runtime.ObservedRefInput(
-    observableId: json['observable_id'] as String,
-    anchor: json['anchor'] as String,
+    observableId: refJson['observable_id'] as String,
+    anchor: refJson['anchor'] as String,
   );
 }
 
@@ -239,7 +246,9 @@ class ShalomRuntimeClient {
     controller.onListen = () {
       try {
         subId = rs_runtime.observeFragment(handle: _handle, refInput: ref);
-        debugPrint('[shalom] subscribeToFragment: observableId=${ref.observableId} anchor=${ref.anchor} subId=$subId');
+        debugPrint(
+          '[shalom] subscribeToFragment: observableId=${ref.observableId} anchor=${ref.anchor} subId=$subId',
+        );
       } catch (e, st) {
         debugPrint('[shalom] subscribeToFragment ERROR: $e');
         if (!controller.isClosed) controller.addError(e, st);
@@ -464,6 +473,50 @@ class ShalomRuntimeClient {
   }
 
   // -------------------------------------------------------------------------
+  // Cache read / write (Apollo-style cache update API)
+  // -------------------------------------------------------------------------
+
+  /// Read the current cache for operation [name] and decode it as [T].
+  ///
+  /// Returns `null` when the data is absent or incomplete in the cache.
+  /// Use inside [CacheProxy.readQuery] or directly when you need a one-shot
+  /// cache read without opening a subscription.
+  T? readQuery<T>({
+    required String name,
+    required T Function(JsonObject) decoder,
+    Map<String, dynamic>? variables,
+  }) {
+    final variablesJson = variables == null ? null : jsonEncode(variables);
+    final raw = rs_runtime.readQuery(
+      handle: _handle,
+      name: name,
+      variablesJson: variablesJson,
+    );
+    if (raw == null) return null;
+    final json = jsonDecode(raw) as Map<String, dynamic>;
+    return decoder(json);
+  }
+
+  /// Write [data] to the cache for its generated operation, normalizing it
+  /// and notifying any active subscribers.
+  ///
+  /// This is a permanent write (no rollback).  The typical use-case is inside
+  /// a mutation's `executeWithCacheUpdate` callback to keep a cached list in
+  /// sync after an add / remove mutation.
+  void writeQuery<T extends OperationInterface>({
+    required T data,
+    Map<String, dynamic>? variables,
+  }) {
+    final variablesJson = variables == null ? null : jsonEncode(variables);
+    rs_runtime.writeQuery(
+      handle: _handle,
+      name: data.operation$Name(),
+      dataJson: jsonEncode(data.toJson()),
+      variablesJson: variablesJson,
+    );
+  }
+
+  // -------------------------------------------------------------------------
   // Debug / cache inspection
   // -------------------------------------------------------------------------
 
@@ -584,7 +637,9 @@ class _RuntimeEnvelope {
 
   factory _RuntimeEnvelope.fromJson(String payload) =>
       tryFromJson(payload) ??
-      (throw const FormatException('runtime response data must be a JSON object'));
+      (throw const FormatException(
+        'runtime response data must be a JSON object',
+      ));
 }
 
 class _TransportError {

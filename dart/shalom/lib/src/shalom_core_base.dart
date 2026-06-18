@@ -1,6 +1,12 @@
 typedef HeadersType = List<(String, String)>;
 typedef JsonObject = Map<String, dynamic>;
 
+abstract interface class OperationInterface {
+  String operation$Name();
+
+  JsonObject toJson();
+}
+
 // ignore: constant_identifier_names
 enum OperationType { Query, Mutation, Subscription }
 

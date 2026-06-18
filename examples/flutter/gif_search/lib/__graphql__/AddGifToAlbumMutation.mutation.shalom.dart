@@ -5,10 +5,12 @@ export 'AddGifToAlbumMutation.shalom.dart';
 
 import "../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
-import 'package:shalom/shalom.dart' show OptimisticMutationResponse;
+import 'package:shalom/shalom.dart' show OptimisticMutationResponse, CacheProxy;
 import 'AddGifToAlbumMutation.shalom.dart';
 
 abstract class $AddGifToAlbumMutation {
+  String operation$Name() => 'AddGifToAlbumMutation';
+
   final shalom_core.ShalomRuntimeClient _client;
   const $AddGifToAlbumMutation(this._client);
 
@@ -17,24 +19,71 @@ abstract class $AddGifToAlbumMutation {
   /// updates on any query subscriptions watching the same entities.
   Future<AddGifToAlbumMutationData> execute({
     required String albumId,
-    required String gifId,
     required shalom_core.Maybe<String?> previewUrl,
     required String title,
     required String url,
   }) => _client.mutate<AddGifToAlbumMutationData>(
-    name: 'AddGifToAlbumMutation',
+    name: operation$Name(),
 
-    variables:
-        AddGifToAlbumMutationVariables(
-          albumId: albumId,
-          gifId: gifId,
-          previewUrl: previewUrl,
-          title: title,
-          url: url,
-        ).toJson(),
+    variables: AddGifToAlbumMutationVariables(
+      albumId: albumId,
+      previewUrl: previewUrl,
+      title: title,
+      url: url,
+    ).toJson(),
 
     decoder: AddGifToAlbumMutationData.fromCache,
   );
+
+  /// Execute the mutation and update the cache via [update].
+  ///
+  /// [update] receives a [CacheProxy] and the typed mutation response.
+  /// Use [CacheProxy.readQuery] / [CacheProxy.writeQuery] to read the current
+  /// cached value of any query and write back a modified version — the typical
+  /// pattern for keeping lists in sync after an add / remove / reorder mutation.
+  ///
+  /// Example:
+  /// ```dart
+  /// await addTodo.executeWithCacheUpdate(
+  ///   input: AddTodoInput(title: 'Buy milk'),
+  ///   update: (cache, data) {
+  ///     final current = cache.readQuery(
+  ///       name: 'GetTodos',
+  ///       decoder: GetTodosData.fromCache,
+  ///     );
+  ///     if (current != null) {
+  ///       cache.writeQuery(
+  ///         data: GetTodosData(todos: [...current.todos, data.addTodo!]),
+  ///       );
+  ///     }
+  ///   },
+  /// );
+  /// ```
+  Future<AddGifToAlbumMutationData> executeWithCacheUpdate({
+    required String albumId,
+    required shalom_core.Maybe<String?> previewUrl,
+    required String title,
+    required String url,
+    required void Function(CacheProxy cache, AddGifToAlbumMutationData data)
+    update,
+  }) async {
+    final vars = AddGifToAlbumMutationVariables(
+      albumId: albumId,
+      previewUrl: previewUrl,
+      title: title,
+      url: url,
+    );
+
+    final data = await _client.mutate<AddGifToAlbumMutationData>(
+      name: operation$Name(),
+
+      variables: vars.toJson(),
+
+      decoder: AddGifToAlbumMutationData.fromCache,
+    );
+    update(CacheProxy(_client), data);
+    return data;
+  }
 
   /// Execute the mutation with an optimistic cache write applied immediately,
   /// before the network response arrives.
@@ -57,20 +106,18 @@ abstract class $AddGifToAlbumMutation {
     optimisticFactory, {
     bool Function(AddGifToAlbumMutationData response)? rollbackWhen,
     required String albumId,
-    required String gifId,
     required shalom_core.Maybe<String?> previewUrl,
     required String title,
     required String url,
   }) async {
     final vars = AddGifToAlbumMutationVariables(
       albumId: albumId,
-      gifId: gifId,
       previewUrl: previewUrl,
       title: title,
       url: url,
     );
     final writeId = await _client.writeOptimistic(
-      name: 'AddGifToAlbumMutation',
+      name: operation$Name(),
       data: optimisticFactory(vars).toJson(),
     );
 
@@ -83,7 +130,7 @@ abstract class $AddGifToAlbumMutation {
 
     try {
       final response = await _client.mutate<AddGifToAlbumMutationData>(
-        name: 'AddGifToAlbumMutation',
+        name: operation$Name(),
 
         variables: vars.toJson(),
 

@@ -483,6 +483,46 @@ fn response_to_json(response: RuntimeResponse) -> anyhow::Result<String> {
 }
 
 // ---------------------------------------------------------------------------
+// Cache read / write (Apollo-style cache update API)
+// ---------------------------------------------------------------------------
+
+/// Read the current cache for a pre-registered query operation.
+///
+/// Returns `None` when the data is absent or incomplete (missing refs), so
+/// callers don't need to handle partial results.  The returned string is a
+/// JSON object that matches the operation's selection shape.
+#[frb(sync)]
+pub fn read_query(
+    handle: &RuntimeHandle,
+    name: String,
+    variables_json: Option<String>,
+) -> anyhow::Result<Option<String>> {
+    let variables = parse_variables(variables_json)?;
+    match handle.runtime.try_read_query(&name, variables.as_ref())? {
+        Some(data) => Ok(Some(serde_json::to_string(&data)?)),
+        None => Ok(None),
+    }
+}
+
+/// Write data to the cache for a pre-registered operation, normalizing it
+/// and notifying any active subscribers.
+///
+/// This is a permanent write — unlike `write_optimistic` it cannot be rolled
+/// back.  Use it inside a mutation's `executeWithCacheUpdate` callback to keep
+/// cached lists in sync after an add / remove / reorder mutation.
+#[frb(sync)]
+pub fn write_query(
+    handle: &RuntimeHandle,
+    name: String,
+    data_json: String,
+    variables_json: Option<String>,
+) -> anyhow::Result<()> {
+    let variables = parse_variables(variables_json)?;
+    let data: Value = serde_json::from_str(&data_json)?;
+    handle.runtime.write_query(&name, data, variables.as_ref())
+}
+
+// ---------------------------------------------------------------------------
 // Debug / cache inspection
 // ---------------------------------------------------------------------------
 

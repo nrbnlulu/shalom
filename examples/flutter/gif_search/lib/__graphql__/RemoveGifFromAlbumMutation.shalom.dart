@@ -4,7 +4,6 @@ import "../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 
@@ -14,51 +13,50 @@ class RemoveGifFromAlbumMutation_removeGifFromAlbum {
   static String G__typename = "Album";
 
   /// class members
-  final String name;
-
   final String id;
+
+  final String name;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
   RemoveGifFromAlbumMutation_removeGifFromAlbum({
-    required this.name,
-
     required this.id,
+
+    required this.name,
   });
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is RemoveGifFromAlbumMutation_removeGifFromAlbum &&
-            name == other.name &&
-            id == other.id);
+            id == other.id &&
+            name == other.name);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    name,
-
     id,
+
+    name,
 
     RemoveGifFromAlbumMutation_removeGifFromAlbum.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
-    return {'name': this.name, 'id': this.id};
+    return {'id': this.id, 'name': this.name};
   }
 
-  @experimental
   static RemoveGifFromAlbumMutation_removeGifFromAlbum fromJson(
     shalom_core.JsonObject data,
   ) {
-    final String name$value = data['name'] as String;
     final String id$value = data['id'] as String;
+    final String name$value = data['name'] as String;
     return RemoveGifFromAlbumMutation_removeGifFromAlbum(
-      name: name$value,
-
       id: id$value,
+
+      name: name$value,
     );
   }
 }
@@ -79,12 +77,15 @@ class RemoveGifFromAlbumMutation_removeGifFromAlbum {
 
 // ------------ MUTATION DATA + VARIABLES -------------
 
-final class RemoveGifFromAlbumMutationData {
+final class RemoveGifFromAlbumMutationData
+    implements shalom_core.OperationInterface {
   final RemoveGifFromAlbumMutation_removeGifFromAlbum removeGifFromAlbum;
 
   const RemoveGifFromAlbumMutationData({required this.removeGifFromAlbum});
 
-  @experimental
+  @override
+  String operation$Name() => 'RemoveGifFromAlbumMutation';
+
   static RemoveGifFromAlbumMutationData fromCache(shalom_core.JsonObject data) {
     final RemoveGifFromAlbumMutation_removeGifFromAlbum
     removeGifFromAlbum$value =

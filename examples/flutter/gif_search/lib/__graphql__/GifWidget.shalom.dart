@@ -5,7 +5,6 @@
 import "../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
@@ -16,62 +15,65 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 extension type GifWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
   shalom_core.JsonObject toJson() => {
-    'observable_id': _inner.observableId,
-    'anchor': _inner.anchor,
+    '__shalom_observed_ref': {
+      'observable_id': _inner.observableId,
+      'anchor': _inner.anchor,
+    },
   };
 }
 
+abstract class GifWidget {
+  String? get previewUrl;
+
+  String get title;
+
+  String get url;
+
+  shalom_core.JsonObject toJson();
+}
+
 final class GifWidgetData {
-  final String title;
-  final String id;
-  final String url;
   final String? previewUrl;
+  final String title;
+  final String url;
 
   const GifWidgetData({
-    required this.title,
-    required this.id,
-    required this.url,
     required this.previewUrl,
+    required this.title,
+    required this.url,
   });
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is GifWidgetData &&
+          previewUrl == other.previewUrl &&
           title == other.title &&
-          id == other.id &&
-          url == other.url &&
-          previewUrl == other.previewUrl);
+          url == other.url);
 
   @override
-  int get hashCode => Object.hashAll([title, id, url, previewUrl]);
+  int get hashCode => Object.hashAll([previewUrl, title, url]);
 
-  @experimental
   static GifWidgetData fromCache(shalom_core.JsonObject data) {
-    final String title$value = data['title'] as String;
-    final String id$value = data['id'] as String;
-    final String url$value = data['url'] as String;
     final String? previewUrl$value = data['previewUrl'] as String?;
+    final String title$value = data['title'] as String;
+    final String url$value = data['url'] as String;
     return GifWidgetData(
+      previewUrl: previewUrl$value,
+
       title: title$value,
 
-      id: id$value,
-
       url: url$value,
-
-      previewUrl: previewUrl$value,
     );
   }
 
   shalom_core.JsonObject toJson() {
     return {
+      'previewUrl': this.previewUrl,
+
       'title': this.title,
 
-      'id': this.id,
-
       'url': this.url,
-
-      'previewUrl': this.previewUrl,
     };
   }
 }
@@ -127,10 +129,9 @@ class _$GifWidgetState extends State<$GifWidget> {
             _data = data;
             _error = null;
           }),
-          onError:
-              (e) => setState(() {
-                _error = e;
-              }),
+          onError: (e) => setState(() {
+            _error = e;
+          }),
           onDone: () {
             if (mounted) _subscribe();
           },

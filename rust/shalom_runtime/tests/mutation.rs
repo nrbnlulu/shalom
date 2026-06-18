@@ -250,3 +250,74 @@ fn write_optimistic_absent_key_rolls_back_to_absent() {
         "User:99 should be removed after rollback"
     );
 }
+
+#[test]
+fn write_query_resolves_wrapped_observed_fragment_refs() {
+    let schema = r#"
+        type Query { observedUsers: [User!]!, users: [User!]! }
+        type User { id: ID!, name: String! }
+    "#;
+    let operations = r#"
+        fragment UserRow on User @observe { id name }
+
+        query ObservedUsers {
+            observedUsers { ...UserRow }
+        }
+
+        query Users {
+            users { id name }
+        }
+    "#;
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_operation(operations).unwrap();
+
+    let observed_op = runtime.operation_by_name("ObservedUsers").unwrap();
+    let observed = runtime
+        .normalize(
+            &observed_op,
+            json!({ "observedUsers": [{ "id": "1", "name": "Ada" }] }),
+            None,
+        )
+        .unwrap()
+        .data;
+    let user_ref = observed["observedUsers"][0]["$UserRow"].clone();
+
+    runtime
+        .write_query("Users", json!({ "users": [user_ref] }), None)
+        .unwrap();
+
+    let users = runtime.try_read_query("Users", None).unwrap().unwrap();
+    assert_eq!(users["users"][0]["id"], json!("1"));
+    assert_eq!(users["users"][0]["name"], json!("Ada"));
+}
+
+#[test]
+fn write_query_does_not_treat_user_fields_as_observed_refs() {
+    let schema = r#"
+        type Query { boxes: [Box!]! }
+        type Box { observable_id: String!, anchor: String! }
+    "#;
+    let operation = r#"
+        query Boxes {
+            boxes { observable_id anchor }
+        }
+    "#;
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_operation(operation).unwrap();
+
+    runtime
+        .write_query(
+            "Boxes",
+            json!({
+                "boxes": [
+                    { "observable_id": "ordinary-field", "anchor": "ordinary-value" }
+                ]
+            }),
+            None,
+        )
+        .unwrap();
+
+    let boxes = runtime.try_read_query("Boxes", None).unwrap().unwrap();
+    assert_eq!(boxes["boxes"][0]["observable_id"], json!("ordinary-field"));
+    assert_eq!(boxes["boxes"][0]["anchor"], json!("ordinary-value"));
+}

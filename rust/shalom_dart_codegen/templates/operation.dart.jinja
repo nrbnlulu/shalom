@@ -77,7 +77,7 @@ class {{ response_class_name }} {{ implements_used_fragments(context.operation.r
 {% if is_observe %}
 // ------------ V2 WIDGET API -------------
 
-final class {{ operation_name }}Data {
+final class {{ operation_name }}Data implements shalom_core.OperationInterface {
     {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
         final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
     {% endfor %}
@@ -87,6 +87,9 @@ final class {{ operation_name }}Data {
             required this.{{ selection.name }},
         {% endfor %}
     });
+
+    @override
+    String operation$Name() => '{{ operation_name }}';
     
     static {{ operation_name }}Data fromCache(shalom_core.JsonObject data) {
         {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}

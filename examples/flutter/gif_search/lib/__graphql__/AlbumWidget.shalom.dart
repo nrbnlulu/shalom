@@ -5,7 +5,6 @@
 import "../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
@@ -16,9 +15,23 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 extension type AlbumWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
   shalom_core.JsonObject toJson() => {
-    'observable_id': _inner.observableId,
-    'anchor': _inner.anchor,
+    '__shalom_observed_ref': {
+      'observable_id': _inner.observableId,
+      'anchor': _inner.anchor,
+    },
   };
+}
+
+abstract class AlbumWidget {
+  List<AlbumWidget_gifs> get gifs;
+
+  String get id;
+
+  String get name;
+
+  String get tag;
+
+  shalom_core.JsonObject toJson();
 }
 
 class AlbumWidget_gifs {
@@ -48,7 +61,6 @@ class AlbumWidget_gifs {
     return {'id': this.id, 'title': this.title};
   }
 
-  @experimental
   static AlbumWidget_gifs fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String title$value = data['title'] as String;
@@ -57,59 +69,57 @@ class AlbumWidget_gifs {
 }
 
 final class AlbumWidgetData {
+  final List<AlbumWidget_gifs> gifs;
   final String id;
   final String name;
   final String tag;
-  final List<AlbumWidget_gifs> gifs;
 
   const AlbumWidgetData({
+    required this.gifs,
     required this.id,
     required this.name,
     required this.tag,
-    required this.gifs,
   });
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       (other is AlbumWidgetData &&
+          const ListEquality().equals(gifs, other.gifs) &&
           id == other.id &&
           name == other.name &&
-          tag == other.tag &&
-          const ListEquality().equals(gifs, other.gifs));
+          tag == other.tag);
 
   @override
-  int get hashCode => Object.hashAll([id, name, tag, gifs]);
+  int get hashCode => Object.hashAll([gifs, id, name, tag]);
 
-  @experimental
   static AlbumWidgetData fromCache(shalom_core.JsonObject data) {
+    final List<AlbumWidget_gifs> gifs$value = (data['gifs'] as List<dynamic>)
+        .map((e) => AlbumWidget_gifs.fromJson(e as shalom_core.JsonObject))
+        .toList();
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
     final String tag$value = data['tag'] as String;
-    final List<AlbumWidget_gifs> gifs$value =
-        (data['gifs'] as List<dynamic>)
-            .map((e) => AlbumWidget_gifs.fromJson(e as shalom_core.JsonObject))
-            .toList();
     return AlbumWidgetData(
+      gifs: gifs$value,
+
       id: id$value,
 
       name: name$value,
 
       tag: tag$value,
-
-      gifs: gifs$value,
     );
   }
 
   shalom_core.JsonObject toJson() {
     return {
+      'gifs': this.gifs.map((e) => e.toJson()).toList(),
+
       'id': this.id,
 
       'name': this.name,
 
       'tag': this.tag,
-
-      'gifs': this.gifs.map((e) => e.toJson()).toList(),
     };
   }
 }
@@ -165,10 +175,9 @@ class _$AlbumWidgetState extends State<$AlbumWidget> {
             _data = data;
             _error = null;
           }),
-          onError:
-              (e) => setState(() {
-                _error = e;
-              }),
+          onError: (e) => setState(() {
+            _error = e;
+          }),
           onDone: () {
             if (mounted) _subscribe();
           },

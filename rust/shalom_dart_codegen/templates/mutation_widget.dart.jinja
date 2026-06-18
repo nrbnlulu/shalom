@@ -9,10 +9,12 @@ export '{{ operation_name }}.shalom.dart';
 
 import "{{ context.schema_import_path }}";
 import 'package:shalom/shalom.dart' as shalom_core;
-import 'package:shalom/shalom.dart' show OptimisticMutationResponse;
+import 'package:shalom/shalom.dart' show OptimisticMutationResponse, CacheProxy;
 import '{{ operation_name }}.shalom.dart';
 
 abstract class ${{ operation_name }} {
+    String operation$Name() => '{{ operation_name }}';
+
     final shalom_core.ShalomRuntimeClient _client;
     const ${{ operation_name }}(this._client);
 
@@ -24,7 +26,7 @@ abstract class ${{ operation_name }} {
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
     }) => _client.mutate<{{ operation_name }}Data>(
-        name: '{{ operation_name }}',
+        name: operation$Name(),
         {% if op_variables_exist %}
         variables: {{ operation_name }}Variables(
             {% for name, _field in op_variables | items -%}
@@ -36,6 +38,56 @@ abstract class ${{ operation_name }} {
         {% endif %}
         decoder: {{ operation_name }}Data.fromCache,
     );
+
+    /// Execute the mutation and update the cache via [update].
+    ///
+    /// [update] receives a [CacheProxy] and the typed mutation response.
+    /// Use [CacheProxy.readQuery] / [CacheProxy.writeQuery] to read the current
+    /// cached value of any query and write back a modified version — the typical
+    /// pattern for keeping lists in sync after an add / remove / reorder mutation.
+    ///
+    /// Example:
+    /// ```dart
+    /// await addTodo.executeWithCacheUpdate(
+    ///   input: AddTodoInput(title: 'Buy milk'),
+    ///   update: (cache, data) {
+    ///     final current = cache.readQuery(
+    ///       name: 'GetTodos',
+    ///       decoder: GetTodosData.fromCache,
+    ///     );
+    ///     if (current != null) {
+    ///       cache.writeQuery(
+    ///         data: GetTodosData(todos: [...current.todos, data.addTodo!]),
+    ///       );
+    ///     }
+    ///   },
+    /// );
+    /// ```
+    Future<{{ operation_name }}Data> executeWithCacheUpdate({
+        {% for name, field in op_variables | items -%}
+            required {{ type_name_for_input_field(field) }} {{ name }},
+        {% endfor -%}
+        required void Function(CacheProxy cache, {{ operation_name }}Data data) update,
+    }) async {
+        {% if op_variables_exist %}
+        final vars = {{ operation_name }}Variables(
+            {% for name, _field in op_variables | items -%}
+                {{ name }}: {{ name }},
+            {% endfor -%}
+        );
+        {% endif %}
+        final data = await _client.mutate<{{ operation_name }}Data>(
+            name: operation$Name(),
+            {% if op_variables_exist %}
+            variables: vars.toJson(),
+            {% else %}
+            variables: null,
+            {% endif %}
+            decoder: {{ operation_name }}Data.fromCache,
+        );
+        update(CacheProxy(_client), data);
+        return data;
+    }
 
     /// Execute the mutation with an optimistic cache write applied immediately,
     /// before the network response arrives.
@@ -66,12 +118,12 @@ abstract class ${{ operation_name }} {
             {% endfor -%}
         );
         final writeId = await _client.writeOptimistic(
-            name: '{{ operation_name }}',
+            name: operation$Name(),
             data: optimisticFactory(vars).toJson(),
         );
         {% else %}
         final writeId = await _client.writeOptimistic(
-            name: '{{ operation_name }}',
+            name: operation$Name(),
             data: optimisticFactory().toJson(),
         );
         {% endif %}
@@ -83,7 +135,7 @@ abstract class ${{ operation_name }} {
         }
         try {
             final response = await _client.mutate<{{ operation_name }}Data>(
-                name: '{{ operation_name }}',
+                name: operation$Name(),
                 {% if op_variables_exist %}
                 variables: vars.toJson(),
                 {% else %}

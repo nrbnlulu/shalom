@@ -1,21 +1,21 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
 // Re-export all generated types so importers only need this file.
-export 'SearchGifsPage.shalom.dart';
+export 'AlbumGifSearch.shalom.dart';
 
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
-import 'SearchGifsPage.shalom.dart';
+import 'AlbumGifSearch.shalom.dart';
 
-abstract class $SearchGifsPage extends StatefulWidget {
-  String operation$Name() => 'SearchGifsPage';
+abstract class $AlbumGifSearch extends StatefulWidget {
+  String operation$Name() => 'AlbumGifSearch';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
 
-  final SearchGifsPageVariables variables;
-  const $SearchGifsPage({
+  final AlbumGifSearchVariables variables;
+  const $AlbumGifSearch({
     super.key,
     required this.variables,
     this.executionPolicy = .cacheFirst,
@@ -23,15 +23,15 @@ abstract class $SearchGifsPage extends StatefulWidget {
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
-  Widget buildData(BuildContext context, SearchGifsPageData data);
+  Widget buildData(BuildContext context, AlbumGifSearchData data);
 
   @override
-  State<$SearchGifsPage> createState() => _$SearchGifsPageState();
+  State<$AlbumGifSearch> createState() => _$AlbumGifSearchState();
 }
 
-class _$SearchGifsPageState extends State<$SearchGifsPage> {
-  StreamSubscription<SearchGifsPageData>? _sub;
-  SearchGifsPageData? _data;
+class _$AlbumGifSearchState extends State<$AlbumGifSearch> {
+  StreamSubscription<AlbumGifSearchData>? _sub;
+  AlbumGifSearchData? _data;
   Object? _error;
 
   @override
@@ -50,7 +50,7 @@ class _$SearchGifsPageState extends State<$SearchGifsPage> {
   }
 
   @override
-  void didUpdateWidget(covariant $SearchGifsPage oldWidget) {
+  void didUpdateWidget(covariant $AlbumGifSearch oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.executionPolicy != oldWidget.executionPolicy ||
         widget.variables != oldWidget.variables) {
@@ -62,12 +62,12 @@ class _$SearchGifsPageState extends State<$SearchGifsPage> {
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client
-        .request<SearchGifsPageData>(
+        .request<AlbumGifSearchData>(
           name: widget.operation$Name(),
 
           variables: widget.variables.toJson(),
 
-          decoder: SearchGifsPageData.fromCache,
+          decoder: AlbumGifSearchData.fromCache,
           executionPolicy: widget.executionPolicy,
         )
         .listen(
@@ -80,7 +80,7 @@ class _$SearchGifsPageState extends State<$SearchGifsPage> {
           }),
           onDone: () {
             debugPrint(
-              '[widget] SearchGifsPage.onDone fired, mounted=$mounted',
+              '[widget] AlbumGifSearch.onDone fired, mounted=$mounted',
             );
             if (mounted) _subscribe();
           },

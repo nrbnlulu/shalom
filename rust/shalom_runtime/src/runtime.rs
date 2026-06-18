@@ -610,7 +610,10 @@ impl ShalomRuntime {
     pub fn key_subscribers(&self, key: &str) -> Vec<KeySubscriberInfo> {
         let manager = self.subscriptions.lock();
         Self::build_observer_list(
-            manager.subscriptions.iter().filter(|(_, s)| s.keys.contains(key)),
+            manager
+                .subscriptions
+                .iter()
+                .filter(|(_, s)| s.keys.contains(key)),
         )
     }
 
@@ -629,7 +632,9 @@ impl ShalomRuntime {
                     let op_type = match op_ctx.op_type() {
                         shalom_core::operation::types::OperationType::Query => "query",
                         shalom_core::operation::types::OperationType::Mutation => "mutation",
-                        shalom_core::operation::types::OperationType::Subscription => "subscription",
+                        shalom_core::operation::types::OperationType::Subscription => {
+                            "subscription"
+                        }
                     };
                     (
                         "operation",
@@ -681,6 +686,37 @@ impl ShalomRuntime {
             data: result.data,
             operation_id: Some(op_ctx.get_operation_name().to_string()),
         })
+    }
+
+    /// Read the cache for a named operation. Returns `None` when data is absent
+    /// or incomplete (missing refs), so callers don't need to handle partial reads.
+    pub fn try_read_query(
+        &self,
+        op_name: &str,
+        variables: Option<&Map<String, Value>>,
+    ) -> anyhow::Result<Option<Value>> {
+        let op_ctx = self.operation_by_name(op_name)?;
+        let result = self.read_result_op(&op_ctx, variables)?;
+        if result.missing_refs.is_empty() {
+            Ok(Some(result.data))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Normalize [data] into the cache for [op_name] and notify all affected
+    /// subscribers.  Unlike `write_optimistic`, this write is permanent and
+    /// cannot be rolled back.
+    pub fn write_query(
+        &self,
+        op_name: &str,
+        data: Value,
+        variables: Option<&Map<String, Value>>,
+    ) -> anyhow::Result<()> {
+        let op_ctx = self.operation_by_name(op_name)?;
+        let data = self.resolve_observed_fragment_refs(data)?;
+        self.normalize(&op_ctx, data, variables)?;
+        Ok(())
     }
 
     /// Look up a pre-registered (or remembered) operation by name.
@@ -812,6 +848,68 @@ impl ShalomRuntime {
         reader.read_fragment(fragment, root_ref)
     }
 
+    fn resolve_observed_fragment_refs(&self, data: Value) -> anyhow::Result<Value> {
+        let cache = self.cache();
+        let cache_guard = cache.lock();
+        let reader = CacheReader::new(self.engine.global_ctx(), &cache_guard, None);
+        let mut stack = HashSet::new();
+        self.resolve_observed_fragment_refs_with_reader(data, &reader, &mut stack)
+    }
+
+    fn resolve_observed_fragment_refs_with_reader(
+        &self,
+        data: Value,
+        reader: &CacheReader<'_>,
+        stack: &mut HashSet<(String, String)>,
+    ) -> anyhow::Result<Value> {
+        match data {
+            Value::Array(items) => items
+                .into_iter()
+                .map(|item| self.resolve_observed_fragment_refs_with_reader(item, reader, stack))
+                .collect::<anyhow::Result<Vec<_>>>()
+                .map(Value::Array),
+            Value::Object(map) => {
+                if let Some((observable_id, anchor)) = observed_ref_from_json_object(&map) {
+                    let ref_key = (observable_id.clone(), anchor.clone());
+                    if !stack.insert(ref_key.clone()) {
+                        return Err(anyhow::anyhow!(
+                            "cyclic observed fragment reference '{}:{}'",
+                            observable_id,
+                            anchor
+                        ));
+                    }
+                    let fragment = self
+                        .engine
+                        .global_ctx()
+                        .get_fragment(&observable_id)
+                        .ok_or_else(|| anyhow::anyhow!("fragment '{}' not found", observable_id))?;
+                    let result = reader.read_fragment(&fragment, &anchor)?;
+                    if !result.missing_refs.is_empty() {
+                        return Err(anyhow::anyhow!(
+                            "observed fragment '{}' at '{}' is incomplete; missing refs: {:?}",
+                            observable_id,
+                            anchor,
+                            result.missing_refs
+                        ));
+                    }
+                    let resolved =
+                        self.resolve_observed_fragment_refs_with_reader(result.data, reader, stack);
+                    stack.remove(&ref_key);
+                    return resolved;
+                }
+
+                map.into_iter()
+                    .map(|(key, value)| {
+                        self.resolve_observed_fragment_refs_with_reader(value, reader, stack)
+                            .map(|value| (key, value))
+                    })
+                    .collect::<anyhow::Result<Map<_, _>>>()
+                    .map(Value::Object)
+            }
+            other => Ok(other),
+        }
+    }
+
     fn remember_operation_vars(
         &self,
         op_ctx: &SharedOpCtx,
@@ -828,6 +926,16 @@ impl ShalomRuntime {
             }
         }
     }
+}
+
+fn observed_ref_from_json_object(map: &Map<String, Value>) -> Option<(String, String)> {
+    if map.len() != 1 {
+        return None;
+    }
+    let ref_obj = map.get("__shalom_observed_ref")?.as_object()?;
+    let observable_id = ref_obj.get("observable_id")?.as_str()?.to_string();
+    let anchor = ref_obj.get("anchor")?.as_str()?.to_string();
+    Some((observable_id, anchor))
 }
 
 // ---------------------------------------------------------------------------

@@ -6,84 +6,64 @@ import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
 // Fragment imports
-import 'GifWidget.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class SearchGifsPageResponse {
+class AlbumGifSearchResponse {
   static String G__typename = "query";
 
   /// class members
-  final SearchGifsPage_searchGifs searchGifs;
+  final AlbumGifSearch_searchGifs searchGifs;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  SearchGifsPageResponse({required this.searchGifs});
+  AlbumGifSearchResponse({required this.searchGifs});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is SearchGifsPageResponse && searchGifs == other.searchGifs);
+        (other is AlbumGifSearchResponse && searchGifs == other.searchGifs);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([searchGifs, SearchGifsPageResponse.G__typename]);
+      Object.hashAll([searchGifs, AlbumGifSearchResponse.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'searchGifs': this.searchGifs.toJson()};
   }
 
-  static SearchGifsPageResponse fromJson(shalom_core.JsonObject data) {
-    final SearchGifsPage_searchGifs searchGifs$value =
-        SearchGifsPage_searchGifs.fromJson(
+  static AlbumGifSearchResponse fromJson(shalom_core.JsonObject data) {
+    final AlbumGifSearch_searchGifs searchGifs$value =
+        AlbumGifSearch_searchGifs.fromJson(
           data['searchGifs'] as shalom_core.JsonObject,
         );
-    return SearchGifsPageResponse(searchGifs: searchGifs$value);
+    return AlbumGifSearchResponse(searchGifs: searchGifs$value);
   }
 }
 
-class SearchGifsPage_searchGifs {
+class AlbumGifSearch_searchGifs {
   static String G__typename = "GifSearchPage";
 
   /// class members
   final bool hasNextPage;
 
-  final List<GifWidgetRef> items;
-
-  final int limit;
-
-  final int offset;
-
-  final int? totalCount;
+  final List<AlbumGifSearch_searchGifs_items> items;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  SearchGifsPage_searchGifs({
-    required this.hasNextPage,
-
-    required this.items,
-
-    required this.limit,
-
-    required this.offset,
-
-    this.totalCount,
-  });
+  AlbumGifSearch_searchGifs({required this.hasNextPage, required this.items});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is SearchGifsPage_searchGifs &&
+        (other is AlbumGifSearch_searchGifs &&
             hasNextPage == other.hasNextPage &&
-            const ListEquality().equals(items, other.items) &&
-            limit == other.limit &&
-            offset == other.offset &&
-            totalCount == other.totalCount);
+            const ListEquality().equals(items, other.items));
   }
 
   @override
@@ -92,13 +72,7 @@ class SearchGifsPage_searchGifs {
 
     items,
 
-    limit,
-
-    offset,
-
-    totalCount,
-
-    SearchGifsPage_searchGifs.G__typename,
+    AlbumGifSearch_searchGifs.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
@@ -106,45 +80,28 @@ class SearchGifsPage_searchGifs {
       'hasNextPage': this.hasNextPage,
 
       'items': this.items.map((e) => e.toJson()).toList(),
-
-      'limit': this.limit,
-
-      'offset': this.offset,
-
-      'totalCount': this.totalCount,
     };
   }
 
-  static SearchGifsPage_searchGifs fromJson(shalom_core.JsonObject data) {
+  static AlbumGifSearch_searchGifs fromJson(shalom_core.JsonObject data) {
     final bool hasNextPage$value = data['hasNextPage'] as bool;
-    final List<GifWidgetRef> items$value = (data['items'] as List<dynamic>)
-        .map(
-          (e) => GifWidgetRef.fromInput(
-            shalom_core.observedRefInputFromJson(
-              (e as shalom_core.JsonObject)[r'$GifWidget']
-                  as shalom_core.JsonObject,
-            ),
-          ),
-        )
-        .toList();
-    final int limit$value = data['limit'] as int;
-    final int offset$value = data['offset'] as int;
-    final int? totalCount$value = data['totalCount'] as int?;
-    return SearchGifsPage_searchGifs(
+    final List<AlbumGifSearch_searchGifs_items> items$value =
+        (data['items'] as List<dynamic>)
+            .map(
+              (e) => AlbumGifSearch_searchGifs_items.fromJson(
+                e as shalom_core.JsonObject,
+              ),
+            )
+            .toList();
+    return AlbumGifSearch_searchGifs(
       hasNextPage: hasNextPage$value,
 
       items: items$value,
-
-      limit: limit$value,
-
-      offset: offset$value,
-
-      totalCount: totalCount$value,
     );
   }
 }
 
-class SearchGifsPage_searchGifs_items implements GifWidget {
+class AlbumGifSearch_searchGifs_items {
   static String G__typename = "PreviewGif";
 
   /// class members
@@ -158,7 +115,7 @@ class SearchGifsPage_searchGifs_items implements GifWidget {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  SearchGifsPage_searchGifs_items({
+  AlbumGifSearch_searchGifs_items({
     this.previewUrl,
 
     required this.title,
@@ -169,7 +126,7 @@ class SearchGifsPage_searchGifs_items implements GifWidget {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is SearchGifsPage_searchGifs_items &&
+        (other is AlbumGifSearch_searchGifs_items &&
             previewUrl == other.previewUrl &&
             title == other.title &&
             url == other.url);
@@ -183,7 +140,7 @@ class SearchGifsPage_searchGifs_items implements GifWidget {
 
     url,
 
-    SearchGifsPage_searchGifs_items.G__typename,
+    AlbumGifSearch_searchGifs_items.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
@@ -196,11 +153,11 @@ class SearchGifsPage_searchGifs_items implements GifWidget {
     };
   }
 
-  static SearchGifsPage_searchGifs_items fromJson(shalom_core.JsonObject data) {
+  static AlbumGifSearch_searchGifs_items fromJson(shalom_core.JsonObject data) {
     final String? previewUrl$value = data['previewUrl'] as String?;
     final String title$value = data['title'] as String;
     final String url$value = data['url'] as String;
-    return SearchGifsPage_searchGifs_items(
+    return AlbumGifSearch_searchGifs_items(
       previewUrl: previewUrl$value,
 
       title: title$value,
@@ -226,20 +183,20 @@ class SearchGifsPage_searchGifs_items implements GifWidget {
 
 // ------------ V2 WIDGET API -------------
 
-final class SearchGifsPageData implements shalom_core.OperationInterface {
-  final SearchGifsPage_searchGifs searchGifs;
+final class AlbumGifSearchData implements shalom_core.OperationInterface {
+  final AlbumGifSearch_searchGifs searchGifs;
 
-  const SearchGifsPageData({required this.searchGifs});
+  const AlbumGifSearchData({required this.searchGifs});
 
   @override
-  String operation$Name() => 'SearchGifsPage';
+  String operation$Name() => 'AlbumGifSearch';
 
-  static SearchGifsPageData fromCache(shalom_core.JsonObject data) {
-    final SearchGifsPage_searchGifs searchGifs$value =
-        SearchGifsPage_searchGifs.fromJson(
+  static AlbumGifSearchData fromCache(shalom_core.JsonObject data) {
+    final AlbumGifSearch_searchGifs searchGifs$value =
+        AlbumGifSearch_searchGifs.fromJson(
           data['searchGifs'] as shalom_core.JsonObject,
         );
-    return SearchGifsPageData(searchGifs: searchGifs$value);
+    return AlbumGifSearchData(searchGifs: searchGifs$value);
   }
 
   shalom_core.JsonObject toJson() {
@@ -247,14 +204,14 @@ final class SearchGifsPageData implements shalom_core.OperationInterface {
   }
 }
 
-final class SearchGifsPageVariables {
+final class AlbumGifSearchVariables {
   final int limit;
 
   final int offset;
 
   final String query;
 
-  const SearchGifsPageVariables({
+  const AlbumGifSearchVariables({
     required this.limit,
 
     required this.offset,
@@ -275,7 +232,7 @@ final class SearchGifsPageVariables {
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is SearchGifsPageVariables &&
+        (other is AlbumGifSearchVariables &&
             this.limit == other.limit &&
             this.offset == other.offset &&
             this.query == other.query);

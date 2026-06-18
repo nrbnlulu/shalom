@@ -5,10 +5,12 @@ export 'RemoveGifFromAlbumMutation.shalom.dart';
 
 import "../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
-import 'package:shalom/shalom.dart' show OptimisticMutationResponse;
+import 'package:shalom/shalom.dart' show OptimisticMutationResponse, CacheProxy;
 import 'RemoveGifFromAlbumMutation.shalom.dart';
 
 abstract class $RemoveGifFromAlbumMutation {
+  String operation$Name() => 'RemoveGifFromAlbumMutation';
+
   final shalom_core.ShalomRuntimeClient _client;
   const $RemoveGifFromAlbumMutation(this._client);
 
@@ -19,16 +21,64 @@ abstract class $RemoveGifFromAlbumMutation {
     required String albumId,
     required String gifId,
   }) => _client.mutate<RemoveGifFromAlbumMutationData>(
-    name: 'RemoveGifFromAlbumMutation',
+    name: operation$Name(),
 
-    variables:
-        RemoveGifFromAlbumMutationVariables(
-          albumId: albumId,
-          gifId: gifId,
-        ).toJson(),
+    variables: RemoveGifFromAlbumMutationVariables(
+      albumId: albumId,
+      gifId: gifId,
+    ).toJson(),
 
     decoder: RemoveGifFromAlbumMutationData.fromCache,
   );
+
+  /// Execute the mutation and update the cache via [update].
+  ///
+  /// [update] receives a [CacheProxy] and the typed mutation response.
+  /// Use [CacheProxy.readQuery] / [CacheProxy.writeQuery] to read the current
+  /// cached value of any query and write back a modified version — the typical
+  /// pattern for keeping lists in sync after an add / remove / reorder mutation.
+  ///
+  /// Example:
+  /// ```dart
+  /// await addTodo.executeWithCacheUpdate(
+  ///   input: AddTodoInput(title: 'Buy milk'),
+  ///   update: (cache, data) {
+  ///     final current = cache.readQuery(
+  ///       name: 'GetTodos',
+  ///       decoder: GetTodosData.fromCache,
+  ///     );
+  ///     if (current != null) {
+  ///       cache.writeQuery(
+  ///         data: GetTodosData(todos: [...current.todos, data.addTodo!]),
+  ///       );
+  ///     }
+  ///   },
+  /// );
+  /// ```
+  Future<RemoveGifFromAlbumMutationData> executeWithCacheUpdate({
+    required String albumId,
+    required String gifId,
+    required void Function(
+      CacheProxy cache,
+      RemoveGifFromAlbumMutationData data,
+    )
+    update,
+  }) async {
+    final vars = RemoveGifFromAlbumMutationVariables(
+      albumId: albumId,
+      gifId: gifId,
+    );
+
+    final data = await _client.mutate<RemoveGifFromAlbumMutationData>(
+      name: operation$Name(),
+
+      variables: vars.toJson(),
+
+      decoder: RemoveGifFromAlbumMutationData.fromCache,
+    );
+    update(CacheProxy(_client), data);
+    return data;
+  }
 
   /// Execute the mutation with an optimistic cache write applied immediately,
   /// before the network response arrives.
@@ -60,7 +110,7 @@ abstract class $RemoveGifFromAlbumMutation {
       gifId: gifId,
     );
     final writeId = await _client.writeOptimistic(
-      name: 'RemoveGifFromAlbumMutation',
+      name: operation$Name(),
       data: optimisticFactory(vars).toJson(),
     );
 
@@ -73,7 +123,7 @@ abstract class $RemoveGifFromAlbumMutation {
 
     try {
       final response = await _client.mutate<RemoveGifFromAlbumMutationData>(
-        name: 'RemoveGifFromAlbumMutation',
+        name: operation$Name(),
 
         variables: vars.toJson(),
 

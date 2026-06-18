@@ -28,15 +28,21 @@ enum AlbumEventKind {
   GIF_REMOVED_FROM_ALBUM
 }
 
-type Gif {
+type Gif implements GifInterface {
+  title: String!
+  url: String!
+  previewUrl: String
   id: String!
+}
+
+interface GifInterface {
   title: String!
   url: String!
   previewUrl: String
 }
 
 type GifSearchPage {
-  items: [Gif!]!
+  items: [PreviewGif!]!
   offset: Int!
   limit: Int!
   totalCount: Int
@@ -45,8 +51,14 @@ type GifSearchPage {
 
 type Mutation {
   createAlbum(name: String!): Album!
-  addGifToAlbum(albumId: String!, gifId: String!, title: String!, url: String!, previewUrl: String = null): Album!
+  addGifToAlbum(albumId: String!, title: String!, url: String!, previewUrl: String = null): Gif!
   removeGifFromAlbum(albumId: String!, gifId: String!): Album!
+}
+
+type PreviewGif implements GifInterface {
+  title: String!
+  url: String!
+  previewUrl: String
 }
 
 type Query {
@@ -63,8 +75,7 @@ type Subscription {
 void registerShalomDefinitions(ShalomRuntimeClient client) {
   client.registerFragment(
     document: r'''
-fragment GifWidget on Gif @observe {
-    id
+fragment GifWidget on PreviewGif @observe {
     title
     url
     previewUrl
@@ -110,6 +121,33 @@ query AlbumsPage @observe {
   );
   client.registerOperation(
     document: r'''
+query AlbumGifListQuery ($albumId: String!) @observe {
+    album(id: $albumId) {
+      id
+      gifs {
+        id
+        title
+      }
+    }
+  }
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query AlbumGifSearch ($query: String!, $offset: Int!, $limit: Int!) @observe {
+    searchGifs(query: $query, offset: $offset, limit: $limit) {
+      items {
+        title
+        url
+        previewUrl
+      }
+      hasNextPage
+    }
+  }
+''',
+  );
+  client.registerOperation(
+    document: r'''
 mutation CreateAlbumMutation ($name: String!) {
     createAlbum(name: $name) {
       id
@@ -120,14 +158,10 @@ mutation CreateAlbumMutation ($name: String!) {
   );
   client.registerOperation(
     document: r'''
-mutation AddGifToAlbumMutation ($albumId: String!, $gifId: String!, $title: String!, $url: String!, $previewUrl: String) {
-    addGifToAlbum(albumId: $albumId, gifId: $gifId, title: $title, url: $url, previewUrl: $previewUrl) {
+mutation AddGifToAlbumMutation ($albumId: String!, $title: String!, $url: String!, $previewUrl: String) {
+    addGifToAlbum(albumId: $albumId, title: $title, url: $url, previewUrl: $previewUrl) {
       id
-      name
-      gifs {
-        id
-        title
-      }
+      title
     }
   }
 ''',

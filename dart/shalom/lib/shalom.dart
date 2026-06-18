@@ -1,6 +1,7 @@
 export 'src/rust/frb_generated.dart' show RustLib;
 export 'src/runtime_client.dart';
 export 'src/optimistic_mutation_response.dart';
+export 'src/cache_proxy.dart' show CacheProxy;
 
 export 'src/shalom_core_base.dart';
 export 'src/scalar.dart';

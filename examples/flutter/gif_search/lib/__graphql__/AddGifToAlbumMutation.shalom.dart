@@ -4,89 +4,12 @@ import "../graphql/__graphql__/schema.shalom.dart";
 
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 
 // ------------ OBJECT DEFINITIONS -------------
 
 class AddGifToAlbumMutation_addGifToAlbum {
-  static String G__typename = "Album";
-
-  /// class members
-  final List<AddGifToAlbumMutation_addGifToAlbum_gifs> gifs;
-
-  final String id;
-
-  final String name;
-
-  // Getter for typename (public accessor for static __typename field)
-  String get $__typename => G__typename;
-
-  // keywordargs constructor
-  AddGifToAlbumMutation_addGifToAlbum({
-    required this.gifs,
-
-    required this.id,
-
-    required this.name,
-  });
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is AddGifToAlbumMutation_addGifToAlbum &&
-            const ListEquality().equals(gifs, other.gifs) &&
-            id == other.id &&
-            name == other.name);
-  }
-
-  @override
-  int get hashCode => Object.hashAll([
-    gifs,
-
-    id,
-
-    name,
-
-    AddGifToAlbumMutation_addGifToAlbum.G__typename,
-  ]);
-
-  shalom_core.JsonObject toJson() {
-    return {
-      'gifs': this.gifs.map((e) => e.toJson()).toList(),
-
-      'id': this.id,
-
-      'name': this.name,
-    };
-  }
-
-  @experimental
-  static AddGifToAlbumMutation_addGifToAlbum fromJson(
-    shalom_core.JsonObject data,
-  ) {
-    final List<AddGifToAlbumMutation_addGifToAlbum_gifs> gifs$value =
-        (data['gifs'] as List<dynamic>)
-            .map(
-              (e) => AddGifToAlbumMutation_addGifToAlbum_gifs.fromJson(
-                e as shalom_core.JsonObject,
-              ),
-            )
-            .toList();
-    final String id$value = data['id'] as String;
-    final String name$value = data['name'] as String;
-    return AddGifToAlbumMutation_addGifToAlbum(
-      gifs: gifs$value,
-
-      id: id$value,
-
-      name: name$value,
-    );
-  }
-}
-
-class AddGifToAlbumMutation_addGifToAlbum_gifs {
   static String G__typename = "Gif";
 
   /// class members
@@ -98,16 +21,12 @@ class AddGifToAlbumMutation_addGifToAlbum_gifs {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  AddGifToAlbumMutation_addGifToAlbum_gifs({
-    required this.id,
-
-    required this.title,
-  });
+  AddGifToAlbumMutation_addGifToAlbum({required this.id, required this.title});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is AddGifToAlbumMutation_addGifToAlbum_gifs &&
+        (other is AddGifToAlbumMutation_addGifToAlbum &&
             id == other.id &&
             title == other.title);
   }
@@ -118,20 +37,19 @@ class AddGifToAlbumMutation_addGifToAlbum_gifs {
 
     title,
 
-    AddGifToAlbumMutation_addGifToAlbum_gifs.G__typename,
+    AddGifToAlbumMutation_addGifToAlbum.G__typename,
   ]);
 
   shalom_core.JsonObject toJson() {
     return {'id': this.id, 'title': this.title};
   }
 
-  @experimental
-  static AddGifToAlbumMutation_addGifToAlbum_gifs fromJson(
+  static AddGifToAlbumMutation_addGifToAlbum fromJson(
     shalom_core.JsonObject data,
   ) {
     final String id$value = data['id'] as String;
     final String title$value = data['title'] as String;
-    return AddGifToAlbumMutation_addGifToAlbum_gifs(
+    return AddGifToAlbumMutation_addGifToAlbum(
       id: id$value,
 
       title: title$value,
@@ -155,12 +73,15 @@ class AddGifToAlbumMutation_addGifToAlbum_gifs {
 
 // ------------ MUTATION DATA + VARIABLES -------------
 
-final class AddGifToAlbumMutationData {
+final class AddGifToAlbumMutationData
+    implements shalom_core.OperationInterface {
   final AddGifToAlbumMutation_addGifToAlbum addGifToAlbum;
 
   const AddGifToAlbumMutationData({required this.addGifToAlbum});
 
-  @experimental
+  @override
+  String operation$Name() => 'AddGifToAlbumMutation';
+
   static AddGifToAlbumMutationData fromCache(shalom_core.JsonObject data) {
     final AddGifToAlbumMutation_addGifToAlbum addGifToAlbum$value =
         AddGifToAlbumMutation_addGifToAlbum.fromJson(
@@ -177,8 +98,6 @@ final class AddGifToAlbumMutationData {
 final class AddGifToAlbumMutationVariables {
   final String albumId;
 
-  final String gifId;
-
   final shalom_core.Maybe<String?> previewUrl;
 
   final String title;
@@ -187,8 +106,6 @@ final class AddGifToAlbumMutationVariables {
 
   const AddGifToAlbumMutationVariables({
     required this.albumId,
-
-    required this.gifId,
 
     this.previewUrl = const shalom_core.None(),
 
@@ -201,7 +118,6 @@ final class AddGifToAlbumMutationVariables {
     shalom_core.JsonObject data = {};
 
     data["albumId"] = this.albumId;
-    data["gifId"] = this.gifId;
     if (previewUrl.isSome()) {
       final value = this.previewUrl.some();
       data["previewUrl"] = value;
@@ -217,14 +133,13 @@ final class AddGifToAlbumMutationVariables {
     return identical(this, other) ||
         (other is AddGifToAlbumMutationVariables &&
             this.albumId == other.albumId &&
-            this.gifId == other.gifId &&
             this.previewUrl == other.previewUrl &&
             this.title == other.title &&
             this.url == other.url);
   }
 
   @override
-  int get hashCode => Object.hashAll([albumId, gifId, previewUrl, title, url]);
+  int get hashCode => Object.hashAll([albumId, previewUrl, title, url]);
 }
 
 // ------------ END MUTATION DATA + VARIABLES -------------
