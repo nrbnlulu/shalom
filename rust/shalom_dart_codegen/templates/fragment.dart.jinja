@@ -48,8 +48,12 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
 {% if is_multi_type %}
 {# Interface/union fragment: sealed class with $TypeName subclasses + $Unknown #}
 {% set root_concretes = multitype_selection_resolved_concretes(fragment_name) -%}
-sealed class {{ fragment_name }}Data {
+sealed class {{ fragment_name }}Data implements {{ fragment_name }} {
   const {{ fragment_name }}Data();
+
+  {% for field in frag_root_shared_selections() if field.name != "__typename" -%}
+    {{ type_name_for_selection_with_observe(field) }} get {{ field.name }};
+  {% endfor %}
 
   static {{ fragment_name }}Data fromCache(shalom_core.JsonObject data) {
     final typename = data['__typename'] as String?;
@@ -66,36 +70,20 @@ sealed class {{ fragment_name }}Data {
 
 {% for concrete in root_concretes -%}
 final class {{ fragment_name }}Data${{ concrete.schema_typename }} extends {{ fragment_name }}Data {
-  {% for selection in concrete.selections if selection.name != "__typename" -%}
-    final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
-  {% endfor %}
-
-  const {{ fragment_name }}Data${{ concrete.schema_typename }}({
-    {% for selection in concrete.selections if selection.name != "__typename" -%}
-      required this.{{ selection.name }},
-    {% endfor %}
-  });
-
-  
-  static {{ fragment_name }}Data${{ concrete.schema_typename }} fromJson(shalom_core.JsonObject data) {
-    {% for selection in concrete.selections if selection.name != "__typename" -%}
-      {% set raw_value_symbol = "data['" + selection.name + "']" -%}
-      final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
-    {% endfor -%}
-    return {{ fragment_name }}Data${{ concrete.schema_typename }}(
-      {% for selection in concrete.selections -%}
-        {% if selection.name != "__typename" %}
-          {{selection.name}}: {{selection.name}}$value,
-        {% endif %}
-      {% endfor -%}
-    );
-  }
+  {{ selection_object_impl(fragment_name ~ "Data$" ~ concrete.schema_typename, concrete, is_root_selection=true, full_name=fragment_name ~ "Data$" ~ concrete.schema_typename, is_multi_type_member=true, shared_selections=concrete.selections) }}
 }
-
 {% endfor %}
 
 final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
   const {{ fragment_name }}Data$Unknown();
+
+  {% for field in frag_root_shared_selections() if field.name != "__typename" -%}
+    @override
+    {{ type_name_for_selection_with_observe(field) }} get {{ field.name }} => throw UnimplementedError();
+  {% endfor %}
+
+  @override
+  shalom_core.JsonObject toJson() => throw UnimplementedError();
 }
 
 {# Nested object definitions within concrete types #}
@@ -173,7 +161,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 {{ selection_object_definition(obj) }}
 {% endfor %}
 
-final class {{ fragment_name }}Data {
+final class {{ fragment_name }}Data implements {{ fragment_name }} {
   {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
     final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
   {% endfor %}
