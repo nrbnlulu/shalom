@@ -199,10 +199,13 @@ class ShelterSubscription_shelterAnimals__Dog
 
 // ------------ V2 WIDGET API -------------
 
-final class ShelterSubscriptionData {
+final class ShelterSubscriptionData implements shalom_core.OperationInterface {
   final ShelterSubscription_shelterAnimals shelterAnimals;
 
   const ShelterSubscriptionData({required this.shelterAnimals});
+
+  @override
+  String operation$Name() => 'ShelterSubscription';
 
   static ShelterSubscriptionData fromCache(shalom_core.JsonObject data) {
     final ShelterSubscription_shelterAnimals shelterAnimals$value =

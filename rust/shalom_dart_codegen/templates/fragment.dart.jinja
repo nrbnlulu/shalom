@@ -161,7 +161,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 {{ selection_object_definition(obj) }}
 {% endfor %}
 
-final class {{ fragment_name }}Data implements {{ fragment_name }} {
+final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.FragmentInterface {
   {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
     final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
   {% endfor %}
@@ -186,7 +186,22 @@ final class {{ fragment_name }}Data implements {{ fragment_name }} {
     {% endfor %}
   ]);
 
-  
+  @override
+  String fragment$Name() => '{{ fragment_name }}';
+
+  @override
+  String entity$Type() => '{{ context.fragment.root_type.schema_typename }}';
+
+  @override
+  String entity$Id() {% if fragment_root_has_id_selection() %}=> this.id;{% else %}=> throw UnimplementedError(
+    "Fragment '{{ fragment_name }}' does not select 'id', so it has no entity id. "
+    "Pass an explicit entityKey instead.",
+  );{% endif %}
+
+  /// The normalized cache key for the entity identified by [id], e.g.
+  /// `'{{ context.fragment.root_type.schema_typename }}:123'`.
+  static String entityKey(String id) => '{{ context.fragment.root_type.schema_typename }}:$id';
+
   static {{ fragment_name }}Data fromCache(shalom_core.JsonObject data) {
     {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
       {% set raw_value_symbol = "data['" + selection.name + "']" -%}

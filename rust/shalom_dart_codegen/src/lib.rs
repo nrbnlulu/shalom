@@ -888,6 +888,11 @@ impl FragmentEnv<'_> {
             minijinja::value::Value::from_serialize(selections)
         });
 
+        let frag_ctx_clone2 = fragment_ctx.clone();
+        env.add_function("fragment_root_has_id_selection", move || {
+            frag_ctx_clone2.get_root().get_selection("id").is_some()
+        });
+
         Ok(FragmentEnv { env })
     }
 

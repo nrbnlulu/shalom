@@ -15,8 +15,10 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 extension type ZooWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
   shalom_core.JsonObject toJson() => {
-    'observable_id': _inner.observableId,
-    'anchor': _inner.anchor,
+    '__shalom_observed_ref': {
+      'observable_id': _inner.observableId,
+      'anchor': _inner.anchor,
+    },
   };
 }
 
@@ -64,7 +66,7 @@ class ZooWidget_cages {
   }
 }
 
-final class ZooWidgetData {
+final class ZooWidgetData implements ZooWidget, shalom_core.FragmentInterface {
   final List<ZooWidget_cages> cages;
   final String id;
   final String name;
@@ -85,6 +87,19 @@ final class ZooWidgetData {
 
   @override
   int get hashCode => Object.hashAll([cages, id, name]);
+
+  @override
+  String fragment$Name() => 'ZooWidget';
+
+  @override
+  String entity$Type() => 'Zoo';
+
+  @override
+  String entity$Id() => this.id;
+
+  /// The normalized cache key for the entity identified by [id], e.g.
+  /// `'Zoo:123'`.
+  static String entityKey(String id) => 'Zoo:$id';
 
   static ZooWidgetData fromCache(shalom_core.JsonObject data) {
     final List<ZooWidget_cages> cages$value = (data['cages'] as List<dynamic>)

@@ -726,6 +726,45 @@ impl ShalomRuntime {
         })
     }
 
+    fn fragment_by_name(&self, name: &str) -> anyhow::Result<SharedFragmentContext> {
+        self.engine
+            .global_ctx()
+            .get_fragment(name)
+            .ok_or_else(|| anyhow::anyhow!("fragment '{name}' not registered"))
+    }
+
+    /// Read the entity at [entity_key] through [fragment_name]'s selection set.
+    ///
+    /// Returns `None` when the entity is absent or has missing refs.
+    pub fn try_read_fragment(
+        &self,
+        fragment_name: &str,
+        entity_key: &str,
+    ) -> anyhow::Result<Option<Value>> {
+        let fragment = self.fragment_by_name(fragment_name)?;
+        let result = self.read_result_fragment(&fragment, entity_key)?;
+        if result.missing_refs.is_empty() {
+            Ok(Some(result.data))
+        } else {
+            Ok(None)
+        }
+    }
+
+    /// Normalize [data] into the cache at [entity_key] using [fragment_name]'s
+    /// selection set and notify all affected subscribers.
+    pub fn write_fragment(
+        &self,
+        fragment_name: &str,
+        entity_key: &str,
+        data: Value,
+    ) -> anyhow::Result<()> {
+        let fragment = self.fragment_by_name(fragment_name)?;
+        let data = self.resolve_observed_fragment_refs(data)?;
+        let result = self.engine.normalize_fragment_response(&fragment, entity_key, data)?;
+        self.notify_subscribers(&result.changed)?;
+        Ok(())
+    }
+
     // -----------------------------------------------------------------------
     // Private helpers
     // -----------------------------------------------------------------------

@@ -1,6 +1,6 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 // GENERATED CODE - DO NOT MODIFY BY HAND
-// Fragment: GifWidget
+// Fragment: AlbumGif
 
 import "../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
@@ -12,7 +12,7 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
-extension type GifWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
+extension type AlbumGifRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
   shalom_core.JsonObject toJson() => {
     '__shalom_observed_ref': {
@@ -22,77 +22,67 @@ extension type GifWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   };
 }
 
-abstract class GifWidget {
-  String? get previewUrl;
+abstract class AlbumGif {
+  String get id;
 
   String get title;
-
-  String get url;
 
   shalom_core.JsonObject toJson();
 }
 
-final class GifWidgetData {
-  final String? previewUrl;
+final class AlbumGifData implements AlbumGif, shalom_core.FragmentInterface {
+  final String id;
   final String title;
-  final String url;
 
-  const GifWidgetData({
-    required this.previewUrl,
-    required this.title,
-    required this.url,
-  });
+  const AlbumGifData({required this.id, required this.title});
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is GifWidgetData &&
-          previewUrl == other.previewUrl &&
-          title == other.title &&
-          url == other.url);
+      (other is AlbumGifData && id == other.id && title == other.title);
 
   @override
-  int get hashCode => Object.hashAll([previewUrl, title, url]);
+  int get hashCode => Object.hashAll([id, title]);
 
-  static GifWidgetData fromCache(shalom_core.JsonObject data) {
-    final String? previewUrl$value = data['previewUrl'] as String?;
+  @override
+  String fragment$Name() => 'AlbumGif';
+
+  @override
+  String entity$Type() => 'Gif';
+
+  @override
+  String entity$Id() => this.id;
+
+  /// The normalized cache key for the entity identified by [id], e.g.
+  /// `'Gif:123'`.
+  static String entityKey(String id) => 'Gif:$id';
+
+  static AlbumGifData fromCache(shalom_core.JsonObject data) {
+    final String id$value = data['id'] as String;
     final String title$value = data['title'] as String;
-    final String url$value = data['url'] as String;
-    return GifWidgetData(
-      previewUrl: previewUrl$value,
-
-      title: title$value,
-
-      url: url$value,
-    );
+    return AlbumGifData(id: id$value, title: title$value);
   }
 
   shalom_core.JsonObject toJson() {
-    return {
-      'previewUrl': this.previewUrl,
-
-      'title': this.title,
-
-      'url': this.url,
-    };
+    return {'id': this.id, 'title': this.title};
   }
 }
 
-abstract class $GifWidget extends StatefulWidget {
-  final GifWidgetRef ref;
-  const $GifWidget({super.key, required this.ref});
+abstract class $AlbumGif extends StatefulWidget {
+  final AlbumGifRef ref;
+  const $AlbumGif({super.key, required this.ref});
 
-  Widget buildData(BuildContext context, GifWidgetData data);
+  Widget buildData(BuildContext context, AlbumGifData data);
   Widget buildLoading(BuildContext context) => const SizedBox.shrink();
   Widget buildError(BuildContext context, Object error) => ErrorWidget(error);
 
   @override
-  State<$GifWidget> createState() => _$GifWidgetState();
+  State<$AlbumGif> createState() => _$AlbumGifState();
 }
 
-class _$GifWidgetState extends State<$GifWidget> {
-  StreamSubscription<GifWidgetData>? _sub;
-  GifWidgetData? _data;
+class _$AlbumGifState extends State<$AlbumGif> {
+  StreamSubscription<AlbumGifData>? _sub;
+  AlbumGifData? _data;
   Object? _error;
 
   @override
@@ -111,7 +101,7 @@ class _$GifWidgetState extends State<$GifWidget> {
   }
 
   @override
-  void didUpdateWidget(covariant $GifWidget oldWidget) {
+  void didUpdateWidget(covariant $AlbumGif oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.ref != oldWidget.ref) _subscribe();
   }
@@ -120,9 +110,9 @@ class _$GifWidgetState extends State<$GifWidget> {
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = client
-        .subscribeToFragment<GifWidgetData>(
+        .subscribeToFragment<AlbumGifData>(
           ref: widget.ref.toInput,
-          decoder: GifWidgetData.fromCache,
+          decoder: AlbumGifData.fromCache,
         )
         .listen(
           (data) => setState(() {

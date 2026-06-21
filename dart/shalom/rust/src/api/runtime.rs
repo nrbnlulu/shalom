@@ -522,6 +522,39 @@ pub fn write_query(
     handle.runtime.write_query(&name, data, variables.as_ref())
 }
 
+/// Read an entity from the cache through a fragment's selection set.
+///
+/// Returns `null` when the entity is absent or has missing refs.
+#[frb(sync)]
+pub fn read_fragment(
+    handle: &RuntimeHandle,
+    fragment_name: String,
+    entity_key: String,
+) -> anyhow::Result<Option<String>> {
+    match handle
+        .runtime
+        .try_read_fragment(&fragment_name, &entity_key)?
+    {
+        Some(data) => Ok(Some(serde_json::to_string(&data)?)),
+        None => Ok(None),
+    }
+}
+
+/// Write entity data to the cache at [entity_key] using [fragment_name]'s
+/// selection set, then notify all affected subscribers.
+#[frb(sync)]
+pub fn write_fragment(
+    handle: &RuntimeHandle,
+    fragment_name: String,
+    entity_key: String,
+    data_json: String,
+) -> anyhow::Result<()> {
+    let data: Value = serde_json::from_str(&data_json)?;
+    handle
+        .runtime
+        .write_fragment(&fragment_name, &entity_key, data)
+}
+
 // ---------------------------------------------------------------------------
 // Debug / cache inspection
 // ---------------------------------------------------------------------------

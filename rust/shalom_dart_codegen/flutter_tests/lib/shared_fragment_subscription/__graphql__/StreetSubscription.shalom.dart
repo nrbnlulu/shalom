@@ -199,10 +199,13 @@ class StreetSubscription_streetAnimals__Dog
 
 // ------------ V2 WIDGET API -------------
 
-final class StreetSubscriptionData {
+final class StreetSubscriptionData implements shalom_core.OperationInterface {
   final StreetSubscription_streetAnimals streetAnimals;
 
   const StreetSubscriptionData({required this.streetAnimals});
+
+  @override
+  String operation$Name() => 'StreetSubscription';
 
   static StreetSubscriptionData fromCache(shalom_core.JsonObject data) {
     final StreetSubscription_streetAnimals streetAnimals$value =

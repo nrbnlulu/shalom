@@ -15,8 +15,10 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
   shalom_core.JsonObject toJson() => {
-    'observable_id': _inner.observableId,
-    'anchor': _inner.anchor,
+    '__shalom_observed_ref': {
+      'observable_id': _inner.observableId,
+      'anchor': _inner.anchor,
+    },
   };
 }
 
@@ -30,7 +32,7 @@ abstract class DogFrag {
   shalom_core.JsonObject toJson();
 }
 
-final class DogFragData {
+final class DogFragData implements DogFrag, shalom_core.FragmentInterface {
   final String breed;
   final String id;
   final String name;
@@ -51,6 +53,19 @@ final class DogFragData {
 
   @override
   int get hashCode => Object.hashAll([breed, id, name]);
+
+  @override
+  String fragment$Name() => 'DogFrag';
+
+  @override
+  String entity$Type() => 'Dog';
+
+  @override
+  String entity$Id() => this.id;
+
+  /// The normalized cache key for the entity identified by [id], e.g.
+  /// `'Dog:123'`.
+  static String entityKey(String id) => 'Dog:$id';
 
   static DogFragData fromCache(shalom_core.JsonObject data) {
     final String breed$value = data['breed'] as String;

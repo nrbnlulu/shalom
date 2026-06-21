@@ -75,15 +75,6 @@ type Subscription {
 void registerShalomDefinitions(ShalomRuntimeClient client) {
   client.registerFragment(
     document: r'''
-fragment GifWidget on PreviewGif @observe {
-    title
-    url
-    previewUrl
-  }
-''',
-  );
-  client.registerFragment(
-    document: r'''
 fragment AlbumWidget on Album @observe {
     id
     name
@@ -95,18 +86,11 @@ fragment AlbumWidget on Album @observe {
   }
 ''',
   );
-  client.registerOperation(
+  client.registerFragment(
     document: r'''
-query SearchGifsPage ($query: String!, $offset: Int!, $limit: Int!) @observe {
-    searchGifs(query: $query, offset: $offset, limit: $limit) {
-      items {
-        ...GifWidget
-      }
-      offset
-      limit
-      totalCount
-      hasNextPage
-    }
+fragment AlbumGif on Gif @observe {
+    id
+    title
   }
 ''',
   );
@@ -115,19 +99,6 @@ query SearchGifsPage ($query: String!, $offset: Int!, $limit: Int!) @observe {
 query AlbumsPage @observe {
     albums {
       ...AlbumWidget
-    }
-  }
-''',
-  );
-  client.registerOperation(
-    document: r'''
-query AlbumGifListQuery ($albumId: String!) @observe {
-    album(id: $albumId) {
-      id
-      gifs {
-        id
-        title
-      }
     }
   }
 ''',
@@ -152,6 +123,11 @@ mutation CreateAlbumMutation ($name: String!) {
     createAlbum(name: $name) {
       id
       name
+      tag
+      gifs {
+        id
+        title
+      }
     }
   }
 ''',
@@ -160,8 +136,7 @@ mutation CreateAlbumMutation ($name: String!) {
     document: r'''
 mutation AddGifToAlbumMutation ($albumId: String!, $title: String!, $url: String!, $previewUrl: String) {
     addGifToAlbum(albumId: $albumId, title: $title, url: $url, previewUrl: $previewUrl) {
-      id
-      title
+      ...AlbumGif
     }
   }
 ''',

@@ -8,6 +8,7 @@ use tokio_stream::Stream;
 
 use shalom_core::context::SharedShalomGlobalContext;
 use shalom_core::operation::context::SharedOpCtx;
+use shalom_core::operation::fragments::SharedFragmentContext;
 
 use crate::cache::NormalizedCache;
 use crate::normalization::{NormalizationResult, Normalizer};
@@ -61,6 +62,17 @@ impl ExecutionEngine {
         let ctx = self.global_ctx();
         let mut cache = self.cache.lock();
         Normalizer::new(ctx, &mut cache, variables).normalize_operation(op_ctx, data)
+    }
+
+    pub fn normalize_fragment_response(
+        &self,
+        fragment: &SharedFragmentContext,
+        entity_key: &str,
+        data: Value,
+    ) -> anyhow::Result<NormalizationResult> {
+        let ctx = self.global_ctx();
+        let mut cache = self.cache.lock();
+        Normalizer::new(ctx, &mut cache, None).normalize_fragment(fragment, entity_key, data)
     }
 
     /// Same as `normalize_response` but records the pre-write value of every

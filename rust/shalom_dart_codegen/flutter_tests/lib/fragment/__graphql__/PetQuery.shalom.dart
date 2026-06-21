@@ -98,10 +98,13 @@ class PetQuery_pet implements PetWidget {
 
 // ------------ V2 WIDGET API -------------
 
-final class PetQueryData {
+final class PetQueryData implements shalom_core.OperationInterface {
   final PetWidgetRef? pet;
 
   const PetQueryData({required this.pet});
+
+  @override
+  String operation$Name() => 'PetQuery';
 
   static PetQueryData fromCache(shalom_core.JsonObject data) {
     final PetWidgetRef? pet$value = data['pet'] == null

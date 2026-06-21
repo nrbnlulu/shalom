@@ -92,10 +92,13 @@ class UserWidget_user {
 
 // ------------ V2 WIDGET API -------------
 
-final class UserWidgetData {
+final class UserWidgetData implements shalom_core.OperationInterface {
   final UserWidget_user? user;
 
   const UserWidgetData({required this.user});
+
+  @override
+  String operation$Name() => 'UserWidget';
 
   static UserWidgetData fromCache(shalom_core.JsonObject data) {
     final UserWidget_user? user$value = data['user'] == null

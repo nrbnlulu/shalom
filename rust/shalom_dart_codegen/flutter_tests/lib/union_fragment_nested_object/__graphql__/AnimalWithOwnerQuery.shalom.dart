@@ -213,10 +213,13 @@ class AnimalWithOwnerQuery_animal__Dog extends AnimalWithOwnerQuery_animal {
 
 // ------------ V2 WIDGET API -------------
 
-final class AnimalWithOwnerQueryData {
+final class AnimalWithOwnerQueryData implements shalom_core.OperationInterface {
   final AnimalWithOwnerWidgetRef? animal;
 
   const AnimalWithOwnerQueryData({required this.animal});
+
+  @override
+  String operation$Name() => 'AnimalWithOwnerQuery';
 
   static AnimalWithOwnerQueryData fromCache(shalom_core.JsonObject data) {
     final AnimalWithOwnerWidgetRef? animal$value = data['animal'] == null

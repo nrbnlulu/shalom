@@ -10,6 +10,8 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import 'AnimalWithOwnerQuery.shalom.dart';
 
 abstract class $AnimalWithOwnerQuery extends StatefulWidget {
+  String operation$Name() => 'AnimalWithOwnerQuery';
+
   final shalom_core.ExecutionPolicyInput executionPolicy;
 
   final AnimalWithOwnerQueryVariables variables;
@@ -51,8 +53,9 @@ class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
   void didUpdateWidget(covariant $AnimalWithOwnerQuery oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.executionPolicy != oldWidget.executionPolicy ||
-        widget.variables != oldWidget.variables)
+        widget.variables != oldWidget.variables) {
       _subscribe();
+    }
   }
 
   void _subscribe() {
@@ -60,7 +63,7 @@ class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
     final client = ShalomScope.of(context);
     _sub = client
         .request<AnimalWithOwnerQueryData>(
-          name: 'AnimalWithOwnerQuery',
+          name: widget.operation$Name(),
 
           variables: widget.variables.toJson(),
 

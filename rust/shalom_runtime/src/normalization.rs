@@ -6,6 +6,7 @@ use shalom_core::{
     context::SharedShalomGlobalContext,
     operation::{
         context::{ExecutableContext, SharedOpCtx},
+        fragments::SharedFragmentContext,
         types::{FieldSelection, SelectionKind},
     },
 };
@@ -132,6 +133,66 @@ impl<'a> Normalizer<'a> {
 
         self.snapshot_key(&root_key);
         self.cache.insert(root_key, next_root);
+
+        Ok(NormalizationResult {
+            data: Value::Object(output),
+            changed: self.changed,
+            used_refs: self.used_refs,
+            snapshot: self.snapshot,
+        })
+    }
+
+    /// Normalize [data] into the cache at [entity_key] using [fragment]'s
+    /// selection set. Equivalent to `normalize_operation` but rooted at a
+    /// specific entity instead of ROOT_QUERY / ROOT_MUTATION.
+    pub fn normalize_fragment(
+        mut self,
+        fragment: &SharedFragmentContext,
+        entity_key: &str,
+        data: Value,
+    ) -> anyhow::Result<NormalizationResult> {
+        let raw_obj = data
+            .as_object()
+            .ok_or_else(|| anyhow::anyhow!("fragment data is not an object"))?;
+
+        let cached_root = self.cache.get(entity_key).cloned().unwrap_or_default();
+        let mut next_root = cached_root.clone();
+        let selections = resolve_object_selections(fragment.get_root(), &self.global_ctx);
+        let mut output = Map::new();
+        let root_locator = CacheLocator::root(entity_key.to_string());
+
+        for selection in selections {
+            let field_name = selection.self_selection_name().clone();
+            let raw_value = raw_obj.get(&field_name).cloned().unwrap_or(Value::Null);
+            let field_cache_key =
+                field_cache_key(&field_name, &selection.arguments, self.variables);
+            let field_segment =
+                field_path_segment(&field_name, &selection.arguments, self.variables);
+            let field_ref_key = format!("{entity_key}.{field_segment}");
+            let cached_value = cached_root.get(&field_cache_key);
+            let field_locator = root_locator.child_field(field_cache_key.clone());
+            if field_name != "__typename" {
+                self.used_refs.insert(field_ref_key.clone());
+            }
+
+            let normalized = self.normalize_field(
+                &selection,
+                &raw_value,
+                cached_value,
+                &mut next_root,
+                entity_key,
+                &field_segment,
+                &field_ref_key,
+                raw_obj.contains_key(&field_name),
+                &field_cache_key,
+                &field_locator,
+            )?;
+
+            output.insert(field_name.clone(), normalized);
+        }
+
+        self.snapshot_key(entity_key);
+        self.cache.insert(entity_key.to_string(), next_root);
 
         Ok(NormalizationResult {
             data: Value::Object(output),

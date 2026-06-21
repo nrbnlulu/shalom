@@ -7,6 +7,19 @@ abstract interface class OperationInterface {
   JsonObject toJson();
 }
 
+abstract interface class FragmentInterface {
+  String fragment$Name();
+
+  String entity$Type();
+
+  /// The normalized cache id of this fragment's root entity (the value of
+  /// its selected `id` field). Combined with [entity$Type] this gives the
+  /// cache key `'$entity$Type:$entity$Id'`.
+  String entity$Id();
+
+  JsonObject toJson();
+}
+
 // ignore: constant_identifier_names
 enum OperationType { Query, Mutation, Subscription }
 

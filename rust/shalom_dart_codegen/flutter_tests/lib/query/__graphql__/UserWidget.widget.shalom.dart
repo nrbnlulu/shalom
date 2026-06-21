@@ -10,6 +10,8 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 import 'UserWidget.shalom.dart';
 
 abstract class $UserWidget extends StatefulWidget {
+  String operation$Name() => 'UserWidget';
+
   final shalom_core.ExecutionPolicyInput executionPolicy;
 
   final UserWidgetVariables variables;
@@ -51,8 +53,9 @@ class _$UserWidgetState extends State<$UserWidget> {
   void didUpdateWidget(covariant $UserWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.executionPolicy != oldWidget.executionPolicy ||
-        widget.variables != oldWidget.variables)
+        widget.variables != oldWidget.variables) {
       _subscribe();
+    }
   }
 
   void _subscribe() {
@@ -60,7 +63,7 @@ class _$UserWidgetState extends State<$UserWidget> {
     final client = ShalomScope.of(context);
     _sub = client
         .request<UserWidgetData>(
-          name: 'UserWidget',
+          name: widget.operation$Name(),
 
           variables: widget.variables.toJson(),
 

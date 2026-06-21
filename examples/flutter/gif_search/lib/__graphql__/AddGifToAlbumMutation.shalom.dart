@@ -6,10 +6,11 @@ import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
 // Fragment imports
+import 'AlbumGif.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
 
-class AddGifToAlbumMutation_addGifToAlbum {
+class AddGifToAlbumMutation_addGifToAlbum implements AlbumGif {
   static String G__typename = "Gif";
 
   /// class members

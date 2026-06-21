@@ -17,8 +17,10 @@ extension type AnimalWithOwnerWidgetRef.fromInput(
 ) {
   shalom_core.ObservedRefInput get toInput => _inner;
   shalom_core.JsonObject toJson() => {
-    'observable_id': _inner.observableId,
-    'anchor': _inner.anchor,
+    '__shalom_observed_ref': {
+      'observable_id': _inner.observableId,
+      'anchor': _inner.anchor,
+    },
   };
 }
 
@@ -28,8 +30,10 @@ abstract class AnimalWithOwnerWidget {
   shalom_core.JsonObject toJson();
 }
 
-sealed class AnimalWithOwnerWidgetData {
+sealed class AnimalWithOwnerWidgetData implements AnimalWithOwnerWidget {
   const AnimalWithOwnerWidgetData();
+
+  String get id;
 
   static AnimalWithOwnerWidgetData fromCache(shalom_core.JsonObject data) {
     final typename = data['__typename'] as String?;
@@ -46,10 +50,41 @@ sealed class AnimalWithOwnerWidgetData {
 }
 
 final class AnimalWithOwnerWidgetData$Cat extends AnimalWithOwnerWidgetData {
+  static String G__typename = "Cat";
+
+  /// class members
+
   final String color;
+
   final String id;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
+  // keywordargs constructor
   const AnimalWithOwnerWidgetData$Cat({required this.color, required this.id});
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AnimalWithOwnerWidgetData$Cat &&
+            color == other.color &&
+            id == other.id);
+  }
+
+  @override
+  int get hashCode =>
+      Object.hashAll([color, id, AnimalWithOwnerWidgetData$Cat.G__typename]);
+
+  shalom_core.JsonObject toJson() {
+    return {
+      "__typename": AnimalWithOwnerWidgetData$Cat.G__typename,
+
+      'color': this.color,
+
+      'id': this.id,
+    };
+  }
 
   static AnimalWithOwnerWidgetData$Cat fromJson(shalom_core.JsonObject data) {
     final String color$value = data['color'] as String;
@@ -59,15 +94,59 @@ final class AnimalWithOwnerWidgetData$Cat extends AnimalWithOwnerWidgetData {
 }
 
 final class AnimalWithOwnerWidgetData$Dog extends AnimalWithOwnerWidgetData {
+  static String G__typename = "Dog";
+
+  /// class members
+
   final String breed;
+
   final String id;
+
   final AnimalWithOwnerWidget__Dog_owner? owner;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
+  // keywordargs constructor
   const AnimalWithOwnerWidgetData$Dog({
     required this.breed,
+
     required this.id,
-    required this.owner,
+
+    this.owner,
   });
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AnimalWithOwnerWidgetData$Dog &&
+            breed == other.breed &&
+            id == other.id &&
+            owner == other.owner);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    breed,
+
+    id,
+
+    owner,
+
+    AnimalWithOwnerWidgetData$Dog.G__typename,
+  ]);
+
+  shalom_core.JsonObject toJson() {
+    return {
+      "__typename": AnimalWithOwnerWidgetData$Dog.G__typename,
+
+      'breed': this.breed,
+
+      'id': this.id,
+
+      'owner': this.owner?.toJson(),
+    };
+  }
 
   static AnimalWithOwnerWidgetData$Dog fromJson(shalom_core.JsonObject data) {
     final String breed$value = data['breed'] as String;
@@ -90,6 +169,12 @@ final class AnimalWithOwnerWidgetData$Dog extends AnimalWithOwnerWidgetData {
 final class AnimalWithOwnerWidgetData$Unknown
     extends AnimalWithOwnerWidgetData {
   const AnimalWithOwnerWidgetData$Unknown();
+
+  @override
+  String get id => throw UnimplementedError();
+
+  @override
+  shalom_core.JsonObject toJson() => throw UnimplementedError();
 }
 
 class AnimalWithOwnerWidget__Dog_owner {

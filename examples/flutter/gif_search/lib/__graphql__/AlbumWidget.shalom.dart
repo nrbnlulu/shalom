@@ -68,7 +68,8 @@ class AlbumWidget_gifs {
   }
 }
 
-final class AlbumWidgetData {
+final class AlbumWidgetData
+    implements AlbumWidget, shalom_core.FragmentInterface {
   final List<AlbumWidget_gifs> gifs;
   final String id;
   final String name;
@@ -92,6 +93,19 @@ final class AlbumWidgetData {
 
   @override
   int get hashCode => Object.hashAll([gifs, id, name, tag]);
+
+  @override
+  String fragment$Name() => 'AlbumWidget';
+
+  @override
+  String entity$Type() => 'Album';
+
+  @override
+  String entity$Id() => this.id;
+
+  /// The normalized cache key for the entity identified by [id], e.g.
+  /// `'Album:123'`.
+  static String entityKey(String id) => 'Album:$id';
 
   static AlbumWidgetData fromCache(shalom_core.JsonObject data) {
     final List<AlbumWidget_gifs> gifs$value = (data['gifs'] as List<dynamic>)

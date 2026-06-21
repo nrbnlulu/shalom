@@ -113,10 +113,13 @@ class ZooQuery_zoo implements ZooWidget {
 
 // ------------ V2 WIDGET API -------------
 
-final class ZooQueryData {
+final class ZooQueryData implements shalom_core.OperationInterface {
   final ZooWidgetRef? zoo;
 
   const ZooQueryData({required this.zoo});
+
+  @override
+  String operation$Name() => 'ZooQuery';
 
   static ZooQueryData fromCache(shalom_core.JsonObject data) {
     final ZooWidgetRef? zoo$value = data['zoo'] == null

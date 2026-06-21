@@ -211,6 +211,33 @@ void writeQuery({
   variablesJson: variablesJson,
 );
 
+/// Read an entity from the cache through a fragment's selection set.
+///
+/// Returns `null` when the entity is absent or has missing refs.
+String? readFragment({
+  required RuntimeHandle handle,
+  required String fragmentName,
+  required String entityKey,
+}) => RustLib.instance.api.crateApiRuntimeReadFragment(
+  handle: handle,
+  fragmentName: fragmentName,
+  entityKey: entityKey,
+);
+
+/// Write entity data to the cache at [entity_key] using [fragment_name]'s
+/// selection set, then notify all affected subscribers.
+void writeFragment({
+  required RuntimeHandle handle,
+  required String fragmentName,
+  required String entityKey,
+  required String dataJson,
+}) => RustLib.instance.api.crateApiRuntimeWriteFragment(
+  handle: handle,
+  fragmentName: fragmentName,
+  entityKey: entityKey,
+  dataJson: dataJson,
+);
+
 /// Returns a JSON object mapping each cache key to its active observer count.
 ///
 /// Example: `{"ROOT_QUERY": 2, "User:1": 1}`

@@ -15,8 +15,10 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
 extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   shalom_core.ObservedRefInput get toInput => _inner;
   shalom_core.JsonObject toJson() => {
-    'observable_id': _inner.observableId,
-    'anchor': _inner.anchor,
+    '__shalom_observed_ref': {
+      'observable_id': _inner.observableId,
+      'anchor': _inner.anchor,
+    },
   };
 }
 
@@ -28,7 +30,7 @@ abstract class PetWidget {
   shalom_core.JsonObject toJson();
 }
 
-final class PetWidgetData {
+final class PetWidgetData implements PetWidget, shalom_core.FragmentInterface {
   final String id;
   final String name;
 
@@ -41,6 +43,19 @@ final class PetWidgetData {
 
   @override
   int get hashCode => Object.hashAll([id, name]);
+
+  @override
+  String fragment$Name() => 'PetWidget';
+
+  @override
+  String entity$Type() => 'Pet';
+
+  @override
+  String entity$Id() => this.id;
+
+  /// The normalized cache key for the entity identified by [id], e.g.
+  /// `'Pet:123'`.
+  static String entityKey(String id) => 'Pet:$id';
 
   static PetWidgetData fromCache(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;

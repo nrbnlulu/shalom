@@ -97,6 +97,7 @@ class ShalomRuntimeClient {
     required String schemaSdl,
     rs_runtime.RuntimeConfigInput? config,
     required GraphQLLink link,
+    rs_runtime.LogLevel? logLevel,
   }) {
     final handle = rs_runtime.initRuntime(schemaSdl: schemaSdl, config: config);
     final client = ShalomRuntimeClient._(handle, link);
@@ -513,6 +514,38 @@ class ShalomRuntimeClient {
       name: data.operation$Name(),
       dataJson: jsonEncode(data.toJson()),
       variablesJson: variablesJson,
+    );
+  }
+
+  /// Read an entity from the cache through [fragment_name]'s selection set.
+  ///
+  /// Returns `null` when the entity is absent or has missing refs.
+  T? readFragment<T>({
+    required String fragmentName,
+    required String entityKey,
+    required T Function(JsonObject) decoder,
+  }) {
+    final raw = rs_runtime.readFragment(
+      handle: _handle,
+      fragmentName: fragmentName,
+      entityKey: entityKey,
+    );
+    if (raw == null) return null;
+    final json = jsonDecode(raw) as Map<String, dynamic>;
+    return decoder(json);
+  }
+
+  /// Write [data] to the cache, using [FragmentInterface]'s selection set,
+  /// notifying all affected subscribers.
+  ///
+  /// The target entity's cache key is derived from [data]'s `entity$Type()`
+  /// and `entity$Id()` (i.e. `'$entity$Type:$entity$Id'`).
+  void writeFragment<T extends FragmentInterface>({required T data}) {
+    rs_runtime.writeFragment(
+      handle: _handle,
+      fragmentName: data.fragment$Name(),
+      entityKey: '${data.entity$Type()}:${data.entity$Id()}',
+      dataJson: jsonEncode(data.toJson()),
     );
   }
 

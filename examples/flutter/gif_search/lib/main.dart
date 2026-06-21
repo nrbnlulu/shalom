@@ -1,9 +1,5 @@
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/material.dart';
-import 'package:media_kit/media_kit.dart'
-    show MediaKit, Player, Media, PlaylistMode;
-import 'package:media_kit_video/media_kit_video.dart'
-    show VideoController, Video, NoVideoControls;
 import 'package:gif_search/__graphql__/AddGifToAlbumMutation.mutation.shalom.dart'
     show $AddGifToAlbumMutation;
 import 'package:gif_search/__graphql__/AddGifToAlbumMutation.shalom.dart';
@@ -19,35 +15,28 @@ import 'package:gif_search/__graphql__/AlbumGifSearch.widget.shalom.dart'
         AlbumGifSearchData,
         AlbumGifSearchVariables,
         AlbumGifSearch_searchGifs_items;
-import 'package:gif_search/__graphql__/AlbumGifListQuery.widget.shalom.dart'
-    show
-        $AlbumGifListQuery,
-        AlbumGifListQueryData,
-        AlbumGifListQuery_album,
-        AlbumGifListQuery_album_gifs;
 import 'package:shalom/shalom.dart'
     as shalom
-    show Some, None, ShalomRuntimeClient, CacheProxy;
+    show Some, None, ShalomRuntimeClient, CacheProxy, ObservedRefInput;
 import 'package:shalom_annotations/shalom_annotations.dart';
 import 'package:gif_search/graphql/__graphql__/shalom_init.shalom.dart';
 import 'package:gif_search/state.dart' show createShalomClient;
 
-import 'package:gif_search/__graphql__/GifWidget.shalom.dart';
+import 'package:gif_search/__graphql__/AlbumGif.shalom.dart'
+    show $AlbumGif, AlbumGifData;
 import 'package:gif_search/__graphql__/AlbumWidget.shalom.dart';
-import 'package:gif_search/__graphql__/SearchGifsPage.widget.shalom.dart';
 import 'package:gif_search/__graphql__/AlbumsPage.widget.shalom.dart';
 import 'package:shalom_flutter/widgets/shalom_provider.dart';
 import 'package:shalom_flutter/widgets/debug_panel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  MediaKit.ensureInitialized();
   await shalom.ShalomRuntimeClient.initFlutterRustBridge();
   final client = createShalomClient();
   runApp(ShalomProvider(client: client, child: const MyApp()));
 }
 
-mixin class QueryWidgetDefaults {
+mixin QueryWidgetMixin {
   Widget buildLoading(BuildContext context) =>
       const Center(child: CircularProgressIndicator());
 
@@ -77,7 +66,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const AlbumsPage(),
     );
   }
 }
@@ -106,449 +95,6 @@ class _DebugButton extends StatelessWidget {
   }
 }
 
-// ─── Home ─────────────────────────────────────────────────────────────────────
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
-
-  static const _pages = [_SearchTab(), _AlbumsTab()];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: IndexedStack(index: _selectedIndex, children: _pages),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _selectedIndex,
-        onTap: (i) => setState(() => _selectedIndex = i),
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.photo_album),
-            label: 'Albums',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Search Tab ───────────────────────────────────────────────────────────────
-
-class _SearchTab extends StatefulWidget {
-  const _SearchTab();
-
-  @override
-  State<_SearchTab> createState() => _SearchTabState();
-}
-
-class _SearchTabState extends State<_SearchTab> {
-  final _controller = TextEditingController();
-  String _currentQuery = '';
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('GIF Search'),
-        actions: const [_DebugButton()],
-      ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              controller: _controller,
-              decoration: const InputDecoration(
-                hintText: 'Search GIFs…',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
-              ),
-              textInputAction: TextInputAction.search,
-              onSubmitted: (v) {
-                final q = v.trim();
-                if (q.isNotEmpty) setState(() => _currentQuery = q);
-              },
-            ),
-          ),
-          Expanded(
-            child: _currentQuery.isEmpty
-                ? const Center(child: Text('Enter a search term above'))
-                : SearchGifsPage(
-                    variables: SearchGifsPageVariables(
-                      query: _currentQuery,
-                      offset: 0,
-                      limit: 20,
-                    ),
-                  ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Album picker — used by the add-to-album dialog ──────────────────────────
-
-class AlbumPickerQuery extends $AlbumsPage with QueryWidgetDefaults {
-  final void Function(AlbumWidgetData album) onSelected;
-
-  const AlbumPickerQuery({super.key, required this.onSelected});
-
-  @override
-  Widget buildData(BuildContext context, AlbumsPageData data) {
-    if (data.albums.isEmpty) {
-      return const Text('No albums yet. Create one first!');
-    }
-    final listHeight = (data.albums.length * 72.0).clamp(72.0, 360.0);
-    return SizedBox(
-      width: double.maxFinite,
-      height: listHeight,
-      child: ListView.builder(
-        itemCount: data.albums.length,
-        itemBuilder: (context, i) =>
-            AlbumWidget(ref: data.albums[i], onTap: onSelected),
-      ),
-    );
-  }
-}
-
-// ─── SearchGifsPage query widget ──────────────────────────────────────────────
-
-@Query(r"""
-  ($query: String!, $offset: Int!, $limit: Int!) {
-    searchGifs(query: $query, offset: $offset, limit: $limit) {
-      items {
-        ...GifWidget
-      }
-      offset
-      limit
-      totalCount
-      hasNextPage
-    }
-  }
-""")
-class SearchGifsPage extends $SearchGifsPage with QueryWidgetDefaults {
-  const SearchGifsPage({super.key, required super.variables});
-
-  @override
-  State<$SearchGifsPage> createState() => _SearchGifsPageState();
-
-  @override
-  Widget buildData(BuildContext context, SearchGifsPageData data) =>
-      throw UnimplementedError();
-}
-
-class _SearchGifsPageState extends State<SearchGifsPage> {
-  final _scrollController = ScrollController();
-  final _refs = <GifWidgetRef>[];
-  bool _hasNextPage = true;
-  int _nextOffset = 0;
-  bool _isLoadingMore = false;
-  Object? _error;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void reassemble() {
-    super.reassemble();
-    setState(() {
-      _refs.clear();
-      _hasNextPage = true;
-      _nextOffset = 0;
-      _isLoadingMore = false;
-      _error = null;
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_refs.isEmpty && !_isLoadingMore) _loadPage(offset: 0);
-  }
-
-  @override
-  void didUpdateWidget(SearchGifsPage old) {
-    super.didUpdateWidget(old);
-    if (old.variables.query != widget.variables.query) {
-      setState(() {
-        _refs.clear();
-        _hasNextPage = true;
-        _nextOffset = 0;
-        _isLoadingMore = false;
-        _error = null;
-      });
-      _loadPage(offset: 0);
-    }
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-            _scrollController.position.maxScrollExtent - 200 &&
-        _hasNextPage &&
-        !_isLoadingMore) {
-      _loadPage(offset: _nextOffset);
-    }
-  }
-
-  Future<void> _loadPage({required int offset}) async {
-    setState(() => _isLoadingMore = true);
-    final vars = SearchGifsPageVariables(
-      query: widget.variables.query,
-      offset: offset,
-      limit: widget.variables.limit,
-    );
-    try {
-      final data = await ShalomScope.of(context)
-          .request<SearchGifsPageData>(
-            name: widget.operation$Name(),
-            variables: vars.toJson(),
-            decoder: SearchGifsPageData.fromCache,
-          )
-          .first;
-      final page = data.searchGifs;
-      final newRefs = page.items.whereType<GifWidgetRef>().toList();
-      if (!mounted) return;
-      setState(() {
-        _refs.addAll(newRefs);
-        _hasNextPage = page.hasNextPage;
-        _nextOffset = _refs.length;
-        _isLoadingMore = false;
-        _error = null;
-      });
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e;
-        _isLoadingMore = false;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_error != null && _refs.isEmpty) {
-      return Center(child: Text('Error: $_error'));
-    }
-    if (_refs.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    return GridView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.all(4),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        crossAxisSpacing: 4,
-        mainAxisSpacing: 4,
-      ),
-      itemCount: _refs.length + (_isLoadingMore ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index == _refs.length) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        return GifWidget(ref: _refs[index]);
-      },
-    );
-  }
-}
-
-// ─── GifWidget fragment ───────────────────────────────────────────────────────
-
-@Fragment(r"""
-  on PreviewGif {
-    title
-    url
-    previewUrl
-  }
-""")
-class GifWidget extends $GifWidget {
-  const GifWidget({super.key, required super.ref});
-
-  @override
-  Widget buildLoading(BuildContext context) => const ColoredBox(
-    color: Color(0x22000000),
-    child: Center(child: CircularProgressIndicator()),
-  );
-
-  @override
-  Widget buildError(BuildContext context, Object error) => const ColoredBox(
-    color: Color(0x22000000),
-    child: Center(child: Icon(Icons.broken_image, size: 40)),
-  );
-
-  @override
-  Widget buildData(BuildContext context, GifWidgetData gif) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          _GifCell(gif: gif),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Color(0xCC000000), Colors.transparent],
-                ),
-              ),
-              padding: const EdgeInsets.fromLTRB(8, 16, 4, 4),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      gif.title,
-                      style: const TextStyle(color: Colors.white, fontSize: 11),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(
-                      Icons.add_to_photos_outlined,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                    tooltip: 'Add to album',
-                    onPressed: () => _showAddToAlbumDialog(context, gif),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _showAddToAlbumDialog(BuildContext context, GifWidgetData gif) {
-    showDialog<void>(
-      context: context,
-      builder: (_) => _AddToAlbumDialog(gif: gif),
-    );
-  }
-}
-
-// ─── GIF cell — handles both animated GIF and video (MP4/WebM) ───────────────
-
-bool _isVideoUrl(String url) {
-  final lower = url.toLowerCase().split('?').first;
-  return lower.endsWith('.mp4') || lower.endsWith('.webm');
-}
-
-class _GifCell extends StatefulWidget {
-  final GifWidgetData gif;
-  const _GifCell({required this.gif});
-
-  @override
-  State<_GifCell> createState() => _GifCellState();
-}
-
-class _GifCellState extends State<_GifCell> {
-  Player? _player;
-  VideoController? _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    if (_isVideoUrl(widget.gif.url)) _initPlayer();
-  }
-
-  Future<void> _initPlayer() async {
-    final player = Player();
-    final controller = VideoController(player);
-    await player.setVolume(0);
-    await player.open(Media(widget.gif.url));
-    await player.setPlaylistMode(PlaylistMode.loop);
-    if (mounted) {
-      setState(() {
-        _player = player;
-        _controller = controller;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _player?.dispose();
-    super.dispose();
-  }
-
-  Widget _placeholder() {
-    final preview = widget.gif.previewUrl;
-    if (preview != null) {
-      return Image.network(
-        preview,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => const _BrokenGif(),
-      );
-    }
-    return const _BrokenGif();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (_isVideoUrl(widget.gif.url)) {
-      final controller = _controller;
-      if (controller == null) return _placeholder();
-      return Video(controller: controller, controls: NoVideoControls);
-    }
-    return Image.network(
-      widget.gif.url,
-      fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => _placeholder(),
-    );
-  }
-}
-
-class _BrokenGif extends StatelessWidget {
-  const _BrokenGif();
-  @override
-  Widget build(BuildContext context) => const ColoredBox(
-    color: Color(0x22000000),
-    child: Center(child: Icon(Icons.broken_image, size: 36)),
-  );
-}
-
-// ─── Albums Tab ───────────────────────────────────────────────────────────────
-
-class _AlbumsTab extends StatelessWidget {
-  const _AlbumsTab();
-
-  @override
-  Widget build(BuildContext context) {
-    return const AlbumsPage();
-  }
-}
-
 // ─── AlbumsPage query widget ──────────────────────────────────────────────────
 
 @Query(r"""
@@ -558,79 +104,11 @@ class _AlbumsTab extends StatelessWidget {
     }
   }
 """)
-class AlbumsPage extends $AlbumsPage with QueryWidgetDefaults {
+class AlbumsPage extends $AlbumsPage with QueryWidgetMixin {
   const AlbumsPage({super.key});
 
   @override
-  State<$AlbumsPage> createState() => _AlbumsPageState();
-
-  @override
-  Widget buildData(BuildContext context, AlbumsPageData data) =>
-      throw UnimplementedError();
-}
-
-class _AlbumsPageState extends State<AlbumsPage> {
-  final _refs = <AlbumWidgetRef>[];
-  StreamSubscription<AlbumsPageData>? _sub;
-  Object? _error;
-  bool _loading = true;
-
-  @override
-  void reassemble() {
-    super.reassemble();
-    setState(() {
-      _refs.clear();
-      _loading = true;
-      _error = null;
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_sub == null) _subscribe();
-  }
-
-  void _subscribe() {
-    _sub?.cancel();
-    _sub = null;
-    setState(() => _loading = true);
-    _sub = ShalomScope.of(context)
-        .request<AlbumsPageData>(
-          name: widget.operation$Name(),
-          variables: null,
-          decoder: AlbumsPageData.fromCache,
-        )
-        .listen(
-          (data) {
-            final newRefs = data.albums.whereType<AlbumWidgetRef>().toList();
-            setState(() {
-              _refs
-                ..clear()
-                ..addAll(newRefs);
-              _loading = false;
-              _error = null;
-            });
-          },
-          onError: (e) => setState(() {
-            _error = e;
-            _loading = false;
-          }),
-          onDone: () {
-            _sub = null;
-            if (mounted) _subscribe();
-          },
-        );
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget buildData(BuildContext context, AlbumsPageData data) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Albums'),
@@ -640,15 +118,11 @@ class _AlbumsPageState extends State<AlbumsPage> {
         onPressed: () => _showCreateAlbumDialog(context),
         child: const Icon(Icons.add),
       ),
-      body: _loading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-          ? Center(child: Text('Error: $_error'))
-          : _refs.isEmpty
+      body: data.albums.isEmpty
           ? const Center(child: Text('No albums yet. Create one!'))
           : ListView.builder(
-              itemCount: _refs.length,
-              itemBuilder: (context, i) => AlbumWidget(ref: _refs[i]),
+              itemCount: data.albums.length,
+              itemBuilder: (context, i) => AlbumWidget(ref: data.albums[i]),
             ),
     );
   }
@@ -656,7 +130,24 @@ class _AlbumsPageState extends State<AlbumsPage> {
   void _showCreateAlbumDialog(BuildContext context) {
     showDialog<void>(
       context: context,
-      builder: (_) => _CreateAlbumDialog(onCreated: (_) => _subscribe()),
+      builder: (_) => _CreateAlbumDialog(
+        onCreated: (cache, data) {
+          final current = cache.readQuery(
+            name: 'AlbumsPage',
+            decoder: AlbumsPageData.fromCache,
+          );
+          if (current == null) return;
+          final newRef = AlbumWidgetRef.fromInput(
+            shalom.ObservedRefInput(
+              observableId: 'AlbumWidget',
+              anchor: 'Album:${data.createAlbum.id}',
+            ),
+          );
+          cache.writeQuery(
+            data: AlbumsPageData(albums: [...current.albums, newRef]),
+          );
+        },
+      ),
     );
   }
 }
@@ -669,12 +160,11 @@ class _AlbumsPageState extends State<AlbumsPage> {
     name
     tag
     gifs {
-      id
-      title
+      ...GifWidget
     }
   }
 """)
-class AlbumWidget extends $AlbumWidget {
+class AlbumWidget extends $AlbumWidget with QueryWidgetMixin {
   final void Function(AlbumWidgetData album)? onTap;
 
   const AlbumWidget({super.key, required super.ref, this.onTap});
@@ -684,8 +174,10 @@ class AlbumWidget extends $AlbumWidget {
       const ListTile(title: Text('Loading…'));
 
   @override
-  Widget buildError(BuildContext context, Object error) =>
-      ListTile(title: Text('Error: $error'));
+  Widget buildError(BuildContext context, Object error) {
+    super.buildError(context, error);
+    return ListTile(title: Text('Error: $error'));
+  }
 
   @override
   Widget buildData(BuildContext context, AlbumWidgetData album) {
@@ -707,13 +199,26 @@ class AlbumWidget extends $AlbumWidget {
                   builder: (_) => _AlbumDetailPage(
                     albumId: album.id,
                     albumName: album.name,
-                    gifs: album.gifs,
                   ),
                 ),
               ),
       ),
     );
   }
+}
+
+@Fragment(r"""
+  on Gif {
+    id
+    title
+  }
+""")
+class AlbumGif extends $AlbumGif with QueryWidgetMixin {
+  const AlbumGif({super.key, required super.ref});
+
+  @override
+  Widget buildData(BuildContext context, AlbumGifData data) =>
+      const SizedBox.shrink();
 }
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
@@ -723,6 +228,7 @@ class AlbumWidget extends $AlbumWidget {
     createAlbum(name: $name) {
       id
       name
+      tag
     }
   }
 """)
@@ -733,8 +239,7 @@ class CreateAlbumMutation extends $CreateAlbumMutation {
 @Mutation(r"""
   ($albumId: String!, $title: String!, $url: String!, $previewUrl: String) {
     addGifToAlbum(albumId: $albumId, title: $title, url: $url, previewUrl: $previewUrl) {
-      id
-      title
+      ...AlbumGif
     }
   }
 """)
@@ -754,28 +259,6 @@ class RemoveGifFromAlbumMutation extends $RemoveGifFromAlbumMutation {
   const RemoveGifFromAlbumMutation(super.client);
 }
 
-// Inline album-gifs query — used as the normalization target in writeQuery inside
-// executeWithCacheUpdate. Returns Album.gifs without the @observe fragment pattern
-// so readQuery/writeQuery work on plain data instead of ref objects.
-@Query(r"""
-  ($albumId: String!) {
-    album(id: $albumId) {
-      id
-      gifs {
-        id
-        title
-      }
-    }
-  }
-""")
-class AlbumGifListQuery extends $AlbumGifListQuery with QueryWidgetDefaults {
-  const AlbumGifListQuery({super.key, required super.variables});
-
-  @override
-  Widget buildData(BuildContext context, AlbumGifListQueryData data) =>
-      const SizedBox.shrink();
-}
-
 // Inline GIF search — returns PreviewGif fields for the album detail search bar.
 @Query(r"""
   ($query: String!, $offset: Int!, $limit: Int!) {
@@ -789,7 +272,7 @@ class AlbumGifListQuery extends $AlbumGifListQuery with QueryWidgetDefaults {
     }
   }
 """)
-class AlbumGifSearch extends $AlbumGifSearch with QueryWidgetDefaults {
+class AlbumGifSearch extends $AlbumGifSearch with QueryWidgetMixin {
   const AlbumGifSearch({super.key, required super.variables});
 
   @override
@@ -800,7 +283,8 @@ class AlbumGifSearch extends $AlbumGifSearch with QueryWidgetDefaults {
 // ─── Dialog Widgets ───────────────────────────────────────────────────────────
 
 class _CreateAlbumDialog extends StatefulWidget {
-  final void Function(CreateAlbumMutationData) onCreated;
+  final void Function(shalom.CacheProxy cache, CreateAlbumMutationData data)
+  onCreated;
 
   const _CreateAlbumDialog({required this.onCreated});
 
@@ -829,8 +313,9 @@ class _CreateAlbumDialogState extends State<_CreateAlbumDialog> {
     final client = ShalomScope.of(context);
     final nav = Navigator.of(context);
     try {
-      final data = await CreateAlbumMutation(client).execute(name: name);
-      widget.onCreated(data);
+      await CreateAlbumMutation(
+        client,
+      ).executeWithCacheUpdate(name: name, update: widget.onCreated);
       nav.pop();
     } catch (e) {
       setState(() {
@@ -885,20 +370,16 @@ class _CreateAlbumDialogState extends State<_CreateAlbumDialog> {
 class _AlbumDetailPage extends StatefulWidget {
   final String albumId;
   final String albumName;
-  final List<AlbumWidget_gifs> gifs;
 
-  const _AlbumDetailPage({
-    required this.albumId,
-    required this.albumName,
-    required this.gifs,
-  });
+  const _AlbumDetailPage({required this.albumId, required this.albumName});
 
   @override
   State<_AlbumDetailPage> createState() => _AlbumDetailPageState();
 }
 
 class _AlbumDetailPageState extends State<_AlbumDetailPage> {
-  late List<AlbumWidget_gifs> _gifs;
+  AlbumWidgetData? _album;
+  StreamSubscription<AlbumWidgetData>? _sub;
   final Set<String> _addedUrls = {};
   final _searchController = TextEditingController();
   String _searchQuery = '';
@@ -906,21 +387,44 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
   List<AlbumGifSearch_searchGifs_items> _searchResults = [];
 
   @override
-  void initState() {
-    super.initState();
-    _gifs = List.of(widget.gifs);
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_sub == null) _subscribe();
+  }
+
+  void _subscribe() {
+    _sub?.cancel();
+    final ref = AlbumWidgetRef.fromInput(
+      shalom.ObservedRefInput(
+        observableId: 'AlbumWidget',
+        anchor: 'Album:${widget.albumId}',
+      ),
+    );
+    _sub = ShalomScope.of(context)
+        .subscribeToFragment<AlbumWidgetData>(
+          ref: ref.toInput,
+          decoder: AlbumWidgetData.fromCache,
+        )
+        .listen(
+          (data) => setState(() => _album = data),
+          onError: (e) =>
+              debugPrint('[AlbumDetailPage] fragment subscription error: $e'),
+        );
   }
 
   @override
   void dispose() {
+    _sub?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
   List<AlbumWidget_gifs> get _filteredLocal {
+    final album = _album;
+    if (album == null) return [];
     final q = _searchQuery.toLowerCase();
-    if (q.isEmpty) return _gifs;
-    return _gifs.where((g) => g.title.toLowerCase().contains(q)).toList();
+    if (q.isEmpty) return album.gifs;
+    return album.gifs.where((g) => g.title.toLowerCase().contains(q)).toList();
   }
 
   Future<void> _onSearch(String query) async {
@@ -959,7 +463,7 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
     if (_addedUrls.contains(gif.url)) return;
     final client = ShalomScope.of(context);
     try {
-      final result = await AddGifToAlbumMutation(client).executeWithCacheUpdate(
+      await AddGifToAlbumMutation(client).executeWithCacheUpdate(
         albumId: widget.albumId,
         title: gif.title,
         url: gif.url,
@@ -967,35 +471,30 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
             ? shalom.Some(gif.previewUrl)
             : const shalom.None(),
         update: (shalom.CacheProxy cache, AddGifToAlbumMutationData data) {
-          final allGifs = [
-            ..._gifs.map(
-              (g) => AlbumGifListQuery_album_gifs(id: g.id, title: g.title),
+          final current = cache.readFragment<AlbumWidgetData>(
+            fragmentName: 'AlbumWidget',
+            entityKey: 'Album:${widget.albumId}',
+            decoder: AlbumWidgetData.fromCache,
+          );
+          if (current == null) return;
+          cache.writeFragment(
+            data: AlbumWidgetData(
+              id: current.id,
+              name: current.name,
+              tag: current.tag,
+              gifs: [
+                ...current.gifs,
+                AlbumWidget_gifs(
+                  id: data.addGifToAlbum.id,
+                  title: data.addGifToAlbum.title,
+                ),
+              ],
             ),
-            AlbumGifListQuery_album_gifs(
-              id: data.addGifToAlbum.id,
-              title: data.addGifToAlbum.title,
-            ),
-          ];
-          cache.writeQuery(
-            data: AlbumGifListQueryData(
-              album: AlbumGifListQuery_album(id: widget.albumId, gifs: allGifs),
-            ),
-            variables: {'albumId': widget.albumId},
           );
         },
       );
       if (!mounted) return;
-      setState(() {
-        _addedUrls.add(gif.url);
-        if (!_gifs.any((g) => g.id == result.addGifToAlbum.id)) {
-          _gifs.add(
-            AlbumWidget_gifs(
-              id: result.addGifToAlbum.id,
-              title: result.addGifToAlbum.title,
-            ),
-          );
-        }
-      });
+      setState(() => _addedUrls.add(gif.url));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -1007,11 +506,26 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
   Future<void> _removeGif(String gifId) async {
     final client = ShalomScope.of(context);
     try {
-      await RemoveGifFromAlbumMutation(
-        client,
-      ).execute(albumId: widget.albumId, gifId: gifId);
-      if (!mounted) return;
-      setState(() => _gifs.removeWhere((g) => g.id == gifId));
+      await RemoveGifFromAlbumMutation(client).executeWithCacheUpdate(
+        albumId: widget.albumId,
+        gifId: gifId,
+        update: (shalom.CacheProxy cache, _) {
+          final current = cache.readFragment<AlbumWidgetData>(
+            fragmentName: 'AlbumWidget',
+            entityKey: 'Album:${widget.albumId}',
+            decoder: AlbumWidgetData.fromCache,
+          );
+          if (current == null) return;
+          cache.writeFragment(
+            data: AlbumWidgetData(
+              id: current.id,
+              name: current.name,
+              tag: current.tag,
+              gifs: current.gifs.where((g) => g.id != gifId).toList(),
+            ),
+          );
+        },
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -1022,135 +536,140 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final album = _album;
     final filtered = _filteredLocal;
     final searching = _searchQuery.isNotEmpty;
 
     return Scaffold(
       appBar: AppBar(title: Text(widget.albumName)),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'Search in album or find new GIFs…',
-                prefixIcon: const Icon(Icons.search),
-                border: const OutlineInputBorder(),
-                suffixIcon: _searchQuery.isNotEmpty
-                    ? IconButton(
-                        icon: const Icon(Icons.clear),
-                        onPressed: () {
-                          _searchController.clear();
-                          _onSearch('');
-                        },
-                      )
-                    : null,
-              ),
-              textInputAction: TextInputAction.search,
-              onChanged: (v) {
-                if (v.trim().isEmpty) {
-                  _onSearch('');
-                } else {
-                  setState(() => _searchQuery = v.trim());
-                }
-              },
-              onSubmitted: _onSearch,
-            ),
-          ),
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                // ── Local album gifs ──────────────────────────────────────
-                if (searching)
-                  const SliverToBoxAdapter(
-                    child: _SectionHeader('In this album'),
-                  ),
-                if (filtered.isEmpty && !searching)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(child: Text('No GIFs in this album yet.')),
-                  )
-                else
-                  SliverList.builder(
-                    itemCount: filtered.length,
-                    itemBuilder: (context, i) {
-                      final gif = filtered[i];
-                      return ListTile(
-                        leading: const Icon(Icons.gif),
-                        title: Text(gif.title),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.remove_circle_outline),
-                          tooltip: 'Remove',
-                          onPressed: () => _removeGif(gif.id),
-                        ),
-                      );
-                    },
-                  ),
-
-                // ── Backend search results ────────────────────────────────
-                if (searching) ...[
-                  const SliverToBoxAdapter(
-                    child: _SectionHeader('From search'),
-                  ),
-                  if (_backendSearching)
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Center(child: CircularProgressIndicator()),
-                      ),
-                    )
-                  else if (_searchResults.isEmpty)
-                    const SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.all(24),
-                        child: Center(child: Text('Submit to search')),
-                      ),
-                    )
-                  else
-                    SliverList.builder(
-                      itemCount: _searchResults.length,
-                      itemBuilder: (context, i) {
-                        final gif = _searchResults[i];
-                        final alreadyIn = _addedUrls.contains(gif.url);
-                        return ListTile(
-                          leading: gif.previewUrl != null
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: Image.network(
-                                    gif.previewUrl!,
-                                    width: 48,
-                                    height: 48,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (_, __, ___) =>
-                                        const Icon(Icons.gif, size: 48),
-                                  ),
-                                )
-                              : const Icon(Icons.gif, size: 48),
-                          title: Text(
-                            gif.title,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          trailing: alreadyIn
-                              ? const Icon(
-                                  Icons.check_circle,
-                                  color: Colors.green,
-                                )
-                              : IconButton(
-                                  icon: const Icon(Icons.add_circle_outline),
-                                  tooltip: 'Add to album',
-                                  onPressed: () => _addGif(gif),
-                                ),
-                        );
-                      },
+      body: album == null
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Search in album or find new GIFs…',
+                      prefixIcon: const Icon(Icons.search),
+                      border: const OutlineInputBorder(),
+                      suffixIcon: _searchQuery.isNotEmpty
+                          ? IconButton(
+                              icon: const Icon(Icons.clear),
+                              onPressed: () {
+                                _searchController.clear();
+                                _onSearch('');
+                              },
+                            )
+                          : null,
                     ),
-                ],
+                    textInputAction: TextInputAction.search,
+                    onChanged: (v) {
+                      if (v.trim().isEmpty) {
+                        _onSearch('');
+                      } else {
+                        setState(() => _searchQuery = v.trim());
+                      }
+                    },
+                    onSubmitted: _onSearch,
+                  ),
+                ),
+                Expanded(
+                  child: CustomScrollView(
+                    slivers: [
+                      if (searching)
+                        const SliverToBoxAdapter(
+                          child: _SectionHeader('In this album'),
+                        ),
+                      if (filtered.isEmpty && !searching)
+                        const SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: Text('No GIFs in this album yet.'),
+                          ),
+                        )
+                      else
+                        SliverList.builder(
+                          itemCount: filtered.length,
+                          itemBuilder: (context, i) {
+                            final gif = filtered[i];
+                            return ListTile(
+                              leading: const Icon(Icons.gif),
+                              title: Text(gif.title),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.remove_circle_outline),
+                                tooltip: 'Remove',
+                                onPressed: () => _removeGif(gif.id),
+                              ),
+                            );
+                          },
+                        ),
+
+                      if (searching) ...[
+                        const SliverToBoxAdapter(
+                          child: _SectionHeader('From search'),
+                        ),
+                        if (_backendSearching)
+                          const SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Center(child: CircularProgressIndicator()),
+                            ),
+                          )
+                        else if (_searchResults.isEmpty)
+                          const SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Center(child: Text('Submit to search')),
+                            ),
+                          )
+                        else
+                          SliverList.builder(
+                            itemCount: _searchResults.length,
+                            itemBuilder: (context, i) {
+                              final gif = _searchResults[i];
+                              final alreadyIn = _addedUrls.contains(gif.url);
+                              return ListTile(
+                                leading: gif.previewUrl != null
+                                    ? ClipRRect(
+                                        borderRadius: BorderRadius.circular(4),
+                                        child: Image.network(
+                                          gif.previewUrl!,
+                                          width: 48,
+                                          height: 48,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (_, __, ___) =>
+                                              const Icon(Icons.gif, size: 48),
+                                        ),
+                                      )
+                                    : const Icon(Icons.gif, size: 48),
+                                title: Text(
+                                  gif.title,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                trailing: alreadyIn
+                                    ? const Icon(
+                                        Icons.check_circle,
+                                        color: Colors.green,
+                                      )
+                                    : IconButton(
+                                        icon: const Icon(
+                                          Icons.add_circle_outline,
+                                        ),
+                                        tooltip: 'Add to album',
+                                        onPressed: () => _addGif(gif),
+                                      ),
+                              );
+                            },
+                          ),
+                      ],
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -1175,115 +694,6 @@ class _SectionHeader extends StatelessWidget {
           const Divider(height: 12),
         ],
       ),
-    );
-  }
-}
-
-class _AddToAlbumDialog extends StatefulWidget {
-  final GifWidgetData gif;
-
-  const _AddToAlbumDialog({required this.gif});
-
-  @override
-  State<_AddToAlbumDialog> createState() => _AddToAlbumDialogState();
-}
-
-// ─── Add-to-album dialog (from search page) ───────────────────────────────────
-
-class _AddToAlbumDialogState extends State<_AddToAlbumDialog> {
-  bool _submitting = false;
-  String? _error;
-
-  Future<void> _addToAlbum(AlbumWidgetData album) async {
-    setState(() {
-      _submitting = true;
-      _error = null;
-    });
-    final client = ShalomScope.of(context);
-    final messenger = ScaffoldMessenger.of(context);
-    final nav = Navigator.of(context);
-    final gif = widget.gif;
-    try {
-      await AddGifToAlbumMutation(client).executeWithCacheUpdate(
-        albumId: album.id,
-        title: gif.title,
-        url: gif.url,
-        previewUrl: gif.previewUrl != null
-            ? shalom.Some(gif.previewUrl)
-            : const shalom.None(),
-        update: (shalom.CacheProxy cache, AddGifToAlbumMutationData data) {
-          // Read the current cached list for this album; fall back to the
-          // AlbumWidget fragment data (always available via albums subscription).
-          final current = cache.readQuery(
-            name: 'AlbumGifListQuery',
-            decoder: AlbumGifListQueryData.fromCache,
-            variables: {'albumId': album.id},
-          );
-          final existingGifs =
-              current?.album?.gifs ??
-              album.gifs
-                  .map(
-                    (g) =>
-                        AlbumGifListQuery_album_gifs(id: g.id, title: g.title),
-                  )
-                  .toList();
-          cache.writeQuery(
-            data: AlbumGifListQueryData(
-              album: AlbumGifListQuery_album(
-                id: album.id,
-                gifs: [
-                  ...existingGifs,
-                  AlbumGifListQuery_album_gifs(
-                    id: data.addGifToAlbum.id,
-                    title: data.addGifToAlbum.title,
-                  ),
-                ],
-              ),
-            ),
-            variables: {'albumId': album.id},
-          );
-        },
-      );
-      if (!mounted) return;
-      messenger.showSnackBar(
-        const SnackBar(content: Text('GIF added to album')),
-      );
-      nav.pop();
-    } catch (e) {
-      if (!mounted) return;
-      setState(() {
-        _error = e.toString();
-        _submitting = false;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text('Add "${widget.gif.title}" to Album'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AlbumPickerQuery(onSelected: _submitting ? (_) {} : _addToAlbum),
-          if (_error != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(_error!, style: const TextStyle(color: Colors.red)),
-            ),
-          if (_submitting)
-            const Padding(
-              padding: EdgeInsets.only(top: 8),
-              child: LinearProgressIndicator(),
-            ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: _submitting ? null : () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-      ],
     );
   }
 }
