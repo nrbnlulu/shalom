@@ -12,6 +12,9 @@ import "{{ context.schema_import_path }}";
 {{ custom_scalar_imports_macro(context.custom_scalar_imports) }}
 {% set OP_TYPE = context.operation.op_ty.name|upper %}
 
+{% if is_observe %}
+import 'dart:async' show Stream;
+{% endif %}
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
@@ -26,12 +29,12 @@ import '{{ import_path }}';
 
 // ------------ OBJECT DEFINITIONS -------------
 {% set response_class_name = operation_name ~ "Response" %}
-class {{ response_class_name }} {{ implements_used_fragments(context.operation.root_type.used_fragments) }}  {
+class {{ response_class_name }} {% if not is_observe %}{{ implements_used_fragments(context.operation.root_type.used_fragments) }}{% endif %}  {
     {{ selection_object_impl(response_class_name, context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name, shared_selections=context.operation.root_type.selections) }}
 }
 
 {% for name, obj in typedefs.objects | items %}
-    {{ selection_object_definition(obj) }}
+    {{ selection_object_definition(obj, implement_fragments=not is_observe) }}
 {% endfor %}
 
 // ------------ END OBJECT DEFINITIONS -------------
@@ -90,7 +93,7 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface {
 
     @override
     String operation$Name() => '{{ operation_name }}';
-    
+
     static {{ operation_name }}Data fromCache(shalom_core.JsonObject data) {
         {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
             {% set raw_value_symbol = "data['" + selection.name + "']" -%}
@@ -122,6 +125,35 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface {
                 {% endif %}
             {% endfor %}
         };
+    }
+}
+
+final class {{ operation_name }}Observable {
+    final shalom_core.ExecutionPolicyInput executionPolicy;
+    {% if op_variables_exist %}
+    final {{ operation_name }}Variables variables;
+    {% endif %}
+
+    const {{ operation_name }}Observable({
+        {% if op_variables_exist %}
+        required this.variables,
+        {% endif %}
+        this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    });
+
+    String operation$Name() => '{{ operation_name }}';
+
+    Stream<{{ operation_name }}Data> observe(shalom_core.ShalomRuntimeClient client) {
+        return client.request<{{ operation_name }}Data>(
+            name: operation$Name(),
+            {% if op_variables_exist %}
+            variables: variables.toJson(),
+            {% else %}
+            variables: null,
+            {% endif %}
+            decoder: {{ operation_name }}Data.fromCache,
+            executionPolicy: executionPolicy,
+        );
     }
 }
 

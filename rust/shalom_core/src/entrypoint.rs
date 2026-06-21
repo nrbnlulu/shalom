@@ -279,6 +279,28 @@ fn collect_fragment_spreads(
     }
 }
 
+pub fn fragment_spreads_from_document(
+    global_ctx: &SharedShalomGlobalContext,
+    source: &str,
+    doc_path: &PathBuf,
+) -> anyhow::Result<HashMap<String, Vec<String>>> {
+    let schema = global_ctx.schema_ctx.schema.clone();
+    let mut parser = apollo_compiler::parser::Parser::new();
+    let doc = parser
+        .parse_executable(&schema, source, doc_path)
+        .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
+
+    let mut result = HashMap::new();
+    for (name, fragment_def) in doc.fragments.iter() {
+        let mut used_fragments = std::collections::HashSet::new();
+        collect_fragment_spreads(&fragment_def.selection_set.selections, &mut used_fragments);
+        let mut used_fragments = used_fragments.into_iter().collect::<Vec<_>>();
+        used_fragments.sort();
+        result.insert(name.to_string(), used_fragments);
+    }
+    Ok(result)
+}
+
 /// Validate documents with injected fragments
 #[allow(clippy::type_complexity)]
 fn validate_documents_with_fragments(

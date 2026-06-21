@@ -2,6 +2,8 @@
 
 import "../../graphql/__graphql__/schema.shalom.dart";
 
+import 'dart:async' show Stream;
+
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
@@ -196,6 +198,31 @@ final class AnimalQueryData implements shalom_core.OperationInterface {
 
   shalom_core.JsonObject toJson() {
     return {'animal': this.animal?.toJson()};
+  }
+}
+
+final class AnimalQueryObservable {
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
+  final AnimalQueryVariables variables;
+
+  const AnimalQueryObservable({
+    required this.variables,
+
+    this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+  });
+
+  String operation$Name() => 'AnimalQuery';
+
+  Stream<AnimalQueryData> observe(shalom_core.ShalomRuntimeClient client) {
+    return client.request<AnimalQueryData>(
+      name: operation$Name(),
+
+      variables: variables.toJson(),
+
+      decoder: AnimalQueryData.fromCache,
+      executionPolicy: executionPolicy,
+    );
   }
 }
 

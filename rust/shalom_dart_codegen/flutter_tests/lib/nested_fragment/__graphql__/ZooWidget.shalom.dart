@@ -6,27 +6,47 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
-import 'dart:async' show StreamSubscription;
+import 'dart:async' show Stream;
 import 'package:flutter/widgets.dart';
-import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+import 'package:shalom_flutter/shalom_flutter.dart';
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
 extension type ZooWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
+  static const String fragmentName = 'ZooWidget';
+
+  static ZooWidgetRef fromEntityKey(String entityKey) {
+    return ZooWidgetRef.fromInput(
+      shalom_core.ObservedRefInput(
+        observableId: fragmentName,
+        anchor: entityKey,
+      ),
+    );
+  }
+
+  static ZooWidgetRef fromId(String id) =>
+      fromEntityKey(ZooWidgetData.entityKey(id));
+
   shalom_core.ObservedRefInput get toInput => _inner;
+  String get anchor => _inner.anchor;
   shalom_core.JsonObject toJson() => {
     '__shalom_observed_ref': {
       'observable_id': _inner.observableId,
       'anchor': _inner.anchor,
     },
   };
+
+  Stream<ZooWidgetData> observe(shalom_core.ShalomRuntimeClient client) {
+    return client.subscribeToFragment<ZooWidgetData>(
+      ref: _inner,
+      decoder: ZooWidgetData.fromCache,
+    );
+  }
 }
 
 abstract class ZooWidget {
   List<ZooWidget_cages> get cages;
-
   String get id;
-
   String get name;
 
   shalom_core.JsonObject toJson();
@@ -121,7 +141,7 @@ final class ZooWidgetData implements ZooWidget, shalom_core.FragmentInterface {
   }
 }
 
-abstract class $ZooWidget extends StatefulWidget {
+abstract class $ZooWidget extends StatelessWidget {
   final ZooWidgetRef ref;
   const $ZooWidget({super.key, required this.ref});
 
@@ -130,68 +150,39 @@ abstract class $ZooWidget extends StatefulWidget {
   Widget buildError(BuildContext context, Object error) => ErrorWidget(error);
 
   @override
-  State<$ZooWidget> createState() => _$ZooWidgetState();
+  Widget build(BuildContext context) {
+    return ZooWidgetScope(
+      ref: ref,
+      loadingBuilder: buildLoading,
+      errorBuilder: buildError,
+      builder: buildData,
+    );
+  }
 }
 
-class _$ZooWidgetState extends State<$ZooWidget> {
-  StreamSubscription<ZooWidgetData>? _sub;
-  ZooWidgetData? _data;
-  Object? _error;
+class ZooWidgetScope extends StatelessWidget {
+  final ZooWidgetRef ref;
+  final ShalomDataWidgetBuilder<ZooWidgetData> builder;
+  final WidgetBuilder? loadingBuilder;
+  final ShalomErrorBuilder? errorBuilder;
 
-  @override
-  void reassemble() {
-    super.reassemble();
-    setState(() {
-      _data = null;
-      _error = null;
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _subscribe();
-  }
-
-  @override
-  void didUpdateWidget(covariant $ZooWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.ref != oldWidget.ref) _subscribe();
-  }
-
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
-    _sub = client
-        .subscribeToFragment<ZooWidgetData>(
-          ref: widget.ref.toInput,
-          decoder: ZooWidgetData.fromCache,
-        )
-        .listen(
-          (data) => setState(() {
-            _data = data;
-            _error = null;
-          }),
-          onError: (e) => setState(() {
-            _error = e;
-          }),
-          onDone: () {
-            if (mounted) _subscribe();
-          },
-        );
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
+  const ZooWidgetScope({
+    super.key,
+    required this.ref,
+    required this.builder,
+    this.loadingBuilder,
+    this.errorBuilder,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) return widget.buildError(context, _error!);
-    if (_data == null) return widget.buildLoading(context);
-    return widget.buildData(context, _data!);
+    return ShalomDataScope<ZooWidgetData>(
+      identity: ref.toInput,
+      observe: (client) => ref.observe(client),
+      loadingBuilder: loadingBuilder,
+      errorBuilder: errorBuilder,
+      builder: builder,
+    );
   }
 }
 

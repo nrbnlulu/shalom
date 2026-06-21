@@ -6,8 +6,9 @@ export 'ShelterSubscription.shalom.dart';
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart' as shalom_core;
-import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+import 'package:shalom_flutter/shalom_flutter.dart';
 import 'ShelterSubscription.shalom.dart';
+import 'DogFrag.shalom.dart';
 
 abstract class $ShelterSubscription extends StatefulWidget {
   String operation$Name() => 'ShelterSubscription';
@@ -55,30 +56,24 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
   void _subscribe() {
     _sub?.cancel();
     final client = ShalomScope.of(context);
-    _sub = client
-        .request<ShelterSubscriptionData>(
-          name: widget.operation$Name(),
-
-          variables: null,
-
-          decoder: ShelterSubscriptionData.fromCache,
-          executionPolicy: widget.executionPolicy,
-        )
-        .listen(
-          (data) => setState(() {
-            _data = data;
-            _error = null;
-          }),
-          onError: (e) => setState(() {
-            _error = e;
-          }),
-          onDone: () {
-            debugPrint(
-              '[widget] ShelterSubscription.onDone fired, mounted=$mounted',
+    _sub =
+        ShelterSubscriptionObservable(executionPolicy: widget.executionPolicy)
+            .observe(client)
+            .listen(
+              (data) => setState(() {
+                _data = data;
+                _error = null;
+              }),
+              onError: (e) => setState(() {
+                _error = e;
+              }),
+              onDone: () {
+                debugPrint(
+                  '[widget] ShelterSubscription.onDone fired, mounted=$mounted',
+                );
+                if (mounted) _subscribe();
+              },
             );
-            if (mounted) _subscribe();
-          },
-        );
   }
 
   @override

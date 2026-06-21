@@ -2,6 +2,8 @@
 
 import "../../graphql/__graphql__/schema.shalom.dart";
 
+import 'dart:async' show Stream;
+
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
@@ -217,6 +219,29 @@ final class ShelterSubscriptionData implements shalom_core.OperationInterface {
 
   shalom_core.JsonObject toJson() {
     return {'shelterAnimals': this.shelterAnimals.toJson()};
+  }
+}
+
+final class ShelterSubscriptionObservable {
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
+  const ShelterSubscriptionObservable({
+    this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+  });
+
+  String operation$Name() => 'ShelterSubscription';
+
+  Stream<ShelterSubscriptionData> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
+    return client.request<ShelterSubscriptionData>(
+      name: operation$Name(),
+
+      variables: null,
+
+      decoder: ShelterSubscriptionData.fromCache,
+      executionPolicy: executionPolicy,
+    );
   }
 }
 

@@ -6,22 +6,43 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
-import 'dart:async' show StreamSubscription;
+import 'dart:async' show Stream;
 import 'package:flutter/widgets.dart';
-import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+import 'package:shalom_flutter/shalom_flutter.dart';
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
 extension type AnimalWithOwnerWidgetRef.fromInput(
   shalom_core.ObservedRefInput _inner
 ) {
+  static const String fragmentName = 'AnimalWithOwnerWidget';
+
+  static AnimalWithOwnerWidgetRef fromEntityKey(String entityKey) {
+    return AnimalWithOwnerWidgetRef.fromInput(
+      shalom_core.ObservedRefInput(
+        observableId: fragmentName,
+        anchor: entityKey,
+      ),
+    );
+  }
+
   shalom_core.ObservedRefInput get toInput => _inner;
+  String get anchor => _inner.anchor;
   shalom_core.JsonObject toJson() => {
     '__shalom_observed_ref': {
       'observable_id': _inner.observableId,
       'anchor': _inner.anchor,
     },
   };
+
+  Stream<AnimalWithOwnerWidgetData> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
+    return client.subscribeToFragment<AnimalWithOwnerWidgetData>(
+      ref: _inner,
+      decoder: AnimalWithOwnerWidgetData.fromCache,
+    );
+  }
 }
 
 abstract class AnimalWithOwnerWidget {
@@ -216,7 +237,7 @@ class AnimalWithOwnerWidget__Dog_owner {
   }
 }
 
-abstract class $AnimalWithOwnerWidget extends StatefulWidget {
+abstract class $AnimalWithOwnerWidget extends StatelessWidget {
   final AnimalWithOwnerWidgetRef ref;
   const $AnimalWithOwnerWidget({super.key, required this.ref});
 
@@ -225,68 +246,39 @@ abstract class $AnimalWithOwnerWidget extends StatefulWidget {
   Widget buildError(BuildContext context, Object error) => ErrorWidget(error);
 
   @override
-  State<$AnimalWithOwnerWidget> createState() => _$AnimalWithOwnerWidgetState();
+  Widget build(BuildContext context) {
+    return AnimalWithOwnerWidgetScope(
+      ref: ref,
+      loadingBuilder: buildLoading,
+      errorBuilder: buildError,
+      builder: buildData,
+    );
+  }
 }
 
-class _$AnimalWithOwnerWidgetState extends State<$AnimalWithOwnerWidget> {
-  StreamSubscription<AnimalWithOwnerWidgetData>? _sub;
-  AnimalWithOwnerWidgetData? _data;
-  Object? _error;
+class AnimalWithOwnerWidgetScope extends StatelessWidget {
+  final AnimalWithOwnerWidgetRef ref;
+  final ShalomDataWidgetBuilder<AnimalWithOwnerWidgetData> builder;
+  final WidgetBuilder? loadingBuilder;
+  final ShalomErrorBuilder? errorBuilder;
 
-  @override
-  void reassemble() {
-    super.reassemble();
-    setState(() {
-      _data = null;
-      _error = null;
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _subscribe();
-  }
-
-  @override
-  void didUpdateWidget(covariant $AnimalWithOwnerWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.ref != oldWidget.ref) _subscribe();
-  }
-
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
-    _sub = client
-        .subscribeToFragment<AnimalWithOwnerWidgetData>(
-          ref: widget.ref.toInput,
-          decoder: AnimalWithOwnerWidgetData.fromCache,
-        )
-        .listen(
-          (data) => setState(() {
-            _data = data;
-            _error = null;
-          }),
-          onError: (e) => setState(() {
-            _error = e;
-          }),
-          onDone: () {
-            if (mounted) _subscribe();
-          },
-        );
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
+  const AnimalWithOwnerWidgetScope({
+    super.key,
+    required this.ref,
+    required this.builder,
+    this.loadingBuilder,
+    this.errorBuilder,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) return widget.buildError(context, _error!);
-    if (_data == null) return widget.buildLoading(context);
-    return widget.buildData(context, _data!);
+    return ShalomDataScope<AnimalWithOwnerWidgetData>(
+      identity: ref.toInput,
+      observe: (client) => ref.observe(client),
+      loadingBuilder: loadingBuilder,
+      errorBuilder: errorBuilder,
+      builder: builder,
+    );
   }
 }
 

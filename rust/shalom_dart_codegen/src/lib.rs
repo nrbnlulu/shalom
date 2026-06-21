@@ -1341,9 +1341,10 @@ fn generate_v2_widgets(
     gen_dir: &str,
     is_pure_dart: bool,
 ) -> Result<()> {
-    let fragments = widgets
+    let fragments: Vec<_> = widgets
         .iter()
-        .filter(|w| w.widget_kind == WidgetKind::Fragment);
+        .filter(|w| w.widget_kind == WidgetKind::Fragment)
+        .collect();
     let queries = widgets
         .iter()
         .filter(|w| w.widget_kind == WidgetKind::Query);
@@ -1354,7 +1355,25 @@ fn generate_v2_widgets(
         .iter()
         .filter(|w| w.widget_kind == WidgetKind::Subscription);
 
+    if !fragments.is_empty() {
+        for widget in widget_fragment_dependency_order(ctx, &fragments, is_pure_dart)? {
+            let sdl = if is_pure_dart {
+                widget.sdl.clone()
+            } else {
+                widget.sdl.replacen('{', "@observe {", 1)
+            };
+            let full_sdl = format!("fragment {} {}", widget.class_name, sdl);
+            shalom_core::entrypoint::register_fragments_from_document(
+                ctx,
+                &full_sdl,
+                &widget.source_path,
+                true,
+            )?;
+        }
+    }
+
     for widget in fragments
+        .into_iter()
         .chain(queries)
         .chain(mutations)
         .chain(subscriptions)
@@ -1389,6 +1408,89 @@ fn generate_v2_widgets(
         }
     }
     Ok(())
+}
+
+fn widget_fragment_dependency_order<'a>(
+    ctx: &SharedShalomGlobalContext,
+    fragments: &'a [&'a WidgetAnnotation],
+    is_pure_dart: bool,
+) -> Result<Vec<&'a WidgetAnnotation>> {
+    let by_name: HashMap<&str, &WidgetAnnotation> = fragments
+        .iter()
+        .map(|widget| (widget.class_name.as_str(), *widget))
+        .collect();
+    let mut dependencies: HashMap<&str, Vec<String>> = HashMap::new();
+    for widget in fragments {
+        let sdl = if is_pure_dart {
+            widget.sdl.clone()
+        } else {
+            widget.sdl.replacen('{', "@observe {", 1)
+        };
+        let full_sdl = format!("fragment {} {}", widget.class_name, sdl);
+        let spreads = shalom_core::entrypoint::fragment_spreads_from_document(
+            ctx,
+            &full_sdl,
+            &widget.source_path,
+        )?;
+        dependencies.insert(
+            widget.class_name.as_str(),
+            spreads.get(&widget.class_name).cloned().unwrap_or_default(),
+        );
+    }
+    let mut visiting = HashSet::new();
+    let mut visited = HashSet::new();
+    let mut ordered = Vec::with_capacity(fragments.len());
+
+    fn visit<'a>(
+        widget: &'a WidgetAnnotation,
+        by_name: &HashMap<&str, &'a WidgetAnnotation>,
+        dependencies: &HashMap<&'a str, Vec<String>>,
+        visiting: &mut HashSet<&'a str>,
+        visited: &mut HashSet<&'a str>,
+        ordered: &mut Vec<&'a WidgetAnnotation>,
+    ) -> Result<()> {
+        let name = widget.class_name.as_str();
+        if visited.contains(name) {
+            return Ok(());
+        }
+        if !visiting.insert(name) {
+            return Err(anyhow::anyhow!(
+                "Fragment dependency cycle detected at widget fragment '{}'",
+                name
+            ));
+        }
+
+        for dep in dependencies.get(name).into_iter().flatten() {
+            if let Some(dep_widget) = by_name.get(dep.as_str()) {
+                visit(
+                    dep_widget,
+                    by_name,
+                    dependencies,
+                    visiting,
+                    visited,
+                    ordered,
+                )?;
+            }
+        }
+
+        visiting.remove(name);
+        visited.insert(name);
+        ordered.push(widget);
+        Ok(())
+    }
+
+    for widget in fragments {
+        visit(
+            widget,
+            &by_name,
+            &dependencies,
+            &mut visiting,
+            &mut visited,
+            &mut ordered,
+        )?;
+    }
+
+    Ok(ordered)
 }
 
 /// Generate a sidecar for a @query annotated widget.
@@ -1465,12 +1567,14 @@ fn generate_v2_fragment_sidecar(
     };
     let full_sdl = format!("fragment {} {}", widget.class_name, sdl);
 
-    shalom_core::entrypoint::register_fragments_from_document(
-        ctx,
-        &full_sdl,
-        &widget.source_path,
-        false,
-    )?;
+    if !ctx.fragment_exists(&widget.class_name) {
+        shalom_core::entrypoint::register_fragments_from_document(
+            ctx,
+            &full_sdl,
+            &widget.source_path,
+            false,
+        )?;
+    }
 
     let fragment_ctx = ctx.get_fragment(&widget.class_name).ok_or_else(|| {
         anyhow::anyhow!(
@@ -1736,21 +1840,30 @@ fn generate_v2_registration_file(
         }
     }
 
+    let make_entry = |w: &WidgetAnnotation, observe: bool| {
+        serde_json::json!({
+            "class_name": w.class_name,
+            // Mutations are fire-and-forget, not reactive — they don't get @observe.
+            "document": if observe && !is_pure_dart { with_observe(&w.sdl) } else { w.sdl.clone() },
+        })
+    };
+
     let make_entries = |kind: WidgetKind, observe: bool| -> Vec<serde_json::Value> {
         widgets
             .iter()
             .filter(|w| w.widget_kind == kind)
-            .map(|w| {
-                serde_json::json!({
-                    "class_name": w.class_name,
-                    // Mutations are fire-and-forget, not reactive — they don't get @observe.
-                    "document": if observe && !is_pure_dart { with_observe(&w.sdl) } else { w.sdl.clone() },
-                })
-            })
+            .map(|w| make_entry(w, observe))
             .collect()
     };
 
-    let fragments = make_entries(WidgetKind::Fragment, true);
+    let widget_fragments = widgets
+        .iter()
+        .filter(|w| w.widget_kind == WidgetKind::Fragment)
+        .collect::<Vec<_>>();
+    let fragments = widget_fragment_dependency_order(ctx, &widget_fragments, is_pure_dart)?
+        .into_iter()
+        .map(|w| make_entry(w, true))
+        .collect::<Vec<_>>();
     let queries = make_entries(WidgetKind::Query, true);
     let mutations = make_entries(WidgetKind::Mutation, false);
     let subscriptions = make_entries(WidgetKind::Subscription, true);

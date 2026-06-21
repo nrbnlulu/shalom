@@ -5,6 +5,7 @@
 {% set op_variables = None %}
 {% set op_variables_exist = false %}
 {% set is_observe = context.fragment.observe and not context.is_pure_dart %}
+{% set is_multi_type = fragment_name in typedefs.unions or fragment_name in typedefs.interfaces %}
 
 {% include "selection_macros" %}
 
@@ -21,29 +22,49 @@ import 'package:collection/collection.dart';
 import '{{ import_path }}';
 {% endfor %}
 {% if is_observe %}
-import 'dart:async' show StreamSubscription;
+import 'dart:async' show Stream;
 import 'package:flutter/widgets.dart';
-import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+import 'package:shalom_flutter/shalom_flutter.dart';
 {% endif %}
 
 {% if is_observe %}
 // ------------ V2 FRAGMENT WIDGET API -------------
 
 extension type {{ fragment_name }}Ref.fromInput(shalom_core.ObservedRefInput _inner) {
+  static const String fragmentName = '{{ fragment_name }}';
+
+  static {{ fragment_name }}Ref fromEntityKey(String entityKey) {
+    return {{ fragment_name }}Ref.fromInput(
+      shalom_core.ObservedRefInput(
+        observableId: fragmentName,
+        anchor: entityKey,
+      ),
+    );
+  }
+
+  {% if not is_multi_type and fragment_root_has_id_selection() %}
+  static {{ fragment_name }}Ref fromId(String id) => fromEntityKey({{ fragment_name }}Data.entityKey(id));
+
+  {% endif %}
   shalom_core.ObservedRefInput get toInput => _inner;
+  String get anchor => _inner.anchor;
   shalom_core.JsonObject toJson() => {'__shalom_observed_ref': {'observable_id': _inner.observableId, 'anchor': _inner.anchor}};
+
+  Stream<{{ fragment_name }}Data> observe(shalom_core.ShalomRuntimeClient client) {
+    return client.subscribeToFragment<{{ fragment_name }}Data>(
+      ref: _inner,
+      decoder: {{ fragment_name }}Data.fromCache,
+    );
+  }
 }
 
 abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.root_type.used_fragments) }} {
   {% for field in frag_root_shared_selections() if field.name != "__typename" -%}
-    {{ type_name_for_selection_with_observe(field) }} get {{ field.name }};
+    {{ type_name_for_selection(field) }} get {{ field.name }};
   {% endfor %}
 
   shalom_core.JsonObject toJson();
 }
-
-{# is_multi_type is true only when the fragment root type itself is a union/interface #}
-{% set is_multi_type = fragment_name in typedefs.unions or fragment_name in typedefs.interfaces %}
 
 {% if is_multi_type %}
 {# Interface/union fragment: sealed class with $TypeName subclasses + $Unknown #}
@@ -52,7 +73,7 @@ sealed class {{ fragment_name }}Data implements {{ fragment_name }} {
   const {{ fragment_name }}Data();
 
   {% for field in frag_root_shared_selections() if field.name != "__typename" -%}
-    {{ type_name_for_selection_with_observe(field) }} get {{ field.name }};
+    {{ type_name_for_selection(field) }} get {{ field.name }};
   {% endfor %}
 
   static {{ fragment_name }}Data fromCache(shalom_core.JsonObject data) {
@@ -70,7 +91,7 @@ sealed class {{ fragment_name }}Data implements {{ fragment_name }} {
 
 {% for concrete in root_concretes -%}
 final class {{ fragment_name }}Data${{ concrete.schema_typename }} extends {{ fragment_name }}Data {
-  {{ selection_object_impl(fragment_name ~ "Data$" ~ concrete.schema_typename, concrete, is_root_selection=true, full_name=fragment_name ~ "Data$" ~ concrete.schema_typename, is_multi_type_member=true, shared_selections=concrete.selections) }}
+  {{ selection_object_impl(fragment_name ~ "Data$" ~ concrete.schema_typename, concrete, is_root_selection=true, full_name=fragment_name ~ "Data$" ~ concrete.schema_typename, is_multi_type_member=true, shared_selections=concrete.selections, use_observe=false) }}
 }
 {% endfor %}
 
@@ -79,7 +100,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 
   {% for field in frag_root_shared_selections() if field.name != "__typename" -%}
     @override
-    {{ type_name_for_selection_with_observe(field) }} get {{ field.name }} => throw UnimplementedError();
+    {{ type_name_for_selection(field) }} get {{ field.name }} => throw UnimplementedError();
   {% endfor %}
 
   @override
@@ -88,7 +109,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 
 {# Nested object definitions within concrete types #}
 {% for name, obj in typedefs.objects | items %}
-{{ selection_object_definition(obj) }}
+{{ selection_object_definition(obj, use_observe=false) }}
 {% endfor %}
 
 {# Nested union definitions (not the root — sealed because all subtypes live in this file) #}
@@ -97,7 +118,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
     {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
     sealed class {{ union_full_name }}{{ implements_used_fragments(union_selection.used_fragments) }} {
       {% for sel in union_selection.selections if sel.name != "__typename" -%}
-        {{type_name_for_selection_with_observe(sel)}} get {{sel.name}};
+        {{type_name_for_selection(sel)}} get {{sel.name}};
       {% endfor %}
       String get $__typename;
       const {{ union_full_name }}();
@@ -117,7 +138,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
     }
     {% for concrete_subset in concretes -%}
       final class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
-        {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections) }}
+        {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
       }
     {% endfor %}
   {% endif %}
@@ -129,7 +150,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
     sealed class {{ iface_path_name }}{{ implements_used_fragments(iface_selection.used_fragments) }} {
       {% for sel in iface_selection.selections if sel.name != "__typename" -%}
-        {{type_name_for_selection_with_observe(sel)}} get {{sel.name}};
+        {{type_name_for_selection(sel)}} get {{sel.name}};
       {% endfor %}
       String get $__typename;
       const {{ iface_path_name }}();
@@ -149,7 +170,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
     }
     {% for concrete_subset in concretes -%}
       final class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
-        {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections) }}
+        {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
       }
     {% endfor %}
   {% endif %}
@@ -158,12 +179,12 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 {% else %}
 {# Concrete object fragment: simple final class, no sealed/dispatch needed #}
 {% for name, obj in typedefs.objects | items %}
-{{ selection_object_definition(obj) }}
+{{ selection_object_definition(obj, use_observe=false) }}
 {% endfor %}
 
 final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.FragmentInterface {
   {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
-    final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
+    final {{ type_name_for_selection(selection) }} {{ selection.name }};
   {% endfor %}
 
   const {{ fragment_name }}Data({
@@ -205,7 +226,7 @@ final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.
   static {{ fragment_name }}Data fromCache(shalom_core.JsonObject data) {
     {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
       {% set raw_value_symbol = "data['" + selection.name + "']" -%}
-      final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
+      final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional, false) }};
     {% endfor -%}
     return {{ fragment_name }}Data(
       {% for selection in context.fragment.root_type.selections -%}
@@ -226,7 +247,7 @@ final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.
 }
 {% endif %}
 
-abstract class ${{ fragment_name }} extends StatefulWidget {
+abstract class ${{ fragment_name }} extends StatelessWidget {
   final {{ fragment_name }}Ref ref;
   const ${{ fragment_name }}({super.key, required this.ref});
 
@@ -235,58 +256,39 @@ abstract class ${{ fragment_name }} extends StatefulWidget {
   Widget buildError(BuildContext context, Object error) => ErrorWidget(error);
 
   @override
-  State<${{ fragment_name }}> createState() => _${{ fragment_name }}State();
+  Widget build(BuildContext context) {
+    return {{ fragment_name }}Scope(
+      ref: ref,
+      loadingBuilder: buildLoading,
+      errorBuilder: buildError,
+      builder: buildData,
+    );
+  }
 }
 
-class _${{ fragment_name }}State extends State<${{ fragment_name }}> {
-  StreamSubscription<{{ fragment_name }}Data>? _sub;
-  {{ fragment_name }}Data? _data;
-  Object? _error;
+class {{ fragment_name }}Scope extends StatelessWidget {
+  final {{ fragment_name }}Ref ref;
+  final ShalomDataWidgetBuilder<{{ fragment_name }}Data> builder;
+  final WidgetBuilder? loadingBuilder;
+  final ShalomErrorBuilder? errorBuilder;
 
-  @override
-  void reassemble() {
-    super.reassemble();
-    setState(() { _data = null; _error = null; });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _subscribe();
-  }
-
-  @override
-  void didUpdateWidget(covariant ${{ fragment_name }} oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.ref != oldWidget.ref) _subscribe();
-  }
-
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
-    _sub = client
-        .subscribeToFragment<{{ fragment_name }}Data>(
-          ref: widget.ref.toInput,
-          decoder: {{ fragment_name }}Data.fromCache,
-        )
-        .listen(
-          (data) => setState(() { _data = data; _error = null; }),
-          onError: (e) => setState(() { _error = e; }),
-          onDone: () { if (mounted) _subscribe(); },
-        );
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
+  const {{ fragment_name }}Scope({
+    super.key,
+    required this.ref,
+    required this.builder,
+    this.loadingBuilder,
+    this.errorBuilder,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) return widget.buildError(context, _error!);
-    if (_data == null) return widget.buildLoading(context);
-    return widget.buildData(context, _data!);
+    return ShalomDataScope<{{ fragment_name }}Data>(
+      identity: ref.toInput,
+      observe: (client) => ref.observe(client),
+      loadingBuilder: loadingBuilder,
+      errorBuilder: errorBuilder,
+      builder: builder,
+    );
   }
 }
 
@@ -330,7 +332,7 @@ class {{ fragment_name }}Impl implements {{ fragment_name }} {
 
         shalom_core.JsonObject toJson();
 
-        
+
         static {{ union_full_name }} fromJson(shalom_core.JsonObject data) {
             final typename = data['__typename'] as String;
             switch(typename) {
@@ -368,7 +370,7 @@ class {{ fragment_name }}Impl implements {{ fragment_name }} {
 
         shalom_core.JsonObject toJson();
 
-        
+
         static {{ iface_path_name }} fromJson(shalom_core.JsonObject data) {
             final typename = data['__typename'] as String;
             switch(typename) {

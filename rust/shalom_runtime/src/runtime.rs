@@ -760,7 +760,9 @@ impl ShalomRuntime {
     ) -> anyhow::Result<()> {
         let fragment = self.fragment_by_name(fragment_name)?;
         let data = self.resolve_observed_fragment_refs(data)?;
-        let result = self.engine.normalize_fragment_response(&fragment, entity_key, data)?;
+        let result = self
+            .engine
+            .normalize_fragment_response(&fragment, entity_key, data)?;
         self.notify_subscribers(&result.changed)?;
         Ok(())
     }

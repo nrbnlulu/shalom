@@ -6,27 +6,47 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
-import 'dart:async' show StreamSubscription;
+import 'dart:async' show Stream;
 import 'package:flutter/widgets.dart';
-import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+import 'package:shalom_flutter/shalom_flutter.dart';
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
 extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
+  static const String fragmentName = 'DogFrag';
+
+  static DogFragRef fromEntityKey(String entityKey) {
+    return DogFragRef.fromInput(
+      shalom_core.ObservedRefInput(
+        observableId: fragmentName,
+        anchor: entityKey,
+      ),
+    );
+  }
+
+  static DogFragRef fromId(String id) =>
+      fromEntityKey(DogFragData.entityKey(id));
+
   shalom_core.ObservedRefInput get toInput => _inner;
+  String get anchor => _inner.anchor;
   shalom_core.JsonObject toJson() => {
     '__shalom_observed_ref': {
       'observable_id': _inner.observableId,
       'anchor': _inner.anchor,
     },
   };
+
+  Stream<DogFragData> observe(shalom_core.ShalomRuntimeClient client) {
+    return client.subscribeToFragment<DogFragData>(
+      ref: _inner,
+      decoder: DogFragData.fromCache,
+    );
+  }
 }
 
 abstract class DogFrag {
   String get breed;
-
   String get id;
-
   String get name;
 
   shalom_core.JsonObject toJson();
@@ -79,7 +99,7 @@ final class DogFragData implements DogFrag, shalom_core.FragmentInterface {
   }
 }
 
-abstract class $DogFrag extends StatefulWidget {
+abstract class $DogFrag extends StatelessWidget {
   final DogFragRef ref;
   const $DogFrag({super.key, required this.ref});
 
@@ -88,68 +108,39 @@ abstract class $DogFrag extends StatefulWidget {
   Widget buildError(BuildContext context, Object error) => ErrorWidget(error);
 
   @override
-  State<$DogFrag> createState() => _$DogFragState();
+  Widget build(BuildContext context) {
+    return DogFragScope(
+      ref: ref,
+      loadingBuilder: buildLoading,
+      errorBuilder: buildError,
+      builder: buildData,
+    );
+  }
 }
 
-class _$DogFragState extends State<$DogFrag> {
-  StreamSubscription<DogFragData>? _sub;
-  DogFragData? _data;
-  Object? _error;
+class DogFragScope extends StatelessWidget {
+  final DogFragRef ref;
+  final ShalomDataWidgetBuilder<DogFragData> builder;
+  final WidgetBuilder? loadingBuilder;
+  final ShalomErrorBuilder? errorBuilder;
 
-  @override
-  void reassemble() {
-    super.reassemble();
-    setState(() {
-      _data = null;
-      _error = null;
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _subscribe();
-  }
-
-  @override
-  void didUpdateWidget(covariant $DogFrag oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.ref != oldWidget.ref) _subscribe();
-  }
-
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
-    _sub = client
-        .subscribeToFragment<DogFragData>(
-          ref: widget.ref.toInput,
-          decoder: DogFragData.fromCache,
-        )
-        .listen(
-          (data) => setState(() {
-            _data = data;
-            _error = null;
-          }),
-          onError: (e) => setState(() {
-            _error = e;
-          }),
-          onDone: () {
-            if (mounted) _subscribe();
-          },
-        );
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
+  const DogFragScope({
+    super.key,
+    required this.ref,
+    required this.builder,
+    this.loadingBuilder,
+    this.errorBuilder,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) return widget.buildError(context, _error!);
-    if (_data == null) return widget.buildLoading(context);
-    return widget.buildData(context, _data!);
+    return ShalomDataScope<DogFragData>(
+      identity: ref.toInput,
+      observe: (client) => ref.observe(client),
+      loadingBuilder: loadingBuilder,
+      errorBuilder: errorBuilder,
+      builder: builder,
+    );
   }
 }
 

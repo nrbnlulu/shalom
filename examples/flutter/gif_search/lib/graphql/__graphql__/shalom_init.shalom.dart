@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomInheritedWidget;
 
+
 /// The GraphQL schema SDL inlined at code-generation time.
 ///
 /// Use this to create the [ShalomRuntimeClient] — no async asset loading needed:
@@ -73,38 +74,32 @@ type Subscription {
 
 /// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
 void registerShalomDefinitions(ShalomRuntimeClient client) {
-  client.registerFragment(
-    document: r'''
+
+  client.registerFragment(document: r'''
+fragment AlbumGif on Gif @observe {
+    id
+    title
+    url
+  }
+''');
+  client.registerFragment(document: r'''
 fragment AlbumWidget on Album @observe {
     id
     name
     tag
     gifs {
-      id
-      title
+      ...AlbumGif
     }
   }
-''',
-  );
-  client.registerFragment(
-    document: r'''
-fragment AlbumGif on Gif @observe {
-    id
-    title
-  }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 query AlbumsPage @observe {
     albums {
       ...AlbumWidget
     }
   }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 query AlbumGifSearch ($query: String!, $offset: Int!, $limit: Int!) @observe {
     searchGifs(query: $query, offset: $offset, limit: $limit) {
       items {
@@ -115,42 +110,31 @@ query AlbumGifSearch ($query: String!, $offset: Int!, $limit: Int!) @observe {
       hasNextPage
     }
   }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 mutation CreateAlbumMutation ($name: String!) {
     createAlbum(name: $name) {
       id
       name
       tag
-      gifs {
-        id
-        title
-      }
     }
   }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 mutation AddGifToAlbumMutation ($albumId: String!, $title: String!, $url: String!, $previewUrl: String) {
     addGifToAlbum(albumId: $albumId, title: $title, url: $url, previewUrl: $previewUrl) {
       ...AlbumGif
     }
   }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 mutation RemoveGifFromAlbumMutation ($albumId: String!, $gifId: String!) {
     removeGifFromAlbum(albumId: $albumId, gifId: $gifId) {
       id
       name
     }
   }
-''',
-  );
+''');
 }
 
 /// Generated [ShalomProvider] for this app.

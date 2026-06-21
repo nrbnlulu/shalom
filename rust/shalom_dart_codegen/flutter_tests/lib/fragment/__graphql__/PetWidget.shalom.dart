@@ -6,25 +6,46 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
-import 'dart:async' show StreamSubscription;
+import 'dart:async' show Stream;
 import 'package:flutter/widgets.dart';
-import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+import 'package:shalom_flutter/shalom_flutter.dart';
 
 // ------------ V2 FRAGMENT WIDGET API -------------
 
 extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
+  static const String fragmentName = 'PetWidget';
+
+  static PetWidgetRef fromEntityKey(String entityKey) {
+    return PetWidgetRef.fromInput(
+      shalom_core.ObservedRefInput(
+        observableId: fragmentName,
+        anchor: entityKey,
+      ),
+    );
+  }
+
+  static PetWidgetRef fromId(String id) =>
+      fromEntityKey(PetWidgetData.entityKey(id));
+
   shalom_core.ObservedRefInput get toInput => _inner;
+  String get anchor => _inner.anchor;
   shalom_core.JsonObject toJson() => {
     '__shalom_observed_ref': {
       'observable_id': _inner.observableId,
       'anchor': _inner.anchor,
     },
   };
+
+  Stream<PetWidgetData> observe(shalom_core.ShalomRuntimeClient client) {
+    return client.subscribeToFragment<PetWidgetData>(
+      ref: _inner,
+      decoder: PetWidgetData.fromCache,
+    );
+  }
 }
 
 abstract class PetWidget {
   String get id;
-
   String get name;
 
   shalom_core.JsonObject toJson();
@@ -68,7 +89,7 @@ final class PetWidgetData implements PetWidget, shalom_core.FragmentInterface {
   }
 }
 
-abstract class $PetWidget extends StatefulWidget {
+abstract class $PetWidget extends StatelessWidget {
   final PetWidgetRef ref;
   const $PetWidget({super.key, required this.ref});
 
@@ -77,68 +98,39 @@ abstract class $PetWidget extends StatefulWidget {
   Widget buildError(BuildContext context, Object error) => ErrorWidget(error);
 
   @override
-  State<$PetWidget> createState() => _$PetWidgetState();
+  Widget build(BuildContext context) {
+    return PetWidgetScope(
+      ref: ref,
+      loadingBuilder: buildLoading,
+      errorBuilder: buildError,
+      builder: buildData,
+    );
+  }
 }
 
-class _$PetWidgetState extends State<$PetWidget> {
-  StreamSubscription<PetWidgetData>? _sub;
-  PetWidgetData? _data;
-  Object? _error;
+class PetWidgetScope extends StatelessWidget {
+  final PetWidgetRef ref;
+  final ShalomDataWidgetBuilder<PetWidgetData> builder;
+  final WidgetBuilder? loadingBuilder;
+  final ShalomErrorBuilder? errorBuilder;
 
-  @override
-  void reassemble() {
-    super.reassemble();
-    setState(() {
-      _data = null;
-      _error = null;
-    });
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _subscribe();
-  }
-
-  @override
-  void didUpdateWidget(covariant $PetWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.ref != oldWidget.ref) _subscribe();
-  }
-
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
-    _sub = client
-        .subscribeToFragment<PetWidgetData>(
-          ref: widget.ref.toInput,
-          decoder: PetWidgetData.fromCache,
-        )
-        .listen(
-          (data) => setState(() {
-            _data = data;
-            _error = null;
-          }),
-          onError: (e) => setState(() {
-            _error = e;
-          }),
-          onDone: () {
-            if (mounted) _subscribe();
-          },
-        );
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
-  }
+  const PetWidgetScope({
+    super.key,
+    required this.ref,
+    required this.builder,
+    this.loadingBuilder,
+    this.errorBuilder,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (_error != null) return widget.buildError(context, _error!);
-    if (_data == null) return widget.buildLoading(context);
-    return widget.buildData(context, _data!);
+    return ShalomDataScope<PetWidgetData>(
+      identity: ref.toInput,
+      observe: (client) => ref.observe(client),
+      loadingBuilder: loadingBuilder,
+      errorBuilder: errorBuilder,
+      builder: builder,
+    );
   }
 }
 

@@ -2,6 +2,8 @@
 
 import "../../graphql/__graphql__/schema.shalom.dart";
 
+import 'dart:async' show Stream;
+
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
@@ -48,7 +50,7 @@ class PetQueryResponse {
   }
 }
 
-class PetQuery_pet implements PetWidget {
+class PetQuery_pet {
   static String G__typename = "Pet";
 
   /// class members
@@ -120,6 +122,31 @@ final class PetQueryData implements shalom_core.OperationInterface {
 
   shalom_core.JsonObject toJson() {
     return {'pet': this.pet?.toJson()};
+  }
+}
+
+final class PetQueryObservable {
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
+  final PetQueryVariables variables;
+
+  const PetQueryObservable({
+    required this.variables,
+
+    this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+  });
+
+  String operation$Name() => 'PetQuery';
+
+  Stream<PetQueryData> observe(shalom_core.ShalomRuntimeClient client) {
+    return client.request<PetQueryData>(
+      name: operation$Name(),
+
+      variables: variables.toJson(),
+
+      decoder: PetQueryData.fromCache,
+      executionPolicy: executionPolicy,
+    );
   }
 }
 

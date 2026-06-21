@@ -2,6 +2,8 @@
 
 import "../../graphql/__graphql__/schema.shalom.dart";
 
+import 'dart:async' show Stream;
+
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
@@ -48,7 +50,7 @@ class ZooQueryResponse {
   }
 }
 
-class ZooQuery_zoo implements ZooWidget {
+class ZooQuery_zoo {
   static String G__typename = "Zoo";
 
   /// class members
@@ -135,6 +137,31 @@ final class ZooQueryData implements shalom_core.OperationInterface {
 
   shalom_core.JsonObject toJson() {
     return {'zoo': this.zoo?.toJson()};
+  }
+}
+
+final class ZooQueryObservable {
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
+  final ZooQueryVariables variables;
+
+  const ZooQueryObservable({
+    required this.variables,
+
+    this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+  });
+
+  String operation$Name() => 'ZooQuery';
+
+  Stream<ZooQueryData> observe(shalom_core.ShalomRuntimeClient client) {
+    return client.request<ZooQueryData>(
+      name: operation$Name(),
+
+      variables: variables.toJson(),
+
+      decoder: ZooQueryData.fromCache,
+      executionPolicy: executionPolicy,
+    );
   }
 }
 

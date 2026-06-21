@@ -2,6 +2,8 @@
 
 import "../../graphql/__graphql__/schema.shalom.dart";
 
+import 'dart:async' show Stream;
+
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
@@ -217,6 +219,29 @@ final class StreetSubscriptionData implements shalom_core.OperationInterface {
 
   shalom_core.JsonObject toJson() {
     return {'streetAnimals': this.streetAnimals.toJson()};
+  }
+}
+
+final class StreetSubscriptionObservable {
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
+  const StreetSubscriptionObservable({
+    this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+  });
+
+  String operation$Name() => 'StreetSubscription';
+
+  Stream<StreetSubscriptionData> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
+    return client.request<StreetSubscriptionData>(
+      name: operation$Name(),
+
+      variables: null,
+
+      decoder: StreetSubscriptionData.fromCache,
+      executionPolicy: executionPolicy,
+    );
   }
 }
 

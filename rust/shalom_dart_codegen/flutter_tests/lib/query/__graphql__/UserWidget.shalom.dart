@@ -2,6 +2,8 @@
 
 import "../../graphql/__graphql__/schema.shalom.dart";
 
+import 'dart:async' show Stream;
+
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
@@ -109,6 +111,31 @@ final class UserWidgetData implements shalom_core.OperationInterface {
 
   shalom_core.JsonObject toJson() {
     return {'user': this.user?.toJson()};
+  }
+}
+
+final class UserWidgetObservable {
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+
+  final UserWidgetVariables variables;
+
+  const UserWidgetObservable({
+    required this.variables,
+
+    this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+  });
+
+  String operation$Name() => 'UserWidget';
+
+  Stream<UserWidgetData> observe(shalom_core.ShalomRuntimeClient client) {
+    return client.request<UserWidgetData>(
+      name: operation$Name(),
+
+      variables: variables.toJson(),
+
+      decoder: UserWidgetData.fromCache,
+      executionPolicy: executionPolicy,
+    );
   }
 }
 

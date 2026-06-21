@@ -6,8 +6,9 @@ export 'PetQuery.shalom.dart';
 import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart' as shalom_core;
-import 'package:shalom_flutter/shalom_flutter.dart' show ShalomScope;
+import 'package:shalom_flutter/shalom_flutter.dart';
 import 'PetQuery.shalom.dart';
+import 'PetWidget.shalom.dart';
 
 abstract class $PetQuery extends StatefulWidget {
   String operation$Name() => 'PetQuery';
@@ -61,28 +62,26 @@ class _$PetQueryState extends State<$PetQuery> {
   void _subscribe() {
     _sub?.cancel();
     final client = ShalomScope.of(context);
-    _sub = client
-        .request<PetQueryData>(
-          name: widget.operation$Name(),
+    _sub =
+        PetQueryObservable(
+              variables: widget.variables,
 
-          variables: widget.variables.toJson(),
-
-          decoder: PetQueryData.fromCache,
-          executionPolicy: widget.executionPolicy,
-        )
-        .listen(
-          (data) => setState(() {
-            _data = data;
-            _error = null;
-          }),
-          onError: (e) => setState(() {
-            _error = e;
-          }),
-          onDone: () {
-            debugPrint('[widget] PetQuery.onDone fired, mounted=$mounted');
-            if (mounted) _subscribe();
-          },
-        );
+              executionPolicy: widget.executionPolicy,
+            )
+            .observe(client)
+            .listen(
+              (data) => setState(() {
+                _data = data;
+                _error = null;
+              }),
+              onError: (e) => setState(() {
+                _error = e;
+              }),
+              onDone: () {
+                debugPrint('[widget] PetQuery.onDone fired, mounted=$mounted');
+                if (mounted) _subscribe();
+              },
+            );
   }
 
   @override
