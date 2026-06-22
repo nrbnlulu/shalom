@@ -131,10 +131,7 @@ class AlbumsPage extends $AlbumsPage with QueryWidgetMixin {
       context: context,
       builder: (_) => _CreateAlbumDialog(
         onCreated: (cache, data) {
-          final current = cache.readQuery(
-            name: 'AlbumsPage',
-            decoder: AlbumsPageData.fromCache,
-          );
+          final current = AlbumsPageData.readFrom(cache);
           if (current == null) return;
           final newRef = AlbumWidgetRef.fromId(data.createAlbum.id);
           cache.writeQuery(
@@ -433,11 +430,7 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
             ? shalom.Some(gif.previewUrl)
             : const shalom.None(),
         update: (shalom.CacheProxy cache, AddGifToAlbumMutationData data) {
-          final current = cache.readFragment<AlbumWidgetData>(
-            fragmentName: 'AlbumWidget',
-            entityKey: AlbumWidgetData.entityKey(widget.albumId),
-            decoder: AlbumWidgetData.fromCache,
-          );
+          final current = AlbumWidgetRef.fromId(widget.albumId).readFrom(cache);
           if (current == null) return;
           if (current.gifs.any((g) => g.url == gif.url)) return;
           cache.writeFragment(

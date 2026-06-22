@@ -109,6 +109,20 @@ final class UserWidgetData implements shalom_core.OperationInterface {
     return UserWidgetData(user: user$value);
   }
 
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [UserWidgetData]. Returns `null` when absent or incomplete.
+  static UserWidgetData? readFrom(
+    shalom_core.CacheProxy cache, {
+    UserWidgetVariables? variables,
+  }) {
+    return cache.readQuery<UserWidgetData>(
+      name: 'UserWidget',
+      decoder: fromCache,
+
+      variables: variables?.toJson(),
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {'user': this.user?.toJson()};
   }

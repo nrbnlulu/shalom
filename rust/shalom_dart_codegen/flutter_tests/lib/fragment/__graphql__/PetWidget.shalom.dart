@@ -36,6 +36,16 @@ extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     },
   };
 
+  /// Reads the entity this ref points to through [cache], decoding it as
+  /// [PetWidgetData]. Returns `null` when absent or incomplete.
+  PetWidgetData? readFrom(shalom_core.CacheProxy cache) {
+    return cache.readFragment<PetWidgetData>(
+      fragmentName: fragmentName,
+      entityKey: anchor,
+      decoder: PetWidgetData.fromCache,
+    );
+  }
+
   Stream<PetWidgetData> observe(shalom_core.ShalomRuntimeClient client) {
     return client.subscribeToFragment<PetWidgetData>(
       ref: _inner,

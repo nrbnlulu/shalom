@@ -217,6 +217,15 @@ final class ShelterSubscriptionData implements shalom_core.OperationInterface {
     return ShelterSubscriptionData(shelterAnimals: shelterAnimals$value);
   }
 
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [ShelterSubscriptionData]. Returns `null` when absent or incomplete.
+  static ShelterSubscriptionData? readFrom(shalom_core.CacheProxy cache) {
+    return cache.readQuery<ShelterSubscriptionData>(
+      name: 'ShelterSubscription',
+      decoder: fromCache,
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {'shelterAnimals': this.shelterAnimals.toJson()};
   }

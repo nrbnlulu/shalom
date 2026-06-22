@@ -236,6 +236,20 @@ final class AnimalWithOwnerQueryData implements shalom_core.OperationInterface {
     return AnimalWithOwnerQueryData(animal: animal$value);
   }
 
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [AnimalWithOwnerQueryData]. Returns `null` when absent or incomplete.
+  static AnimalWithOwnerQueryData? readFrom(
+    shalom_core.CacheProxy cache, {
+    AnimalWithOwnerQueryVariables? variables,
+  }) {
+    return cache.readQuery<AnimalWithOwnerQueryData>(
+      name: 'AnimalWithOwnerQuery',
+      decoder: fromCache,
+
+      variables: variables?.toJson(),
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {'animal': this.animal?.toJson()};
   }

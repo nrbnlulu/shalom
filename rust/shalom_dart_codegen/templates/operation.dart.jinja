@@ -108,6 +108,23 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface {
         );
     }
 
+    /// Reads this operation's current cache entry through [cache], decoding
+    /// it as [{{ operation_name }}Data]. Returns `null` when absent or incomplete.
+    static {{ operation_name }}Data? readFrom(
+        shalom_core.CacheProxy cache
+        {%- if op_variables_exist %}, {
+        {{ operation_name }}Variables? variables,
+        }{% endif %}
+    ) {
+        return cache.readQuery<{{ operation_name }}Data>(
+            name: '{{ operation_name }}',
+            decoder: fromCache,
+            {% if op_variables_exist %}
+            variables: variables?.toJson(),
+            {% endif %}
+        );
+    }
+
     shalom_core.JsonObject toJson() {
         return {
             {% for selection in context.operation.root_type.selections %}

@@ -120,6 +120,20 @@ final class PetQueryData implements shalom_core.OperationInterface {
     return PetQueryData(pet: pet$value);
   }
 
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [PetQueryData]. Returns `null` when absent or incomplete.
+  static PetQueryData? readFrom(
+    shalom_core.CacheProxy cache, {
+    PetQueryVariables? variables,
+  }) {
+    return cache.readQuery<PetQueryData>(
+      name: 'PetQuery',
+      decoder: fromCache,
+
+      variables: variables?.toJson(),
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {'pet': this.pet?.toJson()};
   }

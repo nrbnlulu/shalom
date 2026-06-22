@@ -217,6 +217,15 @@ final class StreetSubscriptionData implements shalom_core.OperationInterface {
     return StreetSubscriptionData(streetAnimals: streetAnimals$value);
   }
 
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [StreetSubscriptionData]. Returns `null` when absent or incomplete.
+  static StreetSubscriptionData? readFrom(shalom_core.CacheProxy cache) {
+    return cache.readQuery<StreetSubscriptionData>(
+      name: 'StreetSubscription',
+      decoder: fromCache,
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {'streetAnimals': this.streetAnimals.toJson()};
   }

@@ -3,7 +3,6 @@ typedef JsonObject = Map<String, dynamic>;
 
 abstract interface class OperationInterface {
   String operation$Name();
-
   JsonObject toJson();
 }
 

@@ -196,6 +196,20 @@ final class AnimalQueryData implements shalom_core.OperationInterface {
     return AnimalQueryData(animal: animal$value);
   }
 
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [AnimalQueryData]. Returns `null` when absent or incomplete.
+  static AnimalQueryData? readFrom(
+    shalom_core.CacheProxy cache, {
+    AnimalQueryVariables? variables,
+  }) {
+    return cache.readQuery<AnimalQueryData>(
+      name: 'AnimalQuery',
+      decoder: fromCache,
+
+      variables: variables?.toJson(),
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {'animal': this.animal?.toJson()};
   }

@@ -135,6 +135,20 @@ final class ZooQueryData implements shalom_core.OperationInterface {
     return ZooQueryData(zoo: zoo$value);
   }
 
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [ZooQueryData]. Returns `null` when absent or incomplete.
+  static ZooQueryData? readFrom(
+    shalom_core.CacheProxy cache, {
+    ZooQueryVariables? variables,
+  }) {
+    return cache.readQuery<ZooQueryData>(
+      name: 'ZooQuery',
+      decoder: fromCache,
+
+      variables: variables?.toJson(),
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {'zoo': this.zoo?.toJson()};
   }
