@@ -136,6 +136,12 @@ class AlbumEvent:
     gif: Optional[Gif] = None
 
 
+@strawberry.type
+class MutationError:
+    code: str
+    message: str
+
+
 def to_gif(model: GifModel) -> Gif:
     return Gif(
         id=model.id,
@@ -344,22 +350,31 @@ class Mutation:
         self,
         album_id: str,
         gif_id: str,
-    ) -> Album:
+    ) -> Optional[MutationError]:
         async with state_lock:
             album_model = albums_by_id.get(album_id)
 
             if not album_model:
-                raise ValueError(f"Album not found: {album_id}")
+                return MutationError(
+                    code="ALBUM_NOT_FOUND",
+                    message=f"Album not found: {album_id}",
+                )
 
             removed_gif = next(
                 (gif for gif in album_model.gifs if gif.id == gif_id),
                 None,
             )
 
+            if removed_gif is None:
+                return MutationError(
+                    code="GIF_NOT_FOUND",
+                    message=f"GIF not found in album: {gif_id}",
+                )
+
             album_model.gifs = [gif for gif in album_model.gifs if gif.id != gif_id]
 
             album = to_album(album_model)
-            gif = to_gif(removed_gif) if removed_gif else None
+            gif = to_gif(removed_gif)
 
         await publish_album_event(
             AlbumEvent(
@@ -369,7 +384,7 @@ class Mutation:
             )
         )
 
-        return album
+        return None
 
 
 @strawberry.type
@@ -395,7 +410,6 @@ schema = strawberry.Schema(
 
 def export_schema() -> None:
     sdl = schema.as_str()
-    Path("scm.graphql").write_text(sdl, encoding="utf-8")
     dart_schema = Path(__file__).parent.parent / "lib" / "graphql" / "schema.graphql"
     dart_schema.write_text(sdl, encoding="utf-8")
 

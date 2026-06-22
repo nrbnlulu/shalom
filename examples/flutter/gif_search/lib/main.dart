@@ -242,8 +242,8 @@ class AddGifToAlbumMutation extends $AddGifToAlbumMutation {
 @Mutation(r"""
   ($albumId: String!, $gifId: String!) {
     removeGifFromAlbum(albumId: $albumId, gifId: $gifId) {
-      id
-      name
+      code
+      message
     }
   }
 """)
@@ -461,25 +461,32 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
   Future<void> _removeGif(String gifId) async {
     final client = ShalomScope.of(context);
     try {
-      await RemoveGifFromAlbumMutation(client).executeWithCacheUpdate(
-        albumId: widget.albumId,
-        gifId: gifId,
-        update: (shalom.CacheProxy cache, _) {
-          final current = cache.readFragment<AlbumWidgetData>(
-            fragmentName: 'AlbumWidget',
-            entityKey: AlbumWidgetData.entityKey(widget.albumId),
-            decoder: AlbumWidgetData.fromCache,
+      final result = await RemoveGifFromAlbumMutation(client)
+          .executeWithCacheUpdate(
+            albumId: widget.albumId,
+            gifId: gifId,
+            update: (shalom.CacheProxy cache, data) {
+              if (data.removeGifFromAlbum != null) return;
+              final current = cache.readFragment<AlbumWidgetData>(
+                fragmentName: 'AlbumWidget',
+                entityKey: AlbumWidgetData.entityKey(widget.albumId),
+                decoder: AlbumWidgetData.fromCache,
+              );
+              if (current == null) return;
+              cache.writeFragment(
+                data: AlbumWidgetData(
+                  id: current.id,
+                  name: current.name,
+                  tag: current.tag,
+                  gifs: current.gifs.where((g) => g.id != gifId).toList(),
+                ),
+              );
+            },
           );
-          if (current == null) return;
-          cache.writeFragment(
-            data: AlbumWidgetData(
-              id: current.id,
-              name: current.name,
-              tag: current.tag,
-              gifs: current.gifs.where((g) => g.id != gifId).toList(),
-            ),
-          );
-        },
+      if (!mounted) return;
+      final error = result.removeGifFromAlbum;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error == null ? 'GIF removed' : error.message)),
       );
     } catch (e) {
       if (!mounted) return;

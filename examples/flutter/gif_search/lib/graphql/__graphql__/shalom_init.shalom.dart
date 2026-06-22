@@ -52,7 +52,12 @@ type GifSearchPage {
 type Mutation {
   createAlbum(name: String!): Album!
   addGifToAlbum(albumId: String!, title: String!, url: String!, previewUrl: String = null): Gif!
-  removeGifFromAlbum(albumId: String!, gifId: String!): Album!
+  removeGifFromAlbum(albumId: String!, gifId: String!): MutationError
+}
+
+type MutationError {
+  code: String!
+  message: String!
 }
 
 type PreviewGif implements GifInterface {
@@ -141,8 +146,8 @@ mutation AddGifToAlbumMutation ($albumId: String!, $title: String!, $url: String
     document: r'''
 mutation RemoveGifFromAlbumMutation ($albumId: String!, $gifId: String!) {
     removeGifFromAlbum(albumId: $albumId, gifId: $gifId) {
-      id
-      name
+      code
+      message
     }
   }
 ''',
