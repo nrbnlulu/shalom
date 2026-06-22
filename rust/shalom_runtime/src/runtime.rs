@@ -37,6 +37,38 @@ pub struct RuntimeResponse {
     pub operation_id: Option<String>,
 }
 
+/// Structured error from a subscription — either GraphQL-level errors or
+/// a transport-layer error. Serializable for bridging to Dart.
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum SubscriptionError {
+    GraphQL {
+        errors: Vec<Map<String, Value>>,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        extensions: Option<Map<String, Value>>,
+    },
+    Transport {
+        message: String,
+        code: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        details: Option<Value>,
+    },
+}
+
+impl std::fmt::Display for SubscriptionError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            SubscriptionError::GraphQL { errors, .. } => {
+                write!(f, "GraphQL errors: {}", serde_json::to_string(errors).unwrap_or_default())
+            }
+            SubscriptionError::Transport { message, code, .. } => {
+                write!(f, "Transport error {}: {}", code, message)
+            }
+        }
+    }
+}
+
+impl std::error::Error for SubscriptionError {}
+
 /// An observed reference — identifies a fragment subscription by fragment name
 /// and cache anchor (e.g. `"User:1"`).
 #[derive(Debug, Clone)]
@@ -52,7 +84,7 @@ pub enum ExecutionPolicy {
 }
 
 pub type RuntimeResponseStream =
-    Pin<Box<dyn Stream<Item = anyhow::Result<RuntimeResponse>> + Send>>;
+    Pin<Box<dyn Stream<Item = Result<RuntimeResponse, SubscriptionError>> + Send>>;
 
 /// Info about a single active subscription / observer.
 #[derive(Debug, Clone)]
@@ -119,8 +151,8 @@ struct SubscriptionState {
     target: SubscriptionTarget,
     variables: Option<Map<String, Value>>,
     keys: HashSet<String>,
-    sender: mpsc::UnboundedSender<anyhow::Result<RuntimeResponse>>,
-    receiver: Option<mpsc::UnboundedReceiver<anyhow::Result<RuntimeResponse>>>,
+    sender: mpsc::UnboundedSender<Result<RuntimeResponse, SubscriptionError>>,
+    receiver: Option<mpsc::UnboundedReceiver<Result<RuntimeResponse, SubscriptionError>>>,
 }
 
 #[derive(Clone)]
@@ -589,8 +621,8 @@ impl ShalomRuntime {
         Ok(Box::pin(UnboundedReceiverStream::new(receiver)))
     }
 
-    /// Push a transport/network error to a subscription so the Dart side sees it.
-    pub fn push_subscription_error(&self, id: SubscriptionId, err: anyhow::Error) {
+    /// Push a subscription error to a subscription so the Dart side sees it.
+    pub fn push_subscription_error(&self, id: SubscriptionId, err: SubscriptionError) {
         let manager = self.subscriptions.lock();
         if let Some(state) = manager.subscriptions.get(&id) {
             let _ = state.sender.send(Err(err));

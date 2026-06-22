@@ -46,7 +46,9 @@ extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
-  Stream<DogFragData> observe(shalom_core.ShalomRuntimeClient client) {
+  Stream<shalom_core.GraphQLResponse<DogFragData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
     return client.subscribeToFragment<DogFragData>(
       ref: _inner,
       decoder: DogFragData.fromCache,

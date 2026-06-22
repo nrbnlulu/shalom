@@ -268,7 +268,7 @@ final class AnimalWithOwnerQueryObservable {
 
   String operation$Name() => 'AnimalWithOwnerQuery';
 
-  Stream<AnimalWithOwnerQueryData> observe(
+  Stream<shalom_core.GraphQLResponse<AnimalWithOwnerQueryData>> observe(
     shalom_core.ShalomRuntimeClient client,
   ) {
     return client.request<AnimalWithOwnerQueryData>(

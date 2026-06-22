@@ -126,9 +126,12 @@ query AlbumGifSearch ($query: String!, $offset: Int!, $limit: Int!) @observe {
     document: r'''
 mutation CreateAlbumMutation ($name: String!) {
     createAlbum(name: $name) {
-      id
+      id 
       name
       tag
+      gifs {
+        ...AlbumGif
+      }
     }
   }
 ''',

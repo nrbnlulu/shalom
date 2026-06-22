@@ -48,7 +48,9 @@ extension type AlbumWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
-  Stream<AlbumWidgetData> observe(shalom_core.ShalomRuntimeClient client) {
+  Stream<shalom_core.GraphQLResponse<AlbumWidgetData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
     return client.subscribeToFragment<AlbumWidgetData>(
       ref: _inner,
       decoder: AlbumWidgetData.fromCache,

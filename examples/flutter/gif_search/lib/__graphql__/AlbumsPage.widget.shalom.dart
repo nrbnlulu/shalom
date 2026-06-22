@@ -27,7 +27,7 @@ abstract class $AlbumsPage extends StatefulWidget {
 }
 
 class _$AlbumsPageState extends State<$AlbumsPage> {
-  StreamSubscription<AlbumsPageData>? _sub;
+  StreamSubscription<shalom_core.GraphQLResponse<AlbumsPageData>>? _sub;
   AlbumsPageData? _data;
   Object? _error;
 
@@ -60,13 +60,18 @@ class _$AlbumsPageState extends State<$AlbumsPage> {
     _sub = AlbumsPageObservable(executionPolicy: widget.executionPolicy)
         .observe(client)
         .listen(
-          (data) => setState(() {
-            _data = data;
-            _error = null;
-          }),
-          onError: (e) => setState(() {
-            _error = e;
-          }),
+          (response) {
+            setState(() {
+              switch (response) {
+                case shalom_core.GraphQLData(data: final data):
+                  _data = data;
+                  _error = null;
+                case shalom_core.GraphQLError() ||
+                    shalom_core.LinkExceptionResponse():
+                  _error = response;
+              }
+            });
+          },
           onDone: () {
             debugPrint('[widget] AlbumsPage.onDone fired, mounted=$mounted');
             if (mounted) _subscribe();

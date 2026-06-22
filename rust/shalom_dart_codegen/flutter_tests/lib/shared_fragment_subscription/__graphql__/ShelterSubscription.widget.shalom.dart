@@ -26,7 +26,8 @@ abstract class $ShelterSubscription extends StatefulWidget {
 }
 
 class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
-  StreamSubscription<ShelterSubscriptionData>? _sub;
+  StreamSubscription<shalom_core.GraphQLResponse<ShelterSubscriptionData>>?
+  _sub;
   ShelterSubscriptionData? _data;
   Object? _error;
 
@@ -60,13 +61,18 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
         ShelterSubscriptionObservable(executionPolicy: widget.executionPolicy)
             .observe(client)
             .listen(
-              (data) => setState(() {
-                _data = data;
-                _error = null;
-              }),
-              onError: (e) => setState(() {
-                _error = e;
-              }),
+              (response) {
+                setState(() {
+                  switch (response) {
+                    case shalom_core.GraphQLData(data: final data):
+                      _data = data;
+                      _error = null;
+                    case shalom_core.GraphQLError() ||
+                        shalom_core.LinkExceptionResponse():
+                      _error = response;
+                  }
+                });
+              },
               onDone: () {
                 debugPrint(
                   '[widget] ShelterSubscription.onDone fired, mounted=$mounted',

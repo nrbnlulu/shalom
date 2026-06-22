@@ -233,7 +233,9 @@ final class AlbumGifSearchObservable {
 
   String operation$Name() => 'AlbumGifSearch';
 
-  Stream<AlbumGifSearchData> observe(shalom_core.ShalomRuntimeClient client) {
+  Stream<shalom_core.GraphQLResponse<AlbumGifSearchData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
     return client.request<AlbumGifSearchData>(
       name: operation$Name(),
 

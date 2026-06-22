@@ -240,7 +240,7 @@ final class StreetSubscriptionObservable {
 
   String operation$Name() => 'StreetSubscription';
 
-  Stream<StreetSubscriptionData> observe(
+  Stream<shalom_core.GraphQLResponse<StreetSubscriptionData>> observe(
     shalom_core.ShalomRuntimeClient client,
   ) {
     return client.request<StreetSubscriptionData>(

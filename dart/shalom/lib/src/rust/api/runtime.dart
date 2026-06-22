@@ -5,6 +5,8 @@
 
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
+part 'runtime.freezed.dart';
 
 // These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`, `to_observer_info`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`
@@ -129,11 +131,8 @@ void unsubscribe({
 );
 
 /// Stream cache-update notifications for an existing subscription.
-///
-/// Errors from the cache (GraphQL errors, transport errors) are encoded as
-/// `{"__error__": "<message>"}` so Dart can route them to `addError` without
-/// relying on FRB's unhandled-future propagation path.
-Stream<String> listenSubscription({
+/// Emits structured SubscriptionEvent carrying either data or typed errors.
+Stream<SubscriptionEvent> listenSubscription({
   required RuntimeHandle handle,
   required BigInt subscriptionId,
 }) => RustLib.instance.api.crateApiRuntimeListenSubscription(
@@ -362,4 +361,21 @@ class RuntimeConfigInput {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is RuntimeConfigInput && runtimeType == other.runtimeType;
+}
+
+@freezed
+sealed class SubscriptionEvent with _$SubscriptionEvent {
+  const SubscriptionEvent._();
+
+  const factory SubscriptionEvent.data({required String dataJson}) =
+      SubscriptionEvent_Data;
+  const factory SubscriptionEvent.graphQlError({
+    required String errorsJson,
+    String? extensionsJson,
+  }) = SubscriptionEvent_GraphQlError;
+  const factory SubscriptionEvent.transportError({
+    required String code,
+    required String message,
+    String? detailsJson,
+  }) = SubscriptionEvent_TransportError;
 }

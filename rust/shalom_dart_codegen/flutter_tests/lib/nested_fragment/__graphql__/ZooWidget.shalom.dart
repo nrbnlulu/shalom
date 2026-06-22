@@ -46,7 +46,9 @@ extension type ZooWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
-  Stream<ZooWidgetData> observe(shalom_core.ShalomRuntimeClient client) {
+  Stream<shalom_core.GraphQLResponse<ZooWidgetData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
     return client.subscribeToFragment<ZooWidgetData>(
       ref: _inner,
       decoder: ZooWidgetData.fromCache,

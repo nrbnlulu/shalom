@@ -46,7 +46,9 @@ extension type AlbumGifRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
-  Stream<AlbumGifData> observe(shalom_core.ShalomRuntimeClient client) {
+  Stream<shalom_core.GraphQLResponse<AlbumGifData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
     return client.subscribeToFragment<AlbumGifData>(
       ref: _inner,
       decoder: AlbumGifData.fromCache,

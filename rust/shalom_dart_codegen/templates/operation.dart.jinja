@@ -160,7 +160,7 @@ final class {{ operation_name }}Observable {
 
     String operation$Name() => '{{ operation_name }}';
 
-    Stream<{{ operation_name }}Data> observe(shalom_core.ShalomRuntimeClient client) {
+    Stream<shalom_core.GraphQLResponse<{{ operation_name }}Data>> observe(shalom_core.ShalomRuntimeClient client) {
         return client.request<{{ operation_name }}Data>(
             name: operation$Name(),
             {% if op_variables_exist %}

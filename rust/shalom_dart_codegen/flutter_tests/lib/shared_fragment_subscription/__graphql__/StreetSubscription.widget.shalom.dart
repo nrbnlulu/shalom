@@ -26,7 +26,7 @@ abstract class $StreetSubscription extends StatefulWidget {
 }
 
 class _$StreetSubscriptionState extends State<$StreetSubscription> {
-  StreamSubscription<StreetSubscriptionData>? _sub;
+  StreamSubscription<shalom_core.GraphQLResponse<StreetSubscriptionData>>? _sub;
   StreetSubscriptionData? _data;
   Object? _error;
 
@@ -59,13 +59,18 @@ class _$StreetSubscriptionState extends State<$StreetSubscription> {
     _sub = StreetSubscriptionObservable(executionPolicy: widget.executionPolicy)
         .observe(client)
         .listen(
-          (data) => setState(() {
-            _data = data;
-            _error = null;
-          }),
-          onError: (e) => setState(() {
-            _error = e;
-          }),
+          (response) {
+            setState(() {
+              switch (response) {
+                case shalom_core.GraphQLData(data: final data):
+                  _data = data;
+                  _error = null;
+                case shalom_core.GraphQLError() ||
+                    shalom_core.LinkExceptionResponse():
+                  _error = response;
+              }
+            });
+          },
           onDone: () {
             debugPrint(
               '[widget] StreetSubscription.onDone fired, mounted=$mounted',

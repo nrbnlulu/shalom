@@ -31,7 +31,7 @@ abstract class $ZooQuery extends StatefulWidget {
 }
 
 class _$ZooQueryState extends State<$ZooQuery> {
-  StreamSubscription<ZooQueryData>? _sub;
+  StreamSubscription<shalom_core.GraphQLResponse<ZooQueryData>>? _sub;
   ZooQueryData? _data;
   Object? _error;
 
@@ -70,13 +70,18 @@ class _$ZooQueryState extends State<$ZooQuery> {
             )
             .observe(client)
             .listen(
-              (data) => setState(() {
-                _data = data;
-                _error = null;
-              }),
-              onError: (e) => setState(() {
-                _error = e;
-              }),
+              (response) {
+                setState(() {
+                  switch (response) {
+                    case shalom_core.GraphQLData(data: final data):
+                      _data = data;
+                      _error = null;
+                    case shalom_core.GraphQLError() ||
+                        shalom_core.LinkExceptionResponse():
+                      _error = response;
+                  }
+                });
+              },
               onDone: () {
                 debugPrint('[widget] ZooQuery.onDone fired, mounted=$mounted');
                 if (mounted) _subscribe();

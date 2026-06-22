@@ -1,9 +1,11 @@
+import 'package:shalom/shalom.dart' show GraphQLResponse;
 import 'runtime_client.dart' show ShalomRuntimeClient;
 
 /// Returned by `$<MutationName>.executeOptimistic()`.
 ///
-/// Carries the real server response together with a handle to undo the
-/// optimistic cache write that was applied before the network call.
+/// Carries the real server response (wrapped in [GraphQLResponse<T>]) together
+/// with a handle to undo the optimistic cache write that was applied before
+/// the network call.
 class OptimisticMutationResponse<T> {
   OptimisticMutationResponse({
     required this.response,
@@ -14,8 +16,8 @@ class OptimisticMutationResponse<T> {
        _writeId = writeId,
        _rolledBack = wasRolledBack;
 
-  /// The decoded server response.
-  final T response;
+  /// The GraphQL server response (success, GraphQL error, or transport error).
+  final GraphQLResponse<T> response;
 
   /// `true` if the `rollbackWhen` predicate fired and the optimistic write was
   /// already undone before this object was returned to the caller.

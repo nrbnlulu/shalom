@@ -141,7 +141,9 @@ final class UserWidgetObservable {
 
   String operation$Name() => 'UserWidget';
 
-  Stream<UserWidgetData> observe(shalom_core.ShalomRuntimeClient client) {
+  Stream<shalom_core.GraphQLResponse<UserWidgetData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
     return client.request<UserWidgetData>(
       name: operation$Name(),
 

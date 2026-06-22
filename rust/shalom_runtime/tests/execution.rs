@@ -3,7 +3,7 @@ use tokio_stream::StreamExt;
 
 use shalom_runtime::sansio_protocols::host::HostLink;
 use shalom_runtime::sansio_protocols::{GraphQLLink, GraphQLResponse, OperationType, Request};
-use shalom_runtime::{RuntimeConfig, RuntimeResponseStream, ShalomRuntime};
+use shalom_runtime::{RuntimeConfig, RuntimeResponseStream, ShalomRuntime, SubscriptionError};
 
 /// Build a `RuntimeResponseStream` wiring `link` to `runtime` for `query`.
 /// This mirrors what `RuntimeHandle::request_stream` does in `shalom_dart`.
@@ -30,16 +30,20 @@ fn make_request_stream(
             .map(|result| shalom_runtime::RuntimeResponse {
                 data: result.data,
                 operation_id: Some(operation_id.clone()),
+            })
+            .map_err(|e| SubscriptionError::Transport {
+                message: e.to_string(),
+                code: "NORMALIZATION_ERROR".into(),
+                details: None,
             }),
-        GraphQLResponse::Error { errors, .. } => Err(anyhow::anyhow!(
-            "graphql errors: {}",
-            serde_json::to_string(&errors).unwrap_or_default()
-        )),
-        GraphQLResponse::TransportError(err) => Err(anyhow::anyhow!(
-            "transport error {}: {}",
-            err.code,
-            err.message
-        )),
+        GraphQLResponse::Error { errors, extensions } => {
+            Err(SubscriptionError::GraphQL { errors, extensions })
+        }
+        GraphQLResponse::TransportError(err) => Err(SubscriptionError::Transport {
+            message: err.message,
+            code: err.code,
+            details: err.details,
+        }),
     });
 
     Ok(Box::pin(stream))

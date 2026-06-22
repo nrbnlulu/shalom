@@ -30,7 +30,7 @@ abstract class $UserWidget extends StatefulWidget {
 }
 
 class _$UserWidgetState extends State<$UserWidget> {
-  StreamSubscription<UserWidgetData>? _sub;
+  StreamSubscription<shalom_core.GraphQLResponse<UserWidgetData>>? _sub;
   UserWidgetData? _data;
   Object? _error;
 
@@ -69,13 +69,18 @@ class _$UserWidgetState extends State<$UserWidget> {
             )
             .observe(client)
             .listen(
-              (data) => setState(() {
-                _data = data;
-                _error = null;
-              }),
-              onError: (e) => setState(() {
-                _error = e;
-              }),
+              (response) {
+                setState(() {
+                  switch (response) {
+                    case shalom_core.GraphQLData(data: final data):
+                      _data = data;
+                      _error = null;
+                    case shalom_core.GraphQLError() ||
+                        shalom_core.LinkExceptionResponse():
+                      _error = response;
+                  }
+                });
+              },
               onDone: () {
                 debugPrint(
                   '[widget] UserWidget.onDone fired, mounted=$mounted',

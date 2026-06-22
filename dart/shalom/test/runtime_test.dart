@@ -36,6 +36,17 @@ class _MockLink extends GraphQLLink {
   }
 }
 
+T _expectData<T>(GraphQLResponse<T> response) {
+  switch (response) {
+    case GraphQLData(data: final data):
+      return data;
+    case GraphQLError(errors: final errors):
+      fail('Expected GraphQLData, got GraphQLError: $errors');
+    case LinkExceptionResponse(errors: final errors):
+      fail('Expected GraphQLData, got LinkExceptionResponse: $errors');
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Schema.
 // ---------------------------------------------------------------------------
@@ -106,13 +117,14 @@ void main() {
     const query = 'query GetUser @observe { user(id: "1") { id name } }';
     client.registerOperation(document: query);
 
-    final data = await client
+    final response = await client
         .request<JsonObject>(
           name: 'GetUser',
           decoder: (d) => (d['user'] as Map<String, dynamic>?) ?? {},
         )
         .first
         .timeout(const Duration(seconds: 5));
+    final data = _expectData(response);
 
     expect(data['id'], '1');
     expect(data['name'], 'Alice');
@@ -154,8 +166,8 @@ void main() {
             name: 'GetUser',
             decoder: (d) => (d['user'] as Map<String, dynamic>?) ?? {},
           )
-          .listen((data) {
-            results.add(data);
+          .listen((response) {
+            results.add(_expectData(response));
             if (results.length == 1) {
               unawaited(
                 client
@@ -306,10 +318,9 @@ void main() {
     );
 
     // skip(1): discard the immediate cache hit ('Rex'); await the update ('Max').
-    final updatedPet = await petUpdates
-        .skip(1)
-        .first
-        .timeout(const Duration(seconds: 5));
+    final updatedPet = _expectData(
+      await petUpdates.skip(1).first.timeout(const Duration(seconds: 5)),
+    );
     expect(updatedPet['name'], 'Max');
 
     await client.dispose();
@@ -362,10 +373,9 @@ void main() {
       );
 
       // skip(1): discard the immediate cache hit ('Initial'); await the update ('Updated').
-      final updated = await updates
-          .skip(1)
-          .first
-          .timeout(const Duration(seconds: 5));
+      final updated = _expectData(
+        await updates.skip(1).first.timeout(const Duration(seconds: 5)),
+      );
       expect(updated['name'], 'Updated');
 
       await client.dispose();
@@ -443,7 +453,9 @@ void main() {
       ref: ObservedRefInput(observableId: 'PetFrag', anchor: 'Pet:15'),
       decoder: (d) => d,
     );
-    final pet15 = await sub15.first.timeout(const Duration(seconds: 5));
+    final pet15 = _expectData(
+      await sub15.first.timeout(const Duration(seconds: 5)),
+    );
     expect(pet15['name'], 'Fido');
 
     await client.dispose();

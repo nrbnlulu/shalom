@@ -31,7 +31,7 @@ abstract class $PetQuery extends StatefulWidget {
 }
 
 class _$PetQueryState extends State<$PetQuery> {
-  StreamSubscription<PetQueryData>? _sub;
+  StreamSubscription<shalom_core.GraphQLResponse<PetQueryData>>? _sub;
   PetQueryData? _data;
   Object? _error;
 
@@ -70,13 +70,18 @@ class _$PetQueryState extends State<$PetQuery> {
             )
             .observe(client)
             .listen(
-              (data) => setState(() {
-                _data = data;
-                _error = null;
-              }),
-              onError: (e) => setState(() {
-                _error = e;
-              }),
+              (response) {
+                setState(() {
+                  switch (response) {
+                    case shalom_core.GraphQLData(data: final data):
+                      _data = data;
+                      _error = null;
+                    case shalom_core.GraphQLError() ||
+                        shalom_core.LinkExceptionResponse():
+                      _error = response;
+                  }
+                });
+              },
               onDone: () {
                 debugPrint('[widget] PetQuery.onDone fired, mounted=$mounted');
                 if (mounted) _subscribe();

@@ -45,7 +45,7 @@ extension type AnimalWithOwnerWidgetRef.fromInput(
     );
   }
 
-  Stream<AnimalWithOwnerWidgetData> observe(
+  Stream<shalom_core.GraphQLResponse<AnimalWithOwnerWidgetData>> observe(
     shalom_core.ShalomRuntimeClient client,
   ) {
     return client.subscribeToFragment<AnimalWithOwnerWidgetData>(

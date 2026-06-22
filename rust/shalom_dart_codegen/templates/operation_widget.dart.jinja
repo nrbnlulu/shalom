@@ -39,7 +39,7 @@ abstract class ${{ operation_name }} extends StatefulWidget {
 }
 
 class _${{ operation_name }}State extends State<${{ operation_name }}> {
-    StreamSubscription<{{ operation_name }}Data>? _sub;
+    StreamSubscription<shalom_core.GraphQLResponse<{{ operation_name }}Data>>? _sub;
     {{ operation_name }}Data? _data;
     Object? _error;
 
@@ -74,8 +74,17 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
             )
             .observe(client)
             .listen(
-                (data) => setState(() { _data = data; _error = null; }),
-                onError: (e) => setState(() { _error = e; }),
+                (response) {
+                    setState(() {
+                        switch (response) {
+                            case shalom_core.GraphQLData(data: final data):
+                                _data = data;
+                                _error = null;
+                            case shalom_core.GraphQLError() || shalom_core.LinkExceptionResponse():
+                                _error = response;
+                        }
+                    });
+                },
                 onDone: () {
                     debugPrint('[widget] {{ operation_name }}.onDone fired, mounted=$mounted');
                     if (mounted) _subscribe();

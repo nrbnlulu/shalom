@@ -46,7 +46,9 @@ extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
-  Stream<PetWidgetData> observe(shalom_core.ShalomRuntimeClient client) {
+  Stream<shalom_core.GraphQLResponse<PetWidgetData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
     return client.subscribeToFragment<PetWidgetData>(
       ref: _inner,
       decoder: PetWidgetData.fromCache,

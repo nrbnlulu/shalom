@@ -30,7 +30,7 @@ abstract class $AlbumGifSearch extends StatefulWidget {
 }
 
 class _$AlbumGifSearchState extends State<$AlbumGifSearch> {
-  StreamSubscription<AlbumGifSearchData>? _sub;
+  StreamSubscription<shalom_core.GraphQLResponse<AlbumGifSearchData>>? _sub;
   AlbumGifSearchData? _data;
   Object? _error;
 
@@ -69,13 +69,18 @@ class _$AlbumGifSearchState extends State<$AlbumGifSearch> {
             )
             .observe(client)
             .listen(
-              (data) => setState(() {
-                _data = data;
-                _error = null;
-              }),
-              onError: (e) => setState(() {
-                _error = e;
-              }),
+              (response) {
+                setState(() {
+                  switch (response) {
+                    case shalom_core.GraphQLData(data: final data):
+                      _data = data;
+                      _error = null;
+                    case shalom_core.GraphQLError() ||
+                        shalom_core.LinkExceptionResponse():
+                      _error = response;
+                  }
+                });
+              },
               onDone: () {
                 debugPrint(
                   '[widget] AlbumGifSearch.onDone fired, mounted=$mounted',

@@ -1,10 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
-import 'package:shalom/shalom.dart' show ShalomRuntimeClient;
+import 'package:shalom/shalom.dart'
+    show ShalomRuntimeClient, GraphQLResponse, GraphQLData, GraphQLError, LinkExceptionResponse;
 import 'package:shalom_flutter/widgets/shalom_provider.dart' show ShalomScope;
 
-typedef ShalomObserve<TData> = Stream<TData> Function(
+typedef ShalomObserve<TData> = Stream<GraphQLResponse<TData>> Function(
   ShalomRuntimeClient client,
 );
 
@@ -39,7 +40,7 @@ class ShalomDataScope<TData> extends StatefulWidget {
 }
 
 class _ShalomDataScopeState<TData> extends State<ShalomDataScope<TData>> {
-  StreamSubscription<TData>? _sub;
+  StreamSubscription<GraphQLResponse<TData>>? _sub;
   TData? _data;
   bool _hasData = false;
   Object? _error;
@@ -72,15 +73,17 @@ class _ShalomDataScopeState<TData> extends State<ShalomDataScope<TData>> {
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub = widget.observe(client).listen(
-      (data) {
+      (response) {
         setState(() {
-          _data = data;
-          _hasData = true;
-          _error = null;
+          switch (response) {
+            case GraphQLData(data: final data):
+              _data = data;
+              _hasData = true;
+              _error = null;
+            case GraphQLError() || LinkExceptionResponse():
+              _error = response;
+          }
         });
-      },
-      onError: (Object error) {
-        setState(() => _error = error);
       },
       onDone: () {
         if (mounted) _subscribe();

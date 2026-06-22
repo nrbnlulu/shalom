@@ -543,10 +543,10 @@ fn wire__crate__api__runtime__listen_subscription_impl(
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>,
             >>::sse_decode(&mut deserializer);
             let api_subscription_id = <u64>::sse_decode(&mut deserializer);
-            let api_sink =
-                <StreamSink<String, flutter_rust_bridge::for_generated::SseCodec>>::sse_decode(
-                    &mut deserializer,
-                );
+            let api_sink = <StreamSink<
+                crate::api::runtime::SubscriptionEvent,
+                flutter_rust_bridge::for_generated::SseCodec,
+            >>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
@@ -1972,6 +1972,19 @@ impl SseDecode for StreamSink<String, flutter_rust_bridge::for_generated::SseCod
     }
 }
 
+impl SseDecode
+    for StreamSink<
+        crate::api::runtime::SubscriptionEvent,
+        flutter_rust_bridge::for_generated::SseCodec,
+    >
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <String>::sse_decode(deserializer);
+        return StreamSink::deserialize(inner);
+    }
+}
+
 impl SseDecode for String {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2133,6 +2146,42 @@ impl SseDecode for crate::api::runtime::RuntimeConfigInput {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         return crate::api::runtime::RuntimeConfigInput {};
+    }
+}
+
+impl SseDecode for crate::api::runtime::SubscriptionEvent {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                let mut var_dataJson = <String>::sse_decode(deserializer);
+                return crate::api::runtime::SubscriptionEvent::Data {
+                    data_json: var_dataJson,
+                };
+            }
+            1 => {
+                let mut var_errorsJson = <String>::sse_decode(deserializer);
+                let mut var_extensionsJson = <Option<String>>::sse_decode(deserializer);
+                return crate::api::runtime::SubscriptionEvent::GraphQlError {
+                    errors_json: var_errorsJson,
+                    extensions_json: var_extensionsJson,
+                };
+            }
+            2 => {
+                let mut var_code = <String>::sse_decode(deserializer);
+                let mut var_message = <String>::sse_decode(deserializer);
+                let mut var_detailsJson = <Option<String>>::sse_decode(deserializer);
+                return crate::api::runtime::SubscriptionEvent::TransportError {
+                    code: var_code,
+                    message: var_message,
+                    details_json: var_detailsJson,
+                };
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
     }
 }
 
@@ -2418,6 +2467,50 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::runtime::RuntimeConfigInput>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::runtime::SubscriptionEvent {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::runtime::SubscriptionEvent::Data { data_json } => {
+                [0.into_dart(), data_json.into_into_dart().into_dart()].into_dart()
+            }
+            crate::api::runtime::SubscriptionEvent::GraphQlError {
+                errors_json,
+                extensions_json,
+            } => [
+                1.into_dart(),
+                errors_json.into_into_dart().into_dart(),
+                extensions_json.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::runtime::SubscriptionEvent::TransportError {
+                code,
+                message,
+                details_json,
+            } => [
+                2.into_dart(),
+                code.into_into_dart().into_dart(),
+                message.into_into_dart().into_dart(),
+                details_json.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::runtime::SubscriptionEvent
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::runtime::SubscriptionEvent>
+    for crate::api::runtime::SubscriptionEvent
+{
+    fn into_into_dart(self) -> crate::api::runtime::SubscriptionEvent {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::ws::WsLinkEvent {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -2506,6 +2599,18 @@ impl SseEncode
 }
 
 impl SseEncode for StreamSink<String, flutter_rust_bridge::for_generated::SseCodec> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        unimplemented!("")
+    }
+}
+
+impl SseEncode
+    for StreamSink<
+        crate::api::runtime::SubscriptionEvent,
+        flutter_rust_bridge::for_generated::SseCodec,
+    >
+{
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         unimplemented!("")
@@ -2652,6 +2757,39 @@ impl SseEncode for Option<crate::api::runtime::RuntimeConfigInput> {
 impl SseEncode for crate::api::runtime::RuntimeConfigInput {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {}
+}
+
+impl SseEncode for crate::api::runtime::SubscriptionEvent {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::runtime::SubscriptionEvent::Data { data_json } => {
+                <i32>::sse_encode(0, serializer);
+                <String>::sse_encode(data_json, serializer);
+            }
+            crate::api::runtime::SubscriptionEvent::GraphQlError {
+                errors_json,
+                extensions_json,
+            } => {
+                <i32>::sse_encode(1, serializer);
+                <String>::sse_encode(errors_json, serializer);
+                <Option<String>>::sse_encode(extensions_json, serializer);
+            }
+            crate::api::runtime::SubscriptionEvent::TransportError {
+                code,
+                message,
+                details_json,
+            } => {
+                <i32>::sse_encode(2, serializer);
+                <String>::sse_encode(code, serializer);
+                <String>::sse_encode(message, serializer);
+                <Option<String>>::sse_encode(details_json, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
 }
 
 impl SseEncode for u16 {

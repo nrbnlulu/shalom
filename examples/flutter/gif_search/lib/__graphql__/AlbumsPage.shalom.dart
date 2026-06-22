@@ -193,7 +193,9 @@ final class AlbumsPageObservable {
 
   String operation$Name() => 'AlbumsPage';
 
-  Stream<AlbumsPageData> observe(shalom_core.ShalomRuntimeClient client) {
+  Stream<shalom_core.GraphQLResponse<AlbumsPageData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
     return client.request<AlbumsPageData>(
       name: operation$Name(),
 

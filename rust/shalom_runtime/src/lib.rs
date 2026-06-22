@@ -9,5 +9,5 @@ pub mod selection;
 
 pub use runtime::{
     ExecutionPolicy, KeySubscriberInfo, ObservedRef, OptimisticWriteId, RuntimeConfig,
-    RuntimeResponse, RuntimeResponseStream, ShalomRuntime, SubscriptionId,
+    RuntimeResponse, RuntimeResponseStream, ShalomRuntime, SubscriptionError, SubscriptionId,
 };

@@ -228,7 +228,9 @@ final class AnimalQueryObservable {
 
   String operation$Name() => 'AnimalQuery';
 
-  Stream<AnimalQueryData> observe(shalom_core.ShalomRuntimeClient client) {
+  Stream<shalom_core.GraphQLResponse<AnimalQueryData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
     return client.request<AnimalQueryData>(
       name: operation$Name(),
 

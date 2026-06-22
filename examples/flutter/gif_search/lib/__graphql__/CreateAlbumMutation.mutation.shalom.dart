@@ -17,18 +17,20 @@ abstract class $CreateAlbumMutation {
   /// Execute the mutation and return the normalised response.
   /// The response is written into the shared entity cache, triggering reactive
   /// updates on any query subscriptions watching the same entities.
-  Future<CreateAlbumMutationData> execute({required String name}) =>
-      _client.mutate<CreateAlbumMutationData>(
-        name: operation$Name(),
+  Future<shalom_core.GraphQLResponse<CreateAlbumMutationData>> execute({
+    required String name,
+  }) => _client.mutate<CreateAlbumMutationData>(
+    name: operation$Name(),
 
-        variables: CreateAlbumMutationVariables(name: name).toJson(),
+    variables: CreateAlbumMutationVariables(name: name).toJson(),
 
-        decoder: CreateAlbumMutationData.fromCache,
-      );
+    decoder: CreateAlbumMutationData.fromCache,
+  );
 
   /// Execute the mutation and update the cache via [update].
   ///
-  /// [update] receives a [CacheProxy] and the typed mutation response.
+  /// [update] receives a [CacheProxy] and the typed mutation response data.
+  /// It's only called if the mutation returns successful data.
   /// Use [CacheProxy.readQuery] / [CacheProxy.writeQuery] to read the current
   /// cached value of any query and write back a modified version — the typical
   /// pattern for keeping lists in sync after an add / remove / reorder mutation.
@@ -50,22 +52,25 @@ abstract class $CreateAlbumMutation {
   ///   },
   /// );
   /// ```
-  Future<CreateAlbumMutationData> executeWithCacheUpdate({
+  Future<shalom_core.GraphQLResponse<CreateAlbumMutationData>>
+  executeWithCacheUpdate({
     required String name,
     required void Function(CacheProxy cache, CreateAlbumMutationData data)
     update,
   }) async {
     final vars = CreateAlbumMutationVariables(name: name);
 
-    final data = await _client.mutate<CreateAlbumMutationData>(
+    final response = await _client.mutate<CreateAlbumMutationData>(
       name: operation$Name(),
 
       variables: vars.toJson(),
 
       decoder: CreateAlbumMutationData.fromCache,
     );
-    update(CacheProxy(_client), data);
-    return data;
+    if (response case shalom_core.GraphQLData(data: final data)) {
+      update(CacheProxy(_client), data);
+    }
+    return response;
   }
 
   /// Execute the mutation with an optimistic cache write applied immediately,
@@ -75,9 +80,10 @@ abstract class $CreateAlbumMutation {
   /// predicted [CreateAlbumMutationData]. This is written to the cache so that
   /// query subscriptions watching the same entities update instantly.
   ///
-  /// [rollbackWhen] is called with the real server response. Return `true` to
+  /// [rollbackWhen] is called with the real server response data. Return `true` to
   /// automatically undo the optimistic write (e.g. when the server signals an
-  /// error via the data payload). Defaults to no auto-rollback.
+  /// error via the data payload). Defaults to no auto-rollback. Only called if
+  /// the response is successful [GraphQLData].
   ///
   /// The returned [OptimisticMutationResponse] exposes:
   /// - [OptimisticMutationResponse.response] — the typed server response
@@ -103,16 +109,20 @@ abstract class $CreateAlbumMutation {
     }
 
     try {
-      final response = await _client.mutate<CreateAlbumMutationData>(
+      final graphqlResponse = await _client.mutate<CreateAlbumMutationData>(
         name: operation$Name(),
 
         variables: vars.toJson(),
 
         decoder: CreateAlbumMutationData.fromCache,
       );
-      if (rollbackWhen?.call(response) ?? false) doRollback();
+      if (graphqlResponse case shalom_core.GraphQLData(
+        data: final responseData,
+      )) {
+        if (rollbackWhen?.call(responseData) ?? false) doRollback();
+      }
       return OptimisticMutationResponse(
-        response: response,
+        response: graphqlResponse,
         wasRolledBack: rolledBack,
         client: _client,
         writeId: writeId,

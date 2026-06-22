@@ -6,6 +6,7 @@ import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
 // Fragment imports
+import 'AlbumGif.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
 
@@ -13,6 +14,8 @@ class CreateAlbumMutation_createAlbum {
   static String G__typename = "Album";
 
   /// class members
+  final List<AlbumGifRef> gifs;
+
   final String id;
 
   final String name;
@@ -24,6 +27,8 @@ class CreateAlbumMutation_createAlbum {
 
   // keywordargs constructor
   CreateAlbumMutation_createAlbum({
+    required this.gifs,
+
     required this.id,
 
     required this.name,
@@ -35,6 +40,7 @@ class CreateAlbumMutation_createAlbum {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is CreateAlbumMutation_createAlbum &&
+            const ListEquality().equals(gifs, other.gifs) &&
             id == other.id &&
             name == other.name &&
             tag == other.tag);
@@ -42,6 +48,8 @@ class CreateAlbumMutation_createAlbum {
 
   @override
   int get hashCode => Object.hashAll([
+    gifs,
+
     id,
 
     name,
@@ -52,19 +60,101 @@ class CreateAlbumMutation_createAlbum {
   ]);
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'name': this.name, 'tag': this.tag};
+    return {
+      'gifs': this.gifs.map((e) => e.toJson()).toList(),
+
+      'id': this.id,
+
+      'name': this.name,
+
+      'tag': this.tag,
+    };
   }
 
   static CreateAlbumMutation_createAlbum fromJson(shalom_core.JsonObject data) {
+    final List<AlbumGifRef> gifs$value = (data['gifs'] as List<dynamic>)
+        .map(
+          (e) => AlbumGifRef.fromInput(
+            shalom_core.observedRefInputFromJson(
+              (e as shalom_core.JsonObject)[r'$AlbumGif']
+                  as shalom_core.JsonObject,
+            ),
+          ),
+        )
+        .toList();
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
     final String tag$value = data['tag'] as String;
     return CreateAlbumMutation_createAlbum(
+      gifs: gifs$value,
+
       id: id$value,
 
       name: name$value,
 
       tag: tag$value,
+    );
+  }
+}
+
+class CreateAlbumMutation_createAlbum_gifs implements AlbumGif {
+  static String G__typename = "Gif";
+
+  /// class members
+  final String id;
+
+  final String title;
+
+  final String url;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
+  // keywordargs constructor
+  CreateAlbumMutation_createAlbum_gifs({
+    required this.id,
+
+    required this.title,
+
+    required this.url,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is CreateAlbumMutation_createAlbum_gifs &&
+            id == other.id &&
+            title == other.title &&
+            url == other.url);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    id,
+
+    title,
+
+    url,
+
+    CreateAlbumMutation_createAlbum_gifs.G__typename,
+  ]);
+
+  shalom_core.JsonObject toJson() {
+    return {'id': this.id, 'title': this.title, 'url': this.url};
+  }
+
+  static CreateAlbumMutation_createAlbum_gifs fromJson(
+    shalom_core.JsonObject data,
+  ) {
+    final String id$value = data['id'] as String;
+    final String title$value = data['title'] as String;
+    final String url$value = data['url'] as String;
+    return CreateAlbumMutation_createAlbum_gifs(
+      id: id$value,
+
+      title: title$value,
+
+      url: url$value,
     );
   }
 }

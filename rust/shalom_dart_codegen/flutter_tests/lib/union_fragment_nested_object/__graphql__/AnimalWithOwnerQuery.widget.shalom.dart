@@ -31,7 +31,8 @@ abstract class $AnimalWithOwnerQuery extends StatefulWidget {
 }
 
 class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
-  StreamSubscription<AnimalWithOwnerQueryData>? _sub;
+  StreamSubscription<shalom_core.GraphQLResponse<AnimalWithOwnerQueryData>>?
+  _sub;
   AnimalWithOwnerQueryData? _data;
   Object? _error;
 
@@ -70,13 +71,18 @@ class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
             )
             .observe(client)
             .listen(
-              (data) => setState(() {
-                _data = data;
-                _error = null;
-              }),
-              onError: (e) => setState(() {
-                _error = e;
-              }),
+              (response) {
+                setState(() {
+                  switch (response) {
+                    case shalom_core.GraphQLData(data: final data):
+                      _data = data;
+                      _error = null;
+                    case shalom_core.GraphQLError() ||
+                        shalom_core.LinkExceptionResponse():
+                      _error = response;
+                  }
+                });
+              },
               onDone: () {
                 debugPrint(
                   '[widget] AnimalWithOwnerQuery.onDone fired, mounted=$mounted',

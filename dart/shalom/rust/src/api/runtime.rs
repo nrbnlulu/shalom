@@ -10,7 +10,7 @@ use shalom_runtime::sansio_protocols::{
 };
 use shalom_runtime::{
     ExecutionPolicy, ObservedRef, OptimisticWriteId, RuntimeConfig, RuntimeResponse, ShalomRuntime,
-    SubscriptionId,
+    SubscriptionError, SubscriptionId,
 };
 
 pub use serde_json::{Map, Value};
@@ -73,6 +73,15 @@ impl From<ExecutionPolicyInput> for ExecutionPolicy {
             ExecutionPolicyInput::CacheFirst => ExecutionPolicy::CacheFirst,
         }
     }
+}
+
+/// FRB-compatible event type for subscription streams. Structured to represent
+/// both successful data and explicit error states (GraphQL or transport errors).
+#[frb]
+pub enum SubscriptionEvent {
+    Data { data_json: String },
+    GraphQlError { errors_json: String, extensions_json: Option<String> },
+    TransportError { code: String, message: String, details_json: Option<String> },
 }
 
 impl From<ObservedRefInput> for ObservedRef {
@@ -188,20 +197,32 @@ pub async fn request(
                     if let Err(e) =
                         runtime.normalize(&op_ctx, Value::Object(data), variables.as_ref())
                     {
-                        runtime.push_subscription_error(sub_id, e);
+                        runtime.push_subscription_error(
+                            sub_id,
+                            SubscriptionError::Transport {
+                                message: e.to_string(),
+                                code: "NORMALIZATION_ERROR".into(),
+                                details: None,
+                            },
+                        );
                         break;
                     }
                 }
-                GraphQLResponse::Error { errors, .. } => {
-                    let msg =
-                        serde_json::to_string(&errors).unwrap_or_else(|_| "graphql errors".into());
-                    runtime.push_subscription_error(sub_id, anyhow::anyhow!("{}", msg));
+                GraphQLResponse::Error { errors, extensions } => {
+                    runtime.push_subscription_error(
+                        sub_id,
+                        SubscriptionError::GraphQL { errors, extensions },
+                    );
                     break;
                 }
                 GraphQLResponse::TransportError(err) => {
                     runtime.push_subscription_error(
                         sub_id,
-                        anyhow::anyhow!("{}: {}", err.code, err.message),
+                        SubscriptionError::Transport {
+                            message: err.message,
+                            code: err.code,
+                            details: err.details,
+                        },
                     );
                     break;
                 }
@@ -287,29 +308,59 @@ pub fn unsubscribe(handle: &RuntimeHandle, subscription_id: u64) {
 }
 
 /// Stream cache-update notifications for an existing subscription.
-///
-/// Errors from the cache (GraphQL errors, transport errors) are encoded as
-/// `{"__error__": "<message>"}` so Dart can route them to `addError` without
-/// relying on FRB's unhandled-future propagation path.
+/// Emits structured SubscriptionEvent carrying either data or typed errors.
 #[frb]
 pub async fn listen_subscription(
     handle: &RuntimeHandle,
     subscription_id: u64,
-    sink: StreamSink<String>,
+    sink: StreamSink<SubscriptionEvent>,
 ) -> anyhow::Result<()> {
     let id = SubscriptionId::from(subscription_id);
     let Ok(mut stream) = handle.runtime.subscription_stream(&id) else {
         return Ok(());
     };
     while let Some(item) = stream.next().await {
-        let payload = match item {
-            Ok(response) => match response_to_json(response) {
-                Ok(p) => p,
-                Err(e) => serde_json::json!({ "__error__": e.to_string() }).to_string(),
-            },
-            Err(e) => serde_json::json!({ "__error__": e.to_string() }).to_string(),
+        let event = match item {
+            Ok(response) => {
+                match response_to_json(response) {
+                    Ok(data_json) => SubscriptionEvent::Data { data_json },
+                    Err(e) => SubscriptionEvent::TransportError {
+                        code: "DECODE_ERROR".into(),
+                        message: e.to_string(),
+                        details_json: None,
+                    },
+                }
+            }
+            Err(err) => {
+                match err {
+                    SubscriptionError::GraphQL { errors, extensions } => {
+                        let errors_json = serde_json::to_string(&errors).unwrap_or_default();
+                        let extensions_json = extensions.as_ref().map(|e| {
+                            serde_json::to_string(e).unwrap_or_default()
+                        });
+                        SubscriptionEvent::GraphQlError {
+                            errors_json,
+                            extensions_json,
+                        }
+                    }
+                    SubscriptionError::Transport {
+                        message,
+                        code,
+                        details,
+                    } => {
+                        let details_json = details.as_ref().map(|d| {
+                            serde_json::to_string(d).unwrap_or_default()
+                        });
+                        SubscriptionEvent::TransportError {
+                            code,
+                            message,
+                            details_json,
+                        }
+                    }
+                }
+            }
         };
-        if sink.add(payload).is_err() {
+        if sink.add(event).is_err() {
             break;
         }
     }
@@ -479,7 +530,7 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
 }
 
 fn response_to_json(response: RuntimeResponse) -> anyhow::Result<String> {
-    serde_json::to_string(&response).map_err(|e| anyhow::anyhow!(e))
+    serde_json::to_string(&response.data).map_err(|e| anyhow::anyhow!(e))
 }
 
 // ---------------------------------------------------------------------------

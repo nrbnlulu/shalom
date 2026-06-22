@@ -16,7 +16,14 @@ import 'package:gif_search/__graphql__/AlbumGifSearch.widget.shalom.dart'
         AlbumGifSearch_searchGifs_items;
 import 'package:shalom/shalom.dart'
     as shalom
-    show Some, None, ShalomRuntimeClient, CacheProxy;
+    show
+        Some,
+        None,
+        ShalomRuntimeClient,
+        CacheProxy,
+        GraphQLData,
+        GraphQLError,
+        LinkExceptionResponse;
 import 'package:shalom_annotations/shalom_annotations.dart';
 import 'package:gif_search/graphql/__graphql__/shalom_init.shalom.dart';
 import 'package:gif_search/state.dart' show createShalomClient;
@@ -65,30 +72,41 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: const AlbumsPage(),
+      home: const _AppWithDebugPanel(),
     );
   }
 }
 
-// ─── Debug button ─────────────────────────────────────────────────────────────
+// ─── App + side-by-side cache debugger ────────────────────────────────────────
 
-class _DebugButton extends StatelessWidget {
-  const _DebugButton();
+const _phoneWidth = 420.0;
+
+class _AppWithDebugPanel extends StatelessWidget {
+  const _AppWithDebugPanel();
 
   @override
   Widget build(BuildContext context) {
     final client = ShalomScope.of(context);
-    return IconButton(
-      icon: const Icon(Icons.bug_report_outlined),
-      tooltip: 'Cache Inspector',
-      onPressed: () => Navigator.of(context).push(
-        MaterialPageRoute<void>(
-          fullscreenDialog: true,
-          builder: (_) => Scaffold(
-            appBar: AppBar(title: const Text('Cache Inspector')),
-            body: ShalomDebugPanel(client: client),
+    return Scaffold(
+      body: Row(
+        children: [
+          SizedBox(
+            width: _phoneWidth,
+            child: Navigator(
+              onGenerateRoute: (settings) => MaterialPageRoute<void>(
+                settings: settings,
+                builder: (_) => const AlbumsPage(),
+              ),
+            ),
           ),
-        ),
+          const VerticalDivider(width: 1),
+          Expanded(
+            child: Scaffold(
+              appBar: AppBar(title: const Text('Cache Inspector')),
+              body: ShalomDebugPanel(client: client),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -109,10 +127,7 @@ class AlbumsPage extends $AlbumsPage with QueryWidgetMixin {
   @override
   Widget buildData(BuildContext context, AlbumsPageData data) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Albums'),
-        actions: const [_DebugButton()],
-      ),
+      appBar: AppBar(title: const Text('Albums')),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showCreateAlbumDialog(context),
         child: const Icon(Icons.add),
@@ -218,9 +233,12 @@ class AlbumGif extends $AlbumGif with QueryWidgetMixin {
 @Mutation(r"""
   ($name: String!) {
     createAlbum(name: $name) {
-      id
+      id 
       name
       tag
+      gifs {
+        ...AlbumGif
+      }
     }
   }
 """)
@@ -305,10 +323,17 @@ class _CreateAlbumDialogState extends State<_CreateAlbumDialog> {
     final client = ShalomScope.of(context);
     final nav = Navigator.of(context);
     try {
-      await CreateAlbumMutation(
+      final response = await CreateAlbumMutation(
         client,
       ).executeWithCacheUpdate(name: name, update: widget.onCreated);
-      nav.pop();
+      if (response case shalom.GraphQLData()) {
+        nav.pop();
+      } else {
+        setState(() {
+          _error = 'Mutation failed';
+          _loading = false;
+        });
+      }
     } catch (e) {
       setState(() {
         _error = e.toString();
@@ -398,7 +423,7 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
     final variables = AlbumGifSearchVariables(query: q, offset: 0, limit: 20);
     final operation = AlbumGifSearch(variables: variables);
     try {
-      final data = await ShalomScope.of(context)
+      final response = await ShalomScope.of(context)
           .request<AlbumGifSearchData>(
             name: operation.operation$Name(),
             variables: variables.toJson(),
@@ -406,10 +431,23 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
           )
           .first;
       if (!mounted) return;
-      setState(() {
-        _searchResults = data.searchGifs.items;
-        _backendSearching = false;
-      });
+      switch (response) {
+        case shalom.GraphQLData(data: final data):
+          setState(() {
+            _searchResults = data.searchGifs.items;
+            _backendSearching = false;
+          });
+        case shalom.GraphQLError():
+          setState(() => _backendSearching = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Search error: GraphQL error')),
+          );
+        case shalom.LinkExceptionResponse():
+          setState(() => _backendSearching = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Search error: Network error')),
+          );
+      }
     } catch (e) {
       if (!mounted) return;
       setState(() => _backendSearching = false);
@@ -422,7 +460,7 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
   Future<void> _addGif(AlbumGifSearch_searchGifs_items gif) async {
     final client = ShalomScope.of(context);
     try {
-      await AddGifToAlbumMutation(client).executeWithCacheUpdate(
+      final response = await AddGifToAlbumMutation(client).executeWithCacheUpdate(
         albumId: widget.albumId,
         title: gif.title,
         url: gif.url,
@@ -450,6 +488,12 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
           );
         },
       );
+      if (response is! shalom.GraphQLData) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to add GIF')),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -461,7 +505,7 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
   Future<void> _removeGif(String gifId) async {
     final client = ShalomScope.of(context);
     try {
-      final result = await RemoveGifFromAlbumMutation(client)
+      final response = await RemoveGifFromAlbumMutation(client)
           .executeWithCacheUpdate(
             albumId: widget.albumId,
             gifId: gifId,
@@ -484,10 +528,21 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
             },
           );
       if (!mounted) return;
-      final error = result.removeGifFromAlbum;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error == null ? 'GIF removed' : error.message)),
-      );
+      switch (response) {
+        case shalom.GraphQLData(data: final data):
+          final error = data.removeGifFromAlbum;
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(error == null ? 'GIF removed' : error.message)),
+          );
+        case shalom.GraphQLError():
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('GraphQL error removing GIF')),
+          );
+        case shalom.LinkExceptionResponse():
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Network error removing GIF')),
+          );
+      }
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(

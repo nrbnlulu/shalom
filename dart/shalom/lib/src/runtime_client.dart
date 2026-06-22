@@ -135,12 +135,17 @@ class ShalomRuntimeClient {
   // -------------------------------------------------------------------------
 
   /// Trigger a network fetch for a pre-registered operation named [name] and
-  /// open a cache subscription. Returns a stream of decoded [T] values.
+  /// open a cache subscription. Returns a stream of [GraphQLResponse<T>] values.
   ///
   /// The first emission arrives after the network response is normalised.
   /// Subsequent emissions are triggered by cache writes to any ref touched by
   /// this operation. Cancelling the returned stream unsubscribes immediately.
-  Stream<T> request<T>({
+  ///
+  /// The stream emits:
+  /// - [GraphQLData<T>] on successful data (may include partial errors)
+  /// - [GraphQLError<T>] on GraphQL-level errors
+  /// - [LinkExceptionResponse<T>] on transport/network errors
+  Stream<GraphQLResponse<T>> request<T>({
     required String name,
     Map<String, dynamic>? variables,
     required T Function(JsonObject) decoder,
@@ -149,7 +154,7 @@ class ShalomRuntimeClient {
   }) {
     final variablesJson = variables == null ? null : jsonEncode(variables);
     BigInt? subId;
-    final controller = StreamController<T>();
+    final controller = StreamController<GraphQLResponse<T>>();
 
     controller.onListen = () {
       Future.microtask(() async {
@@ -195,10 +200,10 @@ class ShalomRuntimeClient {
   // -------------------------------------------------------------------------
 
   /// Fire a pre-registered mutation named [name] and return the normalised
-  /// result as a one-shot [Future].  The mutation response is written into the
-  /// shared entity cache, triggering reactive updates on any query subscriptions
-  /// that watch the same entities.
-  Future<T> mutate<T>({
+  /// result as a one-shot [Future] wrapped in [GraphQLResponse<T>].
+  /// The mutation response is written into the shared entity cache, triggering
+  /// reactive updates on any query subscriptions that watch the same entities.
+  Future<GraphQLResponse<T>> mutate<T>({
     required String name,
     Map<String, dynamic>? variables,
     required T Function(JsonObject) decoder,
@@ -236,13 +241,14 @@ class ShalomRuntimeClient {
   /// identified by [ref].
   ///
   /// Emits the current cached value immediately if available, then re-emits
-  /// whenever the underlying cache entries change.
-  Stream<T> subscribeToFragment<T>({
+  /// whenever the underlying cache entries change. Returns a stream of
+  /// [GraphQLResponse<T>] carrying either success or error states.
+  Stream<GraphQLResponse<T>> subscribeToFragment<T>({
     required rs_runtime.ObservedRefInput ref,
     required T Function(JsonObject) decoder,
   }) {
     BigInt? subId;
-    final controller = StreamController<T>();
+    final controller = StreamController<GraphQLResponse<T>>();
 
     controller.onListen = () {
       try {
@@ -282,13 +288,14 @@ class ShalomRuntimeClient {
   ///   new subscription ID.
   ///
   /// Use [subscribeToFragment] directly if you don't need the optimised swap.
-  Stream<T> rebindFragmentSubscription<T>({
+  /// Returns a stream of [GraphQLResponse<T>].
+  Stream<GraphQLResponse<T>> rebindFragmentSubscription<T>({
     required BigInt subscriptionId,
     required rs_runtime.ObservedRefInput newRef,
     required T Function(JsonObject) decoder,
   }) {
     BigInt? newSubId;
-    final controller = StreamController<T>();
+    final controller = StreamController<GraphQLResponse<T>>();
 
     controller.onListen = () {
       try {
@@ -342,30 +349,53 @@ class ShalomRuntimeClient {
 
   void _bindSubscriptionStream<T>({
     required BigInt subId,
-    required StreamController<T> controller,
+    required StreamController<GraphQLResponse<T>> controller,
     required T Function(JsonObject) decoder,
     String? debugName,
   }) {
     rs_runtime
         .listenSubscription(handle: _handle, subscriptionId: subId)
         .listen(
-          (payload) {
+          (event) {
             if (controller.isClosed) return;
+            GraphQLResponse<T>? response;
             try {
-              final raw = jsonDecode(payload);
-              if (raw is Map && raw.containsKey('__error__')) {
-                controller.addError(Exception(raw['__error__'] as String));
-                return;
+              switch (event) {
+                case rs_runtime.SubscriptionEvent_Data(dataJson: final dataJson):
+                  final decoded = decoder(jsonDecode(dataJson) as JsonObject);
+                  response = GraphQLData<T>(data: decoded);
+                case rs_runtime.SubscriptionEvent_GraphQlError(
+                  errorsJson: final errorsJson,
+                  extensionsJson: final extensionsJson
+                ):
+                  response = GraphQLError<T>(
+                    errors: (jsonDecode(errorsJson) as List)
+                        .cast<JsonObject>(),
+                    extensions: extensionsJson != null
+                        ? (jsonDecode(extensionsJson) as JsonObject)
+                        : null,
+                  );
+                case rs_runtime.SubscriptionEvent_TransportError(
+                  code: final code,
+                  message: final message,
+                  detailsJson: final detailsJson
+                ):
+                  response = LinkExceptionResponse<T>(
+                    [ShalomTransportException(
+                      message: message,
+                      code: code,
+                      details: detailsJson != null
+                          ? (jsonDecode(detailsJson) as JsonObject)
+                          : null,
+                    )],
+                  );
               }
-              final envelope = _RuntimeEnvelope.tryFromJson(payload);
-              if (envelope == null) {
-                debugPrint('[shalom] sub: null data payload, skipping');
-                return;
+              if (response != null) {
+                debugPrint('[shalom] result yielded: ${debugName ?? subId}');
+                controller.add(response);
               }
-              debugPrint('[shalom] result yielded: ${debugName ?? subId}');
-              controller.add(decoder(envelope.data));
             } catch (e, st) {
-              debugPrint('[shalom] sub decode error: $e');
+              debugPrint('[shalom] sub event error: $e');
               controller.addError(e, st);
             }
           },
@@ -641,38 +671,6 @@ class _RequestEnvelope {
     'Subscription' => OperationType.Subscription,
     _ => throw FormatException('unknown operation type: $raw'),
   };
-}
-
-class _RuntimeEnvelope {
-  final JsonObject data;
-
-  const _RuntimeEnvelope({required this.data});
-
-  /// Returns null when the payload carries a null data field (cache miss — no
-  /// data available yet).  Callers must skip emission in that case.
-  static _RuntimeEnvelope? tryFromJson(String payload) {
-    final decoded = jsonDecode(payload);
-    if (decoded is! Map) {
-      throw const FormatException('runtime response must be a JSON object');
-    }
-    if (decoded.containsKey('data')) {
-      final dataRaw = decoded['data'];
-      if (dataRaw == null) return null; // cache empty — nothing to emit yet
-      if (dataRaw is! Map) {
-        throw const FormatException(
-          'runtime response data must be a JSON object',
-        );
-      }
-      return _RuntimeEnvelope(data: dataRaw.cast<String, dynamic>());
-    }
-    return _RuntimeEnvelope(data: decoded.cast<String, dynamic>());
-  }
-
-  factory _RuntimeEnvelope.fromJson(String payload) =>
-      tryFromJson(payload) ??
-      (throw const FormatException(
-        'runtime response data must be a JSON object',
-      ));
 }
 
 class _TransportError {

@@ -31,7 +31,7 @@ abstract class $AnimalQuery extends StatefulWidget {
 }
 
 class _$AnimalQueryState extends State<$AnimalQuery> {
-  StreamSubscription<AnimalQueryData>? _sub;
+  StreamSubscription<shalom_core.GraphQLResponse<AnimalQueryData>>? _sub;
   AnimalQueryData? _data;
   Object? _error;
 
@@ -70,13 +70,18 @@ class _$AnimalQueryState extends State<$AnimalQuery> {
             )
             .observe(client)
             .listen(
-              (data) => setState(() {
-                _data = data;
-                _error = null;
-              }),
-              onError: (e) => setState(() {
-                _error = e;
-              }),
+              (response) {
+                setState(() {
+                  switch (response) {
+                    case shalom_core.GraphQLData(data: final data):
+                      _data = data;
+                      _error = null;
+                    case shalom_core.GraphQLError() ||
+                        shalom_core.LinkExceptionResponse():
+                      _error = response;
+                  }
+                });
+              },
               onDone: () {
                 debugPrint(
                   '[widget] AnimalQuery.onDone fired, mounted=$mounted',

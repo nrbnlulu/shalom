@@ -167,7 +167,9 @@ final class ZooQueryObservable {
 
   String operation$Name() => 'ZooQuery';
 
-  Stream<ZooQueryData> observe(shalom_core.ShalomRuntimeClient client) {
+  Stream<shalom_core.GraphQLResponse<ZooQueryData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
     return client.request<ZooQueryData>(
       name: operation$Name(),
 

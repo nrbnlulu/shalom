@@ -240,7 +240,7 @@ final class ShelterSubscriptionObservable {
 
   String operation$Name() => 'ShelterSubscription';
 
-  Stream<ShelterSubscriptionData> observe(
+  Stream<shalom_core.GraphQLResponse<ShelterSubscriptionData>> observe(
     shalom_core.ShalomRuntimeClient client,
   ) {
     return client.request<ShelterSubscriptionData>(
