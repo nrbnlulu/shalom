@@ -192,6 +192,28 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 {{ selection_object_definition(obj, use_observe=false) }}
 {% endfor %}
 
+{# Nested union definitions (fields of union type within this concrete object) #}
+{% for union_full_name, union_selection in typedefs.unions | items %}
+  {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
+  {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
+  {% for concrete_subset in concretes -%}
+    final class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+      {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
+    }
+  {% endfor %}
+{% endfor %}
+
+{# Nested interface definitions (fields of interface type within this concrete object) #}
+{% for iface_path_name, iface_selection in typedefs.interfaces | items %}
+  {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
+  {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
+  {% for concrete_subset in concretes -%}
+    final class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+      {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
+    }
+  {% endfor %}
+{% endfor %}
+
 final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.FragmentInterface {
   {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
     final {{ type_name_for_selection(selection) }} {{ selection.name }};

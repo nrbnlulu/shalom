@@ -165,6 +165,11 @@ fn test_flutter_zoo_widget_nested_fragment() {
 }
 
 #[test]
+fn test_flutter_zoo_animals_widget_list_of_interface() {
+    common::run_flutter_tests("zoo_animals_widget_test.dart");
+}
+
+#[test]
 fn test_flutter_shared_fragment_subscription() {
     common::run_flutter_tests("shared_fragment_subscription_test.dart");
 }

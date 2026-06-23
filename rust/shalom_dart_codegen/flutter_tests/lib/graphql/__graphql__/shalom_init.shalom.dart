@@ -25,6 +25,7 @@ type Zoo {
   id: ID!
   name: String!
   cages: [Cage!]!
+  animals: [Animal!]!
 }
 
 type Cage {
@@ -124,6 +125,23 @@ fragment AnimalWithOwnerWidget on Animal @observe {
 }
 ''',
   );
+  client.registerFragment(
+    document: r'''
+fragment ZooAnimalsWidget on Zoo @observe {
+  id
+  name
+  animals {
+    id
+    ... on Dog {
+      breed
+    }
+    ... on Cat {
+      color
+    }
+  }
+}
+''',
+  );
   client.registerOperation(
     document: r'''
 query UserWidget ($id: ID!) @observe {
@@ -166,6 +184,15 @@ query ZooQuery ($id: ID!) @observe {
 query AnimalWithOwnerQuery ($id: ID!) @observe {
   animal(id: $id) {
     ...AnimalWithOwnerWidget
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query ZooAnimalsQuery ($id: ID!) @observe {
+  zoo(id: $id) {
+    ...ZooAnimalsWidget
   }
 }
 ''',
