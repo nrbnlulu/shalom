@@ -255,8 +255,9 @@ class WebSocketLink extends GraphQLLink {
 
   void _completeOp(String opId) {
     final handler = _ops.remove(opId);
-    if (handler != null && !handler.controller.isClosed)
+    if (handler != null && !handler.controller.isClosed) {
       handler.controller.close();
+    }
   }
 
   // ── helpers ───────────────────────────────────────────────────────────────

@@ -4,7 +4,6 @@ import 'dart:convert' show utf8;
 import 'package:web_socket/web_socket.dart' as ws;
 
 import 'package:shalom/src/shalom_core_base.dart';
-import 'package:shalom/src/transport/link.dart' show HeadersType;
 import 'package:shalom/src/transport/ws_transport.dart';
 import 'package:shalom/src/utils/json.dart';
 

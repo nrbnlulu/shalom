@@ -202,6 +202,7 @@ impl<'a> Normalizer<'a> {
         })
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn normalize_field(
         &mut self,
         selection: &FieldSelection,
@@ -316,7 +317,7 @@ impl<'a> Normalizer<'a> {
                     None => true,
                 };
 
-                if (has_field && ref_changed) || (!had_value && has_field) {
+                if has_field && (ref_changed || !had_value) {
                     self.changed.insert(field_ref_key.to_string());
                 }
 
@@ -340,6 +341,7 @@ impl<'a> Normalizer<'a> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn normalize_list(
         &mut self,
         list_sel: &shalom_core::operation::types::ListSelection,

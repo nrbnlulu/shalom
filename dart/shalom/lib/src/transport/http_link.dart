@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:shalom/src/shalom_core_base.dart';
-import 'package:shalom/src/transport/link.dart' show GraphQLLink, HeadersType;
+import 'package:shalom/src/transport/link.dart' show GraphQLLink;
 
 enum HttpMethod {
   // ignore: constant_identifier_names
@@ -50,7 +50,7 @@ class HttpLink extends GraphQLLink {
   }) async* {
     try {
       // Merge default headers with request-specific headers
-      var finalHeaders = [...defaultHeaders, if (headers != null) ...headers];
+      var finalHeaders = [...defaultHeaders, ...?headers];
       finalHeaders = _ensureAcceptHeader(finalHeaders);
 
       final methodForThisRequest =

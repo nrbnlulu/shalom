@@ -168,6 +168,12 @@ pub(crate) enum SubscriptionTarget {
     },
 }
 
+type AffectedSubscription = (
+    SubscriptionId,
+    SubscriptionTarget,
+    Option<Map<String, Value>>,
+);
+
 #[derive(Default)]
 struct SubscriptionManager {
     next_id: u64,
@@ -406,16 +412,17 @@ impl ShalomRuntime {
 
         // Emit current cached value immediately if the cache already has data.
         // Skip if data is null — cache is empty, widget will wait for the next network push.
-        if let Ok(result) = self.read_result_fragment(&fragment, &anchor) {
-            if result.data != serde_json::Value::Null && result.missing_refs.is_empty() {
-                let response = RuntimeResponse {
-                    data: result.data,
-                    operation_id: Some(fragment.get_fragment_name().to_string()),
-                };
-                let manager = self.subscriptions.lock();
-                if let Some(state) = manager.subscriptions.get(&sub_id) {
-                    let _ = state.sender.send(Ok(response));
-                }
+        if let Ok(result) = self.read_result_fragment(&fragment, &anchor)
+            && result.data != serde_json::Value::Null
+            && result.missing_refs.is_empty()
+        {
+            let response = RuntimeResponse {
+                data: result.data,
+                operation_id: Some(fragment.get_fragment_name().to_string()),
+            };
+            let manager = self.subscriptions.lock();
+            if let Some(state) = manager.subscriptions.get(&sub_id) {
+                let _ = state.sender.send(Ok(response));
             }
         }
 
@@ -499,14 +506,15 @@ impl ShalomRuntime {
             self.subscription_tracker.lock().unsubscribe(old_keys);
 
             // 4. Push current value for the new anchor.
-            if let Ok(result) = self.read_result_fragment(&fragment, &new_anchor) {
-                if result.data != serde_json::Value::Null && result.missing_refs.is_empty() {
-                    let response = RuntimeResponse {
-                        data: result.data,
-                        operation_id: Some(fragment.get_fragment_name().to_string()),
-                    };
-                    let _ = sender.send(Ok(response));
-                }
+            if let Ok(result) = self.read_result_fragment(&fragment, &new_anchor)
+                && result.data != serde_json::Value::Null
+                && result.missing_refs.is_empty()
+            {
+                let response = RuntimeResponse {
+                    data: result.data,
+                    operation_id: Some(fragment.get_fragment_name().to_string()),
+                };
+                let _ = sender.send(Ok(response));
             }
 
             Ok(id)
@@ -834,11 +842,7 @@ impl ShalomRuntime {
     }
 
     fn notify_subscribers(&self, changed: &HashSet<String>) -> anyhow::Result<()> {
-        let affected: Vec<(
-            SubscriptionId,
-            SubscriptionTarget,
-            Option<Map<String, Value>>,
-        )> = {
+        let affected: Vec<AffectedSubscription> = {
             let manager = self.subscriptions.lock();
             manager
                 .subscriptions

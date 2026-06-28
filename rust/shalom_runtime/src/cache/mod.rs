@@ -95,7 +95,7 @@ impl NormalizedCache {
     }
 
     pub fn get_or_insert(&mut self, key: CacheKey) -> &mut CacheRecord {
-        self.entries.entry(key).or_insert_with(HashMap::new)
+        self.entries.entry(key).or_default()
     }
 
     pub fn insert(&mut self, key: CacheKey, record: CacheRecord) {

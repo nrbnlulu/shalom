@@ -4,18 +4,6 @@ import 'dart:convert';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
     show ExternalLibrary;
 import 'package:shalom/shalom.dart';
-import 'package:shalom/src/shalom_core_base.dart'
-    show
-        GraphQLData,
-        GraphQLError,
-        GraphQLResponse,
-        JsonObject,
-        OperationInterface,
-        LinkExceptionResponse,
-        OperationType,
-        Request,
-        ShalomTransportException;
-import 'package:shalom/src/transport/link.dart' show GraphQLLink;
 
 import 'rust/api/runtime.dart' as rs_runtime;
 
@@ -358,7 +346,7 @@ class ShalomRuntimeClient {
         .listen(
           (event) {
             if (controller.isClosed) return;
-            GraphQLResponse<T>? response;
+            late GraphQLResponse<T> response;
             try {
               switch (event) {
                 case rs_runtime.SubscriptionEvent_Data(
@@ -391,21 +379,15 @@ class ShalomRuntimeClient {
                     ),
                   ]);
               }
-              if (response != null) {
-                debugPrint('[shalom] result yielded: ${debugName ?? subId}');
-                controller.add(response);
-              }
+              controller.add(response);
             } catch (e, st) {
-              debugPrint('[shalom] sub event error: $e');
               controller.addError(e, st);
             }
           },
           onError: (Object e, StackTrace st) {
-            debugPrint('[shalom] sub stream error: $e');
             if (!controller.isClosed) controller.addError(e, st);
           },
           onDone: () {
-            debugPrint('[shalom] sub stream done');
             if (!controller.isClosed) controller.close();
           },
         );

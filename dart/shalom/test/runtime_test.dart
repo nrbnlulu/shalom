@@ -434,7 +434,6 @@ void main() {
         .timeout(const Duration(seconds: 5));
 
     // Subscribe to Pet:14 via the fragment.
-    BigInt? capturedSubId;
     final sub14 = client.subscribeToFragment<JsonObject>(
       ref: ObservedRefInput(observableId: 'PetFrag', anchor: 'Pet:14'),
       decoder: (d) => d,

@@ -69,10 +69,10 @@ pub fn selection_get_observed_fragments(
         observed: &mut Vec<String>,
     ) {
         for frag_name in &common.used_fragments {
-            if let Some(fragment) = ctx.get_fragment(frag_name) {
-                if fragment.is_observe() {
-                    observed.push(frag_name.clone());
-                }
+            if let Some(fragment) = ctx.get_fragment(frag_name)
+                && fragment.is_observe()
+            {
+                observed.push(frag_name.clone());
             }
         }
     }
@@ -138,19 +138,15 @@ fn arg_value_to_json(arg_value: &ArgumentValue, vars: Option<&Map<String, Value>
     match arg_value {
         ArgumentValue::VariableUse(var) => {
             let name = var.common.name.as_str();
-            if let Some(vars) = vars {
-                if let Some(val) = vars.get(name) {
-                    return val.clone();
-                }
+            if let Some(vars) = vars
+                && let Some(val) = vars.get(name)
+            {
+                return val.clone();
             }
             if let Some(default) = &var.default_value {
                 return serde_json::from_str::<Value>(&default.to_string()).unwrap_or(Value::Null);
             }
-            if var.is_optional {
-                Value::Null
-            } else {
-                Value::Null
-            }
+            Value::Null
         }
         ArgumentValue::InlineValue { value } => match value {
             InlineValueArg::Scalar { value } => {

@@ -160,6 +160,7 @@ impl<'a> CacheReader<'a> {
         )
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn read_field(
         &self,
         selection: &FieldSelection,
@@ -232,6 +233,7 @@ impl<'a> CacheReader<'a> {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn read_object(
         &self,
         selection: &FieldSelection,
@@ -353,6 +355,7 @@ impl<'a> CacheReader<'a> {
         Ok(Value::Object(output))
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn read_list(
         &self,
         list_sel: &shalom_core::operation::types::ListSelection,

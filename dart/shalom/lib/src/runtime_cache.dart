@@ -1,2 +1,1 @@
-export 'runtime_client.dart'
-    show collectRuntimeRefs, RuntimeTypedResult, ShalomRuntimeClient;
+export 'runtime_client.dart' show ShalomRuntimeClient;

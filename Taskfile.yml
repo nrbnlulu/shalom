@@ -27,7 +27,7 @@ tasks:
 
     lint:
         cmds:
-            - cd rust && cargo fmt -- --check
+            - cd rust && cargo fmt --all --check
             - cd rust && cargo clippy -- -D warnings
             - cd rust/shalom_dart_codegen/dart_tests && find . -type f -name "*.dart" -not -path "*/__graphql__/*" | xargs fvm exec dart format --set-exit-if-changed
             - cd rust/shalom_dart_codegen/dart_tests && fvm exec dart analyze ./test ./lib
