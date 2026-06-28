@@ -21,11 +21,13 @@ abstract class ${{ operation_name }} {
     /// Execute the mutation and return the normalised response.
     /// The response is written into the shared entity cache, triggering reactive
     /// updates on any query subscriptions watching the same entities.
-    Future<shalom_core.GraphQLResponse<{{ operation_name }}Data>> execute({
+    Future<shalom_core.GraphQLResponse<{{ operation_name }}Data>> execute(
+        {%- if op_variables_exist %}{
         {% for name, field in op_variables | items -%}
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
-    }) => _client.mutate<{{ operation_name }}Data>(
+        }{% endif %}
+    ) => _client.mutate<{{ operation_name }}Data>(
         name: operation$Name(),
         {% if op_variables_exist %}
         variables: {{ operation_name }}Variables(
@@ -33,8 +35,6 @@ abstract class ${{ operation_name }} {
                 {{ name }}: {{ name }},
             {% endfor -%}
         ).toJson(),
-        {% else %}
-        variables: null,
         {% endif %}
         decoder: {{ operation_name }}Data.fromCache,
     );
@@ -81,8 +81,6 @@ abstract class ${{ operation_name }} {
             name: operation$Name(),
             {% if op_variables_exist %}
             variables: vars.toJson(),
-            {% else %}
-            variables: null,
             {% endif %}
             decoder: {{ operation_name }}Data.fromCache,
         );
@@ -142,8 +140,6 @@ abstract class ${{ operation_name }} {
                 name: operation$Name(),
                 {% if op_variables_exist %}
                 variables: vars.toJson(),
-                {% else %}
-                variables: null,
                 {% endif %}
                 decoder: {{ operation_name }}Data.fromCache,
             );

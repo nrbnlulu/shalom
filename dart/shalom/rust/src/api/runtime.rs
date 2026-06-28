@@ -79,9 +79,18 @@ impl From<ExecutionPolicyInput> for ExecutionPolicy {
 /// both successful data and explicit error states (GraphQL or transport errors).
 #[frb]
 pub enum SubscriptionEvent {
-    Data { data_json: String },
-    GraphQlError { errors_json: String, extensions_json: Option<String> },
-    TransportError { code: String, message: String, details_json: Option<String> },
+    Data {
+        data_json: String,
+    },
+    GraphQlError {
+        errors_json: String,
+        extensions_json: Option<String>,
+    },
+    TransportError {
+        code: String,
+        message: String,
+        details_json: Option<String>,
+    },
 }
 
 impl From<ObservedRefInput> for ObservedRef {
@@ -321,44 +330,40 @@ pub async fn listen_subscription(
     };
     while let Some(item) = stream.next().await {
         let event = match item {
-            Ok(response) => {
-                match response_to_json(response) {
-                    Ok(data_json) => SubscriptionEvent::Data { data_json },
-                    Err(e) => SubscriptionEvent::TransportError {
-                        code: "DECODE_ERROR".into(),
-                        message: e.to_string(),
-                        details_json: None,
-                    },
-                }
-            }
-            Err(err) => {
-                match err {
-                    SubscriptionError::GraphQL { errors, extensions } => {
-                        let errors_json = serde_json::to_string(&errors).unwrap_or_default();
-                        let extensions_json = extensions.as_ref().map(|e| {
-                            serde_json::to_string(e).unwrap_or_default()
-                        });
-                        SubscriptionEvent::GraphQlError {
-                            errors_json,
-                            extensions_json,
-                        }
+            Ok(response) => match response_to_json(response) {
+                Ok(data_json) => SubscriptionEvent::Data { data_json },
+                Err(e) => SubscriptionEvent::TransportError {
+                    code: "DECODE_ERROR".into(),
+                    message: e.to_string(),
+                    details_json: None,
+                },
+            },
+            Err(err) => match err {
+                SubscriptionError::GraphQL { errors, extensions } => {
+                    let errors_json = serde_json::to_string(&errors).unwrap_or_default();
+                    let extensions_json = extensions
+                        .as_ref()
+                        .map(|e| serde_json::to_string(e).unwrap_or_default());
+                    SubscriptionEvent::GraphQlError {
+                        errors_json,
+                        extensions_json,
                     }
-                    SubscriptionError::Transport {
-                        message,
+                }
+                SubscriptionError::Transport {
+                    message,
+                    code,
+                    details,
+                } => {
+                    let details_json = details
+                        .as_ref()
+                        .map(|d| serde_json::to_string(d).unwrap_or_default());
+                    SubscriptionEvent::TransportError {
                         code,
-                        details,
-                    } => {
-                        let details_json = details.as_ref().map(|d| {
-                            serde_json::to_string(d).unwrap_or_default()
-                        });
-                        SubscriptionEvent::TransportError {
-                            code,
-                            message,
-                            details_json,
-                        }
+                        message,
+                        details_json,
                     }
                 }
-            }
+            },
         };
         if sink.add(event).is_err() {
             break;

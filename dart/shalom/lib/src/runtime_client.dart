@@ -361,16 +361,17 @@ class ShalomRuntimeClient {
             GraphQLResponse<T>? response;
             try {
               switch (event) {
-                case rs_runtime.SubscriptionEvent_Data(dataJson: final dataJson):
+                case rs_runtime.SubscriptionEvent_Data(
+                  dataJson: final dataJson,
+                ):
                   final decoded = decoder(jsonDecode(dataJson) as JsonObject);
                   response = GraphQLData<T>(data: decoded);
                 case rs_runtime.SubscriptionEvent_GraphQlError(
                   errorsJson: final errorsJson,
-                  extensionsJson: final extensionsJson
+                  extensionsJson: final extensionsJson,
                 ):
                   response = GraphQLError<T>(
-                    errors: (jsonDecode(errorsJson) as List)
-                        .cast<JsonObject>(),
+                    errors: (jsonDecode(errorsJson) as List).cast<JsonObject>(),
                     extensions: extensionsJson != null
                         ? (jsonDecode(extensionsJson) as JsonObject)
                         : null,
@@ -378,17 +379,17 @@ class ShalomRuntimeClient {
                 case rs_runtime.SubscriptionEvent_TransportError(
                   code: final code,
                   message: final message,
-                  detailsJson: final detailsJson
+                  detailsJson: final detailsJson,
                 ):
-                  response = LinkExceptionResponse<T>(
-                    [ShalomTransportException(
+                  response = LinkExceptionResponse<T>([
+                    ShalomTransportException(
                       message: message,
                       code: code,
                       details: detailsJson != null
                           ? (jsonDecode(detailsJson) as JsonObject)
                           : null,
-                    )],
-                  );
+                    ),
+                  ]);
               }
               if (response != null) {
                 debugPrint('[shalom] result yielded: ${debugName ?? subId}');

@@ -2,7 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart'
-    show ShalomRuntimeClient, GraphQLResponse, GraphQLData, GraphQLError, LinkExceptionResponse;
+    show
+        ShalomRuntimeClient,
+        GraphQLResponse,
+        GraphQLData,
+        GraphQLError,
+        LinkExceptionResponse;
 import 'package:shalom_flutter/widgets/shalom_provider.dart' show ShalomScope;
 
 typedef ShalomObserve<TData> = Stream<GraphQLResponse<TData>> Function(

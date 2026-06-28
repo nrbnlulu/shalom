@@ -1,15 +1,12 @@
 import 'dart:io';
 
-import 'package:test/test.dart';
-
-import '__graphql__/UserCardQuery.shalom.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_tests/declarative_raw_fragments/__graphql__/UserCardQuery.shalom.dart';
 
 void main() {
   group('declarative operation with raw fragments', () {
     test('registers raw fragment dependencies in shalom init', () {
-      final initFile = File(
-        'test/declarative_raw_fragments/__graphql__/shalom_init.shalom.dart',
-      );
+      final initFile = File('lib/graphql/__graphql__/shalom_init.shalom.dart');
 
       expect(initFile.existsSync(), isTrue);
 

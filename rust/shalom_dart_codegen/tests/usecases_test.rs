@@ -42,11 +42,6 @@ fn test_cross_dir_fragments_dart() {
 }
 
 #[test]
-fn test_declarative_raw_fragments_dart() {
-    run_dart_tests_for_usecase("declarative_raw_fragments");
-}
-
-#[test]
 fn test_fragment_with_nested_object_selection_dart() {
     run_dart_tests_for_usecase("fragment_with_nested_object_selection");
 }
@@ -182,6 +177,11 @@ fn test_flutter_shared_fragment_subscription() {
 #[test]
 fn test_flutter_shared_fragment_contract() {
     common::run_flutter_tests("shared_fragment_contract_test.dart");
+}
+
+#[test]
+fn test_flutter_declarative_raw_fragments() {
+    common::run_flutter_tests("declarative_raw_fragments_test.dart");
 }
 
 #[test]

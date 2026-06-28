@@ -246,8 +246,6 @@ final class ShelterSubscriptionObservable {
     return client.request<ShelterSubscriptionData>(
       name: operation$Name(),
 
-      variables: null,
-
       decoder: ShelterSubscriptionData.fromCache,
       executionPolicy: executionPolicy,
     );

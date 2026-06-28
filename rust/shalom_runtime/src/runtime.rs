@@ -58,7 +58,11 @@ impl std::fmt::Display for SubscriptionError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             SubscriptionError::GraphQL { errors, .. } => {
-                write!(f, "GraphQL errors: {}", serde_json::to_string(errors).unwrap_or_default())
+                write!(
+                    f,
+                    "GraphQL errors: {}",
+                    serde_json::to_string(errors).unwrap_or_default()
+                )
             }
             SubscriptionError::Transport { message, code, .. } => {
                 write!(f, "Transport error {}: {}", code, message)

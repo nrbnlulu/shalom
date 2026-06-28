@@ -246,8 +246,6 @@ final class StreetSubscriptionObservable {
     return client.request<StreetSubscriptionData>(
       name: operation$Name(),
 
-      variables: null,
-
       decoder: StreetSubscriptionData.fromCache,
       executionPolicy: executionPolicy,
     );

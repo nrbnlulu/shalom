@@ -165,8 +165,6 @@ final class {{ operation_name }}Observable {
             name: operation$Name(),
             {% if op_variables_exist %}
             variables: variables.toJson(),
-            {% else %}
-            variables: null,
             {% endif %}
             decoder: {{ operation_name }}Data.fromCache,
             executionPolicy: executionPolicy,

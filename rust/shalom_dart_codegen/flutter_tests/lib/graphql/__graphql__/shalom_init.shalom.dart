@@ -37,6 +37,7 @@ type Cage {
 type User {
   id: ID!
   name: String!
+  email: String!
 }
 
 type Pet {
@@ -79,6 +80,24 @@ type Cat implements Animal {
 
 /// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
 void registerShalomDefinitions(ShalomRuntimeClient client) {
+  client.registerFragment(
+    document: r'''
+fragment UserIdentity on User {
+  id
+  name
+}
+''',
+  );
+  client.registerFragment(
+    document: r'''
+fragment UserCard on User {
+  ...UserIdentity
+  email
+  id
+}
+''',
+  );
+
   client.registerFragment(
     document: r'''
 fragment PetWidget on Pet @observe {
@@ -259,6 +278,15 @@ query ZooAnimalsContractQuery @observe {
     ...CommonAnimalFrag
     ...DogFavoriteFrag
     ...DogWithFavoriteToyFrag
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query UserCardQuery ($id: ID!) @observe {
+  user(id: $id) {
+    ...UserCard
   }
 }
 ''',

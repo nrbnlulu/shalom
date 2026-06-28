@@ -11,8 +11,8 @@ import 'package:collection/collection.dart';
 import 'CommonAnimalFrag.shalom.dart';
 import 'ToyFrag.shalom.dart';
 import 'HasFavoriteToyFrag.shalom.dart';
-import 'DogWithFavoriteToyFrag.shalom.dart';
 import 'DogFavoriteFrag.shalom.dart';
+import 'DogWithFavoriteToyFrag.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
 
@@ -278,8 +278,6 @@ final class ZooAnimalsContractQueryObservable {
   ) {
     return client.request<ZooAnimalsContractQueryData>(
       name: operation$Name(),
-
-      variables: null,
 
       decoder: ZooAnimalsContractQueryData.fromCache,
       executionPolicy: executionPolicy,
