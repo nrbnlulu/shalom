@@ -2,6 +2,7 @@ type Query {
   user(id: ID!): User
   pet(id: ID!): Pet
   animal(id: ID!): Animal
+  animals: [Animal!]!
   zoo(id: ID!): Zoo
 }
 
@@ -36,16 +37,26 @@ interface Animal {
   id: ID!
 }
 
+interface HasFavoriteToy {
+  favoriteToy: Toy!
+}
+
+type Toy {
+  id: ID!
+  label: String!
+}
+
 type Owner {
   id: ID!
   name: String!
 }
 
-type Dog implements Animal {
+type Dog implements Animal & HasFavoriteToy {
   id: ID!
   name: String!
   breed: String!
   owner: Owner
+  favoriteToy: Toy!
 }
 
 type Cat implements Animal {

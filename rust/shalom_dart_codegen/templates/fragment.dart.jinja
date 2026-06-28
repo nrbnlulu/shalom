@@ -214,27 +214,28 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
   {% endfor %}
 {% endfor %}
 
+{% set fragment_data_selections = frag_root_shared_selections() %}
 final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.FragmentInterface {
-  {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
+  {% for selection in fragment_data_selections if selection.name != "__typename" -%}
     final {{ type_name_for_selection(selection) }} {{ selection.name }};
   {% endfor %}
 
   const {{ fragment_name }}Data({
-    {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
+    {% for selection in fragment_data_selections if selection.name != "__typename" -%}
       required this.{{ selection.name }},
     {% endfor %}
   });
 
   @override
   bool operator ==(Object other) => identical(this, other) || (other is {{ fragment_name }}Data
-    {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
+    {% for selection in fragment_data_selections if selection.name != "__typename" -%}
       && {{ selection_equality_comparison_macro(selection, selection.name, "other." + selection.name) }}
     {% endfor %}
   );
 
   @override
   int get hashCode => Object.hashAll([
-    {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
+    {% for selection in fragment_data_selections if selection.name != "__typename" -%}
       {{ selection.name }},
     {% endfor %}
   ]);
@@ -256,12 +257,12 @@ final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.
   static String entityKey(String id) => '{{ context.fragment.root_type.schema_typename }}:$id';
 
   static {{ fragment_name }}Data fromCache(shalom_core.JsonObject data) {
-    {% for selection in context.fragment.root_type.selections if selection.name != "__typename" -%}
+    {% for selection in fragment_data_selections if selection.name != "__typename" -%}
       {% set raw_value_symbol = "data['" + selection.name + "']" -%}
       final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional, false) }};
     {% endfor -%}
     return {{ fragment_name }}Data(
-      {% for selection in context.fragment.root_type.selections -%}
+      {% for selection in fragment_data_selections -%}
         {% if selection.name != "__typename" %}
           {{selection.name}}: {{selection.name}}$value,
         {% endif %}
@@ -271,7 +272,7 @@ final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.
 
   shalom_core.JsonObject toJson() {
     return {
-      {% for selection in context.fragment.root_type.selections if selection.name != "__typename" %}
+      {% for selection in fragment_data_selections if selection.name != "__typename" %}
         '{{ selection.name }}': {% if selection.is_optional %}{{ _serialize_selection_value_macro("this." + selection.name, selection, true) }}{% else %}{{ _serialize_selection_value_macro("this." + selection.name, selection, false) }}{% endif %},
       {% endfor %}
     };

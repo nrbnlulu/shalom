@@ -13,6 +13,7 @@ const String kSchemaSdl = r'''type Query {
   user(id: ID!): User
   pet(id: ID!): Pet
   animal(id: ID!): Animal
+  animals: [Animal!]!
   zoo(id: ID!): Zoo
 }
 
@@ -47,16 +48,26 @@ interface Animal {
   id: ID!
 }
 
+interface HasFavoriteToy {
+  favoriteToy: Toy!
+}
+
+type Toy {
+  id: ID!
+  label: String!
+}
+
 type Owner {
   id: ID!
   name: String!
 }
 
-type Dog implements Animal {
+type Dog implements Animal & HasFavoriteToy {
   id: ID!
   name: String!
   breed: String!
   owner: Owner
+  favoriteToy: Toy!
 }
 
 type Cat implements Animal {
@@ -142,6 +153,49 @@ fragment ZooAnimalsWidget on Zoo @observe {
 }
 ''',
   );
+  client.registerFragment(
+    document: r'''
+fragment ToyFrag on Toy @observe {
+  id
+  label
+}
+''',
+  );
+  client.registerFragment(
+    document: r'''
+fragment HasFavoriteToyFrag on HasFavoriteToy @observe {
+  favoriteToy {
+    ...ToyFrag
+  }
+}
+''',
+  );
+  client.registerFragment(
+    document: r'''
+fragment CommonAnimalFrag on Animal @observe {
+  __typename
+  id
+}
+''',
+  );
+  client.registerFragment(
+    document: r'''
+fragment DogFavoriteFrag on Dog @observe {
+  ...CommonAnimalFrag
+  breed
+  ...HasFavoriteToyFrag
+}
+''',
+  );
+  client.registerFragment(
+    document: r'''
+fragment DogWithFavoriteToyFrag on Dog @observe {
+  ...CommonAnimalFrag
+  breed
+  ...HasFavoriteToyFrag
+}
+''',
+  );
   client.registerOperation(
     document: r'''
 query UserWidget ($id: ID!) @observe {
@@ -193,6 +247,18 @@ query AnimalWithOwnerQuery ($id: ID!) @observe {
 query ZooAnimalsQuery ($id: ID!) @observe {
   zoo(id: $id) {
     ...ZooAnimalsWidget
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query ZooAnimalsContractQuery @observe {
+  animals {
+    __typename
+    ...CommonAnimalFrag
+    ...DogFavoriteFrag
+    ...DogWithFavoriteToyFrag
   }
 }
 ''',

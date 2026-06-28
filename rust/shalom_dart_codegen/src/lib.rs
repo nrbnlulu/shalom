@@ -889,8 +889,13 @@ impl FragmentEnv<'_> {
         });
 
         let frag_ctx_clone2 = fragment_ctx.clone();
+        let ctx_clone2 = ctx.clone();
         env.add_function("fragment_root_has_id_selection", move || {
-            frag_ctx_clone2.get_root().get_selection("id").is_some()
+            frag_ctx_clone2
+                .get_root()
+                .get_all_selections_that_apply_on_this_type_only(&ctx_clone2)
+                .iter()
+                .any(|selection| selection.self_selection_name() == "id")
         });
 
         Ok(FragmentEnv { env })

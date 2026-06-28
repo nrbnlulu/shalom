@@ -131,6 +131,11 @@ fn test_interface_with_nested_type_fragments_dart() {
 }
 
 #[test]
+fn test_fragment_inherited_interface_fields_dart() {
+    run_dart_tests_for_usecase("fragment_inherited_interface_fields");
+}
+
+#[test]
 fn test_one_of_input_dart() {
     run_dart_tests_for_usecase("one_of_input");
 }
@@ -172,6 +177,11 @@ fn test_flutter_zoo_animals_widget_list_of_interface() {
 #[test]
 fn test_flutter_shared_fragment_subscription() {
     common::run_flutter_tests("shared_fragment_subscription_test.dart");
+}
+
+#[test]
+fn test_flutter_shared_fragment_contract() {
+    common::run_flutter_tests("shared_fragment_contract_test.dart");
 }
 
 #[test]

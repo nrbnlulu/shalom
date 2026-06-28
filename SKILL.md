@@ -121,6 +121,13 @@ final response = await ShalomScope.of(context)
 
 `@Subscription` uses the same widget shape as `@Query`; the link must support streaming operation results.
 
+
+## Naming Rules
+
+Shalom requires every generated GraphQL definition name to be globally unique across the app.
+This includes: - `@Query` / `@Mutation` / `@Subscription` / `@Fragment` class names.
+Do not reuse the same Dart class name for another Shalom operation or fragment, even if the GraphQL selection is different or lives in another file. Generated operation, fragment, data, variables, ref, and scope APIs are derived from these names, so duplicate names cause generation/runtime registration conflicts. Prefer explicit feature-prefixed names when needed.
+
 ## Imperative APIs In Flutter
 
 Default to declarative generated widgets/scopes for reads:
