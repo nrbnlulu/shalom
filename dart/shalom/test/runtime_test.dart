@@ -5,13 +5,6 @@ import 'dart:io';
 import 'package:shalom/shalom.dart';
 import 'package:test/test.dart';
 
-String get _nativeLibPath {
-  if (Platform.isLinux) return '.dart_tool/lib/libshalom_ffi.so';
-  if (Platform.isMacOS) return '.dart_tool/lib/libshalom_ffi.dylib';
-  if (Platform.isWindows) return '.dart_tool/lib/shalom_ffi.dll';
-  throw UnsupportedError('Unsupported platform: ${Platform.operatingSystem}');
-}
-
 // ---------------------------------------------------------------------------
 // Inline mock link.
 // ---------------------------------------------------------------------------
@@ -92,9 +85,7 @@ ShalomRuntimeClient _makeClient(List<GraphQLResponse<JsonObject>> responses) {
 
 void main() {
   setUpAll(() async {
-    await ShalomRuntimeClient.initFlutterRustBridge(
-      nativeLibPath: _nativeLibPath,
-    );
+    await ShalomRuntimeClient.initFlutterRustBridge();
   });
 
   test('runtime initialises without error', () async {
