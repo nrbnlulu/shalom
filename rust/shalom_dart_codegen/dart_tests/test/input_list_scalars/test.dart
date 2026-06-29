@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 import '../input_list_scalars/__graphql__/schema.shalom.dart';
 import '__graphql__/InputScalarInsideInputTypeMutation.shalom.dart';
 import '__graphql__/InputScalarListMaybeMutation.shalom.dart';

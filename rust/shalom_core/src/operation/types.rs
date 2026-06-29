@@ -1,5 +1,5 @@
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeMap, BTreeSet},
     hash::Hasher,
     rc::Rc,
     sync::Arc,
@@ -22,7 +22,7 @@ use crate::{
 /// the name of i.e object in a graphql query based on the parent fields.
 pub type FullPathName = String;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(tag = "name")]
 pub enum OperationType {
     Query,
@@ -32,6 +32,7 @@ pub enum OperationType {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct FieldSelectionCommon {
+    #[serde(default)]
     pub name: String,
     pub description: Option<String>,
 }
@@ -79,6 +80,7 @@ pub struct FieldSelection {
     pub selection_common: FieldSelectionCommon,
     #[serde(flatten)]
     pub kind: SelectionKind,
+    #[serde(default)]
     pub arguments: Vec<FieldArgument>,
 }
 
@@ -94,6 +96,18 @@ impl std::cmp::PartialEq for FieldSelection {
 }
 
 impl std::cmp::Eq for FieldSelection {}
+
+impl std::cmp::Ord for FieldSelection {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.self_selection_name().cmp(other.self_selection_name())
+    }
+}
+
+impl std::cmp::PartialOrd for FieldSelection {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
 
 impl FieldSelection {
     pub fn new(
@@ -185,13 +199,13 @@ pub struct ObjectLikeCommon {
     pub schema_typename: String,
     /// selections that apply to all types in this object-like
     /// in interfaces / union this can be thought as shared selections
-    pub selections: HashSet<FieldSelection>,
+    pub selections: BTreeSet<FieldSelection>,
     /// fragment spreads
-    pub used_fragments: HashSet<FragName>,
+    pub used_fragments: BTreeSet<FragName>,
     /// inline fragments used in this object-like
-    pub used_inline_frags: HashMap<String, InlineFragment>,
+    pub used_inline_frags: BTreeMap<String, InlineFragment>,
     /// type conditioned selections - stores selections for specific types
-    pub type_cond_selections: HashMap<String, ObjectLikeCommon>,
+    pub type_cond_selections: BTreeMap<String, ObjectLikeCommon>,
 }
 
 impl ObjectLikeCommon {
@@ -199,10 +213,10 @@ impl ObjectLikeCommon {
         ObjectLikeCommon {
             path_name,
             schema_typename,
-            used_fragments: HashSet::new(),
-            used_inline_frags: HashMap::new(),
-            type_cond_selections: HashMap::new(),
-            selections: HashSet::new(),
+            used_fragments: BTreeSet::new(),
+            used_inline_frags: BTreeMap::new(),
+            type_cond_selections: BTreeMap::new(),
+            selections: BTreeSet::new(),
         }
     }
     pub fn get_selection(&self, name: &str) -> Option<&FieldSelection> {
@@ -258,11 +272,11 @@ impl ObjectLikeCommon {
             }
 
             let frag_ty = ctx.schema_ctx.get_type_strict(&frag.common.schema_typename);
-            if let GraphQLAny::Interface(_) = frag_ty {
-                if this_ty.implements_interface(&frag.common.schema_typename, &ctx.schema_ctx) {
-                    return true;
-                }
-            };
+            if let GraphQLAny::Interface(_) = frag_ty
+                && this_ty.implements_interface(&frag.common.schema_typename, &ctx.schema_ctx)
+            {
+                return true;
+            }
         }
         // now check for frag spreads
         for frag_name in self.used_fragments.iter() {
@@ -277,11 +291,11 @@ impl ObjectLikeCommon {
             }
 
             let frag_ty = ctx.schema_ctx.get_type_strict(&common.schema_typename);
-            if let GraphQLAny::Interface(_) = frag_ty {
-                if this_ty.implements_interface(&common.schema_typename, &ctx.schema_ctx) {
-                    return true;
-                }
-            };
+            if let GraphQLAny::Interface(_) = frag_ty
+                && this_ty.implements_interface(&common.schema_typename, &ctx.schema_ctx)
+            {
+                return true;
+            }
         }
 
         false
@@ -289,7 +303,7 @@ impl ObjectLikeCommon {
     pub fn add_used_fragment(&mut self, name: FragName) {
         self.used_fragments.insert(name);
     }
-    pub fn get_used_fragments(&self) -> &HashSet<FragName> {
+    pub fn get_used_fragments(&self) -> &BTreeSet<FragName> {
         &self.used_fragments
     }
 
@@ -308,7 +322,7 @@ impl ObjectLikeCommon {
     pub fn get_all_selections_distinct(
         &self,
         ctx: &ShalomGlobalContext,
-    ) -> HashSet<FieldSelection> {
+    ) -> BTreeSet<FieldSelection> {
         let mut selections = self.selections.clone();
 
         for frag_name in &self.used_fragments {
@@ -327,10 +341,10 @@ impl ObjectLikeCommon {
     pub fn get_all_selections_that_apply_on_this_type_only(
         &self,
         ctx: &ShalomGlobalContext,
-    ) -> HashSet<FieldSelection> {
+    ) -> BTreeSet<FieldSelection> {
         fn recursive_inner(
             root_type_name: &str,
-            resolved_selections: &mut HashSet<FieldSelection>,
+            resolved_selections: &mut BTreeSet<FieldSelection>,
             current_obj: &ObjectLikeCommon,
             ctx: &ShalomGlobalContext,
         ) {
@@ -375,7 +389,7 @@ impl ObjectLikeCommon {
             // the resolved type is other than that type condition concrete.
         }
 
-        let mut selections = HashSet::new();
+        let mut selections = BTreeSet::new();
         recursive_inner(&self.schema_typename, &mut selections, self, ctx);
         selections
     }
@@ -432,14 +446,14 @@ pub struct MultiTypeSelectionCommon {
     pub is_optional: bool,
     #[serde(flatten)]
     pub common: ObjectLikeCommon,
-    pub possible_concrete_types: HashSet<String>,
+    pub possible_concrete_types: BTreeSet<String>,
 }
 
 impl MultiTypeSelectionCommon {
     pub fn new(
         is_optional: bool,
         common: ObjectLikeCommon,
-        possible_concrete_types: HashSet<String>,
+        possible_concrete_types: BTreeSet<String>,
     ) -> Self {
         MultiTypeSelectionCommon {
             is_optional,
@@ -470,7 +484,7 @@ impl UnionSelection {
         union_type: Node<UnionType>,
         object_common: ObjectLikeCommon,
         is_optional: bool,
-        possible_concrete_types: HashSet<String>,
+        possible_concrete_types: BTreeSet<String>,
     ) -> SharedUnionSelection {
         Rc::new(UnionSelection {
             common: MultiTypeSelectionCommon::new(
@@ -507,7 +521,7 @@ impl InterfaceSelection {
         interface_type: Arc<InterfaceType>,
         object_common: ObjectLikeCommon,
         is_optional: bool,
-        possible_concrete_types: HashSet<String>,
+        possible_concrete_types: BTreeSet<String>,
     ) -> SharedInterfaceSelection {
         Rc::new(InterfaceSelection {
             common: MultiTypeSelectionCommon::new(

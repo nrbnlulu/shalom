@@ -1,0 +1,31 @@
+type Query {
+  animals: [Animal!]!
+}
+
+interface Animal {
+  id: ID!
+  name: String!
+  species: String!
+  toys: [Toy!]!
+}
+
+type Toy {
+  id: ID!
+  label: String!
+}
+
+type Monkey implements Animal {
+  id: ID!
+  name: String!
+  species: String!
+  toys: [Toy!]!
+  bananaCount: Int!
+}
+
+type Elephant implements Animal {
+  id: ID!
+  name: String!
+  species: String!
+  toys: [Toy!]!
+  trunkLength: Int!
+}

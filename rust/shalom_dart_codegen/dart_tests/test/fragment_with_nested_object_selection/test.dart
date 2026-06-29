@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
 import '__graphql__/GetPostWithDetails.shalom.dart';
 import '__graphql__/GetUserWithProfile.shalom.dart';
 
@@ -38,9 +36,8 @@ void main() {
       'fragmentWithNestedObjectRequired - Fragment with nested object deserializes',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromResponse(
+        final result = GetPostWithDetailsResponse.fromJson(
           postWithDetailsData,
-          variables: variables,
         );
 
         // Test access to top-level fields
@@ -60,9 +57,8 @@ void main() {
       'fragmentWithNestedObjectOptional - Nested object fields are accessible',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromResponse(
+        final result = GetPostWithDetailsResponse.fromJson(
           postWithDetailsData,
-          variables: variables,
         );
 
         // Verify nested object can be accessed and used
@@ -76,53 +72,14 @@ void main() {
     );
 
     test(
-      'fragmentWithNestedObjectCacheNormalization - Cache updates work with nested objects',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        final variables = GetPostWithDetailsVariables(postId: "post1");
-
-        var (result, updateCtx) = GetPostWithDetailsResponse.fromResponseImpl(
-          postWithDetailsData,
-          ctx,
-          variables,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetPostWithDetailsResponse.fromCache(newCtx, variables);
-          hasChanged.complete(true);
-        });
-
-        // Update with changed title
-        final nextResult = GetPostWithDetailsResponse.fromResponse(
-          postWithDetailsDataChangedTitle,
-          ctx: ctx,
-          variables: variables,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.post?.title, "GraphQL Advanced Practices");
-
-        // Verify nested object is still accessible after cache update
-        expect(result.post?.author.id, "author1");
-        expect(result.post?.author.name, "Alice Johnson");
-      },
-    );
-
-    test(
       'fragmentWithNestedObjectEquals - Equality works with nested objects',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result1 = GetPostWithDetailsResponse.fromResponse(
+        final result1 = GetPostWithDetailsResponse.fromJson(
           postWithDetailsData,
-          variables: variables,
         );
-        final result2 = GetPostWithDetailsResponse.fromResponse(
+        final result2 = GetPostWithDetailsResponse.fromJson(
           postWithDetailsData,
-          variables: variables,
         );
 
         expect(result1, equals(result2));
@@ -137,9 +94,8 @@ void main() {
       'fragmentWithNestedObjectToJson - Serialization includes nested objects',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromResponse(
+        final result = GetPostWithDetailsResponse.fromJson(
           postWithDetailsData,
-          variables: variables,
         );
         final json = result.toJson();
 
@@ -193,9 +149,8 @@ void main() {
       'fragmentWithNestedObjectRequired - Second fragment with nested object',
       () {
         final variables = GetUserWithProfileVariables(userId: "user1");
-        final result = GetUserWithProfileResponse.fromResponse(
+        final result = GetUserWithProfileResponse.fromJson(
           userWithProfileData,
-          variables: variables,
         );
 
         expect(result.user?.id, "user1");
@@ -210,9 +165,8 @@ void main() {
       'fragmentWithNestedObjectOptional - Nested object with optional fields',
       () {
         final variables = GetUserWithProfileVariables(userId: "user2");
-        final result = GetUserWithProfileResponse.fromResponse(
+        final result = GetUserWithProfileResponse.fromJson(
           userWithProfileNoAvatar,
-          variables: variables,
         );
 
         expect(result.user?.profile.id, "profile2");
@@ -221,47 +175,13 @@ void main() {
       },
     );
 
-    test(
-      'fragmentWithNestedObjectCacheNormalization - Cache updates with second fragment',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        final variables = GetUserWithProfileVariables(userId: "user1");
-
-        var (result, updateCtx) = GetUserWithProfileResponse.fromResponseImpl(
-          userWithProfileData,
-          ctx,
-          variables,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetUserWithProfileResponse.fromCache(newCtx, variables);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetUserWithProfileResponse.fromResponse(
-          userWithProfileDataChanged,
-          ctx: ctx,
-          variables: variables,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.user?.profile.displayName, "John D.");
-      },
-    );
-
     test('fragmentWithNestedObjectEquals - Equality with second fragment', () {
       final variables = GetUserWithProfileVariables(userId: "user1");
-      final result1 = GetUserWithProfileResponse.fromResponse(
+      final result1 = GetUserWithProfileResponse.fromJson(
         userWithProfileData,
-        variables: variables,
       );
-      final result2 = GetUserWithProfileResponse.fromResponse(
+      final result2 = GetUserWithProfileResponse.fromJson(
         userWithProfileData,
-        variables: variables,
       );
 
       expect(result1, equals(result2));
@@ -273,9 +193,8 @@ void main() {
       'fragmentWithNestedObjectToJson - Serialization with second fragment',
       () {
         final variables = GetUserWithProfileVariables(userId: "user1");
-        final result = GetUserWithProfileResponse.fromResponse(
+        final result = GetUserWithProfileResponse.fromJson(
           userWithProfileData,
-          variables: variables,
         );
         final json = result.toJson();
 

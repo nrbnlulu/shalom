@@ -1,0 +1,34 @@
+fragment ToyFrag on Toy {
+  id
+  label
+}
+
+fragment CommonAnimalFrag on Animal {
+  id
+  name
+  species
+}
+
+fragment AnimalWithToysFrag on Animal {
+  ...CommonAnimalFrag
+  toys {
+    ...ToyFrag
+  }
+}
+
+fragment ElephantWithToysFrag on Elephant {
+  ...AnimalWithToysFrag
+  trunkLength
+}
+
+fragment AnimalWithToysGlobalFrag on Animal {
+  __typename
+  ...AnimalWithToysFrag
+  ...ElephantWithToysFrag
+}
+
+query ZooAnimalsQuery {
+  animals {
+    ...AnimalWithToysGlobalFrag
+  }
+}

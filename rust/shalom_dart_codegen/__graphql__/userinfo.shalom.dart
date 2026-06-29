@@ -19,7 +19,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: UserInfo
 
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 
 
 

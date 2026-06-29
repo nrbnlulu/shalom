@@ -1,6 +1,3 @@
-import "dart:async";
-
-import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
 import "__graphql__/NodeGlobalFrag.shalom.dart";
 import "__graphql__/NodeGlobalQuery.shalom.dart";
@@ -41,9 +38,8 @@ void main() {
   group('Test interface with nested type fragments - required', () {
     test('interfaceWithNestedTypeFragmentsRequired - Foo', () {
       final variables = NodeGlobalQueryVariables(id: "foo1");
-      final result = NodeGlobalQueryResponse.fromResponse(
+      final result = NodeGlobalQueryResponse.fromJson(
         fooData,
-        variables: variables,
       );
 
       // Verify it's the correct type
@@ -66,9 +62,8 @@ void main() {
 
     test('interfaceWithNestedTypeFragmentsRequired - Bar', () {
       final variables = NodeGlobalQueryVariables(id: "bar1");
-      final result = NodeGlobalQueryResponse.fromResponse(
+      final result = NodeGlobalQueryResponse.fromJson(
         barData,
-        variables: variables,
       );
 
       expect(result.node, isA<NodeGlobalQuery_node__Bar>());
@@ -88,9 +83,8 @@ void main() {
 
     test('interfaceWithNestedTypeFragmentsRequired - Baz', () {
       final variables = NodeGlobalQueryVariables(id: "baz1");
-      final result = NodeGlobalQueryResponse.fromResponse(
+      final result = NodeGlobalQueryResponse.fromJson(
         bazData,
-        variables: variables,
       );
 
       expect(result.node, isA<NodeGlobalQuery_node__Baz>());
@@ -110,48 +104,41 @@ void main() {
 
     test('equals - Foo', () {
       final variables = NodeGlobalQueryVariables(id: "foo1");
-      final result1 = NodeGlobalQueryResponse.fromResponse(
+      final result1 = NodeGlobalQueryResponse.fromJson(
         fooData,
-        variables: variables,
       );
-      final result2 = NodeGlobalQueryResponse.fromResponse(
+      final result2 = NodeGlobalQueryResponse.fromJson(
         fooData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
 
     test('equals - Bar', () {
       final variables = NodeGlobalQueryVariables(id: "bar1");
-      final result1 = NodeGlobalQueryResponse.fromResponse(
+      final result1 = NodeGlobalQueryResponse.fromJson(
         barData,
-        variables: variables,
       );
-      final result2 = NodeGlobalQueryResponse.fromResponse(
+      final result2 = NodeGlobalQueryResponse.fromJson(
         barData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
 
     test('not equals - different types', () {
       final variables = NodeGlobalQueryVariables(id: "test");
-      final result1 = NodeGlobalQueryResponse.fromResponse(
+      final result1 = NodeGlobalQueryResponse.fromJson(
         fooData,
-        variables: variables,
       );
-      final result2 = NodeGlobalQueryResponse.fromResponse(
+      final result2 = NodeGlobalQueryResponse.fromJson(
         barData,
-        variables: variables,
       );
       expect(result1, isNot(equals(result2)));
     });
 
     test('toJson - Foo', () {
       final variables = NodeGlobalQueryVariables(id: "foo1");
-      final initial = NodeGlobalQueryResponse.fromResponse(
+      final initial = NodeGlobalQueryResponse.fromJson(
         fooData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, fooData);
@@ -159,9 +146,8 @@ void main() {
 
     test('toJson - Bar', () {
       final variables = NodeGlobalQueryVariables(id: "bar1");
-      final initial = NodeGlobalQueryResponse.fromResponse(
+      final initial = NodeGlobalQueryResponse.fromJson(
         barData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, barData);
@@ -169,9 +155,8 @@ void main() {
 
     test('toJson - Baz', () {
       final variables = NodeGlobalQueryVariables(id: "baz1");
-      final initial = NodeGlobalQueryResponse.fromResponse(
+      final initial = NodeGlobalQueryResponse.fromJson(
         bazData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, bazData);
@@ -193,9 +178,8 @@ void main() {
   group('Test interface with nested type fragments - optional', () {
     test('interfaceWithNestedTypeFragmentsOptional - Foo', () {
       final variables = NodeGlobalQueryOptVariables(id: "foo2");
-      final result = NodeGlobalQueryOptResponse.fromResponse(
+      final result = NodeGlobalQueryOptResponse.fromJson(
         fooOptData,
-        variables: variables,
       );
 
       expect(result.nodeOpt, isNotNull);
@@ -214,44 +198,38 @@ void main() {
 
     test('interfaceWithNestedTypeFragmentsOptional - null', () {
       final variables = NodeGlobalQueryOptVariables(id: "none");
-      final result = NodeGlobalQueryOptResponse.fromResponse(
+      final result = NodeGlobalQueryOptResponse.fromJson(
         nodeOptNullData,
-        variables: variables,
       );
       expect(result.nodeOpt, isNull);
     });
 
     test('equals - with value', () {
       final variables = NodeGlobalQueryOptVariables(id: "foo2");
-      final result1 = NodeGlobalQueryOptResponse.fromResponse(
+      final result1 = NodeGlobalQueryOptResponse.fromJson(
         fooOptData,
-        variables: variables,
       );
-      final result2 = NodeGlobalQueryOptResponse.fromResponse(
+      final result2 = NodeGlobalQueryOptResponse.fromJson(
         fooOptData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
 
     test('equals - null', () {
       final variables = NodeGlobalQueryOptVariables(id: "none");
-      final result1 = NodeGlobalQueryOptResponse.fromResponse(
+      final result1 = NodeGlobalQueryOptResponse.fromJson(
         nodeOptNullData,
-        variables: variables,
       );
-      final result2 = NodeGlobalQueryOptResponse.fromResponse(
+      final result2 = NodeGlobalQueryOptResponse.fromJson(
         nodeOptNullData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
 
     test('toJson - with value', () {
       final variables = NodeGlobalQueryOptVariables(id: "foo2");
-      final initial = NodeGlobalQueryOptResponse.fromResponse(
+      final initial = NodeGlobalQueryOptResponse.fromJson(
         fooOptData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, fooOptData);
@@ -259,9 +237,8 @@ void main() {
 
     test('toJson - null', () {
       final variables = NodeGlobalQueryOptVariables(id: "none");
-      final initial = NodeGlobalQueryOptResponse.fromResponse(
+      final initial = NodeGlobalQueryOptResponse.fromJson(
         nodeOptNullData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, nodeOptNullData);
@@ -296,7 +273,7 @@ void main() {
 
   group('Test interface with nested type fragments - list', () {
     test('interfaceWithNestedTypeFragmentsList - mixed types', () {
-      final result = NodesGlobalQueryResponse.fromResponse(nodesListData);
+      final result = NodesGlobalQueryResponse.fromJson(nodesListData);
 
       expect(result.nodes.length, 3);
       expect(result.nodes[0], isA<NodesGlobalQuery_nodes__Foo>());
@@ -331,166 +308,15 @@ void main() {
     });
 
     test('toJson - list', () {
-      final initial = NodesGlobalQueryResponse.fromResponse(nodesListData);
+      final initial = NodesGlobalQueryResponse.fromJson(nodesListData);
       final json = initial.toJson();
       expect(json, nodesListData);
     });
 
     test('equals - list', () {
-      final result1 = NodesGlobalQueryResponse.fromResponse(nodesListData);
-      final result2 = NodesGlobalQueryResponse.fromResponse(nodesListData);
+      final result1 = NodesGlobalQueryResponse.fromJson(nodesListData);
+      final result2 = NodesGlobalQueryResponse.fromJson(nodesListData);
       expect(result1, equals(result2));
-    });
-  });
-
-  group('interfaceWithNestedTypeFragmentsCacheNormalization', () {
-    test('Foo to Bar type change', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = NodeGlobalQueryVariables(id: "node1");
-
-      var (result, updateCtx) = NodeGlobalQueryResponse.fromResponseImpl(
-        fooData,
-        ctx,
-        variables,
-      );
-
-      expect(result.node, isA<NodeGlobalQuery_node__Foo>());
-      expect(result.node, isA<NodeGlobalFrag>());
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = NodeGlobalQueryResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = NodeGlobalQueryResponse.fromResponse(
-        barData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.node, isA<NodeGlobalQuery_node__Bar>());
-      expect(result.node, isA<NodeGlobalFrag>());
-    });
-
-    test('optional - null to Foo', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = NodeGlobalQueryOptVariables(id: "node1");
-
-      var (result, updateCtx) = NodeGlobalQueryOptResponse.fromResponseImpl(
-        nodeOptNullData,
-        ctx,
-        variables,
-      );
-
-      expect(result.nodeOpt, isNull);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = NodeGlobalQueryOptResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = NodeGlobalQueryOptResponse.fromResponse(
-        fooOptData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.nodeOpt, isNotNull);
-      expect(result.nodeOpt, isA<NodeGlobalFrag>());
-    });
-
-    test('optional - Foo to null', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = NodeGlobalQueryOptVariables(id: "node1");
-
-      var (result, updateCtx) = NodeGlobalQueryOptResponse.fromResponseImpl(
-        fooOptData,
-        ctx,
-        variables,
-      );
-
-      expect(result.nodeOpt, isNotNull);
-      expect(result.nodeOpt, isA<NodeGlobalFrag>());
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = NodeGlobalQueryOptResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = NodeGlobalQueryOptResponse.fromResponse(
-        nodeOptNullData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.nodeOpt, isNull);
-    });
-
-    test('fragment fields update within same type', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = NodeGlobalQueryVariables(id: "node1");
-
-      final initialFooData = {
-        "node": {
-          "__typename": "Foo",
-          "id": "node1",
-          "createdAt": "2024-01-01T00:00:00Z",
-          "fooField": "old value",
-          "fooValue": 1,
-        },
-      };
-
-      var (result, updateCtx) = NodeGlobalQueryResponse.fromResponseImpl(
-        initialFooData,
-        ctx,
-        variables,
-      );
-
-      expect(result.node, isA<NodeGlobalQuery_node__Foo>());
-      final foo1 = result.node as NodeGlobalQuery_node__Foo;
-      expect(foo1.fooField, "old value");
-      expect(foo1.fooValue, 1);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = NodeGlobalQueryResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final updatedFooData = {
-        "node": {
-          "__typename": "Foo",
-          "id": "node1",
-          "createdAt": "2024-01-01T00:00:00Z",
-          "fooField": "new value",
-          "fooValue": 999,
-        },
-      };
-
-      final nextResult = NodeGlobalQueryResponse.fromResponse(
-        updatedFooData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      final foo2 = result.node as NodeGlobalQuery_node__Foo;
-      expect(foo2.fooField, "new value");
-      expect(foo2.fooValue, 999);
     });
   });
 }

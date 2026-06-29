@@ -9,7 +9,7 @@ void main() {
     group('deserialize', () {
       test('with optional value', () {
         final json = {'id': 'test-id-1', 'coords': pointRaw};
-        final result = GetLocationResponse.fromResponse({
+        final result = GetLocationResponse.fromJson({
           "getLocation": json,
         }).getLocation!;
         expect(result.id, 'test-id-1');
@@ -18,7 +18,7 @@ void main() {
       });
       test('with null optional value', () {
         final json = {'id': 'test-id-2', 'coords': null};
-        final result = GetLocationResponse.fromResponse({
+        final result = GetLocationResponse.fromJson({
           "getLocation": json,
         }).getLocation!;
         expect(result.id, 'test-id-2');
@@ -29,7 +29,7 @@ void main() {
     group('serialize', () {
       test('with optional value', () {
         final data = {'id': 'test-id-1', 'coords': pointRaw};
-        final initial = GetLocationResponse.fromResponse({
+        final initial = GetLocationResponse.fromJson({
           "getLocation": data,
         }).getLocation!;
         final json = initial.toJson();
@@ -37,7 +37,7 @@ void main() {
       });
       test('with null optional value', () {
         final data = {'id': 'test-id-2', 'coords': null};
-        final initial = GetLocationResponse.fromResponse({
+        final initial = GetLocationResponse.fromJson({
           "getLocation": data,
         }).getLocation!;
         final json = initial.toJson();
@@ -96,13 +96,13 @@ void main() {
         final json = {
           'getLocation': {'id': 'test-id-1', 'coords': pointRaw},
         };
-        final result = GetLocationResponse.fromResponse(json);
+        final result = GetLocationResponse.fromJson(json);
         expect(result.getLocation, isNotNull);
         expect(result.getLocation?.id, 'test-id-1');
       });
       test('null value', () {
         final json = {'getLocation': null};
-        final result = GetLocationResponse.fromResponse(json);
+        final result = GetLocationResponse.fromJson(json);
         expect(result.getLocation, isNull);
       });
     });

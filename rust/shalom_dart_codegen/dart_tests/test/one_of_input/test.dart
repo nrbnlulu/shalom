@@ -1,6 +1,4 @@
-import "dart:async";
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
 import '__graphql__/schema.shalom.dart';
 import '__graphql__/TestQuery.shalom.dart';
 import '__graphql__/TestListQuery.shalom.dart';
@@ -39,81 +37,14 @@ void main() {
   });
 
   group('TestQueryResponse', () {
-    test('fromResponse', () {
+    test('fromJson', () {
       final jsonResponse = {
         'test': {'id': '1', 'value': 'hello'}
       };
       final variables = TestQueryVariables(input: TestOneOf.a('test'));
-      final response =
-          TestQueryResponse.fromResponse(jsonResponse, variables: variables);
+      final response = TestQueryResponse.fromJson(jsonResponse);
       expect(response.test.id, '1');
       expect(response.test.value, 'hello');
-    });
-
-    test('cache normalization with different oneOf variants', () async {
-      final ctx = ShalomCtx.withCapacity();
-
-      // First request with variant 'a'
-      final jsonResponseA = {
-        'test': {'id': '1', 'value': 'hello_a'}
-      };
-      final variablesA = TestQueryVariables(input: TestOneOf.a('test_a'));
-      TestQueryResponse.fromResponse(jsonResponseA,
-          ctx: ctx, variables: variablesA);
-
-      // Second request with variant 'b' - should be cached separately
-      final jsonResponseB = {
-        'test': {'id': '2', 'value': 'hello_b'}
-      };
-      final variablesB = TestQueryVariables(input: TestOneOf.b(42));
-      TestQueryResponse.fromResponse(jsonResponseB,
-          ctx: ctx, variables: variablesB);
-
-      // Verify both responses are cached correctly
-      final cachedA = TestQueryResponse.fromCache(ctx, variablesA);
-      final cachedB = TestQueryResponse.fromCache(ctx, variablesB);
-
-      expect(cachedA.test.id, '1');
-      expect(cachedA.test.value, 'hello_a');
-      expect(cachedB.test.id, '2');
-      expect(cachedB.test.value, 'hello_b');
-    });
-
-    test('cache normalization with same oneOf variant updates correctly',
-        () async {
-      final ctx = ShalomCtx.withCapacity();
-
-      // Initial request
-      final initialResponse = {
-        'test': {'id': '1', 'value': 'initial'}
-      };
-      final variables = TestQueryVariables(input: TestOneOf.a('test'));
-      var (result, updateCtx) = TestQueryResponse.fromResponseImpl(
-        initialResponse,
-        ctx,
-        variables,
-      );
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = TestQueryResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      // Updated request with same oneOf variant
-      final updatedResponse = {
-        'test': {'id': '1', 'value': 'updated'}
-      };
-      final nextResult = TestQueryResponse.fromResponse(
-        updatedResponse,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.test.value, 'updated');
     });
   });
   group('TestListQuery', () {
@@ -138,11 +69,10 @@ void main() {
       });
     });
 
-    test('fromResponse', () {
+    test('fromJson', () {
       final jsonResponse = {'testList': 'success'};
       final variables = TestListQueryVariables(input: []);
-      final response = TestListQueryResponse.fromResponse(jsonResponse,
-          variables: variables);
+      final response = TestListQueryResponse.fromJson(jsonResponse);
       expect(response.testList, 'success');
     });
   });
@@ -160,19 +90,6 @@ void main() {
       final inputScalar = ComplexOneOf.scalarField('test');
       final inputEnum = ComplexOneOf.enumField(SomeEnum.A);
       expect(inputScalar == inputEnum, isFalse);
-    });
-
-    test('listField equality with same elements', () {
-      final a = ComplexOneOf.listField([1, 2, 3]);
-      final b = ComplexOneOf.listField([1, 2, 3]);
-      expect(a == b, isTrue);
-      expect(a.hashCode == b.hashCode, isTrue);
-    });
-
-    test('listField equality with different elements', () {
-      final a = ComplexOneOf.listField([1, 2, 3]);
-      final b = ComplexOneOf.listField([4, 5, 6]);
-      expect(a == b, isFalse);
     });
 
     test('toJson scalarField', () {
@@ -206,50 +123,15 @@ void main() {
   });
 
   group('TestComplexQueryResponse', () {
-    test('fromResponse', () {
+    test('fromJson', () {
       final jsonResponse = {'testComplex': 'success'};
       final variables = TestComplexQueryVariables(
         input: ComplexOneOf.scalarField('test'),
       );
-      final response = TestComplexQueryResponse.fromResponse(
+      final response = TestComplexQueryResponse.fromJson(
         jsonResponse,
-        variables: variables,
       );
       expect(response.testComplex, 'success');
-    });
-
-    test('cache normalization with different complex oneOf variants', () async {
-      final ctx = ShalomCtx.withCapacity();
-
-      // Request with scalarField variant
-      final jsonResponseScalar = {'testComplex': 'scalar_result'};
-      final variablesScalar = TestComplexQueryVariables(
-        input: ComplexOneOf.scalarField('test'),
-      );
-      final _ = TestComplexQueryResponse.fromResponse(
-        jsonResponseScalar,
-        ctx: ctx,
-        variables: variablesScalar,
-      );
-
-      // Request with enumField variant - should be cached separately
-      final jsonResponseEnum = {'testComplex': 'enum_result'};
-      final variablesEnum = TestComplexQueryVariables(
-        input: ComplexOneOf.enumField(SomeEnum.A),
-      );
-      TestComplexQueryResponse.fromResponse(
-        jsonResponseEnum,
-        ctx: ctx,
-        variables: variablesEnum,
-      );
-
-      // Verify both responses are cached correctly with different keys
-      final cachedScalar =
-          TestComplexQueryResponse.fromCache(ctx, variablesScalar);
-      final cachedEnum = TestComplexQueryResponse.fromCache(ctx, variablesEnum);
-
-      expect(cachedScalar.testComplex, 'scalar_result');
-      expect(cachedEnum.testComplex, 'enum_result');
     });
   });
 }

@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use apollo_compiler::{validation::Valid, ExecutableDocument};
+use apollo_compiler::{ExecutableDocument, validation::Valid};
 use log::{error, trace};
 
 use crate::{
@@ -35,16 +35,15 @@ pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
     let mut operations = vec![];
     for file in found_files {
         let f_name = file.file_name().unwrap().to_str().unwrap();
-        if let Ok(rel_path) = file.strip_prefix(pwd) {
-            if std::process::Command::new("git")
+        if let Ok(rel_path) = file.strip_prefix(pwd)
+            && std::process::Command::new("git")
                 .args(["check-ignore", "--quiet", rel_path.to_str().unwrap()])
                 .current_dir(pwd)
                 .status()
                 .map(|s| s.success())
                 .unwrap_or(false)
-            {
-                continue;
-            }
+        {
+            continue;
         }
         if f_name == "schema.graphql" || f_name == "schema.gql" {
             schema = Some(file);
@@ -59,7 +58,17 @@ pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
 }
 
 pub fn parse_schema(schema: &str) -> anyhow::Result<SharedSchemaContext> {
-    schema::resolver::resolve(schema)
+    let schema = ensure_observe_directive(schema);
+    schema::resolver::resolve(&schema)
+}
+
+fn ensure_observe_directive(schema: &str) -> String {
+    const DIRECTIVE_DEF: &str =
+        "directive @observe on QUERY | MUTATION | SUBSCRIPTION | FRAGMENT_DEFINITION";
+    if schema.contains("directive @observe") {
+        return schema.to_string();
+    }
+    format!("{schema}\n\n{DIRECTIVE_DEF}\n")
 }
 
 pub fn parse_document(
@@ -68,6 +77,28 @@ pub fn parse_document(
     source_path: &PathBuf,
 ) -> anyhow::Result<HashMap<String, SharedOpCtx>> {
     crate::operation::parse::parse_document_impl(global_ctx, operation, source_path)
+}
+
+pub fn register_fragments_from_document(
+    global_ctx: &SharedShalomGlobalContext,
+    source: &str,
+    doc_path: &PathBuf,
+    allow_dups: bool,
+) -> anyhow::Result<()> {
+    let schema = global_ctx.schema_ctx.schema.clone();
+    let mut parser = apollo_compiler::parser::Parser::new();
+    let doc = parser
+        .parse_executable(&schema, source, doc_path)
+        .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
+    // Skip validate() — standalone fragment documents have no operations, and
+    // Apollo's validator rejects fragments that aren't used in the same document.
+    let parsed_docs = vec![(doc, doc_path.clone(), source.to_string())];
+    let fragment_defs = extract_fragment_definitions(&parsed_docs)?;
+    if fragment_defs.is_empty() {
+        return Ok(());
+    }
+    let order = build_fragment_dependencies(&fragment_defs)?;
+    parse_and_register_fragments(fragment_defs, order, global_ctx, allow_dups)
 }
 
 /// Load configuration from directory or use defaults
@@ -133,6 +164,7 @@ fn extract_fragment_definitions(
         for (name, fragment_def) in doc.fragments.iter() {
             let fragment_name = name.to_string();
             let type_condition = fragment_def.type_condition().to_string();
+            let observe = has_observe_directive(&fragment_def.directives);
 
             // Extract fragment SDL for later injection
             let fragment_sdl = format!("{}", fragment_def);
@@ -141,6 +173,7 @@ fn extract_fragment_definitions(
                 fragment_sdl.clone(),
                 file_path.clone(),
                 type_condition,
+                observe,
             );
 
             if all_fragment_defs.contains_key(&fragment_name) {
@@ -161,6 +194,13 @@ fn extract_fragment_definitions(
     Ok(all_fragment_defs)
 }
 
+fn has_observe_directive(directives: &apollo_compiler::ast::DirectiveList) -> bool {
+    directives
+        .0
+        .iter()
+        .any(|directive| directive.name.as_str() == "observe")
+}
+
 /// Build fragment dependency tree and return topologically sorted order
 fn build_fragment_dependencies(
     fragment_defs: &HashMap<String, FragmentDefInitial>,
@@ -168,7 +208,11 @@ fn build_fragment_dependencies(
     let mut dependencies: HashMap<String, Vec<String>> = HashMap::new();
     for (name, def) in fragment_defs {
         let used = crate::operation::parse::get_used_fragments_from_fragment(&def.origin);
-        dependencies.insert(name.clone(), used);
+        let local_dependencies = used
+            .into_iter()
+            .filter(|used_name| fragment_defs.contains_key(used_name))
+            .collect();
+        dependencies.insert(name.clone(), local_dependencies);
     }
     trace!("before topological_sort");
     topological_sort(&dependencies).map_err(|e| {
@@ -232,6 +276,28 @@ fn collect_fragment_spreads(
             }
         }
     }
+}
+
+pub fn fragment_spreads_from_document(
+    global_ctx: &SharedShalomGlobalContext,
+    source: &str,
+    doc_path: &PathBuf,
+) -> anyhow::Result<HashMap<String, Vec<String>>> {
+    let schema = global_ctx.schema_ctx.schema.clone();
+    let mut parser = apollo_compiler::parser::Parser::new();
+    let doc = parser
+        .parse_executable(&schema, source, doc_path)
+        .map_err(|e| anyhow::anyhow!("Failed to parse document: {}", e))?;
+
+    let mut result = HashMap::new();
+    for (name, fragment_def) in doc.fragments.iter() {
+        let mut used_fragments = std::collections::HashSet::new();
+        collect_fragment_spreads(&fragment_def.selection_set.selections, &mut used_fragments);
+        let mut used_fragments = used_fragments.into_iter().collect::<Vec<_>>();
+        used_fragments.sort();
+        result.insert(name.to_string(), used_fragments);
+    }
+    Ok(result)
 }
 
 /// Validate documents with injected fragments
@@ -346,6 +412,7 @@ fn parse_and_register_fragments(
     fragment_defs: HashMap<String, FragmentDefInitial>,
     order: Vec<String>,
     global_ctx: &SharedShalomGlobalContext,
+    allow_dups: bool,
 ) -> anyhow::Result<()> {
     let mut final_fragment_defs: HashMap<
         String,
@@ -366,7 +433,7 @@ fn parse_and_register_fragments(
             // Register fragment immediately after parsing so it's available for subsequent fragments
             let mut single_fragment = HashMap::new();
             single_fragment.insert(name, frag_ctx);
-            global_ctx.register_fragments(single_fragment)?;
+            global_ctx.register_fragments(single_fragment, allow_dups)?;
         }
     }
     Ok(())
@@ -469,7 +536,7 @@ pub fn parse_directory(
         e
     })?;
     // Parse and register fragments
-    parse_and_register_fragments(fragment_defs, order, &global_ctx).map_err(|e| {
+    parse_and_register_fragments(fragment_defs, order, &global_ctx, false).map_err(|e| {
         if strict {
             panic!("failed to build frag deps {e}")
         }
@@ -501,7 +568,7 @@ fn topological_sort(dependencies: &HashMap<String, Vec<String>>) -> Result<Vec<S
 
     let mut queue: VecDeque<String> = in_degree
         .iter()
-        .filter(|(_, &deg)| deg == 0)
+        .filter(|&(_, &deg)| deg == 0)
         .map(|(k, _)| k.clone())
         .collect();
     let mut result = Vec::new();
@@ -557,4 +624,77 @@ pub fn collect_executables(
         }
     }
     Ok(ret)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::shalom_config::ShalomConfig;
+
+    fn test_context(schema: &str) -> SharedShalomGlobalContext {
+        let schema_ctx = parse_schema(schema).unwrap();
+        ShalomGlobalContext::new(
+            schema_ctx,
+            ShalomConfig {
+                project_root: std::env::temp_dir(),
+                ..Default::default()
+            },
+            PathBuf::from("schema.graphql"),
+        )
+    }
+
+    #[test]
+    fn register_fragment_can_spread_already_registered_fragment() {
+        let ctx = test_context(
+            r#"
+type Query {
+  user(id: ID!): User
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+}
+"#,
+        );
+        let source_path = PathBuf::from("fragment.dart");
+
+        register_fragments_from_document(
+            &ctx,
+            r#"
+fragment UserEmailFrag on User {
+  id
+  email
+}
+"#,
+            &source_path,
+            false,
+        )
+        .unwrap();
+
+        register_fragments_from_document(
+            &ctx,
+            r#"
+fragment UserDetailFrag on User {
+  id
+  name
+  ...UserEmailFrag
+}
+"#,
+            &source_path,
+            false,
+        )
+        .unwrap();
+
+        let detail = ctx.get_fragment_strict("UserDetailFrag");
+        assert!(detail.typedefs.get_used_fragment("UserEmailFrag").is_some());
+        assert_eq!(
+            detail
+                .get_on_type()
+                .get_all_selections_that_apply_on_this_type_only(&ctx)
+                .len(),
+            3
+        );
+    }
 }

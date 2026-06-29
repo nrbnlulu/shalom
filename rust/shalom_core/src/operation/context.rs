@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use serde::ser::SerializeSeq;
 use serde::Serialize;
+use serde::ser::SerializeSeq;
 
 use super::fragments::SharedFragmentContext;
 use super::types::{
@@ -168,6 +168,7 @@ pub struct OperationContext {
     pub typedefs: TypeDefs,
     root_type: Option<ObjectLikeCommon>,
     op_ty: OperationType,
+    observe: bool,
 }
 
 unsafe impl Send for OperationContext {}
@@ -180,6 +181,7 @@ impl OperationContext {
         query: String,
         file_path: PathBuf,
         op_ty: OperationType,
+        observe: bool,
     ) -> Self {
         OperationContext {
             schema,
@@ -190,10 +192,17 @@ impl OperationContext {
             typedefs: TypeDefs::new(),
             root_type: None,
             op_ty,
+            observe,
         }
     }
     pub fn get_operation_name(&self) -> &str {
         &self.operation_name
+    }
+    pub fn op_type(&self) -> OperationType {
+        self.op_ty
+    }
+    pub fn is_observe(&self) -> bool {
+        self.observe
     }
     pub fn has_variables(&self) -> bool {
         !self.variables.is_empty()

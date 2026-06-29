@@ -1,0 +1,4 @@
+fragment UserCard on User {
+  ...UserIdentity
+  email
+}

@@ -1,0 +1,168 @@
+typedef HeadersType = List<(String, String)>;
+typedef JsonObject = Map<String, dynamic>;
+
+abstract interface class OperationInterface {
+  String operation$Name();
+  JsonObject toJson();
+}
+
+abstract interface class FragmentInterface {
+  String fragment$Name();
+
+  String entity$Type();
+
+  /// The normalized cache id of this fragment's root entity (the value of
+  /// its selected `id` field). Combined with [entity$Type] this gives the
+  /// cache key `'$entity$Type:$entity$Id'`.
+  String entity$Id();
+
+  JsonObject toJson();
+}
+
+// ignore: constant_identifier_names
+enum OperationType { Query, Mutation, Subscription }
+
+class Request {
+  final String query;
+  final JsonObject variables;
+  final OperationType opType;
+  final String opName;
+
+  Request({
+    required this.query,
+    required this.variables,
+    required this.opType,
+    required this.opName,
+  });
+  JsonObject toJson() {
+    return {"query": query, "variables": variables, "operationName": opName};
+  }
+}
+
+class RequestMeta<T> {
+  final Request request;
+  final T Function(JsonObject data) parseFn;
+  const RequestMeta({required this.request, required this.parseFn});
+}
+
+class Response {
+  final JsonObject data;
+  final String opName;
+
+  Response({required this.data, required this.opName});
+
+  JsonObject toJson() {
+    return {"data": data, "operationName": opName};
+  }
+}
+
+abstract class Requestable<T> {
+  const Requestable();
+  RequestMeta<T> getRequestMeta();
+  Request toRequest() => getRequestMeta().request;
+}
+
+sealed class Maybe<T> {
+  T? some();
+  bool isSome();
+  void inspect(void Function(T) _);
+}
+
+class None<T> implements Maybe<T> {
+  const None();
+
+  @override
+  T? some() => null;
+
+  @override
+  bool isSome() => false;
+
+  @override
+  void inspect(void Function(T) _) {}
+
+  @override
+  bool operator ==(Object other) {
+    return other is None<T>;
+  }
+
+  @override
+  String toString() => "None";
+
+  @override
+  int get hashCode => runtimeType.hashCode;
+}
+
+class Some<T> implements Maybe<T> {
+  final T value;
+
+  const Some(this.value);
+
+  @override
+  T? some() => value;
+
+  @override
+  bool isSome() => true;
+
+  @override
+  void inspect(void Function(T) fn) => fn(value);
+
+  @override
+  bool operator ==(Object other) {
+    if (other is Some<T>) {
+      return value == other.value;
+    }
+    return false;
+  }
+
+  @override
+  String toString() => "Some(${value.toString()})";
+  @override
+  int get hashCode => runtimeType.hashCode ^ value.hashCode;
+}
+
+class OperationContext<TVars> {
+  final TVars? variables;
+
+  const OperationContext({this.variables});
+}
+
+class ShalomTransportException implements Exception {
+  final String message;
+  final String code;
+  final JsonObject? details;
+
+  const ShalomTransportException({
+    required this.message,
+    required this.code,
+    this.details,
+  });
+
+  @override
+  String toString() {
+    return 'ShalomTransportException: $message (code: $code)';
+  }
+}
+
+sealed class GraphQLResponse<T> {
+  const GraphQLResponse();
+}
+
+class LinkExceptionResponse<T> extends GraphQLResponse<T> {
+  final List<Exception> errors;
+  const LinkExceptionResponse(this.errors);
+}
+
+class GraphQLData<T> extends GraphQLResponse<T> {
+  final T data;
+  final List<JsonObject>? errors;
+  final JsonObject? extensions;
+
+  const GraphQLData({required this.data, this.errors, this.extensions});
+}
+
+class GraphQLError<T> extends GraphQLResponse<T> {
+  final List<JsonObject> errors;
+  final JsonObject? extensions;
+
+  const GraphQLError({required this.errors, this.extensions});
+}

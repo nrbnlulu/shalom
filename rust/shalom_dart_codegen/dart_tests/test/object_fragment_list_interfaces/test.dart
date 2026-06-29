@@ -1,6 +1,4 @@
-import 'dart:async';
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
 import '__graphql__/GetLibraryWithCollection.shalom.dart';
 import '__graphql__/GetLibraryWithCollectionPartial.shalom.dart';
 import '__graphql__/CollectionDetailsFrag.shalom.dart';
@@ -115,9 +113,8 @@ void main() {
       'objectFragmentListInterfacesRequired - Object with fragment containing list of interfaces deserializes',
       () {
         final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-        final result = GetLibraryWithCollectionResponse.fromResponse(
+        final result = GetLibraryWithCollectionResponse.fromJson(
           libraryData,
-          variables: variables,
         );
 
         // Test access to top-level object fields
@@ -179,9 +176,8 @@ void main() {
       'objectFragmentListInterfacesOptional - Optional fields are accessible',
       () {
         final variables = GetLibraryWithCollectionVariables(libraryId: "lib2");
-        final result = GetLibraryWithCollectionResponse.fromResponse(
+        final result = GetLibraryWithCollectionResponse.fromJson(
           libraryDataNoDescription,
-          variables: variables,
         );
 
         // Verify optional description field can be null
@@ -201,78 +197,14 @@ void main() {
     );
 
     test(
-      'objectFragmentListInterfacesCacheNormalization - Cache updates work with nested fragment and list of interfaces',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-
-        var (
-          result,
-          updateCtx,
-        ) = GetLibraryWithCollectionResponse.fromResponseImpl(
-          libraryData,
-          ctx,
-          variables,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetLibraryWithCollectionResponse.fromCache(
-            newCtx,
-            variables,
-          );
-          hasChanged.complete(true);
-        });
-
-        // Update with changed library name
-        final nextResult = GetLibraryWithCollectionResponse.fromResponse(
-          libraryDataUpdated,
-          ctx: ctx,
-          variables: variables,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.library?.name, "Central Library - Updated");
-
-        // Verify list of interfaces is still accessible after cache update
-        expect(result.library?.collection.items.length, 3);
-
-        // Verify items through type checking
-        final item0 = result.library?.collection.items[0];
-        if (item0 is CollectionDetailsFrag_items__Book) {
-          expect(item0.id, "book1");
-        }
-
-        final item1 = result.library?.collection.items[1];
-        if (item1 is CollectionDetailsFrag_items__Movie) {
-          expect(item1.id, "movie1");
-        }
-
-        final item2 = result.library?.collection.items[2];
-        if (item2 is CollectionDetailsFrag_items__Music) {
-          expect(item2.id, "music1");
-        }
-
-        // Verify fragment fields are accessible
-        expect(result.library?.collection.curator, "Alice Johnson");
-        expect(result.library?.collection.createdAt, "2024-01-15");
-      },
-    );
-
-    test(
       'objectFragmentListInterfacesEquals - Equality works with fragment and list of interfaces',
       () {
         final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-        final result1 = GetLibraryWithCollectionResponse.fromResponse(
+        final result1 = GetLibraryWithCollectionResponse.fromJson(
           libraryData,
-          variables: variables,
         );
-        final result2 = GetLibraryWithCollectionResponse.fromResponse(
+        final result2 = GetLibraryWithCollectionResponse.fromJson(
           libraryData,
-          variables: variables,
         );
 
         expect(result1, equals(result2));
@@ -295,9 +227,8 @@ void main() {
       'objectFragmentListInterfacesToJson - Serialization includes fragment fields and list of interfaces',
       () {
         final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-        final result = GetLibraryWithCollectionResponse.fromResponse(
+        final result = GetLibraryWithCollectionResponse.fromJson(
           libraryData,
-          variables: variables,
         );
         final json = result.toJson();
 
@@ -390,9 +321,8 @@ void main() {
         final variables = GetLibraryWithCollectionPartialVariables(
           libraryId: "lib3",
         );
-        final result = GetLibraryWithCollectionPartialResponse.fromResponse(
+        final result = GetLibraryWithCollectionPartialResponse.fromJson(
           partialData,
-          variables: variables,
         );
 
         expect(result.library?.id, "lib3");
@@ -426,9 +356,8 @@ void main() {
         final variables = GetLibraryWithCollectionPartialVariables(
           libraryId: "lib3",
         );
-        final result = GetLibraryWithCollectionPartialResponse.fromResponse(
+        final result = GetLibraryWithCollectionPartialResponse.fromJson(
           partialData,
-          variables: variables,
         );
 
         // Verify all items in the list are of the same interface implementation
@@ -440,61 +369,16 @@ void main() {
     );
 
     test(
-      'objectFragmentListInterfacesCacheNormalization - Partial query cache updates',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        final variables = GetLibraryWithCollectionPartialVariables(
-          libraryId: "lib3",
-        );
-
-        var (
-          result,
-          updateCtx,
-        ) = GetLibraryWithCollectionPartialResponse.fromResponseImpl(
-          partialData,
-          ctx,
-          variables,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetLibraryWithCollectionPartialResponse.fromCache(
-            newCtx,
-            variables,
-          );
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetLibraryWithCollectionPartialResponse.fromResponse(
-          partialDataUpdated,
-          ctx: ctx,
-          variables: variables,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.library?.collection.title, "Research Papers - Updated");
-
-        // Verify list is preserved
-        expect(result.library?.collection.items.length, 2);
-      },
-    );
-
-    test(
       'objectFragmentListInterfacesEquals - Equality with partial query',
       () {
         final variables = GetLibraryWithCollectionPartialVariables(
           libraryId: "lib3",
         );
-        final result1 = GetLibraryWithCollectionPartialResponse.fromResponse(
+        final result1 = GetLibraryWithCollectionPartialResponse.fromJson(
           partialData,
-          variables: variables,
         );
-        final result2 = GetLibraryWithCollectionPartialResponse.fromResponse(
+        final result2 = GetLibraryWithCollectionPartialResponse.fromJson(
           partialData,
-          variables: variables,
         );
 
         expect(result1, equals(result2));
@@ -511,9 +395,8 @@ void main() {
         final variables = GetLibraryWithCollectionPartialVariables(
           libraryId: "lib3",
         );
-        final result = GetLibraryWithCollectionPartialResponse.fromResponse(
+        final result = GetLibraryWithCollectionPartialResponse.fromJson(
           partialData,
-          variables: variables,
         );
         final json = result.toJson();
 

@@ -1,0 +1,22 @@
+version: "3"
+
+vars:
+    DART_BIN:
+        sh: |
+            if command -v fvm &> /dev/null; then
+              echo "fvm dart"
+            else
+              echo "dart"
+            fi
+    FLUTTER_BIN:
+        sh: |
+            if command -v fvm &> /dev/null; then
+              echo "fvm flutter"
+            else
+              echo "flutter"
+            fi
+
+tasks:
+    codegen:
+        cmds:
+            - cargo run --manifest-path ../../../rust/shalom_dart_codegen/Cargo.toml generate -f

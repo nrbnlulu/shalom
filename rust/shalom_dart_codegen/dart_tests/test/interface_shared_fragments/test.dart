@@ -1,6 +1,3 @@
-import "dart:async";
-
-import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
 import "__graphql__/NodeTimestamps.shalom.dart";
 import "__graphql__/UserInfo.shalom.dart";
@@ -49,9 +46,8 @@ void main() {
   group('Test interface shared fragments - required', () {
     test('interfaceSharedFragmentsRequired - User', () {
       final variables = GetNodeVariables(id: "user1");
-      final result = GetNodeResponse.fromResponse(
+      final result = GetNodeResponse.fromJson(
         userData,
-        variables: variables,
       );
 
       expect(result.node, isA<GetNode_node__User>());
@@ -83,9 +79,8 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - Post', () {
       final variables = GetNodeVariables(id: "post1");
-      final result = GetNodeResponse.fromResponse(
+      final result = GetNodeResponse.fromJson(
         postData,
-        variables: variables,
       );
 
       expect(result.node, isA<GetNode_node__Post>());
@@ -117,9 +112,8 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - Comment (fallback)', () {
       final variables = GetNodeVariables(id: "comment1");
-      final result = GetNodeResponse.fromResponse(
+      final result = GetNodeResponse.fromJson(
         commentData,
-        variables: variables,
       );
 
       expect(result.node, isA<GetNode_node__Comment>());
@@ -140,13 +134,11 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - equals', () {
       final variables = GetNodeVariables(id: "user1");
-      final result1 = GetNodeResponse.fromResponse(
+      final result1 = GetNodeResponse.fromJson(
         userData,
-        variables: variables,
       );
-      final result2 = GetNodeResponse.fromResponse(
+      final result2 = GetNodeResponse.fromJson(
         userData,
-        variables: variables,
       );
       expect(result1, equals(result2));
       expect(result1.node, equals(result2.node));
@@ -154,9 +146,8 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - toJson', () {
       final variables = GetNodeVariables(id: "user1");
-      final result = GetNodeResponse.fromResponse(
+      final result = GetNodeResponse.fromJson(
         userData,
-        variables: variables,
       );
       final json = result.toJson();
       expect(json, userData);
@@ -192,9 +183,8 @@ void main() {
   group('Test interface shared fragments - optional', () {
     test('interfaceSharedFragmentsOptional - User', () {
       final variables = GetNodeOptVariables(id: "user1");
-      final result = GetNodeOptResponse.fromResponse(
+      final result = GetNodeOptResponse.fromJson(
         userOptData,
-        variables: variables,
       );
 
       expect(result.nodeOpt, isNotNull);
@@ -226,9 +216,8 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - Post', () {
       final variables = GetNodeOptVariables(id: "post1");
-      final result = GetNodeOptResponse.fromResponse(
+      final result = GetNodeOptResponse.fromJson(
         postOptData,
-        variables: variables,
       );
 
       expect(result.nodeOpt, isNotNull);
@@ -248,22 +237,19 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - null', () {
       final variables = GetNodeOptVariables(id: "null");
-      final result = GetNodeOptResponse.fromResponse(
+      final result = GetNodeOptResponse.fromJson(
         nodeOptNull,
-        variables: variables,
       );
       expect(result.nodeOpt, isNull);
     });
 
     test('interfaceSharedFragmentsOptional - equals', () {
       final variables = GetNodeOptVariables(id: "user1");
-      final result1 = GetNodeOptResponse.fromResponse(
+      final result1 = GetNodeOptResponse.fromJson(
         userOptData,
-        variables: variables,
       );
-      final result2 = GetNodeOptResponse.fromResponse(
+      final result2 = GetNodeOptResponse.fromJson(
         userOptData,
-        variables: variables,
       );
       expect(result1, equals(result2));
       expect(result1.nodeOpt, equals(result2.nodeOpt));
@@ -271,9 +257,8 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - toJson', () {
       final variables = GetNodeOptVariables(id: "user1");
-      final result = GetNodeOptResponse.fromResponse(
+      final result = GetNodeOptResponse.fromJson(
         userOptData,
-        variables: variables,
       );
       final json = result.toJson();
       expect(json, userOptData);
@@ -281,172 +266,15 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - toJson null', () {
       final variables = GetNodeOptVariables(id: "null");
-      final result = GetNodeOptResponse.fromResponse(
+      final result = GetNodeOptResponse.fromJson(
         nodeOptNull,
-        variables: variables,
       );
       final json = result.toJson();
       expect(json, nodeOptNull);
     });
   });
 
-  group('Test interface shared fragments - cache normalization', () {
-    test('interfaceSharedFragmentsCacheNormalization - User update', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetNodeVariables(id: "user1");
-
-      var (result, updateCtx) = GetNodeResponse.fromResponseImpl(
-        userData,
-        ctx,
-        variables,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetNodeResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final updatedUserData = {
-        "node": {
-          "__typename": "User",
-          "id": "user1",
-          "createdAt": "2024-01-01T00:00:00Z",
-          "updatedAt": "2024-01-10T00:00:00Z",
-          "username": "john_doe_updated",
-          "email": "john.updated@example.com",
-          "age": 31,
-        },
-      };
-
-      final nextResult = GetNodeResponse.fromResponse(
-        updatedUserData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-
-      final user = result.node as GetNode_node__User;
-      expect(user.username, "john_doe_updated");
-      expect(user.email, "john.updated@example.com");
-      expect(user.age, 31);
-      expect(user.updatedAt, "2024-01-10T00:00:00Z");
-    });
-
-    test('interfaceSharedFragmentsCacheNormalization - Post update', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetNodeVariables(id: "post1");
-
-      var (result, updateCtx) = GetNodeResponse.fromResponseImpl(
-        postData,
-        ctx,
-        variables,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetNodeResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final updatedPostData = {
-        "node": {
-          "__typename": "Post",
-          "id": "post1",
-          "createdAt": "2024-01-03T00:00:00Z",
-          "updatedAt": "2024-01-10T00:00:00Z",
-          "title": "Hello World Updated",
-          "content": "This is my updated post",
-          "views": 200,
-        },
-      };
-
-      final nextResult = GetNodeResponse.fromResponse(
-        updatedPostData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-
-      final post = result.node as GetNode_node__Post;
-      expect(post.title, "Hello World Updated");
-      expect(post.content, "This is my updated post");
-      expect(post.views, 200);
-      expect(post.updatedAt, "2024-01-10T00:00:00Z");
-    });
-
-    test(
-      'interfaceSharedFragmentsCacheNormalization - Optional null to some',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        final variables = GetNodeOptVariables(id: "user1");
-
-        var (result, updateCtx) = GetNodeOptResponse.fromResponseImpl(
-          nodeOptNull,
-          ctx,
-          variables,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetNodeOptResponse.fromCache(newCtx, variables);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetNodeOptResponse.fromResponse(
-          userOptData,
-          ctx: ctx,
-          variables: variables,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.nodeOpt, isNotNull);
-      },
-    );
-
-    test(
-      'interfaceSharedFragmentsCacheNormalization - Optional some to null',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        final variables = GetNodeOptVariables(id: "user1");
-
-        var (result, updateCtx) = GetNodeOptResponse.fromResponseImpl(
-          userOptData,
-          ctx,
-          variables,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetNodeOptResponse.fromCache(newCtx, variables);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetNodeOptResponse.fromResponse(
-          nodeOptNull,
-          ctx: ctx,
-          variables: variables,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.nodeOpt, isNull);
-      },
-    );
-  });
+  group('Test interface shared fragments - cache normalization', () {});
 
   final nodesData = {
     "nodes": [
@@ -479,7 +307,7 @@ void main() {
 
   group('Test interface shared fragments - list', () {
     test('interfaceSharedFragmentsList', () {
-      final result = GetNodesResponse.fromResponse(nodesData);
+      final result = GetNodesResponse.fromJson(nodesData);
 
       expect(result.nodes.length, 3);
 
@@ -508,13 +336,13 @@ void main() {
     });
 
     test('interfaceSharedFragmentsList - equals', () {
-      final result1 = GetNodesResponse.fromResponse(nodesData);
-      final result2 = GetNodesResponse.fromResponse(nodesData);
+      final result1 = GetNodesResponse.fromJson(nodesData);
+      final result2 = GetNodesResponse.fromJson(nodesData);
       expect(result1, equals(result2));
     });
 
     test('interfaceSharedFragmentsList - toJson', () {
-      final result = GetNodesResponse.fromResponse(nodesData);
+      final result = GetNodesResponse.fromJson(nodesData);
       final json = result.toJson();
       expect(json, nodesData);
     });
@@ -534,9 +362,8 @@ void main() {
   group('Test interface shared fragments - all types', () {
     test('interfaceSharedFragmentsAllTypes - Comment', () {
       final variables = GetNodeAllTypesVariables(id: "comment1");
-      final result = GetNodeAllTypesResponse.fromResponse(
+      final result = GetNodeAllTypesResponse.fromJson(
         commentAllTypesData,
-        variables: variables,
       );
 
       expect(result.node, isA<GetNodeAllTypes_node__Comment>());
@@ -559,13 +386,11 @@ void main() {
 
     test('interfaceSharedFragmentsAllTypes - equals', () {
       final variables = GetNodeAllTypesVariables(id: "comment1");
-      final result1 = GetNodeAllTypesResponse.fromResponse(
+      final result1 = GetNodeAllTypesResponse.fromJson(
         commentAllTypesData,
-        variables: variables,
       );
-      final result2 = GetNodeAllTypesResponse.fromResponse(
+      final result2 = GetNodeAllTypesResponse.fromJson(
         commentAllTypesData,
-        variables: variables,
       );
       expect(result1, equals(result2));
       expect(result1.node, equals(result2.node));
@@ -573,9 +398,8 @@ void main() {
 
     test('interfaceSharedFragmentsAllTypes - toJson', () {
       final variables = GetNodeAllTypesVariables(id: "comment1");
-      final result = GetNodeAllTypesResponse.fromResponse(
+      final result = GetNodeAllTypesResponse.fromJson(
         commentAllTypesData,
-        variables: variables,
       );
       final json = result.toJson();
       expect(json, commentAllTypesData);

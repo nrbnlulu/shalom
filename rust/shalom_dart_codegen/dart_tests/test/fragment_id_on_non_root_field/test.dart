@@ -1,7 +1,5 @@
-import "dart:async";
-
-import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
+import 'package:shalom/shalom.dart' show Some, None;
 import "__graphql__/schema.shalom.dart";
 import "__graphql__/UpdateUser.shalom.dart";
 import "__graphql__/GetUser.shalom.dart";
@@ -86,9 +84,8 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result = UpdateUserResponse.fromResponse(
+        final result = UpdateUserResponse.fromJson(
           updateUserSuccessData,
-          variables: variables,
         );
 
         // Access fields from the fragment on data field
@@ -104,9 +101,8 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", email: Some("invalid-email")),
         );
-        final result = UpdateUserResponse.fromResponse(
+        final result = UpdateUserResponse.fromJson(
           updateUserErrorData,
-          variables: variables,
         );
 
         // Access fields from the fragment on error field
@@ -125,9 +121,8 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", name: Some("Bob Jones")),
         );
-        final result = UpdateUserResponse.fromResponse(
+        final result = UpdateUserResponse.fromJson(
           updateUserBothData,
-          variables: variables,
         );
 
         // Both data and error should be accessible
@@ -149,13 +144,11 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result1 = UpdateUserResponse.fromResponse(
+        final result1 = UpdateUserResponse.fromJson(
           updateUserSuccessData,
-          variables: variables,
         );
-        final result2 = UpdateUserResponse.fromResponse(
+        final result2 = UpdateUserResponse.fromJson(
           updateUserSuccessData,
-          variables: variables,
         );
 
         expect(result1, equals(result2));
@@ -167,13 +160,11 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", name: Some("Alice Smith")),
         );
-        final result1 = UpdateUserResponse.fromResponse(
+        final result1 = UpdateUserResponse.fromJson(
           updateUserSuccessData,
-          variables: variables,
         );
-        final result2 = UpdateUserResponse.fromResponse(
+        final result2 = UpdateUserResponse.fromJson(
           updateUserErrorData,
-          variables: variables,
         );
 
         expect(result1, isNot(equals(result2)));
@@ -190,9 +181,8 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result = UpdateUserResponse.fromResponse(
+        final result = UpdateUserResponse.fromJson(
           updateUserSuccessData,
-          variables: variables,
         );
         final json = result.toJson();
 
@@ -203,111 +193,12 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", email: Some("invalid")),
         );
-        final result = UpdateUserResponse.fromResponse(
+        final result = UpdateUserResponse.fromJson(
           updateUserErrorData,
-          variables: variables,
         );
         final json = result.toJson();
 
         expect(json, equals(updateUserErrorData));
-      });
-    });
-
-    group('fragmentCacheNormalization - Cache updates correctly', () {
-      test('user data is normalized by ID', () async {
-        final ctx = ShalomCtx.withCapacity();
-        final variables = UpdateUserVariables(
-          input: UpdateUserInput(
-            id: "user1",
-            name: Some("Alice Smith"),
-            email: Some("alice@example.com"),
-          ),
-        );
-
-        // First, fetch user with GetUser query
-        var (
-          getUserResult,
-          getUserUpdateCtx,
-        ) = GetUserResponse.fromResponseImpl(
-          getUserData,
-          ctx,
-          GetUserVariables(id: "user1"),
-        );
-
-        expect(getUserResult.user?.id, "user1");
-        expect(getUserResult.user?.name, "Alice Smith");
-        expect(getUserResult.user?.age, 30);
-
-        // Set up subscription to detect changes
-        final hasChanged = Completer<bool>();
-        final sub = ctx.subscribe(getUserUpdateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          getUserResult = GetUserResponse.fromCache(
-            newCtx,
-            GetUserVariables(id: "user1"),
-          );
-          hasChanged.complete(true);
-        });
-
-        // Now update the user with UpdateUser mutation
-        final updateResult = UpdateUserResponse.fromResponse(
-          updateUserChangedData,
-          variables: variables,
-          ctx: ctx,
-        );
-
-        // Wait for cache update notification
-        await hasChanged.future.timeout(Duration(seconds: 1));
-
-        // The GetUser query should now return updated data because User:user1 was normalized
-        expect(getUserResult.user?.id, "user1");
-        expect(getUserResult.user?.name, "Alice Johnson");
-        expect(getUserResult.user?.email, "alice.j@example.com");
-        expect(getUserResult.user?.age, 31);
-        expect(getUserResult.user?.bio, "Senior Software Engineer");
-
-        // Also verify the mutation result has the correct data
-        expect(updateResult.updateUser.data?.name, "Alice Johnson");
-        expect(updateResult.updateUser.data?.age, 31);
-      });
-
-      test('null to data updates correctly', () async {
-        final ctx = ShalomCtx.withCapacity();
-        final variables = UpdateUserVariables(
-          input: UpdateUserInput(id: "user1", email: Some("invalid")),
-        );
-
-        // Start with error (data is null)
-        var (result, updateCtx) = UpdateUserResponse.fromResponseImpl(
-          updateUserErrorData,
-          ctx,
-          variables,
-        );
-
-        expect(result.updateUser.data, null);
-        expect(result.updateUser.error, isNotNull);
-
-        // Set up subscription
-        final hasChanged = Completer<bool>();
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = UpdateUserResponse.fromCache(newCtx, variables);
-          hasChanged.complete(true);
-        });
-
-        // Update to success (error becomes null, data is present)
-        final _ = UpdateUserResponse.fromResponse(
-          updateUserSuccessData,
-          variables: variables,
-          ctx: ctx,
-        );
-
-        // Wait for update
-        await hasChanged.future.timeout(Duration(seconds: 1));
-
-        expect(result.updateUser.data, isNotNull);
-        expect(result.updateUser.data?.id, "user1");
-        expect(result.updateUser.error, null);
       });
     });
   });

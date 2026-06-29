@@ -1,0 +1,66 @@
+// ignore_for_file: unused_import
+{% if not is_pure_dart -%}
+import 'package:flutter/widgets.dart';
+{% endif -%}
+import 'package:shalom/shalom.dart';
+{% if not is_pure_dart -%}
+import 'package:shalom_flutter/shalom_flutter.dart' show ShalomInheritedWidget;
+{% endif %}
+
+/// The GraphQL schema SDL inlined at code-generation time.
+///
+/// Use this to create the [ShalomRuntimeClient] — no async asset loading needed:
+/// ```dart
+/// final client = ShalomRuntimeClient.create(schemaSdl: kSchemaSdl, link: link);
+/// ```
+const String kSchemaSdl = r'''{{ schema_sdl }}''';
+
+/// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
+void registerShalomDefinitions(ShalomRuntimeClient client) {
+{% for w in raw_fragments %}  client.registerFragment(document: r'''
+{{ w.document }}
+''');
+{% endfor %}
+{% for w in fragments %}  client.registerFragment(document: r'''
+fragment {{ w.class_name }} {{ w.document }}
+''');
+{% endfor %}{% for w in queries %}  client.registerOperation(document: r'''
+query {{ w.class_name }} {{ w.document }}
+''');
+{% endfor %}{% for w in mutations %}  client.registerOperation(document: r'''
+mutation {{ w.class_name }} {{ w.document }}
+''');
+{% endfor %}{% for w in subscriptions %}  client.registerOperation(document: r'''
+subscription {{ w.class_name }} {{ w.document }}
+''');
+{% endfor %}}
+
+{% if not is_pure_dart -%}
+/// Generated [ShalomProvider] for this app.
+///
+/// Place this at the root of your widget tree.  On hot-reload it automatically
+/// reloads the schema and re-registers all operations and fragments so that any
+/// SDL changes take effect without a full restart.
+class ShalomProvider extends StatefulWidget {
+  final ShalomRuntimeClient client;
+  final Widget child;
+
+  const ShalomProvider({super.key, required this.client, required this.child});
+
+  @override
+  State<ShalomProvider> createState() => _ShalomProviderState();
+}
+
+class _ShalomProviderState extends State<ShalomProvider> {
+  @override
+  void reassemble() {
+    super.reassemble();
+    widget.client.reloadSchema(schemaSdl: kSchemaSdl);
+    registerShalomDefinitions(widget.client);
+  }
+
+  @override
+  Widget build(BuildContext context) =>
+      ShalomInheritedWidget(client: widget.client, child: widget.child);
+}
+{% endif %}
