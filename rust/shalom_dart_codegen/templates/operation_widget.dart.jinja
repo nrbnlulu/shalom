@@ -15,7 +15,7 @@ import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart';
 import '{{ operation_name }}.shalom.dart';
-{% for import_path in generate_fragment_imports(context.operation.file_path) -%}
+{% for import_path in generate_fragment_imports(context.operation.file_path) | sort -%}
 import '{{ import_path }}';
 {% endfor -%}
 

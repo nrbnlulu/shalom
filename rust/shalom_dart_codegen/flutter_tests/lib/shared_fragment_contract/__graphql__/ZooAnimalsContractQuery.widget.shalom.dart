@@ -9,10 +9,10 @@ import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart';
 import 'ZooAnimalsContractQuery.shalom.dart';
 import 'CommonAnimalFrag.shalom.dart';
-import 'ToyFrag.shalom.dart';
-import 'HasFavoriteToyFrag.shalom.dart';
 import 'DogFavoriteFrag.shalom.dart';
 import 'DogWithFavoriteToyFrag.shalom.dart';
+import 'HasFavoriteToyFrag.shalom.dart';
+import 'ToyFrag.shalom.dart';
 
 abstract class $ZooAnimalsContractQuery extends StatefulWidget {
   String operation$Name() => 'ZooAnimalsContractQuery';

@@ -37,4 +37,4 @@ tasks:
     test:
         cmds:
             - cd rust && cargo test -- --test-threads=2
-            - cd dart/shalom && fvm exec dart test
+            - cd dart/shalom && fvm dart test

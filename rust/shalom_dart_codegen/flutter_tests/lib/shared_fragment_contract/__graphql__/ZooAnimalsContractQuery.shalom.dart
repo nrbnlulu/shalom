@@ -9,10 +9,10 @@ import 'package:collection/collection.dart';
 
 // Fragment imports
 import 'CommonAnimalFrag.shalom.dart';
-import 'ToyFrag.shalom.dart';
-import 'HasFavoriteToyFrag.shalom.dart';
 import 'DogFavoriteFrag.shalom.dart';
 import 'DogWithFavoriteToyFrag.shalom.dart';
+import 'HasFavoriteToyFrag.shalom.dart';
+import 'ToyFrag.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
 

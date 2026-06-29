@@ -6,9 +6,9 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
-import 'ToyFrag.shalom.dart';
-import 'HasFavoriteToyFrag.shalom.dart';
 import 'CommonAnimalFrag.shalom.dart';
+import 'HasFavoriteToyFrag.shalom.dart';
+import 'ToyFrag.shalom.dart';
 
 import 'dart:async' show Stream;
 import 'package:flutter/widgets.dart';
