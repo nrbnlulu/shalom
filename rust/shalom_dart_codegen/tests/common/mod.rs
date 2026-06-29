@@ -188,19 +188,33 @@ pub fn run_flutter_tests(usecase: &str) {
     } else {
         std::process::Command::new(&flutter_cmd)
     };
-    // Find libshalom_ffi.so in the hooks_runner output directory so we can
+    let native_lib_name = if cfg!(target_os = "windows") {
+        "shalom_ffi.dll"
+    } else if cfg!(target_os = "macos") {
+        "libshalom_ffi.dylib"
+    } else {
+        "libshalom_ffi.so"
+    };
+
+    // Find the native library in the hooks_runner output directory so we can
     // point FRB to the correct native library at test runtime.
-    let native_lib_dir = glob::glob(
-        root_dir
-            .join(".dart_tool/hooks_runner/shared/shalom/build/*/target/*/release/libshalom_ffi.so")
-            .to_str()
-            .unwrap(),
-    )
-    .ok()
-    .and_then(|mut it| it.next())
-    .and_then(|r| r.ok())
-    .and_then(|p| p.canonicalize().ok())
-    .and_then(|p| p.parent().map(|d| d.to_path_buf()));
+    let native_lib_dir = std::env::var_os("FRB_DART_LOAD_EXTERNAL_LIBRARY_NATIVE_LIB_DIR")
+        .map(PathBuf::from)
+        .or_else(|| {
+            glob::glob(
+                root_dir
+                    .join(format!(
+                        ".dart_tool/hooks_runner/shared/shalom/build/*/target/*/release/{native_lib_name}"
+                    ))
+                    .to_str()
+                    .unwrap(),
+            )
+            .ok()
+            .and_then(|mut it| it.next())
+            .and_then(|r| r.ok())
+            .and_then(|p| p.canonicalize().ok())
+            .and_then(|p| p.parent().map(|d| d.to_path_buf()))
+        });
 
     flutter_test
         .current_dir(&root_dir)

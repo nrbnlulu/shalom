@@ -47,7 +47,12 @@ jobs:
                   cd rust/shalom_dart_codegen/flutter_tests/
                   flutter packages get
 
+            - name: Build native library
+              run: cargo build -p shalom_ffi --release
+
             - name: Test
+              env:
+                  FRB_DART_LOAD_EXTERNAL_LIBRARY_NATIVE_LIB_DIR: ${{ github.workspace }}/target/release
               run: |
                   task test
 
@@ -58,4 +63,3 @@ jobs:
             - name: Lint
               if: runner.os == 'Linux'
               run: task lint
-              
