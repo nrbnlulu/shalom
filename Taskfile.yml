@@ -4,6 +4,20 @@ version: "3"
 
 vars:
     GREETING: Hello, World!
+    DART_BIN:
+        sh: |
+            if command -v fvm > /dev/null 2>&1; then
+              echo "fvm dart"
+            else
+              echo "dart"
+            fi
+    FLUTTER_BIN:
+        sh: |
+            if command -v fvm > /dev/null 2>&1; then
+              echo "fvm flutter"
+            else
+              echo "flutter"
+            fi
 
 tasks:
     default:
@@ -13,12 +27,12 @@ tasks:
 
     generate_rust_bindings:
         cmds:
-            - cd dart/shalom && fvm exec flutter_rust_bridge_codegen generate
+            - cd dart/shalom && {{.DART_BIN}} run flutter_rust_bridge_codegen generate
     fmt:
         cmds:
             - cargo fmt --all
-            - cd rust/shalom_dart_codegen/dart_tests && fvm exec dart format ./test ./lib
-            - fvm exec dart format ./dart
+            - cd rust/shalom_dart_codegen/dart_tests && {{.DART_BIN}} format ./test ./lib
+            - "{{.DART_BIN}} format ./dart"
 
     fix:
         cmds:
@@ -29,12 +43,12 @@ tasks:
         cmds:
             - cd rust && cargo fmt --all --check
             - cd rust && cargo clippy -- -D warnings
-            - cd rust/shalom_dart_codegen/dart_tests && find . -type f -name "*.dart" -not -path "*/__graphql__/*" | xargs fvm exec dart format --set-exit-if-changed
-            - cd rust/shalom_dart_codegen/dart_tests && fvm exec dart analyze ./test ./lib
-            - cd dart/shalom && fvm exec dart analyze ./test ./lib
+            - cd rust/shalom_dart_codegen/dart_tests && find . -type f -name "*.dart" -not -path "*/__graphql__/*" | xargs {{.DART_BIN}} format --set-exit-if-changed
+            - cd rust/shalom_dart_codegen/dart_tests && {{.DART_BIN}} analyze ./test ./lib
+            - cd dart/shalom && {{.DART_BIN}} analyze ./test ./lib
             - typos
 
     test:
         cmds:
             - cd rust && cargo test -- --test-threads=2
-            - cd dart/shalom && fvm dart test
+            - cd dart/shalom && {{.DART_BIN}} test
