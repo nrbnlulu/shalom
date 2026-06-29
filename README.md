@@ -43,13 +43,14 @@ shalom generate --path ./my-project --strict
 
 **Watch**
 
-Watch for changes in GraphQL files (`.graphql` and `.gql`) and automatically regenerate code:
+Watch for changes in and automatically regenerate code:
 
 ```bash
 shalom watch [OPTIONS]
 ```
 ### Examples 
-- [swapi-flutter](./examples/flutter/swapi/README.md)
+check the gif_search example under `./examples/flutter/gif_search`
+
 ### How to: Custom scalars 
 1. make sure to add shalom.yml in project root.
 its content should look like this
