@@ -27,7 +27,7 @@ tasks:
 
     generate_rust_bindings:
         cmds:
-            - cd dart/shalom && {{.DART_BIN}} run flutter_rust_bridge_codegen generate
+            - cd dart/shalom && flutter_rust_bridge_codegen generate
     fmt:
         cmds:
             - cargo fmt --all

@@ -569,7 +569,7 @@ fn topological_sort(dependencies: &HashMap<String, Vec<String>>) -> Result<Vec<S
 
     let mut queue: VecDeque<String> = in_degree
         .iter()
-        .filter(|(_, &deg)| deg == 0)
+        .filter(|&(_, &deg)| deg == 0)
         .map(|(k, _)| k.clone())
         .collect();
     let mut result = Vec::new();
