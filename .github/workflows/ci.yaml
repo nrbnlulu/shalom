@@ -53,6 +53,7 @@ jobs:
                   task test
 
             - name: Install typos
+              if: runner.os == 'Linux'
               run: |
                   cargo install typos-cli
 
