@@ -199,7 +199,7 @@ class StreetSubscription_streetAnimals__Dog
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-// ------------ V2 WIDGET API -------------
+// ------------ widget API -------------
 
 final class StreetSubscriptionData implements shalom_core.OperationInterface {
   final StreetSubscription_streetAnimals streetAnimals;
@@ -252,4 +252,4 @@ final class StreetSubscriptionObservable {
   }
 }
 
-// ------------ END V2 WIDGET API -------------
+// ------------ END widget API -------------

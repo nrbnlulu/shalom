@@ -146,7 +146,7 @@ class AlbumsPage_albums {
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-// ------------ V2 WIDGET API -------------
+// ------------ widget API -------------
 
 final class AlbumsPageData implements shalom_core.OperationInterface {
   final List<AlbumWidgetRef> albums;
@@ -205,4 +205,4 @@ final class AlbumsPageObservable {
   }
 }
 
-// ------------ END V2 WIDGET API -------------
+// ------------ END widget API -------------

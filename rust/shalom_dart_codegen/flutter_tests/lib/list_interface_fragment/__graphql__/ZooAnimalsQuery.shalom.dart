@@ -131,7 +131,7 @@ class ZooAnimalsQuery_zoo {
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-// ------------ V2 WIDGET API -------------
+// ------------ widget API -------------
 
 final class ZooAnimalsQueryData implements shalom_core.OperationInterface {
   final ZooAnimalsWidgetRef? zoo;
@@ -222,4 +222,4 @@ final class ZooAnimalsQueryVariables {
   int get hashCode => Object.hashAll([id]);
 }
 
-// ------------ END V2 WIDGET API -------------
+// ------------ END widget API -------------

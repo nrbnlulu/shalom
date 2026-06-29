@@ -199,7 +199,7 @@ class ShelterSubscription_shelterAnimals__Dog
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-// ------------ V2 WIDGET API -------------
+// ------------ widget API -------------
 
 final class ShelterSubscriptionData implements shalom_core.OperationInterface {
   final ShelterSubscription_shelterAnimals shelterAnimals;
@@ -252,4 +252,4 @@ final class ShelterSubscriptionObservable {
   }
 }
 
-// ------------ END V2 WIDGET API -------------
+// ------------ END widget API -------------

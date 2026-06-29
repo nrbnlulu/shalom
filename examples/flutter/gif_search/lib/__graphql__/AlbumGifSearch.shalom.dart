@@ -183,7 +183,7 @@ class AlbumGifSearch_searchGifs_items {
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-// ------------ V2 WIDGET API -------------
+// ------------ widget API -------------
 
 final class AlbumGifSearchData implements shalom_core.OperationInterface {
   final AlbumGifSearch_searchGifs searchGifs;
@@ -285,4 +285,4 @@ final class AlbumGifSearchVariables {
   int get hashCode => Object.hashAll([limit, offset, query]);
 }
 
-// ------------ END V2 WIDGET API -------------
+// ------------ END widget API -------------

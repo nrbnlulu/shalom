@@ -92,7 +92,7 @@ class UserWidget_user {
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-// ------------ V2 WIDGET API -------------
+// ------------ widget API -------------
 
 final class UserWidgetData implements shalom_core.OperationInterface {
   final UserWidget_user? user;
@@ -178,4 +178,4 @@ final class UserWidgetVariables {
   int get hashCode => Object.hashAll([id]);
 }
 
-// ------------ END V2 WIDGET API -------------
+// ------------ END widget API -------------

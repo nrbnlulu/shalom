@@ -174,7 +174,7 @@ class AnimalQuery_animal__Dog extends AnimalQuery_animal {
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-// ------------ V2 WIDGET API -------------
+// ------------ widget API -------------
 
 final class AnimalQueryData implements shalom_core.OperationInterface {
   final AnimalWidgetRef? animal;
@@ -265,4 +265,4 @@ final class AnimalQueryVariables {
   int get hashCode => Object.hashAll([id]);
 }
 
-// ------------ END V2 WIDGET API -------------
+// ------------ END widget API -------------

@@ -96,11 +96,7 @@ fn should_skip_dir(path: &Path, gen_dir: &str) -> bool {
         return false;
     };
 
-    name == gen_dir
-        || name == "__graphql__"
-        || name == "__graphql_v2__"
-        || name == ".dart_tool"
-        || name == "build"
+    name == gen_dir || name == "__graphql__" || name == ".dart_tool" || name == "build"
 }
 
 fn might_contain_widget_annotation(content: &str) -> bool {
@@ -148,7 +144,6 @@ mod tests {
                 .as_nanos()
         ));
         fs::create_dir_all(root.join("lib/__graphql__")).unwrap();
-        fs::create_dir_all(root.join("lib/__graphql_v2__")).unwrap();
         fs::create_dir_all(root.join(".dart_tool")).unwrap();
 
         let source_path = root.join("lib/widget.dart");
@@ -173,12 +168,12 @@ class Generated {}
         )
         .unwrap();
         fs::write(
-            root.join("lib/__graphql_v2__/GeneratedV2.shalom.dart"),
+            root.join("lib/__graphql__/Generated.shalom.dart"),
             r#"
 @Query(r"""
-query GeneratedV2 { ping }
+query Generated { ping }
 """)
-class GeneratedV2 {}
+class Generated {}
 "#,
         )
         .unwrap();
@@ -193,7 +188,7 @@ class Cached {}
         )
         .unwrap();
 
-        let widgets = scan_dart_widgets(&root, "__graphql_v2__").unwrap();
+        let widgets = scan_dart_widgets(&root, "__graphql__").unwrap();
 
         assert_eq!(widgets.len(), 1);
         assert_eq!(widgets[0].class_name, "WidgetSub");

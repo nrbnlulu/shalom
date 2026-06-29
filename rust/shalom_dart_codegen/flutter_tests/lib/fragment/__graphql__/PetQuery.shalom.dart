@@ -98,7 +98,7 @@ class PetQuery_pet {
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-// ------------ V2 WIDGET API -------------
+// ------------ widget API -------------
 
 final class PetQueryData implements shalom_core.OperationInterface {
   final PetWidgetRef? pet;
@@ -189,4 +189,4 @@ final class PetQueryVariables {
   int get hashCode => Object.hashAll([id]);
 }
 
-// ------------ END V2 WIDGET API -------------
+// ------------ END widget API -------------

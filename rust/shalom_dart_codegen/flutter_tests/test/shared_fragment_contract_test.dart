@@ -3,7 +3,7 @@ import 'package:flutter_tests/shared_fragment_contract/__graphql__/ZooAnimalsCon
 
 void main() {
   test(
-    'v2 Flutter operation variants keep fragment contract fields inline',
+    'Flutter operation variants keep fragment contract fields inline',
     () {
       final result = ZooAnimalsContractQuery_animals__Dog.fromJson({
         '__typename': 'Dog',

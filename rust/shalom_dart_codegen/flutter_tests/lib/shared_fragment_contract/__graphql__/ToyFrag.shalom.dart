@@ -10,7 +10,7 @@ import 'dart:async' show Stream;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart';
 
-// ------------ V2 FRAGMENT WIDGET API -------------
+// ------------ fragment widget API -------------
 
 extension type ToyFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
   static const String fragmentName = 'ToyFrag';
@@ -146,4 +146,4 @@ class ToyFragScope extends StatelessWidget {
   }
 }
 
-// ------------ END V2 FRAGMENT WIDGET API -------------
+// ------------ END fragment widget API -------------

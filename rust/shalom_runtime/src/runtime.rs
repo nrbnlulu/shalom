@@ -345,7 +345,7 @@ impl ShalomRuntime {
     }
 
     // -----------------------------------------------------------------------
-    // Subscriptions — V2 API
+    // Subscriptions — widget API
     // -----------------------------------------------------------------------
 
     /// Create a cache subscription for a pre-registered operation and return

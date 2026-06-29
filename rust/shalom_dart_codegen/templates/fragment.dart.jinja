@@ -28,7 +28,7 @@ import 'package:shalom_flutter/shalom_flutter.dart';
 {% endif %}
 
 {% if is_observe %}
-// ------------ V2 FRAGMENT WIDGET API -------------
+// ------------ fragment widget API -------------
 
 extension type {{ fragment_name }}Ref.fromInput(shalom_core.ObservedRefInput _inner) {
   static const String fragmentName = '{{ fragment_name }}';
@@ -325,7 +325,7 @@ class {{ fragment_name }}Scope extends StatelessWidget {
   }
 }
 
-// ------------ END V2 FRAGMENT WIDGET API -------------
+// ------------ END fragment widget API -------------
 {% else %}
 {% if fragment_name not in typedefs.interfaces and fragment_name not in typedefs.unions %}
 // Generate abstract fragment class

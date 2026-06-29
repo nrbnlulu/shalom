@@ -113,7 +113,7 @@ class UserCardQuery_user {
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-// ------------ V2 WIDGET API -------------
+// ------------ widget API -------------
 
 final class UserCardQueryData implements shalom_core.OperationInterface {
   final UserCardQuery_user? user;
@@ -199,4 +199,4 @@ final class UserCardQueryVariables {
   int get hashCode => Object.hashAll([id]);
 }
 
-// ------------ END V2 WIDGET API -------------
+// ------------ END widget API -------------

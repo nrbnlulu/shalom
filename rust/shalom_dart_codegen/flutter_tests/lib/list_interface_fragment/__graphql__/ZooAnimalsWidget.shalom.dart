@@ -10,7 +10,7 @@ import 'dart:async' show Stream;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart';
 
-// ------------ V2 FRAGMENT WIDGET API -------------
+// ------------ fragment widget API -------------
 
 extension type ZooAnimalsWidgetRef.fromInput(
   shalom_core.ObservedRefInput _inner
@@ -288,4 +288,4 @@ class ZooAnimalsWidgetScope extends StatelessWidget {
   }
 }
 
-// ------------ END V2 FRAGMENT WIDGET API -------------
+// ------------ END fragment widget API -------------

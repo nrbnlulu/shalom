@@ -1184,11 +1184,11 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
         }
     }
 
-    // V2: Scan Dart files for @query/@fragment annotations and generate sidecars
+    //  Scan Dart files for @query/@fragment annotations and generate sidecars
     let widgets = scan_dart_widgets(pwd, gen_dir)?;
     if !widgets.is_empty() {
         info!("Found {} widget annotation(s) in Dart files", widgets.len());
-        generate_v2_widgets(
+        generate_widget_sidecars(
             &ctx,
             &widgets,
             custom_scalar_imports.clone(),
@@ -1197,7 +1197,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
         )?;
     }
 
-    // V2: Generate registration function in gen_dir alongside generated schema files.
+    //  Generate registration function in gen_dir alongside generated schema files.
     // When schema_output_path is configured (e.g. "./lib"), the schema lands directly
     // in that dir, so gen_dir sits beneath it (e.g. lib/my_gen_dir/).
     // Without schema_output_path, get_schema_output_dir already includes gen_dir.
@@ -1207,7 +1207,7 @@ pub fn codegen_entry_point(options: CodegenOptions) -> Result<()> {
         } else {
             get_schema_output_dir(&ctx, gen_dir)
         };
-        generate_v2_registration_file(&schema_output_dir, &widgets, &ctx, is_pure_dart)?;
+        generate_registration_file(&schema_output_dir, &widgets, &ctx, is_pure_dart)?;
     }
 
     if options.fmt {
@@ -1334,12 +1334,12 @@ fn format_generated_files(pwd: &Path) -> Result<()> {
 }
 
 // =========================================================================
-// V2: Dart widget scanning and generation
+//  Dart widget scanning and generation
 // =========================================================================
 
 /// Generate sidecar files for each @query/@fragment annotated Dart widget.
 /// Fragments are processed first so they are registered before queries that spread them.
-fn generate_v2_widgets(
+fn generate_widget_sidecars(
     ctx: &SharedShalomGlobalContext,
     widgets: &[WidgetAnnotation],
     custom_scalar_imports: HashMap<String, String>,
@@ -1385,9 +1385,9 @@ fn generate_v2_widgets(
     {
         let res = match widget.widget_kind {
             WidgetKind::Query => {
-                generate_v2_query_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
+                generate_query_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
             }
-            WidgetKind::Fragment => generate_v2_fragment_sidecar(
+            WidgetKind::Fragment => generate_fragment_sidecar(
                 ctx,
                 widget,
                 custom_scalar_imports.clone(),
@@ -1395,18 +1395,15 @@ fn generate_v2_widgets(
                 is_pure_dart,
             ),
             WidgetKind::Mutation => {
-                generate_v2_mutation_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
+                generate_mutation_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
             }
-            WidgetKind::Subscription => generate_v2_subscription_sidecar(
-                ctx,
-                widget,
-                custom_scalar_imports.clone(),
-                gen_dir,
-            ),
+            WidgetKind::Subscription => {
+                generate_subscription_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
+            }
         };
         if let Err(err) = res {
             return Err(anyhow::anyhow!(
-                "Failed to generate V2 sidecar for '{}': {}",
+                "Failed to generate sidecar for '{}': {}",
                 widget.class_name,
                 err
             ));
@@ -1499,7 +1496,7 @@ fn widget_fragment_dependency_order<'a>(
 }
 
 /// Generate a sidecar for a @query annotated widget.
-fn generate_v2_query_sidecar(
+fn generate_query_sidecar(
     ctx: &SharedShalomGlobalContext,
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
@@ -1543,19 +1540,19 @@ fn generate_v2_query_sidecar(
     let gen_path = out_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
 
     fs::write(&gen_path, rendered)?;
-    info!("Generated V2 query sidecar: {}", gen_path.display());
+    info!("Generated query sidecar: {}", gen_path.display());
 
     // Generate the Flutter widget file (imports + re-exports the types file above).
     let widget_rendered = op_env.render_widget(&op_ctx);
     let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
     fs::write(&widget_path, widget_rendered)?;
-    info!("Generated V2 widget sidecar: {}", widget_path.display());
+    info!("Generated widget sidecar: {}", widget_path.display());
 
     Ok(())
 }
 
 /// Generate a sidecar for a @fragment annotated widget.
-fn generate_v2_fragment_sidecar(
+fn generate_fragment_sidecar(
     ctx: &SharedShalomGlobalContext,
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
@@ -1608,12 +1605,12 @@ fn generate_v2_fragment_sidecar(
     let gen_path = out_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
 
     fs::write(&gen_path, rendered)?;
-    info!("Generated V2 fragment sidecar: {}", gen_path.display());
+    info!("Generated fragment sidecar: {}", gen_path.display());
     Ok(())
 }
 
 /// Generate a sidecar for a @mutation annotated class.
-fn generate_v2_mutation_sidecar(
+fn generate_mutation_sidecar(
     ctx: &SharedShalomGlobalContext,
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
@@ -1650,7 +1647,7 @@ fn generate_v2_mutation_sidecar(
     );
     let gen_path = out_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
     fs::write(&gen_path, rendered)?;
-    info!("Generated V2 mutation sidecar: {}", gen_path.display());
+    info!("Generated mutation sidecar: {}", gen_path.display());
 
     // $MutationName client command/facade file.
     let mutation_facade_rendered = op_env.render_mutation_facade(
@@ -1665,7 +1662,7 @@ fn generate_v2_mutation_sidecar(
         fs::remove_file(&stale_widget_path)?;
     }
     info!(
-        "Generated V2 mutation facade sidecar: {}",
+        "Generated mutation facade sidecar: {}",
         mutation_facade_path.display()
     );
 
@@ -1673,7 +1670,7 @@ fn generate_v2_mutation_sidecar(
 }
 
 /// Generate a sidecar for a @subscription annotated widget.
-fn generate_v2_subscription_sidecar(
+fn generate_subscription_sidecar(
     ctx: &SharedShalomGlobalContext,
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
@@ -1714,13 +1711,13 @@ fn generate_v2_subscription_sidecar(
     let gen_path = out_dir.join(format!("{}.{}", widget.class_name, END_OF_FILE));
 
     fs::write(&gen_path, rendered)?;
-    info!("Generated V2 subscription sidecar: {}", gen_path.display());
+    info!("Generated subscription sidecar: {}", gen_path.display());
 
     let widget_rendered = op_env.render_widget(&op_ctx);
     let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
     fs::write(&widget_path, widget_rendered)?;
     info!(
-        "Generated V2 subscription widget sidecar: {}",
+        "Generated subscription widget sidecar: {}",
         widget_path.display()
     );
 
@@ -1728,7 +1725,7 @@ fn generate_v2_subscription_sidecar(
 }
 
 /// Generate the registration function next to the schema file (in the schema output dir).
-fn generate_v2_registration_file(
+fn generate_registration_file(
     schema_output_dir: &Path,
     widgets: &[WidgetAnnotation],
     ctx: &SharedShalomGlobalContext,
@@ -1890,6 +1887,6 @@ fn generate_v2_registration_file(
     })?;
 
     fs::write(&gen_path, rendered)?;
-    info!("Generated V2 registration file: {}", gen_path.display());
+    info!("Generated registration file: {}", gen_path.display());
     Ok(())
 }

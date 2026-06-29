@@ -78,7 +78,7 @@ class {{ response_class_name }} {% if not is_observe %}{{ implements_used_fragme
 {{ generate_multi_type_list_extensions(multi_type_list_selections) }}
 
 {% if is_observe %}
-// ------------ V2 WIDGET API -------------
+// ------------ widget API -------------
 
 final class {{ operation_name }}Data implements shalom_core.OperationInterface {
     {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
@@ -221,7 +221,7 @@ final class {{ operation_name }}Variables {
 }
 {% endif %}
 
-// ------------ END V2 WIDGET API -------------
+// ------------ END widget API -------------
 {% else %}
 class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_name}}Response>{
     {% if op_variables_exist %}

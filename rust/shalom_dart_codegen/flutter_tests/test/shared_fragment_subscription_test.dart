@@ -5,7 +5,7 @@ import 'package:flutter_tests/shared_fragment_subscription/__graphql__/ShelterSu
 import 'package:flutter_tests/shared_fragment_subscription/__graphql__/StreetSubscription.shalom.dart';
 
 void main() {
-  test('v2 Flutter subscription variants implement shared fragment', () {
+  test('Flutter subscription variants implement shared fragment', () {
     final shelterDog = ShelterSubscription_shelterAnimals__Dog(
       id: 'dog-1',
       name: 'Rex',

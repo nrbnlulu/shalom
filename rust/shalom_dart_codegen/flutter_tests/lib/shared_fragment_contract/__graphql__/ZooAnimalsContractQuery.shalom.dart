@@ -224,7 +224,7 @@ extension ZooAnimalsContractQuery_animals$WhereTypeExt
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-// ------------ V2 WIDGET API -------------
+// ------------ widget API -------------
 
 final class ZooAnimalsContractQueryData
     implements shalom_core.OperationInterface {
@@ -285,4 +285,4 @@ final class ZooAnimalsContractQueryObservable {
   }
 }
 
-// ------------ END V2 WIDGET API -------------
+// ------------ END widget API -------------
