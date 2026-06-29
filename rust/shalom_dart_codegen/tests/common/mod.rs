@@ -186,7 +186,7 @@ pub fn run_flutter_tests(usecase: &str) {
         }
         cmd
     } else {
-        std::process::Command::new(&dart)
+        std::process::Command::new(&flutter_cmd)
     };
     // Find libshalom_ffi.so in the hooks_runner output directory so we can
     // point FRB to the correct native library at test runtime.
