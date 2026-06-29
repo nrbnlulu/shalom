@@ -106,18 +106,16 @@ Generated query/subscription APIs usually include:
 - `ClassNameData.readFrom(cache)` for mutation update callbacks.
 - `executionPolicy`, defaulting to `ExecutionPolicyInput.cacheFirst`.
 
-For imperative one-off reads, use generated names, variables, and decoders:
+Avoid `ShalomScope.of(context).request(...).first` for reads you want to keep in cache, including one-off operations like submit-to-search. The runtime's GC only keeps a root operation field (and entities only reachable through it) alive while some active subscription still references it; a one-shot `request(...)` never registers as an active subscriber, so the written data becomes eligible for eviction the moment any other cache activity triggers garbage collection. For a one-off read whose result should stay live for as long as the UI cares about it, mount the generated `@Query` widget conditionally instead:
 
 ```dart
-final variables = AlbumGifSearchVariables(query: q, offset: 0, limit: 20);
-final response = await ShalomScope.of(context)
-    .request<AlbumGifSearchData>(
-      name: 'AlbumGifSearch',
-      variables: variables.toJson(),
-      decoder: AlbumGifSearchData.fromCache,
-    )
-    .first;
+if (query.isNotEmpty)
+  AlbumGifSearch(
+    variables: AlbumGifSearchVariables(query: query, offset: 0, limit: 20),
+  ),
 ```
+
+The widget keeps an active observer for as long as it's in the tree, so GC won't evict its data, and it naturally unmounts (and becomes eligible for collection) when the search ends.
 
 `@Subscription` uses the same widget shape as `@Query`; the link must support streaming operation results.
 
@@ -141,7 +139,6 @@ Use imperative Shalom APIs for event-driven work:
 - Mutations triggered by button taps, form submits, swipe actions, etc.
 - Optimistic updates, via generated `executeOptimistic`.
 - Mutations that must add/remove/reorder cached list items, via `executeWithCacheUpdate`.
-- One-shot operations that are not the screen's main reactive data, such as a submit-to-search request.
 - UI side effects after an operation, such as `Navigator.pop`, snack bars, loading flags, and error messages.
 
 The common Flutter shape is: declarative scope around the reactive entity, imperative handlers inside the state object.
@@ -210,7 +207,7 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
 }
 ```
 
-Avoid starting imperative `client.request(...)` calls directly inside `build`. Trigger them from handlers, lifecycle methods with cancellation, or generated widgets/scopes. For one-shot imperative requests, use `.first`; for long-lived manual subscriptions, keep and cancel the `StreamSubscription`.
+Avoid starting imperative `client.request(...)` calls directly inside `build`. Trigger them from handlers, lifecycle methods with cancellation, or generated widgets/scopes. Reserve imperative `client.request(...).first` for reads whose result you don't need GC to retain (for example, a throwaway check before a mutation); if the result should stay observable in the cache, mount the generated `@Query` widget instead, since an unsubscribed one-shot read is eligible for eviction as soon as GC next runs. For long-lived manual subscriptions, keep and cancel the `StreamSubscription`.
 
 ## Mutations
 

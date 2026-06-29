@@ -5,6 +5,8 @@
 enum AlbumEventKind {
   ALBUM_CREATED,
 
+  ALBUM_DELETED,
+
   GIF_ADDED_TO_ALBUM,
 
   GIF_REMOVED_FROM_ALBUM;
@@ -13,6 +15,8 @@ enum AlbumEventKind {
     switch (name) {
       case 'ALBUM_CREATED':
         return AlbumEventKind.ALBUM_CREATED;
+      case 'ALBUM_DELETED':
+        return AlbumEventKind.ALBUM_DELETED;
       case 'GIF_ADDED_TO_ALBUM':
         return AlbumEventKind.GIF_ADDED_TO_ALBUM;
       case 'GIF_REMOVED_FROM_ALBUM':

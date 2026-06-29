@@ -125,6 +125,7 @@ class GifSearchPage:
 @strawberry.enum
 class AlbumEventKind(Enum):
     ALBUM_CREATED = "ALBUM_CREATED"
+    ALBUM_DELETED = "ALBUM_DELETED"
     GIF_ADDED_TO_ALBUM = "GIF_ADDED_TO_ALBUM"
     GIF_REMOVED_FROM_ALBUM = "GIF_REMOVED_FROM_ALBUM"
 
@@ -305,6 +306,30 @@ class Mutation:
         )
 
         return album
+
+    @strawberry.mutation
+    async def delete_album(self, id: str) -> Optional[MutationError]:
+        async with state_lock:
+            album_model = albums_by_id.get(id)
+
+            if not album_model:
+                return MutationError(
+                    code="ALBUM_NOT_FOUND",
+                    message=f"Album not found: {id}",
+                )
+
+            album = to_album(album_model)
+            del albums_by_id[id]
+
+        await publish_album_event(
+            AlbumEvent(
+                kind=AlbumEventKind.ALBUM_DELETED,
+                album=album,
+                gif=None,
+            )
+        )
+
+        return None
 
     @strawberry.mutation
     async def add_gif_to_album(

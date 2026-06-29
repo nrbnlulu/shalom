@@ -6,6 +6,10 @@ import 'package:gif_search/__graphql__/CreateAlbumMutation.mutation.shalom.dart'
     show $CreateAlbumMutation;
 import 'package:gif_search/__graphql__/CreateAlbumMutation.shalom.dart'
     show CreateAlbumMutationData;
+import 'package:gif_search/__graphql__/DeleteAlbumMutation.mutation.shalom.dart'
+    show $DeleteAlbumMutation;
+import 'package:gif_search/__graphql__/DeleteAlbumMutation.shalom.dart'
+    show DeleteAlbumMutationData;
 import 'package:gif_search/__graphql__/RemoveGifFromAlbumMutation.mutation.shalom.dart'
     show $RemoveGifFromAlbumMutation;
 import 'package:gif_search/__graphql__/AlbumGifSearch.widget.shalom.dart'
@@ -197,7 +201,17 @@ class AlbumWidget extends $AlbumWidget with QueryWidgetMixin {
         subtitle: Text(
           '$gifCount GIF${gifCount == 1 ? '' : 's'} · ${album.tag}',
         ),
-        trailing: tap == null ? const Icon(Icons.chevron_right) : null,
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.delete_outline),
+              tooltip: 'Delete album',
+              onPressed: () => _confirmDelete(context, album),
+            ),
+            if (tap == null) const Icon(Icons.chevron_right),
+          ],
+        ),
         onTap: tap != null
             ? () => tap(album)
             : () => Navigator.of(context).push(
@@ -210,6 +224,63 @@ class AlbumWidget extends $AlbumWidget with QueryWidgetMixin {
               ),
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context, AlbumWidgetData album) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Delete album?'),
+        content: Text('This will permanently delete "${album.name}".'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+
+    final client = ShalomScope.of(context);
+    final response = await DeleteAlbumMutation(client).executeWithCacheUpdate(
+      id: album.id,
+      update: (shalom.CacheProxy cache, DeleteAlbumMutationData data) {
+        if (data.deleteAlbum != null) return;
+        final current = AlbumsPageData.readFrom(cache);
+        if (current == null) return;
+        final deletedAnchor = AlbumWidgetData.entityKey(album.id);
+        cache.writeQuery(
+          data: AlbumsPageData(
+            albums: current.albums
+                .where((a) => a.anchor != deletedAnchor)
+                .toList(),
+          ),
+        );
+      },
+    );
+    if (!context.mounted) return;
+    switch (response) {
+      case shalom.GraphQLData(data: final data):
+        final error = data.deleteAlbum;
+        if (error != null) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(error.message)));
+        }
+      case shalom.GraphQLError():
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('GraphQL error deleting album')),
+        );
+      case shalom.LinkExceptionResponse():
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Network error deleting album')),
+        );
+    }
   }
 }
 
@@ -229,6 +300,18 @@ class AlbumGif extends $AlbumGif with QueryWidgetMixin {
 }
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
+
+@Mutation(r"""
+  ($id: String!) {
+    deleteAlbum(id: $id) {
+      code
+      message
+    }
+  }
+""")
+class DeleteAlbumMutation extends $DeleteAlbumMutation {
+  const DeleteAlbumMutation(super.client);
+}
 
 @Mutation(r"""
   ($name: String!) {
@@ -283,11 +366,58 @@ class RemoveGifFromAlbumMutation extends $RemoveGifFromAlbumMutation {
   }
 """)
 class AlbumGifSearch extends $AlbumGifSearch with QueryWidgetMixin {
-  const AlbumGifSearch({super.key, required super.variables});
+  final Set<String> albumGifUrls;
+  final void Function(AlbumGifSearch_searchGifs_items gif) onAdd;
+
+  const AlbumGifSearch({
+    super.key,
+    required super.variables,
+    required this.albumGifUrls,
+    required this.onAdd,
+  });
 
   @override
-  Widget buildData(BuildContext context, AlbumGifSearchData data) =>
-      const SizedBox.shrink();
+  Widget buildData(BuildContext context, AlbumGifSearchData data) {
+    final items = data.searchGifs.items;
+    if (items.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.all(24),
+        child: Center(child: Text('No results found')),
+      );
+    }
+    return Column(
+      children: [
+        for (final gif in items)
+          ListTile(
+            leading: gif.previewUrl != null
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.network(
+                      gif.previewUrl!,
+                      width: 48,
+                      height: 48,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) =>
+                          const Icon(Icons.gif, size: 48),
+                    ),
+                  )
+                : const Icon(Icons.gif, size: 48),
+            title: Text(
+              gif.title,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: albumGifUrls.contains(gif.url)
+                ? const Icon(Icons.check_circle, color: Colors.green)
+                : IconButton(
+                    icon: const Icon(Icons.add_circle_outline),
+                    tooltip: 'Add to album',
+                    onPressed: () => onAdd(gif),
+                  ),
+          ),
+      ],
+    );
+  }
 }
 
 // ─── Dialog Widgets ───────────────────────────────────────────────────────────
@@ -397,8 +527,7 @@ class _AlbumDetailPage extends StatefulWidget {
 class _AlbumDetailPageState extends State<_AlbumDetailPage> {
   final _searchController = TextEditingController();
   String _searchQuery = '';
-  bool _backendSearching = false;
-  List<AlbumGifSearch_searchGifs_items> _searchResults = [];
+  String _committedQuery = '';
 
   @override
   void dispose() {
@@ -412,49 +541,12 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
     return album.gifs.where((g) => g.title.toLowerCase().contains(q)).toList();
   }
 
-  Future<void> _onSearch(String query) async {
+  void _onSearch(String query) {
     final q = query.trim();
     setState(() {
       _searchQuery = q;
-      _searchResults = [];
-      _backendSearching = q.isNotEmpty;
+      _committedQuery = q;
     });
-    if (q.isEmpty) return;
-    final variables = AlbumGifSearchVariables(query: q, offset: 0, limit: 20);
-    final operation = AlbumGifSearch(variables: variables);
-    try {
-      final response = await ShalomScope.of(context)
-          .request<AlbumGifSearchData>(
-            name: operation.operation$Name(),
-            variables: variables.toJson(),
-            decoder: AlbumGifSearchData.fromCache,
-          )
-          .first;
-      if (!mounted) return;
-      switch (response) {
-        case shalom.GraphQLData(data: final data):
-          setState(() {
-            _searchResults = data.searchGifs.items;
-            _backendSearching = false;
-          });
-        case shalom.GraphQLError():
-          setState(() => _backendSearching = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Search error: GraphQL error')),
-          );
-        case shalom.LinkExceptionResponse():
-          setState(() => _backendSearching = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Search error: Network error')),
-          );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      setState(() => _backendSearching = false);
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Search error: $e')));
-    }
   }
 
   Future<void> _addGif(AlbumGifSearch_searchGifs_items gif) async {
@@ -572,7 +664,7 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
         ),
         builder: (context, album) {
           final filtered = _filteredLocal(album);
-          final albumGifsByUrl = {for (final gif in album.gifs) gif.url: gif};
+          final albumGifUrls = album.gifs.map((g) => g.url).toSet();
           return Column(
             children: [
               Padding(
@@ -595,11 +687,11 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
                   ),
                   textInputAction: TextInputAction.search,
                   onChanged: (v) {
-                    if (v.trim().isEmpty) {
-                      _onSearch('');
-                    } else {
-                      setState(() => _searchQuery = v.trim());
-                    }
+                    final q = v.trim();
+                    setState(() {
+                      _searchQuery = q;
+                      if (q.isEmpty) _committedQuery = '';
+                    });
                   },
                   onSubmitted: _onSearch,
                 ),
@@ -639,14 +731,7 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
                       const SliverToBoxAdapter(
                         child: _SectionHeader('From search'),
                       ),
-                      if (_backendSearching)
-                        const SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.all(24),
-                            child: Center(child: CircularProgressIndicator()),
-                          ),
-                        )
-                      else if (_searchResults.isEmpty)
+                      if (_committedQuery.isEmpty)
                         const SliverToBoxAdapter(
                           child: Padding(
                             padding: EdgeInsets.all(24),
@@ -654,46 +739,16 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
                           ),
                         )
                       else
-                        SliverList.builder(
-                          itemCount: _searchResults.length,
-                          itemBuilder: (context, i) {
-                            final gif = _searchResults[i];
-                            final alreadyIn = albumGifsByUrl.containsKey(
-                              gif.url,
-                            );
-                            return ListTile(
-                              leading: gif.previewUrl != null
-                                  ? ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: Image.network(
-                                        gif.previewUrl!,
-                                        width: 48,
-                                        height: 48,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) =>
-                                            const Icon(Icons.gif, size: 48),
-                                      ),
-                                    )
-                                  : const Icon(Icons.gif, size: 48),
-                              title: Text(
-                                gif.title,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              trailing: alreadyIn
-                                  ? const Icon(
-                                      Icons.check_circle,
-                                      color: Colors.green,
-                                    )
-                                  : IconButton(
-                                      icon: const Icon(
-                                        Icons.add_circle_outline,
-                                      ),
-                                      tooltip: 'Add to album',
-                                      onPressed: () => _addGif(gif),
-                                    ),
-                            );
-                          },
+                        SliverToBoxAdapter(
+                          child: AlbumGifSearch(
+                            variables: AlbumGifSearchVariables(
+                              query: _committedQuery,
+                              offset: 0,
+                              limit: 20,
+                            ),
+                            albumGifUrls: albumGifUrls,
+                            onAdd: _addGif,
+                          ),
                         ),
                     ],
                   ],

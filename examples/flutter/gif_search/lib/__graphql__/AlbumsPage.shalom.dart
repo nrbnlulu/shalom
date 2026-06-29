@@ -199,8 +199,6 @@ final class AlbumsPageObservable {
     return client.request<AlbumsPageData>(
       name: operation$Name(),
 
-      variables: null,
-
       decoder: AlbumsPageData.fromCache,
       executionPolicy: executionPolicy,
     );

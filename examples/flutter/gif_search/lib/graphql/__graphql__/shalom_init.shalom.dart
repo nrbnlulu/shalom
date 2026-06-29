@@ -24,6 +24,7 @@ type AlbumEvent {
 
 enum AlbumEventKind {
   ALBUM_CREATED
+  ALBUM_DELETED
   GIF_ADDED_TO_ALBUM
   GIF_REMOVED_FROM_ALBUM
 }
@@ -51,6 +52,7 @@ type GifSearchPage {
 
 type Mutation {
   createAlbum(name: String!): Album!
+  deleteAlbum(id: String!): MutationError
   addGifToAlbum(albumId: String!, title: String!, url: String!, previewUrl: String = null): Gif!
   removeGifFromAlbum(albumId: String!, gifId: String!): MutationError
 }
@@ -118,6 +120,16 @@ query AlbumGifSearch ($query: String!, $offset: Int!, $limit: Int!) @observe {
         previewUrl
       }
       hasNextPage
+    }
+  }
+''',
+  );
+  client.registerOperation(
+    document: r'''
+mutation DeleteAlbumMutation ($id: String!) {
+    deleteAlbum(id: $id) {
+      code
+      message
     }
   }
 ''',

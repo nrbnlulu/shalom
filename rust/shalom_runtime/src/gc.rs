@@ -48,6 +48,7 @@ impl SubscriptionTracker {
 pub fn collect_garbage(cache: &mut NormalizedCache, active_keys: &HashSet<String>) -> Vec<String> {
     let mut keep = HashSet::new();
     for root in ["ROOT_QUERY", "ROOT_MUTATION", "ROOT_SUBSCRIPTION"] {
+        prune_stale_root_fields(cache, root, active_keys);
         if cache.get(root).is_some() {
             keep.insert(root.to_string());
         }
@@ -91,6 +92,21 @@ pub fn collect_garbage(cache: &mut NormalizedCache, active_keys: &HashSet<String
     }
 
     evicted
+}
+
+/// Root records (`ROOT_QUERY`/`ROOT_MUTATION`/`ROOT_SUBSCRIPTION`) are always
+/// kept as containers, so without this, every field ever written under them
+/// (and anything reachable from those fields) would survive GC forever, even
+/// after the operation that wrote it is no longer subscribed to. Drop fields
+/// that no active subscription still references before computing
+/// reachability, so unsubscribed root fields (and entities only reachable
+/// through them) become eligible for eviction.
+fn prune_stale_root_fields(cache: &mut NormalizedCache, root: &str, active_keys: &HashSet<String>) {
+    if let Some(record) = cache.get_mut(root) {
+        record.retain(|field_key, _| {
+            field_key == "__typename" || active_keys.contains(&format!("{root}.{field_key}"))
+        });
+    }
 }
 
 fn collect_record_refs(record: &CacheRecord) -> HashSet<String> {

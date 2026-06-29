@@ -57,11 +57,37 @@ fn gc_keeps_referenced_entity_for_root_subscription() {
     cache.insert("ROOT_QUERY".to_string(), root);
     cache.insert("User:1".to_string(), make_entity("User:1"));
 
-    let active = HashSet::from(["ROOT_QUERY_user".to_string()]);
+    let active = HashSet::from(["ROOT_QUERY.user".to_string()]);
     let evicted = collect_garbage(&mut cache, &active);
 
     assert!(evicted.is_empty());
     assert!(cache.get("User:1").is_some());
+}
+
+#[test]
+fn gc_evicts_unsubscribed_root_field_and_its_entity() {
+    let mut cache = NormalizedCache::new();
+    let mut root = CacheRecord::new();
+    root.insert("user".to_string(), CacheValue::Ref("User:1".to_string()));
+    root.insert("posts".to_string(), CacheValue::Ref("Post:1".to_string()));
+    cache.insert("ROOT_QUERY".to_string(), root);
+    cache.insert("User:1".to_string(), make_entity("User:1"));
+    cache.insert("Post:1".to_string(), make_entity("Post:1"));
+
+    // Only "posts" is still observed; "user" has no active subscription.
+    let active = HashSet::from(["ROOT_QUERY.posts".to_string()]);
+    let evicted = collect_garbage(&mut cache, &active);
+
+    assert!(evicted.contains(&"User:1".to_string()));
+    assert!(cache.get("User:1").is_none());
+    assert!(cache.get("Post:1").is_some());
+    assert!(
+        !cache
+            .get("ROOT_QUERY")
+            .expect("root query should still exist")
+            .contains_key("user"),
+        "stale root field should be pruned even though ROOT_QUERY itself is kept"
+    );
 }
 
 #[test]
@@ -121,7 +147,7 @@ fn runtime_gc_respects_subscription_tracker() {
     runtime.unsubscribe(&subscription);
     let evicted = runtime.collect_garbage();
     assert!(
-        !evicted.contains(&"User:1".to_string()),
-        "User:1 still kept by ROOT_QUERY ref"
+        evicted.contains(&"User:1".to_string()),
+        "User:1 should be evicted once nothing subscribes to ROOT_QUERY.user anymore"
     );
 }
