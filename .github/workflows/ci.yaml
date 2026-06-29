@@ -42,6 +42,10 @@ jobs:
                   cd rust/shalom_dart_codegen/dart_tests/
                   flutter packages get
 
+            - name: Install flutter test packages
+              run: |
+                  cd rust/shalom_dart_codegen/flutter_tests/
+                  flutter packages get
 
             - name: Test
               run: |
