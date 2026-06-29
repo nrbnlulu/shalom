@@ -76,6 +76,39 @@ fn run_codegen(cwd: &Path, strict: bool) {
     .unwrap()
 }
 
+/// `flutter test` (unlike `dart test`) does not run the `native_toolchain_rust`
+/// build hook automatically, so the FFI lib never lands in `.dart_tool/lib/`.
+/// Build it ourselves and drop it where `test_env.dart`'s `_nativeLibPath()`
+/// expects it.
+fn ensure_native_lib_built(root_dir: &Path) {
+    let workspace_root = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+        .parent()
+        .and_then(Path::parent)
+        .expect("could not find workspace root from CARGO_MANIFEST_DIR")
+        .to_path_buf();
+
+    let status = std::process::Command::new("cargo")
+        .args(["build", "-p", "shalom_ffi"])
+        .current_dir(&workspace_root)
+        .status()
+        .expect("failed to spawn `cargo build -p shalom_ffi`");
+    assert!(status.success(), "`cargo build -p shalom_ffi` failed");
+
+    let lib_name = if cfg!(target_os = "windows") {
+        "shalom_ffi.dll"
+    } else if cfg!(target_os = "macos") {
+        "libshalom_ffi.dylib"
+    } else {
+        "libshalom_ffi.so"
+    };
+    let built_path = workspace_root.join("target/debug").join(lib_name);
+    let dest_dir = root_dir.join(".dart_tool/lib");
+    std::fs::create_dir_all(&dest_dir).expect("failed to create .dart_tool/lib");
+    std::fs::copy(&built_path, dest_dir.join(lib_name)).unwrap_or_else(|e| {
+        panic!("failed to copy {built_path:?} -> {dest_dir:?}: {e}");
+    });
+}
+
 #[allow(dead_code)]
 static FLUTTER_TESTS_CODEGEN: std::sync::Once = std::sync::Once::new();
 
@@ -155,6 +188,7 @@ pub fn run_flutter_tests(usecase: &str) {
 
     let dart_parts: Vec<&str> = dart.split_whitespace().collect();
     FLUTTER_TESTS_CODEGEN.call_once(|| {
+        ensure_native_lib_built(root_dir);
         run_codegen(root_dir, true);
         let mut dart_fmt = if dart_parts.len() > 1 {
             let mut cmd = std::process::Command::new(dart_parts[0]);
