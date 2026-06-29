@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use std::rc::Rc;
 use std::sync::Arc;
 
-use serde::ser::SerializeSeq;
 use serde::Serialize;
+use serde::ser::SerializeSeq;
 
 use super::fragments::SharedFragmentContext;
 use super::types::{

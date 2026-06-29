@@ -28,6 +28,15 @@ tasks:
     generate_rust_bindings:
         cmds:
             - cd dart/shalom && flutter_rust_bridge_codegen generate
+
+    build_native_lib:
+        desc: Build shalom_ffi and place it at the standardized .dart_tool/lib path used by dart/flutter tests
+        cmds:
+            - cargo build -p shalom_ffi --release
+            - mkdir -p dart/shalom/.dart_tool/lib rust/shalom_dart_codegen/flutter_tests/.dart_tool/lib
+            - cp target/release/libshalom_ffi.so dart/shalom/.dart_tool/lib/libshalom_ffi.so
+            - cp target/release/libshalom_ffi.so rust/shalom_dart_codegen/flutter_tests/.dart_tool/lib/libshalom_ffi.so
+
     fmt:
         cmds:
             - cargo fmt --all
@@ -49,6 +58,7 @@ tasks:
             - typos
 
     test:
+        deps: [build_native_lib]
         cmds:
             - cd rust && cargo test -- --test-threads=2
             - cd dart/shalom && {{.DART_BIN}} test

@@ -272,11 +272,11 @@ impl ObjectLikeCommon {
             }
 
             let frag_ty = ctx.schema_ctx.get_type_strict(&frag.common.schema_typename);
-            if let GraphQLAny::Interface(_) = frag_ty {
-                if this_ty.implements_interface(&frag.common.schema_typename, &ctx.schema_ctx) {
-                    return true;
-                }
-            };
+            if let GraphQLAny::Interface(_) = frag_ty
+                && this_ty.implements_interface(&frag.common.schema_typename, &ctx.schema_ctx)
+            {
+                return true;
+            }
         }
         // now check for frag spreads
         for frag_name in self.used_fragments.iter() {
@@ -291,11 +291,11 @@ impl ObjectLikeCommon {
             }
 
             let frag_ty = ctx.schema_ctx.get_type_strict(&common.schema_typename);
-            if let GraphQLAny::Interface(_) = frag_ty {
-                if this_ty.implements_interface(&common.schema_typename, &ctx.schema_ctx) {
-                    return true;
-                }
-            };
+            if let GraphQLAny::Interface(_) = frag_ty
+                && this_ty.implements_interface(&common.schema_typename, &ctx.schema_ctx)
+            {
+                return true;
+            }
         }
 
         false

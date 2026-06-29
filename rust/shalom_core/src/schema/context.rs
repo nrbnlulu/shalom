@@ -1,5 +1,5 @@
 use crate::schema::types::{GraphQLAny, SchemaObjectLike};
-use apollo_compiler::{validation::Valid, Node};
+use apollo_compiler::{Node, validation::Valid};
 use parking_lot::{Mutex, MutexGuard};
 use serde::{Serialize, Serializer};
 use std::collections::BTreeSet;
@@ -255,10 +255,10 @@ fn check_implements_recursive<I: SchemaObjectLike>(
         return true;
     }
     for iface_name in implementor.implements_interfaces() {
-        if let Some(iface) = types_ctx.interfaces.get(iface_name) {
-            if check_implements_recursive(iface.as_ref(), target_interface, types_ctx) {
-                return true;
-            }
+        if let Some(iface) = types_ctx.interfaces.get(iface_name)
+            && check_implements_recursive(iface.as_ref(), target_interface, types_ctx)
+        {
+            return true;
         }
     }
     false

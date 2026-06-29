@@ -482,7 +482,7 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
         Some(_) => {
             return Err(anyhow::anyhow!(
                 "graphql response data must be an object or null"
-            ))
+            ));
         }
     };
 
@@ -495,7 +495,7 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
                     _ => {
                         return Err(anyhow::anyhow!(
                             "graphql response errors must contain objects"
-                        ))
+                        ));
                     }
                 }
             }
@@ -505,7 +505,7 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
         Some(_) => {
             return Err(anyhow::anyhow!(
                 "graphql response errors must be an array or null"
-            ))
+            ));
         }
     };
 
@@ -515,7 +515,7 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
         Some(_) => {
             return Err(anyhow::anyhow!(
                 "graphql response extensions must be an object or null"
-            ))
+            ));
         }
     };
 

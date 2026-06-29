@@ -4,7 +4,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use apollo_compiler::{validation::Valid, ExecutableDocument};
+use apollo_compiler::{ExecutableDocument, validation::Valid};
 use log::{error, trace};
 
 use crate::{
@@ -35,16 +35,15 @@ pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
     let mut operations = vec![];
     for file in found_files {
         let f_name = file.file_name().unwrap().to_str().unwrap();
-        if let Ok(rel_path) = file.strip_prefix(pwd) {
-            if std::process::Command::new("git")
+        if let Ok(rel_path) = file.strip_prefix(pwd)
+            && std::process::Command::new("git")
                 .args(["check-ignore", "--quiet", rel_path.to_str().unwrap()])
                 .current_dir(pwd)
                 .status()
                 .map(|s| s.success())
                 .unwrap_or(false)
-            {
-                continue;
-            }
+        {
+            continue;
         }
         if f_name == "schema.graphql" || f_name == "schema.gql" {
             schema = Some(file);

@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use apollo_compiler::{
-    ast::OperationType as ApolloOperationType, executable as apollo_executable, Name, Node, Schema,
+    Name, Node, Schema, ast::OperationType as ApolloOperationType, executable as apollo_executable,
 };
 use log::{info, trace};
 

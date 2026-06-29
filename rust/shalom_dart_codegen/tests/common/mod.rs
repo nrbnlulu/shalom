@@ -1,4 +1,4 @@
-use shalom_dart_codegen::{get_dart_command, get_flutter_command, CodegenOptions};
+use shalom_dart_codegen::{CodegenOptions, get_dart_command, get_flutter_command};
 use std::path::{Path, PathBuf};
 
 use log::info;
@@ -76,6 +76,7 @@ fn run_codegen(cwd: &Path, strict: bool) {
     .unwrap()
 }
 
+#[allow(dead_code)]
 static FLUTTER_TESTS_CODEGEN: std::sync::Once = std::sync::Once::new();
 
 pub fn run_dart_tests_for_usecase(usecase: &str) {
@@ -137,6 +138,7 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
     info!("✔️ Dart tests passed\n {out_std}");
 }
 
+#[allow(dead_code)]
 pub fn run_flutter_tests(usecase: &str) {
     match simple_logger::init() {
         Ok(_) => println!("Logger initialized"),
@@ -189,7 +191,7 @@ pub fn run_flutter_tests(usecase: &str) {
         std::process::Command::new(&flutter_cmd)
     };
     flutter_test
-        .current_dir(&root_dir)
+        .current_dir(root_dir)
         .arg("test")
         .arg(format!("test/{usecase}"));
     info!("Running command: {flutter_test:?} for usecase: {usecase}");

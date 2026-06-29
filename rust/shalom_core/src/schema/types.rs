@@ -5,8 +5,8 @@ use std::{
 };
 
 use apollo_compiler::{
-    ast::{Type as RawType, Value},
     Node,
+    ast::{Type as RawType, Value},
 };
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;

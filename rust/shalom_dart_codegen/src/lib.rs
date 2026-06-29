@@ -1,10 +1,10 @@
 use anyhow::Result;
 use lazy_static::lazy_static;
 use log::{error, info};
-use minijinja::{context, value::ViaDeserialize, Environment};
+use minijinja::{Environment, context, value::ViaDeserialize};
 
 mod dart_scanner;
-pub use dart_scanner::{scan_dart_widgets, WidgetAnnotation, WidgetKind};
+pub use dart_scanner::{WidgetAnnotation, WidgetKind, scan_dart_widgets};
 
 use shalom_core::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
@@ -12,8 +12,8 @@ use shalom_core::{
         context::{ExecutableContext, OperationContext, SharedOpCtx},
         fragments::{FragmentContext, SharedFragmentContext},
         types::{
-            dart_type_for_scalar, FieldSelection, ObjectLikeCommon, SelectionKind,
-            SharedListSelection,
+            FieldSelection, ObjectLikeCommon, SelectionKind, SharedListSelection,
+            dart_type_for_scalar,
         },
     },
     schema::{
@@ -722,30 +722,30 @@ fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) 
         SelectionKind::List(list) => observe_frag_for_kind(&list.of_kind, ctx),
         SelectionKind::Object(obj) => {
             for frag_name in &obj.common.used_fragments {
-                if let Some(fragment) = ctx.get_fragment(frag_name) {
-                    if fragment.is_observe() {
-                        return Some(frag_name.clone());
-                    }
+                if let Some(fragment) = ctx.get_fragment(frag_name)
+                    && fragment.is_observe()
+                {
+                    return Some(frag_name.clone());
                 }
             }
             None
         }
         SelectionKind::Union(union) => {
             for frag_name in &union.common.common.used_fragments {
-                if let Some(fragment) = ctx.get_fragment(frag_name) {
-                    if fragment.is_observe() {
-                        return Some(frag_name.clone());
-                    }
+                if let Some(fragment) = ctx.get_fragment(frag_name)
+                    && fragment.is_observe()
+                {
+                    return Some(frag_name.clone());
                 }
             }
             None
         }
         SelectionKind::Interface(interface) => {
             for frag_name in &interface.common.common.used_fragments {
-                if let Some(fragment) = ctx.get_fragment(frag_name) {
-                    if fragment.is_observe() {
-                        return Some(frag_name.clone());
-                    }
+                if let Some(fragment) = ctx.get_fragment(frag_name)
+                    && fragment.is_observe()
+                {
+                    return Some(frag_name.clone());
                 }
             }
             None

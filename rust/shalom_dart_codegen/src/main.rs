@@ -5,8 +5,8 @@ use notify_debouncer_full::new_debouncer;
 use shalom_dart_codegen::CodegenOptions;
 use std::path::PathBuf;
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc,
+    atomic::{AtomicBool, Ordering},
 };
 use std::time::Duration;
 
