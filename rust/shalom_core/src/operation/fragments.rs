@@ -10,7 +10,7 @@ use crate::operation::context::{ExecutableContext, TypeDefs};
 use crate::operation::parse::{
     inject_id_in_selection_set, inject_typename_in_selection_set, parse_obj_like_from_selection_set,
 };
-use crate::operation::types::ObjectLikeCommon;
+use crate::operation::types::{InterfaceSelection, ObjectLikeCommon};
 
 /// inline fragments should generally be generated in the same file
 /// that they are declared and can't be used across the project (well they have no name)
@@ -42,6 +42,7 @@ pub struct FragmentContext {
     pub typedefs: TypeDefs,
     pub root_type: Option<ObjectLikeCommon>,
     pub type_condition: String,
+    pub observe: bool,
 }
 pub type SharedFragmentContext = Arc<FragmentContext>;
 
@@ -51,6 +52,7 @@ impl FragmentContext {
         fragment_raw: String,
         file_path: PathBuf,
         type_condition: String,
+        observe: bool,
     ) -> Self {
         FragmentContext {
             name,
@@ -59,6 +61,7 @@ impl FragmentContext {
             typedefs: TypeDefs::new(),
             root_type: None,
             type_condition,
+            observe,
         }
     }
 
@@ -76,6 +79,10 @@ impl FragmentContext {
 
     pub fn get_on_type(&self) -> &ObjectLikeCommon {
         self.root_type.as_ref().unwrap()
+    }
+
+    pub fn is_observe(&self) -> bool {
+        self.observe
     }
 }
 
@@ -116,8 +123,12 @@ pub(crate) fn parse_fragment(
     let fragment_mut = fragment.make_mut();
     inject_typename_in_selection_set(schema, &mut fragment_mut.selection_set, global_ctx);
     inject_id_in_selection_set(schema, &mut fragment_mut.selection_set, global_ctx);
+    fragment_mut
+        .directives
+        .0
+        .retain(|d| d.name.as_str() != "observe");
 
-    // Update fragment_raw with the injected fields
+    // Update fragment_raw with the injected fields (and @observe stripped for network use)
     fragment_ctx.fragment_raw = fragment.to_string();
 
     let selection_set = &fragment.selection_set;
@@ -130,6 +141,19 @@ pub(crate) fn parse_fragment(
         type_name.to_string().clone(),
         selection_set,
     );
+
+    // If the fragment root type is an interface, register interface typedefs so the
+    // codegen template generates concrete subclasses (e.g. AnimalWidgetData$Dog).
+    if let Some(interface_type) = global_ctx.schema_ctx.get_interface(type_name.as_ref()) {
+        let possible_concretes = global_ctx
+            .schema_ctx
+            .get_concrete_implementors_of_interface(&interface_type.name);
+        let iface_selection =
+            InterfaceSelection::new(interface_type, obj_like.clone(), false, possible_concretes);
+        fragment_ctx
+            .typedefs_mut()
+            .add_interface_selection(frag_name.clone(), iface_selection);
+    }
 
     fragment_ctx.set_on_type(obj_like);
     Ok(())

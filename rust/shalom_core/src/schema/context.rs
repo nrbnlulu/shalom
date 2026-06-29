@@ -1,12 +1,10 @@
 use crate::schema::types::{GraphQLAny, SchemaObjectLike};
-use apollo_compiler::{validation::Valid, Node};
+use apollo_compiler::{Node, validation::Valid};
+use parking_lot::{Mutex, MutexGuard};
 use serde::{Serialize, Serializer};
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 use std::fmt::Debug;
-use std::{
-    collections::HashMap,
-    sync::{Arc, Mutex, MutexGuard},
-};
+use std::{collections::HashMap, sync::Arc};
 
 use super::types::{EnumType, InputObjectType, InterfaceType, ObjectType, ScalarType, UnionType};
 
@@ -17,7 +15,7 @@ fn serialize_schema_types<S>(
 where
     S: Serializer,
 {
-    let schema_types = schema_types.lock().unwrap().clone();
+    let schema_types = schema_types.lock().clone();
     schema_types.serialize(serializer)
 }
 
@@ -116,7 +114,7 @@ impl SchemaContext {
     ) -> SchemaContext {
         let types_ctx = Mutex::new(SchemaTypesCtx::new());
         {
-            let mut types_ctx_g = types_ctx.lock().unwrap();
+            let mut types_ctx_g = types_ctx.lock();
             for (name, type_) in initial_types {
                 types_ctx_g.add_any(name, &type_);
             }
@@ -127,42 +125,39 @@ impl SchemaContext {
         }
     }
     pub fn get_type(&self, name: &String) -> Option<GraphQLAny> {
-        let types_ctx = self.types.lock().unwrap();
+        let types_ctx = self.types.lock();
         types_ctx.get_any(name)
     }
     pub fn get_type_strict(&self, name: &String) -> GraphQLAny {
-        let types_ctx = self.types.lock().unwrap();
+        let types_ctx = self.types.lock();
         types_ctx
             .get_any(name)
             .unwrap_or_else(|| panic!("Type {} not found", name))
     }
 
     pub fn get_scalar(&self, name: &str) -> Option<Node<ScalarType>> {
-        let types_ctx = self.types.lock().unwrap();
+        let types_ctx = self.types.lock();
         types_ctx.scalars.get(name).cloned()
     }
 
     pub fn get_interface(&self, name: &str) -> Option<Arc<InterfaceType>> {
-        let types_ctx = self.types.lock().unwrap();
+        let types_ctx = self.types.lock();
         types_ctx.interfaces.get(name).cloned()
     }
 
     pub fn get_union(&self, name: &str) -> Option<Node<UnionType>> {
-        let types_ctx = self.types.lock().unwrap();
+        let types_ctx = self.types.lock();
         types_ctx.unions.get(name).cloned()
     }
 
     pub fn add_object(&self, name: String, type_: Arc<ObjectType>) -> anyhow::Result<()> {
-        let mut types_ctx = self
-            .types
-            .lock()
-            .map_err(|e| anyhow::anyhow!(e.to_string()))?;
+        let mut types_ctx = self.types.lock();
         types_ctx.add_object(name, type_);
         Ok(())
     }
 
     fn get_types(&self) -> MutexGuard<'_, SchemaTypesCtx> {
-        self.types.lock().unwrap()
+        self.types.lock()
     }
 
     pub fn add_scalar(&self, name: String, type_: Node<ScalarType>) -> anyhow::Result<()> {
@@ -196,7 +191,7 @@ impl SchemaContext {
     }
 
     pub fn is_type_implementing_interface(&self, type_name: &str, interface_name: &str) -> bool {
-        let types_ctx = self.types.lock().unwrap();
+        let types_ctx = self.types.lock();
         if let Some(obj) = types_ctx.objects.get(type_name) {
             check_implements_recursive(obj.as_ref(), interface_name, &types_ctx)
         } else if let Some(iface) = types_ctx.interfaces.get(type_name) {
@@ -221,9 +216,9 @@ impl SchemaContext {
         self.is_type_implementing_interface(type_name, interface_name)
     }
 
-    pub fn get_concrete_implementors_of_interface(&self, iface: &String) -> HashSet<String> {
-        let mut ret = HashSet::new();
-        let types = self.types.lock().unwrap();
+    pub fn get_concrete_implementors_of_interface(&self, iface: &String) -> BTreeSet<String> {
+        let mut ret = BTreeSet::new();
+        let types = self.types.lock();
         for object in types.objects.values() {
             if object.implements_interfaces.contains(iface) {
                 ret.insert(object.name.clone());
@@ -231,8 +226,8 @@ impl SchemaContext {
         }
         ret
     }
-    pub fn get_possible_concretes_for_union(&self, union_type: &UnionType) -> HashSet<String> {
-        let mut ret = HashSet::new();
+    pub fn get_possible_concretes_for_union(&self, union_type: &UnionType) -> BTreeSet<String> {
+        let mut ret = BTreeSet::new();
         for member in &union_type.members {
             match self.get_type_strict(member) {
                 GraphQLAny::Interface(iface) => {
@@ -260,10 +255,10 @@ fn check_implements_recursive<I: SchemaObjectLike>(
         return true;
     }
     for iface_name in implementor.implements_interfaces() {
-        if let Some(iface) = types_ctx.interfaces.get(iface_name) {
-            if check_implements_recursive(iface.as_ref(), target_interface, types_ctx) {
-                return true;
-            }
+        if let Some(iface) = types_ctx.interfaces.get(iface_name)
+            && check_implements_recursive(iface.as_ref(), target_interface, types_ctx)
+        {
+            return true;
         }
     }
     false

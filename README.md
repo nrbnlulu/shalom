@@ -1,6 +1,7 @@
 # shalom
+A GraphQL client runtime for Dart and Flutter.
 
-note that shalom is currently in beta, while the public API's are not expected to change much, the internal behaviour might. 
+
 
 ### Installation
 
@@ -12,8 +13,8 @@ cargo install --git https://github.com/nrbnlulu/shalom.git --branch main shalom_
 
 2. add flutter deps
 ```bash
-dart pub add shalom_core:'{"git":{"url": "https://github.com/nrbnlulu/shalom.git", "path": "dart/shalom_core"}}'
 dart pub add shalom_flutter:'{"git":{"url": "https://github.com/nrbnlulu/shalom.git", "path": "dart/shalom_flutter"}}'
+dart pub add shalom_annotations:'{"git":{"url": "https://github.com/nrbnlulu/shalom.git", "path": "dart/shalom_annotations"}}'
 ```
 
 
@@ -42,13 +43,14 @@ shalom generate --path ./my-project --strict
 
 **Watch**
 
-Watch for changes in GraphQL files (`.graphql` and `.gql`) and automatically regenerate code:
+Watch for changes in and automatically regenerate code:
 
 ```bash
 shalom watch [OPTIONS]
 ```
 ### Examples 
-- [swapi-flutter](./examples/flutter/swapi/README.md)
+check the gif_search example under `./examples/flutter/gif_search`
+
 ### How to: Custom scalars 
 1. make sure to add shalom.yml in project root.
 its content should look like this
@@ -123,39 +125,3 @@ class _PointScalarImpl implements CustomScalarImpl<Point> {
 // This is referenced in shalom.yml
 final pointScalarImpl = _PointScalarImpl();
 ```
-
-
-### Roadmap
-
-- [x] builtin scalars
-- [x] custom scalars
-- [x] enums
-- [x] object selection
-- [x] nested objects
-- [x] union
-- [x] interface
-- [x] fragments
-- [ ] list of
-    - [x] scalars
-    - [x] custom scalars
-    - [x] objects
-    - [x] enums
-    - [x] unions
-    - [x] interface
-    - [x] fragments
-    - [ ] nested list
-- [x] Node interface real time updates.
-- [ ] defer / stream
-- [ ] input
-    - [x] scalar
-    - [x] custom scalar
-    - [x] object
-    - [x] enum
-    - [ ] oneOf
-    - [ ] list of
-        - [x] scalar
-        - [x] custom scalar
-        - [x] object
-        - [x] enum
-        - [ ] oneOf
-

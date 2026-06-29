@@ -5,8 +5,8 @@ use notify_debouncer_full::new_debouncer;
 use shalom_dart_codegen::CodegenOptions;
 use std::path::PathBuf;
 use std::sync::{
-    atomic::{AtomicBool, Ordering},
     Arc,
+    atomic::{AtomicBool, Ordering},
 };
 use std::time::Duration;
 
@@ -33,6 +33,10 @@ enum Commands {
         /// Auto format generated Dart files after generation
         #[arg(short, long, default_value_t = false)]
         fmt: bool,
+
+        /// Name of the subdirectory where generated files are placed (default: __graphql__)
+        #[arg(long)]
+        gen_dir: Option<String>,
     },
     /// Watch for changes in GraphQL files and regenerate code
     Watch {
@@ -47,6 +51,10 @@ enum Commands {
         /// Auto format generated Dart files after generation
         #[arg(short, long, default_value_t = false)]
         fmt: bool,
+
+        /// Name of the subdirectory where generated files are placed (default: __graphql__)
+        #[arg(long)]
+        gen_dir: Option<String>,
     },
 }
 
@@ -58,16 +66,27 @@ fn main() -> Result<()> {
 
     let cli = Cli::parse();
     match cli.command {
-        Commands::Generate { path, strict, fmt } => {
+        Commands::Generate {
+            path,
+            strict,
+            fmt,
+            gen_dir,
+        } => {
             log::info!("Running code generation...");
             shalom_dart_codegen::codegen_entry_point(CodegenOptions {
                 pwd: path,
                 strict,
                 fmt,
+                gen_dir,
             })?;
             log::info!("Code generation completed successfully!");
         }
-        Commands::Watch { path, strict, fmt } => {
+        Commands::Watch {
+            path,
+            strict,
+            fmt,
+            gen_dir,
+        } => {
             log::info!("Starting watch mode...");
 
             // Add atomic flag to prevent concurrent codegen runs
@@ -84,6 +103,7 @@ fn main() -> Result<()> {
                         pwd: path.clone(),
                         strict,
                         fmt,
+                        gen_dir: gen_dir.clone(),
                     }) {
                         Ok(_) => log::info!("Initial code generation completed successfully!"),
                         Err(e) => log::error!("Initial code generation failed: {}", e),
@@ -96,8 +116,10 @@ fn main() -> Result<()> {
 
             let watch_path = path.clone().unwrap_or_else(|| PathBuf::from("."));
 
+            let effective_gen_dir = gen_dir.clone().unwrap_or_else(|| "__graphql__".to_string());
+
             log::info!(
-                "Watching {} for changes in .graphql and .gql files...",
+                "Watching {} for changes in .graphql, .gql, and .dart files...",
                 watch_path.display()
             );
             log::info!("Press Ctrl+C to stop watching");
@@ -116,18 +138,24 @@ fn main() -> Result<()> {
             for result in rx {
                 match result {
                     Ok(events) => {
-                        // Check if any event involves a .graphql or .gql file
-                        let has_graphql_changes = events.iter().any(|event| {
+                        let has_relevant_changes = events.iter().any(|event| {
                             event.paths.iter().any(|path| {
-                                path.extension()
-                                    .and_then(|ext| ext.to_str())
-                                    .map(|ext| ext == "graphql" || ext == "gql")
-                                    .unwrap_or(false)
+                                let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+                                if ext == "graphql" || ext == "gql" {
+                                    return true;
+                                }
+                                // Dart source files, excluding generated output dirs
+                                if ext == "dart" {
+                                    return !path
+                                        .components()
+                                        .any(|c| c.as_os_str() == effective_gen_dir.as_str());
+                                }
+                                false
                             })
                         });
 
-                        if has_graphql_changes {
-                            log::info!("GraphQL file changes detected, regenerating...");
+                        if has_relevant_changes {
+                            log::info!("File changes detected, regenerating...");
                             let running = is_codegen_running.clone();
                             if running
                                 .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
@@ -137,6 +165,7 @@ fn main() -> Result<()> {
                                     pwd: path.clone(),
                                     strict,
                                     fmt,
+                                    gen_dir: gen_dir.clone(),
                                 }) {
                                     Ok(_) => log::info!("Code generation completed successfully!"),
                                     Err(e) => log::error!("Code generation failed: {}", e),

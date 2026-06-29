@@ -2,4 +2,9 @@
 extend-ignore-re = ["(?Rm)^.*# typos: ignore$"]
 
 [files]
-extend-exclude = ["*.pbxproj", "*.xib"]
+extend-exclude = [
+    "*.pbxproj",
+    "*.xib",
+    "examples/flutter/gif_search/ios/Runner/Base.lproj/Main.storyboard",
+    "rust/shalom_dart_codegen/flutter_tests/ios/Runner/Base.lproj/Main.storyboard",
+]

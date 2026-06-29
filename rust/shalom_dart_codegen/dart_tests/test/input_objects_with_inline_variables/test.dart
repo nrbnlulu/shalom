@@ -1,5 +1,5 @@
 import 'package:test/test.dart';
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 import '__graphql__/RefreshToken.shalom.dart';
 import '__graphql__/RefreshTokenWithVariable.shalom.dart';
 import '__graphql__/UpdateUser.shalom.dart';
@@ -8,12 +8,6 @@ import '__graphql__/UpdateUserMixed.shalom.dart';
 
 void main() {
   group('Input Objects with Inline Variables', () {
-    late ShalomCtx shalomCtx;
-
-    setUp(() {
-      shalomCtx = ShalomCtx.withCapacity();
-    });
-
     group('RefreshToken - Single Variable with Inline Literal', () {
       test(
         'RefreshTokenRequired - should handle required variable in inline object',
@@ -38,37 +32,6 @@ void main() {
         final variables = RefreshTokenVariables(refreshToken: 'token-456');
         expect(variables.refreshToken, 'token-456');
       });
-
-      test(
-        'RefreshTokenCacheNormalization - should normalize cache with inline variables',
-        () {
-          final variables = RefreshTokenVariables(refreshToken: 'cache-token');
-
-          final mockData = {
-            'refreshToken': {
-              'token': 'new-access-token',
-              'expiresAt': '2024-12-31T23:59:59Z',
-              'userId': 'user-123',
-            },
-          };
-
-          final cacheUpdateCtx = CacheUpdateContext(shalomContext: shalomCtx);
-          RefreshTokenResponse.normalize$inCache(
-            mockData,
-            cacheUpdateCtx,
-            variables,
-          );
-
-          // Verify cache was updated
-          expect(cacheUpdateCtx.changedRecords.isNotEmpty, true);
-
-          // Read back from cache
-          final cached = RefreshTokenResponse.fromCache(shalomCtx, variables);
-          expect(cached.refreshToken.token, 'new-access-token');
-          expect(cached.refreshToken.expiresAt, '2024-12-31T23:59:59Z');
-          expect(cached.refreshToken.userId, 'user-123');
-        },
-      );
 
       test('RefreshTokenEquals - should compare responses correctly', () {
         final response1 = RefreshTokenResponse(
@@ -149,65 +112,6 @@ void main() {
         },
       );
 
-      test(
-        'RefreshTokenWithVariableCacheNormalization - should cache with different variable combinations',
-        () {
-          final variables1 = RefreshTokenWithVariableVariables(
-            refreshToken: 'token-a',
-            revoke: true,
-          );
-
-          final variables2 = RefreshTokenWithVariableVariables(
-            refreshToken: 'token-a',
-            revoke: false,
-          );
-
-          final mockData1 = {
-            'refreshToken': {
-              'token': 'access-1',
-              'expiresAt': '2024-12-31',
-              'userId': 'user-1',
-            },
-          };
-
-          final mockData2 = {
-            'refreshToken': {
-              'token': 'access-2',
-              'expiresAt': '2025-01-01',
-              'userId': 'user-1',
-            },
-          };
-
-          // Cache both with different variables
-          final cacheCtx1 = CacheUpdateContext(shalomContext: shalomCtx);
-          RefreshTokenWithVariableResponse.normalize$inCache(
-            mockData1,
-            cacheCtx1,
-            variables1,
-          );
-
-          final cacheCtx2 = CacheUpdateContext(shalomContext: shalomCtx);
-          RefreshTokenWithVariableResponse.normalize$inCache(
-            mockData2,
-            cacheCtx2,
-            variables2,
-          );
-
-          // They should be cached separately due to different revoke values
-          final cached1 = RefreshTokenWithVariableResponse.fromCache(
-            shalomCtx,
-            variables1,
-          );
-          final cached2 = RefreshTokenWithVariableResponse.fromCache(
-            shalomCtx,
-            variables2,
-          );
-
-          expect(cached1.refreshToken.token, 'access-1');
-          expect(cached2.refreshToken.token, 'access-2');
-        },
-      );
-
       test('RefreshTokenWithVariableEquals - should compare correctly', () {
         final response1 = RefreshTokenWithVariableResponse(
           refreshToken: RefreshTokenWithVariable_refreshToken(
@@ -261,37 +165,6 @@ void main() {
           expect(gqlRequest.variables['userId'], 'user-123');
           expect(gqlRequest.variables['userName'], 'John Doe');
           expect(gqlRequest.variables['userEmail'], 'john@example.com');
-        },
-      );
-
-      test(
-        'UpdateUserCacheNormalization - should normalize with mixed inline/variable values',
-        () {
-          final variables = UpdateUserVariables(
-            userId: 'user-456',
-            userName: 'Jane Smith',
-            userEmail: 'jane@example.com',
-          );
-
-          final mockData = {
-            'updateUser': {
-              'id': 'user-456',
-              'name': 'Jane Smith',
-              'email': 'jane@example.com',
-              'age': 25,
-              'active': true,
-            },
-          };
-
-          final cacheCtx = CacheUpdateContext(shalomContext: shalomCtx);
-          UpdateUserResponse.normalize$inCache(mockData, cacheCtx, variables);
-
-          final cached = UpdateUserResponse.fromCache(shalomCtx, variables);
-          expect(cached.updateUser.id, 'user-456');
-          expect(cached.updateUser.name, 'Jane Smith');
-          expect(cached.updateUser.email, 'jane@example.com');
-          expect(cached.updateUser.age, 25);
-          expect(cached.updateUser.active, true);
         },
       );
 
@@ -391,45 +264,6 @@ void main() {
       );
 
       test(
-        'UpdateUserWithOptionalVariablesCacheNormalization - should cache with null optionals',
-        () {
-          final variables = UpdateUserWithOptionalVariablesVariables(
-            userId: 'cache-user',
-            userName: 'Cache User',
-            userEmail: 'cache@test.com',
-            userAge: const None(),
-            isActive: const None(),
-          );
-
-          final mockData = {
-            'updateUser': {
-              'id': 'cache-user',
-              'name': 'Cache User',
-              'email': 'cache@test.com',
-              'age': null,
-              'active': null,
-            },
-          };
-
-          final cacheCtx = CacheUpdateContext(shalomContext: shalomCtx);
-          UpdateUserWithOptionalVariablesResponse.normalize$inCache(
-            mockData,
-            cacheCtx,
-            variables,
-          );
-
-          final cached = UpdateUserWithOptionalVariablesResponse.fromCache(
-            shalomCtx,
-            variables,
-          );
-          expect(cached.updateUser.id, 'cache-user');
-          expect(cached.updateUser.name, 'Cache User');
-          expect(cached.updateUser.age, null);
-          expect(cached.updateUser.active, null);
-        },
-      );
-
-      test(
         'UpdateUserWithOptionalVariablesEquals - should handle nulls in comparison',
         () {
           final user1 = UpdateUserWithOptionalVariables_updateUser(
@@ -492,42 +326,6 @@ void main() {
         },
       );
 
-      test(
-        'UpdateUserMixedCacheNormalization - should cache correctly with mixed values',
-        () {
-          final variables = UpdateUserMixedVariables(
-            userId: 'mixed-456',
-            userName: 'Cached Mixed',
-          );
-
-          final mockData = {
-            'updateUser': {
-              'id': 'mixed-456',
-              'name': 'Cached Mixed',
-              'email': 'fixed@example.com',
-              'age': 30,
-              'active': null,
-            },
-          };
-
-          final cacheCtx = CacheUpdateContext(shalomContext: shalomCtx);
-          UpdateUserMixedResponse.normalize$inCache(
-            mockData,
-            cacheCtx,
-            variables,
-          );
-
-          final cached = UpdateUserMixedResponse.fromCache(
-            shalomCtx,
-            variables,
-          );
-          expect(cached.updateUser.id, 'mixed-456');
-          expect(cached.updateUser.name, 'Cached Mixed');
-          expect(cached.updateUser.email, 'fixed@example.com');
-          expect(cached.updateUser.age, 30);
-        },
-      );
-
       test('UpdateUserMixedEquals - should compare mixed responses', () {
         final user1 = UpdateUserMixed_updateUser(
           id: 'm1',
@@ -563,71 +361,6 @@ void main() {
         expect(json['email'], 'fixed@example.com');
         expect(json['age'], 30);
       });
-    });
-
-    group('Cache Key Generation', () {
-      test(
-        'should generate different cache keys for different variable values',
-        () {
-          // This test verifies that cache keys properly include variable values
-          // so that different arguments create different cache entries
-
-          final vars1 = RefreshTokenWithVariableVariables(
-            refreshToken: 'token-1',
-            revoke: true,
-          );
-
-          final vars2 = RefreshTokenWithVariableVariables(
-            refreshToken: 'token-1',
-            revoke: false,
-          );
-
-          final mockData = {
-            'refreshToken': {
-              'token': 'result-token',
-              'expiresAt': '2024-12-31',
-              'userId': 'user-1',
-            },
-          };
-
-          // Cache with first variables
-          final ctx1 = CacheUpdateContext(shalomContext: shalomCtx);
-          RefreshTokenWithVariableResponse.normalize$inCache(
-            mockData,
-            ctx1,
-            vars1,
-          );
-
-          // Update cache with second variables
-          final mockData2 = {
-            'refreshToken': {
-              'token': 'different-token',
-              'expiresAt': '2025-01-01',
-              'userId': 'user-1',
-            },
-          };
-
-          final ctx2 = CacheUpdateContext(shalomContext: shalomCtx);
-          RefreshTokenWithVariableResponse.normalize$inCache(
-            mockData2,
-            ctx2,
-            vars2,
-          );
-
-          // Both should be cached independently
-          final result1 = RefreshTokenWithVariableResponse.fromCache(
-            shalomCtx,
-            vars1,
-          );
-          final result2 = RefreshTokenWithVariableResponse.fromCache(
-            shalomCtx,
-            vars2,
-          );
-
-          expect(result1.refreshToken.token, 'result-token');
-          expect(result2.refreshToken.token, 'different-token');
-        },
-      );
     });
   });
 }

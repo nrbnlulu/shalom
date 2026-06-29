@@ -1,4 +1,4 @@
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 
 class Point {
   final int x;
