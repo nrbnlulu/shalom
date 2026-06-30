@@ -14,7 +14,6 @@ export 'rust/api/runtime.dart'
         RuntimeConfigInput,
         ObserverInfo;
 
-
 // ---------------------------------------------------------------------------
 // ObservedRefInput helpers (exported so codegen templates can use them via
 // `shalom_core.observedRefInputFromJson(...)`)
