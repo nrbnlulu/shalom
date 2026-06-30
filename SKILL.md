@@ -113,6 +113,23 @@ Generated query/subscription APIs usually include:
 - `ClassNameData.readFrom(cache)` for mutation update callbacks.
 - `executionPolicy`, defaulting to `ExecutionPolicyInput.cacheFirst`.
 
+## Execution Policy
+
+Generated query and subscription widgets accept `executionPolicy`.
+Default to `ExecutionPolicyInput.cacheFirst`: it emits complete cached data
+immediately when available, then stays subscribed to later cache/network updates.
+Use `ExecutionPolicyInput.networkFirst` only when the UI must wait for a fresh
+server result, such as explicit refresh flows or server-authorized screens.
+
+```dart
+AlbumsPage(
+  executionPolicy: .networkFirst,
+)
+```
+
+If `cacheFirst` cannot satisfy all selected refs/fields, it waits for the
+network result. Changing `executionPolicy` resubscribes the widget.
+
 Avoid `ShalomScope.of(context).request(...).first` for reads you want to keep in cache, including one-off operations like submit-to-search. The runtime's GC only keeps a root operation field (and entities only reachable through it) alive while some active subscription still references it; a one-shot `request(...)` never registers as an active subscriber, so the written data becomes eligible for eviction the moment any other cache activity triggers garbage collection. For a one-off read whose result should stay live for as long as the UI cares about it, mount the generated `@Query` widget conditionally instead:
 
 ```dart
