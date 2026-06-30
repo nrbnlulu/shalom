@@ -51,7 +51,6 @@ mixin QueryWidgetMixin {
       const Center(child: CircularProgressIndicator());
 
   Widget buildError(BuildContext context, Object error) {
-    debugPrint('Shalom query error in $runtimeType: $error');
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(16),

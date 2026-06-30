@@ -83,7 +83,6 @@ class _$ZooQueryState extends State<$ZooQuery> {
                 });
               },
               onDone: () {
-                debugPrint('[widget] ZooQuery.onDone fired, mounted=$mounted');
                 if (mounted) _subscribe();
               },
             );

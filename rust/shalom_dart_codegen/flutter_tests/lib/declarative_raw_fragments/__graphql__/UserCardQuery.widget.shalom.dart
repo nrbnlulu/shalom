@@ -84,9 +84,6 @@ class _$UserCardQueryState extends State<$UserCardQuery> {
                 });
               },
               onDone: () {
-                debugPrint(
-                  '[widget] UserCardQuery.onDone fired, mounted=$mounted',
-                );
                 if (mounted) _subscribe();
               },
             );
