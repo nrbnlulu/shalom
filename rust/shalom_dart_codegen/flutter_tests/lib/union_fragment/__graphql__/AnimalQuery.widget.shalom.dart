@@ -83,9 +83,6 @@ class _$AnimalQueryState extends State<$AnimalQuery> {
                 });
               },
               onDone: () {
-                debugPrint(
-                  '[widget] AnimalQuery.onDone fired, mounted=$mounted',
-                );
                 if (mounted) _subscribe();
               },
             );

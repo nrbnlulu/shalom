@@ -84,9 +84,6 @@ class _$ZooAnimalsContractQueryState extends State<$ZooAnimalsContractQuery> {
                 });
               },
               onDone: () {
-                debugPrint(
-                  '[widget] ZooAnimalsContractQuery.onDone fired, mounted=$mounted',
-                );
                 if (mounted) _subscribe();
               },
             );

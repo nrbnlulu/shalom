@@ -14,10 +14,6 @@ export 'rust/api/runtime.dart'
         RuntimeConfigInput,
         ObserverInfo;
 
-// Thin wrapper so this file compiles without a Flutter dependency.
-// In Flutter apps the real debugPrint throttles long lines; for our purposes
-// a plain print is sufficient.
-void debugPrint(String? message, {int? wrapWidth}) => print(message);
 
 // ---------------------------------------------------------------------------
 // ObservedRefInput helpers (exported so codegen templates can use them via
@@ -103,9 +99,7 @@ class ShalomRuntimeClient {
   /// Call this on hot-reload before [registerOperation]/[registerFragment]
   /// when the schema file itself has changed.
   void reloadSchema({required String schemaSdl}) {
-    debugPrint('[shalom] reloadSchema called');
     rs_runtime.reloadSchema(handle: _handle, schemaSdl: schemaSdl);
-    debugPrint('[shalom] reloadSchema done');
   }
 
   /// Pre-register a GraphQL operation SDL so it can be executed by name
@@ -147,7 +141,6 @@ class ShalomRuntimeClient {
     controller.onListen = () {
       Future.microtask(() async {
         try {
-          debugPrint('[shalom] executing operation: $name');
           subId = await rs_runtime.request(
             handle: _handle,
             name: name,
@@ -167,14 +160,12 @@ class ShalomRuntimeClient {
             debugName: name,
           );
         } catch (e, st) {
-          debugPrint('[shalom] request($name): ERROR $e');
           if (!controller.isClosed) controller.addError(e, st);
         }
       });
     };
 
     controller.onCancel = () {
-      debugPrint('[shalom] request($name): onCancel fired, subId=$subId');
       final id = subId;
       if (id == null) return;
       rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
@@ -241,11 +232,7 @@ class ShalomRuntimeClient {
     controller.onListen = () {
       try {
         subId = rs_runtime.observeFragment(handle: _handle, refInput: ref);
-        debugPrint(
-          '[shalom] subscribeToFragment: observableId=${ref.observableId} anchor=${ref.anchor} subId=$subId',
-        );
       } catch (e, st) {
-        debugPrint('[shalom] subscribeToFragment ERROR: $e');
         if (!controller.isClosed) controller.addError(e, st);
         return;
       }
@@ -404,7 +391,6 @@ class ShalomRuntimeClient {
 
   void _handleRequestEnvelope(String payload) {
     if (_disposed) return;
-    debugPrint('[shalom] _handleRequestEnvelope: $payload');
     final envelope = _RequestEnvelope.fromJson(payload);
     final previous = _activeRequests.remove(envelope.id);
     if (previous != null) {

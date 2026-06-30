@@ -72,9 +72,6 @@ class _$StreetSubscriptionState extends State<$StreetSubscription> {
             });
           },
           onDone: () {
-            debugPrint(
-              '[widget] StreetSubscription.onDone fired, mounted=$mounted',
-            );
             if (mounted) _subscribe();
           },
         );

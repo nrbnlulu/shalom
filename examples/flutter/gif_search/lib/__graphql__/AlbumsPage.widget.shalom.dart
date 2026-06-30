@@ -73,7 +73,6 @@ class _$AlbumsPageState extends State<$AlbumsPage> {
             });
           },
           onDone: () {
-            debugPrint('[widget] AlbumsPage.onDone fired, mounted=$mounted');
             if (mounted) _subscribe();
           },
         );

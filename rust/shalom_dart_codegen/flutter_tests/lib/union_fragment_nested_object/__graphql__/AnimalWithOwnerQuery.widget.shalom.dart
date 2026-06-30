@@ -84,9 +84,6 @@ class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
                 });
               },
               onDone: () {
-                debugPrint(
-                  '[widget] AnimalWithOwnerQuery.onDone fired, mounted=$mounted',
-                );
                 if (mounted) _subscribe();
               },
             );

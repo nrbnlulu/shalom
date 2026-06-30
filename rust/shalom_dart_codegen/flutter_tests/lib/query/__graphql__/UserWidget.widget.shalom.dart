@@ -82,9 +82,6 @@ class _$UserWidgetState extends State<$UserWidget> {
                 });
               },
               onDone: () {
-                debugPrint(
-                  '[widget] UserWidget.onDone fired, mounted=$mounted',
-                );
                 if (mounted) _subscribe();
               },
             );

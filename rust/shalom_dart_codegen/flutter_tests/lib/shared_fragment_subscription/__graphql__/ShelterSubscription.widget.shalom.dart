@@ -74,9 +74,6 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
                 });
               },
               onDone: () {
-                debugPrint(
-                  '[widget] ShelterSubscription.onDone fired, mounted=$mounted',
-                );
                 if (mounted) _subscribe();
               },
             );

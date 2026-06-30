@@ -83,7 +83,6 @@ class _$PetQueryState extends State<$PetQuery> {
                 });
               },
               onDone: () {
-                debugPrint('[widget] PetQuery.onDone fired, mounted=$mounted');
                 if (mounted) _subscribe();
               },
             );

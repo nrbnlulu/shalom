@@ -82,9 +82,7 @@ class _$AlbumGifSearchState extends State<$AlbumGifSearch> {
                 });
               },
               onDone: () {
-                debugPrint(
-                  '[widget] AlbumGifSearch.onDone fired, mounted=$mounted',
-                );
+
                 if (mounted) _subscribe();
               },
             );

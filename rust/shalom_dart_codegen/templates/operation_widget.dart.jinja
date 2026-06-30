@@ -86,7 +86,6 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
                     });
                 },
                 onDone: () {
-                    debugPrint('[widget] {{ operation_name }}.onDone fired, mounted=$mounted');
                     if (mounted) _subscribe();
                 },
             );
