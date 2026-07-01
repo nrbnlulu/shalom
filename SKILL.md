@@ -8,9 +8,9 @@ description: Use when building or modifying Dart/Flutter apps that use the Shalo
 Use this skill when acting as an app developer consuming Shalom. Prefer Shalom's generated Dart/Flutter APIs over hand-written GraphQL plumbing. Do not edit generated `__graphql__` files directly; change annotations/schema/config and regenerate.
 ## Paradigm
 shalom contains a "smart" runtime that automagically updates widgets if you use it correctly
-shalom is declerative meaning that as a rule of thumb we don't need services nor state management solutions for graphql stuff.
+shalom is declarative meaning that as a rule of thumb we don't need services nor state management solutions for graphql stuff.
 in shalom every widget should request only what it needs.
-in shalom we do less on the ui and more on the server. so if so far you have done sorting on the ui, you should (mostly) now delegate that to the server because usually list nodes would use fragments which are not readable (decleratively) by the list view builder.
+in shalom we do less on the ui and more on the server. so if so far you have done sorting on the ui, you should (mostly) now delegate that to the server because usually list nodes would use fragments which are not readable (declaratively) by the list view builder.
 if you still need to do sorting on the ui, make sure your lists are not huge an you'd prob better off without @Fragment widgets.
 
 
