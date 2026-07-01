@@ -49,8 +49,13 @@ pub fn resolve_multitype_selections(
             collect(root_type, &inline_frag.common, ctx, selections);
         }
 
-        if let Some(type_cond) = current_obj.type_cond_selections.get(root_type) {
-            collect(root_type, type_cond, ctx, selections);
+        for (cond_typename, type_cond) in current_obj.type_cond_selections.iter() {
+            if ctx
+                .schema_ctx
+                .is_type_same_or_implementing_interface(root_type, cond_typename)
+            {
+                collect(root_type, type_cond, ctx, selections);
+            }
         }
     }
 

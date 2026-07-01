@@ -1,0 +1,23 @@
+type Query {
+  errorResult: ErrorUnion!
+  mixedResult: MixedUnion!
+}
+
+interface ErrorInterface {
+  message: String!
+}
+
+type DoesNotExistErr implements ErrorInterface {
+  message: String!
+}
+
+type AlreadyExistsErr implements ErrorInterface {
+  message: String!
+}
+
+type OtherThing {
+  value: Int!
+}
+
+union ErrorUnion = DoesNotExistErr | AlreadyExistsErr
+union MixedUnion = DoesNotExistErr | AlreadyExistsErr | OtherThing

@@ -586,6 +586,48 @@ mod unions {
         assert_eq!(search.get("__typename"), Some(&json!("Admin")));
         assert_eq!(search.get("level"), Some(&json!(7)));
     }
+
+    /// An inline fragment keyed by an interface shared by every union member must
+    /// still contribute its fields when resolving/reading each concrete member.
+    #[test]
+    fn test_interface_typed_inline_fragment_inside_union() {
+        let schema = r#"
+            interface ErrorInterface { id: ID!, message: String! }
+            type DoesNotExistErr implements ErrorInterface { id: ID!, message: String! }
+            type AlreadyExistsErr implements ErrorInterface { id: ID!, message: String! }
+            union MutationError = DoesNotExistErr | AlreadyExistsErr
+            type Query { search: MutationError }
+        "#;
+        let operation = r#"
+            query TestOp {
+                search {
+                    __typename
+                    ... on ErrorInterface { id message }
+                }
+            }
+        "#;
+        let (global_ctx, op_ctx) = build_ctx(schema, operation);
+
+        let result = normalize(
+            &global_ctx,
+            &op_ctx,
+            json!({ "search": { "__typename": "DoesNotExistErr", "id": "e1", "message": "not found" } }),
+            None,
+        );
+        assert!(result.used_refs.contains("ROOT_QUERY.search"));
+
+        let not_found = record(&global_ctx, "DoesNotExistErr:e1");
+        expect_scalar(&not_found, "message", json!("not found"));
+
+        normalize(
+            &global_ctx,
+            &op_ctx,
+            json!({ "search": { "__typename": "AlreadyExistsErr", "id": "e2", "message": "already there" } }),
+            None,
+        );
+        let already_exists = record(&global_ctx, "AlreadyExistsErr:e2");
+        expect_scalar(&already_exists, "message", json!("already there"));
+    }
 }
 
 mod interfaces {
