@@ -7,7 +7,7 @@ for fields and call the serializer/deserializer automatically.
 ## 1. Define a Dart type and scalar implementation
 
 ```dart
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 
 class Point {
   final int x;

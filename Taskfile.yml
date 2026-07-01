@@ -47,4 +47,4 @@ tasks:
         desc: Serve MkDocs locally with uv
         cmds:
             - uv sync
-            - uv run -- mkdocs serve
+            - uv run -- mkdocs serve --dev-addr 0.0.0.0:8080
