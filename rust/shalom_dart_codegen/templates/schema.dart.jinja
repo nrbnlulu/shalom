@@ -1,7 +1,8 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, camel_case_types
 {% include "macros" %}
 {% if schema.context.types.inputs | length > 0 %}
-import 'package:shalom_core/shalom_core.dart' as shalom_core;
+import 'package:shalom/shalom.dart' as shalom_core;
+import 'package:collection/collection.dart';
 {% endif %}
 {{ custom_scalar_imports_macro(custom_scalar_imports) }}
 
@@ -42,7 +43,7 @@ sealed class {{ typename }} {
   shalom_core.JsonObject toJson();
 
   {% for field_name, field in input_object.fields | items -%}
-  static {{ typename }} {{ field_name }}({{ type_name_for_one_of_input_field(field) }} value) => _{{ typename }}_{{ field_name }}(value);
+  static {{ typename }} {{ field_name }}({{ type_name_for_one_of_input_field(field) }} value) => {{ typename }}${{ field_name }}(value);
 
   {% endfor -%}
   @override
@@ -52,10 +53,10 @@ sealed class {{ typename }} {
 }
 
 {% for field_name, field in input_object.fields | items %}
-class _{{ typename }}_{{ field_name }} implements {{ typename }} {
+class {{ typename }}${{ field_name }} implements {{ typename }} {
   final {{ type_name_for_one_of_input_field(field) }} value;
 
-  const _{{ typename }}_{{ field_name }}(this.value);
+  const {{ typename }}${{ field_name }}(this.value);
 
   @override
   shalom_core.JsonObject toJson() {
@@ -65,7 +66,7 @@ class _{{ typename }}_{{ field_name }} implements {{ typename }} {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || (other is _{{ typename }}_{{ field_name }} && value == other.value);
+      identical(this, other) || (other is {{ typename }}${{ field_name }} && value == other.value);
 
   @override
   int get hashCode => value.hashCode ^ runtimeType.hashCode;
@@ -103,6 +104,30 @@ class {{ typename }} {
     String toString() {
         return toJson().toString();
     }
+
+    @override
+    bool operator ==(Object other) {
+        return identical(this, other) || (other is {{ typename }}
+            {% for name, field in input_object.fields | items %}
+                && {% if field.common.type.kind.kind == "List" %}
+                    const DeepCollectionEquality().equals(this.{{ name }}, other.{{ name }})
+                {% else %}
+                    this.{{ name }} == other.{{ name }}
+                {% endif %}
+            {% endfor %}
+        );
+    }
+
+    @override
+    int get hashCode => Object.hashAll([
+        {% for name, field in input_object.fields | items %}
+            {% if field.common.type.kind.kind == "List" %}
+                const DeepCollectionEquality().hash({{ name }}),
+            {% else %}
+                {{ name }},
+            {% endif %}
+        {% endfor %}
+    ]);
 
   {{ updateWith_macro(input_object.fields, typename) }}
 }

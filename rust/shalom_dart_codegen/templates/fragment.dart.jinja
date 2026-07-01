@@ -4,6 +4,8 @@
 {% set typedefs = context.fragment.typedefs %}
 {% set op_variables = None %}
 {% set op_variables_exist = false %}
+{% set is_observe = context.fragment.observe and not context.is_pure_dart %}
+{% set is_multi_type = fragment_name in typedefs.unions or fragment_name in typedefs.interfaces %}
 
 {% include "selection_macros" %}
 
@@ -12,24 +14,335 @@
 // Fragment: {{fragment_name}}
 
 import "{{ context.schema_import_path }}";
-import 'package:shalom_core/shalom_core.dart' as shalom_core;
+import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 {{ custom_scalar_imports_macro(context.custom_scalar_imports) }}
 
-{% for import_path in generate_fragment_imports(context.fragment_file_path) -%}
+{% for import_path in generate_fragment_imports(context.fragment_file_path) | sort -%}
 import '{{ import_path }}';
 {% endfor %}
+{% if is_observe %}
+import 'dart:async' show Stream;
+import 'package:flutter/widgets.dart';
+import 'package:shalom_flutter/shalom_flutter.dart';
+{% endif %}
 
+{% if is_observe %}
+// ------------ fragment widget API -------------
+
+extension type {{ fragment_name }}Ref.fromInput(shalom_core.ObservedRefInput _inner) {
+  static const String fragmentName = '{{ fragment_name }}';
+
+  static {{ fragment_name }}Ref fromEntityKey(String entityKey) {
+    return {{ fragment_name }}Ref.fromInput(
+      shalom_core.ObservedRefInput(
+        observableId: fragmentName,
+        anchor: entityKey,
+      ),
+    );
+  }
+
+  {% if not is_multi_type and fragment_root_has_id_selection() %}
+  static {{ fragment_name }}Ref fromId(String id) => fromEntityKey({{ fragment_name }}Data.entityKey(id));
+
+  {% endif %}
+  shalom_core.ObservedRefInput get toInput => _inner;
+  String get anchor => _inner.anchor;
+  shalom_core.JsonObject toJson() => {'__shalom_observed_ref': {'observable_id': _inner.observableId, 'anchor': _inner.anchor}};
+
+  /// Reads the entity this ref points to through [cache], decoding it as
+  /// [{{ fragment_name }}Data]. Returns `null` when absent or incomplete.
+  {{ fragment_name }}Data? readFrom(shalom_core.CacheProxy cache) {
+    return cache.readFragment<{{ fragment_name }}Data>(
+      fragmentName: fragmentName,
+      entityKey: anchor,
+      decoder: {{ fragment_name }}Data.fromCache,
+    );
+  }
+
+  Stream<shalom_core.GraphQLResponse<{{ fragment_name }}Data>> observe(shalom_core.ShalomRuntimeClient client) {
+    return client.subscribeToFragment<{{ fragment_name }}Data>(
+      ref: _inner,
+      decoder: {{ fragment_name }}Data.fromCache,
+    );
+  }
+}
+
+abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.root_type.used_fragments) }} {
+  {% for field in frag_root_shared_selections() if field.name != "__typename" -%}
+    {{ type_name_for_selection(field) }} get {{ field.name }};
+  {% endfor %}
+
+  shalom_core.JsonObject toJson();
+}
+
+{% if is_multi_type %}
+{# Interface/union fragment: sealed class with $TypeName subclasses + $Unknown #}
+{% set root_concretes = multitype_selection_resolved_concretes(fragment_name) -%}
+sealed class {{ fragment_name }}Data implements {{ fragment_name }} {
+  const {{ fragment_name }}Data();
+
+  {% for field in frag_root_shared_selections() if field.name != "__typename" -%}
+    {{ type_name_for_selection(field) }} get {{ field.name }};
+  {% endfor %}
+
+  static {{ fragment_name }}Data fromCache(shalom_core.JsonObject data) {
+    final typename = data['__typename'] as String?;
+    switch(typename) {
+      {% for concrete in root_concretes -%}
+      case '{{ concrete.schema_typename }}':
+        return {{ fragment_name }}Data${{ concrete.schema_typename }}.fromJson(data);
+      {% endfor %}
+      default:
+        return const {{ fragment_name }}Data$Unknown();
+    }
+  }
+}
+
+{% for concrete in root_concretes -%}
+final class {{ fragment_name }}Data${{ concrete.schema_typename }} extends {{ fragment_name }}Data {
+  {{ selection_object_impl(fragment_name ~ "Data$" ~ concrete.schema_typename, concrete, is_root_selection=true, full_name=fragment_name ~ "Data$" ~ concrete.schema_typename, is_multi_type_member=true, shared_selections=concrete.selections, use_observe=false) }}
+}
+{% endfor %}
+
+final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
+  const {{ fragment_name }}Data$Unknown();
+
+  {% for field in frag_root_shared_selections() if field.name != "__typename" -%}
+    @override
+    {{ type_name_for_selection(field) }} get {{ field.name }} => throw UnimplementedError();
+  {% endfor %}
+
+  @override
+  shalom_core.JsonObject toJson() => throw UnimplementedError();
+}
+
+{# Nested object definitions within concrete types #}
+{% for name, obj in typedefs.objects | items %}
+{{ selection_object_definition(obj, use_observe=false) }}
+{% endfor %}
+
+{# Nested union definitions (not the root — sealed because all subtypes live in this file) #}
+{% for union_full_name, union_selection in typedefs.unions | items %}
+  {% if union_full_name != fragment_name %}
+    {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
+    sealed class {{ union_full_name }}{{ implements_used_fragments(union_selection.used_fragments) }} {
+      {% for sel in union_selection.selections if sel.name != "__typename" -%}
+        {{type_name_for_selection(sel)}} get {{sel.name}};
+      {% endfor %}
+      String get $__typename;
+      const {{ union_full_name }}();
+      shalom_core.JsonObject toJson();
+
+      static {{ union_full_name }} fromJson(shalom_core.JsonObject data) {
+        final typename = data['__typename'] as String;
+        switch(typename) {
+          {% for concrete in concretes -%}
+            case '{{ concrete.schema_typename }}':
+              return {{ concrete.path_name }}.fromJson(data);
+          {% endfor %}
+          default:
+            throw Exception("Unknown typename $typename");
+        }
+      }
+    }
+    {% for concrete_subset in concretes -%}
+      final class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+        {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
+      }
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+
+{# Nested interface definitions (not the root — sealed because all subtypes live in this file) #}
+{% for iface_path_name, iface_selection in typedefs.interfaces | items %}
+  {% if iface_path_name != fragment_name %}
+    {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
+    sealed class {{ iface_path_name }}{{ implements_used_fragments(iface_selection.used_fragments) }} {
+      {% for sel in iface_selection.selections if sel.name != "__typename" -%}
+        {{type_name_for_selection(sel)}} get {{sel.name}};
+      {% endfor %}
+      String get $__typename;
+      const {{ iface_path_name }}();
+      shalom_core.JsonObject toJson();
+
+      static {{ iface_path_name }} fromJson(shalom_core.JsonObject data) {
+        final typename = data['__typename'] as String;
+        switch(typename) {
+          {% for concrete in concretes -%}
+            case '{{ concrete.schema_typename }}':
+              return {{ concrete.path_name }}.fromJson(data);
+          {% endfor %}
+          default:
+            throw Exception("Unknown typename $typename");
+        }
+      }
+    }
+    {% for concrete_subset in concretes -%}
+      final class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+        {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
+      }
+    {% endfor %}
+  {% endif %}
+{% endfor %}
+
+{% else %}
+{# Concrete object fragment: simple final class, no sealed/dispatch needed #}
+{% for name, obj in typedefs.objects | items %}
+{{ selection_object_definition(obj, use_observe=false) }}
+{% endfor %}
+
+{# Nested union definitions (fields of union type within this concrete object) #}
+{% for union_full_name, union_selection in typedefs.unions | items %}
+  {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
+  {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
+  {% for concrete_subset in concretes -%}
+    final class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+      {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
+    }
+  {% endfor %}
+{% endfor %}
+
+{# Nested interface definitions (fields of interface type within this concrete object) #}
+{% for iface_path_name, iface_selection in typedefs.interfaces | items %}
+  {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
+  {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
+  {% for concrete_subset in concretes -%}
+    final class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+      {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
+    }
+  {% endfor %}
+{% endfor %}
+
+{% set fragment_data_selections = frag_root_shared_selections() %}
+final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.FragmentInterface {
+  {% for selection in fragment_data_selections if selection.name != "__typename" -%}
+    final {{ type_name_for_selection(selection) }} {{ selection.name }};
+  {% endfor %}
+
+  const {{ fragment_name }}Data({
+    {% for selection in fragment_data_selections if selection.name != "__typename" -%}
+      required this.{{ selection.name }},
+    {% endfor %}
+  });
+
+  @override
+  bool operator ==(Object other) => identical(this, other) || (other is {{ fragment_name }}Data
+    {% for selection in fragment_data_selections if selection.name != "__typename" -%}
+      && {{ selection_equality_comparison_macro(selection, selection.name, "other." + selection.name) }}
+    {% endfor %}
+  );
+
+  @override
+  int get hashCode => Object.hashAll([
+    {% for selection in fragment_data_selections if selection.name != "__typename" -%}
+      {{ selection.name }},
+    {% endfor %}
+  ]);
+
+  @override
+  String fragment$Name() => '{{ fragment_name }}';
+
+  @override
+  String entity$Type() => '{{ context.fragment.root_type.schema_typename }}';
+
+  @override
+  String entity$Id() {% if fragment_root_has_id_selection() %}=> this.id;{% else %}=> throw UnimplementedError(
+    "Fragment '{{ fragment_name }}' does not select 'id', so it has no entity id. "
+    "Pass an explicit entityKey instead.",
+  );{% endif %}
+
+  /// The normalized cache key for the entity identified by [id], e.g.
+  /// `'{{ context.fragment.root_type.schema_typename }}:123'`.
+  static String entityKey(String id) => '{{ context.fragment.root_type.schema_typename }}:$id';
+
+  static {{ fragment_name }}Data fromCache(shalom_core.JsonObject data) {
+    {% for selection in fragment_data_selections if selection.name != "__typename" -%}
+      {% set raw_value_symbol = "data['" + selection.name + "']" -%}
+      final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional, false) }};
+    {% endfor -%}
+    return {{ fragment_name }}Data(
+      {% for selection in fragment_data_selections -%}
+        {% if selection.name != "__typename" %}
+          {{selection.name}}: {{selection.name}}$value,
+        {% endif %}
+      {% endfor -%}
+    );
+  }
+
+  shalom_core.JsonObject toJson() {
+    return {
+      {% for selection in fragment_data_selections if selection.name != "__typename" %}
+        '{{ selection.name }}': {% if selection.is_optional %}{{ _serialize_selection_value_macro("this." + selection.name, selection, true) }}{% else %}{{ _serialize_selection_value_macro("this." + selection.name, selection, false) }}{% endif %},
+      {% endfor %}
+    };
+  }
+}
+{% endif %}
+
+abstract class ${{ fragment_name }} extends StatelessWidget {
+  final {{ fragment_name }}Ref ref;
+  const ${{ fragment_name }}({super.key, required this.ref});
+
+  Widget buildData(BuildContext context, {{ fragment_name }}Data data);
+  Widget buildLoading(BuildContext context) => const SizedBox.shrink();
+  Widget buildError(BuildContext context, Object error) => ErrorWidget(error);
+
+  @override
+  Widget build(BuildContext context) {
+    return {{ fragment_name }}Scope(
+      ref: ref,
+      loadingBuilder: buildLoading,
+      errorBuilder: buildError,
+      builder: buildData,
+    );
+  }
+}
+
+class {{ fragment_name }}Scope extends StatelessWidget {
+  final {{ fragment_name }}Ref ref;
+  final ShalomDataWidgetBuilder<{{ fragment_name }}Data> builder;
+  final WidgetBuilder? loadingBuilder;
+  final ShalomErrorBuilder? errorBuilder;
+
+  const {{ fragment_name }}Scope({
+    super.key,
+    required this.ref,
+    required this.builder,
+    this.loadingBuilder,
+    this.errorBuilder,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ShalomDataScope<{{ fragment_name }}Data>(
+      identity: ref.toInput,
+      observe: (client) => ref.observe(client),
+      loadingBuilder: loadingBuilder,
+      errorBuilder: errorBuilder,
+      builder: builder,
+    );
+  }
+}
+
+// ------------ END fragment widget API -------------
+{% else %}
+{% if fragment_name not in typedefs.interfaces and fragment_name not in typedefs.unions %}
 // Generate abstract fragment class
 abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.root_type.used_fragments) }} {
     {% for field in frag_root_shared_selections() if field.name != "__typename" -%}
         {{ type_name_for_selection(field) }} get {{ field.name }};
     {% endfor %}
 
+
   Map<String, dynamic> toJson();
 
 }
+
+class {{ fragment_name }}Impl implements {{ fragment_name }} {
+  {{ selection_object_impl(fragment_name ~ "Impl", context.fragment.root_type, is_root_selection=false, full_name=context.fragment.root_type.path_name, shared_selections=frag_root_shared_selections()) }}
+}
+{% endif %}
 
 // ------------ START OBJECT DEFINITIONS -------------
 {% for name, obj in typedefs.objects | items -%}
@@ -42,8 +355,29 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
 
 {% for union_full_name, union_selection in typedefs.unions | items -%}
     {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
-    {# generate sealed classes #}
-    {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
+    {# generate abstract class (not sealed - must be implementable across libraries by operation types) #}
+    abstract class {{ union_full_name }}{{ implements_used_fragments(union_selection.used_fragments) }} {
+        {% for sel in union_selection.selections if sel.name != "__typename" -%}
+            {{type_name_for_selection(sel)}} get {{sel.name}};
+        {% endfor %}
+        String get $__typename;
+        const {{ union_full_name }}();
+
+        shalom_core.JsonObject toJson();
+
+
+        static {{ union_full_name }} fromJson(shalom_core.JsonObject data) {
+            final typename = data['__typename'] as String;
+            switch(typename) {
+                {% for concrete in concretes -%}
+                    case '{{ concrete.schema_typename }}':
+                        return {{ concrete.path_name }}.fromJson(data);
+                {% endfor %}
+                default:
+                    throw Exception("Unknown typename $typename");
+            }
+        }
+    }
 
     {# generate subsets #}
     {% for concrete_subset in concretes -%}
@@ -59,8 +393,29 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
 
 {% for iface_path_name, iface_selection in typedefs.interfaces | items %}
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
-    {# generate sealed classes #}
-    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
+    {# generate abstract class (not sealed - must be implementable across libraries by operation types) #}
+    abstract class {{ iface_path_name }}{{ implements_used_fragments(iface_selection.used_fragments) }} {
+        {% for sel in iface_selection.selections if sel.name != "__typename" -%}
+            {{type_name_for_selection(sel)}} get {{sel.name}};
+        {% endfor %}
+        String get $__typename;
+        const {{ iface_path_name }}();
+
+        shalom_core.JsonObject toJson();
+
+
+        static {{ iface_path_name }} fromJson(shalom_core.JsonObject data) {
+            final typename = data['__typename'] as String;
+            switch(typename) {
+                {% for concrete in concretes -%}
+                    case '{{ concrete.schema_typename }}':
+                        return {{ concrete.path_name }}.fromJson(data);
+                {% endfor %}
+                default:
+                    throw Exception("Unknown typename $typename");
+            }
+        }
+    }
 
     {# generate subsets #}
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
@@ -74,3 +429,4 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
 // ------------ END INTERFACE DEFINITIONS -------------
 
 {{ generate_multi_type_list_extensions(multi_type_list_selections) }}
+{% endif %}

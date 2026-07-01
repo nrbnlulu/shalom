@@ -7,7 +7,7 @@ use super::types::{
 };
 use anyhow::Result;
 use apollo_compiler::{self};
-use apollo_compiler::{schema as apollo_schema, Node};
+use apollo_compiler::{Node, schema as apollo_schema};
 use log::{debug, info};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;

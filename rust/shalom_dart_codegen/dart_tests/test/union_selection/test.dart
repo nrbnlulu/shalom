@@ -1,6 +1,3 @@
-import "dart:async";
-
-import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
 import "__graphql__/GetSearchResult.shalom.dart";
 import "__graphql__/GetSearchResultOpt.shalom.dart";
@@ -38,9 +35,8 @@ void main() {
   group('Test union selection - required', () {
     test('deserialize User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultResponse.fromResponse(
+      final result = GetSearchResultResponse.fromJson(
         userSearchData,
-        variables: variables,
       );
 
       expect(result.search, isA<GetSearchResult_search__User>());
@@ -53,9 +49,8 @@ void main() {
 
     test('deserialize Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultResponse.fromResponse(
+      final result = GetSearchResultResponse.fromJson(
         postSearchData,
-        variables: variables,
       );
 
       expect(result.search, isA<GetSearchResult_search__Post>());
@@ -69,9 +64,8 @@ void main() {
 
     test('deserialize Comment', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultResponse.fromResponse(
+      final result = GetSearchResultResponse.fromJson(
         commentSearchData,
-        variables: variables,
       );
 
       expect(result.search, isA<GetSearchResult_search__Comment>());
@@ -84,9 +78,8 @@ void main() {
 
     test('serialize User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final initial = GetSearchResultResponse.fromResponse(
+      final initial = GetSearchResultResponse.fromJson(
         userSearchData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, userSearchData);
@@ -94,9 +87,8 @@ void main() {
 
     test('serialize Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final initial = GetSearchResultResponse.fromResponse(
+      final initial = GetSearchResultResponse.fromJson(
         postSearchData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, postSearchData);
@@ -104,39 +96,33 @@ void main() {
 
     test('equals User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultResponse.fromResponse(
+      final result1 = GetSearchResultResponse.fromJson(
         userSearchData,
-        variables: variables,
       );
-      final result2 = GetSearchResultResponse.fromResponse(
+      final result2 = GetSearchResultResponse.fromJson(
         userSearchData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
 
     test('equals Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultResponse.fromResponse(
+      final result1 = GetSearchResultResponse.fromJson(
         postSearchData,
-        variables: variables,
       );
-      final result2 = GetSearchResultResponse.fromResponse(
+      final result2 = GetSearchResultResponse.fromJson(
         postSearchData,
-        variables: variables,
       );
       expect(result1, equals(result2));
     });
 
     test('not equals different types', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultResponse.fromResponse(
+      final result1 = GetSearchResultResponse.fromJson(
         userSearchData,
-        variables: variables,
       );
-      final result2 = GetSearchResultResponse.fromResponse(
+      final result2 = GetSearchResultResponse.fromJson(
         postSearchData,
-        variables: variables,
       );
       expect(result1, isNot(equals(result2)));
     });
@@ -156,9 +142,8 @@ void main() {
   group('Test union selection - optional', () {
     test('deserialize User', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final result = GetSearchResultOptResponse.fromResponse(
+      final result = GetSearchResultOptResponse.fromJson(
         userSearchOptData,
-        variables: variables,
       );
 
       expect(result.searchOpt, isNotNull);
@@ -171,18 +156,16 @@ void main() {
 
     test('deserialize null', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final result = GetSearchResultOptResponse.fromResponse(
+      final result = GetSearchResultOptResponse.fromJson(
         searchOptNullData,
-        variables: variables,
       );
       expect(result.searchOpt, isNull);
     });
 
     test('serialize with value', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final initial = GetSearchResultOptResponse.fromResponse(
+      final initial = GetSearchResultOptResponse.fromJson(
         userSearchOptData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, userSearchOptData);
@@ -190,9 +173,8 @@ void main() {
 
     test('serialize null', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final initial = GetSearchResultOptResponse.fromResponse(
+      final initial = GetSearchResultOptResponse.fromJson(
         searchOptNullData,
-        variables: variables,
       );
       final json = initial.toJson();
       expect(json, searchOptNullData);
@@ -204,9 +186,8 @@ void main() {
       final variables = GetSearchResultWithoutTopTypenameVariables(
         query: "test",
       );
-      final result = GetSearchResultWithoutTopTypenameResponse.fromResponse(
+      final result = GetSearchResultWithoutTopTypenameResponse.fromJson(
         userSearchData,
-        variables: variables,
       );
 
       expect(
@@ -220,128 +201,6 @@ void main() {
         "User",
       );
       expect(user.id, "user1");
-    });
-  });
-
-  group('cacheNormalization', () {
-    test('User to Post', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetSearchResultVariables(query: "test");
-
-      var (result, updateCtx) = GetSearchResultResponse.fromResponseImpl(
-        userSearchData,
-        ctx,
-        variables,
-      );
-
-      expect(result.search, isA<GetSearchResult_search__User>());
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetSearchResultResponse.fromResponse(
-        postSearchData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.search, isA<GetSearchResult_search__Post>());
-    });
-
-    test('Post to Comment', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetSearchResultVariables(query: "test");
-
-      var (result, updateCtx) = GetSearchResultResponse.fromResponseImpl(
-        postSearchData,
-        ctx,
-        variables,
-      );
-
-      expect(result.search, isA<GetSearchResult_search__Post>());
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetSearchResultResponse.fromResponse(
-        commentSearchData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.search, isA<GetSearchResult_search__Comment>());
-    });
-
-    test('optional - null to User', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetSearchResultOptVariables(query: "test");
-
-      var (result, updateCtx) = GetSearchResultOptResponse.fromResponseImpl(
-        searchOptNullData,
-        ctx,
-        variables,
-      );
-
-      expect(result.searchOpt, isNull);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultOptResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetSearchResultOptResponse.fromResponse(
-        userSearchOptData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.searchOpt, isNotNull);
-    });
-
-    test('optional - User to null', () async {
-      final ctx = ShalomCtx.withCapacity();
-      final variables = GetSearchResultOptVariables(query: "test");
-
-      var (result, updateCtx) = GetSearchResultOptResponse.fromResponseImpl(
-        userSearchOptData,
-        ctx,
-        variables,
-      );
-
-      expect(result.searchOpt, isNotNull);
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultOptResponse.fromCache(newCtx, variables);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetSearchResultOptResponse.fromResponse(
-        searchOptNullData,
-        ctx: ctx,
-        variables: variables,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.searchOpt, isNull);
     });
   });
 }

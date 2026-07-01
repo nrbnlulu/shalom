@@ -1,6 +1,3 @@
-import "dart:async";
-
-import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
 import "__graphql__/GetSearchResultsRequired.shalom.dart";
 import "__graphql__/GetSearchResultsOptional.shalom.dart";
@@ -127,7 +124,7 @@ void main() {
 
   group('List of Unions Required - [SearchResult!]!', () {
     test('searchResultsRequired deserialize mixed types', () {
-      final result = GetSearchResultsRequiredResponse.fromResponse(
+      final result = GetSearchResultsRequiredResponse.fromJson(
         searchResultsRequiredData,
       );
       expect(result.searchResultsRequired.length, 3);
@@ -168,14 +165,14 @@ void main() {
     });
 
     test('searchResultsRequired deserialize empty list', () {
-      final result = GetSearchResultsRequiredResponse.fromResponse(
+      final result = GetSearchResultsRequiredResponse.fromJson(
         searchResultsRequiredEmptyData,
       );
       expect(result.searchResultsRequired, []);
     });
 
     test('searchResultsRequired toJson', () {
-      final initial = GetSearchResultsRequiredResponse.fromResponse(
+      final initial = GetSearchResultsRequiredResponse.fromJson(
         searchResultsRequiredData,
       );
       final json = initial.toJson();
@@ -183,7 +180,7 @@ void main() {
     });
 
     test('searchResultsRequired toJson empty list', () {
-      final initial = GetSearchResultsRequiredResponse.fromResponse(
+      final initial = GetSearchResultsRequiredResponse.fromJson(
         searchResultsRequiredEmptyData,
       );
       final json = initial.toJson();
@@ -191,156 +188,19 @@ void main() {
     });
 
     test('searchResultsRequired equals', () {
-      final result1 = GetSearchResultsRequiredResponse.fromResponse(
+      final result1 = GetSearchResultsRequiredResponse.fromJson(
         searchResultsRequiredData,
       );
-      final result2 = GetSearchResultsRequiredResponse.fromResponse(
+      final result2 = GetSearchResultsRequiredResponse.fromJson(
         searchResultsRequiredData,
       );
-      final result3 = GetSearchResultsRequiredResponse.fromResponse(
+      final result3 = GetSearchResultsRequiredResponse.fromJson(
         searchResultsRequiredDataChanged,
       );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
     });
-
-    test(
-      'searchResultsRequired cacheNormalization - inner field change',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (
-          result,
-          updateCtx,
-        ) = GetSearchResultsRequiredResponse.fromResponseImpl(
-          searchResultsRequiredData,
-          ctx,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetSearchResultsRequiredResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetSearchResultsRequiredResponse.fromResponse(
-          searchResultsRequiredDataChanged,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        final user = result.searchResultsRequired[0]
-            as GetSearchResultsRequired_searchResultsRequired__User;
-        expect(user.name, "Alice Updated");
-      },
-    );
-
-    test('searchResultsRequired cacheNormalization - type change', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetSearchResultsRequiredResponse.fromResponseImpl(
-        searchResultsRequiredData,
-        ctx,
-      );
-
-      expect(
-        result.searchResultsRequired[0],
-        isA<GetSearchResultsRequired_searchResultsRequired__User>(),
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultsRequiredResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetSearchResultsRequiredResponse.fromResponse(
-        searchResultsRequiredTypeChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(
-        result.searchResultsRequired[0],
-        isA<GetSearchResultsRequired_searchResultsRequired__Post>(),
-      );
-      final post = result.searchResultsRequired[0]
-          as GetSearchResultsRequired_searchResultsRequired__Post;
-      expect(post.title, "Now a post");
-    });
-
-    test(
-      'searchResultsRequired cacheNormalization - list length changed',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (
-          result,
-          updateCtx,
-        ) = GetSearchResultsRequiredResponse.fromResponseImpl(
-          searchResultsRequiredData,
-          ctx,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetSearchResultsRequiredResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetSearchResultsRequiredResponse.fromResponse(
-          searchResultsRequiredLengthChanged,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.searchResultsRequired.length, 2);
-      },
-    );
-
-    test(
-      'searchResultsRequired cacheNormalization - object ID changed at index',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (
-          result,
-          updateCtx,
-        ) = GetSearchResultsRequiredResponse.fromResponseImpl(
-          searchResultsRequiredData,
-          ctx,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetSearchResultsRequiredResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetSearchResultsRequiredResponse.fromResponse(
-          searchResultsRequiredIdChanged,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        final user = result.searchResultsRequired[1]
-            as GetSearchResultsRequired_searchResultsRequired__User;
-        expect(user.id, "user2");
-        expect(user.name, "David");
-      },
-    );
   });
 
   // Test data for optional list
@@ -383,7 +243,7 @@ void main() {
 
   group('List of Unions Optional - [SearchResult!]', () {
     test('searchResultsOptional deserialize', () {
-      final result = GetSearchResultsOptionalResponse.fromResponse(
+      final result = GetSearchResultsOptionalResponse.fromJson(
         searchResultsOptionalData,
       );
       expect(result.searchResultsOptional?.length, 2);
@@ -408,21 +268,21 @@ void main() {
     });
 
     test('searchResultsOptional deserialize null', () {
-      final result = GetSearchResultsOptionalResponse.fromResponse(
+      final result = GetSearchResultsOptionalResponse.fromJson(
         searchResultsOptionalNullData,
       );
       expect(result.searchResultsOptional, isNull);
     });
 
     test('searchResultsOptional deserialize empty list', () {
-      final result = GetSearchResultsOptionalResponse.fromResponse(
+      final result = GetSearchResultsOptionalResponse.fromJson(
         searchResultsOptionalEmptyData,
       );
       expect(result.searchResultsOptional, []);
     });
 
     test('searchResultsOptional toJson', () {
-      final initial = GetSearchResultsOptionalResponse.fromResponse(
+      final initial = GetSearchResultsOptionalResponse.fromJson(
         searchResultsOptionalData,
       );
       final json = initial.toJson();
@@ -430,7 +290,7 @@ void main() {
     });
 
     test('searchResultsOptional toJson null', () {
-      final initial = GetSearchResultsOptionalResponse.fromResponse(
+      final initial = GetSearchResultsOptionalResponse.fromJson(
         searchResultsOptionalNullData,
       );
       final json = initial.toJson();
@@ -438,7 +298,7 @@ void main() {
     });
 
     test('searchResultsOptional toJson empty list', () {
-      final initial = GetSearchResultsOptionalResponse.fromResponse(
+      final initial = GetSearchResultsOptionalResponse.fromJson(
         searchResultsOptionalEmptyData,
       );
       final json = initial.toJson();
@@ -446,112 +306,22 @@ void main() {
     });
 
     test('searchResultsOptional equals', () {
-      final result1 = GetSearchResultsOptionalResponse.fromResponse(
+      final result1 = GetSearchResultsOptionalResponse.fromJson(
         searchResultsOptionalData,
       );
-      final result2 = GetSearchResultsOptionalResponse.fromResponse(
+      final result2 = GetSearchResultsOptionalResponse.fromJson(
         searchResultsOptionalData,
       );
-      final result3 = GetSearchResultsOptionalResponse.fromResponse(
+      final result3 = GetSearchResultsOptionalResponse.fromJson(
         searchResultsOptionalNullData,
       );
-      final result4 = GetSearchResultsOptionalResponse.fromResponse(
+      final result4 = GetSearchResultsOptionalResponse.fromJson(
         searchResultsOptionalNullData,
       );
 
       expect(result1, equals(result2));
       expect(result3, equals(result4));
       expect(result1, isNot(equals(result3)));
-    });
-
-    test('searchResultsOptional cacheNormalization - null to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetSearchResultsOptionalResponse.fromResponseImpl(
-        searchResultsOptionalNullData,
-        ctx,
-      );
-
-      expect(result.searchResultsOptional, isNull);
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultsOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetSearchResultsOptionalResponse.fromResponse(
-        searchResultsOptionalData,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.searchResultsOptional?.length, 2);
-    });
-
-    test('searchResultsOptional cacheNormalization - some to null', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetSearchResultsOptionalResponse.fromResponseImpl(
-        searchResultsOptionalData,
-        ctx,
-      );
-
-      expect(result.searchResultsOptional, isNotNull);
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultsOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetSearchResultsOptionalResponse.fromResponse(
-        searchResultsOptionalNullData,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.searchResultsOptional, isNull);
-    });
-
-    test('searchResultsOptional cacheNormalization - some to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetSearchResultsOptionalResponse.fromResponseImpl(
-        searchResultsOptionalData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetSearchResultsOptionalResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetSearchResultsOptionalResponse.fromResponse(
-        searchResultsOptionalDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      final user = result.searchResultsOptional?[0]
-          as GetSearchResultsOptional_searchResultsOptional__User;
-      expect(user.name, "Alice Modified");
     });
   });
 
@@ -596,7 +366,7 @@ void main() {
 
   group('Optional Unions in List - [SearchResult]!', () {
     test('optionalSearchResults deserialize with nulls', () {
-      final result = GetOptionalSearchResultsResponse.fromResponse(
+      final result = GetOptionalSearchResultsResponse.fromJson(
         optionalSearchResultsData,
       );
       expect(result.optionalSearchResults.length, 3);
@@ -623,7 +393,7 @@ void main() {
     });
 
     test('optionalSearchResults toJson', () {
-      final initial = GetOptionalSearchResultsResponse.fromResponse(
+      final initial = GetOptionalSearchResultsResponse.fromJson(
         optionalSearchResultsData,
       );
       final json = initial.toJson();
@@ -631,48 +401,18 @@ void main() {
     });
 
     test('optionalSearchResults equals', () {
-      final result1 = GetOptionalSearchResultsResponse.fromResponse(
+      final result1 = GetOptionalSearchResultsResponse.fromJson(
         optionalSearchResultsData,
       );
-      final result2 = GetOptionalSearchResultsResponse.fromResponse(
+      final result2 = GetOptionalSearchResultsResponse.fromJson(
         optionalSearchResultsData,
       );
-      final result3 = GetOptionalSearchResultsResponse.fromResponse(
+      final result3 = GetOptionalSearchResultsResponse.fromJson(
         optionalSearchResultsDataChanged,
       );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
-    });
-
-    test('optionalSearchResults cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetOptionalSearchResultsResponse.fromResponseImpl(
-        optionalSearchResultsData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetOptionalSearchResultsResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetOptionalSearchResultsResponse.fromResponse(
-        optionalSearchResultsDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      final post = result.optionalSearchResults[0]
-          as GetOptionalSearchResults_optionalSearchResults__Post;
-      expect(post.title, "Test Updated");
     });
   });
 
@@ -710,7 +450,7 @@ void main() {
 
   group('Fully Optional - [SearchResult]', () {
     test('searchResultsFullyOptional deserialize with nulls', () {
-      final result = GetSearchResultsFullyOptionalResponse.fromResponse(
+      final result = GetSearchResultsFullyOptionalResponse.fromJson(
         searchResultsFullyOptionalData,
       );
       expect(result.searchResultsFullyOptional?.length, 2);
@@ -728,21 +468,21 @@ void main() {
     });
 
     test('searchResultsFullyOptional deserialize null', () {
-      final result = GetSearchResultsFullyOptionalResponse.fromResponse(
+      final result = GetSearchResultsFullyOptionalResponse.fromJson(
         searchResultsFullyOptionalNullData,
       );
       expect(result.searchResultsFullyOptional, isNull);
     });
 
     test('searchResultsFullyOptional deserialize empty list', () {
-      final result = GetSearchResultsFullyOptionalResponse.fromResponse(
+      final result = GetSearchResultsFullyOptionalResponse.fromJson(
         searchResultsFullyOptionalEmptyData,
       );
       expect(result.searchResultsFullyOptional, []);
     });
 
     test('searchResultsFullyOptional toJson', () {
-      final initial = GetSearchResultsFullyOptionalResponse.fromResponse(
+      final initial = GetSearchResultsFullyOptionalResponse.fromJson(
         searchResultsFullyOptionalData,
       );
       final json = initial.toJson();
@@ -750,7 +490,7 @@ void main() {
     });
 
     test('searchResultsFullyOptional toJson null', () {
-      final initial = GetSearchResultsFullyOptionalResponse.fromResponse(
+      final initial = GetSearchResultsFullyOptionalResponse.fromJson(
         searchResultsFullyOptionalNullData,
       );
       final json = initial.toJson();
@@ -758,117 +498,18 @@ void main() {
     });
 
     test('searchResultsFullyOptional equals', () {
-      final result1 = GetSearchResultsFullyOptionalResponse.fromResponse(
+      final result1 = GetSearchResultsFullyOptionalResponse.fromJson(
         searchResultsFullyOptionalData,
       );
-      final result2 = GetSearchResultsFullyOptionalResponse.fromResponse(
+      final result2 = GetSearchResultsFullyOptionalResponse.fromJson(
         searchResultsFullyOptionalData,
       );
-      final result3 = GetSearchResultsFullyOptionalResponse.fromResponse(
+      final result3 = GetSearchResultsFullyOptionalResponse.fromJson(
         searchResultsFullyOptionalNullData,
       );
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
     });
-
-    test(
-      'searchResultsFullyOptional cacheNormalization - null to some',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (
-          result,
-          updateCtx,
-        ) = GetSearchResultsFullyOptionalResponse.fromResponseImpl(
-          searchResultsFullyOptionalNullData,
-          ctx,
-        );
-
-        expect(result.searchResultsFullyOptional, isNull);
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetSearchResultsFullyOptionalResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetSearchResultsFullyOptionalResponse.fromResponse(
-          searchResultsFullyOptionalData,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.searchResultsFullyOptional?.length, 2);
-      },
-    );
-
-    test(
-      'searchResultsFullyOptional cacheNormalization - some to null',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (
-          result,
-          updateCtx,
-        ) = GetSearchResultsFullyOptionalResponse.fromResponseImpl(
-          searchResultsFullyOptionalData,
-          ctx,
-        );
-
-        expect(result.searchResultsFullyOptional, isNotNull);
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetSearchResultsFullyOptionalResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetSearchResultsFullyOptionalResponse.fromResponse(
-          searchResultsFullyOptionalNullData,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        expect(result.searchResultsFullyOptional, isNull);
-      },
-    );
-
-    test(
-      'searchResultsFullyOptional cacheNormalization - some to some',
-      () async {
-        final ctx = ShalomCtx.withCapacity();
-        var (
-          result,
-          updateCtx,
-        ) = GetSearchResultsFullyOptionalResponse.fromResponseImpl(
-          searchResultsFullyOptionalData,
-          ctx,
-        );
-
-        final hasChanged = Completer<bool>();
-
-        final sub = ctx.subscribe(updateCtx.dependantRecords);
-        sub.streamController.stream.listen((newCtx) {
-          result = GetSearchResultsFullyOptionalResponse.fromCache(newCtx);
-          hasChanged.complete(true);
-        });
-
-        final nextResult = GetSearchResultsFullyOptionalResponse.fromResponse(
-          searchResultsFullyOptionalDataChanged,
-          ctx: ctx,
-        );
-
-        await hasChanged.future.timeout(Duration(seconds: 1));
-        expect(result, equals(nextResult));
-        final comment = result.searchResultsFullyOptional?[0]
-            as GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment;
-        expect(comment.text, "Hello Modified");
-      },
-    );
   });
 }

@@ -1,0 +1,34 @@
+name: gif_search
+description: "GIF search and album management with Shalom."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  dio: ^5.0.0
+  shalom:
+    path: ../../../dart/shalom
+  shalom_flutter:
+    path: ../../../dart/shalom_flutter
+  shalom_annotations:
+    path: ../../../dart/shalom_annotations
+  flutter_riverpod: ^3.0.3
+  riverpod: ^3.0.3
+  media_kit: ^1.2.6
+  media_kit_video: ^2.0.1
+  media_kit_libs_video: ^1.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - lib/graphql/schema.graphql

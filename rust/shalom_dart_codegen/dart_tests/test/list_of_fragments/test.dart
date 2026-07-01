@@ -1,6 +1,3 @@
-import "dart:async";
-
-import "package:shalom_core/shalom_core.dart";
 import 'package:test/test.dart';
 import "__graphql__/GetUsersRequiredWithFragment.shalom.dart";
 import "__graphql__/GetUsersOptionalWithFragment.shalom.dart";
@@ -31,7 +28,7 @@ void main() {
 
   group('List of Fragments - Required List with Single Fragment', () {
     test('listFragmentRequired - deserialize list with fragment', () {
-      final result = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final result = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentData,
       );
       expect(result.usersRequired.length, 3);
@@ -43,14 +40,14 @@ void main() {
     });
 
     test('listFragmentRequired - deserialize empty list', () {
-      final result = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final result = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentEmptyData,
       );
       expect(result.usersRequired, []);
     });
 
     test('listFragmentRequired - toJson', () {
-      final initial = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final initial = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentData,
       );
       final json = initial.toJson();
@@ -58,58 +55,11 @@ void main() {
     });
 
     test('listFragmentRequired - toJson with empty list', () {
-      final initial = GetUsersRequiredWithFragmentResponse.fromResponse(
+      final initial = GetUsersRequiredWithFragmentResponse.fromJson(
         usersRequiredFragmentEmptyData,
       );
       final json = initial.toJson();
       expect(json, usersRequiredFragmentEmptyData);
-    });
-
-    test('listFragmentRequired - equals', () {
-      final ctx = ShalomCtx.withCapacity();
-      final result1 = GetUsersRequiredWithFragmentResponse.fromResponse(
-        usersRequiredFragmentData,
-        ctx: ctx,
-      );
-      final result2 = GetUsersRequiredWithFragmentResponse.fromResponse(
-        usersRequiredFragmentData,
-        ctx: ctx,
-      );
-      final result3 = GetUsersRequiredWithFragmentResponse.fromResponse(
-        usersRequiredFragmentDataChanged,
-        ctx: ctx,
-      );
-
-      expect(result1, equals(result2));
-      expect(result1, isNot(equals(result3)));
-    });
-
-    test('listFragmentRequired - cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetUsersRequiredWithFragmentResponse.fromResponseImpl(
-        usersRequiredFragmentData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetUsersRequiredWithFragmentResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetUsersRequiredWithFragmentResponse.fromResponse(
-        usersRequiredFragmentDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.usersRequired[0].name, "Alice Updated");
     });
   });
 
@@ -132,7 +82,7 @@ void main() {
 
   group('List of Fragments - Optional List with Single Fragment', () {
     test('listFragmentOptional - deserialize list with fragment', () {
-      final result = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final result = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentData,
       );
       expect(result.usersOptional?.length, 2);
@@ -141,21 +91,21 @@ void main() {
     });
 
     test('listFragmentOptional - deserialize null list', () {
-      final result = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final result = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentNullData,
       );
       expect(result.usersOptional, isNull);
     });
 
     test('listFragmentOptional - deserialize empty list', () {
-      final result = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final result = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentEmptyData,
       );
       expect(result.usersOptional, []);
     });
 
     test('listFragmentOptional - toJson', () {
-      final initial = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final initial = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentData,
       );
       final json = initial.toJson();
@@ -163,86 +113,11 @@ void main() {
     });
 
     test('listFragmentOptional - toJson with null', () {
-      final initial = GetUsersOptionalWithFragmentResponse.fromResponse(
+      final initial = GetUsersOptionalWithFragmentResponse.fromJson(
         usersOptionalFragmentNullData,
       );
       final json = initial.toJson();
       expect(json, usersOptionalFragmentNullData);
-    });
-
-    test('listFragmentOptional - equals', () {
-      final ctx = ShalomCtx.withCapacity();
-      final result1 = GetUsersOptionalWithFragmentResponse.fromResponse(
-        usersOptionalFragmentData,
-        ctx: ctx,
-      );
-      final result2 = GetUsersOptionalWithFragmentResponse.fromResponse(
-        usersOptionalFragmentData,
-        ctx: ctx,
-      );
-      final result3 = GetUsersOptionalWithFragmentResponse.fromResponse(
-        usersOptionalFragmentNullData,
-        ctx: ctx,
-      );
-
-      expect(result1, equals(result2));
-      expect(result1, isNot(equals(result3)));
-    });
-
-    test('listFragmentOptional - cacheNormalization null to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetUsersOptionalWithFragmentResponse.fromResponseImpl(
-        usersOptionalFragmentNullData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetUsersOptionalWithFragmentResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetUsersOptionalWithFragmentResponse.fromResponse(
-        usersOptionalFragmentData,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.usersOptional?.length, 2);
-    });
-
-    test('listFragmentOptional - cacheNormalization some to some', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetUsersOptionalWithFragmentResponse.fromResponseImpl(
-        usersOptionalFragmentData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetUsersOptionalWithFragmentResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetUsersOptionalWithFragmentResponse.fromResponse(
-        usersOptionalFragmentDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.usersOptional?[0].name, "Alice Modified");
     });
   });
 
@@ -286,7 +161,7 @@ void main() {
 
   group('List of Fragments - Multiple Fragments', () {
     test('multipleFragmentsRequired - deserialize', () {
-      final result = GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
+      final result = GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsData,
       );
       expect(result.usersRequired.length, 2);
@@ -298,66 +173,11 @@ void main() {
     });
 
     test('multipleFragmentsRequired - toJson', () {
-      final initial =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
+      final initial = GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
         usersMultipleFragmentsData,
       );
       final json = initial.toJson();
       expect(json, usersMultipleFragmentsData);
-    });
-
-    test('multipleFragmentsRequired - equals', () {
-      final ctx = ShalomCtx.withCapacity();
-      final result1 =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
-        usersMultipleFragmentsData,
-        ctx: ctx,
-      );
-      final result2 =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
-        usersMultipleFragmentsData,
-        ctx: ctx,
-      );
-      final result3 =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
-        usersMultipleFragmentsDataChanged,
-        ctx: ctx,
-      );
-
-      expect(result1, equals(result2));
-      expect(result1, isNot(equals(result3)));
-    });
-
-    test('multipleFragmentsRequired - cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetUsersRequiredWithMultipleFragmentsResponse.fromResponseImpl(
-        usersMultipleFragmentsData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetUsersRequiredWithMultipleFragmentsResponse.fromCache(
-          newCtx,
-        );
-        hasChanged.complete(true);
-      });
-
-      final nextResult =
-          GetUsersRequiredWithMultipleFragmentsResponse.fromResponse(
-        usersMultipleFragmentsDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.usersRequired[0].bio, "Senior Software Engineer");
-      expect(result.usersRequired[0].age, 31);
     });
   });
 
@@ -401,7 +221,7 @@ void main() {
 
   group('List of Fragments - Fragment with Additional Fields', () {
     test('fragmentWithFieldsRequired - deserialize', () {
-      final result = GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
+      final result = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsData,
       );
       expect(result.usersRequired.length, 2);
@@ -413,67 +233,11 @@ void main() {
     });
 
     test('fragmentWithFieldsRequired - toJson', () {
-      final initial =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
+      final initial = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
         usersFragmentAndFieldsData,
       );
       final json = initial.toJson();
       expect(json, usersFragmentAndFieldsData);
-    });
-
-    test('fragmentWithFieldsRequired - equals', () {
-      final ctx = ShalomCtx.withCapacity();
-      final result1 =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
-        usersFragmentAndFieldsData,
-        ctx: ctx,
-      );
-      final result2 =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
-        usersFragmentAndFieldsData,
-        ctx: ctx,
-      );
-      final result3 =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
-        usersFragmentAndFieldsDataChanged,
-        ctx: ctx,
-      );
-
-      expect(result1, equals(result2));
-      expect(result1, isNot(equals(result3)));
-    });
-
-    test('fragmentWithFieldsRequired - cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetUsersRequiredWithFragmentAndFieldsResponse.fromResponseImpl(
-        usersFragmentAndFieldsData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetUsersRequiredWithFragmentAndFieldsResponse.fromCache(
-          newCtx,
-        );
-        hasChanged.complete(true);
-      });
-
-      final nextResult =
-          GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
-        usersFragmentAndFieldsDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.usersRequired[0].name, "Alice Updated");
-      expect(result.usersRequired[0].age, 31);
-      expect(result.usersRequired[0].bio, "Senior Developer");
     });
   });
 
@@ -517,7 +281,7 @@ void main() {
 
   group('List of Fragments - Nested Object with Fragment', () {
     test('nestedFragmentRequired - deserialize', () {
-      final result = GetPostsWithAuthorFragmentResponse.fromResponse(
+      final result = GetPostsWithAuthorFragmentResponse.fromJson(
         postsWithAuthorFragmentData,
       );
       expect(result.posts.length, 2);
@@ -530,59 +294,11 @@ void main() {
     });
 
     test('nestedFragmentRequired - toJson', () {
-      final initial = GetPostsWithAuthorFragmentResponse.fromResponse(
+      final initial = GetPostsWithAuthorFragmentResponse.fromJson(
         postsWithAuthorFragmentData,
       );
       final json = initial.toJson();
       expect(json, postsWithAuthorFragmentData);
-    });
-
-    test('nestedFragmentRequired - equals', () {
-      final ctx = ShalomCtx.withCapacity();
-      final result1 = GetPostsWithAuthorFragmentResponse.fromResponse(
-        postsWithAuthorFragmentData,
-        ctx: ctx,
-      );
-      final result2 = GetPostsWithAuthorFragmentResponse.fromResponse(
-        postsWithAuthorFragmentData,
-        ctx: ctx,
-      );
-      final result3 = GetPostsWithAuthorFragmentResponse.fromResponse(
-        postsWithAuthorFragmentDataChanged,
-        ctx: ctx,
-      );
-
-      expect(result1, equals(result2));
-      expect(result1, isNot(equals(result3)));
-    });
-
-    test('nestedFragmentRequired - cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetPostsWithAuthorFragmentResponse.fromResponseImpl(
-        postsWithAuthorFragmentData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetPostsWithAuthorFragmentResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      final nextResult = GetPostsWithAuthorFragmentResponse.fromResponse(
-        postsWithAuthorFragmentDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.posts[0].title, "GraphQL Guide Updated");
-      expect(result.posts[0].author.name, "Alice Updated");
     });
   });
 
@@ -628,7 +344,7 @@ void main() {
 
   group('List of Fragments - Optional List with Multiple Fragments', () {
     test('optionalMultipleFragments - deserialize', () {
-      final result = GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
+      final result = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsData,
       );
       expect(result.postsOptional?.length, 2);
@@ -640,148 +356,21 @@ void main() {
     });
 
     test('optionalMultipleFragments - deserialize null', () {
-      final result = GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
+      final result = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsNullData,
       );
       expect(result.postsOptional, isNull);
     });
 
     test('optionalMultipleFragments - toJson', () {
-      final initial =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
+      final initial = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
         postsOptionalMultipleFragmentsData,
       );
       final json = initial.toJson();
       expect(json, postsOptionalMultipleFragmentsData);
     });
-
-    test('optionalMultipleFragments - equals', () {
-      final ctx = ShalomCtx.withCapacity();
-      final result1 =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
-        postsOptionalMultipleFragmentsData,
-        ctx: ctx,
-      );
-      final result2 =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
-        postsOptionalMultipleFragmentsData,
-        ctx: ctx,
-      );
-      final result3 =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
-        postsOptionalMultipleFragmentsNullData,
-        ctx: ctx,
-      );
-
-      expect(result1, equals(result2));
-      expect(result1, isNot(equals(result3)));
-    });
-
-    test('optionalMultipleFragments - cacheNormalization', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetPostsOptionalWithMultipleFragmentsResponse.fromResponseImpl(
-        postsOptionalMultipleFragmentsData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetPostsOptionalWithMultipleFragmentsResponse.fromCache(
-          newCtx,
-        );
-        hasChanged.complete(true);
-      });
-
-      final nextResult =
-          GetPostsOptionalWithMultipleFragmentsResponse.fromResponse(
-        postsOptionalMultipleFragmentsDataChanged,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.postsOptional?[0].title, "GraphQL Basics Updated");
-      expect(result.postsOptional?[0].content, "Content 1 Updated");
-      expect(result.postsOptional?[0].tags, ["graphql", "basics", "updated"]);
-    });
   });
 
-  group('List of Fragments - Cache Normalization with Partial Selection', () {
-    test('partialFragmentCacheNormalization - no overlapping deps', () async {
-      final ctx = ShalomCtx.withCapacity();
-      var (
-        result,
-        updateCtx,
-      ) = GetUsersRequiredPartialFragmentResponse.fromResponseImpl(
-        usersRequiredFragmentData,
-        ctx,
-      );
-
-      final hasChanged = Completer<bool>();
-      final sub = ctx.subscribe(updateCtx.dependantRecords);
-      sub.streamController.stream.listen((newCtx) {
-        result = GetUsersRequiredPartialFragmentResponse.fromCache(newCtx);
-        hasChanged.complete(true);
-      });
-
-      // Change fields that are not part of the partial query (age, bio)
-      final dataWithNonSelectedFieldsChanged = {
-        "usersRequired": [
-          {
-            "id": "1",
-            "name": "Alice",
-            "email": "alice@example.com",
-            "age": 31,
-            "bio": "Updated bio",
-          },
-          {
-            "id": "2",
-            "name": "Bob",
-            "email": "bob@example.com",
-            "age": 26,
-            "bio": "Updated bio",
-          },
-          {
-            "id": "3",
-            "name": "Charlie",
-            "email": "charlie@example.com",
-            "age": 36,
-            "bio": "Updated bio",
-          },
-        ],
-      };
-
-      final _ = GetUsersRequiredWithFragmentAndFieldsResponse.fromResponse(
-        dataWithNonSelectedFieldsChanged,
-        ctx: ctx,
-      );
-
-      // we don't expect any change as the changed fields (age, bio) are not part of the deps
-      await Future.delayed(Duration(milliseconds: 500));
-      expect(hasChanged.isCompleted, false);
-
-      // But name change should trigger update
-      final dataWithNameChange = {
-        "usersRequired": [
-          {"id": "1", "name": "Alice Changed", "email": "alice@example.com"},
-          {"id": "2", "name": "Bob", "email": "bob@example.com"},
-          {"id": "3", "name": "Charlie", "email": "charlie@example.com"},
-        ],
-      };
-
-      final nextResult = GetUsersRequiredPartialFragmentResponse.fromResponse(
-        dataWithNameChange,
-        ctx: ctx,
-      );
-
-      await hasChanged.future.timeout(Duration(seconds: 1));
-      expect(result, equals(nextResult));
-      expect(result.usersRequired[0].name, "Alice Changed");
-    });
-  });
+  group(
+      'List of Fragments - Cache Normalization with Partial Selection', () {});
 }

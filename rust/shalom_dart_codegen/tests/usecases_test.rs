@@ -27,11 +27,6 @@ fn test_object_selection_with_typename_dart() {
 }
 
 #[test]
-fn test_cache_by_arguments_object() {
-    run_dart_tests_for_usecase("cache_by_arguments_object");
-}
-
-#[test]
 fn test_nested_object_selection_dart() {
     run_dart_tests_for_usecase("nested_object_selection");
 }
@@ -131,6 +126,75 @@ fn test_interface_with_nested_type_fragments_dart() {
 }
 
 #[test]
+fn test_fragment_inherited_interface_fields_dart() {
+    run_dart_tests_for_usecase("fragment_inherited_interface_fields");
+}
+
+#[test]
 fn test_one_of_input_dart() {
     run_dart_tests_for_usecase("one_of_input");
+}
+
+#[test]
+fn test_runtime_metadata_dart() {
+    run_dart_tests_for_usecase("runtime_metadata");
+}
+
+// -------------------------------------------------------------------------
+// Flutter tests
+// -------------------------------------------------------------------------
+
+#[test]
+fn test_flutter_animal_widget() {
+    common::run_flutter_tests("animal_widget_test.dart");
+}
+
+#[test]
+fn test_flutter_user_widget() {
+    common::run_flutter_tests("user_widget_test.dart");
+}
+
+#[test]
+fn test_flutter_pet_widget() {
+    common::run_flutter_tests("pet_widget_test.dart");
+}
+
+#[test]
+fn test_flutter_zoo_widget_nested_fragment() {
+    common::run_flutter_tests("zoo_widget_test.dart");
+}
+
+#[test]
+fn test_flutter_zoo_animals_widget_list_of_interface() {
+    common::run_flutter_tests("zoo_animals_widget_test.dart");
+}
+
+#[test]
+fn test_flutter_shared_fragment_subscription() {
+    common::run_flutter_tests("shared_fragment_subscription_test.dart");
+}
+
+#[test]
+fn test_flutter_shared_fragment_contract() {
+    common::run_flutter_tests("shared_fragment_contract_test.dart");
+}
+
+#[test]
+fn test_flutter_declarative_raw_fragments() {
+    common::run_flutter_tests("declarative_raw_fragments_test.dart");
+}
+
+#[test]
+fn test_flutter_animal_with_owner_widget() {
+    common::run_flutter_tests("animal_with_owner_widget_test.dart");
+}
+
+#[test]
+fn test_mutation_simple_dart() {
+    run_dart_tests_for_usecase("mutation_simple");
+}
+
+#[test]
+fn test_mutation_no_variables_dart() {
+    run_dart_tests_for_usecase("mutation_no_variables");
 }
