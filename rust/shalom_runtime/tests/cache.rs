@@ -727,6 +727,43 @@ mod interfaces {
             .expect("node missing");
         assert_eq!(node.get("name"), Some(&json!("Grace")));
     }
+
+    /// An inline fragment keyed by a union name (rather than an interface) must
+    /// still recurse into its nested type conditions for members that belong to
+    /// that union, e.g. `... on Pet { ... on Cat { color } }` inside an
+    /// interface selection.
+    #[test]
+    fn test_nested_union_typed_inline_fragment() {
+        let schema = r#"
+            interface Node { id: ID! }
+            type Cat implements Node { id: ID!, color: String! }
+            type Dog implements Node { id: ID! }
+            union Pet = Cat | Dog
+            type Query { node: Node }
+        "#;
+        let operation = r#"
+            query TestOp {
+                node {
+                    __typename
+                    id
+                    ... on Pet {
+                        __typename
+                        ... on Cat { color }
+                    }
+                }
+            }
+        "#;
+        let (global_ctx, op_ctx) = build_ctx(schema, operation);
+        normalize(
+            &global_ctx,
+            &op_ctx,
+            json!({ "node": { "__typename": "Cat", "id": "c1", "color": "orange" } }),
+            None,
+        );
+
+        let cat = record(&global_ctx, "Cat:c1");
+        expect_scalar(&cat, "color", json!("orange"));
+    }
 }
 
 mod fragments {
@@ -1978,8 +2015,8 @@ mod fragment_subscriptions {
     #[test]
     fn test_updates_across_different_operations() {
         let schema = r#"
-            type Query { 
-                sharedValue: Int 
+            type Query {
+                sharedValue: Int
                 otherValue: String
             }
         "#;
