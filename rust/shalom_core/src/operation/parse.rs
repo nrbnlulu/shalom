@@ -296,7 +296,7 @@ where
 {
     trace!("Parsing union selection {:?}", union_type.name);
 
-    let obj_like = parse_obj_like_from_selection_set(
+    let mut obj_like = parse_obj_like_from_selection_set(
         ctx,
         global_ctx,
         path,
@@ -306,7 +306,35 @@ where
     let possible_concretes = global_ctx
         .schema_ctx
         .get_possible_concretes_for_union(&union_type);
-    // Determine if we need a fallback class
+
+    // An inline fragment type-conditioned on an interface that every member of this
+    // union implements applies unconditionally to the union field, regardless of
+    // which concrete member is actually returned. Promote its selections onto the
+    // union's own shared selections so the generated sealed base class exposes
+    // those fields directly instead of only on each concrete subclass.
+    let common_type_conds: Vec<String> = obj_like
+        .type_cond_selections
+        .keys()
+        .filter(|cond_typename| {
+            possible_concretes.iter().all(|concrete| {
+                global_ctx
+                    .schema_ctx
+                    .is_type_same_or_implementing_interface(concrete, cond_typename)
+            })
+        })
+        .cloned()
+        .collect();
+
+    for cond_typename in common_type_conds {
+        if let Some(cond_obj) = obj_like.type_cond_selections.get(&cond_typename) {
+            let selections = cond_obj.selections.clone();
+            let used_fragments = cond_obj.used_fragments.clone();
+            let used_inline_frags = cond_obj.used_inline_frags.clone();
+            obj_like.selections.extend(selections);
+            obj_like.used_fragments.extend(used_fragments);
+            obj_like.used_inline_frags.extend(used_inline_frags);
+        }
+    }
 
     UnionSelection::new(union_type, obj_like, is_optional, possible_concretes)
 }

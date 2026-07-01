@@ -23,19 +23,36 @@ pub fn resolve_multitype_selections(
     ctx: &SharedShalomGlobalContext,
 ) -> Vec<FieldSelection> {
     let mut selections = HashSet::new();
+
+    /// Whether `root_type` satisfies a type condition named `cond_typename` -
+    /// either directly, via interface implementation, or by being a member of
+    /// a union named `cond_typename`.
+    fn type_condition_covers_root(
+        root_type: &str,
+        cond_typename: &str,
+        ctx: &SharedShalomGlobalContext,
+    ) -> bool {
+        if ctx
+            .schema_ctx
+            .is_type_same_or_implementing_interface(root_type, cond_typename)
+        {
+            return true;
+        }
+        matches!(
+            ctx.schema_ctx.get_type_strict(&cond_typename.to_string()),
+            shalom_core::schema::types::GraphQLAny::Union(union_type)
+                if union_type.members.contains(root_type)
+        )
+    }
+
     fn collect(
         root_type: &str,
         current_obj: &shalom_core::operation::types::ObjectLikeCommon,
         ctx: &SharedShalomGlobalContext,
         selections: &mut HashSet<FieldSelection>,
     ) {
-        let schema_type = ctx.schema_ctx.get_type_strict(&current_obj.schema_typename);
-        let include_shared = match schema_type {
-            shalom_core::schema::types::GraphQLAny::Union(_) => true,
-            _ => ctx
-                .schema_ctx
-                .is_type_same_or_implementing_interface(root_type, &current_obj.schema_typename),
-        };
+        let include_shared =
+            type_condition_covers_root(root_type, &current_obj.schema_typename, ctx);
         if include_shared {
             selections.extend(current_obj.selections.iter().cloned());
         }
@@ -49,8 +66,10 @@ pub fn resolve_multitype_selections(
             collect(root_type, &inline_frag.common, ctx, selections);
         }
 
-        if let Some(type_cond) = current_obj.type_cond_selections.get(root_type) {
-            collect(root_type, type_cond, ctx, selections);
+        for (cond_typename, type_cond) in current_obj.type_cond_selections.iter() {
+            if type_condition_covers_root(root_type, cond_typename, ctx) {
+                collect(root_type, type_cond, ctx, selections);
+            }
         }
     }
 

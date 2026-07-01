@@ -610,7 +610,17 @@ where
         other_obj: &ObjectLikeCommon,
         global_ctx: &ShalomGlobalContext,
     ) {
+        // A union's own shared selections apply to every concrete member unconditionally,
+        // mirroring the runtime's `resolve_multitype_selections` (shalom_runtime/src/selection.rs).
+        let is_union_shared = matches!(
+            global_ctx
+                .schema_ctx
+                .get_type_strict(&other_obj.schema_typename),
+            GraphQLAny::Union(_)
+        );
+
         if resolve_to.schema_typename == other_obj.schema_typename
+            || is_union_shared
             || global_ctx.schema_ctx.is_type_implementing_interface(
                 &resolve_to.schema_typename,
                 &other_obj.schema_typename,

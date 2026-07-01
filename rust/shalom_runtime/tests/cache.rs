@@ -586,6 +586,48 @@ mod unions {
         assert_eq!(search.get("__typename"), Some(&json!("Admin")));
         assert_eq!(search.get("level"), Some(&json!(7)));
     }
+
+    /// An inline fragment keyed by an interface shared by every union member must
+    /// still contribute its fields when resolving/reading each concrete member.
+    #[test]
+    fn test_interface_typed_inline_fragment_inside_union() {
+        let schema = r#"
+            interface ErrorInterface { id: ID!, message: String! }
+            type DoesNotExistErr implements ErrorInterface { id: ID!, message: String! }
+            type AlreadyExistsErr implements ErrorInterface { id: ID!, message: String! }
+            union MutationError = DoesNotExistErr | AlreadyExistsErr
+            type Query { search: MutationError }
+        "#;
+        let operation = r#"
+            query TestOp {
+                search {
+                    __typename
+                    ... on ErrorInterface { id message }
+                }
+            }
+        "#;
+        let (global_ctx, op_ctx) = build_ctx(schema, operation);
+
+        let result = normalize(
+            &global_ctx,
+            &op_ctx,
+            json!({ "search": { "__typename": "DoesNotExistErr", "id": "e1", "message": "not found" } }),
+            None,
+        );
+        assert!(result.used_refs.contains("ROOT_QUERY.search"));
+
+        let not_found = record(&global_ctx, "DoesNotExistErr:e1");
+        expect_scalar(&not_found, "message", json!("not found"));
+
+        normalize(
+            &global_ctx,
+            &op_ctx,
+            json!({ "search": { "__typename": "AlreadyExistsErr", "id": "e2", "message": "already there" } }),
+            None,
+        );
+        let already_exists = record(&global_ctx, "AlreadyExistsErr:e2");
+        expect_scalar(&already_exists, "message", json!("already there"));
+    }
 }
 
 mod interfaces {
@@ -684,6 +726,43 @@ mod interfaces {
             .and_then(|value| value.as_object())
             .expect("node missing");
         assert_eq!(node.get("name"), Some(&json!("Grace")));
+    }
+
+    /// An inline fragment keyed by a union name (rather than an interface) must
+    /// still recurse into its nested type conditions for members that belong to
+    /// that union, e.g. `... on Pet { ... on Cat { color } }` inside an
+    /// interface selection.
+    #[test]
+    fn test_nested_union_typed_inline_fragment() {
+        let schema = r#"
+            interface Node { id: ID! }
+            type Cat implements Node { id: ID!, color: String! }
+            type Dog implements Node { id: ID! }
+            union Pet = Cat | Dog
+            type Query { node: Node }
+        "#;
+        let operation = r#"
+            query TestOp {
+                node {
+                    __typename
+                    id
+                    ... on Pet {
+                        __typename
+                        ... on Cat { color }
+                    }
+                }
+            }
+        "#;
+        let (global_ctx, op_ctx) = build_ctx(schema, operation);
+        normalize(
+            &global_ctx,
+            &op_ctx,
+            json!({ "node": { "__typename": "Cat", "id": "c1", "color": "orange" } }),
+            None,
+        );
+
+        let cat = record(&global_ctx, "Cat:c1");
+        expect_scalar(&cat, "color", json!("orange"));
     }
 }
 
@@ -1936,8 +2015,8 @@ mod fragment_subscriptions {
     #[test]
     fn test_updates_across_different_operations() {
         let schema = r#"
-            type Query { 
-                sharedValue: Int 
+            type Query {
+                sharedValue: Int
                 otherValue: String
             }
         "#;
