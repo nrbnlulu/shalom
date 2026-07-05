@@ -9,7 +9,7 @@ import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'runtime.freezed.dart';
 
 // These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`, `to_observer_info`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`
 
 /// Set the global log level filter for all Rust-side logging.
 void setLogLevel({required LogLevel level}) =>
@@ -349,18 +349,29 @@ class ObserverInfo {
           watchedKeys == other.watchedKeys;
 }
 
-/// Dart-facing runtime configuration.  Empty for now; fields will be added as
-/// the runtime gains configurable behaviour (e.g. GC tuning, cache limits).
+/// Dart-facing runtime configuration.
 class RuntimeConfigInput {
-  const RuntimeConfigInput();
+  /// How often (in milliseconds) the background thread sweeps the cache for
+  /// unreferenced entries. Defaults to 2000ms if not set.
+  final BigInt? gcIntervalMs;
+
+  /// How long (in milliseconds) a cache key is kept alive via a "fake"
+  /// subscriber after its last real subscriber unsubscribes, before it
+  /// becomes eligible for GC eviction. Defaults to 0 (no grace period).
+  final BigInt? retentionGraceMs;
+
+  const RuntimeConfigInput({this.gcIntervalMs, this.retentionGraceMs});
 
   @override
-  int get hashCode => 0;
+  int get hashCode => gcIntervalMs.hashCode ^ retentionGraceMs.hashCode;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is RuntimeConfigInput && runtimeType == other.runtimeType;
+      other is RuntimeConfigInput &&
+          runtimeType == other.runtimeType &&
+          gcIntervalMs == other.gcIntervalMs &&
+          retentionGraceMs == other.retentionGraceMs;
 }
 
 @freezed

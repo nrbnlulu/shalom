@@ -28,10 +28,33 @@ pub struct ObservedRefInput {
     pub anchor: String,
 }
 
-/// Dart-facing runtime configuration.  Empty for now; fields will be added as
-/// the runtime gains configurable behaviour (e.g. GC tuning, cache limits).
+/// Dart-facing runtime configuration.
 #[frb]
-pub struct RuntimeConfigInput {}
+pub struct RuntimeConfigInput {
+    /// How often (in milliseconds) the background thread sweeps the cache for
+    /// unreferenced entries. Defaults to 2000ms if not set.
+    pub gc_interval_ms: Option<u64>,
+    /// How long (in milliseconds) a cache key is kept alive via a "fake"
+    /// subscriber after its last real subscriber unsubscribes, before it
+    /// becomes eligible for GC eviction. Defaults to 0 (no grace period).
+    pub retention_grace_ms: Option<u64>,
+}
+
+impl From<RuntimeConfigInput> for RuntimeConfig {
+    fn from(value: RuntimeConfigInput) -> Self {
+        let default = RuntimeConfig::default();
+        Self {
+            gc_interval: value
+                .gc_interval_ms
+                .map(std::time::Duration::from_millis)
+                .unwrap_or(default.gc_interval),
+            retention_grace: value
+                .retention_grace_ms
+                .map(std::time::Duration::from_millis)
+                .unwrap_or(default.retention_grace),
+        }
+    }
+}
 
 #[frb]
 pub enum LogLevel {
@@ -125,9 +148,9 @@ pub fn init_runtime(
     schema_sdl: String,
     config: Option<RuntimeConfigInput>,
 ) -> anyhow::Result<RuntimeHandle> {
-    let _ = config; // no fields yet; reserved for future use
+    let config = config.map(RuntimeConfig::from).unwrap_or_default();
     let link = Arc::new(HostLink::new());
-    let runtime = ShalomRuntime::init(&schema_sdl, Vec::new(), RuntimeConfig::default())?;
+    let runtime = ShalomRuntime::init(&schema_sdl, Vec::new(), config)?;
     Ok(RuntimeHandle { runtime, link })
 }
 

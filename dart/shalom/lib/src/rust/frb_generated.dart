@@ -1570,6 +1570,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt dco_decode_box_autoadd_u_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_u_64(raw);
+  }
+
+  @protected
   ExecutionPolicyInput dco_decode_execution_policy_input(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return ExecutionPolicyInput.values[raw as int];
@@ -1657,12 +1663,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt? dco_decode_opt_box_autoadd_u_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_u_64(raw);
+  }
+
+  @protected
   RuntimeConfigInput dco_decode_runtime_config_input(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 0)
-      throw Exception('unexpected arr length: expect 0 but see ${arr.length}');
-    return RuntimeConfigInput();
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return RuntimeConfigInput(
+      gcIntervalMs: dco_decode_opt_box_autoadd_u_64(arr[0]),
+      retentionGraceMs: dco_decode_opt_box_autoadd_u_64(arr[1]),
+    );
   }
 
   @protected
@@ -1882,6 +1897,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt sse_decode_box_autoadd_u_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_u_64(deserializer));
+  }
+
+  @protected
   ExecutionPolicyInput sse_decode_execution_policy_input(
     SseDeserializer deserializer,
   ) {
@@ -2004,11 +2025,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  BigInt? sse_decode_opt_box_autoadd_u_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_u_64(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   RuntimeConfigInput sse_decode_runtime_config_input(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    return RuntimeConfigInput();
+    var var_gcIntervalMs = sse_decode_opt_box_autoadd_u_64(deserializer);
+    var var_retentionGraceMs = sse_decode_opt_box_autoadd_u_64(deserializer);
+    return RuntimeConfigInput(
+      gcIntervalMs: var_gcIntervalMs,
+      retentionGraceMs: var_retentionGraceMs,
+    );
   }
 
   @protected
@@ -2271,6 +2308,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_u_64(BigInt self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_64(self, serializer);
+  }
+
+  @protected
   void sse_encode_execution_policy_input(
     ExecutionPolicyInput self,
     SseSerializer serializer,
@@ -2380,11 +2423,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_u_64(BigInt? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_u_64(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_runtime_config_input(
     RuntimeConfigInput self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_u_64(self.gcIntervalMs, serializer);
+    sse_encode_opt_box_autoadd_u_64(self.retentionGraceMs, serializer);
   }
 
   @protected

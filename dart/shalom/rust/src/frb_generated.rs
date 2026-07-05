@@ -2143,10 +2143,26 @@ impl SseDecode for Option<crate::api::runtime::RuntimeConfigInput> {
     }
 }
 
+impl SseDecode for Option<u64> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<u64>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
 impl SseDecode for crate::api::runtime::RuntimeConfigInput {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        return crate::api::runtime::RuntimeConfigInput {};
+        let mut var_gcIntervalMs = <Option<u64>>::sse_decode(deserializer);
+        let mut var_retentionGraceMs = <Option<u64>>::sse_decode(deserializer);
+        return crate::api::runtime::RuntimeConfigInput {
+            gc_interval_ms: var_gcIntervalMs,
+            retention_grace_ms: var_retentionGraceMs,
+        };
     }
 }
 
@@ -2453,7 +2469,11 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::runtime::ObserverInfo>
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::runtime::RuntimeConfigInput {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        Vec::<u8>::new().into_dart()
+        [
+            self.gc_interval_ms.into_into_dart().into_dart(),
+            self.retention_grace_ms.into_into_dart().into_dart(),
+        ]
+        .into_dart()
     }
 }
 impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
@@ -2755,9 +2775,22 @@ impl SseEncode for Option<crate::api::runtime::RuntimeConfigInput> {
     }
 }
 
+impl SseEncode for Option<u64> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <u64>::sse_encode(value, serializer);
+        }
+    }
+}
+
 impl SseEncode for crate::api::runtime::RuntimeConfigInput {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {}
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <Option<u64>>::sse_encode(self.gc_interval_ms, serializer);
+        <Option<u64>>::sse_encode(self.retention_grace_ms, serializer);
+    }
 }
 
 impl SseEncode for crate::api::runtime::SubscriptionEvent {

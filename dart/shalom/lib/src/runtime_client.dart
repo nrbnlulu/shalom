@@ -32,6 +32,33 @@ rs_runtime.ObservedRefInput observedRefInputFromJson(JsonObject json) {
 }
 
 // ---------------------------------------------------------------------------
+// RuntimeConfigInput helpers
+// ---------------------------------------------------------------------------
+
+/// Builds a [RuntimeConfigInput] from [Duration]s instead of raw millisecond
+/// [BigInt]s.
+///
+/// - [gcInterval] controls how often the background thread sweeps the
+///   normalized cache for unreferenced entries (defaults to 2 seconds).
+/// - [retentionGrace] keeps a cache entry alive for a bit after its last
+///   subscriber unsubscribes (e.g. during a widget rebuild or screen
+///   transition) instead of evicting it on the very next GC sweep. Defaults
+///   to `Duration.zero` (no grace period).
+rs_runtime.RuntimeConfigInput runtimeConfig({
+  Duration? gcInterval,
+  Duration? retentionGrace,
+}) {
+  return rs_runtime.RuntimeConfigInput(
+    gcIntervalMs: gcInterval != null
+        ? BigInt.from(gcInterval.inMilliseconds)
+        : null,
+    retentionGraceMs: retentionGrace != null
+        ? BigInt.from(retentionGrace.inMilliseconds)
+        : null,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // ShalomRuntimeClient
 // ---------------------------------------------------------------------------
 
@@ -76,6 +103,9 @@ class ShalomRuntimeClient {
   ///
   /// Register operations/fragments via [registerOperation] /
   /// [registerFragment] (or the generated `registerShalomDefinitions(client)`).
+  ///
+  /// Use [runtimeConfig] to build [config] from [Duration]s (e.g. to tune the
+  /// GC sweep interval or retention grace period).
   static ShalomRuntimeClient create({
     required String schemaSdl,
     rs_runtime.RuntimeConfigInput? config,
