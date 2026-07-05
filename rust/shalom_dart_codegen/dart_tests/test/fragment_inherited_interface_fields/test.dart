@@ -50,8 +50,10 @@ void main() {
     expect(minimal.favoriteToy.id, 'toy-1');
     expect(data.favoriteToy.label, 'Ball');
 
+    expect(minimal.status, isA<ExtendedAnimalNestedFrag_status__MovementStatus>());
     final status =
         minimal.status as ExtendedAnimalNestedFrag_status__MovementStatus;
+    expect(status.$__typename, 'MovementStatus');
     expect(status.motionType, 'person');
     expect(status.originMessage, 'camera-1');
     expect(status.sensitivity, 8);
