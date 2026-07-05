@@ -148,7 +148,10 @@ impl FieldSelection {
     }
 }
 
-fn merge_selection_into_set(selections: &mut BTreeSet<FieldSelection>, selection: FieldSelection) {
+pub fn merge_selection_into_set(
+    selections: &mut BTreeSet<FieldSelection>,
+    selection: FieldSelection,
+) {
     if let Some(existing) = selections.take(&selection) {
         selections.insert(merge_field_selection(existing, selection));
     } else {

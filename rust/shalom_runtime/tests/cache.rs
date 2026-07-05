@@ -2204,3 +2204,102 @@ mod incomplete_cache_emissions {
         runtime.unsubscribe(&sub_id);
     }
 }
+
+mod duplicate_field_selection_merge {
+    use super::*;
+
+    /// Two fragments selecting the same field with different sub-selections
+    /// (a minimal `channelAlert { __typename }` and a wide variant selection)
+    /// must be merged, not deduplicated by field name. A name-only dedup used
+    /// to drop the wide selection, so normalization discarded the variant
+    /// fields and reads returned a "complete" object missing them.
+    const SCHEMA: &str = r#"
+        type Query { alert: Alert }
+        type Alert { id: ID!, data: Data! }
+        union Data = Nvr | Plain
+        type Nvr { channelAlert: Inner!, channel: Int! }
+        type Plain { message: String! }
+        union Inner = Motion | Loss
+        type Motion { motionType: String!, originMessage: String }
+        type Loss { originMessage: String }
+    "#;
+
+    const OPERATION: &str = r#"
+        fragment InnerFrag on Nvr {
+            channelAlert {
+                __typename
+                ... on Motion { motionType originMessage }
+                ... on Loss { originMessage }
+            }
+            channel
+        }
+        fragment MinimalFrag on Alert {
+            id
+            data {
+                __typename
+                ... on Nvr { channelAlert { __typename } }
+                ... on Plain { message }
+            }
+        }
+        fragment FullFrag on Alert {
+            ...MinimalFrag
+            data {
+                ... on Nvr { ...InnerFrag }
+            }
+        }
+        query TestOp {
+            alert { ...FullFrag }
+        }
+    "#;
+
+    fn response() -> Value {
+        json!({
+            "alert": {
+                "__typename": "Alert",
+                "id": "a1",
+                "data": {
+                    "__typename": "Nvr",
+                    "channelAlert": {
+                        "__typename": "Motion",
+                        "motionType": "HUMAN",
+                        "originMessage": "hi"
+                    },
+                    "channel": 3
+                }
+            }
+        })
+    }
+
+    #[test]
+    fn test_normalize_keeps_both_narrow_and_wide_fields() {
+        let (runtime, op_ctx) = build_ctx(SCHEMA, OPERATION);
+        normalize(&runtime, &op_ctx, response(), None);
+
+        let alert = record(&runtime, "Alert:a1");
+        let data = match alert.get("data").expect("data missing") {
+            CacheValue::Object(record) => record.clone(),
+            other => panic!("expected embedded object for data, got {other:?}"),
+        };
+        let channel_alert = match data.get("channelAlert").expect("channelAlert missing") {
+            CacheValue::Object(record) => record.clone(),
+            other => panic!("expected embedded object for channelAlert, got {other:?}"),
+        };
+        expect_scalar(&channel_alert, "motionType", json!("HUMAN"));
+        expect_scalar(&channel_alert, "originMessage", json!("hi"));
+        expect_scalar(&data, "channel", json!(3));
+    }
+
+    #[test]
+    fn test_read_fragment_resolves_merged_selection() {
+        let (runtime, op_ctx) = build_ctx(SCHEMA, OPERATION);
+        normalize(&runtime, &op_ctx, response(), None);
+
+        let read = runtime
+            .try_read_fragment("FullFrag", "Alert:a1")
+            .expect("read fragment")
+            .expect("fragment should be complete in cache");
+        assert_eq!(read["data"]["channelAlert"]["motionType"], json!("HUMAN"));
+        assert_eq!(read["data"]["channelAlert"]["__typename"], json!("Motion"));
+        assert_eq!(read["data"]["channel"], json!(3));
+    }
+}
