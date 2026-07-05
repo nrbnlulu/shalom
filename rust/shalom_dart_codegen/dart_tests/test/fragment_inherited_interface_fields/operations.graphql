@@ -21,6 +21,51 @@ fragment ElephantWithToysFrag on Elephant {
   trunkLength
 }
 
+fragment MinimalAnimalNestedFrag on Elephant {
+  favoriteToy {
+    id
+  }
+  status {
+    __typename
+    ... on MovementStatus {
+      motionType
+      channelAlert {
+        __typename
+      }
+    }
+  }
+}
+
+fragment MileSightChannelAlertFrag on ChannelAlertInterface {
+  __typename
+  channelName
+  ... on MileSightChannelAlert {
+    confidence
+  }
+}
+
+fragment MovementStatusWithChannelAlertFrag on MovementStatus {
+  channelAlert {
+    ...MileSightChannelAlertFrag
+  }
+}
+
+fragment ExtendedAnimalNestedFrag on Elephant {
+  ...MinimalAnimalNestedFrag
+  favoriteToy {
+    label
+  }
+  status {
+    ... on StatusInterface {
+      originMessage
+    }
+    ... on MovementStatus {
+      sensitivity
+      ...MovementStatusWithChannelAlertFrag
+    }
+  }
+}
+
 fragment AnimalWithToysGlobalFrag on Animal {
   __typename
   ...AnimalWithToysFrag
@@ -30,5 +75,12 @@ fragment AnimalWithToysGlobalFrag on Animal {
 query ZooAnimalsQuery {
   animals {
     ...AnimalWithToysGlobalFrag
+  }
+}
+
+query ElephantNestedQuery {
+  animals {
+    __typename
+    ...ExtendedAnimalNestedFrag
   }
 }

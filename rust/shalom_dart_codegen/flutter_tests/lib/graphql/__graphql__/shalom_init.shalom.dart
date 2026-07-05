@@ -53,6 +53,23 @@ interface HasFavoriteToy {
   favoriteToy: Toy!
 }
 
+interface StatusInterface {
+  originMessage: String!
+}
+
+type MovementStatus implements StatusInterface {
+  originMessage: String!
+  motionType: String!
+  sensitivity: Int!
+}
+
+type IdleStatus implements StatusInterface {
+  originMessage: String!
+  idleSince: String!
+}
+
+union AnimalStatus = MovementStatus | IdleStatus
+
 type Toy {
   id: ID!
   label: String!
@@ -69,6 +86,7 @@ type Dog implements Animal & HasFavoriteToy {
   breed: String!
   owner: Owner
   favoriteToy: Toy!
+  status: AnimalStatus!
 }
 
 type Cat implements Animal {
@@ -180,6 +198,33 @@ fragment DogWithFavoriteToyFrag on Dog @observe {
   );
   client.registerFragment(
     document: r'''
+fragment MinimalDogStatusFrag on Dog @observe {
+  status {
+    __typename
+    ... on MovementStatus {
+      motionType
+    }
+  }
+}
+''',
+  );
+  client.registerFragment(
+    document: r'''
+fragment ExtendedDogStatusFrag on Dog @observe {
+  ...MinimalDogStatusFrag
+  status {
+    ... on StatusInterface {
+      originMessage
+    }
+    ... on MovementStatus {
+      sensitivity
+    }
+  }
+}
+''',
+  );
+  client.registerFragment(
+    document: r'''
 fragment DogFrag on Dog @observe {
   name
   breed
@@ -269,6 +314,7 @@ query ZooAnimalsContractQuery @observe {
     ...CommonAnimalFrag
     ...DogFavoriteFrag
     ...DogWithFavoriteToyFrag
+    ...ExtendedDogStatusFrag
   }
 }
 ''',

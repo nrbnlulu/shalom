@@ -7,6 +7,8 @@ interface Animal {
   name: String!
   species: String!
   toys: [Toy!]!
+  favoriteToy: Toy!
+  status: AnimalStatus!
 }
 
 type Toy {
@@ -14,11 +16,40 @@ type Toy {
   label: String!
 }
 
+interface StatusInterface {
+  originMessage: String!
+}
+
+interface ChannelAlertInterface {
+  channelName: String!
+}
+
+type MileSightChannelAlert implements ChannelAlertInterface {
+  channelName: String!
+  confidence: Int!
+}
+
+type MovementStatus implements StatusInterface {
+  originMessage: String!
+  motionType: String!
+  sensitivity: Int!
+  channelAlert: ChannelAlertInterface!
+}
+
+type IdleStatus implements StatusInterface {
+  originMessage: String!
+  idleSince: String!
+}
+
+union AnimalStatus = MovementStatus | IdleStatus
+
 type Monkey implements Animal {
   id: ID!
   name: String!
   species: String!
   toys: [Toy!]!
+  favoriteToy: Toy!
+  status: AnimalStatus!
   bananaCount: Int!
 }
 
@@ -27,5 +58,7 @@ type Elephant implements Animal {
   name: String!
   species: String!
   toys: [Toy!]!
+  favoriteToy: Toy!
+  status: AnimalStatus!
   trunkLength: Int!
 }
