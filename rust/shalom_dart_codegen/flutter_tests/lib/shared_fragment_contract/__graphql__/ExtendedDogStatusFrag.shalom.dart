@@ -91,7 +91,8 @@ sealed class ExtendedDogStatusFrag_status
 }
 
 final class ExtendedDogStatusFrag_status__IdleStatus
-    extends ExtendedDogStatusFrag_status {
+    extends ExtendedDogStatusFrag_status
+    implements MinimalDogStatusFrag_status__IdleStatus {
   static String G__typename = "IdleStatus";
 
   /// class members
@@ -137,7 +138,8 @@ final class ExtendedDogStatusFrag_status__IdleStatus
 }
 
 final class ExtendedDogStatusFrag_status__MovementStatus
-    extends ExtendedDogStatusFrag_status {
+    extends ExtendedDogStatusFrag_status
+    implements MinimalDogStatusFrag_status__MovementStatus {
   static String G__typename = "MovementStatus";
 
   /// class members

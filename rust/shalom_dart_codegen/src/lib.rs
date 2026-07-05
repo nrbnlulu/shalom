@@ -722,6 +722,72 @@ where
     implemented
 }
 
+/// True if this field (or, for lists, its element type) is itself a nested union/interface
+/// selection. Such fields are resolved to a per-fragment-aliased type name (whichever named
+/// fragment happens to own the selection), so two independently-generated concrete members
+/// that both select the field aren't guaranteed to agree on its type -- unlike scalar/enum
+/// leaves, which always resolve to the same schema type on both sides.
+fn selection_kind_is_nested_multitype(kind: &SelectionKind) -> bool {
+    match kind {
+        SelectionKind::Union(_) | SelectionKind::Interface(_) => true,
+        SelectionKind::List(list) => selection_kind_is_nested_multitype(&list.of_kind),
+        _ => false,
+    }
+}
+
+/// Mirrors `implemented_fragment_selection_types`, but for a concrete union/interface
+/// member (e.g. `ExtendedDogStatusFrag_status__MovementStatus`) rather than the shared
+/// base class. Without this, concrete members generated per-fragment (e.g. by
+/// `MinimalDogStatusFrag` and `ExtendedDogStatusFrag`, which both select `... on MovementStatus`)
+/// are structurally identical but type-system-unrelated, so pattern matching on one
+/// fragment's member never matches an instance produced via a spreading fragment.
+///
+/// Conservatively skips members that have their own nested union/interface fields --
+/// see `selection_kind_is_nested_multitype` -- since those fields' types aren't guaranteed
+/// covariant across fragments and Dart would reject the `implements` clause.
+fn implemented_fragment_member_types<T>(
+    executable_ctx: &T,
+    concrete_subset: &ObjectLikeCommon,
+) -> BTreeSet<String>
+where
+    T: ExecutableContext,
+{
+    let mut implemented = concrete_subset.used_fragments.clone();
+    if concrete_subset
+        .selections
+        .iter()
+        .any(|selection| selection_kind_is_nested_multitype(&selection.kind))
+    {
+        return implemented;
+    }
+    for fragment in executable_ctx.typedefs().flatten_used_fragments() {
+        let Some(fragment_member_path) = fragment_path_for_executable_path(
+            executable_ctx,
+            &fragment,
+            &concrete_subset.path_name,
+        ) else {
+            continue;
+        };
+        let Some((union_path, typename)) = fragment_member_path.rsplit_once("__") else {
+            continue;
+        };
+        let has_member = fragment
+            .typedefs
+            .get_multitype_selection(&union_path.to_string())
+            .map(|multitype| {
+                multitype
+                    .common()
+                    .possible_concrete_types
+                    .contains(typename)
+            })
+            .unwrap_or(false);
+        if has_member {
+            implemented.insert(fragment_member_path);
+        }
+    }
+    implemented
+}
+
 fn register_executable_fns<'a, T>(
     env: &mut Environment<'a>,
     ctx: &SharedShalomGlobalContext,
@@ -768,6 +834,18 @@ where
         move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
             let implemented =
                 implemented_fragment_selection_types(executable_ctx_clone4.as_ref(), &obj_like.0);
+            minijinja::Value::from_serialize(&implemented)
+        },
+    );
+
+    let executable_ctx_clone4 = executable_ctx.clone();
+    env.add_function(
+        "implemented_fragment_member_types",
+        move |concrete_subset: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
+            let implemented = implemented_fragment_member_types(
+                executable_ctx_clone4.as_ref(),
+                &concrete_subset.0,
+            );
             minijinja::Value::from_serialize(&implemented)
         },
     );
