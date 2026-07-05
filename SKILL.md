@@ -6,13 +6,14 @@ description: Use when building or modifying Dart/Flutter apps that use the Shalo
 # Shalom
 
 Use this skill when acting as an app developer consuming Shalom. Prefer Shalom's generated Dart/Flutter APIs over hand-written GraphQL plumbing. Do not edit generated `__graphql__` files directly; change annotations/schema/config and regenerate.
+
 ## Paradigm
+
 shalom contains a "smart" runtime that automagically updates widgets if you use it correctly
 shalom is declarative meaning that as a rule of thumb we don't need services nor state management solutions for graphql stuff.
 in shalom every widget should request only what it needs.
 in shalom we do less on the ui and more on the server. so if so far you have done sorting on the ui, you should (mostly) now delegate that to the server because usually list nodes would use fragments which are not readable (declaratively) by the list view builder.
 if you still need to do sorting on the ui, make sure your lists are not huge an you'd prob better off without @Fragment widgets.
-
 
 ## Mental Model
 
@@ -143,7 +144,6 @@ The widget keeps an active observer for as long as it's in the tree, so GC won't
 
 `@Subscription` uses the same widget shape as `@Query`; the link must support streaming operation results.
 
-
 ## Naming Rules
 
 Shalom requires every generated GraphQL definition name to be globally unique across the app.
@@ -151,8 +151,8 @@ This includes: - `@Query` / `@Mutation` / `@Subscription` / `@Fragment` class na
 Do not reuse the same Dart class name for another Shalom operation or fragment, even if the GraphQL selection is different or lives in another file. Generated operation, fragment, data, variables, ref, and scope APIs are derived from these names, so duplicate names cause generation/runtime registration conflicts. Prefer explicit feature-prefixed names when needed.
 
 ## Imperative APIs In Flutter
-Imperative API's for reads are generally discouraged in Flutter, as they can lead to inconsistent state.
 
+Imperative API's for reads are generally discouraged in Flutter, as they can lead to inconsistent state.
 
 Default to declarative generated widgets/scopes for reads:
 
@@ -373,6 +373,8 @@ Fragment guidelines:
 - Fragment spreads are flattened into generated selections. If a fragment spreads another fragment, the generated concrete class implements the spread fragment interface.
 - Nested object selections inside fragments are generated in the fragment file.
 - Union/interface selections become sealed classes resolved by `__typename`.
+- If a fragment X is used by another fragment (Y) then fragment X classes would be `abstract` and only fragment X types would be concrete and can use `sealed` operator for multi-type(union/interface) handling.
+- Do not restructure GraphQL just to avoid overlapping nested fragment selections. Shalom should merge spread selections recursively, including nested union/interface variants; Dart errors such as `invalid_override` or sealed-class cross-library errors from valid fragment composition indicate a Shalom codegen bug.
 
 ## Optimistic Updates
 
