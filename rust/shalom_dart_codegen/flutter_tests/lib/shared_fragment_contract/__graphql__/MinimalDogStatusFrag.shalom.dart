@@ -85,7 +85,7 @@ abstract class MinimalDogStatusFrag_status {
   }
 }
 
-final class MinimalDogStatusFrag_status__IdleStatus
+class MinimalDogStatusFrag_status__IdleStatus
     extends MinimalDogStatusFrag_status {
   static String G__typename = "IdleStatus";
 
@@ -118,7 +118,7 @@ final class MinimalDogStatusFrag_status__IdleStatus
   }
 }
 
-final class MinimalDogStatusFrag_status__MovementStatus
+class MinimalDogStatusFrag_status__MovementStatus
     extends MinimalDogStatusFrag_status {
   static String G__typename = "MovementStatus";
 

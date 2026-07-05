@@ -149,7 +149,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
       }
     }
     {% for concrete_subset in concretes -%}
-      final class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+      {{ "class" if is_abstract_fragment else "final class" }} {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(implemented_fragment_member_types(concrete_subset))}} {
         {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
       }
     {% endfor %}
@@ -183,7 +183,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
       }
     }
     {% for concrete_subset in concretes -%}
-      final class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+      {{ "class" if is_abstract_fragment else "final class" }} {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(implemented_fragment_member_types(concrete_subset))}} {
         {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
       }
     {% endfor %}
@@ -199,9 +199,10 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 {# Nested union definitions (fields of union type within this concrete object) #}
 {% for union_full_name, union_selection in typedefs.unions | items %}
   {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
+  {% set is_abstract_fragment = selection_is_abstract_fragment(union_selection) %}
   {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
   {% for concrete_subset in concretes -%}
-    final class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+    {{ "class" if is_abstract_fragment else "final class" }} {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(implemented_fragment_member_types(concrete_subset))}} {
       {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
     }
   {% endfor %}
@@ -210,9 +211,10 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 {# Nested interface definitions (fields of interface type within this concrete object) #}
 {% for iface_path_name, iface_selection in typedefs.interfaces | items %}
   {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
+  {% set is_abstract_fragment = selection_is_abstract_fragment(iface_selection) %}
   {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
   {% for concrete_subset in concretes -%}
-    final class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+    {{ "class" if is_abstract_fragment else "final class" }} {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(implemented_fragment_member_types(concrete_subset))}} {
       {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
     }
   {% endfor %}
@@ -386,7 +388,7 @@ class {{ fragment_name }}Impl implements {{ fragment_name }} {
 
     {# generate subsets #}
     {% for concrete_subset in concretes -%}
-        class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+        class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(implemented_fragment_member_types(concrete_subset))}} {
             {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections) }}
         }
     {% endfor %}
@@ -426,7 +428,7 @@ class {{ fragment_name }}Impl implements {{ fragment_name }} {
     {# generate subsets #}
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
     {% for concrete_subset in concretes -%}
-        class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+        class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(implemented_fragment_member_types(concrete_subset))}} {
             {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections) }}
         }
     {% endfor %}
