@@ -3,8 +3,10 @@ import 'package:shalom_annotations/shalom_annotations.dart';
 
 import '__graphql__/CommonAnimalFrag.shalom.dart';
 import '__graphql__/DogFavoriteFrag.shalom.dart';
+import '__graphql__/ExtendedDogStatusFrag.shalom.dart';
 import '__graphql__/DogWithFavoriteToyFrag.shalom.dart';
 import '__graphql__/HasFavoriteToyFrag.shalom.dart';
+import '__graphql__/MinimalDogStatusFrag.shalom.dart';
 import '__graphql__/ToyFrag.shalom.dart';
 import '__graphql__/ZooAnimalsContractQuery.widget.shalom.dart';
 
@@ -89,6 +91,47 @@ class DogWithFavoriteToyFrag extends $DogWithFavoriteToyFrag {
   }
 }
 
+@Fragment(r'''
+on Dog {
+  status {
+    __typename
+    ... on MovementStatus {
+      motionType
+    }
+  }
+}
+''')
+class MinimalDogStatusFrag extends $MinimalDogStatusFrag {
+  const MinimalDogStatusFrag({super.key, required super.ref});
+
+  @override
+  Widget buildData(BuildContext context, MinimalDogStatusFragData data) {
+    return Text(data.status.$__typename, textDirection: TextDirection.ltr);
+  }
+}
+
+@Fragment(r'''
+on Dog {
+  ...MinimalDogStatusFrag
+  status {
+    ... on StatusInterface {
+      originMessage
+    }
+    ... on MovementStatus {
+      sensitivity
+    }
+  }
+}
+''')
+class ExtendedDogStatusFrag extends $ExtendedDogStatusFrag {
+  const ExtendedDogStatusFrag({super.key, required super.ref});
+
+  @override
+  Widget buildData(BuildContext context, ExtendedDogStatusFragData data) {
+    return Text(data.status.$__typename, textDirection: TextDirection.ltr);
+  }
+}
+
 @Query(r'''
 {
   animals {
@@ -96,6 +139,7 @@ class DogWithFavoriteToyFrag extends $DogWithFavoriteToyFrag {
     ...CommonAnimalFrag
     ...DogFavoriteFrag
     ...DogWithFavoriteToyFrag
+    ...ExtendedDogStatusFrag
   }
 }
 ''')

@@ -126,8 +126,10 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 {% for union_full_name, union_selection in typedefs.unions | items %}
   {% if union_full_name != fragment_name %}
     {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
-    sealed class {{ union_full_name }}{{ implements_used_fragments(union_selection.used_fragments) }} {
-      {% for sel in union_selection.selections if sel.name != "__typename" -%}
+    {% set union_shared_selections = get_shared_selections_with_fragment_matches(union_selection) %}
+    {% set is_abstract_fragment = selection_is_abstract_fragment(union_selection) %}
+    {{ "abstract" if is_abstract_fragment else "sealed" }} class {{ union_full_name }}{{ implements_used_fragments(implemented_fragment_selection_types(union_selection)) }} {
+      {% for sel in union_shared_selections if sel.name != "__typename" -%}
         {{type_name_for_selection(sel)}} get {{sel.name}};
       {% endfor %}
       String get $__typename;
@@ -158,8 +160,10 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 {% for iface_path_name, iface_selection in typedefs.interfaces | items %}
   {% if iface_path_name != fragment_name %}
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
-    sealed class {{ iface_path_name }}{{ implements_used_fragments(iface_selection.used_fragments) }} {
-      {% for sel in iface_selection.selections if sel.name != "__typename" -%}
+    {% set iface_shared_selections = get_shared_selections_with_fragment_matches(iface_selection) %}
+    {% set is_abstract_fragment = selection_is_abstract_fragment(iface_selection) %}
+    {{ "abstract" if is_abstract_fragment else "sealed" }} class {{ iface_path_name }}{{ implements_used_fragments(implemented_fragment_selection_types(iface_selection)) }} {
+      {% for sel in iface_shared_selections if sel.name != "__typename" -%}
         {{type_name_for_selection(sel)}} get {{sel.name}};
       {% endfor %}
       String get $__typename;
@@ -355,9 +359,10 @@ class {{ fragment_name }}Impl implements {{ fragment_name }} {
 
 {% for union_full_name, union_selection in typedefs.unions | items -%}
     {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
+    {% set union_shared_selections = get_shared_selections_with_fragment_matches(union_selection) %}
     {# generate abstract class (not sealed - must be implementable across libraries by operation types) #}
-    abstract class {{ union_full_name }}{{ implements_used_fragments(union_selection.used_fragments) }} {
-        {% for sel in union_selection.selections if sel.name != "__typename" -%}
+    abstract class {{ union_full_name }}{{ implements_used_fragments(implemented_fragment_selection_types(union_selection)) }} {
+        {% for sel in union_shared_selections if sel.name != "__typename" -%}
             {{type_name_for_selection(sel)}} get {{sel.name}};
         {% endfor %}
         String get $__typename;
@@ -393,9 +398,10 @@ class {{ fragment_name }}Impl implements {{ fragment_name }} {
 
 {% for iface_path_name, iface_selection in typedefs.interfaces | items %}
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
+    {% set iface_shared_selections = get_shared_selections_with_fragment_matches(iface_selection) %}
     {# generate abstract class (not sealed - must be implementable across libraries by operation types) #}
-    abstract class {{ iface_path_name }}{{ implements_used_fragments(iface_selection.used_fragments) }} {
-        {% for sel in iface_selection.selections if sel.name != "__typename" -%}
+    abstract class {{ iface_path_name }}{{ implements_used_fragments(implemented_fragment_selection_types(iface_selection)) }} {
+        {% for sel in iface_shared_selections if sel.name != "__typename" -%}
             {{type_name_for_selection(sel)}} get {{sel.name}};
         {% endfor %}
         String get $__typename;

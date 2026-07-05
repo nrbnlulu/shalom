@@ -327,10 +327,11 @@ where
 
     for cond_typename in common_type_conds {
         if let Some(cond_obj) = obj_like.type_cond_selections.get(&cond_typename) {
-            let selections = cond_obj.selections.clone();
             let used_fragments = cond_obj.used_fragments.clone();
             let used_inline_frags = cond_obj.used_inline_frags.clone();
-            obj_like.selections.extend(selections);
+            for selection in cond_obj.selections.clone() {
+                obj_like.add_selection(selection);
+            }
             obj_like.used_fragments.extend(used_fragments);
             obj_like.used_inline_frags.extend(used_inline_frags);
         }

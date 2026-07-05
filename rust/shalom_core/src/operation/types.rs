@@ -148,6 +148,102 @@ impl FieldSelection {
     }
 }
 
+fn merge_selection_into_set(selections: &mut BTreeSet<FieldSelection>, selection: FieldSelection) {
+    if let Some(existing) = selections.take(&selection) {
+        selections.insert(merge_field_selection(existing, selection));
+    } else {
+        selections.insert(selection);
+    }
+}
+
+fn selection_kind_path_name(kind: &SelectionKind) -> Option<&str> {
+    match kind {
+        SelectionKind::Object(selection) => Some(&selection.common.path_name),
+        SelectionKind::Union(selection) => Some(&selection.common.common.path_name),
+        SelectionKind::Interface(selection) => Some(&selection.common.common.path_name),
+        SelectionKind::List(selection) => selection_kind_path_name(&selection.of_kind),
+        _ => None,
+    }
+}
+
+fn selection_is_owned_by_path(selection: &FieldSelection, owner_path: &str) -> bool {
+    selection_kind_path_name(&selection.kind)
+        .is_some_and(|path| path.starts_with(&format!("{owner_path}_")))
+}
+
+fn merge_fragment_selection_into_set(
+    selections: &mut BTreeSet<FieldSelection>,
+    owner_path: &str,
+    selection: FieldSelection,
+) {
+    if let Some(existing) = selections.take(&selection) {
+        if selection_is_owned_by_path(&existing, owner_path) {
+            selections.insert(merge_field_selection(existing, selection));
+        } else {
+            selections.insert(merge_field_selection(selection, existing));
+        }
+    } else {
+        selections.insert(selection);
+    }
+}
+
+fn merge_field_selection(existing: FieldSelection, incoming: FieldSelection) -> FieldSelection {
+    let kind = merge_selection_kind(&existing.kind, &incoming.kind)
+        .unwrap_or_else(|| existing.kind.clone());
+
+    FieldSelection {
+        selection_common: existing.selection_common,
+        kind,
+        arguments: existing.arguments,
+    }
+}
+
+fn merge_selection_kind(
+    existing: &SelectionKind,
+    incoming: &SelectionKind,
+) -> Option<SelectionKind> {
+    match (existing, incoming) {
+        (SelectionKind::Object(existing), SelectionKind::Object(incoming)) => {
+            let mut common = existing.common.clone();
+            common.merge(incoming.common.clone());
+            Some(SelectionKind::Object(ObjectSelection::new(
+                existing.is_optional,
+                common,
+            )))
+        }
+        (SelectionKind::Union(existing), SelectionKind::Union(incoming)) => {
+            let mut common = existing.common.common.clone();
+            common.merge(incoming.common.common.clone());
+            let mut possible_concrete_types = existing.common.possible_concrete_types.clone();
+            possible_concrete_types.extend(incoming.common.possible_concrete_types.clone());
+            Some(SelectionKind::Union(UnionSelection::new(
+                existing.union_type.clone(),
+                common,
+                existing.common.is_optional,
+                possible_concrete_types,
+            )))
+        }
+        (SelectionKind::Interface(existing), SelectionKind::Interface(incoming)) => {
+            let mut common = existing.common.common.clone();
+            common.merge(incoming.common.common.clone());
+            let mut possible_concrete_types = existing.common.possible_concrete_types.clone();
+            possible_concrete_types.extend(incoming.common.possible_concrete_types.clone());
+            Some(SelectionKind::Interface(InterfaceSelection::new(
+                existing.interface_type.clone(),
+                common,
+                existing.common.is_optional,
+                possible_concrete_types,
+            )))
+        }
+        (SelectionKind::List(existing), SelectionKind::List(incoming)) => {
+            let of_kind = merge_selection_kind(&existing.of_kind, &incoming.of_kind)
+                .unwrap_or_else(|| existing.of_kind.clone());
+            Some(SelectionKind::new_list(existing.is_optional, of_kind))
+        }
+        _ => None,
+    }
+}
+
 pub type SharedSelection = Rc<FieldSelection>;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -229,7 +325,12 @@ impl ObjectLikeCommon {
             // the same type just extend selections (HashSet handles deduplication)
             self.used_fragments.extend(other.used_fragments);
             self.used_inline_frags.extend(other.used_inline_frags);
-            self.selections.extend(other.selections);
+            for selection in other.selections {
+                self.add_selection(selection);
+            }
+            for (_, type_cond_selection) in other.type_cond_selections {
+                self.merge(type_cond_selection);
+            }
         } else {
             // different type - store as type condition, merge if already exists
             if let Some(existing) = self.type_cond_selections.get_mut(&other.schema_typename) {
@@ -242,8 +343,12 @@ impl ObjectLikeCommon {
     }
 
     pub fn add_selection(&mut self, selection: FieldSelection) {
-        // HashSet automatically handles deduplication based on Hash/Eq implementation
-        self.selections.insert(selection);
+        if let Some(existing) = self.selections.take(&selection) {
+            self.selections
+                .insert(merge_field_selection(existing, selection));
+        } else {
+            self.selections.insert(selection);
+        }
     }
     /// finds a field with a name
     pub fn contains_field(&self, name: &str) -> bool {
@@ -327,13 +432,19 @@ impl ObjectLikeCommon {
 
         for frag_name in &self.used_fragments {
             let fragment = ctx.get_fragment_strict(frag_name);
-            selections.extend(fragment.get_on_type().get_all_selections_distinct(ctx));
+            for selection in fragment.get_on_type().get_all_selections_distinct(ctx) {
+                merge_fragment_selection_into_set(&mut selections, &self.path_name, selection);
+            }
         }
         for inline_frag in self.used_inline_frags.values() {
-            selections.extend(inline_frag.common.get_all_selections_distinct(ctx));
+            for selection in inline_frag.common.get_all_selections_distinct(ctx) {
+                merge_fragment_selection_into_set(&mut selections, &self.path_name, selection);
+            }
         }
         for obj in self.type_cond_selections.values() {
-            selections.extend(obj.get_all_selections_distinct(ctx));
+            for selection in obj.get_all_selections_distinct(ctx) {
+                merge_fragment_selection_into_set(&mut selections, &self.path_name, selection);
+            }
         }
         selections
     }
@@ -352,7 +463,9 @@ impl ObjectLikeCommon {
                 root_type_name,
                 &current_obj.schema_typename,
             ) {
-                resolved_selections.extend(current_obj.selections.iter().cloned());
+                for selection in current_obj.selections.iter().cloned() {
+                    merge_selection_into_set(resolved_selections, selection);
+                }
             }
 
             // used frags are directly on this type
@@ -363,7 +476,13 @@ impl ObjectLikeCommon {
                     root_type_name,
                     &frag_root.schema_typename,
                 ) {
-                    resolved_selections.extend(frag_root.selections.iter().cloned());
+                    for selection in frag_root.selections.iter().cloned() {
+                        merge_fragment_selection_into_set(
+                            resolved_selections,
+                            &current_obj.path_name,
+                            selection,
+                        );
+                    }
                     recursive_inner(root_type_name, resolved_selections, frag_root, ctx);
                 }
             }
@@ -374,7 +493,13 @@ impl ObjectLikeCommon {
                     .schema_ctx
                     .is_type_same_or_implementing_interface(root_type_name, on_type)
                 {
-                    resolved_selections.extend(inline_frag.common.selections.iter().cloned());
+                    for selection in inline_frag.common.selections.iter().cloned() {
+                        merge_fragment_selection_into_set(
+                            resolved_selections,
+                            &current_obj.path_name,
+                            selection,
+                        );
+                    }
                     recursive_inner(
                         root_type_name,
                         resolved_selections,

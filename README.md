@@ -1,8 +1,6 @@
 # shalom
 A GraphQL client runtime for Dart and Flutter.
 
-
-
 ### Installation
 
 1. Build the CLI from source:

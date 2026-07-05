@@ -11,7 +11,9 @@ import 'package:collection/collection.dart';
 import 'CommonAnimalFrag.shalom.dart';
 import 'DogFavoriteFrag.shalom.dart';
 import 'DogWithFavoriteToyFrag.shalom.dart';
+import 'ExtendedDogStatusFrag.shalom.dart';
 import 'HasFavoriteToyFrag.shalom.dart';
+import 'MinimalDogStatusFrag.shalom.dart';
 import 'ToyFrag.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
@@ -131,7 +133,7 @@ class ZooAnimalsContractQuery_animals__Cat
 
 class ZooAnimalsContractQuery_animals__Dog
     extends ZooAnimalsContractQuery_animals
-    implements DogFavoriteFrag, DogWithFavoriteToyFrag {
+    implements DogFavoriteFrag, DogWithFavoriteToyFrag, ExtendedDogStatusFrag {
   static String G__typename = "Dog";
 
   /// class members
@@ -141,6 +143,8 @@ class ZooAnimalsContractQuery_animals__Dog
   final HasFavoriteToyFrag_favoriteToy favoriteToy;
 
   final String id;
+
+  final ExtendedDogStatusFrag_status status;
 
   // Getter for typename (public accessor for static __typename field)
   String get $__typename => G__typename;
@@ -152,6 +156,8 @@ class ZooAnimalsContractQuery_animals__Dog
     required this.favoriteToy,
 
     required this.id,
+
+    required this.status,
   });
 
   @override
@@ -160,7 +166,8 @@ class ZooAnimalsContractQuery_animals__Dog
         (other is ZooAnimalsContractQuery_animals__Dog &&
             breed == other.breed &&
             favoriteToy == other.favoriteToy &&
-            id == other.id);
+            id == other.id &&
+            status == other.status);
   }
 
   @override
@@ -170,6 +177,8 @@ class ZooAnimalsContractQuery_animals__Dog
     favoriteToy,
 
     id,
+
+    status,
 
     ZooAnimalsContractQuery_animals__Dog.G__typename,
   ]);
@@ -183,6 +192,8 @@ class ZooAnimalsContractQuery_animals__Dog
       'favoriteToy': this.favoriteToy.toJson(),
 
       'id': this.id,
+
+      'status': this.status.toJson(),
     };
   }
 
@@ -195,12 +206,18 @@ class ZooAnimalsContractQuery_animals__Dog
           data['favoriteToy'] as shalom_core.JsonObject,
         );
     final String id$value = data['id'] as String;
+    final ExtendedDogStatusFrag_status status$value =
+        ExtendedDogStatusFrag_status.fromJson(
+          data['status'] as shalom_core.JsonObject,
+        );
     return ZooAnimalsContractQuery_animals__Dog(
       breed: breed$value,
 
       favoriteToy: favoriteToy$value,
 
       id: id$value,
+
+      status: status$value,
     );
   }
 }
