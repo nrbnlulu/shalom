@@ -9,7 +9,7 @@ pub use dart_scanner::{WidgetAnnotation, WidgetKind, scan_dart_widgets};
 use shalom_core::{
     context::{ShalomGlobalContext, SharedShalomGlobalContext},
     operation::{
-        context::{ExecutableContext, OperationContext, SharedOpCtx},
+        context::{ExecutableContext, OperationContext, SharedOpCtx, TypeDefs},
         fragments::{FragmentContext, SharedFragmentContext},
         types::{
             FieldSelection, ObjectLikeCommon, SelectionKind, SharedListSelection,
@@ -24,7 +24,7 @@ use shalom_core::{
 };
 
 use std::{
-    collections::{HashMap, HashSet},
+    collections::{BTreeSet, HashMap, HashSet},
     fs,
     hash::{DefaultHasher, Hash, Hasher},
     path::{Path, PathBuf},
@@ -561,6 +561,233 @@ where
     multitype_list_selections
 }
 
+fn fragment_path_for_executable_path<T>(
+    executable_ctx: &T,
+    fragment: &FragmentContext,
+    path_name: &str,
+) -> Option<String>
+where
+    T: ExecutableContext,
+{
+    let root_path = &executable_ctx.get_root().path_name;
+    if path_name == root_path {
+        return None;
+    }
+
+    let suffix = path_name.strip_prefix(&format!("{root_path}_"))?;
+    Some(format!("{}_{}", fragment.name, suffix))
+}
+
+fn executable_path_for_fragment_path(
+    executable_root_path: &str,
+    fragment_name: &str,
+    path_name: &str,
+) -> Option<String> {
+    if path_name == fragment_name {
+        return None;
+    }
+
+    let suffix = path_name.strip_prefix(&format!("{fragment_name}_"))?;
+    Some(format!("{executable_root_path}_{suffix}"))
+}
+
+fn get_object_like_for_path(typedefs: &TypeDefs, path_name: &str) -> Option<ObjectLikeCommon> {
+    if let Some(selection) = typedefs.objects.get(path_name) {
+        return Some(selection.common.clone());
+    }
+    if let Some(selection) = typedefs.unions.get(path_name) {
+        return Some(selection.common.common.clone());
+    }
+    if let Some(selection) = typedefs.interfaces.get(path_name) {
+        return Some(selection.common.common.clone());
+    }
+    None
+}
+
+fn executable_uses_fragment<T>(executable_ctx: &T, fragment_name: &str) -> bool
+where
+    T: ExecutableContext,
+{
+    executable_ctx
+        .typedefs()
+        .flatten_used_fragments()
+        .iter()
+        .any(|fragment| fragment.name == fragment_name)
+}
+
+fn fragment_owner_for_path(global_ctx: &ShalomGlobalContext, path_name: &str) -> Option<String> {
+    global_ctx
+        .fragments()
+        .into_iter()
+        .filter_map(|(name, _)| {
+            if path_name.strip_prefix(&format!("{name}_")).is_some() {
+                Some(name)
+            } else {
+                None
+            }
+        })
+        .max_by_key(|name| name.len())
+}
+
+fn selection_is_cross_file_implemented(
+    global_ctx: &ShalomGlobalContext,
+    object_like: &ObjectLikeCommon,
+) -> bool {
+    let Some(fragment_name) = fragment_owner_for_path(global_ctx, &object_like.path_name) else {
+        return false;
+    };
+
+    for (_, fragment) in global_ctx.fragments() {
+        if fragment.name == fragment_name
+            || !executable_uses_fragment(fragment.as_ref(), &fragment_name)
+        {
+            continue;
+        }
+
+        let Some(path) = executable_path_for_fragment_path(
+            &fragment.get_root().path_name,
+            &fragment_name,
+            &object_like.path_name,
+        ) else {
+            continue;
+        };
+
+        if get_object_like_for_path(&fragment.typedefs, &path).is_some() {
+            return true;
+        }
+    }
+
+    for (_, operation) in global_ctx.operations() {
+        if !executable_uses_fragment(operation.as_ref(), &fragment_name) {
+            continue;
+        }
+
+        let Some(path) = executable_path_for_fragment_path(
+            &operation.get_root().path_name,
+            &fragment_name,
+            &object_like.path_name,
+        ) else {
+            continue;
+        };
+
+        if get_object_like_for_path(&operation.typedefs, &path).is_some() {
+            return true;
+        }
+    }
+
+    false
+}
+
+fn object_like_with_fragment_path_matches<T>(
+    executable_ctx: &T,
+    object_like: &ObjectLikeCommon,
+) -> ObjectLikeCommon
+where
+    T: ExecutableContext,
+{
+    let mut merged = object_like.clone();
+    for fragment in executable_ctx.typedefs().flatten_used_fragments() {
+        let Some(fragment_path) =
+            fragment_path_for_executable_path(executable_ctx, &fragment, &object_like.path_name)
+        else {
+            continue;
+        };
+        if let Some(fragment_object_like) =
+            get_object_like_for_path(&fragment.typedefs, &fragment_path)
+        {
+            merged.merge(fragment_object_like);
+        }
+    }
+    merged
+}
+
+fn implemented_fragment_selection_types<T>(
+    executable_ctx: &T,
+    object_like: &ObjectLikeCommon,
+) -> BTreeSet<String>
+where
+    T: ExecutableContext,
+{
+    let mut implemented = object_like.used_fragments.clone();
+    for fragment in executable_ctx.typedefs().flatten_used_fragments() {
+        let Some(fragment_path) =
+            fragment_path_for_executable_path(executable_ctx, &fragment, &object_like.path_name)
+        else {
+            continue;
+        };
+        if get_object_like_for_path(&fragment.typedefs, &fragment_path).is_some() {
+            implemented.insert(fragment_path);
+        }
+    }
+    implemented
+}
+
+/// True if this field (or, for lists, its element type) is itself a nested union/interface
+/// selection. Such fields are resolved to a per-fragment-aliased type name (whichever named
+/// fragment happens to own the selection), so two independently-generated concrete members
+/// that both select the field aren't guaranteed to agree on its type -- unlike scalar/enum
+/// leaves, which always resolve to the same schema type on both sides.
+fn selection_kind_is_nested_multitype(kind: &SelectionKind) -> bool {
+    match kind {
+        SelectionKind::Union(_) | SelectionKind::Interface(_) => true,
+        SelectionKind::List(list) => selection_kind_is_nested_multitype(&list.of_kind),
+        _ => false,
+    }
+}
+
+/// Mirrors `implemented_fragment_selection_types`, but for a concrete union/interface
+/// member (e.g. `ExtendedDogStatusFrag_status__MovementStatus`) rather than the shared
+/// base class. Without this, concrete members generated per-fragment (e.g. by
+/// `MinimalDogStatusFrag` and `ExtendedDogStatusFrag`, which both select `... on MovementStatus`)
+/// are structurally identical but type-system-unrelated, so pattern matching on one
+/// fragment's member never matches an instance produced via a spreading fragment.
+///
+/// Conservatively skips members that have their own nested union/interface fields --
+/// see `selection_kind_is_nested_multitype` -- since those fields' types aren't guaranteed
+/// covariant across fragments and Dart would reject the `implements` clause.
+fn implemented_fragment_member_types<T>(
+    executable_ctx: &T,
+    concrete_subset: &ObjectLikeCommon,
+) -> BTreeSet<String>
+where
+    T: ExecutableContext,
+{
+    let mut implemented = concrete_subset.used_fragments.clone();
+    if concrete_subset
+        .selections
+        .iter()
+        .any(|selection| selection_kind_is_nested_multitype(&selection.kind))
+    {
+        return implemented;
+    }
+    for fragment in executable_ctx.typedefs().flatten_used_fragments() {
+        let Some(fragment_member_path) = fragment_path_for_executable_path(
+            executable_ctx,
+            &fragment,
+            &concrete_subset.path_name,
+        ) else {
+            continue;
+        };
+        let Some((union_path, typename)) = fragment_member_path.rsplit_once("__") else {
+            continue;
+        };
+        let has_member = fragment
+            .typedefs
+            .get_multitype_selection(&union_path.to_string())
+            .map(|multitype| {
+                multitype
+                    .common()
+                    .possible_concrete_types
+                    .contains(typename)
+            })
+            .unwrap_or(false);
+        if has_member {
+            implemented.insert(fragment_member_path);
+        }
+    }
+    implemented
+}
+
 fn register_executable_fns<'a, T>(
     env: &mut Environment<'a>,
     ctx: &SharedShalomGlobalContext,
@@ -576,6 +803,58 @@ where
         move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
             let selections = obj_like.0.get_all_selections_distinct(&ctx_clone3);
             minijinja::Value::from_serialize(&selections)
+        },
+    );
+
+    let ctx_clone3 = ctx.clone();
+    let executable_ctx_clone4 = executable_ctx.clone();
+    env.add_function(
+        "get_all_selections_distinct_with_fragment_matches",
+        move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
+            let merged =
+                object_like_with_fragment_path_matches(executable_ctx_clone4.as_ref(), &obj_like.0);
+            let selections = merged.get_all_selections_distinct(&ctx_clone3);
+            minijinja::Value::from_serialize(&selections)
+        },
+    );
+
+    let executable_ctx_clone4 = executable_ctx.clone();
+    env.add_function(
+        "get_shared_selections_with_fragment_matches",
+        move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
+            let merged =
+                object_like_with_fragment_path_matches(executable_ctx_clone4.as_ref(), &obj_like.0);
+            minijinja::Value::from_serialize(&merged.selections)
+        },
+    );
+
+    let executable_ctx_clone4 = executable_ctx.clone();
+    env.add_function(
+        "implemented_fragment_selection_types",
+        move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
+            let implemented =
+                implemented_fragment_selection_types(executable_ctx_clone4.as_ref(), &obj_like.0);
+            minijinja::Value::from_serialize(&implemented)
+        },
+    );
+
+    let executable_ctx_clone4 = executable_ctx.clone();
+    env.add_function(
+        "implemented_fragment_member_types",
+        move |concrete_subset: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
+            let implemented = implemented_fragment_member_types(
+                executable_ctx_clone4.as_ref(),
+                &concrete_subset.0,
+            );
+            minijinja::Value::from_serialize(&implemented)
+        },
+    );
+
+    let ctx_clone3 = ctx.clone();
+    env.add_function(
+        "selection_is_abstract_fragment",
+        move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> bool {
+            selection_is_cross_file_implemented(&ctx_clone3, &obj_like.0)
         },
     );
 
@@ -626,7 +905,9 @@ where
                 &other_obj.schema_typename,
             )
         {
-            resolve_to.selections.extend(other_obj.selections.clone());
+            for selection in other_obj.selections.clone() {
+                resolve_to.add_selection(selection);
+            }
 
             for frag_name in &other_obj.used_fragments {
                 let fragment = global_ctx.get_fragment_strict(frag_name);
@@ -655,7 +936,7 @@ where
                         other_obj.path_name
                     )
                 });
-            resolve_to.selections.insert(typename_selection);
+            resolve_to.add_selection(typename_selection);
         }
 
         for type_cond_obj in other_obj.type_cond_selections.values() {
@@ -673,17 +954,17 @@ where
                 .typedefs()
                 .get_multitype_selection(&fullname)
                 .unwrap_or_else(|| panic!("{fullname} not found"));
+            let multitype_common = object_like_with_fragment_path_matches(
+                executable_ctx_clone2.as_ref(),
+                &multitype.common().common,
+            );
 
             let mut ret = Vec::new();
             for concrete_typename in &multitype.common().possible_concrete_types {
                 let concrete_path = format!("{fullname}__{concrete_typename}");
                 let mut resolved =
                     ObjectLikeCommon::new(concrete_path.clone(), concrete_typename.clone());
-                collect_selections_for_concrete(
-                    &mut resolved,
-                    &multitype.common().common,
-                    &ctx_clone2,
-                );
+                collect_selections_for_concrete(&mut resolved, &multitype_common, &ctx_clone2);
                 resolved.selections = resolved.get_all_selections_distinct(&ctx_clone2);
                 ret.push(resolved);
             }

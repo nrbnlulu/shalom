@@ -50,7 +50,7 @@ class {{ response_class_name }} {% if not is_observe %}{{ implements_used_fragme
 
     {# generate subsets #}
     {% for concrete_subset in concretes -%}
-        class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+        class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(implemented_fragment_member_types(concrete_subset))}} {
             {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
         }
     {% endfor %}
@@ -67,7 +67,7 @@ class {{ response_class_name }} {% if not is_observe %}{{ implements_used_fragme
 
     {# generate subsets #}
     {% for concrete_subset in concretes -%}
-        class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}}  {
+        class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(implemented_fragment_member_types(concrete_subset))}}  {
             {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
         }
     {% endfor %}

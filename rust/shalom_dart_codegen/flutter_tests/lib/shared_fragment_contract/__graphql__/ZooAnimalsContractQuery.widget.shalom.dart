@@ -11,7 +11,9 @@ import 'ZooAnimalsContractQuery.shalom.dart';
 import 'CommonAnimalFrag.shalom.dart';
 import 'DogFavoriteFrag.shalom.dart';
 import 'DogWithFavoriteToyFrag.shalom.dart';
+import 'ExtendedDogStatusFrag.shalom.dart';
 import 'HasFavoriteToyFrag.shalom.dart';
+import 'MinimalDogStatusFrag.shalom.dart';
 import 'ToyFrag.shalom.dart';
 
 abstract class $ZooAnimalsContractQuery extends StatefulWidget {

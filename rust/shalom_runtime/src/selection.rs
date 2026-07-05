@@ -1,10 +1,12 @@
-use std::collections::HashSet;
+use std::collections::BTreeSet;
 
 use serde_json::{Map, Value};
 
 use shalom_core::{
     context::SharedShalomGlobalContext,
-    operation::types::{ArgumentValue, FieldArgument, FieldSelection, InlineValueArg},
+    operation::types::{
+        ArgumentValue, FieldArgument, FieldSelection, InlineValueArg, merge_selection_into_set,
+    },
 };
 
 pub fn resolve_object_selections(
@@ -22,7 +24,7 @@ pub fn resolve_multitype_selections(
     typename: &str,
     ctx: &SharedShalomGlobalContext,
 ) -> Vec<FieldSelection> {
-    let mut selections = HashSet::new();
+    let mut selections = BTreeSet::new();
 
     /// Whether `root_type` satisfies a type condition named `cond_typename` -
     /// either directly, via interface implementation, or by being a member of
@@ -49,12 +51,14 @@ pub fn resolve_multitype_selections(
         root_type: &str,
         current_obj: &shalom_core::operation::types::ObjectLikeCommon,
         ctx: &SharedShalomGlobalContext,
-        selections: &mut HashSet<FieldSelection>,
+        selections: &mut BTreeSet<FieldSelection>,
     ) {
         let include_shared =
             type_condition_covers_root(root_type, &current_obj.schema_typename, ctx);
         if include_shared {
-            selections.extend(current_obj.selections.iter().cloned());
+            for selection in current_obj.selections.iter().cloned() {
+                merge_selection_into_set(selections, selection);
+            }
         }
 
         for frag_name in current_obj.used_fragments.iter() {
