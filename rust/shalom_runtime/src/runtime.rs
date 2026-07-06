@@ -27,8 +27,25 @@ use crate::read::CacheReader;
 // Public types
 // ---------------------------------------------------------------------------
 
-#[derive(Debug, Clone, Default, serde::Serialize, serde::Deserialize)]
-pub struct RuntimeConfig;
+/// Runtime tuning knobs, configurable from Dart via `RuntimeConfigInput`.
+#[derive(Debug, Clone)]
+pub struct RuntimeConfig {
+    /// How often the background thread sweeps the cache for unreferenced entries.
+    pub gc_interval: Duration,
+    /// How long a cache key is kept alive (via a "fake" subscriber) after its
+    /// last real subscriber unsubscribes, before it becomes eligible for GC.
+    /// Zero means no grace period — the previous behaviour.
+    pub retention_grace: Duration,
+}
+
+impl Default for RuntimeConfig {
+    fn default() -> Self {
+        Self {
+            gc_interval: Duration::from_secs(2),
+            retention_grace: Duration::ZERO,
+        }
+    }
+}
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct RuntimeResponse {
@@ -218,13 +235,13 @@ impl ShalomRuntime {
     pub fn init(
         schema_sdl: &str,
         fragments: Vec<String>,
-        _config: RuntimeConfig,
+        config: RuntimeConfig,
     ) -> anyhow::Result<Self> {
         let schema_ctx = parse_schema(schema_sdl)?;
-        let config = ShalomConfig::default();
+        let shalom_config = ShalomConfig::default();
         let global_ctx = shalom_core::context::ShalomGlobalContext::new(
             schema_ctx,
-            config,
+            shalom_config,
             PathBuf::from("schema.graphql"),
         );
 
@@ -233,15 +250,16 @@ impl ShalomRuntime {
             register_fragments_from_document(&global_ctx, &fragment, &path, true)?;
         }
 
-        let runtime = Self::new(global_ctx);
+        let cache = Arc::new(Mutex::new(NormalizedCache::new()));
+        let runtime = Self::with_cache_and_config(global_ctx, cache, &config);
 
-        // Background GC sweep every 2 seconds on a plain OS thread so it
-        // runs regardless of whether a Tokio runtime is active (e.g. during
-        // synchronous FRB init).
+        // Background GC sweep on a plain OS thread so it runs regardless of
+        // whether a Tokio runtime is active (e.g. during synchronous FRB init).
         let runtime_gc = runtime.clone();
+        let gc_interval = config.gc_interval;
         std::thread::spawn(move || {
             loop {
-                std::thread::sleep(Duration::from_secs(2));
+                std::thread::sleep(gc_interval);
                 if runtime_gc.shutdown.load(Ordering::Relaxed) {
                     break;
                 }
@@ -256,11 +274,21 @@ impl ShalomRuntime {
         global_ctx: SharedShalomGlobalContext,
         cache: Arc<Mutex<NormalizedCache>>,
     ) -> Self {
+        Self::with_cache_and_config(global_ctx, cache, &RuntimeConfig::default())
+    }
+
+    pub fn with_cache_and_config(
+        global_ctx: SharedShalomGlobalContext,
+        cache: Arc<Mutex<NormalizedCache>>,
+        config: &RuntimeConfig,
+    ) -> Self {
         let engine = ExecutionEngine::new(global_ctx, cache);
         Self {
             engine,
             subscriptions: Arc::new(Mutex::new(SubscriptionManager::default())),
-            subscription_tracker: Arc::new(Mutex::new(SubscriptionTracker::new())),
+            subscription_tracker: Arc::new(Mutex::new(SubscriptionTracker::new(
+                config.retention_grace,
+            ))),
             operation_vars: Arc::new(Mutex::new(HashMap::new())),
             shutdown: Arc::new(AtomicBool::new(false)),
             optimistic_writes: Arc::new(Mutex::new(HashMap::new())),

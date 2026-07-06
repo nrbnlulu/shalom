@@ -32,6 +32,33 @@ rs_runtime.ObservedRefInput observedRefInputFromJson(JsonObject json) {
 }
 
 // ---------------------------------------------------------------------------
+// RuntimeConfigInput helpers
+// ---------------------------------------------------------------------------
+
+/// Builds a [RuntimeConfigInput] from [Duration]s instead of raw millisecond
+/// [BigInt]s.
+///
+/// - [gcInterval] controls how often the background thread sweeps the
+///   normalized cache for unreferenced entries (defaults to 2 seconds).
+/// - [retentionGrace] keeps a cache entry alive for a bit after its last
+///   subscriber unsubscribes (e.g. during a widget rebuild or screen
+///   transition) instead of evicting it on the very next GC sweep. Defaults
+///   to `Duration.zero` (no grace period).
+rs_runtime.RuntimeConfigInput runtimeConfig({
+  Duration? gcInterval,
+  Duration? retentionGrace,
+}) {
+  return rs_runtime.RuntimeConfigInput(
+    gcIntervalMs: gcInterval != null
+        ? BigInt.from(gcInterval.inMilliseconds)
+        : null,
+    retentionGraceMs: retentionGrace != null
+        ? BigInt.from(retentionGrace.inMilliseconds)
+        : null,
+  );
+}
+
+// ---------------------------------------------------------------------------
 // ShalomRuntimeClient
 // ---------------------------------------------------------------------------
 
@@ -76,6 +103,9 @@ class ShalomRuntimeClient {
   ///
   /// Register operations/fragments via [registerOperation] /
   /// [registerFragment] (or the generated `registerShalomDefinitions(client)`).
+  ///
+  /// Use [runtimeConfig] to build [config] from [Duration]s (e.g. to tune the
+  /// GC sweep interval or retention grace period).
   static ShalomRuntimeClient create({
     required String schemaSdl,
     rs_runtime.RuntimeConfigInput? config,
@@ -196,14 +226,12 @@ class ShalomRuntimeClient {
   /// mutation named [name].  Returns an opaque write ID that can be passed to
   /// [rollbackOptimistic] to undo the write if the real response indicates
   /// failure.
-  Future<BigInt> writeOptimistic({
-    required String name,
-    required JsonObject data,
-  }) => rs_runtime.writeOptimistic(
-    handle: _handle,
-    opName: name,
-    dataJson: jsonEncode(data),
-  );
+  BigInt writeOptimistic({required String name, required JsonObject data}) =>
+      rs_runtime.writeOptimistic(
+        handle: _handle,
+        opName: name,
+        dataJson: jsonEncode(data),
+      );
 
   /// Undo a previous [writeOptimistic] call, restoring the cache to its
   /// pre-write state and re-notifying affected subscribers.  Idempotent — safe
@@ -402,34 +430,23 @@ class ShalomRuntimeClient {
       opName: envelope.operationName,
     );
 
-    Future<void>? lastPush;
-
     final subscription = _link
         .request(request: request)
         .listen(
-          (response) {
-            lastPush = _dispatchResponse(envelope.id, response);
-          },
+          (response) => _dispatchResponse(envelope.id, response),
           onError: (error) => _dispatchTransportError(envelope.id, error),
           onDone: () {
             _activeRequests.remove(envelope.id);
-            (lastPush ?? Future<void>.value()).then((_) {
-              unawaited(
-                rs_runtime.completeTransport(
-                  handle: _handle,
-                  requestId: BigInt.from(envelope.id),
-                ),
-              );
-            });
+            rs_runtime.completeTransport(
+              handle: _handle,
+              requestId: BigInt.from(envelope.id),
+            );
           },
         );
     _activeRequests[envelope.id] = subscription;
   }
 
-  Future<void> _dispatchResponse(
-    int requestId,
-    GraphQLResponse<JsonObject> response,
-  ) {
+  void _dispatchResponse(int requestId, GraphQLResponse<JsonObject> response) {
     switch (response) {
       case GraphQLData():
         final payload = <String, dynamic>{'data': response.data};
@@ -446,11 +463,10 @@ class ShalomRuntimeClient {
         return _pushResponse(requestId, payload);
       case LinkExceptionResponse():
         _dispatchTransportError(requestId, response.errors);
-        return Future<void>.value();
     }
   }
 
-  Future<void> _pushResponse(int requestId, Map<String, dynamic> payload) {
+  void _pushResponse(int requestId, Map<String, dynamic> payload) {
     return rs_runtime.pushResponse(
       handle: _handle,
       requestId: BigInt.from(requestId),
@@ -460,14 +476,12 @@ class ShalomRuntimeClient {
 
   void _dispatchTransportError(int requestId, Object error) {
     final transport = _toTransportError(error);
-    unawaited(
-      rs_runtime.pushTransportError(
-        handle: _handle,
-        requestId: BigInt.from(requestId),
-        message: transport.message,
-        code: transport.code,
-        detailsJson: transport.detailsJson,
-      ),
+    rs_runtime.pushTransportError(
+      handle: _handle,
+      requestId: BigInt.from(requestId),
+      message: transport.message,
+      code: transport.code,
+      detailsJson: transport.detailsJson,
     );
   }
 

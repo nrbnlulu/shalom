@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 use std::path::PathBuf;
+use std::time::Duration;
 
 use serde_json::json;
 use shalom_core::context::ShalomGlobalContext;
@@ -92,7 +93,7 @@ fn gc_evicts_unsubscribed_root_field_and_its_entity() {
 
 #[test]
 fn subscription_tracker_counts_refs() {
-    let mut tracker = SubscriptionTracker::new();
+    let mut tracker = SubscriptionTracker::new(Duration::ZERO);
     tracker.subscribe(["User:1".to_string(), "User:1_name".to_string()]);
     tracker.subscribe(["User:1".to_string()]);
     tracker.unsubscribe(["User:1".to_string()]);
@@ -105,6 +106,33 @@ fn subscription_tracker_counts_refs() {
     let active = tracker.active_keys();
     assert!(!active.contains("User:1"));
     assert!(active.contains("User:1_name"));
+}
+
+#[test]
+fn subscription_tracker_retention_grace_delays_eviction() {
+    let mut tracker = SubscriptionTracker::new(Duration::from_millis(50));
+    tracker.subscribe(["User:1".to_string()]);
+    tracker.unsubscribe(["User:1".to_string()]);
+
+    // Still within the grace window — key stays "active" via the fake subscriber.
+    assert!(tracker.active_keys().contains("User:1"));
+
+    std::thread::sleep(Duration::from_millis(80));
+    assert!(!tracker.active_keys().contains("User:1"));
+}
+
+#[test]
+fn subscription_tracker_resubscribe_cancels_grace() {
+    let mut tracker = SubscriptionTracker::new(Duration::from_millis(50));
+    tracker.subscribe(["User:1".to_string()]);
+    tracker.unsubscribe(["User:1".to_string()]);
+    assert!(tracker.active_keys().contains("User:1"));
+
+    // Re-subscribing before the grace period elapses should cancel eviction
+    // entirely, not just delay it.
+    tracker.subscribe(["User:1".to_string()]);
+    std::thread::sleep(Duration::from_millis(80));
+    assert!(tracker.active_keys().contains("User:1"));
 }
 
 #[test]
