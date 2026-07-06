@@ -3,6 +3,7 @@
 // Re-export all generated types so importers only need this file.
 export 'RemoveGifFromAlbumMutation.shalom.dart';
 
+import 'dart:async' show FutureOr;
 import "../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom/shalom.dart' show OptimisticMutationResponse, CacheProxy;
@@ -60,7 +61,7 @@ abstract class $RemoveGifFromAlbumMutation {
   executeWithCacheUpdate({
     required String albumId,
     required String gifId,
-    required void Function(
+    required FutureOr<void> Function(
       CacheProxy cache,
       RemoveGifFromAlbumMutationData data,
     )
@@ -79,7 +80,7 @@ abstract class $RemoveGifFromAlbumMutation {
       decoder: RemoveGifFromAlbumMutationData.fromCache,
     );
     if (response case shalom_core.GraphQLData(data: final data)) {
-      update(CacheProxy(_client), data);
+      await update(CacheProxy(_client), data);
     }
     return response;
   }
@@ -99,7 +100,7 @@ abstract class $RemoveGifFromAlbumMutation {
   /// The returned [OptimisticMutationResponse] exposes:
   /// - [OptimisticMutationResponse.response] — the typed server response
   /// - [OptimisticMutationResponse.wasRolledBack] — whether auto-rollback fired
-  /// - [OptimisticMutationResponse.rollback()] — imperative rollback (idempotent)
+  /// - [OptimisticMutationResponse.rollback()] — async rollback (idempotent)
   Future<OptimisticMutationResponse<RemoveGifFromAlbumMutationData>>
   executeOptimistic(
     RemoveGifFromAlbumMutationData Function(
@@ -120,10 +121,10 @@ abstract class $RemoveGifFromAlbumMutation {
     );
 
     var rolledBack = false;
-    void doRollback() {
+    Future<void> doRollback() async {
       if (rolledBack) return;
       rolledBack = true;
-      _client.rollbackOptimistic(writeId);
+      await _client.rollbackOptimistic(writeId);
     }
 
     try {
@@ -138,7 +139,7 @@ abstract class $RemoveGifFromAlbumMutation {
       if (graphqlResponse case shalom_core.GraphQLData(
         data: final responseData,
       )) {
-        if (rollbackWhen?.call(responseData) ?? false) doRollback();
+        if (rollbackWhen?.call(responseData) ?? false) await doRollback();
       }
       return OptimisticMutationResponse(
         response: graphqlResponse,
@@ -147,7 +148,7 @@ abstract class $RemoveGifFromAlbumMutation {
         writeId: writeId,
       );
     } catch (e) {
-      doRollback();
+      await doRollback();
       rethrow;
     }
   }

@@ -111,11 +111,11 @@ final class UserWidgetData implements shalom_core.OperationInterface {
 
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [UserWidgetData]. Returns `null` when absent or incomplete.
-  static UserWidgetData? readFrom(
+  static Future<UserWidgetData?> readFrom(
     shalom_core.CacheProxy cache, {
     UserWidgetVariables? variables,
-  }) {
-    return cache.readQuery<UserWidgetData>(
+  }) async {
+    return await cache.readQuery<UserWidgetData>(
       name: 'UserWidget',
       decoder: fromCache,
 

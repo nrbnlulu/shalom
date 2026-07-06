@@ -7,6 +7,7 @@
 // Re-export all generated types so importers only need this file.
 export '{{ operation_name }}.shalom.dart';
 
+import 'dart:async' show FutureOr;
 import "{{ context.schema_import_path }}";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom/shalom.dart' show OptimisticMutationResponse, CacheProxy;
@@ -51,13 +52,13 @@ abstract class ${{ operation_name }} {
     /// ```dart
     /// await addTodo.executeWithCacheUpdate(
     ///   input: AddTodoInput(title: 'Buy milk'),
-    ///   update: (cache, data) {
-    ///     final current = cache.readQuery(
+    ///   update: (cache, data) async {
+    ///     final current = await cache.readQuery(
     ///       name: 'GetTodos',
     ///       decoder: GetTodosData.fromCache,
     ///     );
     ///     if (current != null) {
-    ///       cache.writeQuery(
+    ///       await cache.writeQuery(
     ///         data: GetTodosData(todos: [...current.todos, data.addTodo!]),
     ///       );
     ///     }
@@ -68,7 +69,7 @@ abstract class ${{ operation_name }} {
         {% for name, field in op_variables | items -%}
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
-        required void Function(CacheProxy cache, {{ operation_name }}Data data) update,
+        required FutureOr<void> Function(CacheProxy cache, {{ operation_name }}Data data) update,
     }) async {
         {% if op_variables_exist %}
         final vars = {{ operation_name }}Variables(
@@ -85,7 +86,7 @@ abstract class ${{ operation_name }} {
             decoder: {{ operation_name }}Data.fromCache,
         );
         if (response case shalom_core.GraphQLData(data: final data)) {
-          update(CacheProxy(_client), data);
+          await update(CacheProxy(_client), data);
         }
         return response;
     }
@@ -105,7 +106,7 @@ abstract class ${{ operation_name }} {
     /// The returned [OptimisticMutationResponse] exposes:
     /// - [OptimisticMutationResponse.response] — the typed server response
     /// - [OptimisticMutationResponse.wasRolledBack] — whether auto-rollback fired
-    /// - [OptimisticMutationResponse.rollback()] — imperative rollback (idempotent)
+    /// - [OptimisticMutationResponse.rollback()] — async rollback (idempotent)
     Future<OptimisticMutationResponse<{{ operation_name }}Data>> executeOptimistic(
         {{ operation_name }}Data Function({% if op_variables_exist %}{{ operation_name }}Variables vars{% endif %}) optimisticFactory, {
         bool Function({{ operation_name }}Data response)? rollbackWhen,
@@ -130,10 +131,10 @@ abstract class ${{ operation_name }} {
         );
         {% endif %}
         var rolledBack = false;
-        void doRollback() {
+        Future<void> doRollback() async {
             if (rolledBack) return;
             rolledBack = true;
-            _client.rollbackOptimistic(writeId);
+            await _client.rollbackOptimistic(writeId);
         }
         try {
             final graphqlResponse = await _client.mutate<{{ operation_name }}Data>(
@@ -144,7 +145,7 @@ abstract class ${{ operation_name }} {
                 decoder: {{ operation_name }}Data.fromCache,
             );
             if (graphqlResponse case shalom_core.GraphQLData(data: final responseData)) {
-              if (rollbackWhen?.call(responseData) ?? false) doRollback();
+              if (rollbackWhen?.call(responseData) ?? false) await doRollback();
             }
             return OptimisticMutationResponse(
                 response: graphqlResponse,
@@ -153,7 +154,7 @@ abstract class ${{ operation_name }} {
                 writeId: writeId,
             );
         } catch (e) {
-            doRollback();
+            await doRollback();
             rethrow;
         }
     }

@@ -272,8 +272,8 @@ pub async fn request(
 /// Write `data_json` to the cache as an optimistic response for the mutation
 /// named `op_name`.  Returns an opaque write ID.  Pass this to
 /// `rollback_optimistic` to undo the write.
-#[frb(sync)]
-pub fn write_optimistic(
+#[frb]
+pub async fn write_optimistic(
     handle: &RuntimeHandle,
     op_name: String,
     data_json: String,
@@ -286,8 +286,8 @@ pub fn write_optimistic(
 }
 
 /// Undo a previous `write_optimistic` call.  No-op if the ID is not found.
-#[frb(sync)]
-pub fn rollback_optimistic(handle: &RuntimeHandle, write_id: u64) -> anyhow::Result<()> {
+#[frb]
+pub async fn rollback_optimistic(handle: &RuntimeHandle, write_id: u64) -> anyhow::Result<()> {
     handle
         .runtime
         .rollback_optimistic(OptimisticWriteId::from(write_id))
@@ -301,8 +301,8 @@ pub fn rollback_optimistic(handle: &RuntimeHandle, write_id: u64) -> anyhow::Res
 /// Returns the subscription ID to pass to `listen_subscription`.
 ///
 /// Emits the current cached value immediately if available.
-#[frb(sync)]
-pub fn observe_fragment(
+#[frb]
+pub async fn observe_fragment(
     handle: &RuntimeHandle,
     ref_input: ObservedRefInput,
 ) -> anyhow::Result<u64> {
@@ -316,8 +316,8 @@ pub fn observe_fragment(
 ///
 /// - Same `observable_id`: fast anchor swap, same subscription ID returned.
 /// - Different `observable_id`: full teardown + new subscription, new ID returned.
-#[frb(sync)]
-pub fn rebind_subscription(
+#[frb]
+pub async fn rebind_subscription(
     handle: &RuntimeHandle,
     subscription_id: u64,
     new_ref: ObservedRefInput,
@@ -333,8 +333,8 @@ pub fn rebind_subscription(
 // Subscription lifecycle
 // ---------------------------------------------------------------------------
 
-#[frb(sync)]
-pub fn unsubscribe(handle: &RuntimeHandle, subscription_id: u64) {
+#[frb]
+pub async fn unsubscribe(handle: &RuntimeHandle, subscription_id: u64) {
     let id = SubscriptionId::from(subscription_id);
     handle.runtime.unsubscribe(&id);
 }
@@ -417,8 +417,8 @@ pub async fn listen_requests(
     Ok(())
 }
 
-#[frb(sync)]
-pub fn push_response(
+#[frb]
+pub async fn push_response(
     handle: &RuntimeHandle,
     request_id: u64,
     response_json: String,
@@ -427,8 +427,8 @@ pub fn push_response(
     handle.link.send_response(request_id, response)
 }
 
-#[frb(sync)]
-pub fn push_transport_error(
+#[frb]
+pub async fn push_transport_error(
     handle: &RuntimeHandle,
     request_id: u64,
     message: String,
@@ -446,8 +446,8 @@ pub fn push_transport_error(
 }
 
 /// Signal that all responses for `request_id` have been delivered.
-#[frb(sync)]
-pub fn complete_transport(handle: &RuntimeHandle, request_id: u64) {
+#[frb]
+pub async fn complete_transport(handle: &RuntimeHandle, request_id: u64) {
     handle.link.complete(request_id);
 }
 
@@ -570,8 +570,8 @@ fn response_to_json(response: RuntimeResponse) -> anyhow::Result<String> {
 /// Returns `None` when the data is absent or incomplete (missing refs), so
 /// callers don't need to handle partial results.  The returned string is a
 /// JSON object that matches the operation's selection shape.
-#[frb(sync)]
-pub fn read_query(
+#[frb]
+pub async fn read_query(
     handle: &RuntimeHandle,
     name: String,
     variables_json: Option<String>,
@@ -589,8 +589,8 @@ pub fn read_query(
 /// This is a permanent write — unlike `write_optimistic` it cannot be rolled
 /// back.  Use it inside a mutation's `executeWithCacheUpdate` callback to keep
 /// cached lists in sync after an add / remove / reorder mutation.
-#[frb(sync)]
-pub fn write_query(
+#[frb]
+pub async fn write_query(
     handle: &RuntimeHandle,
     name: String,
     data_json: String,
@@ -604,8 +604,8 @@ pub fn write_query(
 /// Read an entity from the cache through a fragment's selection set.
 ///
 /// Returns `null` when the entity is absent or has missing refs.
-#[frb(sync)]
-pub fn read_fragment(
+#[frb]
+pub async fn read_fragment(
     handle: &RuntimeHandle,
     fragment_name: String,
     entity_key: String,
@@ -621,8 +621,8 @@ pub fn read_fragment(
 
 /// Write entity data to the cache at [entity_key] using [fragment_name]'s
 /// selection set, then notify all affected subscribers.
-#[frb(sync)]
-pub fn write_fragment(
+#[frb]
+pub async fn write_fragment(
     handle: &RuntimeHandle,
     fragment_name: String,
     entity_key: String,
@@ -674,15 +674,15 @@ fn to_observer_info(s: shalom_runtime::KeySubscriberInfo) -> ObserverInfo {
 /// Returns a JSON object mapping each cache key to its active observer count.
 ///
 /// Example: `{"ROOT_QUERY": 2, "User:1": 1}`
-#[frb(sync)]
-pub fn get_observer_counts(handle: &RuntimeHandle) -> String {
+#[frb]
+pub async fn get_observer_counts(handle: &RuntimeHandle) -> String {
     let counts = handle.runtime.subscription_counts();
     serde_json::to_string(&counts).unwrap_or_else(|_| "{}".to_string())
 }
 
 /// Returns info about every observer currently watching [key].
-#[frb(sync)]
-pub fn get_key_observers(handle: &RuntimeHandle, key: String) -> Vec<ObserverInfo> {
+#[frb]
+pub async fn get_key_observers(handle: &RuntimeHandle, key: String) -> Vec<ObserverInfo> {
     handle
         .runtime
         .key_subscribers(&key)
@@ -692,8 +692,8 @@ pub fn get_key_observers(handle: &RuntimeHandle, key: String) -> Vec<ObserverInf
 }
 
 /// Returns info about ALL active observers across the entire runtime.
-#[frb(sync)]
-pub fn get_all_observers(handle: &RuntimeHandle) -> Vec<ObserverInfo> {
+#[frb]
+pub async fn get_all_observers(handle: &RuntimeHandle) -> Vec<ObserverInfo> {
     handle
         .runtime
         .all_observers()
@@ -707,8 +707,8 @@ pub fn get_all_observers(handle: &RuntimeHandle) -> Vec<ObserverInfo> {
 // ---------------------------------------------------------------------------
 
 /// Returns all keys currently stored in the normalized cache.
-#[frb(sync)]
-pub fn get_cache_keys(handle: &RuntimeHandle) -> Vec<String> {
+#[frb]
+pub async fn get_cache_keys(handle: &RuntimeHandle) -> Vec<String> {
     let cache = handle.runtime.cache();
     let cache = cache.lock();
     let mut keys: Vec<String> = cache.keys().cloned().collect();
@@ -720,8 +720,8 @@ pub fn get_cache_keys(handle: &RuntimeHandle) -> Vec<String> {
 /// or `None` if the key is not present.
 ///
 /// `CacheValue::Ref` entries are serialised as `{"__ref": "<key>"}`.
-#[frb(sync)]
-pub fn get_cache_entry(handle: &RuntimeHandle, key: String) -> Option<String> {
+#[frb]
+pub async fn get_cache_entry(handle: &RuntimeHandle, key: String) -> Option<String> {
     let cache = handle.runtime.cache();
     let cache = cache.lock();
     let record = cache.get(&key)?;

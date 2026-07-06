@@ -122,11 +122,11 @@ final class PetQueryData implements shalom_core.OperationInterface {
 
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [PetQueryData]. Returns `null` when absent or incomplete.
-  static PetQueryData? readFrom(
+  static Future<PetQueryData?> readFrom(
     shalom_core.CacheProxy cache, {
     PetQueryVariables? variables,
-  }) {
-    return cache.readQuery<PetQueryData>(
+  }) async {
+    return await cache.readQuery<PetQueryData>(
       name: 'PetQuery',
       decoder: fromCache,
 

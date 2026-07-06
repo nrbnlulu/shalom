@@ -155,11 +155,11 @@ final class ZooAnimalsQueryData implements shalom_core.OperationInterface {
 
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [ZooAnimalsQueryData]. Returns `null` when absent or incomplete.
-  static ZooAnimalsQueryData? readFrom(
+  static Future<ZooAnimalsQueryData?> readFrom(
     shalom_core.CacheProxy cache, {
     ZooAnimalsQueryVariables? variables,
-  }) {
-    return cache.readQuery<ZooAnimalsQueryData>(
+  }) async {
+    return await cache.readQuery<ZooAnimalsQueryData>(
       name: 'ZooAnimalsQuery',
       decoder: fromCache,
 
