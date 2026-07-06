@@ -272,7 +272,7 @@ pub async fn request(
 /// Write `data_json` to the cache as an optimistic response for the mutation
 /// named `op_name`.  Returns an opaque write ID.  Pass this to
 /// `rollback_optimistic` to undo the write.
-#[frb]
+#[frb(sync)]
 pub fn write_optimistic(
     handle: &RuntimeHandle,
     op_name: String,
@@ -417,7 +417,7 @@ pub async fn listen_requests(
     Ok(())
 }
 
-#[frb]
+#[frb(sync)]
 pub fn push_response(
     handle: &RuntimeHandle,
     request_id: u64,
@@ -427,7 +427,7 @@ pub fn push_response(
     handle.link.send_response(request_id, response)
 }
 
-#[frb]
+#[frb(sync)]
 pub fn push_transport_error(
     handle: &RuntimeHandle,
     request_id: u64,
@@ -446,7 +446,7 @@ pub fn push_transport_error(
 }
 
 /// Signal that all responses for `request_id` have been delivered.
-#[frb]
+#[frb(sync)]
 pub fn complete_transport(handle: &RuntimeHandle, request_id: u64) {
     handle.link.complete(request_id);
 }

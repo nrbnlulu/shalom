@@ -11,544 +11,296 @@ import 'dart:ffi' as ffi;
 import 'frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
 
-abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
-  RustLibApiImplPlatform({
-    required super.handler,
-    required super.wire,
-    required super.generalizedFrbRustBinding,
-    required super.portManager,
-  });
-
-  CrossPlatformFinalizerArg
-  get rust_arc_decrement_strong_count_RuntimeHandlePtr => wire
-      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr;
-
-  CrossPlatformFinalizerArg
-  get rust_arc_decrement_strong_count_WsSansIoPtr => wire
-      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr;
-
-  @protected
-  AnyhowException dco_decode_AnyhowException(dynamic raw);
-
-  @protected
-  RuntimeHandle
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    dynamic raw,
-  );
 
-  @protected
-  WsSansIo
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    dynamic raw,
-  );
 
-  @protected
-  WsSansIo
-  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    dynamic raw,
-  );
 
-  @protected
-  RuntimeHandle
-  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    dynamic raw,
-  );
+                abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
+                  RustLibApiImplPlatform({
+                    required super.handler,
+                    required super.wire,
+                    required super.generalizedFrbRustBinding,
+                    required super.portManager,
+                  });
 
-  @protected
-  WsSansIo
-  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    dynamic raw,
-  );
+                  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_RuntimeHandlePtr => wire._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr;
 
-  @protected
-  RuntimeHandle
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    dynamic raw,
-  );
+CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_WsSansIoPtr => wire._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr;
 
-  @protected
-  WsSansIo
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    dynamic raw,
-  );
 
-  @protected
-  RustStreamSink<String> dco_decode_StreamSink_String_Sse(dynamic raw);
 
-  @protected
-  RustStreamSink<SubscriptionEvent>
-  dco_decode_StreamSink_subscription_event_Sse(dynamic raw);
+                  @protected AnyhowException dco_decode_AnyhowException(dynamic raw);
 
-  @protected
-  String dco_decode_String(dynamic raw);
-
-  @protected
-  bool dco_decode_bool(dynamic raw);
-
-  @protected
-  ObservedRefInput dco_decode_box_autoadd_observed_ref_input(dynamic raw);
-
-  @protected
-  RuntimeConfigInput dco_decode_box_autoadd_runtime_config_input(dynamic raw);
-
-  @protected
-  BigInt dco_decode_box_autoadd_u_64(dynamic raw);
-
-  @protected
-  ExecutionPolicyInput dco_decode_execution_policy_input(dynamic raw);
-
-  @protected
-  int dco_decode_i_32(dynamic raw);
-
-  @protected
-  List<String> dco_decode_list_String(dynamic raw);
-
-  @protected
-  List<ObserverInfo> dco_decode_list_observer_info(dynamic raw);
-
-  @protected
-  Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
-
-  @protected
-  List<WsLinkEvent> dco_decode_list_ws_link_event(dynamic raw);
-
-  @protected
-  LogLevel dco_decode_log_level(dynamic raw);
+@protected RuntimeHandle dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(dynamic raw);
 
-  @protected
-  ObservedRefInput dco_decode_observed_ref_input(dynamic raw);
+@protected WsSansIo dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw);
 
-  @protected
-  ObserverInfo dco_decode_observer_info(dynamic raw);
-
-  @protected
-  String? dco_decode_opt_String(dynamic raw);
+@protected WsSansIo dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw);
 
-  @protected
-  RuntimeConfigInput? dco_decode_opt_box_autoadd_runtime_config_input(
-    dynamic raw,
-  );
-
-  @protected
-  BigInt? dco_decode_opt_box_autoadd_u_64(dynamic raw);
+@protected RuntimeHandle dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(dynamic raw);
 
-  @protected
-  RuntimeConfigInput dco_decode_runtime_config_input(dynamic raw);
+@protected WsSansIo dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw);
 
-  @protected
-  SubscriptionEvent dco_decode_subscription_event(dynamic raw);
+@protected RuntimeHandle dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(dynamic raw);
 
-  @protected
-  int dco_decode_u_16(dynamic raw);
+@protected WsSansIo dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw);
 
-  @protected
-  BigInt dco_decode_u_64(dynamic raw);
+@protected RustStreamSink<String> dco_decode_StreamSink_String_Sse(dynamic raw);
 
-  @protected
-  int dco_decode_u_8(dynamic raw);
+@protected RustStreamSink<SubscriptionEvent> dco_decode_StreamSink_subscription_event_Sse(dynamic raw);
 
-  @protected
-  void dco_decode_unit(dynamic raw);
+@protected String dco_decode_String(dynamic raw);
 
-  @protected
-  BigInt dco_decode_usize(dynamic raw);
+@protected bool dco_decode_bool(dynamic raw);
 
-  @protected
-  WsLinkEvent dco_decode_ws_link_event(dynamic raw);
+@protected ObservedRefInput dco_decode_box_autoadd_observed_ref_input(dynamic raw);
 
-  @protected
-  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+@protected RuntimeConfigInput dco_decode_box_autoadd_runtime_config_input(dynamic raw);
 
-  @protected
-  RuntimeHandle
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    SseDeserializer deserializer,
-  );
+@protected BigInt dco_decode_box_autoadd_u_64(dynamic raw);
 
-  @protected
-  WsSansIo
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    SseDeserializer deserializer,
-  );
+@protected ExecutionPolicyInput dco_decode_execution_policy_input(dynamic raw);
 
-  @protected
-  WsSansIo
-  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    SseDeserializer deserializer,
-  );
+@protected int dco_decode_i_32(dynamic raw);
 
-  @protected
-  RuntimeHandle
-  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    SseDeserializer deserializer,
-  );
+@protected List<String> dco_decode_list_String(dynamic raw);
 
-  @protected
-  WsSansIo
-  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    SseDeserializer deserializer,
-  );
+@protected List<ObserverInfo> dco_decode_list_observer_info(dynamic raw);
 
-  @protected
-  RuntimeHandle
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    SseDeserializer deserializer,
-  );
+@protected Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
-  @protected
-  WsSansIo
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    SseDeserializer deserializer,
-  );
+@protected List<WsLinkEvent> dco_decode_list_ws_link_event(dynamic raw);
 
-  @protected
-  RustStreamSink<String> sse_decode_StreamSink_String_Sse(
-    SseDeserializer deserializer,
-  );
+@protected LogLevel dco_decode_log_level(dynamic raw);
 
-  @protected
-  RustStreamSink<SubscriptionEvent>
-  sse_decode_StreamSink_subscription_event_Sse(SseDeserializer deserializer);
+@protected ObservedRefInput dco_decode_observed_ref_input(dynamic raw);
 
-  @protected
-  String sse_decode_String(SseDeserializer deserializer);
+@protected ObserverInfo dco_decode_observer_info(dynamic raw);
 
-  @protected
-  bool sse_decode_bool(SseDeserializer deserializer);
+@protected String? dco_decode_opt_String(dynamic raw);
 
-  @protected
-  ObservedRefInput sse_decode_box_autoadd_observed_ref_input(
-    SseDeserializer deserializer,
-  );
+@protected RuntimeConfigInput? dco_decode_opt_box_autoadd_runtime_config_input(dynamic raw);
 
-  @protected
-  RuntimeConfigInput sse_decode_box_autoadd_runtime_config_input(
-    SseDeserializer deserializer,
-  );
+@protected BigInt? dco_decode_opt_box_autoadd_u_64(dynamic raw);
 
-  @protected
-  BigInt sse_decode_box_autoadd_u_64(SseDeserializer deserializer);
-
-  @protected
-  ExecutionPolicyInput sse_decode_execution_policy_input(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  int sse_decode_i_32(SseDeserializer deserializer);
-
-  @protected
-  List<String> sse_decode_list_String(SseDeserializer deserializer);
-
-  @protected
-  List<ObserverInfo> sse_decode_list_observer_info(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
-
-  @protected
-  List<WsLinkEvent> sse_decode_list_ws_link_event(SseDeserializer deserializer);
-
-  @protected
-  LogLevel sse_decode_log_level(SseDeserializer deserializer);
-
-  @protected
-  ObservedRefInput sse_decode_observed_ref_input(SseDeserializer deserializer);
-
-  @protected
-  ObserverInfo sse_decode_observer_info(SseDeserializer deserializer);
-
-  @protected
-  String? sse_decode_opt_String(SseDeserializer deserializer);
-
-  @protected
-  RuntimeConfigInput? sse_decode_opt_box_autoadd_runtime_config_input(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  BigInt? sse_decode_opt_box_autoadd_u_64(SseDeserializer deserializer);
-
-  @protected
-  RuntimeConfigInput sse_decode_runtime_config_input(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  SubscriptionEvent sse_decode_subscription_event(SseDeserializer deserializer);
-
-  @protected
-  int sse_decode_u_16(SseDeserializer deserializer);
-
-  @protected
-  BigInt sse_decode_u_64(SseDeserializer deserializer);
-
-  @protected
-  int sse_decode_u_8(SseDeserializer deserializer);
-
-  @protected
-  void sse_decode_unit(SseDeserializer deserializer);
-
-  @protected
-  BigInt sse_decode_usize(SseDeserializer deserializer);
-
-  @protected
-  WsLinkEvent sse_decode_ws_link_event(SseDeserializer deserializer);
-
-  @protected
-  void sse_encode_AnyhowException(
-    AnyhowException self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    RuntimeHandle self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    WsSansIo self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    WsSansIo self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    RuntimeHandle self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    WsSansIo self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    RuntimeHandle self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    WsSansIo self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_StreamSink_String_Sse(
-    RustStreamSink<String> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_StreamSink_subscription_event_Sse(
-    RustStreamSink<SubscriptionEvent> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_String(String self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_box_autoadd_observed_ref_input(
-    ObservedRefInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_box_autoadd_runtime_config_input(
-    RuntimeConfigInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_box_autoadd_u_64(BigInt self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_execution_policy_input(
-    ExecutionPolicyInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_i_32(int self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_list_String(List<String> self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_list_observer_info(
-    List<ObserverInfo> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_list_prim_u_8_strict(
-    Uint8List self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_list_ws_link_event(
-    List<WsLinkEvent> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_log_level(LogLevel self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_observed_ref_input(
-    ObservedRefInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_observer_info(ObserverInfo self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_opt_String(String? self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_opt_box_autoadd_runtime_config_input(
-    RuntimeConfigInput? self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_opt_box_autoadd_u_64(BigInt? self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_runtime_config_input(
-    RuntimeConfigInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_subscription_event(
-    SubscriptionEvent self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_u_16(int self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_u_64(BigInt self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_u_8(int self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_unit(void self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_usize(BigInt self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_ws_link_event(WsLinkEvent self, SseSerializer serializer);
-}
+@protected RuntimeConfigInput dco_decode_runtime_config_input(dynamic raw);
+
+@protected SubscriptionEvent dco_decode_subscription_event(dynamic raw);
+
+@protected int dco_decode_u_16(dynamic raw);
+
+@protected BigInt dco_decode_u_64(dynamic raw);
+
+@protected int dco_decode_u_8(dynamic raw);
+
+@protected void dco_decode_unit(dynamic raw);
+
+@protected BigInt dco_decode_usize(dynamic raw);
+
+@protected WsLinkEvent dco_decode_ws_link_event(dynamic raw);
+
+@protected AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+
+@protected RuntimeHandle sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(SseDeserializer deserializer);
+
+@protected WsSansIo sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer);
+
+@protected WsSansIo sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer);
+
+@protected RuntimeHandle sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(SseDeserializer deserializer);
+
+@protected WsSansIo sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer);
+
+@protected RuntimeHandle sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(SseDeserializer deserializer);
+
+@protected WsSansIo sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer);
+
+@protected RustStreamSink<String> sse_decode_StreamSink_String_Sse(SseDeserializer deserializer);
+
+@protected RustStreamSink<SubscriptionEvent> sse_decode_StreamSink_subscription_event_Sse(SseDeserializer deserializer);
+
+@protected String sse_decode_String(SseDeserializer deserializer);
+
+@protected bool sse_decode_bool(SseDeserializer deserializer);
+
+@protected ObservedRefInput sse_decode_box_autoadd_observed_ref_input(SseDeserializer deserializer);
+
+@protected RuntimeConfigInput sse_decode_box_autoadd_runtime_config_input(SseDeserializer deserializer);
+
+@protected BigInt sse_decode_box_autoadd_u_64(SseDeserializer deserializer);
+
+@protected ExecutionPolicyInput sse_decode_execution_policy_input(SseDeserializer deserializer);
+
+@protected int sse_decode_i_32(SseDeserializer deserializer);
+
+@protected List<String> sse_decode_list_String(SseDeserializer deserializer);
+
+@protected List<ObserverInfo> sse_decode_list_observer_info(SseDeserializer deserializer);
+
+@protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+@protected List<WsLinkEvent> sse_decode_list_ws_link_event(SseDeserializer deserializer);
+
+@protected LogLevel sse_decode_log_level(SseDeserializer deserializer);
+
+@protected ObservedRefInput sse_decode_observed_ref_input(SseDeserializer deserializer);
+
+@protected ObserverInfo sse_decode_observer_info(SseDeserializer deserializer);
+
+@protected String? sse_decode_opt_String(SseDeserializer deserializer);
+
+@protected RuntimeConfigInput? sse_decode_opt_box_autoadd_runtime_config_input(SseDeserializer deserializer);
+
+@protected BigInt? sse_decode_opt_box_autoadd_u_64(SseDeserializer deserializer);
+
+@protected RuntimeConfigInput sse_decode_runtime_config_input(SseDeserializer deserializer);
+
+@protected SubscriptionEvent sse_decode_subscription_event(SseDeserializer deserializer);
+
+@protected int sse_decode_u_16(SseDeserializer deserializer);
+
+@protected BigInt sse_decode_u_64(SseDeserializer deserializer);
+
+@protected int sse_decode_u_8(SseDeserializer deserializer);
+
+@protected void sse_decode_unit(SseDeserializer deserializer);
+
+@protected BigInt sse_decode_usize(SseDeserializer deserializer);
+
+@protected WsLinkEvent sse_decode_ws_link_event(SseDeserializer deserializer);
+
+@protected void sse_encode_AnyhowException(AnyhowException self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(RuntimeHandle self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(RuntimeHandle self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer);
+
+@protected void sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(RuntimeHandle self, SseSerializer serializer);
+
+@protected void sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer);
+
+@protected void sse_encode_StreamSink_String_Sse(RustStreamSink<String> self, SseSerializer serializer);
+
+@protected void sse_encode_StreamSink_subscription_event_Sse(RustStreamSink<SubscriptionEvent> self, SseSerializer serializer);
+
+@protected void sse_encode_String(String self, SseSerializer serializer);
+
+@protected void sse_encode_bool(bool self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_observed_ref_input(ObservedRefInput self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_runtime_config_input(RuntimeConfigInput self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_u_64(BigInt self, SseSerializer serializer);
+
+@protected void sse_encode_execution_policy_input(ExecutionPolicyInput self, SseSerializer serializer);
+
+@protected void sse_encode_i_32(int self, SseSerializer serializer);
+
+@protected void sse_encode_list_String(List<String> self, SseSerializer serializer);
+
+@protected void sse_encode_list_observer_info(List<ObserverInfo> self, SseSerializer serializer);
+
+@protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer);
+
+@protected void sse_encode_list_ws_link_event(List<WsLinkEvent> self, SseSerializer serializer);
+
+@protected void sse_encode_log_level(LogLevel self, SseSerializer serializer);
+
+@protected void sse_encode_observed_ref_input(ObservedRefInput self, SseSerializer serializer);
+
+@protected void sse_encode_observer_info(ObserverInfo self, SseSerializer serializer);
+
+@protected void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+@protected void sse_encode_opt_box_autoadd_runtime_config_input(RuntimeConfigInput? self, SseSerializer serializer);
+
+@protected void sse_encode_opt_box_autoadd_u_64(BigInt? self, SseSerializer serializer);
+
+@protected void sse_encode_runtime_config_input(RuntimeConfigInput self, SseSerializer serializer);
+
+@protected void sse_encode_subscription_event(SubscriptionEvent self, SseSerializer serializer);
+
+@protected void sse_encode_u_16(int self, SseSerializer serializer);
+
+@protected void sse_encode_u_64(BigInt self, SseSerializer serializer);
+
+@protected void sse_encode_u_8(int self, SseSerializer serializer);
+
+@protected void sse_encode_unit(void self, SseSerializer serializer);
+
+@protected void sse_encode_usize(BigInt self, SseSerializer serializer);
+
+@protected void sse_encode_ws_link_event(WsLinkEvent self, SseSerializer serializer);
+                }
+                
+
 
 // Section: wire_class
 
-class RustLibWire implements BaseWire {
-  factory RustLibWire.fromExternalLibrary(ExternalLibrary lib) =>
-      RustLibWire(lib.ffiDynamicLibrary);
 
-  /// Holds the symbol lookup function.
-  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
-  _lookup;
+        class RustLibWire implements BaseWire {
 
-  /// The symbols are looked up in [dynamicLibrary].
-  RustLibWire(ffi.DynamicLibrary dynamicLibrary)
-    : _lookup = dynamicLibrary.lookup;
+            factory RustLibWire.fromExternalLibrary(ExternalLibrary lib) =>
+              RustLibWire(lib.ffiDynamicLibrary);
+        
+            /// Holds the symbol lookup function.
+            final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+                _lookup;
+  
+            /// The symbols are looked up in [dynamicLibrary].
+            RustLibWire(ffi.DynamicLibrary dynamicLibrary)
+                : _lookup = dynamicLibrary.lookup;
 
-  void
-  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-      ptr,
-    );
-  }
+            
+            void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+              ffi.Pointer<ffi.Void> ptr,
+            ) {
+              return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+                ptr,
+              );
+            }
 
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_shalom_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle',
-      );
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle =
-      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>('frbgen_shalom_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle');
+            late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle = _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            
+            void rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+              ffi.Pointer<ffi.Void> ptr,
+            ) {
+              return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+                ptr,
+              );
+            }
 
-  void
-  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-      ptr,
-    );
-  }
+            late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>('frbgen_shalom_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle');
+            late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle = _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            
+            void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+              ffi.Pointer<ffi.Void> ptr,
+            ) {
+              return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+                ptr,
+              );
+            }
 
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_shalom_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle',
-      );
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle =
-      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>('frbgen_shalom_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo');
+            late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo = _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            
+            void rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+              ffi.Pointer<ffi.Void> ptr,
+            ) {
+              return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+                ptr,
+              );
+            }
 
-  void
-  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-      ptr,
-    );
-  }
-
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_shalom_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo',
-      );
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo =
-      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
-
-  void
-  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-      ptr,
-    );
-  }
-
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_shalom_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo',
-      );
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo =
-      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
-}
+            late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>('frbgen_shalom_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo');
+            late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo = _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            
+        }
+        

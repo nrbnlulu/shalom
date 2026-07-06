@@ -226,7 +226,7 @@ class ShalomRuntimeClient {
   /// mutation named [name].  Returns an opaque write ID that can be passed to
   /// [rollbackOptimistic] to undo the write if the real response indicates
   /// failure.
-  Future<BigInt> writeOptimistic({
+  BigInt writeOptimistic({
     required String name,
     required JsonObject data,
   }) => rs_runtime.writeOptimistic(
@@ -432,31 +432,24 @@ class ShalomRuntimeClient {
       opName: envelope.operationName,
     );
 
-    Future<void>? lastPush;
 
     final subscription = _link
         .request(request: request)
         .listen(
-          (response) {
-            lastPush = _dispatchResponse(envelope.id, response);
-          },
+          (response) => _dispatchResponse(envelope.id, response),
           onError: (error) => _dispatchTransportError(envelope.id, error),
           onDone: () {
             _activeRequests.remove(envelope.id);
-            (lastPush ?? Future<void>.value()).then((_) {
-              unawaited(
-                rs_runtime.completeTransport(
-                  handle: _handle,
-                  requestId: BigInt.from(envelope.id),
-                ),
-              );
-            });
+            rs_runtime.completeTransport(
+              handle: _handle,
+              requestId: BigInt.from(envelope.id),
+            );
           },
         );
     _activeRequests[envelope.id] = subscription;
   }
 
-  Future<void> _dispatchResponse(
+  void _dispatchResponse(
     int requestId,
     GraphQLResponse<JsonObject> response,
   ) {
@@ -476,11 +469,10 @@ class ShalomRuntimeClient {
         return _pushResponse(requestId, payload);
       case LinkExceptionResponse():
         _dispatchTransportError(requestId, response.errors);
-        return Future<void>.value();
     }
   }
 
-  Future<void> _pushResponse(int requestId, Map<String, dynamic> payload) {
+  void _pushResponse(int requestId, Map<String, dynamic> payload) {
     return rs_runtime.pushResponse(
       handle: _handle,
       requestId: BigInt.from(requestId),
@@ -490,14 +482,12 @@ class ShalomRuntimeClient {
 
   void _dispatchTransportError(int requestId, Object error) {
     final transport = _toTransportError(error);
-    unawaited(
       rs_runtime.pushTransportError(
         handle: _handle,
         requestId: BigInt.from(requestId),
         message: transport.message,
         code: transport.code,
         detailsJson: transport.detailsJson,
-      ),
     );
   }
 
