@@ -8,30 +8,52 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'runtime.freezed.dart';
 
-            // These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`, `to_observer_info`
+// These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`, `to_observer_info`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`
 
-
-            /// Set the global log level filter for all Rust-side logging.
-void  setLogLevel({required LogLevel level }) => RustLib.instance.api.crateApiRuntimeSetLogLevel(level: level);
+/// Set the global log level filter for all Rust-side logging.
+void setLogLevel({required LogLevel level}) =>
+    RustLib.instance.api.crateApiRuntimeSetLogLevel(level: level);
 
 /// Initialise the runtime with the schema SDL.
 /// Fragment and operation SDLs are registered separately via
 /// `register_operation` / `register_fragment` after init.
-RuntimeHandle  initRuntime({required String schemaSdl , RuntimeConfigInput? config }) => RustLib.instance.api.crateApiRuntimeInitRuntime(schemaSdl: schemaSdl, config: config);
+RuntimeHandle initRuntime({
+  required String schemaSdl,
+  RuntimeConfigInput? config,
+}) => RustLib.instance.api.crateApiRuntimeInitRuntime(
+  schemaSdl: schemaSdl,
+  config: config,
+);
 
 /// Pre-register a query/mutation SDL so it can be executed by name via `request`.
-void  registerOperation({required RuntimeHandle handle , required String document }) => RustLib.instance.api.crateApiRuntimeRegisterOperation(handle: handle, document: document);
+void registerOperation({
+  required RuntimeHandle handle,
+  required String document,
+}) => RustLib.instance.api.crateApiRuntimeRegisterOperation(
+  handle: handle,
+  document: document,
+);
 
 /// Pre-register a fragment SDL so it can be subscribed to via `observe_fragment`.
-void  registerFragment({required RuntimeHandle handle , required String document }) => RustLib.instance.api.crateApiRuntimeRegisterFragment(handle: handle, document: document);
+void registerFragment({
+  required RuntimeHandle handle,
+  required String document,
+}) => RustLib.instance.api.crateApiRuntimeRegisterFragment(
+  handle: handle,
+  document: document,
+);
 
 /// Replace the GraphQL schema with a new SDL string.
 ///
 /// Clears all registered operations/fragments and invalidates the cache.
 /// Call this before `registerShalomDefinitions` on hot-reload when the schema
 /// file has changed.
-void  reloadSchema({required RuntimeHandle handle , required String schemaSdl }) => RustLib.instance.api.crateApiRuntimeReloadSchema(handle: handle, schemaSdl: schemaSdl);
+void reloadSchema({required RuntimeHandle handle, required String schemaSdl}) =>
+    RustLib.instance.api.crateApiRuntimeReloadSchema(
+      handle: handle,
+      schemaSdl: schemaSdl,
+    );
 
 /// Trigger a network request for a pre-registered operation and open a cache
 /// subscription. Returns the subscription ID to pass to `listen_subscription`.
@@ -40,50 +62,135 @@ void  reloadSchema({required RuntimeHandle handle , required String schemaSdl })
 /// via `listen_requests`, executes it, and sends the result back via
 /// `push_response` / `complete_transport`. Normalization triggers the
 /// subscription automatically.
-Future<BigInt>  request({required RuntimeHandle handle , required String name , String? variablesJson , required ExecutionPolicyInput executionPolicy }) => RustLib.instance.api.crateApiRuntimeRequest(handle: handle, name: name, variablesJson: variablesJson, executionPolicy: executionPolicy);
+Future<BigInt> request({
+  required RuntimeHandle handle,
+  required String name,
+  String? variablesJson,
+  required ExecutionPolicyInput executionPolicy,
+}) => RustLib.instance.api.crateApiRuntimeRequest(
+  handle: handle,
+  name: name,
+  variablesJson: variablesJson,
+  executionPolicy: executionPolicy,
+);
 
 /// Write `data_json` to the cache as an optimistic response for the mutation
 /// named `op_name`.  Returns an opaque write ID.  Pass this to
 /// `rollback_optimistic` to undo the write.
-BigInt  writeOptimistic({required RuntimeHandle handle , required String opName , required String dataJson }) => RustLib.instance.api.crateApiRuntimeWriteOptimistic(handle: handle, opName: opName, dataJson: dataJson);
+BigInt writeOptimistic({
+  required RuntimeHandle handle,
+  required String opName,
+  required String dataJson,
+}) => RustLib.instance.api.crateApiRuntimeWriteOptimistic(
+  handle: handle,
+  opName: opName,
+  dataJson: dataJson,
+);
 
 /// Undo a previous `write_optimistic` call.  No-op if the ID is not found.
-void  rollbackOptimistic({required RuntimeHandle handle , required BigInt writeId }) => RustLib.instance.api.crateApiRuntimeRollbackOptimistic(handle: handle, writeId: writeId);
+void rollbackOptimistic({
+  required RuntimeHandle handle,
+  required BigInt writeId,
+}) => RustLib.instance.api.crateApiRuntimeRollbackOptimistic(
+  handle: handle,
+  writeId: writeId,
+);
 
 /// Open a cache subscription for a pre-registered fragment at the given anchor.
 /// Returns the subscription ID to pass to `listen_subscription`.
 ///
 /// Emits the current cached value immediately if available.
-BigInt  observeFragment({required RuntimeHandle handle , required ObservedRefInput refInput }) => RustLib.instance.api.crateApiRuntimeObserveFragment(handle: handle, refInput: refInput);
+BigInt observeFragment({
+  required RuntimeHandle handle,
+  required ObservedRefInput refInput,
+}) => RustLib.instance.api.crateApiRuntimeObserveFragment(
+  handle: handle,
+  refInput: refInput,
+);
 
 /// Rebind an existing fragment subscription to a new `ObservedRefInput`.
 ///
 /// - Same `observable_id`: fast anchor swap, same subscription ID returned.
 /// - Different `observable_id`: full teardown + new subscription, new ID returned.
-BigInt  rebindSubscription({required RuntimeHandle handle , required BigInt subscriptionId , required ObservedRefInput newRef }) => RustLib.instance.api.crateApiRuntimeRebindSubscription(handle: handle, subscriptionId: subscriptionId, newRef: newRef);
+BigInt rebindSubscription({
+  required RuntimeHandle handle,
+  required BigInt subscriptionId,
+  required ObservedRefInput newRef,
+}) => RustLib.instance.api.crateApiRuntimeRebindSubscription(
+  handle: handle,
+  subscriptionId: subscriptionId,
+  newRef: newRef,
+);
 
-void  unsubscribe({required RuntimeHandle handle , required BigInt subscriptionId }) => RustLib.instance.api.crateApiRuntimeUnsubscribe(handle: handle, subscriptionId: subscriptionId);
+void unsubscribe({
+  required RuntimeHandle handle,
+  required BigInt subscriptionId,
+}) => RustLib.instance.api.crateApiRuntimeUnsubscribe(
+  handle: handle,
+  subscriptionId: subscriptionId,
+);
 
 /// Stream cache-update notifications for an existing subscription.
 /// Emits structured SubscriptionEvent carrying either data or typed errors.
-Stream<SubscriptionEvent>  listenSubscription({required RuntimeHandle handle , required BigInt subscriptionId }) => RustLib.instance.api.crateApiRuntimeListenSubscription(handle: handle, subscriptionId: subscriptionId);
+Stream<SubscriptionEvent> listenSubscription({
+  required RuntimeHandle handle,
+  required BigInt subscriptionId,
+}) => RustLib.instance.api.crateApiRuntimeListenSubscription(
+  handle: handle,
+  subscriptionId: subscriptionId,
+);
 
 /// Stream of serialised request envelopes that Dart must execute and respond to.
-Stream<String>  listenRequests({required RuntimeHandle handle }) => RustLib.instance.api.crateApiRuntimeListenRequests(handle: handle);
+Stream<String> listenRequests({required RuntimeHandle handle}) =>
+    RustLib.instance.api.crateApiRuntimeListenRequests(handle: handle);
 
-void  pushResponse({required RuntimeHandle handle , required BigInt requestId , required String responseJson }) => RustLib.instance.api.crateApiRuntimePushResponse(handle: handle, requestId: requestId, responseJson: responseJson);
+void pushResponse({
+  required RuntimeHandle handle,
+  required BigInt requestId,
+  required String responseJson,
+}) => RustLib.instance.api.crateApiRuntimePushResponse(
+  handle: handle,
+  requestId: requestId,
+  responseJson: responseJson,
+);
 
-void  pushTransportError({required RuntimeHandle handle , required BigInt requestId , required String message , required String code , String? detailsJson }) => RustLib.instance.api.crateApiRuntimePushTransportError(handle: handle, requestId: requestId, message: message, code: code, detailsJson: detailsJson);
+void pushTransportError({
+  required RuntimeHandle handle,
+  required BigInt requestId,
+  required String message,
+  required String code,
+  String? detailsJson,
+}) => RustLib.instance.api.crateApiRuntimePushTransportError(
+  handle: handle,
+  requestId: requestId,
+  message: message,
+  code: code,
+  detailsJson: detailsJson,
+);
 
 /// Signal that all responses for `request_id` have been delivered.
-void  completeTransport({required RuntimeHandle handle , required BigInt requestId }) => RustLib.instance.api.crateApiRuntimeCompleteTransport(handle: handle, requestId: requestId);
+void completeTransport({
+  required RuntimeHandle handle,
+  required BigInt requestId,
+}) => RustLib.instance.api.crateApiRuntimeCompleteTransport(
+  handle: handle,
+  requestId: requestId,
+);
 
 /// Read the current cache for a pre-registered query operation.
 ///
 /// Returns `None` when the data is absent or incomplete (missing refs), so
 /// callers don't need to handle partial results.  The returned string is a
 /// JSON object that matches the operation's selection shape.
-String?  readQuery({required RuntimeHandle handle , required String name , String? variablesJson }) => RustLib.instance.api.crateApiRuntimeReadQuery(handle: handle, name: name, variablesJson: variablesJson);
+String? readQuery({
+  required RuntimeHandle handle,
+  required String name,
+  String? variablesJson,
+}) => RustLib.instance.api.crateApiRuntimeReadQuery(
+  handle: handle,
+  name: name,
+  variablesJson: variablesJson,
+);
 
 /// Write data to the cache for a pre-registered operation, normalizing it
 /// and notifying any active subscribers.
@@ -91,165 +198,195 @@ String?  readQuery({required RuntimeHandle handle , required String name , Strin
 /// This is a permanent write — unlike `write_optimistic` it cannot be rolled
 /// back.  Use it inside a mutation's `executeWithCacheUpdate` callback to keep
 /// cached lists in sync after an add / remove / reorder mutation.
-void  writeQuery({required RuntimeHandle handle , required String name , required String dataJson , String? variablesJson }) => RustLib.instance.api.crateApiRuntimeWriteQuery(handle: handle, name: name, dataJson: dataJson, variablesJson: variablesJson);
+void writeQuery({
+  required RuntimeHandle handle,
+  required String name,
+  required String dataJson,
+  String? variablesJson,
+}) => RustLib.instance.api.crateApiRuntimeWriteQuery(
+  handle: handle,
+  name: name,
+  dataJson: dataJson,
+  variablesJson: variablesJson,
+);
 
 /// Read an entity from the cache through a fragment's selection set.
 ///
 /// Returns `null` when the entity is absent or has missing refs.
-String?  readFragment({required RuntimeHandle handle , required String fragmentName , required String entityKey }) => RustLib.instance.api.crateApiRuntimeReadFragment(handle: handle, fragmentName: fragmentName, entityKey: entityKey);
+String? readFragment({
+  required RuntimeHandle handle,
+  required String fragmentName,
+  required String entityKey,
+}) => RustLib.instance.api.crateApiRuntimeReadFragment(
+  handle: handle,
+  fragmentName: fragmentName,
+  entityKey: entityKey,
+);
 
 /// Write entity data to the cache at [entity_key] using [fragment_name]'s
 /// selection set, then notify all affected subscribers.
-void  writeFragment({required RuntimeHandle handle , required String fragmentName , required String entityKey , required String dataJson }) => RustLib.instance.api.crateApiRuntimeWriteFragment(handle: handle, fragmentName: fragmentName, entityKey: entityKey, dataJson: dataJson);
+void writeFragment({
+  required RuntimeHandle handle,
+  required String fragmentName,
+  required String entityKey,
+  required String dataJson,
+}) => RustLib.instance.api.crateApiRuntimeWriteFragment(
+  handle: handle,
+  fragmentName: fragmentName,
+  entityKey: entityKey,
+  dataJson: dataJson,
+);
 
 /// Returns a JSON object mapping each cache key to its active observer count.
 ///
 /// Example: `{"ROOT_QUERY": 2, "User:1": 1}`
-String  getObserverCounts({required RuntimeHandle handle }) => RustLib.instance.api.crateApiRuntimeGetObserverCounts(handle: handle);
+String getObserverCounts({required RuntimeHandle handle}) =>
+    RustLib.instance.api.crateApiRuntimeGetObserverCounts(handle: handle);
 
 /// Returns info about every observer currently watching [key].
-List<ObserverInfo>  getKeyObservers({required RuntimeHandle handle , required String key }) => RustLib.instance.api.crateApiRuntimeGetKeyObservers(handle: handle, key: key);
+List<ObserverInfo> getKeyObservers({
+  required RuntimeHandle handle,
+  required String key,
+}) => RustLib.instance.api.crateApiRuntimeGetKeyObservers(
+  handle: handle,
+  key: key,
+);
 
 /// Returns info about ALL active observers across the entire runtime.
-List<ObserverInfo>  getAllObservers({required RuntimeHandle handle }) => RustLib.instance.api.crateApiRuntimeGetAllObservers(handle: handle);
+List<ObserverInfo> getAllObservers({required RuntimeHandle handle}) =>
+    RustLib.instance.api.crateApiRuntimeGetAllObservers(handle: handle);
 
 /// Returns all keys currently stored in the normalized cache.
-List<String>  getCacheKeys({required RuntimeHandle handle }) => RustLib.instance.api.crateApiRuntimeGetCacheKeys(handle: handle);
+List<String> getCacheKeys({required RuntimeHandle handle}) =>
+    RustLib.instance.api.crateApiRuntimeGetCacheKeys(handle: handle);
 
 /// Returns a pretty-printed JSON string for the cache entry at [key],
 /// or `None` if the key is not present.
 ///
 /// `CacheValue::Ref` entries are serialised as `{"__ref": "<key>"}`.
-String?  getCacheEntry({required RuntimeHandle handle , required String key }) => RustLib.instance.api.crateApiRuntimeGetCacheEntry(handle: handle, key: key);
+String? getCacheEntry({required RuntimeHandle handle, required String key}) =>
+    RustLib.instance.api.crateApiRuntimeGetCacheEntry(handle: handle, key: key);
 
-            
-                // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>>
-                abstract class RuntimeHandle implements RustOpaqueInterface {
-                    
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>>
+abstract class RuntimeHandle implements RustOpaqueInterface {}
 
-                    
-                }
-                
+enum ExecutionPolicyInput { networkFirst, cacheFirst }
 
-enum ExecutionPolicyInput {
-                    networkFirst,
-cacheFirst,
-                    ;
-                    
-                }
-
-enum LogLevel {
-                    error,
-warn,
-info,
-debug,
-trace,
-                    ;
-                    
-                }
+enum LogLevel { error, warn, info, debug, trace }
 
 /// Dart-facing representation of an observed fragment reference.
 ///
 /// `observable_id` is the fragment name; `anchor` is the cache key (e.g. `"User:1"`).
-class ObservedRefInput  {
-                final String observableId;
-final String anchor;
+class ObservedRefInput {
+  final String observableId;
+  final String anchor;
 
-                const ObservedRefInput({required this.observableId ,required this.anchor ,});
+  const ObservedRefInput({required this.observableId, required this.anchor});
 
-                
-                
+  @override
+  int get hashCode => observableId.hashCode ^ anchor.hashCode;
 
-                
-        @override
-        int get hashCode => observableId.hashCode^anchor.hashCode;
-        
-
-                
-        @override
-        bool operator ==(Object other) =>
-            identical(this, other) ||
-            other is ObservedRefInput &&
-                runtimeType == other.runtimeType
-                && observableId == other.observableId&& anchor == other.anchor;
-        
-            }
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ObservedRefInput &&
+          runtimeType == other.runtimeType &&
+          observableId == other.observableId &&
+          anchor == other.anchor;
+}
 
 /// Info about a single active observer (operation or fragment subscription).
-class ObserverInfo  {
-                final BigInt id;
-/// `"operation"` or `"fragment"`
-final String kind;
-final String name;
-/// For operation observers: `"query"`, `"mutation"`, or `"subscription"`.
-final String? opType;
-/// For fragment observers: the anchor cache key.
-final String? anchor;
-/// Serialised JSON of the observer's variables, if any.
-final String? variablesJson;
-/// All cache keys this observer is currently watching.
-final List<String> watchedKeys;
+class ObserverInfo {
+  final BigInt id;
 
-                const ObserverInfo({required this.id ,required this.kind ,required this.name ,this.opType ,this.anchor ,this.variablesJson ,required this.watchedKeys ,});
+  /// `"operation"` or `"fragment"`
+  final String kind;
+  final String name;
 
-                
-                
+  /// For operation observers: `"query"`, `"mutation"`, or `"subscription"`.
+  final String? opType;
 
-                
-        @override
-        int get hashCode => id.hashCode^kind.hashCode^name.hashCode^opType.hashCode^anchor.hashCode^variablesJson.hashCode^watchedKeys.hashCode;
-        
+  /// For fragment observers: the anchor cache key.
+  final String? anchor;
 
-                
-        @override
-        bool operator ==(Object other) =>
-            identical(this, other) ||
-            other is ObserverInfo &&
-                runtimeType == other.runtimeType
-                && id == other.id&& kind == other.kind&& name == other.name&& opType == other.opType&& anchor == other.anchor&& variablesJson == other.variablesJson&& watchedKeys == other.watchedKeys;
-        
-            }
+  /// Serialised JSON of the observer's variables, if any.
+  final String? variablesJson;
+
+  /// All cache keys this observer is currently watching.
+  final List<String> watchedKeys;
+
+  const ObserverInfo({
+    required this.id,
+    required this.kind,
+    required this.name,
+    this.opType,
+    this.anchor,
+    this.variablesJson,
+    required this.watchedKeys,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      kind.hashCode ^
+      name.hashCode ^
+      opType.hashCode ^
+      anchor.hashCode ^
+      variablesJson.hashCode ^
+      watchedKeys.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is ObserverInfo &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          kind == other.kind &&
+          name == other.name &&
+          opType == other.opType &&
+          anchor == other.anchor &&
+          variablesJson == other.variablesJson &&
+          watchedKeys == other.watchedKeys;
+}
 
 /// Dart-facing runtime configuration.
-class RuntimeConfigInput  {
-                /// How often (in milliseconds) the background thread sweeps the cache for
-/// unreferenced entries. Defaults to 2000ms if not set.
-final BigInt? gcIntervalMs;
-/// How long (in milliseconds) a cache key is kept alive via a "fake"
-/// subscriber after its last real subscriber unsubscribes, before it
-/// becomes eligible for GC eviction. Defaults to 0 (no grace period).
-final BigInt? retentionGraceMs;
+class RuntimeConfigInput {
+  /// How often (in milliseconds) the background thread sweeps the cache for
+  /// unreferenced entries. Defaults to 2000ms if not set.
+  final BigInt? gcIntervalMs;
 
-                const RuntimeConfigInput({this.gcIntervalMs ,this.retentionGraceMs ,});
+  /// How long (in milliseconds) a cache key is kept alive via a "fake"
+  /// subscriber after its last real subscriber unsubscribes, before it
+  /// becomes eligible for GC eviction. Defaults to 0 (no grace period).
+  final BigInt? retentionGraceMs;
 
-                
-                
+  const RuntimeConfigInput({this.gcIntervalMs, this.retentionGraceMs});
 
-                
-        @override
-        int get hashCode => gcIntervalMs.hashCode^retentionGraceMs.hashCode;
-        
+  @override
+  int get hashCode => gcIntervalMs.hashCode ^ retentionGraceMs.hashCode;
 
-                
-        @override
-        bool operator ==(Object other) =>
-            identical(this, other) ||
-            other is RuntimeConfigInput &&
-                runtimeType == other.runtimeType
-                && gcIntervalMs == other.gcIntervalMs&& retentionGraceMs == other.retentionGraceMs;
-        
-            }
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RuntimeConfigInput &&
+          runtimeType == other.runtimeType &&
+          gcIntervalMs == other.gcIntervalMs &&
+          retentionGraceMs == other.retentionGraceMs;
+}
 
 @freezed
-                sealed class SubscriptionEvent with _$SubscriptionEvent  {
-                    const SubscriptionEvent._();
+sealed class SubscriptionEvent with _$SubscriptionEvent {
+  const SubscriptionEvent._();
 
-                     const factory SubscriptionEvent.data({   required String dataJson , }) = SubscriptionEvent_Data;
- const factory SubscriptionEvent.graphQlError({   required String errorsJson ,  String? extensionsJson , }) = SubscriptionEvent_GraphQlError;
- const factory SubscriptionEvent.transportError({   required String code ,  required String message ,  String? detailsJson , }) = SubscriptionEvent_TransportError;
-
-                    
-
-                    
-                }
-            
+  const factory SubscriptionEvent.data({required String dataJson}) =
+      SubscriptionEvent_Data;
+  const factory SubscriptionEvent.graphQlError({
+    required String errorsJson,
+    String? extensionsJson,
+  }) = SubscriptionEvent_GraphQlError;
+  const factory SubscriptionEvent.transportError({
+    required String code,
+    required String message,
+    String? detailsJson,
+  }) = SubscriptionEvent_TransportError;
+}

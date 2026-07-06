@@ -226,14 +226,12 @@ class ShalomRuntimeClient {
   /// mutation named [name].  Returns an opaque write ID that can be passed to
   /// [rollbackOptimistic] to undo the write if the real response indicates
   /// failure.
-  BigInt writeOptimistic({
-    required String name,
-    required JsonObject data,
-  }) => rs_runtime.writeOptimistic(
-    handle: _handle,
-    opName: name,
-    dataJson: jsonEncode(data),
-  );
+  BigInt writeOptimistic({required String name, required JsonObject data}) =>
+      rs_runtime.writeOptimistic(
+        handle: _handle,
+        opName: name,
+        dataJson: jsonEncode(data),
+      );
 
   /// Undo a previous [writeOptimistic] call, restoring the cache to its
   /// pre-write state and re-notifying affected subscribers.  Idempotent — safe
@@ -432,7 +430,6 @@ class ShalomRuntimeClient {
       opName: envelope.operationName,
     );
 
-
     final subscription = _link
         .request(request: request)
         .listen(
@@ -449,10 +446,7 @@ class ShalomRuntimeClient {
     _activeRequests[envelope.id] = subscription;
   }
 
-  void _dispatchResponse(
-    int requestId,
-    GraphQLResponse<JsonObject> response,
-  ) {
+  void _dispatchResponse(int requestId, GraphQLResponse<JsonObject> response) {
     switch (response) {
       case GraphQLData():
         final payload = <String, dynamic>{'data': response.data};
@@ -482,12 +476,12 @@ class ShalomRuntimeClient {
 
   void _dispatchTransportError(int requestId, Object error) {
     final transport = _toTransportError(error);
-      rs_runtime.pushTransportError(
-        handle: _handle,
-        requestId: BigInt.from(requestId),
-        message: transport.message,
-        code: transport.code,
-        detailsJson: transport.detailsJson,
+    rs_runtime.pushTransportError(
+      handle: _handle,
+      requestId: BigInt.from(requestId),
+      message: transport.message,
+      code: transport.code,
+      detailsJson: transport.detailsJson,
     );
   }
 
