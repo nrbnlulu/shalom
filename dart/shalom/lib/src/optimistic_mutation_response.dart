@@ -35,6 +35,11 @@ class OptimisticMutationResponse<T> {
   Future<void> rollback() async {
     if (_rolledBack) return;
     _rolledBack = true;
-    await _client.rollbackOptimistic(_writeId);
+    try {
+      await _client.rollbackOptimistic(_writeId);
+    } catch (_) {
+      _rolledBack = false;
+      rethrow;
+    }
   }
 }
