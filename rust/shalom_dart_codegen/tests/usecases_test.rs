@@ -195,6 +195,11 @@ fn test_flutter_animal_with_owner_widget() {
 }
 
 #[test]
+fn test_flutter_unwrap_fragment() {
+    common::run_flutter_tests("unwrap_fragment_test.dart");
+}
+
+#[test]
 fn test_mutation_simple_dart() {
     run_dart_tests_for_usecase("mutation_simple");
 }

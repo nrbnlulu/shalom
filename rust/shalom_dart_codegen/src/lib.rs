@@ -734,6 +734,7 @@ fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) 
             for frag_name in &obj.common.used_fragments {
                 if let Some(fragment) = ctx.get_fragment(frag_name)
                     && fragment.is_observe()
+                    && !obj.common.unwrapped_fragments.contains(frag_name)
                 {
                     return Some(frag_name.clone());
                 }
@@ -744,6 +745,7 @@ fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) 
             for frag_name in &union.common.common.used_fragments {
                 if let Some(fragment) = ctx.get_fragment(frag_name)
                     && fragment.is_observe()
+                    && !union.common.common.unwrapped_fragments.contains(frag_name)
                 {
                     return Some(frag_name.clone());
                 }
@@ -754,6 +756,11 @@ fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) 
             for frag_name in &interface.common.common.used_fragments {
                 if let Some(fragment) = ctx.get_fragment(frag_name)
                     && fragment.is_observe()
+                    && !interface
+                        .common
+                        .common
+                        .unwrapped_fragments
+                        .contains(frag_name)
                 {
                     return Some(frag_name.clone());
                 }
@@ -862,7 +869,7 @@ impl OperationEnv<'_> {
         let template = self.env.get_template("operation").unwrap();
         let mut resolved_query = operation_ctx.query.clone();
         for frag in operation_ctx.typedefs.flatten_used_fragments() {
-            resolved_query.push_str(format!("\n {}", frag.fragment_raw).as_str());
+            resolved_query.push_str(format!("\n {}", frag.network_sdl).as_str());
         }
         let ctx = context! {
             context => context!{
