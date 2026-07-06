@@ -98,7 +98,8 @@ class ShalomRuntimeClient {
     }
   }
 
-  /// Create a runtime for [schemaSdl].  Synchronous — call after
+  /// Create a runtime for [schemaSdl]. Synchronous init only; operational APIs
+  /// are async after construction. Call after
   /// [initFlutterRustBridge] has completed.
   ///
   /// Register operations/fragments via [registerOperation] /
@@ -178,7 +179,10 @@ class ShalomRuntimeClient {
           );
           if (controller.isClosed) {
             if (subId != null) {
-              rs_runtime.unsubscribe(handle: _handle, subscriptionId: subId!);
+              await rs_runtime.unsubscribe(
+                handle: _handle,
+                subscriptionId: subId!,
+              );
             }
             return;
           }
@@ -194,10 +198,10 @@ class ShalomRuntimeClient {
       });
     };
 
-    controller.onCancel = () {
+    controller.onCancel = () async {
       final id = subId;
       if (id == null) return;
-      rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
+      await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
     };
 
     return controller.stream;
@@ -226,17 +230,19 @@ class ShalomRuntimeClient {
   /// mutation named [name].  Returns an opaque write ID that can be passed to
   /// [rollbackOptimistic] to undo the write if the real response indicates
   /// failure.
-  BigInt writeOptimistic({required String name, required JsonObject data}) =>
-      rs_runtime.writeOptimistic(
-        handle: _handle,
-        opName: name,
-        dataJson: jsonEncode(data),
-      );
+  Future<BigInt> writeOptimistic({
+    required String name,
+    required JsonObject data,
+  }) => rs_runtime.writeOptimistic(
+    handle: _handle,
+    opName: name,
+    dataJson: jsonEncode(data),
+  );
 
   /// Undo a previous [writeOptimistic] call, restoring the cache to its
   /// pre-write state and re-notifying affected subscribers.  Idempotent — safe
   /// to call more than once for the same [writeId].
-  void rollbackOptimistic(BigInt writeId) =>
+  Future<void> rollbackOptimistic(BigInt writeId) =>
       rs_runtime.rollbackOptimistic(handle: _handle, writeId: writeId);
 
   // -------------------------------------------------------------------------
@@ -257,24 +263,37 @@ class ShalomRuntimeClient {
     final controller = StreamController<GraphQLResponse<T>>();
 
     controller.onListen = () {
-      try {
-        subId = rs_runtime.observeFragment(handle: _handle, refInput: ref);
-      } catch (e, st) {
-        if (!controller.isClosed) controller.addError(e, st);
-        return;
-      }
+      Future.microtask(() async {
+        try {
+          subId = await rs_runtime.observeFragment(
+            handle: _handle,
+            refInput: ref,
+          );
+        } catch (e, st) {
+          if (!controller.isClosed) controller.addError(e, st);
+          return;
+        }
 
-      _bindSubscriptionStream(
-        subId: subId!,
-        controller: controller,
-        decoder: decoder,
-      );
+        if (controller.isClosed) {
+          final id = subId;
+          if (id != null) {
+            await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
+          }
+          return;
+        }
+
+        _bindSubscriptionStream(
+          subId: subId!,
+          controller: controller,
+          decoder: decoder,
+        );
+      });
     };
 
-    controller.onCancel = () {
+    controller.onCancel = () async {
       final id = subId;
       if (id == null) return;
-      rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
+      await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
     };
 
     return controller.stream;
@@ -300,28 +319,38 @@ class ShalomRuntimeClient {
     final controller = StreamController<GraphQLResponse<T>>();
 
     controller.onListen = () {
-      try {
-        newSubId = rs_runtime.rebindSubscription(
-          handle: _handle,
-          subscriptionId: subscriptionId,
-          newRef: newRef,
-        );
-      } catch (e, st) {
-        if (!controller.isClosed) controller.addError(e, st);
-        return;
-      }
+      Future.microtask(() async {
+        try {
+          newSubId = await rs_runtime.rebindSubscription(
+            handle: _handle,
+            subscriptionId: subscriptionId,
+            newRef: newRef,
+          );
+        } catch (e, st) {
+          if (!controller.isClosed) controller.addError(e, st);
+          return;
+        }
 
-      _bindSubscriptionStream(
-        subId: newSubId!,
-        controller: controller,
-        decoder: decoder,
-      );
+        if (controller.isClosed) {
+          final id = newSubId;
+          if (id != null) {
+            await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
+          }
+          return;
+        }
+
+        _bindSubscriptionStream(
+          subId: newSubId!,
+          controller: controller,
+          decoder: decoder,
+        );
+      });
     };
 
-    controller.onCancel = () {
+    controller.onCancel = () async {
       final id = newSubId;
       if (id == null) return;
-      rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
+      await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
     };
 
     return controller.stream;
@@ -416,12 +445,12 @@ class ShalomRuntimeClient {
     _requestStream = stream.listen(_handleRequestEnvelope, onError: (_) {});
   }
 
-  void _handleRequestEnvelope(String payload) {
+  Future<void> _handleRequestEnvelope(String payload) async {
     if (_disposed) return;
     final envelope = _RequestEnvelope.fromJson(payload);
     final previous = _activeRequests.remove(envelope.id);
     if (previous != null) {
-      unawaited(previous.cancel());
+      await previous.cancel();
     }
     final request = Request(
       query: envelope.query,
@@ -433,11 +462,11 @@ class ShalomRuntimeClient {
     final subscription = _link
         .request(request: request)
         .listen(
-          (response) => _dispatchResponse(envelope.id, response),
-          onError: (error) => _dispatchTransportError(envelope.id, error),
-          onDone: () {
+          (response) async => _dispatchResponse(envelope.id, response),
+          onError: (error) async => _dispatchTransportError(envelope.id, error),
+          onDone: () async {
             _activeRequests.remove(envelope.id);
-            rs_runtime.completeTransport(
+            await rs_runtime.completeTransport(
               handle: _handle,
               requestId: BigInt.from(envelope.id),
             );
@@ -446,7 +475,10 @@ class ShalomRuntimeClient {
     _activeRequests[envelope.id] = subscription;
   }
 
-  void _dispatchResponse(int requestId, GraphQLResponse<JsonObject> response) {
+  Future<void> _dispatchResponse(
+    int requestId,
+    GraphQLResponse<JsonObject> response,
+  ) async {
     switch (response) {
       case GraphQLData():
         final payload = <String, dynamic>{'data': response.data};
@@ -462,11 +494,11 @@ class ShalomRuntimeClient {
         }
         return _pushResponse(requestId, payload);
       case LinkExceptionResponse():
-        _dispatchTransportError(requestId, response.errors);
+        await _dispatchTransportError(requestId, response.errors);
     }
   }
 
-  void _pushResponse(int requestId, Map<String, dynamic> payload) {
+  Future<void> _pushResponse(int requestId, Map<String, dynamic> payload) {
     return rs_runtime.pushResponse(
       handle: _handle,
       requestId: BigInt.from(requestId),
@@ -474,9 +506,9 @@ class ShalomRuntimeClient {
     );
   }
 
-  void _dispatchTransportError(int requestId, Object error) {
+  Future<void> _dispatchTransportError(int requestId, Object error) {
     final transport = _toTransportError(error);
-    rs_runtime.pushTransportError(
+    return rs_runtime.pushTransportError(
       handle: _handle,
       requestId: BigInt.from(requestId),
       message: transport.message,
@@ -494,13 +526,13 @@ class ShalomRuntimeClient {
   /// Returns `null` when the data is absent or incomplete in the cache.
   /// Use inside [CacheProxy.readQuery] or directly when you need a one-shot
   /// cache read without opening a subscription.
-  T? readQuery<T>({
+  Future<T?> readQuery<T>({
     required String name,
     required T Function(JsonObject) decoder,
     Map<String, dynamic>? variables,
-  }) {
+  }) async {
     final variablesJson = variables == null ? null : jsonEncode(variables);
-    final raw = rs_runtime.readQuery(
+    final raw = await rs_runtime.readQuery(
       handle: _handle,
       name: name,
       variablesJson: variablesJson,
@@ -516,12 +548,12 @@ class ShalomRuntimeClient {
   /// This is a permanent write (no rollback).  The typical use-case is inside
   /// a mutation's `executeWithCacheUpdate` callback to keep a cached list in
   /// sync after an add / remove mutation.
-  void writeQuery<T extends OperationInterface>({
+  Future<void> writeQuery<T extends OperationInterface>({
     required T data,
     Map<String, dynamic>? variables,
   }) {
     final variablesJson = variables == null ? null : jsonEncode(variables);
-    rs_runtime.writeQuery(
+    return rs_runtime.writeQuery(
       handle: _handle,
       name: data.operation$Name(),
       dataJson: jsonEncode(data.toJson()),
@@ -532,12 +564,12 @@ class ShalomRuntimeClient {
   /// Read an entity from the cache through [fragment_name]'s selection set.
   ///
   /// Returns `null` when the entity is absent or has missing refs.
-  T? readFragment<T>({
+  Future<T?> readFragment<T>({
     required String fragmentName,
     required String entityKey,
     required T Function(JsonObject) decoder,
-  }) {
-    final raw = rs_runtime.readFragment(
+  }) async {
+    final raw = await rs_runtime.readFragment(
       handle: _handle,
       fragmentName: fragmentName,
       entityKey: entityKey,
@@ -552,8 +584,8 @@ class ShalomRuntimeClient {
   ///
   /// The target entity's cache key is derived from [data]'s `entity$Type()`
   /// and `entity$Id()` (i.e. `'$entity$Type:$entity$Id'`).
-  void writeFragment<T extends FragmentInterface>({required T data}) {
-    rs_runtime.writeFragment(
+  Future<void> writeFragment<T extends FragmentInterface>({required T data}) {
+    return rs_runtime.writeFragment(
       handle: _handle,
       fragmentName: data.fragment$Name(),
       entityKey: '${data.entity$Type()}:${data.entity$Id()}',
@@ -567,28 +599,29 @@ class ShalomRuntimeClient {
 
   /// Returns all keys currently stored in the normalized cache, sorted
   /// alphabetically.
-  List<String> getCacheKeys() => rs_runtime.getCacheKeys(handle: _handle);
+  Future<List<String>> getCacheKeys() =>
+      rs_runtime.getCacheKeys(handle: _handle);
 
   /// Returns a pretty-printed JSON string for the cache entry at [key],
   /// or `null` if the key is not present.
   ///
   /// Refs in the cache are serialised as `{"__ref": "<key>"}`.
-  String? getCacheEntry(String key) =>
+  Future<String?> getCacheEntry(String key) =>
       rs_runtime.getCacheEntry(handle: _handle, key: key);
 
   /// Returns a map of cache-key → active observer count.
-  Map<String, int> getObserverCounts() {
-    final raw = rs_runtime.getObserverCounts(handle: _handle);
+  Future<Map<String, int>> getObserverCounts() async {
+    final raw = await rs_runtime.getObserverCounts(handle: _handle);
     final decoded = jsonDecode(raw) as Map<String, dynamic>;
     return decoded.map((k, v) => MapEntry(k, (v as num).toInt()));
   }
 
   /// Returns info about every active observer currently watching [key].
-  List<rs_runtime.ObserverInfo> getKeyObservers(String key) =>
+  Future<List<rs_runtime.ObserverInfo>> getKeyObservers(String key) =>
       rs_runtime.getKeyObservers(handle: _handle, key: key);
 
   /// Returns info about ALL active observers in the runtime.
-  List<rs_runtime.ObserverInfo> getAllObservers() =>
+  Future<List<rs_runtime.ObserverInfo>> getAllObservers() =>
       rs_runtime.getAllObservers(handle: _handle);
 }
 

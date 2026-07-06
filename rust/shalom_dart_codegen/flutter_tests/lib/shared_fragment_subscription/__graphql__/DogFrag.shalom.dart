@@ -38,8 +38,8 @@ extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [DogFragData]. Returns `null` when absent or incomplete.
-  DogFragData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<DogFragData>(
+  Future<DogFragData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<DogFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
       decoder: DogFragData.fromCache,

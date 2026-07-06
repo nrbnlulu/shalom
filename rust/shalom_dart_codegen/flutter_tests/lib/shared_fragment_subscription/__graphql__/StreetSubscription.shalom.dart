@@ -219,8 +219,10 @@ final class StreetSubscriptionData implements shalom_core.OperationInterface {
 
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [StreetSubscriptionData]. Returns `null` when absent or incomplete.
-  static StreetSubscriptionData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readQuery<StreetSubscriptionData>(
+  static Future<StreetSubscriptionData?> readFrom(
+    shalom_core.CacheProxy cache,
+  ) async {
+    return await cache.readQuery<StreetSubscriptionData>(
       name: 'StreetSubscription',
       decoder: fromCache,
     );

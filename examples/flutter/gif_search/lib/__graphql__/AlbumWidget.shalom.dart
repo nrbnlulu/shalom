@@ -40,8 +40,8 @@ extension type AlbumWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [AlbumWidgetData]. Returns `null` when absent or incomplete.
-  AlbumWidgetData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<AlbumWidgetData>(
+  Future<AlbumWidgetData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<AlbumWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
       decoder: AlbumWidgetData.fromCache,

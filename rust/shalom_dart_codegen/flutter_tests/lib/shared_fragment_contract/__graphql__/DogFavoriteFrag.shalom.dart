@@ -44,8 +44,8 @@ extension type DogFavoriteFragRef.fromInput(
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [DogFavoriteFragData]. Returns `null` when absent or incomplete.
-  DogFavoriteFragData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<DogFavoriteFragData>(
+  Future<DogFavoriteFragData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<DogFavoriteFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
       decoder: DogFavoriteFragData.fromCache,

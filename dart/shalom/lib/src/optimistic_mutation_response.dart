@@ -32,9 +32,9 @@ class OptimisticMutationResponse<T> {
   ///
   /// Idempotent — safe to call even if `wasRolledBack` is already `true` or
   /// if this method has already been called.
-  void rollback() {
+  Future<void> rollback() async {
     if (_rolledBack) return;
     _rolledBack = true;
-    _client.rollbackOptimistic(_writeId);
+    await _client.rollbackOptimistic(_writeId);
   }
 }
