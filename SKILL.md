@@ -50,6 +50,8 @@ void main() async {
 }
 ```
 
+Runtime cache APIs are async because they cross the Flutter/Rust bridge. In generated mutation update callbacks, mark the callback `async` and `await` generated `readFrom`, `cache.readQuery`, `cache.writeQuery`, `ref.readFrom`, `cache.readFragment`, and `cache.writeFragment` calls.
+
 ## Normalized Cache
 
 Shalom normalizes GraphQL responses into root records (`ROOT_QUERY`, `ROOT_MUTATION`, `ROOT_SUBSCRIPTION`) and entity records such as `Album:123`. Queries, subscriptions, and fragments generated from annotations are registered with `@observe`, so the runtime knows which cache refs they watch.
@@ -178,11 +180,11 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
       title: gif.title,
       url: gif.url,
       previewUrl: gif.previewUrl != null ? Some(gif.previewUrl) : const None(),
-      update: (cache, data) {
-        final current = AlbumWidgetRef.fromId(widget.albumId).readFrom(cache);
+      update: (cache, data) async {
+        final current = await AlbumWidgetRef.fromId(widget.albumId).readFrom(cache);
         if (current == null) return;
 
-        cache.writeFragment(
+        await cache.writeFragment(
           data: AlbumWidgetData(
             id: current.id,
             name: current.name,
@@ -258,7 +260,7 @@ class CreateAlbumMutation extends $CreateAlbumMutation {
 Generated mutation APIs include:
 
 - `execute(...)`: run the mutation and normalize the response.
-- `executeWithCacheUpdate(..., update: (CacheProxy cache, Data data) { ... })`: run the mutation, then call `update` only for successful `GraphQLData`.
+- `executeWithCacheUpdate(..., update: (CacheProxy cache, Data data) async { ... })`: run the mutation, then await `update` only for successful `GraphQLData`.
 - `executeOptimistic(optimisticFactory, rollbackWhen: ..., ...)`: write a predicted mutation payload before the network response, then return an `OptimisticMutationResponse`.
 
 Mutation selection rules:
@@ -351,10 +353,10 @@ Use the ref shortcuts inside cache update callbacks:
 
 ```dart
 final ref = AlbumWidgetRef.fromId(albumId);
-final current = ref.readFrom(cache);
+final current = await ref.readFrom(cache);
 if (current == null) return;
 
-cache.writeFragment(
+await cache.writeFragment(
   data: AlbumWidgetData(
     id: current.id,
     name: current.name,
@@ -404,9 +406,10 @@ Important details:
 
 - The optimistic payload must exactly match the mutation response shape.
 - Include ids and any fields watched by active fragments/widgets.
-- `GraphQLError` and `LinkExceptionResponse` are response values, not thrown exceptions. Call `result.rollback()` yourself when those should undo the optimistic write.
+- `GraphQLError` and `LinkExceptionResponse` are response values, not thrown exceptions. Call `await result.rollback()` yourself when those should undo the optimistic write.
 - Thrown exceptions during the mutation path are rolled back by the generated helper.
 - `executeOptimistic` does not run an `executeWithCacheUpdate` list callback. For optimistic list membership, prefer a mutation response that includes the parent/list field, or implement a manual rollback path for the extra list write.
+- `OptimisticMutationResponse.rollback()` is async; await it when manually rolling back `GraphQLError` or `LinkExceptionResponse` results.
 
 ## Updating Lists After Mutations
 
@@ -417,11 +420,11 @@ Root query list add:
 ```dart
 await CreateAlbumMutation(client).executeWithCacheUpdate(
   name: name,
-  update: (cache, data) {
-    final current = AlbumsPageData.readFrom(cache);
+  update: (cache, data) async {
+    final current = await AlbumsPageData.readFrom(cache);
     if (current == null) return;
 
-    cache.writeQuery(
+    await cache.writeQuery(
       data: AlbumsPageData(
         albums: [
           ...current.albums,
@@ -441,12 +444,12 @@ await AddGifToAlbumMutation(client).executeWithCacheUpdate(
   title: gif.title,
   url: gif.url,
   previewUrl: gif.previewUrl != null ? Some(gif.previewUrl) : const None(),
-  update: (cache, data) {
-    final current = AlbumWidgetRef.fromId(albumId).readFrom(cache);
+  update: (cache, data) async {
+    final current = await AlbumWidgetRef.fromId(albumId).readFrom(cache);
     if (current == null) return;
     if (current.gifs.any((g) => g.url == data.addGifToAlbum.url)) return;
 
-    cache.writeFragment(
+    await cache.writeFragment(
       data: AlbumWidgetData(
         id: current.id,
         name: current.name,
@@ -471,17 +474,17 @@ Entity child list remove:
 await RemoveGifFromAlbumMutation(client).executeWithCacheUpdate(
   albumId: albumId,
   gifId: gifId,
-  update: (cache, data) {
+  update: (cache, data) async {
     if (data.removeGifFromAlbum != null) return;
 
-    final current = cache.readFragment<AlbumWidgetData>(
+    final current = await cache.readFragment<AlbumWidgetData>(
       fragmentName: 'AlbumWidget',
       entityKey: AlbumWidgetData.entityKey(albumId),
       decoder: AlbumWidgetData.fromCache,
     );
     if (current == null) return;
 
-    cache.writeFragment(
+    await cache.writeFragment(
       data: AlbumWidgetData(
         id: current.id,
         name: current.name,
