@@ -172,8 +172,8 @@ final class AlbumsPageData implements shalom_core.OperationInterface {
 
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [AlbumsPageData]. Returns `null` when absent or incomplete.
-  static AlbumsPageData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readQuery<AlbumsPageData>(
+  static Future<AlbumsPageData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readQuery<AlbumsPageData>(
       name: 'AlbumsPage',
       decoder: fromCache,
     );

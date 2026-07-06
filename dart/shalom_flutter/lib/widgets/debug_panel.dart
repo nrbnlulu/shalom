@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shalom/shalom.dart';
-import 'package:shalom/src/rust/api/runtime.dart' show ObserverInfo;
 
 import 'shalom_provider.dart';
 
@@ -77,6 +76,8 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
   List<String> _allKeys = [];
   Map<String, int> _obsCounts = {};
   List<ObserverInfo> _allObservers = [];
+  dynamic _selectedCacheValue;
+  List<ObserverInfo> _selectedCacheObservers = [];
 
   String? _selectedQueryField;
   String? _selectedMutationField;
@@ -106,15 +107,18 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
     super.dispose();
   }
 
-  void _refresh() {
-    final keys = widget.client.getCacheKeys();
-    final rootQueryFields =
-        _parseRecord(widget.client.getCacheEntry('ROOT_QUERY'));
-    final rootMutationFields = _parseRecord(
-      widget.client.getCacheEntry('ROOT_MUTATION'),
+  Future<void> _refresh() async {
+    final keys = await widget.client.getCacheKeys();
+    final rootQueryFields = _parseRecord(
+      await widget.client.getCacheEntry('ROOT_QUERY'),
     );
-    final obsCounts = widget.client.getObserverCounts();
-    final allObservers = widget.client.getAllObservers();
+    final rootMutationFields = _parseRecord(
+      await widget.client.getCacheEntry('ROOT_MUTATION'),
+    );
+    final obsCounts = await widget.client.getObserverCounts();
+    final allObservers = await widget.client.getAllObservers();
+    final selectedCacheValue = await _loadSelectedCacheValue();
+    final selectedCacheObservers = await _loadSelectedCacheObservers();
     if (mounted) {
       setState(() {
         _allKeys = keys;
@@ -122,8 +126,28 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
         _rootMutationFields = rootMutationFields;
         _obsCounts = obsCounts;
         _allObservers = allObservers;
+        _selectedCacheValue = selectedCacheValue;
+        _selectedCacheObservers = selectedCacheObservers;
       });
     }
+  }
+
+  Future<dynamic> _loadSelectedCacheValue() async {
+    final key = _selectedCacheKey;
+    if (key == null) return null;
+    final json = await widget.client.getCacheEntry(key);
+    if (json == null) return null;
+    try {
+      return jsonDecode(json);
+    } catch (_) {
+      return json;
+    }
+  }
+
+  Future<List<ObserverInfo>> _loadSelectedCacheObservers() async {
+    final key = _selectedCacheKey;
+    if (key == null) return [];
+    return widget.client.getKeyObservers(key);
   }
 
   static Map<String, dynamic> _parseRecord(String? json) {
@@ -140,6 +164,7 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
       _tab = tab;
       _filter = '';
     });
+    _refresh();
   }
 
   void _navigateToRef(String refKey) {
@@ -154,6 +179,7 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
       _selectedCacheKey = refKey;
       _filter = '';
     });
+    _refresh();
   }
 
   void _goBack() {
@@ -166,6 +192,7 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
       _selectedCacheKey = prev.cacheKey;
       _filter = '';
     });
+    _refresh();
   }
 
   // ---- Derived state -------------------------------------------------------
@@ -198,6 +225,9 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
           _selectedCacheKey = item;
       }
     });
+    if (_tab == _PanelTab.cache) {
+      _refresh();
+    }
   }
 
   dynamic get _rightValue {
@@ -209,14 +239,7 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
         if (_selectedMutationField == null) return null;
         return _rootMutationFields[_selectedMutationField];
       case _PanelTab.cache:
-        if (_selectedCacheKey == null) return null;
-        final json = widget.client.getCacheEntry(_selectedCacheKey!);
-        if (json == null) return null;
-        try {
-          return jsonDecode(json);
-        } catch (_) {
-          return json;
-        }
+        return _selectedCacheValue;
     }
   }
 
@@ -234,9 +257,7 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
             .where((o) => o.kind == 'operation' && o.opType == 'mutation')
             .toList();
       case _PanelTab.cache:
-        final key = _selectedCacheKey;
-        if (key == null) return [];
-        return widget.client.getKeyObservers(key);
+        return _selectedCacheObservers;
     }
   }
 
@@ -1027,7 +1048,6 @@ class _JsonValue extends StatelessWidget {
   final void Function(String) onNavigateToRef;
 
   const _JsonValue({
-    super.key,
     required this.value,
     required this.depth,
     required this.startExpanded,

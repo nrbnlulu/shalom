@@ -38,8 +38,8 @@ extension type AlbumGifRef.fromInput(shalom_core.ObservedRefInput _inner) {
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [AlbumGifData]. Returns `null` when absent or incomplete.
-  AlbumGifData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<AlbumGifData>(
+  Future<AlbumGifData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<AlbumGifData>(
       fragmentName: fragmentName,
       entityKey: anchor,
       decoder: AlbumGifData.fromCache,

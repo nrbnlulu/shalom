@@ -238,11 +238,11 @@ final class AnimalWithOwnerQueryData implements shalom_core.OperationInterface {
 
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [AnimalWithOwnerQueryData]. Returns `null` when absent or incomplete.
-  static AnimalWithOwnerQueryData? readFrom(
+  static Future<AnimalWithOwnerQueryData?> readFrom(
     shalom_core.CacheProxy cache, {
     AnimalWithOwnerQueryVariables? variables,
-  }) {
-    return cache.readQuery<AnimalWithOwnerQueryData>(
+  }) async {
+    return await cache.readQuery<AnimalWithOwnerQueryData>(
       name: 'AnimalWithOwnerQuery',
       decoder: fromCache,
 

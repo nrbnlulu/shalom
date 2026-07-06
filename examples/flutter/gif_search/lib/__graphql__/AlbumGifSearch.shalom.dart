@@ -203,11 +203,11 @@ final class AlbumGifSearchData implements shalom_core.OperationInterface {
 
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [AlbumGifSearchData]. Returns `null` when absent or incomplete.
-  static AlbumGifSearchData? readFrom(
+  static Future<AlbumGifSearchData?> readFrom(
     shalom_core.CacheProxy cache, {
     AlbumGifSearchVariables? variables,
-  }) {
-    return cache.readQuery<AlbumGifSearchData>(
+  }) async {
+    return await cache.readQuery<AlbumGifSearchData>(
       name: 'AlbumGifSearch',
       decoder: fromCache,
 

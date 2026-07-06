@@ -77,7 +77,7 @@ Future<BigInt> request({
 /// Write `data_json` to the cache as an optimistic response for the mutation
 /// named `op_name`.  Returns an opaque write ID.  Pass this to
 /// `rollback_optimistic` to undo the write.
-BigInt writeOptimistic({
+Future<BigInt> writeOptimistic({
   required RuntimeHandle handle,
   required String opName,
   required String dataJson,
@@ -88,7 +88,7 @@ BigInt writeOptimistic({
 );
 
 /// Undo a previous `write_optimistic` call.  No-op if the ID is not found.
-void rollbackOptimistic({
+Future<void> rollbackOptimistic({
   required RuntimeHandle handle,
   required BigInt writeId,
 }) => RustLib.instance.api.crateApiRuntimeRollbackOptimistic(
@@ -100,7 +100,7 @@ void rollbackOptimistic({
 /// Returns the subscription ID to pass to `listen_subscription`.
 ///
 /// Emits the current cached value immediately if available.
-BigInt observeFragment({
+Future<BigInt> observeFragment({
   required RuntimeHandle handle,
   required ObservedRefInput refInput,
 }) => RustLib.instance.api.crateApiRuntimeObserveFragment(
@@ -112,7 +112,7 @@ BigInt observeFragment({
 ///
 /// - Same `observable_id`: fast anchor swap, same subscription ID returned.
 /// - Different `observable_id`: full teardown + new subscription, new ID returned.
-BigInt rebindSubscription({
+Future<BigInt> rebindSubscription({
   required RuntimeHandle handle,
   required BigInt subscriptionId,
   required ObservedRefInput newRef,
@@ -122,7 +122,7 @@ BigInt rebindSubscription({
   newRef: newRef,
 );
 
-void unsubscribe({
+Future<void> unsubscribe({
   required RuntimeHandle handle,
   required BigInt subscriptionId,
 }) => RustLib.instance.api.crateApiRuntimeUnsubscribe(
@@ -144,7 +144,7 @@ Stream<SubscriptionEvent> listenSubscription({
 Stream<String> listenRequests({required RuntimeHandle handle}) =>
     RustLib.instance.api.crateApiRuntimeListenRequests(handle: handle);
 
-void pushResponse({
+Future<void> pushResponse({
   required RuntimeHandle handle,
   required BigInt requestId,
   required String responseJson,
@@ -154,7 +154,7 @@ void pushResponse({
   responseJson: responseJson,
 );
 
-void pushTransportError({
+Future<void> pushTransportError({
   required RuntimeHandle handle,
   required BigInt requestId,
   required String message,
@@ -169,7 +169,7 @@ void pushTransportError({
 );
 
 /// Signal that all responses for `request_id` have been delivered.
-void completeTransport({
+Future<void> completeTransport({
   required RuntimeHandle handle,
   required BigInt requestId,
 }) => RustLib.instance.api.crateApiRuntimeCompleteTransport(
@@ -182,7 +182,7 @@ void completeTransport({
 /// Returns `None` when the data is absent or incomplete (missing refs), so
 /// callers don't need to handle partial results.  The returned string is a
 /// JSON object that matches the operation's selection shape.
-String? readQuery({
+Future<String?> readQuery({
   required RuntimeHandle handle,
   required String name,
   String? variablesJson,
@@ -198,7 +198,7 @@ String? readQuery({
 /// This is a permanent write — unlike `write_optimistic` it cannot be rolled
 /// back.  Use it inside a mutation's `executeWithCacheUpdate` callback to keep
 /// cached lists in sync after an add / remove / reorder mutation.
-void writeQuery({
+Future<void> writeQuery({
   required RuntimeHandle handle,
   required String name,
   required String dataJson,
@@ -213,7 +213,7 @@ void writeQuery({
 /// Read an entity from the cache through a fragment's selection set.
 ///
 /// Returns `null` when the entity is absent or has missing refs.
-String? readFragment({
+Future<String?> readFragment({
   required RuntimeHandle handle,
   required String fragmentName,
   required String entityKey,
@@ -225,7 +225,7 @@ String? readFragment({
 
 /// Write entity data to the cache at [entity_key] using [fragment_name]'s
 /// selection set, then notify all affected subscribers.
-void writeFragment({
+Future<void> writeFragment({
   required RuntimeHandle handle,
   required String fragmentName,
   required String entityKey,
@@ -240,11 +240,11 @@ void writeFragment({
 /// Returns a JSON object mapping each cache key to its active observer count.
 ///
 /// Example: `{"ROOT_QUERY": 2, "User:1": 1}`
-String getObserverCounts({required RuntimeHandle handle}) =>
+Future<String> getObserverCounts({required RuntimeHandle handle}) =>
     RustLib.instance.api.crateApiRuntimeGetObserverCounts(handle: handle);
 
 /// Returns info about every observer currently watching [key].
-List<ObserverInfo> getKeyObservers({
+Future<List<ObserverInfo>> getKeyObservers({
   required RuntimeHandle handle,
   required String key,
 }) => RustLib.instance.api.crateApiRuntimeGetKeyObservers(
@@ -253,18 +253,21 @@ List<ObserverInfo> getKeyObservers({
 );
 
 /// Returns info about ALL active observers across the entire runtime.
-List<ObserverInfo> getAllObservers({required RuntimeHandle handle}) =>
+Future<List<ObserverInfo>> getAllObservers({required RuntimeHandle handle}) =>
     RustLib.instance.api.crateApiRuntimeGetAllObservers(handle: handle);
 
 /// Returns all keys currently stored in the normalized cache.
-List<String> getCacheKeys({required RuntimeHandle handle}) =>
+Future<List<String>> getCacheKeys({required RuntimeHandle handle}) =>
     RustLib.instance.api.crateApiRuntimeGetCacheKeys(handle: handle);
 
 /// Returns a pretty-printed JSON string for the cache entry at [key],
 /// or `None` if the key is not present.
 ///
 /// `CacheValue::Ref` entries are serialised as `{"__ref": "<key>"}`.
-String? getCacheEntry({required RuntimeHandle handle, required String key}) =>
+Future<String?> getCacheEntry({
+  required RuntimeHandle handle,
+  required String key,
+}) =>
     RustLib.instance.api.crateApiRuntimeGetCacheEntry(handle: handle, key: key);
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>>

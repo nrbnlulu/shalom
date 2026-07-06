@@ -132,11 +132,11 @@ final class UserCardQueryData implements shalom_core.OperationInterface {
 
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [UserCardQueryData]. Returns `null` when absent or incomplete.
-  static UserCardQueryData? readFrom(
+  static Future<UserCardQueryData?> readFrom(
     shalom_core.CacheProxy cache, {
     UserCardQueryVariables? variables,
-  }) {
-    return cache.readQuery<UserCardQueryData>(
+  }) async {
+    return await cache.readQuery<UserCardQueryData>(
       name: 'UserCardQuery',
       decoder: fromCache,
 

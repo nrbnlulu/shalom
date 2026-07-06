@@ -40,8 +40,8 @@ extension type ZooAnimalsWidgetRef.fromInput(
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [ZooAnimalsWidgetData]. Returns `null` when absent or incomplete.
-  ZooAnimalsWidgetData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<ZooAnimalsWidgetData>(
+  Future<ZooAnimalsWidgetData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<ZooAnimalsWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
       decoder: ZooAnimalsWidgetData.fromCache,

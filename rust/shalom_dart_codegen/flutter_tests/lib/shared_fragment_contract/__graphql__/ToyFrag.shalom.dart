@@ -38,8 +38,8 @@ extension type ToyFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [ToyFragData]. Returns `null` when absent or incomplete.
-  ToyFragData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<ToyFragData>(
+  Future<ToyFragData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<ToyFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
       decoder: ToyFragData.fromCache,

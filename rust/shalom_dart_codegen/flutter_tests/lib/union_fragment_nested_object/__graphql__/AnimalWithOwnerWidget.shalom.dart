@@ -37,8 +37,10 @@ extension type AnimalWithOwnerWidgetRef.fromInput(
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [AnimalWithOwnerWidgetData]. Returns `null` when absent or incomplete.
-  AnimalWithOwnerWidgetData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<AnimalWithOwnerWidgetData>(
+  Future<AnimalWithOwnerWidgetData?> readFrom(
+    shalom_core.CacheProxy cache,
+  ) async {
+    return await cache.readFragment<AnimalWithOwnerWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
       decoder: AnimalWithOwnerWidgetData.fromCache,

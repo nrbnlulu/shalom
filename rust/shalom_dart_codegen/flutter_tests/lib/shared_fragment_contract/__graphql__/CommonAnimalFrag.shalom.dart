@@ -37,8 +37,8 @@ extension type CommonAnimalFragRef.fromInput(
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [CommonAnimalFragData]. Returns `null` when absent or incomplete.
-  CommonAnimalFragData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<CommonAnimalFragData>(
+  Future<CommonAnimalFragData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<CommonAnimalFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
       decoder: CommonAnimalFragData.fromCache,

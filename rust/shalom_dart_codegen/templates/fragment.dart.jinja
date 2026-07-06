@@ -52,8 +52,8 @@ extension type {{ fragment_name }}Ref.fromInput(shalom_core.ObservedRefInput _in
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [{{ fragment_name }}Data]. Returns `null` when absent or incomplete.
-  {{ fragment_name }}Data? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<{{ fragment_name }}Data>(
+  Future<{{ fragment_name }}Data?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<{{ fragment_name }}Data>(
       fragmentName: fragmentName,
       entityKey: anchor,
       decoder: {{ fragment_name }}Data.fromCache,

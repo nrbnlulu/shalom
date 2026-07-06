@@ -35,8 +35,8 @@ extension type AnimalWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [AnimalWidgetData]. Returns `null` when absent or incomplete.
-  AnimalWidgetData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<AnimalWidgetData>(
+  Future<AnimalWidgetData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<AnimalWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
       decoder: AnimalWidgetData.fromCache,

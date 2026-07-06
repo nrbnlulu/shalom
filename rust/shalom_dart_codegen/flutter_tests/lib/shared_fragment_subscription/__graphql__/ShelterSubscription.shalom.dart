@@ -219,8 +219,10 @@ final class ShelterSubscriptionData implements shalom_core.OperationInterface {
 
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [ShelterSubscriptionData]. Returns `null` when absent or incomplete.
-  static ShelterSubscriptionData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readQuery<ShelterSubscriptionData>(
+  static Future<ShelterSubscriptionData?> readFrom(
+    shalom_core.CacheProxy cache,
+  ) async {
+    return await cache.readQuery<ShelterSubscriptionData>(
       name: 'ShelterSubscription',
       decoder: fromCache,
     );

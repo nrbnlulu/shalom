@@ -39,8 +39,8 @@ extension type HasFavoriteToyFragRef.fromInput(
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [HasFavoriteToyFragData]. Returns `null` when absent or incomplete.
-  HasFavoriteToyFragData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<HasFavoriteToyFragData>(
+  Future<HasFavoriteToyFragData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<HasFavoriteToyFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
       decoder: HasFavoriteToyFragData.fromCache,

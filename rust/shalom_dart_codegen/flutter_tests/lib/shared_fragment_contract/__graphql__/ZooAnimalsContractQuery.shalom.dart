@@ -252,8 +252,10 @@ final class ZooAnimalsContractQueryData
 
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [ZooAnimalsContractQueryData]. Returns `null` when absent or incomplete.
-  static ZooAnimalsContractQueryData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readQuery<ZooAnimalsContractQueryData>(
+  static Future<ZooAnimalsContractQueryData?> readFrom(
+    shalom_core.CacheProxy cache,
+  ) async {
+    return await cache.readQuery<ZooAnimalsContractQueryData>(
       name: 'ZooAnimalsContractQuery',
       decoder: fromCache,
     );
