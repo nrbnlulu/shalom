@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
     show ExternalLibrary;
@@ -65,8 +66,7 @@ rs_runtime.RuntimeConfigInput runtimeConfig({
 class ShalomRuntimeClient {
   final rs_runtime.RuntimeHandle _handle;
   final GraphQLLink _link;
-  final Map<int, StreamSubscription<GraphQLResponse<JsonObject>>>
-  _activeRequests = {};
+  final Map<int, StreamSubscription<void>> _activeRequests = {};
   StreamSubscription<String>? _requestStream;
   bool _disposed = false;
 
@@ -430,10 +430,13 @@ class ShalomRuntimeClient {
       opName: envelope.operationName,
     );
 
+    // The link hands back the exact response bytes; forward them straight to
+    // the Rust runtime, which does the JSON parsing — no jsonDecode/jsonEncode
+    // round trip on the Dart side.
     final subscription = _link
         .request(request: request)
         .listen(
-          (response) => _dispatchResponse(envelope.id, response),
+          (bytes) => _pushResponseBytes(envelope.id, bytes),
           onError: (error) => _dispatchTransportError(envelope.id, error),
           onDone: () {
             _activeRequests.remove(envelope.id);
@@ -446,31 +449,11 @@ class ShalomRuntimeClient {
     _activeRequests[envelope.id] = subscription;
   }
 
-  void _dispatchResponse(int requestId, GraphQLResponse<JsonObject> response) {
-    switch (response) {
-      case GraphQLData():
-        final payload = <String, dynamic>{'data': response.data};
-        if (response.errors != null) payload['errors'] = response.errors;
-        if (response.extensions != null) {
-          payload['extensions'] = response.extensions;
-        }
-        return _pushResponse(requestId, payload);
-      case GraphQLError():
-        final payload = <String, dynamic>{'errors': response.errors};
-        if (response.extensions != null) {
-          payload['extensions'] = response.extensions;
-        }
-        return _pushResponse(requestId, payload);
-      case LinkExceptionResponse():
-        _dispatchTransportError(requestId, response.errors);
-    }
-  }
-
-  void _pushResponse(int requestId, Map<String, dynamic> payload) {
-    return rs_runtime.pushResponse(
+  void _pushResponseBytes(int requestId, Uint8List bytes) {
+    return rs_runtime.pushResponseBytes(
       handle: _handle,
       requestId: BigInt.from(requestId),
-      responseJson: jsonEncode(payload),
+      responseBytes: bytes,
     );
   }
 

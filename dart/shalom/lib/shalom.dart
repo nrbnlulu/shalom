@@ -8,7 +8,8 @@ export 'src/scalar.dart';
 
 export 'src/transport/http_link.dart'
     show HttpLink, HttpMethod, ShalomHttpTransport;
-export 'src/transport/link.dart' show GraphQLLink, ShalomClient;
+export 'src/transport/link.dart'
+    show GraphQLLink, ShalomClient, parseGraphQLResponseBytes;
 export 'src/transport/ws_link.dart' show WebSocketLink;
 export 'src/transport/ws_transport.dart' show WebSocketTransport, MessageSender;
 export 'src/transport/web_socket_transport.dart' show WebSocketPackageTransport;

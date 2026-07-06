@@ -67,7 +67,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => -885489623;
+  int get rustContentHash => -106294496;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -123,10 +123,10 @@ abstract class RustLibApi extends BaseApi {
     required ObservedRefInput refInput,
   });
 
-  void crateApiRuntimePushResponse({
+  void crateApiRuntimePushResponseBytes({
     required RuntimeHandle handle,
     required BigInt requestId,
-    required String responseJson,
+    required List<int> responseBytes,
   });
 
   void crateApiRuntimePushTransportError({
@@ -648,10 +648,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  void crateApiRuntimePushResponse({
+  void crateApiRuntimePushResponseBytes({
     required RuntimeHandle handle,
     required BigInt requestId,
-    required String responseJson,
+    required List<int> responseBytes,
   }) {
     return handler.executeSync(
       SyncTask(
@@ -662,24 +662,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_u_64(requestId, serializer);
-          sse_encode_String(responseJson, serializer);
+          sse_encode_list_prim_u_8_loose(responseBytes, serializer);
           return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 13)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
         ),
-        constMeta: kCrateApiRuntimePushResponseConstMeta,
-        argValues: [handle, requestId, responseJson],
+        constMeta: kCrateApiRuntimePushResponseBytesConstMeta,
+        argValues: [handle, requestId, responseBytes],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiRuntimePushResponseConstMeta =>
+  TaskConstMeta get kCrateApiRuntimePushResponseBytesConstMeta =>
       const TaskConstMeta(
-        debugName: "push_response",
-        argNames: ["handle", "requestId", "responseJson"],
+        debugName: "push_response_bytes",
+        argNames: ["handle", "requestId", "responseBytes"],
       );
 
   @override
@@ -1580,6 +1580,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  List<int> dco_decode_list_prim_u_8_loose(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as List<int>;
+  }
+
+  @protected
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Uint8List;
@@ -1921,6 +1927,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       ans_.add(sse_decode_observer_info(deserializer));
     }
     return ans_;
+  }
+
+  @protected
+  List<int> sse_decode_list_prim_u_8_loose(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var len_ = sse_decode_i_32(deserializer);
+    return deserializer.buffer.getUint8List(len_);
   }
 
   @protected
@@ -2327,6 +2340,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     for (final item in self) {
       sse_encode_observer_info(item, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_list_prim_u_8_loose(
+    List<int> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    serializer.buffer.putUint8List(
+      self is Uint8List ? self : Uint8List.fromList(self),
+    );
   }
 
   @protected

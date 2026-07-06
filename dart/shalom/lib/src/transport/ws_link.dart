@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'dart:convert' show json;
+import 'dart:convert' show json, utf8;
 import 'dart:developer' show log;
+import 'dart:typed_data';
 
 import 'package:shalom/src/rust/api/ws.dart';
 import 'package:shalom/src/shalom_core_base.dart';
@@ -169,22 +170,17 @@ class WebSocketLink extends GraphQLLink {
           log('WebSocketLink: unknown op $opId');
           return;
         }
-        final data = dataJson != null
-            ? json.decode(dataJson) as JsonObject
-            : null;
-        final errors = errorsJson != null
-            ? (json.decode(errorsJson) as List).cast<JsonObject>()
-            : null;
-        final extensions = extensionsJson != null
-            ? json.decode(extensionsJson) as JsonObject
-            : null;
-        if (data != null) {
+        // dataJson/errorsJson/extensionsJson are already-serialised JSON
+        // fragments from Rust — stitch them into the response body directly
+        // instead of decoding and re-encoding them.
+        if (dataJson != null || errorsJson != null) {
+          final fields = <String>[
+            if (dataJson != null) '"data":$dataJson',
+            if (errorsJson != null) '"errors":$errorsJson',
+            if (extensionsJson != null) '"extensions":$extensionsJson',
+          ];
           handler.controller.add(
-            GraphQLData(data: data, errors: errors, extensions: extensions),
-          );
-        } else if (errors != null) {
-          handler.controller.add(
-            GraphQLError(errors: errors, extensions: extensions),
+            Uint8List.fromList(utf8.encode('{${fields.join(',')}}')),
           );
         }
 
@@ -199,12 +195,9 @@ class WebSocketLink extends GraphQLLink {
   // ── operations ────────────────────────────────────────────────────────────
 
   @override
-  Stream<GraphQLResponse<JsonObject>> request({
-    required Request request,
-    HeadersType? headers,
-  }) {
+  Stream<Uint8List> request({required Request request, HeadersType? headers}) {
     final opId = (_nextOpId++).toString();
-    final controller = StreamController<GraphQLResponse<JsonObject>>();
+    final controller = StreamController<Uint8List>();
     final handler = _OperationHandler(
       id: opId,
       request: request,
@@ -272,13 +265,11 @@ class WebSocketLink extends GraphQLLink {
   void _handleTransportError(dynamic error) {
     for (final h in _ops.values) {
       if (!h.controller.isClosed) {
-        h.controller.add(
-          LinkExceptionResponse([
-            ShalomTransportException(
-              message: 'WebSocket error: $error',
-              code: 'WEBSOCKET_ERROR',
-            ),
-          ]),
+        h.controller.addError(
+          ShalomTransportException(
+            message: 'WebSocket error: $error',
+            code: 'WEBSOCKET_ERROR',
+          ),
         );
       }
     }
@@ -287,13 +278,11 @@ class WebSocketLink extends GraphQLLink {
   void _handleConnectionError(dynamic error) {
     for (final h in _ops.values) {
       if (!h.controller.isClosed) {
-        h.controller.add(
-          LinkExceptionResponse([
-            ShalomTransportException(
-              message: 'Connection error: $error',
-              code: 'CONNECTION_ERROR',
-            ),
-          ]),
+        h.controller.addError(
+          ShalomTransportException(
+            message: 'Connection error: $error',
+            code: 'CONNECTION_ERROR',
+          ),
         );
       }
     }
@@ -338,7 +327,7 @@ class WebSocketLink extends GraphQLLink {
 class _OperationHandler {
   final String id;
   final Request request;
-  final StreamController<GraphQLResponse<JsonObject>> controller;
+  final StreamController<Uint8List> controller;
 
   const _OperationHandler({
     required this.id,

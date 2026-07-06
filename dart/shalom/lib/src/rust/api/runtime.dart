@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'runtime.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`, `to_observer_info`
+// These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `graphql_response_from_value`, `parse_graphql_response_bytes`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`, `to_observer_info`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`
 
 /// Set the global log level filter for all Rust-side logging.
@@ -144,14 +144,18 @@ Stream<SubscriptionEvent> listenSubscription({
 Stream<String> listenRequests({required RuntimeHandle handle}) =>
     RustLib.instance.api.crateApiRuntimeListenRequests(handle: handle);
 
-void pushResponse({
+/// Push a network response for `request_id`. Takes the raw response bytes
+/// (e.g. the exact bytes of an HTTP response body) rather than a JSON
+/// string, so Dart-side transports never need to parse the response into a
+/// `Map` before handing it off — Rust does the JSON parsing.
+void pushResponseBytes({
   required RuntimeHandle handle,
   required BigInt requestId,
-  required String responseJson,
-}) => RustLib.instance.api.crateApiRuntimePushResponse(
+  required List<int> responseBytes,
+}) => RustLib.instance.api.crateApiRuntimePushResponseBytes(
   handle: handle,
   requestId: requestId,
-  responseJson: responseJson,
+  responseBytes: responseBytes,
 );
 
 void pushTransportError({

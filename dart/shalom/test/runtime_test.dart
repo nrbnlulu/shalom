@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:shalom/shalom.dart';
 import 'package:test/test.dart';
@@ -23,16 +25,28 @@ class _MockLink extends GraphQLLink {
     : _queue = Queue.from(responses);
 
   @override
-  Stream<GraphQLResponse<JsonObject>> request({
-    required Request request,
-    HeadersType? headers,
-  }) {
+  Stream<Uint8List> request({required Request request, HeadersType? headers}) {
     if (_queue.isEmpty) {
       throw StateError(
         '_MockLink: no more responses queued for ${request.opName}',
       );
     }
-    return Stream.value(_queue.removeFirst());
+    final response = _queue.removeFirst();
+    switch (response) {
+      case GraphQLData(:final data, :final errors, :final extensions):
+        final payload = <String, dynamic>{'data': data};
+        if (errors != null) payload['errors'] = errors;
+        if (extensions != null) payload['extensions'] = extensions;
+        return Stream.value(utf8.encode(jsonEncode(payload)));
+      case GraphQLError(:final errors, :final extensions):
+        final payload = <String, dynamic>{'errors': errors};
+        if (extensions != null) payload['extensions'] = extensions;
+        return Stream.value(utf8.encode(jsonEncode(payload)));
+      case LinkExceptionResponse(:final errors):
+        return Stream.error(
+          errors.isNotEmpty ? errors.first : StateError('mock link error'),
+        );
+    }
   }
 }
 

@@ -417,13 +417,17 @@ pub async fn listen_requests(
     Ok(())
 }
 
+/// Push a network response for `request_id`. Takes the raw response bytes
+/// (e.g. the exact bytes of an HTTP response body) rather than a JSON
+/// string, so Dart-side transports never need to parse the response into a
+/// `Map` before handing it off — Rust does the JSON parsing.
 #[frb(sync)]
-pub fn push_response(
+pub fn push_response_bytes(
     handle: &RuntimeHandle,
     request_id: u64,
-    response_json: String,
+    response_bytes: Vec<u8>,
 ) -> anyhow::Result<()> {
-    let response = parse_graphql_response(&response_json)?;
+    let response = parse_graphql_response_bytes(&response_bytes)?;
     handle.link.send_response(request_id, response)
 }
 
@@ -493,8 +497,12 @@ fn parse_optional_json(json: Option<String>) -> anyhow::Result<Option<Value>> {
     Ok(Some(value))
 }
 
-fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse> {
-    let value: Value = serde_json::from_str(response_json)?;
+fn parse_graphql_response_bytes(response_bytes: &[u8]) -> anyhow::Result<GraphQLResponse> {
+    let value: Value = serde_json::from_slice(response_bytes)?;
+    graphql_response_from_value(value)
+}
+
+fn graphql_response_from_value(value: Value) -> anyhow::Result<GraphQLResponse> {
     let obj = value
         .as_object()
         .ok_or_else(|| anyhow::anyhow!("graphql response must be a JSON object"))?;
