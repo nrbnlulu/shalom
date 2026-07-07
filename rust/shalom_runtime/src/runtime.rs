@@ -403,6 +403,12 @@ impl ShalomRuntime {
     /// the subscription hasn't been unsubscribed in the meantime. A
     /// GraphQL-level error or a normalization failure is terminal: retrying
     /// the same request/data wouldn't change the outcome.
+    ///
+    /// If the link's stream ends cleanly (no transport error — typically a
+    /// one-shot query/mutation over HTTP) and `refetch_interval` is set, the
+    /// request is re-issued after the interval, as long as the subscription
+    /// is still observed. This is a plain polling refetch, independent of any
+    /// error handling; it's only meaningful for queries.
     pub fn execute_operation(
         &self,
         op_ctx: SharedOpCtx,
@@ -410,6 +416,7 @@ impl ShalomRuntime {
         execution_policy: ExecutionPolicy,
         link: Arc<dyn GraphQLLink>,
         retry_delay: Option<Duration>,
+        refetch_interval: Option<Duration>,
     ) -> SubscriptionId {
         let sub_id =
             self.create_operation_subscription(op_ctx.clone(), variables.clone(), execution_policy);
@@ -484,17 +491,20 @@ impl ShalomRuntime {
                     }
                 }
 
-                if !transport_failed {
-                    // Stream ended cleanly (link signalled completion) — nothing to retry.
-                    return;
-                }
-                let Some(delay) = retry_delay else {
+                let wait = if transport_failed {
+                    retry_delay
+                } else {
+                    // Stream ended cleanly (link signalled completion) — only
+                    // re-issue if a polling refetch interval was requested.
+                    refetch_interval
+                };
+                let Some(wait) = wait else {
                     return;
                 };
                 tokio::select! {
                     biased;
                     _ = cancel.notified() => return,
-                    _ = tokio::time::sleep(delay) => {}
+                    _ = tokio::time::sleep(wait) => {}
                 }
                 if !runtime.subscription_exists(&sub_id) {
                     return;

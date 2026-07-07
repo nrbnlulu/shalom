@@ -211,6 +211,12 @@ class ShalomRuntimeClient {
   /// either way). Defaults to [RetryDelay.inherit], i.e. the runtime's global
   /// default configured via [runtimeConfig]. Retrying stops as soon as the
   /// returned stream is cancelled.
+  ///
+  /// [autoRefetch], if set, re-issues this operation on a timer as long as
+  /// the returned stream is still listened to — a plain polling refetch,
+  /// independent of [retryDelay]'s error handling. Only meaningful for
+  /// queries (subscriptions stay open on their own; mutations shouldn't be
+  /// repeated on a timer).
   Stream<GraphQLResponse<T>> request<T>({
     required String name,
     Map<String, dynamic>? variables,
@@ -218,6 +224,7 @@ class ShalomRuntimeClient {
     rs_runtime.ExecutionPolicyInput executionPolicy =
         rs_runtime.ExecutionPolicyInput.networkFirst,
     RetryDelay retryDelay = const RetryDelay.inherit(),
+    Duration? autoRefetch,
   }) {
     final variablesJson = variables == null ? null : jsonEncode(variables);
     BigInt? subId;
@@ -232,6 +239,9 @@ class ShalomRuntimeClient {
             variablesJson: variablesJson,
             executionPolicy: executionPolicy,
             retryDelay: retryDelay._toInput(),
+            refetchIntervalMs: autoRefetch != null
+                ? BigInt.from(autoRefetch.inMilliseconds)
+                : null,
           );
           if (controller.isClosed) {
             if (subId != null) {

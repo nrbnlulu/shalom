@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'runtime.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`, `to_observer_info`
+// These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_observer_info`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`
 
 /// Set the global log level filter for all Rust-side logging.
@@ -68,12 +68,14 @@ Future<BigInt> request({
   String? variablesJson,
   required ExecutionPolicyInput executionPolicy,
   required RetryDelayInput retryDelay,
+  BigInt? refetchIntervalMs,
 }) => RustLib.instance.api.crateApiRuntimeRequest(
   handle: handle,
   name: name,
   variablesJson: variablesJson,
   executionPolicy: executionPolicy,
   retryDelay: retryDelay,
+  refetchIntervalMs: refetchIntervalMs,
 );
 
 /// Write `data_json` to the cache as an optimistic response for the mutation

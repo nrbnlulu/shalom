@@ -217,6 +217,7 @@ pub async fn request(
     variables_json: Option<String>,
     execution_policy: ExecutionPolicyInput,
     retry_delay: RetryDelayInput,
+    refetch_interval_ms: Option<u64>,
 ) -> anyhow::Result<u64> {
     let variables = parse_variables(variables_json)?;
     let op_ctx = handle.runtime.operation_by_name(&name)?;
@@ -226,6 +227,7 @@ pub async fn request(
         RetryDelayInput::Disabled => None,
         RetryDelayInput::Millis(ms) => Some(std::time::Duration::from_millis(ms)),
     };
+    let refetch_interval = refetch_interval_ms.map(std::time::Duration::from_millis);
 
     let sub_id = handle.runtime.execute_operation(
         op_ctx,
@@ -233,6 +235,7 @@ pub async fn request(
         execution_policy.into(),
         handle.link.clone(),
         retry_delay,
+        refetch_interval,
     );
 
     Ok(sub_id.into())

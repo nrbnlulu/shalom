@@ -1215,6 +1215,7 @@ fn wire__crate__api__runtime__request_impl(
                 <crate::api::runtime::ExecutionPolicyInput>::sse_decode(&mut deserializer);
             let api_retry_delay =
                 <crate::api::runtime::RetryDelayInput>::sse_decode(&mut deserializer);
+            let api_refetch_interval_ms = <Option<u64>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
@@ -1244,6 +1245,7 @@ fn wire__crate__api__runtime__request_impl(
                             api_variables_json,
                             api_execution_policy,
                             api_retry_delay,
+                            api_refetch_interval_ms,
                         )
                         .await?;
                         Ok(output_ok)

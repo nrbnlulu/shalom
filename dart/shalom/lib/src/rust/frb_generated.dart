@@ -180,6 +180,7 @@ abstract class RustLibApi extends BaseApi {
     String? variablesJson,
     required ExecutionPolicyInput executionPolicy,
     required RetryDelayInput retryDelay,
+    BigInt? refetchIntervalMs,
   });
 
   Future<void> crateApiRuntimeRollbackOptimistic({
@@ -1000,6 +1001,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     String? variablesJson,
     required ExecutionPolicyInput executionPolicy,
     required RetryDelayInput retryDelay,
+    BigInt? refetchIntervalMs,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -1013,6 +1015,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_opt_String(variablesJson, serializer);
           sse_encode_execution_policy_input(executionPolicy, serializer);
           sse_encode_box_autoadd_retry_delay_input(retryDelay, serializer);
+          sse_encode_opt_box_autoadd_u_64(refetchIntervalMs, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -1025,7 +1028,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiRuntimeRequestConstMeta,
-        argValues: [handle, name, variablesJson, executionPolicy, retryDelay],
+        argValues: [
+          handle,
+          name,
+          variablesJson,
+          executionPolicy,
+          retryDelay,
+          refetchIntervalMs,
+        ],
         apiImpl: this,
       ),
     );
@@ -1039,6 +1049,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       "variablesJson",
       "executionPolicy",
       "retryDelay",
+      "refetchIntervalMs",
     ],
   );
 

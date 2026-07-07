@@ -36,6 +36,7 @@ async fn transport_error_retries_and_recovers() {
         ExecutionPolicy::NetworkFirst,
         link.clone() as Arc<dyn GraphQLLink>,
         Some(Duration::from_millis(20)),
+        None,
     );
     let mut responses = runtime
         .subscription_stream(&sub_id)
@@ -80,6 +81,118 @@ async fn transport_error_retries_and_recovers() {
     assert_eq!(second.data.get("value"), Some(&json!(42)));
 }
 
+/// A `refetch_interval` re-issues a query on a timer once its stream ends
+/// cleanly (no transport error) — a plain polling refetch.
+#[tokio::test]
+async fn refetch_interval_reissues_after_clean_completion() {
+    let link = Arc::new(HostLink::new());
+    let mut outgoing = link.take_request_stream().expect("request stream missing");
+    let runtime =
+        ShalomRuntime::init(SCHEMA, Vec::new(), RuntimeConfig::default()).expect("runtime init");
+    let op_ctx = runtime
+        .register_operation("query TestOp @observe { value }")
+        .expect("register operation");
+
+    let sub_id = runtime.execute_operation(
+        op_ctx,
+        None,
+        ExecutionPolicy::NetworkFirst,
+        link.clone() as Arc<dyn GraphQLLink>,
+        None,
+        Some(Duration::from_millis(20)),
+    );
+    let mut responses = runtime
+        .subscription_stream(&sub_id)
+        .expect("subscription stream");
+
+    let first_envelope = outgoing.next().await.expect("first request missing");
+    link.send_response(
+        first_envelope.id,
+        GraphQLResponse::Data {
+            data: json!({ "value": 1 }).as_object().unwrap().clone(),
+            errors: None,
+            extensions: None,
+        },
+    )
+    .expect("send data");
+    // Signal the stream ended cleanly (e.g. an HTTP link closing after one response).
+    link.complete(first_envelope.id);
+
+    let first = responses
+        .next()
+        .await
+        .expect("missing response")
+        .expect("first response should be ok");
+    assert_eq!(first.data.get("value"), Some(&json!(1)));
+
+    // After the refetch interval, the query is re-issued as a fresh request.
+    let refetch_envelope = outgoing.next().await.expect("refetch request missing");
+    assert_ne!(refetch_envelope.id, first_envelope.id);
+    link.send_response(
+        refetch_envelope.id,
+        GraphQLResponse::Data {
+            data: json!({ "value": 2 }).as_object().unwrap().clone(),
+            errors: None,
+            extensions: None,
+        },
+    )
+    .expect("send data");
+    link.complete(refetch_envelope.id);
+
+    let second = responses
+        .next()
+        .await
+        .expect("missing response")
+        .expect("refetch response should be ok");
+    assert_eq!(second.data.get("value"), Some(&json!(2)));
+}
+
+/// Without a `refetch_interval`, a query's stream ending cleanly is terminal:
+/// it's not re-issued.
+#[tokio::test]
+async fn clean_completion_without_refetch_interval_does_not_refetch() {
+    let link = Arc::new(HostLink::new());
+    let mut outgoing = link.take_request_stream().expect("request stream missing");
+    let runtime =
+        ShalomRuntime::init(SCHEMA, Vec::new(), RuntimeConfig::default()).expect("runtime init");
+    let op_ctx = runtime
+        .register_operation("query TestOp @observe { value }")
+        .expect("register operation");
+
+    let sub_id = runtime.execute_operation(
+        op_ctx,
+        None,
+        ExecutionPolicy::NetworkFirst,
+        link.clone() as Arc<dyn GraphQLLink>,
+        None,
+        None,
+    );
+    let mut responses = runtime
+        .subscription_stream(&sub_id)
+        .expect("subscription stream");
+
+    let envelope = outgoing.next().await.expect("request missing");
+    link.send_response(
+        envelope.id,
+        GraphQLResponse::Data {
+            data: json!({ "value": 1 }).as_object().unwrap().clone(),
+            errors: None,
+            extensions: None,
+        },
+    )
+    .expect("send data");
+    link.complete(envelope.id);
+
+    let first = responses.next().await.expect("missing response");
+    assert!(first.is_ok());
+
+    let no_refetch = tokio::time::timeout(Duration::from_millis(100), outgoing.next()).await;
+    assert!(
+        no_refetch.is_err(),
+        "expected no refetch request to be sent"
+    );
+}
+
 /// If the operation didn't opt into auto-retry, a transport error is terminal:
 /// it's pushed once and the operation is not re-issued.
 #[tokio::test]
@@ -97,6 +210,7 @@ async fn transport_error_without_retry_delay_does_not_retry() {
         None,
         ExecutionPolicy::NetworkFirst,
         link.clone() as Arc<dyn GraphQLLink>,
+        None,
         None,
     );
     let mut responses = runtime
@@ -140,6 +254,7 @@ async fn unsubscribing_before_retry_cancels_it() {
         ExecutionPolicy::NetworkFirst,
         link.clone() as Arc<dyn GraphQLLink>,
         Some(Duration::from_millis(30)),
+        None,
     );
     let mut responses = runtime
         .subscription_stream(&sub_id)
@@ -232,6 +347,7 @@ async fn unsubscribing_aborts_in_flight_stream_promptly() {
         None,
         ExecutionPolicy::NetworkFirst,
         link.clone() as Arc<dyn GraphQLLink>,
+        None,
         None,
     );
 
