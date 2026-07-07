@@ -4,8 +4,8 @@ use std::time::Duration;
 
 use serde_json::json;
 use tokio::sync::mpsc;
-use tokio_stream::wrappers::UnboundedReceiverStream;
 use tokio_stream::StreamExt;
+use tokio_stream::wrappers::UnboundedReceiverStream;
 
 use shalom_runtime::sansio_protocols::host::HostLink;
 use shalom_runtime::sansio_protocols::{

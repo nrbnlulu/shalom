@@ -8,8 +8,8 @@ use std::time::Duration;
 use parking_lot::Mutex;
 use serde_json::{Map, Value};
 use tokio::sync::{Notify, mpsc};
-use tokio_stream::{Stream, StreamExt};
 use tokio_stream::wrappers::UnboundedReceiverStream;
+use tokio_stream::{Stream, StreamExt};
 
 use shalom_core::context::SharedShalomGlobalContext;
 use shalom_core::entrypoint::{parse_document, parse_schema, register_fragments_from_document};
@@ -411,11 +411,8 @@ impl ShalomRuntime {
         link: Arc<dyn GraphQLLink>,
         retry_delay: Option<Duration>,
     ) -> SubscriptionId {
-        let sub_id = self.create_operation_subscription(
-            op_ctx.clone(),
-            variables.clone(),
-            execution_policy,
-        );
+        let sub_id =
+            self.create_operation_subscription(op_ctx.clone(), variables.clone(), execution_policy);
 
         // Cancellation signal: fired by `unsubscribe` so this task can abort an
         // in-flight `stream.next()` (or a pending retry sleep) immediately,
@@ -1237,9 +1234,7 @@ fn subscription_refs_for_result(result: &crate::read::ReadResult) -> HashSet<Str
     refs
 }
 
-fn to_link_op_type(
-    op_type: shalom_core::operation::types::OperationType,
-) -> LinkOperationType {
+fn to_link_op_type(op_type: shalom_core::operation::types::OperationType) -> LinkOperationType {
     match op_type {
         shalom_core::operation::types::OperationType::Query => LinkOperationType::Query,
         shalom_core::operation::types::OperationType::Mutation => LinkOperationType::Mutation,

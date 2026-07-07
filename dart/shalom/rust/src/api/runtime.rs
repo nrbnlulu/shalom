@@ -4,8 +4,8 @@ use crate::frb_generated::StreamSink;
 use flutter_rust_bridge::frb;
 use tokio_stream::StreamExt;
 
-use shalom_runtime::sansio_protocols::host::HostLink;
 use shalom_runtime::sansio_protocols::GraphQLResponse;
+use shalom_runtime::sansio_protocols::host::HostLink;
 use shalom_runtime::{
     ExecutionPolicy, ObservedRef, OptimisticWriteId, RuntimeConfig, RuntimeResponse, ShalomRuntime,
     SubscriptionError, SubscriptionId,
