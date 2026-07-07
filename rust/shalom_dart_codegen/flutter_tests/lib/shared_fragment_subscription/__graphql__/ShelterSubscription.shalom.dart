@@ -235,9 +235,13 @@ final class ShelterSubscriptionData implements shalom_core.OperationInterface {
 
 final class ShelterSubscriptionObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   const ShelterSubscriptionObservable({
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'ShelterSubscription';
@@ -250,6 +254,8 @@ final class ShelterSubscriptionObservable {
 
       decoder: ShelterSubscriptionData.fromCache,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }

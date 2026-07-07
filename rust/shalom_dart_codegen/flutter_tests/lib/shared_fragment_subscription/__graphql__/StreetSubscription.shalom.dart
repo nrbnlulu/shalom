@@ -235,9 +235,13 @@ final class StreetSubscriptionData implements shalom_core.OperationInterface {
 
 final class StreetSubscriptionObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   const StreetSubscriptionObservable({
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'StreetSubscription';
@@ -250,6 +254,8 @@ final class StreetSubscriptionObservable {
 
       decoder: StreetSubscriptionData.fromCache,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }
