@@ -8,7 +8,7 @@ use std::time::Duration;
 use parking_lot::Mutex;
 use serde_json::{Map, Value};
 use tokio::sync::mpsc;
-use tokio_stream::Stream;
+use tokio_stream::{Stream, StreamExt};
 use tokio_stream::wrappers::UnboundedReceiverStream;
 
 use shalom_core::context::SharedShalomGlobalContext;
@@ -22,6 +22,9 @@ use crate::execution::ExecutionEngine;
 use crate::gc::{SubscriptionTracker, collect_garbage};
 use crate::normalization::NormalizationResult;
 use crate::read::CacheReader;
+use crate::sansio_protocols::{
+    GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request,
+};
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -36,6 +39,10 @@ pub struct RuntimeConfig {
     /// last real subscriber unsubscribes, before it becomes eligible for GC.
     /// Zero means no grace period — the previous behaviour.
     pub retention_grace: Duration,
+    /// Default delay before retrying an operation (query/mutation/subscription)
+    /// after a transport error, when the operation didn't override it.
+    /// `None` means auto-retry is off by default.
+    pub default_retry_delay: Option<Duration>,
 }
 
 impl Default for RuntimeConfig {
@@ -43,6 +50,7 @@ impl Default for RuntimeConfig {
         Self {
             gc_interval: Duration::from_secs(2),
             retention_grace: Duration::ZERO,
+            default_retry_delay: None,
         }
     }
 }
@@ -214,6 +222,9 @@ pub struct ShalomRuntime {
     optimistic_writes: Arc<Mutex<HashMap<OptimisticWriteId, OptimisticWrite>>>,
     /// Monotonic counter for generating `OptimisticWriteId`s.
     next_optimistic_id: Arc<AtomicU64>,
+    /// Default retry delay for operations that don't override it. See
+    /// [`RuntimeConfig::default_retry_delay`].
+    default_retry_delay: Option<Duration>,
 }
 
 impl Drop for ShalomRuntime {
@@ -291,6 +302,7 @@ impl ShalomRuntime {
             ))),
             operation_vars: Arc::new(Mutex::new(HashMap::new())),
             shutdown: Arc::new(AtomicBool::new(false)),
+            default_retry_delay: config.default_retry_delay,
             optimistic_writes: Arc::new(Mutex::new(HashMap::new())),
             next_optimistic_id: Arc::new(AtomicU64::new(0)),
         }
@@ -375,6 +387,101 @@ impl ShalomRuntime {
     // -----------------------------------------------------------------------
     // Subscriptions — widget API
     // -----------------------------------------------------------------------
+
+    /// Create a cache subscription for a pre-registered operation, trigger the
+    /// network request through `link`, and normalise each response as it
+    /// arrives.
+    ///
+    /// If the link reports a [`crate::sansio_protocols::GraphQLResponse::TransportError`],
+    /// the error is pushed to the subscription (so the caller sees it
+    /// immediately) and, if `retry_delay` is set, the whole request is
+    /// re-issued (a fresh `link.execute` call) after the delay — as long as
+    /// the subscription hasn't been unsubscribed in the meantime. A
+    /// GraphQL-level error or a normalization failure is terminal: retrying
+    /// the same request/data wouldn't change the outcome.
+    pub fn execute_operation(
+        &self,
+        op_ctx: SharedOpCtx,
+        variables: Option<Map<String, Value>>,
+        execution_policy: ExecutionPolicy,
+        link: Arc<dyn GraphQLLink>,
+        retry_delay: Option<Duration>,
+    ) -> SubscriptionId {
+        let sub_id = self.create_operation_subscription(
+            op_ctx.clone(),
+            variables.clone(),
+            execution_policy,
+        );
+
+        let runtime = self.clone();
+        tokio::spawn(async move {
+            let request = Request {
+                query: op_ctx.query.clone(),
+                variables: variables.clone().unwrap_or_default(),
+                operation_name: op_ctx.get_operation_name().to_string(),
+                operation_type: to_link_op_type(op_ctx.op_type()),
+                headers: None,
+            };
+
+            loop {
+                let mut stream = link.execute(request.clone());
+                let mut transport_failed = false;
+
+                while let Some(response) = stream.next().await {
+                    match response {
+                        GraphQLResponse::Data { data, .. } => {
+                            if let Err(e) =
+                                runtime.normalize(&op_ctx, Value::Object(data), variables.as_ref())
+                            {
+                                runtime.push_subscription_error(
+                                    sub_id,
+                                    SubscriptionError::Transport {
+                                        message: e.to_string(),
+                                        code: "NORMALIZATION_ERROR".into(),
+                                        details: None,
+                                    },
+                                );
+                                return;
+                            }
+                        }
+                        GraphQLResponse::Error { errors, extensions } => {
+                            runtime.push_subscription_error(
+                                sub_id,
+                                SubscriptionError::GraphQL { errors, extensions },
+                            );
+                            return;
+                        }
+                        GraphQLResponse::TransportError(err) => {
+                            runtime.push_subscription_error(
+                                sub_id,
+                                SubscriptionError::Transport {
+                                    message: err.message,
+                                    code: err.code,
+                                    details: err.details,
+                                },
+                            );
+                            transport_failed = true;
+                            break;
+                        }
+                    }
+                }
+
+                if !transport_failed {
+                    // Stream ended cleanly (link signalled completion) — nothing to retry.
+                    return;
+                }
+                let Some(delay) = retry_delay else {
+                    return;
+                };
+                tokio::time::sleep(delay).await;
+                if !runtime.subscription_exists(&sub_id) {
+                    return;
+                }
+            }
+        });
+
+        sub_id
+    }
 
     /// Create a cache subscription for a pre-registered operation and return
     /// its ID. The caller (FRB layer) is responsible for also triggering the
@@ -626,6 +733,16 @@ impl ShalomRuntime {
     // -----------------------------------------------------------------------
     // Subscription lifecycle
     // -----------------------------------------------------------------------
+
+    /// The default retry delay configured via [`RuntimeConfig::default_retry_delay`].
+    pub fn default_retry_delay(&self) -> Option<Duration> {
+        self.default_retry_delay
+    }
+
+    /// Whether a subscription is still active (i.e. hasn't been [`unsubscribe`]d).
+    pub fn subscription_exists(&self, id: &SubscriptionId) -> bool {
+        self.subscriptions.lock().subscriptions.contains_key(id)
+    }
 
     pub fn unsubscribe(&self, id: &SubscriptionId) {
         let keys = {
@@ -1077,4 +1194,16 @@ fn subscription_refs_for_result(result: &crate::read::ReadResult) -> HashSet<Str
     let mut refs = result.used_refs.clone();
     refs.extend(result.missing_refs.iter().cloned());
     refs
+}
+
+fn to_link_op_type(
+    op_type: shalom_core::operation::types::OperationType,
+) -> LinkOperationType {
+    match op_type {
+        shalom_core::operation::types::OperationType::Query => LinkOperationType::Query,
+        shalom_core::operation::types::OperationType::Mutation => LinkOperationType::Mutation,
+        shalom_core::operation::types::OperationType::Subscription => {
+            LinkOperationType::Subscription
+        }
+    }
 }

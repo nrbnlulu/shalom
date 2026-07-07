@@ -14,6 +14,9 @@ export 'rust/api/runtime.dart'
         RuntimeConfigInput,
         ObserverInfo;
 
+// Note: `RetryDelayInput` (the raw FRB type) is intentionally not exported —
+// callers use the ergonomic [RetryDelay] wrapper instead.
+
 // ---------------------------------------------------------------------------
 // ObservedRefInput helpers (exported so codegen templates can use them via
 // `shalom_core.observedRefInputFromJson(...)`)
@@ -44,9 +47,14 @@ rs_runtime.ObservedRefInput observedRefInputFromJson(JsonObject json) {
 ///   subscriber unsubscribes (e.g. during a widget rebuild or screen
 ///   transition) instead of evicting it on the very next GC sweep. Defaults
 ///   to `Duration.zero` (no grace period).
+/// - [defaultRetryDelay] is the default delay before an operation (query,
+///   mutation, or subscription) that failed with a transport error is
+///   retried. Individual [ShalomRuntimeClient.request] calls can override
+///   this via their `retryDelay` param. Defaults to no auto-retry.
 rs_runtime.RuntimeConfigInput runtimeConfig({
   Duration? gcInterval,
   Duration? retentionGrace,
+  Duration? defaultRetryDelay,
 }) {
   return rs_runtime.RuntimeConfigInput(
     gcIntervalMs: gcInterval != null
@@ -55,7 +63,47 @@ rs_runtime.RuntimeConfigInput runtimeConfig({
     retentionGraceMs: retentionGrace != null
         ? BigInt.from(retentionGrace.inMilliseconds)
         : null,
+    defaultRetryDelayMs: defaultRetryDelay != null
+        ? BigInt.from(defaultRetryDelay.inMilliseconds)
+        : null,
   );
+}
+
+/// Per-call override for [ShalomRuntimeClient.request]'s retry-on-transport-error
+/// behavior. Defaults to [RetryDelay.inherit], which uses the runtime's
+/// globally configured default (see [runtimeConfig]'s `defaultRetryDelay`).
+sealed class RetryDelay {
+  const RetryDelay();
+
+  /// Use the runtime's globally configured default (which may itself be off).
+  const factory RetryDelay.inherit() = _RetryDelayInherit;
+
+  /// Disable auto-retry for this operation, regardless of the global default.
+  const factory RetryDelay.disabled() = _RetryDelayDisabled;
+
+  /// Retry after [duration], overriding the global default.
+  const factory RetryDelay.after(Duration duration) = _RetryDelayAfter;
+
+  rs_runtime.RetryDelayInput _toInput() => switch (this) {
+    _RetryDelayInherit() => const rs_runtime.RetryDelayInput.inherit(),
+    _RetryDelayDisabled() => const rs_runtime.RetryDelayInput.disabled(),
+    _RetryDelayAfter(:final duration) => rs_runtime.RetryDelayInput.millis(
+      BigInt.from(duration.inMilliseconds),
+    ),
+  };
+}
+
+class _RetryDelayInherit extends RetryDelay {
+  const _RetryDelayInherit();
+}
+
+class _RetryDelayDisabled extends RetryDelay {
+  const _RetryDelayDisabled();
+}
+
+class _RetryDelayAfter extends RetryDelay {
+  final Duration duration;
+  const _RetryDelayAfter(this.duration);
 }
 
 // ---------------------------------------------------------------------------
@@ -157,12 +205,19 @@ class ShalomRuntimeClient {
   /// - [GraphQLData<T>] on successful data (may include partial errors)
   /// - [GraphQLError<T>] on GraphQL-level errors
   /// - [LinkExceptionResponse<T>] on transport/network errors
+  ///
+  /// [retryDelay] controls whether a transport error automatically re-issues
+  /// this operation after a delay (the error is still emitted on the stream
+  /// either way). Defaults to [RetryDelay.inherit], i.e. the runtime's global
+  /// default configured via [runtimeConfig]. Retrying stops as soon as the
+  /// returned stream is cancelled.
   Stream<GraphQLResponse<T>> request<T>({
     required String name,
     Map<String, dynamic>? variables,
     required T Function(JsonObject) decoder,
     rs_runtime.ExecutionPolicyInput executionPolicy =
         rs_runtime.ExecutionPolicyInput.networkFirst,
+    RetryDelay retryDelay = const RetryDelay.inherit(),
   }) {
     final variablesJson = variables == null ? null : jsonEncode(variables);
     BigInt? subId;
@@ -176,6 +231,7 @@ class ShalomRuntimeClient {
             name: name,
             variablesJson: variablesJson,
             executionPolicy: executionPolicy,
+            retryDelay: retryDelay._toInput(),
           );
           if (controller.isClosed) {
             if (subId != null) {
@@ -215,15 +271,21 @@ class ShalomRuntimeClient {
   /// result as a one-shot [Future] wrapped in [GraphQLResponse<T>].
   /// The mutation response is written into the shared entity cache, triggering
   /// reactive updates on any query subscriptions that watch the same entities.
+  ///
+  /// Auto-retry is disabled by default (mutations have side effects, so
+  /// silently re-sending one after a transport error is unsafe unless the
+  /// caller opts in explicitly via [retryDelay]).
   Future<GraphQLResponse<T>> mutate<T>({
     required String name,
     Map<String, dynamic>? variables,
     required T Function(JsonObject) decoder,
+    RetryDelay retryDelay = const RetryDelay.disabled(),
   }) => request<T>(
     name: name,
     variables: variables,
     decoder: decoder,
     executionPolicy: rs_runtime.ExecutionPolicyInput.networkFirst,
+    retryDelay: retryDelay,
   ).first;
 
   /// Write [data] to the cache immediately as an optimistic response for the

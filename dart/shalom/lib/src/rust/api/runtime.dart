@@ -67,11 +67,13 @@ Future<BigInt> request({
   required String name,
   String? variablesJson,
   required ExecutionPolicyInput executionPolicy,
+  required RetryDelayInput retryDelay,
 }) => RustLib.instance.api.crateApiRuntimeRequest(
   handle: handle,
   name: name,
   variablesJson: variablesJson,
   executionPolicy: executionPolicy,
+  retryDelay: retryDelay,
 );
 
 /// Write `data_json` to the cache as an optimistic response for the mutation
@@ -352,6 +354,20 @@ class ObserverInfo {
           watchedKeys == other.watchedKeys;
 }
 
+@freezed
+sealed class RetryDelayInput with _$RetryDelayInput {
+  const RetryDelayInput._();
+
+  /// Use the runtime's globally configured default (may itself be "off").
+  const factory RetryDelayInput.inherit() = RetryDelayInput_Inherit;
+
+  /// Disable auto-retry for this operation, regardless of the global default.
+  const factory RetryDelayInput.disabled() = RetryDelayInput_Disabled;
+
+  /// Retry after this many milliseconds, overriding the global default.
+  const factory RetryDelayInput.millis(BigInt field0) = RetryDelayInput_Millis;
+}
+
 /// Dart-facing runtime configuration.
 class RuntimeConfigInput {
   /// How often (in milliseconds) the background thread sweeps the cache for
@@ -363,10 +379,22 @@ class RuntimeConfigInput {
   /// becomes eligible for GC eviction. Defaults to 0 (no grace period).
   final BigInt? retentionGraceMs;
 
-  const RuntimeConfigInput({this.gcIntervalMs, this.retentionGraceMs});
+  /// Default delay (in milliseconds) before retrying an operation after a
+  /// transport error, for operations that don't override it via `request`'s
+  /// `retry_delay` param. Defaults to no auto-retry.
+  final BigInt? defaultRetryDelayMs;
+
+  const RuntimeConfigInput({
+    this.gcIntervalMs,
+    this.retentionGraceMs,
+    this.defaultRetryDelayMs,
+  });
 
   @override
-  int get hashCode => gcIntervalMs.hashCode ^ retentionGraceMs.hashCode;
+  int get hashCode =>
+      gcIntervalMs.hashCode ^
+      retentionGraceMs.hashCode ^
+      defaultRetryDelayMs.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -374,7 +402,8 @@ class RuntimeConfigInput {
       other is RuntimeConfigInput &&
           runtimeType == other.runtimeType &&
           gcIntervalMs == other.gcIntervalMs &&
-          retentionGraceMs == other.retentionGraceMs;
+          retentionGraceMs == other.retentionGraceMs &&
+          defaultRetryDelayMs == other.defaultRetryDelayMs;
 }
 
 @freezed
