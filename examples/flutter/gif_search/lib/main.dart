@@ -127,7 +127,7 @@ class _AppWithDebugPanel extends StatelessWidget {
   }
 """)
 class AlbumsPage extends $AlbumsPage with QueryWidgetMixin {
-  const AlbumsPage({super.key});
+  const AlbumsPage({super.key, super.autoRefetch = const Duration(seconds: 5)});
 
   @override
   Widget buildData(BuildContext context, AlbumsPageData data) {
@@ -320,7 +320,7 @@ class DeleteAlbumMutation extends $DeleteAlbumMutation {
 @Mutation(r"""
   ($name: String!) {
     createAlbum(name: $name) {
-      id 
+      id
       name
       tag
       gifs {
@@ -617,7 +617,9 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
             gifId: gifId,
             update: (shalom.CacheProxy cache, data) async {
               if (data.removeGifFromAlbum != null) return;
-              final current = await AlbumWidgetRef.fromId(widget.albumId).readFrom(cache);
+              final current = await AlbumWidgetRef.fromId(
+                widget.albumId,
+              ).readFrom(cache);
               if (current == null) return;
               await cache.writeFragment(
                 data: AlbumWidgetData(

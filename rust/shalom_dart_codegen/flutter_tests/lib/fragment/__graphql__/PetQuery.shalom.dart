@@ -141,6 +141,8 @@ final class PetQueryData implements shalom_core.OperationInterface {
 
 final class PetQueryObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final PetQueryVariables variables;
 
@@ -148,6 +150,8 @@ final class PetQueryObservable {
     required this.variables,
 
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'PetQuery';
@@ -162,6 +166,8 @@ final class PetQueryObservable {
 
       decoder: PetQueryData.fromCache,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }

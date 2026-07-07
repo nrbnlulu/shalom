@@ -7,9 +7,9 @@ use std::time::Duration;
 
 use parking_lot::Mutex;
 use serde_json::{Map, Value};
-use tokio::sync::mpsc;
-use tokio_stream::Stream;
+use tokio::sync::{Notify, mpsc};
 use tokio_stream::wrappers::UnboundedReceiverStream;
+use tokio_stream::{Stream, StreamExt};
 
 use shalom_core::context::SharedShalomGlobalContext;
 use shalom_core::entrypoint::{parse_document, parse_schema, register_fragments_from_document};
@@ -22,6 +22,9 @@ use crate::execution::ExecutionEngine;
 use crate::gc::{SubscriptionTracker, collect_garbage};
 use crate::normalization::NormalizationResult;
 use crate::read::CacheReader;
+use crate::sansio_protocols::{
+    GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request,
+};
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -36,6 +39,10 @@ pub struct RuntimeConfig {
     /// last real subscriber unsubscribes, before it becomes eligible for GC.
     /// Zero means no grace period — the previous behaviour.
     pub retention_grace: Duration,
+    /// Default delay before retrying an operation (query/mutation/subscription)
+    /// after a transport error, when the operation didn't override it.
+    /// `None` means auto-retry is off by default.
+    pub default_retry_delay: Option<Duration>,
 }
 
 impl Default for RuntimeConfig {
@@ -43,6 +50,7 @@ impl Default for RuntimeConfig {
         Self {
             gc_interval: Duration::from_secs(2),
             retention_grace: Duration::ZERO,
+            default_retry_delay: None,
         }
     }
 }
@@ -174,6 +182,10 @@ struct SubscriptionState {
     keys: HashSet<String>,
     sender: mpsc::UnboundedSender<Result<RuntimeResponse, SubscriptionError>>,
     receiver: Option<mpsc::UnboundedReceiver<Result<RuntimeResponse, SubscriptionError>>>,
+    /// Fired when this subscription is unsubscribed, so any in-flight network
+    /// request driving it (see [`ShalomRuntime::execute_operation`]) can abort
+    /// immediately instead of waiting on the next stream item.
+    cancel: Arc<Notify>,
 }
 
 #[derive(Clone)]
@@ -214,6 +226,9 @@ pub struct ShalomRuntime {
     optimistic_writes: Arc<Mutex<HashMap<OptimisticWriteId, OptimisticWrite>>>,
     /// Monotonic counter for generating `OptimisticWriteId`s.
     next_optimistic_id: Arc<AtomicU64>,
+    /// Default retry delay for operations that don't override it. See
+    /// [`RuntimeConfig::default_retry_delay`].
+    default_retry_delay: Option<Duration>,
 }
 
 impl Drop for ShalomRuntime {
@@ -291,6 +306,7 @@ impl ShalomRuntime {
             ))),
             operation_vars: Arc::new(Mutex::new(HashMap::new())),
             shutdown: Arc::new(AtomicBool::new(false)),
+            default_retry_delay: config.default_retry_delay,
             optimistic_writes: Arc::new(Mutex::new(HashMap::new())),
             next_optimistic_id: Arc::new(AtomicU64::new(0)),
         }
@@ -375,6 +391,137 @@ impl ShalomRuntime {
     // -----------------------------------------------------------------------
     // Subscriptions — widget API
     // -----------------------------------------------------------------------
+
+    /// Create a cache subscription for a pre-registered operation, trigger the
+    /// network request through `link`, and normalise each response as it
+    /// arrives.
+    ///
+    /// If the link reports a [`crate::sansio_protocols::GraphQLResponse::TransportError`],
+    /// the error is pushed to the subscription (so the caller sees it
+    /// immediately) and, if `retry_delay` is set, the whole request is
+    /// re-issued (a fresh `link.execute` call) after the delay — as long as
+    /// the subscription hasn't been unsubscribed in the meantime. A
+    /// GraphQL-level error or a normalization failure is terminal: retrying
+    /// the same request/data wouldn't change the outcome.
+    ///
+    /// If the link's stream ends cleanly (no transport error — typically a
+    /// one-shot query/mutation over HTTP) and `refetch_interval` is set, the
+    /// request is re-issued after the interval, as long as the subscription
+    /// is still observed. This is a plain polling refetch, independent of any
+    /// error handling; it's only meaningful for queries.
+    pub fn execute_operation(
+        &self,
+        op_ctx: SharedOpCtx,
+        variables: Option<Map<String, Value>>,
+        execution_policy: ExecutionPolicy,
+        link: Arc<dyn GraphQLLink>,
+        retry_delay: Option<Duration>,
+        refetch_interval: Option<Duration>,
+    ) -> SubscriptionId {
+        let sub_id =
+            self.create_operation_subscription(op_ctx.clone(), variables.clone(), execution_policy);
+
+        // Cancellation signal: fired by `unsubscribe` so this task can abort an
+        // in-flight `stream.next()` (or a pending retry sleep) immediately,
+        // rather than only noticing at the next stream item / after the delay.
+        let Some(cancel) = self.subscription_cancel_signal(&sub_id) else {
+            // Already unsubscribed before the task even got a chance to run.
+            return sub_id;
+        };
+
+        let runtime = self.clone();
+        tokio::spawn(async move {
+            let request = Request {
+                query: op_ctx.query.clone(),
+                variables: variables.clone().unwrap_or_default(),
+                operation_name: op_ctx.get_operation_name().to_string(),
+                operation_type: to_link_op_type(op_ctx.op_type()),
+                headers: None,
+            };
+
+            loop {
+                let mut stream = link.execute(request.clone());
+                let mut transport_failed = false;
+
+                loop {
+                    let response = tokio::select! {
+                        biased;
+                        _ = cancel.notified() => return,
+                        item = stream.next() => match item {
+                            Some(response) => response,
+                            None => break,
+                        },
+                    };
+
+                    match response {
+                        GraphQLResponse::Data { data, .. } => {
+                            if let Err(e) =
+                                runtime.normalize(&op_ctx, Value::Object(data), variables.as_ref())
+                            {
+                                runtime.push_subscription_error(
+                                    sub_id,
+                                    SubscriptionError::Transport {
+                                        message: e.to_string(),
+                                        code: "NORMALIZATION_ERROR".into(),
+                                        details: None,
+                                    },
+                                );
+                                return;
+                            }
+                        }
+                        GraphQLResponse::Error { errors, extensions } => {
+                            runtime.push_subscription_error(
+                                sub_id,
+                                SubscriptionError::GraphQL { errors, extensions },
+                            );
+                            return;
+                        }
+                        GraphQLResponse::TransportError(err) => {
+                            runtime.push_subscription_error(
+                                sub_id,
+                                SubscriptionError::Transport {
+                                    message: err.message,
+                                    code: err.code,
+                                    details: err.details,
+                                },
+                            );
+                            transport_failed = true;
+                            break;
+                        }
+                    }
+                }
+
+                let wait = if transport_failed {
+                    retry_delay
+                } else {
+                    // Stream ended cleanly (link signalled completion) — only
+                    // re-issue if a polling refetch interval was requested.
+                    refetch_interval
+                };
+                let Some(wait) = wait else {
+                    return;
+                };
+                // `cancel.notified()` only wakes a task that's already awaiting
+                // it — if `unsubscribe` fired between the inner loop ending and
+                // here, that notification is lost and a freshly created
+                // `notified()` future below would never resolve. Check first so
+                // an already-cancelled subscription doesn't sleep needlessly.
+                if !runtime.subscription_exists(&sub_id) {
+                    return;
+                }
+                tokio::select! {
+                    biased;
+                    _ = cancel.notified() => return,
+                    _ = tokio::time::sleep(wait) => {}
+                }
+                if !runtime.subscription_exists(&sub_id) {
+                    return;
+                }
+            }
+        });
+
+        sub_id
+    }
 
     /// Create a cache subscription for a pre-registered operation and return
     /// its ID. The caller (FRB layer) is responsible for also triggering the
@@ -627,13 +774,27 @@ impl ShalomRuntime {
     // Subscription lifecycle
     // -----------------------------------------------------------------------
 
+    /// The default retry delay configured via [`RuntimeConfig::default_retry_delay`].
+    pub fn default_retry_delay(&self) -> Option<Duration> {
+        self.default_retry_delay
+    }
+
+    /// Whether a subscription is still active (i.e. hasn't been [`unsubscribe`]d).
+    pub fn subscription_exists(&self, id: &SubscriptionId) -> bool {
+        self.subscriptions.lock().subscriptions.contains_key(id)
+    }
+
     pub fn unsubscribe(&self, id: &SubscriptionId) {
-        let keys = {
+        let removed = {
             let mut manager = self.subscriptions.lock();
-            manager.subscriptions.remove(id).map(|state| state.keys)
+            manager.subscriptions.remove(id)
         };
-        if let Some(keys) = keys {
-            self.subscription_tracker.lock().unsubscribe(keys);
+        if let Some(state) = removed {
+            // Wake any in-flight network request driving this subscription
+            // (see `execute_operation`) so it aborts immediately instead of
+            // waiting on the next stream item.
+            state.cancel.notify_waiters();
+            self.subscription_tracker.lock().unsubscribe(state.keys);
         }
     }
 
@@ -862,11 +1023,23 @@ impl ShalomRuntime {
                 keys: refs,
                 sender,
                 receiver: Some(receiver),
+                cancel: Arc::new(Notify::new()),
             },
         );
         drop(manager);
         self.subscription_tracker.lock().subscribe(keys);
         id
+    }
+
+    /// The cancellation signal for a subscription, fired when it's unsubscribed.
+    /// Used by [`Self::execute_operation`] to abort an in-flight network
+    /// request promptly instead of waiting on the next stream item.
+    fn subscription_cancel_signal(&self, id: &SubscriptionId) -> Option<Arc<Notify>> {
+        self.subscriptions
+            .lock()
+            .subscriptions
+            .get(id)
+            .map(|state| state.cancel.clone())
     }
 
     fn notify_subscribers(&self, changed: &HashSet<String>) -> anyhow::Result<()> {
@@ -1077,4 +1250,14 @@ fn subscription_refs_for_result(result: &crate::read::ReadResult) -> HashSet<Str
     let mut refs = result.used_refs.clone();
     refs.extend(result.missing_refs.iter().cloned());
     refs
+}
+
+fn to_link_op_type(op_type: shalom_core::operation::types::OperationType) -> LinkOperationType {
+    match op_type {
+        shalom_core::operation::types::OperationType::Query => LinkOperationType::Query,
+        shalom_core::operation::types::OperationType::Mutation => LinkOperationType::Mutation,
+        shalom_core::operation::types::OperationType::Subscription => {
+            LinkOperationType::Subscription
+        }
+    }
 }

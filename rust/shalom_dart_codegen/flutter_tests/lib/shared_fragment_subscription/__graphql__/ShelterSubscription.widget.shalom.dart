@@ -14,8 +14,15 @@ abstract class $ShelterSubscription extends StatefulWidget {
   String operation$Name() => 'ShelterSubscription';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
-  const $ShelterSubscription({super.key, this.executionPolicy = .cacheFirst});
+  const $ShelterSubscription({
+    super.key,
+    this.executionPolicy = .cacheFirst,
+    this.retryDelay = const .inherit(),
+    this.autoRefetch,
+  });
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
@@ -58,7 +65,11 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
     _sub?.cancel();
     final client = ShalomScope.of(context);
     _sub =
-        ShelterSubscriptionObservable(executionPolicy: widget.executionPolicy)
+        ShelterSubscriptionObservable(
+              executionPolicy: widget.executionPolicy,
+              retryDelay: widget.retryDelay,
+              autoRefetch: widget.autoRefetch,
+            )
             .observe(client)
             .listen(
               (response) {

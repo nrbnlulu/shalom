@@ -4,10 +4,8 @@ use crate::frb_generated::StreamSink;
 use flutter_rust_bridge::frb;
 use tokio_stream::StreamExt;
 
+use shalom_runtime::sansio_protocols::GraphQLResponse;
 use shalom_runtime::sansio_protocols::host::HostLink;
-use shalom_runtime::sansio_protocols::{
-    GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request,
-};
 use shalom_runtime::{
     ExecutionPolicy, ObservedRef, OptimisticWriteId, RuntimeConfig, RuntimeResponse, ShalomRuntime,
     SubscriptionError, SubscriptionId,
@@ -38,6 +36,10 @@ pub struct RuntimeConfigInput {
     /// subscriber after its last real subscriber unsubscribes, before it
     /// becomes eligible for GC eviction. Defaults to 0 (no grace period).
     pub retention_grace_ms: Option<u64>,
+    /// Default delay (in milliseconds) before retrying an operation after a
+    /// transport error, for operations that don't override it via `request`'s
+    /// `retry_delay` param. Defaults to no auto-retry.
+    pub default_retry_delay_ms: Option<u64>,
 }
 
 impl From<RuntimeConfigInput> for RuntimeConfig {
@@ -52,8 +54,24 @@ impl From<RuntimeConfigInput> for RuntimeConfig {
                 .retention_grace_ms
                 .map(std::time::Duration::from_millis)
                 .unwrap_or(default.retention_grace),
+            default_retry_delay: value
+                .default_retry_delay_ms
+                .map(std::time::Duration::from_millis)
+                .or(default.default_retry_delay),
         }
     }
+}
+
+/// Per-call override for an operation's retry-on-transport-error delay.
+/// Passed to `request`; defaults to `Inherit` (use `RuntimeConfig::default_retry_delay`).
+#[frb]
+pub enum RetryDelayInput {
+    /// Use the runtime's globally configured default (may itself be "off").
+    Inherit,
+    /// Disable auto-retry for this operation, regardless of the global default.
+    Disabled,
+    /// Retry after this many milliseconds, overriding the global default.
+    Millis(u64),
 }
 
 #[frb]
@@ -198,69 +216,27 @@ pub async fn request(
     name: String,
     variables_json: Option<String>,
     execution_policy: ExecutionPolicyInput,
+    retry_delay: RetryDelayInput,
+    refetch_interval_ms: Option<u64>,
 ) -> anyhow::Result<u64> {
     let variables = parse_variables(variables_json)?;
     let op_ctx = handle.runtime.operation_by_name(&name)?;
-    let sub_id = handle.runtime.create_operation_subscription(
-        op_ctx.clone(),
-        variables.clone(),
+
+    let retry_delay = match retry_delay {
+        RetryDelayInput::Inherit => handle.runtime.default_retry_delay(),
+        RetryDelayInput::Disabled => None,
+        RetryDelayInput::Millis(ms) => Some(std::time::Duration::from_millis(ms)),
+    };
+    let refetch_interval = refetch_interval_ms.map(std::time::Duration::from_millis);
+
+    let sub_id = handle.runtime.execute_operation(
+        op_ctx,
+        variables,
         execution_policy.into(),
+        handle.link.clone(),
+        retry_delay,
+        refetch_interval,
     );
-
-    // Spawn a task to drive the network round-trip and normalise the response.
-    // The normalisation side-effect triggers `notify_subscribers` which pushes
-    // data onto the subscription channel opened above.
-    let link = handle.link.clone();
-    let runtime = handle.runtime.clone();
-
-    tokio::spawn(async move {
-        let request = Request {
-            query: op_ctx.query.clone(),
-            variables: variables.clone().unwrap_or_default(),
-            operation_name: op_ctx.get_operation_name().to_string(),
-            operation_type: to_link_op_type(op_ctx.op_type()),
-            headers: None,
-        };
-
-        let mut stream = link.execute(request);
-        while let Some(response) = stream.next().await {
-            match response {
-                GraphQLResponse::Data { data, .. } => {
-                    if let Err(e) =
-                        runtime.normalize(&op_ctx, Value::Object(data), variables.as_ref())
-                    {
-                        runtime.push_subscription_error(
-                            sub_id,
-                            SubscriptionError::Transport {
-                                message: e.to_string(),
-                                code: "NORMALIZATION_ERROR".into(),
-                                details: None,
-                            },
-                        );
-                        break;
-                    }
-                }
-                GraphQLResponse::Error { errors, extensions } => {
-                    runtime.push_subscription_error(
-                        sub_id,
-                        SubscriptionError::GraphQL { errors, extensions },
-                    );
-                    break;
-                }
-                GraphQLResponse::TransportError(err) => {
-                    runtime.push_subscription_error(
-                        sub_id,
-                        SubscriptionError::Transport {
-                            message: err.message,
-                            code: err.code,
-                            details: err.details,
-                        },
-                    );
-                    break;
-                }
-            }
-        }
-    });
 
     Ok(sub_id.into())
 }
@@ -454,16 +430,6 @@ pub async fn complete_transport(handle: &RuntimeHandle, request_id: u64) {
 // ---------------------------------------------------------------------------
 // Private helpers
 // ---------------------------------------------------------------------------
-
-fn to_link_op_type(op_type: shalom_core::operation::types::OperationType) -> LinkOperationType {
-    match op_type {
-        shalom_core::operation::types::OperationType::Query => LinkOperationType::Query,
-        shalom_core::operation::types::OperationType::Mutation => LinkOperationType::Mutation,
-        shalom_core::operation::types::OperationType::Subscription => {
-            LinkOperationType::Subscription
-        }
-    }
-}
 
 fn parse_variables(variables_json: Option<String>) -> anyhow::Result<Option<Map<String, Value>>> {
     let json = match variables_json {

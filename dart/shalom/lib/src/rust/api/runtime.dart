@@ -8,7 +8,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'runtime.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_link_op_type`, `to_observer_info`
+// These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_observer_info`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`
 
 /// Set the global log level filter for all Rust-side logging.
@@ -67,11 +67,15 @@ Future<BigInt> request({
   required String name,
   String? variablesJson,
   required ExecutionPolicyInput executionPolicy,
+  required RetryDelayInput retryDelay,
+  BigInt? refetchIntervalMs,
 }) => RustLib.instance.api.crateApiRuntimeRequest(
   handle: handle,
   name: name,
   variablesJson: variablesJson,
   executionPolicy: executionPolicy,
+  retryDelay: retryDelay,
+  refetchIntervalMs: refetchIntervalMs,
 );
 
 /// Write `data_json` to the cache as an optimistic response for the mutation
@@ -352,6 +356,20 @@ class ObserverInfo {
           watchedKeys == other.watchedKeys;
 }
 
+@freezed
+sealed class RetryDelayInput with _$RetryDelayInput {
+  const RetryDelayInput._();
+
+  /// Use the runtime's globally configured default (may itself be "off").
+  const factory RetryDelayInput.inherit() = RetryDelayInput_Inherit;
+
+  /// Disable auto-retry for this operation, regardless of the global default.
+  const factory RetryDelayInput.disabled() = RetryDelayInput_Disabled;
+
+  /// Retry after this many milliseconds, overriding the global default.
+  const factory RetryDelayInput.millis(BigInt field0) = RetryDelayInput_Millis;
+}
+
 /// Dart-facing runtime configuration.
 class RuntimeConfigInput {
   /// How often (in milliseconds) the background thread sweeps the cache for
@@ -363,10 +381,22 @@ class RuntimeConfigInput {
   /// becomes eligible for GC eviction. Defaults to 0 (no grace period).
   final BigInt? retentionGraceMs;
 
-  const RuntimeConfigInput({this.gcIntervalMs, this.retentionGraceMs});
+  /// Default delay (in milliseconds) before retrying an operation after a
+  /// transport error, for operations that don't override it via `request`'s
+  /// `retry_delay` param. Defaults to no auto-retry.
+  final BigInt? defaultRetryDelayMs;
+
+  const RuntimeConfigInput({
+    this.gcIntervalMs,
+    this.retentionGraceMs,
+    this.defaultRetryDelayMs,
+  });
 
   @override
-  int get hashCode => gcIntervalMs.hashCode ^ retentionGraceMs.hashCode;
+  int get hashCode =>
+      gcIntervalMs.hashCode ^
+      retentionGraceMs.hashCode ^
+      defaultRetryDelayMs.hashCode;
 
   @override
   bool operator ==(Object other) =>
@@ -374,7 +404,8 @@ class RuntimeConfigInput {
       other is RuntimeConfigInput &&
           runtimeType == other.runtimeType &&
           gcIntervalMs == other.gcIntervalMs &&
-          retentionGraceMs == other.retentionGraceMs;
+          retentionGraceMs == other.retentionGraceMs &&
+          defaultRetryDelayMs == other.defaultRetryDelayMs;
 }
 
 @freezed

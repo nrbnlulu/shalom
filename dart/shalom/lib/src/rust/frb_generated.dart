@@ -179,6 +179,8 @@ abstract class RustLibApi extends BaseApi {
     required String name,
     String? variablesJson,
     required ExecutionPolicyInput executionPolicy,
+    required RetryDelayInput retryDelay,
+    BigInt? refetchIntervalMs,
   });
 
   Future<void> crateApiRuntimeRollbackOptimistic({
@@ -998,6 +1000,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required String name,
     String? variablesJson,
     required ExecutionPolicyInput executionPolicy,
+    required RetryDelayInput retryDelay,
+    BigInt? refetchIntervalMs,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -1010,6 +1014,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_String(name, serializer);
           sse_encode_opt_String(variablesJson, serializer);
           sse_encode_execution_policy_input(executionPolicy, serializer);
+          sse_encode_box_autoadd_retry_delay_input(retryDelay, serializer);
+          sse_encode_opt_box_autoadd_u_64(refetchIntervalMs, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
@@ -1022,7 +1028,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiRuntimeRequestConstMeta,
-        argValues: [handle, name, variablesJson, executionPolicy],
+        argValues: [
+          handle,
+          name,
+          variablesJson,
+          executionPolicy,
+          retryDelay,
+          refetchIntervalMs,
+        ],
         apiImpl: this,
       ),
     );
@@ -1030,7 +1043,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiRuntimeRequestConstMeta => const TaskConstMeta(
     debugName: "request",
-    argNames: ["handle", "name", "variablesJson", "executionPolicy"],
+    argNames: [
+      "handle",
+      "name",
+      "variablesJson",
+      "executionPolicy",
+      "retryDelay",
+      "refetchIntervalMs",
+    ],
   );
 
   @override
@@ -1637,6 +1657,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  RetryDelayInput dco_decode_box_autoadd_retry_delay_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_retry_delay_input(raw);
+  }
+
+  @protected
   RuntimeConfigInput dco_decode_box_autoadd_runtime_config_input(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_runtime_config_input(raw);
@@ -1742,14 +1768,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  RetryDelayInput dco_decode_retry_delay_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return RetryDelayInput_Inherit();
+      case 1:
+        return RetryDelayInput_Disabled();
+      case 2:
+        return RetryDelayInput_Millis(dco_decode_u_64(raw[1]));
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
   RuntimeConfigInput dco_decode_runtime_config_input(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
     return RuntimeConfigInput(
       gcIntervalMs: dco_decode_opt_box_autoadd_u_64(arr[0]),
       retentionGraceMs: dco_decode_opt_box_autoadd_u_64(arr[1]),
+      defaultRetryDelayMs: dco_decode_opt_box_autoadd_u_64(arr[2]),
     );
   }
 
@@ -1962,6 +2004,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  RetryDelayInput sse_decode_box_autoadd_retry_delay_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_retry_delay_input(deserializer));
+  }
+
+  @protected
   RuntimeConfigInput sse_decode_box_autoadd_runtime_config_input(
     SseDeserializer deserializer,
   ) {
@@ -2109,15 +2159,35 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  RetryDelayInput sse_decode_retry_delay_input(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        return RetryDelayInput_Inherit();
+      case 1:
+        return RetryDelayInput_Disabled();
+      case 2:
+        var var_field0 = sse_decode_u_64(deserializer);
+        return RetryDelayInput_Millis(var_field0);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
   RuntimeConfigInput sse_decode_runtime_config_input(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var var_gcIntervalMs = sse_decode_opt_box_autoadd_u_64(deserializer);
     var var_retentionGraceMs = sse_decode_opt_box_autoadd_u_64(deserializer);
+    var var_defaultRetryDelayMs = sse_decode_opt_box_autoadd_u_64(deserializer);
     return RuntimeConfigInput(
       gcIntervalMs: var_gcIntervalMs,
       retentionGraceMs: var_retentionGraceMs,
+      defaultRetryDelayMs: var_defaultRetryDelayMs,
     );
   }
 
@@ -2372,6 +2442,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_retry_delay_input(
+    RetryDelayInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_retry_delay_input(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_runtime_config_input(
     RuntimeConfigInput self,
     SseSerializer serializer,
@@ -2506,6 +2585,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_retry_delay_input(
+    RetryDelayInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case RetryDelayInput_Inherit():
+        sse_encode_i_32(0, serializer);
+      case RetryDelayInput_Disabled():
+        sse_encode_i_32(1, serializer);
+      case RetryDelayInput_Millis(field0: final field0):
+        sse_encode_i_32(2, serializer);
+        sse_encode_u_64(field0, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_runtime_config_input(
     RuntimeConfigInput self,
     SseSerializer serializer,
@@ -2513,6 +2609,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_opt_box_autoadd_u_64(self.gcIntervalMs, serializer);
     sse_encode_opt_box_autoadd_u_64(self.retentionGraceMs, serializer);
+    sse_encode_opt_box_autoadd_u_64(self.defaultRetryDelayMs, serializer);
   }
 
   @protected
