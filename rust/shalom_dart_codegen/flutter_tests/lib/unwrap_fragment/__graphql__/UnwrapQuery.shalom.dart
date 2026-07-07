@@ -103,7 +103,7 @@ class UnwrapQuery_pet {
   }
 }
 
-class UnwrapQuery_petUnwrapped {
+class UnwrapQuery_petUnwrapped implements PetWidget {
   static String G__typename = "Pet";
 
   /// class members

@@ -29,12 +29,12 @@ import '{{ import_path }}';
 
 // ------------ OBJECT DEFINITIONS -------------
 {% set response_class_name = operation_name ~ "Response" %}
-class {{ response_class_name }} {% if not is_observe %}{{ implements_used_fragments(context.operation.root_type.used_fragments) }}{% endif %}  {
+class {{ response_class_name }} {{ implements_used_fragments(implementable_fragments(context.operation.root_type.used_fragments, context.operation.root_type.unwrapped_fragments)) }}  {
     {{ selection_object_impl(response_class_name, context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name, shared_selections=context.operation.root_type.selections) }}
 }
 
 {% for name, obj in typedefs.objects | items %}
-    {{ selection_object_definition(obj, implement_fragments=not is_observe) }}
+    {{ selection_object_definition(obj) }}
 {% endfor %}
 
 // ------------ END OBJECT DEFINITIONS -------------

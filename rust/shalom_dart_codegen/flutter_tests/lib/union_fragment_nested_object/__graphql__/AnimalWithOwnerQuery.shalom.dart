@@ -60,7 +60,7 @@ class AnimalWithOwnerQueryResponse {
 
 // ------------ INTERFACE DEFINITIONS -------------
 
-sealed class AnimalWithOwnerQuery_animal implements AnimalWithOwnerWidget {
+sealed class AnimalWithOwnerQuery_animal {
   String get id;
 
   String get $__typename;

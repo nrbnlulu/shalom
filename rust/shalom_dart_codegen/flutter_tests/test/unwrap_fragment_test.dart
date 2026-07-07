@@ -4,6 +4,7 @@ import 'package:shalom/shalom.dart';
 import '../lib/graphql/__graphql__/shalom_init.shalom.dart';
 import 'package:flutter_tests/unwrap_fragment/unwrap_query.dart';
 import 'package:flutter_tests/unwrap_fragment/__graphql__/UnwrapQuery.shalom.dart';
+import 'package:flutter_tests/fragment/__graphql__/PetWidget.shalom.dart';
 import 'helpers/mock_link.dart';
 import 'helpers/test_env.dart';
 
@@ -81,6 +82,8 @@ void main() {
 
       expect(data.petUnwrapped?.id, '2');
       expect(data.petUnwrapped?.name, 'Rex');
+      // The inlined @unwrap type still implements the fragment interface.
+      expect(data.petUnwrapped is PetWidget, true);
     },
   );
 }

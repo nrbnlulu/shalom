@@ -58,7 +58,7 @@ class AnimalQueryResponse {
 
 // ------------ INTERFACE DEFINITIONS -------------
 
-sealed class AnimalQuery_animal implements AnimalWidget {
+sealed class AnimalQuery_animal {
   String get id;
 
   String get $__typename;

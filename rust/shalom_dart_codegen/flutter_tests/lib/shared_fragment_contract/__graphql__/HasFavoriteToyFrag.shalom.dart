@@ -131,7 +131,7 @@ final class HasFavoriteToyFragData$Unknown extends HasFavoriteToyFragData {
   shalom_core.JsonObject toJson() => throw UnimplementedError();
 }
 
-class HasFavoriteToyFrag_favoriteToy implements ToyFrag {
+class HasFavoriteToyFrag_favoriteToy {
   static String G__typename = "Toy";
 
   /// class members
