@@ -130,6 +130,8 @@ final class UserWidgetData implements shalom_core.OperationInterface {
 
 final class UserWidgetObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final UserWidgetVariables variables;
 
@@ -137,6 +139,8 @@ final class UserWidgetObservable {
     required this.variables,
 
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'UserWidget';
@@ -151,6 +155,8 @@ final class UserWidgetObservable {
 
       decoder: UserWidgetData.fromCache,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }

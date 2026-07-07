@@ -13,12 +13,16 @@ abstract class $UserWidget extends StatefulWidget {
   String operation$Name() => 'UserWidget';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final UserWidgetVariables variables;
   const $UserWidget({
     super.key,
     required this.variables,
     this.executionPolicy = .cacheFirst,
+    this.retryDelay = const .inherit(),
+    this.autoRefetch,
   });
 
   Widget buildLoading(BuildContext context);
@@ -66,6 +70,8 @@ class _$UserWidgetState extends State<$UserWidget> {
               variables: widget.variables,
 
               executionPolicy: widget.executionPolicy,
+              retryDelay: widget.retryDelay,
+              autoRefetch: widget.autoRefetch,
             )
             .observe(client)
             .listen(

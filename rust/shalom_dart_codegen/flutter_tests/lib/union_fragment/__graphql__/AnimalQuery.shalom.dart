@@ -217,6 +217,8 @@ final class AnimalQueryData implements shalom_core.OperationInterface {
 
 final class AnimalQueryObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final AnimalQueryVariables variables;
 
@@ -224,6 +226,8 @@ final class AnimalQueryObservable {
     required this.variables,
 
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'AnimalQuery';
@@ -238,6 +242,8 @@ final class AnimalQueryObservable {
 
       decoder: AnimalQueryData.fromCache,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }

@@ -222,6 +222,8 @@ final class AlbumGifSearchData implements shalom_core.OperationInterface {
 
 final class AlbumGifSearchObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final AlbumGifSearchVariables variables;
 
@@ -229,6 +231,8 @@ final class AlbumGifSearchObservable {
     required this.variables,
 
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'AlbumGifSearch';
@@ -243,6 +247,8 @@ final class AlbumGifSearchObservable {
 
       decoder: AlbumGifSearchData.fromCache,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }

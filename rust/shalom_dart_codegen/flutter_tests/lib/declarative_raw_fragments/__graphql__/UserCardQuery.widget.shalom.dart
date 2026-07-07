@@ -15,12 +15,16 @@ abstract class $UserCardQuery extends StatefulWidget {
   String operation$Name() => 'UserCardQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final UserCardQueryVariables variables;
   const $UserCardQuery({
     super.key,
     required this.variables,
     this.executionPolicy = .cacheFirst,
+    this.retryDelay = const .inherit(),
+    this.autoRefetch,
   });
 
   Widget buildLoading(BuildContext context);
@@ -68,6 +72,8 @@ class _$UserCardQueryState extends State<$UserCardQuery> {
               variables: widget.variables,
 
               executionPolicy: widget.executionPolicy,
+              retryDelay: widget.retryDelay,
+              autoRefetch: widget.autoRefetch,
             )
             .observe(client)
             .listen(
