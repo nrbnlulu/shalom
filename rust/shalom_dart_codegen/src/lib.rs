@@ -634,6 +634,12 @@ where
 
                 if frag_on_type == &resolve_to.schema_typename {
                     resolve_to.used_fragments.insert(frag_name.clone());
+                    // Flatten the fragment's selections through the same type-aware
+                    // walk instead of `get_all_selections_distinct`, so type
+                    // conditions nested inside the fragment (e.g. an interface
+                    // fragment it spreads that carries `... on OtherSibling`)
+                    // are filtered against this concrete type.
+                    collect_selections_for_concrete(resolve_to, fragment.get_on_type(), global_ctx);
                 } else if global_ctx
                     .schema_ctx
                     .is_type_implementing_interface(&resolve_to.schema_typename, frag_on_type)
@@ -684,7 +690,6 @@ where
                     &multitype.common().common,
                     &ctx_clone2,
                 );
-                resolved.selections = resolved.get_all_selections_distinct(&ctx_clone2);
                 ret.push(resolved);
             }
             minijinja::Value::from_serialize(ret)

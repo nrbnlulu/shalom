@@ -136,6 +136,11 @@ fn test_fragment_inherited_interface_fields_dart() {
 }
 
 #[test]
+fn test_fragment_concrete_spread_interface_frag_dart() {
+    run_dart_tests_for_usecase("fragment_concrete_spread_interface_frag");
+}
+
+#[test]
 fn test_one_of_input_dart() {
     run_dart_tests_for_usecase("one_of_input");
 }

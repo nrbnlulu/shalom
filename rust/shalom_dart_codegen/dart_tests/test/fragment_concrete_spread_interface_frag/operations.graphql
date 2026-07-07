@@ -1,0 +1,35 @@
+fragment HasConnectionInfoFrag on IHasConnectionInfo {
+  connectionInfo {
+    hostname
+  }
+  ... on Nvr {
+    vendor
+  }
+}
+
+fragment NvrDetailsFrag on Nvr {
+  ...HasConnectionInfoFrag
+}
+
+fragment OnvifCameraDetailsFrag on OnvifCamera {
+  ...HasConnectionInfoFrag
+}
+
+fragment StreamableSystemFrag on System {
+  __typename
+  id
+
+  ... on Nvr {
+    ...NvrDetailsFrag
+  }
+
+  ... on OnvifCamera {
+    ...OnvifCameraDetailsFrag
+  }
+}
+
+query GetSystems {
+  systems {
+    ...StreamableSystemFrag
+  }
+}
