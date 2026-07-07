@@ -14,8 +14,15 @@ abstract class $StreetSubscription extends StatefulWidget {
   String operation$Name() => 'StreetSubscription';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
-  const $StreetSubscription({super.key, this.executionPolicy = .cacheFirst});
+  const $StreetSubscription({
+    super.key,
+    this.executionPolicy = .cacheFirst,
+    this.retryDelay = const .inherit(),
+    this.autoRefetch,
+  });
 
   Widget buildLoading(BuildContext context);
   Widget buildError(BuildContext context, Object error);
@@ -56,25 +63,30 @@ class _$StreetSubscriptionState extends State<$StreetSubscription> {
   void _subscribe() {
     _sub?.cancel();
     final client = ShalomScope.of(context);
-    _sub = StreetSubscriptionObservable(executionPolicy: widget.executionPolicy)
-        .observe(client)
-        .listen(
-          (response) {
-            setState(() {
-              switch (response) {
-                case shalom_core.GraphQLData(data: final data):
-                  _data = data;
-                  _error = null;
-                case shalom_core.GraphQLError() ||
-                    shalom_core.LinkExceptionResponse():
-                  _error = response;
-              }
-            });
-          },
-          onDone: () {
-            if (mounted) _subscribe();
-          },
-        );
+    _sub =
+        StreetSubscriptionObservable(
+              executionPolicy: widget.executionPolicy,
+              retryDelay: widget.retryDelay,
+              autoRefetch: widget.autoRefetch,
+            )
+            .observe(client)
+            .listen(
+              (response) {
+                setState(() {
+                  switch (response) {
+                    case shalom_core.GraphQLData(data: final data):
+                      _data = data;
+                      _error = null;
+                    case shalom_core.GraphQLError() ||
+                        shalom_core.LinkExceptionResponse():
+                      _error = response;
+                  }
+                });
+              },
+              onDone: () {
+                if (mounted) _subscribe();
+              },
+            );
   }
 
   @override

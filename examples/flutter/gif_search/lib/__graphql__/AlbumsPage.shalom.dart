@@ -186,9 +186,13 @@ final class AlbumsPageData implements shalom_core.OperationInterface {
 
 final class AlbumsPageObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   const AlbumsPageObservable({
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'AlbumsPage';
@@ -201,6 +205,8 @@ final class AlbumsPageObservable {
 
       decoder: AlbumsPageData.fromCache,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }

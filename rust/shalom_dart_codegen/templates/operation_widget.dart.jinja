@@ -23,11 +23,13 @@ abstract class ${{ operation_name }} extends StatefulWidget {
     String operation$Name() => '{{ operation_name }}';
 
     final shalom_core.ExecutionPolicyInput executionPolicy;
+    final shalom_core.RetryDelay retryDelay;
+    final Duration? autoRefetch;
     {% if op_variables_exist %}
         final {{ operation_name }}Variables variables;
-        const ${{ operation_name }}({super.key, required this.variables, this.executionPolicy = .cacheFirst});
+        const ${{ operation_name }}({super.key, required this.variables, this.executionPolicy = .cacheFirst, this.retryDelay = const .inherit(), this.autoRefetch});
     {% else %}
-        const ${{ operation_name }}({super.key, this.executionPolicy = .cacheFirst});
+        const ${{ operation_name }}({super.key, this.executionPolicy = .cacheFirst, this.retryDelay = const .inherit(), this.autoRefetch});
     {% endif %}
 
     Widget buildLoading(BuildContext context);
@@ -71,6 +73,8 @@ class _${{ operation_name }}State extends State<${{ operation_name }}> {
                 variables: widget.variables,
                 {% endif %}
                 executionPolicy: widget.executionPolicy,
+                retryDelay: widget.retryDelay,
+                autoRefetch: widget.autoRefetch,
             )
             .observe(client)
             .listen(

@@ -114,6 +114,7 @@ Generated query/subscription APIs usually include:
 - `ClassNameObservable.observe(client)` for lower-level observation.
 - `ClassNameData.readFrom(cache)` for mutation update callbacks.
 - `executionPolicy`, defaulting to `ExecutionPolicyInput.cacheFirst`.
+- `retryDelay` and `autoRefetch` for resilience — see [Retry And Auto-Refetch](#retry-and-auto-refetch).
 
 ## Execution Policy
 
@@ -145,6 +146,21 @@ The widget keeps an active observer for as long as it's in the tree, so GC won't
 
 `@Subscription` uses the same widget shape as `@Query`; the link must support streaming operation results.
 
+## Retry And Auto-Refetch
+
+Generated query/subscription widgets (and `ShalomRuntimeClient.request`) accept two independent, orthogonal knobs for resilience:
+
+- `retryDelay` (a `RetryDelay`) — if the link reports a transport error (e.g. a dropped connection), the error is always emitted on the stream immediately, and if `retryDelay` resolves to a delay, the whole operation is re-issued after it. Defaults to `RetryDelay.inherit()`, which uses the runtime's global default (`runtimeConfig(defaultRetryDelay: ...)`); `RetryDelay.disabled()` turns it off for one call; `RetryDelay.after(duration)` overrides the delay per call. A GraphQL-level error is terminal and never retried — only transport errors are. `ShalomRuntimeClient.mutate` defaults to `RetryDelay.disabled()` since blindly re-sending a mutation after a network blip can duplicate a side effect; opt in explicitly if the mutation is known to be idempotent.
+- `autoRefetch` (a `Duration?`) — independent of any error, re-issues the operation on a plain timer as long as it's still observed. Only meaningful for queries (subscriptions stay open on their own; polling a mutation on a timer doesn't make sense). `null` (the default) means no polling.
+
+```dart
+AlbumsPage(
+  retryDelay: RetryDelay.after(const Duration(seconds: 2)),
+  autoRefetch: const Duration(seconds: 30),
+)
+```
+
+Both stop as soon as the widget/stream is disposed/cancelled — cancellation is checked before each retry/refetch fires, so there's no risk of a stray request landing after the caller stopped listening.
 
 ## Naming Rules
 

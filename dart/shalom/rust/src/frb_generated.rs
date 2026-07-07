@@ -1213,6 +1213,9 @@ fn wire__crate__api__runtime__request_impl(
             let api_variables_json = <Option<String>>::sse_decode(&mut deserializer);
             let api_execution_policy =
                 <crate::api::runtime::ExecutionPolicyInput>::sse_decode(&mut deserializer);
+            let api_retry_delay =
+                <crate::api::runtime::RetryDelayInput>::sse_decode(&mut deserializer);
+            let api_refetch_interval_ms = <Option<u64>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
@@ -1241,6 +1244,8 @@ fn wire__crate__api__runtime__request_impl(
                             api_name,
                             api_variables_json,
                             api_execution_policy,
+                            api_retry_delay,
+                            api_refetch_interval_ms,
                         )
                         .await?;
                         Ok(output_ok)
@@ -2297,14 +2302,38 @@ impl SseDecode for Option<u64> {
     }
 }
 
+impl SseDecode for crate::api::runtime::RetryDelayInput {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                return crate::api::runtime::RetryDelayInput::Inherit;
+            }
+            1 => {
+                return crate::api::runtime::RetryDelayInput::Disabled;
+            }
+            2 => {
+                let mut var_field0 = <u64>::sse_decode(deserializer);
+                return crate::api::runtime::RetryDelayInput::Millis(var_field0);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
 impl SseDecode for crate::api::runtime::RuntimeConfigInput {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_gcIntervalMs = <Option<u64>>::sse_decode(deserializer);
         let mut var_retentionGraceMs = <Option<u64>>::sse_decode(deserializer);
+        let mut var_defaultRetryDelayMs = <Option<u64>>::sse_decode(deserializer);
         return crate::api::runtime::RuntimeConfigInput {
             gc_interval_ms: var_gcIntervalMs,
             retention_grace_ms: var_retentionGraceMs,
+            default_retry_delay_ms: var_defaultRetryDelayMs,
         };
     }
 }
@@ -2614,11 +2643,38 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::runtime::ObserverInfo>
     }
 }
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::runtime::RetryDelayInput {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::runtime::RetryDelayInput::Inherit => [0.into_dart()].into_dart(),
+            crate::api::runtime::RetryDelayInput::Disabled => [1.into_dart()].into_dart(),
+            crate::api::runtime::RetryDelayInput::Millis(field0) => {
+                [2.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::runtime::RetryDelayInput
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::runtime::RetryDelayInput>
+    for crate::api::runtime::RetryDelayInput
+{
+    fn into_into_dart(self) -> crate::api::runtime::RetryDelayInput {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::runtime::RuntimeConfigInput {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         [
             self.gc_interval_ms.into_into_dart().into_dart(),
             self.retention_grace_ms.into_into_dart().into_dart(),
+            self.default_retry_delay_ms.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -2932,11 +2988,33 @@ impl SseEncode for Option<u64> {
     }
 }
 
+impl SseEncode for crate::api::runtime::RetryDelayInput {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::runtime::RetryDelayInput::Inherit => {
+                <i32>::sse_encode(0, serializer);
+            }
+            crate::api::runtime::RetryDelayInput::Disabled => {
+                <i32>::sse_encode(1, serializer);
+            }
+            crate::api::runtime::RetryDelayInput::Millis(field0) => {
+                <i32>::sse_encode(2, serializer);
+                <u64>::sse_encode(field0, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
 impl SseEncode for crate::api::runtime::RuntimeConfigInput {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <Option<u64>>::sse_encode(self.gc_interval_ms, serializer);
         <Option<u64>>::sse_encode(self.retention_grace_ms, serializer);
+        <Option<u64>>::sse_encode(self.default_retry_delay_ms, serializer);
     }
 }
 

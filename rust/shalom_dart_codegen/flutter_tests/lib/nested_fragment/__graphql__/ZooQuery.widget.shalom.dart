@@ -14,12 +14,16 @@ abstract class $ZooQuery extends StatefulWidget {
   String operation$Name() => 'ZooQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final ZooQueryVariables variables;
   const $ZooQuery({
     super.key,
     required this.variables,
     this.executionPolicy = .cacheFirst,
+    this.retryDelay = const .inherit(),
+    this.autoRefetch,
   });
 
   Widget buildLoading(BuildContext context);
@@ -67,6 +71,8 @@ class _$ZooQueryState extends State<$ZooQuery> {
               variables: widget.variables,
 
               executionPolicy: widget.executionPolicy,
+              retryDelay: widget.retryDelay,
+              autoRefetch: widget.autoRefetch,
             )
             .observe(client)
             .listen(

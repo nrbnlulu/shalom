@@ -40,13 +40,13 @@ abstract class $DeleteAlbumMutation {
   /// ```dart
   /// await addTodo.executeWithCacheUpdate(
   ///   input: AddTodoInput(title: 'Buy milk'),
-  ///   update: (cache, data) {
-  ///     final current = cache.readQuery(
+  ///   update: (cache, data) async {
+  ///     final current = await cache.readQuery(
   ///       name: 'GetTodos',
   ///       decoder: GetTodosData.fromCache,
   ///     );
   ///     if (current != null) {
-  ///       cache.writeQuery(
+  ///       await cache.writeQuery(
   ///         data: GetTodosData(todos: [...current.todos, data.addTodo!]),
   ///       );
   ///     }

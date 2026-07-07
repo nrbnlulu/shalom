@@ -12,6 +12,302 @@ part of 'runtime.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
+mixin _$RetryDelayInput {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RetryDelayInput);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'RetryDelayInput()';
+}
+
+
+}
+
+/// @nodoc
+class $RetryDelayInputCopyWith<$Res>  {
+$RetryDelayInputCopyWith(RetryDelayInput _, $Res Function(RetryDelayInput) __);
+}
+
+
+/// Adds pattern-matching-related methods to [RetryDelayInput].
+extension RetryDelayInputPatterns on RetryDelayInput {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( RetryDelayInput_Inherit value)?  inherit,TResult Function( RetryDelayInput_Disabled value)?  disabled,TResult Function( RetryDelayInput_Millis value)?  millis,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case RetryDelayInput_Inherit() when inherit != null:
+return inherit(_that);case RetryDelayInput_Disabled() when disabled != null:
+return disabled(_that);case RetryDelayInput_Millis() when millis != null:
+return millis(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( RetryDelayInput_Inherit value)  inherit,required TResult Function( RetryDelayInput_Disabled value)  disabled,required TResult Function( RetryDelayInput_Millis value)  millis,}){
+final _that = this;
+switch (_that) {
+case RetryDelayInput_Inherit():
+return inherit(_that);case RetryDelayInput_Disabled():
+return disabled(_that);case RetryDelayInput_Millis():
+return millis(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( RetryDelayInput_Inherit value)?  inherit,TResult? Function( RetryDelayInput_Disabled value)?  disabled,TResult? Function( RetryDelayInput_Millis value)?  millis,}){
+final _that = this;
+switch (_that) {
+case RetryDelayInput_Inherit() when inherit != null:
+return inherit(_that);case RetryDelayInput_Disabled() when disabled != null:
+return disabled(_that);case RetryDelayInput_Millis() when millis != null:
+return millis(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  inherit,TResult Function()?  disabled,TResult Function( BigInt field0)?  millis,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case RetryDelayInput_Inherit() when inherit != null:
+return inherit();case RetryDelayInput_Disabled() when disabled != null:
+return disabled();case RetryDelayInput_Millis() when millis != null:
+return millis(_that.field0);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  inherit,required TResult Function()  disabled,required TResult Function( BigInt field0)  millis,}) {final _that = this;
+switch (_that) {
+case RetryDelayInput_Inherit():
+return inherit();case RetryDelayInput_Disabled():
+return disabled();case RetryDelayInput_Millis():
+return millis(_that.field0);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  inherit,TResult? Function()?  disabled,TResult? Function( BigInt field0)?  millis,}) {final _that = this;
+switch (_that) {
+case RetryDelayInput_Inherit() when inherit != null:
+return inherit();case RetryDelayInput_Disabled() when disabled != null:
+return disabled();case RetryDelayInput_Millis() when millis != null:
+return millis(_that.field0);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class RetryDelayInput_Inherit extends RetryDelayInput {
+  const RetryDelayInput_Inherit(): super._();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RetryDelayInput_Inherit);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'RetryDelayInput.inherit()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class RetryDelayInput_Disabled extends RetryDelayInput {
+  const RetryDelayInput_Disabled(): super._();
+  
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RetryDelayInput_Disabled);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'RetryDelayInput.disabled()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
+class RetryDelayInput_Millis extends RetryDelayInput {
+  const RetryDelayInput_Millis(this.field0): super._();
+  
+
+ final  BigInt field0;
+
+/// Create a copy of RetryDelayInput
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$RetryDelayInput_MillisCopyWith<RetryDelayInput_Millis> get copyWith => _$RetryDelayInput_MillisCopyWithImpl<RetryDelayInput_Millis>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is RetryDelayInput_Millis&&(identical(other.field0, field0) || other.field0 == field0));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,field0);
+
+@override
+String toString() {
+  return 'RetryDelayInput.millis(field0: $field0)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $RetryDelayInput_MillisCopyWith<$Res> implements $RetryDelayInputCopyWith<$Res> {
+  factory $RetryDelayInput_MillisCopyWith(RetryDelayInput_Millis value, $Res Function(RetryDelayInput_Millis) _then) = _$RetryDelayInput_MillisCopyWithImpl;
+@useResult
+$Res call({
+ BigInt field0
+});
+
+
+
+
+}
+/// @nodoc
+class _$RetryDelayInput_MillisCopyWithImpl<$Res>
+    implements $RetryDelayInput_MillisCopyWith<$Res> {
+  _$RetryDelayInput_MillisCopyWithImpl(this._self, this._then);
+
+  final RetryDelayInput_Millis _self;
+  final $Res Function(RetryDelayInput_Millis) _then;
+
+/// Create a copy of RetryDelayInput
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
+  return _then(RetryDelayInput_Millis(
+null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
+as BigInt,
+  ));
+}
+
+
+}
+
+/// @nodoc
 mixin _$SubscriptionEvent {
 
 

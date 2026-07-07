@@ -14,12 +14,16 @@ abstract class $ZooAnimalsQuery extends StatefulWidget {
   String operation$Name() => 'ZooAnimalsQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final ZooAnimalsQueryVariables variables;
   const $ZooAnimalsQuery({
     super.key,
     required this.variables,
     this.executionPolicy = .cacheFirst,
+    this.retryDelay = const .inherit(),
+    this.autoRefetch,
   });
 
   Widget buildLoading(BuildContext context);
@@ -67,6 +71,8 @@ class _$ZooAnimalsQueryState extends State<$ZooAnimalsQuery> {
               variables: widget.variables,
 
               executionPolicy: widget.executionPolicy,
+              retryDelay: widget.retryDelay,
+              autoRefetch: widget.autoRefetch,
             )
             .observe(client)
             .listen(

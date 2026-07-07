@@ -91,6 +91,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   ObservedRefInput dco_decode_box_autoadd_observed_ref_input(dynamic raw);
 
   @protected
+  RetryDelayInput dco_decode_box_autoadd_retry_delay_input(dynamic raw);
+
+  @protected
   RuntimeConfigInput dco_decode_box_autoadd_runtime_config_input(dynamic raw);
 
   @protected
@@ -133,6 +136,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt? dco_decode_opt_box_autoadd_u_64(dynamic raw);
+
+  @protected
+  RetryDelayInput dco_decode_retry_delay_input(dynamic raw);
 
   @protected
   RuntimeConfigInput dco_decode_runtime_config_input(dynamic raw);
@@ -224,6 +230,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  RetryDelayInput sse_decode_box_autoadd_retry_delay_input(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   RuntimeConfigInput sse_decode_box_autoadd_runtime_config_input(
     SseDeserializer deserializer,
   );
@@ -272,6 +283,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt? sse_decode_opt_box_autoadd_u_64(SseDeserializer deserializer);
+
+  @protected
+  RetryDelayInput sse_decode_retry_delay_input(SseDeserializer deserializer);
 
   @protected
   RuntimeConfigInput sse_decode_runtime_config_input(
@@ -379,6 +393,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_box_autoadd_retry_delay_input(
+    RetryDelayInput self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_runtime_config_input(
     RuntimeConfigInput self,
     SseSerializer serializer,
@@ -440,6 +460,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_box_autoadd_u_64(BigInt? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_retry_delay_input(
+    RetryDelayInput self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_runtime_config_input(

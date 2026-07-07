@@ -14,12 +14,16 @@ abstract class $AnimalWithOwnerQuery extends StatefulWidget {
   String operation$Name() => 'AnimalWithOwnerQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final AnimalWithOwnerQueryVariables variables;
   const $AnimalWithOwnerQuery({
     super.key,
     required this.variables,
     this.executionPolicy = .cacheFirst,
+    this.retryDelay = const .inherit(),
+    this.autoRefetch,
   });
 
   Widget buildLoading(BuildContext context);
@@ -68,6 +72,8 @@ class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
               variables: widget.variables,
 
               executionPolicy: widget.executionPolicy,
+              retryDelay: widget.retryDelay,
+              autoRefetch: widget.autoRefetch,
             )
             .observe(client)
             .listen(

@@ -268,9 +268,13 @@ final class ZooAnimalsContractQueryData
 
 final class ZooAnimalsContractQueryObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   const ZooAnimalsContractQueryObservable({
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'ZooAnimalsContractQuery';
@@ -283,6 +287,8 @@ final class ZooAnimalsContractQueryObservable {
 
       decoder: ZooAnimalsContractQueryData.fromCache,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }
