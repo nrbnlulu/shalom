@@ -501,6 +501,14 @@ impl ShalomRuntime {
                 let Some(wait) = wait else {
                     return;
                 };
+                // `cancel.notified()` only wakes a task that's already awaiting
+                // it — if `unsubscribe` fired between the inner loop ending and
+                // here, that notification is lost and a freshly created
+                // `notified()` future below would never resolve. Check first so
+                // an already-cancelled subscription doesn't sleep needlessly.
+                if !runtime.subscription_exists(&sub_id) {
+                    return;
+                }
                 tokio::select! {
                     biased;
                     _ = cancel.notified() => return,
