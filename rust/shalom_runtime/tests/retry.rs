@@ -1,11 +1,16 @@
-use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 use serde_json::json;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::UnboundedReceiverStream;
 use tokio_stream::StreamExt;
 
 use shalom_runtime::sansio_protocols::host::HostLink;
-use shalom_runtime::sansio_protocols::{GraphQLLink, GraphQLResponse, TransportError};
+use shalom_runtime::sansio_protocols::{
+    GraphQLLink, GraphQLResponse, LinkStream, Request, TransportError,
+};
 use shalom_runtime::{ExecutionPolicy, RuntimeConfig, ShalomRuntime};
 
 const SCHEMA: &str = r#"
@@ -161,5 +166,89 @@ async fn unsubscribing_before_retry_cancels_it() {
     assert!(
         no_retry.is_err(),
         "expected no retry request after cancellation"
+    );
+}
+
+/// A [`GraphQLLink`] whose stream never completes and never yields another
+/// item (simulating a live, still-open network subscription), instrumented to
+/// report when the stream itself is dropped.
+struct PendingForeverLink {
+    dropped: Arc<AtomicBool>,
+    /// Keeps each request's channel sender alive so its receiver stream never
+    /// closes on its own — the only way it ends is by being dropped.
+    senders: Mutex<Vec<mpsc::UnboundedSender<GraphQLResponse>>>,
+}
+
+struct DropFlagStream {
+    inner: UnboundedReceiverStream<GraphQLResponse>,
+    dropped: Arc<AtomicBool>,
+}
+
+impl tokio_stream::Stream for DropFlagStream {
+    type Item = GraphQLResponse;
+    fn poll_next(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Option<Self::Item>> {
+        std::pin::Pin::new(&mut self.inner).poll_next(cx)
+    }
+}
+
+impl Drop for DropFlagStream {
+    fn drop(&mut self) {
+        self.dropped.store(true, Ordering::SeqCst);
+    }
+}
+
+impl GraphQLLink for PendingForeverLink {
+    fn execute(&self, _request: Request) -> LinkStream {
+        let (tx, rx) = mpsc::unbounded_channel();
+        self.senders.lock().unwrap().push(tx);
+        Box::pin(DropFlagStream {
+            inner: UnboundedReceiverStream::new(rx),
+            dropped: self.dropped.clone(),
+        })
+    }
+}
+
+/// A live subscription's in-flight stream must be aborted promptly on
+/// `unsubscribe` — not left polling forever until the link happens to produce
+/// another item (which, for an open GraphQL subscription, may be never).
+#[tokio::test]
+async fn unsubscribing_aborts_in_flight_stream_promptly() {
+    let dropped = Arc::new(AtomicBool::new(false));
+    let link = Arc::new(PendingForeverLink {
+        dropped: dropped.clone(),
+        senders: Mutex::new(Vec::new()),
+    });
+    let runtime =
+        ShalomRuntime::init(SCHEMA, Vec::new(), RuntimeConfig::default()).expect("runtime init");
+    let op_ctx = runtime
+        .register_operation("query TestOp @observe { value }")
+        .expect("register operation");
+
+    let sub_id = runtime.execute_operation(
+        op_ctx,
+        None,
+        ExecutionPolicy::NetworkFirst,
+        link.clone() as Arc<dyn GraphQLLink>,
+        None,
+    );
+
+    // Give the spawned task a chance to call `link.execute` and start polling.
+    tokio::time::sleep(Duration::from_millis(20)).await;
+    assert!(
+        !dropped.load(Ordering::SeqCst),
+        "stream should still be open before unsubscribe"
+    );
+
+    runtime.unsubscribe(&sub_id);
+
+    // The in-flight stream should be dropped promptly, not held open
+    // indefinitely waiting for a network item that may never come.
+    tokio::time::sleep(Duration::from_millis(20)).await;
+    assert!(
+        dropped.load(Ordering::SeqCst),
+        "stream should be aborted promptly after unsubscribe"
     );
 }

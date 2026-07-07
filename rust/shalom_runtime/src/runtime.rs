@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use parking_lot::Mutex;
 use serde_json::{Map, Value};
-use tokio::sync::mpsc;
+use tokio::sync::{Notify, mpsc};
 use tokio_stream::{Stream, StreamExt};
 use tokio_stream::wrappers::UnboundedReceiverStream;
 
@@ -182,6 +182,10 @@ struct SubscriptionState {
     keys: HashSet<String>,
     sender: mpsc::UnboundedSender<Result<RuntimeResponse, SubscriptionError>>,
     receiver: Option<mpsc::UnboundedReceiver<Result<RuntimeResponse, SubscriptionError>>>,
+    /// Fired when this subscription is unsubscribed, so any in-flight network
+    /// request driving it (see [`ShalomRuntime::execute_operation`]) can abort
+    /// immediately instead of waiting on the next stream item.
+    cancel: Arc<Notify>,
 }
 
 #[derive(Clone)]
@@ -413,6 +417,14 @@ impl ShalomRuntime {
             execution_policy,
         );
 
+        // Cancellation signal: fired by `unsubscribe` so this task can abort an
+        // in-flight `stream.next()` (or a pending retry sleep) immediately,
+        // rather than only noticing at the next stream item / after the delay.
+        let Some(cancel) = self.subscription_cancel_signal(&sub_id) else {
+            // Already unsubscribed before the task even got a chance to run.
+            return sub_id;
+        };
+
         let runtime = self.clone();
         tokio::spawn(async move {
             let request = Request {
@@ -427,7 +439,16 @@ impl ShalomRuntime {
                 let mut stream = link.execute(request.clone());
                 let mut transport_failed = false;
 
-                while let Some(response) = stream.next().await {
+                loop {
+                    let response = tokio::select! {
+                        biased;
+                        _ = cancel.notified() => return,
+                        item = stream.next() => match item {
+                            Some(response) => response,
+                            None => break,
+                        },
+                    };
+
                     match response {
                         GraphQLResponse::Data { data, .. } => {
                             if let Err(e) =
@@ -473,7 +494,11 @@ impl ShalomRuntime {
                 let Some(delay) = retry_delay else {
                     return;
                 };
-                tokio::time::sleep(delay).await;
+                tokio::select! {
+                    biased;
+                    _ = cancel.notified() => return,
+                    _ = tokio::time::sleep(delay) => {}
+                }
                 if !runtime.subscription_exists(&sub_id) {
                     return;
                 }
@@ -745,12 +770,16 @@ impl ShalomRuntime {
     }
 
     pub fn unsubscribe(&self, id: &SubscriptionId) {
-        let keys = {
+        let removed = {
             let mut manager = self.subscriptions.lock();
-            manager.subscriptions.remove(id).map(|state| state.keys)
+            manager.subscriptions.remove(id)
         };
-        if let Some(keys) = keys {
-            self.subscription_tracker.lock().unsubscribe(keys);
+        if let Some(state) = removed {
+            // Wake any in-flight network request driving this subscription
+            // (see `execute_operation`) so it aborts immediately instead of
+            // waiting on the next stream item.
+            state.cancel.notify_waiters();
+            self.subscription_tracker.lock().unsubscribe(state.keys);
         }
     }
 
@@ -979,11 +1008,23 @@ impl ShalomRuntime {
                 keys: refs,
                 sender,
                 receiver: Some(receiver),
+                cancel: Arc::new(Notify::new()),
             },
         );
         drop(manager);
         self.subscription_tracker.lock().subscribe(keys);
         id
+    }
+
+    /// The cancellation signal for a subscription, fired when it's unsubscribed.
+    /// Used by [`Self::execute_operation`] to abort an in-flight network
+    /// request promptly instead of waiting on the next stream item.
+    fn subscription_cancel_signal(&self, id: &SubscriptionId) -> Option<Arc<Notify>> {
+        self.subscriptions
+            .lock()
+            .subscriptions
+            .get(id)
+            .map(|state| state.cancel.clone())
     }
 
     fn notify_subscribers(&self, changed: &HashSet<String>) -> anyhow::Result<()> {
