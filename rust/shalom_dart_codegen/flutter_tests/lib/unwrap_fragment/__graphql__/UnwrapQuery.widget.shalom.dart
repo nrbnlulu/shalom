@@ -3,7 +3,6 @@
 // Re-export all generated types so importers only need this file.
 export 'UnwrapQuery.shalom.dart';
 
-import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart';
@@ -14,12 +13,16 @@ abstract class $UnwrapQuery extends StatefulWidget {
   String operation$Name() => 'UnwrapQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final UnwrapQueryVariables variables;
   const $UnwrapQuery({
     super.key,
     required this.variables,
     this.executionPolicy = .cacheFirst,
+    this.retryDelay = const .inherit(),
+    this.autoRefetch,
   });
 
   Widget buildLoading(BuildContext context);
@@ -30,8 +33,8 @@ abstract class $UnwrapQuery extends StatefulWidget {
   State<$UnwrapQuery> createState() => _$UnwrapQueryState();
 }
 
-class _$UnwrapQueryState extends State<$UnwrapQuery> {
-  StreamSubscription<shalom_core.GraphQLResponse<UnwrapQueryData>>? _sub;
+class _$UnwrapQueryState extends State<$UnwrapQuery>
+    with ShalomObservingState<UnwrapQueryData, $UnwrapQuery> {
   UnwrapQueryData? _data;
   Object? _error;
 
@@ -45,53 +48,38 @@ class _$UnwrapQueryState extends State<$UnwrapQuery> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _subscribe();
-  }
-
-  @override
   void didUpdateWidget(covariant $UnwrapQuery oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.executionPolicy != oldWidget.executionPolicy ||
+        widget.retryDelay != oldWidget.retryDelay ||
+        widget.autoRefetch != oldWidget.autoRefetch ||
         widget.variables != oldWidget.variables) {
-      _subscribe();
+      resubscribe();
     }
   }
 
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
-    _sub =
-        UnwrapQueryObservable(
-              variables: widget.variables,
+  @override
+  Stream<shalom_core.GraphQLResponse<UnwrapQueryData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) => UnwrapQueryObservable(
+    variables: widget.variables,
 
-              executionPolicy: widget.executionPolicy,
-            )
-            .observe(client)
-            .listen(
-              (response) {
-                setState(() {
-                  switch (response) {
-                    case shalom_core.GraphQLData(data: final data):
-                      _data = data;
-                      _error = null;
-                    case shalom_core.GraphQLError() ||
-                        shalom_core.LinkExceptionResponse():
-                      _error = response;
-                  }
-                });
-              },
-              onDone: () {
-                if (mounted) _subscribe();
-              },
-            );
-  }
+    executionPolicy: widget.executionPolicy,
+    retryDelay: widget.retryDelay,
+    autoRefetch: widget.autoRefetch,
+  ).observe(client);
 
   @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
+  void onResponse(shalom_core.GraphQLResponse<UnwrapQueryData> response) {
+    setState(() {
+      switch (response) {
+        case shalom_core.GraphQLData(data: final data):
+          _data = data;
+          _error = null;
+        case shalom_core.GraphQLError() || shalom_core.LinkExceptionResponse():
+          _error = response;
+      }
+    });
   }
 
   @override

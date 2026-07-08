@@ -208,6 +208,8 @@ final class UnwrapQueryData implements shalom_core.OperationInterface {
 
 final class UnwrapQueryObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final UnwrapQueryVariables variables;
 
@@ -215,6 +217,8 @@ final class UnwrapQueryObservable {
     required this.variables,
 
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'UnwrapQuery';
@@ -229,6 +233,8 @@ final class UnwrapQueryObservable {
 
       decoder: UnwrapQueryData.fromCache,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }
