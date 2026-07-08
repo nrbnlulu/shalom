@@ -41,7 +41,7 @@ class ShalomDataScope<TData> extends StatefulWidget {
 
 class _ShalomDataScopeState<TData> extends State<ShalomDataScope<TData>> {
   StreamSubscription<GraphQLResponse<TData>>? _sub;
-  ShalomRuntimeClient? _client;
+  late ShalomRuntimeClient _client;
   int _subscriptionGeneration = 0;
   TData? _data;
   bool _hasData = false;
@@ -60,10 +60,9 @@ class _ShalomDataScopeState<TData> extends State<ShalomDataScope<TData>> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final client = ShalomScope.of(context);
-    if (!identical(client, _client)) {
-      _client = client;
-      _subscribe(client);
+    if (_subscriptionGeneration == 0) {
+      _client = ShalomScope.of(context);
+      _subscribe();
     }
   }
 
@@ -71,15 +70,15 @@ class _ShalomDataScopeState<TData> extends State<ShalomDataScope<TData>> {
   void didUpdateWidget(covariant ShalomDataScope<TData> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.identity != oldWidget.identity) {
-      _subscribe(_client ?? ShalomScope.of(context));
+      _subscribe();
     }
   }
 
-  void _subscribe(ShalomRuntimeClient client) {
+  void _subscribe() {
     final generation = ++_subscriptionGeneration;
     unawaited(_sub?.cancel());
     _sub = widget
-        .observe(client)
+        .observe(_client)
         .listen(
           (response) {
             if (generation != _subscriptionGeneration) return;
@@ -96,7 +95,7 @@ class _ShalomDataScopeState<TData> extends State<ShalomDataScope<TData>> {
           },
           onDone: () {
             if (mounted && generation == _subscriptionGeneration) {
-              _subscribe(client);
+              _subscribe();
             }
           },
         );

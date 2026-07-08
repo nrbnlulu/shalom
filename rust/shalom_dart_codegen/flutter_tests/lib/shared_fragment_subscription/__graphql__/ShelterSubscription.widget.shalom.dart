@@ -35,7 +35,7 @@ abstract class $ShelterSubscription extends StatefulWidget {
 class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
   StreamSubscription<shalom_core.GraphQLResponse<ShelterSubscriptionData>>?
   _sub;
-  shalom_core.ShalomRuntimeClient? _client;
+  late shalom_core.ShalomRuntimeClient _client;
   int _subscriptionGeneration = 0;
   ShelterSubscriptionData? _data;
   Object? _error;
@@ -52,10 +52,9 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final client = ShalomScope.of(context);
-    if (!identical(client, _client)) {
-      _client = client;
-      _subscribe(client);
+    if (_subscriptionGeneration == 0) {
+      _client = ShalomScope.of(context);
+      _subscribe();
     }
   }
 
@@ -65,11 +64,11 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
     if (widget.executionPolicy != oldWidget.executionPolicy ||
         widget.retryDelay != oldWidget.retryDelay ||
         widget.autoRefetch != oldWidget.autoRefetch) {
-      _subscribe(_client ?? ShalomScope.of(context));
+      _subscribe();
     }
   }
 
-  void _subscribe(shalom_core.ShalomRuntimeClient client) {
+  void _subscribe() {
     final generation = ++_subscriptionGeneration;
     unawaited(_sub?.cancel());
     _sub =
@@ -78,7 +77,7 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
               retryDelay: widget.retryDelay,
               autoRefetch: widget.autoRefetch,
             )
-            .observe(client)
+            .observe(_client)
             .listen(
               (response) {
                 if (generation != _subscriptionGeneration) return;
@@ -95,7 +94,7 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
               },
               onDone: () {
                 if (mounted && generation == _subscriptionGeneration) {
-                  _subscribe(client);
+                  _subscribe();
                 }
               },
             );

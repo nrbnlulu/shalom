@@ -37,7 +37,7 @@ abstract class $AnimalWithOwnerQuery extends StatefulWidget {
 class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
   StreamSubscription<shalom_core.GraphQLResponse<AnimalWithOwnerQueryData>>?
   _sub;
-  shalom_core.ShalomRuntimeClient? _client;
+  late shalom_core.ShalomRuntimeClient _client;
   int _subscriptionGeneration = 0;
   AnimalWithOwnerQueryData? _data;
   Object? _error;
@@ -54,10 +54,9 @@ class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final client = ShalomScope.of(context);
-    if (!identical(client, _client)) {
-      _client = client;
-      _subscribe(client);
+    if (_subscriptionGeneration == 0) {
+      _client = ShalomScope.of(context);
+      _subscribe();
     }
   }
 
@@ -68,11 +67,11 @@ class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
         widget.retryDelay != oldWidget.retryDelay ||
         widget.autoRefetch != oldWidget.autoRefetch ||
         widget.variables != oldWidget.variables) {
-      _subscribe(_client ?? ShalomScope.of(context));
+      _subscribe();
     }
   }
 
-  void _subscribe(shalom_core.ShalomRuntimeClient client) {
+  void _subscribe() {
     final generation = ++_subscriptionGeneration;
     unawaited(_sub?.cancel());
     _sub =
@@ -83,7 +82,7 @@ class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
               retryDelay: widget.retryDelay,
               autoRefetch: widget.autoRefetch,
             )
-            .observe(client)
+            .observe(_client)
             .listen(
               (response) {
                 if (generation != _subscriptionGeneration) return;
@@ -100,7 +99,7 @@ class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
               },
               onDone: () {
                 if (mounted && generation == _subscriptionGeneration) {
-                  _subscribe(client);
+                  _subscribe();
                 }
               },
             );
