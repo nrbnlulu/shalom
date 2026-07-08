@@ -3,7 +3,7 @@
 // Re-export all generated types so importers only need this file.
 export 'ShelterSubscription.shalom.dart';
 
-import 'dart:async' show StreamSubscription;
+import 'dart:async' show StreamSubscription, unawaited;
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart';
@@ -35,6 +35,8 @@ abstract class $ShelterSubscription extends StatefulWidget {
 class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
   StreamSubscription<shalom_core.GraphQLResponse<ShelterSubscriptionData>>?
   _sub;
+  shalom_core.ShalomRuntimeClient? _client;
+  int _subscriptionGeneration = 0;
   ShelterSubscriptionData? _data;
   Object? _error;
 
@@ -50,20 +52,26 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _subscribe();
+    final client = ShalomScope.of(context);
+    if (!identical(client, _client)) {
+      _client = client;
+      _subscribe(client);
+    }
   }
 
   @override
   void didUpdateWidget(covariant $ShelterSubscription oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.executionPolicy != oldWidget.executionPolicy) {
-      _subscribe();
+    if (widget.executionPolicy != oldWidget.executionPolicy ||
+        widget.retryDelay != oldWidget.retryDelay ||
+        widget.autoRefetch != oldWidget.autoRefetch) {
+      _subscribe(_client ?? ShalomScope.of(context));
     }
   }
 
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
+  void _subscribe(shalom_core.ShalomRuntimeClient client) {
+    final generation = ++_subscriptionGeneration;
+    unawaited(_sub?.cancel());
     _sub =
         ShelterSubscriptionObservable(
               executionPolicy: widget.executionPolicy,
@@ -73,6 +81,7 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
             .observe(client)
             .listen(
               (response) {
+                if (generation != _subscriptionGeneration) return;
                 setState(() {
                   switch (response) {
                     case shalom_core.GraphQLData(data: final data):
@@ -85,7 +94,9 @@ class _$ShelterSubscriptionState extends State<$ShelterSubscription> {
                 });
               },
               onDone: () {
-                if (mounted) _subscribe();
+                if (mounted && generation == _subscriptionGeneration) {
+                  _subscribe(client);
+                }
               },
             );
   }

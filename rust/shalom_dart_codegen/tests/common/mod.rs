@@ -165,9 +165,10 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
         .arg(format!("test/{usecase}/test.dart"));
     info!("Running command: {dart_test:?} inside {dart_test_root:?}");
     let output = dart_test.output().unwrap();
+    let err = String::from_utf8_lossy(&output.stderr);
     let out_std = String::from_utf8_lossy(&output.stdout);
 
-    assert!(output.status.success(), "❌ Dart tests failed\n {out_std}");
+    assert!(output.status.success(), "❌ Dart tests failed\n {out_std}\n{err}");
     info!("✔️ Dart tests passed\n {out_std}");
 }
 

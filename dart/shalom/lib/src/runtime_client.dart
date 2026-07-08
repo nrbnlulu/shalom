@@ -228,6 +228,7 @@ class ShalomRuntimeClient {
   }) {
     final variablesJson = variables == null ? null : jsonEncode(variables);
     BigInt? subId;
+    var cancelled = false;
     final controller = StreamController<GraphQLResponse<T>>();
 
     controller.onListen = () {
@@ -243,7 +244,7 @@ class ShalomRuntimeClient {
                 ? BigInt.from(autoRefetch.inMilliseconds)
                 : null,
           );
-          if (controller.isClosed) {
+          if (cancelled || controller.isClosed) {
             if (subId != null) {
               await rs_runtime.unsubscribe(
                 handle: _handle,
@@ -259,12 +260,13 @@ class ShalomRuntimeClient {
             debugName: name,
           );
         } catch (e, st) {
-          if (!controller.isClosed) controller.addError(e, st);
+          if (!cancelled && !controller.isClosed) controller.addError(e, st);
         }
       });
     };
 
     controller.onCancel = () async {
+      cancelled = true;
       final id = subId;
       if (id == null) return;
       await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
@@ -332,6 +334,7 @@ class ShalomRuntimeClient {
     required T Function(JsonObject) decoder,
   }) {
     BigInt? subId;
+    var cancelled = false;
     final controller = StreamController<GraphQLResponse<T>>();
 
     controller.onListen = () {
@@ -342,11 +345,11 @@ class ShalomRuntimeClient {
             refInput: ref,
           );
         } catch (e, st) {
-          if (!controller.isClosed) controller.addError(e, st);
+          if (!cancelled && !controller.isClosed) controller.addError(e, st);
           return;
         }
 
-        if (controller.isClosed) {
+        if (cancelled || controller.isClosed) {
           final id = subId;
           if (id != null) {
             await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
@@ -363,6 +366,7 @@ class ShalomRuntimeClient {
     };
 
     controller.onCancel = () async {
+      cancelled = true;
       final id = subId;
       if (id == null) return;
       await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
@@ -388,6 +392,7 @@ class ShalomRuntimeClient {
     required T Function(JsonObject) decoder,
   }) {
     BigInt? newSubId;
+    var cancelled = false;
     final controller = StreamController<GraphQLResponse<T>>();
 
     controller.onListen = () {
@@ -399,11 +404,11 @@ class ShalomRuntimeClient {
             newRef: newRef,
           );
         } catch (e, st) {
-          if (!controller.isClosed) controller.addError(e, st);
+          if (!cancelled && !controller.isClosed) controller.addError(e, st);
           return;
         }
 
-        if (controller.isClosed) {
+        if (cancelled || controller.isClosed) {
           final id = newSubId;
           if (id != null) {
             await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
@@ -420,6 +425,7 @@ class ShalomRuntimeClient {
     };
 
     controller.onCancel = () async {
+      cancelled = true;
       final id = newSubId;
       if (id == null) return;
       await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
@@ -531,13 +537,30 @@ class ShalomRuntimeClient {
       opName: envelope.operationName,
     );
 
+    var pendingDispatch = Future<void>.value();
+
+    void enqueueDispatch(Future<void> Function() dispatch) {
+      pendingDispatch = pendingDispatch
+          .catchError((_) {})
+          .then((_) {
+            if (_disposed) return null;
+            return dispatch();
+          })
+          .catchError((_) {});
+    }
+
     final subscription = _link
         .request(request: request)
         .listen(
-          (response) async => _dispatchResponse(envelope.id, response),
-          onError: (error) async => _dispatchTransportError(envelope.id, error),
+          (response) =>
+              enqueueDispatch(() => _dispatchResponse(envelope.id, response)),
+          onError: (error) => enqueueDispatch(
+            () => _dispatchTransportError(envelope.id, error),
+          ),
           onDone: () async {
+            await pendingDispatch.catchError((_) {});
             _activeRequests.remove(envelope.id);
+            if (_disposed) return;
             await rs_runtime.completeTransport(
               handle: _handle,
               requestId: BigInt.from(envelope.id),

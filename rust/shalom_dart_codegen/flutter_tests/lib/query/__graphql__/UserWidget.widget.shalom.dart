@@ -3,7 +3,7 @@
 // Re-export all generated types so importers only need this file.
 export 'UserWidget.shalom.dart';
 
-import 'dart:async' show StreamSubscription;
+import 'dart:async' show StreamSubscription, unawaited;
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart';
@@ -35,6 +35,8 @@ abstract class $UserWidget extends StatefulWidget {
 
 class _$UserWidgetState extends State<$UserWidget> {
   StreamSubscription<shalom_core.GraphQLResponse<UserWidgetData>>? _sub;
+  shalom_core.ShalomRuntimeClient? _client;
+  int _subscriptionGeneration = 0;
   UserWidgetData? _data;
   Object? _error;
 
@@ -50,21 +52,27 @@ class _$UserWidgetState extends State<$UserWidget> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _subscribe();
+    final client = ShalomScope.of(context);
+    if (!identical(client, _client)) {
+      _client = client;
+      _subscribe(client);
+    }
   }
 
   @override
   void didUpdateWidget(covariant $UserWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.executionPolicy != oldWidget.executionPolicy ||
+        widget.retryDelay != oldWidget.retryDelay ||
+        widget.autoRefetch != oldWidget.autoRefetch ||
         widget.variables != oldWidget.variables) {
-      _subscribe();
+      _subscribe(_client ?? ShalomScope.of(context));
     }
   }
 
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
+  void _subscribe(shalom_core.ShalomRuntimeClient client) {
+    final generation = ++_subscriptionGeneration;
+    unawaited(_sub?.cancel());
     _sub =
         UserWidgetObservable(
               variables: widget.variables,
@@ -76,6 +84,7 @@ class _$UserWidgetState extends State<$UserWidget> {
             .observe(client)
             .listen(
               (response) {
+                if (generation != _subscriptionGeneration) return;
                 setState(() {
                   switch (response) {
                     case shalom_core.GraphQLData(data: final data):
@@ -88,7 +97,9 @@ class _$UserWidgetState extends State<$UserWidget> {
                 });
               },
               onDone: () {
-                if (mounted) _subscribe();
+                if (mounted && generation == _subscriptionGeneration) {
+                  _subscribe(client);
+                }
               },
             );
   }

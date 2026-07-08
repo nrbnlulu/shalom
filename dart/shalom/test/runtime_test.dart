@@ -36,6 +36,16 @@ class _MockLink extends GraphQLLink {
   }
 }
 
+class _NeverLink extends GraphQLLink {
+  @override
+  Stream<GraphQLResponse<JsonObject>> request({
+    required Request request,
+    HeadersType? headers,
+  }) {
+    return const Stream.empty();
+  }
+}
+
 T _expectData<T>(GraphQLResponse<T> response) {
   switch (response) {
     case GraphQLData(data: final data):
@@ -99,6 +109,52 @@ void main() {
 
   test('runtime initialises without error', () async {
     final client = _makeClient([]);
+    await client.dispose();
+  });
+
+  test(
+    'immediate request cancellation does not leave active observer',
+    () async {
+      final client = ShalomRuntimeClient.create(
+        schemaSdl: _schemaSdl,
+        link: _NeverLink(),
+      );
+      const query = 'query GetUser @observe { user(id: "1") { id name } }';
+      client.registerOperation(document: query);
+
+      final sub = client
+          .request<JsonObject>(
+            name: 'GetUser',
+            decoder: (d) => (d['user'] as Map<String, dynamic>?) ?? {},
+          )
+          .listen((_) {});
+
+      await sub.cancel();
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(await client.getAllObservers(), isEmpty);
+
+      await client.dispose();
+    },
+  );
+
+  test('one-shot responses are pushed before transport completion', () async {
+    final client = _makeClient([
+      for (var i = 0; i < 20; i++)
+        GraphQLData(data: {'version': '${'v' * 50000}-$i'}),
+    ]);
+    const query = 'query GetVersion @observe { version }';
+    client.registerOperation(document: query);
+
+    for (var i = 0; i < 20; i++) {
+      final response = await client
+          .request<JsonObject>(name: 'GetVersion', decoder: (d) => d)
+          .first
+          .timeout(const Duration(seconds: 5));
+      final data = _expectData(response);
+      expect(data['version'], endsWith('-$i'));
+    }
+
     await client.dispose();
   });
 

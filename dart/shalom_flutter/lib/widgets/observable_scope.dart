@@ -10,19 +10,14 @@ import 'package:shalom/shalom.dart'
         LinkExceptionResponse;
 import 'package:shalom_flutter/widgets/shalom_provider.dart' show ShalomScope;
 
-typedef ShalomObserve<TData> = Stream<GraphQLResponse<TData>> Function(
-  ShalomRuntimeClient client,
-);
+typedef ShalomObserve<TData> =
+    Stream<GraphQLResponse<TData>> Function(ShalomRuntimeClient client);
 
-typedef ShalomErrorBuilder = Widget Function(
-  BuildContext context,
-  Object error,
-);
+typedef ShalomErrorBuilder =
+    Widget Function(BuildContext context, Object error);
 
-typedef ShalomDataWidgetBuilder<TData> = Widget Function(
-  BuildContext context,
-  TData data,
-);
+typedef ShalomDataWidgetBuilder<TData> =
+    Widget Function(BuildContext context, TData data);
 
 class ShalomDataScope<TData> extends StatefulWidget {
   final Object identity;
@@ -46,6 +41,8 @@ class ShalomDataScope<TData> extends StatefulWidget {
 
 class _ShalomDataScopeState<TData> extends State<ShalomDataScope<TData>> {
   StreamSubscription<GraphQLResponse<TData>>? _sub;
+  ShalomRuntimeClient? _client;
+  int _subscriptionGeneration = 0;
   TData? _data;
   bool _hasData = false;
   Object? _error;
@@ -63,37 +60,46 @@ class _ShalomDataScopeState<TData> extends State<ShalomDataScope<TData>> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _subscribe();
+    final client = ShalomScope.of(context);
+    if (!identical(client, _client)) {
+      _client = client;
+      _subscribe(client);
+    }
   }
 
   @override
   void didUpdateWidget(covariant ShalomDataScope<TData> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.identity != oldWidget.identity) {
-      _subscribe();
+      _subscribe(_client ?? ShalomScope.of(context));
     }
   }
 
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
-    _sub = widget.observe(client).listen(
-      (response) {
-        setState(() {
-          switch (response) {
-            case GraphQLData(data: final data):
-              _data = data;
-              _hasData = true;
-              _error = null;
-            case GraphQLError() || LinkExceptionResponse():
-              _error = response;
-          }
-        });
-      },
-      onDone: () {
-        if (mounted) _subscribe();
-      },
-    );
+  void _subscribe(ShalomRuntimeClient client) {
+    final generation = ++_subscriptionGeneration;
+    unawaited(_sub?.cancel());
+    _sub = widget
+        .observe(client)
+        .listen(
+          (response) {
+            if (generation != _subscriptionGeneration) return;
+            setState(() {
+              switch (response) {
+                case GraphQLData(data: final data):
+                  _data = data;
+                  _hasData = true;
+                  _error = null;
+                case GraphQLError() || LinkExceptionResponse():
+                  _error = response;
+              }
+            });
+          },
+          onDone: () {
+            if (mounted && generation == _subscriptionGeneration) {
+              _subscribe(client);
+            }
+          },
+        );
   }
 
   @override
