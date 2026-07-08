@@ -1,0 +1,205 @@
+:root {
+    --terminal-bg: #121212;
+    --terminal-panel: #212121;
+    --terminal-fg: #eaeaea;
+    --terminal-muted: #8a8a8d;
+    --terminal-accent: #f59e0b;
+    --terminal-border: #333333;
+    --terminal-hover: #262626;
+    --md-primary-fg-color: #121212;
+    --md-accent-fg-color: #f59e0b;
+    --md-accent-fg-color--transparent: rgba(245, 158, 11, 0.2);
+}
+
+html,
+body {
+    background: var(--terminal-bg);
+    cursor: none;
+}
+
+* {
+    cursor: none !important;
+}
+
+.md-container,
+.md-main,
+.md-main__inner {
+    background: var(--terminal-bg);
+}
+
+.md-header,
+.md-tabs {
+    background: var(--terminal-bg);
+    box-shadow: 0 1px 0 var(--terminal-border);
+}
+
+.md-header__title,
+.md-tabs__link,
+.md-tabs__link--active,
+.md-nav__link,
+.md-nav__title,
+.md-search__input,
+.md-search__input::placeholder {
+    color: var(--terminal-fg);
+}
+
+.md-typeset {
+    color: var(--terminal-fg);
+}
+
+.md-typeset a {
+    color: var(--terminal-accent);
+}
+
+.md-typeset a:hover {
+    color: #fbbf24;
+}
+
+.md-typeset code {
+    background: var(--terminal-panel);
+    border: 1px solid var(--terminal-border);
+    border-radius: 4px;
+    color: var(--terminal-fg);
+}
+
+.md-typeset pre {
+    background: var(--terminal-panel);
+    border: 1px solid var(--terminal-border);
+}
+
+.md-typeset pre code {
+    border: none;
+    background: transparent;
+}
+
+.md-typeset h1,
+.md-typeset h2,
+.md-typeset h3,
+.md-typeset h4 {
+    color: var(--terminal-fg);
+}
+
+.md-sidebar__scrollwrap {
+    background: var(--terminal-bg);
+}
+
+.md-nav__link--active {
+    color: var(--terminal-accent);
+}
+
+.md-typeset .admonition,
+.md-typeset details {
+    background: var(--terminal-panel);
+    border: 1px solid var(--terminal-border);
+}
+
+.md-footer {
+    background: var(--terminal-bg);
+    color: var(--terminal-muted);
+    border-top: 1px solid var(--terminal-border);
+}
+
+.md-footer a {
+    color: var(--terminal-accent);
+}
+
+.md-search__form {
+    background: var(--terminal-panel);
+    border: 1px solid var(--terminal-border);
+}
+
+.md-search__input {
+    background: transparent;
+}
+
+.md-sidebar--secondary .md-nav__title {
+    color: var(--terminal-muted);
+}
+
+.md-nav__link:hover,
+.md-nav__link:focus {
+    background: var(--terminal-hover);
+}
+
+.md-nav__link--active {
+    color: var(--terminal-accent);
+}
+
+.md-search__input,
+.md-search__input::placeholder {
+    color: var(--terminal-fg);
+}
+
+.md-search-result__more summary {
+    color: var(--terminal-muted);
+}
+
+.md-button,
+.md-button:hover,
+.md-button:focus,
+.md-button:active {
+    background: var(--terminal-panel);
+    border-color: var(--terminal-border);
+    color: var(--terminal-fg);
+}
+
+.md-button--primary,
+.md-button--primary:hover,
+.md-button--primary:focus,
+.md-button--primary:active {
+    background: var(--terminal-accent);
+    border-color: var(--terminal-border);
+    color: #121212;
+}
+
+.md-typeset a,
+.md-nav__link--active,
+.md-nav__link--active:hover {
+    color: var(--terminal-accent);
+}
+
+.md-nav__link--active .md-nav__icon,
+.md-nav__link--active .md-nav__link {
+    color: var(--terminal-accent);
+}
+
+.md-nav__link--active,
+.md-nav__link--active:focus,
+.md-nav__link--active:hover {
+    color: var(--terminal-accent) !important;
+}
+
+.terminal-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(245, 158, 11, 0.6);
+    border-radius: 50%;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+    transform: translate(-100px, -100px);
+    pointer-events: none;
+    opacity: 0;
+    transition:
+        opacity 0.2s ease,
+        width 0.15s ease,
+        height 0.15s ease,
+        box-shadow 0.15s ease,
+        border-color 0.15s ease;
+    z-index: 9999;
+}
+
+.terminal-cursor--active {
+    width: 28px;
+    height: 28px;
+    border-color: rgba(245, 158, 11, 0.9);
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.55);
+}
+
+.terminal-cursor--click {
+    width: 12px;
+    height: 12px;
+    border-color: rgba(245, 158, 11, 0.95);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.7);
+}
