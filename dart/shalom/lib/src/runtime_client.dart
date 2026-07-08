@@ -227,52 +227,20 @@ class ShalomRuntimeClient {
     Duration? autoRefetch,
   }) {
     final variablesJson = variables == null ? null : jsonEncode(variables);
-    BigInt? subId;
-    var cancelled = false;
-    final controller = StreamController<GraphQLResponse<T>>();
-
-    controller.onListen = () {
-      Future.microtask(() async {
-        try {
-          subId = await rs_runtime.request(
-            handle: _handle,
-            name: name,
-            variablesJson: variablesJson,
-            executionPolicy: executionPolicy,
-            retryDelay: retryDelay._toInput(),
-            refetchIntervalMs: autoRefetch != null
-                ? BigInt.from(autoRefetch.inMilliseconds)
-                : null,
-          );
-          if (cancelled || controller.isClosed) {
-            if (subId != null) {
-              await rs_runtime.unsubscribe(
-                handle: _handle,
-                subscriptionId: subId!,
-              );
-            }
-            return;
-          }
-          _bindSubscriptionStream(
-            subId: subId!,
-            controller: controller,
-            decoder: decoder,
-            debugName: name,
-          );
-        } catch (e, st) {
-          if (!cancelled && !controller.isClosed) controller.addError(e, st);
-        }
-      });
-    };
-
-    controller.onCancel = () async {
-      cancelled = true;
-      final id = subId;
-      if (id == null) return;
-      await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
-    };
-
-    return controller.stream;
+    return _observeSubscription<T>(
+      subscribe: () => rs_runtime.request(
+        handle: _handle,
+        name: name,
+        variablesJson: variablesJson,
+        executionPolicy: executionPolicy,
+        retryDelay: retryDelay._toInput(),
+        refetchIntervalMs: autoRefetch != null
+            ? BigInt.from(autoRefetch.inMilliseconds)
+            : null,
+      ),
+      decoder: decoder,
+      debugName: name,
+    );
   }
 
   // -------------------------------------------------------------------------
@@ -333,46 +301,11 @@ class ShalomRuntimeClient {
     required rs_runtime.ObservedRefInput ref,
     required T Function(JsonObject) decoder,
   }) {
-    BigInt? subId;
-    var cancelled = false;
-    final controller = StreamController<GraphQLResponse<T>>();
-
-    controller.onListen = () {
-      Future.microtask(() async {
-        try {
-          subId = await rs_runtime.observeFragment(
-            handle: _handle,
-            refInput: ref,
-          );
-        } catch (e, st) {
-          if (!cancelled && !controller.isClosed) controller.addError(e, st);
-          return;
-        }
-
-        if (cancelled || controller.isClosed) {
-          final id = subId;
-          if (id != null) {
-            await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
-          }
-          return;
-        }
-
-        _bindSubscriptionStream(
-          subId: subId!,
-          controller: controller,
-          decoder: decoder,
-        );
-      });
-    };
-
-    controller.onCancel = () async {
-      cancelled = true;
-      final id = subId;
-      if (id == null) return;
-      await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
-    };
-
-    return controller.stream;
+    return _observeSubscription<T>(
+      subscribe: () =>
+          rs_runtime.observeFragment(handle: _handle, refInput: ref),
+      decoder: decoder,
+    );
   }
 
   /// Rebind an existing fragment subscription identified by [subscriptionId]
@@ -391,47 +324,14 @@ class ShalomRuntimeClient {
     required rs_runtime.ObservedRefInput newRef,
     required T Function(JsonObject) decoder,
   }) {
-    BigInt? newSubId;
-    var cancelled = false;
-    final controller = StreamController<GraphQLResponse<T>>();
-
-    controller.onListen = () {
-      Future.microtask(() async {
-        try {
-          newSubId = await rs_runtime.rebindSubscription(
-            handle: _handle,
-            subscriptionId: subscriptionId,
-            newRef: newRef,
-          );
-        } catch (e, st) {
-          if (!cancelled && !controller.isClosed) controller.addError(e, st);
-          return;
-        }
-
-        if (cancelled || controller.isClosed) {
-          final id = newSubId;
-          if (id != null) {
-            await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
-          }
-          return;
-        }
-
-        _bindSubscriptionStream(
-          subId: newSubId!,
-          controller: controller,
-          decoder: decoder,
-        );
-      });
-    };
-
-    controller.onCancel = () async {
-      cancelled = true;
-      final id = newSubId;
-      if (id == null) return;
-      await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
-    };
-
-    return controller.stream;
+    return _observeSubscription<T>(
+      subscribe: () => rs_runtime.rebindSubscription(
+        handle: _handle,
+        subscriptionId: subscriptionId,
+        newRef: newRef,
+      ),
+      decoder: decoder,
+    );
   }
 
   // -------------------------------------------------------------------------
@@ -455,6 +355,56 @@ class ShalomRuntimeClient {
   // -------------------------------------------------------------------------
   // Private subscription helper
   // -------------------------------------------------------------------------
+
+  /// Shared plumbing for [request], [subscribeToFragment] and
+  /// [rebindFragmentSubscription]: opens a cache subscription lazily on
+  /// [StreamController.onListen] via [subscribe], tears it down again via
+  /// [rs_runtime.unsubscribe] if the stream is cancelled before or after the
+  /// subscribe call resolves, and otherwise binds it with
+  /// [_bindSubscriptionStream].
+  Stream<GraphQLResponse<T>> _observeSubscription<T>({
+    required Future<BigInt> Function() subscribe,
+    required T Function(JsonObject) decoder,
+    String? debugName,
+  }) {
+    BigInt? subId;
+    var cancelled = false;
+    final controller = StreamController<GraphQLResponse<T>>();
+
+    controller.onListen = () {
+      Future.microtask(() async {
+        try {
+          subId = await subscribe();
+          if (cancelled || controller.isClosed) {
+            if (subId != null) {
+              await rs_runtime.unsubscribe(
+                handle: _handle,
+                subscriptionId: subId!,
+              );
+            }
+            return;
+          }
+          _bindSubscriptionStream(
+            subId: subId!,
+            controller: controller,
+            decoder: decoder,
+            debugName: debugName,
+          );
+        } catch (e, st) {
+          if (!cancelled && !controller.isClosed) controller.addError(e, st);
+        }
+      });
+    };
+
+    controller.onCancel = () async {
+      cancelled = true;
+      final id = subId;
+      if (id == null) return;
+      await rs_runtime.unsubscribe(handle: _handle, subscriptionId: id);
+    };
+
+    return controller.stream;
+  }
 
   void _bindSubscriptionStream<T>({
     required BigInt subId,

@@ -3,7 +3,6 @@
 // Re-export all generated types so importers only need this file.
 export 'StreetSubscription.shalom.dart';
 
-import 'dart:async' show StreamSubscription, unawaited;
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart';
@@ -32,10 +31,8 @@ abstract class $StreetSubscription extends StatefulWidget {
   State<$StreetSubscription> createState() => _$StreetSubscriptionState();
 }
 
-class _$StreetSubscriptionState extends State<$StreetSubscription> {
-  StreamSubscription<shalom_core.GraphQLResponse<StreetSubscriptionData>>? _sub;
-  late shalom_core.ShalomRuntimeClient _client;
-  int _subscriptionGeneration = 0;
+class _$StreetSubscriptionState extends State<$StreetSubscription>
+    with ShalomObservingState<StreetSubscriptionData, $StreetSubscription> {
   StreetSubscriptionData? _data;
   Object? _error;
 
@@ -49,60 +46,37 @@ class _$StreetSubscriptionState extends State<$StreetSubscription> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_subscriptionGeneration == 0) {
-      _client = ShalomScope.of(context);
-      _subscribe();
-    }
-  }
-
-  @override
   void didUpdateWidget(covariant $StreetSubscription oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.executionPolicy != oldWidget.executionPolicy ||
         widget.retryDelay != oldWidget.retryDelay ||
         widget.autoRefetch != oldWidget.autoRefetch) {
-      _subscribe();
+      resubscribe();
     }
   }
 
-  void _subscribe() {
-    final generation = ++_subscriptionGeneration;
-    unawaited(_sub?.cancel());
-    _sub =
-        StreetSubscriptionObservable(
-              executionPolicy: widget.executionPolicy,
-              retryDelay: widget.retryDelay,
-              autoRefetch: widget.autoRefetch,
-            )
-            .observe(_client)
-            .listen(
-              (response) {
-                if (generation != _subscriptionGeneration) return;
-                setState(() {
-                  switch (response) {
-                    case shalom_core.GraphQLData(data: final data):
-                      _data = data;
-                      _error = null;
-                    case shalom_core.GraphQLError() ||
-                        shalom_core.LinkExceptionResponse():
-                      _error = response;
-                  }
-                });
-              },
-              onDone: () {
-                if (mounted && generation == _subscriptionGeneration) {
-                  _subscribe();
-                }
-              },
-            );
-  }
+  @override
+  Stream<shalom_core.GraphQLResponse<StreetSubscriptionData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) => StreetSubscriptionObservable(
+    executionPolicy: widget.executionPolicy,
+    retryDelay: widget.retryDelay,
+    autoRefetch: widget.autoRefetch,
+  ).observe(client);
 
   @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
+  void onResponse(
+    shalom_core.GraphQLResponse<StreetSubscriptionData> response,
+  ) {
+    setState(() {
+      switch (response) {
+        case shalom_core.GraphQLData(data: final data):
+          _data = data;
+          _error = null;
+        case shalom_core.GraphQLError() || shalom_core.LinkExceptionResponse():
+          _error = response;
+      }
+    });
   }
 
   @override
