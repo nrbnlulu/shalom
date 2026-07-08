@@ -10,14 +10,14 @@ import 'package:shalom/shalom.dart'
         LinkExceptionResponse;
 import 'package:shalom_flutter/widgets/shalom_provider.dart' show ShalomScope;
 
-typedef ShalomObserve<TData> =
-    Stream<GraphQLResponse<TData>> Function(ShalomRuntimeClient client);
+typedef ShalomObserve<TData> = Stream<GraphQLResponse<TData>> Function(
+    ShalomRuntimeClient client);
 
-typedef ShalomErrorBuilder =
-    Widget Function(BuildContext context, Object error);
+typedef ShalomErrorBuilder = Widget Function(
+    BuildContext context, Object error);
 
-typedef ShalomDataWidgetBuilder<TData> =
-    Widget Function(BuildContext context, TData data);
+typedef ShalomDataWidgetBuilder<TData> = Widget Function(
+    BuildContext context, TData data);
 
 class ShalomDataScope<TData> extends StatefulWidget {
   final Object identity;
@@ -77,28 +77,26 @@ class _ShalomDataScopeState<TData> extends State<ShalomDataScope<TData>> {
   void _subscribe() {
     final generation = ++_subscriptionGeneration;
     unawaited(_sub?.cancel());
-    _sub = widget
-        .observe(_client)
-        .listen(
-          (response) {
-            if (generation != _subscriptionGeneration) return;
-            setState(() {
-              switch (response) {
-                case GraphQLData(data: final data):
-                  _data = data;
-                  _hasData = true;
-                  _error = null;
-                case GraphQLError() || LinkExceptionResponse():
-                  _error = response;
-              }
-            });
-          },
-          onDone: () {
-            if (mounted && generation == _subscriptionGeneration) {
-              _subscribe();
-            }
-          },
-        );
+    _sub = widget.observe(_client).listen(
+      (response) {
+        if (generation != _subscriptionGeneration) return;
+        setState(() {
+          switch (response) {
+            case GraphQLData(data: final data):
+              _data = data;
+              _hasData = true;
+              _error = null;
+            case GraphQLError() || LinkExceptionResponse():
+              _error = response;
+          }
+        });
+      },
+      onDone: () {
+        if (mounted && generation == _subscriptionGeneration) {
+          _subscribe();
+        }
+      },
+    );
   }
 
   @override

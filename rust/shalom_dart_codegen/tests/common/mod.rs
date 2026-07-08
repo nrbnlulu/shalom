@@ -168,7 +168,10 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
     let err = String::from_utf8_lossy(&output.stderr);
     let out_std = String::from_utf8_lossy(&output.stdout);
 
-    assert!(output.status.success(), "❌ Dart tests failed\n {out_std}\n{err}");
+    assert!(
+        output.status.success(),
+        "❌ Dart tests failed\n {out_std}\n{err}"
+    );
     info!("✔️ Dart tests passed\n {out_std}");
 }
 
