@@ -165,6 +165,11 @@ fn test_flutter_user_widget() {
 }
 
 #[test]
+fn test_flutter_observable_scope() {
+    common::run_flutter_tests("observable_scope_test.dart");
+}
+
+#[test]
 fn test_flutter_pet_widget() {
     common::run_flutter_tests("pet_widget_test.dart");
 }

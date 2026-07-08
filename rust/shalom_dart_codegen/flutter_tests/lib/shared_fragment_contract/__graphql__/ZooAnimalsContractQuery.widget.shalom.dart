@@ -3,7 +3,6 @@
 // Re-export all generated types so importers only need this file.
 export 'ZooAnimalsContractQuery.shalom.dart';
 
-import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart';
@@ -37,9 +36,12 @@ abstract class $ZooAnimalsContractQuery extends StatefulWidget {
       _$ZooAnimalsContractQueryState();
 }
 
-class _$ZooAnimalsContractQueryState extends State<$ZooAnimalsContractQuery> {
-  StreamSubscription<shalom_core.GraphQLResponse<ZooAnimalsContractQueryData>>?
-  _sub;
+class _$ZooAnimalsContractQueryState extends State<$ZooAnimalsContractQuery>
+    with
+        ShalomObservingState<
+          ZooAnimalsContractQueryData,
+          $ZooAnimalsContractQuery
+        > {
   ZooAnimalsContractQueryData? _data;
   Object? _error;
 
@@ -53,52 +55,37 @@ class _$ZooAnimalsContractQueryState extends State<$ZooAnimalsContractQuery> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _subscribe();
-  }
-
-  @override
   void didUpdateWidget(covariant $ZooAnimalsContractQuery oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.executionPolicy != oldWidget.executionPolicy) {
-      _subscribe();
+    if (widget.executionPolicy != oldWidget.executionPolicy ||
+        widget.retryDelay != oldWidget.retryDelay ||
+        widget.autoRefetch != oldWidget.autoRefetch) {
+      resubscribe();
     }
   }
 
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
-    _sub =
-        ZooAnimalsContractQueryObservable(
-              executionPolicy: widget.executionPolicy,
-              retryDelay: widget.retryDelay,
-              autoRefetch: widget.autoRefetch,
-            )
-            .observe(client)
-            .listen(
-              (response) {
-                setState(() {
-                  switch (response) {
-                    case shalom_core.GraphQLData(data: final data):
-                      _data = data;
-                      _error = null;
-                    case shalom_core.GraphQLError() ||
-                        shalom_core.LinkExceptionResponse():
-                      _error = response;
-                  }
-                });
-              },
-              onDone: () {
-                if (mounted) _subscribe();
-              },
-            );
-  }
+  @override
+  Stream<shalom_core.GraphQLResponse<ZooAnimalsContractQueryData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) => ZooAnimalsContractQueryObservable(
+    executionPolicy: widget.executionPolicy,
+    retryDelay: widget.retryDelay,
+    autoRefetch: widget.autoRefetch,
+  ).observe(client);
 
   @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
+  void onResponse(
+    shalom_core.GraphQLResponse<ZooAnimalsContractQueryData> response,
+  ) {
+    setState(() {
+      switch (response) {
+        case shalom_core.GraphQLData(data: final data):
+          _data = data;
+          _error = null;
+        case shalom_core.GraphQLError() || shalom_core.LinkExceptionResponse():
+          _error = response;
+      }
+    });
   }
 
   @override

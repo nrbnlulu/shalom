@@ -3,7 +3,6 @@
 // Re-export all generated types so importers only need this file.
 export 'AnimalWithOwnerQuery.shalom.dart';
 
-import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart';
@@ -34,9 +33,8 @@ abstract class $AnimalWithOwnerQuery extends StatefulWidget {
   State<$AnimalWithOwnerQuery> createState() => _$AnimalWithOwnerQueryState();
 }
 
-class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
-  StreamSubscription<shalom_core.GraphQLResponse<AnimalWithOwnerQueryData>>?
-  _sub;
+class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery>
+    with ShalomObservingState<AnimalWithOwnerQueryData, $AnimalWithOwnerQuery> {
   AnimalWithOwnerQueryData? _data;
   Object? _error;
 
@@ -50,55 +48,40 @@ class _$AnimalWithOwnerQueryState extends State<$AnimalWithOwnerQuery> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _subscribe();
-  }
-
-  @override
   void didUpdateWidget(covariant $AnimalWithOwnerQuery oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.executionPolicy != oldWidget.executionPolicy ||
+        widget.retryDelay != oldWidget.retryDelay ||
+        widget.autoRefetch != oldWidget.autoRefetch ||
         widget.variables != oldWidget.variables) {
-      _subscribe();
+      resubscribe();
     }
   }
 
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
-    _sub =
-        AnimalWithOwnerQueryObservable(
-              variables: widget.variables,
+  @override
+  Stream<shalom_core.GraphQLResponse<AnimalWithOwnerQueryData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) => AnimalWithOwnerQueryObservable(
+    variables: widget.variables,
 
-              executionPolicy: widget.executionPolicy,
-              retryDelay: widget.retryDelay,
-              autoRefetch: widget.autoRefetch,
-            )
-            .observe(client)
-            .listen(
-              (response) {
-                setState(() {
-                  switch (response) {
-                    case shalom_core.GraphQLData(data: final data):
-                      _data = data;
-                      _error = null;
-                    case shalom_core.GraphQLError() ||
-                        shalom_core.LinkExceptionResponse():
-                      _error = response;
-                  }
-                });
-              },
-              onDone: () {
-                if (mounted) _subscribe();
-              },
-            );
-  }
+    executionPolicy: widget.executionPolicy,
+    retryDelay: widget.retryDelay,
+    autoRefetch: widget.autoRefetch,
+  ).observe(client);
 
   @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
+  void onResponse(
+    shalom_core.GraphQLResponse<AnimalWithOwnerQueryData> response,
+  ) {
+    setState(() {
+      switch (response) {
+        case shalom_core.GraphQLData(data: final data):
+          _data = data;
+          _error = null;
+        case shalom_core.GraphQLError() || shalom_core.LinkExceptionResponse():
+          _error = response;
+      }
+    });
   }
 
   @override
