@@ -62,7 +62,7 @@ class WebSocketLink extends GraphQLLink {
     this.connectionInitTimeout = const Duration(seconds: 10),
     this.reconnectTimeout = const Duration(seconds: 5),
     this.heartbeatInterval = const Duration(seconds: 5),
-    this.heartbeatTimeout = const Duration(seconds: 5),
+    this.heartbeatTimeout = const Duration(seconds: 3),
   }) : connectionParamsJson = connectionParams != null
            ? json.encode(connectionParams)
            : null {
@@ -148,7 +148,12 @@ class WebSocketLink extends GraphQLLink {
   }
 
   Future<void> _sendPing() async {
+    final heartbeatTimerAtSend = _heartbeatTimer;
     await _sendRaw(wsPingFrame());
+    // If the heartbeat was stopped (disconnect/dispose/reconnect) while the
+    // send was in flight, don't arm a timeout for a heartbeat cycle that no
+    // longer applies.
+    if (!identical(_heartbeatTimer, heartbeatTimerAtSend)) return;
     _pongTimeoutTimer?.cancel();
     _pongTimeoutTimer = Timer(heartbeatTimeout, () {
       _closeTransport(4408, 'Heartbeat pong timeout');
