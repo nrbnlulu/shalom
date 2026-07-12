@@ -28,6 +28,10 @@ pub enum WsLinkEvent {
     /// Server sent a Ping.  Send back the frame from `ws_pong_frame()`.
     /// `payload_json` is the raw ping payload (JSON object or null string).
     PingReceived { payload_json: Option<String> },
+    /// Server sent a Pong — typically in response to a caller-initiated
+    /// heartbeat `ws_ping_frame()`. Caller should cancel any pending
+    /// pong-timeout timer.
+    PongReceived { payload_json: Option<String> },
     /// A data / error payload arrived for `op_id`.
     /// `data_json`       — JSON object (`{"field":…}`) or null.
     /// `errors_json`     — JSON array  (`[{"message":…}]`) or null.
@@ -56,6 +60,9 @@ impl WsLinkEvent {
                 Self::Connected
             }
             WsEvent::PingReceived { payload } => Self::PingReceived {
+                payload_json: opt_value_to_json(payload),
+            },
+            WsEvent::PongReceived { payload } => Self::PongReceived {
                 payload_json: opt_value_to_json(payload),
             },
             WsEvent::OperationResponse { op_id, response } => {
