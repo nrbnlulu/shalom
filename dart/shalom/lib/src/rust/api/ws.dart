@@ -89,6 +89,12 @@ sealed class WsLinkEvent with _$WsLinkEvent {
   const factory WsLinkEvent.pingReceived({String? payloadJson}) =
       WsLinkEvent_PingReceived;
 
+  /// Server sent a Pong — typically in response to a caller-initiated
+  /// heartbeat `ws_ping_frame()`. Caller should cancel any pending
+  /// pong-timeout timer.
+  const factory WsLinkEvent.pongReceived({String? payloadJson}) =
+      WsLinkEvent_PongReceived;
+
   /// A data / error payload arrived for `op_id`.
   /// `data_json`       — JSON object (`{"field":…}`) or null.
   /// `errors_json`     — JSON array  (`[{"message":…}]`) or null.

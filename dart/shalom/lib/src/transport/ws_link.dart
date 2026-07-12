@@ -26,6 +26,8 @@ class WebSocketLink extends GraphQLLink {
   final bool autoReconnect;
   final Duration connectionInitTimeout;
   final Duration reconnectTimeout;
+  final Duration heartbeatInterval;
+  final Duration heartbeatTimeout;
 
   // ── sans-IO state machine ─────────────────────────────────────────────────
   WsSansIo? _sansio;
@@ -48,6 +50,8 @@ class WebSocketLink extends GraphQLLink {
   // ── timers ────────────────────────────────────────────────────────────────
   Timer? _initTimer;
   Timer? _reconnectTimer;
+  Timer? _heartbeatTimer;
+  Timer? _pongTimeoutTimer;
 
   WebSocketLink({
     required this.transport,
@@ -57,6 +61,8 @@ class WebSocketLink extends GraphQLLink {
     this.autoReconnect = true,
     this.connectionInitTimeout = const Duration(seconds: 10),
     this.reconnectTimeout = const Duration(seconds: 5),
+    this.heartbeatInterval = const Duration(seconds: 5),
+    this.heartbeatTimeout = const Duration(seconds: 5),
   }) : connectionParamsJson = connectionParams != null
            ? json.encode(connectionParams)
            : null {
@@ -116,6 +122,7 @@ class WebSocketLink extends GraphQLLink {
   void _onDisconnected() {
     _acknowledged = false;
     _initTimer?.cancel();
+    _stopHeartbeat();
     _msgSub?.cancel();
     _msgController = null;
     _sender = null;
@@ -124,6 +131,28 @@ class WebSocketLink extends GraphQLLink {
       _reconnectTimer?.cancel();
       _reconnectTimer = Timer(reconnectTimeout, _connect);
     }
+  }
+
+  // ── heartbeat (client-initiated liveness ping/pong) ──────────────────────
+
+  void _startHeartbeat() {
+    _stopHeartbeat();
+    _heartbeatTimer = Timer.periodic(heartbeatInterval, (_) => _sendPing());
+  }
+
+  void _stopHeartbeat() {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
+    _pongTimeoutTimer?.cancel();
+    _pongTimeoutTimer = null;
+  }
+
+  Future<void> _sendPing() async {
+    await _sendRaw(wsPingFrame());
+    _pongTimeoutTimer?.cancel();
+    _pongTimeoutTimer = Timer(heartbeatTimeout, () {
+      _closeTransport(4408, 'Heartbeat pong timeout');
+    });
   }
 
   // ── message handling ──────────────────────────────────────────────────────
@@ -154,9 +183,13 @@ class WebSocketLink extends GraphQLLink {
             alreadyInRust: rustKnownSet.contains(entry.key),
           );
         }
+        _startHeartbeat();
 
       case WsLinkEvent_PingReceived(:final payloadJson):
         await _sendRaw(wsPongFrame(sansio: _sansio!, payloadJson: payloadJson));
+
+      case WsLinkEvent_PongReceived():
+        _pongTimeoutTimer?.cancel();
 
       case WsLinkEvent_OperationResponse(
         :final opId,
@@ -322,6 +355,7 @@ class WebSocketLink extends GraphQLLink {
 
     _initTimer?.cancel();
     _reconnectTimer?.cancel();
+    _stopHeartbeat();
 
     for (final h in _ops.values) {
       if (!h.controller.isClosed) h.controller.close();
