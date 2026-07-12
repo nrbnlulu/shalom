@@ -2422,6 +2422,12 @@ impl SseDecode for crate::api::ws::WsLinkEvent {
                 };
             }
             2 => {
+                let mut var_payloadJson = <Option<String>>::sse_decode(deserializer);
+                return crate::api::ws::WsLinkEvent::PongReceived {
+                    payload_json: var_payloadJson,
+                };
+            }
+            3 => {
                 let mut var_opId = <String>::sse_decode(deserializer);
                 let mut var_dataJson = <Option<String>>::sse_decode(deserializer);
                 let mut var_errorsJson = <Option<String>>::sse_decode(deserializer);
@@ -2433,11 +2439,11 @@ impl SseDecode for crate::api::ws::WsLinkEvent {
                     extensions_json: var_extensionsJson,
                 };
             }
-            3 => {
+            4 => {
                 let mut var_opId = <String>::sse_decode(deserializer);
                 return crate::api::ws::WsLinkEvent::OperationComplete { op_id: var_opId };
             }
-            4 => {
+            5 => {
                 let mut var_code = <u16>::sse_decode(deserializer);
                 let mut var_reason = <String>::sse_decode(deserializer);
                 return crate::api::ws::WsLinkEvent::ProtocolError {
@@ -2742,13 +2748,16 @@ impl flutter_rust_bridge::IntoDart for crate::api::ws::WsLinkEvent {
             crate::api::ws::WsLinkEvent::PingReceived { payload_json } => {
                 [1.into_dart(), payload_json.into_into_dart().into_dart()].into_dart()
             }
+            crate::api::ws::WsLinkEvent::PongReceived { payload_json } => {
+                [2.into_dart(), payload_json.into_into_dart().into_dart()].into_dart()
+            }
             crate::api::ws::WsLinkEvent::OperationResponse {
                 op_id,
                 data_json,
                 errors_json,
                 extensions_json,
             } => [
-                2.into_dart(),
+                3.into_dart(),
                 op_id.into_into_dart().into_dart(),
                 data_json.into_into_dart().into_dart(),
                 errors_json.into_into_dart().into_dart(),
@@ -2756,10 +2765,10 @@ impl flutter_rust_bridge::IntoDart for crate::api::ws::WsLinkEvent {
             ]
             .into_dart(),
             crate::api::ws::WsLinkEvent::OperationComplete { op_id } => {
-                [3.into_dart(), op_id.into_into_dart().into_dart()].into_dart()
+                [4.into_dart(), op_id.into_into_dart().into_dart()].into_dart()
             }
             crate::api::ws::WsLinkEvent::ProtocolError { code, reason } => [
-                4.into_dart(),
+                5.into_dart(),
                 code.into_into_dart().into_dart(),
                 reason.into_into_dart().into_dart(),
             ]
@@ -3098,24 +3107,28 @@ impl SseEncode for crate::api::ws::WsLinkEvent {
                 <i32>::sse_encode(1, serializer);
                 <Option<String>>::sse_encode(payload_json, serializer);
             }
+            crate::api::ws::WsLinkEvent::PongReceived { payload_json } => {
+                <i32>::sse_encode(2, serializer);
+                <Option<String>>::sse_encode(payload_json, serializer);
+            }
             crate::api::ws::WsLinkEvent::OperationResponse {
                 op_id,
                 data_json,
                 errors_json,
                 extensions_json,
             } => {
-                <i32>::sse_encode(2, serializer);
+                <i32>::sse_encode(3, serializer);
                 <String>::sse_encode(op_id, serializer);
                 <Option<String>>::sse_encode(data_json, serializer);
                 <Option<String>>::sse_encode(errors_json, serializer);
                 <Option<String>>::sse_encode(extensions_json, serializer);
             }
             crate::api::ws::WsLinkEvent::OperationComplete { op_id } => {
-                <i32>::sse_encode(3, serializer);
+                <i32>::sse_encode(4, serializer);
                 <String>::sse_encode(op_id, serializer);
             }
             crate::api::ws::WsLinkEvent::ProtocolError { code, reason } => {
-                <i32>::sse_encode(4, serializer);
+                <i32>::sse_encode(5, serializer);
                 <u16>::sse_encode(code, serializer);
                 <String>::sse_encode(reason, serializer);
             }

@@ -55,12 +55,13 @@ extension WsLinkEventPatterns on WsLinkEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( WsLinkEvent_Connected value)?  connected,TResult Function( WsLinkEvent_PingReceived value)?  pingReceived,TResult Function( WsLinkEvent_OperationResponse value)?  operationResponse,TResult Function( WsLinkEvent_OperationComplete value)?  operationComplete,TResult Function( WsLinkEvent_ProtocolError value)?  protocolError,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( WsLinkEvent_Connected value)?  connected,TResult Function( WsLinkEvent_PingReceived value)?  pingReceived,TResult Function( WsLinkEvent_PongReceived value)?  pongReceived,TResult Function( WsLinkEvent_OperationResponse value)?  operationResponse,TResult Function( WsLinkEvent_OperationComplete value)?  operationComplete,TResult Function( WsLinkEvent_ProtocolError value)?  protocolError,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected() when connected != null:
 return connected(_that);case WsLinkEvent_PingReceived() when pingReceived != null:
-return pingReceived(_that);case WsLinkEvent_OperationResponse() when operationResponse != null:
+return pingReceived(_that);case WsLinkEvent_PongReceived() when pongReceived != null:
+return pongReceived(_that);case WsLinkEvent_OperationResponse() when operationResponse != null:
 return operationResponse(_that);case WsLinkEvent_OperationComplete() when operationComplete != null:
 return operationComplete(_that);case WsLinkEvent_ProtocolError() when protocolError != null:
 return protocolError(_that);case _:
@@ -81,12 +82,13 @@ return protocolError(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( WsLinkEvent_Connected value)  connected,required TResult Function( WsLinkEvent_PingReceived value)  pingReceived,required TResult Function( WsLinkEvent_OperationResponse value)  operationResponse,required TResult Function( WsLinkEvent_OperationComplete value)  operationComplete,required TResult Function( WsLinkEvent_ProtocolError value)  protocolError,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( WsLinkEvent_Connected value)  connected,required TResult Function( WsLinkEvent_PingReceived value)  pingReceived,required TResult Function( WsLinkEvent_PongReceived value)  pongReceived,required TResult Function( WsLinkEvent_OperationResponse value)  operationResponse,required TResult Function( WsLinkEvent_OperationComplete value)  operationComplete,required TResult Function( WsLinkEvent_ProtocolError value)  protocolError,}){
 final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected():
 return connected(_that);case WsLinkEvent_PingReceived():
-return pingReceived(_that);case WsLinkEvent_OperationResponse():
+return pingReceived(_that);case WsLinkEvent_PongReceived():
+return pongReceived(_that);case WsLinkEvent_OperationResponse():
 return operationResponse(_that);case WsLinkEvent_OperationComplete():
 return operationComplete(_that);case WsLinkEvent_ProtocolError():
 return protocolError(_that);}
@@ -103,12 +105,13 @@ return protocolError(_that);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( WsLinkEvent_Connected value)?  connected,TResult? Function( WsLinkEvent_PingReceived value)?  pingReceived,TResult? Function( WsLinkEvent_OperationResponse value)?  operationResponse,TResult? Function( WsLinkEvent_OperationComplete value)?  operationComplete,TResult? Function( WsLinkEvent_ProtocolError value)?  protocolError,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( WsLinkEvent_Connected value)?  connected,TResult? Function( WsLinkEvent_PingReceived value)?  pingReceived,TResult? Function( WsLinkEvent_PongReceived value)?  pongReceived,TResult? Function( WsLinkEvent_OperationResponse value)?  operationResponse,TResult? Function( WsLinkEvent_OperationComplete value)?  operationComplete,TResult? Function( WsLinkEvent_ProtocolError value)?  protocolError,}){
 final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected() when connected != null:
 return connected(_that);case WsLinkEvent_PingReceived() when pingReceived != null:
-return pingReceived(_that);case WsLinkEvent_OperationResponse() when operationResponse != null:
+return pingReceived(_that);case WsLinkEvent_PongReceived() when pongReceived != null:
+return pongReceived(_that);case WsLinkEvent_OperationResponse() when operationResponse != null:
 return operationResponse(_that);case WsLinkEvent_OperationComplete() when operationComplete != null:
 return operationComplete(_that);case WsLinkEvent_ProtocolError() when protocolError != null:
 return protocolError(_that);case _:
@@ -128,11 +131,12 @@ return protocolError(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  connected,TResult Function( String? payloadJson)?  pingReceived,TResult Function( String opId,  String? dataJson,  String? errorsJson,  String? extensionsJson)?  operationResponse,TResult Function( String opId)?  operationComplete,TResult Function( int code,  String reason)?  protocolError,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  connected,TResult Function( String? payloadJson)?  pingReceived,TResult Function( String? payloadJson)?  pongReceived,TResult Function( String opId,  String? dataJson,  String? errorsJson,  String? extensionsJson)?  operationResponse,TResult Function( String opId)?  operationComplete,TResult Function( int code,  String reason)?  protocolError,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected() when connected != null:
 return connected();case WsLinkEvent_PingReceived() when pingReceived != null:
-return pingReceived(_that.payloadJson);case WsLinkEvent_OperationResponse() when operationResponse != null:
+return pingReceived(_that.payloadJson);case WsLinkEvent_PongReceived() when pongReceived != null:
+return pongReceived(_that.payloadJson);case WsLinkEvent_OperationResponse() when operationResponse != null:
 return operationResponse(_that.opId,_that.dataJson,_that.errorsJson,_that.extensionsJson);case WsLinkEvent_OperationComplete() when operationComplete != null:
 return operationComplete(_that.opId);case WsLinkEvent_ProtocolError() when protocolError != null:
 return protocolError(_that.code,_that.reason);case _:
@@ -153,11 +157,12 @@ return protocolError(_that.code,_that.reason);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  connected,required TResult Function( String? payloadJson)  pingReceived,required TResult Function( String opId,  String? dataJson,  String? errorsJson,  String? extensionsJson)  operationResponse,required TResult Function( String opId)  operationComplete,required TResult Function( int code,  String reason)  protocolError,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  connected,required TResult Function( String? payloadJson)  pingReceived,required TResult Function( String? payloadJson)  pongReceived,required TResult Function( String opId,  String? dataJson,  String? errorsJson,  String? extensionsJson)  operationResponse,required TResult Function( String opId)  operationComplete,required TResult Function( int code,  String reason)  protocolError,}) {final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected():
 return connected();case WsLinkEvent_PingReceived():
-return pingReceived(_that.payloadJson);case WsLinkEvent_OperationResponse():
+return pingReceived(_that.payloadJson);case WsLinkEvent_PongReceived():
+return pongReceived(_that.payloadJson);case WsLinkEvent_OperationResponse():
 return operationResponse(_that.opId,_that.dataJson,_that.errorsJson,_that.extensionsJson);case WsLinkEvent_OperationComplete():
 return operationComplete(_that.opId);case WsLinkEvent_ProtocolError():
 return protocolError(_that.code,_that.reason);}
@@ -174,11 +179,12 @@ return protocolError(_that.code,_that.reason);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  connected,TResult? Function( String? payloadJson)?  pingReceived,TResult? Function( String opId,  String? dataJson,  String? errorsJson,  String? extensionsJson)?  operationResponse,TResult? Function( String opId)?  operationComplete,TResult? Function( int code,  String reason)?  protocolError,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  connected,TResult? Function( String? payloadJson)?  pingReceived,TResult? Function( String? payloadJson)?  pongReceived,TResult? Function( String opId,  String? dataJson,  String? errorsJson,  String? extensionsJson)?  operationResponse,TResult? Function( String opId)?  operationComplete,TResult? Function( int code,  String reason)?  protocolError,}) {final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected() when connected != null:
 return connected();case WsLinkEvent_PingReceived() when pingReceived != null:
-return pingReceived(_that.payloadJson);case WsLinkEvent_OperationResponse() when operationResponse != null:
+return pingReceived(_that.payloadJson);case WsLinkEvent_PongReceived() when pongReceived != null:
+return pongReceived(_that.payloadJson);case WsLinkEvent_OperationResponse() when operationResponse != null:
 return operationResponse(_that.opId,_that.dataJson,_that.errorsJson,_that.extensionsJson);case WsLinkEvent_OperationComplete() when operationComplete != null:
 return operationComplete(_that.opId);case WsLinkEvent_ProtocolError() when protocolError != null:
 return protocolError(_that.code,_that.reason);case _:
@@ -279,6 +285,72 @@ class _$WsLinkEvent_PingReceivedCopyWithImpl<$Res>
 /// with the given fields replaced by the non-null parameter values.
 @pragma('vm:prefer-inline') $Res call({Object? payloadJson = freezed,}) {
   return _then(WsLinkEvent_PingReceived(
+payloadJson: freezed == payloadJson ? _self.payloadJson : payloadJson // ignore: cast_nullable_to_non_nullable
+as String?,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class WsLinkEvent_PongReceived extends WsLinkEvent {
+  const WsLinkEvent_PongReceived({this.payloadJson}): super._();
+  
+
+ final  String? payloadJson;
+
+/// Create a copy of WsLinkEvent
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$WsLinkEvent_PongReceivedCopyWith<WsLinkEvent_PongReceived> get copyWith => _$WsLinkEvent_PongReceivedCopyWithImpl<WsLinkEvent_PongReceived>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WsLinkEvent_PongReceived&&(identical(other.payloadJson, payloadJson) || other.payloadJson == payloadJson));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,payloadJson);
+
+@override
+String toString() {
+  return 'WsLinkEvent.pongReceived(payloadJson: $payloadJson)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $WsLinkEvent_PongReceivedCopyWith<$Res> implements $WsLinkEventCopyWith<$Res> {
+  factory $WsLinkEvent_PongReceivedCopyWith(WsLinkEvent_PongReceived value, $Res Function(WsLinkEvent_PongReceived) _then) = _$WsLinkEvent_PongReceivedCopyWithImpl;
+@useResult
+$Res call({
+ String? payloadJson
+});
+
+
+
+
+}
+/// @nodoc
+class _$WsLinkEvent_PongReceivedCopyWithImpl<$Res>
+    implements $WsLinkEvent_PongReceivedCopyWith<$Res> {
+  _$WsLinkEvent_PongReceivedCopyWithImpl(this._self, this._then);
+
+  final WsLinkEvent_PongReceived _self;
+  final $Res Function(WsLinkEvent_PongReceived) _then;
+
+/// Create a copy of WsLinkEvent
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? payloadJson = freezed,}) {
+  return _then(WsLinkEvent_PongReceived(
 payloadJson: freezed == payloadJson ? _self.payloadJson : payloadJson // ignore: cast_nullable_to_non_nullable
 as String?,
   ));

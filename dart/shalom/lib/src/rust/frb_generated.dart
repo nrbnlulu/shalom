@@ -1858,15 +1858,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           payloadJson: dco_decode_opt_String(raw[1]),
         );
       case 2:
+        return WsLinkEvent_PongReceived(
+          payloadJson: dco_decode_opt_String(raw[1]),
+        );
+      case 3:
         return WsLinkEvent_OperationResponse(
           opId: dco_decode_String(raw[1]),
           dataJson: dco_decode_opt_String(raw[2]),
           errorsJson: dco_decode_opt_String(raw[3]),
           extensionsJson: dco_decode_opt_String(raw[4]),
         );
-      case 3:
-        return WsLinkEvent_OperationComplete(opId: dco_decode_String(raw[1]));
       case 4:
+        return WsLinkEvent_OperationComplete(opId: dco_decode_String(raw[1]));
+      case 5:
         return WsLinkEvent_ProtocolError(
           code: dco_decode_u_16(raw[1]),
           reason: dco_decode_String(raw[2]),
@@ -2264,6 +2268,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         var var_payloadJson = sse_decode_opt_String(deserializer);
         return WsLinkEvent_PingReceived(payloadJson: var_payloadJson);
       case 2:
+        var var_payloadJson = sse_decode_opt_String(deserializer);
+        return WsLinkEvent_PongReceived(payloadJson: var_payloadJson);
+      case 3:
         var var_opId = sse_decode_String(deserializer);
         var var_dataJson = sse_decode_opt_String(deserializer);
         var var_errorsJson = sse_decode_opt_String(deserializer);
@@ -2274,10 +2281,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           errorsJson: var_errorsJson,
           extensionsJson: var_extensionsJson,
         );
-      case 3:
+      case 4:
         var var_opId = sse_decode_String(deserializer);
         return WsLinkEvent_OperationComplete(opId: var_opId);
-      case 4:
+      case 5:
         var var_code = sse_decode_u_16(deserializer);
         var var_reason = sse_decode_String(deserializer);
         return WsLinkEvent_ProtocolError(code: var_code, reason: var_reason);
@@ -2679,22 +2686,25 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       case WsLinkEvent_PingReceived(payloadJson: final payloadJson):
         sse_encode_i_32(1, serializer);
         sse_encode_opt_String(payloadJson, serializer);
+      case WsLinkEvent_PongReceived(payloadJson: final payloadJson):
+        sse_encode_i_32(2, serializer);
+        sse_encode_opt_String(payloadJson, serializer);
       case WsLinkEvent_OperationResponse(
         opId: final opId,
         dataJson: final dataJson,
         errorsJson: final errorsJson,
         extensionsJson: final extensionsJson,
       ):
-        sse_encode_i_32(2, serializer);
+        sse_encode_i_32(3, serializer);
         sse_encode_String(opId, serializer);
         sse_encode_opt_String(dataJson, serializer);
         sse_encode_opt_String(errorsJson, serializer);
         sse_encode_opt_String(extensionsJson, serializer);
       case WsLinkEvent_OperationComplete(opId: final opId):
-        sse_encode_i_32(3, serializer);
+        sse_encode_i_32(4, serializer);
         sse_encode_String(opId, serializer);
       case WsLinkEvent_ProtocolError(code: final code, reason: final reason):
-        sse_encode_i_32(4, serializer);
+        sse_encode_i_32(5, serializer);
         sse_encode_u_16(code, serializer);
         sse_encode_String(reason, serializer);
     }
