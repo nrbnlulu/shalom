@@ -242,9 +242,23 @@ final class AnimalWithOwnerQueryData implements shalom_core.OperationInterface {
     shalom_core.CacheProxy cache, {
     AnimalWithOwnerQueryVariables? variables,
   }) async {
-    return await cache.readQuery<AnimalWithOwnerQueryData>(
+    return await cache.readOperation<AnimalWithOwnerQueryData>(
       name: 'AnimalWithOwnerQuery',
       decoder: fromCache,
+
+      variables: variables?.toJson(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    AnimalWithOwnerQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'AnimalWithOwnerQuery',
 
       variables: variables?.toJson(),
     );

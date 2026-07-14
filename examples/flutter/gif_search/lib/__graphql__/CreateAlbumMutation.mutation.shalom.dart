@@ -32,7 +32,7 @@ abstract class $CreateAlbumMutation {
   ///
   /// [update] receives a [CacheProxy] and the typed mutation response data.
   /// It's only called if the mutation returns successful data.
-  /// Use [CacheProxy.readQuery] / [CacheProxy.writeQuery] to read the current
+  /// Use [CacheProxy.readOperation] / [CacheProxy.writeOperation] to read the current
   /// cached value of any query and write back a modified version — the typical
   /// pattern for keeping lists in sync after an add / remove / reorder mutation.
   ///
@@ -41,12 +41,12 @@ abstract class $CreateAlbumMutation {
   /// await addTodo.executeWithCacheUpdate(
   ///   input: AddTodoInput(title: 'Buy milk'),
   ///   update: (cache, data) async {
-  ///     final current = await cache.readQuery(
+  ///     final current = await cache.readOperation(
   ///       name: 'GetTodos',
   ///       decoder: GetTodosData.fromCache,
   ///     );
   ///     if (current != null) {
-  ///       await cache.writeQuery(
+  ///       await cache.writeOperation(
   ///         data: GetTodosData(todos: [...current.todos, data.addTodo!]),
   ///       );
   ///     }
