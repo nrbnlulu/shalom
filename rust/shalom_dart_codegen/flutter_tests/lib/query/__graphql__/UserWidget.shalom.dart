@@ -115,9 +115,23 @@ final class UserWidgetData implements shalom_core.OperationInterface {
     shalom_core.CacheProxy cache, {
     UserWidgetVariables? variables,
   }) async {
-    return await cache.readQuery<UserWidgetData>(
+    return await cache.readOperation<UserWidgetData>(
       name: 'UserWidget',
       decoder: fromCache,
+
+      variables: variables?.toJson(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    UserWidgetVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'UserWidget',
 
       variables: variables?.toJson(),
     );

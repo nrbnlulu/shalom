@@ -569,15 +569,15 @@ class ShalomRuntimeClient {
   /// Read the current cache for operation [name] and decode it as [T].
   ///
   /// Returns `null` when the data is absent or incomplete in the cache.
-  /// Use inside [CacheProxy.readQuery] or directly when you need a one-shot
-  /// cache read without opening a subscription.
-  Future<T?> readQuery<T>({
+  /// Use inside [CacheProxy.readOperation] or directly when you need a
+  /// one-shot cache read without opening a subscription.
+  Future<T?> readOperation<T>({
     required String name,
     required T Function(JsonObject) decoder,
     Map<String, dynamic>? variables,
   }) async {
     final variablesJson = variables == null ? null : jsonEncode(variables);
-    final raw = await rs_runtime.readQuery(
+    final raw = await rs_runtime.readOperation(
       handle: _handle,
       name: name,
       variablesJson: variablesJson,
@@ -593,15 +593,33 @@ class ShalomRuntimeClient {
   /// This is a permanent write (no rollback).  The typical use-case is inside
   /// a mutation's `executeWithCacheUpdate` callback to keep a cached list in
   /// sync after an add / remove mutation.
-  Future<void> writeQuery<T extends OperationInterface>({
+  Future<void> writeOperation<T extends OperationInterface>({
     required T data,
     Map<String, dynamic>? variables,
   }) {
     final variablesJson = variables == null ? null : jsonEncode(variables);
-    return rs_runtime.writeQuery(
+    return rs_runtime.writeOperation(
       handle: _handle,
       name: data.operation$Name(),
       dataJson: jsonEncode(data.toJson()),
+      variablesJson: variablesJson,
+    );
+  }
+
+  /// Evict operation [name]'s cached root field(s) (matched by [variables])
+  /// and notify any active subscribers.
+  ///
+  /// Only unlinks the operation's own root entry — entities it referenced
+  /// are reclaimed by the next GC sweep if nothing else keeps them
+  /// reachable. Returns `false` if no matching cache entry existed.
+  Future<bool> evictOperation({
+    required String name,
+    Map<String, dynamic>? variables,
+  }) {
+    final variablesJson = variables == null ? null : jsonEncode(variables);
+    return rs_runtime.evictOperation(
+      handle: _handle,
+      name: name,
       variablesJson: variablesJson,
     );
   }

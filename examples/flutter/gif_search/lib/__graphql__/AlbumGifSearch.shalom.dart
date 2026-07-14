@@ -207,7 +207,7 @@ final class AlbumGifSearchData implements shalom_core.OperationInterface {
     shalom_core.CacheProxy cache, {
     AlbumGifSearchVariables? variables,
   }) async {
-    return await cache.readQuery<AlbumGifSearchData>(
+    return await cache.readOperation<AlbumGifSearchData>(
       name: 'AlbumGifSearch',
       decoder: fromCache,
 

@@ -141,9 +141,23 @@ final class ZooQueryData implements shalom_core.OperationInterface {
     shalom_core.CacheProxy cache, {
     ZooQueryVariables? variables,
   }) async {
-    return await cache.readQuery<ZooQueryData>(
+    return await cache.readOperation<ZooQueryData>(
       name: 'ZooQuery',
       decoder: fromCache,
+
+      variables: variables?.toJson(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    ZooQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'ZooQuery',
 
       variables: variables?.toJson(),
     );
