@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
     show ExternalLibrary;
@@ -31,6 +30,16 @@ rs_runtime.ObservedRefInput observedRefInputFromJson(JsonObject json) {
   return rs_runtime.ObservedRefInput(
     observableId: refJson['observable_id'] as String,
     anchor: refJson['anchor'] as String,
+  );
+}
+
+rs_runtime.ObservedRefInput observedRefInputFromShalomValue(
+  ShalomJsonValue value,
+) {
+  final refValue = value.field('__shalom_observed_ref') ?? value;
+  return rs_runtime.ObservedRefInput(
+    observableId: refValue.field('observable_id')!.stringValue,
+    anchor: refValue.field('anchor')!.stringValue,
   );
 }
 
@@ -113,9 +122,9 @@ class _RetryDelayAfter extends RetryDelay {
 class ShalomRuntimeClient {
   final rs_runtime.RuntimeHandle _handle;
   final GraphQLLink _link;
-  final Map<int, StreamSubscription<GraphQLResponse<JsonObject>>>
+  final Map<int, StreamSubscription<GraphQLResponse<GraphQLLinkPayload>>>
   _activeRequests = {};
-  StreamSubscription<String>? _requestStream;
+  StreamSubscription<rs_runtime.RequestEnvelopeInput>? _requestStream;
   bool _disposed = false;
 
   ShalomRuntimeClient._(this._handle, this._link);
@@ -219,19 +228,18 @@ class ShalomRuntimeClient {
   /// repeated on a timer).
   Stream<GraphQLResponse<T>> request<T>({
     required String name,
-    Map<String, dynamic>? variables,
-    required T Function(JsonObject) decoder,
+    ShalomJsonValue? variables,
+    required T Function(ShalomJsonValue) decoder,
     rs_runtime.ExecutionPolicyInput executionPolicy =
         rs_runtime.ExecutionPolicyInput.networkFirst,
     RetryDelay retryDelay = const RetryDelay.inherit(),
     Duration? autoRefetch,
   }) {
-    final variablesJson = variables == null ? null : jsonEncode(variables);
     return _observeSubscription<T>(
       subscribe: () => rs_runtime.request(
         handle: _handle,
         name: name,
-        variablesJson: variablesJson,
+        variables: variables,
         executionPolicy: executionPolicy,
         retryDelay: retryDelay._toInput(),
         refetchIntervalMs: autoRefetch != null
@@ -257,8 +265,8 @@ class ShalomRuntimeClient {
   /// caller opts in explicitly via [retryDelay]).
   Future<GraphQLResponse<T>> mutate<T>({
     required String name,
-    Map<String, dynamic>? variables,
-    required T Function(JsonObject) decoder,
+    ShalomJsonValue? variables,
+    required T Function(ShalomJsonValue) decoder,
     RetryDelay retryDelay = const RetryDelay.disabled(),
   }) => request<T>(
     name: name,
@@ -274,11 +282,11 @@ class ShalomRuntimeClient {
   /// failure.
   Future<BigInt> writeOptimistic({
     required String name,
-    required JsonObject data,
+    required OperationInterface data,
   }) => rs_runtime.writeOptimistic(
     handle: _handle,
     opName: name,
-    dataJson: jsonEncode(data),
+    data: data.toShalomValue(),
   );
 
   /// Undo a previous [writeOptimistic] call, restoring the cache to its
@@ -299,7 +307,7 @@ class ShalomRuntimeClient {
   /// [GraphQLResponse<T>] carrying either success or error states.
   Stream<GraphQLResponse<T>> subscribeToFragment<T>({
     required rs_runtime.ObservedRefInput ref,
-    required T Function(JsonObject) decoder,
+    required T Function(ShalomJsonValue) decoder,
   }) {
     return _observeSubscription<T>(
       subscribe: () =>
@@ -322,7 +330,7 @@ class ShalomRuntimeClient {
   Stream<GraphQLResponse<T>> rebindFragmentSubscription<T>({
     required BigInt subscriptionId,
     required rs_runtime.ObservedRefInput newRef,
-    required T Function(JsonObject) decoder,
+    required T Function(ShalomJsonValue) decoder,
   }) {
     return _observeSubscription<T>(
       subscribe: () => rs_runtime.rebindSubscription(
@@ -364,7 +372,7 @@ class ShalomRuntimeClient {
   /// [_bindSubscriptionStream].
   Stream<GraphQLResponse<T>> _observeSubscription<T>({
     required Future<BigInt> Function() subscribe,
-    required T Function(JsonObject) decoder,
+    required T Function(ShalomJsonValue) decoder,
     String? debugName,
   }) {
     BigInt? subId;
@@ -409,7 +417,7 @@ class ShalomRuntimeClient {
   void _bindSubscriptionStream<T>({
     required BigInt subId,
     required StreamController<GraphQLResponse<T>> controller,
-    required T Function(JsonObject) decoder,
+    required T Function(ShalomJsonValue) decoder,
     String? debugName,
   }) {
     rs_runtime
@@ -420,33 +428,29 @@ class ShalomRuntimeClient {
             late GraphQLResponse<T> response;
             try {
               switch (event) {
-                case rs_runtime.SubscriptionEvent_Data(
-                  dataJson: final dataJson,
-                ):
-                  final decoded = decoder(jsonDecode(dataJson) as JsonObject);
+                case rs_runtime.SubscriptionEvent_Data(data: final data):
+                  final decoded = decoder(data);
                   response = GraphQLData<T>(data: decoded);
                 case rs_runtime.SubscriptionEvent_GraphQlError(
-                  errorsJson: final errorsJson,
-                  extensionsJson: final extensionsJson,
+                  errors: final errors,
+                  extensions: final extensions,
                 ):
                   response = GraphQLError<T>(
-                    errors: (jsonDecode(errorsJson) as List).cast<JsonObject>(),
-                    extensions: extensionsJson != null
-                        ? (jsonDecode(extensionsJson) as JsonObject)
-                        : null,
+                    errors: errors
+                        .map((error) => error.toJsonValue() as JsonObject)
+                        .toList(growable: false),
+                    extensions: extensions?.toJsonValue() as JsonObject?,
                   );
                 case rs_runtime.SubscriptionEvent_TransportError(
                   code: final code,
                   message: final message,
-                  detailsJson: final detailsJson,
+                  details: final details,
                 ):
                   response = LinkExceptionResponse<T>([
                     ShalomTransportException(
                       message: message,
                       code: code,
-                      details: detailsJson != null
-                          ? (jsonDecode(detailsJson) as JsonObject)
-                          : null,
+                      details: details?.toJsonValue() as JsonObject?,
                     ),
                   ]);
               }
@@ -473,17 +477,19 @@ class ShalomRuntimeClient {
     _requestStream = stream.listen(_handleRequestEnvelope, onError: (_) {});
   }
 
-  Future<void> _handleRequestEnvelope(String payload) async {
+  Future<void> _handleRequestEnvelope(
+    rs_runtime.RequestEnvelopeInput envelope,
+  ) async {
     if (_disposed) return;
-    final envelope = _RequestEnvelope.fromJson(payload);
-    final previous = _activeRequests.remove(envelope.id);
+    final requestId = envelope.id.toInt();
+    final previous = _activeRequests.remove(requestId);
     if (previous != null) {
       await previous.cancel();
     }
     final request = Request(
       query: envelope.query,
-      variables: envelope.variables,
-      opType: envelope.operationType,
+      variables: envelope.variables.toJsonValue() as JsonObject,
+      opType: _parseOperationType(envelope.operationType),
       opName: envelope.operationName,
     );
 
@@ -503,51 +509,56 @@ class ShalomRuntimeClient {
         .request(request: request)
         .listen(
           (response) =>
-              enqueueDispatch(() => _dispatchResponse(envelope.id, response)),
-          onError: (error) => enqueueDispatch(
-            () => _dispatchTransportError(envelope.id, error),
-          ),
+              enqueueDispatch(() => _dispatchResponse(requestId, response)),
+          onError: (error) =>
+              enqueueDispatch(() => _dispatchTransportError(requestId, error)),
           onDone: () async {
             await pendingDispatch.catchError((_) {});
-            _activeRequests.remove(envelope.id);
+            _activeRequests.remove(requestId);
             if (_disposed) return;
             await rs_runtime.completeTransport(
               handle: _handle,
-              requestId: BigInt.from(envelope.id),
+              requestId: envelope.id,
             );
           },
         );
-    _activeRequests[envelope.id] = subscription;
+    _activeRequests[requestId] = subscription;
   }
 
   Future<void> _dispatchResponse(
     int requestId,
-    GraphQLResponse<JsonObject> response,
+    GraphQLResponse<GraphQLLinkPayload> response,
   ) async {
     switch (response) {
-      case GraphQLData():
-        final payload = <String, dynamic>{'data': response.data};
-        if (response.errors != null) payload['errors'] = response.errors;
-        if (response.extensions != null) {
-          payload['extensions'] = response.extensions;
-        }
-        return _pushResponse(requestId, payload);
+      case GraphQLData(:final data):
+        return switch (data) {
+          RawGraphQLLinkPayload(:final json) => _pushResponse(requestId, json),
+          ParsedGraphQLLinkPayload(:final response) =>
+            rs_runtime.pushResponseValue(
+              handle: _handle,
+              requestId: BigInt.from(requestId),
+              response: response,
+            ),
+        };
       case GraphQLError():
-        final payload = <String, dynamic>{'errors': response.errors};
-        if (response.extensions != null) {
-          payload['extensions'] = response.extensions;
-        }
-        return _pushResponse(requestId, payload);
+        return rs_runtime.pushGraphqlError(
+          handle: _handle,
+          requestId: BigInt.from(requestId),
+          errors: response.errors.map(shalomJsonValue).toList(growable: false),
+          extensions: response.extensions == null
+              ? null
+              : shalomJsonValue(response.extensions),
+        );
       case LinkExceptionResponse():
         await _dispatchTransportError(requestId, response.errors);
     }
   }
 
-  Future<void> _pushResponse(int requestId, Map<String, dynamic> payload) {
+  Future<void> _pushResponse(int requestId, String responseJson) {
     return rs_runtime.pushResponse(
       handle: _handle,
       requestId: BigInt.from(requestId),
-      responseJson: jsonEncode(payload),
+      responseJson: responseJson,
     );
   }
 
@@ -558,7 +569,7 @@ class ShalomRuntimeClient {
       requestId: BigInt.from(requestId),
       message: transport.message,
       code: transport.code,
-      detailsJson: transport.detailsJson,
+      details: transport.details,
     );
   }
 
@@ -573,18 +584,16 @@ class ShalomRuntimeClient {
   /// one-shot cache read without opening a subscription.
   Future<T?> readOperation<T>({
     required String name,
-    required T Function(JsonObject) decoder,
-    Map<String, dynamic>? variables,
+    required T Function(ShalomJsonValue) decoder,
+    ShalomJsonValue? variables,
   }) async {
-    final variablesJson = variables == null ? null : jsonEncode(variables);
-    final raw = await rs_runtime.readOperation(
+    final value = await rs_runtime.readOperation(
       handle: _handle,
       name: name,
-      variablesJson: variablesJson,
+      variables: variables,
     );
-    if (raw == null) return null;
-    final json = jsonDecode(raw) as Map<String, dynamic>;
-    return decoder(json);
+    if (value == null) return null;
+    return decoder(value);
   }
 
   /// Write [data] to the cache for its generated operation, normalizing it
@@ -595,14 +604,13 @@ class ShalomRuntimeClient {
   /// sync after an add / remove mutation.
   Future<void> writeOperation<T extends OperationInterface>({
     required T data,
-    Map<String, dynamic>? variables,
+    ShalomJsonValue? variables,
   }) {
-    final variablesJson = variables == null ? null : jsonEncode(variables);
     return rs_runtime.writeOperation(
       handle: _handle,
       name: data.operation$Name(),
-      dataJson: jsonEncode(data.toJson()),
-      variablesJson: variablesJson,
+      data: data.toShalomValue(),
+      variables: variables,
     );
   }
 
@@ -614,13 +622,12 @@ class ShalomRuntimeClient {
   /// reachable. Returns `false` if no matching cache entry existed.
   Future<bool> evictOperation({
     required String name,
-    Map<String, dynamic>? variables,
+    ShalomJsonValue? variables,
   }) {
-    final variablesJson = variables == null ? null : jsonEncode(variables);
     return rs_runtime.evictOperation(
       handle: _handle,
       name: name,
-      variablesJson: variablesJson,
+      variables: variables,
     );
   }
 
@@ -630,16 +637,15 @@ class ShalomRuntimeClient {
   Future<T?> readFragment<T>({
     required String fragmentName,
     required String entityKey,
-    required T Function(JsonObject) decoder,
+    required T Function(ShalomJsonValue) decoder,
   }) async {
-    final raw = await rs_runtime.readFragment(
+    final value = await rs_runtime.readFragment(
       handle: _handle,
       fragmentName: fragmentName,
       entityKey: entityKey,
     );
-    if (raw == null) return null;
-    final json = jsonDecode(raw) as Map<String, dynamic>;
-    return decoder(json);
+    if (value == null) return null;
+    return decoder(value);
   }
 
   /// Write [data] to the cache, using [FragmentInterface]'s selection set,
@@ -652,7 +658,7 @@ class ShalomRuntimeClient {
       handle: _handle,
       fragmentName: data.fragment$Name(),
       entityKey: '${data.entity$Type()}:${data.entity$Id()}',
-      dataJson: jsonEncode(data.toJson()),
+      data: data.toShalomValue(),
     );
   }
 
@@ -673,11 +679,8 @@ class ShalomRuntimeClient {
       rs_runtime.getCacheEntry(handle: _handle, key: key);
 
   /// Returns a map of cache-key → active observer count.
-  Future<Map<String, int>> getObserverCounts() async {
-    final raw = await rs_runtime.getObserverCounts(handle: _handle);
-    final decoded = jsonDecode(raw) as Map<String, dynamic>;
-    return decoded.map((k, v) => MapEntry(k, (v as num).toInt()));
-  }
+  Future<Map<String, int>> getObserverCounts() =>
+      rs_runtime.getObserverCounts(handle: _handle);
 
   /// Returns info about every active observer currently watching [key].
   Future<List<rs_runtime.ObserverInfo>> getKeyObservers(String key) =>
@@ -692,74 +695,22 @@ class ShalomRuntimeClient {
 // Private helpers
 // ---------------------------------------------------------------------------
 
-class _RequestEnvelope {
-  final int id;
-  final String query;
-  final Map<String, dynamic> variables;
-  final String operationName;
-  final OperationType operationType;
-
-  const _RequestEnvelope({
-    required this.id,
-    required this.query,
-    required this.variables,
-    required this.operationName,
-    required this.operationType,
-  });
-
-  factory _RequestEnvelope.fromJson(String payload) {
-    final decoded = jsonDecode(payload);
-    if (decoded is! Map) {
-      throw const FormatException('request envelope must be a JSON object');
-    }
-    final idRaw = decoded['id'];
-    if (idRaw is! num) {
-      throw const FormatException('request envelope id must be a number');
-    }
-    final requestRaw = decoded['request'];
-    if (requestRaw is! Map) {
-      throw const FormatException(
-        'request envelope request must be a JSON object',
-      );
-    }
-    final query = requestRaw['query'];
-    final opName = requestRaw['operation_name'];
-    final opTypeRaw = requestRaw['operation_type'];
-    if (query is! String || opName is! String || opTypeRaw is! String) {
-      throw const FormatException(
-        'request envelope has invalid request fields',
-      );
-    }
-    final variablesRaw = requestRaw['variables'];
-    final variables = variablesRaw is Map
-        ? variablesRaw.cast<String, dynamic>()
-        : <String, dynamic>{};
-    return _RequestEnvelope(
-      id: idRaw.toInt(),
-      query: query,
-      variables: variables,
-      operationName: opName,
-      operationType: _parseOperationType(opTypeRaw),
-    );
-  }
-
-  static OperationType _parseOperationType(String raw) => switch (raw) {
-    'Query' => OperationType.Query,
-    'Mutation' => OperationType.Mutation,
-    'Subscription' => OperationType.Subscription,
-    _ => throw FormatException('unknown operation type: $raw'),
-  };
-}
+OperationType _parseOperationType(String raw) => switch (raw) {
+  'Query' => OperationType.Query,
+  'Mutation' => OperationType.Mutation,
+  'Subscription' => OperationType.Subscription,
+  _ => throw FormatException('unknown operation type: $raw'),
+};
 
 class _TransportError {
   final String message;
   final String code;
-  final String? detailsJson;
+  final ShalomJsonValue? details;
 
   const _TransportError({
     required this.message,
     required this.code,
-    this.detailsJson,
+    this.details,
   });
 }
 
@@ -768,7 +719,7 @@ _TransportError _toTransportError(Object error) {
     return _TransportError(
       message: error.message,
       code: error.code,
-      detailsJson: error.details == null ? null : jsonEncode(error.details),
+      details: error.details == null ? null : shalomJsonValue(error.details),
     );
   }
   if (error is List<Exception>) {
@@ -778,7 +729,9 @@ _TransportError _toTransportError(Object error) {
         return _TransportError(
           message: first.message,
           code: first.code,
-          detailsJson: first.details == null ? null : jsonEncode(first.details),
+          details: first.details == null
+              ? null
+              : shalomJsonValue(first.details),
         );
       }
     }

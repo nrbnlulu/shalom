@@ -84,12 +84,14 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
   String? _selectedCacheKey;
 
   final List<
-      ({
-        _PanelTab tab,
-        String? queryField,
-        String? mutationField,
-        String? cacheKey,
-      })> _history = [];
+    ({
+      _PanelTab tab,
+      String? queryField,
+      String? mutationField,
+      String? cacheKey,
+    })
+  >
+  _history = [];
 
   String _filter = '';
   Timer? _timer;
@@ -209,10 +211,10 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
   }
 
   String? get _selectedItem => switch (_tab) {
-        _PanelTab.queries => _selectedQueryField,
-        _PanelTab.mutations => _selectedMutationField,
-        _PanelTab.cache => _selectedCacheKey,
-      };
+    _PanelTab.queries => _selectedQueryField,
+    _PanelTab.mutations => _selectedMutationField,
+    _PanelTab.cache => _selectedCacheKey,
+  };
 
   void _onItemSelected(String item) {
     setState(() {
@@ -495,8 +497,10 @@ class _LeftPane extends StatelessWidget {
                 hintText: 'Filter…',
                 hintStyle: TextStyle(color: Colors.white38, fontSize: 11),
                 isDense: true,
-                contentPadding:
-                    EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 6,
+                ),
                 border: OutlineInputBorder(),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.white24),
@@ -514,8 +518,10 @@ class _LeftPane extends StatelessWidget {
                 ? Center(
                     child: Text(
                       emptyHint,
-                      style:
-                          const TextStyle(color: Colors.white38, fontSize: 11),
+                      style: const TextStyle(
+                        color: Colors.white38,
+                        fontSize: 11,
+                      ),
                     ),
                   )
                 : ListView.builder(
@@ -526,8 +532,9 @@ class _LeftPane extends StatelessWidget {
                       final obsCount = obsCounts[item];
 
                       final parenIdx = item.indexOf('(');
-                      final displayName =
-                          parenIdx == -1 ? item : item.substring(0, parenIdx);
+                      final displayName = parenIdx == -1
+                          ? item
+                          : item.substring(0, parenIdx);
                       final hasArgs = parenIdx != -1;
 
                       return InkWell(
@@ -613,8 +620,11 @@ class _ObsBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.visibility_outlined,
-              size: 9, color: _kObsBadgeColor),
+          const Icon(
+            Icons.visibility_outlined,
+            size: 9,
+            color: _kObsBadgeColor,
+          ),
           const SizedBox(width: 2),
           Text(
             '$count',
@@ -708,13 +718,18 @@ class _RightPaneState extends State<_RightPane> {
               children: [
                 if (widget.canGoBack) ...[
                   IconButton(
-                    icon: const Icon(Icons.arrow_back,
-                        color: Colors.white70, size: 14),
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.white70,
+                      size: 14,
+                    ),
                     onPressed: widget.onGoBack,
                     tooltip: 'Go back',
                     padding: EdgeInsets.zero,
-                    constraints:
-                        const BoxConstraints(minWidth: 24, minHeight: 24),
+                    constraints: const BoxConstraints(
+                      minWidth: 24,
+                      minHeight: 24,
+                    ),
                   ),
                   const SizedBox(width: 4),
                 ],
@@ -740,8 +755,10 @@ class _RightPaneState extends State<_RightPane> {
                       Clipboard.setData(ClipboardData(text: rawJson)),
                   tooltip: 'Copy raw JSON',
                   padding: EdgeInsets.zero,
-                  constraints:
-                      const BoxConstraints(minWidth: 24, minHeight: 24),
+                  constraints: const BoxConstraints(
+                    minWidth: 24,
+                    minHeight: 24,
+                  ),
                 ),
               ],
             ),
@@ -837,10 +854,7 @@ class _ObserverList extends StatelessWidget {
   final List<ObserverInfo> observers;
   final void Function(String) onNavigateToKey;
 
-  const _ObserverList({
-    required this.observers,
-    required this.onNavigateToKey,
-  });
+  const _ObserverList({required this.observers, required this.onNavigateToKey});
 
   @override
   Widget build(BuildContext context) {
@@ -858,10 +872,8 @@ class _ObserverList extends StatelessWidget {
       itemCount: observers.length,
       separatorBuilder: (_, __) =>
           const Divider(color: Color(0xFF333355), height: 12),
-      itemBuilder: (_, i) => _ObserverCard(
-        info: observers[i],
-        onNavigateToKey: onNavigateToKey,
-      ),
+      itemBuilder: (_, i) =>
+          _ObserverCard(info: observers[i], onNavigateToKey: onNavigateToKey),
     );
   }
 }
@@ -1063,8 +1075,10 @@ class _JsonValue extends StatelessWidget {
         return _RefChip(refKey: refKey, onTap: () => onNavigateToRef(refKey));
       }
       if (map.isEmpty) {
-        return const Text('{ }',
-            style: TextStyle(color: _kPunctColor, fontSize: 12));
+        return const Text(
+          '{ }',
+          style: TextStyle(color: _kPunctColor, fontSize: 12),
+        );
       }
       return _JsonObjectNode(
         entries: map.entries.toList(),
@@ -1076,8 +1090,10 @@ class _JsonValue extends StatelessWidget {
     if (value is List) {
       final list = value as List;
       if (list.isEmpty) {
-        return const Text('[ ]',
-            style: TextStyle(color: _kPunctColor, fontSize: 12));
+        return const Text(
+          '[ ]',
+          style: TextStyle(color: _kPunctColor, fontSize: 12),
+        );
       }
       return _JsonArrayNode(
         items: list,
@@ -1131,7 +1147,9 @@ class _JsonObjectNodeState extends State<_JsonObjectNode> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _CollapseHeader(
-            bracket: '{', onTap: () => setState(() => _expanded = false)),
+          bracket: '{',
+          onTap: () => setState(() => _expanded = false),
+        ),
         for (final e in widget.entries)
           _KeyValueRow(
             label: '"${e.key}"',
@@ -1186,7 +1204,9 @@ class _JsonArrayNodeState extends State<_JsonArrayNode> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _CollapseHeader(
-            bracket: '[', onTap: () => setState(() => _expanded = false)),
+          bracket: '[',
+          onTap: () => setState(() => _expanded = false),
+        ),
         for (var i = 0; i < widget.items.length; i++)
           _KeyValueRow(
             label: '$i',
@@ -1277,8 +1297,10 @@ class _ExpandHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 2),
-          Text(close,
-              style: const TextStyle(color: _kPunctColor, fontSize: 12)),
+          Text(
+            close,
+            style: const TextStyle(color: _kPunctColor, fontSize: 12),
+          ),
         ],
       ),
     );
@@ -1299,8 +1321,10 @@ class _CollapseHeader extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.expand_more, size: 14, color: _kMutedColor),
-          Text(bracket,
-              style: const TextStyle(color: _kPunctColor, fontSize: 12)),
+          Text(
+            bracket,
+            style: const TextStyle(color: _kPunctColor, fontSize: 12),
+          ),
         ],
       ),
     );
@@ -1314,23 +1338,43 @@ class _JsonScalar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (value == null) {
-      return const Text('null',
-          style: TextStyle(
-              color: _kBoolNullColor, fontSize: 12, fontFamily: 'monospace'));
+      return const Text(
+        'null',
+        style: TextStyle(
+          color: _kBoolNullColor,
+          fontSize: 12,
+          fontFamily: 'monospace',
+        ),
+      );
     }
     if (value is bool) {
-      return Text('$value',
-          style: const TextStyle(
-              color: _kBoolNullColor, fontSize: 12, fontFamily: 'monospace'));
+      return Text(
+        '$value',
+        style: const TextStyle(
+          color: _kBoolNullColor,
+          fontSize: 12,
+          fontFamily: 'monospace',
+        ),
+      );
     }
     if (value is String) {
-      return Text('"$value"',
-          style: const TextStyle(
-              color: _kStringColor, fontSize: 12, fontFamily: 'monospace'));
-    }
-    return Text('$value',
+      return Text(
+        '"$value"',
         style: const TextStyle(
-            color: _kNumberColor, fontSize: 12, fontFamily: 'monospace'));
+          color: _kStringColor,
+          fontSize: 12,
+          fontFamily: 'monospace',
+        ),
+      );
+    }
+    return Text(
+      '$value',
+      style: const TextStyle(
+        color: _kNumberColor,
+        fontSize: 12,
+        fontFamily: 'monospace',
+      ),
+    );
   }
 }
 

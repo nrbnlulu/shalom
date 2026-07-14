@@ -1,5 +1,5 @@
 import 'package:shalom/src/shalom_core_base.dart'
-    show FragmentInterface, JsonObject, OperationInterface;
+    show FragmentInterface, OperationInterface, ShalomJsonValue;
 import 'runtime_client.dart' show ShalomRuntimeClient;
 
 /// A focused cache interface passed to mutation `update` callbacks.
@@ -17,8 +17,8 @@ class CacheProxy {
   /// Returns `null` when the data is absent or incomplete (missing refs).
   Future<T?> readOperation<T>({
     required String name,
-    required T Function(JsonObject) decoder,
-    Map<String, dynamic>? variables,
+    required T Function(ShalomJsonValue) decoder,
+    ShalomJsonValue? variables,
   }) =>
       _client.readOperation(name: name, decoder: decoder, variables: variables);
 
@@ -26,7 +26,7 @@ class CacheProxy {
   /// and notifying any active subscribers.
   Future<void> writeOperation<T extends OperationInterface>({
     required T data,
-    Map<String, dynamic>? variables,
+    ShalomJsonValue? variables,
   }) => _client.writeOperation(data: data, variables: variables);
 
   /// Evict operation [name]'s cached root field(s) (matched by [variables])
@@ -35,7 +35,7 @@ class CacheProxy {
   /// Returns `false` if no matching cache entry existed.
   Future<bool> evictOperation({
     required String name,
-    Map<String, dynamic>? variables,
+    ShalomJsonValue? variables,
   }) => _client.evictOperation(name: name, variables: variables);
 
   /// Read an entity from the cache through the fragment's selection set.
@@ -44,7 +44,7 @@ class CacheProxy {
   Future<T?> readFragment<T>({
     required String fragmentName,
     required String entityKey,
-    required T Function(JsonObject) decoder,
+    required T Function(ShalomJsonValue) decoder,
   }) => _client.readFragment(
     fragmentName: fragmentName,
     entityKey: entityKey,

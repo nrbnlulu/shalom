@@ -37,6 +37,12 @@ extension type ZooAnimalsWidgetRef.fromInput(
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [ZooAnimalsWidgetData]. Returns `null` when absent or incomplete.
@@ -44,7 +50,7 @@ extension type ZooAnimalsWidgetRef.fromInput(
     return await cache.readFragment<ZooAnimalsWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: ZooAnimalsWidgetData.fromCache,
+      decoder: ZooAnimalsWidgetData.fromShalomValue,
     );
   }
 
@@ -53,7 +59,7 @@ extension type ZooAnimalsWidgetRef.fromInput(
   ) {
     return client.subscribeToFragment<ZooAnimalsWidgetData>(
       ref: _inner,
-      decoder: ZooAnimalsWidgetData.fromCache,
+      decoder: ZooAnimalsWidgetData.fromShalomValue,
     );
   }
 }
@@ -64,6 +70,7 @@ abstract class ZooAnimalsWidget {
   String get name;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 sealed class ZooAnimalsWidget_animals {
@@ -73,6 +80,7 @@ sealed class ZooAnimalsWidget_animals {
   const ZooAnimalsWidget_animals();
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 
   static ZooAnimalsWidget_animals fromJson(shalom_core.JsonObject data) {
     final typename = data['__typename'] as String;
@@ -81,6 +89,21 @@ sealed class ZooAnimalsWidget_animals {
         return ZooAnimalsWidget_animals__Cat.fromJson(data);
       case 'Dog':
         return ZooAnimalsWidget_animals__Dog.fromJson(data);
+
+      default:
+        throw Exception("Unknown typename $typename");
+    }
+  }
+
+  static ZooAnimalsWidget_animals fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final typename = data.field('__typename')!.stringValue;
+    switch (typename) {
+      case 'Cat':
+        return ZooAnimalsWidget_animals__Cat.fromShalomValue(data);
+      case 'Dog':
+        return ZooAnimalsWidget_animals__Dog.fromShalomValue(data);
 
       default:
         throw Exception("Unknown typename $typename");
@@ -125,9 +148,29 @@ final class ZooAnimalsWidget_animals__Cat extends ZooAnimalsWidget_animals {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      ZooAnimalsWidget_animals__Cat.G__typename,
+    ),
+
+    'color': shalom_core.shalomJsonValue(this.color!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static ZooAnimalsWidget_animals__Cat fromJson(shalom_core.JsonObject data) {
     final String color$value = data['color'] as String;
     final String id$value = data['id'] as String;
+    return ZooAnimalsWidget_animals__Cat(color: color$value, id: id$value);
+  }
+
+  static ZooAnimalsWidget_animals__Cat fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? color$raw = data.field('color');
+    final String color$value = color$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return ZooAnimalsWidget_animals__Cat(color: color$value, id: id$value);
   }
 }
@@ -169,9 +212,29 @@ final class ZooAnimalsWidget_animals__Dog extends ZooAnimalsWidget_animals {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      ZooAnimalsWidget_animals__Dog.G__typename,
+    ),
+
+    'breed': shalom_core.shalomJsonValue(this.breed!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static ZooAnimalsWidget_animals__Dog fromJson(shalom_core.JsonObject data) {
     final String breed$value = data['breed'] as String;
     final String id$value = data['id'] as String;
+    return ZooAnimalsWidget_animals__Dog(breed: breed$value, id: id$value);
+  }
+
+  static ZooAnimalsWidget_animals__Dog fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+    final String breed$value = breed$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return ZooAnimalsWidget_animals__Dog(breed: breed$value, id: id$value);
   }
 }
@@ -232,6 +295,24 @@ final class ZooAnimalsWidgetData
     );
   }
 
+  static ZooAnimalsWidgetData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? animals$raw = data.field('animals');
+    final List<ZooAnimalsWidget_animals> animals$value = animals$raw!.listValue
+        .map((e) => ZooAnimalsWidget_animals.fromShalomValue(e!))
+        .toList();
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
+    return ZooAnimalsWidgetData(
+      animals: animals$value,
+      id: id$value,
+      name: name$value,
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {
       'animals': this.animals.map((e) => e.toJson()).toList(),
@@ -241,6 +322,17 @@ final class ZooAnimalsWidgetData
       'name': this.name,
     };
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'animals': shalom_core.shalomJsonArray(
+      this.animals!.map((e) => e!.toShalomValue()),
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
 }
 
 abstract class $ZooAnimalsWidget extends StatelessWidget {

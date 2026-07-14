@@ -44,12 +44,31 @@ class DeleteAlbumMutation_deleteAlbum {
     return {'code': this.code, 'message': this.message};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'code': shalom_core.shalomJsonValue(this.code!),
+
+    'message': shalom_core.shalomJsonValue(this.message!),
+  });
+
   static DeleteAlbumMutation_deleteAlbum fromJson(shalom_core.JsonObject data) {
     final String code$value = data['code'] as String;
     final String message$value = data['message'] as String;
     return DeleteAlbumMutation_deleteAlbum(
       code: code$value,
 
+      message: message$value,
+    );
+  }
+
+  static DeleteAlbumMutation_deleteAlbum fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? code$raw = data.field('code');
+    final String code$value = code$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? message$raw = data.field('message');
+    final String message$value = message$raw!.stringValue;
+    return DeleteAlbumMutation_deleteAlbum(
+      code: code$value,
       message: message$value,
     );
   }
@@ -89,9 +108,29 @@ final class DeleteAlbumMutationData implements shalom_core.OperationInterface {
     return DeleteAlbumMutationData(deleteAlbum: deleteAlbum$value);
   }
 
+  static DeleteAlbumMutationData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? deleteAlbum$raw = data.field(
+      'deleteAlbum',
+    );
+    final DeleteAlbumMutation_deleteAlbum? deleteAlbum$value =
+        deleteAlbum$raw == null || deleteAlbum$raw!.isNull
+        ? null
+        : DeleteAlbumMutation_deleteAlbum.fromShalomValue(deleteAlbum$raw!);
+    return DeleteAlbumMutationData(deleteAlbum: deleteAlbum$value);
+  }
+
   shalom_core.JsonObject toJson() {
     return {'deleteAlbum': this.deleteAlbum?.toJson()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'deleteAlbum': this.deleteAlbum == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.deleteAlbum!.toShalomValue(),
+  });
 }
 
 final class DeleteAlbumMutationVariables {
@@ -105,6 +144,12 @@ final class DeleteAlbumMutationVariables {
     data["id"] = this.id;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    $data["id"] = shalom_core.shalomJsonValue(this.id!);
+    return shalom_core.shalomJsonObject($data);
   }
 
   @override
