@@ -4,6 +4,8 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:shalom/shalom.dart';
+import 'package:shalom/src/rust/api/runtime.dart' as rs_runtime;
+import 'package:shalom/src/rust/api/ws.dart' as rs_ws;
 import 'package:test/test.dart';
 
 String get _nativeLibPath {
@@ -18,13 +20,13 @@ String get _nativeLibPath {
 // ---------------------------------------------------------------------------
 
 class _MockLink extends GraphQLLink {
-  final Queue<GraphQLResponse<String>> _queue;
+  final Queue<GraphQLResponse<GraphQLLinkPayload>> _queue;
 
   _MockLink(List<GraphQLResponse<JsonObject>> responses)
     : _queue = Queue.from(responses.map(_rawResponse));
 
   @override
-  Stream<GraphQLResponse<String>> request({
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
     required Request request,
     HeadersType? headers,
   }) {
@@ -39,7 +41,7 @@ class _MockLink extends GraphQLLink {
 
 class _NeverLink extends GraphQLLink {
   @override
-  Stream<GraphQLResponse<String>> request({
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
     required Request request,
     HeadersType? headers,
   }) {
@@ -47,21 +49,44 @@ class _NeverLink extends GraphQLLink {
   }
 }
 
-GraphQLResponse<String> _rawResponse(GraphQLResponse<JsonObject> response) =>
-    switch (response) {
-      GraphQLData(:final data, :final errors, :final extensions) => GraphQLData(
-        data: jsonEncode({
-          'data': data,
-          ...?errors == null ? null : {'errors': errors},
-          ...?extensions == null ? null : {'extensions': extensions},
-        }),
-      ),
-      GraphQLError(:final errors, :final extensions) => GraphQLError(
-        errors: errors,
-        extensions: extensions,
-      ),
-      LinkExceptionResponse(:final errors) => LinkExceptionResponse(errors),
-    };
+class _TypedMockLink extends GraphQLLink {
+  final Queue<GraphQLResponse<GraphQLLinkPayload>> _queue;
+
+  _TypedMockLink(List<GraphQLResponse<GraphQLLinkPayload>> responses)
+    : _queue = Queue.from(responses);
+
+  @override
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
+    required Request request,
+    HeadersType? headers,
+  }) {
+    if (_queue.isEmpty) {
+      throw StateError(
+        '_TypedMockLink: no more responses queued for ${request.opName}',
+      );
+    }
+    return Stream.value(_queue.removeFirst());
+  }
+}
+
+GraphQLResponse<GraphQLLinkPayload> _rawResponse(
+  GraphQLResponse<JsonObject> response,
+) => switch (response) {
+  GraphQLData(:final data, :final errors, :final extensions) => GraphQLData(
+    data: RawGraphQLLinkPayload(
+      json: jsonEncode({
+        'data': data,
+        ...?errors == null ? null : {'errors': errors},
+        ...?extensions == null ? null : {'extensions': extensions},
+      }),
+    ),
+  ),
+  GraphQLError(:final errors, :final extensions) => GraphQLError(
+    errors: errors,
+    extensions: extensions,
+  ),
+  LinkExceptionResponse(:final errors) => LinkExceptionResponse(errors),
+};
 
 T _expectData<T>(GraphQLResponse<T> response) {
   switch (response) {
@@ -203,6 +228,59 @@ void main() {
     expect(data['name'], 'Alice');
 
     await client.dispose();
+  });
+
+  test('request accepts an already parsed GraphQL response', () async {
+    final client = ShalomRuntimeClient.create(
+      schemaSdl: _schemaSdl,
+      link: _TypedMockLink([
+        GraphQLData(
+          data: ParsedGraphQLLinkPayload(
+            response: rs_runtime.GraphQlResponseInput.data(
+              data: shalomJsonObject({
+                'user': shalomJsonObject({
+                  'id': shalomJsonValue('1'),
+                  'name': shalomJsonValue('Alice'),
+                }),
+              }),
+            ),
+          ),
+        ),
+      ]),
+    );
+    const query = 'query GetUser @observe { user(id: "1") { id name } }';
+    client.registerOperation(document: query);
+
+    final response = await client
+        .request<JsonObject>(
+          name: 'GetUser',
+          decoder: (data) => data['user'] as JsonObject,
+        )
+        .first
+        .timeout(const Duration(seconds: 5));
+
+    expect(_expectData(response), {'id': '1', 'name': 'Alice'});
+    await client.dispose();
+  });
+
+  test('WS events carry the parsed GraphQL response', () {
+    final sansio = rs_ws.createWsSansIo();
+    rs_ws.wsOnMessage(sansio: sansio, raw: '{"type":"connection_ack"}');
+    rs_ws.wsSubscribeFrame(
+      sansio: sansio,
+      opId: 'operation-1',
+      query: 'query GetVersion { version }',
+    );
+
+    final events = rs_ws.wsOnMessage(
+      sansio: sansio,
+      raw:
+          '{"id":"operation-1","type":"next","payload":{"data":{"version":"v1"}}}',
+    );
+
+    final event = events.single as rs_ws.WsLinkEvent_OperationResponse;
+    final response = event.response as rs_runtime.GraphQlResponseInput_Data;
+    expect(response.data.toJsonValue(), {'version': 'v1'});
   });
 
   // -------------------------------------------------------------------------

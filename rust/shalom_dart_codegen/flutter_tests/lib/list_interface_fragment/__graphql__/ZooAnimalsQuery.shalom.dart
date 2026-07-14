@@ -284,9 +284,9 @@ final class ZooAnimalsQueryVariables {
   }
 
   shalom_core.ShalomJsonValue toShalomValue() {
-    final data = <String, shalom_core.ShalomJsonValue>{};
-    data["id"] = shalom_core.shalomJsonValue(this.id!);
-    return shalom_core.shalomJsonObject(data);
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    $data["id"] = shalom_core.shalomJsonValue(this.id!);
+    return shalom_core.shalomJsonObject($data);
   }
 
   @override

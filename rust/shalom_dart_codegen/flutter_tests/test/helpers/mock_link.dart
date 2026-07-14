@@ -7,13 +7,13 @@ import 'package:shalom/shalom.dart';
 /// Each call to [request] pops the next response. Throws [StateError] if the
 /// queue is exhausted.
 class MockGraphQLLink extends GraphQLLink {
-  final Queue<GraphQLResponse<String>> _queue;
+  final Queue<GraphQLResponse<GraphQLLinkPayload>> _queue;
 
   MockGraphQLLink(List<GraphQLResponse<JsonObject>> responses)
     : _queue = Queue.from(responses.map(_rawResponse));
 
   @override
-  Stream<GraphQLResponse<String>> request({
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
     required Request request,
     HeadersType? headers,
   }) {
@@ -29,18 +29,21 @@ class MockGraphQLLink extends GraphQLLink {
   int get remaining => _queue.length;
 }
 
-GraphQLResponse<String> _rawResponse(GraphQLResponse<JsonObject> response) =>
-    switch (response) {
-      GraphQLData(:final data, :final errors, :final extensions) => GraphQLData(
-        data: jsonEncode({
-          'data': data,
-          ...?errors == null ? null : {'errors': errors},
-          ...?extensions == null ? null : {'extensions': extensions},
-        }),
-      ),
-      GraphQLError(:final errors, :final extensions) => GraphQLError(
-        errors: errors,
-        extensions: extensions,
-      ),
-      LinkExceptionResponse(:final errors) => LinkExceptionResponse(errors),
-    };
+GraphQLResponse<GraphQLLinkPayload> _rawResponse(
+  GraphQLResponse<JsonObject> response,
+) => switch (response) {
+  GraphQLData(:final data, :final errors, :final extensions) => GraphQLData(
+    data: RawGraphQLLinkPayload(
+      json: jsonEncode({
+        'data': data,
+        ...?errors == null ? null : {'errors': errors},
+        ...?extensions == null ? null : {'extensions': extensions},
+      }),
+    ),
+  ),
+  GraphQLError(:final errors, :final extensions) => GraphQLError(
+    errors: errors,
+    extensions: extensions,
+  ),
+  LinkExceptionResponse(:final errors) => LinkExceptionResponse(errors),
+};

@@ -96,6 +96,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool dco_decode_bool(dynamic raw);
 
   @protected
+  GraphQlResponseInput dco_decode_box_autoadd_graph_ql_response_input(
+    dynamic raw,
+  );
+
+  @protected
   ObservedRefInput dco_decode_box_autoadd_observed_ref_input(dynamic raw);
 
   @protected
@@ -115,6 +120,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double dco_decode_f_64(dynamic raw);
+
+  @protected
+  GraphQlResponseInput dco_decode_graph_ql_response_input(dynamic raw);
 
   @protected
   int dco_decode_i_32(dynamic raw);
@@ -166,6 +174,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt? dco_decode_opt_box_autoadd_u_64(dynamic raw);
+
+  @protected
+  List<ShalomJsonValue>? dco_decode_opt_list_shalom_json_value(dynamic raw);
 
   @protected
   (String, ShalomJsonValue) dco_decode_record_string_shalom_json_value(
@@ -283,6 +294,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
+  GraphQlResponseInput sse_decode_box_autoadd_graph_ql_response_input(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   ObservedRefInput sse_decode_box_autoadd_observed_ref_input(
     SseDeserializer deserializer,
   );
@@ -312,6 +328,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   double sse_decode_f_64(SseDeserializer deserializer);
+
+  @protected
+  GraphQlResponseInput sse_decode_graph_ql_response_input(
+    SseDeserializer deserializer,
+  );
 
   @protected
   int sse_decode_i_32(SseDeserializer deserializer);
@@ -371,6 +392,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   BigInt? sse_decode_opt_box_autoadd_u_64(SseDeserializer deserializer);
+
+  @protected
+  List<ShalomJsonValue>? sse_decode_opt_list_shalom_json_value(
+    SseDeserializer deserializer,
+  );
 
   @protected
   (String, ShalomJsonValue) sse_decode_record_string_shalom_json_value(
@@ -506,6 +532,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
+  void sse_encode_box_autoadd_graph_ql_response_input(
+    GraphQlResponseInput self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_box_autoadd_observed_ref_input(
     ObservedRefInput self,
     SseSerializer serializer,
@@ -540,6 +572,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_f_64(double self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_graph_ql_response_input(
+    GraphQlResponseInput self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_i_32(int self, SseSerializer serializer);
@@ -615,6 +653,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_opt_box_autoadd_u_64(BigInt? self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_opt_list_shalom_json_value(
+    List<ShalomJsonValue>? self,
+    SseSerializer serializer,
+  );
 
   @protected
   void sse_encode_record_string_shalom_json_value(

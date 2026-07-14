@@ -3,7 +3,8 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:shalom/src/shalom_core_base.dart';
-import 'package:shalom/src/transport/link.dart' show GraphQLLink;
+import 'package:shalom/src/transport/link.dart'
+    show GraphQLLink, GraphQLLinkPayload, RawGraphQLLinkPayload;
 
 enum HttpMethod {
   // ignore: constant_identifier_names
@@ -45,7 +46,7 @@ class HttpLink extends GraphQLLink {
   });
 
   @override
-  Stream<GraphQLResponse<String>> request({
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
     required Request request,
     HeadersType? headers,
   }) async* {
@@ -82,7 +83,7 @@ class HttpLink extends GraphQLLink {
         headers: finalHeaders,
       );
 
-      yield GraphQLData(data: $response);
+      yield GraphQLData(data: RawGraphQLLinkPayload(json: $response));
     } catch (e) {
       // Return a link error for any exceptions
       yield LinkExceptionResponse([

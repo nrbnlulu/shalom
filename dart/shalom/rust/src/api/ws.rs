@@ -1,8 +1,8 @@
 use crate::api::json::ShalomJsonValue;
+use crate::api::runtime::GraphQlResponseInput;
 use flutter_rust_bridge::frb;
-use serde_json::{Map, Value};
+use serde_json::Value;
 
-use shalom_runtime::sansio_protocols::GraphQLResponse;
 use shalom_runtime::sansio_protocols::ws::{WsEvent, WsStateMachine};
 
 /// Dart-facing wrapper around `WsStateMachine`.
@@ -29,58 +29,16 @@ pub enum WsLinkEvent {
     /// heartbeat `ws_ping_frame()`. Caller should cancel any pending
     /// pong-timeout timer.
     PongReceived { payload: Option<ShalomJsonValue> },
-    /// A data / error payload arrived for `op_id`.
-    /// `response_json` is the complete GraphQL response payload. Dart passes
-    /// it through untouched to the runtime bridge.
+    /// A data / error payload arrived for `op_id`, already parsed by the
+    /// `graphql-transport-ws` state machine.
     OperationResponse {
         op_id: String,
-        response_json: String,
+        response: GraphQlResponseInput,
     },
     /// The server has finished sending data for `op_id`.
     OperationComplete { op_id: String },
     /// Protocol violation — close the WebSocket with `code`.
     ProtocolError { code: u16, reason: String },
-}
-
-fn graphql_response_to_json(response: GraphQLResponse) -> String {
-    let mut payload = Map::new();
-    match response {
-        GraphQLResponse::Data {
-            data,
-            errors,
-            extensions,
-        } => {
-            payload.insert("data".to_string(), Value::Object(data));
-            if let Some(errors) = errors {
-                payload.insert(
-                    "errors".to_string(),
-                    Value::Array(errors.into_iter().map(Value::Object).collect()),
-                );
-            }
-            if let Some(extensions) = extensions {
-                payload.insert("extensions".to_string(), Value::Object(extensions));
-            }
-        }
-        GraphQLResponse::Error { errors, extensions } => {
-            payload.insert(
-                "errors".to_string(),
-                Value::Array(errors.into_iter().map(Value::Object).collect()),
-            );
-            if let Some(extensions) = extensions {
-                payload.insert("extensions".to_string(), Value::Object(extensions));
-            }
-        }
-        GraphQLResponse::TransportError(error) => {
-            payload.insert(
-                "errors".to_string(),
-                Value::Array(vec![serde_json::json!({
-                    "message": error.message,
-                    "extensions": { "code": error.code },
-                })]),
-            );
-        }
-    }
-    Value::Object(payload).to_string()
 }
 
 impl WsLinkEvent {
@@ -98,7 +56,7 @@ impl WsLinkEvent {
             },
             WsEvent::OperationResponse { op_id, response } => Self::OperationResponse {
                 op_id,
-                response_json: graphql_response_to_json(response),
+                response: response.into(),
             },
             WsEvent::OperationComplete { op_id } => Self::OperationComplete { op_id },
             WsEvent::ProtocolError { code, reason } => Self::ProtocolError { code, reason },

@@ -122,8 +122,8 @@ class _RetryDelayAfter extends RetryDelay {
 class ShalomRuntimeClient {
   final rs_runtime.RuntimeHandle _handle;
   final GraphQLLink _link;
-  final Map<int, StreamSubscription<GraphQLResponse<String>>> _activeRequests =
-      {};
+  final Map<int, StreamSubscription<GraphQLResponse<GraphQLLinkPayload>>>
+  _activeRequests = {};
   StreamSubscription<rs_runtime.RequestEnvelopeInput>? _requestStream;
   bool _disposed = false;
 
@@ -548,11 +548,19 @@ class ShalomRuntimeClient {
 
   Future<void> _dispatchResponse(
     int requestId,
-    GraphQLResponse<String> response,
+    GraphQLResponse<GraphQLLinkPayload> response,
   ) async {
     switch (response) {
-      case GraphQLData():
-        return _pushResponse(requestId, response.data);
+      case GraphQLData(:final data):
+        return switch (data) {
+          RawGraphQLLinkPayload(:final json) => _pushResponse(requestId, json),
+          ParsedGraphQLLinkPayload(:final response) =>
+            rs_runtime.pushResponseValue(
+              handle: _handle,
+              requestId: BigInt.from(requestId),
+              response: response,
+            ),
+        };
       case GraphQLError():
         return rs_runtime.pushGraphqlError(
           handle: _handle,

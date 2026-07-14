@@ -7,13 +7,14 @@ import '../frb_generated.dart';
 import 'json.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
+import 'runtime.dart';
 part 'ws.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `from_ws_event`, `graphql_response_to_json`
+// These functions are ignored because they are not marked as `pub`: `from_ws_event`
 
 /// Create a new sans-IO state machine.
 ///
-/// `connection_params_json` — optional JSON object forwarded as the
+/// `connection_params` — optional JSON object forwarded as the
 /// `connection_init` payload (e.g. `{"Authorization":"Bearer …"}`).
 WsSansIo createWsSansIo({ShalomJsonValue? connectionParams}) => RustLib
     .instance
@@ -26,7 +27,7 @@ String wsConnectionInitFrame({required WsSansIo sansio}) =>
 
 /// Build a `subscribe` frame for a new operation and register it internally.
 ///
-/// `variables_json` — optional JSON object of operation variables.
+/// `variables` — optional JSON object of operation variables.
 String wsSubscribeFrame({
   required WsSansIo sansio,
   required String opId,
@@ -47,7 +48,7 @@ String wsCompleteFrame({required WsSansIo sansio, required String opId}) =>
 
 /// Build a `pong` frame in response to a server `ping`.
 ///
-/// `payload_json` — the payload from the `PingReceived` event, if any.
+/// `payload` — the payload from the `PingReceived` event, if any.
 String wsPongFrame({required WsSansIo sansio, ShalomJsonValue? payload}) =>
     RustLib.instance.api.crateApiWsWsPongFrame(
       sansio: sansio,
@@ -98,12 +99,11 @@ sealed class WsLinkEvent with _$WsLinkEvent {
   const factory WsLinkEvent.pongReceived({ShalomJsonValue? payload}) =
       WsLinkEvent_PongReceived;
 
-  /// A data / error payload arrived for `op_id`.
-  /// `response_json` is the complete GraphQL response payload. Dart passes
-  /// it through untouched to the runtime bridge.
+  /// A data / error payload arrived for `op_id`, already parsed by the
+  /// `graphql-transport-ws` state machine.
   const factory WsLinkEvent.operationResponse({
     required String opId,
-    required String responseJson,
+    required GraphQlResponseInput response,
   }) = WsLinkEvent_OperationResponse;
 
   /// The server has finished sending data for `op_id`.

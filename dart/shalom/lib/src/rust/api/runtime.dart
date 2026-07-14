@@ -10,7 +10,7 @@ import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'runtime.freezed.dart';
 
 // These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_variables`, `to_observer_info`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`, `from`, `try_from`
 
 /// Set the global log level filter for all Rust-side logging.
 void setLogLevel({required LogLevel level}) =>
@@ -79,7 +79,7 @@ Future<BigInt> request({
   refetchIntervalMs: refetchIntervalMs,
 );
 
-/// Write `data_json` to the cache as an optimistic response for the mutation
+/// Write `data` to the cache as an optimistic response for the mutation
 /// named `op_name`.  Returns an opaque write ID.  Pass this to
 /// `rollback_optimistic` to undo the write.
 Future<BigInt> writeOptimistic({
@@ -157,6 +157,18 @@ Future<void> pushResponse({
   handle: handle,
   requestId: requestId,
   responseJson: responseJson,
+);
+
+/// Deliver a GraphQL response which was already parsed by a transport
+/// protocol implementation (currently `graphql-transport-ws`).
+Future<void> pushResponseValue({
+  required RuntimeHandle handle,
+  required BigInt requestId,
+  required GraphQlResponseInput response,
+}) => RustLib.instance.api.crateApiRuntimePushResponseValue(
+  handle: handle,
+  requestId: requestId,
+  response: response,
 );
 
 Future<void> pushGraphqlError({
@@ -290,6 +302,26 @@ Future<String?> getCacheEntry({
 abstract class RuntimeHandle implements RustOpaqueInterface {}
 
 enum ExecutionPolicyInput { networkFirst, cacheFirst }
+
+@freezed
+sealed class GraphQlResponseInput with _$GraphQlResponseInput {
+  const GraphQlResponseInput._();
+
+  const factory GraphQlResponseInput.data({
+    required ShalomJsonValue data,
+    List<ShalomJsonValue>? errors,
+    ShalomJsonValue? extensions,
+  }) = GraphQlResponseInput_Data;
+  const factory GraphQlResponseInput.error({
+    required List<ShalomJsonValue> errors,
+    ShalomJsonValue? extensions,
+  }) = GraphQlResponseInput_Error;
+  const factory GraphQlResponseInput.transportError({
+    required String message,
+    required String code,
+    ShalomJsonValue? details,
+  }) = GraphQlResponseInput_TransportError;
+}
 
 enum LogLevel { error, warn, info, debug, trace }
 

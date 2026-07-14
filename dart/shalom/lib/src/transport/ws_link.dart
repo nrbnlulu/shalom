@@ -194,13 +194,15 @@ class WebSocketLink extends GraphQLLink {
       case WsLinkEvent_PongReceived():
         _pongTimeoutTimer?.cancel();
 
-      case WsLinkEvent_OperationResponse(:final opId, :final responseJson):
+      case WsLinkEvent_OperationResponse(:final opId, :final response):
         final handler = _ops[opId];
         if (handler == null) {
           log('WebSocketLink: unknown op $opId');
           return;
         }
-        handler.controller.add(GraphQLData(data: responseJson));
+        handler.controller.add(
+          GraphQLData(data: ParsedGraphQLLinkPayload(response: response)),
+        );
 
       case WsLinkEvent_OperationComplete(:final opId):
         _completeOp(opId);
@@ -213,12 +215,12 @@ class WebSocketLink extends GraphQLLink {
   // ── operations ────────────────────────────────────────────────────────────
 
   @override
-  Stream<GraphQLResponse<String>> request({
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
     required Request request,
     HeadersType? headers,
   }) {
     final opId = (_nextOpId++).toString();
-    final controller = StreamController<GraphQLResponse<String>>();
+    final controller = StreamController<GraphQLResponse<GraphQLLinkPayload>>();
     final handler = _OperationHandler(
       id: opId,
       request: request,
@@ -353,7 +355,7 @@ class WebSocketLink extends GraphQLLink {
 class _OperationHandler {
   final String id;
   final Request request;
-  final StreamController<GraphQLResponse<String>> controller;
+  final StreamController<GraphQLResponse<GraphQLLinkPayload>> controller;
 
   const _OperationHandler({
     required this.id,

@@ -135,6 +135,112 @@ pub enum SubscriptionEvent {
     },
 }
 
+/// FRB representation of a complete GraphQL response.
+///
+/// HTTP responses reach the runtime as their raw JSON body and are parsed by
+/// [push_response]. WebSocket protocol handling has already parsed a `next`
+/// payload, so it uses this type to avoid serialising that response back to
+/// JSON before handing it to the runtime.
+#[frb]
+pub enum GraphQlResponseInput {
+    Data {
+        data: ShalomJsonValue,
+        errors: Option<Vec<ShalomJsonValue>>,
+        extensions: Option<ShalomJsonValue>,
+    },
+    Error {
+        errors: Vec<ShalomJsonValue>,
+        extensions: Option<ShalomJsonValue>,
+    },
+    TransportError {
+        message: String,
+        code: String,
+        details: Option<ShalomJsonValue>,
+    },
+}
+
+impl From<GraphQLResponse> for GraphQlResponseInput {
+    fn from(response: GraphQLResponse) -> Self {
+        match response {
+            GraphQLResponse::Data {
+                data,
+                errors,
+                extensions,
+            } => Self::Data {
+                data: ShalomJsonValue::from(Value::Object(data)),
+                errors: errors.map(|errors| {
+                    errors
+                        .into_iter()
+                        .map(|error| ShalomJsonValue::from(Value::Object(error)))
+                        .collect()
+                }),
+                extensions: extensions
+                    .map(|extensions| ShalomJsonValue::from(Value::Object(extensions))),
+            },
+            GraphQLResponse::Error { errors, extensions } => Self::Error {
+                errors: errors
+                    .into_iter()
+                    .map(|error| ShalomJsonValue::from(Value::Object(error)))
+                    .collect(),
+                extensions: extensions
+                    .map(|extensions| ShalomJsonValue::from(Value::Object(extensions))),
+            },
+            GraphQLResponse::TransportError(error) => Self::TransportError {
+                message: error.message,
+                code: error.code,
+                details: error.details.map(ShalomJsonValue::from),
+            },
+        }
+    }
+}
+
+impl TryFrom<GraphQlResponseInput> for GraphQLResponse {
+    type Error = anyhow::Error;
+
+    fn try_from(response: GraphQlResponseInput) -> Result<Self, anyhow::Error> {
+        match response {
+            GraphQlResponseInput::Data {
+                data,
+                errors,
+                extensions,
+            } => Ok(Self::Data {
+                data: data.into_object("graphql response data")?,
+                errors: errors
+                    .map(|errors| {
+                        errors
+                            .into_iter()
+                            .map(|error| error.into_object("graphql response error"))
+                            .collect()
+                    })
+                    .transpose()?,
+                extensions: extensions
+                    .map(|extensions| extensions.into_object("graphql response extensions"))
+                    .transpose()?,
+            }),
+            GraphQlResponseInput::Error { errors, extensions } => Ok(Self::Error {
+                errors: errors
+                    .into_iter()
+                    .map(|error| error.into_object("graphql response error"))
+                    .collect::<anyhow::Result<_>>()?,
+                extensions: extensions
+                    .map(|extensions| extensions.into_object("graphql response extensions"))
+                    .transpose()?,
+            }),
+            GraphQlResponseInput::TransportError {
+                message,
+                code,
+                details,
+            } => Ok(Self::TransportError(
+                shalom_runtime::sansio_protocols::TransportError {
+                    message,
+                    code,
+                    details: details.map(Value::from),
+                },
+            )),
+        }
+    }
+}
+
 /// A runtime request ready for Dart's transport layer.
 #[frb]
 pub struct RequestEnvelopeInput {
@@ -413,6 +519,17 @@ pub async fn push_response(
 ) -> anyhow::Result<()> {
     let response = parse_graphql_response(&response_json)?;
     handle.link.send_response(request_id, response)
+}
+
+/// Deliver a GraphQL response which was already parsed by a transport
+/// protocol implementation (currently `graphql-transport-ws`).
+#[frb]
+pub async fn push_response_value(
+    handle: &RuntimeHandle,
+    request_id: u64,
+    response: GraphQlResponseInput,
+) -> anyhow::Result<()> {
+    handle.link.send_response(request_id, response.try_into()?)
 }
 
 #[frb]

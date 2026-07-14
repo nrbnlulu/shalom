@@ -40,7 +40,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.12.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 667625377;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 393835091;
 
 // Section: executor
 
@@ -826,6 +826,71 @@ fn wire__crate__api__runtime__push_response_impl(
                             &*api_handle_guard,
                             api_request_id,
                             api_response_json,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__api__runtime__push_response_value_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "push_response_value",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_handle = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>,
+            >>::sse_decode(&mut deserializer);
+            let api_request_id = <u64>::sse_decode(&mut deserializer);
+            let api_response =
+                <crate::api::runtime::GraphQlResponseInput>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
+                    (move || async move {
+                        let mut api_handle_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_handle,
+                                    0,
+                                    false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_handle_guard =
+                                        Some(api_handle.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_handle_guard = api_handle_guard.unwrap();
+                        let output_ok = crate::api::runtime::push_response_value(
+                            &*api_handle_guard,
+                            api_request_id,
+                            api_response,
                         )
                         .await?;
                         Ok(output_ok)
@@ -2264,6 +2329,51 @@ impl SseDecode for f64 {
     }
 }
 
+impl SseDecode for crate::api::runtime::GraphQlResponseInput {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut tag_ = <i32>::sse_decode(deserializer);
+        match tag_ {
+            0 => {
+                let mut var_data = <crate::api::json::ShalomJsonValue>::sse_decode(deserializer);
+                let mut var_errors =
+                    <Option<Vec<crate::api::json::ShalomJsonValue>>>::sse_decode(deserializer);
+                let mut var_extensions =
+                    <Option<crate::api::json::ShalomJsonValue>>::sse_decode(deserializer);
+                return crate::api::runtime::GraphQlResponseInput::Data {
+                    data: var_data,
+                    errors: var_errors,
+                    extensions: var_extensions,
+                };
+            }
+            1 => {
+                let mut var_errors =
+                    <Vec<crate::api::json::ShalomJsonValue>>::sse_decode(deserializer);
+                let mut var_extensions =
+                    <Option<crate::api::json::ShalomJsonValue>>::sse_decode(deserializer);
+                return crate::api::runtime::GraphQlResponseInput::Error {
+                    errors: var_errors,
+                    extensions: var_extensions,
+                };
+            }
+            2 => {
+                let mut var_message = <String>::sse_decode(deserializer);
+                let mut var_code = <String>::sse_decode(deserializer);
+                let mut var_details =
+                    <Option<crate::api::json::ShalomJsonValue>>::sse_decode(deserializer);
+                return crate::api::runtime::GraphQlResponseInput::TransportError {
+                    message: var_message,
+                    code: var_code,
+                    details: var_details,
+                };
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+
 impl SseDecode for i32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -2459,6 +2569,19 @@ impl SseDecode for Option<u64> {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<u64>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<Vec<crate::api::json::ShalomJsonValue>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<Vec<crate::api::json::ShalomJsonValue>>::sse_decode(
+                deserializer,
+            ));
         } else {
             return None;
         }
@@ -2681,10 +2804,11 @@ impl SseDecode for crate::api::ws::WsLinkEvent {
             }
             3 => {
                 let mut var_opId = <String>::sse_decode(deserializer);
-                let mut var_responseJson = <String>::sse_decode(deserializer);
+                let mut var_response =
+                    <crate::api::runtime::GraphQlResponseInput>::sse_decode(deserializer);
                 return crate::api::ws::WsLinkEvent::OperationResponse {
                     op_id: var_opId,
-                    response_json: var_responseJson,
+                    response: var_response,
                 };
             }
             4 => {
@@ -2730,21 +2854,24 @@ fn pde_ffi_dispatcher_primary_impl(
         13 => wire__crate__api__runtime__push_graphql_error_impl(port, ptr, rust_vec_len, data_len),
         14 => wire__crate__api__runtime__push_response_impl(port, ptr, rust_vec_len, data_len),
         15 => {
+            wire__crate__api__runtime__push_response_value_impl(port, ptr, rust_vec_len, data_len)
+        }
+        16 => {
             wire__crate__api__runtime__push_transport_error_impl(port, ptr, rust_vec_len, data_len)
         }
-        16 => wire__crate__api__runtime__read_fragment_impl(port, ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__runtime__read_query_impl(port, ptr, rust_vec_len, data_len),
-        18 => {
+        17 => wire__crate__api__runtime__read_fragment_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__runtime__read_query_impl(port, ptr, rust_vec_len, data_len),
+        19 => {
             wire__crate__api__runtime__rebind_subscription_impl(port, ptr, rust_vec_len, data_len)
         }
-        22 => wire__crate__api__runtime__request_impl(port, ptr, rust_vec_len, data_len),
-        23 => {
+        23 => wire__crate__api__runtime__request_impl(port, ptr, rust_vec_len, data_len),
+        24 => {
             wire__crate__api__runtime__rollback_optimistic_impl(port, ptr, rust_vec_len, data_len)
         }
-        25 => wire__crate__api__runtime__unsubscribe_impl(port, ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__runtime__write_fragment_impl(port, ptr, rust_vec_len, data_len),
-        27 => wire__crate__api__runtime__write_optimistic_impl(port, ptr, rust_vec_len, data_len),
-        28 => wire__crate__api__runtime__write_query_impl(port, ptr, rust_vec_len, data_len),
+        26 => wire__crate__api__runtime__unsubscribe_impl(port, ptr, rust_vec_len, data_len),
+        27 => wire__crate__api__runtime__write_fragment_impl(port, ptr, rust_vec_len, data_len),
+        28 => wire__crate__api__runtime__write_optimistic_impl(port, ptr, rust_vec_len, data_len),
+        29 => wire__crate__api__runtime__write_query_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -2759,19 +2886,19 @@ fn pde_ffi_dispatcher_sync_impl(
     match func_id {
         2 => wire__crate__api__ws__create_ws_sans_io_impl(ptr, rust_vec_len, data_len),
         9 => wire__crate__api__runtime__init_runtime_impl(ptr, rust_vec_len, data_len),
-        19 => wire__crate__api__runtime__register_fragment_impl(ptr, rust_vec_len, data_len),
-        20 => wire__crate__api__runtime__register_operation_impl(ptr, rust_vec_len, data_len),
-        21 => wire__crate__api__runtime__reload_schema_impl(ptr, rust_vec_len, data_len),
-        24 => wire__crate__api__runtime__set_log_level_impl(ptr, rust_vec_len, data_len),
-        29 => wire__crate__api__ws__ws_active_operation_ids_impl(ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__ws__ws_complete_frame_impl(ptr, rust_vec_len, data_len),
-        31 => wire__crate__api__ws__ws_connection_init_frame_impl(ptr, rust_vec_len, data_len),
-        32 => wire__crate__api__ws__ws_is_connected_impl(ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__ws__ws_on_message_impl(ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__ws__ws_ping_frame_impl(ptr, rust_vec_len, data_len),
-        35 => wire__crate__api__ws__ws_pong_frame_impl(ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__ws__ws_reset_impl(ptr, rust_vec_len, data_len),
-        37 => wire__crate__api__ws__ws_subscribe_frame_impl(ptr, rust_vec_len, data_len),
+        20 => wire__crate__api__runtime__register_fragment_impl(ptr, rust_vec_len, data_len),
+        21 => wire__crate__api__runtime__register_operation_impl(ptr, rust_vec_len, data_len),
+        22 => wire__crate__api__runtime__reload_schema_impl(ptr, rust_vec_len, data_len),
+        25 => wire__crate__api__runtime__set_log_level_impl(ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__ws__ws_active_operation_ids_impl(ptr, rust_vec_len, data_len),
+        31 => wire__crate__api__ws__ws_complete_frame_impl(ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__ws__ws_connection_init_frame_impl(ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__ws__ws_is_connected_impl(ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__ws__ws_on_message_impl(ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__ws__ws_ping_frame_impl(ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__ws__ws_pong_frame_impl(ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__ws__ws_reset_impl(ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__ws__ws_subscribe_frame_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -2826,6 +2953,55 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::runtime::ExecutionPolicyInput
     for crate::api::runtime::ExecutionPolicyInput
 {
     fn into_into_dart(self) -> crate::api::runtime::ExecutionPolicyInput {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::api::runtime::GraphQlResponseInput {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            crate::api::runtime::GraphQlResponseInput::Data {
+                data,
+                errors,
+                extensions,
+            } => [
+                0.into_dart(),
+                data.into_into_dart().into_dart(),
+                errors.into_into_dart().into_dart(),
+                extensions.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::runtime::GraphQlResponseInput::Error { errors, extensions } => [
+                1.into_dart(),
+                errors.into_into_dart().into_dart(),
+                extensions.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            crate::api::runtime::GraphQlResponseInput::TransportError {
+                message,
+                code,
+                details,
+            } => [
+                2.into_dart(),
+                message.into_into_dart().into_dart(),
+                code.into_into_dart().into_dart(),
+                details.into_into_dart().into_dart(),
+            ]
+            .into_dart(),
+            _ => {
+                unimplemented!("");
+            }
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::api::runtime::GraphQlResponseInput
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::api::runtime::GraphQlResponseInput>
+    for crate::api::runtime::GraphQlResponseInput
+{
+    fn into_into_dart(self) -> crate::api::runtime::GraphQlResponseInput {
         self
     }
 }
@@ -3061,13 +3237,10 @@ impl flutter_rust_bridge::IntoDart for crate::api::ws::WsLinkEvent {
             crate::api::ws::WsLinkEvent::PongReceived { payload } => {
                 [2.into_dart(), payload.into_into_dart().into_dart()].into_dart()
             }
-            crate::api::ws::WsLinkEvent::OperationResponse {
-                op_id,
-                response_json,
-            } => [
+            crate::api::ws::WsLinkEvent::OperationResponse { op_id, response } => [
                 3.into_dart(),
                 op_id.into_into_dart().into_dart(),
-                response_json.into_into_dart().into_dart(),
+                response.into_into_dart().into_dart(),
             ]
             .into_dart(),
             crate::api::ws::WsLinkEvent::OperationComplete { op_id } => {
@@ -3212,6 +3385,42 @@ impl SseEncode for f64 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         serializer.cursor.write_f64::<NativeEndian>(self).unwrap();
+    }
+}
+
+impl SseEncode for crate::api::runtime::GraphQlResponseInput {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        match self {
+            crate::api::runtime::GraphQlResponseInput::Data {
+                data,
+                errors,
+                extensions,
+            } => {
+                <i32>::sse_encode(0, serializer);
+                <crate::api::json::ShalomJsonValue>::sse_encode(data, serializer);
+                <Option<Vec<crate::api::json::ShalomJsonValue>>>::sse_encode(errors, serializer);
+                <Option<crate::api::json::ShalomJsonValue>>::sse_encode(extensions, serializer);
+            }
+            crate::api::runtime::GraphQlResponseInput::Error { errors, extensions } => {
+                <i32>::sse_encode(1, serializer);
+                <Vec<crate::api::json::ShalomJsonValue>>::sse_encode(errors, serializer);
+                <Option<crate::api::json::ShalomJsonValue>>::sse_encode(extensions, serializer);
+            }
+            crate::api::runtime::GraphQlResponseInput::TransportError {
+                message,
+                code,
+                details,
+            } => {
+                <i32>::sse_encode(2, serializer);
+                <String>::sse_encode(message, serializer);
+                <String>::sse_encode(code, serializer);
+                <Option<crate::api::json::ShalomJsonValue>>::sse_encode(details, serializer);
+            }
+            _ => {
+                unimplemented!("");
+            }
+        }
     }
 }
 
@@ -3375,6 +3584,16 @@ impl SseEncode for Option<u64> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <u64>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<Vec<crate::api::json::ShalomJsonValue>> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <Vec<crate::api::json::ShalomJsonValue>>::sse_encode(value, serializer);
         }
     }
 }
@@ -3564,13 +3783,10 @@ impl SseEncode for crate::api::ws::WsLinkEvent {
                 <i32>::sse_encode(2, serializer);
                 <Option<crate::api::json::ShalomJsonValue>>::sse_encode(payload, serializer);
             }
-            crate::api::ws::WsLinkEvent::OperationResponse {
-                op_id,
-                response_json,
-            } => {
+            crate::api::ws::WsLinkEvent::OperationResponse { op_id, response } => {
                 <i32>::sse_encode(3, serializer);
                 <String>::sse_encode(op_id, serializer);
-                <String>::sse_encode(response_json, serializer);
+                <crate::api::runtime::GraphQlResponseInput>::sse_encode(response, serializer);
             }
             crate::api::ws::WsLinkEvent::OperationComplete { op_id } => {
                 <i32>::sse_encode(4, serializer);

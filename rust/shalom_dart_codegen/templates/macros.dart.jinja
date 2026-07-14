@@ -60,19 +60,19 @@ import '{{path}}' as {{ namespace_alias }};
 {% endmacro %}
 
 {% macro toShalomValue_macro(fields) -%}
-final data = <String, shalom_core.ShalomJsonValue>{};
+final $data = <String, shalom_core.ShalomJsonValue>{};
 {% for name, field in fields | items -%}
     {% set field_ty = resolve_field_type(field.common).ty -%}
     {% if field.is_optional and field.default_value is none -%}
         if ({{ name }}.isSome()) {
-            final value = this.{{ name }}.some();
-            data["{{ name }}"] = {{ _serialize_field_to_shalom_macro("value", field_ty, true) }};
+            final $value = this.{{ name }}.some();
+            $data["{{ name }}"] = {{ _serialize_field_to_shalom_macro("$value", field_ty, true) }};
         }
     {% else -%}
-        data["{{ name }}"] = {{ _serialize_field_to_shalom_macro("this." + name, field_ty, field.is_optional) }};
+        $data["{{ name }}"] = {{ _serialize_field_to_shalom_macro("this." + name, field_ty, field.is_optional) }};
     {% endif -%}
 {% endfor -%}
-return shalom_core.shalomJsonObject(data);
+return shalom_core.shalomJsonObject($data);
 {% endmacro %}
 
 {# Helper macro for deserializing a field value recursively #}

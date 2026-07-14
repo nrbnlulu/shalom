@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert' show jsonDecode;
 
+import '../rust/api/runtime.dart' as rs_runtime;
 import '../shalom_core_base.dart'
     show
         GraphQLData,
@@ -10,11 +11,29 @@ import '../shalom_core_base.dart'
         JsonObject,
         LinkExceptionResponse,
         Request,
-        RequestMeta;
+        RequestMeta,
+        ShalomJsonValueAccess,
+        ShalomTransportException;
+
+/// The representation of a GraphQL response emitted by a transport link.
+sealed class GraphQLLinkPayload {
+  const GraphQLLinkPayload();
+}
+
+/// A raw GraphQL-over-HTTP response body.
+final class RawGraphQLLinkPayload extends GraphQLLinkPayload {
+  final String json;
+  const RawGraphQLLinkPayload({required this.json});
+}
+
+/// A response parsed by Rust's WebSocket protocol state machine.
+final class ParsedGraphQLLinkPayload extends GraphQLLinkPayload {
+  final rs_runtime.GraphQlResponseInput response;
+  const ParsedGraphQLLinkPayload({required this.response});
+}
 
 abstract class GraphQLLink {
-  /// Emits the server's complete raw GraphQL response body/frame.
-  Stream<GraphQLResponse<String>> request({
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
     required Request request,
     HeadersType? headers,
   });
@@ -29,7 +48,7 @@ class ShalomClient {
     HeadersType? headers,
   }) {
     final controller = StreamController<GraphQLResponse<T>>();
-    StreamSubscription<GraphQLResponse<String>>? linkSubscription;
+    StreamSubscription<GraphQLResponse<GraphQLLinkPayload>>? linkSubscription;
 
     controller.onListen = () {
       linkSubscription = link
@@ -40,7 +59,14 @@ class ShalomClient {
 
               switch (response) {
                 case GraphQLData(:final data):
-                  controller.add(_decodeRawResponse(data, meta.parseFn));
+                  controller.add(switch (data) {
+                    RawGraphQLLinkPayload(:final json) => _decodeRawResponse(
+                      json,
+                      meta.parseFn,
+                    ),
+                    ParsedGraphQLLinkPayload(:final response) =>
+                      _decodeTypedResponse(response, meta.parseFn),
+                  });
                 case GraphQLError(:final errors, :final extensions):
                   controller.add(
                     GraphQLError(errors: errors, extensions: extensions),
@@ -79,7 +105,16 @@ class ShalomClient {
     )) {
       switch (res) {
         case GraphQLData(:final data):
-          return _decodeRawResponse(data, meta.parseFn);
+          return switch (data) {
+            RawGraphQLLinkPayload(:final json) => _decodeRawResponse(
+              json,
+              meta.parseFn,
+            ),
+            ParsedGraphQLLinkPayload(:final response) => _decodeTypedResponse(
+              response,
+              meta.parseFn,
+            ),
+          };
         case GraphQLError(:final errors, :final extensions):
           return GraphQLError(errors: errors, extensions: extensions);
         case LinkExceptionResponse(:final errors):
@@ -89,6 +124,43 @@ class ShalomClient {
     throw Exception("Stream closed without emitting a response");
   }
 }
+
+GraphQLResponse<T> _decodeTypedResponse<T>(
+  rs_runtime.GraphQlResponseInput response,
+  T Function(JsonObject) decoder,
+) => switch (response) {
+  rs_runtime.GraphQlResponseInput_Data(
+    :final data,
+    :final errors,
+    :final extensions,
+  ) =>
+    GraphQLData(
+      data: decoder(data.toJsonValue() as JsonObject),
+      errors: errors
+          ?.map((error) => error.toJsonValue() as JsonObject)
+          .toList(growable: false),
+      extensions: extensions?.toJsonValue() as JsonObject?,
+    ),
+  rs_runtime.GraphQlResponseInput_Error(:final errors, :final extensions) =>
+    GraphQLError(
+      errors: errors
+          .map((error) => error.toJsonValue() as JsonObject)
+          .toList(growable: false),
+      extensions: extensions?.toJsonValue() as JsonObject?,
+    ),
+  rs_runtime.GraphQlResponseInput_TransportError(
+    :final message,
+    :final code,
+    :final details,
+  ) =>
+    LinkExceptionResponse([
+      ShalomTransportException(
+        message: message,
+        code: code,
+        details: details?.toJsonValue() as JsonObject?,
+      ),
+    ]),
+};
 
 GraphQLResponse<T> _decodeRawResponse<T>(
   String raw,
