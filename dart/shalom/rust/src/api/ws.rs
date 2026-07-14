@@ -1,3 +1,5 @@
+use crate::api::json::ShalomJsonValue;
+use crate::api::runtime::GraphQlResponseInput;
 use flutter_rust_bridge::frb;
 use serde_json::Value;
 
@@ -16,40 +18,27 @@ pub struct WsSansIo {
 // FRB maps this Rust enum to a Dart sealed class hierarchy, giving Dart
 // exhaustive pattern matching without any JSON string parsing at dispatch time.
 //
-// Complex nested payloads (GraphQL data / errors / extensions, ping payloads)
-// are kept as JSON strings because serde_json::Value / Map are not directly
-// bridgeable by FRB.
-
 /// Events emitted by the sans-IO WebSocket state machine.
 #[frb(sync)]
 pub enum WsLinkEvent {
     /// Connection acknowledged — safe to flush pending operations.
     Connected,
     /// Server sent a Ping.  Send back the frame from `ws_pong_frame()`.
-    /// `payload_json` is the raw ping payload (JSON object or null string).
-    PingReceived { payload_json: Option<String> },
+    PingReceived { payload: Option<ShalomJsonValue> },
     /// Server sent a Pong — typically in response to a caller-initiated
     /// heartbeat `ws_ping_frame()`. Caller should cancel any pending
     /// pong-timeout timer.
-    PongReceived { payload_json: Option<String> },
-    /// A data / error payload arrived for `op_id`.
-    /// `data_json`       — JSON object (`{"field":…}`) or null.
-    /// `errors_json`     — JSON array  (`[{"message":…}]`) or null.
-    /// `extensions_json` — JSON object or null.
+    PongReceived { payload: Option<ShalomJsonValue> },
+    /// A data / error payload arrived for `op_id`, already parsed by the
+    /// `graphql-transport-ws` state machine.
     OperationResponse {
         op_id: String,
-        data_json: Option<String>,
-        errors_json: Option<String>,
-        extensions_json: Option<String>,
+        response: GraphQlResponseInput,
     },
     /// The server has finished sending data for `op_id`.
     OperationComplete { op_id: String },
     /// Protocol violation — close the WebSocket with `code`.
     ProtocolError { code: u16, reason: String },
-}
-
-fn opt_value_to_json(v: Option<Value>) -> Option<String> {
-    v.and_then(|val| serde_json::to_string(&val).ok())
 }
 
 impl WsLinkEvent {
@@ -60,42 +49,15 @@ impl WsLinkEvent {
                 Self::Connected
             }
             WsEvent::PingReceived { payload } => Self::PingReceived {
-                payload_json: opt_value_to_json(payload),
+                payload: payload.map(ShalomJsonValue::from),
             },
             WsEvent::PongReceived { payload } => Self::PongReceived {
-                payload_json: opt_value_to_json(payload),
+                payload: payload.map(ShalomJsonValue::from),
             },
-            WsEvent::OperationResponse { op_id, response } => {
-                use shalom_runtime::sansio_protocols::GraphQLResponse;
-                match response {
-                    GraphQLResponse::Data {
-                        data,
-                        errors,
-                        extensions,
-                    } => Self::OperationResponse {
-                        op_id,
-                        data_json: serde_json::to_string(&data).ok(),
-                        errors_json: errors
-                            .as_deref()
-                            .and_then(|e| serde_json::to_string(e).ok()),
-                        extensions_json: extensions
-                            .as_ref()
-                            .and_then(|e| serde_json::to_string(e).ok()),
-                    },
-                    GraphQLResponse::Error { errors, extensions } => Self::OperationResponse {
-                        op_id,
-                        data_json: None,
-                        errors_json: serde_json::to_string(&errors).ok(),
-                        extensions_json: extensions
-                            .as_ref()
-                            .and_then(|e| serde_json::to_string(e).ok()),
-                    },
-                    GraphQLResponse::TransportError(err) => Self::ProtocolError {
-                        code: 4400,
-                        reason: format!("{}: {}", err.code, err.message),
-                    },
-                }
-            }
+            WsEvent::OperationResponse { op_id, response } => Self::OperationResponse {
+                op_id,
+                response: response.into(),
+            },
             WsEvent::OperationComplete { op_id } => Self::OperationComplete { op_id },
             WsEvent::ProtocolError { code, reason } => Self::ProtocolError { code, reason },
         }
@@ -106,14 +68,11 @@ impl WsLinkEvent {
 
 /// Create a new sans-IO state machine.
 ///
-/// `connection_params_json` — optional JSON object forwarded as the
+/// `connection_params` — optional JSON object forwarded as the
 /// `connection_init` payload (e.g. `{"Authorization":"Bearer …"}`).
 #[frb(sync)]
-pub fn create_ws_sans_io(connection_params_json: Option<String>) -> anyhow::Result<WsSansIo> {
-    let params = match connection_params_json {
-        Some(s) if !s.trim().is_empty() => Some(serde_json::from_str::<Value>(&s)?),
-        _ => None,
-    };
+pub fn create_ws_sans_io(connection_params: Option<ShalomJsonValue>) -> anyhow::Result<WsSansIo> {
+    let params = connection_params.map(Value::from);
     Ok(WsSansIo {
         inner: WsStateMachine::new(params),
     })
@@ -127,22 +86,18 @@ pub fn ws_connection_init_frame(sansio: &WsSansIo) -> String {
 
 /// Build a `subscribe` frame for a new operation and register it internally.
 ///
-/// `variables_json` — optional JSON object of operation variables.
+/// `variables` — optional JSON object of operation variables.
 #[frb(sync)]
 pub fn ws_subscribe_frame(
     sansio: &mut WsSansIo,
     op_id: String,
     query: String,
-    variables_json: Option<String>,
+    variables: Option<ShalomJsonValue>,
     operation_name: Option<String>,
 ) -> anyhow::Result<String> {
-    let variables = match variables_json {
-        Some(s) if !s.trim().is_empty() => {
-            let v: Value = serde_json::from_str(&s)?;
-            v.as_object().cloned()
-        }
-        _ => None,
-    };
+    let variables = variables
+        .map(|value| value.into_object("variables"))
+        .transpose()?;
     Ok(sansio
         .inner
         .subscribe_frame(op_id, query, variables, operation_name))
@@ -156,13 +111,13 @@ pub fn ws_complete_frame(sansio: &mut WsSansIo, op_id: String) -> String {
 
 /// Build a `pong` frame in response to a server `ping`.
 ///
-/// `payload_json` — the payload from the `PingReceived` event, if any.
+/// `payload` — the payload from the `PingReceived` event, if any.
 #[frb(sync)]
-pub fn ws_pong_frame(sansio: &WsSansIo, payload_json: Option<String>) -> anyhow::Result<String> {
-    let payload = match payload_json {
-        Some(s) if !s.trim().is_empty() => Some(serde_json::from_str::<Value>(&s)?),
-        _ => None,
-    };
+pub fn ws_pong_frame(
+    sansio: &WsSansIo,
+    payload: Option<ShalomJsonValue>,
+) -> anyhow::Result<String> {
+    let payload = payload.map(Value::from);
     Ok(sansio.inner.pong_frame(payload))
 }
 

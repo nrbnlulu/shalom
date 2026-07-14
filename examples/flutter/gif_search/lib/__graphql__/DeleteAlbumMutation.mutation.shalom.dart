@@ -23,9 +23,9 @@ abstract class $DeleteAlbumMutation {
   }) => _client.mutate<DeleteAlbumMutationData>(
     name: operation$Name(),
 
-    variables: DeleteAlbumMutationVariables(id: id).toJson(),
+    variables: DeleteAlbumMutationVariables(id: id).toShalomValue(),
 
-    decoder: DeleteAlbumMutationData.fromCache,
+    decoder: DeleteAlbumMutationData.fromShalomValue,
   );
 
   /// Execute the mutation and update the cache via [update].
@@ -43,7 +43,7 @@ abstract class $DeleteAlbumMutation {
   ///   update: (cache, data) async {
   ///     final current = await cache.readOperation(
   ///       name: 'GetTodos',
-  ///       decoder: GetTodosData.fromCache,
+  ///       decoder: GetTodosData.fromShalomValue,
   ///     );
   ///     if (current != null) {
   ///       await cache.writeOperation(
@@ -67,9 +67,9 @@ abstract class $DeleteAlbumMutation {
     final response = await _client.mutate<DeleteAlbumMutationData>(
       name: operation$Name(),
 
-      variables: vars.toJson(),
+      variables: vars.toShalomValue(),
 
-      decoder: DeleteAlbumMutationData.fromCache,
+      decoder: DeleteAlbumMutationData.fromShalomValue,
     );
     if (response case shalom_core.GraphQLData(data: final data)) {
       await update(CacheProxy(_client), data);
@@ -102,7 +102,7 @@ abstract class $DeleteAlbumMutation {
     final vars = DeleteAlbumMutationVariables(id: id);
     final writeId = await _client.writeOptimistic(
       name: operation$Name(),
-      data: optimisticFactory(vars).toJson(),
+      data: optimisticFactory(vars),
     );
 
     var rolledBack = false;
@@ -116,9 +116,9 @@ abstract class $DeleteAlbumMutation {
       final graphqlResponse = await _client.mutate<DeleteAlbumMutationData>(
         name: operation$Name(),
 
-        variables: vars.toJson(),
+        variables: vars.toShalomValue(),
 
-        decoder: DeleteAlbumMutationData.fromCache,
+        decoder: DeleteAlbumMutationData.fromShalomValue,
       );
       if (graphqlResponse case shalom_core.GraphQLData(
         data: final responseData,

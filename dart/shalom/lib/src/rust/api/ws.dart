@@ -4,18 +4,22 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'json.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
+import 'runtime.dart';
 part 'ws.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `from_ws_event`, `opt_value_to_json`
+// These functions are ignored because they are not marked as `pub`: `from_ws_event`
 
 /// Create a new sans-IO state machine.
 ///
-/// `connection_params_json` — optional JSON object forwarded as the
+/// `connection_params` — optional JSON object forwarded as the
 /// `connection_init` payload (e.g. `{"Authorization":"Bearer …"}`).
-WsSansIo createWsSansIo({String? connectionParamsJson}) => RustLib.instance.api
-    .crateApiWsCreateWsSansIo(connectionParamsJson: connectionParamsJson);
+WsSansIo createWsSansIo({ShalomJsonValue? connectionParams}) => RustLib
+    .instance
+    .api
+    .crateApiWsCreateWsSansIo(connectionParams: connectionParams);
 
 /// The `connection_init` frame to send immediately after the socket opens.
 String wsConnectionInitFrame({required WsSansIo sansio}) =>
@@ -23,18 +27,18 @@ String wsConnectionInitFrame({required WsSansIo sansio}) =>
 
 /// Build a `subscribe` frame for a new operation and register it internally.
 ///
-/// `variables_json` — optional JSON object of operation variables.
+/// `variables` — optional JSON object of operation variables.
 String wsSubscribeFrame({
   required WsSansIo sansio,
   required String opId,
   required String query,
-  String? variablesJson,
+  ShalomJsonValue? variables,
   String? operationName,
 }) => RustLib.instance.api.crateApiWsWsSubscribeFrame(
   sansio: sansio,
   opId: opId,
   query: query,
-  variablesJson: variablesJson,
+  variables: variables,
   operationName: operationName,
 );
 
@@ -44,11 +48,12 @@ String wsCompleteFrame({required WsSansIo sansio, required String opId}) =>
 
 /// Build a `pong` frame in response to a server `ping`.
 ///
-/// `payload_json` — the payload from the `PingReceived` event, if any.
-String wsPongFrame({required WsSansIo sansio, String? payloadJson}) => RustLib
-    .instance
-    .api
-    .crateApiWsWsPongFrame(sansio: sansio, payloadJson: payloadJson);
+/// `payload` — the payload from the `PingReceived` event, if any.
+String wsPongFrame({required WsSansIo sansio, ShalomJsonValue? payload}) =>
+    RustLib.instance.api.crateApiWsWsPongFrame(
+      sansio: sansio,
+      payload: payload,
+    );
 
 /// Build a `ping` frame to send to the server.
 String wsPingFrame() => RustLib.instance.api.crateApiWsWsPingFrame();
@@ -85,25 +90,20 @@ sealed class WsLinkEvent with _$WsLinkEvent {
   const factory WsLinkEvent.connected() = WsLinkEvent_Connected;
 
   /// Server sent a Ping.  Send back the frame from `ws_pong_frame()`.
-  /// `payload_json` is the raw ping payload (JSON object or null string).
-  const factory WsLinkEvent.pingReceived({String? payloadJson}) =
+  const factory WsLinkEvent.pingReceived({ShalomJsonValue? payload}) =
       WsLinkEvent_PingReceived;
 
   /// Server sent a Pong — typically in response to a caller-initiated
   /// heartbeat `ws_ping_frame()`. Caller should cancel any pending
   /// pong-timeout timer.
-  const factory WsLinkEvent.pongReceived({String? payloadJson}) =
+  const factory WsLinkEvent.pongReceived({ShalomJsonValue? payload}) =
       WsLinkEvent_PongReceived;
 
-  /// A data / error payload arrived for `op_id`.
-  /// `data_json`       — JSON object (`{"field":…}`) or null.
-  /// `errors_json`     — JSON array  (`[{"message":…}]`) or null.
-  /// `extensions_json` — JSON object or null.
+  /// A data / error payload arrived for `op_id`, already parsed by the
+  /// `graphql-transport-ws` state machine.
   const factory WsLinkEvent.operationResponse({
     required String opId,
-    String? dataJson,
-    String? errorsJson,
-    String? extensionsJson,
+    required GraphQlResponseInput response,
   }) = WsLinkEvent_OperationResponse;
 
   /// The server has finished sending data for `op_id`.

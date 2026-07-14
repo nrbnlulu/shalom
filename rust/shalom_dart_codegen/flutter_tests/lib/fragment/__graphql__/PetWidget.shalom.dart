@@ -35,6 +35,12 @@ extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [PetWidgetData]. Returns `null` when absent or incomplete.
@@ -42,7 +48,7 @@ extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     return await cache.readFragment<PetWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: PetWidgetData.fromCache,
+      decoder: PetWidgetData.fromShalomValue,
     );
   }
 
@@ -51,7 +57,7 @@ extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   ) {
     return client.subscribeToFragment<PetWidgetData>(
       ref: _inner,
-      decoder: PetWidgetData.fromCache,
+      decoder: PetWidgetData.fromShalomValue,
     );
   }
 }
@@ -61,6 +67,7 @@ abstract class PetWidget {
   String get name;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 final class PetWidgetData implements PetWidget, shalom_core.FragmentInterface {
@@ -96,9 +103,24 @@ final class PetWidgetData implements PetWidget, shalom_core.FragmentInterface {
     return PetWidgetData(id: id$value, name: name$value);
   }
 
+  static PetWidgetData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
+    return PetWidgetData(id: id$value, name: name$value);
+  }
+
   shalom_core.JsonObject toJson() {
     return {'id': this.id, 'name': this.name};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
 }
 
 abstract class $PetWidget extends StatelessWidget {

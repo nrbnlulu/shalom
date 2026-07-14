@@ -7,33 +7,39 @@ class DioTransport extends ShalomHttpTransport {
   DioTransport(this.dioClient);
 
   @override
-  Future<JsonObject> request({
+  Future<String> request({
     required HttpMethod method,
     required String url,
     required JsonObject data,
     HeadersType? headers,
     JsonObject? extra,
   }) async {
-    dio.Response response;
+    dio.Response<String> response;
 
     final headersMap = headers != null
         ? Map.fromEntries(headers.map((e) => MapEntry(e.$1, e.$2)))
         : null;
 
     if (method == HttpMethod.GET) {
-      response = await dioClient.get(
+      response = await dioClient.get<String>(
         url,
         data: data,
-        options: dio.Options(headers: headersMap),
+        options: dio.Options(
+          headers: headersMap,
+          responseType: dio.ResponseType.plain,
+        ),
       );
     } else {
-      response = await dioClient.post(
+      response = await dioClient.post<String>(
         url,
         data: data,
-        options: dio.Options(headers: headersMap),
+        options: dio.Options(
+          headers: headersMap,
+          responseType: dio.ResponseType.plain,
+        ),
       );
     }
 
-    return response.data;
+    return response.data ?? '';
   }
 }

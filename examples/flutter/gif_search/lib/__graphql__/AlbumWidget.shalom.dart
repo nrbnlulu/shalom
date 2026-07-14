@@ -37,6 +37,12 @@ extension type AlbumWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [AlbumWidgetData]. Returns `null` when absent or incomplete.
@@ -44,7 +50,7 @@ extension type AlbumWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     return await cache.readFragment<AlbumWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: AlbumWidgetData.fromCache,
+      decoder: AlbumWidgetData.fromShalomValue,
     );
   }
 
@@ -53,7 +59,7 @@ extension type AlbumWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   ) {
     return client.subscribeToFragment<AlbumWidgetData>(
       ref: _inner,
-      decoder: AlbumWidgetData.fromCache,
+      decoder: AlbumWidgetData.fromShalomValue,
     );
   }
 }
@@ -65,6 +71,7 @@ abstract class AlbumWidget {
   String get tag;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 class AlbumWidget_gifs implements AlbumGif {
@@ -100,10 +107,28 @@ class AlbumWidget_gifs implements AlbumGif {
     return {'id': this.id, 'title': this.title, 'url': this.url};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'title': shalom_core.shalomJsonValue(this.title!),
+
+    'url': shalom_core.shalomJsonValue(this.url!),
+  });
+
   static AlbumWidget_gifs fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String title$value = data['title'] as String;
     final String url$value = data['url'] as String;
+    return AlbumWidget_gifs(id: id$value, title: title$value, url: url$value);
+  }
+
+  static AlbumWidget_gifs fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? title$raw = data.field('title');
+    final String title$value = title$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? url$raw = data.field('url');
+    final String url$value = url$raw!.stringValue;
     return AlbumWidget_gifs(id: id$value, title: title$value, url: url$value);
   }
 }
@@ -165,6 +190,25 @@ final class AlbumWidgetData
     );
   }
 
+  static AlbumWidgetData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? gifs$raw = data.field('gifs');
+    final List<AlbumWidget_gifs> gifs$value = gifs$raw!.listValue
+        .map((e) => AlbumWidget_gifs.fromShalomValue(e!))
+        .toList();
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? tag$raw = data.field('tag');
+    final String tag$value = tag$raw!.stringValue;
+    return AlbumWidgetData(
+      gifs: gifs$value,
+      id: id$value,
+      name: name$value,
+      tag: tag$value,
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {
       'gifs': this.gifs.map((e) => e.toJson()).toList(),
@@ -176,6 +220,19 @@ final class AlbumWidgetData
       'tag': this.tag,
     };
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'gifs': shalom_core.shalomJsonArray(
+      this.gifs!.map((e) => e!.toShalomValue()),
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+
+    'tag': shalom_core.shalomJsonValue(this.tag!),
+  });
 }
 
 abstract class $AlbumWidget extends StatelessWidget {

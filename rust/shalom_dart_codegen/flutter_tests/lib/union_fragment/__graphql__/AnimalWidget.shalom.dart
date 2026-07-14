@@ -32,6 +32,12 @@ extension type AnimalWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [AnimalWidgetData]. Returns `null` when absent or incomplete.
@@ -39,7 +45,7 @@ extension type AnimalWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     return await cache.readFragment<AnimalWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: AnimalWidgetData.fromCache,
+      decoder: AnimalWidgetData.fromShalomValue,
     );
   }
 
@@ -48,7 +54,7 @@ extension type AnimalWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   ) {
     return client.subscribeToFragment<AnimalWidgetData>(
       ref: _inner,
-      decoder: AnimalWidgetData.fromCache,
+      decoder: AnimalWidgetData.fromShalomValue,
     );
   }
 }
@@ -57,6 +63,7 @@ abstract class AnimalWidget {
   String get id;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 sealed class AnimalWidgetData implements AnimalWidget {
@@ -71,6 +78,19 @@ sealed class AnimalWidgetData implements AnimalWidget {
         return AnimalWidgetData$Cat.fromJson(data);
       case 'Dog':
         return AnimalWidgetData$Dog.fromJson(data);
+
+      default:
+        return const AnimalWidgetData$Unknown();
+    }
+  }
+
+  static AnimalWidgetData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final typename = data.field('__typename')?.stringValue;
+    switch (typename) {
+      case 'Cat':
+        return AnimalWidgetData$Cat.fromShalomValue(data);
+      case 'Dog':
+        return AnimalWidgetData$Dog.fromShalomValue(data);
 
       default:
         return const AnimalWidgetData$Unknown();
@@ -115,9 +135,27 @@ final class AnimalWidgetData$Cat extends AnimalWidgetData {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(AnimalWidgetData$Cat.G__typename),
+
+    'color': shalom_core.shalomJsonValue(this.color!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static AnimalWidgetData$Cat fromJson(shalom_core.JsonObject data) {
     final String color$value = data['color'] as String;
     final String id$value = data['id'] as String;
+    return AnimalWidgetData$Cat(color: color$value, id: id$value);
+  }
+
+  static AnimalWidgetData$Cat fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? color$raw = data.field('color');
+    final String color$value = color$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return AnimalWidgetData$Cat(color: color$value, id: id$value);
   }
 }
@@ -159,9 +197,27 @@ final class AnimalWidgetData$Dog extends AnimalWidgetData {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(AnimalWidgetData$Dog.G__typename),
+
+    'breed': shalom_core.shalomJsonValue(this.breed!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static AnimalWidgetData$Dog fromJson(shalom_core.JsonObject data) {
     final String breed$value = data['breed'] as String;
     final String id$value = data['id'] as String;
+    return AnimalWidgetData$Dog(breed: breed$value, id: id$value);
+  }
+
+  static AnimalWidgetData$Dog fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+    final String breed$value = breed$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return AnimalWidgetData$Dog(breed: breed$value, id: id$value);
   }
 }
@@ -174,6 +230,9 @@ final class AnimalWidgetData$Unknown extends AnimalWidgetData {
 
   @override
   shalom_core.JsonObject toJson() => throw UnimplementedError();
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => throw UnimplementedError();
 }
 
 abstract class $AnimalWidget extends StatelessWidget {

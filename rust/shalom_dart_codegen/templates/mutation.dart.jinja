@@ -85,6 +85,19 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface {
         );
     }
 
+    static {{ operation_name }}Data fromShalomValue(shalom_core.ShalomJsonValue data) {
+        {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
+            final shalom_core.ShalomJsonValue? {{selection.name}}$raw = data.field('{{selection.name}}');
+            {% set raw_value_symbol = selection.name + "$raw" -%}
+            final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_shalom_macro(raw_value_symbol, selection, selection.is_optional, false) }};
+        {% endfor -%}
+        return {{ operation_name }}Data(
+            {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
+                {{selection.name}}: {{selection.name}}$value,
+            {% endfor -%}
+        );
+    }
+
     shalom_core.JsonObject toJson() {
         return {
             {% for selection in context.operation.root_type.selections %}
@@ -101,6 +114,13 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface {
             {% endfor %}
         };
     }
+
+    @override
+    shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+        {% for selection in context.operation.root_type.selections if selection.name != "__typename" %}
+            '{{ selection.name }}': {{ _serialize_selection_to_shalom_macro("this." + selection.name, selection, selection.is_optional, false) }},
+        {% endfor %}
+    });
 }
 
 {% if op_variables_exist %}
@@ -128,6 +148,10 @@ final class {{ operation_name }}Variables {
         shalom_core.JsonObject data = {};
         {{ toJson_macro(op_variables) }}
         return data;
+    }
+
+    shalom_core.ShalomJsonValue toShalomValue() {
+        {{ toShalomValue_macro(op_variables) }}
     }
 
     @override

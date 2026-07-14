@@ -34,6 +34,12 @@ extension type CommonAnimalFragRef.fromInput(
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [CommonAnimalFragData]. Returns `null` when absent or incomplete.
@@ -41,7 +47,7 @@ extension type CommonAnimalFragRef.fromInput(
     return await cache.readFragment<CommonAnimalFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: CommonAnimalFragData.fromCache,
+      decoder: CommonAnimalFragData.fromShalomValue,
     );
   }
 
@@ -50,7 +56,7 @@ extension type CommonAnimalFragRef.fromInput(
   ) {
     return client.subscribeToFragment<CommonAnimalFragData>(
       ref: _inner,
-      decoder: CommonAnimalFragData.fromCache,
+      decoder: CommonAnimalFragData.fromShalomValue,
     );
   }
 }
@@ -59,6 +65,7 @@ abstract class CommonAnimalFrag {
   String get id;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 sealed class CommonAnimalFragData implements CommonAnimalFrag {
@@ -73,6 +80,21 @@ sealed class CommonAnimalFragData implements CommonAnimalFrag {
         return CommonAnimalFragData$Cat.fromJson(data);
       case 'Dog':
         return CommonAnimalFragData$Dog.fromJson(data);
+
+      default:
+        return const CommonAnimalFragData$Unknown();
+    }
+  }
+
+  static CommonAnimalFragData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final typename = data.field('__typename')?.stringValue;
+    switch (typename) {
+      case 'Cat':
+        return CommonAnimalFragData$Cat.fromShalomValue(data);
+      case 'Dog':
+        return CommonAnimalFragData$Dog.fromShalomValue(data);
 
       default:
         return const CommonAnimalFragData$Unknown();
@@ -107,8 +129,24 @@ final class CommonAnimalFragData$Cat extends CommonAnimalFragData {
     return {"__typename": CommonAnimalFragData$Cat.G__typename, 'id': this.id};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      CommonAnimalFragData$Cat.G__typename,
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static CommonAnimalFragData$Cat fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
+    return CommonAnimalFragData$Cat(id: id$value);
+  }
+
+  static CommonAnimalFragData$Cat fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return CommonAnimalFragData$Cat(id: id$value);
   }
 }
@@ -140,8 +178,24 @@ final class CommonAnimalFragData$Dog extends CommonAnimalFragData {
     return {"__typename": CommonAnimalFragData$Dog.G__typename, 'id': this.id};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      CommonAnimalFragData$Dog.G__typename,
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static CommonAnimalFragData$Dog fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
+    return CommonAnimalFragData$Dog(id: id$value);
+  }
+
+  static CommonAnimalFragData$Dog fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return CommonAnimalFragData$Dog(id: id$value);
   }
 }
@@ -154,6 +208,9 @@ final class CommonAnimalFragData$Unknown extends CommonAnimalFragData {
 
   @override
   shalom_core.JsonObject toJson() => throw UnimplementedError();
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => throw UnimplementedError();
 }
 
 abstract class $CommonAnimalFrag extends StatelessWidget {

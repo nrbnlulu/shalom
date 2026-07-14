@@ -43,6 +43,12 @@ class ZooAnimalsContractQueryResponse {
     return {'animals': this.animals.map((e) => e.toJson()).toList()};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'animals': shalom_core.shalomJsonArray(
+      this.animals!.map((e) => e!.toShalomValue()),
+    ),
+  });
+
   static ZooAnimalsContractQueryResponse fromJson(shalom_core.JsonObject data) {
     final List<CommonAnimalFragRef> animals$value =
         (data['animals'] as List<dynamic>)
@@ -55,6 +61,22 @@ class ZooAnimalsContractQueryResponse {
               ),
             )
             .toList();
+    return ZooAnimalsContractQueryResponse(animals: animals$value);
+  }
+
+  static ZooAnimalsContractQueryResponse fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? animals$raw = data.field('animals');
+    final List<CommonAnimalFragRef> animals$value = animals$raw!.listValue
+        .map(
+          (e) => CommonAnimalFragRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              e!.field(r'$CommonAnimalFrag')!,
+            ),
+          ),
+        )
+        .toList();
     return ZooAnimalsContractQueryResponse(animals: animals$value);
   }
 }
@@ -74,6 +96,7 @@ sealed class ZooAnimalsContractQuery_animals {
   const ZooAnimalsContractQuery_animals();
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 
   static ZooAnimalsContractQuery_animals fromJson(shalom_core.JsonObject data) {
     final typename = data['__typename'] as String;
@@ -82,6 +105,21 @@ sealed class ZooAnimalsContractQuery_animals {
         return ZooAnimalsContractQuery_animals__Cat.fromJson(data);
       case 'Dog':
         return ZooAnimalsContractQuery_animals__Dog.fromJson(data);
+
+      default:
+        throw Exception("Unknown typename $typename");
+    }
+  }
+
+  static ZooAnimalsContractQuery_animals fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final typename = data.field('__typename')!.stringValue;
+    switch (typename) {
+      case 'Cat':
+        return ZooAnimalsContractQuery_animals__Cat.fromShalomValue(data);
+      case 'Dog':
+        return ZooAnimalsContractQuery_animals__Dog.fromShalomValue(data);
 
       default:
         throw Exception("Unknown typename $typename");
@@ -121,10 +159,26 @@ class ZooAnimalsContractQuery_animals__Cat
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      ZooAnimalsContractQuery_animals__Cat.G__typename,
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static ZooAnimalsContractQuery_animals__Cat fromJson(
     shalom_core.JsonObject data,
   ) {
     final String id$value = data['id'] as String;
+    return ZooAnimalsContractQuery_animals__Cat(id: id$value);
+  }
+
+  static ZooAnimalsContractQuery_animals__Cat fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return ZooAnimalsContractQuery_animals__Cat(id: id$value);
   }
 }
@@ -186,6 +240,18 @@ class ZooAnimalsContractQuery_animals__Dog
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      ZooAnimalsContractQuery_animals__Dog.G__typename,
+    ),
+
+    'breed': shalom_core.shalomJsonValue(this.breed!),
+
+    'favoriteToy': this.favoriteToy!.toShalomValue(),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static ZooAnimalsContractQuery_animals__Dog fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -200,6 +266,25 @@ class ZooAnimalsContractQuery_animals__Dog
 
       favoriteToy: favoriteToy$value,
 
+      id: id$value,
+    );
+  }
+
+  static ZooAnimalsContractQuery_animals__Dog fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+    final String breed$value = breed$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? favoriteToy$raw = data.field(
+      'favoriteToy',
+    );
+    final HasFavoriteToyFrag_favoriteToy favoriteToy$value =
+        HasFavoriteToyFrag_favoriteToy.fromShalomValue(favoriteToy$raw!);
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    return ZooAnimalsContractQuery_animals__Dog(
+      breed: breed$value,
+      favoriteToy: favoriteToy$value,
       id: id$value,
     );
   }
@@ -250,6 +335,22 @@ final class ZooAnimalsContractQueryData
     return ZooAnimalsContractQueryData(animals: animals$value);
   }
 
+  static ZooAnimalsContractQueryData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? animals$raw = data.field('animals');
+    final List<CommonAnimalFragRef> animals$value = animals$raw!.listValue
+        .map(
+          (e) => CommonAnimalFragRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              e!.field(r'$CommonAnimalFrag')!,
+            ),
+          ),
+        )
+        .toList();
+    return ZooAnimalsContractQueryData(animals: animals$value);
+  }
+
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [ZooAnimalsContractQueryData]. Returns `null` when absent or incomplete.
   static Future<ZooAnimalsContractQueryData?> readFrom(
@@ -257,7 +358,7 @@ final class ZooAnimalsContractQueryData
   ) async {
     return await cache.readOperation<ZooAnimalsContractQueryData>(
       name: 'ZooAnimalsContractQuery',
-      decoder: fromCache,
+      decoder: fromShalomValue,
     );
   }
 
@@ -271,6 +372,13 @@ final class ZooAnimalsContractQueryData
   shalom_core.JsonObject toJson() {
     return {'animals': this.animals.map((e) => e.toJson()).toList()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'animals': shalom_core.shalomJsonArray(
+      this.animals!.map((e) => e!.toShalomValue()),
+    ),
+  });
 }
 
 final class ZooAnimalsContractQueryObservable {
@@ -292,7 +400,7 @@ final class ZooAnimalsContractQueryObservable {
     return client.request<ZooAnimalsContractQueryData>(
       name: operation$Name(),
 
-      decoder: ZooAnimalsContractQueryData.fromCache,
+      decoder: ZooAnimalsContractQueryData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,
