@@ -154,7 +154,7 @@ class AlbumsPage extends $AlbumsPage with QueryWidgetMixin {
           final current = await AlbumsPageData.readFrom(cache);
           if (current == null) return;
           final newRef = AlbumWidgetRef.fromId(data.createAlbum.id);
-          await cache.writeQuery(
+          await cache.writeOperation(
             data: AlbumsPageData(albums: [...current.albums, newRef]),
           );
         },
@@ -258,7 +258,7 @@ class AlbumWidget extends $AlbumWidget with QueryWidgetMixin {
         final current = await AlbumsPageData.readFrom(cache);
         if (current == null) return;
         final deletedAnchor = AlbumWidgetData.entityKey(album.id);
-        await cache.writeQuery(
+        await cache.writeOperation(
           data: AlbumsPageData(
             albums: current.albums
                 .where((a) => a.anchor != deletedAnchor)

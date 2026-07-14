@@ -126,9 +126,23 @@ final class PetQueryData implements shalom_core.OperationInterface {
     shalom_core.CacheProxy cache, {
     PetQueryVariables? variables,
   }) async {
-    return await cache.readQuery<PetQueryData>(
+    return await cache.readOperation<PetQueryData>(
       name: 'PetQuery',
       decoder: fromCache,
+
+      variables: variables?.toJson(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    PetQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'PetQuery',
 
       variables: variables?.toJson(),
     );
