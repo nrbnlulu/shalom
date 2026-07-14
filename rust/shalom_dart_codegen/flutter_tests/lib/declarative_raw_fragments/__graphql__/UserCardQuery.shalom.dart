@@ -136,9 +136,23 @@ final class UserCardQueryData implements shalom_core.OperationInterface {
     shalom_core.CacheProxy cache, {
     UserCardQueryVariables? variables,
   }) async {
-    return await cache.readQuery<UserCardQueryData>(
+    return await cache.readOperation<UserCardQueryData>(
       name: 'UserCardQuery',
       decoder: fromCache,
+
+      variables: variables?.toJson(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    UserCardQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'UserCardQuery',
 
       variables: variables?.toJson(),
     );

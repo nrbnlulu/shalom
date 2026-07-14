@@ -50,7 +50,7 @@ void main() async {
 }
 ```
 
-Runtime cache APIs are async because they cross the Flutter/Rust bridge. In generated mutation update callbacks, mark the callback `async` and `await` generated `readFrom`, `cache.readQuery`, `cache.writeQuery`, `ref.readFrom`, `cache.readFragment`, and `cache.writeFragment` calls.
+Runtime cache APIs are async because they cross the Flutter/Rust bridge. In generated mutation update callbacks, mark the callback `async` and `await` generated `readFrom`, `cache.readOperation`, `cache.writeOperation`, `cache.evictOperation`, `ref.readFrom`, `cache.readFragment`, and `cache.writeFragment` calls.
 
 ## Normalized Cache
 
@@ -112,7 +112,7 @@ Generated query/subscription APIs usually include:
 - `$ClassName`, a widget base with `buildLoading`, `buildError`, and `buildData`.
 - `ClassNameData`, nested result classes, and `ClassNameVariables` when variables exist.
 - `ClassNameObservable.observe(client)` for lower-level observation.
-- `ClassNameData.readFrom(cache)` for mutation update callbacks.
+- `ClassNameData.readFrom(cache)` and `ClassNameData.evictFrom(cache, {variables})` for mutation update callbacks.
 - `executionPolicy`, defaulting to `ExecutionPolicyInput.cacheFirst`.
 - `retryDelay` and `autoRefetch` for resilience — see [Retry And Auto-Refetch](#retry-and-auto-refetch).
 
@@ -440,7 +440,7 @@ await CreateAlbumMutation(client).executeWithCacheUpdate(
     final current = await AlbumsPageData.readFrom(cache);
     if (current == null) return;
 
-    await cache.writeQuery(
+    await cache.writeOperation(
       data: AlbumsPageData(
         albums: [
           ...current.albums,
@@ -514,10 +514,11 @@ await RemoveGifFromAlbumMutation(client).executeWithCacheUpdate(
 
 List update rules:
 
-- Use `cache.writeQuery` for root operation data.
+- Use `cache.writeOperation` for root operation data.
 - Use `cache.writeFragment` for one normalized entity's fragment data.
 - Preserve all required fields from the existing cached value when constructing replacement data.
-- `readFrom`, `readQuery`, and `readFragment` can return `null` when data is absent or incomplete.
+- `readFrom`, `readOperation`, and `readFragment` can return `null` when data is absent or incomplete.
 - Guard duplicate inserts with stable ids or unique fields.
 - Only write generated refs such as `AlbumWidgetRef.fromId(id)` after the mutation response includes enough fields to satisfy that fragment.
-- For queries with variables, pass the same variables to `readQuery`/`writeQuery`; argument values are part of the normalized field key.
+- For queries with variables, pass the same variables to `readOperation`/`writeOperation`/`evictOperation`; argument values are part of the normalized field key.
+- Use `cache.evictOperation(name: ..., variables: ...)` (or the generated `ClassNameData.evictFrom(cache, variables: ...)` shortcut) to drop a cached operation's root entry entirely instead of overwriting it — for example when a mutation invalidates a query rather than producing data to merge. It only unlinks the operation's root field(s); referenced entities are reclaimed by the next GC sweep if nothing else keeps them reachable, and it's a no-op (`false`) when nothing matched.

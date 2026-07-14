@@ -537,13 +537,16 @@ fn response_to_json(response: RuntimeResponse) -> anyhow::Result<String> {
 /// callers don't need to handle partial results.  The returned string is a
 /// JSON object that matches the operation's selection shape.
 #[frb]
-pub async fn read_query(
+pub async fn read_operation(
     handle: &RuntimeHandle,
     name: String,
     variables_json: Option<String>,
 ) -> anyhow::Result<Option<String>> {
     let variables = parse_variables(variables_json)?;
-    match handle.runtime.try_read_query(&name, variables.as_ref())? {
+    match handle
+        .runtime
+        .try_read_operation(&name, variables.as_ref())?
+    {
         Some(data) => Ok(Some(serde_json::to_string(&data)?)),
         None => Ok(None),
     }
@@ -556,7 +559,7 @@ pub async fn read_query(
 /// back.  Use it inside a mutation's `executeWithCacheUpdate` callback to keep
 /// cached lists in sync after an add / remove / reorder mutation.
 #[frb]
-pub async fn write_query(
+pub async fn write_operation(
     handle: &RuntimeHandle,
     name: String,
     data_json: String,
@@ -564,7 +567,25 @@ pub async fn write_query(
 ) -> anyhow::Result<()> {
     let variables = parse_variables(variables_json)?;
     let data: Value = serde_json::from_str(&data_json)?;
-    handle.runtime.write_query(&name, data, variables.as_ref())
+    handle
+        .runtime
+        .write_operation(&name, data, variables.as_ref())
+}
+
+/// Evict a pre-registered operation's cached root field(s) (matched by
+/// `variables`) and notify any active subscribers.
+///
+/// Only unlinks the operation's own root entry — entities it referenced are
+/// reclaimed by the next GC sweep if nothing else keeps them reachable.
+/// Returns `false` if no matching cache entry existed.
+#[frb]
+pub async fn evict_operation(
+    handle: &RuntimeHandle,
+    name: String,
+    variables_json: Option<String>,
+) -> anyhow::Result<bool> {
+    let variables = parse_variables(variables_json)?;
+    handle.runtime.evict_operation(&name, variables.as_ref())
 }
 
 /// Read an entity from the cache through a fragment's selection set.

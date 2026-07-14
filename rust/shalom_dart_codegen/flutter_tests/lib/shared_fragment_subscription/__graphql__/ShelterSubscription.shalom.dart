@@ -222,10 +222,17 @@ final class ShelterSubscriptionData implements shalom_core.OperationInterface {
   static Future<ShelterSubscriptionData?> readFrom(
     shalom_core.CacheProxy cache,
   ) async {
-    return await cache.readQuery<ShelterSubscriptionData>(
+    return await cache.readOperation<ShelterSubscriptionData>(
       name: 'ShelterSubscription',
       decoder: fromCache,
     );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
+    return cache.evictOperation(name: 'ShelterSubscription');
   }
 
   shalom_core.JsonObject toJson() {

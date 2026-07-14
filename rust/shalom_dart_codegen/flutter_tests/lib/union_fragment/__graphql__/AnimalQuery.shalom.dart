@@ -202,9 +202,23 @@ final class AnimalQueryData implements shalom_core.OperationInterface {
     shalom_core.CacheProxy cache, {
     AnimalQueryVariables? variables,
   }) async {
-    return await cache.readQuery<AnimalQueryData>(
+    return await cache.readOperation<AnimalQueryData>(
       name: 'AnimalQuery',
       decoder: fromCache,
+
+      variables: variables?.toJson(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    AnimalQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'AnimalQuery',
 
       variables: variables?.toJson(),
     );

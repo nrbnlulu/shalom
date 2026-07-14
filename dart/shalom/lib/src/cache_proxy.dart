@@ -15,18 +15,28 @@ class CacheProxy {
   /// Read the current cache for operation [name].
   ///
   /// Returns `null` when the data is absent or incomplete (missing refs).
-  Future<T?> readQuery<T>({
+  Future<T?> readOperation<T>({
     required String name,
     required T Function(JsonObject) decoder,
     Map<String, dynamic>? variables,
-  }) => _client.readQuery(name: name, decoder: decoder, variables: variables);
+  }) =>
+      _client.readOperation(name: name, decoder: decoder, variables: variables);
 
   /// Write [data] to the cache for its generated operation, normalizing it
   /// and notifying any active subscribers.
-  Future<void> writeQuery<T extends OperationInterface>({
+  Future<void> writeOperation<T extends OperationInterface>({
     required T data,
     Map<String, dynamic>? variables,
-  }) => _client.writeQuery(data: data, variables: variables);
+  }) => _client.writeOperation(data: data, variables: variables);
+
+  /// Evict operation [name]'s cached root field(s) (matched by [variables])
+  /// and notify any active subscribers.
+  ///
+  /// Returns `false` if no matching cache entry existed.
+  Future<bool> evictOperation({
+    required String name,
+    Map<String, dynamic>? variables,
+  }) => _client.evictOperation(name: name, variables: variables);
 
   /// Read an entity from the cache through the fragment's selection set.
   ///

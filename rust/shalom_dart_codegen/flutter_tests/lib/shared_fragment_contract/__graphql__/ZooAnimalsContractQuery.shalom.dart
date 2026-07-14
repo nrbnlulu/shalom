@@ -255,10 +255,17 @@ final class ZooAnimalsContractQueryData
   static Future<ZooAnimalsContractQueryData?> readFrom(
     shalom_core.CacheProxy cache,
   ) async {
-    return await cache.readQuery<ZooAnimalsContractQueryData>(
+    return await cache.readOperation<ZooAnimalsContractQueryData>(
       name: 'ZooAnimalsContractQuery',
       decoder: fromCache,
     );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
+    return cache.evictOperation(name: 'ZooAnimalsContractQuery');
   }
 
   shalom_core.JsonObject toJson() {

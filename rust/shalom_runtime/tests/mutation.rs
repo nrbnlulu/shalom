@@ -252,7 +252,7 @@ fn write_optimistic_absent_key_rolls_back_to_absent() {
 }
 
 #[test]
-fn write_query_resolves_wrapped_observed_fragment_refs() {
+fn write_operation_resolves_wrapped_observed_fragment_refs() {
     let schema = r#"
         type Query { observedUsers: [User!]!, users: [User!]! }
         type User { id: ID!, name: String! }
@@ -283,16 +283,16 @@ fn write_query_resolves_wrapped_observed_fragment_refs() {
     let user_ref = observed["observedUsers"][0]["$UserRow"].clone();
 
     runtime
-        .write_query("Users", json!({ "users": [user_ref] }), None)
+        .write_operation("Users", json!({ "users": [user_ref] }), None)
         .unwrap();
 
-    let users = runtime.try_read_query("Users", None).unwrap().unwrap();
+    let users = runtime.try_read_operation("Users", None).unwrap().unwrap();
     assert_eq!(users["users"][0]["id"], json!("1"));
     assert_eq!(users["users"][0]["name"], json!("Ada"));
 }
 
 #[test]
-fn write_query_does_not_treat_user_fields_as_observed_refs() {
+fn write_operation_does_not_treat_user_fields_as_observed_refs() {
     let schema = r#"
         type Query { boxes: [Box!]! }
         type Box { observable_id: String!, anchor: String! }
@@ -306,7 +306,7 @@ fn write_query_does_not_treat_user_fields_as_observed_refs() {
     runtime.register_operation(operation).unwrap();
 
     runtime
-        .write_query(
+        .write_operation(
             "Boxes",
             json!({
                 "boxes": [
@@ -317,7 +317,108 @@ fn write_query_does_not_treat_user_fields_as_observed_refs() {
         )
         .unwrap();
 
-    let boxes = runtime.try_read_query("Boxes", None).unwrap().unwrap();
+    let boxes = runtime.try_read_operation("Boxes", None).unwrap().unwrap();
     assert_eq!(boxes["boxes"][0]["observable_id"], json!("ordinary-field"));
     assert_eq!(boxes["boxes"][0]["anchor"], json!("ordinary-value"));
+}
+
+// ---------------------------------------------------------------------------
+// evict_operation — manual cache eviction of an operation's root field(s)
+// ---------------------------------------------------------------------------
+
+#[test]
+fn evict_operation_removes_matching_root_field_only() {
+    let runtime = make_runtime();
+
+    runtime
+        .write_operation(
+            "GetUser",
+            json!({ "user": { "id": "1", "name": "Alice" } }),
+            Some(&vars(&[("id", json!("1"))])),
+        )
+        .unwrap();
+    runtime
+        .write_operation(
+            "GetUser",
+            json!({ "user": { "id": "2", "name": "Bob" } }),
+            Some(&vars(&[("id", json!("2"))])),
+        )
+        .unwrap();
+
+    // Evicting a non-matching set of variables is a no-op.
+    let evicted_missing = runtime
+        .evict_operation("GetUser", Some(&vars(&[("id", json!("3"))])))
+        .unwrap();
+    assert!(!evicted_missing);
+    assert!(
+        runtime
+            .try_read_operation("GetUser", Some(&vars(&[("id", json!("1"))])))
+            .unwrap()
+            .is_some()
+    );
+
+    let evicted = runtime
+        .evict_operation("GetUser", Some(&vars(&[("id", json!("1"))])))
+        .unwrap();
+    assert!(evicted);
+
+    // The evicted variant is gone, the other is untouched.
+    assert!(
+        runtime
+            .try_read_operation("GetUser", Some(&vars(&[("id", json!("1"))])))
+            .unwrap()
+            .is_none()
+    );
+    assert_eq!(
+        runtime
+            .try_read_operation("GetUser", Some(&vars(&[("id", json!("2"))])))
+            .unwrap()
+            .unwrap()["user"]["name"],
+        json!("Bob")
+    );
+}
+
+#[test]
+fn evict_operation_updates_subscriber_tracked_refs() {
+    let runtime = make_runtime();
+    let query_op = runtime.operation_by_name("GetUser").unwrap();
+    let query_vars = vars(&[("id", json!("1"))]);
+
+    runtime
+        .normalize(
+            &query_op,
+            json!({ "user": { "id": "1", "name": "Alice" } }),
+            Some(&query_vars),
+        )
+        .expect("seed");
+    let sub_id = runtime.create_operation_subscription(
+        query_op.clone(),
+        Some(query_vars.clone()),
+        ExecutionPolicy::NetworkFirst,
+    );
+
+    // Eviction leaves the read incomplete, so — like GC and optimistic
+    // rollback — the subscriber gets no spurious "empty" push here.
+    let evicted = runtime
+        .evict_operation("GetUser", Some(&query_vars))
+        .unwrap();
+    assert!(evicted);
+    assert!(
+        runtime
+            .try_read_operation("GetUser", Some(&query_vars))
+            .unwrap()
+            .is_none()
+    );
+
+    // A subsequent write for the same key is still delivered, proving the
+    // subscriber's tracked refs survived the eviction correctly.
+    runtime
+        .normalize(
+            &query_op,
+            json!({ "user": { "id": "1", "name": "Carol" } }),
+            Some(&query_vars),
+        )
+        .expect("re-seed");
+    let update = yield_update_sync(&runtime, sub_id);
+    assert_eq!(update["user"]["name"], json!("Carol"));
 }

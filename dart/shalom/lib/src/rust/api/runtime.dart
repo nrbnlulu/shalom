@@ -186,11 +186,11 @@ Future<void> completeTransport({
 /// Returns `None` when the data is absent or incomplete (missing refs), so
 /// callers don't need to handle partial results.  The returned string is a
 /// JSON object that matches the operation's selection shape.
-Future<String?> readQuery({
+Future<String?> readOperation({
   required RuntimeHandle handle,
   required String name,
   String? variablesJson,
-}) => RustLib.instance.api.crateApiRuntimeReadQuery(
+}) => RustLib.instance.api.crateApiRuntimeReadOperation(
   handle: handle,
   name: name,
   variablesJson: variablesJson,
@@ -202,15 +202,31 @@ Future<String?> readQuery({
 /// This is a permanent write — unlike `write_optimistic` it cannot be rolled
 /// back.  Use it inside a mutation's `executeWithCacheUpdate` callback to keep
 /// cached lists in sync after an add / remove / reorder mutation.
-Future<void> writeQuery({
+Future<void> writeOperation({
   required RuntimeHandle handle,
   required String name,
   required String dataJson,
   String? variablesJson,
-}) => RustLib.instance.api.crateApiRuntimeWriteQuery(
+}) => RustLib.instance.api.crateApiRuntimeWriteOperation(
   handle: handle,
   name: name,
   dataJson: dataJson,
+  variablesJson: variablesJson,
+);
+
+/// Evict a pre-registered operation's cached root field(s) (matched by
+/// `variables`) and notify any active subscribers.
+///
+/// Only unlinks the operation's own root entry — entities it referenced are
+/// reclaimed by the next GC sweep if nothing else keeps them reachable.
+/// Returns `false` if no matching cache entry existed.
+Future<bool> evictOperation({
+  required RuntimeHandle handle,
+  required String name,
+  String? variablesJson,
+}) => RustLib.instance.api.crateApiRuntimeEvictOperation(
+  handle: handle,
+  name: name,
   variablesJson: variablesJson,
 );
 
