@@ -31,9 +31,9 @@ abstract class $AddGifToAlbumMutation {
       previewUrl: previewUrl,
       title: title,
       url: url,
-    ).toJson(),
+    ).toShalomValue(),
 
-    decoder: AddGifToAlbumMutationData.fromCache,
+    decoder: AddGifToAlbumMutationData.fromShalomValue,
   );
 
   /// Execute the mutation and update the cache via [update].
@@ -51,7 +51,7 @@ abstract class $AddGifToAlbumMutation {
   ///   update: (cache, data) async {
   ///     final current = await cache.readOperation(
   ///       name: 'GetTodos',
-  ///       decoder: GetTodosData.fromCache,
+  ///       decoder: GetTodosData.fromShalomValue,
   ///     );
   ///     if (current != null) {
   ///       await cache.writeOperation(
@@ -83,9 +83,9 @@ abstract class $AddGifToAlbumMutation {
     final response = await _client.mutate<AddGifToAlbumMutationData>(
       name: operation$Name(),
 
-      variables: vars.toJson(),
+      variables: vars.toShalomValue(),
 
-      decoder: AddGifToAlbumMutationData.fromCache,
+      decoder: AddGifToAlbumMutationData.fromShalomValue,
     );
     if (response case shalom_core.GraphQLData(data: final data)) {
       await update(CacheProxy(_client), data);
@@ -127,7 +127,7 @@ abstract class $AddGifToAlbumMutation {
     );
     final writeId = await _client.writeOptimistic(
       name: operation$Name(),
-      data: optimisticFactory(vars).toJson(),
+      data: optimisticFactory(vars),
     );
 
     var rolledBack = false;
@@ -141,9 +141,9 @@ abstract class $AddGifToAlbumMutation {
       final graphqlResponse = await _client.mutate<AddGifToAlbumMutationData>(
         name: operation$Name(),
 
-        variables: vars.toJson(),
+        variables: vars.toShalomValue(),
 
-        decoder: AddGifToAlbumMutationData.fromCache,
+        decoder: AddGifToAlbumMutationData.fromShalomValue,
       );
       if (graphqlResponse case shalom_core.GraphQLData(
         data: final responseData,

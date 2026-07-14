@@ -38,6 +38,12 @@ class AnimalWithOwnerQueryResponse {
     return {'animal': this.animal?.toJson()};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'animal': this.animal == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.animal!.toShalomValue(),
+  });
+
   static AnimalWithOwnerQueryResponse fromJson(shalom_core.JsonObject data) {
     final AnimalWithOwnerWidgetRef? animal$value = data['animal'] == null
         ? null
@@ -46,6 +52,21 @@ class AnimalWithOwnerQueryResponse {
               (data['animal']
                       as shalom_core.JsonObject)[r'$AnimalWithOwnerWidget']
                   as shalom_core.JsonObject,
+            ),
+          );
+    return AnimalWithOwnerQueryResponse(animal: animal$value);
+  }
+
+  static AnimalWithOwnerQueryResponse fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? animal$raw = data.field('animal');
+    final AnimalWithOwnerWidgetRef? animal$value =
+        animal$raw == null || animal$raw!.isNull
+        ? null
+        : AnimalWithOwnerWidgetRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              animal$raw!.field(r'$AnimalWithOwnerWidget')!,
             ),
           );
     return AnimalWithOwnerQueryResponse(animal: animal$value);
@@ -67,6 +88,7 @@ sealed class AnimalWithOwnerQuery_animal implements AnimalWithOwnerWidget {
   const AnimalWithOwnerQuery_animal();
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 
   static AnimalWithOwnerQuery_animal fromJson(shalom_core.JsonObject data) {
     final typename = data['__typename'] as String;
@@ -75,6 +97,21 @@ sealed class AnimalWithOwnerQuery_animal implements AnimalWithOwnerWidget {
         return AnimalWithOwnerQuery_animal__Cat.fromJson(data);
       case 'Dog':
         return AnimalWithOwnerQuery_animal__Dog.fromJson(data);
+
+      default:
+        throw Exception("Unknown typename $typename");
+    }
+  }
+
+  static AnimalWithOwnerQuery_animal fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final typename = data.field('__typename')!.stringValue;
+    switch (typename) {
+      case 'Cat':
+        return AnimalWithOwnerQuery_animal__Cat.fromShalomValue(data);
+      case 'Dog':
+        return AnimalWithOwnerQuery_animal__Dog.fromShalomValue(data);
 
       default:
         throw Exception("Unknown typename $typename");
@@ -123,11 +160,31 @@ class AnimalWithOwnerQuery_animal__Cat extends AnimalWithOwnerQuery_animal {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      AnimalWithOwnerQuery_animal__Cat.G__typename,
+    ),
+
+    'color': shalom_core.shalomJsonValue(this.color!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static AnimalWithOwnerQuery_animal__Cat fromJson(
     shalom_core.JsonObject data,
   ) {
     final String color$value = data['color'] as String;
     final String id$value = data['id'] as String;
+    return AnimalWithOwnerQuery_animal__Cat(color: color$value, id: id$value);
+  }
+
+  static AnimalWithOwnerQuery_animal__Cat fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? color$raw = data.field('color');
+    final String color$value = color$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return AnimalWithOwnerQuery_animal__Cat(color: color$value, id: id$value);
   }
 }
@@ -187,6 +244,20 @@ class AnimalWithOwnerQuery_animal__Dog extends AnimalWithOwnerQuery_animal {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      AnimalWithOwnerQuery_animal__Dog.G__typename,
+    ),
+
+    'breed': shalom_core.shalomJsonValue(this.breed!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'owner': this.owner == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.owner!.toShalomValue(),
+  });
+
   static AnimalWithOwnerQuery_animal__Dog fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -202,6 +273,25 @@ class AnimalWithOwnerQuery_animal__Dog extends AnimalWithOwnerQuery_animal {
 
       id: id$value,
 
+      owner: owner$value,
+    );
+  }
+
+  static AnimalWithOwnerQuery_animal__Dog fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+    final String breed$value = breed$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? owner$raw = data.field('owner');
+    final AnimalWithOwnerWidget__Dog_owner? owner$value =
+        owner$raw == null || owner$raw!.isNull
+        ? null
+        : AnimalWithOwnerWidget__Dog_owner.fromShalomValue(owner$raw!);
+    return AnimalWithOwnerQuery_animal__Dog(
+      breed: breed$value,
+      id: id$value,
       owner: owner$value,
     );
   }
@@ -236,6 +326,21 @@ final class AnimalWithOwnerQueryData implements shalom_core.OperationInterface {
     return AnimalWithOwnerQueryData(animal: animal$value);
   }
 
+  static AnimalWithOwnerQueryData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? animal$raw = data.field('animal');
+    final AnimalWithOwnerWidgetRef? animal$value =
+        animal$raw == null || animal$raw!.isNull
+        ? null
+        : AnimalWithOwnerWidgetRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              animal$raw!.field(r'$AnimalWithOwnerWidget')!,
+            ),
+          );
+    return AnimalWithOwnerQueryData(animal: animal$value);
+  }
+
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [AnimalWithOwnerQueryData]. Returns `null` when absent or incomplete.
   static Future<AnimalWithOwnerQueryData?> readFrom(
@@ -244,9 +349,9 @@ final class AnimalWithOwnerQueryData implements shalom_core.OperationInterface {
   }) async {
     return await cache.readOperation<AnimalWithOwnerQueryData>(
       name: 'AnimalWithOwnerQuery',
-      decoder: fromCache,
+      decoder: fromShalomValue,
 
-      variables: variables?.toJson(),
+      variables: variables?.toShalomValue(),
     );
   }
 
@@ -260,13 +365,20 @@ final class AnimalWithOwnerQueryData implements shalom_core.OperationInterface {
     return cache.evictOperation(
       name: 'AnimalWithOwnerQuery',
 
-      variables: variables?.toJson(),
+      variables: variables?.toShalomValue(),
     );
   }
 
   shalom_core.JsonObject toJson() {
     return {'animal': this.animal?.toJson()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'animal': this.animal == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.animal!.toShalomValue(),
+  });
 }
 
 final class AnimalWithOwnerQueryObservable {
@@ -292,9 +404,9 @@ final class AnimalWithOwnerQueryObservable {
     return client.request<AnimalWithOwnerQueryData>(
       name: operation$Name(),
 
-      variables: variables.toJson(),
+      variables: variables.toShalomValue(),
 
-      decoder: AnimalWithOwnerQueryData.fromCache,
+      decoder: AnimalWithOwnerQueryData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,
@@ -313,6 +425,12 @@ final class AnimalWithOwnerQueryVariables {
     data["id"] = this.id;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    $data["id"] = shalom_core.shalomJsonValue(this.id!);
+    return shalom_core.shalomJsonObject($data);
   }
 
   @override

@@ -12,6 +12,439 @@ part of 'runtime.dart';
 // dart format off
 T _$identity<T>(T value) => value;
 /// @nodoc
+mixin _$GraphQlResponseInput {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GraphQlResponseInput);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'GraphQlResponseInput()';
+}
+
+
+}
+
+/// @nodoc
+class $GraphQlResponseInputCopyWith<$Res>  {
+$GraphQlResponseInputCopyWith(GraphQlResponseInput _, $Res Function(GraphQlResponseInput) __);
+}
+
+
+/// Adds pattern-matching-related methods to [GraphQlResponseInput].
+extension GraphQlResponseInputPatterns on GraphQlResponseInput {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( GraphQlResponseInput_Data value)?  data,TResult Function( GraphQlResponseInput_Error value)?  error,TResult Function( GraphQlResponseInput_TransportError value)?  transportError,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case GraphQlResponseInput_Data() when data != null:
+return data(_that);case GraphQlResponseInput_Error() when error != null:
+return error(_that);case GraphQlResponseInput_TransportError() when transportError != null:
+return transportError(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( GraphQlResponseInput_Data value)  data,required TResult Function( GraphQlResponseInput_Error value)  error,required TResult Function( GraphQlResponseInput_TransportError value)  transportError,}){
+final _that = this;
+switch (_that) {
+case GraphQlResponseInput_Data():
+return data(_that);case GraphQlResponseInput_Error():
+return error(_that);case GraphQlResponseInput_TransportError():
+return transportError(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( GraphQlResponseInput_Data value)?  data,TResult? Function( GraphQlResponseInput_Error value)?  error,TResult? Function( GraphQlResponseInput_TransportError value)?  transportError,}){
+final _that = this;
+switch (_that) {
+case GraphQlResponseInput_Data() when data != null:
+return data(_that);case GraphQlResponseInput_Error() when error != null:
+return error(_that);case GraphQlResponseInput_TransportError() when transportError != null:
+return transportError(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ShalomJsonValue data,  List<ShalomJsonValue>? errors,  ShalomJsonValue? extensions)?  data,TResult Function( List<ShalomJsonValue> errors,  ShalomJsonValue? extensions)?  error,TResult Function( String message,  String code,  ShalomJsonValue? details)?  transportError,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case GraphQlResponseInput_Data() when data != null:
+return data(_that.data,_that.errors,_that.extensions);case GraphQlResponseInput_Error() when error != null:
+return error(_that.errors,_that.extensions);case GraphQlResponseInput_TransportError() when transportError != null:
+return transportError(_that.message,_that.code,_that.details);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ShalomJsonValue data,  List<ShalomJsonValue>? errors,  ShalomJsonValue? extensions)  data,required TResult Function( List<ShalomJsonValue> errors,  ShalomJsonValue? extensions)  error,required TResult Function( String message,  String code,  ShalomJsonValue? details)  transportError,}) {final _that = this;
+switch (_that) {
+case GraphQlResponseInput_Data():
+return data(_that.data,_that.errors,_that.extensions);case GraphQlResponseInput_Error():
+return error(_that.errors,_that.extensions);case GraphQlResponseInput_TransportError():
+return transportError(_that.message,_that.code,_that.details);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ShalomJsonValue data,  List<ShalomJsonValue>? errors,  ShalomJsonValue? extensions)?  data,TResult? Function( List<ShalomJsonValue> errors,  ShalomJsonValue? extensions)?  error,TResult? Function( String message,  String code,  ShalomJsonValue? details)?  transportError,}) {final _that = this;
+switch (_that) {
+case GraphQlResponseInput_Data() when data != null:
+return data(_that.data,_that.errors,_that.extensions);case GraphQlResponseInput_Error() when error != null:
+return error(_that.errors,_that.extensions);case GraphQlResponseInput_TransportError() when transportError != null:
+return transportError(_that.message,_that.code,_that.details);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class GraphQlResponseInput_Data extends GraphQlResponseInput {
+  const GraphQlResponseInput_Data({required this.data, final  List<ShalomJsonValue>? errors, this.extensions}): _errors = errors,super._();
+
+
+ final  ShalomJsonValue data;
+ final  List<ShalomJsonValue>? _errors;
+ List<ShalomJsonValue>? get errors {
+  final value = _errors;
+  if (value == null) return null;
+  if (_errors is EqualUnmodifiableListView) return _errors;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(value);
+}
+
+ final  ShalomJsonValue? extensions;
+
+/// Create a copy of GraphQlResponseInput
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GraphQlResponseInput_DataCopyWith<GraphQlResponseInput_Data> get copyWith => _$GraphQlResponseInput_DataCopyWithImpl<GraphQlResponseInput_Data>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GraphQlResponseInput_Data&&(identical(other.data, data) || other.data == data)&&const DeepCollectionEquality().equals(other._errors, _errors)&&(identical(other.extensions, extensions) || other.extensions == extensions));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,data,const DeepCollectionEquality().hash(_errors),extensions);
+
+@override
+String toString() {
+  return 'GraphQlResponseInput.data(data: $data, errors: $errors, extensions: $extensions)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $GraphQlResponseInput_DataCopyWith<$Res> implements $GraphQlResponseInputCopyWith<$Res> {
+  factory $GraphQlResponseInput_DataCopyWith(GraphQlResponseInput_Data value, $Res Function(GraphQlResponseInput_Data) _then) = _$GraphQlResponseInput_DataCopyWithImpl;
+@useResult
+$Res call({
+ ShalomJsonValue data, List<ShalomJsonValue>? errors, ShalomJsonValue? extensions
+});
+
+
+$ShalomJsonValueCopyWith<$Res> get data;$ShalomJsonValueCopyWith<$Res>? get extensions;
+
+}
+/// @nodoc
+class _$GraphQlResponseInput_DataCopyWithImpl<$Res>
+    implements $GraphQlResponseInput_DataCopyWith<$Res> {
+  _$GraphQlResponseInput_DataCopyWithImpl(this._self, this._then);
+
+  final GraphQlResponseInput_Data _self;
+  final $Res Function(GraphQlResponseInput_Data) _then;
+
+/// Create a copy of GraphQlResponseInput
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? data = null,Object? errors = freezed,Object? extensions = freezed,}) {
+  return _then(GraphQlResponseInput_Data(
+data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue,errors: freezed == errors ? _self._errors : errors // ignore: cast_nullable_to_non_nullable
+as List<ShalomJsonValue>?,extensions: freezed == extensions ? _self.extensions : extensions // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue?,
+  ));
+}
+
+/// Create a copy of GraphQlResponseInput
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res> get data {
+
+  return $ShalomJsonValueCopyWith<$Res>(_self.data, (value) {
+    return _then(_self.copyWith(data: value));
+  });
+}/// Create a copy of GraphQlResponseInput
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res>? get extensions {
+    if (_self.extensions == null) {
+    return null;
+  }
+
+  return $ShalomJsonValueCopyWith<$Res>(_self.extensions!, (value) {
+    return _then(_self.copyWith(extensions: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class GraphQlResponseInput_Error extends GraphQlResponseInput {
+  const GraphQlResponseInput_Error({required final  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
+
+
+ final  List<ShalomJsonValue> _errors;
+ List<ShalomJsonValue> get errors {
+  if (_errors is EqualUnmodifiableListView) return _errors;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_errors);
+}
+
+ final  ShalomJsonValue? extensions;
+
+/// Create a copy of GraphQlResponseInput
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GraphQlResponseInput_ErrorCopyWith<GraphQlResponseInput_Error> get copyWith => _$GraphQlResponseInput_ErrorCopyWithImpl<GraphQlResponseInput_Error>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GraphQlResponseInput_Error&&const DeepCollectionEquality().equals(other._errors, _errors)&&(identical(other.extensions, extensions) || other.extensions == extensions));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_errors),extensions);
+
+@override
+String toString() {
+  return 'GraphQlResponseInput.error(errors: $errors, extensions: $extensions)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $GraphQlResponseInput_ErrorCopyWith<$Res> implements $GraphQlResponseInputCopyWith<$Res> {
+  factory $GraphQlResponseInput_ErrorCopyWith(GraphQlResponseInput_Error value, $Res Function(GraphQlResponseInput_Error) _then) = _$GraphQlResponseInput_ErrorCopyWithImpl;
+@useResult
+$Res call({
+ List<ShalomJsonValue> errors, ShalomJsonValue? extensions
+});
+
+
+$ShalomJsonValueCopyWith<$Res>? get extensions;
+
+}
+/// @nodoc
+class _$GraphQlResponseInput_ErrorCopyWithImpl<$Res>
+    implements $GraphQlResponseInput_ErrorCopyWith<$Res> {
+  _$GraphQlResponseInput_ErrorCopyWithImpl(this._self, this._then);
+
+  final GraphQlResponseInput_Error _self;
+  final $Res Function(GraphQlResponseInput_Error) _then;
+
+/// Create a copy of GraphQlResponseInput
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? errors = null,Object? extensions = freezed,}) {
+  return _then(GraphQlResponseInput_Error(
+errors: null == errors ? _self._errors : errors // ignore: cast_nullable_to_non_nullable
+as List<ShalomJsonValue>,extensions: freezed == extensions ? _self.extensions : extensions // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue?,
+  ));
+}
+
+/// Create a copy of GraphQlResponseInput
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res>? get extensions {
+    if (_self.extensions == null) {
+    return null;
+  }
+
+  return $ShalomJsonValueCopyWith<$Res>(_self.extensions!, (value) {
+    return _then(_self.copyWith(extensions: value));
+  });
+}
+}
+
+/// @nodoc
+
+
+class GraphQlResponseInput_TransportError extends GraphQlResponseInput {
+  const GraphQlResponseInput_TransportError({required this.message, required this.code, this.details}): super._();
+
+
+ final  String message;
+ final  String code;
+ final  ShalomJsonValue? details;
+
+/// Create a copy of GraphQlResponseInput
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$GraphQlResponseInput_TransportErrorCopyWith<GraphQlResponseInput_TransportError> get copyWith => _$GraphQlResponseInput_TransportErrorCopyWithImpl<GraphQlResponseInput_TransportError>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is GraphQlResponseInput_TransportError&&(identical(other.message, message) || other.message == message)&&(identical(other.code, code) || other.code == code)&&(identical(other.details, details) || other.details == details));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,message,code,details);
+
+@override
+String toString() {
+  return 'GraphQlResponseInput.transportError(message: $message, code: $code, details: $details)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $GraphQlResponseInput_TransportErrorCopyWith<$Res> implements $GraphQlResponseInputCopyWith<$Res> {
+  factory $GraphQlResponseInput_TransportErrorCopyWith(GraphQlResponseInput_TransportError value, $Res Function(GraphQlResponseInput_TransportError) _then) = _$GraphQlResponseInput_TransportErrorCopyWithImpl;
+@useResult
+$Res call({
+ String message, String code, ShalomJsonValue? details
+});
+
+
+$ShalomJsonValueCopyWith<$Res>? get details;
+
+}
+/// @nodoc
+class _$GraphQlResponseInput_TransportErrorCopyWithImpl<$Res>
+    implements $GraphQlResponseInput_TransportErrorCopyWith<$Res> {
+  _$GraphQlResponseInput_TransportErrorCopyWithImpl(this._self, this._then);
+
+  final GraphQlResponseInput_TransportError _self;
+  final $Res Function(GraphQlResponseInput_TransportError) _then;
+
+/// Create a copy of GraphQlResponseInput
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? message = null,Object? code = null,Object? details = freezed,}) {
+  return _then(GraphQlResponseInput_TransportError(
+message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
+as String,code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
+as String,details: freezed == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue?,
+  ));
+}
+
+/// Create a copy of GraphQlResponseInput
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res>? get details {
+    if (_self.details == null) {
+    return null;
+  }
+
+  return $ShalomJsonValueCopyWith<$Res>(_self.details!, (value) {
+    return _then(_self.copyWith(details: value));
+  });
+}
+}
+
+/// @nodoc
 mixin _$RetryDelayInput {
 
 
@@ -182,7 +615,7 @@ return millis(_that.field0);case _:
 
 class RetryDelayInput_Inherit extends RetryDelayInput {
   const RetryDelayInput_Inherit(): super._();
-  
+
 
 
 
@@ -214,7 +647,7 @@ String toString() {
 
 class RetryDelayInput_Disabled extends RetryDelayInput {
   const RetryDelayInput_Disabled(): super._();
-  
+
 
 
 
@@ -246,7 +679,7 @@ String toString() {
 
 class RetryDelayInput_Millis extends RetryDelayInput {
   const RetryDelayInput_Millis(this.field0): super._();
-  
+
 
  final  BigInt field0;
 
@@ -418,12 +851,12 @@ return transportError(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String dataJson)?  data,TResult Function( String errorsJson,  String? extensionsJson)?  graphQlError,TResult Function( String code,  String message,  String? detailsJson)?  transportError,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ShalomJsonValue data)?  data,TResult Function( List<ShalomJsonValue> errors,  ShalomJsonValue? extensions)?  graphQlError,TResult Function( String code,  String message,  ShalomJsonValue? details)?  transportError,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case SubscriptionEvent_Data() when data != null:
-return data(_that.dataJson);case SubscriptionEvent_GraphQlError() when graphQlError != null:
-return graphQlError(_that.errorsJson,_that.extensionsJson);case SubscriptionEvent_TransportError() when transportError != null:
-return transportError(_that.code,_that.message,_that.detailsJson);case _:
+return data(_that.data);case SubscriptionEvent_GraphQlError() when graphQlError != null:
+return graphQlError(_that.errors,_that.extensions);case SubscriptionEvent_TransportError() when transportError != null:
+return transportError(_that.code,_that.message,_that.details);case _:
   return orElse();
 
 }
@@ -441,12 +874,12 @@ return transportError(_that.code,_that.message,_that.detailsJson);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String dataJson)  data,required TResult Function( String errorsJson,  String? extensionsJson)  graphQlError,required TResult Function( String code,  String message,  String? detailsJson)  transportError,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ShalomJsonValue data)  data,required TResult Function( List<ShalomJsonValue> errors,  ShalomJsonValue? extensions)  graphQlError,required TResult Function( String code,  String message,  ShalomJsonValue? details)  transportError,}) {final _that = this;
 switch (_that) {
 case SubscriptionEvent_Data():
-return data(_that.dataJson);case SubscriptionEvent_GraphQlError():
-return graphQlError(_that.errorsJson,_that.extensionsJson);case SubscriptionEvent_TransportError():
-return transportError(_that.code,_that.message,_that.detailsJson);}
+return data(_that.data);case SubscriptionEvent_GraphQlError():
+return graphQlError(_that.errors,_that.extensions);case SubscriptionEvent_TransportError():
+return transportError(_that.code,_that.message,_that.details);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -460,12 +893,12 @@ return transportError(_that.code,_that.message,_that.detailsJson);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String dataJson)?  data,TResult? Function( String errorsJson,  String? extensionsJson)?  graphQlError,TResult? Function( String code,  String message,  String? detailsJson)?  transportError,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ShalomJsonValue data)?  data,TResult? Function( List<ShalomJsonValue> errors,  ShalomJsonValue? extensions)?  graphQlError,TResult? Function( String code,  String message,  ShalomJsonValue? details)?  transportError,}) {final _that = this;
 switch (_that) {
 case SubscriptionEvent_Data() when data != null:
-return data(_that.dataJson);case SubscriptionEvent_GraphQlError() when graphQlError != null:
-return graphQlError(_that.errorsJson,_that.extensionsJson);case SubscriptionEvent_TransportError() when transportError != null:
-return transportError(_that.code,_that.message,_that.detailsJson);case _:
+return data(_that.data);case SubscriptionEvent_GraphQlError() when graphQlError != null:
+return graphQlError(_that.errors,_that.extensions);case SubscriptionEvent_TransportError() when transportError != null:
+return transportError(_that.code,_that.message,_that.details);case _:
   return null;
 
 }
@@ -477,10 +910,10 @@ return transportError(_that.code,_that.message,_that.detailsJson);case _:
 
 
 class SubscriptionEvent_Data extends SubscriptionEvent {
-  const SubscriptionEvent_Data({required this.dataJson}): super._();
-  
+  const SubscriptionEvent_Data({required this.data}): super._();
 
- final  String dataJson;
+
+ final  ShalomJsonValue data;
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -492,16 +925,16 @@ $SubscriptionEvent_DataCopyWith<SubscriptionEvent_Data> get copyWith => _$Subscr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_Data&&(identical(other.dataJson, dataJson) || other.dataJson == dataJson));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_Data&&(identical(other.data, data) || other.data == data));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,dataJson);
+int get hashCode => Object.hash(runtimeType,data);
 
 @override
 String toString() {
-  return 'SubscriptionEvent.data(dataJson: $dataJson)';
+  return 'SubscriptionEvent.data(data: $data)';
 }
 
 
@@ -512,11 +945,11 @@ abstract mixin class $SubscriptionEvent_DataCopyWith<$Res> implements $Subscript
   factory $SubscriptionEvent_DataCopyWith(SubscriptionEvent_Data value, $Res Function(SubscriptionEvent_Data) _then) = _$SubscriptionEvent_DataCopyWithImpl;
 @useResult
 $Res call({
- String dataJson
+ ShalomJsonValue data
 });
 
 
-
+$ShalomJsonValueCopyWith<$Res> get data;
 
 }
 /// @nodoc
@@ -529,25 +962,40 @@ class _$SubscriptionEvent_DataCopyWithImpl<$Res>
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? dataJson = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? data = null,}) {
   return _then(SubscriptionEvent_Data(
-dataJson: null == dataJson ? _self.dataJson : dataJson // ignore: cast_nullable_to_non_nullable
-as String,
+data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue,
   ));
 }
 
+/// Create a copy of SubscriptionEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res> get data {
 
+  return $ShalomJsonValueCopyWith<$Res>(_self.data, (value) {
+    return _then(_self.copyWith(data: value));
+  });
+}
 }
 
 /// @nodoc
 
 
 class SubscriptionEvent_GraphQlError extends SubscriptionEvent {
-  const SubscriptionEvent_GraphQlError({required this.errorsJson, this.extensionsJson}): super._();
-  
+  const SubscriptionEvent_GraphQlError({required final  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
 
- final  String errorsJson;
- final  String? extensionsJson;
+
+ final  List<ShalomJsonValue> _errors;
+ List<ShalomJsonValue> get errors {
+  if (_errors is EqualUnmodifiableListView) return _errors;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_errors);
+}
+
+ final  ShalomJsonValue? extensions;
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -559,16 +1007,16 @@ $SubscriptionEvent_GraphQlErrorCopyWith<SubscriptionEvent_GraphQlError> get copy
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_GraphQlError&&(identical(other.errorsJson, errorsJson) || other.errorsJson == errorsJson)&&(identical(other.extensionsJson, extensionsJson) || other.extensionsJson == extensionsJson));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_GraphQlError&&const DeepCollectionEquality().equals(other._errors, _errors)&&(identical(other.extensions, extensions) || other.extensions == extensions));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,errorsJson,extensionsJson);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_errors),extensions);
 
 @override
 String toString() {
-  return 'SubscriptionEvent.graphQlError(errorsJson: $errorsJson, extensionsJson: $extensionsJson)';
+  return 'SubscriptionEvent.graphQlError(errors: $errors, extensions: $extensions)';
 }
 
 
@@ -579,11 +1027,11 @@ abstract mixin class $SubscriptionEvent_GraphQlErrorCopyWith<$Res> implements $S
   factory $SubscriptionEvent_GraphQlErrorCopyWith(SubscriptionEvent_GraphQlError value, $Res Function(SubscriptionEvent_GraphQlError) _then) = _$SubscriptionEvent_GraphQlErrorCopyWithImpl;
 @useResult
 $Res call({
- String errorsJson, String? extensionsJson
+ List<ShalomJsonValue> errors, ShalomJsonValue? extensions
 });
 
 
-
+$ShalomJsonValueCopyWith<$Res>? get extensions;
 
 }
 /// @nodoc
@@ -596,27 +1044,39 @@ class _$SubscriptionEvent_GraphQlErrorCopyWithImpl<$Res>
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? errorsJson = null,Object? extensionsJson = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? errors = null,Object? extensions = freezed,}) {
   return _then(SubscriptionEvent_GraphQlError(
-errorsJson: null == errorsJson ? _self.errorsJson : errorsJson // ignore: cast_nullable_to_non_nullable
-as String,extensionsJson: freezed == extensionsJson ? _self.extensionsJson : extensionsJson // ignore: cast_nullable_to_non_nullable
-as String?,
+errors: null == errors ? _self._errors : errors // ignore: cast_nullable_to_non_nullable
+as List<ShalomJsonValue>,extensions: freezed == extensions ? _self.extensions : extensions // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue?,
   ));
 }
 
+/// Create a copy of SubscriptionEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res>? get extensions {
+    if (_self.extensions == null) {
+    return null;
+  }
 
+  return $ShalomJsonValueCopyWith<$Res>(_self.extensions!, (value) {
+    return _then(_self.copyWith(extensions: value));
+  });
+}
 }
 
 /// @nodoc
 
 
 class SubscriptionEvent_TransportError extends SubscriptionEvent {
-  const SubscriptionEvent_TransportError({required this.code, required this.message, this.detailsJson}): super._();
-  
+  const SubscriptionEvent_TransportError({required this.code, required this.message, this.details}): super._();
+
 
  final  String code;
  final  String message;
- final  String? detailsJson;
+ final  ShalomJsonValue? details;
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -628,16 +1088,16 @@ $SubscriptionEvent_TransportErrorCopyWith<SubscriptionEvent_TransportError> get 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_TransportError&&(identical(other.code, code) || other.code == code)&&(identical(other.message, message) || other.message == message)&&(identical(other.detailsJson, detailsJson) || other.detailsJson == detailsJson));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_TransportError&&(identical(other.code, code) || other.code == code)&&(identical(other.message, message) || other.message == message)&&(identical(other.details, details) || other.details == details));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,code,message,detailsJson);
+int get hashCode => Object.hash(runtimeType,code,message,details);
 
 @override
 String toString() {
-  return 'SubscriptionEvent.transportError(code: $code, message: $message, detailsJson: $detailsJson)';
+  return 'SubscriptionEvent.transportError(code: $code, message: $message, details: $details)';
 }
 
 
@@ -648,11 +1108,11 @@ abstract mixin class $SubscriptionEvent_TransportErrorCopyWith<$Res> implements 
   factory $SubscriptionEvent_TransportErrorCopyWith(SubscriptionEvent_TransportError value, $Res Function(SubscriptionEvent_TransportError) _then) = _$SubscriptionEvent_TransportErrorCopyWithImpl;
 @useResult
 $Res call({
- String code, String message, String? detailsJson
+ String code, String message, ShalomJsonValue? details
 });
 
 
-
+$ShalomJsonValueCopyWith<$Res>? get details;
 
 }
 /// @nodoc
@@ -665,16 +1125,28 @@ class _$SubscriptionEvent_TransportErrorCopyWithImpl<$Res>
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? code = null,Object? message = null,Object? detailsJson = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? code = null,Object? message = null,Object? details = freezed,}) {
   return _then(SubscriptionEvent_TransportError(
 code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,detailsJson: freezed == detailsJson ? _self.detailsJson : detailsJson // ignore: cast_nullable_to_non_nullable
-as String?,
+as String,details: freezed == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue?,
   ));
 }
 
+/// Create a copy of SubscriptionEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res>? get details {
+    if (_self.details == null) {
+    return null;
+  }
 
+  return $ShalomJsonValueCopyWith<$Res>(_self.details!, (value) {
+    return _then(_self.copyWith(details: value));
+  });
+}
 }
 
 // dart format on

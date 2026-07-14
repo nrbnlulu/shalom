@@ -156,6 +156,76 @@ null
     {% endif %}
 {% endmacro %}
 
+{# Recursive bridge-value decoder used by Shalom's runtime path. #}
+{% macro _deserialize_selection_from_shalom_macro(value_symbol, selection, is_optional=false, use_observe=true, value_may_be_absent=true) -%}
+    {% set observe_frag = selection_observe_fragment_name(selection) if use_observe else none %}
+    {% if is_optional -%}
+        {% if value_may_be_absent -%}
+            {{ value_symbol }} == null || {{ value_symbol }}!.isNull ? null :
+        {% else -%}
+            {{ value_symbol }}.isNull ? null :
+        {% endif -%}
+    {% endif -%}
+    {% if observe_frag %}
+        {% if selection.kind == "List" %}
+            {{ value_symbol }}!.listValue.map((e) => {{ _deserialize_selection_from_shalom_macro("e", selection.of_kind, selection.of_kind.is_optional, use_observe, false) }}).toList()
+        {% else %}
+            {{ observe_frag }}Ref.fromInput(shalom_core.observedRefInputFromShalomValue({{ value_symbol }}!.field(r'${{ observe_frag }}')!))
+        {% endif %}
+    {% elif selection.kind == "Scalar" %}
+        {% if selection.is_custom_scalar %}
+            {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
+            {{ scalar_impl }}.deserialize({{ value_symbol }}!.toJsonValue())
+        {% elif selection.concrete_type.name == "Int" %}
+            {{ value_symbol }}!.intValue
+        {% elif selection.concrete_type.name == "Float" %}
+            {{ value_symbol }}!.doubleValue
+        {% elif selection.concrete_type.name == "Boolean" %}
+            {{ value_symbol }}!.boolValue
+        {% else %}
+            {{ value_symbol }}!.stringValue
+        {% endif %}
+    {% elif selection.kind == "Object" or selection.kind == "Union" or selection.kind == "Interface" %}
+        {{ selection.path_name }}.fromShalomValue({{ value_symbol }}!)
+    {% elif selection.kind == "Enum" %}
+        {{ selection.concrete_type.name }}.fromString({{ value_symbol }}!.stringValue)
+    {% elif selection.kind == "List" %}
+        {{ value_symbol }}!.listValue.map((e) => {{ _deserialize_selection_from_shalom_macro("e", selection.of_kind, selection.of_kind.is_optional, use_observe, false) }}).toList()
+    {% else %}
+        {{ value_symbol }}!.toJsonValue() as {{ dart_type_for_scalar_name(selection.concrete_type.name) }}
+    {% endif %}
+{% endmacro %}
+
+{# Recursive bridge-value encoder used by Shalom's runtime path. #}
+{% macro _serialize_selection_to_shalom_macro(value_symbol, selection, is_optional=false, use_observe=true) -%}
+    {% set observe_frag = selection_observe_fragment_name(selection) if use_observe else none %}
+    {% if is_optional -%}
+        {{ value_symbol }} == null ? shalom_core.shalomJsonValue(null) :
+    {% endif -%}
+    {% if observe_frag %}
+        {% if selection.kind == "List" %}
+            shalom_core.shalomJsonArray({{ value_symbol }}!.map((e) => {{ _serialize_selection_to_shalom_macro("e", selection.of_kind, selection.of_kind.is_optional, use_observe) }}))
+        {% else %}
+            {{ value_symbol }}!.toShalomValue()
+        {% endif %}
+    {% elif selection.kind == "Scalar" %}
+        {% if selection.is_custom_scalar %}
+            {% set scalar_impl = custom_scalar_impl_fullname(selection.concrete_type.name) -%}
+            shalom_core.shalomJsonValue({{ scalar_impl }}.serialize({{ value_symbol }}!))
+        {% else %}
+            shalom_core.shalomJsonValue({{ value_symbol }}!)
+        {% endif %}
+    {% elif selection.kind == "Object" or selection.kind == "Union" or selection.kind == "Interface" %}
+        {{ value_symbol }}!.toShalomValue()
+    {% elif selection.kind == "Enum" %}
+        shalom_core.shalomJsonValue({{ value_symbol }}!.name)
+    {% elif selection.kind == "List" %}
+        shalom_core.shalomJsonArray({{ value_symbol }}!.map((e) => {{ _serialize_selection_to_shalom_macro("e", selection.of_kind, selection.of_kind.is_optional, use_observe) }}))
+    {% else %}
+        shalom_core.shalomJsonValue({{ value_symbol }}!)
+    {% endif %}
+{% endmacro %}
+
 
 {# Recursive macro for serializing selection values #}
 {% macro _serialize_selection_value_macro(value_symbol, selection, is_optional=false) %}
@@ -291,6 +361,16 @@ null
     };
     }
 
+    shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    {% for selection in selections %}
+        {% if selection.name == "__typename" %}
+        "__typename": shalom_core.shalomJsonValue({{ typename }}.G__typename),
+        {% else %}
+        '{{ selection.name }}': {{ _serialize_selection_to_shalom_macro("this." + selection.name, selection, selection.is_optional, use_observe) }},
+        {% endif %}
+    {% endfor %}
+    });
+
     static {{ typename }} fromJson(shalom_core.JsonObject data) {
         {% for selection in selections if selection.name != "__typename" -%}
             {% set raw_value_symbol = "data['" + selection.name + "']" -%}
@@ -301,6 +381,19 @@ null
                 {% if selection.name != "__typename" %}
                     {{selection.name}}: {{selection.name}}$value,
                 {% endif %}
+            {% endfor -%}
+        );
+    }
+
+    static {{ typename }} fromShalomValue(shalom_core.ShalomJsonValue data) {
+        {% for selection in selections if selection.name != "__typename" -%}
+            final shalom_core.ShalomJsonValue? {{selection.name}}$raw = data.field('{{selection.name}}');
+            {% set raw_value_symbol = selection.name + "$raw" -%}
+            final {{type_name_for_selection_observe_mode(selection, use_observe)}} {{selection.name}}$value = {{ _deserialize_selection_from_shalom_macro(raw_value_symbol, selection, selection.is_optional, use_observe) }};
+        {% endfor -%}
+        return {{ typename }}(
+            {% for selection in selections if selection.name != "__typename" -%}
+                {{selection.name}}: {{selection.name}}$value,
             {% endfor -%}
         );
     }
@@ -326,6 +419,7 @@ null
         const {{ full_name }}();
 
         shalom_core.JsonObject toJson();
+        shalom_core.ShalomJsonValue toShalomValue();
 
         static {{ full_name }} fromJson(shalom_core.JsonObject data) {
             final typename = data['__typename'] as String;
@@ -333,6 +427,18 @@ null
                 {% for concrete in possible_concretes -%}
                     case '{{ concrete.schema_typename }}':
                         return {{ concrete.path_name }}.fromJson(data);
+                {% endfor %}
+                default:
+                    throw Exception("Unknown typename $typename");
+            }
+        }
+
+        static {{ full_name }} fromShalomValue(shalom_core.ShalomJsonValue data) {
+            final typename = data.field('__typename')!.stringValue;
+            switch(typename) {
+                {% for concrete in possible_concretes -%}
+                    case '{{ concrete.schema_typename }}':
+                        return {{ concrete.path_name }}.fromShalomValue(data);
                 {% endfor %}
                 default:
                     throw Exception("Unknown typename $typename");

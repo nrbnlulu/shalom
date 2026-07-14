@@ -28,8 +28,8 @@ class ShalomScope {
 
   /// Retrieves the nearest [ShalomRuntimeClient] from the given [BuildContext].
   static ShalomRuntimeClient of(BuildContext context) {
-    final result =
-        context.dependOnInheritedWidgetOfExactType<ShalomInheritedWidget>();
+    final result = context
+        .dependOnInheritedWidgetOfExactType<ShalomInheritedWidget>();
     assert(result != null, 'No ShalomProvider found in context');
     return result!.client;
   }

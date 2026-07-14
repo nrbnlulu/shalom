@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert' show json;
 import 'dart:developer' show log;
 
 import 'package:shalom/src/rust/api/ws.dart';
@@ -20,8 +19,7 @@ class WebSocketLink extends GraphQLLink {
   final String url;
   final HeadersType? headers;
 
-  /// Serialised JSON of the `connection_init` payload, e.g. `{"auth":"…"}`.
-  final String? connectionParamsJson;
+  final ShalomJsonValue? connectionParamsValue;
 
   final bool autoReconnect;
   final Duration connectionInitTimeout;
@@ -43,7 +41,7 @@ class WebSocketLink extends GraphQLLink {
   int _nextOpId = 0;
 
   // ── transport handles ─────────────────────────────────────────────────────
-  StreamController<JsonObject>? _msgController;
+  StreamController<String>? _msgController;
   MessageSender? _sender;
   StreamSubscription<void>? _msgSub;
 
@@ -63,9 +61,9 @@ class WebSocketLink extends GraphQLLink {
     this.reconnectTimeout = const Duration(seconds: 5),
     this.heartbeatInterval = const Duration(seconds: 5),
     this.heartbeatTimeout = const Duration(seconds: 3),
-  }) : connectionParamsJson = connectionParams != null
-           ? json.encode(connectionParams)
-           : null {
+  }) : connectionParamsValue = connectionParams == null
+           ? null
+           : shalomJsonValue(connectionParams) {
     _connect();
   }
 
@@ -75,7 +73,7 @@ class WebSocketLink extends GraphQLLink {
     if (_disposed) return;
 
     if (_sansio == null) {
-      _sansio = createWsSansIo(connectionParamsJson: connectionParamsJson);
+      _sansio = createWsSansIo(connectionParams: connectionParamsValue);
     } else {
       // Resets to AwaitingAck while preserving the operations map so
       // wsActiveOperationIds() still returns prior op ids after reset.
@@ -162,10 +160,10 @@ class WebSocketLink extends GraphQLLink {
 
   // ── message handling ──────────────────────────────────────────────────────
 
-  Future<void> _handleMessage(JsonObject message) async {
+  Future<void> _handleMessage(String message) async {
     final List<WsLinkEvent> events;
     try {
-      events = wsOnMessage(sansio: _sansio!, raw: json.encode(message));
+      events = wsOnMessage(sansio: _sansio!, raw: message);
     } catch (e) {
       _closeTransport(4400, e.toString());
       return;
@@ -190,41 +188,21 @@ class WebSocketLink extends GraphQLLink {
         }
         _startHeartbeat();
 
-      case WsLinkEvent_PingReceived(:final payloadJson):
-        await _sendRaw(wsPongFrame(sansio: _sansio!, payloadJson: payloadJson));
+      case WsLinkEvent_PingReceived(:final payload):
+        await _sendRaw(wsPongFrame(sansio: _sansio!, payload: payload));
 
       case WsLinkEvent_PongReceived():
         _pongTimeoutTimer?.cancel();
 
-      case WsLinkEvent_OperationResponse(
-        :final opId,
-        :final dataJson,
-        :final errorsJson,
-        :final extensionsJson,
-      ):
+      case WsLinkEvent_OperationResponse(:final opId, :final response):
         final handler = _ops[opId];
         if (handler == null) {
           log('WebSocketLink: unknown op $opId');
           return;
         }
-        final data = dataJson != null
-            ? json.decode(dataJson) as JsonObject
-            : null;
-        final errors = errorsJson != null
-            ? (json.decode(errorsJson) as List).cast<JsonObject>()
-            : null;
-        final extensions = extensionsJson != null
-            ? json.decode(extensionsJson) as JsonObject
-            : null;
-        if (data != null) {
-          handler.controller.add(
-            GraphQLData(data: data, errors: errors, extensions: extensions),
-          );
-        } else if (errors != null) {
-          handler.controller.add(
-            GraphQLError(errors: errors, extensions: extensions),
-          );
-        }
+        handler.controller.add(
+          GraphQLData(data: ParsedGraphQLLinkPayload(response: response)),
+        );
 
       case WsLinkEvent_OperationComplete(:final opId):
         _completeOp(opId);
@@ -237,12 +215,12 @@ class WebSocketLink extends GraphQLLink {
   // ── operations ────────────────────────────────────────────────────────────
 
   @override
-  Stream<GraphQLResponse<JsonObject>> request({
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
     required Request request,
     HeadersType? headers,
   }) {
     final opId = (_nextOpId++).toString();
-    final controller = StreamController<GraphQLResponse<JsonObject>>();
+    final controller = StreamController<GraphQLResponse<GraphQLLinkPayload>>();
     final handler = _OperationHandler(
       id: opId,
       request: request,
@@ -270,8 +248,8 @@ class WebSocketLink extends GraphQLLink {
         sansio: _sansio!,
         opId: opId,
         query: req.query,
-        variablesJson: req.variables.isNotEmpty
-            ? json.encode(req.variables)
+        variables: req.variables.isNotEmpty
+            ? shalomJsonValue(req.variables)
             : null,
         operationName: req.opName,
       ),
@@ -303,7 +281,7 @@ class WebSocketLink extends GraphQLLink {
   Future<void> _sendRaw(String frame) async {
     if (_sender == null) return;
     try {
-      await _sender!.send(json.decode(frame) as JsonObject);
+      await _sender!.send(frame);
     } catch (_) {}
   }
 
@@ -377,7 +355,7 @@ class WebSocketLink extends GraphQLLink {
 class _OperationHandler {
   final String id;
   final Request request;
-  final StreamController<GraphQLResponse<JsonObject>> controller;
+  final StreamController<GraphQLResponse<GraphQLLinkPayload>> controller;
 
   const _OperationHandler({
     required this.id,

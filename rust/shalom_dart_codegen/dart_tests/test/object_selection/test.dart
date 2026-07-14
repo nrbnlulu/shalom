@@ -1,3 +1,4 @@
+import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:test/test.dart';
 import "__graphql__/GetListing.shalom.dart";
 import "__graphql__/GetListingOpt.shalom.dart";
@@ -21,6 +22,15 @@ void main() {
       final initial = GetListingResponse.fromJson(listingData);
       final json = initial.toJson();
       expect(json, listingData);
+    });
+
+    test('direct bridge codec', () {
+      final initial = GetListingResponse.fromShalomValue(
+        shalom_core.shalomJsonValue(listingData),
+      );
+
+      expect(initial.listing.name, 'video games');
+      expect(initial.toShalomValue().toJsonValue(), listingData);
     });
   });
   final listingOptSome = {
@@ -58,6 +68,15 @@ void main() {
         final initial = GetListingOptResponse.fromJson(dataNull);
         final json = initial.toJson();
         expect(json, dataNull);
+      });
+
+      test('direct bridge codec with null', () {
+        final initial = GetListingOptResponse.fromShalomValue(
+          shalom_core.shalomJsonValue(dataNull),
+        );
+
+        expect(initial.listingOpt, isNull);
+        expect(initial.toShalomValue().toJsonValue(), dataNull);
       });
     });
   });

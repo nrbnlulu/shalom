@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::api::json::ShalomJsonValue;
 use crate::frb_generated::StreamSink;
 use flutter_rust_bridge::frb;
 use tokio_stream::StreamExt;
@@ -7,7 +8,7 @@ use tokio_stream::StreamExt;
 use shalom_runtime::sansio_protocols::GraphQLResponse;
 use shalom_runtime::sansio_protocols::host::HostLink;
 use shalom_runtime::{
-    ExecutionPolicy, ObservedRef, OptimisticWriteId, RuntimeConfig, RuntimeResponse, ShalomRuntime,
+    ExecutionPolicy, ObservedRef, OptimisticWriteId, RuntimeConfig, ShalomRuntime,
     SubscriptionError, SubscriptionId,
 };
 
@@ -121,17 +122,133 @@ impl From<ExecutionPolicyInput> for ExecutionPolicy {
 #[frb]
 pub enum SubscriptionEvent {
     Data {
-        data_json: String,
+        data: ShalomJsonValue,
     },
     GraphQlError {
-        errors_json: String,
-        extensions_json: Option<String>,
+        errors: Vec<ShalomJsonValue>,
+        extensions: Option<ShalomJsonValue>,
     },
     TransportError {
         code: String,
         message: String,
-        details_json: Option<String>,
+        details: Option<ShalomJsonValue>,
     },
+}
+
+/// FRB representation of a complete GraphQL response.
+///
+/// HTTP responses reach the runtime as their raw JSON body and are parsed by
+/// [push_response]. WebSocket protocol handling has already parsed a `next`
+/// payload, so it uses this type to avoid serialising that response back to
+/// JSON before handing it to the runtime.
+#[frb]
+pub enum GraphQlResponseInput {
+    Data {
+        data: ShalomJsonValue,
+        errors: Option<Vec<ShalomJsonValue>>,
+        extensions: Option<ShalomJsonValue>,
+    },
+    Error {
+        errors: Vec<ShalomJsonValue>,
+        extensions: Option<ShalomJsonValue>,
+    },
+    TransportError {
+        message: String,
+        code: String,
+        details: Option<ShalomJsonValue>,
+    },
+}
+
+impl From<GraphQLResponse> for GraphQlResponseInput {
+    fn from(response: GraphQLResponse) -> Self {
+        match response {
+            GraphQLResponse::Data {
+                data,
+                errors,
+                extensions,
+            } => Self::Data {
+                data: ShalomJsonValue::from(Value::Object(data)),
+                errors: errors.map(|errors| {
+                    errors
+                        .into_iter()
+                        .map(|error| ShalomJsonValue::from(Value::Object(error)))
+                        .collect()
+                }),
+                extensions: extensions
+                    .map(|extensions| ShalomJsonValue::from(Value::Object(extensions))),
+            },
+            GraphQLResponse::Error { errors, extensions } => Self::Error {
+                errors: errors
+                    .into_iter()
+                    .map(|error| ShalomJsonValue::from(Value::Object(error)))
+                    .collect(),
+                extensions: extensions
+                    .map(|extensions| ShalomJsonValue::from(Value::Object(extensions))),
+            },
+            GraphQLResponse::TransportError(error) => Self::TransportError {
+                message: error.message,
+                code: error.code,
+                details: error.details.map(ShalomJsonValue::from),
+            },
+        }
+    }
+}
+
+impl TryFrom<GraphQlResponseInput> for GraphQLResponse {
+    type Error = anyhow::Error;
+
+    fn try_from(response: GraphQlResponseInput) -> Result<Self, anyhow::Error> {
+        match response {
+            GraphQlResponseInput::Data {
+                data,
+                errors,
+                extensions,
+            } => Ok(Self::Data {
+                data: data.into_object("graphql response data")?,
+                errors: errors
+                    .map(|errors| {
+                        errors
+                            .into_iter()
+                            .map(|error| error.into_object("graphql response error"))
+                            .collect()
+                    })
+                    .transpose()?,
+                extensions: extensions
+                    .map(|extensions| extensions.into_object("graphql response extensions"))
+                    .transpose()?,
+            }),
+            GraphQlResponseInput::Error { errors, extensions } => Ok(Self::Error {
+                errors: errors
+                    .into_iter()
+                    .map(|error| error.into_object("graphql response error"))
+                    .collect::<anyhow::Result<_>>()?,
+                extensions: extensions
+                    .map(|extensions| extensions.into_object("graphql response extensions"))
+                    .transpose()?,
+            }),
+            GraphQlResponseInput::TransportError {
+                message,
+                code,
+                details,
+            } => Ok(Self::TransportError(
+                shalom_runtime::sansio_protocols::TransportError {
+                    message,
+                    code,
+                    details: details.map(Value::from),
+                },
+            )),
+        }
+    }
+}
+
+/// A runtime request ready for Dart's transport layer.
+#[frb]
+pub struct RequestEnvelopeInput {
+    pub id: u64,
+    pub query: String,
+    pub variables: ShalomJsonValue,
+    pub operation_name: String,
+    pub operation_type: String,
 }
 
 impl From<ObservedRefInput> for ObservedRef {
@@ -214,12 +331,12 @@ pub fn reload_schema(handle: &RuntimeHandle, schema_sdl: String) -> anyhow::Resu
 pub async fn request(
     handle: &RuntimeHandle,
     name: String,
-    variables_json: Option<String>,
+    variables: Option<ShalomJsonValue>,
     execution_policy: ExecutionPolicyInput,
     retry_delay: RetryDelayInput,
     refetch_interval_ms: Option<u64>,
 ) -> anyhow::Result<u64> {
-    let variables = parse_variables(variables_json)?;
+    let variables = parse_variables(variables)?;
     let op_ctx = handle.runtime.operation_by_name(&name)?;
 
     let retry_delay = match retry_delay {
@@ -245,19 +362,18 @@ pub async fn request(
 // Optimistic writes
 // ---------------------------------------------------------------------------
 
-/// Write `data_json` to the cache as an optimistic response for the mutation
+/// Write `data` to the cache as an optimistic response for the mutation
 /// named `op_name`.  Returns an opaque write ID.  Pass this to
 /// `rollback_optimistic` to undo the write.
 #[frb]
 pub async fn write_optimistic(
     handle: &RuntimeHandle,
     op_name: String,
-    data_json: String,
+    data: ShalomJsonValue,
 ) -> anyhow::Result<u64> {
-    let data: Value = serde_json::from_str(&data_json)?;
     handle
         .runtime
-        .write_optimistic(&op_name, data)
+        .write_optimistic(&op_name, Value::from(data))
         .map(u64::from)
 }
 
@@ -329,39 +445,29 @@ pub async fn listen_subscription(
     };
     while let Some(item) = stream.next().await {
         let event = match item {
-            Ok(response) => match response_to_json(response) {
-                Ok(data_json) => SubscriptionEvent::Data { data_json },
-                Err(e) => SubscriptionEvent::TransportError {
-                    code: "DECODE_ERROR".into(),
-                    message: e.to_string(),
-                    details_json: None,
-                },
+            Ok(response) => SubscriptionEvent::Data {
+                data: ShalomJsonValue::from(response.data),
             },
             Err(err) => match err {
                 SubscriptionError::GraphQL { errors, extensions } => {
-                    let errors_json = serde_json::to_string(&errors).unwrap_or_default();
-                    let extensions_json = extensions
-                        .as_ref()
-                        .map(|e| serde_json::to_string(e).unwrap_or_default());
                     SubscriptionEvent::GraphQlError {
-                        errors_json,
-                        extensions_json,
+                        errors: errors
+                            .into_iter()
+                            .map(|error| ShalomJsonValue::from(Value::Object(error)))
+                            .collect(),
+                        extensions: extensions
+                            .map(|value| ShalomJsonValue::from(Value::Object(value))),
                     }
                 }
                 SubscriptionError::Transport {
                     message,
                     code,
                     details,
-                } => {
-                    let details_json = details
-                        .as_ref()
-                        .map(|d| serde_json::to_string(d).unwrap_or_default());
-                    SubscriptionEvent::TransportError {
-                        code,
-                        message,
-                        details_json,
-                    }
-                }
+                } => SubscriptionEvent::TransportError {
+                    code,
+                    message,
+                    details: details.map(ShalomJsonValue::from),
+                },
             },
         };
         if sink.add(event).is_err() {
@@ -375,17 +481,29 @@ pub async fn listen_subscription(
 // Host link plumbing (unchanged from V1)
 // ---------------------------------------------------------------------------
 
-/// Stream of serialised request envelopes that Dart must execute and respond to.
+/// Stream of request envelopes that Dart must execute and respond to.
 #[frb]
 pub async fn listen_requests(
     handle: &RuntimeHandle,
-    sink: StreamSink<String>,
+    sink: StreamSink<RequestEnvelopeInput>,
 ) -> anyhow::Result<()> {
     let Some(mut stream) = handle.link.take_request_stream() else {
         return Err(anyhow::anyhow!("request stream already taken"));
     };
     while let Some(envelope) = stream.next().await {
-        let payload = serde_json::to_string(&envelope)?;
+        let request = envelope.request;
+        let payload = RequestEnvelopeInput {
+            id: envelope.id,
+            query: request.query,
+            variables: ShalomJsonValue::from(Value::Object(request.variables)),
+            operation_name: request.operation_name,
+            operation_type: match request.operation_type {
+                shalom_runtime::sansio_protocols::OperationType::Query => "Query",
+                shalom_runtime::sansio_protocols::OperationType::Mutation => "Mutation",
+                shalom_runtime::sansio_protocols::OperationType::Subscription => "Subscription",
+            }
+            .to_string(),
+        };
         if sink.add(payload).is_err() {
             break;
         }
@@ -403,20 +521,49 @@ pub async fn push_response(
     handle.link.send_response(request_id, response)
 }
 
+/// Deliver a GraphQL response which was already parsed by a transport
+/// protocol implementation (currently `graphql-transport-ws`).
+#[frb]
+pub async fn push_response_value(
+    handle: &RuntimeHandle,
+    request_id: u64,
+    response: GraphQlResponseInput,
+) -> anyhow::Result<()> {
+    handle.link.send_response(request_id, response.try_into()?)
+}
+
+#[frb]
+pub async fn push_graphql_error(
+    handle: &RuntimeHandle,
+    request_id: u64,
+    errors: Vec<ShalomJsonValue>,
+    extensions: Option<ShalomJsonValue>,
+) -> anyhow::Result<()> {
+    let errors = errors
+        .into_iter()
+        .map(|error| error.into_object("graphql error"))
+        .collect::<anyhow::Result<Vec<_>>>()?;
+    let extensions = extensions
+        .map(|value| value.into_object("graphql extensions"))
+        .transpose()?;
+    handle
+        .link
+        .send_response(request_id, GraphQLResponse::Error { errors, extensions })
+}
+
 #[frb]
 pub async fn push_transport_error(
     handle: &RuntimeHandle,
     request_id: u64,
     message: String,
     code: String,
-    details_json: Option<String>,
+    details: Option<ShalomJsonValue>,
 ) -> anyhow::Result<()> {
-    let details = parse_optional_json(details_json)?;
     let response =
         GraphQLResponse::TransportError(shalom_runtime::sansio_protocols::TransportError {
             message,
             code,
-            details,
+            details: details.map(Value::from),
         });
     handle.link.send_response(request_id, response)
 }
@@ -431,32 +578,15 @@ pub async fn complete_transport(handle: &RuntimeHandle, request_id: u64) {
 // Private helpers
 // ---------------------------------------------------------------------------
 
-fn parse_variables(variables_json: Option<String>) -> anyhow::Result<Option<Map<String, Value>>> {
-    let json = match variables_json {
-        Some(json) => json,
+fn parse_variables(
+    variables: Option<ShalomJsonValue>,
+) -> anyhow::Result<Option<Map<String, Value>>> {
+    let value = match variables {
+        Some(value) => value,
         None => return Ok(None),
     };
-    if json.trim().is_empty() {
-        return Ok(None);
-    }
-    let value: Value = serde_json::from_str(&json)?;
-    match value {
-        Value::Object(map) => Ok(Some(map)),
-        Value::Null => Ok(None),
-        _ => Err(anyhow::anyhow!("variables must be a JSON object or null")),
-    }
-}
-
-fn parse_optional_json(json: Option<String>) -> anyhow::Result<Option<Value>> {
-    let json = match json {
-        Some(j) => j,
-        None => return Ok(None),
-    };
-    if json.trim().is_empty() {
-        return Ok(None);
-    }
-    let value: Value = serde_json::from_str(&json)?;
-    Ok(Some(value))
+    let variables = value.into_object("variables")?;
+    Ok((!variables.is_empty()).then_some(variables))
 }
 
 fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse> {
@@ -523,10 +653,6 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
     }
 }
 
-fn response_to_json(response: RuntimeResponse) -> anyhow::Result<String> {
-    serde_json::to_string(&response.data).map_err(|e| anyhow::anyhow!(e))
-}
-
 // ---------------------------------------------------------------------------
 // Cache read / write (Apollo-style cache update API)
 // ---------------------------------------------------------------------------
@@ -534,20 +660,19 @@ fn response_to_json(response: RuntimeResponse) -> anyhow::Result<String> {
 /// Read the current cache for a pre-registered query operation.
 ///
 /// Returns `None` when the data is absent or incomplete (missing refs), so
-/// callers don't need to handle partial results.  The returned string is a
-/// JSON object that matches the operation's selection shape.
+/// callers don't need to handle partial results.
 #[frb]
 pub async fn read_operation(
     handle: &RuntimeHandle,
     name: String,
-    variables_json: Option<String>,
-) -> anyhow::Result<Option<String>> {
-    let variables = parse_variables(variables_json)?;
+    variables: Option<ShalomJsonValue>,
+) -> anyhow::Result<Option<ShalomJsonValue>> {
+    let variables = parse_variables(variables)?;
     match handle
         .runtime
         .try_read_operation(&name, variables.as_ref())?
     {
-        Some(data) => Ok(Some(serde_json::to_string(&data)?)),
+        Some(data) => Ok(Some(ShalomJsonValue::from(data))),
         None => Ok(None),
     }
 }
@@ -562,14 +687,13 @@ pub async fn read_operation(
 pub async fn write_operation(
     handle: &RuntimeHandle,
     name: String,
-    data_json: String,
-    variables_json: Option<String>,
+    data: ShalomJsonValue,
+    variables: Option<ShalomJsonValue>,
 ) -> anyhow::Result<()> {
-    let variables = parse_variables(variables_json)?;
-    let data: Value = serde_json::from_str(&data_json)?;
+    let variables = parse_variables(variables)?;
     handle
         .runtime
-        .write_operation(&name, data, variables.as_ref())
+        .write_operation(&name, Value::from(data), variables.as_ref())
 }
 
 /// Evict a pre-registered operation's cached root field(s) (matched by
@@ -582,9 +706,9 @@ pub async fn write_operation(
 pub async fn evict_operation(
     handle: &RuntimeHandle,
     name: String,
-    variables_json: Option<String>,
+    variables: Option<ShalomJsonValue>,
 ) -> anyhow::Result<bool> {
-    let variables = parse_variables(variables_json)?;
+    let variables = parse_variables(variables)?;
     handle.runtime.evict_operation(&name, variables.as_ref())
 }
 
@@ -596,12 +720,12 @@ pub async fn read_fragment(
     handle: &RuntimeHandle,
     fragment_name: String,
     entity_key: String,
-) -> anyhow::Result<Option<String>> {
+) -> anyhow::Result<Option<ShalomJsonValue>> {
     match handle
         .runtime
         .try_read_fragment(&fragment_name, &entity_key)?
     {
-        Some(data) => Ok(Some(serde_json::to_string(&data)?)),
+        Some(data) => Ok(Some(ShalomJsonValue::from(data))),
         None => Ok(None),
     }
 }
@@ -613,12 +737,11 @@ pub async fn write_fragment(
     handle: &RuntimeHandle,
     fragment_name: String,
     entity_key: String,
-    data_json: String,
+    data: ShalomJsonValue,
 ) -> anyhow::Result<()> {
-    let data: Value = serde_json::from_str(&data_json)?;
     handle
         .runtime
-        .write_fragment(&fragment_name, &entity_key, data)
+        .write_fragment(&fragment_name, &entity_key, Value::from(data))
 }
 
 // ---------------------------------------------------------------------------
@@ -658,13 +781,17 @@ fn to_observer_info(s: shalom_runtime::KeySubscriberInfo) -> ObserverInfo {
     }
 }
 
-/// Returns a JSON object mapping each cache key to its active observer count.
+/// Returns a map from each cache key to its active observer count.
 ///
 /// Example: `{"ROOT_QUERY": 2, "User:1": 1}`
 #[frb]
-pub async fn get_observer_counts(handle: &RuntimeHandle) -> String {
-    let counts = handle.runtime.subscription_counts();
-    serde_json::to_string(&counts).unwrap_or_else(|_| "{}".to_string())
+pub async fn get_observer_counts(handle: &RuntimeHandle) -> std::collections::HashMap<String, u32> {
+    handle
+        .runtime
+        .subscription_counts()
+        .into_iter()
+        .map(|(key, count)| (key, count.min(u32::MAX as usize) as u32))
+        .collect()
 }
 
 /// Returns info about every observer currently watching [key].

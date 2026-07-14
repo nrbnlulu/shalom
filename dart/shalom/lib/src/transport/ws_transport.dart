@@ -3,7 +3,7 @@ import 'dart:async' show StreamController;
 import 'package:shalom/shalom.dart';
 
 class MessageSender {
-  final Future<void> Function(JsonObject) send;
+  final Future<void> Function(String) send;
   const MessageSender(this.send);
 }
 
@@ -19,7 +19,7 @@ abstract class WebSocketTransport {
   /// [url] - The WebSocket URL to connect to
   /// [headers] - Optional headers to send with the connection request
   /// [protocols] - WebSocket sub-protocols to negotiate (should include 'graphql-transport-ws')
-  Future<(StreamController<JsonObject>, MessageSender)> connect({
+  Future<(StreamController<String>, MessageSender)> connect({
     required String url,
     required List<String> protocols,
     HeadersType? headers,

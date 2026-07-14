@@ -39,6 +39,12 @@ class AlbumsPageResponse {
     return {'albums': this.albums.map((e) => e.toJson()).toList()};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'albums': shalom_core.shalomJsonArray(
+      this.albums!.map((e) => e!.toShalomValue()),
+    ),
+  });
+
   static AlbumsPageResponse fromJson(shalom_core.JsonObject data) {
     final List<AlbumWidgetRef> albums$value = (data['albums'] as List<dynamic>)
         .map(
@@ -46,6 +52,20 @@ class AlbumsPageResponse {
             shalom_core.observedRefInputFromJson(
               (e as shalom_core.JsonObject)[r'$AlbumWidget']
                   as shalom_core.JsonObject,
+            ),
+          ),
+        )
+        .toList();
+    return AlbumsPageResponse(albums: albums$value);
+  }
+
+  static AlbumsPageResponse fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? albums$raw = data.field('albums');
+    final List<AlbumWidgetRef> albums$value = albums$raw!.listValue
+        .map(
+          (e) => AlbumWidgetRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              e!.field(r'$AlbumWidget')!,
             ),
           ),
         )
@@ -106,6 +126,18 @@ class AlbumsPage_albums {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'gifs': shalom_core.shalomJsonArray(
+      this.gifs!.map((e) => e!.toShalomValue()),
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+
+    'tag': shalom_core.shalomJsonValue(this.tag!),
+  });
+
   static AlbumsPage_albums fromJson(shalom_core.JsonObject data) {
     final List<AlbumGifRef> gifs$value = (data['gifs'] as List<dynamic>)
         .map(
@@ -127,6 +159,31 @@ class AlbumsPage_albums {
 
       name: name$value,
 
+      tag: tag$value,
+    );
+  }
+
+  static AlbumsPage_albums fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? gifs$raw = data.field('gifs');
+    final List<AlbumGifRef> gifs$value = gifs$raw!.listValue
+        .map(
+          (e) => AlbumGifRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              e!.field(r'$AlbumGif')!,
+            ),
+          ),
+        )
+        .toList();
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? tag$raw = data.field('tag');
+    final String tag$value = tag$raw!.stringValue;
+    return AlbumsPage_albums(
+      gifs: gifs$value,
+      id: id$value,
+      name: name$value,
       tag: tag$value,
     );
   }
@@ -170,18 +227,46 @@ final class AlbumsPageData implements shalom_core.OperationInterface {
     return AlbumsPageData(albums: albums$value);
   }
 
+  static AlbumsPageData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? albums$raw = data.field('albums');
+    final List<AlbumWidgetRef> albums$value = albums$raw!.listValue
+        .map(
+          (e) => AlbumWidgetRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              e!.field(r'$AlbumWidget')!,
+            ),
+          ),
+        )
+        .toList();
+    return AlbumsPageData(albums: albums$value);
+  }
+
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [AlbumsPageData]. Returns `null` when absent or incomplete.
   static Future<AlbumsPageData?> readFrom(shalom_core.CacheProxy cache) async {
     return await cache.readOperation<AlbumsPageData>(
       name: 'AlbumsPage',
-      decoder: fromCache,
+      decoder: fromShalomValue,
     );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
+    return cache.evictOperation(name: 'AlbumsPage');
   }
 
   shalom_core.JsonObject toJson() {
     return {'albums': this.albums.map((e) => e.toJson()).toList()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'albums': shalom_core.shalomJsonArray(
+      this.albums!.map((e) => e!.toShalomValue()),
+    ),
+  });
 }
 
 final class AlbumsPageObservable {
@@ -203,7 +288,7 @@ final class AlbumsPageObservable {
     return client.request<AlbumsPageData>(
       name: operation$Name(),
 
-      decoder: AlbumsPageData.fromCache,
+      decoder: AlbumsPageData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,

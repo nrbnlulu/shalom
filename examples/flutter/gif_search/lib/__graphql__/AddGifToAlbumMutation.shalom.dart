@@ -56,6 +56,14 @@ class AddGifToAlbumMutation_addGifToAlbum implements AlbumGif {
     return {'id': this.id, 'title': this.title, 'url': this.url};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'title': shalom_core.shalomJsonValue(this.title!),
+
+    'url': shalom_core.shalomJsonValue(this.url!),
+  });
+
   static AddGifToAlbumMutation_addGifToAlbum fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -67,6 +75,22 @@ class AddGifToAlbumMutation_addGifToAlbum implements AlbumGif {
 
       title: title$value,
 
+      url: url$value,
+    );
+  }
+
+  static AddGifToAlbumMutation_addGifToAlbum fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? title$raw = data.field('title');
+    final String title$value = title$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? url$raw = data.field('url');
+    final String url$value = url$raw!.stringValue;
+    return AddGifToAlbumMutation_addGifToAlbum(
+      id: id$value,
+      title: title$value,
       url: url$value,
     );
   }
@@ -105,9 +129,25 @@ final class AddGifToAlbumMutationData
     return AddGifToAlbumMutationData(addGifToAlbum: addGifToAlbum$value);
   }
 
+  static AddGifToAlbumMutationData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? addGifToAlbum$raw = data.field(
+      'addGifToAlbum',
+    );
+    final AddGifToAlbumMutation_addGifToAlbum addGifToAlbum$value =
+        AddGifToAlbumMutation_addGifToAlbum.fromShalomValue(addGifToAlbum$raw!);
+    return AddGifToAlbumMutationData(addGifToAlbum: addGifToAlbum$value);
+  }
+
   shalom_core.JsonObject toJson() {
     return {'addGifToAlbum': this.addGifToAlbum.toJson()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'addGifToAlbum': this.addGifToAlbum!.toShalomValue(),
+  });
 }
 
 final class AddGifToAlbumMutationVariables {
@@ -141,6 +181,20 @@ final class AddGifToAlbumMutationVariables {
     data["url"] = this.url;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    $data["albumId"] = shalom_core.shalomJsonValue(this.albumId!);
+    if (previewUrl.isSome()) {
+      final $value = this.previewUrl.some();
+      $data["previewUrl"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    $data["title"] = shalom_core.shalomJsonValue(this.title!);
+    $data["url"] = shalom_core.shalomJsonValue(this.url!);
+    return shalom_core.shalomJsonObject($data);
   }
 
   @override

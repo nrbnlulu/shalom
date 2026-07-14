@@ -1,6 +1,6 @@
 ---
 name: shalom
-description: Use when building or modifying Dart/Flutter apps that use the Shalom GraphQL client: annotated @Query/@Mutation/@Subscription/@Fragment classes, ShalomRuntimeClient setup, network links, normalized cache reads/writes, optimistic mutation updates, and mutation-driven list updates without refetching.
+description: "Use when building or modifying Dart/Flutter apps that use the Shalom GraphQL client: annotated @Query/@Mutation/@Subscription/@Fragment classes, ShalomRuntimeClient setup, network links, normalized cache reads/writes, optimistic mutation updates, and mutation-driven list updates without refetching."
 ---
 
 # Shalom

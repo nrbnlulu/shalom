@@ -35,6 +35,12 @@ extension type ZooWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [ZooWidgetData]. Returns `null` when absent or incomplete.
@@ -42,7 +48,7 @@ extension type ZooWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     return await cache.readFragment<ZooWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: ZooWidgetData.fromCache,
+      decoder: ZooWidgetData.fromShalomValue,
     );
   }
 
@@ -51,7 +57,7 @@ extension type ZooWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   ) {
     return client.subscribeToFragment<ZooWidgetData>(
       ref: _inner,
-      decoder: ZooWidgetData.fromCache,
+      decoder: ZooWidgetData.fromShalomValue,
     );
   }
 }
@@ -62,6 +68,7 @@ abstract class ZooWidget {
   String get name;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 class ZooWidget_cages {
@@ -91,9 +98,23 @@ class ZooWidget_cages {
     return {'id': this.id, 'name': this.name};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static ZooWidget_cages fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    return ZooWidget_cages(id: id$value, name: name$value);
+  }
+
+  static ZooWidget_cages fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
     return ZooWidget_cages(id: id$value, name: name$value);
   }
 }
@@ -142,6 +163,18 @@ final class ZooWidgetData implements ZooWidget, shalom_core.FragmentInterface {
     return ZooWidgetData(cages: cages$value, id: id$value, name: name$value);
   }
 
+  static ZooWidgetData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? cages$raw = data.field('cages');
+    final List<ZooWidget_cages> cages$value = cages$raw!.listValue
+        .map((e) => ZooWidget_cages.fromShalomValue(e!))
+        .toList();
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
+    return ZooWidgetData(cages: cages$value, id: id$value, name: name$value);
+  }
+
   shalom_core.JsonObject toJson() {
     return {
       'cages': this.cages.map((e) => e.toJson()).toList(),
@@ -151,6 +184,17 @@ final class ZooWidgetData implements ZooWidget, shalom_core.FragmentInterface {
       'name': this.name,
     };
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'cages': shalom_core.shalomJsonArray(
+      this.cages!.map((e) => e!.toShalomValue()),
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
 }
 
 abstract class $ZooWidget extends StatelessWidget {

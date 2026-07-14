@@ -15,6 +15,7 @@ abstract class UserCard implements UserIdentity {
   String get name;
 
   Map<String, dynamic> toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 class UserCardImpl implements UserCard {
@@ -50,10 +51,28 @@ class UserCardImpl implements UserCard {
     return {'email': this.email, 'id': this.id, 'name': this.name};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'email': shalom_core.shalomJsonValue(this.email!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static UserCardImpl fromJson(shalom_core.JsonObject data) {
     final String email$value = data['email'] as String;
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    return UserCardImpl(email: email$value, id: id$value, name: name$value);
+  }
+
+  static UserCardImpl fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? email$raw = data.field('email');
+    final String email$value = email$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
     return UserCardImpl(email: email$value, id: id$value, name: name$value);
   }
 }

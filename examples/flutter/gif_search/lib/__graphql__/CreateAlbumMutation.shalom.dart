@@ -71,6 +71,18 @@ class CreateAlbumMutation_createAlbum {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'gifs': shalom_core.shalomJsonArray(
+      this.gifs!.map((e) => e!.toShalomValue()),
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+
+    'tag': shalom_core.shalomJsonValue(this.tag!),
+  });
+
   static CreateAlbumMutation_createAlbum fromJson(shalom_core.JsonObject data) {
     final List<AlbumGifRef> gifs$value = (data['gifs'] as List<dynamic>)
         .map(
@@ -92,6 +104,33 @@ class CreateAlbumMutation_createAlbum {
 
       name: name$value,
 
+      tag: tag$value,
+    );
+  }
+
+  static CreateAlbumMutation_createAlbum fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? gifs$raw = data.field('gifs');
+    final List<AlbumGifRef> gifs$value = gifs$raw!.listValue
+        .map(
+          (e) => AlbumGifRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              e!.field(r'$AlbumGif')!,
+            ),
+          ),
+        )
+        .toList();
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? tag$raw = data.field('tag');
+    final String tag$value = tag$raw!.stringValue;
+    return CreateAlbumMutation_createAlbum(
+      gifs: gifs$value,
+      id: id$value,
+      name: name$value,
       tag: tag$value,
     );
   }
@@ -143,6 +182,14 @@ class CreateAlbumMutation_createAlbum_gifs implements AlbumGif {
     return {'id': this.id, 'title': this.title, 'url': this.url};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'title': shalom_core.shalomJsonValue(this.title!),
+
+    'url': shalom_core.shalomJsonValue(this.url!),
+  });
+
   static CreateAlbumMutation_createAlbum_gifs fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -154,6 +201,22 @@ class CreateAlbumMutation_createAlbum_gifs implements AlbumGif {
 
       title: title$value,
 
+      url: url$value,
+    );
+  }
+
+  static CreateAlbumMutation_createAlbum_gifs fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? title$raw = data.field('title');
+    final String title$value = title$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? url$raw = data.field('url');
+    final String url$value = url$raw!.stringValue;
+    return CreateAlbumMutation_createAlbum_gifs(
+      id: id$value,
+      title: title$value,
       url: url$value,
     );
   }
@@ -191,9 +254,25 @@ final class CreateAlbumMutationData implements shalom_core.OperationInterface {
     return CreateAlbumMutationData(createAlbum: createAlbum$value);
   }
 
+  static CreateAlbumMutationData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? createAlbum$raw = data.field(
+      'createAlbum',
+    );
+    final CreateAlbumMutation_createAlbum createAlbum$value =
+        CreateAlbumMutation_createAlbum.fromShalomValue(createAlbum$raw!);
+    return CreateAlbumMutationData(createAlbum: createAlbum$value);
+  }
+
   shalom_core.JsonObject toJson() {
     return {'createAlbum': this.createAlbum.toJson()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'createAlbum': this.createAlbum!.toShalomValue(),
+  });
 }
 
 final class CreateAlbumMutationVariables {
@@ -207,6 +286,12 @@ final class CreateAlbumMutationVariables {
     data["name"] = this.name;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    $data["name"] = shalom_core.shalomJsonValue(this.name!);
+    return shalom_core.shalomJsonObject($data);
   }
 
   @override

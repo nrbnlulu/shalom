@@ -48,6 +48,12 @@ class RemoveGifFromAlbumMutation_removeGifFromAlbum {
     return {'code': this.code, 'message': this.message};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'code': shalom_core.shalomJsonValue(this.code!),
+
+    'message': shalom_core.shalomJsonValue(this.message!),
+  });
+
   static RemoveGifFromAlbumMutation_removeGifFromAlbum fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -56,6 +62,19 @@ class RemoveGifFromAlbumMutation_removeGifFromAlbum {
     return RemoveGifFromAlbumMutation_removeGifFromAlbum(
       code: code$value,
 
+      message: message$value,
+    );
+  }
+
+  static RemoveGifFromAlbumMutation_removeGifFromAlbum fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? code$raw = data.field('code');
+    final String code$value = code$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? message$raw = data.field('message');
+    final String message$value = message$raw!.stringValue;
+    return RemoveGifFromAlbumMutation_removeGifFromAlbum(
+      code: code$value,
       message: message$value,
     );
   }
@@ -98,9 +117,34 @@ final class RemoveGifFromAlbumMutationData
     );
   }
 
+  static RemoveGifFromAlbumMutationData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? removeGifFromAlbum$raw = data.field(
+      'removeGifFromAlbum',
+    );
+    final RemoveGifFromAlbumMutation_removeGifFromAlbum?
+    removeGifFromAlbum$value =
+        removeGifFromAlbum$raw == null || removeGifFromAlbum$raw!.isNull
+        ? null
+        : RemoveGifFromAlbumMutation_removeGifFromAlbum.fromShalomValue(
+            removeGifFromAlbum$raw!,
+          );
+    return RemoveGifFromAlbumMutationData(
+      removeGifFromAlbum: removeGifFromAlbum$value,
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {'removeGifFromAlbum': this.removeGifFromAlbum?.toJson()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'removeGifFromAlbum': this.removeGifFromAlbum == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.removeGifFromAlbum!.toShalomValue(),
+  });
 }
 
 final class RemoveGifFromAlbumMutationVariables {
@@ -121,6 +165,13 @@ final class RemoveGifFromAlbumMutationVariables {
     data["gifId"] = this.gifId;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    $data["albumId"] = shalom_core.shalomJsonValue(this.albumId!);
+    $data["gifId"] = shalom_core.shalomJsonValue(this.gifId!);
+    return shalom_core.shalomJsonObject($data);
   }
 
   @override

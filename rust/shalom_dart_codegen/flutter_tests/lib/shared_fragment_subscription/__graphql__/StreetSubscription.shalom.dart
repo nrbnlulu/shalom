@@ -39,11 +39,26 @@ class StreetSubscriptionResponse {
     return {'streetAnimals': this.streetAnimals.toJson()};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'streetAnimals': this.streetAnimals!.toShalomValue(),
+  });
+
   static StreetSubscriptionResponse fromJson(shalom_core.JsonObject data) {
     final StreetSubscription_streetAnimals streetAnimals$value =
         StreetSubscription_streetAnimals.fromJson(
           data['streetAnimals'] as shalom_core.JsonObject,
         );
+    return StreetSubscriptionResponse(streetAnimals: streetAnimals$value);
+  }
+
+  static StreetSubscriptionResponse fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? streetAnimals$raw = data.field(
+      'streetAnimals',
+    );
+    final StreetSubscription_streetAnimals streetAnimals$value =
+        StreetSubscription_streetAnimals.fromShalomValue(streetAnimals$raw!);
     return StreetSubscriptionResponse(streetAnimals: streetAnimals$value);
   }
 }
@@ -63,6 +78,7 @@ sealed class StreetSubscription_streetAnimals {
   const StreetSubscription_streetAnimals();
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 
   static StreetSubscription_streetAnimals fromJson(
     shalom_core.JsonObject data,
@@ -73,6 +89,21 @@ sealed class StreetSubscription_streetAnimals {
         return StreetSubscription_streetAnimals__Cat.fromJson(data);
       case 'Dog':
         return StreetSubscription_streetAnimals__Dog.fromJson(data);
+
+      default:
+        throw Exception("Unknown typename $typename");
+    }
+  }
+
+  static StreetSubscription_streetAnimals fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final typename = data.field('__typename')!.stringValue;
+    switch (typename) {
+      case 'Cat':
+        return StreetSubscription_streetAnimals__Cat.fromShalomValue(data);
+      case 'Dog':
+        return StreetSubscription_streetAnimals__Dog.fromShalomValue(data);
 
       default:
         throw Exception("Unknown typename $typename");
@@ -112,10 +143,26 @@ class StreetSubscription_streetAnimals__Cat
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      StreetSubscription_streetAnimals__Cat.G__typename,
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static StreetSubscription_streetAnimals__Cat fromJson(
     shalom_core.JsonObject data,
   ) {
     final String id$value = data['id'] as String;
+    return StreetSubscription_streetAnimals__Cat(id: id$value);
+  }
+
+  static StreetSubscription_streetAnimals__Cat fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return StreetSubscription_streetAnimals__Cat(id: id$value);
   }
 }
@@ -177,6 +224,18 @@ class StreetSubscription_streetAnimals__Dog
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      StreetSubscription_streetAnimals__Dog.G__typename,
+    ),
+
+    'breed': shalom_core.shalomJsonValue(this.breed!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static StreetSubscription_streetAnimals__Dog fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -188,6 +247,22 @@ class StreetSubscription_streetAnimals__Dog
 
       id: id$value,
 
+      name: name$value,
+    );
+  }
+
+  static StreetSubscription_streetAnimals__Dog fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+    final String breed$value = breed$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
+    return StreetSubscription_streetAnimals__Dog(
+      breed: breed$value,
+      id: id$value,
       name: name$value,
     );
   }
@@ -217,6 +292,17 @@ final class StreetSubscriptionData implements shalom_core.OperationInterface {
     return StreetSubscriptionData(streetAnimals: streetAnimals$value);
   }
 
+  static StreetSubscriptionData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? streetAnimals$raw = data.field(
+      'streetAnimals',
+    );
+    final StreetSubscription_streetAnimals streetAnimals$value =
+        StreetSubscription_streetAnimals.fromShalomValue(streetAnimals$raw!);
+    return StreetSubscriptionData(streetAnimals: streetAnimals$value);
+  }
+
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [StreetSubscriptionData]. Returns `null` when absent or incomplete.
   static Future<StreetSubscriptionData?> readFrom(
@@ -224,7 +310,7 @@ final class StreetSubscriptionData implements shalom_core.OperationInterface {
   ) async {
     return await cache.readOperation<StreetSubscriptionData>(
       name: 'StreetSubscription',
-      decoder: fromCache,
+      decoder: fromShalomValue,
     );
   }
 
@@ -238,6 +324,11 @@ final class StreetSubscriptionData implements shalom_core.OperationInterface {
   shalom_core.JsonObject toJson() {
     return {'streetAnimals': this.streetAnimals.toJson()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'streetAnimals': this.streetAnimals!.toShalomValue(),
+  });
 }
 
 final class StreetSubscriptionObservable {
@@ -259,7 +350,7 @@ final class StreetSubscriptionObservable {
     return client.request<StreetSubscriptionData>(
       name: operation$Name(),
 
-      decoder: StreetSubscriptionData.fromCache,
+      decoder: StreetSubscriptionData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,

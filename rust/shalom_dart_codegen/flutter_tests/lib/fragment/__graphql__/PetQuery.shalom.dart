@@ -37,6 +37,12 @@ class PetQueryResponse {
     return {'pet': this.pet?.toJson()};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'pet': this.pet == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.pet!.toShalomValue(),
+  });
+
   static PetQueryResponse fromJson(shalom_core.JsonObject data) {
     final PetWidgetRef? pet$value = data['pet'] == null
         ? null
@@ -44,6 +50,18 @@ class PetQueryResponse {
             shalom_core.observedRefInputFromJson(
               (data['pet'] as shalom_core.JsonObject)[r'$PetWidget']
                   as shalom_core.JsonObject,
+            ),
+          );
+    return PetQueryResponse(pet: pet$value);
+  }
+
+  static PetQueryResponse fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? pet$raw = data.field('pet');
+    final PetWidgetRef? pet$value = pet$raw == null || pet$raw!.isNull
+        ? null
+        : PetWidgetRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              pet$raw!.field(r'$PetWidget')!,
             ),
           );
     return PetQueryResponse(pet: pet$value);
@@ -77,9 +95,23 @@ class PetQuery_pet {
     return {'id': this.id, 'name': this.name};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static PetQuery_pet fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    return PetQuery_pet(id: id$value, name: name$value);
+  }
+
+  static PetQuery_pet fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
     return PetQuery_pet(id: id$value, name: name$value);
   }
 }
@@ -120,6 +152,18 @@ final class PetQueryData implements shalom_core.OperationInterface {
     return PetQueryData(pet: pet$value);
   }
 
+  static PetQueryData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? pet$raw = data.field('pet');
+    final PetWidgetRef? pet$value = pet$raw == null || pet$raw!.isNull
+        ? null
+        : PetWidgetRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              pet$raw!.field(r'$PetWidget')!,
+            ),
+          );
+    return PetQueryData(pet: pet$value);
+  }
+
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [PetQueryData]. Returns `null` when absent or incomplete.
   static Future<PetQueryData?> readFrom(
@@ -128,9 +172,9 @@ final class PetQueryData implements shalom_core.OperationInterface {
   }) async {
     return await cache.readOperation<PetQueryData>(
       name: 'PetQuery',
-      decoder: fromCache,
+      decoder: fromShalomValue,
 
-      variables: variables?.toJson(),
+      variables: variables?.toShalomValue(),
     );
   }
 
@@ -144,13 +188,20 @@ final class PetQueryData implements shalom_core.OperationInterface {
     return cache.evictOperation(
       name: 'PetQuery',
 
-      variables: variables?.toJson(),
+      variables: variables?.toShalomValue(),
     );
   }
 
   shalom_core.JsonObject toJson() {
     return {'pet': this.pet?.toJson()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'pet': this.pet == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.pet!.toShalomValue(),
+  });
 }
 
 final class PetQueryObservable {
@@ -176,9 +227,9 @@ final class PetQueryObservable {
     return client.request<PetQueryData>(
       name: operation$Name(),
 
-      variables: variables.toJson(),
+      variables: variables.toShalomValue(),
 
-      decoder: PetQueryData.fromCache,
+      decoder: PetQueryData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,
@@ -197,6 +248,12 @@ final class PetQueryVariables {
     data["id"] = this.id;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    $data["id"] = shalom_core.shalomJsonValue(this.id!);
+    return shalom_core.shalomJsonObject($data);
   }
 
   @override

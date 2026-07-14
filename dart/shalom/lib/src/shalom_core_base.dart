@@ -1,9 +1,93 @@
+import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
+    show PlatformInt64Util;
+import 'package:shalom/src/rust/api/json.dart' as rs_json;
+
 typedef HeadersType = List<(String, String)>;
 typedef JsonObject = Map<String, dynamic>;
+typedef ShalomJsonValue = rs_json.ShalomJsonValue;
+
+ShalomJsonValue shalomJsonValue(Object? value) => switch (value) {
+  null => const rs_json.ShalomJsonValue.null_(),
+  bool value => rs_json.ShalomJsonValue.boolean(value),
+  int value => rs_json.ShalomJsonValue.integer(PlatformInt64Util.from(value)),
+  double value => rs_json.ShalomJsonValue.float(value),
+  String value => rs_json.ShalomJsonValue.string(value),
+  List<Object?> value => rs_json.ShalomJsonValue.array(
+    value.map(shalomJsonValue).toList(growable: false),
+  ),
+  Map<Object?, Object?> value => rs_json.ShalomJsonValue.object(
+    value.map((key, value) {
+      if (key is! String) {
+        throw ArgumentError.value(
+          key,
+          'key',
+          'JSON object keys must be strings',
+        );
+      }
+      return MapEntry(key, shalomJsonValue(value));
+    }),
+  ),
+  _ => throw ArgumentError.value(value, 'value', 'Not a JSON value'),
+};
+
+ShalomJsonValue shalomJsonObject(Map<String, ShalomJsonValue> fields) =>
+    rs_json.ShalomJsonValue.object(fields);
+
+ShalomJsonValue shalomJsonArray(Iterable<ShalomJsonValue> values) =>
+    rs_json.ShalomJsonValue.array(values.toList(growable: false));
+
+extension ShalomJsonValueAccess on ShalomJsonValue {
+  bool get isNull => this is rs_json.ShalomJsonValue_Null;
+
+  ShalomJsonValue? field(String name) => switch (this) {
+    rs_json.ShalomJsonValue_Object(:final field0) => field0[name],
+    _ => throw const FormatException('Expected a JSON object'),
+  };
+
+  List<ShalomJsonValue> get listValue => switch (this) {
+    rs_json.ShalomJsonValue_Array(:final field0) => field0,
+    _ => throw const FormatException('Expected a JSON array'),
+  };
+
+  String get stringValue => switch (this) {
+    rs_json.ShalomJsonValue_String(:final field0) => field0,
+    _ => throw const FormatException('Expected a JSON string'),
+  };
+
+  bool get boolValue => switch (this) {
+    rs_json.ShalomJsonValue_Boolean(:final field0) => field0,
+    _ => throw const FormatException('Expected a JSON boolean'),
+  };
+
+  int get intValue => switch (this) {
+    rs_json.ShalomJsonValue_Integer(:final field0) => field0.toInt(),
+    _ => throw const FormatException('Expected a JSON integer'),
+  };
+
+  double get doubleValue => switch (this) {
+    rs_json.ShalomJsonValue_Float(:final field0) => field0,
+    rs_json.ShalomJsonValue_Integer() => intValue.toDouble(),
+    _ => throw const FormatException('Expected a JSON number'),
+  };
+
+  Object? toJsonValue() => switch (this) {
+    rs_json.ShalomJsonValue_Null() => null,
+    rs_json.ShalomJsonValue_Boolean(:final field0) => field0,
+    rs_json.ShalomJsonValue_Integer() => intValue,
+    rs_json.ShalomJsonValue_Float(:final field0) => field0,
+    rs_json.ShalomJsonValue_String(:final field0) => field0,
+    rs_json.ShalomJsonValue_Array(:final field0) =>
+      field0.map((value) => value.toJsonValue()).toList(growable: false),
+    rs_json.ShalomJsonValue_Object(:final field0) => field0.map(
+      (key, value) => MapEntry(key, value.toJsonValue()),
+    ),
+  };
+}
 
 abstract interface class OperationInterface {
   String operation$Name();
   JsonObject toJson();
+  ShalomJsonValue toShalomValue();
 }
 
 abstract interface class FragmentInterface {
@@ -17,6 +101,7 @@ abstract interface class FragmentInterface {
   String entity$Id();
 
   JsonObject toJson();
+  ShalomJsonValue toShalomValue();
 }
 
 // ignore: constant_identifier_names

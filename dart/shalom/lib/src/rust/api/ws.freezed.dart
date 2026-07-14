@@ -131,13 +131,13 @@ return protocolError(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  connected,TResult Function( String? payloadJson)?  pingReceived,TResult Function( String? payloadJson)?  pongReceived,TResult Function( String opId,  String? dataJson,  String? errorsJson,  String? extensionsJson)?  operationResponse,TResult Function( String opId)?  operationComplete,TResult Function( int code,  String reason)?  protocolError,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  connected,TResult Function( ShalomJsonValue? payload)?  pingReceived,TResult Function( ShalomJsonValue? payload)?  pongReceived,TResult Function( String opId,  GraphQlResponseInput response)?  operationResponse,TResult Function( String opId)?  operationComplete,TResult Function( int code,  String reason)?  protocolError,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected() when connected != null:
 return connected();case WsLinkEvent_PingReceived() when pingReceived != null:
-return pingReceived(_that.payloadJson);case WsLinkEvent_PongReceived() when pongReceived != null:
-return pongReceived(_that.payloadJson);case WsLinkEvent_OperationResponse() when operationResponse != null:
-return operationResponse(_that.opId,_that.dataJson,_that.errorsJson,_that.extensionsJson);case WsLinkEvent_OperationComplete() when operationComplete != null:
+return pingReceived(_that.payload);case WsLinkEvent_PongReceived() when pongReceived != null:
+return pongReceived(_that.payload);case WsLinkEvent_OperationResponse() when operationResponse != null:
+return operationResponse(_that.opId,_that.response);case WsLinkEvent_OperationComplete() when operationComplete != null:
 return operationComplete(_that.opId);case WsLinkEvent_ProtocolError() when protocolError != null:
 return protocolError(_that.code,_that.reason);case _:
   return orElse();
@@ -157,13 +157,13 @@ return protocolError(_that.code,_that.reason);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  connected,required TResult Function( String? payloadJson)  pingReceived,required TResult Function( String? payloadJson)  pongReceived,required TResult Function( String opId,  String? dataJson,  String? errorsJson,  String? extensionsJson)  operationResponse,required TResult Function( String opId)  operationComplete,required TResult Function( int code,  String reason)  protocolError,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  connected,required TResult Function( ShalomJsonValue? payload)  pingReceived,required TResult Function( ShalomJsonValue? payload)  pongReceived,required TResult Function( String opId,  GraphQlResponseInput response)  operationResponse,required TResult Function( String opId)  operationComplete,required TResult Function( int code,  String reason)  protocolError,}) {final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected():
 return connected();case WsLinkEvent_PingReceived():
-return pingReceived(_that.payloadJson);case WsLinkEvent_PongReceived():
-return pongReceived(_that.payloadJson);case WsLinkEvent_OperationResponse():
-return operationResponse(_that.opId,_that.dataJson,_that.errorsJson,_that.extensionsJson);case WsLinkEvent_OperationComplete():
+return pingReceived(_that.payload);case WsLinkEvent_PongReceived():
+return pongReceived(_that.payload);case WsLinkEvent_OperationResponse():
+return operationResponse(_that.opId,_that.response);case WsLinkEvent_OperationComplete():
 return operationComplete(_that.opId);case WsLinkEvent_ProtocolError():
 return protocolError(_that.code,_that.reason);}
 }
@@ -179,13 +179,13 @@ return protocolError(_that.code,_that.reason);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  connected,TResult? Function( String? payloadJson)?  pingReceived,TResult? Function( String? payloadJson)?  pongReceived,TResult? Function( String opId,  String? dataJson,  String? errorsJson,  String? extensionsJson)?  operationResponse,TResult? Function( String opId)?  operationComplete,TResult? Function( int code,  String reason)?  protocolError,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  connected,TResult? Function( ShalomJsonValue? payload)?  pingReceived,TResult? Function( ShalomJsonValue? payload)?  pongReceived,TResult? Function( String opId,  GraphQlResponseInput response)?  operationResponse,TResult? Function( String opId)?  operationComplete,TResult? Function( int code,  String reason)?  protocolError,}) {final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected() when connected != null:
 return connected();case WsLinkEvent_PingReceived() when pingReceived != null:
-return pingReceived(_that.payloadJson);case WsLinkEvent_PongReceived() when pongReceived != null:
-return pongReceived(_that.payloadJson);case WsLinkEvent_OperationResponse() when operationResponse != null:
-return operationResponse(_that.opId,_that.dataJson,_that.errorsJson,_that.extensionsJson);case WsLinkEvent_OperationComplete() when operationComplete != null:
+return pingReceived(_that.payload);case WsLinkEvent_PongReceived() when pongReceived != null:
+return pongReceived(_that.payload);case WsLinkEvent_OperationResponse() when operationResponse != null:
+return operationResponse(_that.opId,_that.response);case WsLinkEvent_OperationComplete() when operationComplete != null:
 return operationComplete(_that.opId);case WsLinkEvent_ProtocolError() when protocolError != null:
 return protocolError(_that.code,_that.reason);case _:
   return null;
@@ -200,7 +200,7 @@ return protocolError(_that.code,_that.reason);case _:
 
 class WsLinkEvent_Connected extends WsLinkEvent {
   const WsLinkEvent_Connected(): super._();
-  
+
 
 
 
@@ -231,10 +231,10 @@ String toString() {
 
 
 class WsLinkEvent_PingReceived extends WsLinkEvent {
-  const WsLinkEvent_PingReceived({this.payloadJson}): super._();
-  
+  const WsLinkEvent_PingReceived({this.payload}): super._();
 
- final  String? payloadJson;
+
+ final  ShalomJsonValue? payload;
 
 /// Create a copy of WsLinkEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -246,16 +246,16 @@ $WsLinkEvent_PingReceivedCopyWith<WsLinkEvent_PingReceived> get copyWith => _$Ws
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WsLinkEvent_PingReceived&&(identical(other.payloadJson, payloadJson) || other.payloadJson == payloadJson));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WsLinkEvent_PingReceived&&(identical(other.payload, payload) || other.payload == payload));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,payloadJson);
+int get hashCode => Object.hash(runtimeType,payload);
 
 @override
 String toString() {
-  return 'WsLinkEvent.pingReceived(payloadJson: $payloadJson)';
+  return 'WsLinkEvent.pingReceived(payload: $payload)';
 }
 
 
@@ -266,11 +266,11 @@ abstract mixin class $WsLinkEvent_PingReceivedCopyWith<$Res> implements $WsLinkE
   factory $WsLinkEvent_PingReceivedCopyWith(WsLinkEvent_PingReceived value, $Res Function(WsLinkEvent_PingReceived) _then) = _$WsLinkEvent_PingReceivedCopyWithImpl;
 @useResult
 $Res call({
- String? payloadJson
+ ShalomJsonValue? payload
 });
 
 
-
+$ShalomJsonValueCopyWith<$Res>? get payload;
 
 }
 /// @nodoc
@@ -283,24 +283,36 @@ class _$WsLinkEvent_PingReceivedCopyWithImpl<$Res>
 
 /// Create a copy of WsLinkEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? payloadJson = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? payload = freezed,}) {
   return _then(WsLinkEvent_PingReceived(
-payloadJson: freezed == payloadJson ? _self.payloadJson : payloadJson // ignore: cast_nullable_to_non_nullable
-as String?,
+payload: freezed == payload ? _self.payload : payload // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue?,
   ));
 }
 
+/// Create a copy of WsLinkEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res>? get payload {
+    if (_self.payload == null) {
+    return null;
+  }
 
+  return $ShalomJsonValueCopyWith<$Res>(_self.payload!, (value) {
+    return _then(_self.copyWith(payload: value));
+  });
+}
 }
 
 /// @nodoc
 
 
 class WsLinkEvent_PongReceived extends WsLinkEvent {
-  const WsLinkEvent_PongReceived({this.payloadJson}): super._();
-  
+  const WsLinkEvent_PongReceived({this.payload}): super._();
 
- final  String? payloadJson;
+
+ final  ShalomJsonValue? payload;
 
 /// Create a copy of WsLinkEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -312,16 +324,16 @@ $WsLinkEvent_PongReceivedCopyWith<WsLinkEvent_PongReceived> get copyWith => _$Ws
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WsLinkEvent_PongReceived&&(identical(other.payloadJson, payloadJson) || other.payloadJson == payloadJson));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WsLinkEvent_PongReceived&&(identical(other.payload, payload) || other.payload == payload));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,payloadJson);
+int get hashCode => Object.hash(runtimeType,payload);
 
 @override
 String toString() {
-  return 'WsLinkEvent.pongReceived(payloadJson: $payloadJson)';
+  return 'WsLinkEvent.pongReceived(payload: $payload)';
 }
 
 
@@ -332,11 +344,11 @@ abstract mixin class $WsLinkEvent_PongReceivedCopyWith<$Res> implements $WsLinkE
   factory $WsLinkEvent_PongReceivedCopyWith(WsLinkEvent_PongReceived value, $Res Function(WsLinkEvent_PongReceived) _then) = _$WsLinkEvent_PongReceivedCopyWithImpl;
 @useResult
 $Res call({
- String? payloadJson
+ ShalomJsonValue? payload
 });
 
 
-
+$ShalomJsonValueCopyWith<$Res>? get payload;
 
 }
 /// @nodoc
@@ -349,27 +361,37 @@ class _$WsLinkEvent_PongReceivedCopyWithImpl<$Res>
 
 /// Create a copy of WsLinkEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? payloadJson = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? payload = freezed,}) {
   return _then(WsLinkEvent_PongReceived(
-payloadJson: freezed == payloadJson ? _self.payloadJson : payloadJson // ignore: cast_nullable_to_non_nullable
-as String?,
+payload: freezed == payload ? _self.payload : payload // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue?,
   ));
 }
 
+/// Create a copy of WsLinkEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res>? get payload {
+    if (_self.payload == null) {
+    return null;
+  }
 
+  return $ShalomJsonValueCopyWith<$Res>(_self.payload!, (value) {
+    return _then(_self.copyWith(payload: value));
+  });
+}
 }
 
 /// @nodoc
 
 
 class WsLinkEvent_OperationResponse extends WsLinkEvent {
-  const WsLinkEvent_OperationResponse({required this.opId, this.dataJson, this.errorsJson, this.extensionsJson}): super._();
-  
+  const WsLinkEvent_OperationResponse({required this.opId, required this.response}): super._();
+
 
  final  String opId;
- final  String? dataJson;
- final  String? errorsJson;
- final  String? extensionsJson;
+ final  GraphQlResponseInput response;
 
 /// Create a copy of WsLinkEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -381,16 +403,16 @@ $WsLinkEvent_OperationResponseCopyWith<WsLinkEvent_OperationResponse> get copyWi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WsLinkEvent_OperationResponse&&(identical(other.opId, opId) || other.opId == opId)&&(identical(other.dataJson, dataJson) || other.dataJson == dataJson)&&(identical(other.errorsJson, errorsJson) || other.errorsJson == errorsJson)&&(identical(other.extensionsJson, extensionsJson) || other.extensionsJson == extensionsJson));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WsLinkEvent_OperationResponse&&(identical(other.opId, opId) || other.opId == opId)&&(identical(other.response, response) || other.response == response));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,opId,dataJson,errorsJson,extensionsJson);
+int get hashCode => Object.hash(runtimeType,opId,response);
 
 @override
 String toString() {
-  return 'WsLinkEvent.operationResponse(opId: $opId, dataJson: $dataJson, errorsJson: $errorsJson, extensionsJson: $extensionsJson)';
+  return 'WsLinkEvent.operationResponse(opId: $opId, response: $response)';
 }
 
 
@@ -401,11 +423,11 @@ abstract mixin class $WsLinkEvent_OperationResponseCopyWith<$Res> implements $Ws
   factory $WsLinkEvent_OperationResponseCopyWith(WsLinkEvent_OperationResponse value, $Res Function(WsLinkEvent_OperationResponse) _then) = _$WsLinkEvent_OperationResponseCopyWithImpl;
 @useResult
 $Res call({
- String opId, String? dataJson, String? errorsJson, String? extensionsJson
+ String opId, GraphQlResponseInput response
 });
 
 
-
+$GraphQlResponseInputCopyWith<$Res> get response;
 
 }
 /// @nodoc
@@ -418,17 +440,24 @@ class _$WsLinkEvent_OperationResponseCopyWithImpl<$Res>
 
 /// Create a copy of WsLinkEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? opId = null,Object? dataJson = freezed,Object? errorsJson = freezed,Object? extensionsJson = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? opId = null,Object? response = null,}) {
   return _then(WsLinkEvent_OperationResponse(
 opId: null == opId ? _self.opId : opId // ignore: cast_nullable_to_non_nullable
-as String,dataJson: freezed == dataJson ? _self.dataJson : dataJson // ignore: cast_nullable_to_non_nullable
-as String?,errorsJson: freezed == errorsJson ? _self.errorsJson : errorsJson // ignore: cast_nullable_to_non_nullable
-as String?,extensionsJson: freezed == extensionsJson ? _self.extensionsJson : extensionsJson // ignore: cast_nullable_to_non_nullable
-as String?,
+as String,response: null == response ? _self.response : response // ignore: cast_nullable_to_non_nullable
+as GraphQlResponseInput,
   ));
 }
 
+/// Create a copy of WsLinkEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$GraphQlResponseInputCopyWith<$Res> get response {
 
+  return $GraphQlResponseInputCopyWith<$Res>(_self.response, (value) {
+    return _then(_self.copyWith(response: value));
+  });
+}
 }
 
 /// @nodoc
@@ -436,7 +465,7 @@ as String?,
 
 class WsLinkEvent_OperationComplete extends WsLinkEvent {
   const WsLinkEvent_OperationComplete({required this.opId}): super._();
-  
+
 
  final  String opId;
 
@@ -502,7 +531,7 @@ as String,
 
 class WsLinkEvent_ProtocolError extends WsLinkEvent {
   const WsLinkEvent_ProtocolError({required this.code, required this.reason}): super._();
-  
+
 
  final  int code;
  final  String reason;

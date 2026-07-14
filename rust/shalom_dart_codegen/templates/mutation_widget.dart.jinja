@@ -35,9 +35,9 @@ abstract class ${{ operation_name }} {
             {% for name, _field in op_variables | items -%}
                 {{ name }}: {{ name }},
             {% endfor -%}
-        ).toJson(),
+        ).toShalomValue(),
         {% endif %}
-        decoder: {{ operation_name }}Data.fromCache,
+        decoder: {{ operation_name }}Data.fromShalomValue,
     );
 
     /// Execute the mutation and update the cache via [update].
@@ -55,7 +55,7 @@ abstract class ${{ operation_name }} {
     ///   update: (cache, data) async {
     ///     final current = await cache.readOperation(
     ///       name: 'GetTodos',
-    ///       decoder: GetTodosData.fromCache,
+    ///       decoder: GetTodosData.fromShalomValue,
     ///     );
     ///     if (current != null) {
     ///       await cache.writeOperation(
@@ -81,9 +81,9 @@ abstract class ${{ operation_name }} {
         final response = await _client.mutate<{{ operation_name }}Data>(
             name: operation$Name(),
             {% if op_variables_exist %}
-            variables: vars.toJson(),
+            variables: vars.toShalomValue(),
             {% endif %}
-            decoder: {{ operation_name }}Data.fromCache,
+            decoder: {{ operation_name }}Data.fromShalomValue,
         );
         if (response case shalom_core.GraphQLData(data: final data)) {
           await update(CacheProxy(_client), data);
@@ -122,12 +122,12 @@ abstract class ${{ operation_name }} {
         );
         final writeId = await _client.writeOptimistic(
             name: operation$Name(),
-            data: optimisticFactory(vars).toJson(),
+            data: optimisticFactory(vars),
         );
         {% else %}
         final writeId = await _client.writeOptimistic(
             name: operation$Name(),
-            data: optimisticFactory().toJson(),
+            data: optimisticFactory(),
         );
         {% endif %}
         var rolledBack = false;
@@ -140,9 +140,9 @@ abstract class ${{ operation_name }} {
             final graphqlResponse = await _client.mutate<{{ operation_name }}Data>(
                 name: operation$Name(),
                 {% if op_variables_exist %}
-                variables: vars.toJson(),
+                variables: vars.toShalomValue(),
                 {% endif %}
-                decoder: {{ operation_name }}Data.fromCache,
+                decoder: {{ operation_name }}Data.fromShalomValue,
             );
             if (graphqlResponse case shalom_core.GraphQLData(data: final responseData)) {
               if (rollbackWhen?.call(responseData) ?? false) await doRollback();
