@@ -13,7 +13,7 @@ use tokio_stream::{Stream, StreamExt};
 
 use shalom_core::context::SharedShalomGlobalContext;
 use shalom_core::entrypoint::{parse_document, parse_schema, register_fragments_from_document};
-use shalom_core::operation::context::SharedOpCtx;
+use shalom_core::operation::context::{ExecutableContext, SharedOpCtx};
 use shalom_core::operation::fragments::SharedFragmentContext;
 use shalom_core::shalom_config::ShalomConfig;
 
@@ -25,6 +25,7 @@ use crate::read::CacheReader;
 use crate::sansio_protocols::{
     GraphQLLink, GraphQLResponse, OperationType as LinkOperationType, Request,
 };
+use crate::selection::{field_cache_key, field_path_segment, resolve_object_selections};
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -923,7 +924,7 @@ impl ShalomRuntime {
 
     /// Read the cache for a named operation. Returns `None` when data is absent
     /// or incomplete (missing refs), so callers don't need to handle partial reads.
-    pub fn try_read_query(
+    pub fn try_read_operation(
         &self,
         op_name: &str,
         variables: Option<&Map<String, Value>>,
@@ -940,7 +941,7 @@ impl ShalomRuntime {
     /// Normalize [data] into the cache for [op_name] and notify all affected
     /// subscribers.  Unlike `write_optimistic`, this write is permanent and
     /// cannot be rolled back.
-    pub fn write_query(
+    pub fn write_operation(
         &self,
         op_name: &str,
         data: Value,
@@ -950,6 +951,52 @@ impl ShalomRuntime {
         let data = self.resolve_observed_fragment_refs(data)?;
         self.normalize(&op_ctx, data, variables)?;
         Ok(())
+    }
+
+    /// Evict operation [op_name]'s root field(s) (matched with [variables])
+    /// from the cache and notify affected subscribers. This only unlinks the
+    /// operation's root entry(ies) — entities it referenced are reclaimed by
+    /// the next GC sweep if nothing else keeps them reachable.
+    ///
+    /// Returns `false` (and does nothing) if no matching cache entry exists.
+    pub fn evict_operation(
+        &self,
+        op_name: &str,
+        variables: Option<&Map<String, Value>>,
+    ) -> anyhow::Result<bool> {
+        let op_ctx = self.operation_by_name(op_name)?;
+        let root_key = match op_ctx.op_type() {
+            shalom_core::operation::types::OperationType::Query => "ROOT_QUERY",
+            shalom_core::operation::types::OperationType::Mutation => "ROOT_MUTATION",
+            shalom_core::operation::types::OperationType::Subscription => "ROOT_SUBSCRIPTION",
+        };
+        let selections = resolve_object_selections(op_ctx.get_root(), &self.engine.global_ctx());
+
+        let mut changed = HashSet::new();
+        {
+            let cache = self.cache();
+            let mut cache = cache.lock();
+            if let Some(record) = cache.get_mut(root_key) {
+                for selection in &selections {
+                    let field_name = selection.self_selection_name();
+                    if field_name == "__typename" {
+                        continue;
+                    }
+                    let cache_key = field_cache_key(field_name, &selection.arguments, variables);
+                    let field_segment =
+                        field_path_segment(field_name, &selection.arguments, variables);
+                    if record.remove(&cache_key).is_some() {
+                        changed.insert(format!("{root_key}.{field_segment}"));
+                    }
+                }
+            }
+        }
+
+        if changed.is_empty() {
+            return Ok(false);
+        }
+        self.notify_subscribers(&changed)?;
+        Ok(true)
     }
 
     /// Look up a pre-registered (or remembered) operation by name.

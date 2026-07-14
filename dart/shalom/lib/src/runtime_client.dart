@@ -228,34 +228,25 @@ class ShalomRuntimeClient {
   /// repeated on a timer).
   Stream<GraphQLResponse<T>> request<T>({
     required String name,
-    Map<String, dynamic>? variables,
-    ShalomJsonValue? variablesValue,
-    T Function(JsonObject)? decoder,
-    T Function(ShalomJsonValue)? bridgeDecoder,
+    ShalomJsonValue? variables,
+    required T Function(ShalomJsonValue) decoder,
     rs_runtime.ExecutionPolicyInput executionPolicy =
         rs_runtime.ExecutionPolicyInput.networkFirst,
     RetryDelay retryDelay = const RetryDelay.inherit(),
     Duration? autoRefetch,
   }) {
-    assert(decoder != null || bridgeDecoder != null);
-    assert(variables == null || variablesValue == null);
-    final bridgedVariables =
-        variablesValue ??
-        (variables == null ? null : shalomJsonValue(variables));
-    final decode =
-        bridgeDecoder ?? (value) => decoder!(value.toJsonValue() as JsonObject);
     return _observeSubscription<T>(
       subscribe: () => rs_runtime.request(
         handle: _handle,
         name: name,
-        variables: bridgedVariables,
+        variables: variables,
         executionPolicy: executionPolicy,
         retryDelay: retryDelay._toInput(),
         refetchIntervalMs: autoRefetch != null
             ? BigInt.from(autoRefetch.inMilliseconds)
             : null,
       ),
-      decoder: decode,
+      decoder: decoder,
       debugName: name,
     );
   }
@@ -274,17 +265,13 @@ class ShalomRuntimeClient {
   /// caller opts in explicitly via [retryDelay]).
   Future<GraphQLResponse<T>> mutate<T>({
     required String name,
-    Map<String, dynamic>? variables,
-    ShalomJsonValue? variablesValue,
-    T Function(JsonObject)? decoder,
-    T Function(ShalomJsonValue)? bridgeDecoder,
+    ShalomJsonValue? variables,
+    required T Function(ShalomJsonValue) decoder,
     RetryDelay retryDelay = const RetryDelay.disabled(),
   }) => request<T>(
     name: name,
     variables: variables,
-    variablesValue: variablesValue,
     decoder: decoder,
-    bridgeDecoder: bridgeDecoder,
     executionPolicy: rs_runtime.ExecutionPolicyInput.networkFirst,
     retryDelay: retryDelay,
   ).first;
@@ -320,16 +307,12 @@ class ShalomRuntimeClient {
   /// [GraphQLResponse<T>] carrying either success or error states.
   Stream<GraphQLResponse<T>> subscribeToFragment<T>({
     required rs_runtime.ObservedRefInput ref,
-    T Function(JsonObject)? decoder,
-    T Function(ShalomJsonValue)? bridgeDecoder,
+    required T Function(ShalomJsonValue) decoder,
   }) {
-    assert(decoder != null || bridgeDecoder != null);
     return _observeSubscription<T>(
       subscribe: () =>
           rs_runtime.observeFragment(handle: _handle, refInput: ref),
-      decoder:
-          bridgeDecoder ??
-          (value) => decoder!(value.toJsonValue() as JsonObject),
+      decoder: decoder,
     );
   }
 
@@ -347,19 +330,15 @@ class ShalomRuntimeClient {
   Stream<GraphQLResponse<T>> rebindFragmentSubscription<T>({
     required BigInt subscriptionId,
     required rs_runtime.ObservedRefInput newRef,
-    T Function(JsonObject)? decoder,
-    T Function(ShalomJsonValue)? bridgeDecoder,
+    required T Function(ShalomJsonValue) decoder,
   }) {
-    assert(decoder != null || bridgeDecoder != null);
     return _observeSubscription<T>(
       subscribe: () => rs_runtime.rebindSubscription(
         handle: _handle,
         subscriptionId: subscriptionId,
         newRef: newRef,
       ),
-      decoder:
-          bridgeDecoder ??
-          (value) => decoder!(value.toJsonValue() as JsonObject),
+      decoder: decoder,
     );
   }
 
@@ -601,27 +580,20 @@ class ShalomRuntimeClient {
   /// Read the current cache for operation [name] and decode it as [T].
   ///
   /// Returns `null` when the data is absent or incomplete in the cache.
-  /// Use inside [CacheProxy.readQuery] or directly when you need a one-shot
-  /// cache read without opening a subscription.
-  Future<T?> readQuery<T>({
+  /// Use inside [CacheProxy.readOperation] or directly when you need a
+  /// one-shot cache read without opening a subscription.
+  Future<T?> readOperation<T>({
     required String name,
-    T Function(JsonObject)? decoder,
-    T Function(ShalomJsonValue)? bridgeDecoder,
-    Map<String, dynamic>? variables,
-    ShalomJsonValue? variablesValue,
+    required T Function(ShalomJsonValue) decoder,
+    ShalomJsonValue? variables,
   }) async {
-    assert(decoder != null || bridgeDecoder != null);
-    assert(variables == null || variablesValue == null);
-    final value = await rs_runtime.readQuery(
+    final value = await rs_runtime.readOperation(
       handle: _handle,
       name: name,
-      variables:
-          variablesValue ??
-          (variables == null ? null : shalomJsonValue(variables)),
+      variables: variables,
     );
     if (value == null) return null;
-    if (bridgeDecoder != null) return bridgeDecoder(value);
-    return decoder!(value.toJsonValue() as JsonObject);
+    return decoder(value);
   }
 
   /// Write [data] to the cache for its generated operation, normalizing it
@@ -630,19 +602,32 @@ class ShalomRuntimeClient {
   /// This is a permanent write (no rollback).  The typical use-case is inside
   /// a mutation's `executeWithCacheUpdate` callback to keep a cached list in
   /// sync after an add / remove mutation.
-  Future<void> writeQuery<T extends OperationInterface>({
+  Future<void> writeOperation<T extends OperationInterface>({
     required T data,
-    Map<String, dynamic>? variables,
-    ShalomJsonValue? variablesValue,
+    ShalomJsonValue? variables,
   }) {
-    assert(variables == null || variablesValue == null);
-    return rs_runtime.writeQuery(
+    return rs_runtime.writeOperation(
       handle: _handle,
       name: data.operation$Name(),
       data: data.toShalomValue(),
-      variables:
-          variablesValue ??
-          (variables == null ? null : shalomJsonValue(variables)),
+      variables: variables,
+    );
+  }
+
+  /// Evict operation [name]'s cached root field(s) (matched by [variables])
+  /// and notify any active subscribers.
+  ///
+  /// Only unlinks the operation's own root entry — entities it referenced
+  /// are reclaimed by the next GC sweep if nothing else keeps them
+  /// reachable. Returns `false` if no matching cache entry existed.
+  Future<bool> evictOperation({
+    required String name,
+    ShalomJsonValue? variables,
+  }) {
+    return rs_runtime.evictOperation(
+      handle: _handle,
+      name: name,
+      variables: variables,
     );
   }
 
@@ -652,18 +637,15 @@ class ShalomRuntimeClient {
   Future<T?> readFragment<T>({
     required String fragmentName,
     required String entityKey,
-    T Function(JsonObject)? decoder,
-    T Function(ShalomJsonValue)? bridgeDecoder,
+    required T Function(ShalomJsonValue) decoder,
   }) async {
-    assert(decoder != null || bridgeDecoder != null);
     final value = await rs_runtime.readFragment(
       handle: _handle,
       fragmentName: fragmentName,
       entityKey: entityKey,
     );
     if (value == null) return null;
-    if (bridgeDecoder != null) return bridgeDecoder(value);
-    return decoder!(value.toJsonValue() as JsonObject);
+    return decoder(value);
   }
 
   /// Write [data] to the cache, using [FragmentInterface]'s selection set,

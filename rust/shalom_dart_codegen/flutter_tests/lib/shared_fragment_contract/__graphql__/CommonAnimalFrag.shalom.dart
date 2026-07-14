@@ -47,7 +47,7 @@ extension type CommonAnimalFragRef.fromInput(
     return await cache.readFragment<CommonAnimalFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      bridgeDecoder: CommonAnimalFragData.fromShalomValue,
+      decoder: CommonAnimalFragData.fromShalomValue,
     );
   }
 
@@ -56,7 +56,7 @@ extension type CommonAnimalFragRef.fromInput(
   ) {
     return client.subscribeToFragment<CommonAnimalFragData>(
       ref: _inner,
-      bridgeDecoder: CommonAnimalFragData.fromShalomValue,
+      decoder: CommonAnimalFragData.fromShalomValue,
     );
   }
 }

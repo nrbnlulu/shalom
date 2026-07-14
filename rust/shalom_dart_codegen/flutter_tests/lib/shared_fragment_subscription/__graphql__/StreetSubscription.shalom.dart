@@ -308,10 +308,17 @@ final class StreetSubscriptionData implements shalom_core.OperationInterface {
   static Future<StreetSubscriptionData?> readFrom(
     shalom_core.CacheProxy cache,
   ) async {
-    return await cache.readQuery<StreetSubscriptionData>(
+    return await cache.readOperation<StreetSubscriptionData>(
       name: 'StreetSubscription',
-      bridgeDecoder: fromShalomValue,
+      decoder: fromShalomValue,
     );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
+    return cache.evictOperation(name: 'StreetSubscription');
   }
 
   shalom_core.JsonObject toJson() {
@@ -343,7 +350,7 @@ final class StreetSubscriptionObservable {
     return client.request<StreetSubscriptionData>(
       name: operation$Name(),
 
-      bridgeDecoder: StreetSubscriptionData.fromShalomValue,
+      decoder: StreetSubscriptionData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,

@@ -49,7 +49,7 @@ extension type HasFavoriteToyFragRef.fromInput(
     return await cache.readFragment<HasFavoriteToyFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      bridgeDecoder: HasFavoriteToyFragData.fromShalomValue,
+      decoder: HasFavoriteToyFragData.fromShalomValue,
     );
   }
 
@@ -58,7 +58,7 @@ extension type HasFavoriteToyFragRef.fromInput(
   ) {
     return client.subscribeToFragment<HasFavoriteToyFragData>(
       ref: _inner,
-      bridgeDecoder: HasFavoriteToyFragData.fromShalomValue,
+      decoder: HasFavoriteToyFragData.fromShalomValue,
     );
   }
 }

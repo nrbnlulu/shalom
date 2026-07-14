@@ -48,7 +48,7 @@ extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
     return await cache.readFragment<DogFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      bridgeDecoder: DogFragData.fromShalomValue,
+      decoder: DogFragData.fromShalomValue,
     );
   }
 
@@ -57,7 +57,7 @@ extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
   ) {
     return client.subscribeToFragment<DogFragData>(
       ref: _inner,
-      bridgeDecoder: DogFragData.fromShalomValue,
+      decoder: DogFragData.fromShalomValue,
     );
   }
 }

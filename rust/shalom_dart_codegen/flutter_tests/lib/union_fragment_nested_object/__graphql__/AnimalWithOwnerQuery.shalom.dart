@@ -347,11 +347,25 @@ final class AnimalWithOwnerQueryData implements shalom_core.OperationInterface {
     shalom_core.CacheProxy cache, {
     AnimalWithOwnerQueryVariables? variables,
   }) async {
-    return await cache.readQuery<AnimalWithOwnerQueryData>(
+    return await cache.readOperation<AnimalWithOwnerQueryData>(
       name: 'AnimalWithOwnerQuery',
-      bridgeDecoder: fromShalomValue,
+      decoder: fromShalomValue,
 
-      variablesValue: variables?.toShalomValue(),
+      variables: variables?.toShalomValue(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    AnimalWithOwnerQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'AnimalWithOwnerQuery',
+
+      variables: variables?.toShalomValue(),
     );
   }
 
@@ -390,9 +404,9 @@ final class AnimalWithOwnerQueryObservable {
     return client.request<AnimalWithOwnerQueryData>(
       name: operation$Name(),
 
-      variablesValue: variables.toShalomValue(),
+      variables: variables.toShalomValue(),
 
-      bridgeDecoder: AnimalWithOwnerQueryData.fromShalomValue,
+      decoder: AnimalWithOwnerQueryData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,

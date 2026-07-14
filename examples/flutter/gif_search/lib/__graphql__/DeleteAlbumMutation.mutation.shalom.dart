@@ -23,16 +23,16 @@ abstract class $DeleteAlbumMutation {
   }) => _client.mutate<DeleteAlbumMutationData>(
     name: operation$Name(),
 
-    variables: DeleteAlbumMutationVariables(id: id).toJson(),
+    variables: DeleteAlbumMutationVariables(id: id).toShalomValue(),
 
-    decoder: DeleteAlbumMutationData.fromCache,
+    decoder: DeleteAlbumMutationData.fromShalomValue,
   );
 
   /// Execute the mutation and update the cache via [update].
   ///
   /// [update] receives a [CacheProxy] and the typed mutation response data.
   /// It's only called if the mutation returns successful data.
-  /// Use [CacheProxy.readQuery] / [CacheProxy.writeQuery] to read the current
+  /// Use [CacheProxy.readOperation] / [CacheProxy.writeOperation] to read the current
   /// cached value of any query and write back a modified version — the typical
   /// pattern for keeping lists in sync after an add / remove / reorder mutation.
   ///
@@ -41,12 +41,12 @@ abstract class $DeleteAlbumMutation {
   /// await addTodo.executeWithCacheUpdate(
   ///   input: AddTodoInput(title: 'Buy milk'),
   ///   update: (cache, data) async {
-  ///     final current = await cache.readQuery(
+  ///     final current = await cache.readOperation(
   ///       name: 'GetTodos',
-  ///       decoder: GetTodosData.fromCache,
+  ///       decoder: GetTodosData.fromShalomValue,
   ///     );
   ///     if (current != null) {
-  ///       await cache.writeQuery(
+  ///       await cache.writeOperation(
   ///         data: GetTodosData(todos: [...current.todos, data.addTodo!]),
   ///       );
   ///     }
@@ -67,9 +67,9 @@ abstract class $DeleteAlbumMutation {
     final response = await _client.mutate<DeleteAlbumMutationData>(
       name: operation$Name(),
 
-      variables: vars.toJson(),
+      variables: vars.toShalomValue(),
 
-      decoder: DeleteAlbumMutationData.fromCache,
+      decoder: DeleteAlbumMutationData.fromShalomValue,
     );
     if (response case shalom_core.GraphQLData(data: final data)) {
       await update(CacheProxy(_client), data);
@@ -102,7 +102,7 @@ abstract class $DeleteAlbumMutation {
     final vars = DeleteAlbumMutationVariables(id: id);
     final writeId = await _client.writeOptimistic(
       name: operation$Name(),
-      data: optimisticFactory(vars).toJson(),
+      data: optimisticFactory(vars),
     );
 
     var rolledBack = false;
@@ -116,9 +116,9 @@ abstract class $DeleteAlbumMutation {
       final graphqlResponse = await _client.mutate<DeleteAlbumMutationData>(
         name: operation$Name(),
 
-        variables: vars.toJson(),
+        variables: vars.toShalomValue(),
 
-        decoder: DeleteAlbumMutationData.fromCache,
+        decoder: DeleteAlbumMutationData.fromShalomValue,
       );
       if (graphqlResponse case shalom_core.GraphQLData(
         data: final responseData,

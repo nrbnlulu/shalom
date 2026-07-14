@@ -48,7 +48,7 @@ extension type ToyFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
     return await cache.readFragment<ToyFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      bridgeDecoder: ToyFragData.fromShalomValue,
+      decoder: ToyFragData.fromShalomValue,
     );
   }
 
@@ -57,7 +57,7 @@ extension type ToyFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
   ) {
     return client.subscribeToFragment<ToyFragData>(
       ref: _inner,
-      bridgeDecoder: ToyFragData.fromShalomValue,
+      decoder: ToyFragData.fromShalomValue,
     );
   }
 }

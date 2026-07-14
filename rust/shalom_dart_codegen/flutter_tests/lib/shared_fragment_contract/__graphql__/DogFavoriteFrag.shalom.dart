@@ -54,7 +54,7 @@ extension type DogFavoriteFragRef.fromInput(
     return await cache.readFragment<DogFavoriteFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      bridgeDecoder: DogFavoriteFragData.fromShalomValue,
+      decoder: DogFavoriteFragData.fromShalomValue,
     );
   }
 
@@ -63,7 +63,7 @@ extension type DogFavoriteFragRef.fromInput(
   ) {
     return client.subscribeToFragment<DogFavoriteFragData>(
       ref: _inner,
-      bridgeDecoder: DogFavoriteFragData.fromShalomValue,
+      decoder: DogFavoriteFragData.fromShalomValue,
     );
   }
 }

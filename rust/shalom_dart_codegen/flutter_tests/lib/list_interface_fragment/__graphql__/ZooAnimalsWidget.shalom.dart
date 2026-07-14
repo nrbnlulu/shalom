@@ -50,7 +50,7 @@ extension type ZooAnimalsWidgetRef.fromInput(
     return await cache.readFragment<ZooAnimalsWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      bridgeDecoder: ZooAnimalsWidgetData.fromShalomValue,
+      decoder: ZooAnimalsWidgetData.fromShalomValue,
     );
   }
 
@@ -59,7 +59,7 @@ extension type ZooAnimalsWidgetRef.fromInput(
   ) {
     return client.subscribeToFragment<ZooAnimalsWidgetData>(
       ref: _inner,
-      bridgeDecoder: ZooAnimalsWidgetData.fromShalomValue,
+      decoder: ZooAnimalsWidgetData.fromShalomValue,
     );
   }
 }

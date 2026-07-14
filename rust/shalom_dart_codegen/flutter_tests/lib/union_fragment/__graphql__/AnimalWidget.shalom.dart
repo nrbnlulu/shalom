@@ -45,7 +45,7 @@ extension type AnimalWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     return await cache.readFragment<AnimalWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      bridgeDecoder: AnimalWidgetData.fromShalomValue,
+      decoder: AnimalWidgetData.fromShalomValue,
     );
   }
 
@@ -54,7 +54,7 @@ extension type AnimalWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   ) {
     return client.subscribeToFragment<AnimalWidgetData>(
       ref: _inner,
-      bridgeDecoder: AnimalWidgetData.fromShalomValue,
+      decoder: AnimalWidgetData.fromShalomValue,
     );
   }
 }

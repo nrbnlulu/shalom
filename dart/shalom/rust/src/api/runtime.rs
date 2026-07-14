@@ -662,13 +662,16 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
 /// Returns `None` when the data is absent or incomplete (missing refs), so
 /// callers don't need to handle partial results.
 #[frb]
-pub async fn read_query(
+pub async fn read_operation(
     handle: &RuntimeHandle,
     name: String,
     variables: Option<ShalomJsonValue>,
 ) -> anyhow::Result<Option<ShalomJsonValue>> {
     let variables = parse_variables(variables)?;
-    match handle.runtime.try_read_query(&name, variables.as_ref())? {
+    match handle
+        .runtime
+        .try_read_operation(&name, variables.as_ref())?
+    {
         Some(data) => Ok(Some(ShalomJsonValue::from(data))),
         None => Ok(None),
     }
@@ -681,7 +684,7 @@ pub async fn read_query(
 /// back.  Use it inside a mutation's `executeWithCacheUpdate` callback to keep
 /// cached lists in sync after an add / remove / reorder mutation.
 #[frb]
-pub async fn write_query(
+pub async fn write_operation(
     handle: &RuntimeHandle,
     name: String,
     data: ShalomJsonValue,
@@ -690,7 +693,23 @@ pub async fn write_query(
     let variables = parse_variables(variables)?;
     handle
         .runtime
-        .write_query(&name, Value::from(data), variables.as_ref())
+        .write_operation(&name, Value::from(data), variables.as_ref())
+}
+
+/// Evict a pre-registered operation's cached root field(s) (matched by
+/// `variables`) and notify any active subscribers.
+///
+/// Only unlinks the operation's own root entry — entities it referenced are
+/// reclaimed by the next GC sweep if nothing else keeps them reachable.
+/// Returns `false` if no matching cache entry existed.
+#[frb]
+pub async fn evict_operation(
+    handle: &RuntimeHandle,
+    name: String,
+    variables: Option<ShalomJsonValue>,
+) -> anyhow::Result<bool> {
+    let variables = parse_variables(variables)?;
+    handle.runtime.evict_operation(&name, variables.as_ref())
 }
 
 /// Read an entity from the cache through a fragment's selection set.

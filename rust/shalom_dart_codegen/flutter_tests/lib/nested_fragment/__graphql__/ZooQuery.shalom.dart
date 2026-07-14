@@ -193,11 +193,25 @@ final class ZooQueryData implements shalom_core.OperationInterface {
     shalom_core.CacheProxy cache, {
     ZooQueryVariables? variables,
   }) async {
-    return await cache.readQuery<ZooQueryData>(
+    return await cache.readOperation<ZooQueryData>(
       name: 'ZooQuery',
-      bridgeDecoder: fromShalomValue,
+      decoder: fromShalomValue,
 
-      variablesValue: variables?.toShalomValue(),
+      variables: variables?.toShalomValue(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    ZooQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'ZooQuery',
+
+      variables: variables?.toShalomValue(),
     );
   }
 
@@ -236,9 +250,9 @@ final class ZooQueryObservable {
     return client.request<ZooQueryData>(
       name: operation$Name(),
 
-      variablesValue: variables.toShalomValue(),
+      variables: variables.toShalomValue(),
 
-      bridgeDecoder: ZooQueryData.fromShalomValue,
+      decoder: ZooQueryData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,

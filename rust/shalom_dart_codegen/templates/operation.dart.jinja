@@ -129,11 +129,28 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface {
         {{ operation_name }}Variables? variables,
         }{% endif %}
     ) async {
-        return await cache.readQuery<{{ operation_name }}Data>(
+        return await cache.readOperation<{{ operation_name }}Data>(
             name: '{{ operation_name }}',
-            bridgeDecoder: fromShalomValue,
+            decoder: fromShalomValue,
             {% if op_variables_exist %}
-            variablesValue: variables?.toShalomValue(),
+            variables: variables?.toShalomValue(),
+            {% endif %}
+        );
+    }
+
+    /// Evicts this operation's cached entry (matched by [variables]) through
+    /// [cache], notifying any active subscribers. Returns `false` if no
+    /// matching cache entry existed.
+    static Future<bool> evictFrom(
+        shalom_core.CacheProxy cache
+        {%- if op_variables_exist %}, {
+        {{ operation_name }}Variables? variables,
+        }{% endif %}
+    ) {
+        return cache.evictOperation(
+            name: '{{ operation_name }}',
+            {% if op_variables_exist %}
+            variables: variables?.toShalomValue(),
             {% endif %}
         );
     }
@@ -192,9 +209,9 @@ final class {{ operation_name }}Observable {
         return client.request<{{ operation_name }}Data>(
             name: operation$Name(),
             {% if op_variables_exist %}
-            variablesValue: variables.toShalomValue(),
+            variables: variables.toShalomValue(),
             {% endif %}
-            bridgeDecoder: {{ operation_name }}Data.fromShalomValue,
+            decoder: {{ operation_name }}Data.fromShalomValue,
             executionPolicy: executionPolicy,
             retryDelay: retryDelay,
             autoRefetch: autoRefetch,

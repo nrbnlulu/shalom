@@ -48,7 +48,7 @@ extension type ZooWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     return await cache.readFragment<ZooWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      bridgeDecoder: ZooWidgetData.fromShalomValue,
+      decoder: ZooWidgetData.fromShalomValue,
     );
   }
 
@@ -57,7 +57,7 @@ extension type ZooWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
   ) {
     return client.subscribeToFragment<ZooWidgetData>(
       ref: _inner,
-      bridgeDecoder: ZooWidgetData.fromShalomValue,
+      decoder: ZooWidgetData.fromShalomValue,
     );
   }
 }

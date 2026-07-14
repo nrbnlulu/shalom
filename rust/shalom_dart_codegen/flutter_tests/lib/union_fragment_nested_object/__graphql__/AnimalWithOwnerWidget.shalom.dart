@@ -49,7 +49,7 @@ extension type AnimalWithOwnerWidgetRef.fromInput(
     return await cache.readFragment<AnimalWithOwnerWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      bridgeDecoder: AnimalWithOwnerWidgetData.fromShalomValue,
+      decoder: AnimalWithOwnerWidgetData.fromShalomValue,
     );
   }
 
@@ -58,7 +58,7 @@ extension type AnimalWithOwnerWidgetRef.fromInput(
   ) {
     return client.subscribeToFragment<AnimalWithOwnerWidgetData>(
       ref: _inner,
-      bridgeDecoder: AnimalWithOwnerWidgetData.fromShalomValue,
+      decoder: AnimalWithOwnerWidgetData.fromShalomValue,
     );
   }
 }

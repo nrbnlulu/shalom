@@ -62,14 +62,14 @@ extension type {{ fragment_name }}Ref.fromInput(shalom_core.ObservedRefInput _in
     return await cache.readFragment<{{ fragment_name }}Data>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      bridgeDecoder: {{ fragment_name }}Data.fromShalomValue,
+      decoder: {{ fragment_name }}Data.fromShalomValue,
     );
   }
 
   Stream<shalom_core.GraphQLResponse<{{ fragment_name }}Data>> observe(shalom_core.ShalomRuntimeClient client) {
     return client.subscribeToFragment<{{ fragment_name }}Data>(
       ref: _inner,
-      bridgeDecoder: {{ fragment_name }}Data.fromShalomValue,
+      decoder: {{ fragment_name }}Data.fromShalomValue,
     );
   }
 }

@@ -35,6 +35,12 @@ extension type AlbumGifRef.fromInput(shalom_core.ObservedRefInput _inner) {
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [AlbumGifData]. Returns `null` when absent or incomplete.
@@ -42,7 +48,7 @@ extension type AlbumGifRef.fromInput(shalom_core.ObservedRefInput _inner) {
     return await cache.readFragment<AlbumGifData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: AlbumGifData.fromCache,
+      decoder: AlbumGifData.fromShalomValue,
     );
   }
 
@@ -51,7 +57,7 @@ extension type AlbumGifRef.fromInput(shalom_core.ObservedRefInput _inner) {
   ) {
     return client.subscribeToFragment<AlbumGifData>(
       ref: _inner,
-      decoder: AlbumGifData.fromCache,
+      decoder: AlbumGifData.fromShalomValue,
     );
   }
 }
@@ -62,6 +68,7 @@ abstract class AlbumGif {
   String get url;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 final class AlbumGifData implements AlbumGif, shalom_core.FragmentInterface {
@@ -106,9 +113,28 @@ final class AlbumGifData implements AlbumGif, shalom_core.FragmentInterface {
     return AlbumGifData(id: id$value, title: title$value, url: url$value);
   }
 
+  static AlbumGifData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? title$raw = data.field('title');
+    final String title$value = title$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? url$raw = data.field('url');
+    final String url$value = url$raw!.stringValue;
+    return AlbumGifData(id: id$value, title: title$value, url: url$value);
+  }
+
   shalom_core.JsonObject toJson() {
     return {'id': this.id, 'title': this.title, 'url': this.url};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'title': shalom_core.shalomJsonValue(this.title!),
+
+    'url': shalom_core.shalomJsonValue(this.url!),
+  });
 }
 
 abstract class $AlbumGif extends StatelessWidget {

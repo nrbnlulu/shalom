@@ -138,7 +138,7 @@ mutation DeleteAlbumMutation ($id: String!) {
     document: r'''
 mutation CreateAlbumMutation ($name: String!) {
     createAlbum(name: $name) {
-      id 
+      id
       name
       tag
       gifs {
