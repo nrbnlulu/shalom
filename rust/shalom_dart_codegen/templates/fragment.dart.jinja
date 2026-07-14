@@ -49,6 +49,12 @@ extension type {{ fragment_name }}Ref.fromInput(shalom_core.ObservedRefInput _in
   shalom_core.ObservedRefInput get toInput => _inner;
   String get anchor => _inner.anchor;
   shalom_core.JsonObject toJson() => {'__shalom_observed_ref': {'observable_id': _inner.observableId, 'anchor': _inner.anchor}};
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [{{ fragment_name }}Data]. Returns `null` when absent or incomplete.
@@ -56,14 +62,14 @@ extension type {{ fragment_name }}Ref.fromInput(shalom_core.ObservedRefInput _in
     return await cache.readFragment<{{ fragment_name }}Data>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: {{ fragment_name }}Data.fromCache,
+      bridgeDecoder: {{ fragment_name }}Data.fromShalomValue,
     );
   }
 
   Stream<shalom_core.GraphQLResponse<{{ fragment_name }}Data>> observe(shalom_core.ShalomRuntimeClient client) {
     return client.subscribeToFragment<{{ fragment_name }}Data>(
       ref: _inner,
-      decoder: {{ fragment_name }}Data.fromCache,
+      bridgeDecoder: {{ fragment_name }}Data.fromShalomValue,
     );
   }
 }
@@ -74,6 +80,7 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
   {% endfor %}
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 {% if is_multi_type %}
@@ -97,6 +104,18 @@ sealed class {{ fragment_name }}Data implements {{ fragment_name }} {
         return const {{ fragment_name }}Data$Unknown();
     }
   }
+
+  static {{ fragment_name }}Data fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final typename = data.field('__typename')?.stringValue;
+    switch(typename) {
+      {% for concrete in root_concretes -%}
+      case '{{ concrete.schema_typename }}':
+        return {{ fragment_name }}Data${{ concrete.schema_typename }}.fromShalomValue(data);
+      {% endfor %}
+      default:
+        return const {{ fragment_name }}Data$Unknown();
+    }
+  }
 }
 
 {% for concrete in root_concretes -%}
@@ -115,6 +134,9 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
 
   @override
   shalom_core.JsonObject toJson() => throw UnimplementedError();
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => throw UnimplementedError();
 }
 
 {# Nested object definitions within concrete types #}
@@ -133,6 +155,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
       String get $__typename;
       const {{ union_full_name }}();
       shalom_core.JsonObject toJson();
+      shalom_core.ShalomJsonValue toShalomValue();
 
       static {{ union_full_name }} fromJson(shalom_core.JsonObject data) {
         final typename = data['__typename'] as String;
@@ -140,6 +163,18 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
           {% for concrete in concretes -%}
             case '{{ concrete.schema_typename }}':
               return {{ concrete.path_name }}.fromJson(data);
+          {% endfor %}
+          default:
+            throw Exception("Unknown typename $typename");
+        }
+      }
+
+      static {{ union_full_name }} fromShalomValue(shalom_core.ShalomJsonValue data) {
+        final typename = data.field('__typename')!.stringValue;
+        switch(typename) {
+          {% for concrete in concretes -%}
+            case '{{ concrete.schema_typename }}':
+              return {{ concrete.path_name }}.fromShalomValue(data);
           {% endfor %}
           default:
             throw Exception("Unknown typename $typename");
@@ -165,6 +200,7 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
       String get $__typename;
       const {{ iface_path_name }}();
       shalom_core.JsonObject toJson();
+      shalom_core.ShalomJsonValue toShalomValue();
 
       static {{ iface_path_name }} fromJson(shalom_core.JsonObject data) {
         final typename = data['__typename'] as String;
@@ -172,6 +208,18 @@ final class {{ fragment_name }}Data$Unknown extends {{ fragment_name }}Data {
           {% for concrete in concretes -%}
             case '{{ concrete.schema_typename }}':
               return {{ concrete.path_name }}.fromJson(data);
+          {% endfor %}
+          default:
+            throw Exception("Unknown typename $typename");
+        }
+      }
+
+      static {{ iface_path_name }} fromShalomValue(shalom_core.ShalomJsonValue data) {
+        final typename = data.field('__typename')!.stringValue;
+        switch(typename) {
+          {% for concrete in concretes -%}
+            case '{{ concrete.schema_typename }}':
+              return {{ concrete.path_name }}.fromShalomValue(data);
           {% endfor %}
           default:
             throw Exception("Unknown typename $typename");
@@ -270,6 +318,19 @@ final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.
     );
   }
 
+  static {{ fragment_name }}Data fromShalomValue(shalom_core.ShalomJsonValue data) {
+    {% for selection in fragment_data_selections if selection.name != "__typename" -%}
+      final shalom_core.ShalomJsonValue? {{selection.name}}$raw = data.field('{{selection.name}}');
+      {% set raw_value_symbol = selection.name + "$raw" -%}
+      final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_shalom_macro(raw_value_symbol, selection, selection.is_optional, false) }};
+    {% endfor -%}
+    return {{ fragment_name }}Data(
+      {% for selection in fragment_data_selections if selection.name != "__typename" -%}
+        {{selection.name}}: {{selection.name}}$value,
+      {% endfor -%}
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {
       {% for selection in fragment_data_selections if selection.name != "__typename" %}
@@ -277,6 +338,13 @@ final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.
       {% endfor %}
     };
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    {% for selection in fragment_data_selections if selection.name != "__typename" %}
+      '{{ selection.name }}': {{ _serialize_selection_to_shalom_macro("this." + selection.name, selection, selection.is_optional, false) }},
+    {% endfor %}
+  });
 }
 {% endif %}
 
@@ -336,6 +404,7 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
 
 
   Map<String, dynamic> toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 
 }
 
@@ -364,6 +433,7 @@ class {{ fragment_name }}Impl implements {{ fragment_name }} {
         const {{ union_full_name }}();
 
         shalom_core.JsonObject toJson();
+        shalom_core.ShalomJsonValue toShalomValue();
 
 
         static {{ union_full_name }} fromJson(shalom_core.JsonObject data) {
@@ -372,6 +442,18 @@ class {{ fragment_name }}Impl implements {{ fragment_name }} {
                 {% for concrete in concretes -%}
                     case '{{ concrete.schema_typename }}':
                         return {{ concrete.path_name }}.fromJson(data);
+                {% endfor %}
+                default:
+                    throw Exception("Unknown typename $typename");
+            }
+        }
+
+        static {{ union_full_name }} fromShalomValue(shalom_core.ShalomJsonValue data) {
+            final typename = data.field('__typename')!.stringValue;
+            switch(typename) {
+                {% for concrete in concretes -%}
+                    case '{{ concrete.schema_typename }}':
+                        return {{ concrete.path_name }}.fromShalomValue(data);
                 {% endfor %}
                 default:
                     throw Exception("Unknown typename $typename");
@@ -402,6 +484,7 @@ class {{ fragment_name }}Impl implements {{ fragment_name }} {
         const {{ iface_path_name }}();
 
         shalom_core.JsonObject toJson();
+        shalom_core.ShalomJsonValue toShalomValue();
 
 
         static {{ iface_path_name }} fromJson(shalom_core.JsonObject data) {
@@ -410,6 +493,18 @@ class {{ fragment_name }}Impl implements {{ fragment_name }} {
                 {% for concrete in concretes -%}
                     case '{{ concrete.schema_typename }}':
                         return {{ concrete.path_name }}.fromJson(data);
+                {% endfor %}
+                default:
+                    throw Exception("Unknown typename $typename");
+            }
+        }
+
+        static {{ iface_path_name }} fromShalomValue(shalom_core.ShalomJsonValue data) {
+            final typename = data.field('__typename')!.stringValue;
+            switch(typename) {
+                {% for concrete in concretes -%}
+                    case '{{ concrete.schema_typename }}':
+                        return {{ concrete.path_name }}.fromShalomValue(data);
                 {% endfor %}
                 default:
                     throw Exception("Unknown typename $typename");

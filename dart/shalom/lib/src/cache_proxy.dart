@@ -1,5 +1,5 @@
 import 'package:shalom/src/shalom_core_base.dart'
-    show FragmentInterface, JsonObject, OperationInterface;
+    show FragmentInterface, JsonObject, OperationInterface, ShalomJsonValue;
 import 'runtime_client.dart' show ShalomRuntimeClient;
 
 /// A focused cache interface passed to mutation `update` callbacks.
@@ -17,16 +17,29 @@ class CacheProxy {
   /// Returns `null` when the data is absent or incomplete (missing refs).
   Future<T?> readQuery<T>({
     required String name,
-    required T Function(JsonObject) decoder,
+    T Function(JsonObject)? decoder,
+    T Function(ShalomJsonValue)? bridgeDecoder,
     Map<String, dynamic>? variables,
-  }) => _client.readQuery(name: name, decoder: decoder, variables: variables);
+    ShalomJsonValue? variablesValue,
+  }) => _client.readQuery(
+    name: name,
+    decoder: decoder,
+    bridgeDecoder: bridgeDecoder,
+    variables: variables,
+    variablesValue: variablesValue,
+  );
 
   /// Write [data] to the cache for its generated operation, normalizing it
   /// and notifying any active subscribers.
   Future<void> writeQuery<T extends OperationInterface>({
     required T data,
     Map<String, dynamic>? variables,
-  }) => _client.writeQuery(data: data, variables: variables);
+    ShalomJsonValue? variablesValue,
+  }) => _client.writeQuery(
+    data: data,
+    variables: variables,
+    variablesValue: variablesValue,
+  );
 
   /// Read an entity from the cache through the fragment's selection set.
   ///
@@ -34,11 +47,13 @@ class CacheProxy {
   Future<T?> readFragment<T>({
     required String fragmentName,
     required String entityKey,
-    required T Function(JsonObject) decoder,
+    T Function(JsonObject)? decoder,
+    T Function(ShalomJsonValue)? bridgeDecoder,
   }) => _client.readFragment(
     fragmentName: fragmentName,
     entityKey: entityKey,
     decoder: decoder,
+    bridgeDecoder: bridgeDecoder,
   );
 
   /// Write [data] directly into the entity store using the fragment's

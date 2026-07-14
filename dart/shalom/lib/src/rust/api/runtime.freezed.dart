@@ -182,7 +182,7 @@ return millis(_that.field0);case _:
 
 class RetryDelayInput_Inherit extends RetryDelayInput {
   const RetryDelayInput_Inherit(): super._();
-  
+
 
 
 
@@ -418,12 +418,12 @@ return transportError(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( String dataJson)?  data,TResult Function( String errorsJson,  String? extensionsJson)?  graphQlError,TResult Function( String code,  String message,  String? detailsJson)?  transportError,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( ShalomJsonValue data)?  data,TResult Function( List<ShalomJsonValue> errors,  ShalomJsonValue? extensions)?  graphQlError,TResult Function( String code,  String message,  ShalomJsonValue? details)?  transportError,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case SubscriptionEvent_Data() when data != null:
-return data(_that.dataJson);case SubscriptionEvent_GraphQlError() when graphQlError != null:
-return graphQlError(_that.errorsJson,_that.extensionsJson);case SubscriptionEvent_TransportError() when transportError != null:
-return transportError(_that.code,_that.message,_that.detailsJson);case _:
+return data(_that.data);case SubscriptionEvent_GraphQlError() when graphQlError != null:
+return graphQlError(_that.errors,_that.extensions);case SubscriptionEvent_TransportError() when transportError != null:
+return transportError(_that.code,_that.message,_that.details);case _:
   return orElse();
 
 }
@@ -441,12 +441,12 @@ return transportError(_that.code,_that.message,_that.detailsJson);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( String dataJson)  data,required TResult Function( String errorsJson,  String? extensionsJson)  graphQlError,required TResult Function( String code,  String message,  String? detailsJson)  transportError,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( ShalomJsonValue data)  data,required TResult Function( List<ShalomJsonValue> errors,  ShalomJsonValue? extensions)  graphQlError,required TResult Function( String code,  String message,  ShalomJsonValue? details)  transportError,}) {final _that = this;
 switch (_that) {
 case SubscriptionEvent_Data():
-return data(_that.dataJson);case SubscriptionEvent_GraphQlError():
-return graphQlError(_that.errorsJson,_that.extensionsJson);case SubscriptionEvent_TransportError():
-return transportError(_that.code,_that.message,_that.detailsJson);}
+return data(_that.data);case SubscriptionEvent_GraphQlError():
+return graphQlError(_that.errors,_that.extensions);case SubscriptionEvent_TransportError():
+return transportError(_that.code,_that.message,_that.details);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -460,12 +460,12 @@ return transportError(_that.code,_that.message,_that.detailsJson);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( String dataJson)?  data,TResult? Function( String errorsJson,  String? extensionsJson)?  graphQlError,TResult? Function( String code,  String message,  String? detailsJson)?  transportError,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( ShalomJsonValue data)?  data,TResult? Function( List<ShalomJsonValue> errors,  ShalomJsonValue? extensions)?  graphQlError,TResult? Function( String code,  String message,  ShalomJsonValue? details)?  transportError,}) {final _that = this;
 switch (_that) {
 case SubscriptionEvent_Data() when data != null:
-return data(_that.dataJson);case SubscriptionEvent_GraphQlError() when graphQlError != null:
-return graphQlError(_that.errorsJson,_that.extensionsJson);case SubscriptionEvent_TransportError() when transportError != null:
-return transportError(_that.code,_that.message,_that.detailsJson);case _:
+return data(_that.data);case SubscriptionEvent_GraphQlError() when graphQlError != null:
+return graphQlError(_that.errors,_that.extensions);case SubscriptionEvent_TransportError() when transportError != null:
+return transportError(_that.code,_that.message,_that.details);case _:
   return null;
 
 }
@@ -477,10 +477,10 @@ return transportError(_that.code,_that.message,_that.detailsJson);case _:
 
 
 class SubscriptionEvent_Data extends SubscriptionEvent {
-  const SubscriptionEvent_Data({required this.dataJson}): super._();
+  const SubscriptionEvent_Data({required this.data}): super._();
   
 
- final  String dataJson;
+ final  ShalomJsonValue data;
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -492,16 +492,16 @@ $SubscriptionEvent_DataCopyWith<SubscriptionEvent_Data> get copyWith => _$Subscr
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_Data&&(identical(other.dataJson, dataJson) || other.dataJson == dataJson));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_Data&&(identical(other.data, data) || other.data == data));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,dataJson);
+int get hashCode => Object.hash(runtimeType,data);
 
 @override
 String toString() {
-  return 'SubscriptionEvent.data(dataJson: $dataJson)';
+  return 'SubscriptionEvent.data(data: $data)';
 }
 
 
@@ -512,11 +512,11 @@ abstract mixin class $SubscriptionEvent_DataCopyWith<$Res> implements $Subscript
   factory $SubscriptionEvent_DataCopyWith(SubscriptionEvent_Data value, $Res Function(SubscriptionEvent_Data) _then) = _$SubscriptionEvent_DataCopyWithImpl;
 @useResult
 $Res call({
- String dataJson
+ ShalomJsonValue data
 });
 
 
-
+$ShalomJsonValueCopyWith<$Res> get data;
 
 }
 /// @nodoc
@@ -529,25 +529,40 @@ class _$SubscriptionEvent_DataCopyWithImpl<$Res>
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? dataJson = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? data = null,}) {
   return _then(SubscriptionEvent_Data(
-dataJson: null == dataJson ? _self.dataJson : dataJson // ignore: cast_nullable_to_non_nullable
-as String,
+data: null == data ? _self.data : data // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue,
   ));
 }
 
+/// Create a copy of SubscriptionEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res> get data {
 
+  return $ShalomJsonValueCopyWith<$Res>(_self.data, (value) {
+    return _then(_self.copyWith(data: value));
+  });
+}
 }
 
 /// @nodoc
 
 
 class SubscriptionEvent_GraphQlError extends SubscriptionEvent {
-  const SubscriptionEvent_GraphQlError({required this.errorsJson, this.extensionsJson}): super._();
+  const SubscriptionEvent_GraphQlError({required final  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
   
 
- final  String errorsJson;
- final  String? extensionsJson;
+ final  List<ShalomJsonValue> _errors;
+ List<ShalomJsonValue> get errors {
+  if (_errors is EqualUnmodifiableListView) return _errors;
+  // ignore: implicit_dynamic_type
+  return EqualUnmodifiableListView(_errors);
+}
+
+ final  ShalomJsonValue? extensions;
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -559,16 +574,16 @@ $SubscriptionEvent_GraphQlErrorCopyWith<SubscriptionEvent_GraphQlError> get copy
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_GraphQlError&&(identical(other.errorsJson, errorsJson) || other.errorsJson == errorsJson)&&(identical(other.extensionsJson, extensionsJson) || other.extensionsJson == extensionsJson));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_GraphQlError&&const DeepCollectionEquality().equals(other._errors, _errors)&&(identical(other.extensions, extensions) || other.extensions == extensions));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,errorsJson,extensionsJson);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_errors),extensions);
 
 @override
 String toString() {
-  return 'SubscriptionEvent.graphQlError(errorsJson: $errorsJson, extensionsJson: $extensionsJson)';
+  return 'SubscriptionEvent.graphQlError(errors: $errors, extensions: $extensions)';
 }
 
 
@@ -579,11 +594,11 @@ abstract mixin class $SubscriptionEvent_GraphQlErrorCopyWith<$Res> implements $S
   factory $SubscriptionEvent_GraphQlErrorCopyWith(SubscriptionEvent_GraphQlError value, $Res Function(SubscriptionEvent_GraphQlError) _then) = _$SubscriptionEvent_GraphQlErrorCopyWithImpl;
 @useResult
 $Res call({
- String errorsJson, String? extensionsJson
+ List<ShalomJsonValue> errors, ShalomJsonValue? extensions
 });
 
 
-
+$ShalomJsonValueCopyWith<$Res>? get extensions;
 
 }
 /// @nodoc
@@ -596,27 +611,39 @@ class _$SubscriptionEvent_GraphQlErrorCopyWithImpl<$Res>
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? errorsJson = null,Object? extensionsJson = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? errors = null,Object? extensions = freezed,}) {
   return _then(SubscriptionEvent_GraphQlError(
-errorsJson: null == errorsJson ? _self.errorsJson : errorsJson // ignore: cast_nullable_to_non_nullable
-as String,extensionsJson: freezed == extensionsJson ? _self.extensionsJson : extensionsJson // ignore: cast_nullable_to_non_nullable
-as String?,
+errors: null == errors ? _self._errors : errors // ignore: cast_nullable_to_non_nullable
+as List<ShalomJsonValue>,extensions: freezed == extensions ? _self.extensions : extensions // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue?,
   ));
 }
 
+/// Create a copy of SubscriptionEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res>? get extensions {
+    if (_self.extensions == null) {
+    return null;
+  }
 
+  return $ShalomJsonValueCopyWith<$Res>(_self.extensions!, (value) {
+    return _then(_self.copyWith(extensions: value));
+  });
+}
 }
 
 /// @nodoc
 
 
 class SubscriptionEvent_TransportError extends SubscriptionEvent {
-  const SubscriptionEvent_TransportError({required this.code, required this.message, this.detailsJson}): super._();
+  const SubscriptionEvent_TransportError({required this.code, required this.message, this.details}): super._();
   
 
  final  String code;
  final  String message;
- final  String? detailsJson;
+ final  ShalomJsonValue? details;
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -628,16 +655,16 @@ $SubscriptionEvent_TransportErrorCopyWith<SubscriptionEvent_TransportError> get 
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_TransportError&&(identical(other.code, code) || other.code == code)&&(identical(other.message, message) || other.message == message)&&(identical(other.detailsJson, detailsJson) || other.detailsJson == detailsJson));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SubscriptionEvent_TransportError&&(identical(other.code, code) || other.code == code)&&(identical(other.message, message) || other.message == message)&&(identical(other.details, details) || other.details == details));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,code,message,detailsJson);
+int get hashCode => Object.hash(runtimeType,code,message,details);
 
 @override
 String toString() {
-  return 'SubscriptionEvent.transportError(code: $code, message: $message, detailsJson: $detailsJson)';
+  return 'SubscriptionEvent.transportError(code: $code, message: $message, details: $details)';
 }
 
 
@@ -648,11 +675,11 @@ abstract mixin class $SubscriptionEvent_TransportErrorCopyWith<$Res> implements 
   factory $SubscriptionEvent_TransportErrorCopyWith(SubscriptionEvent_TransportError value, $Res Function(SubscriptionEvent_TransportError) _then) = _$SubscriptionEvent_TransportErrorCopyWithImpl;
 @useResult
 $Res call({
- String code, String message, String? detailsJson
+ String code, String message, ShalomJsonValue? details
 });
 
 
-
+$ShalomJsonValueCopyWith<$Res>? get details;
 
 }
 /// @nodoc
@@ -665,16 +692,28 @@ class _$SubscriptionEvent_TransportErrorCopyWithImpl<$Res>
 
 /// Create a copy of SubscriptionEvent
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? code = null,Object? message = null,Object? detailsJson = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? code = null,Object? message = null,Object? details = freezed,}) {
   return _then(SubscriptionEvent_TransportError(
 code: null == code ? _self.code : code // ignore: cast_nullable_to_non_nullable
 as String,message: null == message ? _self.message : message // ignore: cast_nullable_to_non_nullable
-as String,detailsJson: freezed == detailsJson ? _self.detailsJson : detailsJson // ignore: cast_nullable_to_non_nullable
-as String?,
+as String,details: freezed == details ? _self.details : details // ignore: cast_nullable_to_non_nullable
+as ShalomJsonValue?,
   ));
 }
 
+/// Create a copy of SubscriptionEvent
+/// with the given fields replaced by the non-null parameter values.
+@override
+@pragma('vm:prefer-inline')
+$ShalomJsonValueCopyWith<$Res>? get details {
+    if (_self.details == null) {
+    return null;
+  }
 
+  return $ShalomJsonValueCopyWith<$Res>(_self.details!, (value) {
+    return _then(_self.copyWith(details: value));
+  });
+}
 }
 
 // dart format on

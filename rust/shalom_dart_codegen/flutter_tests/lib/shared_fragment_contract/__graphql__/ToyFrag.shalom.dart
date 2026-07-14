@@ -35,6 +35,12 @@ extension type ToyFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [ToyFragData]. Returns `null` when absent or incomplete.
@@ -42,7 +48,7 @@ extension type ToyFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
     return await cache.readFragment<ToyFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: ToyFragData.fromCache,
+      bridgeDecoder: ToyFragData.fromShalomValue,
     );
   }
 
@@ -51,7 +57,7 @@ extension type ToyFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
   ) {
     return client.subscribeToFragment<ToyFragData>(
       ref: _inner,
-      decoder: ToyFragData.fromCache,
+      bridgeDecoder: ToyFragData.fromShalomValue,
     );
   }
 }
@@ -61,6 +67,7 @@ abstract class ToyFrag {
   String get label;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 final class ToyFragData implements ToyFrag, shalom_core.FragmentInterface {
@@ -96,9 +103,24 @@ final class ToyFragData implements ToyFrag, shalom_core.FragmentInterface {
     return ToyFragData(id: id$value, label: label$value);
   }
 
+  static ToyFragData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? label$raw = data.field('label');
+    final String label$value = label$raw!.stringValue;
+    return ToyFragData(id: id$value, label: label$value);
+  }
+
   shalom_core.JsonObject toJson() {
     return {'id': this.id, 'label': this.label};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'label': shalom_core.shalomJsonValue(this.label!),
+  });
 }
 
 abstract class $ToyFrag extends StatelessWidget {

@@ -38,10 +38,26 @@ class UserCardQueryResponse {
     return {'user': this.user?.toJson()};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'user': this.user == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.user!.toShalomValue(),
+  });
+
   static UserCardQueryResponse fromJson(shalom_core.JsonObject data) {
     final UserCardQuery_user? user$value = data['user'] == null
         ? null
         : UserCardQuery_user.fromJson(data['user'] as shalom_core.JsonObject);
+    return UserCardQueryResponse(user: user$value);
+  }
+
+  static UserCardQueryResponse fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? user$raw = data.field('user');
+    final UserCardQuery_user? user$value = user$raw == null || user$raw!.isNull
+        ? null
+        : UserCardQuery_user.fromShalomValue(user$raw!);
     return UserCardQueryResponse(user: user$value);
   }
 }
@@ -85,6 +101,14 @@ class UserCardQuery_user {
     return {'email': this.email, 'id': this.id, 'name': this.name};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'email': shalom_core.shalomJsonValue(this.email!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static UserCardQuery_user fromJson(shalom_core.JsonObject data) {
     final String email$value = data['email'] as String;
     final String id$value = data['id'] as String;
@@ -94,6 +118,20 @@ class UserCardQuery_user {
 
       id: id$value,
 
+      name: name$value,
+    );
+  }
+
+  static UserCardQuery_user fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? email$raw = data.field('email');
+    final String email$value = email$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
+    return UserCardQuery_user(
+      email: email$value,
+      id: id$value,
       name: name$value,
     );
   }
@@ -130,6 +168,14 @@ final class UserCardQueryData implements shalom_core.OperationInterface {
     return UserCardQueryData(user: user$value);
   }
 
+  static UserCardQueryData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? user$raw = data.field('user');
+    final UserCardQuery_user? user$value = user$raw == null || user$raw!.isNull
+        ? null
+        : UserCardQuery_user.fromShalomValue(user$raw!);
+    return UserCardQueryData(user: user$value);
+  }
+
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [UserCardQueryData]. Returns `null` when absent or incomplete.
   static Future<UserCardQueryData?> readFrom(
@@ -138,15 +184,22 @@ final class UserCardQueryData implements shalom_core.OperationInterface {
   }) async {
     return await cache.readQuery<UserCardQueryData>(
       name: 'UserCardQuery',
-      decoder: fromCache,
+      bridgeDecoder: fromShalomValue,
 
-      variables: variables?.toJson(),
+      variablesValue: variables?.toShalomValue(),
     );
   }
 
   shalom_core.JsonObject toJson() {
     return {'user': this.user?.toJson()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'user': this.user == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.user!.toShalomValue(),
+  });
 }
 
 final class UserCardQueryObservable {
@@ -172,9 +225,9 @@ final class UserCardQueryObservable {
     return client.request<UserCardQueryData>(
       name: operation$Name(),
 
-      variables: variables.toJson(),
+      variablesValue: variables.toShalomValue(),
 
-      decoder: UserCardQueryData.fromCache,
+      bridgeDecoder: UserCardQueryData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,
@@ -193,6 +246,12 @@ final class UserCardQueryVariables {
     data["id"] = this.id;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final data = <String, shalom_core.ShalomJsonValue>{};
+    data["id"] = shalom_core.shalomJsonValue(this.id!);
+    return shalom_core.shalomJsonObject(data);
   }
 
   @override

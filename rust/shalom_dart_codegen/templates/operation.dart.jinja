@@ -108,6 +108,19 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface {
         );
     }
 
+    static {{ operation_name }}Data fromShalomValue(shalom_core.ShalomJsonValue data) {
+        {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
+            final shalom_core.ShalomJsonValue? {{selection.name}}$raw = data.field('{{selection.name}}');
+            {% set raw_value_symbol = selection.name + "$raw" -%}
+            final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_shalom_macro(raw_value_symbol, selection, selection.is_optional) }};
+        {% endfor -%}
+        return {{ operation_name }}Data(
+            {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
+                {{selection.name}}: {{selection.name}}$value,
+            {% endfor -%}
+        );
+    }
+
     /// Reads this operation's current cache entry through [cache], decoding
     /// it as [{{ operation_name }}Data]. Returns `null` when absent or incomplete.
     static Future<{{ operation_name }}Data?> readFrom(
@@ -118,9 +131,9 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface {
     ) async {
         return await cache.readQuery<{{ operation_name }}Data>(
             name: '{{ operation_name }}',
-            decoder: fromCache,
+            bridgeDecoder: fromShalomValue,
             {% if op_variables_exist %}
-            variables: variables?.toJson(),
+            variablesValue: variables?.toShalomValue(),
             {% endif %}
         );
     }
@@ -143,6 +156,17 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface {
             {% endfor %}
         };
     }
+
+    @override
+    shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+        {% for selection in context.operation.root_type.selections %}
+            {% if selection.name == "__typename" %}
+                "__typename": shalom_core.shalomJsonValue({{ response_class_name }}.G__typename),
+            {% else %}
+                '{{ selection.name }}': {{ _serialize_selection_to_shalom_macro("this." + selection.name, selection, selection.is_optional) }},
+            {% endif %}
+        {% endfor %}
+    });
 }
 
 final class {{ operation_name }}Observable {
@@ -168,9 +192,9 @@ final class {{ operation_name }}Observable {
         return client.request<{{ operation_name }}Data>(
             name: operation$Name(),
             {% if op_variables_exist %}
-            variables: variables.toJson(),
+            variablesValue: variables.toShalomValue(),
             {% endif %}
-            decoder: {{ operation_name }}Data.fromCache,
+            bridgeDecoder: {{ operation_name }}Data.fromShalomValue,
             executionPolicy: executionPolicy,
             retryDelay: retryDelay,
             autoRefetch: autoRefetch,
@@ -203,6 +227,10 @@ final class {{ operation_name }}Variables {
         shalom_core.JsonObject data = {};
         {{ toJson_macro(op_variables) }}
         return data;
+    }
+
+    shalom_core.ShalomJsonValue toShalomValue() {
+        {{ toShalomValue_macro(op_variables) }}
     }
 
     @override

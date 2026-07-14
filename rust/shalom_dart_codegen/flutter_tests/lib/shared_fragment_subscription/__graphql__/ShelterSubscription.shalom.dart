@@ -39,11 +39,26 @@ class ShelterSubscriptionResponse {
     return {'shelterAnimals': this.shelterAnimals.toJson()};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'shelterAnimals': this.shelterAnimals!.toShalomValue(),
+  });
+
   static ShelterSubscriptionResponse fromJson(shalom_core.JsonObject data) {
     final ShelterSubscription_shelterAnimals shelterAnimals$value =
         ShelterSubscription_shelterAnimals.fromJson(
           data['shelterAnimals'] as shalom_core.JsonObject,
         );
+    return ShelterSubscriptionResponse(shelterAnimals: shelterAnimals$value);
+  }
+
+  static ShelterSubscriptionResponse fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? shelterAnimals$raw = data.field(
+      'shelterAnimals',
+    );
+    final ShelterSubscription_shelterAnimals shelterAnimals$value =
+        ShelterSubscription_shelterAnimals.fromShalomValue(shelterAnimals$raw!);
     return ShelterSubscriptionResponse(shelterAnimals: shelterAnimals$value);
   }
 }
@@ -63,6 +78,7 @@ sealed class ShelterSubscription_shelterAnimals {
   const ShelterSubscription_shelterAnimals();
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 
   static ShelterSubscription_shelterAnimals fromJson(
     shalom_core.JsonObject data,
@@ -73,6 +89,21 @@ sealed class ShelterSubscription_shelterAnimals {
         return ShelterSubscription_shelterAnimals__Cat.fromJson(data);
       case 'Dog':
         return ShelterSubscription_shelterAnimals__Dog.fromJson(data);
+
+      default:
+        throw Exception("Unknown typename $typename");
+    }
+  }
+
+  static ShelterSubscription_shelterAnimals fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final typename = data.field('__typename')!.stringValue;
+    switch (typename) {
+      case 'Cat':
+        return ShelterSubscription_shelterAnimals__Cat.fromShalomValue(data);
+      case 'Dog':
+        return ShelterSubscription_shelterAnimals__Dog.fromShalomValue(data);
 
       default:
         throw Exception("Unknown typename $typename");
@@ -112,10 +143,26 @@ class ShelterSubscription_shelterAnimals__Cat
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      ShelterSubscription_shelterAnimals__Cat.G__typename,
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static ShelterSubscription_shelterAnimals__Cat fromJson(
     shalom_core.JsonObject data,
   ) {
     final String id$value = data['id'] as String;
+    return ShelterSubscription_shelterAnimals__Cat(id: id$value);
+  }
+
+  static ShelterSubscription_shelterAnimals__Cat fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return ShelterSubscription_shelterAnimals__Cat(id: id$value);
   }
 }
@@ -177,6 +224,18 @@ class ShelterSubscription_shelterAnimals__Dog
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      ShelterSubscription_shelterAnimals__Dog.G__typename,
+    ),
+
+    'breed': shalom_core.shalomJsonValue(this.breed!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static ShelterSubscription_shelterAnimals__Dog fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -188,6 +247,22 @@ class ShelterSubscription_shelterAnimals__Dog
 
       id: id$value,
 
+      name: name$value,
+    );
+  }
+
+  static ShelterSubscription_shelterAnimals__Dog fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+    final String breed$value = breed$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
+    return ShelterSubscription_shelterAnimals__Dog(
+      breed: breed$value,
+      id: id$value,
       name: name$value,
     );
   }
@@ -217,6 +292,17 @@ final class ShelterSubscriptionData implements shalom_core.OperationInterface {
     return ShelterSubscriptionData(shelterAnimals: shelterAnimals$value);
   }
 
+  static ShelterSubscriptionData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? shelterAnimals$raw = data.field(
+      'shelterAnimals',
+    );
+    final ShelterSubscription_shelterAnimals shelterAnimals$value =
+        ShelterSubscription_shelterAnimals.fromShalomValue(shelterAnimals$raw!);
+    return ShelterSubscriptionData(shelterAnimals: shelterAnimals$value);
+  }
+
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [ShelterSubscriptionData]. Returns `null` when absent or incomplete.
   static Future<ShelterSubscriptionData?> readFrom(
@@ -224,13 +310,18 @@ final class ShelterSubscriptionData implements shalom_core.OperationInterface {
   ) async {
     return await cache.readQuery<ShelterSubscriptionData>(
       name: 'ShelterSubscription',
-      decoder: fromCache,
+      bridgeDecoder: fromShalomValue,
     );
   }
 
   shalom_core.JsonObject toJson() {
     return {'shelterAnimals': this.shelterAnimals.toJson()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'shelterAnimals': this.shelterAnimals!.toShalomValue(),
+  });
 }
 
 final class ShelterSubscriptionObservable {
@@ -252,7 +343,7 @@ final class ShelterSubscriptionObservable {
     return client.request<ShelterSubscriptionData>(
       name: operation$Name(),
 
-      decoder: ShelterSubscriptionData.fromCache,
+      bridgeDecoder: ShelterSubscriptionData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:shalom/shalom.dart';
@@ -17,13 +18,13 @@ String get _nativeLibPath {
 // ---------------------------------------------------------------------------
 
 class _MockLink extends GraphQLLink {
-  final Queue<GraphQLResponse<JsonObject>> _queue;
+  final Queue<GraphQLResponse<String>> _queue;
 
   _MockLink(List<GraphQLResponse<JsonObject>> responses)
-    : _queue = Queue.from(responses);
+    : _queue = Queue.from(responses.map(_rawResponse));
 
   @override
-  Stream<GraphQLResponse<JsonObject>> request({
+  Stream<GraphQLResponse<String>> request({
     required Request request,
     HeadersType? headers,
   }) {
@@ -38,13 +39,29 @@ class _MockLink extends GraphQLLink {
 
 class _NeverLink extends GraphQLLink {
   @override
-  Stream<GraphQLResponse<JsonObject>> request({
+  Stream<GraphQLResponse<String>> request({
     required Request request,
     HeadersType? headers,
   }) {
     return const Stream.empty();
   }
 }
+
+GraphQLResponse<String> _rawResponse(GraphQLResponse<JsonObject> response) =>
+    switch (response) {
+      GraphQLData(:final data, :final errors, :final extensions) => GraphQLData(
+        data: jsonEncode({
+          'data': data,
+          ...?errors == null ? null : {'errors': errors},
+          ...?extensions == null ? null : {'extensions': extensions},
+        }),
+      ),
+      GraphQLError(:final errors, :final extensions) => GraphQLError(
+        errors: errors,
+        extensions: extensions,
+      ),
+      LinkExceptionResponse(:final errors) => LinkExceptionResponse(errors),
+    };
 
 T _expectData<T>(GraphQLResponse<T> response) {
   switch (response) {

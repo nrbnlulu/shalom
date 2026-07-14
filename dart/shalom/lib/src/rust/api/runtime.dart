@@ -4,11 +4,12 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'json.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'runtime.freezed.dart';
 
-// These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_optional_json`, `parse_variables`, `response_to_json`, `to_observer_info`
+// These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_variables`, `to_observer_info`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`
 
 /// Set the global log level filter for all Rust-side logging.
@@ -65,14 +66,14 @@ void reloadSchema({required RuntimeHandle handle, required String schemaSdl}) =>
 Future<BigInt> request({
   required RuntimeHandle handle,
   required String name,
-  String? variablesJson,
+  ShalomJsonValue? variables,
   required ExecutionPolicyInput executionPolicy,
   required RetryDelayInput retryDelay,
   BigInt? refetchIntervalMs,
 }) => RustLib.instance.api.crateApiRuntimeRequest(
   handle: handle,
   name: name,
-  variablesJson: variablesJson,
+  variables: variables,
   executionPolicy: executionPolicy,
   retryDelay: retryDelay,
   refetchIntervalMs: refetchIntervalMs,
@@ -84,11 +85,11 @@ Future<BigInt> request({
 Future<BigInt> writeOptimistic({
   required RuntimeHandle handle,
   required String opName,
-  required String dataJson,
+  required ShalomJsonValue data,
 }) => RustLib.instance.api.crateApiRuntimeWriteOptimistic(
   handle: handle,
   opName: opName,
-  dataJson: dataJson,
+  data: data,
 );
 
 /// Undo a previous `write_optimistic` call.  No-op if the ID is not found.
@@ -144,8 +145,8 @@ Stream<SubscriptionEvent> listenSubscription({
   subscriptionId: subscriptionId,
 );
 
-/// Stream of serialised request envelopes that Dart must execute and respond to.
-Stream<String> listenRequests({required RuntimeHandle handle}) =>
+/// Stream of request envelopes that Dart must execute and respond to.
+Stream<RequestEnvelopeInput> listenRequests({required RuntimeHandle handle}) =>
     RustLib.instance.api.crateApiRuntimeListenRequests(handle: handle);
 
 Future<void> pushResponse({
@@ -158,18 +159,30 @@ Future<void> pushResponse({
   responseJson: responseJson,
 );
 
+Future<void> pushGraphqlError({
+  required RuntimeHandle handle,
+  required BigInt requestId,
+  required List<ShalomJsonValue> errors,
+  ShalomJsonValue? extensions,
+}) => RustLib.instance.api.crateApiRuntimePushGraphqlError(
+  handle: handle,
+  requestId: requestId,
+  errors: errors,
+  extensions: extensions,
+);
+
 Future<void> pushTransportError({
   required RuntimeHandle handle,
   required BigInt requestId,
   required String message,
   required String code,
-  String? detailsJson,
+  ShalomJsonValue? details,
 }) => RustLib.instance.api.crateApiRuntimePushTransportError(
   handle: handle,
   requestId: requestId,
   message: message,
   code: code,
-  detailsJson: detailsJson,
+  details: details,
 );
 
 /// Signal that all responses for `request_id` have been delivered.
@@ -184,16 +197,15 @@ Future<void> completeTransport({
 /// Read the current cache for a pre-registered query operation.
 ///
 /// Returns `None` when the data is absent or incomplete (missing refs), so
-/// callers don't need to handle partial results.  The returned string is a
-/// JSON object that matches the operation's selection shape.
-Future<String?> readQuery({
+/// callers don't need to handle partial results.
+Future<ShalomJsonValue?> readQuery({
   required RuntimeHandle handle,
   required String name,
-  String? variablesJson,
+  ShalomJsonValue? variables,
 }) => RustLib.instance.api.crateApiRuntimeReadQuery(
   handle: handle,
   name: name,
-  variablesJson: variablesJson,
+  variables: variables,
 );
 
 /// Write data to the cache for a pre-registered operation, normalizing it
@@ -205,19 +217,19 @@ Future<String?> readQuery({
 Future<void> writeQuery({
   required RuntimeHandle handle,
   required String name,
-  required String dataJson,
-  String? variablesJson,
+  required ShalomJsonValue data,
+  ShalomJsonValue? variables,
 }) => RustLib.instance.api.crateApiRuntimeWriteQuery(
   handle: handle,
   name: name,
-  dataJson: dataJson,
-  variablesJson: variablesJson,
+  data: data,
+  variables: variables,
 );
 
 /// Read an entity from the cache through a fragment's selection set.
 ///
 /// Returns `null` when the entity is absent or has missing refs.
-Future<String?> readFragment({
+Future<ShalomJsonValue?> readFragment({
   required RuntimeHandle handle,
   required String fragmentName,
   required String entityKey,
@@ -233,18 +245,18 @@ Future<void> writeFragment({
   required RuntimeHandle handle,
   required String fragmentName,
   required String entityKey,
-  required String dataJson,
+  required ShalomJsonValue data,
 }) => RustLib.instance.api.crateApiRuntimeWriteFragment(
   handle: handle,
   fragmentName: fragmentName,
   entityKey: entityKey,
-  dataJson: dataJson,
+  data: data,
 );
 
-/// Returns a JSON object mapping each cache key to its active observer count.
+/// Returns a map from each cache key to its active observer count.
 ///
 /// Example: `{"ROOT_QUERY": 2, "User:1": 1}`
-Future<String> getObserverCounts({required RuntimeHandle handle}) =>
+Future<Map<String, int>> getObserverCounts({required RuntimeHandle handle}) =>
     RustLib.instance.api.crateApiRuntimeGetObserverCounts(handle: handle);
 
 /// Returns info about every observer currently watching [key].
@@ -356,6 +368,42 @@ class ObserverInfo {
           watchedKeys == other.watchedKeys;
 }
 
+/// A runtime request ready for Dart's transport layer.
+class RequestEnvelopeInput {
+  final BigInt id;
+  final String query;
+  final ShalomJsonValue variables;
+  final String operationName;
+  final String operationType;
+
+  const RequestEnvelopeInput({
+    required this.id,
+    required this.query,
+    required this.variables,
+    required this.operationName,
+    required this.operationType,
+  });
+
+  @override
+  int get hashCode =>
+      id.hashCode ^
+      query.hashCode ^
+      variables.hashCode ^
+      operationName.hashCode ^
+      operationType.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is RequestEnvelopeInput &&
+          runtimeType == other.runtimeType &&
+          id == other.id &&
+          query == other.query &&
+          variables == other.variables &&
+          operationName == other.operationName &&
+          operationType == other.operationType;
+}
+
 @freezed
 sealed class RetryDelayInput with _$RetryDelayInput {
   const RetryDelayInput._();
@@ -412,15 +460,15 @@ class RuntimeConfigInput {
 sealed class SubscriptionEvent with _$SubscriptionEvent {
   const SubscriptionEvent._();
 
-  const factory SubscriptionEvent.data({required String dataJson}) =
+  const factory SubscriptionEvent.data({required ShalomJsonValue data}) =
       SubscriptionEvent_Data;
   const factory SubscriptionEvent.graphQlError({
-    required String errorsJson,
-    String? extensionsJson,
+    required List<ShalomJsonValue> errors,
+    ShalomJsonValue? extensions,
   }) = SubscriptionEvent_GraphQlError;
   const factory SubscriptionEvent.transportError({
     required String code,
     required String message,
-    String? detailsJson,
+    ShalomJsonValue? details,
   }) = SubscriptionEvent_TransportError;
 }

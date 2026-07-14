@@ -36,10 +36,24 @@ class UserWidgetResponse {
     return {'user': this.user?.toJson()};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'user': this.user == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.user!.toShalomValue(),
+  });
+
   static UserWidgetResponse fromJson(shalom_core.JsonObject data) {
     final UserWidget_user? user$value = data['user'] == null
         ? null
         : UserWidget_user.fromJson(data['user'] as shalom_core.JsonObject);
+    return UserWidgetResponse(user: user$value);
+  }
+
+  static UserWidgetResponse fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? user$raw = data.field('user');
+    final UserWidget_user? user$value = user$raw == null || user$raw!.isNull
+        ? null
+        : UserWidget_user.fromShalomValue(user$raw!);
     return UserWidgetResponse(user: user$value);
   }
 }
@@ -71,9 +85,23 @@ class UserWidget_user {
     return {'id': this.id, 'name': this.name};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static UserWidget_user fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    return UserWidget_user(id: id$value, name: name$value);
+  }
+
+  static UserWidget_user fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
     return UserWidget_user(id: id$value, name: name$value);
   }
 }
@@ -109,6 +137,14 @@ final class UserWidgetData implements shalom_core.OperationInterface {
     return UserWidgetData(user: user$value);
   }
 
+  static UserWidgetData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? user$raw = data.field('user');
+    final UserWidget_user? user$value = user$raw == null || user$raw!.isNull
+        ? null
+        : UserWidget_user.fromShalomValue(user$raw!);
+    return UserWidgetData(user: user$value);
+  }
+
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [UserWidgetData]. Returns `null` when absent or incomplete.
   static Future<UserWidgetData?> readFrom(
@@ -117,15 +153,22 @@ final class UserWidgetData implements shalom_core.OperationInterface {
   }) async {
     return await cache.readQuery<UserWidgetData>(
       name: 'UserWidget',
-      decoder: fromCache,
+      bridgeDecoder: fromShalomValue,
 
-      variables: variables?.toJson(),
+      variablesValue: variables?.toShalomValue(),
     );
   }
 
   shalom_core.JsonObject toJson() {
     return {'user': this.user?.toJson()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'user': this.user == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.user!.toShalomValue(),
+  });
 }
 
 final class UserWidgetObservable {
@@ -151,9 +194,9 @@ final class UserWidgetObservable {
     return client.request<UserWidgetData>(
       name: operation$Name(),
 
-      variables: variables.toJson(),
+      variablesValue: variables.toShalomValue(),
 
-      decoder: UserWidgetData.fromCache,
+      bridgeDecoder: UserWidgetData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,
@@ -172,6 +215,12 @@ final class UserWidgetVariables {
     data["id"] = this.id;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final data = <String, shalom_core.ShalomJsonValue>{};
+    data["id"] = shalom_core.shalomJsonValue(this.id!);
+    return shalom_core.shalomJsonObject(data);
   }
 
   @override

@@ -34,6 +34,12 @@ extension type AnimalWithOwnerWidgetRef.fromInput(
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [AnimalWithOwnerWidgetData]. Returns `null` when absent or incomplete.
@@ -43,7 +49,7 @@ extension type AnimalWithOwnerWidgetRef.fromInput(
     return await cache.readFragment<AnimalWithOwnerWidgetData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: AnimalWithOwnerWidgetData.fromCache,
+      bridgeDecoder: AnimalWithOwnerWidgetData.fromShalomValue,
     );
   }
 
@@ -52,7 +58,7 @@ extension type AnimalWithOwnerWidgetRef.fromInput(
   ) {
     return client.subscribeToFragment<AnimalWithOwnerWidgetData>(
       ref: _inner,
-      decoder: AnimalWithOwnerWidgetData.fromCache,
+      bridgeDecoder: AnimalWithOwnerWidgetData.fromShalomValue,
     );
   }
 }
@@ -61,6 +67,7 @@ abstract class AnimalWithOwnerWidget {
   String get id;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 sealed class AnimalWithOwnerWidgetData implements AnimalWithOwnerWidget {
@@ -75,6 +82,21 @@ sealed class AnimalWithOwnerWidgetData implements AnimalWithOwnerWidget {
         return AnimalWithOwnerWidgetData$Cat.fromJson(data);
       case 'Dog':
         return AnimalWithOwnerWidgetData$Dog.fromJson(data);
+
+      default:
+        return const AnimalWithOwnerWidgetData$Unknown();
+    }
+  }
+
+  static AnimalWithOwnerWidgetData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final typename = data.field('__typename')?.stringValue;
+    switch (typename) {
+      case 'Cat':
+        return AnimalWithOwnerWidgetData$Cat.fromShalomValue(data);
+      case 'Dog':
+        return AnimalWithOwnerWidgetData$Dog.fromShalomValue(data);
 
       default:
         return const AnimalWithOwnerWidgetData$Unknown();
@@ -119,9 +141,29 @@ final class AnimalWithOwnerWidgetData$Cat extends AnimalWithOwnerWidgetData {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      AnimalWithOwnerWidgetData$Cat.G__typename,
+    ),
+
+    'color': shalom_core.shalomJsonValue(this.color!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static AnimalWithOwnerWidgetData$Cat fromJson(shalom_core.JsonObject data) {
     final String color$value = data['color'] as String;
     final String id$value = data['id'] as String;
+    return AnimalWithOwnerWidgetData$Cat(color: color$value, id: id$value);
+  }
+
+  static AnimalWithOwnerWidgetData$Cat fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? color$raw = data.field('color');
+    final String color$value = color$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return AnimalWithOwnerWidgetData$Cat(color: color$value, id: id$value);
   }
 }
@@ -181,6 +223,20 @@ final class AnimalWithOwnerWidgetData$Dog extends AnimalWithOwnerWidgetData {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      AnimalWithOwnerWidgetData$Dog.G__typename,
+    ),
+
+    'breed': shalom_core.shalomJsonValue(this.breed!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'owner': this.owner == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.owner!.toShalomValue(),
+  });
+
   static AnimalWithOwnerWidgetData$Dog fromJson(shalom_core.JsonObject data) {
     final String breed$value = data['breed'] as String;
     final String id$value = data['id'] as String;
@@ -197,6 +253,25 @@ final class AnimalWithOwnerWidgetData$Dog extends AnimalWithOwnerWidgetData {
       owner: owner$value,
     );
   }
+
+  static AnimalWithOwnerWidgetData$Dog fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+    final String breed$value = breed$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? owner$raw = data.field('owner');
+    final AnimalWithOwnerWidget__Dog_owner? owner$value =
+        owner$raw == null || owner$raw!.isNull
+        ? null
+        : AnimalWithOwnerWidget__Dog_owner.fromShalomValue(owner$raw!);
+    return AnimalWithOwnerWidgetData$Dog(
+      breed: breed$value,
+      id: id$value,
+      owner: owner$value,
+    );
+  }
 }
 
 final class AnimalWithOwnerWidgetData$Unknown
@@ -208,6 +283,9 @@ final class AnimalWithOwnerWidgetData$Unknown
 
   @override
   shalom_core.JsonObject toJson() => throw UnimplementedError();
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => throw UnimplementedError();
 }
 
 class AnimalWithOwnerWidget__Dog_owner {
@@ -240,11 +318,27 @@ class AnimalWithOwnerWidget__Dog_owner {
     return {'id': this.id, 'name': this.name};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static AnimalWithOwnerWidget__Dog_owner fromJson(
     shalom_core.JsonObject data,
   ) {
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    return AnimalWithOwnerWidget__Dog_owner(id: id$value, name: name$value);
+  }
+
+  static AnimalWithOwnerWidget__Dog_owner fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
     return AnimalWithOwnerWidget__Dog_owner(id: id$value, name: name$value);
   }
 }

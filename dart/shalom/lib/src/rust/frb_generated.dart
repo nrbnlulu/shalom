@@ -3,6 +3,7 @@
 
 // ignore_for_file: unused_import, unused_element, unnecessary_import, duplicate_ignore, invalid_use_of_internal_member, annotate_overrides, non_constant_identifier_names, curly_braces_in_flow_control_structures, prefer_const_literals_to_create_immutables, unused_field
 
+import 'api/json.dart';
 import 'api/runtime.dart';
 import 'api/ws.dart';
 import 'dart:async';
@@ -67,7 +68,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.12.0';
 
   @override
-  int get rustContentHash => -885489623;
+  int get rustContentHash => 667625377;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -84,7 +85,7 @@ abstract class RustLibApi extends BaseApi {
     required BigInt requestId,
   });
 
-  WsSansIo crateApiWsCreateWsSansIo({String? connectionParamsJson});
+  WsSansIo crateApiWsCreateWsSansIo({ShalomJsonValue? connectionParams});
 
   Future<List<ObserverInfo>> crateApiRuntimeGetAllObservers({
     required RuntimeHandle handle,
@@ -104,7 +105,7 @@ abstract class RustLibApi extends BaseApi {
     required String key,
   });
 
-  Future<String> crateApiRuntimeGetObserverCounts({
+  Future<Map<String, int>> crateApiRuntimeGetObserverCounts({
     required RuntimeHandle handle,
   });
 
@@ -115,7 +116,9 @@ abstract class RustLibApi extends BaseApi {
     RuntimeConfigInput? config,
   });
 
-  Stream<String> crateApiRuntimeListenRequests({required RuntimeHandle handle});
+  Stream<RequestEnvelopeInput> crateApiRuntimeListenRequests({
+    required RuntimeHandle handle,
+  });
 
   Stream<SubscriptionEvent> crateApiRuntimeListenSubscription({
     required RuntimeHandle handle,
@@ -125,6 +128,13 @@ abstract class RustLibApi extends BaseApi {
   Future<BigInt> crateApiRuntimeObserveFragment({
     required RuntimeHandle handle,
     required ObservedRefInput refInput,
+  });
+
+  Future<void> crateApiRuntimePushGraphqlError({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required List<ShalomJsonValue> errors,
+    ShalomJsonValue? extensions,
   });
 
   Future<void> crateApiRuntimePushResponse({
@@ -138,19 +148,19 @@ abstract class RustLibApi extends BaseApi {
     required BigInt requestId,
     required String message,
     required String code,
-    String? detailsJson,
+    ShalomJsonValue? details,
   });
 
-  Future<String?> crateApiRuntimeReadFragment({
+  Future<ShalomJsonValue?> crateApiRuntimeReadFragment({
     required RuntimeHandle handle,
     required String fragmentName,
     required String entityKey,
   });
 
-  Future<String?> crateApiRuntimeReadQuery({
+  Future<ShalomJsonValue?> crateApiRuntimeReadQuery({
     required RuntimeHandle handle,
     required String name,
-    String? variablesJson,
+    ShalomJsonValue? variables,
   });
 
   Future<BigInt> crateApiRuntimeRebindSubscription({
@@ -177,7 +187,7 @@ abstract class RustLibApi extends BaseApi {
   Future<BigInt> crateApiRuntimeRequest({
     required RuntimeHandle handle,
     required String name,
-    String? variablesJson,
+    ShalomJsonValue? variables,
     required ExecutionPolicyInput executionPolicy,
     required RetryDelayInput retryDelay,
     BigInt? refetchIntervalMs,
@@ -199,20 +209,20 @@ abstract class RustLibApi extends BaseApi {
     required RuntimeHandle handle,
     required String fragmentName,
     required String entityKey,
-    required String dataJson,
+    required ShalomJsonValue data,
   });
 
   Future<BigInt> crateApiRuntimeWriteOptimistic({
     required RuntimeHandle handle,
     required String opName,
-    required String dataJson,
+    required ShalomJsonValue data,
   });
 
   Future<void> crateApiRuntimeWriteQuery({
     required RuntimeHandle handle,
     required String name,
-    required String dataJson,
-    String? variablesJson,
+    required ShalomJsonValue data,
+    ShalomJsonValue? variables,
   });
 
   List<String> crateApiWsWsActiveOperationIds({required WsSansIo sansio});
@@ -233,7 +243,10 @@ abstract class RustLibApi extends BaseApi {
 
   String crateApiWsWsPingFrame();
 
-  String crateApiWsWsPongFrame({required WsSansIo sansio, String? payloadJson});
+  String crateApiWsWsPongFrame({
+    required WsSansIo sansio,
+    ShalomJsonValue? payload,
+  });
 
   void crateApiWsWsReset({required WsSansIo sansio});
 
@@ -241,7 +254,7 @@ abstract class RustLibApi extends BaseApi {
     required WsSansIo sansio,
     required String opId,
     required String query,
-    String? variablesJson,
+    ShalomJsonValue? variables,
     String? operationName,
   });
 
@@ -310,12 +323,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  WsSansIo crateApiWsCreateWsSansIo({String? connectionParamsJson}) {
+  WsSansIo crateApiWsCreateWsSansIo({ShalomJsonValue? connectionParams}) {
     return handler.executeSync(
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          sse_encode_opt_String(connectionParamsJson, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(
+            connectionParams,
+            serializer,
+          );
           return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
         },
         codec: SseCodec(
@@ -324,7 +340,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiWsCreateWsSansIoConstMeta,
-        argValues: [connectionParamsJson],
+        argValues: [connectionParams],
         apiImpl: this,
       ),
     );
@@ -332,7 +348,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiWsCreateWsSansIoConstMeta => const TaskConstMeta(
     debugName: "create_ws_sans_io",
-    argNames: ["connectionParamsJson"],
+    argNames: ["connectionParams"],
   );
 
   @override
@@ -478,7 +494,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<String> crateApiRuntimeGetObserverCounts({
+  Future<Map<String, int>> crateApiRuntimeGetObserverCounts({
     required RuntimeHandle handle,
   }) {
     return handler.executeNormal(
@@ -497,7 +513,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
         },
         codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
+          decodeSuccessData: sse_decode_Map_String_u_32_None,
           decodeErrorData: null,
         ),
         constMeta: kCrateApiRuntimeGetObserverCountsConstMeta,
@@ -571,10 +587,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  Stream<String> crateApiRuntimeListenRequests({
+  Stream<RequestEnvelopeInput> crateApiRuntimeListenRequests({
     required RuntimeHandle handle,
   }) {
-    final sink = RustStreamSink<String>();
+    final sink = RustStreamSink<RequestEnvelopeInput>();
     unawaited(
       handler.executeNormal(
         NormalTask(
@@ -584,7 +600,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               handle,
               serializer,
             );
-            sse_encode_StreamSink_String_Sse(sink, serializer);
+            sse_encode_StreamSink_request_envelope_input_Sse(sink, serializer);
             pdeCallFfi(
               generalizedFrbRustBinding,
               serializer,
@@ -693,6 +709,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
+  Future<void> crateApiRuntimePushGraphqlError({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required List<ShalomJsonValue> errors,
+    ShalomJsonValue? extensions,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_u_64(requestId, serializer);
+          sse_encode_list_shalom_json_value(errors, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(extensions, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 13,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_unit,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+        constMeta: kCrateApiRuntimePushGraphqlErrorConstMeta,
+        argValues: [handle, requestId, errors, extensions],
+        apiImpl: this,
+      ),
+    );
+  }
+
+  TaskConstMeta get kCrateApiRuntimePushGraphqlErrorConstMeta =>
+      const TaskConstMeta(
+        debugName: "push_graphql_error",
+        argNames: ["handle", "requestId", "errors", "extensions"],
+      );
+
+  @override
   Future<void> crateApiRuntimePushResponse({
     required RuntimeHandle handle,
     required BigInt requestId,
@@ -711,7 +769,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 13,
+            funcId: 14,
             port: port_,
           );
         },
@@ -738,7 +796,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required BigInt requestId,
     required String message,
     required String code,
-    String? detailsJson,
+    ShalomJsonValue? details,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -751,11 +809,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           sse_encode_u_64(requestId, serializer);
           sse_encode_String(message, serializer);
           sse_encode_String(code, serializer);
-          sse_encode_opt_String(detailsJson, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(details, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 14,
+            funcId: 15,
             port: port_,
           );
         },
@@ -764,7 +822,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiRuntimePushTransportErrorConstMeta,
-        argValues: [handle, requestId, message, code, detailsJson],
+        argValues: [handle, requestId, message, code, details],
         apiImpl: this,
       ),
     );
@@ -773,11 +831,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiRuntimePushTransportErrorConstMeta =>
       const TaskConstMeta(
         debugName: "push_transport_error",
-        argNames: ["handle", "requestId", "message", "code", "detailsJson"],
+        argNames: ["handle", "requestId", "message", "code", "details"],
       );
 
   @override
-  Future<String?> crateApiRuntimeReadFragment({
+  Future<ShalomJsonValue?> crateApiRuntimeReadFragment({
     required RuntimeHandle handle,
     required String fragmentName,
     required String entityKey,
@@ -795,12 +853,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 15,
+            funcId: 16,
             port: port_,
           );
         },
         codec: SseCodec(
-          decodeSuccessData: sse_decode_opt_String,
+          decodeSuccessData: sse_decode_opt_box_autoadd_shalom_json_value,
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiRuntimeReadFragmentConstMeta,
@@ -817,10 +875,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<String?> crateApiRuntimeReadQuery({
+  Future<ShalomJsonValue?> crateApiRuntimeReadQuery({
     required RuntimeHandle handle,
     required String name,
-    String? variablesJson,
+    ShalomJsonValue? variables,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -831,20 +889,20 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_String(name, serializer);
-          sse_encode_opt_String(variablesJson, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 16,
+            funcId: 17,
             port: port_,
           );
         },
         codec: SseCodec(
-          decodeSuccessData: sse_decode_opt_String,
+          decodeSuccessData: sse_decode_opt_box_autoadd_shalom_json_value,
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiRuntimeReadQueryConstMeta,
-        argValues: [handle, name, variablesJson],
+        argValues: [handle, name, variables],
         apiImpl: this,
       ),
     );
@@ -852,7 +910,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiRuntimeReadQueryConstMeta => const TaskConstMeta(
     debugName: "read_query",
-    argNames: ["handle", "name", "variablesJson"],
+    argNames: ["handle", "name", "variables"],
   );
 
   @override
@@ -874,7 +932,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 17,
+            funcId: 18,
             port: port_,
           );
         },
@@ -909,7 +967,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_String(document, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 18)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 19)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
@@ -942,7 +1000,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_String(document, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 19)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 20)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
@@ -975,7 +1033,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_String(schemaSdl, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 20)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 21)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
@@ -998,7 +1056,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Future<BigInt> crateApiRuntimeRequest({
     required RuntimeHandle handle,
     required String name,
-    String? variablesJson,
+    ShalomJsonValue? variables,
     required ExecutionPolicyInput executionPolicy,
     required RetryDelayInput retryDelay,
     BigInt? refetchIntervalMs,
@@ -1012,14 +1070,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_String(name, serializer);
-          sse_encode_opt_String(variablesJson, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
           sse_encode_execution_policy_input(executionPolicy, serializer);
           sse_encode_box_autoadd_retry_delay_input(retryDelay, serializer);
           sse_encode_opt_box_autoadd_u_64(refetchIntervalMs, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 21,
+            funcId: 22,
             port: port_,
           );
         },
@@ -1031,7 +1089,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         argValues: [
           handle,
           name,
-          variablesJson,
+          variables,
           executionPolicy,
           retryDelay,
           refetchIntervalMs,
@@ -1046,7 +1104,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     argNames: [
       "handle",
       "name",
-      "variablesJson",
+      "variables",
       "executionPolicy",
       "retryDelay",
       "refetchIntervalMs",
@@ -1070,7 +1128,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 22,
+            funcId: 23,
             port: port_,
           );
         },
@@ -1098,7 +1156,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_log_level(level, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 23)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 24)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
@@ -1131,7 +1189,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 24,
+            funcId: 25,
             port: port_,
           );
         },
@@ -1156,7 +1214,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required RuntimeHandle handle,
     required String fragmentName,
     required String entityKey,
-    required String dataJson,
+    required ShalomJsonValue data,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -1168,11 +1226,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
           sse_encode_String(fragmentName, serializer);
           sse_encode_String(entityKey, serializer);
-          sse_encode_String(dataJson, serializer);
+          sse_encode_box_autoadd_shalom_json_value(data, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 25,
+            funcId: 26,
             port: port_,
           );
         },
@@ -1181,7 +1239,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiRuntimeWriteFragmentConstMeta,
-        argValues: [handle, fragmentName, entityKey, dataJson],
+        argValues: [handle, fragmentName, entityKey, data],
         apiImpl: this,
       ),
     );
@@ -1190,14 +1248,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiRuntimeWriteFragmentConstMeta =>
       const TaskConstMeta(
         debugName: "write_fragment",
-        argNames: ["handle", "fragmentName", "entityKey", "dataJson"],
+        argNames: ["handle", "fragmentName", "entityKey", "data"],
       );
 
   @override
   Future<BigInt> crateApiRuntimeWriteOptimistic({
     required RuntimeHandle handle,
     required String opName,
-    required String dataJson,
+    required ShalomJsonValue data,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -1208,11 +1266,11 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_String(opName, serializer);
-          sse_encode_String(dataJson, serializer);
+          sse_encode_box_autoadd_shalom_json_value(data, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 26,
+            funcId: 27,
             port: port_,
           );
         },
@@ -1221,7 +1279,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiRuntimeWriteOptimisticConstMeta,
-        argValues: [handle, opName, dataJson],
+        argValues: [handle, opName, data],
         apiImpl: this,
       ),
     );
@@ -1230,15 +1288,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   TaskConstMeta get kCrateApiRuntimeWriteOptimisticConstMeta =>
       const TaskConstMeta(
         debugName: "write_optimistic",
-        argNames: ["handle", "opName", "dataJson"],
+        argNames: ["handle", "opName", "data"],
       );
 
   @override
   Future<void> crateApiRuntimeWriteQuery({
     required RuntimeHandle handle,
     required String name,
-    required String dataJson,
-    String? variablesJson,
+    required ShalomJsonValue data,
+    ShalomJsonValue? variables,
   }) {
     return handler.executeNormal(
       NormalTask(
@@ -1249,12 +1307,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_String(name, serializer);
-          sse_encode_String(dataJson, serializer);
-          sse_encode_opt_String(variablesJson, serializer);
+          sse_encode_box_autoadd_shalom_json_value(data, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 27,
+            funcId: 28,
             port: port_,
           );
         },
@@ -1263,7 +1321,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiRuntimeWriteQueryConstMeta,
-        argValues: [handle, name, dataJson, variablesJson],
+        argValues: [handle, name, data, variables],
         apiImpl: this,
       ),
     );
@@ -1271,7 +1329,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiRuntimeWriteQueryConstMeta => const TaskConstMeta(
     debugName: "write_query",
-    argNames: ["handle", "name", "dataJson", "variablesJson"],
+    argNames: ["handle", "name", "data", "variables"],
   );
 
   @override
@@ -1284,7 +1342,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             sansio,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 28)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 29)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_String,
@@ -1317,7 +1375,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_String(opId, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 29)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 30)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -1345,7 +1403,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             sansio,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 30)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 31)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -1374,7 +1432,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             sansio,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 31)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 32)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_bool,
@@ -1404,7 +1462,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             serializer,
           );
           sse_encode_String(raw, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 32)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 33)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_list_ws_link_event,
@@ -1428,7 +1486,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       SyncTask(
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 33)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 34)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
@@ -1447,7 +1505,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @override
   String crateApiWsWsPongFrame({
     required WsSansIo sansio,
-    String? payloadJson,
+    ShalomJsonValue? payload,
   }) {
     return handler.executeSync(
       SyncTask(
@@ -1457,15 +1515,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             sansio,
             serializer,
           );
-          sse_encode_opt_String(payloadJson, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 34)!;
+          sse_encode_opt_box_autoadd_shalom_json_value(payload, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 35)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiWsWsPongFrameConstMeta,
-        argValues: [sansio, payloadJson],
+        argValues: [sansio, payload],
         apiImpl: this,
       ),
     );
@@ -1473,7 +1531,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiWsWsPongFrameConstMeta => const TaskConstMeta(
     debugName: "ws_pong_frame",
-    argNames: ["sansio", "payloadJson"],
+    argNames: ["sansio", "payload"],
   );
 
   @override
@@ -1486,7 +1544,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
             sansio,
             serializer,
           );
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 35)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 36)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
@@ -1507,7 +1565,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     required WsSansIo sansio,
     required String opId,
     required String query,
-    String? variablesJson,
+    ShalomJsonValue? variables,
     String? operationName,
   }) {
     return handler.executeSync(
@@ -1520,16 +1578,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           );
           sse_encode_String(opId, serializer);
           sse_encode_String(query, serializer);
-          sse_encode_opt_String(variablesJson, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
           sse_encode_opt_String(operationName, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 36)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 37)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiWsWsSubscribeFrameConstMeta,
-        argValues: [sansio, opId, query, variablesJson, operationName],
+        argValues: [sansio, opId, query, variables, operationName],
         apiImpl: this,
       ),
     );
@@ -1537,7 +1595,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   TaskConstMeta get kCrateApiWsWsSubscribeFrameConstMeta => const TaskConstMeta(
     debugName: "ws_subscribe_frame",
-    argNames: ["sansio", "opId", "query", "variablesJson", "operationName"],
+    argNames: ["sansio", "opId", "query", "variables", "operationName"],
   );
 
   RustArcIncrementStrongCountFnType
@@ -1608,6 +1666,26 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Map<String, ShalomJsonValue> dco_decode_Map_String_shalom_json_value_None(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return Map.fromEntries(
+      dco_decode_list_record_string_shalom_json_value(
+        raw,
+      ).map((e) => MapEntry(e.$1, e.$2)),
+    );
+  }
+
+  @protected
+  Map<String, int> dco_decode_Map_String_u_32_None(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return Map.fromEntries(
+      dco_decode_list_record_string_u_32(raw).map((e) => MapEntry(e.$1, e.$2)),
+    );
+  }
+
+  @protected
   RuntimeHandle
   dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
     dynamic raw,
@@ -1626,7 +1704,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  RustStreamSink<String> dco_decode_StreamSink_String_Sse(dynamic raw) {
+  RustStreamSink<RequestEnvelopeInput>
+  dco_decode_StreamSink_request_envelope_input_Sse(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     throw UnimplementedError();
   }
@@ -1669,6 +1748,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ShalomJsonValue dco_decode_box_autoadd_shalom_json_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_shalom_json_value(raw);
+  }
+
+  @protected
   BigInt dco_decode_box_autoadd_u_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return dco_decode_u_64(raw);
@@ -1681,9 +1766,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  double dco_decode_f_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as double;
+  }
+
+  @protected
   int dco_decode_i_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
+  }
+
+  @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeI64(raw);
   }
 
   @protected
@@ -1702,6 +1799,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as Uint8List;
+  }
+
+  @protected
+  List<(String, ShalomJsonValue)>
+  dco_decode_list_record_string_shalom_json_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>)
+        .map(dco_decode_record_string_shalom_json_value)
+        .toList();
+  }
+
+  @protected
+  List<(String, int)> dco_decode_list_record_string_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_record_string_u_32).toList();
+  }
+
+  @protected
+  List<ShalomJsonValue> dco_decode_list_shalom_json_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_shalom_json_value).toList();
   }
 
   @protected
@@ -1762,9 +1880,52 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ShalomJsonValue? dco_decode_opt_box_autoadd_shalom_json_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_shalom_json_value(raw);
+  }
+
+  @protected
   BigInt? dco_decode_opt_box_autoadd_u_64(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw == null ? null : dco_decode_box_autoadd_u_64(raw);
+  }
+
+  @protected
+  (String, ShalomJsonValue) dco_decode_record_string_shalom_json_value(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2) {
+      throw Exception('Expected 2 elements, got ${arr.length}');
+    }
+    return (dco_decode_String(arr[0]), dco_decode_shalom_json_value(arr[1]));
+  }
+
+  @protected
+  (String, int) dco_decode_record_string_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2) {
+      throw Exception('Expected 2 elements, got ${arr.length}');
+    }
+    return (dco_decode_String(arr[0]), dco_decode_u_32(arr[1]));
+  }
+
+  @protected
+  RequestEnvelopeInput dco_decode_request_envelope_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return RequestEnvelopeInput(
+      id: dco_decode_u_64(arr[0]),
+      query: dco_decode_String(arr[1]),
+      variables: dco_decode_shalom_json_value(arr[2]),
+      operationName: dco_decode_String(arr[3]),
+      operationType: dco_decode_String(arr[4]),
+    );
   }
 
   @protected
@@ -1796,21 +1957,48 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ShalomJsonValue dco_decode_shalom_json_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return ShalomJsonValue_Null();
+      case 1:
+        return ShalomJsonValue_Boolean(dco_decode_bool(raw[1]));
+      case 2:
+        return ShalomJsonValue_Integer(dco_decode_i_64(raw[1]));
+      case 3:
+        return ShalomJsonValue_Float(dco_decode_f_64(raw[1]));
+      case 4:
+        return ShalomJsonValue_String(dco_decode_String(raw[1]));
+      case 5:
+        return ShalomJsonValue_Array(dco_decode_list_shalom_json_value(raw[1]));
+      case 6:
+        return ShalomJsonValue_Object(
+          dco_decode_Map_String_shalom_json_value_None(raw[1]),
+        );
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
   SubscriptionEvent dco_decode_subscription_event(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     switch (raw[0]) {
       case 0:
-        return SubscriptionEvent_Data(dataJson: dco_decode_String(raw[1]));
+        return SubscriptionEvent_Data(
+          data: dco_decode_box_autoadd_shalom_json_value(raw[1]),
+        );
       case 1:
         return SubscriptionEvent_GraphQlError(
-          errorsJson: dco_decode_String(raw[1]),
-          extensionsJson: dco_decode_opt_String(raw[2]),
+          errors: dco_decode_list_shalom_json_value(raw[1]),
+          extensions: dco_decode_opt_box_autoadd_shalom_json_value(raw[2]),
         );
       case 2:
         return SubscriptionEvent_TransportError(
           code: dco_decode_String(raw[1]),
           message: dco_decode_String(raw[2]),
-          detailsJson: dco_decode_opt_String(raw[3]),
+          details: dco_decode_opt_box_autoadd_shalom_json_value(raw[3]),
         );
       default:
         throw Exception("unreachable");
@@ -1819,6 +2007,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
 
   @protected
   int dco_decode_u_16(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
+  int dco_decode_u_32(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as int;
   }
@@ -1855,18 +2049,16 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         return WsLinkEvent_Connected();
       case 1:
         return WsLinkEvent_PingReceived(
-          payloadJson: dco_decode_opt_String(raw[1]),
+          payload: dco_decode_opt_box_autoadd_shalom_json_value(raw[1]),
         );
       case 2:
         return WsLinkEvent_PongReceived(
-          payloadJson: dco_decode_opt_String(raw[1]),
+          payload: dco_decode_opt_box_autoadd_shalom_json_value(raw[1]),
         );
       case 3:
         return WsLinkEvent_OperationResponse(
           opId: dco_decode_String(raw[1]),
-          dataJson: dco_decode_opt_String(raw[2]),
-          errorsJson: dco_decode_opt_String(raw[3]),
-          extensionsJson: dco_decode_opt_String(raw[4]),
+          responseJson: dco_decode_String(raw[2]),
         );
       case 4:
         return WsLinkEvent_OperationComplete(opId: dco_decode_String(raw[1]));
@@ -1948,6 +2140,24 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  Map<String, ShalomJsonValue> sse_decode_Map_String_shalom_json_value_None(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_list_record_string_shalom_json_value(deserializer);
+    return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
+  }
+
+  @protected
+  Map<String, int> sse_decode_Map_String_u_32_None(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_list_record_string_u_32(deserializer);
+    return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
+  }
+
+  @protected
   RuntimeHandle
   sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
     SseDeserializer deserializer,
@@ -1972,7 +2182,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  RustStreamSink<String> sse_decode_StreamSink_String_Sse(
+  RustStreamSink<RequestEnvelopeInput>
+  sse_decode_StreamSink_request_envelope_input_Sse(
     SseDeserializer deserializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
@@ -2024,6 +2235,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ShalomJsonValue sse_decode_box_autoadd_shalom_json_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_shalom_json_value(deserializer));
+  }
+
+  @protected
   BigInt sse_decode_box_autoadd_u_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return (sse_decode_u_64(deserializer));
@@ -2039,9 +2258,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  double sse_decode_f_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getFloat64();
+  }
+
+  @protected
   int sse_decode_i_32(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getInt32();
+  }
+
+  @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getPlatformInt64();
   }
 
   @protected
@@ -2075,6 +2306,49 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var len_ = sse_decode_i_32(deserializer);
     return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
+  List<(String, ShalomJsonValue)>
+  sse_decode_list_record_string_shalom_json_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <(String, ShalomJsonValue)>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_record_string_shalom_json_value(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<(String, int)> sse_decode_list_record_string_u_32(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <(String, int)>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_record_string_u_32(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ShalomJsonValue> sse_decode_list_shalom_json_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ShalomJsonValue>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_shalom_json_value(deserializer));
+    }
+    return ans_;
   }
 
   @protected
@@ -2152,6 +2426,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ShalomJsonValue? sse_decode_opt_box_autoadd_shalom_json_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_shalom_json_value(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
   BigInt? sse_decode_opt_box_autoadd_u_64(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -2160,6 +2447,43 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     } else {
       return null;
     }
+  }
+
+  @protected
+  (String, ShalomJsonValue) sse_decode_record_string_shalom_json_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_field0 = sse_decode_String(deserializer);
+    var var_field1 = sse_decode_shalom_json_value(deserializer);
+    return (var_field0, var_field1);
+  }
+
+  @protected
+  (String, int) sse_decode_record_string_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_field0 = sse_decode_String(deserializer);
+    var var_field1 = sse_decode_u_32(deserializer);
+    return (var_field0, var_field1);
+  }
+
+  @protected
+  RequestEnvelopeInput sse_decode_request_envelope_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_u_64(deserializer);
+    var var_query = sse_decode_String(deserializer);
+    var var_variables = sse_decode_shalom_json_value(deserializer);
+    var var_operationName = sse_decode_String(deserializer);
+    var var_operationType = sse_decode_String(deserializer);
+    return RequestEnvelopeInput(
+      id: var_id,
+      query: var_query,
+      variables: var_variables,
+      operationName: var_operationName,
+      operationType: var_operationType,
+    );
   }
 
   @protected
@@ -2196,6 +2520,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  ShalomJsonValue sse_decode_shalom_json_value(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        return ShalomJsonValue_Null();
+      case 1:
+        var var_field0 = sse_decode_bool(deserializer);
+        return ShalomJsonValue_Boolean(var_field0);
+      case 2:
+        var var_field0 = sse_decode_i_64(deserializer);
+        return ShalomJsonValue_Integer(var_field0);
+      case 3:
+        var var_field0 = sse_decode_f_64(deserializer);
+        return ShalomJsonValue_Float(var_field0);
+      case 4:
+        var var_field0 = sse_decode_String(deserializer);
+        return ShalomJsonValue_String(var_field0);
+      case 5:
+        var var_field0 = sse_decode_list_shalom_json_value(deserializer);
+        return ShalomJsonValue_Array(var_field0);
+      case 6:
+        var var_field0 = sse_decode_Map_String_shalom_json_value_None(
+          deserializer,
+        );
+        return ShalomJsonValue_Object(var_field0);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
   SubscriptionEvent sse_decode_subscription_event(
     SseDeserializer deserializer,
   ) {
@@ -2204,23 +2561,27 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var tag_ = sse_decode_i_32(deserializer);
     switch (tag_) {
       case 0:
-        var var_dataJson = sse_decode_String(deserializer);
-        return SubscriptionEvent_Data(dataJson: var_dataJson);
+        var var_data = sse_decode_box_autoadd_shalom_json_value(deserializer);
+        return SubscriptionEvent_Data(data: var_data);
       case 1:
-        var var_errorsJson = sse_decode_String(deserializer);
-        var var_extensionsJson = sse_decode_opt_String(deserializer);
+        var var_errors = sse_decode_list_shalom_json_value(deserializer);
+        var var_extensions = sse_decode_opt_box_autoadd_shalom_json_value(
+          deserializer,
+        );
         return SubscriptionEvent_GraphQlError(
-          errorsJson: var_errorsJson,
-          extensionsJson: var_extensionsJson,
+          errors: var_errors,
+          extensions: var_extensions,
         );
       case 2:
         var var_code = sse_decode_String(deserializer);
         var var_message = sse_decode_String(deserializer);
-        var var_detailsJson = sse_decode_opt_String(deserializer);
+        var var_details = sse_decode_opt_box_autoadd_shalom_json_value(
+          deserializer,
+        );
         return SubscriptionEvent_TransportError(
           code: var_code,
           message: var_message,
-          detailsJson: var_detailsJson,
+          details: var_details,
         );
       default:
         throw UnimplementedError('');
@@ -2231,6 +2592,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   int sse_decode_u_16(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint16();
+  }
+
+  @protected
+  int sse_decode_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint32();
   }
 
   @protected
@@ -2265,21 +2632,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       case 0:
         return WsLinkEvent_Connected();
       case 1:
-        var var_payloadJson = sse_decode_opt_String(deserializer);
-        return WsLinkEvent_PingReceived(payloadJson: var_payloadJson);
+        var var_payload = sse_decode_opt_box_autoadd_shalom_json_value(
+          deserializer,
+        );
+        return WsLinkEvent_PingReceived(payload: var_payload);
       case 2:
-        var var_payloadJson = sse_decode_opt_String(deserializer);
-        return WsLinkEvent_PongReceived(payloadJson: var_payloadJson);
+        var var_payload = sse_decode_opt_box_autoadd_shalom_json_value(
+          deserializer,
+        );
+        return WsLinkEvent_PongReceived(payload: var_payload);
       case 3:
         var var_opId = sse_decode_String(deserializer);
-        var var_dataJson = sse_decode_opt_String(deserializer);
-        var var_errorsJson = sse_decode_opt_String(deserializer);
-        var var_extensionsJson = sse_decode_opt_String(deserializer);
+        var var_responseJson = sse_decode_String(deserializer);
         return WsLinkEvent_OperationResponse(
           opId: var_opId,
-          dataJson: var_dataJson,
-          errorsJson: var_errorsJson,
-          extensionsJson: var_extensionsJson,
+          responseJson: var_responseJson,
         );
       case 4:
         var var_opId = sse_decode_String(deserializer);
@@ -2368,6 +2735,30 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_Map_String_shalom_json_value_None(
+    Map<String, ShalomJsonValue> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_record_string_shalom_json_value(
+      self.entries.map((e) => (e.key, e.value)).toList(),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_Map_String_u_32_None(
+    Map<String, int> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_record_string_u_32(
+      self.entries.map((e) => (e.key, e.value)).toList(),
+      serializer,
+    );
+  }
+
+  @protected
   void
   sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
     RuntimeHandle self,
@@ -2394,15 +2785,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_StreamSink_String_Sse(
-    RustStreamSink<String> self,
+  void sse_encode_StreamSink_request_envelope_input_Sse(
+    RustStreamSink<RequestEnvelopeInput> self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_String(
       self.setupAndSerialize(
         codec: SseCodec(
-          decodeSuccessData: sse_decode_String,
+          decodeSuccessData: sse_decode_request_envelope_input,
           decodeErrorData: sse_decode_AnyhowException,
         ),
       ),
@@ -2467,6 +2858,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_box_autoadd_shalom_json_value(
+    ShalomJsonValue self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_shalom_json_value(self, serializer);
+  }
+
+  @protected
   void sse_encode_box_autoadd_u_64(BigInt self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_u_64(self, serializer);
@@ -2482,9 +2882,21 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_f_64(double self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putFloat64(self);
+  }
+
+  @protected
   void sse_encode_i_32(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putInt32(self);
+  }
+
+  @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putPlatformInt64(self);
   }
 
   @protected
@@ -2516,6 +2928,42 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_i_32(self.length, serializer);
     serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void sse_encode_list_record_string_shalom_json_value(
+    List<(String, ShalomJsonValue)> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_record_string_shalom_json_value(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_record_string_u_32(
+    List<(String, int)> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_record_string_u_32(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_shalom_json_value(
+    List<ShalomJsonValue> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_shalom_json_value(item, serializer);
+    }
   }
 
   @protected
@@ -2582,6 +3030,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_opt_box_autoadd_shalom_json_value(
+    ShalomJsonValue? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_shalom_json_value(self, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_opt_box_autoadd_u_64(BigInt? self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
 
@@ -2589,6 +3050,39 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     if (self != null) {
       sse_encode_box_autoadd_u_64(self, serializer);
     }
+  }
+
+  @protected
+  void sse_encode_record_string_shalom_json_value(
+    (String, ShalomJsonValue) self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.$1, serializer);
+    sse_encode_shalom_json_value(self.$2, serializer);
+  }
+
+  @protected
+  void sse_encode_record_string_u_32(
+    (String, int) self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.$1, serializer);
+    sse_encode_u_32(self.$2, serializer);
+  }
+
+  @protected
+  void sse_encode_request_envelope_input(
+    RequestEnvelopeInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_64(self.id, serializer);
+    sse_encode_String(self.query, serializer);
+    sse_encode_shalom_json_value(self.variables, serializer);
+    sse_encode_String(self.operationName, serializer);
+    sse_encode_String(self.operationType, serializer);
   }
 
   @protected
@@ -2620,31 +3114,61 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_shalom_json_value(
+    ShalomJsonValue self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case ShalomJsonValue_Null():
+        sse_encode_i_32(0, serializer);
+      case ShalomJsonValue_Boolean(field0: final field0):
+        sse_encode_i_32(1, serializer);
+        sse_encode_bool(field0, serializer);
+      case ShalomJsonValue_Integer(field0: final field0):
+        sse_encode_i_32(2, serializer);
+        sse_encode_i_64(field0, serializer);
+      case ShalomJsonValue_Float(field0: final field0):
+        sse_encode_i_32(3, serializer);
+        sse_encode_f_64(field0, serializer);
+      case ShalomJsonValue_String(field0: final field0):
+        sse_encode_i_32(4, serializer);
+        sse_encode_String(field0, serializer);
+      case ShalomJsonValue_Array(field0: final field0):
+        sse_encode_i_32(5, serializer);
+        sse_encode_list_shalom_json_value(field0, serializer);
+      case ShalomJsonValue_Object(field0: final field0):
+        sse_encode_i_32(6, serializer);
+        sse_encode_Map_String_shalom_json_value_None(field0, serializer);
+    }
+  }
+
+  @protected
   void sse_encode_subscription_event(
     SubscriptionEvent self,
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     switch (self) {
-      case SubscriptionEvent_Data(dataJson: final dataJson):
+      case SubscriptionEvent_Data(data: final data):
         sse_encode_i_32(0, serializer);
-        sse_encode_String(dataJson, serializer);
+        sse_encode_box_autoadd_shalom_json_value(data, serializer);
       case SubscriptionEvent_GraphQlError(
-        errorsJson: final errorsJson,
-        extensionsJson: final extensionsJson,
+        errors: final errors,
+        extensions: final extensions,
       ):
         sse_encode_i_32(1, serializer);
-        sse_encode_String(errorsJson, serializer);
-        sse_encode_opt_String(extensionsJson, serializer);
+        sse_encode_list_shalom_json_value(errors, serializer);
+        sse_encode_opt_box_autoadd_shalom_json_value(extensions, serializer);
       case SubscriptionEvent_TransportError(
         code: final code,
         message: final message,
-        detailsJson: final detailsJson,
+        details: final details,
       ):
         sse_encode_i_32(2, serializer);
         sse_encode_String(code, serializer);
         sse_encode_String(message, serializer);
-        sse_encode_opt_String(detailsJson, serializer);
+        sse_encode_opt_box_autoadd_shalom_json_value(details, serializer);
     }
   }
 
@@ -2652,6 +3176,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_u_16(int self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint16(self);
+  }
+
+  @protected
+  void sse_encode_u_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint32(self);
   }
 
   @protected
@@ -2683,23 +3213,19 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     switch (self) {
       case WsLinkEvent_Connected():
         sse_encode_i_32(0, serializer);
-      case WsLinkEvent_PingReceived(payloadJson: final payloadJson):
+      case WsLinkEvent_PingReceived(payload: final payload):
         sse_encode_i_32(1, serializer);
-        sse_encode_opt_String(payloadJson, serializer);
-      case WsLinkEvent_PongReceived(payloadJson: final payloadJson):
+        sse_encode_opt_box_autoadd_shalom_json_value(payload, serializer);
+      case WsLinkEvent_PongReceived(payload: final payload):
         sse_encode_i_32(2, serializer);
-        sse_encode_opt_String(payloadJson, serializer);
+        sse_encode_opt_box_autoadd_shalom_json_value(payload, serializer);
       case WsLinkEvent_OperationResponse(
         opId: final opId,
-        dataJson: final dataJson,
-        errorsJson: final errorsJson,
-        extensionsJson: final extensionsJson,
+        responseJson: final responseJson,
       ):
         sse_encode_i_32(3, serializer);
         sse_encode_String(opId, serializer);
-        sse_encode_opt_String(dataJson, serializer);
-        sse_encode_opt_String(errorsJson, serializer);
-        sse_encode_opt_String(extensionsJson, serializer);
+        sse_encode_String(responseJson, serializer);
       case WsLinkEvent_OperationComplete(opId: final opId):
         sse_encode_i_32(4, serializer);
         sse_encode_String(opId, serializer);

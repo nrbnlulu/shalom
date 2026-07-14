@@ -37,6 +37,12 @@ class ZooQueryResponse {
     return {'zoo': this.zoo?.toJson()};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'zoo': this.zoo == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.zoo!.toShalomValue(),
+  });
+
   static ZooQueryResponse fromJson(shalom_core.JsonObject data) {
     final ZooWidgetRef? zoo$value = data['zoo'] == null
         ? null
@@ -44,6 +50,18 @@ class ZooQueryResponse {
             shalom_core.observedRefInputFromJson(
               (data['zoo'] as shalom_core.JsonObject)[r'$ZooWidget']
                   as shalom_core.JsonObject,
+            ),
+          );
+    return ZooQueryResponse(zoo: zoo$value);
+  }
+
+  static ZooQueryResponse fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? zoo$raw = data.field('zoo');
+    final ZooWidgetRef? zoo$value = zoo$raw == null || zoo$raw!.isNull
+        ? null
+        : ZooWidgetRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              zoo$raw!.field(r'$ZooWidget')!,
             ),
           );
     return ZooQueryResponse(zoo: zoo$value);
@@ -89,12 +107,34 @@ class ZooQuery_zoo {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'cages': shalom_core.shalomJsonArray(
+      this.cages!.map((e) => e!.toShalomValue()),
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static ZooQuery_zoo fromJson(shalom_core.JsonObject data) {
     final List<ZooWidget_cages> cages$value = (data['cages'] as List<dynamic>)
         .map((e) => ZooWidget_cages.fromJson(e as shalom_core.JsonObject))
         .toList();
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    return ZooQuery_zoo(cages: cages$value, id: id$value, name: name$value);
+  }
+
+  static ZooQuery_zoo fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? cages$raw = data.field('cages');
+    final List<ZooWidget_cages> cages$value = cages$raw!.listValue
+        .map((e) => ZooWidget_cages.fromShalomValue(e!))
+        .toList();
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
     return ZooQuery_zoo(cages: cages$value, id: id$value, name: name$value);
   }
 }
@@ -135,6 +175,18 @@ final class ZooQueryData implements shalom_core.OperationInterface {
     return ZooQueryData(zoo: zoo$value);
   }
 
+  static ZooQueryData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? zoo$raw = data.field('zoo');
+    final ZooWidgetRef? zoo$value = zoo$raw == null || zoo$raw!.isNull
+        ? null
+        : ZooWidgetRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              zoo$raw!.field(r'$ZooWidget')!,
+            ),
+          );
+    return ZooQueryData(zoo: zoo$value);
+  }
+
   /// Reads this operation's current cache entry through [cache], decoding
   /// it as [ZooQueryData]. Returns `null` when absent or incomplete.
   static Future<ZooQueryData?> readFrom(
@@ -143,15 +195,22 @@ final class ZooQueryData implements shalom_core.OperationInterface {
   }) async {
     return await cache.readQuery<ZooQueryData>(
       name: 'ZooQuery',
-      decoder: fromCache,
+      bridgeDecoder: fromShalomValue,
 
-      variables: variables?.toJson(),
+      variablesValue: variables?.toShalomValue(),
     );
   }
 
   shalom_core.JsonObject toJson() {
     return {'zoo': this.zoo?.toJson()};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'zoo': this.zoo == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.zoo!.toShalomValue(),
+  });
 }
 
 final class ZooQueryObservable {
@@ -177,9 +236,9 @@ final class ZooQueryObservable {
     return client.request<ZooQueryData>(
       name: operation$Name(),
 
-      variables: variables.toJson(),
+      variablesValue: variables.toShalomValue(),
 
-      decoder: ZooQueryData.fromCache,
+      bridgeDecoder: ZooQueryData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,
@@ -198,6 +257,12 @@ final class ZooQueryVariables {
     data["id"] = this.id;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final data = <String, shalom_core.ShalomJsonValue>{};
+    data["id"] = shalom_core.shalomJsonValue(this.id!);
+    return shalom_core.shalomJsonObject(data);
   }
 
   @override

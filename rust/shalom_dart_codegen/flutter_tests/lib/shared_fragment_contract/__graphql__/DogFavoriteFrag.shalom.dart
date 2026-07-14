@@ -41,6 +41,12 @@ extension type DogFavoriteFragRef.fromInput(
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [DogFavoriteFragData]. Returns `null` when absent or incomplete.
@@ -48,7 +54,7 @@ extension type DogFavoriteFragRef.fromInput(
     return await cache.readFragment<DogFavoriteFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: DogFavoriteFragData.fromCache,
+      bridgeDecoder: DogFavoriteFragData.fromShalomValue,
     );
   }
 
@@ -57,7 +63,7 @@ extension type DogFavoriteFragRef.fromInput(
   ) {
     return client.subscribeToFragment<DogFavoriteFragData>(
       ref: _inner,
-      decoder: DogFavoriteFragData.fromCache,
+      bridgeDecoder: DogFavoriteFragData.fromShalomValue,
     );
   }
 }
@@ -68,6 +74,7 @@ abstract class DogFavoriteFrag implements CommonAnimalFrag, HasFavoriteToyFrag {
   String get id;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 final class DogFavoriteFragData
@@ -122,6 +129,23 @@ final class DogFavoriteFragData
     );
   }
 
+  static DogFavoriteFragData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+    final String breed$value = breed$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? favoriteToy$raw = data.field(
+      'favoriteToy',
+    );
+    final HasFavoriteToyFrag_favoriteToy favoriteToy$value =
+        HasFavoriteToyFrag_favoriteToy.fromShalomValue(favoriteToy$raw!);
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    return DogFavoriteFragData(
+      breed: breed$value,
+      favoriteToy: favoriteToy$value,
+      id: id$value,
+    );
+  }
+
   shalom_core.JsonObject toJson() {
     return {
       'breed': this.breed,
@@ -131,6 +155,15 @@ final class DogFavoriteFragData
       'id': this.id,
     };
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'breed': shalom_core.shalomJsonValue(this.breed!),
+
+    'favoriteToy': this.favoriteToy!.toShalomValue(),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
 }
 
 abstract class $DogFavoriteFrag extends StatelessWidget {
