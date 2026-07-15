@@ -84,14 +84,12 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
   String? _selectedCacheKey;
 
   final List<
-    ({
-      _PanelTab tab,
-      String? queryField,
-      String? mutationField,
-      String? cacheKey,
-    })
-  >
-  _history = [];
+      ({
+        _PanelTab tab,
+        String? queryField,
+        String? mutationField,
+        String? cacheKey,
+      })> _history = [];
 
   String _filter = '';
   Timer? _timer;
@@ -211,10 +209,10 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
   }
 
   String? get _selectedItem => switch (_tab) {
-    _PanelTab.queries => _selectedQueryField,
-    _PanelTab.mutations => _selectedMutationField,
-    _PanelTab.cache => _selectedCacheKey,
-  };
+        _PanelTab.queries => _selectedQueryField,
+        _PanelTab.mutations => _selectedMutationField,
+        _PanelTab.cache => _selectedCacheKey,
+      };
 
   void _onItemSelected(String item) {
     setState(() {
@@ -532,9 +530,8 @@ class _LeftPane extends StatelessWidget {
                       final obsCount = obsCounts[item];
 
                       final parenIdx = item.indexOf('(');
-                      final displayName = parenIdx == -1
-                          ? item
-                          : item.substring(0, parenIdx);
+                      final displayName =
+                          parenIdx == -1 ? item : item.substring(0, parenIdx);
                       final hasArgs = parenIdx != -1;
 
                       return InkWell(
