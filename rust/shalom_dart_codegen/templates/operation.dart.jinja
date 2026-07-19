@@ -80,7 +80,7 @@ class {{ response_class_name }} {{ implements_used_fragments(implementable_fragm
 {% if is_observe %}
 // ------------ widget API -------------
 
-final class {{ operation_name }}Data implements shalom_core.OperationInterface {
+final class {{ operation_name }}Data implements shalom_core.OperationInterface, shalom_core.StreamCompat {
     {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
         final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
     {% endfor %}

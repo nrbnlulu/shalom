@@ -153,7 +153,8 @@ class UserCardQuery_user implements UserCard {
 
 // ------------ widget API -------------
 
-final class UserCardQueryData implements shalom_core.OperationInterface {
+final class UserCardQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   final UserCardQuery_user? user;
 
   const UserCardQueryData({required this.user});

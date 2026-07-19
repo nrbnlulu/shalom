@@ -524,6 +524,76 @@ impl ShalomRuntime {
         sub_id
     }
 
+    /// Execute a mutation exactly once and return its result directly,
+    /// without registering a reactive cache subscription.
+    ///
+    /// Unlike [`Self::execute_operation`], this never goes through
+    /// `self.subscriptions` / `notify_subscribers`, so it can't race against
+    /// an unrelated concurrent cache write (or an optimistic write) that
+    /// would otherwise resolve a subscriber with stale data before this
+    /// mutation's own network response has arrived.
+    ///
+    /// A transport error is retried (a fresh `link.execute` call) after
+    /// `retry_delay`, if set; a GraphQL-level error or a normalization
+    /// failure is terminal. Success writes the response into the shared
+    /// entity cache (via `normalize`), which still notifies any *other*
+    /// reactive subscriptions watching the same entities.
+    pub async fn execute_mutation(
+        &self,
+        op_ctx: SharedOpCtx,
+        variables: Option<Map<String, Value>>,
+        link: Arc<dyn GraphQLLink>,
+        retry_delay: Option<Duration>,
+    ) -> Result<RuntimeResponse, SubscriptionError> {
+        let request = Request {
+            query: op_ctx.query.clone(),
+            variables: variables.clone().unwrap_or_default(),
+            operation_name: op_ctx.get_operation_name().to_string(),
+            operation_type: to_link_op_type(op_ctx.op_type()),
+            headers: None,
+        };
+
+        loop {
+            let mut stream = link.execute(request.clone());
+            match stream.next().await {
+                Some(GraphQLResponse::Data { data, .. }) => {
+                    let result = self
+                        .normalize(&op_ctx, Value::Object(data), variables.as_ref())
+                        .map_err(|e| SubscriptionError::Transport {
+                            message: e.to_string(),
+                            code: "NORMALIZATION_ERROR".into(),
+                            details: None,
+                        })?;
+                    return Ok(RuntimeResponse {
+                        data: result.data,
+                        operation_id: Some(op_ctx.get_operation_name().to_string()),
+                    });
+                }
+                Some(GraphQLResponse::Error { errors, extensions }) => {
+                    return Err(SubscriptionError::GraphQL { errors, extensions });
+                }
+                Some(GraphQLResponse::TransportError(err)) => {
+                    let Some(wait) = retry_delay else {
+                        return Err(SubscriptionError::Transport {
+                            message: err.message,
+                            code: err.code,
+                            details: err.details,
+                        });
+                    };
+                    tokio::time::sleep(wait).await;
+                    continue;
+                }
+                None => {
+                    return Err(SubscriptionError::Transport {
+                        message: "mutation link stream ended without a response".into(),
+                        code: "EMPTY_RESPONSE".into(),
+                        details: None,
+                    });
+                }
+            }
+        }
+    }
+
     /// Create a cache subscription for a pre-registered operation and return
     /// its ID. The caller (FRB layer) is responsible for also triggering the
     /// network request via the host link.

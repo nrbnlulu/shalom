@@ -276,7 +276,8 @@ class StreetSubscription_streetAnimals__Dog
 
 // ------------ widget API -------------
 
-final class StreetSubscriptionData implements shalom_core.OperationInterface {
+final class StreetSubscriptionData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   final StreetSubscription_streetAnimals streetAnimals;
 
   const StreetSubscriptionData({required this.streetAnimals});
