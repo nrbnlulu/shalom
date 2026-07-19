@@ -106,6 +106,7 @@ pub fn set_log_level(level: LogLevel) {
 pub enum ExecutionPolicyInput {
     NetworkFirst,
     CacheFirst,
+    NetworkOnly,
 }
 
 impl From<ExecutionPolicyInput> for ExecutionPolicy {
@@ -113,6 +114,7 @@ impl From<ExecutionPolicyInput> for ExecutionPolicy {
         match value {
             ExecutionPolicyInput::NetworkFirst => ExecutionPolicy::NetworkFirst,
             ExecutionPolicyInput::CacheFirst => ExecutionPolicy::CacheFirst,
+            ExecutionPolicyInput::NetworkOnly => ExecutionPolicy::NetworkOnly,
         }
     }
 }

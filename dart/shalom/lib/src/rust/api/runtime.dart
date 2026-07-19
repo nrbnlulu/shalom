@@ -317,7 +317,7 @@ Future<String?> getCacheEntry({
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>>
 abstract class RuntimeHandle implements RustOpaqueInterface {}
 
-enum ExecutionPolicyInput { networkFirst, cacheFirst }
+enum ExecutionPolicyInput { networkFirst, cacheFirst, networkOnly }
 
 @freezed
 sealed class GraphQlResponseInput with _$GraphQlResponseInput {

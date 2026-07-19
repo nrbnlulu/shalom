@@ -111,6 +111,12 @@ pub struct ObservedRef {
 pub enum ExecutionPolicy {
     NetworkFirst,
     CacheFirst,
+    /// Always executes the request against the network and never resolves
+    /// (or emits) a cached value for it. Used as the default for mutations:
+    /// a mutation whose result entities are already fully cached from a
+    /// previous call must not short-circuit to that stale cached value on
+    /// the next invocation — it always has to reach the server.
+    NetworkOnly,
 }
 
 pub type RuntimeResponseStream =

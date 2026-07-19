@@ -2382,6 +2382,7 @@ impl SseDecode for crate::api::runtime::ExecutionPolicyInput {
         return match inner {
             0 => crate::api::runtime::ExecutionPolicyInput::NetworkFirst,
             1 => crate::api::runtime::ExecutionPolicyInput::CacheFirst,
+            2 => crate::api::runtime::ExecutionPolicyInput::NetworkOnly,
             _ => unreachable!("Invalid variant for ExecutionPolicyInput: {}", inner),
         };
     }
@@ -3007,6 +3008,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::runtime::ExecutionPolicyInput
         match self {
             Self::NetworkFirst => 0.into_dart(),
             Self::CacheFirst => 1.into_dart(),
+            Self::NetworkOnly => 2.into_dart(),
             _ => unreachable!(),
         }
     }
@@ -3438,6 +3440,7 @@ impl SseEncode for crate::api::runtime::ExecutionPolicyInput {
             match self {
                 crate::api::runtime::ExecutionPolicyInput::NetworkFirst => 0,
                 crate::api::runtime::ExecutionPolicyInput::CacheFirst => 1,
+                crate::api::runtime::ExecutionPolicyInput::NetworkOnly => 2,
                 _ => {
                     unimplemented!("");
                 }

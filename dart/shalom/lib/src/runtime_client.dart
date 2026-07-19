@@ -272,7 +272,7 @@ class ShalomRuntimeClient {
     name: name,
     variables: variables,
     decoder: decoder,
-    executionPolicy: rs_runtime.ExecutionPolicyInput.networkFirst,
+    executionPolicy: rs_runtime.ExecutionPolicyInput.networkOnly,
     retryDelay: retryDelay,
   ).first;
 

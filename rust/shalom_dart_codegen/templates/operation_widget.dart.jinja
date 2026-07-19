@@ -2,6 +2,8 @@
 {% set op_variables = context.operation.variables %}
 {% set typedefs = context.operation.typedefs %}
 {% set operation_name = context.operation.operation_name %}
+{% set is_mutation = context.operation.op_ty.name == "Mutation" %}
+{% set default_execution_policy = "networkOnly" if is_mutation else "cacheFirst" %}
 {% include "macros" %}
 {% include "selection_macros" %}
 
@@ -26,9 +28,9 @@ abstract class ${{ operation_name }} extends StatefulWidget {
     final Duration? autoRefetch;
     {% if op_variables_exist %}
         final {{ operation_name }}Variables variables;
-        const ${{ operation_name }}({super.key, required this.variables, this.executionPolicy = .cacheFirst, this.retryDelay = const .inherit(), this.autoRefetch});
+        const ${{ operation_name }}({super.key, required this.variables, this.executionPolicy = .{{ default_execution_policy }}, this.retryDelay = const .inherit(), this.autoRefetch});
     {% else %}
-        const ${{ operation_name }}({super.key, this.executionPolicy = .cacheFirst, this.retryDelay = const .inherit(), this.autoRefetch});
+        const ${{ operation_name }}({super.key, this.executionPolicy = .{{ default_execution_policy }}, this.retryDelay = const .inherit(), this.autoRefetch});
     {% endif %}
 
     Widget buildLoading(BuildContext context);
