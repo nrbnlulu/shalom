@@ -122,7 +122,8 @@ class UserWidget_user {
 
 // ------------ widget API -------------
 
-final class UserWidgetData implements shalom_core.OperationInterface {
+final class UserWidgetData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   final UserWidget_user? user;
 
   const UserWidgetData({required this.user});

@@ -4,8 +4,6 @@
 {% set op_variables_exist = context.operation.variables | length > 0 %}
 {% set typedefs = context.operation.typedefs %}
 {% set is_observe = context.operation.observe %}
-{% set is_mutation = context.operation.op_ty.name == "Mutation" %}
-{% set default_execution_policy = "networkOnly" if is_mutation else "cacheFirst" %}
 
 
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
@@ -82,7 +80,7 @@ class {{ response_class_name }} {% if not is_observe %}{{ implements_used_fragme
 {% if is_observe %}
 // ------------ widget API -------------
 
-final class {{ operation_name }}Data implements shalom_core.OperationInterface {
+final class {{ operation_name }}Data implements shalom_core.OperationInterface, shalom_core.StreamCompat {
     {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
         final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
     {% endfor %}
@@ -200,7 +198,7 @@ final class {{ operation_name }}Observable {
         {% if op_variables_exist %}
         required this.variables,
         {% endif %}
-        this.executionPolicy = shalom_core.ExecutionPolicyInput.{{ default_execution_policy }},
+        this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
         this.retryDelay = const shalom_core.RetryDelay.inherit(),
         this.autoRefetch,
     });

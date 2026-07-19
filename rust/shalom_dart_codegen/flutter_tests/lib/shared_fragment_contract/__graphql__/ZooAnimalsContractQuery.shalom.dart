@@ -312,7 +312,7 @@ extension ZooAnimalsContractQuery_animals$WhereTypeExt
 // ------------ widget API -------------
 
 final class ZooAnimalsContractQueryData
-    implements shalom_core.OperationInterface {
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   final List<CommonAnimalFragRef> animals;
 
   const ZooAnimalsContractQueryData({required this.animals});

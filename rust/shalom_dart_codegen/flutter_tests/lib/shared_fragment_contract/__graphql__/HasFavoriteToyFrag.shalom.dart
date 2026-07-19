@@ -70,7 +70,8 @@ abstract class HasFavoriteToyFrag {
   shalom_core.ShalomJsonValue toShalomValue();
 }
 
-sealed class HasFavoriteToyFragData implements HasFavoriteToyFrag {
+sealed class HasFavoriteToyFragData
+    implements HasFavoriteToyFrag, shalom_core.StreamCompat {
   const HasFavoriteToyFragData();
 
   HasFavoriteToyFrag_favoriteToy get favoriteToy;

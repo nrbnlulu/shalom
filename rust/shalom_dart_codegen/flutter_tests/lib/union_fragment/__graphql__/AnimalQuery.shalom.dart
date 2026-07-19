@@ -249,7 +249,8 @@ class AnimalQuery_animal__Dog extends AnimalQuery_animal {
 
 // ------------ widget API -------------
 
-final class AnimalQueryData implements shalom_core.OperationInterface {
+final class AnimalQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   final AnimalWidgetRef? animal;
 
   const AnimalQueryData({required this.animal});

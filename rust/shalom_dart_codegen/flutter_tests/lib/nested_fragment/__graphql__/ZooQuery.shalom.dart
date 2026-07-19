@@ -155,7 +155,8 @@ class ZooQuery_zoo {
 
 // ------------ widget API -------------
 
-final class ZooQueryData implements shalom_core.OperationInterface {
+final class ZooQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   final ZooWidgetRef? zoo;
 
   const ZooQueryData({required this.zoo});

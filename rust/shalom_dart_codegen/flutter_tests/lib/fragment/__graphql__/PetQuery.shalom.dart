@@ -132,7 +132,8 @@ class PetQuery_pet {
 
 // ------------ widget API -------------
 
-final class PetQueryData implements shalom_core.OperationInterface {
+final class PetQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   final PetWidgetRef? pet;
 
   const PetQueryData({required this.pet});

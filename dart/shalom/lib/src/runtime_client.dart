@@ -226,7 +226,7 @@ class ShalomRuntimeClient {
   /// independent of [retryDelay]'s error handling. Only meaningful for
   /// queries (subscriptions stay open on their own; mutations shouldn't be
   /// repeated on a timer).
-  Stream<GraphQLResponse<T>> request<T>({
+  Stream<GraphQLResponse<T>> request<T extends StreamCompat>({
     required String name,
     ShalomJsonValue? variables,
     required T Function(ShalomJsonValue) decoder,
@@ -255,26 +255,34 @@ class ShalomRuntimeClient {
   // Mutations
   // -------------------------------------------------------------------------
 
-  /// Fire a pre-registered mutation named [name] and return the normalised
-  /// result as a one-shot [Future] wrapped in [GraphQLResponse<T>].
-  /// The mutation response is written into the shared entity cache, triggering
-  /// reactive updates on any query subscriptions that watch the same entities.
+  /// Fire a pre-registered mutation named [name] exactly once and return the
+  /// normalised result as [GraphQLResponse<T>].
+  ///
+  /// Unlike [request], this never registers a reactive cache subscription —
+  /// it executes the mutation directly and returns its own response, so it
+  /// can't be resolved with a stale value from some unrelated concurrent
+  /// cache write (or an optimistic write) racing ahead of the real network
+  /// response. The response is still written into the shared entity cache,
+  /// triggering reactive updates on any *other* query subscriptions that
+  /// watch the same entities.
   ///
   /// Auto-retry is disabled by default (mutations have side effects, so
   /// silently re-sending one after a transport error is unsafe unless the
   /// caller opts in explicitly via [retryDelay]).
-  Future<GraphQLResponse<T>> mutate<T>({
+  Future<GraphQLResponse<T>> mutate<T extends MutationInterface>({
     required String name,
     ShalomJsonValue? variables,
     required T Function(ShalomJsonValue) decoder,
     RetryDelay retryDelay = const RetryDelay.disabled(),
-  }) => request<T>(
-    name: name,
-    variables: variables,
-    decoder: decoder,
-    executionPolicy: rs_runtime.ExecutionPolicyInput.networkOnly,
-    retryDelay: retryDelay,
-  ).first;
+  }) async {
+    final event = await rs_runtime.mutate(
+      handle: _handle,
+      name: name,
+      variables: variables,
+      retryDelay: retryDelay._toInput(),
+    );
+    return _eventToResponse<T>(event, decoder);
+  }
 
   /// Write [data] to the cache immediately as an optimistic response for the
   /// mutation named [name].  Returns an opaque write ID that can be passed to
@@ -282,7 +290,7 @@ class ShalomRuntimeClient {
   /// failure.
   Future<BigInt> writeOptimistic({
     required String name,
-    required OperationInterface data,
+    required MutationInterface data,
   }) => rs_runtime.writeOptimistic(
     handle: _handle,
     opName: name,
@@ -305,7 +313,7 @@ class ShalomRuntimeClient {
   /// Emits the current cached value immediately if available, then re-emits
   /// whenever the underlying cache entries change. Returns a stream of
   /// [GraphQLResponse<T>] carrying either success or error states.
-  Stream<GraphQLResponse<T>> subscribeToFragment<T>({
+  Stream<GraphQLResponse<T>> subscribeToFragment<T extends StreamCompat>({
     required rs_runtime.ObservedRefInput ref,
     required T Function(ShalomJsonValue) decoder,
   }) {
@@ -327,7 +335,8 @@ class ShalomRuntimeClient {
   ///
   /// Use [subscribeToFragment] directly if you don't need the optimised swap.
   /// Returns a stream of [GraphQLResponse<T>].
-  Stream<GraphQLResponse<T>> rebindFragmentSubscription<T>({
+  Stream<GraphQLResponse<T>>
+  rebindFragmentSubscription<T extends StreamCompat>({
     required BigInt subscriptionId,
     required rs_runtime.ObservedRefInput newRef,
     required T Function(ShalomJsonValue) decoder,
@@ -370,7 +379,7 @@ class ShalomRuntimeClient {
   /// [rs_runtime.unsubscribe] if the stream is cancelled before or after the
   /// subscribe call resolves, and otherwise binds it with
   /// [_bindSubscriptionStream].
-  Stream<GraphQLResponse<T>> _observeSubscription<T>({
+  Stream<GraphQLResponse<T>> _observeSubscription<T extends StreamCompat>({
     required Future<BigInt> Function() subscribe,
     required T Function(ShalomJsonValue) decoder,
     String? debugName,
@@ -414,7 +423,7 @@ class ShalomRuntimeClient {
     return controller.stream;
   }
 
-  void _bindSubscriptionStream<T>({
+  void _bindSubscriptionStream<T extends StreamCompat>({
     required BigInt subId,
     required StreamController<GraphQLResponse<T>> controller,
     required T Function(ShalomJsonValue) decoder,
@@ -425,36 +434,8 @@ class ShalomRuntimeClient {
         .listen(
           (event) {
             if (controller.isClosed) return;
-            late GraphQLResponse<T> response;
             try {
-              switch (event) {
-                case rs_runtime.SubscriptionEvent_Data(data: final data):
-                  final decoded = decoder(data);
-                  response = GraphQLData<T>(data: decoded);
-                case rs_runtime.SubscriptionEvent_GraphQlError(
-                  errors: final errors,
-                  extensions: final extensions,
-                ):
-                  response = GraphQLError<T>(
-                    errors: errors
-                        .map((error) => error.toJsonValue() as JsonObject)
-                        .toList(growable: false),
-                    extensions: extensions?.toJsonValue() as JsonObject?,
-                  );
-                case rs_runtime.SubscriptionEvent_TransportError(
-                  code: final code,
-                  message: final message,
-                  details: final details,
-                ):
-                  response = LinkExceptionResponse<T>([
-                    ShalomTransportException(
-                      message: message,
-                      code: code,
-                      details: details?.toJsonValue() as JsonObject?,
-                    ),
-                  ]);
-              }
-              controller.add(response);
+              controller.add(_eventToResponse<T>(event, decoder));
             } catch (e, st) {
               controller.addError(e, st);
             }
@@ -466,6 +447,41 @@ class ShalomRuntimeClient {
             if (!controller.isClosed) controller.close();
           },
         );
+  }
+
+  /// Shared conversion from the FRB [rs_runtime.SubscriptionEvent] wire type
+  /// to the public [GraphQLResponse<T>], used by both the reactive stream
+  /// path ([_bindSubscriptionStream]) and the one-shot [mutate] call.
+  GraphQLResponse<T> _eventToResponse<T>(
+    rs_runtime.SubscriptionEvent event,
+    T Function(ShalomJsonValue) decoder,
+  ) {
+    switch (event) {
+      case rs_runtime.SubscriptionEvent_Data(data: final data):
+        return GraphQLData<T>(data: decoder(data));
+      case rs_runtime.SubscriptionEvent_GraphQlError(
+        errors: final errors,
+        extensions: final extensions,
+      ):
+        return GraphQLError<T>(
+          errors: errors
+              .map((error) => error.toJsonValue() as JsonObject)
+              .toList(growable: false),
+          extensions: extensions?.toJsonValue() as JsonObject?,
+        );
+      case rs_runtime.SubscriptionEvent_TransportError(
+        code: final code,
+        message: final message,
+        details: final details,
+      ):
+        return LinkExceptionResponse<T>([
+          ShalomTransportException(
+            message: message,
+            code: code,
+            details: details?.toJsonValue() as JsonObject?,
+          ),
+        ]);
+    }
   }
 
   // -------------------------------------------------------------------------

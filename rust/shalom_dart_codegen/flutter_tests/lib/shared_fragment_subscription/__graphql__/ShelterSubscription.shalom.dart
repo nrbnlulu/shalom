@@ -276,7 +276,8 @@ class ShelterSubscription_shelterAnimals__Dog
 
 // ------------ widget API -------------
 
-final class ShelterSubscriptionData implements shalom_core.OperationInterface {
+final class ShelterSubscriptionData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   final ShelterSubscription_shelterAnimals shelterAnimals;
 
   const ShelterSubscriptionData({required this.shelterAnimals});
