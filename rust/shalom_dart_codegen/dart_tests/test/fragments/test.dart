@@ -20,9 +20,7 @@ void main() {
         },
       };
 
-      final result = GetUserResponse.fromJson(
-        userData,
-      );
+      final result = GetUserData.fromJson(userData);
 
       // Basic field access should work
       expect(result.user?.id, "user1");
@@ -41,9 +39,7 @@ void main() {
         },
       };
 
-      final result = GetPostResponse.fromJson(
-        postData,
-      );
+      final result = GetPostData.fromJson(postData);
 
       expect(result.post?.id, "post1");
       expect(result.post?.title, "GraphQL Best Practices");
@@ -61,12 +57,8 @@ void main() {
         },
       };
 
-      final result1 = GetUserResponse.fromJson(
-        userData,
-      );
-      final result2 = GetUserResponse.fromJson(
-        userData,
-      );
+      final result1 = GetUserData.fromJson(userData);
+      final result2 = GetUserData.fromJson(userData);
 
       expect(result1 == result2, true);
       expect(result1.user == result2.user, true);
@@ -82,9 +74,7 @@ void main() {
         },
       };
 
-      final result = GetUserResponse.fromJson(
-        userData,
-      );
+      final result = GetUserData.fromJson(userData);
       final json = result.toJson();
 
       expect(json, userData);
@@ -107,9 +97,7 @@ void main() {
           },
         };
 
-        final result = GetPostWithAuthorResponse.fromJson(
-          postData,
-        );
+        final result = GetPostWithAuthorData.fromJson(postData);
 
         expect(result.post?.id, "post1");
         expect(result.post?.title, "Test Post");
@@ -131,11 +119,9 @@ void main() {
           },
         };
 
-        final getUserResult = GetUserResponse.fromJson(
-          userData,
-        );
+        final getUserResult = GetUserData.fromJson(userData);
 
-        final getUserWithAuthorResult = GetUserWithAuthorResponse.fromJson(
+        final getUserWithAuthorResult = GetUserWithAuthorData.fromJson(
           userData,
         );
 
@@ -158,9 +144,7 @@ void main() {
           },
         };
 
-        final result = GetUserWithAuthorResponse.fromJson(
-          userData,
-        );
+        final result = GetUserWithAuthorData.fromJson(userData);
 
         // Should have fields from both fragments
         expect(result.user?.id, "user1"); // from UserInfoFrag
@@ -183,9 +167,7 @@ void main() {
         },
       };
 
-      final result = GetPostWithAuthorResponse.fromJson(
-        postData,
-      );
+      final result = GetPostWithAuthorData.fromJson(postData);
 
       // TODO: Fragment interface implementation not working yet
       // Author should be of type UserInfoFrag
@@ -206,12 +188,8 @@ void main() {
         },
       };
 
-      final result1 = GetUserResponse.fromJson(
-        userData,
-      );
-      final result2 = GetUserResponse.fromJson(
-        userData,
-      );
+      final result1 = GetUserData.fromJson(userData);
+      final result2 = GetUserData.fromJson(userData);
 
       expect(result1 == result2, true);
       expect(result1.user == result2.user, true);
@@ -236,12 +214,8 @@ void main() {
         },
       };
 
-      final result1 = GetUserResponse.fromJson(
-        userData1,
-      );
-      final result2 = GetUserResponse.fromJson(
-        userData2,
-      );
+      final result1 = GetUserData.fromJson(userData1);
+      final result2 = GetUserData.fromJson(userData2);
 
       expect(result1 == result2, false);
       expect(result1.user == result2.user, false);
@@ -257,9 +231,7 @@ void main() {
         },
       };
 
-      final result = GetUserResponse.fromJson(
-        userData,
-      );
+      final result = GetUserData.fromJson(userData);
       final json = result.toJson();
 
       expect(json, userData);

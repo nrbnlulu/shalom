@@ -12,8 +12,8 @@ import '../fragments/__graphql__/UserIdentity.shalom.dart';
 import '../more_fragments/__graphql__/UserCard.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class UserCardQueryResponse {
+class UserCardQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members
@@ -23,16 +23,16 @@ class UserCardQueryResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  UserCardQueryResponse({this.user});
+  UserCardQueryData({this.user});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UserCardQueryResponse && user == other.user);
+        (other is UserCardQueryData && user == other.user);
   }
 
   @override
-  int get hashCode => Object.hashAll([user, UserCardQueryResponse.G__typename]);
+  int get hashCode => Object.hashAll([user, UserCardQueryData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'user': this.user?.toJson()};
@@ -44,21 +44,50 @@ class UserCardQueryResponse {
         : this.user!.toShalomValue(),
   });
 
-  static UserCardQueryResponse fromJson(shalom_core.JsonObject data) {
+  static UserCardQueryData fromJson(shalom_core.JsonObject data) {
     final UserCardQuery_user? user$value = data['user'] == null
         ? null
         : UserCardQuery_user.fromJson(data['user'] as shalom_core.JsonObject);
-    return UserCardQueryResponse(user: user$value);
+    return UserCardQueryData(user: user$value);
   }
 
-  static UserCardQueryResponse fromShalomValue(
-    shalom_core.ShalomJsonValue data,
-  ) {
+  static UserCardQueryData fromShalomValue(shalom_core.ShalomJsonValue data) {
     final shalom_core.ShalomJsonValue? user$raw = data.field('user');
     final UserCardQuery_user? user$value = user$raw == null || user$raw!.isNull
         ? null
         : UserCardQuery_user.fromShalomValue(user$raw!);
-    return UserCardQueryResponse(user: user$value);
+    return UserCardQueryData(user: user$value);
+  }
+
+  @override
+  String operation$Name() => 'UserCardQuery';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [UserCardQueryData]. Returns `null` when absent or incomplete.
+  static Future<UserCardQueryData?> readFrom(
+    shalom_core.CacheProxy cache, {
+    UserCardQueryVariables? variables,
+  }) async {
+    return await cache.readOperation<UserCardQueryData>(
+      name: 'UserCardQuery',
+      decoder: fromShalomValue,
+
+      variables: variables?.toShalomValue(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    UserCardQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'UserCardQuery',
+
+      variables: variables?.toShalomValue(),
+    );
   }
 }
 
@@ -152,70 +181,6 @@ class UserCardQuery_user {
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
 // ------------ widget API -------------
-
-final class UserCardQueryData
-    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
-  final UserCardQuery_user? user;
-
-  const UserCardQueryData({required this.user});
-
-  @override
-  String operation$Name() => 'UserCardQuery';
-
-  static UserCardQueryData fromCache(shalom_core.JsonObject data) {
-    final UserCardQuery_user? user$value = data['user'] == null
-        ? null
-        : UserCardQuery_user.fromJson(data['user'] as shalom_core.JsonObject);
-    return UserCardQueryData(user: user$value);
-  }
-
-  static UserCardQueryData fromShalomValue(shalom_core.ShalomJsonValue data) {
-    final shalom_core.ShalomJsonValue? user$raw = data.field('user');
-    final UserCardQuery_user? user$value = user$raw == null || user$raw!.isNull
-        ? null
-        : UserCardQuery_user.fromShalomValue(user$raw!);
-    return UserCardQueryData(user: user$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [UserCardQueryData]. Returns `null` when absent or incomplete.
-  static Future<UserCardQueryData?> readFrom(
-    shalom_core.CacheProxy cache, {
-    UserCardQueryVariables? variables,
-  }) async {
-    return await cache.readOperation<UserCardQueryData>(
-      name: 'UserCardQuery',
-      decoder: fromShalomValue,
-
-      variables: variables?.toShalomValue(),
-    );
-  }
-
-  /// Evicts this operation's cached entry (matched by [variables]) through
-  /// [cache], notifying any active subscribers. Returns `false` if no
-  /// matching cache entry existed.
-  static Future<bool> evictFrom(
-    shalom_core.CacheProxy cache, {
-    UserCardQueryVariables? variables,
-  }) {
-    return cache.evictOperation(
-      name: 'UserCardQuery',
-
-      variables: variables?.toShalomValue(),
-    );
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {'user': this.user?.toJson()};
-  }
-
-  @override
-  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    'user': this.user == null
-        ? shalom_core.shalomJsonValue(null)
-        : this.user!.toShalomValue(),
-  });
-}
 
 final class UserCardQueryObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;

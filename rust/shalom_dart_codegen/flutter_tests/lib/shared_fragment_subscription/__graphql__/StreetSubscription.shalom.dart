@@ -11,8 +11,8 @@ import 'package:collection/collection.dart';
 import 'DogFrag.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class StreetSubscriptionResponse {
+class StreetSubscriptionData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "subscription";
 
   /// class members
@@ -22,18 +22,18 @@ class StreetSubscriptionResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  StreetSubscriptionResponse({required this.streetAnimals});
+  StreetSubscriptionData({required this.streetAnimals});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is StreetSubscriptionResponse &&
+        (other is StreetSubscriptionData &&
             streetAnimals == other.streetAnimals);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([streetAnimals, StreetSubscriptionResponse.G__typename]);
+      Object.hashAll([streetAnimals, StreetSubscriptionData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'streetAnimals': this.streetAnimals.toJson()};
@@ -43,15 +43,15 @@ class StreetSubscriptionResponse {
     'streetAnimals': this.streetAnimals!.toShalomValue(),
   });
 
-  static StreetSubscriptionResponse fromJson(shalom_core.JsonObject data) {
+  static StreetSubscriptionData fromJson(shalom_core.JsonObject data) {
     final StreetSubscription_streetAnimals streetAnimals$value =
         StreetSubscription_streetAnimals.fromJson(
           data['streetAnimals'] as shalom_core.JsonObject,
         );
-    return StreetSubscriptionResponse(streetAnimals: streetAnimals$value);
+    return StreetSubscriptionData(streetAnimals: streetAnimals$value);
   }
 
-  static StreetSubscriptionResponse fromShalomValue(
+  static StreetSubscriptionData fromShalomValue(
     shalom_core.ShalomJsonValue data,
   ) {
     final shalom_core.ShalomJsonValue? streetAnimals$raw = data.field(
@@ -59,7 +59,28 @@ class StreetSubscriptionResponse {
     );
     final StreetSubscription_streetAnimals streetAnimals$value =
         StreetSubscription_streetAnimals.fromShalomValue(streetAnimals$raw!);
-    return StreetSubscriptionResponse(streetAnimals: streetAnimals$value);
+    return StreetSubscriptionData(streetAnimals: streetAnimals$value);
+  }
+
+  @override
+  String operation$Name() => 'StreetSubscription';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [StreetSubscriptionData]. Returns `null` when absent or incomplete.
+  static Future<StreetSubscriptionData?> readFrom(
+    shalom_core.CacheProxy cache,
+  ) async {
+    return await cache.readOperation<StreetSubscriptionData>(
+      name: 'StreetSubscription',
+      decoder: fromShalomValue,
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
+    return cache.evictOperation(name: 'StreetSubscription');
   }
 }
 
@@ -275,62 +296,6 @@ class StreetSubscription_streetAnimals__Dog
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
 // ------------ widget API -------------
-
-final class StreetSubscriptionData
-    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
-  final StreetSubscription_streetAnimals streetAnimals;
-
-  const StreetSubscriptionData({required this.streetAnimals});
-
-  @override
-  String operation$Name() => 'StreetSubscription';
-
-  static StreetSubscriptionData fromCache(shalom_core.JsonObject data) {
-    final StreetSubscription_streetAnimals streetAnimals$value =
-        StreetSubscription_streetAnimals.fromJson(
-          data['streetAnimals'] as shalom_core.JsonObject,
-        );
-    return StreetSubscriptionData(streetAnimals: streetAnimals$value);
-  }
-
-  static StreetSubscriptionData fromShalomValue(
-    shalom_core.ShalomJsonValue data,
-  ) {
-    final shalom_core.ShalomJsonValue? streetAnimals$raw = data.field(
-      'streetAnimals',
-    );
-    final StreetSubscription_streetAnimals streetAnimals$value =
-        StreetSubscription_streetAnimals.fromShalomValue(streetAnimals$raw!);
-    return StreetSubscriptionData(streetAnimals: streetAnimals$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [StreetSubscriptionData]. Returns `null` when absent or incomplete.
-  static Future<StreetSubscriptionData?> readFrom(
-    shalom_core.CacheProxy cache,
-  ) async {
-    return await cache.readOperation<StreetSubscriptionData>(
-      name: 'StreetSubscription',
-      decoder: fromShalomValue,
-    );
-  }
-
-  /// Evicts this operation's cached entry (matched by [variables]) through
-  /// [cache], notifying any active subscribers. Returns `false` if no
-  /// matching cache entry existed.
-  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
-    return cache.evictOperation(name: 'StreetSubscription');
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {'streetAnimals': this.streetAnimals.toJson()};
-  }
-
-  @override
-  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    'streetAnimals': this.streetAnimals!.toShalomValue(),
-  });
-}
 
 final class StreetSubscriptionObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
