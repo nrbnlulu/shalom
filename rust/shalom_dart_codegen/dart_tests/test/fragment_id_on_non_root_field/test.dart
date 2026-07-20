@@ -84,7 +84,7 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result = UpdateUserResponse.fromJson(
+        final result = UpdateUserData.fromJson(
           updateUserSuccessData,
         );
 
@@ -101,7 +101,7 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", email: Some("invalid-email")),
         );
-        final result = UpdateUserResponse.fromJson(
+        final result = UpdateUserData.fromJson(
           updateUserErrorData,
         );
 
@@ -121,7 +121,7 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", name: Some("Bob Jones")),
         );
-        final result = UpdateUserResponse.fromJson(
+        final result = UpdateUserData.fromJson(
           updateUserBothData,
         );
 
@@ -144,10 +144,10 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result1 = UpdateUserResponse.fromJson(
+        final result1 = UpdateUserData.fromJson(
           updateUserSuccessData,
         );
-        final result2 = UpdateUserResponse.fromJson(
+        final result2 = UpdateUserData.fromJson(
           updateUserSuccessData,
         );
 
@@ -160,10 +160,10 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", name: Some("Alice Smith")),
         );
-        final result1 = UpdateUserResponse.fromJson(
+        final result1 = UpdateUserData.fromJson(
           updateUserSuccessData,
         );
-        final result2 = UpdateUserResponse.fromJson(
+        final result2 = UpdateUserData.fromJson(
           updateUserErrorData,
         );
 
@@ -181,7 +181,7 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result = UpdateUserResponse.fromJson(
+        final result = UpdateUserData.fromJson(
           updateUserSuccessData,
         );
         final json = result.toJson();
@@ -193,7 +193,7 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", email: Some("invalid")),
         );
-        final result = UpdateUserResponse.fromJson(
+        final result = UpdateUserData.fromJson(
           updateUserErrorData,
         );
         final json = result.toJson();

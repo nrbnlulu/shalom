@@ -38,7 +38,7 @@ void main() {
 
   group('Nested Object Selection Required', () {
     test('nestedObjectSelectionRequired deserialize', () {
-      final result = GetListingWithUserResponse.fromJson(
+      final result = GetListingWithUserData.fromJson(
         listingWithUserData,
       );
       expect(result.listing.id, "foo");
@@ -51,7 +51,7 @@ void main() {
     });
 
     test('nestedObjectSelectionRequired serialize', () {
-      final initial = GetListingWithUserResponse.fromJson(
+      final initial = GetListingWithUserData.fromJson(
         listingWithUserData,
       );
       final json = initial.toJson();
@@ -59,10 +59,10 @@ void main() {
     });
 
     test('nestedObjectSelectionRequired equals', () {
-      final result1 = GetListingWithUserResponse.fromJson(
+      final result1 = GetListingWithUserData.fromJson(
         listingWithUserData,
       );
-      final result2 = GetListingWithUserResponse.fromJson(
+      final result2 = GetListingWithUserData.fromJson(
         listingWithUserData,
       );
       expect(result1, equals(result2));
@@ -102,7 +102,7 @@ void main() {
     final listingOptNullData = {"listingOpt": null};
 
     test('nestedObjectSelectionOptional deserialize with value', () {
-      final result = GetListingOptWithUserResponse.fromJson(
+      final result = GetListingOptWithUserData.fromJson(
         listingOptWithUserData,
       );
       expect(result.listingOpt?.id, "foo");
@@ -114,14 +114,14 @@ void main() {
     });
 
     test('nestedObjectSelectionOptional deserialize null value', () {
-      final result = GetListingOptWithUserResponse.fromJson(
+      final result = GetListingOptWithUserData.fromJson(
         listingOptNullData,
       );
       expect(result.listingOpt, null);
     });
 
     test('nestedObjectSelectionOptional serialize with value', () {
-      final initial = GetListingOptWithUserResponse.fromJson(
+      final initial = GetListingOptWithUserData.fromJson(
         listingOptWithUserData,
       );
       final json = initial.toJson();
@@ -129,7 +129,7 @@ void main() {
     });
 
     test('nestedObjectSelectionOptional serialize null', () {
-      final initial = GetListingOptWithUserResponse.fromJson(
+      final initial = GetListingOptWithUserData.fromJson(
         listingOptNullData,
       );
       final json = initial.toJson();
@@ -137,16 +137,16 @@ void main() {
     });
 
     test('nestedObjectSelectionOptional equals', () {
-      final result1 = GetListingOptWithUserResponse.fromJson(
+      final result1 = GetListingOptWithUserData.fromJson(
         listingOptWithUserData,
       );
-      final result2 = GetListingOptWithUserResponse.fromJson(
+      final result2 = GetListingOptWithUserData.fromJson(
         listingOptWithUserData,
       );
-      final result3 = GetListingOptWithUserResponse.fromJson(
+      final result3 = GetListingOptWithUserData.fromJson(
         listingOptNullData,
       );
-      final result4 = GetListingOptWithUserResponse.fromJson(
+      final result4 = GetListingOptWithUserData.fromJson(
         listingOptNullData,
       );
 
@@ -180,7 +180,7 @@ void main() {
     test(
       'nestedObjectSelectionRootRequiredChildOptional deserialize child some',
       () {
-        final result = GetListingWithUserOptResponse.fromJson(
+        final result = GetListingWithUserOptData.fromJson(
           listingWithUserOptData,
         );
         expect(result.listing.id, "foo");
@@ -194,7 +194,7 @@ void main() {
     test(
       'nestedObjectSelectionRootRequiredChildOptional deserialize child null',
       () {
-        final result = GetListingWithUserOptResponse.fromJson(
+        final result = GetListingWithUserOptData.fromJson(
           listingWithUserOptNullData,
         );
         expect(result.listing.id, "bar");
@@ -207,7 +207,7 @@ void main() {
     test(
       'nestedObjectSelectionRootRequiredChildOptional serialize child some',
       () {
-        final initial = GetListingWithUserOptResponse.fromJson(
+        final initial = GetListingWithUserOptData.fromJson(
           listingWithUserOptData,
         );
         final json = initial.toJson();
@@ -218,7 +218,7 @@ void main() {
     test(
       'nestedObjectSelectionRootRequiredChildOptional serialize child null',
       () {
-        final initial = GetListingWithUserOptResponse.fromJson(
+        final initial = GetListingWithUserOptData.fromJson(
           listingWithUserOptNullData,
         );
         final json = initial.toJson();
@@ -227,16 +227,16 @@ void main() {
     );
 
     test('nestedObjectSelectionRootRequiredChildOptional equals', () {
-      final result1 = GetListingWithUserOptResponse.fromJson(
+      final result1 = GetListingWithUserOptData.fromJson(
         listingWithUserOptData,
       );
-      final result2 = GetListingWithUserOptResponse.fromJson(
+      final result2 = GetListingWithUserOptData.fromJson(
         listingWithUserOptData,
       );
-      final result3 = GetListingWithUserOptResponse.fromJson(
+      final result3 = GetListingWithUserOptData.fromJson(
         listingWithUserOptNullData,
       );
-      final result4 = GetListingWithUserOptResponse.fromJson(
+      final result4 = GetListingWithUserOptData.fromJson(
         listingWithUserOptNullData,
       );
 
@@ -262,7 +262,7 @@ void main() {
     test(
       'nestedObjectSelectionRootOptionalChildOptional deserialize with value',
       () {
-        final result = GetListinOptWithUserOptResponse.fromJson(
+        final result = GetListinOptWithUserOptData.fromJson(
           listingOptWithUserOptData,
         );
         expect(result.listingOpt?.id, "foo");
@@ -276,7 +276,7 @@ void main() {
     test(
       'nestedObjectSelectionRootOptionalChildOptional deserialize null value',
       () {
-        final result = GetListinOptWithUserOptResponse.fromJson(
+        final result = GetListinOptWithUserOptData.fromJson(
           listingOptWithUserOptNullData,
         );
         expect(result.listingOpt, null);
@@ -286,7 +286,7 @@ void main() {
     test(
       'nestedObjectSelectionRootOptionalChildOptional serialize with value',
       () {
-        final initial = GetListinOptWithUserOptResponse.fromJson(
+        final initial = GetListinOptWithUserOptData.fromJson(
           listingOptWithUserOptData,
         );
         final json = initial.toJson();
@@ -297,7 +297,7 @@ void main() {
     test(
       'nestedObjectSelectionRootOptionalChildOptional serialize null value',
       () {
-        final initial = GetListinOptWithUserOptResponse.fromJson(
+        final initial = GetListinOptWithUserOptData.fromJson(
           listingOptWithUserOptNullData,
         );
         final json = initial.toJson();
@@ -306,16 +306,16 @@ void main() {
     );
 
     test('nestedObjectSelectionRootOptionalChildOptional equals', () {
-      final result1 = GetListinOptWithUserOptResponse.fromJson(
+      final result1 = GetListinOptWithUserOptData.fromJson(
         listingOptWithUserOptData,
       );
-      final result2 = GetListinOptWithUserOptResponse.fromJson(
+      final result2 = GetListinOptWithUserOptData.fromJson(
         listingOptWithUserOptData,
       );
-      final result3 = GetListinOptWithUserOptResponse.fromJson(
+      final result3 = GetListinOptWithUserOptData.fromJson(
         listingOptWithUserOptNullData,
       );
-      final result4 = GetListinOptWithUserOptResponse.fromJson(
+      final result4 = GetListinOptWithUserOptData.fromJson(
         listingOptWithUserOptNullData,
       );
 

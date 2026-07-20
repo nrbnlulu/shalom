@@ -113,7 +113,7 @@ void main() {
       'objectFragmentListInterfacesRequired - Object with fragment containing list of interfaces deserializes',
       () {
         final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-        final result = GetLibraryWithCollectionResponse.fromJson(
+        final result = GetLibraryWithCollectionData.fromJson(
           libraryData,
         );
 
@@ -176,7 +176,7 @@ void main() {
       'objectFragmentListInterfacesOptional - Optional fields are accessible',
       () {
         final variables = GetLibraryWithCollectionVariables(libraryId: "lib2");
-        final result = GetLibraryWithCollectionResponse.fromJson(
+        final result = GetLibraryWithCollectionData.fromJson(
           libraryDataNoDescription,
         );
 
@@ -200,10 +200,10 @@ void main() {
       'objectFragmentListInterfacesEquals - Equality works with fragment and list of interfaces',
       () {
         final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-        final result1 = GetLibraryWithCollectionResponse.fromJson(
+        final result1 = GetLibraryWithCollectionData.fromJson(
           libraryData,
         );
-        final result2 = GetLibraryWithCollectionResponse.fromJson(
+        final result2 = GetLibraryWithCollectionData.fromJson(
           libraryData,
         );
 
@@ -227,7 +227,7 @@ void main() {
       'objectFragmentListInterfacesToJson - Serialization includes fragment fields and list of interfaces',
       () {
         final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-        final result = GetLibraryWithCollectionResponse.fromJson(
+        final result = GetLibraryWithCollectionData.fromJson(
           libraryData,
         );
         final json = result.toJson();
@@ -321,7 +321,7 @@ void main() {
         final variables = GetLibraryWithCollectionPartialVariables(
           libraryId: "lib3",
         );
-        final result = GetLibraryWithCollectionPartialResponse.fromJson(
+        final result = GetLibraryWithCollectionPartialData.fromJson(
           partialData,
         );
 
@@ -356,7 +356,7 @@ void main() {
         final variables = GetLibraryWithCollectionPartialVariables(
           libraryId: "lib3",
         );
-        final result = GetLibraryWithCollectionPartialResponse.fromJson(
+        final result = GetLibraryWithCollectionPartialData.fromJson(
           partialData,
         );
 
@@ -374,10 +374,10 @@ void main() {
         final variables = GetLibraryWithCollectionPartialVariables(
           libraryId: "lib3",
         );
-        final result1 = GetLibraryWithCollectionPartialResponse.fromJson(
+        final result1 = GetLibraryWithCollectionPartialData.fromJson(
           partialData,
         );
-        final result2 = GetLibraryWithCollectionPartialResponse.fromJson(
+        final result2 = GetLibraryWithCollectionPartialData.fromJson(
           partialData,
         );
 
@@ -395,7 +395,7 @@ void main() {
         final variables = GetLibraryWithCollectionPartialVariables(
           libraryId: "lib3",
         );
-        final result = GetLibraryWithCollectionPartialResponse.fromJson(
+        final result = GetLibraryWithCollectionPartialData.fromJson(
           partialData,
         );
         final json = result.toJson();

@@ -5,7 +5,7 @@ import "__graphql__/GetMixedResult.shalom.dart";
 void main() {
   group('union with a common interface across every member', () {
     test('sealed base class exposes the shared interface field directly', () {
-      final result = GetErrorResultResponse.fromJson({
+      final result = GetErrorResultData.fromJson({
         "errorResult": {
           "__typename": "DoesNotExistErr",
           "message": "not found",
@@ -19,7 +19,7 @@ void main() {
     });
 
     test('works the same for the other member of the union', () {
-      final result = GetErrorResultResponse.fromJson({
+      final result = GetErrorResultData.fromJson({
         "errorResult": {
           "__typename": "AlreadyExistsErr",
           "message": "already there",
@@ -34,7 +34,7 @@ void main() {
       final data = {
         "errorResult": {"__typename": "DoesNotExistErr", "message": "oops"},
       };
-      final result = GetErrorResultResponse.fromJson(data);
+      final result = GetErrorResultData.fromJson(data);
       expect(result.toJson(), data);
     });
   });
@@ -43,7 +43,7 @@ void main() {
     test(
         'members implementing the interface still expose their field via downcast',
         () {
-      final result = GetMixedResultResponse.fromJson({
+      final result = GetMixedResultData.fromJson({
         "mixedResult": {
           "__typename": "DoesNotExistErr",
           "message": "not found",
@@ -56,7 +56,7 @@ void main() {
     });
 
     test('the member outside the shared interface keeps its own field', () {
-      final result = GetMixedResultResponse.fromJson({
+      final result = GetMixedResultData.fromJson({
         "mixedResult": {"__typename": "OtherThing", "value": 42},
       });
 

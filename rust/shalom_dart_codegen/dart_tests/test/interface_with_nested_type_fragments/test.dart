@@ -38,7 +38,7 @@ void main() {
   group('Test interface with nested type fragments - required', () {
     test('interfaceWithNestedTypeFragmentsRequired - Foo', () {
       final variables = NodeGlobalQueryVariables(id: "foo1");
-      final result = NodeGlobalQueryResponse.fromJson(
+      final result = NodeGlobalQueryData.fromJson(
         fooData,
       );
 
@@ -62,7 +62,7 @@ void main() {
 
     test('interfaceWithNestedTypeFragmentsRequired - Bar', () {
       final variables = NodeGlobalQueryVariables(id: "bar1");
-      final result = NodeGlobalQueryResponse.fromJson(
+      final result = NodeGlobalQueryData.fromJson(
         barData,
       );
 
@@ -83,7 +83,7 @@ void main() {
 
     test('interfaceWithNestedTypeFragmentsRequired - Baz', () {
       final variables = NodeGlobalQueryVariables(id: "baz1");
-      final result = NodeGlobalQueryResponse.fromJson(
+      final result = NodeGlobalQueryData.fromJson(
         bazData,
       );
 
@@ -104,10 +104,10 @@ void main() {
 
     test('equals - Foo', () {
       final variables = NodeGlobalQueryVariables(id: "foo1");
-      final result1 = NodeGlobalQueryResponse.fromJson(
+      final result1 = NodeGlobalQueryData.fromJson(
         fooData,
       );
-      final result2 = NodeGlobalQueryResponse.fromJson(
+      final result2 = NodeGlobalQueryData.fromJson(
         fooData,
       );
       expect(result1, equals(result2));
@@ -115,10 +115,10 @@ void main() {
 
     test('equals - Bar', () {
       final variables = NodeGlobalQueryVariables(id: "bar1");
-      final result1 = NodeGlobalQueryResponse.fromJson(
+      final result1 = NodeGlobalQueryData.fromJson(
         barData,
       );
-      final result2 = NodeGlobalQueryResponse.fromJson(
+      final result2 = NodeGlobalQueryData.fromJson(
         barData,
       );
       expect(result1, equals(result2));
@@ -126,10 +126,10 @@ void main() {
 
     test('not equals - different types', () {
       final variables = NodeGlobalQueryVariables(id: "test");
-      final result1 = NodeGlobalQueryResponse.fromJson(
+      final result1 = NodeGlobalQueryData.fromJson(
         fooData,
       );
-      final result2 = NodeGlobalQueryResponse.fromJson(
+      final result2 = NodeGlobalQueryData.fromJson(
         barData,
       );
       expect(result1, isNot(equals(result2)));
@@ -137,7 +137,7 @@ void main() {
 
     test('toJson - Foo', () {
       final variables = NodeGlobalQueryVariables(id: "foo1");
-      final initial = NodeGlobalQueryResponse.fromJson(
+      final initial = NodeGlobalQueryData.fromJson(
         fooData,
       );
       final json = initial.toJson();
@@ -146,7 +146,7 @@ void main() {
 
     test('toJson - Bar', () {
       final variables = NodeGlobalQueryVariables(id: "bar1");
-      final initial = NodeGlobalQueryResponse.fromJson(
+      final initial = NodeGlobalQueryData.fromJson(
         barData,
       );
       final json = initial.toJson();
@@ -155,7 +155,7 @@ void main() {
 
     test('toJson - Baz', () {
       final variables = NodeGlobalQueryVariables(id: "baz1");
-      final initial = NodeGlobalQueryResponse.fromJson(
+      final initial = NodeGlobalQueryData.fromJson(
         bazData,
       );
       final json = initial.toJson();
@@ -178,7 +178,7 @@ void main() {
   group('Test interface with nested type fragments - optional', () {
     test('interfaceWithNestedTypeFragmentsOptional - Foo', () {
       final variables = NodeGlobalQueryOptVariables(id: "foo2");
-      final result = NodeGlobalQueryOptResponse.fromJson(
+      final result = NodeGlobalQueryOptData.fromJson(
         fooOptData,
       );
 
@@ -198,7 +198,7 @@ void main() {
 
     test('interfaceWithNestedTypeFragmentsOptional - null', () {
       final variables = NodeGlobalQueryOptVariables(id: "none");
-      final result = NodeGlobalQueryOptResponse.fromJson(
+      final result = NodeGlobalQueryOptData.fromJson(
         nodeOptNullData,
       );
       expect(result.nodeOpt, isNull);
@@ -206,10 +206,10 @@ void main() {
 
     test('equals - with value', () {
       final variables = NodeGlobalQueryOptVariables(id: "foo2");
-      final result1 = NodeGlobalQueryOptResponse.fromJson(
+      final result1 = NodeGlobalQueryOptData.fromJson(
         fooOptData,
       );
-      final result2 = NodeGlobalQueryOptResponse.fromJson(
+      final result2 = NodeGlobalQueryOptData.fromJson(
         fooOptData,
       );
       expect(result1, equals(result2));
@@ -217,10 +217,10 @@ void main() {
 
     test('equals - null', () {
       final variables = NodeGlobalQueryOptVariables(id: "none");
-      final result1 = NodeGlobalQueryOptResponse.fromJson(
+      final result1 = NodeGlobalQueryOptData.fromJson(
         nodeOptNullData,
       );
-      final result2 = NodeGlobalQueryOptResponse.fromJson(
+      final result2 = NodeGlobalQueryOptData.fromJson(
         nodeOptNullData,
       );
       expect(result1, equals(result2));
@@ -228,7 +228,7 @@ void main() {
 
     test('toJson - with value', () {
       final variables = NodeGlobalQueryOptVariables(id: "foo2");
-      final initial = NodeGlobalQueryOptResponse.fromJson(
+      final initial = NodeGlobalQueryOptData.fromJson(
         fooOptData,
       );
       final json = initial.toJson();
@@ -237,7 +237,7 @@ void main() {
 
     test('toJson - null', () {
       final variables = NodeGlobalQueryOptVariables(id: "none");
-      final initial = NodeGlobalQueryOptResponse.fromJson(
+      final initial = NodeGlobalQueryOptData.fromJson(
         nodeOptNullData,
       );
       final json = initial.toJson();
@@ -273,7 +273,7 @@ void main() {
 
   group('Test interface with nested type fragments - list', () {
     test('interfaceWithNestedTypeFragmentsList - mixed types', () {
-      final result = NodesGlobalQueryResponse.fromJson(nodesListData);
+      final result = NodesGlobalQueryData.fromJson(nodesListData);
 
       expect(result.nodes.length, 3);
       expect(result.nodes[0], isA<NodesGlobalQuery_nodes__Foo>());
@@ -308,14 +308,14 @@ void main() {
     });
 
     test('toJson - list', () {
-      final initial = NodesGlobalQueryResponse.fromJson(nodesListData);
+      final initial = NodesGlobalQueryData.fromJson(nodesListData);
       final json = initial.toJson();
       expect(json, nodesListData);
     });
 
     test('equals - list', () {
-      final result1 = NodesGlobalQueryResponse.fromJson(nodesListData);
-      final result2 = NodesGlobalQueryResponse.fromJson(nodesListData);
+      final result1 = NodesGlobalQueryData.fromJson(nodesListData);
+      final result2 = NodesGlobalQueryData.fromJson(nodesListData);
       expect(result1, equals(result2));
     });
   });

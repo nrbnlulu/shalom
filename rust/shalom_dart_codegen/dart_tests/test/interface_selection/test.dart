@@ -67,7 +67,7 @@ void main() {
   group('Test interface selection - required', () {
     test('deserialize Lion', () {
       final variables = GetAnimalVariables(id: "lion1");
-      final result = GetAnimalResponse.fromJson(
+      final result = GetAnimalData.fromJson(
         lionData,
       );
 
@@ -83,7 +83,7 @@ void main() {
 
     test('deserialize Turtle', () {
       final variables = GetAnimalVariables(id: "turtle1");
-      final result = GetAnimalResponse.fromJson(
+      final result = GetAnimalData.fromJson(
         turtleData,
       );
 
@@ -98,7 +98,7 @@ void main() {
 
     test('deserialize Dog (fallback)', () {
       final variables = GetAnimalVariables(id: "dog1");
-      final result = GetAnimalResponse.fromJson(
+      final result = GetAnimalData.fromJson(
         dogData,
       );
 
@@ -112,7 +112,7 @@ void main() {
 
     test('serialize Lion', () {
       final variables = GetAnimalVariables(id: "lion1");
-      final initial = GetAnimalResponse.fromJson(
+      final initial = GetAnimalData.fromJson(
         lionData,
       );
       final json = initial.toJson();
@@ -121,7 +121,7 @@ void main() {
 
     test('serialize Turtle', () {
       final variables = GetAnimalVariables(id: "turtle1");
-      final initial = GetAnimalResponse.fromJson(
+      final initial = GetAnimalData.fromJson(
         turtleData,
       );
       final json = initial.toJson();
@@ -130,7 +130,7 @@ void main() {
 
     test('serialize Dog (fallback)', () {
       final variables = GetAnimalVariables(id: "dog1");
-      final initial = GetAnimalResponse.fromJson(
+      final initial = GetAnimalData.fromJson(
         dogData,
       );
       final json = initial.toJson();
@@ -139,10 +139,10 @@ void main() {
 
     test('equals Lion', () {
       final variables = GetAnimalVariables(id: "lion1");
-      final result1 = GetAnimalResponse.fromJson(
+      final result1 = GetAnimalData.fromJson(
         lionData,
       );
-      final result2 = GetAnimalResponse.fromJson(
+      final result2 = GetAnimalData.fromJson(
         lionData,
       );
       expect(result1, equals(result2));
@@ -150,10 +150,10 @@ void main() {
 
     test('equals Turtle', () {
       final variables = GetAnimalVariables(id: "turtle1");
-      final result1 = GetAnimalResponse.fromJson(
+      final result1 = GetAnimalData.fromJson(
         turtleData,
       );
-      final result2 = GetAnimalResponse.fromJson(
+      final result2 = GetAnimalData.fromJson(
         turtleData,
       );
       expect(result1, equals(result2));
@@ -161,10 +161,10 @@ void main() {
 
     test('not equals different types', () {
       final variables = GetAnimalVariables(id: "test");
-      final result1 = GetAnimalResponse.fromJson(
+      final result1 = GetAnimalData.fromJson(
         lionData,
       );
-      final result2 = GetAnimalResponse.fromJson(
+      final result2 = GetAnimalData.fromJson(
         turtleData,
       );
       expect(result1, isNot(equals(result2)));
@@ -186,7 +186,7 @@ void main() {
   group('Test interface selection - optional', () {
     test('deserialize Lion', () {
       final variables = GetAnimalOptVariables(id: "lion2");
-      final result = GetAnimalOptResponse.fromJson(
+      final result = GetAnimalOptData.fromJson(
         lionOptData,
       );
 
@@ -201,7 +201,7 @@ void main() {
 
     test('deserialize null', () {
       final variables = GetAnimalOptVariables(id: "none");
-      final result = GetAnimalOptResponse.fromJson(
+      final result = GetAnimalOptData.fromJson(
         animalOptNullData,
       );
       expect(result.animalOpt, isNull);
@@ -209,7 +209,7 @@ void main() {
 
     test('serialize with value', () {
       final variables = GetAnimalOptVariables(id: "lion2");
-      final initial = GetAnimalOptResponse.fromJson(
+      final initial = GetAnimalOptData.fromJson(
         lionOptData,
       );
       final json = initial.toJson();
@@ -218,7 +218,7 @@ void main() {
 
     test('serialize null', () {
       final variables = GetAnimalOptVariables(id: "none");
-      final initial = GetAnimalOptResponse.fromJson(
+      final initial = GetAnimalOptData.fromJson(
         animalOptNullData,
       );
       final json = initial.toJson();
@@ -239,7 +239,7 @@ void main() {
   group('Test interface selection - all types covered (no fallback)', () {
     test('deserialize Dog with inline fragment', () {
       final variables = GetAnimalAllTypesVariables(id: "dog2");
-      final result = GetAnimalAllTypesResponse.fromJson(
+      final result = GetAnimalAllTypesData.fromJson(
         dogAllTypesData,
       );
 
@@ -254,7 +254,7 @@ void main() {
 
     test('serialize Dog', () {
       final variables = GetAnimalAllTypesVariables(id: "dog2");
-      final initial = GetAnimalAllTypesResponse.fromJson(
+      final initial = GetAnimalAllTypesData.fromJson(
         dogAllTypesData,
       );
       final json = initial.toJson();
@@ -284,7 +284,7 @@ void main() {
 
   group('Test interface selection - list', () {
     test('deserialize list with mixed types', () {
-      final result = GetAnimalsResponse.fromJson(animalsListData);
+      final result = GetAnimalsData.fromJson(animalsListData);
 
       expect(result.animals.length, 3);
       expect(result.animals[0], isA<GetAnimals_animals__Lion>());
@@ -305,7 +305,7 @@ void main() {
     });
 
     test('serialize list', () {
-      final initial = GetAnimalsResponse.fromJson(animalsListData);
+      final initial = GetAnimalsData.fromJson(animalsListData);
       final json = initial.toJson();
       expect(json, animalsListData);
     });
@@ -314,7 +314,7 @@ void main() {
   group('Test interface selection - __typename in fragments', () {
     test('deserialize with __typename in fragments', () {
       final variables = GetAnimalWithoutTopTypenameVariables(id: "lion1");
-      final result = GetAnimalWithoutTopTypenameResponse.fromJson(
+      final result = GetAnimalWithoutTopTypenameData.fromJson(
         lionData,
       );
 
@@ -328,7 +328,7 @@ void main() {
   group('Test interface with arguments', () {
     test('lionRequired', () {
       final variables = GetAnimalWithArgumentsVariables(id: "lion5", limit: 30);
-      final result = GetAnimalWithArgumentsResponse.fromJson(
+      final result = GetAnimalWithArgumentsData.fromJson(
         lionWithArgsData,
       );
 
@@ -347,7 +347,7 @@ void main() {
         id: "turtle5",
         limit: 25,
       );
-      final result = GetAnimalWithArgumentsResponse.fromJson(
+      final result = GetAnimalWithArgumentsData.fromJson(
         turtleWithArgsData,
       );
 
@@ -363,7 +363,7 @@ void main() {
 
     test('dogRequired', () {
       final variables = GetAnimalWithArgumentsVariables(id: "dog5", limit: 20);
-      final result = GetAnimalWithArgumentsResponse.fromJson(
+      final result = GetAnimalWithArgumentsData.fromJson(
         dogWithArgsData,
       );
 
@@ -379,10 +379,10 @@ void main() {
 
     test('equals', () {
       final variables = GetAnimalWithArgumentsVariables(id: "lion5", limit: 30);
-      final result1 = GetAnimalWithArgumentsResponse.fromJson(
+      final result1 = GetAnimalWithArgumentsData.fromJson(
         lionWithArgsData,
       );
-      final result2 = GetAnimalWithArgumentsResponse.fromJson(
+      final result2 = GetAnimalWithArgumentsData.fromJson(
         lionWithArgsData,
       );
       expect(result1, equals(result2));
@@ -390,7 +390,7 @@ void main() {
 
     test('toJson', () {
       final variables = GetAnimalWithArgumentsVariables(id: "lion5", limit: 30);
-      final initial = GetAnimalWithArgumentsResponse.fromJson(
+      final initial = GetAnimalWithArgumentsData.fromJson(
         lionWithArgsData,
       );
       final json = initial.toJson();

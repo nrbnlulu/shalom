@@ -34,7 +34,7 @@ void main() {
   group('Test union partial selection - required (covered types)', () {
     test('deserialize EmailNotification', () {
       final variables = GetNotificationPartialVariables(id: "email1");
-      final result = GetNotificationPartialResponse.fromJson(
+      final result = GetNotificationPartialData.fromJson(
         emailNotificationData,
       );
 
@@ -53,7 +53,7 @@ void main() {
 
     test('deserialize SMSNotification', () {
       final variables = GetNotificationPartialVariables(id: "sms1");
-      final result = GetNotificationPartialResponse.fromJson(
+      final result = GetNotificationPartialData.fromJson(
         smsNotificationData,
       );
 
@@ -71,7 +71,7 @@ void main() {
 
     test('serialize EmailNotification', () {
       final variables = GetNotificationPartialVariables(id: "email1");
-      final initial = GetNotificationPartialResponse.fromJson(
+      final initial = GetNotificationPartialData.fromJson(
         emailNotificationData,
       );
       final json = initial.toJson();
@@ -80,7 +80,7 @@ void main() {
 
     test('serialize SMSNotification', () {
       final variables = GetNotificationPartialVariables(id: "sms1");
-      final initial = GetNotificationPartialResponse.fromJson(
+      final initial = GetNotificationPartialData.fromJson(
         smsNotificationData,
       );
       final json = initial.toJson();
@@ -89,10 +89,10 @@ void main() {
 
     test('equals EmailNotification', () {
       final variables = GetNotificationPartialVariables(id: "email1");
-      final result1 = GetNotificationPartialResponse.fromJson(
+      final result1 = GetNotificationPartialData.fromJson(
         emailNotificationData,
       );
-      final result2 = GetNotificationPartialResponse.fromJson(
+      final result2 = GetNotificationPartialData.fromJson(
         emailNotificationData,
       );
       expect(result1, equals(result2));
@@ -100,10 +100,10 @@ void main() {
 
     test('equals SMSNotification', () {
       final variables = GetNotificationPartialVariables(id: "sms1");
-      final result1 = GetNotificationPartialResponse.fromJson(
+      final result1 = GetNotificationPartialData.fromJson(
         smsNotificationData,
       );
-      final result2 = GetNotificationPartialResponse.fromJson(
+      final result2 = GetNotificationPartialData.fromJson(
         smsNotificationData,
       );
       expect(result1, equals(result2));
@@ -111,10 +111,10 @@ void main() {
 
     test('not equals different types', () {
       final variables = GetNotificationPartialVariables(id: "test");
-      final result1 = GetNotificationPartialResponse.fromJson(
+      final result1 = GetNotificationPartialData.fromJson(
         emailNotificationData,
       );
-      final result2 = GetNotificationPartialResponse.fromJson(
+      final result2 = GetNotificationPartialData.fromJson(
         smsNotificationData,
       );
       expect(result1, isNot(equals(result2)));
@@ -124,7 +124,7 @@ void main() {
   group('Test union partial selection - required (fallback types)', () {
     test('deserialize PushNotification (fallback)', () {
       final variables = GetNotificationPartialVariables(id: "push1");
-      final result = GetNotificationPartialResponse.fromJson(
+      final result = GetNotificationPartialData.fromJson(
         pushNotificationData,
       );
 
@@ -139,7 +139,7 @@ void main() {
 
     test('deserialize WebhookNotification non directly selected', () {
       final variables = GetNotificationPartialVariables(id: "webhook1");
-      final result = GetNotificationPartialResponse.fromJson(
+      final result = GetNotificationPartialData.fromJson(
         webhookNotificationData,
       );
 
@@ -154,7 +154,7 @@ void main() {
 
     test('serialize PushNotification (fallback)', () {
       final variables = GetNotificationPartialVariables(id: "push1");
-      final initial = GetNotificationPartialResponse.fromJson(
+      final initial = GetNotificationPartialData.fromJson(
         pushNotificationData,
       );
       final json = initial.toJson();
@@ -163,10 +163,10 @@ void main() {
 
     test('equals fallback types', () {
       final variables = GetNotificationPartialVariables(id: "push1");
-      final result1 = GetNotificationPartialResponse.fromJson(
+      final result1 = GetNotificationPartialData.fromJson(
         pushNotificationData,
       );
-      final result2 = GetNotificationPartialResponse.fromJson(
+      final result2 = GetNotificationPartialData.fromJson(
         pushNotificationData,
       );
       expect(result1, equals(result2));
@@ -174,10 +174,10 @@ void main() {
 
     test('not equals fallback vs covered type', () {
       final variables = GetNotificationPartialVariables(id: "test");
-      final result1 = GetNotificationPartialResponse.fromJson(
+      final result1 = GetNotificationPartialData.fromJson(
         emailNotificationData,
       );
-      final result2 = GetNotificationPartialResponse.fromJson(
+      final result2 = GetNotificationPartialData.fromJson(
         pushNotificationData,
       );
       expect(result1, isNot(equals(result2)));
@@ -203,7 +203,7 @@ void main() {
   group('Test union partial selection - optional', () {
     test('deserialize EmailNotification', () {
       final variables = GetNotificationPartialOptVariables(id: "email2");
-      final result = GetNotificationPartialOptResponse.fromJson(
+      final result = GetNotificationPartialOptData.fromJson(
         emailNotificationOptData,
       );
 
@@ -222,7 +222,7 @@ void main() {
 
     test('deserialize PushNotification (fallback)', () {
       final variables = GetNotificationPartialOptVariables(id: "push2");
-      final result = GetNotificationPartialOptResponse.fromJson(
+      final result = GetNotificationPartialOptData.fromJson(
         pushNotificationOptData,
       );
 
@@ -238,7 +238,7 @@ void main() {
 
     test('deserialize null', () {
       final variables = GetNotificationPartialOptVariables(id: "null");
-      final result = GetNotificationPartialOptResponse.fromJson(
+      final result = GetNotificationPartialOptData.fromJson(
         notificationOptNullData,
       );
       expect(result.getNotificationOpt, isNull);
@@ -246,7 +246,7 @@ void main() {
 
     test('serialize with value', () {
       final variables = GetNotificationPartialOptVariables(id: "email2");
-      final initial = GetNotificationPartialOptResponse.fromJson(
+      final initial = GetNotificationPartialOptData.fromJson(
         emailNotificationOptData,
       );
       final json = initial.toJson();
@@ -255,7 +255,7 @@ void main() {
 
     test('serialize fallback', () {
       final variables = GetNotificationPartialOptVariables(id: "push2");
-      final initial = GetNotificationPartialOptResponse.fromJson(
+      final initial = GetNotificationPartialOptData.fromJson(
         pushNotificationOptData,
       );
       final json = initial.toJson();
@@ -264,7 +264,7 @@ void main() {
 
     test('serialize null', () {
       final variables = GetNotificationPartialOptVariables(id: "null");
-      final initial = GetNotificationPartialOptResponse.fromJson(
+      final initial = GetNotificationPartialOptData.fromJson(
         notificationOptNullData,
       );
       final json = initial.toJson();
@@ -277,7 +277,7 @@ void main() {
       final variables = GetNotificationPartialNoTopTypenameVariables(
         id: "email1",
       );
-      final result = GetNotificationPartialNoTopTypenameResponse.fromJson(
+      final result = GetNotificationPartialNoTopTypenameData.fromJson(
         emailNotificationData,
       );
 

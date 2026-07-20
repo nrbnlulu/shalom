@@ -34,7 +34,7 @@ void main() {
       });
 
       test('RefreshTokenEquals - should compare responses correctly', () {
-        final response1 = RefreshTokenResponse(
+        final response1 = RefreshTokenData(
           refreshToken: RefreshToken_refreshToken(
             token: 'token-1',
             expiresAt: '2024-12-31',
@@ -42,7 +42,7 @@ void main() {
           ),
         );
 
-        final response2 = RefreshTokenResponse(
+        final response2 = RefreshTokenData(
           refreshToken: RefreshToken_refreshToken(
             token: 'token-1',
             expiresAt: '2024-12-31',
@@ -50,7 +50,7 @@ void main() {
           ),
         );
 
-        final response3 = RefreshTokenResponse(
+        final response3 = RefreshTokenData(
           refreshToken: RefreshToken_refreshToken(
             token: 'token-2',
             expiresAt: '2024-12-31',
@@ -113,7 +113,7 @@ void main() {
       );
 
       test('RefreshTokenWithVariableEquals - should compare correctly', () {
-        final response1 = RefreshTokenWithVariableResponse(
+        final response1 = RefreshTokenWithVariableData(
           refreshToken: RefreshTokenWithVariable_refreshToken(
             token: 't1',
             expiresAt: '2024',
@@ -121,7 +121,7 @@ void main() {
           ),
         );
 
-        final response2 = RefreshTokenWithVariableResponse(
+        final response2 = RefreshTokenWithVariableData(
           refreshToken: RefreshTokenWithVariable_refreshToken(
             token: 't1',
             expiresAt: '2024',

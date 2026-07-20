@@ -35,7 +35,7 @@ void main() {
   group('Test union selection - required', () {
     test('deserialize User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultResponse.fromJson(
+      final result = GetSearchResultData.fromJson(
         userSearchData,
       );
 
@@ -49,7 +49,7 @@ void main() {
 
     test('deserialize Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultResponse.fromJson(
+      final result = GetSearchResultData.fromJson(
         postSearchData,
       );
 
@@ -64,7 +64,7 @@ void main() {
 
     test('deserialize Comment', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultResponse.fromJson(
+      final result = GetSearchResultData.fromJson(
         commentSearchData,
       );
 
@@ -78,7 +78,7 @@ void main() {
 
     test('serialize User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final initial = GetSearchResultResponse.fromJson(
+      final initial = GetSearchResultData.fromJson(
         userSearchData,
       );
       final json = initial.toJson();
@@ -87,7 +87,7 @@ void main() {
 
     test('serialize Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final initial = GetSearchResultResponse.fromJson(
+      final initial = GetSearchResultData.fromJson(
         postSearchData,
       );
       final json = initial.toJson();
@@ -96,10 +96,10 @@ void main() {
 
     test('equals User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultResponse.fromJson(
+      final result1 = GetSearchResultData.fromJson(
         userSearchData,
       );
-      final result2 = GetSearchResultResponse.fromJson(
+      final result2 = GetSearchResultData.fromJson(
         userSearchData,
       );
       expect(result1, equals(result2));
@@ -107,10 +107,10 @@ void main() {
 
     test('equals Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultResponse.fromJson(
+      final result1 = GetSearchResultData.fromJson(
         postSearchData,
       );
-      final result2 = GetSearchResultResponse.fromJson(
+      final result2 = GetSearchResultData.fromJson(
         postSearchData,
       );
       expect(result1, equals(result2));
@@ -118,10 +118,10 @@ void main() {
 
     test('not equals different types', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultResponse.fromJson(
+      final result1 = GetSearchResultData.fromJson(
         userSearchData,
       );
-      final result2 = GetSearchResultResponse.fromJson(
+      final result2 = GetSearchResultData.fromJson(
         postSearchData,
       );
       expect(result1, isNot(equals(result2)));
@@ -142,7 +142,7 @@ void main() {
   group('Test union selection - optional', () {
     test('deserialize User', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final result = GetSearchResultOptResponse.fromJson(
+      final result = GetSearchResultOptData.fromJson(
         userSearchOptData,
       );
 
@@ -156,7 +156,7 @@ void main() {
 
     test('deserialize null', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final result = GetSearchResultOptResponse.fromJson(
+      final result = GetSearchResultOptData.fromJson(
         searchOptNullData,
       );
       expect(result.searchOpt, isNull);
@@ -164,7 +164,7 @@ void main() {
 
     test('serialize with value', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final initial = GetSearchResultOptResponse.fromJson(
+      final initial = GetSearchResultOptData.fromJson(
         userSearchOptData,
       );
       final json = initial.toJson();
@@ -173,7 +173,7 @@ void main() {
 
     test('serialize null', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final initial = GetSearchResultOptResponse.fromJson(
+      final initial = GetSearchResultOptData.fromJson(
         searchOptNullData,
       );
       final json = initial.toJson();
@@ -186,7 +186,7 @@ void main() {
       final variables = GetSearchResultWithoutTopTypenameVariables(
         query: "test",
       );
-      final result = GetSearchResultWithoutTopTypenameResponse.fromJson(
+      final result = GetSearchResultWithoutTopTypenameData.fromJson(
         userSearchData,
       );
 

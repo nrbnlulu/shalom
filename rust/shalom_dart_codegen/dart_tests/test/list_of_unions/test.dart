@@ -124,7 +124,7 @@ void main() {
 
   group('List of Unions Required - [SearchResult!]!', () {
     test('searchResultsRequired deserialize mixed types', () {
-      final result = GetSearchResultsRequiredResponse.fromJson(
+      final result = GetSearchResultsRequiredData.fromJson(
         searchResultsRequiredData,
       );
       expect(result.searchResultsRequired.length, 3);
@@ -165,14 +165,14 @@ void main() {
     });
 
     test('searchResultsRequired deserialize empty list', () {
-      final result = GetSearchResultsRequiredResponse.fromJson(
+      final result = GetSearchResultsRequiredData.fromJson(
         searchResultsRequiredEmptyData,
       );
       expect(result.searchResultsRequired, []);
     });
 
     test('searchResultsRequired toJson', () {
-      final initial = GetSearchResultsRequiredResponse.fromJson(
+      final initial = GetSearchResultsRequiredData.fromJson(
         searchResultsRequiredData,
       );
       final json = initial.toJson();
@@ -180,7 +180,7 @@ void main() {
     });
 
     test('searchResultsRequired toJson empty list', () {
-      final initial = GetSearchResultsRequiredResponse.fromJson(
+      final initial = GetSearchResultsRequiredData.fromJson(
         searchResultsRequiredEmptyData,
       );
       final json = initial.toJson();
@@ -188,13 +188,13 @@ void main() {
     });
 
     test('searchResultsRequired equals', () {
-      final result1 = GetSearchResultsRequiredResponse.fromJson(
+      final result1 = GetSearchResultsRequiredData.fromJson(
         searchResultsRequiredData,
       );
-      final result2 = GetSearchResultsRequiredResponse.fromJson(
+      final result2 = GetSearchResultsRequiredData.fromJson(
         searchResultsRequiredData,
       );
-      final result3 = GetSearchResultsRequiredResponse.fromJson(
+      final result3 = GetSearchResultsRequiredData.fromJson(
         searchResultsRequiredDataChanged,
       );
 
@@ -243,7 +243,7 @@ void main() {
 
   group('List of Unions Optional - [SearchResult!]', () {
     test('searchResultsOptional deserialize', () {
-      final result = GetSearchResultsOptionalResponse.fromJson(
+      final result = GetSearchResultsOptionalData.fromJson(
         searchResultsOptionalData,
       );
       expect(result.searchResultsOptional?.length, 2);
@@ -268,21 +268,21 @@ void main() {
     });
 
     test('searchResultsOptional deserialize null', () {
-      final result = GetSearchResultsOptionalResponse.fromJson(
+      final result = GetSearchResultsOptionalData.fromJson(
         searchResultsOptionalNullData,
       );
       expect(result.searchResultsOptional, isNull);
     });
 
     test('searchResultsOptional deserialize empty list', () {
-      final result = GetSearchResultsOptionalResponse.fromJson(
+      final result = GetSearchResultsOptionalData.fromJson(
         searchResultsOptionalEmptyData,
       );
       expect(result.searchResultsOptional, []);
     });
 
     test('searchResultsOptional toJson', () {
-      final initial = GetSearchResultsOptionalResponse.fromJson(
+      final initial = GetSearchResultsOptionalData.fromJson(
         searchResultsOptionalData,
       );
       final json = initial.toJson();
@@ -290,7 +290,7 @@ void main() {
     });
 
     test('searchResultsOptional toJson null', () {
-      final initial = GetSearchResultsOptionalResponse.fromJson(
+      final initial = GetSearchResultsOptionalData.fromJson(
         searchResultsOptionalNullData,
       );
       final json = initial.toJson();
@@ -298,7 +298,7 @@ void main() {
     });
 
     test('searchResultsOptional toJson empty list', () {
-      final initial = GetSearchResultsOptionalResponse.fromJson(
+      final initial = GetSearchResultsOptionalData.fromJson(
         searchResultsOptionalEmptyData,
       );
       final json = initial.toJson();
@@ -306,16 +306,16 @@ void main() {
     });
 
     test('searchResultsOptional equals', () {
-      final result1 = GetSearchResultsOptionalResponse.fromJson(
+      final result1 = GetSearchResultsOptionalData.fromJson(
         searchResultsOptionalData,
       );
-      final result2 = GetSearchResultsOptionalResponse.fromJson(
+      final result2 = GetSearchResultsOptionalData.fromJson(
         searchResultsOptionalData,
       );
-      final result3 = GetSearchResultsOptionalResponse.fromJson(
+      final result3 = GetSearchResultsOptionalData.fromJson(
         searchResultsOptionalNullData,
       );
-      final result4 = GetSearchResultsOptionalResponse.fromJson(
+      final result4 = GetSearchResultsOptionalData.fromJson(
         searchResultsOptionalNullData,
       );
 
@@ -366,7 +366,7 @@ void main() {
 
   group('Optional Unions in List - [SearchResult]!', () {
     test('optionalSearchResults deserialize with nulls', () {
-      final result = GetOptionalSearchResultsResponse.fromJson(
+      final result = GetOptionalSearchResultsData.fromJson(
         optionalSearchResultsData,
       );
       expect(result.optionalSearchResults.length, 3);
@@ -393,7 +393,7 @@ void main() {
     });
 
     test('optionalSearchResults toJson', () {
-      final initial = GetOptionalSearchResultsResponse.fromJson(
+      final initial = GetOptionalSearchResultsData.fromJson(
         optionalSearchResultsData,
       );
       final json = initial.toJson();
@@ -401,13 +401,13 @@ void main() {
     });
 
     test('optionalSearchResults equals', () {
-      final result1 = GetOptionalSearchResultsResponse.fromJson(
+      final result1 = GetOptionalSearchResultsData.fromJson(
         optionalSearchResultsData,
       );
-      final result2 = GetOptionalSearchResultsResponse.fromJson(
+      final result2 = GetOptionalSearchResultsData.fromJson(
         optionalSearchResultsData,
       );
-      final result3 = GetOptionalSearchResultsResponse.fromJson(
+      final result3 = GetOptionalSearchResultsData.fromJson(
         optionalSearchResultsDataChanged,
       );
 
@@ -450,7 +450,7 @@ void main() {
 
   group('Fully Optional - [SearchResult]', () {
     test('searchResultsFullyOptional deserialize with nulls', () {
-      final result = GetSearchResultsFullyOptionalResponse.fromJson(
+      final result = GetSearchResultsFullyOptionalData.fromJson(
         searchResultsFullyOptionalData,
       );
       expect(result.searchResultsFullyOptional?.length, 2);
@@ -468,21 +468,21 @@ void main() {
     });
 
     test('searchResultsFullyOptional deserialize null', () {
-      final result = GetSearchResultsFullyOptionalResponse.fromJson(
+      final result = GetSearchResultsFullyOptionalData.fromJson(
         searchResultsFullyOptionalNullData,
       );
       expect(result.searchResultsFullyOptional, isNull);
     });
 
     test('searchResultsFullyOptional deserialize empty list', () {
-      final result = GetSearchResultsFullyOptionalResponse.fromJson(
+      final result = GetSearchResultsFullyOptionalData.fromJson(
         searchResultsFullyOptionalEmptyData,
       );
       expect(result.searchResultsFullyOptional, []);
     });
 
     test('searchResultsFullyOptional toJson', () {
-      final initial = GetSearchResultsFullyOptionalResponse.fromJson(
+      final initial = GetSearchResultsFullyOptionalData.fromJson(
         searchResultsFullyOptionalData,
       );
       final json = initial.toJson();
@@ -490,7 +490,7 @@ void main() {
     });
 
     test('searchResultsFullyOptional toJson null', () {
-      final initial = GetSearchResultsFullyOptionalResponse.fromJson(
+      final initial = GetSearchResultsFullyOptionalData.fromJson(
         searchResultsFullyOptionalNullData,
       );
       final json = initial.toJson();
@@ -498,13 +498,13 @@ void main() {
     });
 
     test('searchResultsFullyOptional equals', () {
-      final result1 = GetSearchResultsFullyOptionalResponse.fromJson(
+      final result1 = GetSearchResultsFullyOptionalData.fromJson(
         searchResultsFullyOptionalData,
       );
-      final result2 = GetSearchResultsFullyOptionalResponse.fromJson(
+      final result2 = GetSearchResultsFullyOptionalData.fromJson(
         searchResultsFullyOptionalData,
       );
-      final result3 = GetSearchResultsFullyOptionalResponse.fromJson(
+      final result3 = GetSearchResultsFullyOptionalData.fromJson(
         searchResultsFullyOptionalNullData,
       );
 

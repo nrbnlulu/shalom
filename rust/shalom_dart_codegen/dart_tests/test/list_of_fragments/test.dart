@@ -28,7 +28,7 @@ void main() {
 
   group('List of Fragments - Required List with Single Fragment', () {
     test('listFragmentRequired - deserialize list with fragment', () {
-      final result = GetUsersRequiredWithFragmentResponse.fromJson(
+      final result = GetUsersRequiredWithFragmentData.fromJson(
         usersRequiredFragmentData,
       );
       expect(result.usersRequired.length, 3);
@@ -40,14 +40,14 @@ void main() {
     });
 
     test('listFragmentRequired - deserialize empty list', () {
-      final result = GetUsersRequiredWithFragmentResponse.fromJson(
+      final result = GetUsersRequiredWithFragmentData.fromJson(
         usersRequiredFragmentEmptyData,
       );
       expect(result.usersRequired, []);
     });
 
     test('listFragmentRequired - toJson', () {
-      final initial = GetUsersRequiredWithFragmentResponse.fromJson(
+      final initial = GetUsersRequiredWithFragmentData.fromJson(
         usersRequiredFragmentData,
       );
       final json = initial.toJson();
@@ -55,7 +55,7 @@ void main() {
     });
 
     test('listFragmentRequired - toJson with empty list', () {
-      final initial = GetUsersRequiredWithFragmentResponse.fromJson(
+      final initial = GetUsersRequiredWithFragmentData.fromJson(
         usersRequiredFragmentEmptyData,
       );
       final json = initial.toJson();
@@ -82,7 +82,7 @@ void main() {
 
   group('List of Fragments - Optional List with Single Fragment', () {
     test('listFragmentOptional - deserialize list with fragment', () {
-      final result = GetUsersOptionalWithFragmentResponse.fromJson(
+      final result = GetUsersOptionalWithFragmentData.fromJson(
         usersOptionalFragmentData,
       );
       expect(result.usersOptional?.length, 2);
@@ -91,21 +91,21 @@ void main() {
     });
 
     test('listFragmentOptional - deserialize null list', () {
-      final result = GetUsersOptionalWithFragmentResponse.fromJson(
+      final result = GetUsersOptionalWithFragmentData.fromJson(
         usersOptionalFragmentNullData,
       );
       expect(result.usersOptional, isNull);
     });
 
     test('listFragmentOptional - deserialize empty list', () {
-      final result = GetUsersOptionalWithFragmentResponse.fromJson(
+      final result = GetUsersOptionalWithFragmentData.fromJson(
         usersOptionalFragmentEmptyData,
       );
       expect(result.usersOptional, []);
     });
 
     test('listFragmentOptional - toJson', () {
-      final initial = GetUsersOptionalWithFragmentResponse.fromJson(
+      final initial = GetUsersOptionalWithFragmentData.fromJson(
         usersOptionalFragmentData,
       );
       final json = initial.toJson();
@@ -113,7 +113,7 @@ void main() {
     });
 
     test('listFragmentOptional - toJson with null', () {
-      final initial = GetUsersOptionalWithFragmentResponse.fromJson(
+      final initial = GetUsersOptionalWithFragmentData.fromJson(
         usersOptionalFragmentNullData,
       );
       final json = initial.toJson();
@@ -161,7 +161,7 @@ void main() {
 
   group('List of Fragments - Multiple Fragments', () {
     test('multipleFragmentsRequired - deserialize', () {
-      final result = GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
+      final result = GetUsersRequiredWithMultipleFragmentsData.fromJson(
         usersMultipleFragmentsData,
       );
       expect(result.usersRequired.length, 2);
@@ -173,7 +173,7 @@ void main() {
     });
 
     test('multipleFragmentsRequired - toJson', () {
-      final initial = GetUsersRequiredWithMultipleFragmentsResponse.fromJson(
+      final initial = GetUsersRequiredWithMultipleFragmentsData.fromJson(
         usersMultipleFragmentsData,
       );
       final json = initial.toJson();
@@ -221,7 +221,7 @@ void main() {
 
   group('List of Fragments - Fragment with Additional Fields', () {
     test('fragmentWithFieldsRequired - deserialize', () {
-      final result = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
+      final result = GetUsersRequiredWithFragmentAndFieldsData.fromJson(
         usersFragmentAndFieldsData,
       );
       expect(result.usersRequired.length, 2);
@@ -233,7 +233,7 @@ void main() {
     });
 
     test('fragmentWithFieldsRequired - toJson', () {
-      final initial = GetUsersRequiredWithFragmentAndFieldsResponse.fromJson(
+      final initial = GetUsersRequiredWithFragmentAndFieldsData.fromJson(
         usersFragmentAndFieldsData,
       );
       final json = initial.toJson();
@@ -281,7 +281,7 @@ void main() {
 
   group('List of Fragments - Nested Object with Fragment', () {
     test('nestedFragmentRequired - deserialize', () {
-      final result = GetPostsWithAuthorFragmentResponse.fromJson(
+      final result = GetPostsWithAuthorFragmentData.fromJson(
         postsWithAuthorFragmentData,
       );
       expect(result.posts.length, 2);
@@ -294,7 +294,7 @@ void main() {
     });
 
     test('nestedFragmentRequired - toJson', () {
-      final initial = GetPostsWithAuthorFragmentResponse.fromJson(
+      final initial = GetPostsWithAuthorFragmentData.fromJson(
         postsWithAuthorFragmentData,
       );
       final json = initial.toJson();
@@ -344,7 +344,7 @@ void main() {
 
   group('List of Fragments - Optional List with Multiple Fragments', () {
     test('optionalMultipleFragments - deserialize', () {
-      final result = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
+      final result = GetPostsOptionalWithMultipleFragmentsData.fromJson(
         postsOptionalMultipleFragmentsData,
       );
       expect(result.postsOptional?.length, 2);
@@ -356,14 +356,14 @@ void main() {
     });
 
     test('optionalMultipleFragments - deserialize null', () {
-      final result = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
+      final result = GetPostsOptionalWithMultipleFragmentsData.fromJson(
         postsOptionalMultipleFragmentsNullData,
       );
       expect(result.postsOptional, isNull);
     });
 
     test('optionalMultipleFragments - toJson', () {
-      final initial = GetPostsOptionalWithMultipleFragmentsResponse.fromJson(
+      final initial = GetPostsOptionalWithMultipleFragmentsData.fromJson(
         postsOptionalMultipleFragmentsData,
       );
       final json = initial.toJson();

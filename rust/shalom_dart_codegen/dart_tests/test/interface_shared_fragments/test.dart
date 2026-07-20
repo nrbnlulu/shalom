@@ -46,7 +46,7 @@ void main() {
   group('Test interface shared fragments - required', () {
     test('interfaceSharedFragmentsRequired - User', () {
       final variables = GetNodeVariables(id: "user1");
-      final result = GetNodeResponse.fromJson(
+      final result = GetNodeData.fromJson(
         userData,
       );
 
@@ -79,7 +79,7 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - Post', () {
       final variables = GetNodeVariables(id: "post1");
-      final result = GetNodeResponse.fromJson(
+      final result = GetNodeData.fromJson(
         postData,
       );
 
@@ -112,7 +112,7 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - Comment (fallback)', () {
       final variables = GetNodeVariables(id: "comment1");
-      final result = GetNodeResponse.fromJson(
+      final result = GetNodeData.fromJson(
         commentData,
       );
 
@@ -134,10 +134,10 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - equals', () {
       final variables = GetNodeVariables(id: "user1");
-      final result1 = GetNodeResponse.fromJson(
+      final result1 = GetNodeData.fromJson(
         userData,
       );
-      final result2 = GetNodeResponse.fromJson(
+      final result2 = GetNodeData.fromJson(
         userData,
       );
       expect(result1, equals(result2));
@@ -146,7 +146,7 @@ void main() {
 
     test('interfaceSharedFragmentsRequired - toJson', () {
       final variables = GetNodeVariables(id: "user1");
-      final result = GetNodeResponse.fromJson(
+      final result = GetNodeData.fromJson(
         userData,
       );
       final json = result.toJson();
@@ -183,7 +183,7 @@ void main() {
   group('Test interface shared fragments - optional', () {
     test('interfaceSharedFragmentsOptional - User', () {
       final variables = GetNodeOptVariables(id: "user1");
-      final result = GetNodeOptResponse.fromJson(
+      final result = GetNodeOptData.fromJson(
         userOptData,
       );
 
@@ -216,7 +216,7 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - Post', () {
       final variables = GetNodeOptVariables(id: "post1");
-      final result = GetNodeOptResponse.fromJson(
+      final result = GetNodeOptData.fromJson(
         postOptData,
       );
 
@@ -237,7 +237,7 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - null', () {
       final variables = GetNodeOptVariables(id: "null");
-      final result = GetNodeOptResponse.fromJson(
+      final result = GetNodeOptData.fromJson(
         nodeOptNull,
       );
       expect(result.nodeOpt, isNull);
@@ -245,10 +245,10 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - equals', () {
       final variables = GetNodeOptVariables(id: "user1");
-      final result1 = GetNodeOptResponse.fromJson(
+      final result1 = GetNodeOptData.fromJson(
         userOptData,
       );
-      final result2 = GetNodeOptResponse.fromJson(
+      final result2 = GetNodeOptData.fromJson(
         userOptData,
       );
       expect(result1, equals(result2));
@@ -257,7 +257,7 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - toJson', () {
       final variables = GetNodeOptVariables(id: "user1");
-      final result = GetNodeOptResponse.fromJson(
+      final result = GetNodeOptData.fromJson(
         userOptData,
       );
       final json = result.toJson();
@@ -266,7 +266,7 @@ void main() {
 
     test('interfaceSharedFragmentsOptional - toJson null', () {
       final variables = GetNodeOptVariables(id: "null");
-      final result = GetNodeOptResponse.fromJson(
+      final result = GetNodeOptData.fromJson(
         nodeOptNull,
       );
       final json = result.toJson();
@@ -307,7 +307,7 @@ void main() {
 
   group('Test interface shared fragments - list', () {
     test('interfaceSharedFragmentsList', () {
-      final result = GetNodesResponse.fromJson(nodesData);
+      final result = GetNodesData.fromJson(nodesData);
 
       expect(result.nodes.length, 3);
 
@@ -336,13 +336,13 @@ void main() {
     });
 
     test('interfaceSharedFragmentsList - equals', () {
-      final result1 = GetNodesResponse.fromJson(nodesData);
-      final result2 = GetNodesResponse.fromJson(nodesData);
+      final result1 = GetNodesData.fromJson(nodesData);
+      final result2 = GetNodesData.fromJson(nodesData);
       expect(result1, equals(result2));
     });
 
     test('interfaceSharedFragmentsList - toJson', () {
-      final result = GetNodesResponse.fromJson(nodesData);
+      final result = GetNodesData.fromJson(nodesData);
       final json = result.toJson();
       expect(json, nodesData);
     });
@@ -362,7 +362,7 @@ void main() {
   group('Test interface shared fragments - all types', () {
     test('interfaceSharedFragmentsAllTypes - Comment', () {
       final variables = GetNodeAllTypesVariables(id: "comment1");
-      final result = GetNodeAllTypesResponse.fromJson(
+      final result = GetNodeAllTypesData.fromJson(
         commentAllTypesData,
       );
 
@@ -386,10 +386,10 @@ void main() {
 
     test('interfaceSharedFragmentsAllTypes - equals', () {
       final variables = GetNodeAllTypesVariables(id: "comment1");
-      final result1 = GetNodeAllTypesResponse.fromJson(
+      final result1 = GetNodeAllTypesData.fromJson(
         commentAllTypesData,
       );
-      final result2 = GetNodeAllTypesResponse.fromJson(
+      final result2 = GetNodeAllTypesData.fromJson(
         commentAllTypesData,
       );
       expect(result1, equals(result2));
@@ -398,7 +398,7 @@ void main() {
 
     test('interfaceSharedFragmentsAllTypes - toJson', () {
       final variables = GetNodeAllTypesVariables(id: "comment1");
-      final result = GetNodeAllTypesResponse.fromJson(
+      final result = GetNodeAllTypesData.fromJson(
         commentAllTypesData,
       );
       final json = result.toJson();

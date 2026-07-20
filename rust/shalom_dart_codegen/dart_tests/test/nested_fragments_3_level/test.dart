@@ -25,7 +25,7 @@ void main() {
       'nestedFragmentsRequired - All fields accessible through nested fragments',
       () {
         final variables = SiteQueryVariables(siteId: "site1");
-        final result = SiteQueryResponse.fromJson(
+        final result = SiteQueryData.fromJson(
           siteData,
         );
 
@@ -46,7 +46,7 @@ void main() {
     test('nestedFragmentsOptional - Null handling works correctly', () {
       final nullData = {"site": null};
       final variables = SiteQueryVariables(siteId: "site1");
-      final result = SiteQueryResponse.fromJson(
+      final result = SiteQueryData.fromJson(
         nullData,
       );
 
@@ -55,10 +55,10 @@ void main() {
 
     test('equals - Equality works with nested fragments', () {
       final variables = SiteQueryVariables(siteId: "site1");
-      final result1 = SiteQueryResponse.fromJson(
+      final result1 = SiteQueryData.fromJson(
         siteData,
       );
-      final result2 = SiteQueryResponse.fromJson(
+      final result2 = SiteQueryData.fromJson(
         siteData,
       );
 
@@ -68,7 +68,7 @@ void main() {
 
     test('toJson - Serialization works with nested fragments', () {
       final variables = SiteQueryVariables(siteId: "site1");
-      final result = SiteQueryResponse.fromJson(
+      final result = SiteQueryData.fromJson(
         siteData,
       );
       final json = result.toJson();

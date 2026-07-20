@@ -36,13 +36,13 @@ void main() {
     });
   });
 
-  group('TestQueryResponse', () {
+  group('TestQueryData', () {
     test('fromJson', () {
       final jsonResponse = {
         'test': {'id': '1', 'value': 'hello'}
       };
       final variables = TestQueryVariables(input: TestOneOf.a('test'));
-      final response = TestQueryResponse.fromJson(jsonResponse);
+      final response = TestQueryData.fromJson(jsonResponse);
       expect(response.test.id, '1');
       expect(response.test.value, 'hello');
     });
@@ -72,7 +72,7 @@ void main() {
     test('fromJson', () {
       final jsonResponse = {'testList': 'success'};
       final variables = TestListQueryVariables(input: []);
-      final response = TestListQueryResponse.fromJson(jsonResponse);
+      final response = TestListQueryData.fromJson(jsonResponse);
       expect(response.testList, 'success');
     });
   });
@@ -122,13 +122,13 @@ void main() {
     });
   });
 
-  group('TestComplexQueryResponse', () {
+  group('TestComplexQueryData', () {
     test('fromJson', () {
       final jsonResponse = {'testComplex': 'success'};
       final variables = TestComplexQueryVariables(
         input: ComplexOneOf.scalarField('test'),
       );
-      final response = TestComplexQueryResponse.fromJson(
+      final response = TestComplexQueryData.fromJson(
         jsonResponse,
       );
       expect(response.testComplex, 'success');

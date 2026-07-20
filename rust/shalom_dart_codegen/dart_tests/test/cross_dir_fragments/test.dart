@@ -64,7 +64,7 @@ void main() {
       };
 
       final variables = GetUserVariables(userId: "user1");
-      final response = GetUserResponse.fromJson(userData);
+      final response = GetUserData.fromJson(userData);
 
       expect(response.user, isNotNull);
       expect(response.user!.id, equals("user1"));
@@ -78,7 +78,7 @@ void main() {
         final userData = {"user": null};
 
         final variables = GetUserVariables(userId: "user999");
-        final response = GetUserResponse.fromJson(userData);
+        final response = GetUserData.fromJson(userData);
 
         expect(response.user, isNull);
       },
@@ -94,8 +94,8 @@ void main() {
       };
 
       final variables = GetUserVariables(userId: "user1");
-      final response1 = GetUserResponse.fromJson(userData1);
-      final response2 = GetUserResponse.fromJson(userData2);
+      final response1 = GetUserData.fromJson(userData1);
+      final response2 = GetUserData.fromJson(userData2);
 
       expect(response1, equals(response2));
     });
@@ -112,7 +112,7 @@ void main() {
         };
 
         final variables = GetUserVariables(userId: "user1");
-        final response = GetUserResponse.fromJson(userData);
+        final response = GetUserData.fromJson(userData);
         final json = response.toJson();
 
         expect(json["user"]["id"], equals("user1"));
@@ -138,7 +138,7 @@ void main() {
         };
 
         final variables = GetPostVariables(postId: "post1");
-        final response = GetPostResponse.fromJson(postData);
+        final response = GetPostData.fromJson(postData);
 
         expect(response.post, isNotNull);
         expect(response.post!.id, equals("post1"));
@@ -164,7 +164,7 @@ void main() {
         };
 
         final variables = GetAuthorVariables(authorId: "author1");
-        final response = GetAuthorResponse.fromJson(authorData);
+        final response = GetAuthorData.fromJson(authorData);
 
         expect(response.user, isNotNull);
         expect(response.user!.id, equals("author1"));
@@ -180,7 +180,7 @@ void main() {
       final authorData = {"user": null};
 
       final variables = GetAuthorVariables(authorId: "author999");
-      final response = GetAuthorResponse.fromJson(authorData);
+      final response = GetAuthorData.fromJson(authorData);
 
       expect(response.user, isNull);
     });
@@ -200,7 +200,7 @@ void main() {
         };
 
         final variables = GetAuthorVariables(authorId: "author1");
-        final response = GetAuthorResponse.fromJson(authorData1);
+        final response = GetAuthorData.fromJson(authorData1);
 
         // Verify that response preserves the data structure from nested fragments
         expect(response.user, isNotNull);
@@ -236,8 +236,8 @@ void main() {
       };
 
       final variables = GetAuthorVariables(authorId: "author1");
-      final response1 = GetAuthorResponse.fromJson(authorData1);
-      final response2 = GetAuthorResponse.fromJson(authorData2);
+      final response1 = GetAuthorData.fromJson(authorData1);
+      final response2 = GetAuthorData.fromJson(authorData2);
 
       expect(response1, equals(response2));
     });
@@ -258,7 +258,7 @@ void main() {
         };
 
         final variables = GetAuthorVariables(authorId: "author1");
-        final response = GetAuthorResponse.fromJson(authorData);
+        final response = GetAuthorData.fromJson(authorData);
         final json = response.toJson();
 
         expect(json["user"]["id"], equals("author1"));

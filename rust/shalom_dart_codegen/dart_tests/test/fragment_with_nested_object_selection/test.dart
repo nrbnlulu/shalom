@@ -36,7 +36,7 @@ void main() {
       'fragmentWithNestedObjectRequired - Fragment with nested object deserializes',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromJson(
+        final result = GetPostWithDetailsData.fromJson(
           postWithDetailsData,
         );
 
@@ -57,7 +57,7 @@ void main() {
       'fragmentWithNestedObjectOptional - Nested object fields are accessible',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromJson(
+        final result = GetPostWithDetailsData.fromJson(
           postWithDetailsData,
         );
 
@@ -75,10 +75,10 @@ void main() {
       'fragmentWithNestedObjectEquals - Equality works with nested objects',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result1 = GetPostWithDetailsResponse.fromJson(
+        final result1 = GetPostWithDetailsData.fromJson(
           postWithDetailsData,
         );
-        final result2 = GetPostWithDetailsResponse.fromJson(
+        final result2 = GetPostWithDetailsData.fromJson(
           postWithDetailsData,
         );
 
@@ -94,7 +94,7 @@ void main() {
       'fragmentWithNestedObjectToJson - Serialization includes nested objects',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromJson(
+        final result = GetPostWithDetailsData.fromJson(
           postWithDetailsData,
         );
         final json = result.toJson();
@@ -149,7 +149,7 @@ void main() {
       'fragmentWithNestedObjectRequired - Second fragment with nested object',
       () {
         final variables = GetUserWithProfileVariables(userId: "user1");
-        final result = GetUserWithProfileResponse.fromJson(
+        final result = GetUserWithProfileData.fromJson(
           userWithProfileData,
         );
 
@@ -165,7 +165,7 @@ void main() {
       'fragmentWithNestedObjectOptional - Nested object with optional fields',
       () {
         final variables = GetUserWithProfileVariables(userId: "user2");
-        final result = GetUserWithProfileResponse.fromJson(
+        final result = GetUserWithProfileData.fromJson(
           userWithProfileNoAvatar,
         );
 
@@ -177,10 +177,10 @@ void main() {
 
     test('fragmentWithNestedObjectEquals - Equality with second fragment', () {
       final variables = GetUserWithProfileVariables(userId: "user1");
-      final result1 = GetUserWithProfileResponse.fromJson(
+      final result1 = GetUserWithProfileData.fromJson(
         userWithProfileData,
       );
-      final result2 = GetUserWithProfileResponse.fromJson(
+      final result2 = GetUserWithProfileData.fromJson(
         userWithProfileData,
       );
 
@@ -193,7 +193,7 @@ void main() {
       'fragmentWithNestedObjectToJson - Serialization with second fragment',
       () {
         final variables = GetUserWithProfileVariables(userId: "user1");
-        final result = GetUserWithProfileResponse.fromJson(
+        final result = GetUserWithProfileData.fromJson(
           userWithProfileData,
         );
         final json = result.toJson();

@@ -214,7 +214,7 @@ void main() {
   group('List of Interfaces Required - [Vehicle!]!', () {
     test('vehiclesRequired deserialize mixed types', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
-      final result = GetVehiclesRequiredResponse.fromJson(
+      final result = GetVehiclesRequiredData.fromJson(
         vehiclesRequiredData,
       );
       expect(result.vehiclesRequired.length, 3);
@@ -270,7 +270,7 @@ void main() {
 
     test('vehiclesRequired deserialize empty list', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
-      final result = GetVehiclesRequiredResponse.fromJson(
+      final result = GetVehiclesRequiredData.fromJson(
         vehiclesRequiredEmptyData,
       );
       expect(result.vehiclesRequired.length, 0);
@@ -278,7 +278,7 @@ void main() {
 
     test('vehiclesRequired toJson', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
-      final initial = GetVehiclesRequiredResponse.fromJson(
+      final initial = GetVehiclesRequiredData.fromJson(
         vehiclesRequiredData,
       );
       final json = initial.toJson();
@@ -287,10 +287,10 @@ void main() {
 
     test('vehiclesRequired equals', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
-      final result1 = GetVehiclesRequiredResponse.fromJson(
+      final result1 = GetVehiclesRequiredData.fromJson(
         vehiclesRequiredData,
       );
-      final result2 = GetVehiclesRequiredResponse.fromJson(
+      final result2 = GetVehiclesRequiredData.fromJson(
         vehiclesRequiredData,
       );
       expect(result1, equals(result2));
@@ -298,10 +298,10 @@ void main() {
 
     test('vehiclesRequired not equals different data', () {
       final variables = GetVehiclesRequiredVariables(maxLength: 50);
-      final result1 = GetVehiclesRequiredResponse.fromJson(
+      final result1 = GetVehiclesRequiredData.fromJson(
         vehiclesRequiredData,
       );
-      final result2 = GetVehiclesRequiredResponse.fromJson(
+      final result2 = GetVehiclesRequiredData.fromJson(
         vehiclesRequiredDataChanged,
       );
       expect(result1, isNot(equals(result2)));
@@ -311,7 +311,7 @@ void main() {
   group('List of Interfaces Optional - [Vehicle!]', () {
     test('vehiclesOptional deserialize with data', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
-      final result = GetVehiclesOptionalResponse.fromJson(
+      final result = GetVehiclesOptionalData.fromJson(
         vehiclesOptionalData,
       );
       expect(result.vehiclesOptional, isNotNull);
@@ -352,7 +352,7 @@ void main() {
 
     test('vehiclesOptional deserialize null', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
-      final result = GetVehiclesOptionalResponse.fromJson(
+      final result = GetVehiclesOptionalData.fromJson(
         vehiclesOptionalNullData,
       );
       expect(result.vehiclesOptional, isNull);
@@ -360,7 +360,7 @@ void main() {
 
     test('vehiclesOptional toJson with data', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
-      final initial = GetVehiclesOptionalResponse.fromJson(
+      final initial = GetVehiclesOptionalData.fromJson(
         vehiclesOptionalData,
       );
       final json = initial.toJson();
@@ -369,7 +369,7 @@ void main() {
 
     test('vehiclesOptional toJson null', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
-      final initial = GetVehiclesOptionalResponse.fromJson(
+      final initial = GetVehiclesOptionalData.fromJson(
         vehiclesOptionalNullData,
       );
       final json = initial.toJson();
@@ -378,10 +378,10 @@ void main() {
 
     test('vehiclesOptional equals', () {
       final variables = GetVehiclesOptionalVariables(maxLength: 50);
-      final result1 = GetVehiclesOptionalResponse.fromJson(
+      final result1 = GetVehiclesOptionalData.fromJson(
         vehiclesOptionalData,
       );
-      final result2 = GetVehiclesOptionalResponse.fromJson(
+      final result2 = GetVehiclesOptionalData.fromJson(
         vehiclesOptionalData,
       );
       expect(result1, equals(result2));
@@ -391,7 +391,7 @@ void main() {
   group('List of Interfaces Optional Items - [Vehicle]!', () {
     test('optionalVehicles deserialize with nulls', () {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
-      final result = GetOptionalVehiclesResponse.fromJson(
+      final result = GetOptionalVehiclesData.fromJson(
         optionalVehiclesData,
       );
       expect(result.optionalVehicles.length, 3);
@@ -427,7 +427,7 @@ void main() {
 
     test('optionalVehicles toJson', () {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
-      final initial = GetOptionalVehiclesResponse.fromJson(
+      final initial = GetOptionalVehiclesData.fromJson(
         optionalVehiclesData,
       );
       final json = initial.toJson();
@@ -436,10 +436,10 @@ void main() {
 
     test('optionalVehicles equals', () {
       final variables = GetOptionalVehiclesVariables(maxLength: 50);
-      final result1 = GetOptionalVehiclesResponse.fromJson(
+      final result1 = GetOptionalVehiclesData.fromJson(
         optionalVehiclesData,
       );
-      final result2 = GetOptionalVehiclesResponse.fromJson(
+      final result2 = GetOptionalVehiclesData.fromJson(
         optionalVehiclesData,
       );
       expect(result1, equals(result2));
@@ -449,7 +449,7 @@ void main() {
   group('List of Interfaces Fully Optional - [Vehicle]', () {
     test('vehiclesFullyOptional deserialize with data and nulls', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
-      final result = GetVehiclesFullyOptionalResponse.fromJson(
+      final result = GetVehiclesFullyOptionalData.fromJson(
         vehiclesFullyOptionalData,
       );
       expect(result.vehiclesFullyOptional, isNotNull);
@@ -473,7 +473,7 @@ void main() {
 
     test('vehiclesFullyOptional deserialize null list', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
-      final result = GetVehiclesFullyOptionalResponse.fromJson(
+      final result = GetVehiclesFullyOptionalData.fromJson(
         vehiclesFullyOptionalNullData,
       );
       expect(result.vehiclesFullyOptional, isNull);
@@ -481,7 +481,7 @@ void main() {
 
     test('vehiclesFullyOptional toJson with data', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
-      final initial = GetVehiclesFullyOptionalResponse.fromJson(
+      final initial = GetVehiclesFullyOptionalData.fromJson(
         vehiclesFullyOptionalData,
       );
       final json = initial.toJson();
@@ -490,7 +490,7 @@ void main() {
 
     test('vehiclesFullyOptional toJson null', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
-      final initial = GetVehiclesFullyOptionalResponse.fromJson(
+      final initial = GetVehiclesFullyOptionalData.fromJson(
         vehiclesFullyOptionalNullData,
       );
       final json = initial.toJson();
@@ -499,10 +499,10 @@ void main() {
 
     test('vehiclesFullyOptional equals', () {
       final variables = GetVehiclesFullyOptionalVariables(maxLength: 50);
-      final result1 = GetVehiclesFullyOptionalResponse.fromJson(
+      final result1 = GetVehiclesFullyOptionalData.fromJson(
         vehiclesFullyOptionalData,
       );
-      final result2 = GetVehiclesFullyOptionalResponse.fromJson(
+      final result2 = GetVehiclesFullyOptionalData.fromJson(
         vehiclesFullyOptionalData,
       );
       expect(result1, equals(result2));
@@ -512,7 +512,7 @@ void main() {
   group('List of Interfaces With Arguments', () {
     test('vehiclesWithArgs deserialize all types', () {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
-      final result = GetVehiclesWithArgsResponse.fromJson(
+      final result = GetVehiclesWithArgsData.fromJson(
         vehiclesWithArgsData,
       );
       expect(result.vehiclesWithArgs.length, 3);
@@ -559,7 +559,7 @@ void main() {
 
     test('vehiclesWithArgs toJson', () {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
-      final initial = GetVehiclesWithArgsResponse.fromJson(
+      final initial = GetVehiclesWithArgsData.fromJson(
         vehiclesWithArgsData,
       );
       final json = initial.toJson();
@@ -568,10 +568,10 @@ void main() {
 
     test('vehiclesWithArgs equals', () {
       final variables = GetVehiclesWithArgsVariables(limit: 10, maxLength: 20);
-      final result1 = GetVehiclesWithArgsResponse.fromJson(
+      final result1 = GetVehiclesWithArgsData.fromJson(
         vehiclesWithArgsData,
       );
-      final result2 = GetVehiclesWithArgsResponse.fromJson(
+      final result2 = GetVehiclesWithArgsData.fromJson(
         vehiclesWithArgsData,
       );
       expect(result1, equals(result2));
@@ -582,7 +582,7 @@ void main() {
     final variables = GetVehiclesRequiredVariables(maxLength: 100);
 
     test('vehiclesRequired filter to cars only', () {
-      final result = GetVehiclesRequiredResponse.fromJson(
+      final result = GetVehiclesRequiredData.fromJson(
         vehiclesRequiredData,
       );
 
@@ -594,7 +594,7 @@ void main() {
     });
 
     test('vehiclesRequired filter to motorcycles only', () {
-      final result = GetVehiclesRequiredResponse.fromJson(
+      final result = GetVehiclesRequiredData.fromJson(
         vehiclesRequiredData,
       );
 
@@ -606,7 +606,7 @@ void main() {
     });
 
     test('vehiclesRequired filter to bicycles only', () {
-      final result = GetVehiclesRequiredResponse.fromJson(
+      final result = GetVehiclesRequiredData.fromJson(
         vehiclesRequiredData,
       );
 
@@ -639,7 +639,7 @@ void main() {
         ],
       };
 
-      final result = GetVehiclesRequiredResponse.fromJson(
+      final result = GetVehiclesRequiredData.fromJson(
         dataWithNoBicycles,
       );
 
@@ -677,7 +677,7 @@ void main() {
         ],
       };
 
-      final result = GetVehiclesRequiredResponse.fromJson(
+      final result = GetVehiclesRequiredData.fromJson(
         dataWithMultipleCars,
       );
 

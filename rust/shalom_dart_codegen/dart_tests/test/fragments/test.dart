@@ -20,7 +20,7 @@ void main() {
         },
       };
 
-      final result = GetUserResponse.fromJson(
+      final result = GetUserData.fromJson(
         userData,
       );
 
@@ -41,7 +41,7 @@ void main() {
         },
       };
 
-      final result = GetPostResponse.fromJson(
+      final result = GetPostData.fromJson(
         postData,
       );
 
@@ -61,10 +61,10 @@ void main() {
         },
       };
 
-      final result1 = GetUserResponse.fromJson(
+      final result1 = GetUserData.fromJson(
         userData,
       );
-      final result2 = GetUserResponse.fromJson(
+      final result2 = GetUserData.fromJson(
         userData,
       );
 
@@ -82,7 +82,7 @@ void main() {
         },
       };
 
-      final result = GetUserResponse.fromJson(
+      final result = GetUserData.fromJson(
         userData,
       );
       final json = result.toJson();
@@ -107,7 +107,7 @@ void main() {
           },
         };
 
-        final result = GetPostWithAuthorResponse.fromJson(
+        final result = GetPostWithAuthorData.fromJson(
           postData,
         );
 
@@ -131,11 +131,11 @@ void main() {
           },
         };
 
-        final getUserResult = GetUserResponse.fromJson(
+        final getUserResult = GetUserData.fromJson(
           userData,
         );
 
-        final getUserWithAuthorResult = GetUserWithAuthorResponse.fromJson(
+        final getUserWithAuthorResult = GetUserWithAuthorData.fromJson(
           userData,
         );
 
@@ -158,7 +158,7 @@ void main() {
           },
         };
 
-        final result = GetUserWithAuthorResponse.fromJson(
+        final result = GetUserWithAuthorData.fromJson(
           userData,
         );
 
@@ -183,7 +183,7 @@ void main() {
         },
       };
 
-      final result = GetPostWithAuthorResponse.fromJson(
+      final result = GetPostWithAuthorData.fromJson(
         postData,
       );
 
@@ -206,10 +206,10 @@ void main() {
         },
       };
 
-      final result1 = GetUserResponse.fromJson(
+      final result1 = GetUserData.fromJson(
         userData,
       );
-      final result2 = GetUserResponse.fromJson(
+      final result2 = GetUserData.fromJson(
         userData,
       );
 
@@ -236,10 +236,10 @@ void main() {
         },
       };
 
-      final result1 = GetUserResponse.fromJson(
+      final result1 = GetUserData.fromJson(
         userData1,
       );
-      final result2 = GetUserResponse.fromJson(
+      final result2 = GetUserData.fromJson(
         userData2,
       );
 
@@ -257,7 +257,7 @@ void main() {
         },
       };
 
-      final result = GetUserResponse.fromJson(
+      final result = GetUserData.fromJson(
         userData,
       );
       final json = result.toJson();
