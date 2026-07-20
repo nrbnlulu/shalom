@@ -14,21 +14,21 @@ void main() {
     final listOfScalarsRequiredEmptyData = {'listOfScalarsRequired': []};
 
     test('listOfScalarsRequired deserialize', () {
-      final result = ListofScalarsRequiredResponse.fromJson(
+      final result = ListofScalarsRequiredData.fromJson(
         listOfScalarsRequiredData,
       );
       expect(result.listOfScalarsRequired, ['hello', 'world', 'test']);
     });
 
     test('listOfScalarsRequired deserialize with empty list', () {
-      final result = ListofScalarsRequiredResponse.fromJson(
+      final result = ListofScalarsRequiredData.fromJson(
         listOfScalarsRequiredEmptyData,
       );
       expect(result.listOfScalarsRequired, []);
     });
 
     test('listOfScalarsRequired toJson', () {
-      final initial = ListofScalarsRequiredResponse.fromJson(
+      final initial = ListofScalarsRequiredData.fromJson(
         listOfScalarsRequiredData,
       );
       final json = initial.toJson();
@@ -36,7 +36,7 @@ void main() {
     });
 
     test('listOfScalarsRequired toJson with empty list', () {
-      final initial = ListofScalarsRequiredResponse.fromJson(
+      final initial = ListofScalarsRequiredData.fromJson(
         listOfScalarsRequiredEmptyData,
       );
       final json = initial.toJson();
@@ -55,28 +55,28 @@ void main() {
     final listOfScalarsOptionalEmptyData = {'listOfScalarsOptional': []};
 
     test('listOfScalarsOptional deserialize', () {
-      final result = ListOfScalarsOptionalResponse.fromJson(
+      final result = ListOfScalarsOptionalData.fromJson(
         listOfScalarsOptionalData,
       );
       expect(result.listOfScalarsOptional, ['hello', 'world', 'test']);
     });
 
     test('listOfScalarsOptional deserialize with null', () {
-      final result = ListOfScalarsOptionalResponse.fromJson(
+      final result = ListOfScalarsOptionalData.fromJson(
         listOfScalarsOptionalNullData,
       );
       expect(result.listOfScalarsOptional, isNull);
     });
 
     test('listOfScalarsOptional deserialize with empty list', () {
-      final result = ListOfScalarsOptionalResponse.fromJson(
+      final result = ListOfScalarsOptionalData.fromJson(
         listOfScalarsOptionalEmptyData,
       );
       expect(result.listOfScalarsOptional, []);
     });
 
     test('listOfScalarsOptional toJson', () {
-      final initial = ListOfScalarsOptionalResponse.fromJson(
+      final initial = ListOfScalarsOptionalData.fromJson(
         listOfScalarsOptionalData,
       );
       final json = initial.toJson();
@@ -84,7 +84,7 @@ void main() {
     });
 
     test('listOfScalarsOptional toJson with null', () {
-      final initial = ListOfScalarsOptionalResponse.fromJson(
+      final initial = ListOfScalarsOptionalData.fromJson(
         listOfScalarsOptionalNullData,
       );
       final json = initial.toJson();
@@ -92,7 +92,7 @@ void main() {
     });
 
     test('listOfScalarsOptional toJson with empty list', () {
-      final initial = ListOfScalarsOptionalResponse.fromJson(
+      final initial = ListOfScalarsOptionalData.fromJson(
         listOfScalarsOptionalEmptyData,
       );
       final json = initial.toJson();
@@ -115,28 +115,28 @@ void main() {
     };
 
     test('listOfOptionalScalarsOptional deserialize', () {
-      final result = ListOfOptionalScalarsOptionalResponse.fromJson(
+      final result = ListOfOptionalScalarsOptionalData.fromJson(
         listOfOptionalScalarsOptionalData,
       );
       expect(result.listOfOptionalScalarsOptional, [1, 2, 3]);
     });
 
     test('listOfOptionalScalarsOptional deserialize with null', () {
-      final result = ListOfOptionalScalarsOptionalResponse.fromJson(
+      final result = ListOfOptionalScalarsOptionalData.fromJson(
         listOfOptionalScalarsOptionalNullData,
       );
       expect(result.listOfOptionalScalarsOptional, isNull);
     });
 
     test('listOfOptionalScalarsOptional deserialize with empty list', () {
-      final result = ListOfOptionalScalarsOptionalResponse.fromJson(
+      final result = ListOfOptionalScalarsOptionalData.fromJson(
         listOfOptionalScalarsOptionalEmptyData,
       );
       expect(result.listOfOptionalScalarsOptional, []);
     });
 
     test('listOfOptionalScalarsOptional toJson', () {
-      final initial = ListOfOptionalScalarsOptionalResponse.fromJson(
+      final initial = ListOfOptionalScalarsOptionalData.fromJson(
         listOfOptionalScalarsOptionalData,
       );
       final json = initial.toJson();
@@ -144,7 +144,7 @@ void main() {
     });
 
     test('listOfOptionalScalarsOptional toJson with null', () {
-      final initial = ListOfOptionalScalarsOptionalResponse.fromJson(
+      final initial = ListOfOptionalScalarsOptionalData.fromJson(
         listOfOptionalScalarsOptionalNullData,
       );
       final json = initial.toJson();
@@ -152,7 +152,7 @@ void main() {
     });
 
     test('listOfOptionalScalarsOptional toJson with empty list', () {
-      final initial = ListOfOptionalScalarsOptionalResponse.fromJson(
+      final initial = ListOfOptionalScalarsOptionalData.fromJson(
         listOfOptionalScalarsOptionalEmptyData,
       );
       final json = initial.toJson();

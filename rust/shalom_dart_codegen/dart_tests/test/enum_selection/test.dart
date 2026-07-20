@@ -9,7 +9,7 @@ void main() {
       final json = {
         "task": {"id": "foo", "name": "do nothing", "status": "FAILED"},
       };
-      final result = GetTaskResponse.fromJson(json);
+      final result = GetTaskData.fromJson(json);
       expect(result.task.id, "foo");
       expect(result.task.name, "do nothing");
       expect(result.task.status, Status.FAILED);
@@ -19,7 +19,7 @@ void main() {
       final data = {
         "task": {"id": "foo", "name": "do nothing", "status": "FAILED"},
       };
-      final initial = GetTaskResponse.fromJson(data);
+      final initial = GetTaskData.fromJson(data);
       final json = initial.toJson();
       expect(json, data);
     });
@@ -52,7 +52,7 @@ void main() {
         final json = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": "FAILED"},
         };
-        final result = GetTaskStatusOptResponse.fromJson(json);
+        final result = GetTaskStatusOptData.fromJson(json);
         expect(result.task.id, "foo");
         expect(result.task.name, "do nothing");
         expect(result.task.statusOpt, Status.FAILED);
@@ -61,7 +61,7 @@ void main() {
         final json = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": null},
         };
-        final result = GetTaskStatusOptResponse.fromJson(json);
+        final result = GetTaskStatusOptData.fromJson(json);
         expect(result.task.id, "foo");
         expect(result.task.name, "do nothing");
         expect(result.task.statusOpt, null);
@@ -72,7 +72,7 @@ void main() {
         final data = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": "FAILED"},
         };
-        final initial = GetTaskStatusOptResponse.fromJson(data);
+        final initial = GetTaskStatusOptData.fromJson(data);
         final json = initial.toJson();
         expect(json, data);
       });
@@ -80,7 +80,7 @@ void main() {
         final data = {
           "task": {"id": "foo", "name": "do nothing", "statusOpt": null},
         };
-        final initial = GetTaskStatusOptResponse.fromJson(data);
+        final initial = GetTaskStatusOptData.fromJson(data);
         final json = initial.toJson();
         expect(json, data);
       });

@@ -12,20 +12,20 @@ void main() {
       final json = {
         "listing": {"id": "foo", "name": "video games", "price": 100},
       };
-      final result = GetListingResponse.fromJson(json);
+      final result = GetListingData.fromJson(json);
       expect(result.listing.id, "foo");
       expect(result.listing.name, "video games");
       expect(result.listing.price, 100);
     });
 
     test('serialize', () {
-      final initial = GetListingResponse.fromJson(listingData);
+      final initial = GetListingData.fromJson(listingData);
       final json = initial.toJson();
       expect(json, listingData);
     });
 
     test('direct bridge codec', () {
-      final initial = GetListingResponse.fromShalomValue(
+      final initial = GetListingData.fromShalomValue(
         shalom_core.shalomJsonValue(listingData),
       );
 
@@ -44,7 +44,7 @@ void main() {
         final json = {
           "listingOpt": {"id": "foo", "name": "video games", "price": 100},
         };
-        final result = GetListingOptResponse.fromJson(json);
+        final result = GetListingOptData.fromJson(json);
         expect(result.listingOpt?.id, "foo");
         expect(result.listingOpt?.name, "video games");
         expect(result.listingOpt?.price, 100);
@@ -52,26 +52,26 @@ void main() {
 
       test('null value', () {
         final json = {"listingOpt": null};
-        final result = GetListingOptResponse.fromJson(json);
+        final result = GetListingOptData.fromJson(json);
         expect(result.listingOpt, null);
       });
     });
 
     group('serialize', () {
       test('with value', () {
-        final initial = GetListingOptResponse.fromJson(listingOptSome);
+        final initial = GetListingOptData.fromJson(listingOptSome);
         final json = initial.toJson();
         expect(json, listingOptSome);
       });
 
       test('null value', () {
-        final initial = GetListingOptResponse.fromJson(dataNull);
+        final initial = GetListingOptData.fromJson(dataNull);
         final json = initial.toJson();
         expect(json, dataNull);
       });
 
       test('direct bridge codec with null', () {
-        final initial = GetListingOptResponse.fromShalomValue(
+        final initial = GetListingOptData.fromShalomValue(
           shalom_core.shalomJsonValue(dataNull),
         );
 

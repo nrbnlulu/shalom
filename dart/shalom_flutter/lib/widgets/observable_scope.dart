@@ -9,14 +9,14 @@ import 'package:shalom/shalom.dart'
 import 'package:shalom_flutter/src/observable_state_mixin.dart'
     show ShalomObservingState;
 
-typedef ShalomObserve<TData> =
-    Stream<GraphQLResponse<TData>> Function(ShalomRuntimeClient client);
+typedef ShalomObserve<TData> = Stream<GraphQLResponse<TData>> Function(
+    ShalomRuntimeClient client);
 
-typedef ShalomErrorBuilder =
-    Widget Function(BuildContext context, Object error);
+typedef ShalomErrorBuilder = Widget Function(
+    BuildContext context, Object error);
 
-typedef ShalomDataWidgetBuilder<TData> =
-    Widget Function(BuildContext context, TData data);
+typedef ShalomDataWidgetBuilder<TData> = Widget Function(
+    BuildContext context, TData data);
 
 class ShalomDataScope<TData> extends StatefulWidget {
   final Object identity;

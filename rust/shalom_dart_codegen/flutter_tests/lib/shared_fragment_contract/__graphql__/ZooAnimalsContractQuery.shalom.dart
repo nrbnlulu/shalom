@@ -15,8 +15,7 @@ import 'HasFavoriteToyFrag.shalom.dart';
 import 'ToyFrag.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class ZooAnimalsContractQueryResponse {
+class ZooAnimalsContractQueryData implements shalom_core.OperationInterface {
   static String G__typename = "query";
 
   /// class members
@@ -26,18 +25,18 @@ class ZooAnimalsContractQueryResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  ZooAnimalsContractQueryResponse({required this.animals});
+  ZooAnimalsContractQueryData({required this.animals});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is ZooAnimalsContractQueryResponse &&
+        (other is ZooAnimalsContractQueryData &&
             const ListEquality().equals(animals, other.animals));
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([animals, ZooAnimalsContractQueryResponse.G__typename]);
+      Object.hashAll([animals, ZooAnimalsContractQueryData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'animals': this.animals.map((e) => e.toJson()).toList()};
@@ -49,7 +48,7 @@ class ZooAnimalsContractQueryResponse {
     ),
   });
 
-  static ZooAnimalsContractQueryResponse fromJson(shalom_core.JsonObject data) {
+  static ZooAnimalsContractQueryData fromJson(shalom_core.JsonObject data) {
     final List<CommonAnimalFragRef> animals$value =
         (data['animals'] as List<dynamic>)
             .map(
@@ -61,10 +60,10 @@ class ZooAnimalsContractQueryResponse {
               ),
             )
             .toList();
-    return ZooAnimalsContractQueryResponse(animals: animals$value);
+    return ZooAnimalsContractQueryData(animals: animals$value);
   }
 
-  static ZooAnimalsContractQueryResponse fromShalomValue(
+  static ZooAnimalsContractQueryData fromShalomValue(
     shalom_core.ShalomJsonValue data,
   ) {
     final shalom_core.ShalomJsonValue? animals$raw = data.field('animals');
@@ -77,7 +76,28 @@ class ZooAnimalsContractQueryResponse {
           ),
         )
         .toList();
-    return ZooAnimalsContractQueryResponse(animals: animals$value);
+    return ZooAnimalsContractQueryData(animals: animals$value);
+  }
+
+  @override
+  String operation$Name() => 'ZooAnimalsContractQuery';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [ZooAnimalsContractQueryData]. Returns `null` when absent or incomplete.
+  static Future<ZooAnimalsContractQueryData?> readFrom(
+    shalom_core.CacheProxy cache,
+  ) async {
+    return await cache.readOperation<ZooAnimalsContractQueryData>(
+      name: 'ZooAnimalsContractQuery',
+      decoder: fromShalomValue,
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
+    return cache.evictOperation(name: 'ZooAnimalsContractQuery');
   }
 }
 
@@ -310,76 +330,6 @@ extension ZooAnimalsContractQuery_animals$WhereTypeExt
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
 // ------------ widget API -------------
-
-final class ZooAnimalsContractQueryData
-    implements shalom_core.OperationInterface {
-  final List<CommonAnimalFragRef> animals;
-
-  const ZooAnimalsContractQueryData({required this.animals});
-
-  @override
-  String operation$Name() => 'ZooAnimalsContractQuery';
-
-  static ZooAnimalsContractQueryData fromCache(shalom_core.JsonObject data) {
-    final List<CommonAnimalFragRef> animals$value =
-        (data['animals'] as List<dynamic>)
-            .map(
-              (e) => CommonAnimalFragRef.fromInput(
-                shalom_core.observedRefInputFromJson(
-                  (e as shalom_core.JsonObject)[r'$CommonAnimalFrag']
-                      as shalom_core.JsonObject,
-                ),
-              ),
-            )
-            .toList();
-    return ZooAnimalsContractQueryData(animals: animals$value);
-  }
-
-  static ZooAnimalsContractQueryData fromShalomValue(
-    shalom_core.ShalomJsonValue data,
-  ) {
-    final shalom_core.ShalomJsonValue? animals$raw = data.field('animals');
-    final List<CommonAnimalFragRef> animals$value = animals$raw!.listValue
-        .map(
-          (e) => CommonAnimalFragRef.fromInput(
-            shalom_core.observedRefInputFromShalomValue(
-              e!.field(r'$CommonAnimalFrag')!,
-            ),
-          ),
-        )
-        .toList();
-    return ZooAnimalsContractQueryData(animals: animals$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [ZooAnimalsContractQueryData]. Returns `null` when absent or incomplete.
-  static Future<ZooAnimalsContractQueryData?> readFrom(
-    shalom_core.CacheProxy cache,
-  ) async {
-    return await cache.readOperation<ZooAnimalsContractQueryData>(
-      name: 'ZooAnimalsContractQuery',
-      decoder: fromShalomValue,
-    );
-  }
-
-  /// Evicts this operation's cached entry (matched by [variables]) through
-  /// [cache], notifying any active subscribers. Returns `false` if no
-  /// matching cache entry existed.
-  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
-    return cache.evictOperation(name: 'ZooAnimalsContractQuery');
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {'animals': this.animals.map((e) => e.toJson()).toList()};
-  }
-
-  @override
-  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    'animals': shalom_core.shalomJsonArray(
-      this.animals!.map((e) => e!.toShalomValue()),
-    ),
-  });
-}
 
 final class ZooAnimalsContractQueryObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;

@@ -36,13 +36,13 @@ void main() {
     });
   });
 
-  group('TestQueryResponse', () {
+  group('TestQueryData', () {
     test('fromJson', () {
       final jsonResponse = {
-        'test': {'id': '1', 'value': 'hello'}
+        'test': {'id': '1', 'value': 'hello'},
       };
       final variables = TestQueryVariables(input: TestOneOf.a('test'));
-      final response = TestQueryResponse.fromJson(jsonResponse);
+      final response = TestQueryData.fromJson(jsonResponse);
       expect(response.test.id, '1');
       expect(response.test.value, 'hello');
     });
@@ -51,28 +51,25 @@ void main() {
     group('variables', () {
       test('toJson with list of different variants', () {
         final variables = TestListQueryVariables(
-          input: [
-            TestOneOf.a('test'),
-            TestOneOf.b(42),
-            TestOneOf.c(true),
-          ],
+          input: [TestOneOf.a('test'), TestOneOf.b(42), TestOneOf.c(true)],
         );
         expect(
-            variables.toJson(),
-            equals({
-              'input': [
-                {'a': 'test'},
-                {'b': 42},
-                {'c': true},
-              ],
-            }));
+          variables.toJson(),
+          equals({
+            'input': [
+              {'a': 'test'},
+              {'b': 42},
+              {'c': true},
+            ],
+          }),
+        );
       });
     });
 
     test('fromJson', () {
       final jsonResponse = {'testList': 'success'};
       final variables = TestListQueryVariables(input: []);
-      final response = TestListQueryResponse.fromJson(jsonResponse);
+      final response = TestListQueryData.fromJson(jsonResponse);
       expect(response.testList, 'success');
     });
   });
@@ -101,19 +98,21 @@ void main() {
       final obj = ResultInput(id: '1', value: 'val');
       final input = ComplexOneOf.objectField(obj);
       expect(
-          input.toJson(),
-          equals({
-            'objectField': {'id': '1', 'value': 'val'}
-          }));
+        input.toJson(),
+        equals({
+          'objectField': {'id': '1', 'value': 'val'},
+        }),
+      );
     });
 
     test('toJson listField', () {
       final input = ComplexOneOf.listField([1, 2, 3]);
       expect(
-          input.toJson(),
-          equals({
-            'listField': [1, 2, 3]
-          }));
+        input.toJson(),
+        equals({
+          'listField': [1, 2, 3],
+        }),
+      );
     });
 
     test('toJson enumField', () {
@@ -122,15 +121,13 @@ void main() {
     });
   });
 
-  group('TestComplexQueryResponse', () {
+  group('TestComplexQueryData', () {
     test('fromJson', () {
       final jsonResponse = {'testComplex': 'success'};
       final variables = TestComplexQueryVariables(
         input: ComplexOneOf.scalarField('test'),
       );
-      final response = TestComplexQueryResponse.fromJson(
-        jsonResponse,
-      );
+      final response = TestComplexQueryData.fromJson(jsonResponse);
       expect(response.testComplex, 'success');
     });
   });
