@@ -6,10 +6,7 @@ void main() {
   test('runtime metadata is ignored by fromJson', () {
     final variables = GetPersonVariables(name: "foo");
     final data = {
-      "person": {
-        "id": "p1",
-        "name": "Foo",
-      },
+      "person": {"id": "p1", "name": "Foo"},
       "__used_refs": [
         "ROOT_QUERY_person\$name:foo",
         "Person:p1",
@@ -22,9 +19,6 @@ void main() {
 
     expect(result.person?.id, "p1");
     expect(result.person?.name, "Foo");
-    expect(
-      data["__used_refs"],
-      contains("Person:p1_name"),
-    );
+    expect(data["__used_refs"], contains("Person:p1_name"));
   });
 }

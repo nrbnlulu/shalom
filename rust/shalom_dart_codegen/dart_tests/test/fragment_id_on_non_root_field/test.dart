@@ -84,9 +84,7 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result = UpdateUserData.fromJson(
-          updateUserSuccessData,
-        );
+        final result = UpdateUserData.fromJson(updateUserSuccessData);
 
         // Access fields from the fragment on data field
         expect(result.updateUser.data?.id, "user1");
@@ -101,9 +99,7 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", email: Some("invalid-email")),
         );
-        final result = UpdateUserData.fromJson(
-          updateUserErrorData,
-        );
+        final result = UpdateUserData.fromJson(updateUserErrorData);
 
         // Access fields from the fragment on error field
         expect(result.updateUser.data, null);
@@ -121,9 +117,7 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", name: Some("Bob Jones")),
         );
-        final result = UpdateUserData.fromJson(
-          updateUserBothData,
-        );
+        final result = UpdateUserData.fromJson(updateUserBothData);
 
         // Both data and error should be accessible
         expect(result.updateUser.data?.id, "user1");
@@ -144,12 +138,8 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result1 = UpdateUserData.fromJson(
-          updateUserSuccessData,
-        );
-        final result2 = UpdateUserData.fromJson(
-          updateUserSuccessData,
-        );
+        final result1 = UpdateUserData.fromJson(updateUserSuccessData);
+        final result2 = UpdateUserData.fromJson(updateUserSuccessData);
 
         expect(result1, equals(result2));
         expect(result1.updateUser, equals(result2.updateUser));
@@ -160,12 +150,8 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", name: Some("Alice Smith")),
         );
-        final result1 = UpdateUserData.fromJson(
-          updateUserSuccessData,
-        );
-        final result2 = UpdateUserData.fromJson(
-          updateUserErrorData,
-        );
+        final result1 = UpdateUserData.fromJson(updateUserSuccessData);
+        final result2 = UpdateUserData.fromJson(updateUserErrorData);
 
         expect(result1, isNot(equals(result2)));
         expect(result1.updateUser.data, isNot(equals(result2.updateUser.data)));
@@ -181,9 +167,7 @@ void main() {
             email: Some("alice@example.com"),
           ),
         );
-        final result = UpdateUserData.fromJson(
-          updateUserSuccessData,
-        );
+        final result = UpdateUserData.fromJson(updateUserSuccessData);
         final json = result.toJson();
 
         expect(json, equals(updateUserSuccessData));
@@ -193,9 +177,7 @@ void main() {
         final variables = UpdateUserVariables(
           input: UpdateUserInput(id: "user1", email: Some("invalid")),
         );
-        final result = UpdateUserData.fromJson(
-          updateUserErrorData,
-        );
+        final result = UpdateUserData.fromJson(updateUserErrorData);
         final json = result.toJson();
 
         expect(json, equals(updateUserErrorData));

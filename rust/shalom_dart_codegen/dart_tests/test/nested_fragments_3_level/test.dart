@@ -25,9 +25,7 @@ void main() {
       'nestedFragmentsRequired - All fields accessible through nested fragments',
       () {
         final variables = SiteQueryVariables(siteId: "site1");
-        final result = SiteQueryData.fromJson(
-          siteData,
-        );
+        final result = SiteQueryData.fromJson(siteData);
 
         // All fields should be accessible through the 3-level nested fragment chain
         expect(result.site?.id, "site1");
@@ -46,21 +44,15 @@ void main() {
     test('nestedFragmentsOptional - Null handling works correctly', () {
       final nullData = {"site": null};
       final variables = SiteQueryVariables(siteId: "site1");
-      final result = SiteQueryData.fromJson(
-        nullData,
-      );
+      final result = SiteQueryData.fromJson(nullData);
 
       expect(result.site, null);
     });
 
     test('equals - Equality works with nested fragments', () {
       final variables = SiteQueryVariables(siteId: "site1");
-      final result1 = SiteQueryData.fromJson(
-        siteData,
-      );
-      final result2 = SiteQueryData.fromJson(
-        siteData,
-      );
+      final result1 = SiteQueryData.fromJson(siteData);
+      final result2 = SiteQueryData.fromJson(siteData);
 
       expect(result1 == result2, true);
       expect(result1.site == result2.site, true);
@@ -68,9 +60,7 @@ void main() {
 
     test('toJson - Serialization works with nested fragments', () {
       final variables = SiteQueryVariables(siteId: "site1");
-      final result = SiteQueryData.fromJson(
-        siteData,
-      );
+      final result = SiteQueryData.fromJson(siteData);
       final json = result.toJson();
 
       expect(json, siteData);

@@ -113,9 +113,7 @@ void main() {
       'objectFragmentListInterfacesRequired - Object with fragment containing list of interfaces deserializes',
       () {
         final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-        final result = GetLibraryWithCollectionData.fromJson(
-          libraryData,
-        );
+        final result = GetLibraryWithCollectionData.fromJson(libraryData);
 
         // Test access to top-level object fields
         expect(result.library?.id, "lib1");
@@ -200,12 +198,8 @@ void main() {
       'objectFragmentListInterfacesEquals - Equality works with fragment and list of interfaces',
       () {
         final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-        final result1 = GetLibraryWithCollectionData.fromJson(
-          libraryData,
-        );
-        final result2 = GetLibraryWithCollectionData.fromJson(
-          libraryData,
-        );
+        final result1 = GetLibraryWithCollectionData.fromJson(libraryData);
+        final result2 = GetLibraryWithCollectionData.fromJson(libraryData);
 
         expect(result1, equals(result2));
 
@@ -227,9 +221,7 @@ void main() {
       'objectFragmentListInterfacesToJson - Serialization includes fragment fields and list of interfaces',
       () {
         final variables = GetLibraryWithCollectionVariables(libraryId: "lib1");
-        final result = GetLibraryWithCollectionData.fromJson(
-          libraryData,
-        );
+        final result = GetLibraryWithCollectionData.fromJson(libraryData);
         final json = result.toJson();
 
         expect(json, libraryData);
@@ -251,8 +243,7 @@ void main() {
     );
   });
 
-  group('Object Fragment List Interfaces - GetLibraryWithCollectionPartial',
-      () {
+  group('Object Fragment List Interfaces - GetLibraryWithCollectionPartial', () {
     final partialData = {
       "library": {
         "id": "lib3",

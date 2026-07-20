@@ -26,9 +26,7 @@ void main() {
     });
 
     test('StringOptional with null', () {
-      final result = GetStringOptionalData.fromJson({
-        'stringOptional': null,
-      });
+      final result = GetStringOptionalData.fromJson({'stringOptional': null});
       expect(result.stringOptional, isNull);
     });
 
@@ -55,16 +53,12 @@ void main() {
     });
 
     test('FloatOptional', () {
-      final result = GetFloatOptionalData.fromJson({
-        'floatOptional': 4.56,
-      });
+      final result = GetFloatOptionalData.fromJson({'floatOptional': 4.56});
       expect(result.floatOptional, 4.56);
     });
 
     test('FloatOptional with null', () {
-      final result = GetFloatOptionalData.fromJson({
-        'floatOptional': null,
-      });
+      final result = GetFloatOptionalData.fromJson({'floatOptional': null});
       expect(result.floatOptional, isNull);
     });
 
@@ -81,9 +75,7 @@ void main() {
     });
 
     test('BooleanOptional with null', () {
-      final result = GetBooleanOptionalData.fromJson({
-        'booleanOptional': null,
-      });
+      final result = GetBooleanOptionalData.fromJson({'booleanOptional': null});
       expect(result.booleanOptional, isNull);
     });
 
@@ -220,16 +212,10 @@ void main() {
     });
 
     test('StringOptional ==', () {
-      final a = GetStringOptionalData.fromJson({
-        'stringOptional': 'test',
-      });
-      final b = GetStringOptionalData.fromJson({
-        'stringOptional': 'test',
-      });
+      final a = GetStringOptionalData.fromJson({'stringOptional': 'test'});
+      final b = GetStringOptionalData.fromJson({'stringOptional': 'test'});
       expect(a == b, true);
-      final c = GetStringOptionalData.fromJson({
-        'stringOptional': null,
-      });
+      final c = GetStringOptionalData.fromJson({'stringOptional': null});
       expect(a == c, false);
     });
 
@@ -274,16 +260,10 @@ void main() {
     });
 
     test('BooleanOptional ==', () {
-      final a = GetBooleanOptionalData.fromJson({
-        'booleanOptional': true,
-      });
-      final b = GetBooleanOptionalData.fromJson({
-        'booleanOptional': true,
-      });
+      final a = GetBooleanOptionalData.fromJson({'booleanOptional': true});
+      final b = GetBooleanOptionalData.fromJson({'booleanOptional': true});
       expect(a == b, true);
-      final c = GetBooleanOptionalData.fromJson({
-        'booleanOptional': null,
-      });
+      final c = GetBooleanOptionalData.fromJson({'booleanOptional': null});
       expect(a == c, false);
     });
 

@@ -41,19 +41,20 @@ void main() {
 
   group('union with a partially-shared interface', () {
     test(
-        'members implementing the interface still expose their field via downcast',
-        () {
-      final result = GetMixedResultData.fromJson({
-        "mixedResult": {
-          "__typename": "DoesNotExistErr",
-          "message": "not found",
-        },
-      });
+      'members implementing the interface still expose their field via downcast',
+      () {
+        final result = GetMixedResultData.fromJson({
+          "mixedResult": {
+            "__typename": "DoesNotExistErr",
+            "message": "not found",
+          },
+        });
 
-      final err =
-          result.mixedResult as GetMixedResult_mixedResult__DoesNotExistErr;
-      expect(err.message, "not found");
-    });
+        final err =
+            result.mixedResult as GetMixedResult_mixedResult__DoesNotExistErr;
+        expect(err.message, "not found");
+      },
+    );
 
     test('the member outside the shared interface keeps its own field', () {
       final result = GetMixedResultData.fromJson({

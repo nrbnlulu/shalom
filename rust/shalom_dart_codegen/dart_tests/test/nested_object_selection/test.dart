@@ -38,9 +38,7 @@ void main() {
 
   group('Nested Object Selection Required', () {
     test('nestedObjectSelectionRequired deserialize', () {
-      final result = GetListingWithUserData.fromJson(
-        listingWithUserData,
-      );
+      final result = GetListingWithUserData.fromJson(listingWithUserData);
       expect(result.listing.id, "foo");
       expect(result.listing.name, "video games");
       expect(result.listing.price, 100);
@@ -51,20 +49,14 @@ void main() {
     });
 
     test('nestedObjectSelectionRequired serialize', () {
-      final initial = GetListingWithUserData.fromJson(
-        listingWithUserData,
-      );
+      final initial = GetListingWithUserData.fromJson(listingWithUserData);
       final json = initial.toJson();
       expect(json, listingWithUserData);
     });
 
     test('nestedObjectSelectionRequired equals', () {
-      final result1 = GetListingWithUserData.fromJson(
-        listingWithUserData,
-      );
-      final result2 = GetListingWithUserData.fromJson(
-        listingWithUserData,
-      );
+      final result1 = GetListingWithUserData.fromJson(listingWithUserData);
+      final result2 = GetListingWithUserData.fromJson(listingWithUserData);
       expect(result1, equals(result2));
       expect(result1.hashCode, equals(result2.hashCode));
     });
@@ -102,9 +94,7 @@ void main() {
     final listingOptNullData = {"listingOpt": null};
 
     test('nestedObjectSelectionOptional deserialize with value', () {
-      final result = GetListingOptWithUserData.fromJson(
-        listingOptWithUserData,
-      );
+      final result = GetListingOptWithUserData.fromJson(listingOptWithUserData);
       expect(result.listingOpt?.id, "foo");
       expect(result.listingOpt?.name, "video games");
       expect(result.listingOpt?.price, 100);
@@ -114,9 +104,7 @@ void main() {
     });
 
     test('nestedObjectSelectionOptional deserialize null value', () {
-      final result = GetListingOptWithUserData.fromJson(
-        listingOptNullData,
-      );
+      final result = GetListingOptWithUserData.fromJson(listingOptNullData);
       expect(result.listingOpt, null);
     });
 
@@ -129,9 +117,7 @@ void main() {
     });
 
     test('nestedObjectSelectionOptional serialize null', () {
-      final initial = GetListingOptWithUserData.fromJson(
-        listingOptNullData,
-      );
+      final initial = GetListingOptWithUserData.fromJson(listingOptNullData);
       final json = initial.toJson();
       expect(json, listingOptNullData);
     });
@@ -143,12 +129,8 @@ void main() {
       final result2 = GetListingOptWithUserData.fromJson(
         listingOptWithUserData,
       );
-      final result3 = GetListingOptWithUserData.fromJson(
-        listingOptNullData,
-      );
-      final result4 = GetListingOptWithUserData.fromJson(
-        listingOptNullData,
-      );
+      final result3 = GetListingOptWithUserData.fromJson(listingOptNullData);
+      final result4 = GetListingOptWithUserData.fromJson(listingOptNullData);
 
       expect(result1, equals(result2));
       expect(result1.hashCode, equals(result2.hashCode));

@@ -10,7 +10,7 @@ class MockGraphQLLink extends GraphQLLink {
   final Queue<GraphQLResponse<GraphQLLinkPayload>> _queue;
 
   MockGraphQLLink(List<GraphQLResponse<JsonObject>> responses)
-      : _queue = Queue.from(responses.map(_rawResponse));
+    : _queue = Queue.from(responses.map(_rawResponse));
 
   @override
   Stream<GraphQLResponse<GraphQLLinkPayload>> request({
@@ -31,19 +31,19 @@ class MockGraphQLLink extends GraphQLLink {
 
 GraphQLResponse<GraphQLLinkPayload> _rawResponse(
   GraphQLResponse<JsonObject> response,
-) =>
-    switch (response) {
-      GraphQLData(:final data, :final errors, :final extensions) => GraphQLData(
-          data: RawGraphQLLinkPayload(
-              json: jsonEncode({
-            'data': data,
-            ...?errors == null ? null : {'errors': errors},
-            ...?extensions == null ? null : {'extensions': extensions},
-          })),
-        ),
-      GraphQLError(:final errors, :final extensions) => GraphQLError(
-          errors: errors,
-          extensions: extensions,
-        ),
-      LinkExceptionResponse(:final errors) => LinkExceptionResponse(errors),
-    };
+) => switch (response) {
+  GraphQLData(:final data, :final errors, :final extensions) => GraphQLData(
+    data: RawGraphQLLinkPayload(
+      json: jsonEncode({
+        'data': data,
+        ...?errors == null ? null : {'errors': errors},
+        ...?extensions == null ? null : {'extensions': extensions},
+      }),
+    ),
+  ),
+  GraphQLError(:final errors, :final extensions) => GraphQLError(
+    errors: errors,
+    extensions: extensions,
+  ),
+  LinkExceptionResponse(:final errors) => LinkExceptionResponse(errors),
+};

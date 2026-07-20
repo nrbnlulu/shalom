@@ -372,5 +372,7 @@ void main() {
   });
 
   group(
-      'List of Fragments - Cache Normalization with Partial Selection', () {});
+    'List of Fragments - Cache Normalization with Partial Selection',
+    () {},
+  );
 }

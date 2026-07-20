@@ -39,7 +39,7 @@ void main() {
   group('TestQueryData', () {
     test('fromJson', () {
       final jsonResponse = {
-        'test': {'id': '1', 'value': 'hello'}
+        'test': {'id': '1', 'value': 'hello'},
       };
       final variables = TestQueryVariables(input: TestOneOf.a('test'));
       final response = TestQueryData.fromJson(jsonResponse);
@@ -51,21 +51,18 @@ void main() {
     group('variables', () {
       test('toJson with list of different variants', () {
         final variables = TestListQueryVariables(
-          input: [
-            TestOneOf.a('test'),
-            TestOneOf.b(42),
-            TestOneOf.c(true),
-          ],
+          input: [TestOneOf.a('test'), TestOneOf.b(42), TestOneOf.c(true)],
         );
         expect(
-            variables.toJson(),
-            equals({
-              'input': [
-                {'a': 'test'},
-                {'b': 42},
-                {'c': true},
-              ],
-            }));
+          variables.toJson(),
+          equals({
+            'input': [
+              {'a': 'test'},
+              {'b': 42},
+              {'c': true},
+            ],
+          }),
+        );
       });
     });
 
@@ -101,19 +98,21 @@ void main() {
       final obj = ResultInput(id: '1', value: 'val');
       final input = ComplexOneOf.objectField(obj);
       expect(
-          input.toJson(),
-          equals({
-            'objectField': {'id': '1', 'value': 'val'}
-          }));
+        input.toJson(),
+        equals({
+          'objectField': {'id': '1', 'value': 'val'},
+        }),
+      );
     });
 
     test('toJson listField', () {
       final input = ComplexOneOf.listField([1, 2, 3]);
       expect(
-          input.toJson(),
-          equals({
-            'listField': [1, 2, 3]
-          }));
+        input.toJson(),
+        equals({
+          'listField': [1, 2, 3],
+        }),
+      );
     });
 
     test('toJson enumField', () {
@@ -128,9 +127,7 @@ void main() {
       final variables = TestComplexQueryVariables(
         input: ComplexOneOf.scalarField('test'),
       );
-      final response = TestComplexQueryData.fromJson(
-        jsonResponse,
-      );
+      final response = TestComplexQueryData.fromJson(jsonResponse);
       expect(response.testComplex, 'success');
     });
   });

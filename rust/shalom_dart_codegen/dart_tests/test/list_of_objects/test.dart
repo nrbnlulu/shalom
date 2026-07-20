@@ -56,9 +56,7 @@ void main() {
     });
 
     test('usersRequired deserialize with empty list', () {
-      final result = GetUsersRequiredData.fromJson(
-        usersRequiredEmptyData,
-      );
+      final result = GetUsersRequiredData.fromJson(usersRequiredEmptyData);
       expect(result.usersRequired, []);
     });
 
@@ -69,9 +67,7 @@ void main() {
     });
 
     test('usersRequired toJson with empty list', () {
-      final initial = GetUsersRequiredData.fromJson(
-        usersRequiredEmptyData,
-      );
+      final initial = GetUsersRequiredData.fromJson(usersRequiredEmptyData);
       final json = initial.toJson();
       expect(json, usersRequiredEmptyData);
     });
@@ -103,16 +99,12 @@ void main() {
     });
 
     test('usersOptional deserialize with null', () {
-      final result = GetUsersOptionalData.fromJson(
-        usersOptionalNullData,
-      );
+      final result = GetUsersOptionalData.fromJson(usersOptionalNullData);
       expect(result.usersOptional, isNull);
     });
 
     test('usersOptional deserialize with empty list', () {
-      final result = GetUsersOptionalData.fromJson(
-        usersOptionalEmptyData,
-      );
+      final result = GetUsersOptionalData.fromJson(usersOptionalEmptyData);
       expect(result.usersOptional, []);
     });
 
@@ -123,17 +115,13 @@ void main() {
     });
 
     test('usersOptional toJson with null', () {
-      final initial = GetUsersOptionalData.fromJson(
-        usersOptionalNullData,
-      );
+      final initial = GetUsersOptionalData.fromJson(usersOptionalNullData);
       final json = initial.toJson();
       expect(json, usersOptionalNullData);
     });
 
     test('usersOptional toJson with empty list', () {
-      final initial = GetUsersOptionalData.fromJson(
-        usersOptionalEmptyData,
-      );
+      final initial = GetUsersOptionalData.fromJson(usersOptionalEmptyData);
       final json = initial.toJson();
       expect(json, usersOptionalEmptyData);
     });

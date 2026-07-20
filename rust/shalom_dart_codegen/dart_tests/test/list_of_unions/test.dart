@@ -133,8 +133,9 @@ void main() {
         result.searchResultsRequired[0],
         isA<GetSearchResultsRequired_searchResultsRequired__User>(),
       );
-      final user = result.searchResultsRequired[0]
-          as GetSearchResultsRequired_searchResultsRequired__User;
+      final user =
+          result.searchResultsRequired[0]
+              as GetSearchResultsRequired_searchResultsRequired__User;
       expect(user.id, "user1");
       expect(user.name, "Alice");
       expect(user.email, "alice@example.com");
@@ -144,8 +145,9 @@ void main() {
         result.searchResultsRequired[1],
         isA<GetSearchResultsRequired_searchResultsRequired__Post>(),
       );
-      final post = result.searchResultsRequired[1]
-          as GetSearchResultsRequired_searchResultsRequired__Post;
+      final post =
+          result.searchResultsRequired[1]
+              as GetSearchResultsRequired_searchResultsRequired__Post;
       expect(post.id, "post1");
       expect(post.title, "Hello World");
       expect(post.content, "First post");
@@ -156,8 +158,9 @@ void main() {
         result.searchResultsRequired[2],
         isA<GetSearchResultsRequired_searchResultsRequired__Comment>(),
       );
-      final comment = result.searchResultsRequired[2]
-          as GetSearchResultsRequired_searchResultsRequired__Comment;
+      final comment =
+          result.searchResultsRequired[2]
+              as GetSearchResultsRequired_searchResultsRequired__Comment;
       expect(comment.id, "comment1");
       expect(comment.text, "Great!");
       expect(comment.author, "Charlie");
@@ -252,8 +255,9 @@ void main() {
         result.searchResultsOptional?[0],
         isA<GetSearchResultsOptional_searchResultsOptional__User>(),
       );
-      final user = result.searchResultsOptional?[0]
-          as GetSearchResultsOptional_searchResultsOptional__User;
+      final user =
+          result.searchResultsOptional?[0]
+              as GetSearchResultsOptional_searchResultsOptional__User;
       expect(user.id, "user1");
       expect(user.name, "Alice");
 
@@ -261,8 +265,9 @@ void main() {
         result.searchResultsOptional?[1],
         isA<GetSearchResultsOptional_searchResultsOptional__Comment>(),
       );
-      final comment = result.searchResultsOptional?[1]
-          as GetSearchResultsOptional_searchResultsOptional__Comment;
+      final comment =
+          result.searchResultsOptional?[1]
+              as GetSearchResultsOptional_searchResultsOptional__Comment;
       expect(comment.id, "comment1");
       expect(comment.text, "Nice!");
     });
@@ -375,8 +380,9 @@ void main() {
         result.optionalSearchResults[0],
         isA<GetOptionalSearchResults_optionalSearchResults__Post>(),
       );
-      final post = result.optionalSearchResults[0]
-          as GetOptionalSearchResults_optionalSearchResults__Post;
+      final post =
+          result.optionalSearchResults[0]
+              as GetOptionalSearchResults_optionalSearchResults__Post;
       expect(post.id, "post1");
       expect(post.title, "Test");
 
@@ -386,8 +392,9 @@ void main() {
         result.optionalSearchResults[2],
         isA<GetOptionalSearchResults_optionalSearchResults__User>(),
       );
-      final user = result.optionalSearchResults[2]
-          as GetOptionalSearchResults_optionalSearchResults__User;
+      final user =
+          result.optionalSearchResults[2]
+              as GetOptionalSearchResults_optionalSearchResults__User;
       expect(user.id, "user1");
       expect(user.name, "Alice");
     });
@@ -457,10 +464,13 @@ void main() {
 
       expect(
         result.searchResultsFullyOptional?[0],
-        isA<GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment>(),
+        isA<
+          GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment
+        >(),
       );
-      final comment = result.searchResultsFullyOptional?[0]
-          as GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment;
+      final comment =
+          result.searchResultsFullyOptional?[0]
+              as GetSearchResultsFullyOptional_searchResultsFullyOptional__Comment;
       expect(comment.id, "comment1");
       expect(comment.text, "Hello");
 

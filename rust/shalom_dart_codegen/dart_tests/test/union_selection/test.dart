@@ -35,9 +35,7 @@ void main() {
   group('Test union selection - required', () {
     test('deserialize User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultData.fromJson(
-        userSearchData,
-      );
+      final result = GetSearchResultData.fromJson(userSearchData);
 
       expect(result.search, isA<GetSearchResult_search__User>());
       final user = result.search as GetSearchResult_search__User;
@@ -49,9 +47,7 @@ void main() {
 
     test('deserialize Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultData.fromJson(
-        postSearchData,
-      );
+      final result = GetSearchResultData.fromJson(postSearchData);
 
       expect(result.search, isA<GetSearchResult_search__Post>());
       final post = result.search as GetSearchResult_search__Post;
@@ -64,9 +60,7 @@ void main() {
 
     test('deserialize Comment', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result = GetSearchResultData.fromJson(
-        commentSearchData,
-      );
+      final result = GetSearchResultData.fromJson(commentSearchData);
 
       expect(result.search, isA<GetSearchResult_search__Comment>());
       final comment = result.search as GetSearchResult_search__Comment;
@@ -78,52 +72,36 @@ void main() {
 
     test('serialize User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final initial = GetSearchResultData.fromJson(
-        userSearchData,
-      );
+      final initial = GetSearchResultData.fromJson(userSearchData);
       final json = initial.toJson();
       expect(json, userSearchData);
     });
 
     test('serialize Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final initial = GetSearchResultData.fromJson(
-        postSearchData,
-      );
+      final initial = GetSearchResultData.fromJson(postSearchData);
       final json = initial.toJson();
       expect(json, postSearchData);
     });
 
     test('equals User', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultData.fromJson(
-        userSearchData,
-      );
-      final result2 = GetSearchResultData.fromJson(
-        userSearchData,
-      );
+      final result1 = GetSearchResultData.fromJson(userSearchData);
+      final result2 = GetSearchResultData.fromJson(userSearchData);
       expect(result1, equals(result2));
     });
 
     test('equals Post', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultData.fromJson(
-        postSearchData,
-      );
-      final result2 = GetSearchResultData.fromJson(
-        postSearchData,
-      );
+      final result1 = GetSearchResultData.fromJson(postSearchData);
+      final result2 = GetSearchResultData.fromJson(postSearchData);
       expect(result1, equals(result2));
     });
 
     test('not equals different types', () {
       final variables = GetSearchResultVariables(query: "test");
-      final result1 = GetSearchResultData.fromJson(
-        userSearchData,
-      );
-      final result2 = GetSearchResultData.fromJson(
-        postSearchData,
-      );
+      final result1 = GetSearchResultData.fromJson(userSearchData);
+      final result2 = GetSearchResultData.fromJson(postSearchData);
       expect(result1, isNot(equals(result2)));
     });
   });
@@ -142,9 +120,7 @@ void main() {
   group('Test union selection - optional', () {
     test('deserialize User', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final result = GetSearchResultOptData.fromJson(
-        userSearchOptData,
-      );
+      final result = GetSearchResultOptData.fromJson(userSearchOptData);
 
       expect(result.searchOpt, isNotNull);
       expect(result.searchOpt, isA<GetSearchResultOpt_searchOpt__User>());
@@ -156,26 +132,20 @@ void main() {
 
     test('deserialize null', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final result = GetSearchResultOptData.fromJson(
-        searchOptNullData,
-      );
+      final result = GetSearchResultOptData.fromJson(searchOptNullData);
       expect(result.searchOpt, isNull);
     });
 
     test('serialize with value', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final initial = GetSearchResultOptData.fromJson(
-        userSearchOptData,
-      );
+      final initial = GetSearchResultOptData.fromJson(userSearchOptData);
       final json = initial.toJson();
       expect(json, userSearchOptData);
     });
 
     test('serialize null', () {
       final variables = GetSearchResultOptVariables(query: "test");
-      final initial = GetSearchResultOptData.fromJson(
-        searchOptNullData,
-      );
+      final initial = GetSearchResultOptData.fromJson(searchOptNullData);
       final json = initial.toJson();
       expect(json, searchOptNullData);
     });

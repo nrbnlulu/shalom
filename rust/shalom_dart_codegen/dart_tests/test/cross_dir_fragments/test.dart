@@ -6,8 +6,7 @@ import 'nested_queries/__graphql__/GetAuthor.shalom.dart';
 
 void main() {
   group('Cross-Directory Fragment Tests', () {
-    test('crossDirImportPaths - Fragment import paths are correctly generated',
-        () {
+    test('crossDirImportPaths - Fragment import paths are correctly generated', () {
       // Verify that the generated GetUser file imports the fragment with the correct path
       final getUserFile = File(
         'test/cross_dir_fragments/queries/__graphql__/GetUser.shalom.dart',

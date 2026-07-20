@@ -28,13 +28,13 @@ import '{{ import_path }}';
 {% include "selection_macros" %}
 
 // ------------ OBJECT DEFINITIONS -------------
-class {{ operation_name }}Data {% if is_observe %}implements shalom_core.OperationInterface{% else %}{{ implements_used_fragments(context.operation.root_type.used_fragments) }}{% endif %}  {
+class {{ operation_name }}Data implements shalom_core.OperationInterface{% if not is_observe -%}{% for frag_name in context.operation.root_type.used_fragments -%}, {{ frag_name }}{% endfor %}{% endif %}  {
     {{ selection_object_impl(operation_name ~ "Data", context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name, shared_selections=context.operation.root_type.selections, use_observe=is_observe) }}
 
-    {% if is_observe %}
     @override
     String operation$Name() => '{{ operation_name }}';
 
+    {% if is_observe -%}
     /// Reads this operation's current cache entry through [cache], decoding
     /// it as [{{ operation_name }}Data]. Returns `null` when absent or incomplete.
     static Future<{{ operation_name }}Data?> readFrom(

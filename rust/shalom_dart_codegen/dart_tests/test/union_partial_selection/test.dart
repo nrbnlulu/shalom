@@ -34,16 +34,15 @@ void main() {
   group('Test union partial selection - required (covered types)', () {
     test('deserialize EmailNotification', () {
       final variables = GetNotificationPartialVariables(id: "email1");
-      final result = GetNotificationPartialData.fromJson(
-        emailNotificationData,
-      );
+      final result = GetNotificationPartialData.fromJson(emailNotificationData);
 
       expect(
         result.getNotification,
         isA<GetNotificationPartial_getNotification__EmailNotification>(),
       );
-      final email = result.getNotification
-          as GetNotificationPartial_getNotification__EmailNotification;
+      final email =
+          result.getNotification
+              as GetNotificationPartial_getNotification__EmailNotification;
       expect(email.id, "email1");
       expect(email.subject, "Test Email");
       expect(email.body, "This is a test email");
@@ -53,16 +52,15 @@ void main() {
 
     test('deserialize SMSNotification', () {
       final variables = GetNotificationPartialVariables(id: "sms1");
-      final result = GetNotificationPartialData.fromJson(
-        smsNotificationData,
-      );
+      final result = GetNotificationPartialData.fromJson(smsNotificationData);
 
       expect(
         result.getNotification,
         isA<GetNotificationPartial_getNotification__SMSNotification>(),
       );
-      final sms = result.getNotification
-          as GetNotificationPartial_getNotification__SMSNotification;
+      final sms =
+          result.getNotification
+              as GetNotificationPartial_getNotification__SMSNotification;
       expect(sms.id, "sms1");
       expect(sms.message, "Test SMS");
       expect(sms.phoneNumber, "+1234567890");
@@ -80,9 +78,7 @@ void main() {
 
     test('serialize SMSNotification', () {
       final variables = GetNotificationPartialVariables(id: "sms1");
-      final initial = GetNotificationPartialData.fromJson(
-        smsNotificationData,
-      );
+      final initial = GetNotificationPartialData.fromJson(smsNotificationData);
       final json = initial.toJson();
       expect(json, smsNotificationData);
     });
@@ -100,12 +96,8 @@ void main() {
 
     test('equals SMSNotification', () {
       final variables = GetNotificationPartialVariables(id: "sms1");
-      final result1 = GetNotificationPartialData.fromJson(
-        smsNotificationData,
-      );
-      final result2 = GetNotificationPartialData.fromJson(
-        smsNotificationData,
-      );
+      final result1 = GetNotificationPartialData.fromJson(smsNotificationData);
+      final result2 = GetNotificationPartialData.fromJson(smsNotificationData);
       expect(result1, equals(result2));
     });
 
@@ -114,9 +106,7 @@ void main() {
       final result1 = GetNotificationPartialData.fromJson(
         emailNotificationData,
       );
-      final result2 = GetNotificationPartialData.fromJson(
-        smsNotificationData,
-      );
+      final result2 = GetNotificationPartialData.fromJson(smsNotificationData);
       expect(result1, isNot(equals(result2)));
     });
   });
@@ -124,16 +114,15 @@ void main() {
   group('Test union partial selection - required (fallback types)', () {
     test('deserialize PushNotification (fallback)', () {
       final variables = GetNotificationPartialVariables(id: "push1");
-      final result = GetNotificationPartialData.fromJson(
-        pushNotificationData,
-      );
+      final result = GetNotificationPartialData.fromJson(pushNotificationData);
 
       expect(
         result.getNotification,
         isA<GetNotificationPartial_getNotification__PushNotification>(),
       );
-      final fallback = result.getNotification
-          as GetNotificationPartial_getNotification__PushNotification;
+      final fallback =
+          result.getNotification
+              as GetNotificationPartial_getNotification__PushNotification;
       expect(fallback.$__typename, "PushNotification");
     });
 
@@ -147,28 +136,23 @@ void main() {
         result.getNotification,
         isA<GetNotificationPartial_getNotification__WebhookNotification>(),
       );
-      final fallback = result.getNotification
-          as GetNotificationPartial_getNotification__WebhookNotification;
+      final fallback =
+          result.getNotification
+              as GetNotificationPartial_getNotification__WebhookNotification;
       expect(fallback.$__typename, "WebhookNotification");
     });
 
     test('serialize PushNotification (fallback)', () {
       final variables = GetNotificationPartialVariables(id: "push1");
-      final initial = GetNotificationPartialData.fromJson(
-        pushNotificationData,
-      );
+      final initial = GetNotificationPartialData.fromJson(pushNotificationData);
       final json = initial.toJson();
       expect(json, pushNotificationData);
     });
 
     test('equals fallback types', () {
       final variables = GetNotificationPartialVariables(id: "push1");
-      final result1 = GetNotificationPartialData.fromJson(
-        pushNotificationData,
-      );
-      final result2 = GetNotificationPartialData.fromJson(
-        pushNotificationData,
-      );
+      final result1 = GetNotificationPartialData.fromJson(pushNotificationData);
+      final result2 = GetNotificationPartialData.fromJson(pushNotificationData);
       expect(result1, equals(result2));
     });
 
@@ -177,9 +161,7 @@ void main() {
       final result1 = GetNotificationPartialData.fromJson(
         emailNotificationData,
       );
-      final result2 = GetNotificationPartialData.fromJson(
-        pushNotificationData,
-      );
+      final result2 = GetNotificationPartialData.fromJson(pushNotificationData);
       expect(result1, isNot(equals(result2)));
     });
   });
@@ -212,8 +194,9 @@ void main() {
         result.getNotificationOpt,
         isA<GetNotificationPartialOpt_getNotificationOpt__EmailNotification>(),
       );
-      final email = result.getNotificationOpt
-          as GetNotificationPartialOpt_getNotificationOpt__EmailNotification;
+      final email =
+          result.getNotificationOpt
+              as GetNotificationPartialOpt_getNotificationOpt__EmailNotification;
       expect(email.id, "email2");
       expect(email.subject, "Optional Email");
       expect(email.body, "This is optional");
@@ -231,8 +214,9 @@ void main() {
         result.getNotificationOpt,
         isA<GetNotificationPartialOpt_getNotificationOpt__PushNotification>(),
       );
-      final fallback = result.getNotificationOpt
-          as GetNotificationPartialOpt_getNotificationOpt__PushNotification;
+      final fallback =
+          result.getNotificationOpt
+              as GetNotificationPartialOpt_getNotificationOpt__PushNotification;
       expect(fallback.$__typename, "PushNotification");
     });
 
@@ -283,10 +267,13 @@ void main() {
 
       expect(
         result.getNotification,
-        isA<GetNotificationPartialNoTopTypename_getNotification__EmailNotification>(),
+        isA<
+          GetNotificationPartialNoTopTypename_getNotification__EmailNotification
+        >(),
       );
-      final email = result.getNotification
-          as GetNotificationPartialNoTopTypename_getNotification__EmailNotification;
+      final email =
+          result.getNotification
+              as GetNotificationPartialNoTopTypename_getNotification__EmailNotification;
       expect(email.$__typename, "EmailNotification");
       expect(email.id, "email1");
     });

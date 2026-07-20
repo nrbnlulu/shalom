@@ -216,93 +216,94 @@ void main() {
     });
 
     group(
-        'UpdateUserWithOptionalVariables - Optional Variables in Inline Objects',
-        () {
-      test(
-        'UpdateUserWithOptionalVariablesRequired - should handle required and optional variables',
-        () {
-          final variables = UpdateUserWithOptionalVariablesVariables(
-            userId: 'opt-user',
-            userName: 'Optional User',
-            userEmail: 'opt@test.com',
-            userAge: const Some<int?>(30),
-            isActive: const Some<bool?>(false),
-          );
+      'UpdateUserWithOptionalVariables - Optional Variables in Inline Objects',
+      () {
+        test(
+          'UpdateUserWithOptionalVariablesRequired - should handle required and optional variables',
+          () {
+            final variables = UpdateUserWithOptionalVariablesVariables(
+              userId: 'opt-user',
+              userName: 'Optional User',
+              userEmail: 'opt@test.com',
+              userAge: const Some<int?>(30),
+              isActive: const Some<bool?>(false),
+            );
 
-          expect(variables.userId, 'opt-user');
-          expect(variables.userName, 'Optional User');
-          expect(variables.userEmail, 'opt@test.com');
-          expect(variables.userAge, const Some<int?>(30));
-          expect(variables.isActive, const Some<bool?>(false));
-        },
-      );
+            expect(variables.userId, 'opt-user');
+            expect(variables.userName, 'Optional User');
+            expect(variables.userEmail, 'opt@test.com');
+            expect(variables.userAge, const Some<int?>(30));
+            expect(variables.isActive, const Some<bool?>(false));
+          },
+        );
 
-      test(
-        'UpdateUserWithOptionalVariablesOptional - should handle null optional variables',
-        () {
-          final variables = UpdateUserWithOptionalVariablesVariables(
-            userId: 'opt-user-2',
-            userName: 'User 2',
-            userEmail: 'user2@test.com',
-            userAge: const None(),
-            isActive: const None(),
-          );
+        test(
+          'UpdateUserWithOptionalVariablesOptional - should handle null optional variables',
+          () {
+            final variables = UpdateUserWithOptionalVariablesVariables(
+              userId: 'opt-user-2',
+              userName: 'User 2',
+              userEmail: 'user2@test.com',
+              userAge: const None(),
+              isActive: const None(),
+            );
 
-          expect(variables.userId, 'opt-user-2');
-          expect(variables.userAge, const None());
-          expect(variables.isActive, const None());
+            expect(variables.userId, 'opt-user-2');
+            expect(variables.userAge, const None());
+            expect(variables.isActive, const None());
 
-          final gqlRequest = RequestUpdateUserWithOptionalVariables(
-            variables: variables,
-          ).toRequest();
-          expect(gqlRequest.variables, {
-            'userEmail': 'user2@test.com',
-            "userId": "opt-user-2",
-            "userName": "User 2",
-          });
-        },
-      );
+            final gqlRequest = RequestUpdateUserWithOptionalVariables(
+              variables: variables,
+            ).toRequest();
+            expect(gqlRequest.variables, {
+              'userEmail': 'user2@test.com',
+              "userId": "opt-user-2",
+              "userName": "User 2",
+            });
+          },
+        );
 
-      test(
-        'UpdateUserWithOptionalVariablesEquals - should handle nulls in comparison',
-        () {
-          final user1 = UpdateUserWithOptionalVariables_updateUser(
-            id: '1',
-            name: 'User',
-            email: 'user@test.com',
-            age: null,
-            active: null,
-          );
+        test(
+          'UpdateUserWithOptionalVariablesEquals - should handle nulls in comparison',
+          () {
+            final user1 = UpdateUserWithOptionalVariables_updateUser(
+              id: '1',
+              name: 'User',
+              email: 'user@test.com',
+              age: null,
+              active: null,
+            );
 
-          final user2 = UpdateUserWithOptionalVariables_updateUser(
-            id: '1',
-            name: 'User',
-            email: 'user@test.com',
-            age: null,
-            active: null,
-          );
+            final user2 = UpdateUserWithOptionalVariables_updateUser(
+              id: '1',
+              name: 'User',
+              email: 'user@test.com',
+              age: null,
+              active: null,
+            );
 
-          expect(user1, equals(user2));
-        },
-      );
+            expect(user1, equals(user2));
+          },
+        );
 
-      test(
-        'UpdateUserWithOptionalVariablesToJson - should include null values',
-        () {
-          final user = UpdateUserWithOptionalVariables_updateUser(
-            id: 'null-user',
-            name: 'Null Test',
-            email: 'null@test.com',
-            age: null,
-            active: null,
-          );
+        test(
+          'UpdateUserWithOptionalVariablesToJson - should include null values',
+          () {
+            final user = UpdateUserWithOptionalVariables_updateUser(
+              id: 'null-user',
+              name: 'Null Test',
+              email: 'null@test.com',
+              age: null,
+              active: null,
+            );
 
-          final json = user.toJson();
-          expect(json['age'], null);
-          expect(json['active'], null);
-        },
-      );
-    });
+            final json = user.toJson();
+            expect(json['age'], null);
+            expect(json['active'], null);
+          },
+        );
+      },
+    );
 
     group('UpdateUserMixed - Mixed Inline Literals and Variables', () {
       test(
