@@ -57,7 +57,7 @@ import '{{ import_path }}';
 
 // ------------ MUTATION DATA + VARIABLES -------------
 
-final class {{ operation_name }}Data implements shalom_core.OperationInterface {
+final class {{ operation_name }}Data implements shalom_core.MutationInterface {
     {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
         final {{ type_name_for_selection(selection) }} {{ selection.name }};
     {% endfor %}

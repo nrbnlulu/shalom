@@ -11,7 +11,8 @@ import 'package:collection/collection.dart';
 import 'ZooWidget.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-class ZooQueryData implements shalom_core.OperationInterface {
+class ZooQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members

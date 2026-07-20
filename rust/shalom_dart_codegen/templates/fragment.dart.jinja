@@ -88,7 +88,7 @@ abstract class {{ fragment_name }}{{ implements_used_fragments(context.fragment.
 {% if is_multi_type %}
 {# Interface/union fragment: sealed class with $TypeName subclasses + $Unknown #}
 {% set root_concretes = multitype_selection_resolved_concretes(fragment_name) -%}
-sealed class {{ fragment_name }}Data implements {{ fragment_name }} {
+sealed class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.StreamCompat {
   const {{ fragment_name }}Data();
 
   {% for field in frag_root_shared_selections() if field.name != "__typename" -%}

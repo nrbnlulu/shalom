@@ -11,7 +11,8 @@ import 'package:collection/collection.dart';
 import 'PetWidget.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-class PetQueryData implements shalom_core.OperationInterface {
+class PetQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members

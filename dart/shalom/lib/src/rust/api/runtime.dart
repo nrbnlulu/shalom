@@ -79,6 +79,24 @@ Future<BigInt> request({
   refetchIntervalMs: refetchIntervalMs,
 );
 
+/// Execute a pre-registered mutation exactly once and return its result
+/// directly — no subscription, no stream. The response is still written
+/// into the shared entity cache (notifying any other reactive subscriptions
+/// watching the same entities), but this call can never itself observe a
+/// stale/optimistic value from an unrelated concurrent write, since it
+/// isn't registered in the reactive subscription registry.
+Future<SubscriptionEvent> mutate({
+  required RuntimeHandle handle,
+  required String name,
+  ShalomJsonValue? variables,
+  required RetryDelayInput retryDelay,
+}) => RustLib.instance.api.crateApiRuntimeMutate(
+  handle: handle,
+  name: name,
+  variables: variables,
+  retryDelay: retryDelay,
+);
+
 /// Write `data` to the cache as an optimistic response for the mutation
 /// named `op_name`.  Returns an opaque write ID.  Pass this to
 /// `rollback_optimistic` to undo the write.

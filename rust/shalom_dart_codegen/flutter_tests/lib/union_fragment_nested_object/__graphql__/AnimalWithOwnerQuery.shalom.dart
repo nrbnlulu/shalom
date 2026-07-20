@@ -11,7 +11,8 @@ import 'package:collection/collection.dart';
 import 'AnimalWithOwnerWidget.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-class AnimalWithOwnerQueryData implements shalom_core.OperationInterface {
+class AnimalWithOwnerQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members

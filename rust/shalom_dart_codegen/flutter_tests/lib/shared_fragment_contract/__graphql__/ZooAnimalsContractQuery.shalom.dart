@@ -15,7 +15,8 @@ import 'HasFavoriteToyFrag.shalom.dart';
 import 'ToyFrag.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-class ZooAnimalsContractQueryData implements shalom_core.OperationInterface {
+class ZooAnimalsContractQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members
