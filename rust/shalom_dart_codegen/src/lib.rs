@@ -1326,7 +1326,21 @@ fn format_generated_files(pwd: &Path) -> Result<()> {
         }
     }
 
-    for chunk in files.chunks(100) {
+    // Windows caps command lines at ~8191 chars (CreateProcess limit), so we
+    // can't just chunk by a fixed file count: generated paths can be long
+    // enough that even 100 of them blow past that limit. Chunk by the actual
+    // serialized length of the arguments instead, with headroom for the
+    // command/args themselves.
+    const MAX_CMDLINE_CHARS: usize = 6000;
+
+    let mut chunk: Vec<&PathBuf> = Vec::new();
+    let mut chunk_len = 0usize;
+
+    let run_chunk = |chunk: &[&PathBuf]| -> Result<()> {
+        if chunk.is_empty() {
+            return Ok(());
+        }
+
         let mut cmd = Command::new(dart_cmd);
 
         // Add any additional args (like "fvm" if using fvm dart)
@@ -1343,7 +1357,21 @@ fn format_generated_files(pwd: &Path) -> Result<()> {
                 String::from_utf8_lossy(&output.stderr)
             );
         }
+
+        Ok(())
+    };
+
+    for file in &files {
+        let file_len = file.to_string_lossy().len() + 1; // +1 for separating space
+        if !chunk.is_empty() && chunk_len + file_len > MAX_CMDLINE_CHARS {
+            run_chunk(&chunk)?;
+            chunk.clear();
+            chunk_len = 0;
+        }
+        chunk_len += file_len;
+        chunk.push(file);
     }
+    run_chunk(&chunk)?;
 
     Ok(())
 }
