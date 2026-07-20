@@ -1362,7 +1362,7 @@ fn format_generated_files(pwd: &Path) -> Result<()> {
     };
 
     for file in &files {
-        let file_len = file.as_os_str().len() + 1; // +1 for separating space
+        let file_len = file.to_string_lossy().len() + 1; // +1 for separating space
         if !chunk.is_empty() && chunk_len + file_len > MAX_CMDLINE_CHARS {
             run_chunk(&chunk)?;
             chunk.clear();
