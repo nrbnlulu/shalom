@@ -11,8 +11,8 @@ import 'package:collection/collection.dart';
 import '../../fragment/__graphql__/PetWidget.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class UnwrapQueryResponse {
+class UnwrapQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members
@@ -24,19 +24,19 @@ class UnwrapQueryResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  UnwrapQueryResponse({this.pet, this.petUnwrapped});
+  UnwrapQueryData({this.pet, this.petUnwrapped});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UnwrapQueryResponse &&
+        (other is UnwrapQueryData &&
             pet == other.pet &&
             petUnwrapped == other.petUnwrapped);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([pet, petUnwrapped, UnwrapQueryResponse.G__typename]);
+      Object.hashAll([pet, petUnwrapped, UnwrapQueryData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {
@@ -46,7 +46,17 @@ class UnwrapQueryResponse {
     };
   }
 
-  static UnwrapQueryResponse fromJson(shalom_core.JsonObject data) {
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'pet': this.pet == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.pet!.toShalomValue(),
+
+    'petUnwrapped': this.petUnwrapped == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.petUnwrapped!.toShalomValue(),
+  });
+
+  static UnwrapQueryData fromJson(shalom_core.JsonObject data) {
     final PetWidgetRef? pet$value = data['pet'] == null
         ? null
         : PetWidgetRef.fromInput(
@@ -61,10 +71,56 @@ class UnwrapQueryResponse {
         : UnwrapQuery_petUnwrapped.fromJson(
             data['petUnwrapped'] as shalom_core.JsonObject,
           );
-    return UnwrapQueryResponse(
-      pet: pet$value,
+    return UnwrapQueryData(pet: pet$value, petUnwrapped: petUnwrapped$value);
+  }
 
-      petUnwrapped: petUnwrapped$value,
+  static UnwrapQueryData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? pet$raw = data.field('pet');
+    final PetWidgetRef? pet$value = pet$raw == null || pet$raw!.isNull
+        ? null
+        : PetWidgetRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              pet$raw!.field(r'$PetWidget')!,
+            ),
+          );
+    final shalom_core.ShalomJsonValue? petUnwrapped$raw = data.field(
+      'petUnwrapped',
+    );
+    final UnwrapQuery_petUnwrapped? petUnwrapped$value =
+        petUnwrapped$raw == null || petUnwrapped$raw!.isNull
+        ? null
+        : UnwrapQuery_petUnwrapped.fromShalomValue(petUnwrapped$raw!);
+    return UnwrapQueryData(pet: pet$value, petUnwrapped: petUnwrapped$value);
+  }
+
+  @override
+  String operation$Name() => 'UnwrapQuery';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [UnwrapQueryData]. Returns `null` when absent or incomplete.
+  static Future<UnwrapQueryData?> readFrom(
+    shalom_core.CacheProxy cache, {
+    UnwrapQueryVariables? variables,
+  }) async {
+    return await cache.readOperation<UnwrapQueryData>(
+      name: 'UnwrapQuery',
+      decoder: fromShalomValue,
+
+      variables: variables?.toShalomValue(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    UnwrapQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'UnwrapQuery',
+
+      variables: variables?.toShalomValue(),
     );
   }
 }
@@ -96,9 +152,23 @@ class UnwrapQuery_pet {
     return {'id': this.id, 'name': this.name};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static UnwrapQuery_pet fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    return UnwrapQuery_pet(id: id$value, name: name$value);
+  }
+
+  static UnwrapQuery_pet fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
     return UnwrapQuery_pet(id: id$value, name: name$value);
   }
 }
@@ -133,9 +203,25 @@ class UnwrapQuery_petUnwrapped implements PetWidget {
     return {'id': this.id, 'name': this.name};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static UnwrapQuery_petUnwrapped fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    return UnwrapQuery_petUnwrapped(id: id$value, name: name$value);
+  }
+
+  static UnwrapQuery_petUnwrapped fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
     return UnwrapQuery_petUnwrapped(id: id$value, name: name$value);
   }
 }
@@ -155,56 +241,6 @@ class UnwrapQuery_petUnwrapped implements PetWidget {
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
 // ------------ widget API -------------
-
-final class UnwrapQueryData implements shalom_core.OperationInterface {
-  final PetWidgetRef? pet;
-  final UnwrapQuery_petUnwrapped? petUnwrapped;
-
-  const UnwrapQueryData({required this.pet, required this.petUnwrapped});
-
-  @override
-  String operation$Name() => 'UnwrapQuery';
-
-  static UnwrapQueryData fromCache(shalom_core.JsonObject data) {
-    final PetWidgetRef? pet$value = data['pet'] == null
-        ? null
-        : PetWidgetRef.fromInput(
-            shalom_core.observedRefInputFromJson(
-              (data['pet'] as shalom_core.JsonObject)[r'$PetWidget']
-                  as shalom_core.JsonObject,
-            ),
-          );
-    final UnwrapQuery_petUnwrapped? petUnwrapped$value =
-        data['petUnwrapped'] == null
-        ? null
-        : UnwrapQuery_petUnwrapped.fromJson(
-            data['petUnwrapped'] as shalom_core.JsonObject,
-          );
-    return UnwrapQueryData(pet: pet$value, petUnwrapped: petUnwrapped$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [UnwrapQueryData]. Returns `null` when absent or incomplete.
-  static Future<UnwrapQueryData?> readFrom(
-    shalom_core.CacheProxy cache, {
-    UnwrapQueryVariables? variables,
-  }) async {
-    return await cache.readQuery<UnwrapQueryData>(
-      name: 'UnwrapQuery',
-      decoder: fromCache,
-
-      variables: variables?.toJson(),
-    );
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {
-      'pet': this.pet?.toJson(),
-
-      'petUnwrapped': this.petUnwrapped?.toJson(),
-    };
-  }
-}
 
 final class UnwrapQueryObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
@@ -229,9 +265,9 @@ final class UnwrapQueryObservable {
     return client.request<UnwrapQueryData>(
       name: operation$Name(),
 
-      variables: variables.toJson(),
+      variables: variables.toShalomValue(),
 
-      decoder: UnwrapQueryData.fromCache,
+      decoder: UnwrapQueryData.fromShalomValue,
       executionPolicy: executionPolicy,
       retryDelay: retryDelay,
       autoRefetch: autoRefetch,
@@ -250,6 +286,12 @@ final class UnwrapQueryVariables {
     data["id"] = this.id;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    $data["id"] = shalom_core.shalomJsonValue(this.id!);
+    return shalom_core.shalomJsonObject($data);
   }
 
   @override

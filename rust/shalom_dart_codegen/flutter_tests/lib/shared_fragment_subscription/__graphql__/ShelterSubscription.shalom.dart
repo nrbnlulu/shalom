@@ -11,8 +11,8 @@ import 'package:collection/collection.dart';
 import 'DogFrag.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class ShelterSubscriptionResponse {
+class ShelterSubscriptionData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "subscription";
 
   /// class members
@@ -22,18 +22,18 @@ class ShelterSubscriptionResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  ShelterSubscriptionResponse({required this.shelterAnimals});
+  ShelterSubscriptionData({required this.shelterAnimals});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is ShelterSubscriptionResponse &&
+        (other is ShelterSubscriptionData &&
             shelterAnimals == other.shelterAnimals);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([shelterAnimals, ShelterSubscriptionResponse.G__typename]);
+      Object.hashAll([shelterAnimals, ShelterSubscriptionData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'shelterAnimals': this.shelterAnimals.toJson()};
@@ -43,15 +43,15 @@ class ShelterSubscriptionResponse {
     'shelterAnimals': this.shelterAnimals!.toShalomValue(),
   });
 
-  static ShelterSubscriptionResponse fromJson(shalom_core.JsonObject data) {
+  static ShelterSubscriptionData fromJson(shalom_core.JsonObject data) {
     final ShelterSubscription_shelterAnimals shelterAnimals$value =
         ShelterSubscription_shelterAnimals.fromJson(
           data['shelterAnimals'] as shalom_core.JsonObject,
         );
-    return ShelterSubscriptionResponse(shelterAnimals: shelterAnimals$value);
+    return ShelterSubscriptionData(shelterAnimals: shelterAnimals$value);
   }
 
-  static ShelterSubscriptionResponse fromShalomValue(
+  static ShelterSubscriptionData fromShalomValue(
     shalom_core.ShalomJsonValue data,
   ) {
     final shalom_core.ShalomJsonValue? shelterAnimals$raw = data.field(
@@ -59,7 +59,28 @@ class ShelterSubscriptionResponse {
     );
     final ShelterSubscription_shelterAnimals shelterAnimals$value =
         ShelterSubscription_shelterAnimals.fromShalomValue(shelterAnimals$raw!);
-    return ShelterSubscriptionResponse(shelterAnimals: shelterAnimals$value);
+    return ShelterSubscriptionData(shelterAnimals: shelterAnimals$value);
+  }
+
+  @override
+  String operation$Name() => 'ShelterSubscription';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [ShelterSubscriptionData]. Returns `null` when absent or incomplete.
+  static Future<ShelterSubscriptionData?> readFrom(
+    shalom_core.CacheProxy cache,
+  ) async {
+    return await cache.readOperation<ShelterSubscriptionData>(
+      name: 'ShelterSubscription',
+      decoder: fromShalomValue,
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
+    return cache.evictOperation(name: 'ShelterSubscription');
   }
 }
 
@@ -275,62 +296,6 @@ class ShelterSubscription_shelterAnimals__Dog
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
 // ------------ widget API -------------
-
-final class ShelterSubscriptionData
-    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
-  final ShelterSubscription_shelterAnimals shelterAnimals;
-
-  const ShelterSubscriptionData({required this.shelterAnimals});
-
-  @override
-  String operation$Name() => 'ShelterSubscription';
-
-  static ShelterSubscriptionData fromCache(shalom_core.JsonObject data) {
-    final ShelterSubscription_shelterAnimals shelterAnimals$value =
-        ShelterSubscription_shelterAnimals.fromJson(
-          data['shelterAnimals'] as shalom_core.JsonObject,
-        );
-    return ShelterSubscriptionData(shelterAnimals: shelterAnimals$value);
-  }
-
-  static ShelterSubscriptionData fromShalomValue(
-    shalom_core.ShalomJsonValue data,
-  ) {
-    final shalom_core.ShalomJsonValue? shelterAnimals$raw = data.field(
-      'shelterAnimals',
-    );
-    final ShelterSubscription_shelterAnimals shelterAnimals$value =
-        ShelterSubscription_shelterAnimals.fromShalomValue(shelterAnimals$raw!);
-    return ShelterSubscriptionData(shelterAnimals: shelterAnimals$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [ShelterSubscriptionData]. Returns `null` when absent or incomplete.
-  static Future<ShelterSubscriptionData?> readFrom(
-    shalom_core.CacheProxy cache,
-  ) async {
-    return await cache.readOperation<ShelterSubscriptionData>(
-      name: 'ShelterSubscription',
-      decoder: fromShalomValue,
-    );
-  }
-
-  /// Evicts this operation's cached entry (matched by [variables]) through
-  /// [cache], notifying any active subscribers. Returns `false` if no
-  /// matching cache entry existed.
-  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
-    return cache.evictOperation(name: 'ShelterSubscription');
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {'shelterAnimals': this.shelterAnimals.toJson()};
-  }
-
-  @override
-  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    'shelterAnimals': this.shelterAnimals!.toShalomValue(),
-  });
-}
 
 final class ShelterSubscriptionObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;

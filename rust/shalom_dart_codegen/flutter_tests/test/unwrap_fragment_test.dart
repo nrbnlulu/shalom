@@ -66,9 +66,9 @@ void main() {
   );
 
   test(
-    'UnwrapQueryData.fromCache decodes the @unwrap spread as plain fields',
+    'UnwrapQueryData.fromJson decodes the @unwrap spread as plain fields',
     () {
-      final data = UnwrapQueryData.fromCache({
+      final data = UnwrapQueryData.fromJson({
         'pet': {
           r'$PetWidget': {
             '__shalom_observed_ref': {

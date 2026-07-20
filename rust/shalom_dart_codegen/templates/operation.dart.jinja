@@ -28,99 +28,13 @@ import '{{ import_path }}';
 {% include "selection_macros" %}
 
 // ------------ OBJECT DEFINITIONS -------------
-{% set response_class_name = operation_name ~ "Response" %}
-class {{ response_class_name }} {{ implements_used_fragments(implementable_fragments(context.operation.root_type.used_fragments, context.operation.root_type.unwrapped_fragments)) }}  {
-    {{ selection_object_impl(response_class_name, context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name, shared_selections=context.operation.root_type.selections) }}
-}
-
-{% for name, obj in typedefs.objects | items %}
-    {{ selection_object_definition(obj) }}
-{% endfor %}
-
-// ------------ END OBJECT DEFINITIONS -------------
-
-
-// ------------ UNION DEFINITIONS -------------
-
-{% set union_types = typedefs.unions %}
-{% for union_full_name, union_selection in union_types | items %}
-    {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
-    {# generate sealed classes #}
-    {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
-
-    {# generate subsets #}
-    {% for concrete_subset in concretes -%}
-        class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
-            {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
-        }
-    {% endfor %}
-{% endfor %}
-
-// ------------ END UNION DEFINITIONS -------------
-
-// ------------ INTERFACE DEFINITIONS -------------
-
-{% for iface_path_name, iface_selection in typedefs.interfaces | items %}
-    {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
-    {# generate sealed classes #}
-    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
-
-    {# generate subsets #}
-    {% for concrete_subset in concretes -%}
-        class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}}  {
-            {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
-        }
-    {% endfor %}
-{% endfor %}
-
-// ------------ END INTERFACE DEFINITIONS -------------
-
-{{ generate_multi_type_list_extensions(multi_type_list_selections) }}
-
-{% if is_observe %}
-// ------------ widget API -------------
-
-final class {{ operation_name }}Data implements shalom_core.OperationInterface, shalom_core.StreamCompat {
-    {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
-        final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
-    {% endfor %}
-
-    const {{ operation_name }}Data({
-        {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
-            required this.{{ selection.name }},
-        {% endfor %}
-    });
+class {{ operation_name }}Data implements shalom_core.OperationInterface{% if is_observe -%}, shalom_core.StreamCompat{% endif %}{% for frag_name in (implementable_fragments(context.operation.root_type.used_fragments, context.operation.root_type.unwrapped_fragments) if is_observe else context.operation.root_type.used_fragments) -%}, {{ frag_name }}{% endfor %}  {
+    {{ selection_object_impl(operation_name ~ "Data", context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name, shared_selections=context.operation.root_type.selections, use_observe=is_observe) }}
 
     @override
     String operation$Name() => '{{ operation_name }}';
 
-    static {{ operation_name }}Data fromCache(shalom_core.JsonObject data) {
-        {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
-            {% set raw_value_symbol = "data['" + selection.name + "']" -%}
-            final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
-        {% endfor -%}
-        return {{ operation_name }}Data(
-            {% for selection in context.operation.root_type.selections -%}
-                {% if selection.name != "__typename" %}
-                    {{selection.name}}: {{selection.name}}$value,
-                {% endif %}
-            {% endfor -%}
-        );
-    }
-
-    static {{ operation_name }}Data fromShalomValue(shalom_core.ShalomJsonValue data) {
-        {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
-            final shalom_core.ShalomJsonValue? {{selection.name}}$raw = data.field('{{selection.name}}');
-            {% set raw_value_symbol = selection.name + "$raw" -%}
-            final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_shalom_macro(raw_value_symbol, selection, selection.is_optional) }};
-        {% endfor -%}
-        return {{ operation_name }}Data(
-            {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
-                {{selection.name}}: {{selection.name}}$value,
-            {% endfor -%}
-        );
-    }
-
+    {% if is_observe -%}
     /// Reads this operation's current cache entry through [cache], decoding
     /// it as [{{ operation_name }}Data]. Returns `null` when absent or incomplete.
     static Future<{{ operation_name }}Data?> readFrom(
@@ -154,37 +68,55 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface, 
             {% endif %}
         );
     }
-
-    shalom_core.JsonObject toJson() {
-        return {
-            {% for selection in context.operation.root_type.selections %}
-                {% set selection_name = selection.name %}
-                {% if selection_name == "__typename" %}
-                    "__typename": {{ response_class_name }}.G__typename,
-                {% else %}
-                    '{{ selection_name }}':
-                        {% if selection.is_optional %}
-                            {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}
-                        {% else %}
-                            {{ _serialize_selection_value_macro("this." + selection_name, selection, false) }}
-                        {% endif %}
-                    ,
-                {% endif %}
-            {% endfor %}
-        };
-    }
-
-    @override
-    shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-        {% for selection in context.operation.root_type.selections %}
-            {% if selection.name == "__typename" %}
-                "__typename": shalom_core.shalomJsonValue({{ response_class_name }}.G__typename),
-            {% else %}
-                '{{ selection.name }}': {{ _serialize_selection_to_shalom_macro("this." + selection.name, selection, selection.is_optional) }},
-            {% endif %}
-        {% endfor %}
-    });
+    {% endif %}
 }
+
+{% for name, obj in typedefs.objects | items %}
+    {{ selection_object_definition(obj, use_observe=is_observe) }}
+{% endfor %}
+
+// ------------ END OBJECT DEFINITIONS -------------
+
+
+// ------------ UNION DEFINITIONS -------------
+
+{% set union_types = typedefs.unions %}
+{% for union_full_name, union_selection in union_types | items %}
+    {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
+    {# generate sealed classes #}
+    {{ multi_type_selection_definition(union_full_name, union_selection, concretes, use_observe=is_observe) }}
+
+    {# generate subsets #}
+    {% for concrete_subset in concretes -%}
+        class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
+            {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
+        }
+    {% endfor %}
+{% endfor %}
+
+// ------------ END UNION DEFINITIONS -------------
+
+// ------------ INTERFACE DEFINITIONS -------------
+
+{% for iface_path_name, iface_selection in typedefs.interfaces | items %}
+    {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
+    {# generate sealed classes #}
+    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes, use_observe=is_observe) }}
+
+    {# generate subsets #}
+    {% for concrete_subset in concretes -%}
+        class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}}  {
+            {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections, use_observe=false) }}
+        }
+    {% endfor %}
+{% endfor %}
+
+// ------------ END INTERFACE DEFINITIONS -------------
+
+{{ generate_multi_type_list_extensions(multi_type_list_selections) }}
+
+{% if is_observe %}
+// ------------ widget API -------------
 
 final class {{ operation_name }}Observable {
     final shalom_core.ExecutionPolicyInput executionPolicy;
@@ -274,7 +206,7 @@ final class {{ operation_name }}Variables {
 
 // ------------ END widget API -------------
 {% else %}
-class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_name}}Response>{
+class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_name}}Data>{
     {% if op_variables_exist %}
     final {{ operation_name }}Variables variables;
     {% endif %}
@@ -287,7 +219,7 @@ class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_na
         {% endif %}
     );
     @override
-    shalom_core.RequestMeta<{{operation_name}}Response> getRequestMeta(){
+    shalom_core.RequestMeta<{{operation_name}}Data> getRequestMeta(){
         shalom_core.JsonObject variablesJson = {% if op_variables_exist %} variables.toJson() {% else %} {}  {% endif %};
         final request = shalom_core.Request(
             query: r"""
@@ -299,7 +231,7 @@ class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_na
         );
         return shalom_core.RequestMeta(
             request: request,
-            parseFn: (shalom_core.JsonObject data) => {{operation_name}}Response.fromJson(data),
+            parseFn: (shalom_core.JsonObject data) => {{operation_name}}Data.fromJson(data),
         );
     }
 }

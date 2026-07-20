@@ -3,8 +3,7 @@ import 'package:test/test.dart';
 import '__graphql__/StreamableSystemFrag.shalom.dart';
 
 void main() {
-  test(
-      'concrete type does not inherit sibling-only fields from an interface '
+  test('concrete type does not inherit sibling-only fields from an interface '
       'fragment spread through a concrete-type fragment', () {
     // OnvifCamera does not have `vendor` (it is Nvr-only, selected via
     // `... on Nvr` inside HasConnectionInfoFrag) so decoding valid

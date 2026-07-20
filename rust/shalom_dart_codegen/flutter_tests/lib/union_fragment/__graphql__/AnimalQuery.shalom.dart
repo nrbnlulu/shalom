@@ -11,8 +11,8 @@ import 'package:collection/collection.dart';
 import 'AnimalWidget.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class AnimalQueryResponse {
+class AnimalQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members
@@ -22,16 +22,16 @@ class AnimalQueryResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  AnimalQueryResponse({this.animal});
+  AnimalQueryData({this.animal});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is AnimalQueryResponse && animal == other.animal);
+        (other is AnimalQueryData && animal == other.animal);
   }
 
   @override
-  int get hashCode => Object.hashAll([animal, AnimalQueryResponse.G__typename]);
+  int get hashCode => Object.hashAll([animal, AnimalQueryData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'animal': this.animal?.toJson()};
@@ -43,7 +43,7 @@ class AnimalQueryResponse {
         : this.animal!.toShalomValue(),
   });
 
-  static AnimalQueryResponse fromJson(shalom_core.JsonObject data) {
+  static AnimalQueryData fromJson(shalom_core.JsonObject data) {
     final AnimalWidgetRef? animal$value = data['animal'] == null
         ? null
         : AnimalWidgetRef.fromInput(
@@ -52,10 +52,10 @@ class AnimalQueryResponse {
                   as shalom_core.JsonObject,
             ),
           );
-    return AnimalQueryResponse(animal: animal$value);
+    return AnimalQueryData(animal: animal$value);
   }
 
-  static AnimalQueryResponse fromShalomValue(shalom_core.ShalomJsonValue data) {
+  static AnimalQueryData fromShalomValue(shalom_core.ShalomJsonValue data) {
     final shalom_core.ShalomJsonValue? animal$raw = data.field('animal');
     final AnimalWidgetRef? animal$value =
         animal$raw == null || animal$raw!.isNull
@@ -65,7 +65,38 @@ class AnimalQueryResponse {
               animal$raw!.field(r'$AnimalWidget')!,
             ),
           );
-    return AnimalQueryResponse(animal: animal$value);
+    return AnimalQueryData(animal: animal$value);
+  }
+
+  @override
+  String operation$Name() => 'AnimalQuery';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [AnimalQueryData]. Returns `null` when absent or incomplete.
+  static Future<AnimalQueryData?> readFrom(
+    shalom_core.CacheProxy cache, {
+    AnimalQueryVariables? variables,
+  }) async {
+    return await cache.readOperation<AnimalQueryData>(
+      name: 'AnimalQuery',
+      decoder: fromShalomValue,
+
+      variables: variables?.toShalomValue(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    AnimalQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'AnimalQuery',
+
+      variables: variables?.toShalomValue(),
+    );
   }
 }
 
@@ -248,80 +279,6 @@ class AnimalQuery_animal__Dog extends AnimalQuery_animal {
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
 // ------------ widget API -------------
-
-final class AnimalQueryData
-    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
-  final AnimalWidgetRef? animal;
-
-  const AnimalQueryData({required this.animal});
-
-  @override
-  String operation$Name() => 'AnimalQuery';
-
-  static AnimalQueryData fromCache(shalom_core.JsonObject data) {
-    final AnimalWidgetRef? animal$value = data['animal'] == null
-        ? null
-        : AnimalWidgetRef.fromInput(
-            shalom_core.observedRefInputFromJson(
-              (data['animal'] as shalom_core.JsonObject)[r'$AnimalWidget']
-                  as shalom_core.JsonObject,
-            ),
-          );
-    return AnimalQueryData(animal: animal$value);
-  }
-
-  static AnimalQueryData fromShalomValue(shalom_core.ShalomJsonValue data) {
-    final shalom_core.ShalomJsonValue? animal$raw = data.field('animal');
-    final AnimalWidgetRef? animal$value =
-        animal$raw == null || animal$raw!.isNull
-        ? null
-        : AnimalWidgetRef.fromInput(
-            shalom_core.observedRefInputFromShalomValue(
-              animal$raw!.field(r'$AnimalWidget')!,
-            ),
-          );
-    return AnimalQueryData(animal: animal$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [AnimalQueryData]. Returns `null` when absent or incomplete.
-  static Future<AnimalQueryData?> readFrom(
-    shalom_core.CacheProxy cache, {
-    AnimalQueryVariables? variables,
-  }) async {
-    return await cache.readOperation<AnimalQueryData>(
-      name: 'AnimalQuery',
-      decoder: fromShalomValue,
-
-      variables: variables?.toShalomValue(),
-    );
-  }
-
-  /// Evicts this operation's cached entry (matched by [variables]) through
-  /// [cache], notifying any active subscribers. Returns `false` if no
-  /// matching cache entry existed.
-  static Future<bool> evictFrom(
-    shalom_core.CacheProxy cache, {
-    AnimalQueryVariables? variables,
-  }) {
-    return cache.evictOperation(
-      name: 'AnimalQuery',
-
-      variables: variables?.toShalomValue(),
-    );
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {'animal': this.animal?.toJson()};
-  }
-
-  @override
-  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    'animal': this.animal == null
-        ? shalom_core.shalomJsonValue(null)
-        : this.animal!.toShalomValue(),
-  });
-}
 
 final class AnimalQueryObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;

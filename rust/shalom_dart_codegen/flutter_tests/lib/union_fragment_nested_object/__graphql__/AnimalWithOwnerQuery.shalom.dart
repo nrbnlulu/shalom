@@ -11,8 +11,8 @@ import 'package:collection/collection.dart';
 import 'AnimalWithOwnerWidget.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class AnimalWithOwnerQueryResponse {
+class AnimalWithOwnerQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members
@@ -22,17 +22,17 @@ class AnimalWithOwnerQueryResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  AnimalWithOwnerQueryResponse({this.animal});
+  AnimalWithOwnerQueryData({this.animal});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is AnimalWithOwnerQueryResponse && animal == other.animal);
+        (other is AnimalWithOwnerQueryData && animal == other.animal);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([animal, AnimalWithOwnerQueryResponse.G__typename]);
+      Object.hashAll([animal, AnimalWithOwnerQueryData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'animal': this.animal?.toJson()};
@@ -44,7 +44,7 @@ class AnimalWithOwnerQueryResponse {
         : this.animal!.toShalomValue(),
   });
 
-  static AnimalWithOwnerQueryResponse fromJson(shalom_core.JsonObject data) {
+  static AnimalWithOwnerQueryData fromJson(shalom_core.JsonObject data) {
     final AnimalWithOwnerWidgetRef? animal$value = data['animal'] == null
         ? null
         : AnimalWithOwnerWidgetRef.fromInput(
@@ -54,10 +54,10 @@ class AnimalWithOwnerQueryResponse {
                   as shalom_core.JsonObject,
             ),
           );
-    return AnimalWithOwnerQueryResponse(animal: animal$value);
+    return AnimalWithOwnerQueryData(animal: animal$value);
   }
 
-  static AnimalWithOwnerQueryResponse fromShalomValue(
+  static AnimalWithOwnerQueryData fromShalomValue(
     shalom_core.ShalomJsonValue data,
   ) {
     final shalom_core.ShalomJsonValue? animal$raw = data.field('animal');
@@ -69,7 +69,38 @@ class AnimalWithOwnerQueryResponse {
               animal$raw!.field(r'$AnimalWithOwnerWidget')!,
             ),
           );
-    return AnimalWithOwnerQueryResponse(animal: animal$value);
+    return AnimalWithOwnerQueryData(animal: animal$value);
+  }
+
+  @override
+  String operation$Name() => 'AnimalWithOwnerQuery';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [AnimalWithOwnerQueryData]. Returns `null` when absent or incomplete.
+  static Future<AnimalWithOwnerQueryData?> readFrom(
+    shalom_core.CacheProxy cache, {
+    AnimalWithOwnerQueryVariables? variables,
+  }) async {
+    return await cache.readOperation<AnimalWithOwnerQueryData>(
+      name: 'AnimalWithOwnerQuery',
+      decoder: fromShalomValue,
+
+      variables: variables?.toShalomValue(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    AnimalWithOwnerQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'AnimalWithOwnerQuery',
+
+      variables: variables?.toShalomValue(),
+    );
   }
 }
 
@@ -304,83 +335,6 @@ class AnimalWithOwnerQuery_animal__Dog extends AnimalWithOwnerQuery_animal {
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
 // ------------ widget API -------------
-
-final class AnimalWithOwnerQueryData
-    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
-  final AnimalWithOwnerWidgetRef? animal;
-
-  const AnimalWithOwnerQueryData({required this.animal});
-
-  @override
-  String operation$Name() => 'AnimalWithOwnerQuery';
-
-  static AnimalWithOwnerQueryData fromCache(shalom_core.JsonObject data) {
-    final AnimalWithOwnerWidgetRef? animal$value = data['animal'] == null
-        ? null
-        : AnimalWithOwnerWidgetRef.fromInput(
-            shalom_core.observedRefInputFromJson(
-              (data['animal']
-                      as shalom_core.JsonObject)[r'$AnimalWithOwnerWidget']
-                  as shalom_core.JsonObject,
-            ),
-          );
-    return AnimalWithOwnerQueryData(animal: animal$value);
-  }
-
-  static AnimalWithOwnerQueryData fromShalomValue(
-    shalom_core.ShalomJsonValue data,
-  ) {
-    final shalom_core.ShalomJsonValue? animal$raw = data.field('animal');
-    final AnimalWithOwnerWidgetRef? animal$value =
-        animal$raw == null || animal$raw!.isNull
-        ? null
-        : AnimalWithOwnerWidgetRef.fromInput(
-            shalom_core.observedRefInputFromShalomValue(
-              animal$raw!.field(r'$AnimalWithOwnerWidget')!,
-            ),
-          );
-    return AnimalWithOwnerQueryData(animal: animal$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [AnimalWithOwnerQueryData]. Returns `null` when absent or incomplete.
-  static Future<AnimalWithOwnerQueryData?> readFrom(
-    shalom_core.CacheProxy cache, {
-    AnimalWithOwnerQueryVariables? variables,
-  }) async {
-    return await cache.readOperation<AnimalWithOwnerQueryData>(
-      name: 'AnimalWithOwnerQuery',
-      decoder: fromShalomValue,
-
-      variables: variables?.toShalomValue(),
-    );
-  }
-
-  /// Evicts this operation's cached entry (matched by [variables]) through
-  /// [cache], notifying any active subscribers. Returns `false` if no
-  /// matching cache entry existed.
-  static Future<bool> evictFrom(
-    shalom_core.CacheProxy cache, {
-    AnimalWithOwnerQueryVariables? variables,
-  }) {
-    return cache.evictOperation(
-      name: 'AnimalWithOwnerQuery',
-
-      variables: variables?.toShalomValue(),
-    );
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {'animal': this.animal?.toJson()};
-  }
-
-  @override
-  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    'animal': this.animal == null
-        ? shalom_core.shalomJsonValue(null)
-        : this.animal!.toShalomValue(),
-  });
-}
 
 final class AnimalWithOwnerQueryObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;

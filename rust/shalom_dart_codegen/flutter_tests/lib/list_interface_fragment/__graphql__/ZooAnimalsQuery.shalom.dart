@@ -11,8 +11,8 @@ import 'package:collection/collection.dart';
 import 'ZooAnimalsWidget.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class ZooAnimalsQueryResponse {
+class ZooAnimalsQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members
@@ -22,17 +22,16 @@ class ZooAnimalsQueryResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  ZooAnimalsQueryResponse({this.zoo});
+  ZooAnimalsQueryData({this.zoo});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is ZooAnimalsQueryResponse && zoo == other.zoo);
+        (other is ZooAnimalsQueryData && zoo == other.zoo);
   }
 
   @override
-  int get hashCode =>
-      Object.hashAll([zoo, ZooAnimalsQueryResponse.G__typename]);
+  int get hashCode => Object.hashAll([zoo, ZooAnimalsQueryData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'zoo': this.zoo?.toJson()};
@@ -44,7 +43,7 @@ class ZooAnimalsQueryResponse {
         : this.zoo!.toShalomValue(),
   });
 
-  static ZooAnimalsQueryResponse fromJson(shalom_core.JsonObject data) {
+  static ZooAnimalsQueryData fromJson(shalom_core.JsonObject data) {
     final ZooAnimalsWidgetRef? zoo$value = data['zoo'] == null
         ? null
         : ZooAnimalsWidgetRef.fromInput(
@@ -53,12 +52,10 @@ class ZooAnimalsQueryResponse {
                   as shalom_core.JsonObject,
             ),
           );
-    return ZooAnimalsQueryResponse(zoo: zoo$value);
+    return ZooAnimalsQueryData(zoo: zoo$value);
   }
 
-  static ZooAnimalsQueryResponse fromShalomValue(
-    shalom_core.ShalomJsonValue data,
-  ) {
+  static ZooAnimalsQueryData fromShalomValue(shalom_core.ShalomJsonValue data) {
     final shalom_core.ShalomJsonValue? zoo$raw = data.field('zoo');
     final ZooAnimalsWidgetRef? zoo$value = zoo$raw == null || zoo$raw!.isNull
         ? null
@@ -67,7 +64,38 @@ class ZooAnimalsQueryResponse {
               zoo$raw!.field(r'$ZooAnimalsWidget')!,
             ),
           );
-    return ZooAnimalsQueryResponse(zoo: zoo$value);
+    return ZooAnimalsQueryData(zoo: zoo$value);
+  }
+
+  @override
+  String operation$Name() => 'ZooAnimalsQuery';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [ZooAnimalsQueryData]. Returns `null` when absent or incomplete.
+  static Future<ZooAnimalsQueryData?> readFrom(
+    shalom_core.CacheProxy cache, {
+    ZooAnimalsQueryVariables? variables,
+  }) async {
+    return await cache.readOperation<ZooAnimalsQueryData>(
+      name: 'ZooAnimalsQuery',
+      decoder: fromShalomValue,
+
+      variables: variables?.toShalomValue(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    ZooAnimalsQueryVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'ZooAnimalsQuery',
+
+      variables: variables?.toShalomValue(),
+    );
   }
 }
 
@@ -178,79 +206,6 @@ class ZooAnimalsQuery_zoo {
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
 // ------------ widget API -------------
-
-final class ZooAnimalsQueryData
-    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
-  final ZooAnimalsWidgetRef? zoo;
-
-  const ZooAnimalsQueryData({required this.zoo});
-
-  @override
-  String operation$Name() => 'ZooAnimalsQuery';
-
-  static ZooAnimalsQueryData fromCache(shalom_core.JsonObject data) {
-    final ZooAnimalsWidgetRef? zoo$value = data['zoo'] == null
-        ? null
-        : ZooAnimalsWidgetRef.fromInput(
-            shalom_core.observedRefInputFromJson(
-              (data['zoo'] as shalom_core.JsonObject)[r'$ZooAnimalsWidget']
-                  as shalom_core.JsonObject,
-            ),
-          );
-    return ZooAnimalsQueryData(zoo: zoo$value);
-  }
-
-  static ZooAnimalsQueryData fromShalomValue(shalom_core.ShalomJsonValue data) {
-    final shalom_core.ShalomJsonValue? zoo$raw = data.field('zoo');
-    final ZooAnimalsWidgetRef? zoo$value = zoo$raw == null || zoo$raw!.isNull
-        ? null
-        : ZooAnimalsWidgetRef.fromInput(
-            shalom_core.observedRefInputFromShalomValue(
-              zoo$raw!.field(r'$ZooAnimalsWidget')!,
-            ),
-          );
-    return ZooAnimalsQueryData(zoo: zoo$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [ZooAnimalsQueryData]. Returns `null` when absent or incomplete.
-  static Future<ZooAnimalsQueryData?> readFrom(
-    shalom_core.CacheProxy cache, {
-    ZooAnimalsQueryVariables? variables,
-  }) async {
-    return await cache.readOperation<ZooAnimalsQueryData>(
-      name: 'ZooAnimalsQuery',
-      decoder: fromShalomValue,
-
-      variables: variables?.toShalomValue(),
-    );
-  }
-
-  /// Evicts this operation's cached entry (matched by [variables]) through
-  /// [cache], notifying any active subscribers. Returns `false` if no
-  /// matching cache entry existed.
-  static Future<bool> evictFrom(
-    shalom_core.CacheProxy cache, {
-    ZooAnimalsQueryVariables? variables,
-  }) {
-    return cache.evictOperation(
-      name: 'ZooAnimalsQuery',
-
-      variables: variables?.toShalomValue(),
-    );
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {'zoo': this.zoo?.toJson()};
-  }
-
-  @override
-  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    'zoo': this.zoo == null
-        ? shalom_core.shalomJsonValue(null)
-        : this.zoo!.toShalomValue(),
-  });
-}
 
 final class ZooAnimalsQueryObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;

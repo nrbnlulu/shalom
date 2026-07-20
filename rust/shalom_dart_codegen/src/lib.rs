@@ -1408,12 +1408,8 @@ fn generate_widget_sidecars(
         .filter(|w| w.widget_kind == WidgetKind::Subscription);
 
     if !fragments.is_empty() {
-        for widget in widget_fragment_dependency_order(ctx, &fragments, is_pure_dart)? {
-            let sdl = if is_pure_dart {
-                widget.sdl.clone()
-            } else {
-                widget.sdl.replacen('{', "@observe {", 1)
-            };
+        for widget in widget_fragment_dependency_order(ctx, &fragments)? {
+            let sdl = widget.sdl.replacen('{', "@observe {", 1);
             let full_sdl = format!("fragment {} {}", widget.class_name, sdl);
             shalom_core::entrypoint::register_fragments_from_document(
                 ctx,
@@ -1431,9 +1427,13 @@ fn generate_widget_sidecars(
         .chain(subscriptions)
     {
         let res = match widget.widget_kind {
-            WidgetKind::Query => {
-                generate_query_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
-            }
+            WidgetKind::Query => generate_query_sidecar(
+                ctx,
+                widget,
+                custom_scalar_imports.clone(),
+                gen_dir,
+                is_pure_dart,
+            ),
             WidgetKind::Fragment => generate_fragment_sidecar(
                 ctx,
                 widget,
@@ -1444,9 +1444,13 @@ fn generate_widget_sidecars(
             WidgetKind::Mutation => {
                 generate_mutation_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
             }
-            WidgetKind::Subscription => {
-                generate_subscription_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
-            }
+            WidgetKind::Subscription => generate_subscription_sidecar(
+                ctx,
+                widget,
+                custom_scalar_imports.clone(),
+                gen_dir,
+                is_pure_dart,
+            ),
         };
         if let Err(err) = res {
             return Err(anyhow::anyhow!(
@@ -1462,7 +1466,6 @@ fn generate_widget_sidecars(
 fn widget_fragment_dependency_order<'a>(
     ctx: &SharedShalomGlobalContext,
     fragments: &'a [&'a WidgetAnnotation],
-    is_pure_dart: bool,
 ) -> Result<Vec<&'a WidgetAnnotation>> {
     let by_name: HashMap<&str, &WidgetAnnotation> = fragments
         .iter()
@@ -1470,11 +1473,7 @@ fn widget_fragment_dependency_order<'a>(
         .collect();
     let mut dependencies: HashMap<&str, Vec<String>> = HashMap::new();
     for widget in fragments {
-        let sdl = if is_pure_dart {
-            widget.sdl.clone()
-        } else {
-            widget.sdl.replacen('{', "@observe {", 1)
-        };
+        let sdl = widget.sdl.replacen('{', "@observe {", 1);
         let full_sdl = format!("fragment {} {}", widget.class_name, sdl);
         let spreads = shalom_core::entrypoint::fragment_spreads_from_document(
             ctx,
@@ -1548,6 +1547,7 @@ fn generate_query_sidecar(
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
     gen_dir: &str,
+    is_pure_dart: bool,
 ) -> Result<()> {
     // Insert @observe immediately before the selection-set opening brace so the
     // directive lands in the correct position per the GraphQL grammar:
@@ -1589,11 +1589,19 @@ fn generate_query_sidecar(
     fs::write(&gen_path, rendered)?;
     info!("Generated query sidecar: {}", gen_path.display());
 
-    // Generate the Flutter widget file (imports + re-exports the types file above).
-    let widget_rendered = op_env.render_widget(&op_ctx);
     let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
-    fs::write(&widget_path, widget_rendered)?;
-    info!("Generated widget sidecar: {}", widget_path.display());
+    if is_pure_dart {
+        // Pure Dart projects consume the reactive Observable/Data API directly
+        // (via Streams) and have no Flutter dependency to build a widget on top of.
+        if widget_path.exists() {
+            fs::remove_file(&widget_path)?;
+        }
+    } else {
+        // Generate the Flutter widget file (imports + re-exports the types file above).
+        let widget_rendered = op_env.render_widget(&op_ctx);
+        fs::write(&widget_path, widget_rendered)?;
+        info!("Generated widget sidecar: {}", widget_path.display());
+    }
 
     Ok(())
 }
@@ -1609,11 +1617,7 @@ fn generate_fragment_sidecar(
     // Insert @observe immediately before the selection-set opening brace so the
     // directive lands in the correct position per the GraphQL grammar:
     //   fragment Name TypeCondition Directives? SelectionSet
-    let sdl = if is_pure_dart {
-        widget.sdl.clone()
-    } else {
-        widget.sdl.replacen('{', "@observe {", 1)
-    };
+    let sdl = widget.sdl.replacen('{', "@observe {", 1);
     let full_sdl = format!("fragment {} {}", widget.class_name, sdl);
 
     if !ctx.fragment_exists(&widget.class_name) {
@@ -1722,6 +1726,7 @@ fn generate_subscription_sidecar(
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
     gen_dir: &str,
+    is_pure_dart: bool,
 ) -> Result<()> {
     let full_sdl = format!(
         "subscription {} {}",
@@ -1760,13 +1765,21 @@ fn generate_subscription_sidecar(
     fs::write(&gen_path, rendered)?;
     info!("Generated subscription sidecar: {}", gen_path.display());
 
-    let widget_rendered = op_env.render_widget(&op_ctx);
     let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
-    fs::write(&widget_path, widget_rendered)?;
-    info!(
-        "Generated subscription widget sidecar: {}",
-        widget_path.display()
-    );
+    if is_pure_dart {
+        // Pure Dart projects consume the reactive Observable/Data API directly
+        // (via Streams) and have no Flutter dependency to build a widget on top of.
+        if widget_path.exists() {
+            fs::remove_file(&widget_path)?;
+        }
+    } else {
+        let widget_rendered = op_env.render_widget(&op_ctx);
+        fs::write(&widget_path, widget_rendered)?;
+        info!(
+            "Generated subscription widget sidecar: {}",
+            widget_path.display()
+        );
+    }
 
     Ok(())
 }
@@ -1840,26 +1853,16 @@ fn generate_registration_file(
             }
             WidgetKind::Query | WidgetKind::Mutation | WidgetKind::Subscription => {
                 let document = match widget.widget_kind {
-                    WidgetKind::Query => format!(
-                        "query {} {}",
-                        widget.class_name,
-                        if is_pure_dart {
-                            widget.sdl.clone()
-                        } else {
-                            with_observe(&widget.sdl)
-                        }
-                    ),
+                    WidgetKind::Query => {
+                        format!("query {} {}", widget.class_name, with_observe(&widget.sdl))
+                    }
                     WidgetKind::Mutation => {
                         format!("mutation {} {}", widget.class_name, widget.sdl)
                     }
                     WidgetKind::Subscription => format!(
                         "subscription {} {}",
                         widget.class_name,
-                        if is_pure_dart {
-                            widget.sdl.clone()
-                        } else {
-                            with_observe(&widget.sdl)
-                        }
+                        with_observe(&widget.sdl)
                     ),
                     WidgetKind::Fragment => unreachable!(),
                 };
@@ -1893,7 +1896,9 @@ fn generate_registration_file(
         serde_json::json!({
             "class_name": w.class_name,
             // Mutations are fire-and-forget, not reactive — they don't get @observe.
-            "document": if observe && !is_pure_dart { with_observe(&w.sdl) } else { w.sdl.clone() },
+            // Reactive registration is independent of Flutter: pure Dart projects
+            // consume the same Observable/Streams API directly.
+            "document": if observe { with_observe(&w.sdl) } else { w.sdl.clone() },
         })
     };
 
@@ -1909,7 +1914,7 @@ fn generate_registration_file(
         .iter()
         .filter(|w| w.widget_kind == WidgetKind::Fragment)
         .collect::<Vec<_>>();
-    let fragments = widget_fragment_dependency_order(ctx, &widget_fragments, is_pure_dart)?
+    let fragments = widget_fragment_dependency_order(ctx, &widget_fragments)?
         .into_iter()
         .map(|w| make_entry(w, true))
         .collect::<Vec<_>>();
