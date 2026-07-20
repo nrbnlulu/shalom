@@ -4,7 +4,7 @@
 {% set typedefs = context.fragment.typedefs %}
 {% set op_variables = None %}
 {% set op_variables_exist = false %}
-{% set is_observe = context.fragment.observe and not context.is_pure_dart %}
+{% set is_observe = context.fragment.observe %}
 {% set is_multi_type = fragment_name in typedefs.unions or fragment_name in typedefs.interfaces %}
 
 {% include "selection_macros" %}
@@ -21,10 +21,12 @@ import 'package:collection/collection.dart';
 {% for import_path in generate_fragment_imports(context.fragment_file_path) | sort -%}
 import '{{ import_path }}';
 {% endfor %}
-{% if is_observe %}
+{% if is_observe -%}
 import 'dart:async' show Stream;
+{% if not context.is_pure_dart -%}
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart';
+{% endif %}
 {% endif %}
 
 {% if is_observe %}
@@ -348,6 +350,7 @@ final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.
 }
 {% endif %}
 
+{% if not context.is_pure_dart -%}
 abstract class ${{ fragment_name }} extends StatelessWidget {
   final {{ fragment_name }}Ref ref;
   const ${{ fragment_name }}({super.key, required this.ref});
@@ -392,6 +395,7 @@ class {{ fragment_name }}Scope extends StatelessWidget {
     );
   }
 }
+{% endif %}
 
 // ------------ END fragment widget API -------------
 {% else %}
