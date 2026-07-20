@@ -91,7 +91,7 @@ class UserCardQueryData
   }
 }
 
-class UserCardQuery_user {
+class UserCardQuery_user implements UserCard {
   static String G__typename = "User";
 
   /// class members

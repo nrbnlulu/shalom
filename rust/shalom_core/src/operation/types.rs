@@ -202,6 +202,11 @@ pub struct ObjectLikeCommon {
     pub selections: BTreeSet<FieldSelection>,
     /// fragment spreads
     pub used_fragments: BTreeSet<FragName>,
+    /// fragment spreads marked with `@unwrap` at this exact spread site - these
+    /// are still flattened via `used_fragments`/`get_all_selections_distinct`, but
+    /// should not be treated as an `@observe`d ref here even if the fragment
+    /// itself is globally marked `@observe` (other spread sites are unaffected).
+    pub unwrapped_fragments: BTreeSet<FragName>,
     /// inline fragments used in this object-like
     pub used_inline_frags: BTreeMap<String, InlineFragment>,
     /// type conditioned selections - stores selections for specific types
@@ -214,6 +219,7 @@ impl ObjectLikeCommon {
             path_name,
             schema_typename,
             used_fragments: BTreeSet::new(),
+            unwrapped_fragments: BTreeSet::new(),
             used_inline_frags: BTreeMap::new(),
             type_cond_selections: BTreeMap::new(),
             selections: BTreeSet::new(),
@@ -228,6 +234,7 @@ impl ObjectLikeCommon {
         if self.schema_typename == other.schema_typename {
             // the same type just extend selections (HashSet handles deduplication)
             self.used_fragments.extend(other.used_fragments);
+            self.unwrapped_fragments.extend(other.unwrapped_fragments);
             self.used_inline_frags.extend(other.used_inline_frags);
             self.selections.extend(other.selections);
         } else {
@@ -301,6 +308,13 @@ impl ObjectLikeCommon {
         false
     }
     pub fn add_used_fragment(&mut self, name: FragName) {
+        self.used_fragments.insert(name);
+    }
+    /// Add a fragment spread marked with `@unwrap` at this spread site: the
+    /// fragment's fields are still flattened in, but it must not be treated as
+    /// an `@observe`d ref here.
+    pub fn add_used_fragment_unwrapped(&mut self, name: FragName) {
+        self.unwrapped_fragments.insert(name.clone());
         self.used_fragments.insert(name);
     }
     pub fn get_used_fragments(&self) -> &BTreeSet<FragName> {

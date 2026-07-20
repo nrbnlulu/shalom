@@ -59,6 +59,7 @@ pub fn find_graphql_files(pwd: &Path) -> FoundGqlFiles {
 
 pub fn parse_schema(schema: &str) -> anyhow::Result<SharedSchemaContext> {
     let schema = ensure_observe_directive(schema);
+    let schema = ensure_unwrap_directive(&schema);
     schema::resolver::resolve(&schema)
 }
 
@@ -66,6 +67,14 @@ fn ensure_observe_directive(schema: &str) -> String {
     const DIRECTIVE_DEF: &str =
         "directive @observe on QUERY | MUTATION | SUBSCRIPTION | FRAGMENT_DEFINITION";
     if schema.contains("directive @observe") {
+        return schema.to_string();
+    }
+    format!("{schema}\n\n{DIRECTIVE_DEF}\n")
+}
+
+fn ensure_unwrap_directive(schema: &str) -> String {
+    const DIRECTIVE_DEF: &str = "directive @unwrap on FRAGMENT_SPREAD";
+    if schema.contains("directive @unwrap") {
         return schema.to_string();
     }
     format!("{schema}\n\n{DIRECTIVE_DEF}\n")
@@ -692,6 +701,84 @@ fragment UserDetailFrag on User {
         assert_eq!(
             detail
                 .get_on_type()
+                .get_all_selections_that_apply_on_this_type_only(&ctx)
+                .len(),
+            3
+        );
+    }
+
+    #[test]
+    fn unwrap_directive_marks_spread_site_only() {
+        let ctx = test_context(
+            r#"
+type Query {
+  user(id: ID!): User
+}
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+}
+"#,
+        );
+        let source_path = PathBuf::from("fragment.dart");
+
+        register_fragments_from_document(
+            &ctx,
+            r#"
+fragment UserEmailFrag on User @observe {
+  id
+  email
+}
+"#,
+            &source_path,
+            false,
+        )
+        .unwrap();
+
+        // One fragment spreads it plainly, another spreads it with @unwrap.
+        register_fragments_from_document(
+            &ctx,
+            r#"
+fragment UserPlainFrag on User {
+  name
+  ...UserEmailFrag
+}
+
+fragment UserUnwrappedFrag on User {
+  name
+  ...UserEmailFrag @unwrap
+}
+"#,
+            &source_path,
+            false,
+        )
+        .unwrap();
+
+        let plain = ctx.get_fragment_strict("UserPlainFrag");
+        let plain_root = plain.get_on_type();
+        assert!(plain_root.used_fragments.contains("UserEmailFrag"));
+        assert!(!plain_root.unwrapped_fragments.contains("UserEmailFrag"));
+
+        let unwrapped = ctx.get_fragment_strict("UserUnwrappedFrag");
+        let unwrapped_root = unwrapped.get_on_type();
+        assert!(unwrapped_root.used_fragments.contains("UserEmailFrag"));
+        assert!(unwrapped_root.unwrapped_fragments.contains("UserEmailFrag"));
+
+        // Both should still flatten to the same fields regardless of @unwrap.
+        assert_eq!(
+            plain_root.get_all_selections_distinct(&ctx).len(),
+            unwrapped_root.get_all_selections_distinct(&ctx).len()
+        );
+        assert_eq!(
+            plain_root
+                .get_all_selections_that_apply_on_this_type_only(&ctx)
+                .len(),
+            3
+        );
+        assert_eq!(
+            unwrapped_root
                 .get_all_selections_that_apply_on_this_type_only(&ctx)
                 .len(),
             3
