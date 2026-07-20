@@ -10,7 +10,8 @@ import 'package:collection/collection.dart';
 // Fragment imports
 
 // ------------ OBJECT DEFINITIONS -------------
-class UserWidgetData implements shalom_core.OperationInterface {
+class UserWidgetData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members

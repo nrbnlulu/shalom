@@ -11,7 +11,8 @@ import 'package:collection/collection.dart';
 import 'DogFrag.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-class ShelterSubscriptionData implements shalom_core.OperationInterface {
+class ShelterSubscriptionData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "subscription";
 
   /// class members

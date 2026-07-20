@@ -90,7 +90,23 @@ abstract interface class OperationInterface {
   ShalomJsonValue toShalomValue();
 }
 
-abstract interface class FragmentInterface {
+/// Marker for operation/fragment data types that can be safely observed
+/// through a long-lived reactive [Stream] subscription ([ShalomRuntimeClient.request],
+/// [ShalomRuntimeClient.subscribeToFragment]).
+///
+/// Mutation response types are intentionally excluded: routing a mutation
+/// through the reactive subscription registry lets an unrelated concurrent
+/// cache write resolve it with stale data before its own network response
+/// arrives. See [MutationInterface] and [ShalomRuntimeClient.mutate], which
+/// executes a mutation directly instead.
+abstract interface class StreamCompat {}
+
+/// Marker for mutation response types, used with [ShalomRuntimeClient.mutate]
+/// and [ShalomRuntimeClient.writeOptimistic]. Deliberately does *not*
+/// implement [StreamCompat] — see its doc comment for why.
+abstract interface class MutationInterface extends OperationInterface {}
+
+abstract interface class FragmentInterface implements StreamCompat {
   String fragment$Name();
 
   String entity$Type();

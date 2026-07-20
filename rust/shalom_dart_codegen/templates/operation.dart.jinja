@@ -28,7 +28,7 @@ import '{{ import_path }}';
 {% include "selection_macros" %}
 
 // ------------ OBJECT DEFINITIONS -------------
-class {{ operation_name }}Data implements shalom_core.OperationInterface{% if not is_observe -%}{% for frag_name in context.operation.root_type.used_fragments -%}, {{ frag_name }}{% endfor %}{% endif %}  {
+class {{ operation_name }}Data implements shalom_core.OperationInterface{% if is_observe -%}, shalom_core.StreamCompat{% else %}{% for frag_name in context.operation.root_type.used_fragments -%}, {{ frag_name }}{% endfor %}{% endif %}  {
     {{ selection_object_impl(operation_name ~ "Data", context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name, shared_selections=context.operation.root_type.selections, use_observe=is_observe) }}
 
     @override

@@ -358,6 +358,57 @@ pub async fn request(
     Ok(sub_id.into())
 }
 
+/// Execute a pre-registered mutation exactly once and return its result
+/// directly — no subscription, no stream. The response is still written
+/// into the shared entity cache (notifying any other reactive subscriptions
+/// watching the same entities), but this call can never itself observe a
+/// stale/optimistic value from an unrelated concurrent write, since it
+/// isn't registered in the reactive subscription registry.
+#[frb]
+pub async fn mutate(
+    handle: &RuntimeHandle,
+    name: String,
+    variables: Option<ShalomJsonValue>,
+    retry_delay: RetryDelayInput,
+) -> anyhow::Result<SubscriptionEvent> {
+    let variables = parse_variables(variables)?;
+    let op_ctx = handle.runtime.operation_by_name(&name)?;
+
+    let retry_delay = match retry_delay {
+        RetryDelayInput::Inherit => handle.runtime.default_retry_delay(),
+        RetryDelayInput::Disabled => None,
+        RetryDelayInput::Millis(ms) => Some(std::time::Duration::from_millis(ms)),
+    };
+
+    let event = match handle
+        .runtime
+        .execute_mutation(op_ctx, variables, handle.link.clone(), retry_delay)
+        .await
+    {
+        Ok(response) => SubscriptionEvent::Data {
+            data: ShalomJsonValue::from(response.data),
+        },
+        Err(SubscriptionError::GraphQL { errors, extensions }) => SubscriptionEvent::GraphQlError {
+            errors: errors
+                .into_iter()
+                .map(|error| ShalomJsonValue::from(Value::Object(error)))
+                .collect(),
+            extensions: extensions.map(|value| ShalomJsonValue::from(Value::Object(value))),
+        },
+        Err(SubscriptionError::Transport {
+            message,
+            code,
+            details,
+        }) => SubscriptionEvent::TransportError {
+            code,
+            message,
+            details: details.map(ShalomJsonValue::from),
+        },
+    };
+
+    Ok(event)
+}
+
 // ---------------------------------------------------------------------------
 // Optimistic writes
 // ---------------------------------------------------------------------------

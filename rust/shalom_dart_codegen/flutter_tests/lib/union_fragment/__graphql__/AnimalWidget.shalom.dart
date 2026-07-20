@@ -66,7 +66,8 @@ abstract class AnimalWidget {
   shalom_core.ShalomJsonValue toShalomValue();
 }
 
-sealed class AnimalWidgetData implements AnimalWidget {
+sealed class AnimalWidgetData
+    implements AnimalWidget, shalom_core.StreamCompat {
   const AnimalWidgetData();
 
   String get id;

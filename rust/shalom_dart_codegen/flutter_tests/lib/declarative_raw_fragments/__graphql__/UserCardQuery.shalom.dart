@@ -12,7 +12,8 @@ import '../fragments/__graphql__/UserIdentity.shalom.dart';
 import '../more_fragments/__graphql__/UserCard.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-class UserCardQueryData implements shalom_core.OperationInterface {
+class UserCardQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members

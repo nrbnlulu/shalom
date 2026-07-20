@@ -68,7 +68,8 @@ abstract class CommonAnimalFrag {
   shalom_core.ShalomJsonValue toShalomValue();
 }
 
-sealed class CommonAnimalFragData implements CommonAnimalFrag {
+sealed class CommonAnimalFragData
+    implements CommonAnimalFrag, shalom_core.StreamCompat {
   const CommonAnimalFragData();
 
   String get id;
