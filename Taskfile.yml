@@ -6,17 +6,10 @@ vars:
     GREETING: Hello, World!
     DART_BIN:
         sh: |
-            if command -v fvm > /dev/null 2>&1; then
+            if command -v fvm &> /dev/null; then
               echo "fvm dart"
             else
               echo "dart"
-            fi
-    FLUTTER_BIN:
-        sh: |
-            if command -v fvm > /dev/null 2>&1; then
-              echo "fvm flutter"
-            else
-              echo "flutter"
             fi
 
 tasks:
@@ -25,13 +18,9 @@ tasks:
             - echo "{{.GREETING}}"
         silent: true
 
-    generate_rust_bindings:
-        cmds:
-            - cd dart/shalom && flutter_rust_bridge_codegen generate
-
     fmt:
         cmds:
-            - cargo fmt --all
+            - cd rust && cargo fmt
             - cd rust/shalom_dart_codegen/dart_tests && {{.DART_BIN}} format ./test ./lib
             - "{{.DART_BIN}} format ./dart"
 
@@ -42,14 +31,20 @@ tasks:
 
     lint:
         cmds:
-            - cd rust && cargo fmt --all --check
+            - cd rust && cargo fmt -- --check
             - cd rust && cargo clippy -- -D warnings
             - cd rust/shalom_dart_codegen/dart_tests && find . -type f -name "*.dart" -not -path "*/__graphql__/*" | xargs {{.DART_BIN}} format --set-exit-if-changed
             - cd rust/shalom_dart_codegen/dart_tests && {{.DART_BIN}} analyze ./test ./lib
-            - cd dart/shalom && {{.DART_BIN}} analyze ./test ./lib
+            - cd dart/shalom_core && {{.DART_BIN}} analyze ./test ./lib
             - typos
 
     test:
         cmds:
             - cd rust && cargo test -- --test-threads=2
-            - cd dart/shalom && {{.DART_BIN}} test
+            - cd dart/shalom_core && {{.DART_BIN}} test
+
+    docs:serve:
+        desc: Serve MkDocs locally with uv
+        cmds:
+            - uv sync
+            - uv run -- mkdocs serve --dev-addr 0.0.0.0:8080
