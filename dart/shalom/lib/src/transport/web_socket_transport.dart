@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert' show utf8;
+import 'dart:developer' show log;
 
 import 'package:web_socket/web_socket.dart' as ws;
 
@@ -70,6 +71,7 @@ class WebSocketPackageTransport implements WebSocketTransport {
         await socket.close();
       } on ws.WebSocketConnectionClosed {
         // The peer already closed the socket.
+        log('WebSocketPackageTransport: socket already closed by peer');
       }
     };
 
