@@ -65,7 +65,12 @@ class WebSocketPackageTransport implements WebSocketTransport {
     // tear down the underlying socket too.
     controller.onCancel = () async {
       await subscription.cancel();
-      await socket.close();
+
+      try {
+        await socket.close();
+      } on ws.WebSocketConnectionClosed {
+        // The peer already closed the socket.
+      }
     };
 
     final sender = MessageSender((String message) async {
