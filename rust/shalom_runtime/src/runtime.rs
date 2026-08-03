@@ -187,6 +187,22 @@ struct SubscriptionState {
     /// request driving it (see [`ShalomRuntime::execute_operation`]) can abort
     /// immediately instead of waiting on the next stream item.
     cancel: Arc<Notify>,
+    /// Whether this subscription has ever had a response pushed to it.
+    ///
+    /// Until the first emission, [`ShalomRuntime::notify_subscribers`] always
+    /// includes this subscription regardless of whether the triggering write
+    /// actually changed any of its watched keys. This guarantees a first
+    /// delivery for subscriptions created under [`ExecutionPolicy::NetworkFirst`]
+    /// (which, unlike `CacheFirst`, don't emit synchronously from the cache at
+    /// creation time): if the network response happens to normalize to data
+    /// identical to what's already cached, `changed` comes back empty and the
+    /// key-diff filter alone would skip the subscriber forever, leaving it
+    /// with no data and no error. After the first emission, only the normal
+    /// diff-based filtering applies.
+    ///
+    /// Reset to `false` by [`ShalomRuntime::rebind_subscription`]'s fast path
+    /// when the anchor changes, since the subscription hasn't delivered data
+    /// for the new anchor yet.
     has_emitted: bool,
 }
 
@@ -623,9 +639,7 @@ impl ShalomRuntime {
                 operation_id: Some(op_name),
             };
             let mut manager = self.subscriptions.lock();
-            if let Some(state) = manager.subscriptions.get_mut(&id) {
-                let _ = state.sender.send(Ok(response)).map(|_| state.has_emitted = true);
-            }
+            self.send_or_remove(&mut manager, id, Ok(response));
         }
 
         id
@@ -668,9 +682,7 @@ impl ShalomRuntime {
                 operation_id: Some(fragment.get_fragment_name().to_string()),
             };
             let mut manager = self.subscriptions.lock();
-            if let Some(state) = manager.subscriptions.get_mut(&sub_id) {
-                let _ = state.sender.send(Ok(response)).map(|_| state.has_emitted = true);
-            }
+            self.send_or_remove(&mut manager, sub_id, Ok(response));
         }
 
         Ok(sub_id)
@@ -728,7 +740,7 @@ impl ShalomRuntime {
             self.subscription_tracker.lock().subscribe(new_keys.clone());
 
             // 2. Swap the subscription state.
-            let sender = {
+            {
                 let mut manager = self.subscriptions.lock();
                 match manager.subscriptions.get_mut(&id) {
                     Some(state) => {
@@ -738,7 +750,6 @@ impl ShalomRuntime {
                         };
                         state.keys = new_keys;
                         state.has_emitted = false;
-                        state.sender.clone()
                     }
                     None => {
                         // Subscription was cancelled between the snapshot and now.
@@ -763,9 +774,7 @@ impl ShalomRuntime {
                     operation_id: Some(fragment.get_fragment_name().to_string()),
                 };
                 let mut manager = self.subscriptions.lock();
-                if let Some(state) = manager.subscriptions.get_mut(&id) {
-                    let _ = state.sender.send(Ok(response)).map(|_| state.has_emitted = true);
-                }
+                self.send_or_remove(&mut manager, id, Ok(response));
             }
 
             Ok(id)
@@ -901,9 +910,7 @@ impl ShalomRuntime {
     /// Push a subscription error to a subscription so the Dart side sees it.
     pub fn push_subscription_error(&self, id: SubscriptionId, err: SubscriptionError) {
         let mut manager = self.subscriptions.lock();
-        if let Some(state) = manager.subscriptions.get_mut(&id) {
-            let _ = state.sender.send(Err(err)).map(|_| state.has_emitted = true);
-        }
+        self.send_or_remove(&mut manager, id, Err(err));
     }
 
     // -----------------------------------------------------------------------
@@ -1154,6 +1161,31 @@ impl ShalomRuntime {
         id
     }
 
+    /// Send `msg` on subscription `id`'s channel and mark it as emitted.
+    ///
+    /// If the receiver has been dropped (send fails), the subscription is
+    /// removed from `manager` and its keys released from the tracker — a
+    /// dead subscription left behind here would otherwise pin its cache keys
+    /// forever, since nothing else would ever call `unsubscribe` for it.
+    fn send_or_remove(
+        &self,
+        manager: &mut SubscriptionManager,
+        id: SubscriptionId,
+        msg: Result<RuntimeResponse, SubscriptionError>,
+    ) {
+        let Some(state) = manager.subscriptions.get_mut(&id) else {
+            return;
+        };
+        match state.sender.send(msg) {
+            Ok(()) => state.has_emitted = true,
+            Err(_) => {
+                if let Some(state) = manager.subscriptions.remove(&id) {
+                    self.subscription_tracker.lock().unsubscribe(state.keys);
+                }
+            }
+        }
+    }
+
     /// The cancellation signal for a subscription, fired when it's unsubscribed.
     /// Used by [`Self::execute_operation`] to abort an in-flight network
     /// request promptly instead of waiting on the next stream item.
@@ -1172,6 +1204,9 @@ impl ShalomRuntime {
                 .subscriptions
                 .iter()
                 .filter(|(_, state)| {
+                    // `!state.has_emitted`: guarantee a first delivery even if this
+                    // particular write didn't touch any of the subscription's keys
+                    // (see the field doc on `SubscriptionState::has_emitted`).
                     !state.has_emitted
                         || state.keys.is_empty()
                         || state.keys.iter().any(|k| changed.contains(k))
@@ -1210,24 +1245,21 @@ impl ShalomRuntime {
                     old_keys = Some(state.keys.clone());
                     state.keys = new_refs.clone();
                     if let Some(response) = response {
-                        let _ = state
-                            .sender
-                            .send(Ok(response))
-                            .map(|_| state.has_emitted = true)
-                            .map_err(|_| {
+                        match state.sender.send(Ok(response)) {
+                            Ok(()) => state.has_emitted = true,
+                            Err(_) => {
                                 manager.subscriptions.remove(&id);
                                 removed = true;
-                            });
+                            }
+                        }
                     }
                 }
             }
 
             if let Some(old_keys) = old_keys {
                 let mut tracker = self.subscription_tracker.lock();
-                if removed {
-                    tracker.unsubscribe(old_keys);
-                } else {
-                    tracker.unsubscribe(old_keys);
+                tracker.unsubscribe(old_keys);
+                if !removed {
                     tracker.subscribe(new_refs);
                 }
             }
