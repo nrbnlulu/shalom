@@ -1180,6 +1180,7 @@ impl ShalomRuntime {
             Ok(()) => state.has_emitted = true,
             Err(_) => {
                 if let Some(state) = manager.subscriptions.remove(&id) {
+                    state.cancel.notify_waiters();
                     self.subscription_tracker.lock().unsubscribe(state.keys);
                 }
             }
