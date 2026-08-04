@@ -50,6 +50,8 @@ tasks:
             - typos
 
     test:
+        env:
+            SHALOM_TEST_NO_FMT: '{{if contains "--no-fmt" .CLI_ARGS}}1{{else}}0{{end}}'
         cmds:
             - cd rust && cargo test -- --test-threads=2
             - cd dart/shalom && {{.DART_BIN}} test

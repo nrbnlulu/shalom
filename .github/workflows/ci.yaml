@@ -50,7 +50,7 @@ jobs:
 
             - name: Test
               run: |
-                  task test
+                  task test -- --no-fmt
 
             - name: Install typos
               if: runner.os == 'Linux'
