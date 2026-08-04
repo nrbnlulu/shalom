@@ -76,10 +76,6 @@ fn run_codegen(cwd: &Path, strict: bool) {
     .unwrap()
 }
 
-fn should_format_test_output() -> bool {
-    std::env::var("SHALOM_TEST_NO_FMT").as_deref() != Ok("1")
-}
-
 /// `flutter test` (unlike `dart test`) does not run the `native_toolchain_rust`
 /// build hook automatically, so the FFI lib never lands in `.dart_tool/lib/`.
 /// Build it ourselves and drop it where `test_env.dart`'s `_nativeLibPath()`
@@ -134,27 +130,25 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
 
     let dart_test_root = tests_path("dart_tests").join("..");
     let dart_parts: Vec<&str> = dart.split_whitespace().collect();
-    if should_format_test_output() {
-        let mut dart_fmt = if dart_parts.len() > 1 {
-            let mut cmd = std::process::Command::new(dart_parts[0]);
-            for part in &dart_parts[1..] {
-                cmd.arg(part);
-            }
-            cmd
-        } else {
-            std::process::Command::new(&dart)
-        };
-        let output = dart_fmt
-            .current_dir(&dart_test_root)
-            .arg("format")
-            .arg(format!("test/{usecase}"))
-            .output()
-            .unwrap();
-        info!(
-            "Running command: {dart_fmt:?} inside {dart_test_root:?} => {}",
-            String::from_utf8_lossy(&output.stderr)
-        );
-    }
+    let mut dart_fmt = if dart_parts.len() > 1 {
+        let mut cmd = std::process::Command::new(dart_parts[0]);
+        for part in &dart_parts[1..] {
+            cmd.arg(part);
+        }
+        cmd
+    } else {
+        std::process::Command::new(&dart)
+    };
+    let output = dart_fmt
+        .current_dir(&dart_test_root)
+        .arg("format")
+        .arg(format!("test/{usecase}"))
+        .output()
+        .unwrap();
+    info!(
+        "Running command: {dart_fmt:?} inside {dart_test_root:?} => {}",
+        String::from_utf8_lossy(&output.stderr)
+    );
 
     let mut dart_test = if dart_parts.len() > 1 {
         let mut cmd = std::process::Command::new(dart_parts[0]);
@@ -193,30 +187,28 @@ pub fn run_flutter_tests(usecase: &str) {
     FLUTTER_TESTS_CODEGEN.call_once(|| {
         ensure_native_lib_built(root_dir);
         run_codegen(root_dir, true);
-        if should_format_test_output() {
-            let dart = get_dart_command().unwrap_or_else(|e| panic!("⚠️  {e}. install dart"));
-            let dart_parts: Vec<&str> = dart.split_whitespace().collect();
-            let mut dart_fmt = if dart_parts.len() > 1 {
-                let mut cmd = std::process::Command::new(dart_parts[0]);
-                for part in &dart_parts[1..] {
-                    cmd.arg(part);
-                }
-                cmd
-            } else {
-                std::process::Command::new(&dart)
-            };
-            let output = dart_fmt
-                .current_dir(root_dir)
-                .arg("format")
-                .arg("./lib")
-                .arg("./test")
-                .output()
-                .unwrap();
-            info!(
-                "Running command: {dart_fmt:?} => {}",
-                String::from_utf8_lossy(&output.stderr)
-            );
-        }
+        let dart = get_dart_command().unwrap_or_else(|e| panic!("⚠️  {e}. install dart"));
+        let dart_parts: Vec<&str> = dart.split_whitespace().collect();
+        let mut dart_fmt = if dart_parts.len() > 1 {
+            let mut cmd = std::process::Command::new(dart_parts[0]);
+            for part in &dart_parts[1..] {
+                cmd.arg(part);
+            }
+            cmd
+        } else {
+            std::process::Command::new(&dart)
+        };
+        let output = dart_fmt
+            .current_dir(root_dir)
+            .arg("format")
+            .arg("./lib")
+            .arg("./test")
+            .output()
+            .unwrap();
+        info!(
+            "Running command: {dart_fmt:?} => {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
     });
 
     let flutter_cmd = get_flutter_command().unwrap();

@@ -4,6 +4,7 @@ version: "3"
 
 vars:
     GREETING: Hello, World!
+    TEST_THREADS: '{{default "2" .SHALOM_TEST_THREADS}}'
     DART_BIN:
         sh: |
             if command -v fvm > /dev/null 2>&1; then
@@ -50,8 +51,6 @@ tasks:
             - typos
 
     test:
-        env:
-            SHALOM_TEST_NO_FMT: '{{if contains "--no-fmt" .CLI_ARGS}}1{{else}}0{{end}}'
         cmds:
-            - cd rust && cargo test -- --test-threads=2
+            - cd rust && cargo test -- --test-threads={{.TEST_THREADS}}
             - cd dart/shalom && {{.DART_BIN}} test
