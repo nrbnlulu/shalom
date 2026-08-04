@@ -334,7 +334,8 @@ void main() {
                 client
                     .request<_TestData>(
                       name: 'GetUserDetails',
-                      decoder: (d) => _TestData(_json(d)['user'] as JsonObject? ?? {}),
+                      decoder: (d) =>
+                          _TestData(_json(d)['user'] as JsonObject? ?? {}),
                     )
                     .first,
               );
