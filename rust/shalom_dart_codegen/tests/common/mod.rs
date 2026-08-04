@@ -182,18 +182,13 @@ pub fn run_flutter_tests(usecase: &str) {
         Err(e) => eprintln!("Error initializing logger: {e}"),
     }
     let tests_dir = tests_path("flutter_tests");
-    let dart = match get_dart_command() {
-        Ok(cmd) => cmd,
-        Err(e) => {
-            panic!("⚠️  {e}. install dart");
-        }
-    };
     let root_dir = &tests_dir.parent().unwrap();
 
-    let dart_parts: Vec<&str> = dart.split_whitespace().collect();
     FLUTTER_TESTS_CODEGEN.call_once(|| {
         ensure_native_lib_built(root_dir);
         run_codegen(root_dir, true);
+        let dart = get_dart_command().unwrap_or_else(|e| panic!("⚠️  {e}. install dart"));
+        let dart_parts: Vec<&str> = dart.split_whitespace().collect();
         let mut dart_fmt = if dart_parts.len() > 1 {
             let mut cmd = std::process::Command::new(dart_parts[0]);
             for part in &dart_parts[1..] {
