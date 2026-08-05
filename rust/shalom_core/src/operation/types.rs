@@ -378,8 +378,8 @@ impl ObjectLikeCommon {
                         .is_type_same_or_implementing_interface(root_type_name, on_type)
             };
 
-            for (on_type, inline_frag) in current_obj.used_inline_frags.iter() {
-                if is_type_matching(on_type) {
+            for inline_frag in current_obj.used_inline_frags.values() {
+                if is_type_matching(&inline_frag.common.schema_typename) {
                     resolved_selections.extend(inline_frag.common.selections.iter().cloned());
                     recursive_inner(
                         root_type_name,
