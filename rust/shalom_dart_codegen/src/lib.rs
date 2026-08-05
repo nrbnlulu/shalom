@@ -727,6 +727,31 @@ where
         },
     );
 
+    let ctx_clone4 = ctx.clone();
+    env.add_function(
+        "implementable_fragments",
+        move |used_fragments: ViaDeserialize<std::collections::BTreeSet<String>>,
+              unwrapped_fragments: ViaDeserialize<std::collections::BTreeSet<String>>|
+              -> minijinja::Value {
+            // A fragment can only be `implements`-ed here if this exact selection is the
+            // live (non-Ref) type for it - i.e. the fragment isn't `@observe`d at this spread
+            // site, or it is but was spread with `@unwrap`. Otherwise the field's type is a
+            // `XxxRef` instead of this class, so implementing it here would be misleading.
+            let filtered: std::collections::BTreeSet<String> = used_fragments
+                .0
+                .iter()
+                .filter(|frag_name| {
+                    let is_observed = ctx_clone4
+                        .get_fragment(frag_name)
+                        .is_some_and(|fragment| fragment.is_observe());
+                    !is_observed || unwrapped_fragments.0.contains(*frag_name)
+                })
+                .cloned()
+                .collect();
+            minijinja::Value::from_serialize(filtered)
+        },
+    );
+
     Ok(())
 }
 
@@ -739,6 +764,7 @@ fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) 
             for frag_name in &obj.common.used_fragments {
                 if let Some(fragment) = ctx.get_fragment(frag_name)
                     && fragment.is_observe()
+                    && !obj.common.unwrapped_fragments.contains(frag_name)
                 {
                     return Some(frag_name.clone());
                 }
@@ -749,6 +775,7 @@ fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) 
             for frag_name in &union.common.common.used_fragments {
                 if let Some(fragment) = ctx.get_fragment(frag_name)
                     && fragment.is_observe()
+                    && !union.common.common.unwrapped_fragments.contains(frag_name)
                 {
                     return Some(frag_name.clone());
                 }
@@ -759,6 +786,11 @@ fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) 
             for frag_name in &interface.common.common.used_fragments {
                 if let Some(fragment) = ctx.get_fragment(frag_name)
                     && fragment.is_observe()
+                    && !interface
+                        .common
+                        .common
+                        .unwrapped_fragments
+                        .contains(frag_name)
                 {
                     return Some(frag_name.clone());
                 }
@@ -867,7 +899,7 @@ impl OperationEnv<'_> {
         let template = self.env.get_template("operation").unwrap();
         let mut resolved_query = operation_ctx.query.clone();
         for frag in operation_ctx.typedefs.flatten_used_fragments() {
-            resolved_query.push_str(format!("\n {}", frag.fragment_raw).as_str());
+            resolved_query.push_str(format!("\n {}", frag.network_sdl).as_str());
         }
         let ctx = context! {
             context => context!{

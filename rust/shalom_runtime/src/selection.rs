@@ -90,6 +90,7 @@ pub fn selection_get_observed_fragments(
         for frag_name in &common.used_fragments {
             if let Some(fragment) = ctx.get_fragment(frag_name)
                 && fragment.is_observe()
+                && !common.unwrapped_fragments.contains(frag_name)
             {
                 observed.push(frag_name.clone());
             }

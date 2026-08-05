@@ -24,7 +24,7 @@ import '{{ import_path }}';
 
 // ------------ OBJECT DEFINITIONS -------------
 {% for name, obj in typedefs.objects | items %}
-    {{ selection_object_definition(obj) }}
+    {{ selection_object_definition(obj, use_observe=false) }}
 {% endfor %}
 // ------------ END OBJECT DEFINITIONS -------------
 
@@ -32,7 +32,7 @@ import '{{ import_path }}';
 {% set union_types = typedefs.unions %}
 {% for union_full_name, union_selection in union_types | items %}
     {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
-    {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
+    {{ multi_type_selection_definition(union_full_name, union_selection, concretes, use_observe=false) }}
     {% for concrete_subset in concretes -%}
         class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
             {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections) }}
@@ -44,7 +44,7 @@ import '{{ import_path }}';
 // ------------ INTERFACE DEFINITIONS -------------
 {% for iface_path_name, iface_selection in typedefs.interfaces | items %}
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
-    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
+    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes, use_observe=false) }}
     {% for concrete_subset in concretes -%}
         class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}}  {
             {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections) }}
