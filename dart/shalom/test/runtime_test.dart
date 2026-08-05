@@ -17,6 +17,14 @@ String get _nativeLibPath {
 
 JsonObject _json(ShalomJsonValue value) => value.toJsonValue() as JsonObject;
 
+/// [request]/[subscribeToFragment] require a [StreamCompat] type argument;
+/// wrap plain decoded JSON so these tests can use it as one.
+class _TestData extends MapView<String, dynamic> implements StreamCompat {
+  _TestData(super.map);
+}
+
+_TestData _tdJson(ShalomJsonValue value) => _TestData(_json(value));
+
 // ---------------------------------------------------------------------------
 // Inline mock link.
 // ---------------------------------------------------------------------------
@@ -167,9 +175,9 @@ void main() {
       client.registerOperation(document: query);
 
       final sub = client
-          .request<JsonObject>(
+          .request<_TestData>(
             name: 'GetUser',
-            decoder: (d) => _json(d)['user'] as JsonObject? ?? {},
+            decoder: (d) => _TestData(_json(d)['user'] as JsonObject? ?? {}),
           )
           .listen((_) {});
 
@@ -192,7 +200,7 @@ void main() {
 
     for (var i = 0; i < 20; i++) {
       final response = await client
-          .request<JsonObject>(name: 'GetVersion', decoder: _json)
+          .request<_TestData>(name: 'GetVersion', decoder: _tdJson)
           .first
           .timeout(const Duration(seconds: 5));
       final data = _expectData(response);
@@ -218,9 +226,9 @@ void main() {
     client.registerOperation(document: query);
 
     final response = await client
-        .request<JsonObject>(
+        .request<_TestData>(
           name: 'GetUser',
-          decoder: (d) => _json(d)['user'] as JsonObject? ?? {},
+          decoder: (d) => _TestData(_json(d)['user'] as JsonObject? ?? {}),
         )
         .first
         .timeout(const Duration(seconds: 5));
@@ -254,9 +262,9 @@ void main() {
     client.registerOperation(document: query);
 
     final response = await client
-        .request<JsonObject>(
+        .request<_TestData>(
           name: 'GetUser',
-          decoder: (data) => _json(data)['user'] as JsonObject,
+          decoder: (data) => _TestData(_json(data)['user'] as JsonObject),
         )
         .first
         .timeout(const Duration(seconds: 5));
@@ -315,18 +323,19 @@ void main() {
       final secondReceived = Completer<void>();
 
       final sub = client
-          .request<JsonObject>(
+          .request<_TestData>(
             name: 'GetUser',
-            decoder: (d) => _json(d)['user'] as JsonObject? ?? {},
+            decoder: (d) => _TestData(_json(d)['user'] as JsonObject? ?? {}),
           )
           .listen((response) {
             results.add(_expectData(response));
             if (results.length == 1) {
               unawaited(
                 client
-                    .request<JsonObject>(
+                    .request<_TestData>(
                       name: 'GetUserDetails',
-                      decoder: (d) => _json(d)['user'] as JsonObject? ?? {},
+                      decoder: (d) =>
+                          _TestData(_json(d)['user'] as JsonObject? ?? {}),
                     )
                     .first,
               );
@@ -372,9 +381,9 @@ void main() {
     bool gotUpdate = false;
 
     final sub = client
-        .request<JsonObject>(
+        .request<_TestData>(
           name: 'GetUser',
-          decoder: (d) => _json(d)['user'] as JsonObject? ?? {},
+          decoder: (d) => _TestData(_json(d)['user'] as JsonObject? ?? {}),
         )
         .listen((data) {
           if (!firstReceived.isCompleted) {
@@ -387,9 +396,9 @@ void main() {
     await firstReceived.future.timeout(const Duration(seconds: 5));
 
     await client
-        .request<JsonObject>(
+        .request<_TestData>(
           name: 'GetPost',
-          decoder: (d) => _json(d)['post'] as JsonObject? ?? {},
+          decoder: (d) => _TestData(_json(d)['post'] as JsonObject? ?? {}),
         )
         .first
         .timeout(const Duration(seconds: 5));
@@ -454,19 +463,19 @@ void main() {
 
     // Populate the cache.
     await client
-        .request<JsonObject>(name: 'GetUser', decoder: _json)
+        .request<_TestData>(name: 'GetUser', decoder: _tdJson)
         .first
         .timeout(const Duration(seconds: 5));
 
     // Subscribe to the pet entity by its normalised cache key.
-    final petUpdates = client.subscribeToFragment<JsonObject>(
+    final petUpdates = client.subscribeToFragment<_TestData>(
       ref: ObservedRefInput(observableId: 'PetFrag', anchor: 'Pet:14'),
-      decoder: _json,
+      decoder: _tdJson,
     );
 
     // Trigger a second fetch that updates Pet:14.name to "Max".
     unawaited(
-      client.request<JsonObject>(name: 'GetUser', decoder: _json).first,
+      client.request<_TestData>(name: 'GetUser', decoder: _tdJson).first,
     );
 
     // skip(1): discard the immediate cache hit ('Rex'); await the update ('Max').
@@ -509,19 +518,19 @@ void main() {
 
       // Populate cache.
       await client
-          .request<JsonObject>(name: 'FetchUser', decoder: _json)
+          .request<_TestData>(name: 'FetchUser', decoder: _tdJson)
           .first
           .timeout(const Duration(seconds: 5));
 
       final ref = ObservedRefInput(observableId: 'UserFrag', anchor: 'User:7');
-      final updates = client.subscribeToFragment<JsonObject>(
+      final updates = client.subscribeToFragment<_TestData>(
         ref: ref,
-        decoder: _json,
+        decoder: _tdJson,
       );
 
       // Trigger the write.
       unawaited(
-        client.request<JsonObject>(name: 'FetchUser', decoder: _json).first,
+        client.request<_TestData>(name: 'FetchUser', decoder: _tdJson).first,
       );
 
       // skip(1): discard the immediate cache hit ('Initial'); await the update ('Updated').
@@ -577,18 +586,18 @@ void main() {
 
     // Populate cache for both pets.
     await client
-        .request<JsonObject>(name: 'GetPet14', decoder: _json)
+        .request<_TestData>(name: 'GetPet14', decoder: _tdJson)
         .first
         .timeout(const Duration(seconds: 5));
     await client
-        .request<JsonObject>(name: 'GetPet15', decoder: _json)
+        .request<_TestData>(name: 'GetPet15', decoder: _tdJson)
         .first
         .timeout(const Duration(seconds: 5));
 
     // Subscribe to Pet:14 via the fragment.
-    final sub14 = client.subscribeToFragment<JsonObject>(
+    final sub14 = client.subscribeToFragment<_TestData>(
       ref: ObservedRefInput(observableId: 'PetFrag', anchor: 'Pet:14'),
-      decoder: _json,
+      decoder: _tdJson,
     );
     // Drain first emission (immediate cache hit).
     await sub14.first.timeout(const Duration(seconds: 5));
@@ -600,9 +609,9 @@ void main() {
     //
     // For a white-box rebind test (with a known subId), use the Rust layer
     // tests in rust/shalom_runtime/tests/.
-    final sub15 = client.subscribeToFragment<JsonObject>(
+    final sub15 = client.subscribeToFragment<_TestData>(
       ref: ObservedRefInput(observableId: 'PetFrag', anchor: 'Pet:15'),
-      decoder: _json,
+      decoder: _tdJson,
     );
     final pet15 = _expectData(
       await sub15.first.timeout(const Duration(seconds: 5)),
