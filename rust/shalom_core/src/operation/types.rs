@@ -392,12 +392,7 @@ impl ObjectLikeCommon {
             for (on_type, type_cond) in current_obj.type_cond_selections.iter() {
                 if is_type_matching(on_type) {
                     resolved_selections.extend(type_cond.selections.iter().cloned());
-                    recursive_inner(
-                        root_type_name,
-                        resolved_selections,
-                        type_cond,
-                        ctx,
-                    );
+                    recursive_inner(root_type_name, resolved_selections, type_cond, ctx);
                 }
             }
         }
