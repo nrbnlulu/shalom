@@ -367,13 +367,19 @@ impl ObjectLikeCommon {
                     recursive_inner(root_type_name, resolved_selections, frag_root, ctx);
                 }
             }
-            // these should also be safe to expand here
-            // since this type implements them
+            // Expand inline fragments and type conditioned selections ONLY if they match
+            // this target type or if the target type implements the condition interface.
+            // Incompatible type conditions are skipped because the server won't return those fields
+            // for non-matching concrete types.
+            let is_type_matching = |on_type: &str| {
+                root_type_name == on_type
+                    || ctx
+                        .schema_ctx
+                        .is_type_same_or_implementing_interface(root_type_name, on_type)
+            };
+
             for (on_type, inline_frag) in current_obj.used_inline_frags.iter() {
-                if ctx
-                    .schema_ctx
-                    .is_type_same_or_implementing_interface(root_type_name, on_type)
-                {
+                if is_type_matching(on_type) {
                     resolved_selections.extend(inline_frag.common.selections.iter().cloned());
                     recursive_inner(
                         root_type_name,
@@ -383,10 +389,17 @@ impl ObjectLikeCommon {
                     );
                 }
             }
-            // type conditioned selections should not be expanded here since
-            // even if you selected a selections that applies to the root type but
-            // in a type condition, you won't get it in the graphql response if
-            // the resolved type is other than that type condition concrete.
+            for (on_type, type_cond) in current_obj.type_cond_selections.iter() {
+                if is_type_matching(on_type) {
+                    resolved_selections.extend(type_cond.selections.iter().cloned());
+                    recursive_inner(
+                        root_type_name,
+                        resolved_selections,
+                        type_cond,
+                        ctx,
+                    );
+                }
+            }
         }
 
         let mut selections = BTreeSet::new();

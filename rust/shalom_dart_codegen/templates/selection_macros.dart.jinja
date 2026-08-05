@@ -399,9 +399,9 @@ null
     }
 {% endmacro %}
 
-{% macro selection_object_definition(object, use_observe=true, implement_fragments=true) -%}
-    class {{ object.path_name }} {% if implement_fragments %}{{ implements_used_fragments(object.used_fragments) }}{% endif %}  {
-        {{ selection_object_impl(object.path_name, object, is_root_selection=false, full_name=object.path_name, shared_selections=get_all_selections_distinct(object), use_observe=use_observe) }}
+{% macro selection_object_definition(object, use_observe=true) -%}
+    class {{ object.path_name }} {{ implements_used_fragments(implementable_fragments(object.used_fragments, object.unwrapped_fragments) if use_observe else object.used_fragments) }}  {
+        {{ selection_object_impl(object.path_name, object, is_root_selection=false, full_name=object.path_name, shared_selections=get_all_selections_that_apply_on_this_type_only(object), use_observe=use_observe) }}
     }
 {% endmacro %}
 
