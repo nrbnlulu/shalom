@@ -37,6 +37,13 @@ pub type FragName = String;
 pub struct FragmentContext {
     pub name: FragName,
     pub fragment_raw: String,
+    /// Same shape as `fragment_raw`, but with internal-only directives (like
+    /// `@unwrap` on nested spreads) stripped. This is the copy that must be
+    /// used to build the literal query text sent to a real GraphQL server;
+    /// `fragment_raw` itself is kept intact for runtime registration, since the
+    /// Rust runtime needs to see `@unwrap` on nested spreads to know not to
+    /// wrap them as observed refs.
+    pub network_sdl: String,
     #[serde(skip_serializing)]
     pub file_path: PathBuf,
     pub typedefs: TypeDefs,
@@ -56,6 +63,7 @@ impl FragmentContext {
     ) -> Self {
         FragmentContext {
             name,
+            network_sdl: fragment_raw.clone(),
             file_path,
             fragment_raw,
             typedefs: TypeDefs::new(),
@@ -128,8 +136,21 @@ pub(crate) fn parse_fragment(
         .0
         .retain(|d| d.name.as_str() != "observe");
 
-    // Update fragment_raw with the injected fields (and @observe stripped for network use)
+    // Update fragment_raw with the injected fields (and @observe stripped for network use).
+    // Nested `@unwrap` on spreads is intentionally preserved here - it must survive into
+    // the document used for runtime registration (see `network_sdl` below for the copy
+    // actually sent over the wire).
     fragment_ctx.fragment_raw = fragment.to_string();
+
+    // Build the network-safe copy: same as fragment_raw, but with `@unwrap` recursively
+    // stripped off every nested fragment spread so it never reaches a real GraphQL server.
+    let mut network_fragment = fragment.clone();
+    let network_fragment_mut = network_fragment.make_mut();
+    crate::operation::parse::strip_directive_from_spreads_recursive(
+        &mut network_fragment_mut.selection_set,
+        "unwrap",
+    );
+    fragment_ctx.network_sdl = network_fragment.to_string();
 
     let selection_set = &fragment.selection_set;
     let type_name = fragment.type_condition();
