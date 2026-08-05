@@ -110,7 +110,7 @@ class ZooAnimalsContractQueryData
 
 // ------------ INTERFACE DEFINITIONS -------------
 
-sealed class ZooAnimalsContractQuery_animals implements CommonAnimalFrag {
+sealed class ZooAnimalsContractQuery_animals {
   String get id;
 
   String get $__typename;

@@ -231,7 +231,7 @@ class ShalomRuntimeClient {
     ShalomJsonValue? variables,
     required T Function(ShalomJsonValue) decoder,
     rs_runtime.ExecutionPolicyInput executionPolicy =
-        rs_runtime.ExecutionPolicyInput.networkFirst,
+        .networkFirst,
     RetryDelay retryDelay = const RetryDelay.inherit(),
     Duration? autoRefetch,
   }) {

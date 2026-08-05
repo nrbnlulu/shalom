@@ -12,6 +12,7 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomInheritedWidget;
 const String kSchemaSdl = r'''type Query {
   user(id: ID!): User
   pet(id: ID!): Pet
+  petUnwrapped(id: ID!): Pet
   animal(id: ID!): Animal
   animals: [Animal!]!
   zoo(id: ID!): Zoo
@@ -287,6 +288,18 @@ query AnimalQuery ($id: ID!) @observe {
 query AnimalWithOwnerQuery ($id: ID!) @observe {
   animal(id: $id) {
     ...AnimalWithOwnerWidget
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query UnwrapQuery ($id: ID!) @observe {
+  pet(id: $id) {
+    ...PetWidget
+  }
+  petUnwrapped(id: $id) {
+    ...PetWidget @unwrap
   }
 }
 ''',

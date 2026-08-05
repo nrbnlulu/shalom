@@ -194,6 +194,11 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
             let fragment_name = fragment_spread.fragment_name.to_string();
             trace!("Processing fragment spread: {}", fragment_name);
 
+            let is_unwrap = fragment_spread
+                .directives
+                .iter()
+                .any(|d| d.name.as_str() == "unwrap");
+
             // all fragments should be already parsed by now.
             let frag = global_ctx.get_fragment_strict(&fragment_name);
             // add it globally for imports awareness
@@ -207,15 +212,23 @@ pub(crate) fn parse_selection<T: ExecutableContext>(
                 )
             {
                 // if this fragment is of the same type that it is used on we just add it on the used_fragments
-                obj_like.add_used_fragment(fragment_name.clone());
+                if is_unwrap {
+                    obj_like.add_used_fragment_unwrapped(fragment_name.clone());
+                } else {
+                    obj_like.add_used_fragment(fragment_name.clone());
+                }
             } else {
-                obj_like
+                let type_cond = obj_like
                     .type_cond_selections
                     .entry(frag_root.schema_typename.clone())
                     .or_insert_with(move || {
                         ObjectLikeCommon::new(path.clone(), frag_root.schema_typename.clone())
-                    })
-                    .add_used_fragment(frag.name.clone());
+                    });
+                if is_unwrap {
+                    type_cond.add_used_fragment_unwrapped(frag.name.clone());
+                } else {
+                    type_cond.add_used_fragment(frag.name.clone());
+                }
             }
         }
         apollo_executable::Selection::InlineFragment(inline_fragment) => {
@@ -647,6 +660,43 @@ pub(crate) fn get_used_fragments_from_fragment(
     used
 }
 
+/// Recursively strips a directive (by name) from every fragment spread nested
+/// anywhere within a selection set. Internal-only directives (like `@unwrap`)
+/// must never leak into the literal GraphQL text sent to a real server, which
+/// doesn't declare them.
+pub(crate) fn strip_directive_from_spreads_recursive(
+    selection_set: &mut apollo_executable::SelectionSet,
+    directive_name: &str,
+) {
+    for selection in selection_set.selections.iter_mut() {
+        match selection {
+            apollo_executable::Selection::Field(field) => {
+                if !field.selection_set.selections.is_empty() {
+                    let field_mut = field.make_mut();
+                    strip_directive_from_spreads_recursive(
+                        &mut field_mut.selection_set,
+                        directive_name,
+                    );
+                }
+            }
+            apollo_executable::Selection::FragmentSpread(spread) => {
+                let spread_mut = spread.make_mut();
+                spread_mut
+                    .directives
+                    .0
+                    .retain(|d| d.name.as_str() != directive_name);
+            }
+            apollo_executable::Selection::InlineFragment(inline_fragment) => {
+                let inline_mut = inline_fragment.make_mut();
+                strip_directive_from_spreads_recursive(
+                    &mut inline_mut.selection_set,
+                    directive_name,
+                );
+            }
+        }
+    }
+}
+
 fn parse_operation(
     global_ctx: &SharedShalomGlobalContext,
     mut op: Node<apollo_compiler::executable::Operation>,
@@ -663,11 +713,20 @@ fn parse_operation(
         op_mut.directives.0.retain(|d| d.name.as_str() != "observe");
     }
     let op_type = parse_operation_type(op.operation_type);
+
+    // Build the network-safe copy of the operation text: same as `op`, but with
+    // `@unwrap` recursively stripped off nested spreads so it never reaches a real
+    // GraphQL server. This must be a separate clone - `op` itself (with `@unwrap`
+    // intact) is still needed below to build the IR via `parse_obj_like_from_selection_set`.
+    let mut network_op = op.clone();
+    let network_op_mut = network_op.make_mut();
+    strip_directive_from_spreads_recursive(&mut network_op_mut.selection_set, "unwrap");
+
     let mut query = fragment_sdls.join("\n");
     if !query.is_empty() {
         query.push('\n');
     }
-    query.push_str(&op.to_string());
+    query.push_str(&network_op.to_string());
     let mut ctx = OperationContext::new(
         global_ctx.schema_ctx.clone(),
         operation_name.clone(),

@@ -28,7 +28,7 @@ import '{{ import_path }}';
 {% include "selection_macros" %}
 
 // ------------ OBJECT DEFINITIONS -------------
-class {{ operation_name }}Data implements shalom_core.OperationInterface{% if is_observe -%}, shalom_core.StreamCompat{% else %}{% for frag_name in context.operation.root_type.used_fragments -%}, {{ frag_name }}{% endfor %}{% endif %}  {
+class {{ operation_name }}Data implements shalom_core.OperationInterface{% if is_observe -%}, shalom_core.StreamCompat{% endif %}{% for frag_name in (implementable_fragments(context.operation.root_type.used_fragments, context.operation.root_type.unwrapped_fragments) if is_observe else context.operation.root_type.used_fragments) -%}, {{ frag_name }}{% endfor %}  {
     {{ selection_object_impl(operation_name ~ "Data", context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name, shared_selections=context.operation.root_type.selections, use_observe=is_observe) }}
 
     @override
@@ -72,7 +72,7 @@ class {{ operation_name }}Data implements shalom_core.OperationInterface{% if is
 }
 
 {% for name, obj in typedefs.objects | items %}
-    {{ selection_object_definition(obj, implement_fragments=not is_observe) }}
+    {{ selection_object_definition(obj, use_observe=is_observe) }}
 {% endfor %}
 
 // ------------ END OBJECT DEFINITIONS -------------
@@ -84,7 +84,7 @@ class {{ operation_name }}Data implements shalom_core.OperationInterface{% if is
 {% for union_full_name, union_selection in union_types | items %}
     {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
     {# generate sealed classes #}
-    {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
+    {{ multi_type_selection_definition(union_full_name, union_selection, concretes, use_observe=is_observe) }}
 
     {# generate subsets #}
     {% for concrete_subset in concretes -%}
@@ -101,7 +101,7 @@ class {{ operation_name }}Data implements shalom_core.OperationInterface{% if is
 {% for iface_path_name, iface_selection in typedefs.interfaces | items %}
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
     {# generate sealed classes #}
-    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
+    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes, use_observe=is_observe) }}
 
     {# generate subsets #}
     {% for concrete_subset in concretes -%}
