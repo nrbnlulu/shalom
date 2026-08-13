@@ -579,6 +579,17 @@ where
         },
     );
 
+    let ctx_clone4 = ctx.clone();
+    env.add_function(
+        "get_all_selections_that_apply_on_this_type_only",
+        move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
+            let selections = obj_like
+                .0
+                .get_all_selections_that_apply_on_this_type_only(&ctx_clone4);
+            minijinja::Value::from_serialize(&selections)
+        },
+    );
+
     let executable_ctx_clone3 = executable_ctx.clone();
     env.add_function(
         "object_like_needs_variables",
