@@ -54,3 +54,31 @@ tasks:
         cmds:
             - cd rust && cargo test -- --test-threads={{.TEST_THREADS}}
             - cd dart/shalom && {{.DART_BIN}} test
+
+    publish_dart_packages:
+        desc: Publish Dart package versions that are not on pub.dev yet
+        preconditions:
+            - sh: command -v curl
+              msg: curl is required to query pub.dev
+        cmds:
+            - |
+                set -eu
+
+                for package_dir in \
+                    dart/shalom_annotations \
+                    dart/shalom \
+                    dart/shalom_flutter
+                do
+                    package_name="$(sed -n 's/^name:[[:space:]]*//p' "$package_dir/pubspec.yaml" | head -n 1)"
+                    local_version="$(sed -n 's/^version:[[:space:]]*//p' "$package_dir/pubspec.yaml" | head -n 1)"
+                    status="$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' "https://pub.dev/api/packages/$package_name/versions/$local_version")"
+
+                    case "$status" in
+                        200) echo "$package_name $local_version is already published" ;;
+                        404)
+                            echo "Publishing $package_name $local_version"
+                            (cd "$package_dir" && {{.DART_BIN}} pub publish --force)
+                            ;;
+                        *) echo "Could not check $package_name $local_version on pub.dev (HTTP $status)" >&2; exit 1 ;;
+                    esac
+                done
