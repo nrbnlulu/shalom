@@ -74,15 +74,18 @@ pub fn collect_garbage(cache: &mut NormalizedCache, active_keys: &HashSet<String
         }
     }
 
-    for key in cache.keys() {
-        if keep.contains(key) {
-            continue;
+    // Retain directly watched records and the legacy `record_field` form.
+    // Deriving candidate record keys from each watched key avoids comparing
+    // every cache entry with every active key (O(cache * active)).
+    for active_key in active_keys {
+        if cache.get(active_key).is_some() {
+            keep.insert(active_key.clone());
         }
-        if active_keys
-            .iter()
-            .any(|sub| sub == key || sub.starts_with(&format!("{key}_")))
-        {
-            keep.insert(key.clone());
+        for (separator, _) in active_key.match_indices('_') {
+            let candidate = &active_key[..separator];
+            if cache.get(candidate).is_some() {
+                keep.insert(candidate.to_string());
+            }
         }
     }
 
@@ -110,6 +113,7 @@ pub fn collect_garbage(cache: &mut NormalizedCache, active_keys: &HashSet<String
             evicted.push(key);
         }
     }
+    cache.prune_ref_index();
 
     evicted
 }

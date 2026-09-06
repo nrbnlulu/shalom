@@ -2204,3 +2204,61 @@ mod incomplete_cache_emissions {
         runtime.unsubscribe(&sub_id);
     }
 }
+
+#[test]
+fn subscriber_index_notifies_only_the_changed_operation() {
+    let schema = r#"
+        type Query { a: Int, b: Int }
+    "#;
+    let operations = r#"
+        query A { a }
+        query B { b }
+    "#;
+
+    let schema_ctx = parse_schema(schema).unwrap();
+    let global_ctx = ShalomGlobalContext::new(
+        schema_ctx,
+        ShalomConfig::default(),
+        std::path::PathBuf::from("schema.graphql"),
+    );
+    let ops = parse_document(
+        &global_ctx,
+        operations,
+        &std::path::PathBuf::from("ops.graphql"),
+    )
+    .unwrap();
+    let op_a = ops.get("A").unwrap().clone();
+    let op_b = ops.get("B").unwrap().clone();
+    let runtime = ShalomRuntime::new(global_ctx);
+
+    normalize(&runtime, &op_a, json!({ "a": 1 }), None);
+    normalize(&runtime, &op_b, json!({ "b": 1 }), None);
+    let sub_a =
+        runtime.create_operation_subscription(op_a.clone(), None, ExecutionPolicy::CacheFirst);
+    let sub_b = runtime.create_operation_subscription(op_b, None, ExecutionPolicy::CacheFirst);
+    let mut updates_a = runtime.subscription_stream(&sub_a).unwrap();
+    let mut updates_b = runtime.subscription_stream(&sub_b).unwrap();
+
+    normalize(&runtime, &op_a, json!({ "a": 2 }), None);
+
+    let tokio_rt = Builder::new_current_thread().enable_all().build().unwrap();
+    tokio_rt.block_on(async {
+        updates_a.next().await.unwrap().unwrap();
+        updates_b.next().await.unwrap().unwrap();
+        let update_a = updates_a.next().await.unwrap().unwrap();
+        assert_eq!(update_a.data["a"], json!(2));
+        assert!(
+            tokio::time::timeout(Duration::from_millis(20), updates_b.next())
+                .await
+                .is_err(),
+            "the unchanged operation must not be notified"
+        );
+    });
+
+    assert_eq!(runtime.key_subscribers("ROOT_QUERY.a").len(), 1);
+    assert_eq!(runtime.key_subscribers("ROOT_QUERY.b").len(), 1);
+    runtime.unsubscribe(&sub_a);
+    runtime.unsubscribe(&sub_b);
+    assert!(runtime.key_subscribers("ROOT_QUERY.a").is_empty());
+    assert!(runtime.key_subscribers("ROOT_QUERY.b").is_empty());
+}

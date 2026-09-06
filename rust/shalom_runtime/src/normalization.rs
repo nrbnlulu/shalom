@@ -95,8 +95,8 @@ impl<'a> Normalizer<'a> {
             .as_object()
             .ok_or_else(|| anyhow::anyhow!("operation data is not an object"))?;
 
-        let cached_root = self.cache.get(&root_key).cloned().unwrap_or_default();
-        let mut next_root = cached_root.clone();
+        self.snapshot_key(&root_key);
+        let mut next_root = self.cache.remove(&root_key).unwrap_or_default();
         let selections = resolve_object_selections(op_ctx.get_root(), &self.global_ctx);
         let mut output = Map::new();
         let root_locator = CacheLocator::root(root_key.clone());
@@ -109,7 +109,7 @@ impl<'a> Normalizer<'a> {
             let field_segment =
                 field_path_segment(&field_name, &selection.arguments, self.variables);
             let field_ref_key = format!("{}.{}", root_key, field_segment);
-            let cached_value = cached_root.get(&field_cache_key);
+            let cached_value = next_root.remove(&field_cache_key);
             let field_locator = root_locator.child_field(field_cache_key.clone());
             if field_name != "__typename" {
                 self.used_refs.insert(field_ref_key.clone());
@@ -131,7 +131,6 @@ impl<'a> Normalizer<'a> {
             output.insert(field_name.clone(), normalized);
         }
 
-        self.snapshot_key(&root_key);
         self.cache.insert(root_key, next_root);
 
         Ok(NormalizationResult {
@@ -155,8 +154,8 @@ impl<'a> Normalizer<'a> {
             .as_object()
             .ok_or_else(|| anyhow::anyhow!("fragment data is not an object"))?;
 
-        let cached_root = self.cache.get(entity_key).cloned().unwrap_or_default();
-        let mut next_root = cached_root.clone();
+        self.snapshot_key(entity_key);
+        let mut next_root = self.cache.remove(entity_key).unwrap_or_default();
         let selections = resolve_object_selections(fragment.get_root(), &self.global_ctx);
         let mut output = Map::new();
         let root_locator = CacheLocator::root(entity_key.to_string());
@@ -169,7 +168,7 @@ impl<'a> Normalizer<'a> {
             let field_segment =
                 field_path_segment(&field_name, &selection.arguments, self.variables);
             let field_ref_key = format!("{entity_key}.{field_segment}");
-            let cached_value = cached_root.get(&field_cache_key);
+            let cached_value = next_root.remove(&field_cache_key);
             let field_locator = root_locator.child_field(field_cache_key.clone());
             if field_name != "__typename" {
                 self.used_refs.insert(field_ref_key.clone());
@@ -191,7 +190,6 @@ impl<'a> Normalizer<'a> {
             output.insert(field_name.clone(), normalized);
         }
 
-        self.snapshot_key(entity_key);
         self.cache.insert(entity_key.to_string(), next_root);
 
         Ok(NormalizationResult {
@@ -207,7 +205,7 @@ impl<'a> Normalizer<'a> {
         &mut self,
         selection: &FieldSelection,
         raw_value: &Value,
-        cached_value: Option<&CacheValue>,
+        cached_value: Option<CacheValue>,
         parent_record: &mut CacheRecord,
         parent_ref_key: &str,
         field_segment: &str,
@@ -220,7 +218,7 @@ impl<'a> Normalizer<'a> {
             SelectionKind::Scalar(_) | SelectionKind::Enum(_) => {
                 let changed = has_field
                     && match cached_value {
-                        Some(CacheValue::Scalar(prev)) => prev != raw_value,
+                        Some(CacheValue::Scalar(prev)) => prev != *raw_value,
                         Some(_) => true,
                         None => true,
                     };
@@ -252,10 +250,10 @@ impl<'a> Normalizer<'a> {
                             selection.self_selection_name()
                         )
                     })?;
-                    let cached_list = cached_value.and_then(|v| match v {
-                        CacheValue::List(items) => Some(items.as_slice()),
+                    let cached_list = match cached_value {
+                        Some(CacheValue::List(items)) => Some(items),
                         _ => None,
-                    });
+                    };
                     let normalized = self.normalize_list(
                         list_sel,
                         raw_list,
@@ -292,6 +290,17 @@ impl<'a> Normalizer<'a> {
                     )
                 })?;
 
+                let had_value = matches!(
+                    &cached_value,
+                    Some(CacheValue::Ref(_) | CacheValue::Object(_))
+                );
+                let previous_ref = match &cached_value {
+                    Some(CacheValue::Ref(key)) => Some(key.clone()),
+                    _ => None,
+                };
+                let previous_was_object = matches!(&cached_value, Some(CacheValue::Object(_)));
+                let prev_typename = cached_value.as_ref().and_then(cached_typename_from_value);
+
                 let (value, cache_value, object_ref_key, entity_key, is_union_interface) = self
                     .normalize_object_field(
                         selection,
@@ -302,19 +311,13 @@ impl<'a> Normalizer<'a> {
                         field_locator.clone(),
                     )?;
 
-                let had_value = matches!(
-                    cached_value,
-                    Some(CacheValue::Ref(_) | CacheValue::Object(_))
-                );
-                let ref_changed = match cached_value {
-                    Some(CacheValue::Ref(prev)) => match &cache_value {
-                        CacheValue::Ref(next) => prev != next,
+                let ref_changed = match previous_ref {
+                    Some(prev) => match &cache_value {
+                        CacheValue::Ref(next) => &prev != next,
                         _ => true,
                     },
-                    Some(CacheValue::Object(_)) => matches!(cache_value, CacheValue::Ref(_)),
-                    Some(CacheValue::Scalar(v)) if v.is_null() => true,
-                    Some(_) => true,
-                    None => true,
+                    None if previous_was_object => matches!(cache_value, CacheValue::Ref(_)),
+                    None => !had_value,
                 };
 
                 if has_field && (ref_changed || !had_value) {
@@ -322,7 +325,6 @@ impl<'a> Normalizer<'a> {
                 }
 
                 if is_union_interface {
-                    let prev_typename = cached_value.and_then(cached_typename_from_value);
                     let new_typename = raw_obj
                         .get("__typename")
                         .and_then(|v| v.as_str())
@@ -346,7 +348,7 @@ impl<'a> Normalizer<'a> {
         &mut self,
         list_sel: &shalom_core::operation::types::ListSelection,
         raw_list: &[Value],
-        cached_list: Option<&[CacheValue]>,
+        cached_list: Option<Vec<CacheValue>>,
         parent_ref_key: &str,
         field_segment: &str,
         field_ref_key: &str,
@@ -354,10 +356,19 @@ impl<'a> Normalizer<'a> {
     ) -> anyhow::Result<ListNormalization> {
         let mut out = Vec::with_capacity(raw_list.len());
         let mut new_cache_list = Vec::with_capacity(raw_list.len());
+        let mut structural_changed = cached_list.as_ref().map(Vec::len) != Some(raw_list.len());
+        let mut cached_items = cached_list.map(Vec::into_iter);
 
         for (idx, raw_item) in raw_list.iter().enumerate() {
             let item_segment = format!("{}[{}]", field_segment, idx);
-            let item_cached = cached_list.and_then(|items| items.get(idx));
+            let item_cached = cached_items.as_mut().and_then(Iterator::next);
+            let previous_identity = (!structural_changed)
+                .then(|| {
+                    item_cached
+                        .as_ref()
+                        .map(|value| list_item_identity(value, idx))
+                })
+                .flatten();
             let item_locator = list_locator.child_index(idx);
             let item_value = match &list_sel.of_kind {
                 SelectionKind::Scalar(_) | SelectionKind::Enum(_) => {
@@ -399,10 +410,10 @@ impl<'a> Normalizer<'a> {
                         let inner_raw = raw_item.as_array().ok_or_else(|| {
                             anyhow::anyhow!("expected nested list for item at {idx}")
                         })?;
-                        let inner_cached = item_cached.and_then(|val| match val {
-                            CacheValue::List(items) => Some(items.as_slice()),
+                        let inner_cached = match item_cached {
+                            Some(CacheValue::List(items)) => Some(items),
                             _ => None,
-                        });
+                        };
                         let item_ref_key = format!("{}.{}", parent_ref_key, item_segment);
                         self.used_refs.insert(item_ref_key.clone());
                         let normalized = self.normalize_list(
@@ -420,12 +431,16 @@ impl<'a> Normalizer<'a> {
                 }
             };
             out.push(item_value);
+            if let Some(previous_identity) = previous_identity
+                && previous_identity
+                    != list_item_identity(
+                        new_cache_list.last().expect("list item was inserted"),
+                        idx,
+                    )
+            {
+                structural_changed = true;
+            }
         }
-
-        let structural_changed = match cached_list {
-            Some(prev) => list_structure_changed(prev, &new_cache_list),
-            None => true,
-        };
 
         if structural_changed {
             self.changed.insert(field_ref_key.to_string());
@@ -441,7 +456,7 @@ impl<'a> Normalizer<'a> {
         &mut self,
         selection: &FieldSelection,
         raw_obj: &Map<String, Value>,
-        cached_value: Option<&CacheValue>,
+        cached_value: Option<CacheValue>,
         parent_ref_key: &str,
         field_segment: &str,
         object_locator: CacheLocator,
@@ -506,17 +521,18 @@ impl<'a> Normalizer<'a> {
 
         let cached_record = match cached_value {
             Some(CacheValue::Ref(key)) => {
-                if entity_key.as_ref() == Some(key) {
-                    self.cache.get(key).cloned()
+                if entity_key.as_ref() == Some(&key) {
+                    self.snapshot_key(&key);
+                    self.cache.remove(&key)
                 } else {
                     None
                 }
             }
-            Some(CacheValue::Object(record)) => Some(record.clone()),
+            Some(CacheValue::Object(record)) => Some(record),
             _ => None,
         };
 
-        let mut next_record = cached_record.clone().unwrap_or_default();
+        let mut next_record = cached_record.unwrap_or_default();
         let mut output = Map::new();
 
         let record_locator = if let Some(entity_key) = &entity_key {
@@ -533,7 +549,7 @@ impl<'a> Normalizer<'a> {
             let field_segment =
                 field_path_segment(&field_name, &selection.arguments, self.variables);
             let field_ref_key = format!("{}.{}", object_ref_key, field_segment);
-            let cached_value = cached_record.as_ref().and_then(|r| r.get(&field_cache_key));
+            let cached_value = next_record.remove(&field_cache_key);
             let field_locator = record_locator.child_field(field_cache_key.clone());
             if field_name != "__typename" {
                 self.used_refs.insert(field_ref_key.clone());
@@ -576,6 +592,8 @@ impl<'a> Normalizer<'a> {
         }
 
         let cache_value = if let Some(entity_key) = entity_key.clone() {
+            // A newly referenced entity was not removed above, so capture its
+            // previous value before overwriting it for optimistic rollback.
             self.snapshot_key(&entity_key);
             self.cache.insert(entity_key.clone(), next_record);
             CacheValue::Ref(entity_key)
@@ -610,20 +628,6 @@ fn cached_typename_from_value(value: &CacheValue) -> Option<String> {
         }),
         CacheValue::Scalar(_) | CacheValue::List(_) => None,
     }
-}
-
-fn list_structure_changed(prev: &[CacheValue], next: &[CacheValue]) -> bool {
-    if prev.len() != next.len() {
-        return true;
-    }
-    for (idx, (left, right)) in prev.iter().zip(next.iter()).enumerate() {
-        let left_key = list_item_identity(left, idx);
-        let right_key = list_item_identity(right, idx);
-        if left_key != right_key {
-            return true;
-        }
-    }
-    false
 }
 
 fn list_item_identity(value: &CacheValue, idx: usize) -> String {
