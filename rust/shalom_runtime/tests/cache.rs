@@ -2262,3 +2262,71 @@ fn subscriber_index_notifies_only_the_changed_operation() {
     assert!(runtime.key_subscribers("ROOT_QUERY.a").is_empty());
     assert!(runtime.key_subscribers("ROOT_QUERY.b").is_empty());
 }
+
+#[test]
+fn invalid_nested_response_preserves_existing_cache_records() {
+    let schema = r#"
+        type Query { user: User }
+        type User {
+            id: ID!
+            name: String!
+            friends: [User!]!
+        }
+    "#;
+    let operation = r#"
+        query GetUser {
+            user {
+                id
+                name
+                friends { id name }
+            }
+        }
+    "#;
+    let (runtime, op_ctx) = build_ctx(schema, operation);
+    normalize(
+        &runtime,
+        &op_ctx,
+        json!({
+            "user": {
+                "id": "1",
+                "name": "Ada",
+                "friends": [{ "id": "2", "name": "Grace" }]
+            }
+        }),
+        None,
+    );
+    let root_before = record(&runtime, "ROOT_QUERY");
+    let user_before = record(&runtime, "User:1");
+
+    let error = runtime
+        .normalize(
+            &op_ctx,
+            json!({
+                "user": {
+                    "id": "1",
+                    "name": "corrupt",
+                    "friends": { "id": "not-a-list" }
+                }
+            }),
+            None,
+        )
+        .expect_err("invalid nested data must fail normalization");
+
+    assert!(
+        error
+            .to_string()
+            .contains("expected list for field friends")
+    );
+    assert_eq!(record(&runtime, "ROOT_QUERY"), root_before);
+    assert_eq!(record(&runtime, "User:1"), user_before);
+    assert_eq!(
+        runtime.read_from_cache(&op_ctx, None).unwrap().data,
+        json!({
+            "user": {
+                "id": "1",
+                "name": "Ada",
+                "friends": [{ "id": "2", "name": "Grace" }]
+            }
+        })
+    );
+}
