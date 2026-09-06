@@ -48,12 +48,14 @@ tasks:
             - cd rust/shalom_dart_codegen/dart_tests && find . -type f -name "*.dart" -not -path "*/__graphql__/*" | xargs {{.DART_BIN}} format --set-exit-if-changed
             - cd rust/shalom_dart_codegen/dart_tests && {{.DART_BIN}} analyze ./test ./lib
             - cd dart/shalom && {{.DART_BIN}} analyze ./test ./lib
+            - cd dart/shalom_dart_codegen && {{.DART_BIN}} analyze
             - typos
 
     test:
         cmds:
             - cd rust && cargo test -- --test-threads={{.TEST_THREADS}}
             - cd dart/shalom && {{.DART_BIN}} test
+            - cd dart/shalom_dart_codegen && {{.DART_BIN}} test
 
     publish_dart_packages:
         desc: Publish Dart package versions that are not on pub.dev yet
@@ -67,6 +69,7 @@ tasks:
                 for package_dir in \
                     dart/shalom_annotations \
                     dart/shalom \
+                    dart/shalom_dart_codegen \
                     dart/shalom_flutter
                 do
                     package_name="$(sed -n 's/^name:[[:space:]]*//p' "$package_dir/pubspec.yaml" | head -n 1)"

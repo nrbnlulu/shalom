@@ -5,16 +5,19 @@ A GraphQL client runtime for Dart and Flutter.
 
 ### Installation
 
-1. Build the CLI from source:
+1. Add the code generator to your project:
 
 ```bash
-cargo install --git https://github.com/nrbnlulu/shalom.git --branch main shalom_dart_codegen
+dart pub add --dev shalom_dart_codegen
 ```
 
-2. add flutter deps
+The matching native executable is downloaded from GitHub Releases for your
+development machine when Dart runs the package build hook.
+
+2. Add the Flutter dependencies:
+
 ```bash
-dart pub add shalom_flutter:'{"git":{"url": "https://github.com/nrbnlulu/shalom.git", "path": "dart/shalom_flutter"}}'
-dart pub add shalom_annotations:'{"git":{"url": "https://github.com/nrbnlulu/shalom.git", "path": "dart/shalom_annotations"}}'
+dart pub add shalom_flutter shalom_annotations
 ```
 
 
@@ -29,7 +32,7 @@ The `shalom` CLI provides commands to generate Dart code from your GraphQL schem
 Generate Dart code from GraphQL schema and operations:
 
 ```bash
-shalom generate [OPTIONS]
+dart run shalom_dart_codegen:shalom generate [OPTIONS]
 ```
 
 Options:
@@ -38,7 +41,7 @@ Options:
 
 Example:
 ```bash
-shalom generate --path ./my-project --strict
+dart run shalom_dart_codegen:shalom generate --path ./my-project --strict
 ```
 
 **Watch**
@@ -46,7 +49,7 @@ shalom generate --path ./my-project --strict
 Watch for changes in and automatically regenerate code:
 
 ```bash
-shalom watch [OPTIONS]
+dart run shalom_dart_codegen:shalom watch [OPTIONS]
 ```
 ### Examples 
 check the gif_search example under `./examples/flutter/gif_search`

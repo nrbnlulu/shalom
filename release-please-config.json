@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "simple",
+  "include-component-in-tag": true,
+  "packages": {
+    ".": {
+      "package-name": "shalom_dart_codegen",
+      "component": "shalom_dart_codegen",
+      "changelog-path": "dart/shalom_dart_codegen/CHANGELOG.md",
+      "extra-files": [
+        {
+          "type": "generic",
+          "path": "dart/shalom_dart_codegen/pubspec.yaml"
+        },
+        {
+          "type": "generic",
+          "path": "dart/shalom_dart_codegen/lib/src/binary.dart"
+        },
+        {
+          "type": "generic",
+          "path": "rust/shalom_dart_codegen/Cargo.toml"
+        }
+      ]
+    }
+  }
+}
