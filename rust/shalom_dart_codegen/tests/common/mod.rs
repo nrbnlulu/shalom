@@ -235,13 +235,16 @@ pub fn run_flutter_tests(usecase: &str) {
         .arg("test")
         .arg(format!("test/{usecase}"));
     info!("Running command: {flutter_test:?} for usecase: {usecase}");
-    let _guard = FLUTTER_TEST_RUN_LOCK.lock().unwrap();
+    let _guard = FLUTTER_TEST_RUN_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     let output = flutter_test.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
+    let out_err = String::from_utf8_lossy(&output.stderr);
 
     assert!(
         output.status.success(),
-        "❌ Flutter tests failed\n {out_std}"
+        "❌ Flutter tests failed\n {out_std}\n{out_err}"
     );
     info!("✔️ Flutter tests passed\n {out_std}");
 }
