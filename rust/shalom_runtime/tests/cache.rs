@@ -2204,3 +2204,129 @@ mod incomplete_cache_emissions {
         runtime.unsubscribe(&sub_id);
     }
 }
+
+#[test]
+fn subscriber_index_notifies_only_the_changed_operation() {
+    let schema = r#"
+        type Query { a: Int, b: Int }
+    "#;
+    let operations = r#"
+        query A { a }
+        query B { b }
+    "#;
+
+    let schema_ctx = parse_schema(schema).unwrap();
+    let global_ctx = ShalomGlobalContext::new(
+        schema_ctx,
+        ShalomConfig::default(),
+        std::path::PathBuf::from("schema.graphql"),
+    );
+    let ops = parse_document(
+        &global_ctx,
+        operations,
+        &std::path::PathBuf::from("ops.graphql"),
+    )
+    .unwrap();
+    let op_a = ops.get("A").unwrap().clone();
+    let op_b = ops.get("B").unwrap().clone();
+    let runtime = ShalomRuntime::new(global_ctx);
+
+    normalize(&runtime, &op_a, json!({ "a": 1 }), None);
+    normalize(&runtime, &op_b, json!({ "b": 1 }), None);
+    let sub_a =
+        runtime.create_operation_subscription(op_a.clone(), None, ExecutionPolicy::CacheFirst);
+    let sub_b = runtime.create_operation_subscription(op_b, None, ExecutionPolicy::CacheFirst);
+    let mut updates_a = runtime.subscription_stream(&sub_a).unwrap();
+    let mut updates_b = runtime.subscription_stream(&sub_b).unwrap();
+
+    normalize(&runtime, &op_a, json!({ "a": 2 }), None);
+
+    let tokio_rt = Builder::new_current_thread().enable_all().build().unwrap();
+    tokio_rt.block_on(async {
+        updates_a.next().await.unwrap().unwrap();
+        updates_b.next().await.unwrap().unwrap();
+        let update_a = updates_a.next().await.unwrap().unwrap();
+        assert_eq!(update_a.data["a"], json!(2));
+        assert!(
+            tokio::time::timeout(Duration::from_millis(20), updates_b.next())
+                .await
+                .is_err(),
+            "the unchanged operation must not be notified"
+        );
+    });
+
+    assert_eq!(runtime.key_subscribers("ROOT_QUERY.a").len(), 1);
+    assert_eq!(runtime.key_subscribers("ROOT_QUERY.b").len(), 1);
+    runtime.unsubscribe(&sub_a);
+    runtime.unsubscribe(&sub_b);
+    assert!(runtime.key_subscribers("ROOT_QUERY.a").is_empty());
+    assert!(runtime.key_subscribers("ROOT_QUERY.b").is_empty());
+}
+
+#[test]
+fn invalid_nested_response_preserves_existing_cache_records() {
+    let schema = r#"
+        type Query { user: User }
+        type User {
+            id: ID!
+            name: String!
+            friends: [User!]!
+        }
+    "#;
+    let operation = r#"
+        query GetUser {
+            user {
+                id
+                name
+                friends { id name }
+            }
+        }
+    "#;
+    let (runtime, op_ctx) = build_ctx(schema, operation);
+    normalize(
+        &runtime,
+        &op_ctx,
+        json!({
+            "user": {
+                "id": "1",
+                "name": "Ada",
+                "friends": [{ "id": "2", "name": "Grace" }]
+            }
+        }),
+        None,
+    );
+    let root_before = record(&runtime, "ROOT_QUERY");
+    let user_before = record(&runtime, "User:1");
+
+    let error = runtime
+        .normalize(
+            &op_ctx,
+            json!({
+                "user": {
+                    "id": "1",
+                    "name": "corrupt",
+                    "friends": { "id": "not-a-list" }
+                }
+            }),
+            None,
+        )
+        .expect_err("invalid nested data must fail normalization");
+
+    assert!(
+        error
+            .to_string()
+            .contains("expected list for field friends")
+    );
+    assert_eq!(record(&runtime, "ROOT_QUERY"), root_before);
+    assert_eq!(record(&runtime, "User:1"), user_before);
+    assert_eq!(
+        runtime.read_from_cache(&op_ctx, None).unwrap().data,
+        json!({
+            "user": {
+                "id": "1",
+                "name": "Ada",
+                "friends": [{ "id": "2", "name": "Grace" }]
+            }
+        })
+    );
+}
