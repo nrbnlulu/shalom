@@ -1,9 +1,16 @@
 use shalom_dart_codegen::{CodegenOptions, get_dart_command, get_flutter_command};
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 
 use log::info;
 
 use glob::glob;
+
+/// `flutter test` invocations for different usecases all run against the same
+/// `flutter_tests` package (shared `.dart_tool/` build cache, VM service ports,
+/// frontend-server kernel cache). Running them concurrently causes flaky,
+/// hard-to-reproduce failures, so serialize them here.
+static FLUTTER_TEST_RUN_LOCK: Mutex<()> = Mutex::new(());
 
 fn tests_path(tests_dir_name: &str) -> PathBuf {
     let mut current_dir = PathBuf::from(file!());
@@ -228,12 +235,16 @@ pub fn run_flutter_tests(usecase: &str) {
         .arg("test")
         .arg(format!("test/{usecase}"));
     info!("Running command: {flutter_test:?} for usecase: {usecase}");
+    let _guard = FLUTTER_TEST_RUN_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     let output = flutter_test.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
+    let out_err = String::from_utf8_lossy(&output.stderr);
 
     assert!(
         output.status.success(),
-        "❌ Flutter tests failed\n {out_std}"
+        "❌ Flutter tests failed\n {out_std}\n{out_err}"
     );
     info!("✔️ Flutter tests passed\n {out_std}");
 }

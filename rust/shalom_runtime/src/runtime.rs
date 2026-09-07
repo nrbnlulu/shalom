@@ -225,6 +225,74 @@ type AffectedSubscription = (
 struct SubscriptionManager {
     next_id: u64,
     subscriptions: HashMap<SubscriptionId, SubscriptionState>,
+    subscriptions_by_key: HashMap<String, HashSet<SubscriptionId>>,
+    unfiltered_subscriptions: HashSet<SubscriptionId>,
+}
+
+impl SubscriptionManager {
+    fn insert(&mut self, id: SubscriptionId, state: SubscriptionState) {
+        self.subscriptions.insert(id, state);
+        self.index(id);
+    }
+
+    fn remove(&mut self, id: &SubscriptionId) -> Option<SubscriptionState> {
+        let state = self.subscriptions.remove(id)?;
+        self.unindex(*id, &state.keys);
+        Some(state)
+    }
+
+    fn clear(&mut self) -> Vec<SubscriptionState> {
+        self.subscriptions_by_key.clear();
+        self.unfiltered_subscriptions.clear();
+        self.subscriptions.drain().map(|(_, state)| state).collect()
+    }
+
+    fn reindex(&mut self, id: SubscriptionId, old_keys: &HashSet<String>) {
+        self.unindex(id, old_keys);
+        self.index(id);
+    }
+
+    fn index(&mut self, id: SubscriptionId) {
+        let Some(state) = self.subscriptions.get(&id) else {
+            return;
+        };
+        let keys: Vec<_> = state.keys.iter().cloned().collect();
+        let unfiltered = !state.has_emitted || state.keys.is_empty();
+        for key in keys {
+            self.subscriptions_by_key.entry(key).or_default().insert(id);
+        }
+        if unfiltered {
+            self.unfiltered_subscriptions.insert(id);
+        }
+    }
+
+    fn unindex(&mut self, id: SubscriptionId, keys: &HashSet<String>) {
+        for key in keys {
+            if let Some(ids) = self.subscriptions_by_key.get_mut(key) {
+                ids.remove(&id);
+                if ids.is_empty() {
+                    self.subscriptions_by_key.remove(key);
+                }
+            }
+        }
+        self.unfiltered_subscriptions.remove(&id);
+    }
+
+    fn affected(&self, changed: &HashSet<String>) -> Vec<AffectedSubscription> {
+        let mut ids = self.unfiltered_subscriptions.clone();
+        for key in changed {
+            if let Some(watching) = self.subscriptions_by_key.get(key) {
+                ids.extend(watching);
+            }
+        }
+        ids.into_iter()
+            .filter_map(|id| {
+                self.subscriptions
+                    .get(&id)
+                    .map(|state| (id, state.target.clone(), state.variables.clone()))
+            })
+            .collect()
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -400,7 +468,7 @@ impl ShalomRuntime {
         self.cache().lock().clear();
         let removed: Vec<SubscriptionState> = {
             let mut manager = self.subscriptions.lock();
-            manager.subscriptions.drain().map(|(_, s)| s).collect()
+            manager.clear()
         };
         self.subscription_tracker.lock().clear();
         drop(removed);
@@ -759,6 +827,7 @@ impl ShalomRuntime {
                         ));
                     }
                 }
+                manager.reindex(id, &old_keys);
             };
 
             // 3. Decrement old refs SECOND.
@@ -872,7 +941,7 @@ impl ShalomRuntime {
     pub fn unsubscribe(&self, id: &SubscriptionId) {
         let removed = {
             let mut manager = self.subscriptions.lock();
-            manager.subscriptions.remove(id)
+            manager.remove(id)
         };
         if let Some(state) = removed {
             // Wake any in-flight network request driving this subscription
@@ -925,11 +994,11 @@ impl ShalomRuntime {
     /// Returns info about every active observer that watches [key].
     pub fn key_subscribers(&self, key: &str) -> Vec<KeySubscriberInfo> {
         let manager = self.subscriptions.lock();
+        let ids = manager.subscriptions_by_key.get(key);
         Self::build_observer_list(
-            manager
-                .subscriptions
-                .iter()
-                .filter(|(_, s)| s.keys.contains(key)),
+            ids.into_iter()
+                .flatten()
+                .filter_map(|id| manager.subscriptions.get_key_value(id)),
         )
     }
 
@@ -1144,7 +1213,7 @@ impl ShalomRuntime {
         let mut manager = self.subscriptions.lock();
         let id = SubscriptionId(manager.next_id);
         manager.next_id += 1;
-        manager.subscriptions.insert(
+        manager.insert(
             id,
             SubscriptionState {
                 target,
@@ -1176,10 +1245,14 @@ impl ShalomRuntime {
         let Some(state) = manager.subscriptions.get_mut(&id) else {
             return;
         };
+        let old_keys = state.keys.clone();
         match state.sender.send(msg) {
-            Ok(()) => state.has_emitted = true,
+            Ok(()) => {
+                state.has_emitted = true;
+                manager.reindex(id, &old_keys);
+            }
             Err(_) => {
-                if let Some(state) = manager.subscriptions.remove(&id) {
+                if let Some(state) = manager.remove(&id) {
                     state.cancel.notify_waiters();
                     self.subscription_tracker.lock().unsubscribe(state.keys);
                 }
@@ -1201,19 +1274,7 @@ impl ShalomRuntime {
     fn notify_subscribers(&self, changed: &HashSet<String>) -> anyhow::Result<()> {
         let affected: Vec<AffectedSubscription> = {
             let manager = self.subscriptions.lock();
-            manager
-                .subscriptions
-                .iter()
-                .filter(|(_, state)| {
-                    // `!state.has_emitted`: guarantee a first delivery even if this
-                    // particular write didn't touch any of the subscription's keys
-                    // (see the field doc on `SubscriptionState::has_emitted`).
-                    !state.has_emitted
-                        || state.keys.is_empty()
-                        || state.keys.iter().any(|k| changed.contains(k))
-                })
-                .map(|(id, state)| (*id, state.target.clone(), state.variables.clone()))
-                .collect()
+            manager.affected(changed)
         };
 
         for (id, target, variables) in affected {
@@ -1249,10 +1310,15 @@ impl ShalomRuntime {
                         match state.sender.send(Ok(response)) {
                             Ok(()) => state.has_emitted = true,
                             Err(_) => {
-                                manager.subscriptions.remove(&id);
                                 removed = true;
                             }
                         }
+                    }
+                }
+                if let Some(old_keys) = &old_keys {
+                    manager.reindex(id, old_keys);
+                    if removed {
+                        manager.remove(&id);
                     }
                 }
             }

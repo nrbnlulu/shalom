@@ -1,3 +1,4 @@
+use std::borrow::Cow;
 use std::collections::HashSet;
 
 use serde_json::{Map, Value, json};
@@ -72,7 +73,7 @@ impl<'a> CacheReader<'a> {
         }
         .to_string();
 
-        let root_record = self.cache.get(&root_key).cloned().unwrap_or_default();
+        let root_record = self.cache.get(&root_key);
         let selections = resolve_object_selections(op_ctx.get_root(), &self.global_ctx);
         let mut output = Map::new();
 
@@ -82,7 +83,7 @@ impl<'a> CacheReader<'a> {
             let field_segment =
                 field_path_segment(&field_name, &selection.arguments, self.variables);
             let field_ref_key = format!("{}.{}", root_key, field_segment);
-            let cached_value = root_record.get(&cache_key);
+            let cached_value = root_record.and_then(|record| record.get(&cache_key));
 
             if field_name != "__typename" {
                 used_refs.insert(field_ref_key);
@@ -135,24 +136,25 @@ impl<'a> CacheReader<'a> {
         claimed_refs: &mut HashSet<String>,
         missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
-        let cached_value = if let Some(locator) = self.cache.ref_locator(root_ref) {
-            match self.cache.resolve_locator(locator) {
-                Some(value) => value,
-                None => {
-                    missing_refs.insert(root_ref.to_string());
-                    return Ok(Value::Null);
+        let cached_value: Cow<'_, CacheValue> =
+            if let Some(locator) = self.cache.ref_locator(root_ref) {
+                match self.cache.resolve_locator_ref(locator) {
+                    Some(value) => Cow::Borrowed(value),
+                    None => {
+                        missing_refs.insert(root_ref.to_string());
+                        return Ok(Value::Null);
+                    }
                 }
-            }
-        } else if self.cache.get(root_ref).is_some() {
-            CacheValue::Ref(root_ref.to_string())
-        } else {
-            missing_refs.insert(root_ref.to_string());
-            return Ok(Value::Null);
-        };
+            } else if self.cache.get(root_ref).is_some() {
+                Cow::Owned(CacheValue::Ref(root_ref.to_string()))
+            } else {
+                missing_refs.insert(root_ref.to_string());
+                return Ok(Value::Null);
+            };
 
         self.read_root_object(
             fragment,
-            &cached_value,
+            cached_value.as_ref(),
             root_ref,
             used_refs,
             claimed_refs,
@@ -246,13 +248,13 @@ impl<'a> CacheReader<'a> {
     ) -> anyhow::Result<Value> {
         let (record, entity_key) = match cached_value {
             CacheValue::Ref(key) => match self.cache.get(key) {
-                Some(record) => (record.clone(), Some(key.clone())),
+                Some(record) => (record, Some(key.as_str())),
                 None => {
                     missing_refs.insert(key.clone());
                     return Ok(Value::Null);
                 }
             },
-            CacheValue::Object(record) => (record.clone(), None),
+            CacheValue::Object(record) => (record, None),
             CacheValue::Scalar(value) if value.is_null() => {
                 return Ok(Value::Null);
             }
@@ -271,7 +273,7 @@ impl<'a> CacheReader<'a> {
                 false,
             ),
             SelectionKind::Union(union) => {
-                let typename = cached_typename_from_record(&record)
+                let typename = cached_typename_from_record(record)
                     .ok_or_else(|| anyhow::anyhow!("union selection missing __typename"))?;
                 (
                     typename.clone(),
@@ -280,7 +282,7 @@ impl<'a> CacheReader<'a> {
                 )
             }
             SelectionKind::Interface(interface) => {
-                let typename = cached_typename_from_record(&record)
+                let typename = cached_typename_from_record(record)
                     .ok_or_else(|| anyhow::anyhow!("interface selection missing __typename"))?;
                 (
                     typename.clone(),
@@ -299,7 +301,7 @@ impl<'a> CacheReader<'a> {
         let object_ref_key = if is_union_interface || entity_key.is_none() {
             path_key.clone()
         } else {
-            entity_key.clone().unwrap_or(path_key.clone())
+            entity_key.unwrap_or(&path_key).to_string()
         };
         let observed_frags = selection_get_observed_fragments(selection, &self.global_ctx);
         let before_refs = if !observed_frags.is_empty() {
@@ -429,13 +431,13 @@ impl<'a> CacheReader<'a> {
     ) -> anyhow::Result<Value> {
         let (record, _entity_key) = match cached_value {
             CacheValue::Ref(key) => match self.cache.get(key) {
-                Some(record) => (record.clone(), Some(key.clone())),
+                Some(record) => (record, Some(key.as_str())),
                 None => {
                     missing_refs.insert(key.clone());
                     return Ok(Value::Null);
                 }
             },
-            CacheValue::Object(record) => (record.clone(), None),
+            CacheValue::Object(record) => (record, None),
             CacheValue::Scalar(value) if value.is_null() => {
                 return Ok(Value::Null);
             }
@@ -454,7 +456,7 @@ impl<'a> CacheReader<'a> {
             .get_type_strict(&root_common.schema_typename)
         {
             GraphQLAny::Union(_) => {
-                let typename = cached_typename_from_record(&record)
+                let typename = cached_typename_from_record(record)
                     .ok_or_else(|| anyhow::anyhow!("union selection missing __typename"))?;
                 (
                     resolve_multitype_selections(root_common, &typename, &self.global_ctx),
@@ -462,7 +464,7 @@ impl<'a> CacheReader<'a> {
                 )
             }
             GraphQLAny::Interface(_) => {
-                let typename = cached_typename_from_record(&record)
+                let typename = cached_typename_from_record(record)
                     .ok_or_else(|| anyhow::anyhow!("interface selection missing __typename"))?;
                 (
                     resolve_multitype_selections(root_common, &typename, &self.global_ctx),
@@ -502,7 +504,7 @@ impl<'a> CacheReader<'a> {
             output.insert(field_name.clone(), value);
         }
 
-        if is_union_interface && cached_typename_from_record(&record).is_none() {
+        if is_union_interface && cached_typename_from_record(record).is_none() {
             return Err(anyhow::anyhow!(
                 "missing __typename for fragment {}",
                 fragment.get_fragment_name()

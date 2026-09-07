@@ -119,18 +119,36 @@ impl NormalizedCache {
     }
 
     pub fn resolve_locator(&self, locator: &CacheLocator) -> Option<CacheValue> {
-        let mut current = CacheValue::Object(self.entries.get(&locator.base)?.clone());
-        for segment in &locator.path {
-            current = match (segment, current) {
-                (LocatorSegment::Field(key), CacheValue::Object(record)) => {
-                    record.get(key).cloned()?
-                }
-                (LocatorSegment::Index(idx), CacheValue::List(items)) => {
-                    items.get(*idx).cloned()?
-                }
-                _ => return None,
-            };
-        }
-        Some(current)
+        self.resolve_locator_ref(locator).cloned()
     }
+
+    pub fn resolve_locator_ref(&self, locator: &CacheLocator) -> Option<&CacheValue> {
+        resolve_locator(&self.entries, locator)
+    }
+
+    pub(crate) fn prune_ref_index(&mut self) {
+        let entries = &self.entries;
+        self.ref_index
+            .retain(|_, locator| resolve_locator(entries, locator).is_some());
+    }
+}
+
+fn resolve_locator<'a>(
+    entries: &'a HashMap<CacheKey, CacheRecord>,
+    locator: &CacheLocator,
+) -> Option<&'a CacheValue> {
+    let base = entries.get(&locator.base)?;
+    let (first, rest) = locator.path.split_first()?;
+    let mut current = match first {
+        LocatorSegment::Field(key) => base.get(key)?,
+        LocatorSegment::Index(_) => return None,
+    };
+    for segment in rest {
+        current = match (segment, current) {
+            (LocatorSegment::Field(key), CacheValue::Object(record)) => record.get(key)?,
+            (LocatorSegment::Index(idx), CacheValue::List(items)) => items.get(*idx)?,
+            _ => return None,
+        };
+    }
+    Some(current)
 }
