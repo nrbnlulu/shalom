@@ -97,7 +97,7 @@ class RemoveGifFromAlbumMutation_removeGifFromAlbum {
 // ------------ MUTATION DATA + VARIABLES -------------
 
 final class RemoveGifFromAlbumMutationData
-    implements shalom_core.OperationInterface {
+    implements shalom_core.MutationInterface {
   final RemoveGifFromAlbumMutation_removeGifFromAlbum? removeGifFromAlbum;
 
   const RemoveGifFromAlbumMutationData({required this.removeGifFromAlbum});

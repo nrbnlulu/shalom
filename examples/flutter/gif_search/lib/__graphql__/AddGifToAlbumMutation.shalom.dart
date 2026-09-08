@@ -112,8 +112,7 @@ class AddGifToAlbumMutation_addGifToAlbum implements AlbumGif {
 
 // ------------ MUTATION DATA + VARIABLES -------------
 
-final class AddGifToAlbumMutationData
-    implements shalom_core.OperationInterface {
+final class AddGifToAlbumMutationData implements shalom_core.MutationInterface {
   final AddGifToAlbumMutation_addGifToAlbum addGifToAlbum;
 
   const AddGifToAlbumMutationData({required this.addGifToAlbum});

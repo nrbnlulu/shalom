@@ -14,7 +14,7 @@ class CreateAlbumMutation_createAlbum {
   static String G__typename = "Album";
 
   /// class members
-  final List<AlbumGifRef> gifs;
+  final List<CreateAlbumMutation_createAlbum_gifs> gifs;
 
   final String id;
 
@@ -84,16 +84,14 @@ class CreateAlbumMutation_createAlbum {
   });
 
   static CreateAlbumMutation_createAlbum fromJson(shalom_core.JsonObject data) {
-    final List<AlbumGifRef> gifs$value = (data['gifs'] as List<dynamic>)
-        .map(
-          (e) => AlbumGifRef.fromInput(
-            shalom_core.observedRefInputFromJson(
-              (e as shalom_core.JsonObject)[r'$AlbumGif']
-                  as shalom_core.JsonObject,
-            ),
-          ),
-        )
-        .toList();
+    final List<CreateAlbumMutation_createAlbum_gifs> gifs$value =
+        (data['gifs'] as List<dynamic>)
+            .map(
+              (e) => CreateAlbumMutation_createAlbum_gifs.fromJson(
+                e as shalom_core.JsonObject,
+              ),
+            )
+            .toList();
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
     final String tag$value = data['tag'] as String;
@@ -112,14 +110,9 @@ class CreateAlbumMutation_createAlbum {
     shalom_core.ShalomJsonValue data,
   ) {
     final shalom_core.ShalomJsonValue? gifs$raw = data.field('gifs');
-    final List<AlbumGifRef> gifs$value = gifs$raw!.listValue
-        .map(
-          (e) => AlbumGifRef.fromInput(
-            shalom_core.observedRefInputFromShalomValue(
-              e!.field(r'$AlbumGif')!,
-            ),
-          ),
-        )
+    final List<CreateAlbumMutation_createAlbum_gifs> gifs$value = gifs$raw!
+        .listValue
+        .map((e) => CreateAlbumMutation_createAlbum_gifs.fromShalomValue(e!))
         .toList();
     final shalom_core.ShalomJsonValue? id$raw = data.field('id');
     final String id$value = id$raw!.stringValue;
@@ -238,7 +231,7 @@ class CreateAlbumMutation_createAlbum_gifs implements AlbumGif {
 
 // ------------ MUTATION DATA + VARIABLES -------------
 
-final class CreateAlbumMutationData implements shalom_core.OperationInterface {
+final class CreateAlbumMutationData implements shalom_core.MutationInterface {
   final CreateAlbumMutation_createAlbum createAlbum;
 
   const CreateAlbumMutationData({required this.createAlbum});

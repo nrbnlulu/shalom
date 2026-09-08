@@ -12,8 +12,8 @@ import 'AlbumGif.shalom.dart';
 import 'AlbumWidget.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class AlbumsPageResponse {
+class AlbumsPageData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members
@@ -23,17 +23,17 @@ class AlbumsPageResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  AlbumsPageResponse({required this.albums});
+  AlbumsPageData({required this.albums});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is AlbumsPageResponse &&
+        (other is AlbumsPageData &&
             const ListEquality().equals(albums, other.albums));
   }
 
   @override
-  int get hashCode => Object.hashAll([albums, AlbumsPageResponse.G__typename]);
+  int get hashCode => Object.hashAll([albums, AlbumsPageData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'albums': this.albums.map((e) => e.toJson()).toList()};
@@ -45,7 +45,7 @@ class AlbumsPageResponse {
     ),
   });
 
-  static AlbumsPageResponse fromJson(shalom_core.JsonObject data) {
+  static AlbumsPageData fromJson(shalom_core.JsonObject data) {
     final List<AlbumWidgetRef> albums$value = (data['albums'] as List<dynamic>)
         .map(
           (e) => AlbumWidgetRef.fromInput(
@@ -56,10 +56,10 @@ class AlbumsPageResponse {
           ),
         )
         .toList();
-    return AlbumsPageResponse(albums: albums$value);
+    return AlbumsPageData(albums: albums$value);
   }
 
-  static AlbumsPageResponse fromShalomValue(shalom_core.ShalomJsonValue data) {
+  static AlbumsPageData fromShalomValue(shalom_core.ShalomJsonValue data) {
     final shalom_core.ShalomJsonValue? albums$raw = data.field('albums');
     final List<AlbumWidgetRef> albums$value = albums$raw!.listValue
         .map(
@@ -70,7 +70,26 @@ class AlbumsPageResponse {
           ),
         )
         .toList();
-    return AlbumsPageResponse(albums: albums$value);
+    return AlbumsPageData(albums: albums$value);
+  }
+
+  @override
+  String operation$Name() => 'AlbumsPage';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [AlbumsPageData]. Returns `null` when absent or incomplete.
+  static Future<AlbumsPageData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readOperation<AlbumsPageData>(
+      name: 'AlbumsPage',
+      decoder: fromShalomValue,
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
+    return cache.evictOperation(name: 'AlbumsPage');
   }
 }
 
@@ -204,70 +223,6 @@ class AlbumsPage_albums {
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
 // ------------ widget API -------------
-
-final class AlbumsPageData implements shalom_core.OperationInterface {
-  final List<AlbumWidgetRef> albums;
-
-  const AlbumsPageData({required this.albums});
-
-  @override
-  String operation$Name() => 'AlbumsPage';
-
-  static AlbumsPageData fromCache(shalom_core.JsonObject data) {
-    final List<AlbumWidgetRef> albums$value = (data['albums'] as List<dynamic>)
-        .map(
-          (e) => AlbumWidgetRef.fromInput(
-            shalom_core.observedRefInputFromJson(
-              (e as shalom_core.JsonObject)[r'$AlbumWidget']
-                  as shalom_core.JsonObject,
-            ),
-          ),
-        )
-        .toList();
-    return AlbumsPageData(albums: albums$value);
-  }
-
-  static AlbumsPageData fromShalomValue(shalom_core.ShalomJsonValue data) {
-    final shalom_core.ShalomJsonValue? albums$raw = data.field('albums');
-    final List<AlbumWidgetRef> albums$value = albums$raw!.listValue
-        .map(
-          (e) => AlbumWidgetRef.fromInput(
-            shalom_core.observedRefInputFromShalomValue(
-              e!.field(r'$AlbumWidget')!,
-            ),
-          ),
-        )
-        .toList();
-    return AlbumsPageData(albums: albums$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [AlbumsPageData]. Returns `null` when absent or incomplete.
-  static Future<AlbumsPageData?> readFrom(shalom_core.CacheProxy cache) async {
-    return await cache.readOperation<AlbumsPageData>(
-      name: 'AlbumsPage',
-      decoder: fromShalomValue,
-    );
-  }
-
-  /// Evicts this operation's cached entry (matched by [variables]) through
-  /// [cache], notifying any active subscribers. Returns `false` if no
-  /// matching cache entry existed.
-  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
-    return cache.evictOperation(name: 'AlbumsPage');
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {'albums': this.albums.map((e) => e.toJson()).toList()};
-  }
-
-  @override
-  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    'albums': shalom_core.shalomJsonArray(
-      this.albums!.map((e) => e!.toShalomValue()),
-    ),
-  });
-}
 
 final class AlbumsPageObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
