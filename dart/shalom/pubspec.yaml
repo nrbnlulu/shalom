@@ -1,6 +1,6 @@
 name: shalom
 description: "GraphQL client for Flutter/Dart with Rust-powered normalization runtime."
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/nrbnlulu/shalom
 repository: https://github.com/nrbnlulu/shalom
 

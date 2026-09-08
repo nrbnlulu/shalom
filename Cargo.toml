@@ -7,6 +7,10 @@ members = [
 ]
 resolver = "2"
 
+[patch.crates-io]
+shalom_core = { path = "rust/shalom_core" }
+shalom_runtime = { path = "rust/shalom_runtime" }
+
 [workspace.dependencies]
 anyhow = "1.0.86"
 simple_logger = "5.0.0"
