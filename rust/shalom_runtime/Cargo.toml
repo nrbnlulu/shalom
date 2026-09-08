@@ -2,6 +2,9 @@
 name = "shalom_runtime"
 version = "0.1.0"
 edition = "2024"
+description = "GraphQL client runtime for Shalom: normalized cache, links, execution, mutations and cache subscriptions."
+license = "MIT"
+repository = "https://github.com/nrbnlulu/shalom"
 
 [dependencies]
 shalom_core = { version = "0.1.0", path = "../shalom_core" }
