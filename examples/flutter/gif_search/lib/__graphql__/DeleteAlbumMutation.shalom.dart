@@ -90,7 +90,7 @@ class DeleteAlbumMutation_deleteAlbum {
 
 // ------------ MUTATION DATA + VARIABLES -------------
 
-final class DeleteAlbumMutationData implements shalom_core.OperationInterface {
+final class DeleteAlbumMutationData implements shalom_core.MutationInterface {
   final DeleteAlbumMutation_deleteAlbum? deleteAlbum;
 
   const DeleteAlbumMutationData({required this.deleteAlbum});
