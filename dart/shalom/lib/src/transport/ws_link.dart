@@ -6,14 +6,18 @@ import 'package:shalom/src/shalom_core_base.dart';
 import 'package:shalom/src/transport/link.dart';
 import 'package:shalom/src/transport/ws_transport.dart';
 
-/// WebSocket link backed by the Rust sans-IO `graphql-transport-ws` state machine.
+/// WebSocket link backed by the Rust sans-IO `graphql-transport-ws` state
+/// machine.
 ///
-/// Dart owns the socket (via [WebSocketTransport]); Rust owns the protocol
-/// state. On each received frame [wsOnMessage] is called synchronously — no
-/// Future overhead on the hot path.
-///
-/// Dart holds [_ops] only for its [StreamController] handles — Rust's internal
-/// `operations` map is the authoritative record of which ops are subscribed.
+/// Requests are distributed across a pool of [_Socket]s, each of which owns
+/// one physical WebSocket connection and its own protocol state machine. By
+/// default ([maxOperationsPerSocket] is `null`) every operation multiplexes
+/// onto a single shared connection, matching standard `graphql-transport-ws`
+/// behavior. Setting [maxOperationsPerSocket] caps how many concurrently
+/// active operations a single connection may carry — once a socket is full,
+/// new operations open an additional connection. Set it to `1` to give every
+/// concurrent subscription its own dedicated socket, e.g. to avoid tripping
+/// server-side limits on active subscriptions per connection.
 class WebSocketLink extends GraphQLLink {
   final WebSocketTransport transport;
   final String url;
@@ -27,6 +31,127 @@ class WebSocketLink extends GraphQLLink {
   final Duration heartbeatInterval;
   final Duration heartbeatTimeout;
 
+  /// Maximum number of concurrently active operations allowed on a single
+  /// WebSocket connection. `null` (default) means unlimited — all
+  /// operations share one connection. A socket that drops back to zero
+  /// active operations is closed once another socket exists, keeping
+  /// exactly one warm connection when idle.
+  final int? maxOperationsPerSocket;
+
+  bool _disposed = false;
+  final List<_Socket> _sockets = [];
+  int _nextOpId = 0;
+
+  WebSocketLink({
+    required this.transport,
+    required this.url,
+    this.headers,
+    JsonObject? connectionParams,
+    this.autoReconnect = true,
+    this.connectionInitTimeout = const Duration(seconds: 10),
+    this.reconnectTimeout = const Duration(seconds: 5),
+    this.heartbeatInterval = const Duration(seconds: 5),
+    this.heartbeatTimeout = const Duration(seconds: 3),
+    this.maxOperationsPerSocket,
+  }) : connectionParamsValue = connectionParams == null
+           ? null
+           : shalomJsonValue(connectionParams) {
+    _sockets.add(_createSocket());
+  }
+
+  // ── pool management ───────────────────────────────────────────────────────
+
+  _Socket _createSocket() {
+    final socket = _Socket(
+      transport: transport,
+      url: url,
+      headers: headers,
+      connectionParamsValue: connectionParamsValue,
+      autoReconnect: autoReconnect,
+      connectionInitTimeout: connectionInitTimeout,
+      reconnectTimeout: reconnectTimeout,
+      heartbeatInterval: heartbeatInterval,
+      heartbeatTimeout: heartbeatTimeout,
+      onIdle: _onSocketIdle,
+    );
+    socket.connect();
+    return socket;
+  }
+
+  /// Picks a socket with spare capacity, or opens a new one if all existing
+  /// sockets are full (or none exist yet).
+  _Socket _pickSocket() {
+    final max = maxOperationsPerSocket;
+    for (final socket in _sockets) {
+      if (max == null || socket.activeOpCount < max) return socket;
+    }
+    final socket = _createSocket();
+    _sockets.add(socket);
+    return socket;
+  }
+
+  /// Called by a [_Socket] once it has no active operations left. Unlimited
+  /// pools never close their single socket; bounded pools close and drop
+  /// idle sockets, keeping exactly one warm connection alive.
+  void _onSocketIdle(_Socket socket) {
+    if (_disposed) return;
+    if (maxOperationsPerSocket == null) return;
+    if (_sockets.length <= 1) return;
+    _sockets.remove(socket);
+    unawaited(socket.dispose());
+  }
+
+  // ── operations ────────────────────────────────────────────────────────────
+
+  @override
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
+    required Request request,
+    HeadersType? headers,
+  }) {
+    final opId = (_nextOpId++).toString();
+    return _pickSocket().subscribe(opId, request);
+  }
+
+  // ── public API ────────────────────────────────────────────────────────────
+
+  Future<void> reconnect() async {
+    for (final socket in List<_Socket>.of(_sockets)) {
+      await socket.reconnect();
+    }
+  }
+
+  Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
+    for (final socket in _sockets) {
+      await socket.dispose();
+    }
+    _sockets.clear();
+  }
+}
+
+/// Owns a single physical WebSocket connection and its `graphql-transport-ws`
+/// protocol state. Dart owns the socket (via [WebSocketTransport]); Rust owns
+/// the protocol state. On each received frame [wsOnMessage] is called
+/// synchronously — no Future overhead on the hot path.
+///
+/// [_ops] holds only the Dart [StreamController] handles — Rust's internal
+/// `operations` map is the authoritative record of which ops are subscribed
+/// on this connection.
+class _Socket {
+  final WebSocketTransport transport;
+  final String url;
+  final HeadersType? headers;
+  final ShalomJsonValue? connectionParamsValue;
+  final bool autoReconnect;
+  final Duration connectionInitTimeout;
+  final Duration reconnectTimeout;
+  final Duration heartbeatInterval;
+  final Duration heartbeatTimeout;
+
+  /// Invoked whenever this socket's active operation count drops to zero.
+  final void Function(_Socket socket) onIdle;
+
   // ── sans-IO state machine ─────────────────────────────────────────────────
   WsSansIo? _sansio;
 
@@ -35,10 +160,7 @@ class WebSocketLink extends GraphQLLink {
   bool _disposed = false;
 
   // ── operations ────────────────────────────────────────────────────────────
-  // Keyed by op id. Subscription state lives in Rust; this map exists only
-  // to hold the Dart StreamController handles.
   final Map<String, _OperationHandler> _ops = {};
-  int _nextOpId = 0;
 
   // ── transport handles ─────────────────────────────────────────────────────
   StreamController<String>? _msgController;
@@ -51,21 +173,22 @@ class WebSocketLink extends GraphQLLink {
   Timer? _heartbeatTimer;
   Timer? _pongTimeoutTimer;
 
-  WebSocketLink({
+  _Socket({
     required this.transport,
     required this.url,
-    this.headers,
-    JsonObject? connectionParams,
-    this.autoReconnect = true,
-    this.connectionInitTimeout = const Duration(seconds: 10),
-    this.reconnectTimeout = const Duration(seconds: 5),
-    this.heartbeatInterval = const Duration(seconds: 5),
-    this.heartbeatTimeout = const Duration(seconds: 3),
-  }) : connectionParamsValue = connectionParams == null
-           ? null
-           : shalomJsonValue(connectionParams) {
-    _connect();
-  }
+    required this.headers,
+    required this.connectionParamsValue,
+    required this.autoReconnect,
+    required this.connectionInitTimeout,
+    required this.reconnectTimeout,
+    required this.heartbeatInterval,
+    required this.heartbeatTimeout,
+    required this.onIdle,
+  });
+
+  int get activeOpCount => _ops.length;
+
+  void connect() => unawaited(_connect());
 
   // ── connection lifecycle ──────────────────────────────────────────────────
 
@@ -214,12 +337,10 @@ class WebSocketLink extends GraphQLLink {
 
   // ── operations ────────────────────────────────────────────────────────────
 
-  @override
-  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
-    required Request request,
-    HeadersType? headers,
-  }) {
-    final opId = (_nextOpId++).toString();
+  Stream<GraphQLResponse<GraphQLLinkPayload>> subscribe(
+    String opId,
+    Request request,
+  ) {
     final controller = StreamController<GraphQLResponse<GraphQLLinkPayload>>();
     final handler = _OperationHandler(
       id: opId,
@@ -267,6 +388,7 @@ class WebSocketLink extends GraphQLLink {
     }
 
     if (!handler.controller.isClosed) handler.controller.close();
+    _checkIdle();
   }
 
   void _completeOp(String opId) {
@@ -274,6 +396,11 @@ class WebSocketLink extends GraphQLLink {
     if (handler != null && !handler.controller.isClosed) {
       handler.controller.close();
     }
+    _checkIdle();
+  }
+
+  void _checkIdle() {
+    if (!_disposed && _ops.isEmpty) onIdle(this);
   }
 
   // ── helpers ───────────────────────────────────────────────────────────────

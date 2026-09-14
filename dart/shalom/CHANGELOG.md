@@ -1,3 +1,7 @@
+## 0.1.3
+
+- Add `WebSocketLink.maxOperationsPerSocket` to cap how many concurrent subscriptions share a single WebSocket connection, opening additional connections as needed (defaults to unlimited, preserving prior behavior).
+
 ## 0.1.2
 
 - Prevent the internal `@unwrap` directive from being sent to GraphQL servers when it is used inside a nested fragment.
