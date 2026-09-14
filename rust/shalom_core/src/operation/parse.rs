@@ -791,11 +791,15 @@ pub(crate) fn parse_document_impl(
     }
 
     // Collect transitive fragment SDLs in dependency order (deps first).
-    let fragment_sdls =
+    let fragments =
         collect_transitive_fragment_sdls(&initial_spreads, &doc_raw, global_ctx, &schema);
 
     // Rebuild source as: sorted fragment SDLs + operations only (no inline fragment defs).
-    let mut combined = fragment_sdls.join("\n");
+    let mut combined = fragments
+        .iter()
+        .map(|fragment| fragment.validation_sdl.as_str())
+        .collect::<Vec<_>>()
+        .join("\n");
     if !combined.is_empty() {
         combined.push('\n');
     }
@@ -815,6 +819,10 @@ pub(crate) fn parse_document_impl(
     if doc_orig.operations.anonymous.is_some() {
         unimplemented!("Anonymous operations are not supported")
     }
+    let network_fragment_sdls = fragments
+        .into_iter()
+        .map(|fragment| fragment.network_sdl)
+        .collect::<Vec<_>>();
     for (name, op) in doc_orig.operations.named.iter() {
         let name = name.to_string();
         ret.insert(
@@ -824,7 +832,7 @@ pub(crate) fn parse_document_impl(
                 op.clone(),
                 name,
                 doc_path.clone(),
-                fragment_sdls.clone(),
+                network_fragment_sdls.clone(),
             )?,
         );
     }
@@ -850,13 +858,20 @@ fn collect_fragment_spreads_into(
     }
 }
 
+struct CollectedFragmentSdl {
+    /// Keeps Shalom-only directives so validation and IR construction can use them.
+    validation_sdl: String,
+    /// Has Shalom-only directives removed and is safe to send to the server.
+    network_sdl: String,
+}
+
 fn collect_transitive_fragment_sdls(
     initial_spreads: &HashSet<String>,
     source_doc: &apollo_compiler::ExecutableDocument,
     global_ctx: &SharedShalomGlobalContext,
     schema: &apollo_compiler::validation::Valid<apollo_compiler::Schema>,
-) -> Vec<String> {
-    let mut ordered: Vec<String> = Vec::new();
+) -> Vec<CollectedFragmentSdl> {
+    let mut ordered = Vec::new();
     let mut visited: HashSet<String> = HashSet::new();
     for name in initial_spreads {
         collect_fragment_recursive(
@@ -877,7 +892,7 @@ fn collect_fragment_recursive(
     global_ctx: &SharedShalomGlobalContext,
     schema: &apollo_compiler::validation::Valid<apollo_compiler::Schema>,
     visited: &mut HashSet<String>,
-    ordered: &mut Vec<String>,
+    ordered: &mut Vec<CollectedFragmentSdl>,
 ) {
     if visited.contains(name) {
         return;
@@ -885,7 +900,7 @@ fn collect_fragment_recursive(
     visited.insert(name.to_string());
 
     // Prefer inline definitions from the source doc, then fall back to global ctx.
-    let (sdl, sub_spreads) = if let Some(frag_def) = source_doc.fragments.get(name) {
+    let (fragment, sub_spreads) = if let Some(frag_def) = source_doc.fragments.get(name) {
         let mut frag_clone = frag_def.clone();
         frag_clone
             .make_mut()
@@ -893,11 +908,24 @@ fn collect_fragment_recursive(
             .0
             .retain(|d| d.name.as_str() != "observe");
         let sub = get_used_fragments_from_fragment(&frag_clone);
-        (frag_clone.to_string(), sub)
+        let validation_sdl = frag_clone.to_string();
+        strip_directive_from_spreads_recursive(&mut frag_clone.make_mut().selection_set, "unwrap");
+        (
+            CollectedFragmentSdl {
+                validation_sdl,
+                network_sdl: frag_clone.to_string(),
+            },
+            sub,
+        )
     } else if let Some(frag_ctx) = global_ctx.get_fragment(name) {
-        let sdl = frag_ctx.fragment_raw.clone();
-        let sub = extract_spreads_from_fragment_sdl(&sdl, schema);
-        (sdl, sub)
+        let sub = extract_spreads_from_fragment_sdl(&frag_ctx.fragment_raw, schema);
+        (
+            CollectedFragmentSdl {
+                validation_sdl: frag_ctx.fragment_raw.clone(),
+                network_sdl: frag_ctx.network_sdl.clone(),
+            },
+            sub,
+        )
     } else {
         return; // not found — validation will surface the error
     };
@@ -906,7 +934,7 @@ fn collect_fragment_recursive(
     for sub in &sub_spreads {
         collect_fragment_recursive(sub, source_doc, global_ctx, schema, visited, ordered);
     }
-    ordered.push(sdl);
+    ordered.push(fragment);
 }
 
 /// Re-parse a standalone fragment SDL string to find which fragments it spreads.
