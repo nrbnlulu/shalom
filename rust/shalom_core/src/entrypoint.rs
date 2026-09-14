@@ -784,4 +784,67 @@ fragment UserUnwrappedFrag on User {
             3
         );
     }
+
+    #[test]
+    fn nested_unwrap_directive_is_not_sent_to_the_server() {
+        let ctx = test_context(
+            r#"
+type Query {
+  site: Site
+}
+
+type Site {
+  id: ID!
+  groups: [ReporteeGroup!]!
+}
+
+type ReporteeGroup {
+  id: ID!
+  name: String!
+}
+"#,
+        );
+        let source_path = PathBuf::from("fragment.dart");
+
+        register_fragments_from_document(
+            &ctx,
+            r#"
+fragment ReporteeGroupFrag on ReporteeGroup @observe {
+  id
+  name
+}
+
+fragment SiteFrag on Site {
+  id
+  groups {
+    ...ReporteeGroupFrag @unwrap
+  }
+}
+"#,
+            &source_path,
+            false,
+        )
+        .unwrap();
+
+        let operations = parse_document(
+            &ctx,
+            r#"
+query SiteQuery {
+  site {
+    ...SiteFrag
+  }
+}
+"#,
+            &PathBuf::from("query.dart"),
+        )
+        .unwrap();
+        let operation = operations.get("SiteQuery").unwrap();
+
+        assert!(!operation.query.contains("@unwrap"));
+        assert!(operation.query.contains("...ReporteeGroupFrag"));
+
+        let site_fragment = ctx.get_fragment_strict("SiteFrag");
+        assert!(site_fragment.fragment_raw.contains("@unwrap"));
+        assert!(!site_fragment.network_sdl.contains("@unwrap"));
+    }
 }
