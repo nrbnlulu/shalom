@@ -1,3 +1,7 @@
+## 0.1.5
+
+- Persist `__typename` on every normalized entity that has an id, even when the selection that wrote it didn't request `__typename` (e.g. a plain object field). Fixes "union selection missing `__typename`" normalization errors when the same entity is later read through a union/interface selection elsewhere in the app.
+
 ## 0.1.4
 
 - Register operations and fragments with their `__typename`/`id`-injected document instead of the raw widget SDL, so union/interface selections no longer fail normalization with a "missing `__typename`" error at runtime.
