@@ -721,16 +721,18 @@ fn parse_operation(
     let mut network_op = op.clone();
     let network_op_mut = network_op.make_mut();
     strip_directive_from_spreads_recursive(&mut network_op_mut.selection_set, "unwrap");
+    let op_sdl = network_op.to_string();
 
     let mut query = fragment_sdls.join("\n");
     if !query.is_empty() {
         query.push('\n');
     }
-    query.push_str(&network_op.to_string());
+    query.push_str(&op_sdl);
     let mut ctx = OperationContext::new(
         global_ctx.schema_ctx.clone(),
         operation_name.clone(),
         query,
+        op_sdl,
         file_path,
         op_type,
         observe,
