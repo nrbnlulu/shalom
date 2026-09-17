@@ -1,3 +1,7 @@
+## 0.1.4
+
+- Register operations and fragments with their `__typename`/`id`-injected document instead of the raw widget SDL, so union/interface selections no longer fail normalization with a "missing `__typename`" error at runtime.
+
 ## 0.1.3
 
 - Add `WebSocketLink.maxOperationsPerSocket` to cap how many concurrent subscriptions share a single WebSocket connection, opening additional connections as needed (defaults to unlimited, preserving prior behavior).
