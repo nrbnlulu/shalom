@@ -1903,21 +1903,36 @@ fn generate_registration_file(
         }
     }
 
-    let make_entry = |w: &WidgetAnnotation, observe: bool| {
-        serde_json::json!({
+    // Registration documents must use the __typename/id-injected text (via shalom_core's
+    // parsing), not the widget's raw source SDL — otherwise union/interface selections that
+    // rely on auto-injected __typename never get it in the document actually sent/registered,
+    // causing "union selection missing __typename" normalization errors at runtime.
+    let make_operation_entry = |w: &WidgetAnnotation, observe: bool| -> Result<serde_json::Value> {
+        let keyword = match w.widget_kind {
+            WidgetKind::Query => "query",
+            WidgetKind::Mutation => "mutation",
+            WidgetKind::Subscription => "subscription",
+            WidgetKind::Fragment => unreachable!(),
+        };
+        let document = format!("{} {} {}", keyword, w.class_name, w.sdl);
+        let operations = shalom_core::entrypoint::parse_document(ctx, &document, &w.source_path)?;
+        let operation = operations
+            .get(&w.class_name)
+            .ok_or_else(|| anyhow::anyhow!("failed to parse operation '{}'", w.class_name))?;
+        Ok(serde_json::json!({
             "class_name": w.class_name,
             // Mutations are fire-and-forget, not reactive — they don't get @observe.
             // Reactive registration is independent of Flutter: pure Dart projects
             // consume the same Observable/Streams API directly.
-            "document": if observe { with_observe(&w.sdl) } else { w.sdl.clone() },
-        })
+            "document": if observe { with_observe(&operation.op_sdl) } else { operation.op_sdl.clone() },
+        }))
     };
 
-    let make_entries = |kind: WidgetKind, observe: bool| -> Vec<serde_json::Value> {
+    let make_entries = |kind: WidgetKind, observe: bool| -> Result<Vec<serde_json::Value>> {
         widgets
             .iter()
             .filter(|w| w.widget_kind == kind)
-            .map(|w| make_entry(w, observe))
+            .map(|w| make_operation_entry(w, observe))
             .collect()
     };
 
@@ -1927,11 +1942,22 @@ fn generate_registration_file(
         .collect::<Vec<_>>();
     let fragments = widget_fragment_dependency_order(ctx, &widget_fragments)?
         .into_iter()
-        .map(|w| make_entry(w, true))
-        .collect::<Vec<_>>();
-    let queries = make_entries(WidgetKind::Query, true);
-    let mutations = make_entries(WidgetKind::Mutation, false);
-    let subscriptions = make_entries(WidgetKind::Subscription, true);
+        .map(|w| {
+            let fragment = ctx.get_fragment(&w.class_name).ok_or_else(|| {
+                anyhow::anyhow!(
+                    "fragment '{}' not registered in global context",
+                    w.class_name
+                )
+            })?;
+            Ok(serde_json::json!({
+                "class_name": w.class_name,
+                "document": with_observe(&fragment.fragment_raw),
+            }))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let queries = make_entries(WidgetKind::Query, true)?;
+    let mutations = make_entries(WidgetKind::Mutation, false)?;
+    let subscriptions = make_entries(WidgetKind::Subscription, true)?;
 
     let mut env = Environment::new();
     env.add_template(
