@@ -637,6 +637,19 @@ impl<'a> Normalizer<'a> {
         };
 
         let mut next_record = cached_record.unwrap_or_default();
+
+        // Entities are shared across independent selections that may reach them through
+        // different type contexts (e.g. a plain object field here, a union/interface member
+        // elsewhere). Persist __typename unconditionally so a later union/interface read of
+        // this same entity can resolve its concrete type from the cache alone, even if this
+        // particular selection never asked for __typename itself.
+        if entity_key.is_some() {
+            next_record.insert(
+                "__typename".to_string(),
+                CacheValue::Scalar(Value::String(typename.clone())),
+            );
+        }
+
         let mut output = Map::new();
 
         let record_locator = if let Some(entity_key) = &entity_key {
