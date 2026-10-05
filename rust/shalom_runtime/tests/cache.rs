@@ -2330,3 +2330,105 @@ fn invalid_nested_response_preserves_existing_cache_records() {
         })
     );
 }
+
+#[test]
+fn partial_query_does_not_drop_unselected_fields_from_existing_entity() {
+    let schema = r#"
+        type User {
+            id: ID!
+            name: String!
+            description: String
+        }
+        type Company {
+            id: ID!
+            employees: [User!]!
+        }
+        type Query {
+            users: [User!]!
+            company: Company!
+        }
+    "#;
+    let ops = r#"
+        query GetUsers {
+            users {
+                id
+                name
+                description
+            }
+        }
+        query GetCompany {
+            company {
+                id
+                employees {
+                    id
+                }
+            }
+        }
+    "#;
+    let schema_ctx = parse_schema(schema).expect("schema parse failed");
+    let global_ctx = ShalomGlobalContext::new(
+        schema_ctx,
+        ShalomConfig::default(),
+        PathBuf::from("schema.graphql"),
+    );
+    let parsed_ops = parse_document(&global_ctx, ops, &PathBuf::from("ops.graphql")).unwrap();
+    let runtime = ShalomRuntime::new(global_ctx);
+    runtime.register_operation(ops).unwrap();
+
+    let get_users_op = parsed_ops.get("GetUsers").unwrap();
+    let get_company_op = parsed_ops.get("GetCompany").unwrap();
+
+    // 1. First query normalizes User:1 with all fields
+    runtime
+        .normalize(
+            get_users_op,
+            json!({
+                "users": [
+                    { "id": "1", "name": "Ada", "description": "Mathematician" }
+                ]
+            }),
+            None,
+        )
+        .expect("normalize users");
+
+    let user_record_initial = record(&runtime, "User:1");
+    expect_scalar(&user_record_initial, "name", json!("Ada"));
+    expect_scalar(&user_record_initial, "description", json!("Mathematician"));
+
+    // 2. Second query reaches User:1 under company.employees with ONLY `id`
+    runtime
+        .normalize(
+            get_company_op,
+            json!({
+                "company": {
+                    "id": "100",
+                    "employees": [
+                        { "id": "1" }
+                    ]
+                }
+            }),
+            None,
+        )
+        .expect("normalize company");
+
+    // 3. User:1 must still have `name` and `description`!
+    let user_record_after = record(&runtime, "User:1");
+    expect_scalar(&user_record_after, "name", json!("Ada"));
+    expect_scalar(&user_record_after, "description", json!("Mathematician"));
+
+    // 4. Reading GetUsers from cache must succeed with zero missing refs
+    let cached_users = runtime
+        .try_read_operation("GetUsers", None)
+        .expect("try_read_operation")
+        .expect("cache hit");
+
+    assert_eq!(
+        cached_users,
+        json!({
+            "users": [
+                { "id": "1", "name": "Ada", "description": "Mathematician" }
+            ]
+        })
+    );
+}
+
