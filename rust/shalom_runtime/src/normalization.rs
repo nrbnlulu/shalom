@@ -625,10 +625,7 @@ impl<'a> Normalizer<'a> {
 
         let cached_record = if let Some(key) = &entity_key {
             self.snapshot_key(key);
-            self.cache.remove(key).or_else(|| match cached_value {
-                Some(CacheValue::Object(record)) => Some(record),
-                _ => None,
-            })
+            self.cache.remove(key)
         } else {
             match cached_value {
                 Some(CacheValue::Object(record)) => Some(record),

@@ -2432,3 +2432,86 @@ fn partial_query_does_not_drop_unselected_fields_from_existing_entity() {
     );
 }
 
+#[test]
+fn test_keyed_entity_replaces_inline_object_without_field_leak() {
+    let schema = r#"
+        schema { query: Query }
+        type Query {
+            currentProfile: Profile
+        }
+        type Profile {
+            id: ID
+            name: String
+            bio: String
+        }
+    "#;
+
+    let op1 = r#"
+        query GetFullProfile {
+            currentProfile {
+                name
+                bio
+            }
+        }
+    "#;
+    let op2 = r#"
+        query GetPartialProfile {
+            currentProfile {
+                id
+                name
+            }
+        }
+    "#;
+
+    let ops = format!("{}\n{}", op1, op2);
+    let schema_ctx = parse_schema(schema).expect("schema parse failed");
+    let global_ctx = ShalomGlobalContext::new(
+        schema_ctx,
+        ShalomConfig::default(),
+        PathBuf::from("schema.graphql"),
+    );
+    let parsed_ops = parse_document(&global_ctx, &ops, &PathBuf::from("ops.graphql")).unwrap();
+    let runtime = ShalomRuntime::new(global_ctx);
+    runtime.register_operation(&ops).unwrap();
+
+    let get_full_op = parsed_ops.get("GetFullProfile").unwrap();
+    let get_partial_op = parsed_ops.get("GetPartialProfile").unwrap();
+
+    // 1. Initial response has an inline profile without an id
+    runtime
+        .normalize(
+            get_full_op,
+            json!({
+                "currentProfile": {
+                    "name": "Anonymous Guest",
+                    "bio": "Visiting the site"
+                }
+            }),
+            None,
+        )
+        .expect("normalize full profile");
+
+    // 2. Next response replaces it with a new entity that has an ID, using a query that only selects id and name
+    runtime
+        .normalize(
+            get_partial_op,
+            json!({
+                "currentProfile": {
+                    "id": "user-42",
+                    "name": "Alice"
+                }
+            }),
+            None,
+        )
+        .expect("normalize partial profile");
+
+    // 3. The newly keyed entity Profile:user-42 must NOT have inherited "bio" from the inline object
+    let profile_record = record(&runtime, "Profile:user-42");
+    expect_scalar(&profile_record, "name", json!("Alice"));
+    assert!(
+        profile_record.get("bio").is_none(),
+        "Fields from unkeyed inline object must not leak into newly keyed entity"
+    );
+}
+
+
