@@ -1146,9 +1146,46 @@ impl ShalomRuntime {
         if changed.is_empty() {
             return Ok(false);
         }
-        self.notify_subscribers(&changed)?;
+
+        // Close and remove matching subscriptions for this evicted operation.
+        // Dropping their SubscriptionState drops their sender channel, which emits
+        // onDone in Dart/Flutter, triggering resubscribe() and a fresh network fetch.
+        let removed_subscriptions: Vec<SubscriptionState> = {
+            let mut manager = self.subscriptions.lock();
+            let matching_ids: Vec<SubscriptionId> = manager
+                .subscriptions
+                .iter()
+                .filter_map(|(id, state)| {
+                    if let SubscriptionTarget::Operation(ctx) = &state.target
+                        && ctx.get_operation_name() == op_name
+                        && state.variables.as_ref() == variables
+                    {
+                        Some(*id)
+                    } else {
+                        None
+                    }
+                })
+                .collect();
+
+            matching_ids
+                .into_iter()
+                .filter_map(|id| manager.remove(&id))
+                .collect()
+        };
+
+        if !removed_subscriptions.is_empty() {
+            let mut tracker = self.subscription_tracker.lock();
+            for state in &removed_subscriptions {
+                state.cancel.notify_waiters();
+                tracker.unsubscribe(state.keys.clone());
+            }
+        }
+        drop(removed_subscriptions);
+
         Ok(true)
     }
+
+
 
     /// Look up a pre-registered (or remembered) operation by name.
     pub fn operation_by_name(&self, name: &str) -> anyhow::Result<SharedOpCtx> {
