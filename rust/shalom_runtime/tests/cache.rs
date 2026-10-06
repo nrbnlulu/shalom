@@ -2513,5 +2513,3 @@ fn test_keyed_entity_replaces_inline_object_without_field_leak() {
         "Fields from unkeyed inline object must not leak into newly keyed entity"
     );
 }
-
-
