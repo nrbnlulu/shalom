@@ -82,7 +82,6 @@ class _$AlbumGifSearchState extends State<$AlbumGifSearch> {
                 });
               },
               onDone: () {
-
                 if (mounted) _subscribe();
               },
             );
