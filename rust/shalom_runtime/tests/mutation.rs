@@ -378,7 +378,6 @@ fn evict_operation_removes_matching_root_field_only() {
     );
 }
 
-
 #[tokio::test]
 async fn evict_operation_closes_matching_subscription_stream() {
     let runtime = make_runtime();
@@ -418,4 +417,3 @@ async fn evict_operation_closes_matching_subscription_stream() {
     );
     assert!(!runtime.subscription_exists(&sub_id));
 }
-

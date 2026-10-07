@@ -1185,8 +1185,6 @@ impl ShalomRuntime {
         Ok(true)
     }
 
-
-
     /// Look up a pre-registered (or remembered) operation by name.
     pub fn operation_by_name(&self, name: &str) -> anyhow::Result<SharedOpCtx> {
         self.engine.global_ctx().get_operation(name).ok_or_else(|| {
