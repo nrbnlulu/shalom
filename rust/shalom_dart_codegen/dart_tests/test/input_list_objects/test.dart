@@ -134,8 +134,8 @@ void main() {
 
           final request =
               RequestInputListOfOptionalObjectsWithNullDefaultMutation(
-            variables: variables,
-          ).toRequest();
+                variables: variables,
+              ).toRequest();
 
           expect(request.variables, {'items': null});
         });
@@ -143,13 +143,13 @@ void main() {
         test('listOfRequiredObjectsOptionalWithNullDefault - with objects', () {
           final variables =
               InputListOfOptionalObjectsWithNullDefaultMutationVariables(
-            items: [sampleObject1],
-          );
+                items: [sampleObject1],
+              );
 
           final request =
               RequestInputListOfOptionalObjectsWithNullDefaultMutation(
-            variables: variables,
-          ).toRequest();
+                variables: variables,
+              ).toRequest();
 
           expect(request.variables, {
             'items': [
@@ -174,13 +174,13 @@ void main() {
           () {
             final variables =
                 InputListOfOptionalObjectsWithNullDefaultMutationVariables(
-              items: null,
-            );
+                  items: null,
+                );
 
             final request =
                 RequestInputListOfOptionalObjectsWithNullDefaultMutation(
-              variables: variables,
-            ).toRequest();
+                  variables: variables,
+                ).toRequest();
 
             expect(request.variables, {'items': null});
           },

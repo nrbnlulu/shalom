@@ -1,0 +1,20 @@
+query GetErrorResult {
+  errorResult {
+    __typename
+    ... on ErrorInterface {
+      message
+    }
+  }
+}
+
+query GetMixedResult {
+  mixedResult {
+    __typename
+    ... on ErrorInterface {
+      message
+    }
+    ... on OtherThing {
+      value
+    }
+  }
+}

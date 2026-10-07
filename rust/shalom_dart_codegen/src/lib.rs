@@ -579,6 +579,17 @@ where
         },
     );
 
+    let ctx_clone4 = ctx.clone();
+    env.add_function(
+        "get_all_selections_that_apply_on_this_type_only",
+        move |obj_like: ViaDeserialize<ObjectLikeCommon>| -> minijinja::Value {
+            let selections = obj_like
+                .0
+                .get_all_selections_that_apply_on_this_type_only(&ctx_clone4);
+            minijinja::Value::from_serialize(&selections)
+        },
+    );
+
     let executable_ctx_clone3 = executable_ctx.clone();
     env.add_function(
         "object_like_needs_variables",
@@ -610,7 +621,17 @@ where
         other_obj: &ObjectLikeCommon,
         global_ctx: &ShalomGlobalContext,
     ) {
+        // A union's own shared selections apply to every concrete member unconditionally,
+        // mirroring the runtime's `resolve_multitype_selections` (shalom_runtime/src/selection.rs).
+        let is_union_shared = matches!(
+            global_ctx
+                .schema_ctx
+                .get_type_strict(&other_obj.schema_typename),
+            GraphQLAny::Union(_)
+        );
+
         if resolve_to.schema_typename == other_obj.schema_typename
+            || is_union_shared
             || global_ctx.schema_ctx.is_type_implementing_interface(
                 &resolve_to.schema_typename,
                 &other_obj.schema_typename,
@@ -624,6 +645,12 @@ where
 
                 if frag_on_type == &resolve_to.schema_typename {
                     resolve_to.used_fragments.insert(frag_name.clone());
+                    // Flatten the fragment's selections through the same type-aware
+                    // walk instead of `get_all_selections_distinct`, so type
+                    // conditions nested inside the fragment (e.g. an interface
+                    // fragment it spreads that carries `... on OtherSibling`)
+                    // are filtered against this concrete type.
+                    collect_selections_for_concrete(resolve_to, fragment.get_on_type(), global_ctx);
                 } else if global_ctx
                     .schema_ctx
                     .is_type_implementing_interface(&resolve_to.schema_typename, frag_on_type)
@@ -674,7 +701,6 @@ where
                     &multitype.common().common,
                     &ctx_clone2,
                 );
-                resolved.selections = resolved.get_all_selections_distinct(&ctx_clone2);
                 ret.push(resolved);
             }
             minijinja::Value::from_serialize(ret)
@@ -712,6 +738,31 @@ where
         },
     );
 
+    let ctx_clone4 = ctx.clone();
+    env.add_function(
+        "implementable_fragments",
+        move |used_fragments: ViaDeserialize<std::collections::BTreeSet<String>>,
+              unwrapped_fragments: ViaDeserialize<std::collections::BTreeSet<String>>|
+              -> minijinja::Value {
+            // A fragment can only be `implements`-ed here if this exact selection is the
+            // live (non-Ref) type for it - i.e. the fragment isn't `@observe`d at this spread
+            // site, or it is but was spread with `@unwrap`. Otherwise the field's type is a
+            // `XxxRef` instead of this class, so implementing it here would be misleading.
+            let filtered: std::collections::BTreeSet<String> = used_fragments
+                .0
+                .iter()
+                .filter(|frag_name| {
+                    let is_observed = ctx_clone4
+                        .get_fragment(frag_name)
+                        .is_some_and(|fragment| fragment.is_observe());
+                    !is_observed || unwrapped_fragments.0.contains(*frag_name)
+                })
+                .cloned()
+                .collect();
+            minijinja::Value::from_serialize(filtered)
+        },
+    );
+
     Ok(())
 }
 
@@ -724,6 +775,7 @@ fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) 
             for frag_name in &obj.common.used_fragments {
                 if let Some(fragment) = ctx.get_fragment(frag_name)
                     && fragment.is_observe()
+                    && !obj.common.unwrapped_fragments.contains(frag_name)
                 {
                     return Some(frag_name.clone());
                 }
@@ -734,6 +786,7 @@ fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) 
             for frag_name in &union.common.common.used_fragments {
                 if let Some(fragment) = ctx.get_fragment(frag_name)
                     && fragment.is_observe()
+                    && !union.common.common.unwrapped_fragments.contains(frag_name)
                 {
                     return Some(frag_name.clone());
                 }
@@ -744,6 +797,11 @@ fn observe_frag_for_kind(kind: &SelectionKind, ctx: &SharedShalomGlobalContext) 
             for frag_name in &interface.common.common.used_fragments {
                 if let Some(fragment) = ctx.get_fragment(frag_name)
                     && fragment.is_observe()
+                    && !interface
+                        .common
+                        .common
+                        .unwrapped_fragments
+                        .contains(frag_name)
                 {
                     return Some(frag_name.clone());
                 }
@@ -852,7 +910,7 @@ impl OperationEnv<'_> {
         let template = self.env.get_template("operation").unwrap();
         let mut resolved_query = operation_ctx.query.clone();
         for frag in operation_ctx.typedefs.flatten_used_fragments() {
-            resolved_query.push_str(format!("\n {}", frag.fragment_raw).as_str());
+            resolved_query.push_str(format!("\n {}", frag.network_sdl).as_str());
         }
         let ctx = context! {
             context => context!{
@@ -1361,12 +1419,8 @@ fn generate_widget_sidecars(
         .filter(|w| w.widget_kind == WidgetKind::Subscription);
 
     if !fragments.is_empty() {
-        for widget in widget_fragment_dependency_order(ctx, &fragments, is_pure_dart)? {
-            let sdl = if is_pure_dart {
-                widget.sdl.clone()
-            } else {
-                widget.sdl.replacen('{', "@observe {", 1)
-            };
+        for widget in widget_fragment_dependency_order(ctx, &fragments)? {
+            let sdl = widget.sdl.replacen('{', "@observe {", 1);
             let full_sdl = format!("fragment {} {}", widget.class_name, sdl);
             shalom_core::entrypoint::register_fragments_from_document(
                 ctx,
@@ -1384,9 +1438,13 @@ fn generate_widget_sidecars(
         .chain(subscriptions)
     {
         let res = match widget.widget_kind {
-            WidgetKind::Query => {
-                generate_query_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
-            }
+            WidgetKind::Query => generate_query_sidecar(
+                ctx,
+                widget,
+                custom_scalar_imports.clone(),
+                gen_dir,
+                is_pure_dart,
+            ),
             WidgetKind::Fragment => generate_fragment_sidecar(
                 ctx,
                 widget,
@@ -1397,9 +1455,13 @@ fn generate_widget_sidecars(
             WidgetKind::Mutation => {
                 generate_mutation_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
             }
-            WidgetKind::Subscription => {
-                generate_subscription_sidecar(ctx, widget, custom_scalar_imports.clone(), gen_dir)
-            }
+            WidgetKind::Subscription => generate_subscription_sidecar(
+                ctx,
+                widget,
+                custom_scalar_imports.clone(),
+                gen_dir,
+                is_pure_dart,
+            ),
         };
         if let Err(err) = res {
             return Err(anyhow::anyhow!(
@@ -1415,7 +1477,6 @@ fn generate_widget_sidecars(
 fn widget_fragment_dependency_order<'a>(
     ctx: &SharedShalomGlobalContext,
     fragments: &'a [&'a WidgetAnnotation],
-    is_pure_dart: bool,
 ) -> Result<Vec<&'a WidgetAnnotation>> {
     let by_name: HashMap<&str, &WidgetAnnotation> = fragments
         .iter()
@@ -1423,11 +1484,7 @@ fn widget_fragment_dependency_order<'a>(
         .collect();
     let mut dependencies: HashMap<&str, Vec<String>> = HashMap::new();
     for widget in fragments {
-        let sdl = if is_pure_dart {
-            widget.sdl.clone()
-        } else {
-            widget.sdl.replacen('{', "@observe {", 1)
-        };
+        let sdl = widget.sdl.replacen('{', "@observe {", 1);
         let full_sdl = format!("fragment {} {}", widget.class_name, sdl);
         let spreads = shalom_core::entrypoint::fragment_spreads_from_document(
             ctx,
@@ -1501,6 +1558,7 @@ fn generate_query_sidecar(
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
     gen_dir: &str,
+    is_pure_dart: bool,
 ) -> Result<()> {
     // Insert @observe immediately before the selection-set opening brace so the
     // directive lands in the correct position per the GraphQL grammar:
@@ -1542,11 +1600,19 @@ fn generate_query_sidecar(
     fs::write(&gen_path, rendered)?;
     info!("Generated query sidecar: {}", gen_path.display());
 
-    // Generate the Flutter widget file (imports + re-exports the types file above).
-    let widget_rendered = op_env.render_widget(&op_ctx);
     let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
-    fs::write(&widget_path, widget_rendered)?;
-    info!("Generated widget sidecar: {}", widget_path.display());
+    if is_pure_dart {
+        // Pure Dart projects consume the reactive Observable/Data API directly
+        // (via Streams) and have no Flutter dependency to build a widget on top of.
+        if widget_path.exists() {
+            fs::remove_file(&widget_path)?;
+        }
+    } else {
+        // Generate the Flutter widget file (imports + re-exports the types file above).
+        let widget_rendered = op_env.render_widget(&op_ctx);
+        fs::write(&widget_path, widget_rendered)?;
+        info!("Generated widget sidecar: {}", widget_path.display());
+    }
 
     Ok(())
 }
@@ -1562,11 +1628,7 @@ fn generate_fragment_sidecar(
     // Insert @observe immediately before the selection-set opening brace so the
     // directive lands in the correct position per the GraphQL grammar:
     //   fragment Name TypeCondition Directives? SelectionSet
-    let sdl = if is_pure_dart {
-        widget.sdl.clone()
-    } else {
-        widget.sdl.replacen('{', "@observe {", 1)
-    };
+    let sdl = widget.sdl.replacen('{', "@observe {", 1);
     let full_sdl = format!("fragment {} {}", widget.class_name, sdl);
 
     if !ctx.fragment_exists(&widget.class_name) {
@@ -1675,6 +1737,7 @@ fn generate_subscription_sidecar(
     widget: &WidgetAnnotation,
     custom_scalar_imports: HashMap<String, String>,
     gen_dir: &str,
+    is_pure_dart: bool,
 ) -> Result<()> {
     let full_sdl = format!(
         "subscription {} {}",
@@ -1713,13 +1776,21 @@ fn generate_subscription_sidecar(
     fs::write(&gen_path, rendered)?;
     info!("Generated subscription sidecar: {}", gen_path.display());
 
-    let widget_rendered = op_env.render_widget(&op_ctx);
     let widget_path = out_dir.join(format!("{}.widget.{}", widget.class_name, END_OF_FILE));
-    fs::write(&widget_path, widget_rendered)?;
-    info!(
-        "Generated subscription widget sidecar: {}",
-        widget_path.display()
-    );
+    if is_pure_dart {
+        // Pure Dart projects consume the reactive Observable/Data API directly
+        // (via Streams) and have no Flutter dependency to build a widget on top of.
+        if widget_path.exists() {
+            fs::remove_file(&widget_path)?;
+        }
+    } else {
+        let widget_rendered = op_env.render_widget(&op_ctx);
+        fs::write(&widget_path, widget_rendered)?;
+        info!(
+            "Generated subscription widget sidecar: {}",
+            widget_path.display()
+        );
+    }
 
     Ok(())
 }
@@ -1793,26 +1864,16 @@ fn generate_registration_file(
             }
             WidgetKind::Query | WidgetKind::Mutation | WidgetKind::Subscription => {
                 let document = match widget.widget_kind {
-                    WidgetKind::Query => format!(
-                        "query {} {}",
-                        widget.class_name,
-                        if is_pure_dart {
-                            widget.sdl.clone()
-                        } else {
-                            with_observe(&widget.sdl)
-                        }
-                    ),
+                    WidgetKind::Query => {
+                        format!("query {} {}", widget.class_name, with_observe(&widget.sdl))
+                    }
                     WidgetKind::Mutation => {
                         format!("mutation {} {}", widget.class_name, widget.sdl)
                     }
                     WidgetKind::Subscription => format!(
                         "subscription {} {}",
                         widget.class_name,
-                        if is_pure_dart {
-                            widget.sdl.clone()
-                        } else {
-                            with_observe(&widget.sdl)
-                        }
+                        with_observe(&widget.sdl)
                     ),
                     WidgetKind::Fragment => unreachable!(),
                 };
@@ -1842,19 +1903,36 @@ fn generate_registration_file(
         }
     }
 
-    let make_entry = |w: &WidgetAnnotation, observe: bool| {
-        serde_json::json!({
+    // Registration documents must use the __typename/id-injected text (via shalom_core's
+    // parsing), not the widget's raw source SDL — otherwise union/interface selections that
+    // rely on auto-injected __typename never get it in the document actually sent/registered,
+    // causing "union selection missing __typename" normalization errors at runtime.
+    let make_operation_entry = |w: &WidgetAnnotation, observe: bool| -> Result<serde_json::Value> {
+        let keyword = match w.widget_kind {
+            WidgetKind::Query => "query",
+            WidgetKind::Mutation => "mutation",
+            WidgetKind::Subscription => "subscription",
+            WidgetKind::Fragment => unreachable!(),
+        };
+        let document = format!("{} {} {}", keyword, w.class_name, w.sdl);
+        let operations = shalom_core::entrypoint::parse_document(ctx, &document, &w.source_path)?;
+        let operation = operations
+            .get(&w.class_name)
+            .ok_or_else(|| anyhow::anyhow!("failed to parse operation '{}'", w.class_name))?;
+        Ok(serde_json::json!({
             "class_name": w.class_name,
             // Mutations are fire-and-forget, not reactive — they don't get @observe.
-            "document": if observe && !is_pure_dart { with_observe(&w.sdl) } else { w.sdl.clone() },
-        })
+            // Reactive registration is independent of Flutter: pure Dart projects
+            // consume the same Observable/Streams API directly.
+            "document": if observe { with_observe(&operation.op_sdl) } else { operation.op_sdl.clone() },
+        }))
     };
 
-    let make_entries = |kind: WidgetKind, observe: bool| -> Vec<serde_json::Value> {
+    let make_entries = |kind: WidgetKind, observe: bool| -> Result<Vec<serde_json::Value>> {
         widgets
             .iter()
             .filter(|w| w.widget_kind == kind)
-            .map(|w| make_entry(w, observe))
+            .map(|w| make_operation_entry(w, observe))
             .collect()
     };
 
@@ -1862,13 +1940,24 @@ fn generate_registration_file(
         .iter()
         .filter(|w| w.widget_kind == WidgetKind::Fragment)
         .collect::<Vec<_>>();
-    let fragments = widget_fragment_dependency_order(ctx, &widget_fragments, is_pure_dart)?
+    let fragments = widget_fragment_dependency_order(ctx, &widget_fragments)?
         .into_iter()
-        .map(|w| make_entry(w, true))
-        .collect::<Vec<_>>();
-    let queries = make_entries(WidgetKind::Query, true);
-    let mutations = make_entries(WidgetKind::Mutation, false);
-    let subscriptions = make_entries(WidgetKind::Subscription, true);
+        .map(|w| {
+            let fragment = ctx.get_fragment(&w.class_name).ok_or_else(|| {
+                anyhow::anyhow!(
+                    "fragment '{}' not registered in global context",
+                    w.class_name
+                )
+            })?;
+            Ok(serde_json::json!({
+                "class_name": w.class_name,
+                "document": with_observe(&fragment.fragment_raw),
+            }))
+        })
+        .collect::<Result<Vec<_>>>()?;
+    let queries = make_entries(WidgetKind::Query, true)?;
+    let mutations = make_entries(WidgetKind::Mutation, false)?;
+    let subscriptions = make_entries(WidgetKind::Subscription, true)?;
 
     let mut env = Environment::new();
     env.add_template(

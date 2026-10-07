@@ -1,21 +1,30 @@
 use std::collections::{HashMap, HashSet, VecDeque};
+use std::time::{Duration, Instant};
 
 use crate::cache::{CacheRecord, CacheValue, NormalizedCache};
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct SubscriptionTracker {
     counts: HashMap<String, usize>,
+    /// Keys whose last subscriber just dropped off, kept "fake"-subscribed
+    /// until the recorded instant so GC doesn't evict them immediately.
+    grace: HashMap<String, Instant>,
+    retention_grace: Duration,
 }
 
 impl SubscriptionTracker {
-    pub fn new() -> Self {
+    pub fn new(retention_grace: Duration) -> Self {
         Self {
             counts: HashMap::new(),
+            grace: HashMap::new(),
+            retention_grace,
         }
     }
 
     pub fn subscribe<I: IntoIterator<Item = String>>(&mut self, keys: I) {
         for key in keys {
+            // A real subscriber showed up again — cancel any pending grace eviction.
+            self.grace.remove(&key);
             *self.counts.entry(key).or_insert(0) += 1;
         }
     }
@@ -27,13 +36,23 @@ impl SubscriptionTracker {
                     *count -= 1;
                 } else {
                     self.counts.remove(&key);
+                    if !self.retention_grace.is_zero() {
+                        self.grace
+                            .insert(key, Instant::now() + self.retention_grace);
+                    }
                 }
             }
         }
     }
 
-    pub fn active_keys(&self) -> HashSet<String> {
-        self.counts.keys().cloned().collect()
+    pub fn active_keys(&mut self) -> HashSet<String> {
+        let now = Instant::now();
+        self.grace.retain(|_, expiry| *expiry > now);
+        self.counts
+            .keys()
+            .cloned()
+            .chain(self.grace.keys().cloned())
+            .collect()
     }
 
     pub fn counts(&self) -> &HashMap<String, usize> {
@@ -42,6 +61,7 @@ impl SubscriptionTracker {
 
     pub fn clear(&mut self) {
         self.counts.clear();
+        self.grace.clear();
     }
 }
 
@@ -54,15 +74,18 @@ pub fn collect_garbage(cache: &mut NormalizedCache, active_keys: &HashSet<String
         }
     }
 
-    for key in cache.keys() {
-        if keep.contains(key) {
-            continue;
+    // Retain directly watched records and the legacy `record_field` form.
+    // Deriving candidate record keys from each watched key avoids comparing
+    // every cache entry with every active key (O(cache * active)).
+    for active_key in active_keys {
+        if cache.get(active_key).is_some() {
+            keep.insert(active_key.clone());
         }
-        if active_keys
-            .iter()
-            .any(|sub| sub == key || sub.starts_with(&format!("{key}_")))
-        {
-            keep.insert(key.clone());
+        for (separator, _) in active_key.match_indices('_') {
+            let candidate = &active_key[..separator];
+            if cache.get(candidate).is_some() {
+                keep.insert(candidate.to_string());
+            }
         }
     }
 
@@ -90,6 +113,7 @@ pub fn collect_garbage(cache: &mut NormalizedCache, active_keys: &HashSet<String
             evicted.push(key);
         }
     }
+    cache.prune_ref_index();
 
     evicted
 }

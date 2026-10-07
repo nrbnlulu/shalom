@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:shalom/shalom.dart';
+import 'package:shalom/src/rust/api/runtime.dart' as rs_runtime;
+import 'package:shalom/src/rust/api/ws.dart' as rs_ws;
 import 'package:test/test.dart';
 
 String get _nativeLibPath {
@@ -12,18 +15,28 @@ String get _nativeLibPath {
   throw UnsupportedError('Unsupported platform: ${Platform.operatingSystem}');
 }
 
+JsonObject _json(ShalomJsonValue value) => value.toJsonValue() as JsonObject;
+
+/// [request]/[subscribeToFragment] require a [StreamCompat] type argument;
+/// wrap plain decoded JSON so these tests can use it as one.
+class _TestData extends MapView<String, dynamic> implements StreamCompat {
+  _TestData(super.map);
+}
+
+_TestData _tdJson(ShalomJsonValue value) => _TestData(_json(value));
+
 // ---------------------------------------------------------------------------
 // Inline mock link.
 // ---------------------------------------------------------------------------
 
 class _MockLink extends GraphQLLink {
-  final Queue<GraphQLResponse<JsonObject>> _queue;
+  final Queue<GraphQLResponse<GraphQLLinkPayload>> _queue;
 
   _MockLink(List<GraphQLResponse<JsonObject>> responses)
-    : _queue = Queue.from(responses);
+    : _queue = Queue.from(responses.map(_rawResponse));
 
   @override
-  Stream<GraphQLResponse<JsonObject>> request({
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
     required Request request,
     HeadersType? headers,
   }) {
@@ -35,6 +48,55 @@ class _MockLink extends GraphQLLink {
     return Stream.value(_queue.removeFirst());
   }
 }
+
+class _NeverLink extends GraphQLLink {
+  @override
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
+    required Request request,
+    HeadersType? headers,
+  }) {
+    return const Stream.empty();
+  }
+}
+
+class _TypedMockLink extends GraphQLLink {
+  final Queue<GraphQLResponse<GraphQLLinkPayload>> _queue;
+
+  _TypedMockLink(List<GraphQLResponse<GraphQLLinkPayload>> responses)
+    : _queue = Queue.from(responses);
+
+  @override
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
+    required Request request,
+    HeadersType? headers,
+  }) {
+    if (_queue.isEmpty) {
+      throw StateError(
+        '_TypedMockLink: no more responses queued for ${request.opName}',
+      );
+    }
+    return Stream.value(_queue.removeFirst());
+  }
+}
+
+GraphQLResponse<GraphQLLinkPayload> _rawResponse(
+  GraphQLResponse<JsonObject> response,
+) => switch (response) {
+  GraphQLData(:final data, :final errors, :final extensions) => GraphQLData(
+    data: RawGraphQLLinkPayload(
+      json: jsonEncode({
+        'data': data,
+        ...?errors == null ? null : {'errors': errors},
+        ...?extensions == null ? null : {'extensions': extensions},
+      }),
+    ),
+  ),
+  GraphQLError(:final errors, :final extensions) => GraphQLError(
+    errors: errors,
+    extensions: extensions,
+  ),
+  LinkExceptionResponse(:final errors) => LinkExceptionResponse(errors),
+};
 
 T _expectData<T>(GraphQLResponse<T> response) {
   switch (response) {
@@ -102,6 +164,52 @@ void main() {
     await client.dispose();
   });
 
+  test(
+    'immediate request cancellation does not leave active observer',
+    () async {
+      final client = ShalomRuntimeClient.create(
+        schemaSdl: _schemaSdl,
+        link: _NeverLink(),
+      );
+      const query = 'query GetUser @observe { user(id: "1") { id name } }';
+      client.registerOperation(document: query);
+
+      final sub = client
+          .request<_TestData>(
+            name: 'GetUser',
+            decoder: (d) => _TestData(_json(d)['user'] as JsonObject? ?? {}),
+          )
+          .listen((_) {});
+
+      await sub.cancel();
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+
+      expect(await client.getAllObservers(), isEmpty);
+
+      await client.dispose();
+    },
+  );
+
+  test('one-shot responses are pushed before transport completion', () async {
+    final client = _makeClient([
+      for (var i = 0; i < 20; i++)
+        GraphQLData(data: {'version': '${'v' * 50000}-$i'}),
+    ]);
+    const query = 'query GetVersion @observe { version }';
+    client.registerOperation(document: query);
+
+    for (var i = 0; i < 20; i++) {
+      final response = await client
+          .request<_TestData>(name: 'GetVersion', decoder: _tdJson)
+          .first
+          .timeout(const Duration(seconds: 5));
+      final data = _expectData(response);
+      expect(data['version'], endsWith('-$i'));
+    }
+
+    await client.dispose();
+  });
+
   // -------------------------------------------------------------------------
   // 2. request() returns normalised data from the network.
   // -------------------------------------------------------------------------
@@ -118,9 +226,9 @@ void main() {
     client.registerOperation(document: query);
 
     final response = await client
-        .request<JsonObject>(
+        .request<_TestData>(
           name: 'GetUser',
-          decoder: (d) => (d['user'] as Map<String, dynamic>?) ?? {},
+          decoder: (d) => _TestData(_json(d)['user'] as JsonObject? ?? {}),
         )
         .first
         .timeout(const Duration(seconds: 5));
@@ -130,6 +238,59 @@ void main() {
     expect(data['name'], 'Alice');
 
     await client.dispose();
+  });
+
+  test('request accepts an already parsed GraphQL response', () async {
+    final client = ShalomRuntimeClient.create(
+      schemaSdl: _schemaSdl,
+      link: _TypedMockLink([
+        GraphQLData(
+          data: ParsedGraphQLLinkPayload(
+            response: rs_runtime.GraphQlResponseInput.data(
+              data: shalomJsonObject({
+                'user': shalomJsonObject({
+                  'id': shalomJsonValue('1'),
+                  'name': shalomJsonValue('Alice'),
+                }),
+              }),
+            ),
+          ),
+        ),
+      ]),
+    );
+    const query = 'query GetUser @observe { user(id: "1") { id name } }';
+    client.registerOperation(document: query);
+
+    final response = await client
+        .request<_TestData>(
+          name: 'GetUser',
+          decoder: (data) => _TestData(_json(data)['user'] as JsonObject),
+        )
+        .first
+        .timeout(const Duration(seconds: 5));
+
+    expect(_expectData(response), {'id': '1', 'name': 'Alice'});
+    await client.dispose();
+  });
+
+  test('WS events carry the parsed GraphQL response', () {
+    final sansio = rs_ws.createWsSansIo();
+    rs_ws.wsOnMessage(sansio: sansio, raw: '{"type":"connection_ack"}');
+    rs_ws.wsSubscribeFrame(
+      sansio: sansio,
+      opId: 'operation-1',
+      query: 'query GetVersion { version }',
+    );
+
+    final events = rs_ws.wsOnMessage(
+      sansio: sansio,
+      raw:
+          '{"id":"operation-1","type":"next","payload":{"data":{"version":"v1"}}}',
+    );
+
+    final event = events.single as rs_ws.WsLinkEvent_OperationResponse;
+    final response = event.response as rs_runtime.GraphQlResponseInput_Data;
+    expect(response.data.toJsonValue(), {'version': 'v1'});
   });
 
   // -------------------------------------------------------------------------
@@ -162,19 +323,19 @@ void main() {
       final secondReceived = Completer<void>();
 
       final sub = client
-          .request<JsonObject>(
+          .request<_TestData>(
             name: 'GetUser',
-            decoder: (d) => (d['user'] as Map<String, dynamic>?) ?? {},
+            decoder: (d) => _TestData(_json(d)['user'] as JsonObject? ?? {}),
           )
           .listen((response) {
             results.add(_expectData(response));
             if (results.length == 1) {
               unawaited(
                 client
-                    .request<JsonObject>(
+                    .request<_TestData>(
                       name: 'GetUserDetails',
                       decoder: (d) =>
-                          (d['user'] as Map<String, dynamic>?) ?? {},
+                          _TestData(_json(d)['user'] as JsonObject? ?? {}),
                     )
                     .first,
               );
@@ -220,9 +381,9 @@ void main() {
     bool gotUpdate = false;
 
     final sub = client
-        .request<JsonObject>(
+        .request<_TestData>(
           name: 'GetUser',
-          decoder: (d) => (d['user'] as Map<String, dynamic>?) ?? {},
+          decoder: (d) => _TestData(_json(d)['user'] as JsonObject? ?? {}),
         )
         .listen((data) {
           if (!firstReceived.isCompleted) {
@@ -235,9 +396,9 @@ void main() {
     await firstReceived.future.timeout(const Duration(seconds: 5));
 
     await client
-        .request<JsonObject>(
+        .request<_TestData>(
           name: 'GetPost',
-          decoder: (d) => (d['post'] as Map<String, dynamic>?) ?? {},
+          decoder: (d) => _TestData(_json(d)['post'] as JsonObject? ?? {}),
         )
         .first
         .timeout(const Duration(seconds: 5));
@@ -302,19 +463,19 @@ void main() {
 
     // Populate the cache.
     await client
-        .request<JsonObject>(name: 'GetUser', decoder: (d) => d)
+        .request<_TestData>(name: 'GetUser', decoder: _tdJson)
         .first
         .timeout(const Duration(seconds: 5));
 
     // Subscribe to the pet entity by its normalised cache key.
-    final petUpdates = client.subscribeToFragment<JsonObject>(
+    final petUpdates = client.subscribeToFragment<_TestData>(
       ref: ObservedRefInput(observableId: 'PetFrag', anchor: 'Pet:14'),
-      decoder: (d) => d,
+      decoder: _tdJson,
     );
 
     // Trigger a second fetch that updates Pet:14.name to "Max".
     unawaited(
-      client.request<JsonObject>(name: 'GetUser', decoder: (d) => d).first,
+      client.request<_TestData>(name: 'GetUser', decoder: _tdJson).first,
     );
 
     // skip(1): discard the immediate cache hit ('Rex'); await the update ('Max').
@@ -357,19 +518,19 @@ void main() {
 
       // Populate cache.
       await client
-          .request<JsonObject>(name: 'FetchUser', decoder: (d) => d)
+          .request<_TestData>(name: 'FetchUser', decoder: _tdJson)
           .first
           .timeout(const Duration(seconds: 5));
 
       final ref = ObservedRefInput(observableId: 'UserFrag', anchor: 'User:7');
-      final updates = client.subscribeToFragment<JsonObject>(
+      final updates = client.subscribeToFragment<_TestData>(
         ref: ref,
-        decoder: (d) => d,
+        decoder: _tdJson,
       );
 
       // Trigger the write.
       unawaited(
-        client.request<JsonObject>(name: 'FetchUser', decoder: (d) => d).first,
+        client.request<_TestData>(name: 'FetchUser', decoder: _tdJson).first,
       );
 
       // skip(1): discard the immediate cache hit ('Initial'); await the update ('Updated').
@@ -425,18 +586,18 @@ void main() {
 
     // Populate cache for both pets.
     await client
-        .request<JsonObject>(name: 'GetPet14', decoder: (d) => d)
+        .request<_TestData>(name: 'GetPet14', decoder: _tdJson)
         .first
         .timeout(const Duration(seconds: 5));
     await client
-        .request<JsonObject>(name: 'GetPet15', decoder: (d) => d)
+        .request<_TestData>(name: 'GetPet15', decoder: _tdJson)
         .first
         .timeout(const Duration(seconds: 5));
 
     // Subscribe to Pet:14 via the fragment.
-    final sub14 = client.subscribeToFragment<JsonObject>(
+    final sub14 = client.subscribeToFragment<_TestData>(
       ref: ObservedRefInput(observableId: 'PetFrag', anchor: 'Pet:14'),
-      decoder: (d) => d,
+      decoder: _tdJson,
     );
     // Drain first emission (immediate cache hit).
     await sub14.first.timeout(const Duration(seconds: 5));
@@ -448,9 +609,9 @@ void main() {
     //
     // For a white-box rebind test (with a known subId), use the Rust layer
     // tests in rust/shalom_runtime/tests/.
-    final sub15 = client.subscribeToFragment<JsonObject>(
+    final sub15 = client.subscribeToFragment<_TestData>(
       ref: ObservedRefInput(observableId: 'PetFrag', anchor: 'Pet:15'),
-      decoder: (d) => d,
+      decoder: _tdJson,
     );
     final pet15 = _expectData(
       await sub15.first.timeout(const Duration(seconds: 5)),

@@ -36,9 +36,7 @@ void main() {
       'fragmentWithNestedObjectRequired - Fragment with nested object deserializes',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromJson(
-          postWithDetailsData,
-        );
+        final result = GetPostWithDetailsData.fromJson(postWithDetailsData);
 
         // Test access to top-level fields
         expect(result.post?.id, "post1");
@@ -57,9 +55,7 @@ void main() {
       'fragmentWithNestedObjectOptional - Nested object fields are accessible',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromJson(
-          postWithDetailsData,
-        );
+        final result = GetPostWithDetailsData.fromJson(postWithDetailsData);
 
         // Verify nested object can be accessed and used
         final author = result.post?.author;
@@ -75,12 +71,8 @@ void main() {
       'fragmentWithNestedObjectEquals - Equality works with nested objects',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result1 = GetPostWithDetailsResponse.fromJson(
-          postWithDetailsData,
-        );
-        final result2 = GetPostWithDetailsResponse.fromJson(
-          postWithDetailsData,
-        );
+        final result1 = GetPostWithDetailsData.fromJson(postWithDetailsData);
+        final result2 = GetPostWithDetailsData.fromJson(postWithDetailsData);
 
         expect(result1, equals(result2));
         expect(result1.hashCode, equals(result2.hashCode));
@@ -94,9 +86,7 @@ void main() {
       'fragmentWithNestedObjectToJson - Serialization includes nested objects',
       () {
         final variables = GetPostWithDetailsVariables(postId: "post1");
-        final result = GetPostWithDetailsResponse.fromJson(
-          postWithDetailsData,
-        );
+        final result = GetPostWithDetailsData.fromJson(postWithDetailsData);
         final json = result.toJson();
 
         expect(json, postWithDetailsData);
@@ -149,9 +139,7 @@ void main() {
       'fragmentWithNestedObjectRequired - Second fragment with nested object',
       () {
         final variables = GetUserWithProfileVariables(userId: "user1");
-        final result = GetUserWithProfileResponse.fromJson(
-          userWithProfileData,
-        );
+        final result = GetUserWithProfileData.fromJson(userWithProfileData);
 
         expect(result.user?.id, "user1");
         expect(result.user?.username, "johndoe");
@@ -165,9 +153,7 @@ void main() {
       'fragmentWithNestedObjectOptional - Nested object with optional fields',
       () {
         final variables = GetUserWithProfileVariables(userId: "user2");
-        final result = GetUserWithProfileResponse.fromJson(
-          userWithProfileNoAvatar,
-        );
+        final result = GetUserWithProfileData.fromJson(userWithProfileNoAvatar);
 
         expect(result.user?.profile.id, "profile2");
         expect(result.user?.profile.displayName, "Jane Doe");
@@ -177,12 +163,8 @@ void main() {
 
     test('fragmentWithNestedObjectEquals - Equality with second fragment', () {
       final variables = GetUserWithProfileVariables(userId: "user1");
-      final result1 = GetUserWithProfileResponse.fromJson(
-        userWithProfileData,
-      );
-      final result2 = GetUserWithProfileResponse.fromJson(
-        userWithProfileData,
-      );
+      final result1 = GetUserWithProfileData.fromJson(userWithProfileData);
+      final result2 = GetUserWithProfileData.fromJson(userWithProfileData);
 
       expect(result1, equals(result2));
       expect(result1.hashCode, equals(result2.hashCode));
@@ -193,9 +175,7 @@ void main() {
       'fragmentWithNestedObjectToJson - Serialization with second fragment',
       () {
         final variables = GetUserWithProfileVariables(userId: "user1");
-        final result = GetUserWithProfileResponse.fromJson(
-          userWithProfileData,
-        );
+        final result = GetUserWithProfileData.fromJson(userWithProfileData);
         final json = result.toJson();
 
         expect(json, userWithProfileData);

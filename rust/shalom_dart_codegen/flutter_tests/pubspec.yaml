@@ -53,6 +53,12 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
 
+dependency_overrides:
+  # Force every package that depends on `shalom` (e.g. shalom_flutter) to
+  # resolve to the local path instead of the hosted pub.dev version.
+  shalom:
+    path: ../../../dart/shalom
+
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
 

@@ -35,14 +35,20 @@ extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [DogFragData]. Returns `null` when absent or incomplete.
-  DogFragData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<DogFragData>(
+  Future<DogFragData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<DogFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: DogFragData.fromCache,
+      decoder: DogFragData.fromShalomValue,
     );
   }
 
@@ -51,7 +57,7 @@ extension type DogFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
   ) {
     return client.subscribeToFragment<DogFragData>(
       ref: _inner,
-      decoder: DogFragData.fromCache,
+      decoder: DogFragData.fromShalomValue,
     );
   }
 }
@@ -62,6 +68,7 @@ abstract class DogFrag {
   String get name;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 final class DogFragData implements DogFrag, shalom_core.FragmentInterface {
@@ -106,9 +113,28 @@ final class DogFragData implements DogFrag, shalom_core.FragmentInterface {
     return DogFragData(breed: breed$value, id: id$value, name: name$value);
   }
 
+  static DogFragData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+    final String breed$value = breed$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
+    return DogFragData(breed: breed$value, id: id$value, name: name$value);
+  }
+
   shalom_core.JsonObject toJson() {
     return {'breed': this.breed, 'id': this.id, 'name': this.name};
   }
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'breed': shalom_core.shalomJsonValue(this.breed!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
 }
 
 abstract class $DogFrag extends StatelessWidget {

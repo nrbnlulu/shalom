@@ -23,7 +23,7 @@ void main() {
     });
 
     test('generates response fields from nested raw fragments', () {
-      final response = UserCardQueryResponse.fromJson({
+      final response = UserCardQueryData.fromJson({
         'user': {'id': '1', 'name': 'Alice', 'email': 'alice@example.com'},
       });
 

@@ -62,6 +62,11 @@ fn test_interface_selection_dart() {
 }
 
 #[test]
+fn test_union_common_interface_dart() {
+    run_dart_tests_for_usecase("union_common_interface");
+}
+
+#[test]
 fn test_list_of_scalars_dart() {
     run_dart_tests_for_usecase("list_of_scalars");
 }
@@ -131,6 +136,11 @@ fn test_fragment_inherited_interface_fields_dart() {
 }
 
 #[test]
+fn test_fragment_concrete_spread_interface_frag_dart() {
+    run_dart_tests_for_usecase("fragment_concrete_spread_interface_frag");
+}
+
+#[test]
 fn test_one_of_input_dart() {
     run_dart_tests_for_usecase("one_of_input");
 }
@@ -152,6 +162,11 @@ fn test_flutter_animal_widget() {
 #[test]
 fn test_flutter_user_widget() {
     common::run_flutter_tests("user_widget_test.dart");
+}
+
+#[test]
+fn test_flutter_observable_scope() {
+    common::run_flutter_tests("observable_scope_test.dart");
 }
 
 #[test]
@@ -187,6 +202,11 @@ fn test_flutter_declarative_raw_fragments() {
 #[test]
 fn test_flutter_animal_with_owner_widget() {
     common::run_flutter_tests("animal_with_owner_widget_test.dart");
+}
+
+#[test]
+fn test_flutter_unwrap_fragment() {
+    common::run_flutter_tests("unwrap_fragment_test.dart");
 }
 
 #[test]

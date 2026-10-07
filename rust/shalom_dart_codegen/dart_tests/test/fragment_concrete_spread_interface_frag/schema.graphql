@@ -1,0 +1,30 @@
+type Query {
+    systems: [System!]!
+}
+
+interface System {
+    id: ID!
+}
+
+interface IHasConnectionInfo {
+    connectionInfo: StreamableConfig!
+}
+
+type StreamableConfig {
+    hostname: String!
+}
+
+type Nvr implements System & IHasConnectionInfo {
+    id: ID!
+    connectionInfo: StreamableConfig!
+    vendor: NvrVendor!
+}
+
+type OnvifCamera implements System & IHasConnectionInfo {
+    id: ID!
+    connectionInfo: StreamableConfig!
+}
+
+enum NvrVendor {
+    MILESIGHT
+}

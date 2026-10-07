@@ -38,7 +38,7 @@ void main() {
 
   group('List of Custom Scalars Required - [Point!]!', () {
     test('pointsRequired deserialize', () {
-      final result = GetPointsRequiredResponse.fromJson(pointsRequiredData);
+      final result = GetPointsRequiredData.fromJson(pointsRequiredData);
       expect(result.pointsRequired.length, 3);
       expect(result.pointsRequired[0].x, 1);
       expect(result.pointsRequired[0].y, 2);
@@ -49,38 +49,26 @@ void main() {
     });
 
     test('pointsRequired deserialize empty list', () {
-      final result = GetPointsRequiredResponse.fromJson(
-        pointsRequiredEmptyData,
-      );
+      final result = GetPointsRequiredData.fromJson(pointsRequiredEmptyData);
       expect(result.pointsRequired, []);
     });
 
     test('pointsRequired toJson', () {
-      final initial = GetPointsRequiredResponse.fromJson(
-        pointsRequiredData,
-      );
+      final initial = GetPointsRequiredData.fromJson(pointsRequiredData);
       final json = initial.toJson();
       expect(json, pointsRequiredDataSerialized);
     });
 
     test('pointsRequired toJson empty list', () {
-      final initial = GetPointsRequiredResponse.fromJson(
-        pointsRequiredEmptyData,
-      );
+      final initial = GetPointsRequiredData.fromJson(pointsRequiredEmptyData);
       final json = initial.toJson();
       expect(json, pointsRequiredEmptyData);
     });
 
     test('pointsRequired equals', () {
-      final result1 = GetPointsRequiredResponse.fromJson(
-        pointsRequiredData,
-      );
-      final result2 = GetPointsRequiredResponse.fromJson(
-        pointsRequiredData,
-      );
-      final result3 = GetPointsRequiredResponse.fromJson(
-        pointsRequiredDataChanged,
-      );
+      final result1 = GetPointsRequiredData.fromJson(pointsRequiredData);
+      final result2 = GetPointsRequiredData.fromJson(pointsRequiredData);
+      final result3 = GetPointsRequiredData.fromJson(pointsRequiredDataChanged);
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -111,7 +99,7 @@ void main() {
 
   group('List of Custom Scalars Optional - [Point!]', () {
     test('pointsOptional deserialize', () {
-      final result = GetPointsOptionalResponse.fromJson(pointsOptionalData);
+      final result = GetPointsOptionalData.fromJson(pointsOptionalData);
       expect(result.pointsOptional?.length, 2);
       expect(result.pointsOptional?[0].x, 10);
       expect(result.pointsOptional?[0].y, 20);
@@ -120,56 +108,38 @@ void main() {
     });
 
     test('pointsOptional deserialize null', () {
-      final result = GetPointsOptionalResponse.fromJson(
-        pointsOptionalNullData,
-      );
+      final result = GetPointsOptionalData.fromJson(pointsOptionalNullData);
       expect(result.pointsOptional, isNull);
     });
 
     test('pointsOptional deserialize empty list', () {
-      final result = GetPointsOptionalResponse.fromJson(
-        pointsOptionalEmptyData,
-      );
+      final result = GetPointsOptionalData.fromJson(pointsOptionalEmptyData);
       expect(result.pointsOptional, []);
     });
 
     test('pointsOptional toJson', () {
-      final initial = GetPointsOptionalResponse.fromJson(
-        pointsOptionalData,
-      );
+      final initial = GetPointsOptionalData.fromJson(pointsOptionalData);
       final json = initial.toJson();
       expect(json, pointsOptionalDataSerialized);
     });
 
     test('pointsOptional toJson null', () {
-      final initial = GetPointsOptionalResponse.fromJson(
-        pointsOptionalNullData,
-      );
+      final initial = GetPointsOptionalData.fromJson(pointsOptionalNullData);
       final json = initial.toJson();
       expect(json, pointsOptionalNullData);
     });
 
     test('pointsOptional toJson empty list', () {
-      final initial = GetPointsOptionalResponse.fromJson(
-        pointsOptionalEmptyData,
-      );
+      final initial = GetPointsOptionalData.fromJson(pointsOptionalEmptyData);
       final json = initial.toJson();
       expect(json, pointsOptionalEmptyData);
     });
 
     test('pointsOptional equals', () {
-      final result1 = GetPointsOptionalResponse.fromJson(
-        pointsOptionalData,
-      );
-      final result2 = GetPointsOptionalResponse.fromJson(
-        pointsOptionalData,
-      );
-      final result3 = GetPointsOptionalResponse.fromJson(
-        pointsOptionalNullData,
-      );
-      final result4 = GetPointsOptionalResponse.fromJson(
-        pointsOptionalNullData,
-      );
+      final result1 = GetPointsOptionalData.fromJson(pointsOptionalData);
+      final result2 = GetPointsOptionalData.fromJson(pointsOptionalData);
+      final result3 = GetPointsOptionalData.fromJson(pointsOptionalNullData);
+      final result4 = GetPointsOptionalData.fromJson(pointsOptionalNullData);
 
       expect(result1, equals(result2));
       expect(result3, equals(result4));
@@ -200,7 +170,7 @@ void main() {
 
   group('Optional Custom Scalars in List - [Point]!', () {
     test('optionalPoints deserialize with nulls', () {
-      final result = GetOptionalPointsResponse.fromJson(optionalPointsData);
+      final result = GetOptionalPointsData.fromJson(optionalPointsData);
       expect(result.optionalPoints.length, 3);
       expect(result.optionalPoints[0]?.x, 100);
       expect(result.optionalPoints[0]?.y, 200);
@@ -210,23 +180,15 @@ void main() {
     });
 
     test('optionalPoints toJson', () {
-      final initial = GetOptionalPointsResponse.fromJson(
-        optionalPointsData,
-      );
+      final initial = GetOptionalPointsData.fromJson(optionalPointsData);
       final json = initial.toJson();
       expect(json, optionalPointsDataSerialized);
     });
 
     test('optionalPoints equals', () {
-      final result1 = GetOptionalPointsResponse.fromJson(
-        optionalPointsData,
-      );
-      final result2 = GetOptionalPointsResponse.fromJson(
-        optionalPointsData,
-      );
-      final result3 = GetOptionalPointsResponse.fromJson(
-        optionalPointsDataChanged,
-      );
+      final result1 = GetOptionalPointsData.fromJson(optionalPointsData);
+      final result2 = GetOptionalPointsData.fromJson(optionalPointsData);
+      final result3 = GetOptionalPointsData.fromJson(optionalPointsDataChanged);
 
       expect(result1, equals(result2));
       expect(result1, isNot(equals(result3)));
@@ -257,7 +219,7 @@ void main() {
 
   group('Fully Optional - [Point]', () {
     test('pointsFullyOptional deserialize with nulls', () {
-      final result = GetPointsFullyOptionalResponse.fromJson(
+      final result = GetPointsFullyOptionalData.fromJson(
         pointsFullyOptionalData,
       );
       expect(result.pointsFullyOptional?.length, 2);
@@ -267,21 +229,21 @@ void main() {
     });
 
     test('pointsFullyOptional deserialize null', () {
-      final result = GetPointsFullyOptionalResponse.fromJson(
+      final result = GetPointsFullyOptionalData.fromJson(
         pointsFullyOptionalNullData,
       );
       expect(result.pointsFullyOptional, isNull);
     });
 
     test('pointsFullyOptional deserialize empty list', () {
-      final result = GetPointsFullyOptionalResponse.fromJson(
+      final result = GetPointsFullyOptionalData.fromJson(
         pointsFullyOptionalEmptyData,
       );
       expect(result.pointsFullyOptional, []);
     });
 
     test('pointsFullyOptional toJson', () {
-      final initial = GetPointsFullyOptionalResponse.fromJson(
+      final initial = GetPointsFullyOptionalData.fromJson(
         pointsFullyOptionalData,
       );
       final json = initial.toJson();
@@ -289,7 +251,7 @@ void main() {
     });
 
     test('pointsFullyOptional toJson null', () {
-      final initial = GetPointsFullyOptionalResponse.fromJson(
+      final initial = GetPointsFullyOptionalData.fromJson(
         pointsFullyOptionalNullData,
       );
       final json = initial.toJson();
@@ -297,13 +259,13 @@ void main() {
     });
 
     test('pointsFullyOptional equals', () {
-      final result1 = GetPointsFullyOptionalResponse.fromJson(
+      final result1 = GetPointsFullyOptionalData.fromJson(
         pointsFullyOptionalData,
       );
-      final result2 = GetPointsFullyOptionalResponse.fromJson(
+      final result2 = GetPointsFullyOptionalData.fromJson(
         pointsFullyOptionalData,
       );
-      final result3 = GetPointsFullyOptionalResponse.fromJson(
+      final result3 = GetPointsFullyOptionalData.fromJson(
         pointsFullyOptionalNullData,
       );
 

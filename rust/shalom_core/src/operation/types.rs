@@ -202,6 +202,11 @@ pub struct ObjectLikeCommon {
     pub selections: BTreeSet<FieldSelection>,
     /// fragment spreads
     pub used_fragments: BTreeSet<FragName>,
+    /// fragment spreads marked with `@unwrap` at this exact spread site - these
+    /// are still flattened via `used_fragments`/`get_all_selections_distinct`, but
+    /// should not be treated as an `@observe`d ref here even if the fragment
+    /// itself is globally marked `@observe` (other spread sites are unaffected).
+    pub unwrapped_fragments: BTreeSet<FragName>,
     /// inline fragments used in this object-like
     pub used_inline_frags: BTreeMap<String, InlineFragment>,
     /// type conditioned selections - stores selections for specific types
@@ -214,6 +219,7 @@ impl ObjectLikeCommon {
             path_name,
             schema_typename,
             used_fragments: BTreeSet::new(),
+            unwrapped_fragments: BTreeSet::new(),
             used_inline_frags: BTreeMap::new(),
             type_cond_selections: BTreeMap::new(),
             selections: BTreeSet::new(),
@@ -228,6 +234,7 @@ impl ObjectLikeCommon {
         if self.schema_typename == other.schema_typename {
             // the same type just extend selections (HashSet handles deduplication)
             self.used_fragments.extend(other.used_fragments);
+            self.unwrapped_fragments.extend(other.unwrapped_fragments);
             self.used_inline_frags.extend(other.used_inline_frags);
             self.selections.extend(other.selections);
         } else {
@@ -303,6 +310,13 @@ impl ObjectLikeCommon {
     pub fn add_used_fragment(&mut self, name: FragName) {
         self.used_fragments.insert(name);
     }
+    /// Add a fragment spread marked with `@unwrap` at this spread site: the
+    /// fragment's fields are still flattened in, but it must not be treated as
+    /// an `@observe`d ref here.
+    pub fn add_used_fragment_unwrapped(&mut self, name: FragName) {
+        self.unwrapped_fragments.insert(name.clone());
+        self.used_fragments.insert(name);
+    }
     pub fn get_used_fragments(&self) -> &BTreeSet<FragName> {
         &self.used_fragments
     }
@@ -367,13 +381,19 @@ impl ObjectLikeCommon {
                     recursive_inner(root_type_name, resolved_selections, frag_root, ctx);
                 }
             }
-            // these should also be safe to expand here
-            // since this type implements them
-            for (on_type, inline_frag) in current_obj.used_inline_frags.iter() {
-                if ctx
-                    .schema_ctx
-                    .is_type_same_or_implementing_interface(root_type_name, on_type)
-                {
+            // Expand inline fragments and type conditioned selections ONLY if they match
+            // this target type or if the target type implements the condition interface.
+            // Incompatible type conditions are skipped because the server won't return those fields
+            // for non-matching concrete types.
+            let is_type_matching = |on_type: &str| {
+                root_type_name == on_type
+                    || ctx
+                        .schema_ctx
+                        .is_type_same_or_implementing_interface(root_type_name, on_type)
+            };
+
+            for inline_frag in current_obj.used_inline_frags.values() {
+                if is_type_matching(&inline_frag.common.schema_typename) {
                     resolved_selections.extend(inline_frag.common.selections.iter().cloned());
                     recursive_inner(
                         root_type_name,
@@ -383,10 +403,12 @@ impl ObjectLikeCommon {
                     );
                 }
             }
-            // type conditioned selections should not be expanded here since
-            // even if you selected a selections that applies to the root type but
-            // in a type condition, you won't get it in the graphql response if
-            // the resolved type is other than that type condition concrete.
+            for (on_type, type_cond) in current_obj.type_cond_selections.iter() {
+                if is_type_matching(on_type) {
+                    resolved_selections.extend(type_cond.selections.iter().cloned());
+                    recursive_inner(root_type_name, resolved_selections, type_cond, ctx);
+                }
+            }
         }
 
         let mut selections = BTreeSet::new();
