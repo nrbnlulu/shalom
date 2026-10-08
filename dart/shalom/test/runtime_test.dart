@@ -1,19 +1,12 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:shalom/shalom.dart';
 import 'package:shalom/src/rust/api/runtime.dart' as rs_runtime;
 import 'package:shalom/src/rust/api/ws.dart' as rs_ws;
+import 'package:shalom/testing.dart';
 import 'package:test/test.dart';
-
-String get _nativeLibPath {
-  if (Platform.isLinux) return '.dart_tool/lib/libshalom_ffi.so';
-  if (Platform.isMacOS) return '.dart_tool/lib/libshalom_ffi.dylib';
-  if (Platform.isWindows) return '.dart_tool/lib/shalom_ffi.dll';
-  throw UnsupportedError('Unsupported platform: ${Platform.operatingSystem}');
-}
 
 JsonObject _json(ShalomJsonValue value) => value.toJsonValue() as JsonObject;
 
@@ -155,7 +148,7 @@ ShalomRuntimeClient _makeClient(List<GraphQLResponse<JsonObject>> responses) {
 void main() {
   setUpAll(() async {
     await ShalomRuntimeClient.initFlutterRustBridge(
-      nativeLibPath: _nativeLibPath,
+      nativeLibPath: resolveNativeLibPath(),
     );
   });
 

@@ -6,6 +6,9 @@ description = "GraphQL parsing, validation and core types for the Shalom GraphQL
 license = "MIT"
 repository = "https://github.com/nrbnlulu/shalom"
 
+[lib]
+name = "shalom_core"
+
 [dependencies]
 anyhow = {workspace = true}
 apollo-compiler = {workspace = true}

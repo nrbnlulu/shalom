@@ -6,6 +6,9 @@ description = "GraphQL client runtime for Shalom: normalized cache, links, execu
 license = "MIT"
 repository = "https://github.com/nrbnlulu/shalom"
 
+[lib]
+name = "shalom_runtime"
+
 [dependencies]
 shalom_core = { version = "0.1.2", path = "../shalom_core" }
 simple_logger = {workspace = true}
