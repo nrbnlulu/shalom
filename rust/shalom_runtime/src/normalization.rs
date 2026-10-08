@@ -623,17 +623,14 @@ impl<'a> Normalizer<'a> {
                 .record_ref(object_ref_key.clone(), object_locator.clone());
         }
 
-        let cached_record = match cached_value {
-            Some(CacheValue::Ref(key)) => {
-                if entity_key.as_ref() == Some(&key) {
-                    self.snapshot_key(&key);
-                    self.cache.remove(&key)
-                } else {
-                    None
-                }
+        let cached_record = if let Some(key) = &entity_key {
+            self.snapshot_key(key);
+            self.cache.remove(key)
+        } else {
+            match cached_value {
+                Some(CacheValue::Object(record)) => Some(record),
+                _ => None,
             }
-            Some(CacheValue::Object(record)) => Some(record),
-            _ => None,
         };
 
         let mut next_record = cached_record.unwrap_or_default();
