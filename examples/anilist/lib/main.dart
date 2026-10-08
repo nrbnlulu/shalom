@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 
 import 'dio_transport.dart';
 import 'graphql/__graphql__/GetAnimeDetails.shalom.dart';
@@ -31,8 +31,7 @@ class _AniListAppState extends State<AniListApp> {
     _dioClient = dio.Dio();
     final transport = DioTransport(_dioClient);
     final httpLink = HttpLink(transportLayer: transport, url: _endpoint);
-    final ctx = ShalomCtx.withCapacity();
-    _client = ShalomClient(ctx: ctx, link: httpLink);
+    _client = ShalomClient(link: httpLink);
   }
 
   @override
@@ -95,8 +94,8 @@ class _AnimeListPageState extends State<AnimeListPage> {
       perPage: _pageSize,
     );
 
-    final response = await widget.client.requestOnce(
-      requestable: RequestGetAnimePage(variables: variables),
+    final response = await widget.client.requestAsync(
+      meta: RequestGetAnimePage(variables: variables).getRequestMeta(),
     );
 
     if (!mounted) return;
@@ -184,7 +183,7 @@ class _AnimeListPageState extends State<AnimeListPage> {
                         MaterialPageRoute(
                           builder: (_) => AnimeDetailsPage(
                             client: widget.client,
-                            mediaId: media.id!,
+                            mediaId: media.id,
                             title: title,
                           ),
                         ),
@@ -249,8 +248,8 @@ class _AnimeDetailsPageState extends State<AnimeDetailsPage> {
       perPage: _characterPageSize,
     );
 
-    final response = await widget.client.requestOnce(
-      requestable: RequestGetAnimeDetails(variables: variables),
+    final response = await widget.client.requestAsync(
+      meta: RequestGetAnimeDetails(variables: variables).getRequestMeta(),
     );
 
     if (!mounted) return;

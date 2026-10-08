@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart' as dio;
-import 'package:shalom_core/shalom_core.dart';
+import 'package:shalom/shalom.dart';
 
 class DioTransport extends ShalomHttpTransport {
   final dio.Dio dioClient;
@@ -7,7 +7,7 @@ class DioTransport extends ShalomHttpTransport {
   DioTransport(this.dioClient);
 
   @override
-  Future<JsonObject> request({
+  Future<String> request({
     required HttpMethod method,
     required String url,
     required JsonObject data,

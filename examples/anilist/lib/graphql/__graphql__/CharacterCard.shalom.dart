@@ -3,17 +3,105 @@
 // Fragment: CharacterCard
 
 import "../../schema.shalom.dart";
-import 'package:shalom_core/shalom_core.dart' as shalom_core;
+import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Generate abstract fragment class
 abstract class CharacterCard {
   int get id;
-  CharacterCard_name? get name;
   CharacterCard_image? get image;
+  CharacterCard_name? get name;
 
   Map<String, dynamic> toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
+}
+
+class CharacterCardImpl implements CharacterCard {
+  static String G__typename = "Character";
+
+  /// class members
+  final int id;
+
+  final CharacterCard_image? image;
+
+  final CharacterCard_name? name;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
+  // keywordargs constructor
+  CharacterCardImpl({required this.id, this.image, this.name});
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is CharacterCardImpl &&
+            id == other.id &&
+            image == other.image &&
+            name == other.name);
+  }
+
+  @override
+  int get hashCode =>
+      Object.hashAll([id, image, name, CharacterCardImpl.G__typename]);
+
+  shalom_core.JsonObject toJson() {
+    return {
+      'id': this.id,
+
+      'image': this.image?.toJson(),
+
+      'name': this.name?.toJson(),
+    };
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'image': this.image == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.image!.toShalomValue(),
+
+    'name': this.name == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.name!.toShalomValue(),
+  });
+
+  static CharacterCardImpl fromJson(shalom_core.JsonObject data) {
+    final int id$value = data['id'] as int;
+    final CharacterCard_image? image$value = data['image'] == null
+        ? null
+        : CharacterCard_image.fromJson(data['image'] as shalom_core.JsonObject);
+    final CharacterCard_name? name$value = data['name'] == null
+        ? null
+        : CharacterCard_name.fromJson(data['name'] as shalom_core.JsonObject);
+    return CharacterCardImpl(
+      id: id$value,
+
+      image: image$value,
+
+      name: name$value,
+    );
+  }
+
+  static CharacterCardImpl fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final int id$value = id$raw!.intValue;
+    final shalom_core.ShalomJsonValue? image$raw = data.field('image');
+    final CharacterCard_image? image$value =
+        image$raw == null || image$raw!.isNull
+        ? null
+        : CharacterCard_image.fromShalomValue(image$raw!);
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final CharacterCard_name? name$value = name$raw == null || name$raw!.isNull
+        ? null
+        : CharacterCard_name.fromShalomValue(name$raw!);
+    return CharacterCardImpl(
+      id: id$value,
+      image: image$value,
+      name: name$value,
+    );
+  }
 }
 
 // ------------ START OBJECT DEFINITIONS -------------
@@ -23,78 +111,11 @@ class CharacterCard_image {
   /// class members
   final String? large;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
   CharacterCard_image({this.large});
-
-  static void normalize$inCache(
-    shalom_core.JsonObject data,
-    shalom_core.CacheUpdateContext ctx, {
-
-    /// can be just the selection name but also may include serialized arguments.
-    required shalom_core.RecordID this$fieldName,
-    required shalom_core.JsonObject? this$cached,
-    required shalom_core.JsonObject parent$record,
-    required shalom_core.RecordID parent$normalizedID,
-  }) {
-    String this$normalizedID;
-    shalom_core.JsonObject this$NormalizedRecord;
-
-    final shalom_core.RecordID? this$normalizedID_temp =
-        data["id"] as shalom_core.RecordID?;
-    if (this$normalizedID_temp == null) {
-      this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-
-      this$NormalizedRecord = shalom_core.getOrCreateObject(
-        parent$record,
-        this$fieldName,
-      );
-    } else {
-      final normalized$objRecord = shalom_core.NormalizedObjectRecord(
-        typename: "CharacterImage",
-        id: this$normalizedID_temp!,
-      );
-      if (this$cached != null &&
-          this$cached is shalom_core.NormalizedObjectRecord &&
-          this$cached as shalom_core.NormalizedObjectRecord !=
-              normalized$objRecord) {
-        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-      }
-      parent$record[this$fieldName] = normalized$objRecord;
-      this$normalizedID = normalized$objRecord.normalizedID();
-      this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(
-        this$normalizedID,
-      );
-      ctx.addDependantRecord(this$normalizedID);
-    }
-    final largeNormalized$Key = "large";
-    final large$normalizedID = "${this$normalizedID}.${largeNormalized$Key}";
-    ctx.addDependantRecords({large$normalizedID});
-    final large$cached = this$NormalizedRecord[largeNormalized$Key];
-    final large$raw = data["large"];
-    if (large$raw != null) {
-      if (large$cached != large$raw) {
-        ctx.addChangedRecord(large$normalizedID);
-      }
-      this$NormalizedRecord[largeNormalized$Key] = large$raw;
-    } else if (data.containsKey("large") && large$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[largeNormalized$Key] = null;
-      ctx.addChangedRecord(large$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[largeNormalized$Key] = null;
-    }
-  }
-
-  static CharacterCard_image fromCached(
-    shalom_core.NormalizedRecordData data,
-    shalom_core.ShalomCtx ctx,
-  ) {
-    final large$raw = data["large"];
-    final String? large$value = large$raw as String?;
-    return CharacterCard_image(large: large$value);
-  }
 
   @override
   bool operator ==(Object other) {
@@ -109,9 +130,22 @@ class CharacterCard_image {
     return {'large': this.large};
   }
 
-  @experimental
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'large': this.large == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.large!),
+  });
+
   static CharacterCard_image fromJson(shalom_core.JsonObject data) {
     final String? large$value = data['large'] as String?;
+    return CharacterCard_image(large: large$value);
+  }
+
+  static CharacterCard_image fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? large$raw = data.field('large');
+    final String? large$value = large$raw == null || large$raw!.isNull
+        ? null
+        : large$raw!.stringValue;
     return CharacterCard_image(large: large$value);
   }
 }
@@ -122,78 +156,11 @@ class CharacterCard_name {
   /// class members
   final String? full;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
   CharacterCard_name({this.full});
-
-  static void normalize$inCache(
-    shalom_core.JsonObject data,
-    shalom_core.CacheUpdateContext ctx, {
-
-    /// can be just the selection name but also may include serialized arguments.
-    required shalom_core.RecordID this$fieldName,
-    required shalom_core.JsonObject? this$cached,
-    required shalom_core.JsonObject parent$record,
-    required shalom_core.RecordID parent$normalizedID,
-  }) {
-    String this$normalizedID;
-    shalom_core.JsonObject this$NormalizedRecord;
-
-    final shalom_core.RecordID? this$normalizedID_temp =
-        data["id"] as shalom_core.RecordID?;
-    if (this$normalizedID_temp == null) {
-      this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-
-      this$NormalizedRecord = shalom_core.getOrCreateObject(
-        parent$record,
-        this$fieldName,
-      );
-    } else {
-      final normalized$objRecord = shalom_core.NormalizedObjectRecord(
-        typename: "CharacterName",
-        id: this$normalizedID_temp!,
-      );
-      if (this$cached != null &&
-          this$cached is shalom_core.NormalizedObjectRecord &&
-          this$cached as shalom_core.NormalizedObjectRecord !=
-              normalized$objRecord) {
-        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-      }
-      parent$record[this$fieldName] = normalized$objRecord;
-      this$normalizedID = normalized$objRecord.normalizedID();
-      this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(
-        this$normalizedID,
-      );
-      ctx.addDependantRecord(this$normalizedID);
-    }
-    final fullNormalized$Key = "full";
-    final full$normalizedID = "${this$normalizedID}.${fullNormalized$Key}";
-    ctx.addDependantRecords({full$normalizedID});
-    final full$cached = this$NormalizedRecord[fullNormalized$Key];
-    final full$raw = data["full"];
-    if (full$raw != null) {
-      if (full$cached != full$raw) {
-        ctx.addChangedRecord(full$normalizedID);
-      }
-      this$NormalizedRecord[fullNormalized$Key] = full$raw;
-    } else if (data.containsKey("full") && full$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[fullNormalized$Key] = null;
-      ctx.addChangedRecord(full$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[fullNormalized$Key] = null;
-    }
-  }
-
-  static CharacterCard_name fromCached(
-    shalom_core.NormalizedRecordData data,
-    shalom_core.ShalomCtx ctx,
-  ) {
-    final full$raw = data["full"];
-    final String? full$value = full$raw as String?;
-    return CharacterCard_name(full: full$value);
-  }
 
   @override
   bool operator ==(Object other) {
@@ -208,9 +175,22 @@ class CharacterCard_name {
     return {'full': this.full};
   }
 
-  @experimental
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'full': this.full == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.full!),
+  });
+
   static CharacterCard_name fromJson(shalom_core.JsonObject data) {
     final String? full$value = data['full'] as String?;
+    return CharacterCard_name(full: full$value);
+  }
+
+  static CharacterCard_name fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? full$raw = data.field('full');
+    final String? full$value = full$raw == null || full$raw!.isNull
+        ? null
+        : full$raw!.stringValue;
     return CharacterCard_name(full: full$value);
   }
 }
