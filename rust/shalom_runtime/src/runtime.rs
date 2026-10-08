@@ -1146,7 +1146,32 @@ impl ShalomRuntime {
         if changed.is_empty() {
             return Ok(false);
         }
-        self.notify_subscribers(&changed)?;
+
+        // Close and unsubscribe matching subscriptions for this evicted operation.
+        // Unsubscribing drops their sender channel, which emits onDone in Dart/Flutter,
+        // triggering resubscribe() and a fresh network fetch.
+        let matching_ids: Vec<SubscriptionId> = {
+            let manager = self.subscriptions.lock();
+            manager
+                .subscriptions
+                .iter()
+                .filter_map(|(id, state)| {
+                    if let SubscriptionTarget::Operation(ctx) = &state.target
+                        && ctx.get_operation_name() == op_name
+                        && state.variables.as_ref() == variables
+                    {
+                        Some(*id)
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        };
+
+        for id in matching_ids {
+            self.unsubscribe(&id);
+        }
+
         Ok(true)
     }
 

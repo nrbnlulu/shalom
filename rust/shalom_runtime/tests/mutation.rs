@@ -378,8 +378,8 @@ fn evict_operation_removes_matching_root_field_only() {
     );
 }
 
-#[test]
-fn evict_operation_updates_subscriber_tracked_refs() {
+#[tokio::test]
+async fn evict_operation_closes_matching_subscription_stream() {
     let runtime = make_runtime();
     let query_op = runtime.operation_by_name("GetUser").unwrap();
     let query_vars = vars(&[("id", json!("1"))]);
@@ -394,31 +394,26 @@ fn evict_operation_updates_subscriber_tracked_refs() {
     let sub_id = runtime.create_operation_subscription(
         query_op.clone(),
         Some(query_vars.clone()),
-        ExecutionPolicy::NetworkFirst,
+        ExecutionPolicy::CacheFirst,
     );
 
-    // Eviction leaves the read incomplete, so — like GC and optimistic
-    // rollback — the subscriber gets no spurious "empty" push here.
+    let mut stream = runtime.subscription_stream(&sub_id).expect("stream");
+    // CacheFirst emits the initial value
+    let initial = stream.next().await.expect("initial value").expect("ok");
+    assert_eq!(initial.data["user"]["name"], json!("Alice"));
+
+    // Evict the operation
     let evicted = runtime
         .evict_operation("GetUser", Some(&query_vars))
         .unwrap();
     assert!(evicted);
-    assert!(
-        runtime
-            .try_read_operation("GetUser", Some(&query_vars))
-            .unwrap()
-            .is_none()
-    );
 
-    // A subsequent write for the same key is still delivered, proving the
-    // subscriber's tracked refs survived the eviction correctly.
-    runtime
-        .normalize(
-            &query_op,
-            json!({ "user": { "id": "1", "name": "Carol" } }),
-            Some(&query_vars),
-        )
-        .expect("re-seed");
-    let update = yield_update_sync(&runtime, sub_id);
-    assert_eq!(update["user"]["name"], json!("Carol"));
+    // The subscription stream should complete (return None / EOF) so that
+    // subscribers (and Flutter widgets) know to refetch fresh data.
+    let next = stream.next().await;
+    assert!(
+        next.is_none(),
+        "subscription stream must close on operation eviction so subscriber can refetch"
+    );
+    assert!(!runtime.subscription_exists(&sub_id));
 }
