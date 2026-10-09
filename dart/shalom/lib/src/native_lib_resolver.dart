@@ -44,8 +44,8 @@ String? resolveNativeLibPath() {
     'target/release',
     '../../target/debug',
     '../../target/release',
-    'rust/target/debug',
-    'rust/target/release',
+    '../../../target/debug',
+    '../../../target/release',
     '.dart_tool/lib',
   ];
 
