@@ -12,6 +12,7 @@ import 'package:shalom_flutter/shalom_flutter.dart' show ShalomInheritedWidget;
 const String kSchemaSdl = r'''type Query {
   user(id: ID!): User
   pet(id: ID!): Pet
+  petUnwrapped(id: ID!): Pet
   animal(id: ID!): Animal
   animals: [Animal!]!
   zoo(id: ID!): Zoo
@@ -100,26 +101,10 @@ fragment UserCard on User {
 
   client.registerFragment(
     document: r'''
-fragment PetWidget on Pet @observe {
-  id
+fragment DogFrag on Dog @observe {
   name
-}
-''',
-  );
-  client.registerFragment(
-    document: r'''
-fragment ZooAnimalsWidget on Zoo @observe {
+  breed
   id
-  name
-  animals {
-    id
-    ... on Dog {
-      breed
-    }
-    ... on Cat {
-      color
-    }
-  }
 }
 ''',
   );
@@ -137,6 +122,46 @@ fragment ZooWidget on Zoo @observe {
   );
   client.registerFragment(
     document: r'''
+fragment AnimalWithOwnerWidget on Animal @observe {
+  id
+  ... on Dog {
+    breed
+    owner {
+      name
+      id
+    }
+    id
+  }
+  ... on Cat {
+    color
+    id
+  }
+  __typename
+}
+''',
+  );
+  client.registerFragment(
+    document: r'''
+fragment ZooAnimalsWidget on Zoo @observe {
+  id
+  name
+  animals {
+    id
+    ... on Dog {
+      breed
+      id
+    }
+    ... on Cat {
+      color
+      id
+    }
+    __typename
+  }
+}
+''',
+  );
+  client.registerFragment(
+    document: r'''
 fragment ToyFrag on Toy @observe {
   id
   label
@@ -148,7 +173,9 @@ fragment ToyFrag on Toy @observe {
 fragment HasFavoriteToyFrag on HasFavoriteToy @observe {
   favoriteToy {
     ...ToyFrag
+    id
   }
+  __typename
 }
 ''',
   );
@@ -166,6 +193,7 @@ fragment DogFavoriteFrag on Dog @observe {
   ...CommonAnimalFrag
   breed
   ...HasFavoriteToyFrag
+  id
 }
 ''',
   );
@@ -175,14 +203,7 @@ fragment DogWithFavoriteToyFrag on Dog @observe {
   ...CommonAnimalFrag
   breed
   ...HasFavoriteToyFrag
-}
-''',
-  );
-  client.registerFragment(
-    document: r'''
-fragment DogFrag on Dog @observe {
-  name
-  breed
+  id
 }
 ''',
   );
@@ -192,71 +213,71 @@ fragment AnimalWidget on Animal @observe {
   id
   ... on Dog {
     breed
+    id
   }
   ... on Cat {
     color
+    id
   }
+  __typename
 }
 ''',
   );
   client.registerFragment(
     document: r'''
-fragment AnimalWithOwnerWidget on Animal @observe {
+fragment PetWidget on Pet @observe {
   id
-  ... on Dog {
-    breed
-    owner {
-      name
-    }
-  }
-  ... on Cat {
-    color
-  }
+  name
 }
 ''',
   );
   client.registerOperation(
     document: r'''
-query UserCardQuery ($id: ID!) @observe {
+query UserCardQuery($id: ID!) @observe {
   user(id: $id) {
     ...UserCard
+    id
   }
 }
 ''',
   );
   client.registerOperation(
     document: r'''
-query PetQuery ($id: ID!) @observe {
-  pet(id: $id) {
-    ...PetWidget
-  }
-}
-''',
-  );
-  client.registerOperation(
-    document: r'''
-query ZooAnimalsQuery ($id: ID!) @observe {
-  zoo(id: $id) {
-    ...ZooAnimalsWidget
-  }
-}
-''',
-  );
-  client.registerOperation(
-    document: r'''
-query ZooQuery ($id: ID!) @observe {
+query ZooQuery($id: ID!) @observe {
   zoo(id: $id) {
     ...ZooWidget
+    id
   }
 }
 ''',
   );
   client.registerOperation(
     document: r'''
-query UserWidget ($id: ID!) @observe {
+query UserWidget($id: ID!) @observe {
   user(id: $id) {
     id
     name
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query AnimalWithOwnerQuery($id: ID!) @observe {
+  animal(id: $id) {
+    ...AnimalWithOwnerWidget
+    __typename
+    id
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query ZooAnimalsQuery($id: ID!) @observe {
+  zoo(id: $id) {
+    ...ZooAnimalsWidget
+    id
   }
 }
 ''',
@@ -269,24 +290,42 @@ query ZooAnimalsContractQuery @observe {
     ...CommonAnimalFrag
     ...DogFavoriteFrag
     ...DogWithFavoriteToyFrag
+    id
   }
 }
 ''',
   );
   client.registerOperation(
     document: r'''
-query AnimalQuery ($id: ID!) @observe {
+query UnwrapQuery($id: ID!) @observe {
+  pet(id: $id) {
+    ...PetWidget
+    id
+  }
+  petUnwrapped(id: $id) {
+    ...PetWidget
+    id
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query AnimalQuery($id: ID!) @observe {
   animal(id: $id) {
     ...AnimalWidget
+    __typename
+    id
   }
 }
 ''',
   );
   client.registerOperation(
     document: r'''
-query AnimalWithOwnerQuery ($id: ID!) @observe {
-  animal(id: $id) {
-    ...AnimalWithOwnerWidget
+query PetQuery($id: ID!) @observe {
+  pet(id: $id) {
+    ...PetWidget
+    id
   }
 }
 ''',
@@ -296,6 +335,8 @@ query AnimalWithOwnerQuery ($id: ID!) @observe {
 subscription ShelterSubscription @observe {
   shelterAnimals {
     ...DogFrag
+    __typename
+    id
   }
 }
 ''',
@@ -305,6 +346,8 @@ subscription ShelterSubscription @observe {
 subscription StreetSubscription @observe {
   streetAnimals {
     ...DogFrag
+    __typename
+    id
   }
 }
 ''',

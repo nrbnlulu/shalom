@@ -2,153 +2,61 @@
 
 import "../../schema.shalom.dart";
 
-import 'package:shalom_core/shalom_core.dart' as shalom_core;
+import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Fragment imports
 import 'MediaCard.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class GetAnimePageResponse {
+class GetAnimePageData implements shalom_core.OperationInterface {
   static String G__typename = "query";
 
   /// class members
   final GetAnimePage_Page? Page;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
-  GetAnimePageResponse({this.Page});
-
-  static void normalize$inCache(
-    shalom_core.JsonObject data,
-    shalom_core.CacheUpdateContext ctx,
-    GetAnimePageVariables variables,
-  ) {
-    final String this$normalizedID = "ROOT_QUERY";
-    final this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(
-      "ROOT_QUERY",
-    );
-    final PageNormalized$Key =
-        '''Page(page:${variables.page}, perPage:${variables.perPage})''';
-    final Page$normalizedID = "${this$normalizedID}.${PageNormalized$Key}";
-    ctx.addDependantRecords({Page$normalizedID});
-    final Page$cached = this$NormalizedRecord[PageNormalized$Key];
-    final Page$raw = data["Page"];
-    if (Page$raw != null) {
-      if (Page$cached == null) {
-        ctx.addChangedRecord(Page$normalizedID);
-      }
-
-      GetAnimePage_Page.normalize$inCache(
-        Page$raw as shalom_core.JsonObject,
-        ctx,
-        variables,
-        this$cached: Page$cached is shalom_core.NormalizedObjectRecord
-            ? ctx.shalomContext.getCachedRecord(Page$cached.normalizedID())
-            : Page$cached,
-        this$fieldName: PageNormalized$Key,
-        parent$record: this$NormalizedRecord,
-        parent$normalizedID: this$normalizedID,
-      );
-
-      final Page$id =
-          (Page$raw as shalom_core.JsonObject)["id"] as shalom_core.RecordID?;
-      if (Page$id != null) {
-        final Page$normalized = shalom_core.NormalizedObjectRecord(
-          typename: "Page",
-          id: Page$id,
-        );
-        this$NormalizedRecord[PageNormalized$Key] = Page$normalized;
-
-        if (Page$cached != null &&
-            Page$cached is shalom_core.NormalizedObjectRecord &&
-            Page$cached != Page$normalized) {
-          ctx.addChangedRecord(Page$normalizedID);
-        }
-      } else {
-        this$NormalizedRecord[PageNormalized$Key] = shalom_core
-            .getOrCreateObject(this$NormalizedRecord, PageNormalized$Key);
-      }
-    } else if (data.containsKey("Page") && Page$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[PageNormalized$Key] = null;
-      ctx.addChangedRecord(Page$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[PageNormalized$Key] = null;
-    }
-  }
-
-  static GetAnimePageResponse fromCache(
-    shalom_core.ShalomCtx ctx,
-    GetAnimePageVariables variables,
-  ) {
-    final data = ctx.getCachedRecord("ROOT_QUERY");
-    final Page$cacheKey =
-        '''Page(page:${variables.page}, perPage:${variables.perPage})''';
-    final Page$raw = data[Page$cacheKey];
-    final GetAnimePage_Page? Page$value = Page$raw == null
-        ? null
-        : (Page$raw is shalom_core.NormalizedObjectRecord)
-        ? GetAnimePage_Page.fromCached(
-            ctx.getCachedRecord(
-              (Page$raw as shalom_core.NormalizedObjectRecord).normalizedID(),
-            ),
-            ctx,
-            variables,
-          )
-        : GetAnimePage_Page.fromCached(Page$raw, ctx, variables);
-    return GetAnimePageResponse(Page: Page$value);
-  }
-
-  static (GetAnimePageResponse, shalom_core.CacheUpdateContext)
-  fromResponseImpl(
-    shalom_core.JsonObject data,
-    shalom_core.ShalomCtx ctx,
-    GetAnimePageVariables variables,
-  ) {
-    // first update the cache
-    final updateCtx = shalom_core.CacheUpdateContext(shalomContext: ctx);
-    normalize$inCache(data, updateCtx, variables);
-    ctx.invalidateRefs(updateCtx.changedRecords);
-    return (fromCache(ctx, variables), updateCtx);
-  }
-
-  static GetAnimePageResponse fromResponse(
-    shalom_core.JsonObject data, {
-    shalom_core.ShalomCtx? ctx,
-    required GetAnimePageVariables variables,
-  }) {
-    // if ctx not provider we create dummy one
-    return fromResponseImpl(
-      data,
-      ctx ?? shalom_core.ShalomCtx.withCapacity(),
-      variables,
-    ).$1;
-  }
+  GetAnimePageData({this.Page});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is GetAnimePageResponse && Page == other.Page);
+        (other is GetAnimePageData && Page == other.Page);
   }
 
   @override
-  int get hashCode => Object.hashAll([Page, GetAnimePageResponse.G__typename]);
+  int get hashCode => Object.hashAll([Page, GetAnimePageData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'Page': this.Page?.toJson()};
   }
 
-  @experimental
-  static GetAnimePageResponse fromJson(shalom_core.JsonObject data) {
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'Page': this.Page == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.Page!.toShalomValue(),
+  });
+
+  static GetAnimePageData fromJson(shalom_core.JsonObject data) {
     final GetAnimePage_Page? Page$value = data['Page'] == null
         ? null
         : GetAnimePage_Page.fromJson(data['Page'] as shalom_core.JsonObject);
-    return GetAnimePageResponse(Page: Page$value);
+    return GetAnimePageData(Page: Page$value);
   }
+
+  static GetAnimePageData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? Page$raw = data.field('Page');
+    final GetAnimePage_Page? Page$value = Page$raw == null || Page$raw!.isNull
+        ? null
+        : GetAnimePage_Page.fromShalomValue(Page$raw!);
+    return GetAnimePageData(Page: Page$value);
+  }
+
+  @override
+  String operation$Name() => 'GetAnimePage';
 }
 
 class GetAnimePage_Page {
@@ -159,219 +67,11 @@ class GetAnimePage_Page {
 
   final GetAnimePage_Page_pageInfo? pageInfo;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
   GetAnimePage_Page({this.media, this.pageInfo});
-
-  static void normalize$inCache(
-    shalom_core.JsonObject data,
-    shalom_core.CacheUpdateContext ctx,
-    GetAnimePageVariables variables, {
-
-    /// can be just the selection name but also may include serialized arguments.
-    required shalom_core.RecordID this$fieldName,
-    required shalom_core.JsonObject? this$cached,
-    required shalom_core.JsonObject parent$record,
-    required shalom_core.RecordID parent$normalizedID,
-  }) {
-    String this$normalizedID;
-    shalom_core.JsonObject this$NormalizedRecord;
-
-    final shalom_core.RecordID? this$normalizedID_temp =
-        data["id"] as shalom_core.RecordID?;
-    if (this$normalizedID_temp == null) {
-      this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-
-      this$NormalizedRecord = shalom_core.getOrCreateObject(
-        parent$record,
-        this$fieldName,
-      );
-    } else {
-      final normalized$objRecord = shalom_core.NormalizedObjectRecord(
-        typename: "Page",
-        id: this$normalizedID_temp!,
-      );
-      if (this$cached != null &&
-          this$cached is shalom_core.NormalizedObjectRecord &&
-          this$cached as shalom_core.NormalizedObjectRecord !=
-              normalized$objRecord) {
-        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-      }
-      parent$record[this$fieldName] = normalized$objRecord;
-      this$normalizedID = normalized$objRecord.normalizedID();
-      this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(
-        this$normalizedID,
-      );
-      ctx.addDependantRecord(this$normalizedID);
-    }
-    final mediaNormalized$Key = '''media(type:ANIME, sort:POPULARITY_DESC)''';
-    final media$normalizedID = "${this$normalizedID}.${mediaNormalized$Key}";
-    final pageInfoNormalized$Key = "pageInfo";
-    final pageInfo$normalizedID =
-        "${this$normalizedID}.${pageInfoNormalized$Key}";
-    ctx.addDependantRecords({media$normalizedID, pageInfo$normalizedID});
-    final media$cached = this$NormalizedRecord[mediaNormalized$Key];
-    final media$raw = data["media"];
-    if (media$raw != null) {
-      final media$rawList = media$raw as List<dynamic>;
-      final media$cachedList = media$cached as List<dynamic>?;
-
-      if (media$cachedList == null ||
-          media$cachedList.length != media$rawList.length) {
-        ctx.addChangedRecord(media$normalizedID);
-      }
-
-      final media$normalizedList = <dynamic>[];
-
-      for (int i = 0; i < media$rawList.length; i++) {
-        final item$raw = media$rawList[i];
-        final item$cached = media$cachedList?.elementAtOrNull(i);
-        final item$normalizedKey = "media$i";
-
-        if (item$raw != null) {
-          if (item$cached == null) {
-            ctx.addChangedRecord(media$normalizedID);
-          }
-
-          GetAnimePage_Page_media.normalize$inCache(
-            item$raw as shalom_core.JsonObject,
-            ctx,
-            variables,
-            this$cached: item$cached is shalom_core.NormalizedObjectRecord
-                ? ctx.shalomContext.getCachedRecord(item$cached.normalizedID())
-                : item$cached,
-            this$fieldName: item$normalizedKey,
-            parent$record: this$NormalizedRecord,
-            parent$normalizedID: this$normalizedID,
-          );
-
-          final media$item$id =
-              (item$raw as shalom_core.JsonObject)["id"]
-                  as shalom_core.RecordID?;
-          if (media$item$id != null) {
-            final media$item$normalized = shalom_core.NormalizedObjectRecord(
-              typename: "Media",
-              id: media$item$id,
-            );
-            this$NormalizedRecord[item$normalizedKey] = media$item$normalized;
-
-            if (item$cached != null &&
-                item$cached is shalom_core.NormalizedObjectRecord &&
-                item$cached != media$item$normalized) {
-              ctx.addChangedRecord(media$normalizedID);
-            }
-          } else {
-            this$NormalizedRecord[item$normalizedKey] = shalom_core
-                .getOrCreateObject(this$NormalizedRecord, item$normalizedKey);
-          }
-        } else {
-          if (item$cached != null) {
-            ctx.addChangedRecord(media$normalizedID);
-          }
-          this$NormalizedRecord[item$normalizedKey] = null;
-        }
-
-        media$normalizedList.add(this$NormalizedRecord[item$normalizedKey]);
-      }
-
-      this$NormalizedRecord[mediaNormalized$Key] = media$normalizedList;
-    } else if (data.containsKey("media") && media$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[mediaNormalized$Key] = null;
-      ctx.addChangedRecord(media$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[mediaNormalized$Key] = null;
-    }
-    final pageInfo$cached = this$NormalizedRecord[pageInfoNormalized$Key];
-    final pageInfo$raw = data["pageInfo"];
-    if (pageInfo$raw != null) {
-      if (pageInfo$cached == null) {
-        ctx.addChangedRecord(pageInfo$normalizedID);
-      }
-
-      GetAnimePage_Page_pageInfo.normalize$inCache(
-        pageInfo$raw as shalom_core.JsonObject,
-        ctx,
-        variables,
-        this$cached: pageInfo$cached is shalom_core.NormalizedObjectRecord
-            ? ctx.shalomContext.getCachedRecord(pageInfo$cached.normalizedID())
-            : pageInfo$cached,
-        this$fieldName: pageInfoNormalized$Key,
-        parent$record: this$NormalizedRecord,
-        parent$normalizedID: this$normalizedID,
-      );
-
-      final pageInfo$id =
-          (pageInfo$raw as shalom_core.JsonObject)["id"]
-              as shalom_core.RecordID?;
-      if (pageInfo$id != null) {
-        final pageInfo$normalized = shalom_core.NormalizedObjectRecord(
-          typename: "PageInfo",
-          id: pageInfo$id,
-        );
-        this$NormalizedRecord[pageInfoNormalized$Key] = pageInfo$normalized;
-
-        if (pageInfo$cached != null &&
-            pageInfo$cached is shalom_core.NormalizedObjectRecord &&
-            pageInfo$cached != pageInfo$normalized) {
-          ctx.addChangedRecord(pageInfo$normalizedID);
-        }
-      } else {
-        this$NormalizedRecord[pageInfoNormalized$Key] = shalom_core
-            .getOrCreateObject(this$NormalizedRecord, pageInfoNormalized$Key);
-      }
-    } else if (data.containsKey("pageInfo") && pageInfo$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[pageInfoNormalized$Key] = null;
-      ctx.addChangedRecord(pageInfo$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[pageInfoNormalized$Key] = null;
-    }
-  }
-
-  static GetAnimePage_Page fromCached(
-    shalom_core.NormalizedRecordData data,
-    shalom_core.ShalomCtx ctx,
-    GetAnimePageVariables variables,
-  ) {
-    final media$cacheKey = '''media(type:ANIME, sort:POPULARITY_DESC)''';
-    final media$raw = data[media$cacheKey];
-    final List<GetAnimePage_Page_media?>? media$value = media$raw == null
-        ? null
-        : (media$raw as List<dynamic>)
-              .map(
-                (e) => e == null
-                    ? null
-                    : (e is shalom_core.NormalizedObjectRecord)
-                    ? GetAnimePage_Page_media.fromCached(
-                        ctx.getCachedRecord(
-                          (e as shalom_core.NormalizedObjectRecord)
-                              .normalizedID(),
-                        ),
-                        ctx,
-                        variables,
-                      )
-                    : GetAnimePage_Page_media.fromCached(e, ctx, variables),
-              )
-              .toList();
-    final pageInfo$raw = data["pageInfo"];
-    final GetAnimePage_Page_pageInfo? pageInfo$value = pageInfo$raw == null
-        ? null
-        : (pageInfo$raw is shalom_core.NormalizedObjectRecord)
-        ? GetAnimePage_Page_pageInfo.fromCached(
-            ctx.getCachedRecord(
-              (pageInfo$raw as shalom_core.NormalizedObjectRecord)
-                  .normalizedID(),
-            ),
-            ctx,
-            variables,
-          )
-        : GetAnimePage_Page_pageInfo.fromCached(pageInfo$raw, ctx, variables);
-    return GetAnimePage_Page(media: media$value, pageInfo: pageInfo$value);
-  }
 
   @override
   bool operator ==(Object other) {
@@ -393,7 +93,22 @@ class GetAnimePage_Page {
     };
   }
 
-  @experimental
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'media': this.media == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonArray(
+            this.media!.map(
+              (e) => e == null
+                  ? shalom_core.shalomJsonValue(null)
+                  : e!.toShalomValue(),
+            ),
+          ),
+
+    'pageInfo': this.pageInfo == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.pageInfo!.toShalomValue(),
+  });
+
   static GetAnimePage_Page fromJson(shalom_core.JsonObject data) {
     final List<GetAnimePage_Page_media?>? media$value = data['media'] == null
         ? null
@@ -413,6 +128,26 @@ class GetAnimePage_Page {
           );
     return GetAnimePage_Page(media: media$value, pageInfo: pageInfo$value);
   }
+
+  static GetAnimePage_Page fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? media$raw = data.field('media');
+    final List<GetAnimePage_Page_media?>? media$value =
+        media$raw == null || media$raw!.isNull
+        ? null
+        : media$raw!.listValue
+              .map(
+                (e) => e.isNull
+                    ? null
+                    : GetAnimePage_Page_media.fromShalomValue(e!),
+              )
+              .toList();
+    final shalom_core.ShalomJsonValue? pageInfo$raw = data.field('pageInfo');
+    final GetAnimePage_Page_pageInfo? pageInfo$value =
+        pageInfo$raw == null || pageInfo$raw!.isNull
+        ? null
+        : GetAnimePage_Page_pageInfo.fromShalomValue(pageInfo$raw!);
+    return GetAnimePage_Page(media: media$value, pageInfo: pageInfo$value);
+  }
 }
 
 class GetAnimePage_Page_media implements MediaCard {
@@ -421,303 +156,52 @@ class GetAnimePage_Page_media implements MediaCard {
   /// class members
   final MediaCard_coverImage? coverImage;
 
-  final MediaCard_title? title;
-
-  final int id;
+  final int? episodes;
 
   final MediaFormat? format;
 
-  final int? episodes;
+  final int id;
+
+  final MediaCard_title? title;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
 
   // keywordargs constructor
   GetAnimePage_Page_media({
     this.coverImage,
 
-    this.title,
-
-    required this.id,
+    this.episodes,
 
     this.format,
 
-    this.episodes,
+    required this.id,
+
+    this.title,
   });
-
-  static void normalize$inCache(
-    shalom_core.JsonObject data,
-    shalom_core.CacheUpdateContext ctx,
-    GetAnimePageVariables variables, {
-
-    /// can be just the selection name but also may include serialized arguments.
-    required shalom_core.RecordID this$fieldName,
-    required shalom_core.JsonObject? this$cached,
-    required shalom_core.JsonObject parent$record,
-    required shalom_core.RecordID parent$normalizedID,
-  }) {
-    String this$normalizedID;
-    shalom_core.JsonObject this$NormalizedRecord;
-
-    final shalom_core.RecordID? this$normalizedID_temp =
-        data["id"] as shalom_core.RecordID?;
-    if (this$normalizedID_temp == null) {
-      this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-
-      this$NormalizedRecord = shalom_core.getOrCreateObject(
-        parent$record,
-        this$fieldName,
-      );
-    } else {
-      final normalized$objRecord = shalom_core.NormalizedObjectRecord(
-        typename: "Media",
-        id: this$normalizedID_temp!,
-      );
-      if (this$cached != null &&
-          this$cached is shalom_core.NormalizedObjectRecord &&
-          this$cached as shalom_core.NormalizedObjectRecord !=
-              normalized$objRecord) {
-        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-      }
-      parent$record[this$fieldName] = normalized$objRecord;
-      this$normalizedID = normalized$objRecord.normalizedID();
-      this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(
-        this$normalizedID,
-      );
-      ctx.addDependantRecord(this$normalizedID);
-    }
-    final coverImageNormalized$Key = "coverImage";
-    final coverImage$normalizedID =
-        "${this$normalizedID}.${coverImageNormalized$Key}";
-    final titleNormalized$Key = "title";
-    final title$normalizedID = "${this$normalizedID}.${titleNormalized$Key}";
-    final idNormalized$Key = "id";
-    final id$normalizedID = "${this$normalizedID}.${idNormalized$Key}";
-    final formatNormalized$Key = "format";
-    final format$normalizedID = "${this$normalizedID}.${formatNormalized$Key}";
-    final episodesNormalized$Key = "episodes";
-    final episodes$normalizedID =
-        "${this$normalizedID}.${episodesNormalized$Key}";
-    ctx.addDependantRecords({
-      coverImage$normalizedID,
-      title$normalizedID,
-      id$normalizedID,
-      format$normalizedID,
-      episodes$normalizedID,
-    });
-    final coverImage$cached = this$NormalizedRecord[coverImageNormalized$Key];
-    final coverImage$raw = data["coverImage"];
-    if (coverImage$raw != null) {
-      if (coverImage$cached == null) {
-        ctx.addChangedRecord(coverImage$normalizedID);
-      }
-
-      MediaCard_coverImage.normalize$inCache(
-        coverImage$raw as shalom_core.JsonObject,
-        ctx,
-
-        this$cached: coverImage$cached is shalom_core.NormalizedObjectRecord
-            ? ctx.shalomContext.getCachedRecord(
-                coverImage$cached.normalizedID(),
-              )
-            : coverImage$cached,
-        this$fieldName: coverImageNormalized$Key,
-        parent$record: this$NormalizedRecord,
-        parent$normalizedID: this$normalizedID,
-      );
-
-      final coverImage$id =
-          (coverImage$raw as shalom_core.JsonObject)["id"]
-              as shalom_core.RecordID?;
-      if (coverImage$id != null) {
-        final coverImage$normalized = shalom_core.NormalizedObjectRecord(
-          typename: "MediaCoverImage",
-          id: coverImage$id,
-        );
-        this$NormalizedRecord[coverImageNormalized$Key] = coverImage$normalized;
-
-        if (coverImage$cached != null &&
-            coverImage$cached is shalom_core.NormalizedObjectRecord &&
-            coverImage$cached != coverImage$normalized) {
-          ctx.addChangedRecord(coverImage$normalizedID);
-        }
-      } else {
-        this$NormalizedRecord[coverImageNormalized$Key] = shalom_core
-            .getOrCreateObject(this$NormalizedRecord, coverImageNormalized$Key);
-      }
-    } else if (data.containsKey("coverImage") && coverImage$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[coverImageNormalized$Key] = null;
-      ctx.addChangedRecord(coverImage$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[coverImageNormalized$Key] = null;
-    }
-    final title$cached = this$NormalizedRecord[titleNormalized$Key];
-    final title$raw = data["title"];
-    if (title$raw != null) {
-      if (title$cached == null) {
-        ctx.addChangedRecord(title$normalizedID);
-      }
-
-      MediaCard_title.normalize$inCache(
-        title$raw as shalom_core.JsonObject,
-        ctx,
-
-        this$cached: title$cached is shalom_core.NormalizedObjectRecord
-            ? ctx.shalomContext.getCachedRecord(title$cached.normalizedID())
-            : title$cached,
-        this$fieldName: titleNormalized$Key,
-        parent$record: this$NormalizedRecord,
-        parent$normalizedID: this$normalizedID,
-      );
-
-      final title$id =
-          (title$raw as shalom_core.JsonObject)["id"] as shalom_core.RecordID?;
-      if (title$id != null) {
-        final title$normalized = shalom_core.NormalizedObjectRecord(
-          typename: "MediaTitle",
-          id: title$id,
-        );
-        this$NormalizedRecord[titleNormalized$Key] = title$normalized;
-
-        if (title$cached != null &&
-            title$cached is shalom_core.NormalizedObjectRecord &&
-            title$cached != title$normalized) {
-          ctx.addChangedRecord(title$normalizedID);
-        }
-      } else {
-        this$NormalizedRecord[titleNormalized$Key] = shalom_core
-            .getOrCreateObject(this$NormalizedRecord, titleNormalized$Key);
-      }
-    } else if (data.containsKey("title") && title$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[titleNormalized$Key] = null;
-      ctx.addChangedRecord(title$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[titleNormalized$Key] = null;
-    }
-    final id$cached = this$NormalizedRecord[idNormalized$Key];
-    final id$raw = data["id"];
-    if (id$raw != null) {
-      if (id$cached != id$raw) {
-        ctx.addChangedRecord(id$normalizedID);
-      }
-      this$NormalizedRecord[idNormalized$Key] = id$raw;
-    } else if (data.containsKey("id") && id$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[idNormalized$Key] = null;
-      ctx.addChangedRecord(id$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[idNormalized$Key] = null;
-    }
-    final format$cached = this$NormalizedRecord[formatNormalized$Key];
-    final format$raw = data["format"];
-    if (format$raw != null) {
-      if (format$cached != format$raw) {
-        ctx.addChangedRecord(format$normalizedID);
-      }
-      this$NormalizedRecord[formatNormalized$Key] = format$raw;
-    } else if (data.containsKey("format") && format$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[formatNormalized$Key] = null;
-      ctx.addChangedRecord(format$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[formatNormalized$Key] = null;
-    }
-    final episodes$cached = this$NormalizedRecord[episodesNormalized$Key];
-    final episodes$raw = data["episodes"];
-    if (episodes$raw != null) {
-      if (episodes$cached != episodes$raw) {
-        ctx.addChangedRecord(episodes$normalizedID);
-      }
-      this$NormalizedRecord[episodesNormalized$Key] = episodes$raw;
-    } else if (data.containsKey("episodes") && episodes$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[episodesNormalized$Key] = null;
-      ctx.addChangedRecord(episodes$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[episodesNormalized$Key] = null;
-    }
-  }
-
-  static GetAnimePage_Page_media fromCached(
-    shalom_core.NormalizedRecordData data,
-    shalom_core.ShalomCtx ctx,
-    GetAnimePageVariables variables,
-  ) {
-    final coverImage$raw = data["coverImage"];
-    final MediaCard_coverImage? coverImage$value = coverImage$raw == null
-        ? null
-        : (coverImage$raw is shalom_core.NormalizedObjectRecord)
-        ? MediaCard_coverImage.fromCached(
-            ctx.getCachedRecord(
-              (coverImage$raw as shalom_core.NormalizedObjectRecord)
-                  .normalizedID(),
-            ),
-            ctx,
-          )
-        : MediaCard_coverImage.fromCached(coverImage$raw, ctx);
-    final title$raw = data["title"];
-    final MediaCard_title? title$value = title$raw == null
-        ? null
-        : (title$raw is shalom_core.NormalizedObjectRecord)
-        ? MediaCard_title.fromCached(
-            ctx.getCachedRecord(
-              (title$raw as shalom_core.NormalizedObjectRecord).normalizedID(),
-            ),
-            ctx,
-          )
-        : MediaCard_title.fromCached(title$raw, ctx);
-    final id$raw = data["id"];
-    final int id$value = id$raw as int;
-    final format$raw = data["format"];
-    final MediaFormat? format$value = format$raw == null
-        ? null
-        : MediaFormat.fromString(format$raw);
-    final episodes$raw = data["episodes"];
-    final int? episodes$value = episodes$raw as int?;
-    return GetAnimePage_Page_media(
-      coverImage: coverImage$value,
-
-      title: title$value,
-
-      id: id$value,
-
-      format: format$value,
-
-      episodes: episodes$value,
-    );
-  }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is GetAnimePage_Page_media &&
             coverImage == other.coverImage &&
-            title == other.title &&
-            id == other.id &&
+            episodes == other.episodes &&
             format == other.format &&
-            episodes == other.episodes);
+            id == other.id &&
+            title == other.title);
   }
 
   @override
   int get hashCode => Object.hashAll([
     coverImage,
 
-    title,
-
-    id,
+    episodes,
 
     format,
 
-    episodes,
+    id,
+
+    title,
 
     GetAnimePage_Page_media.G__typename,
   ]);
@@ -726,41 +210,93 @@ class GetAnimePage_Page_media implements MediaCard {
     return {
       'coverImage': this.coverImage?.toJson(),
 
-      'title': this.title?.toJson(),
-
-      'id': this.id,
+      'episodes': this.episodes,
 
       'format': this.format?.name,
 
-      'episodes': this.episodes,
+      'id': this.id,
+
+      'title': this.title?.toJson(),
     };
   }
 
-  @experimental
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'coverImage': this.coverImage == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.coverImage!.toShalomValue(),
+
+    'episodes': this.episodes == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.episodes!),
+
+    'format': this.format == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.format!.name),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'title': this.title == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.title!.toShalomValue(),
+  });
+
   static GetAnimePage_Page_media fromJson(shalom_core.JsonObject data) {
     final MediaCard_coverImage? coverImage$value = data['coverImage'] == null
         ? null
         : MediaCard_coverImage.fromJson(
             data['coverImage'] as shalom_core.JsonObject,
           );
-    final MediaCard_title? title$value = data['title'] == null
-        ? null
-        : MediaCard_title.fromJson(data['title'] as shalom_core.JsonObject);
-    final int id$value = data['id'] as int;
+    final int? episodes$value = data['episodes'] as int?;
     final MediaFormat? format$value = data['format'] == null
         ? null
         : MediaFormat.fromString(data['format']);
-    final int? episodes$value = data['episodes'] as int?;
+    final int id$value = data['id'] as int;
+    final MediaCard_title? title$value = data['title'] == null
+        ? null
+        : MediaCard_title.fromJson(data['title'] as shalom_core.JsonObject);
     return GetAnimePage_Page_media(
       coverImage: coverImage$value,
 
-      title: title$value,
-
-      id: id$value,
+      episodes: episodes$value,
 
       format: format$value,
 
+      id: id$value,
+
+      title: title$value,
+    );
+  }
+
+  static GetAnimePage_Page_media fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? coverImage$raw = data.field(
+      'coverImage',
+    );
+    final MediaCard_coverImage? coverImage$value =
+        coverImage$raw == null || coverImage$raw!.isNull
+        ? null
+        : MediaCard_coverImage.fromShalomValue(coverImage$raw!);
+    final shalom_core.ShalomJsonValue? episodes$raw = data.field('episodes');
+    final int? episodes$value = episodes$raw == null || episodes$raw!.isNull
+        ? null
+        : episodes$raw!.intValue;
+    final shalom_core.ShalomJsonValue? format$raw = data.field('format');
+    final MediaFormat? format$value = format$raw == null || format$raw!.isNull
+        ? null
+        : MediaFormat.fromString(format$raw!.stringValue);
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final int id$value = id$raw!.intValue;
+    final shalom_core.ShalomJsonValue? title$raw = data.field('title');
+    final MediaCard_title? title$value = title$raw == null || title$raw!.isNull
+        ? null
+        : MediaCard_title.fromShalomValue(title$raw!);
+    return GetAnimePage_Page_media(
+      coverImage: coverImage$value,
       episodes: episodes$value,
+      format: format$value,
+      id: id$value,
+      title: title$value,
     );
   }
 }
@@ -769,160 +305,38 @@ class GetAnimePage_Page_pageInfo {
   static String G__typename = "PageInfo";
 
   /// class members
-  final bool? hasNextPage;
-
   final int? currentPage;
+
+  final bool? hasNextPage;
 
   final int? lastPage;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
   GetAnimePage_Page_pageInfo({
-    this.hasNextPage,
-
     this.currentPage,
+
+    this.hasNextPage,
 
     this.lastPage,
   });
-
-  static void normalize$inCache(
-    shalom_core.JsonObject data,
-    shalom_core.CacheUpdateContext ctx,
-    GetAnimePageVariables variables, {
-
-    /// can be just the selection name but also may include serialized arguments.
-    required shalom_core.RecordID this$fieldName,
-    required shalom_core.JsonObject? this$cached,
-    required shalom_core.JsonObject parent$record,
-    required shalom_core.RecordID parent$normalizedID,
-  }) {
-    String this$normalizedID;
-    shalom_core.JsonObject this$NormalizedRecord;
-
-    final shalom_core.RecordID? this$normalizedID_temp =
-        data["id"] as shalom_core.RecordID?;
-    if (this$normalizedID_temp == null) {
-      this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-
-      this$NormalizedRecord = shalom_core.getOrCreateObject(
-        parent$record,
-        this$fieldName,
-      );
-    } else {
-      final normalized$objRecord = shalom_core.NormalizedObjectRecord(
-        typename: "PageInfo",
-        id: this$normalizedID_temp!,
-      );
-      if (this$cached != null &&
-          this$cached is shalom_core.NormalizedObjectRecord &&
-          this$cached as shalom_core.NormalizedObjectRecord !=
-              normalized$objRecord) {
-        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-      }
-      parent$record[this$fieldName] = normalized$objRecord;
-      this$normalizedID = normalized$objRecord.normalizedID();
-      this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(
-        this$normalizedID,
-      );
-      ctx.addDependantRecord(this$normalizedID);
-    }
-    final hasNextPageNormalized$Key = "hasNextPage";
-    final hasNextPage$normalizedID =
-        "${this$normalizedID}.${hasNextPageNormalized$Key}";
-    final currentPageNormalized$Key = "currentPage";
-    final currentPage$normalizedID =
-        "${this$normalizedID}.${currentPageNormalized$Key}";
-    final lastPageNormalized$Key = "lastPage";
-    final lastPage$normalizedID =
-        "${this$normalizedID}.${lastPageNormalized$Key}";
-    ctx.addDependantRecords({
-      hasNextPage$normalizedID,
-      currentPage$normalizedID,
-      lastPage$normalizedID,
-    });
-    final hasNextPage$cached = this$NormalizedRecord[hasNextPageNormalized$Key];
-    final hasNextPage$raw = data["hasNextPage"];
-    if (hasNextPage$raw != null) {
-      if (hasNextPage$cached != hasNextPage$raw) {
-        ctx.addChangedRecord(hasNextPage$normalizedID);
-      }
-      this$NormalizedRecord[hasNextPageNormalized$Key] = hasNextPage$raw;
-    } else if (data.containsKey("hasNextPage") && hasNextPage$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[hasNextPageNormalized$Key] = null;
-      ctx.addChangedRecord(hasNextPage$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[hasNextPageNormalized$Key] = null;
-    }
-    final currentPage$cached = this$NormalizedRecord[currentPageNormalized$Key];
-    final currentPage$raw = data["currentPage"];
-    if (currentPage$raw != null) {
-      if (currentPage$cached != currentPage$raw) {
-        ctx.addChangedRecord(currentPage$normalizedID);
-      }
-      this$NormalizedRecord[currentPageNormalized$Key] = currentPage$raw;
-    } else if (data.containsKey("currentPage") && currentPage$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[currentPageNormalized$Key] = null;
-      ctx.addChangedRecord(currentPage$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[currentPageNormalized$Key] = null;
-    }
-    final lastPage$cached = this$NormalizedRecord[lastPageNormalized$Key];
-    final lastPage$raw = data["lastPage"];
-    if (lastPage$raw != null) {
-      if (lastPage$cached != lastPage$raw) {
-        ctx.addChangedRecord(lastPage$normalizedID);
-      }
-      this$NormalizedRecord[lastPageNormalized$Key] = lastPage$raw;
-    } else if (data.containsKey("lastPage") && lastPage$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[lastPageNormalized$Key] = null;
-      ctx.addChangedRecord(lastPage$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[lastPageNormalized$Key] = null;
-    }
-  }
-
-  static GetAnimePage_Page_pageInfo fromCached(
-    shalom_core.NormalizedRecordData data,
-    shalom_core.ShalomCtx ctx,
-    GetAnimePageVariables variables,
-  ) {
-    final hasNextPage$raw = data["hasNextPage"];
-    final bool? hasNextPage$value = hasNextPage$raw as bool?;
-    final currentPage$raw = data["currentPage"];
-    final int? currentPage$value = currentPage$raw as int?;
-    final lastPage$raw = data["lastPage"];
-    final int? lastPage$value = lastPage$raw as int?;
-    return GetAnimePage_Page_pageInfo(
-      hasNextPage: hasNextPage$value,
-
-      currentPage: currentPage$value,
-
-      lastPage: lastPage$value,
-    );
-  }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other is GetAnimePage_Page_pageInfo &&
-            hasNextPage == other.hasNextPage &&
             currentPage == other.currentPage &&
+            hasNextPage == other.hasNextPage &&
             lastPage == other.lastPage);
   }
 
   @override
   int get hashCode => Object.hashAll([
-    hasNextPage,
-
     currentPage,
+
+    hasNextPage,
 
     lastPage,
 
@@ -931,24 +345,65 @@ class GetAnimePage_Page_pageInfo {
 
   shalom_core.JsonObject toJson() {
     return {
-      'hasNextPage': this.hasNextPage,
-
       'currentPage': this.currentPage,
+
+      'hasNextPage': this.hasNextPage,
 
       'lastPage': this.lastPage,
     };
   }
 
-  @experimental
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'currentPage': this.currentPage == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.currentPage!),
+
+    'hasNextPage': this.hasNextPage == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.hasNextPage!),
+
+    'lastPage': this.lastPage == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.lastPage!),
+  });
+
   static GetAnimePage_Page_pageInfo fromJson(shalom_core.JsonObject data) {
-    final bool? hasNextPage$value = data['hasNextPage'] as bool?;
     final int? currentPage$value = data['currentPage'] as int?;
+    final bool? hasNextPage$value = data['hasNextPage'] as bool?;
     final int? lastPage$value = data['lastPage'] as int?;
     return GetAnimePage_Page_pageInfo(
-      hasNextPage: hasNextPage$value,
-
       currentPage: currentPage$value,
 
+      hasNextPage: hasNextPage$value,
+
+      lastPage: lastPage$value,
+    );
+  }
+
+  static GetAnimePage_Page_pageInfo fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? currentPage$raw = data.field(
+      'currentPage',
+    );
+    final int? currentPage$value =
+        currentPage$raw == null || currentPage$raw!.isNull
+        ? null
+        : currentPage$raw!.intValue;
+    final shalom_core.ShalomJsonValue? hasNextPage$raw = data.field(
+      'hasNextPage',
+    );
+    final bool? hasNextPage$value =
+        hasNextPage$raw == null || hasNextPage$raw!.isNull
+        ? null
+        : hasNextPage$raw!.boolValue;
+    final shalom_core.ShalomJsonValue? lastPage$raw = data.field('lastPage');
+    final int? lastPage$value = lastPage$raw == null || lastPage$raw!.isNull
+        ? null
+        : lastPage$raw!.intValue;
+    return GetAnimePage_Page_pageInfo(
+      currentPage: currentPage$value,
+      hasNextPage: hasNextPage$value,
       lastPage: lastPage$value,
     );
   }
@@ -968,17 +423,37 @@ class GetAnimePage_Page_pageInfo {
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
 
-class RequestGetAnimePage
-    extends shalom_core.Requestable<GetAnimePageResponse> {
+class RequestGetAnimePage extends shalom_core.Requestable<GetAnimePageData> {
   final GetAnimePageVariables variables;
 
   RequestGetAnimePage({required this.variables});
   @override
-  shalom_core.RequestMeta<GetAnimePageResponse> getRequestMeta() {
+  shalom_core.RequestMeta<GetAnimePageData> getRequestMeta() {
     shalom_core.JsonObject variablesJson = variables.toJson();
     final request = shalom_core.Request(
       query: r"""
-            query GetAnimePage($page: Int!, $perPage: Int!) {
+            fragment CharacterCard on Character {
+  id
+  name {
+    full
+  }
+  image {
+    large
+  }
+}
+fragment MediaCard on Media {
+  id
+  title {
+    romaji
+    english
+  }
+  coverImage {
+    large
+  }
+  episodes
+  format
+}
+query GetAnimePage($page: Int!, $perPage: Int!) {
   Page(page: $page, perPage: $perPage) {
     pageInfo {
       currentPage
@@ -1010,20 +485,7 @@ class RequestGetAnimePage
     );
     return shalom_core.RequestMeta(
       request: request,
-      loadFn:
-          ({
-            required shalom_core.JsonObject data,
-            required shalom_core.ShalomCtx ctx,
-          }) {
-            final (deserialized, updatedCtx) =
-                GetAnimePageResponse.fromResponseImpl(data, ctx, variables);
-            return (deserialized, updatedCtx.dependantRecords);
-          },
-      fromCacheFn: (shalom_core.ShalomCtx ctx) {
-        final updateCtx = shalom_core.CacheUpdateContext(shalomContext: ctx);
-        final deserialized = GetAnimePageResponse.fromCache(ctx, variables);
-        return (deserialized, updateCtx.dependantRecords);
-      },
+      parseFn: (shalom_core.JsonObject data) => GetAnimePageData.fromJson(data),
     );
   }
 }

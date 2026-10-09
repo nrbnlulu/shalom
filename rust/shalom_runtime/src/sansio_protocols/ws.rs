@@ -56,6 +56,10 @@ pub enum WsEvent {
     /// Server sent a Ping; caller must send a Pong frame immediately.
     PingReceived { payload: Option<Value> },
 
+    /// Server sent a Pong — typically in response to a caller-initiated
+    /// heartbeat Ping. Caller should cancel any pending pong-timeout timer.
+    PongReceived { payload: Option<Value> },
+
     /// A response payload for a registered operation.
     OperationResponse {
         op_id: String,
@@ -95,6 +99,7 @@ enum ConnectionState {
 ///         WsEvent::OperationResponse { op_id, response } => { /* feed to HostLink */ }
 ///         WsEvent::OperationComplete { op_id } => { /* complete_transport(op_id) */ }
 ///         WsEvent::PingReceived { payload } => { ws.send(sm.pong_frame(payload)); }
+///         WsEvent::PongReceived { .. } => { /* cancel pending pong-timeout timer */ }
 ///         WsEvent::ProtocolError { code, reason } => { ws.close(code, reason); }
 ///     }
 /// }
@@ -213,10 +218,7 @@ impl WsStateMachine {
 
             IncomingMessage::Ping { payload } => Ok(vec![WsEvent::PingReceived { payload }]),
 
-            IncomingMessage::Pong { .. } => {
-                // Pong received in response to our ping — no action needed from caller.
-                Ok(vec![])
-            }
+            IncomingMessage::Pong { payload } => Ok(vec![WsEvent::PongReceived { payload }]),
 
             IncomingMessage::Next { id, payload } => {
                 if !self.operations.contains_key(&id) {
@@ -371,6 +373,15 @@ mod tests {
         let ping = json!({ "type": "ping" }).to_string();
         let events = sm.on_message(&ping).unwrap();
         assert!(matches!(&events[0], WsEvent::PingReceived { .. }));
+    }
+
+    #[test]
+    fn pong_emits_pong_received() {
+        let mut sm = WsStateMachine::new(None);
+        sm.on_message(&ack()).unwrap();
+        let pong = json!({ "type": "pong" }).to_string();
+        let events = sm.on_message(&pong).unwrap();
+        assert!(matches!(&events[0], WsEvent::PongReceived { .. }));
     }
 
     #[test]

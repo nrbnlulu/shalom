@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert' show json;
 import 'dart:developer' show log;
 
 import 'package:shalom/src/rust/api/ws.dart';
@@ -7,47 +6,41 @@ import 'package:shalom/src/shalom_core_base.dart';
 import 'package:shalom/src/transport/link.dart';
 import 'package:shalom/src/transport/ws_transport.dart';
 
-/// WebSocket link backed by the Rust sans-IO `graphql-transport-ws` state machine.
+/// WebSocket link backed by the Rust sans-IO `graphql-transport-ws` state
+/// machine.
 ///
-/// Dart owns the socket (via [WebSocketTransport]); Rust owns the protocol
-/// state. On each received frame [wsOnMessage] is called synchronously — no
-/// Future overhead on the hot path.
-///
-/// Dart holds [_ops] only for its [StreamController] handles — Rust's internal
-/// `operations` map is the authoritative record of which ops are subscribed.
+/// Requests are distributed across a pool of [_Socket]s, each of which owns
+/// one physical WebSocket connection and its own protocol state machine. By
+/// default ([maxOperationsPerSocket] is `null`) every operation multiplexes
+/// onto a single shared connection, matching standard `graphql-transport-ws`
+/// behavior. Setting [maxOperationsPerSocket] caps how many concurrently
+/// active operations a single connection may carry — once a socket is full,
+/// new operations open an additional connection. Set it to `1` to give every
+/// concurrent subscription its own dedicated socket, e.g. to avoid tripping
+/// server-side limits on active subscriptions per connection.
 class WebSocketLink extends GraphQLLink {
   final WebSocketTransport transport;
   final String url;
   final HeadersType? headers;
 
-  /// Serialised JSON of the `connection_init` payload, e.g. `{"auth":"…"}`.
-  final String? connectionParamsJson;
+  final ShalomJsonValue? connectionParamsValue;
 
   final bool autoReconnect;
   final Duration connectionInitTimeout;
   final Duration reconnectTimeout;
+  final Duration heartbeatInterval;
+  final Duration heartbeatTimeout;
 
-  // ── sans-IO state machine ─────────────────────────────────────────────────
-  WsSansIo? _sansio;
+  /// Maximum number of concurrently active operations allowed on a single
+  /// WebSocket connection. `null` (default) means unlimited — all
+  /// operations share one connection. A socket that drops back to zero
+  /// active operations is closed once another socket exists, keeping
+  /// exactly one warm connection when idle.
+  final int? maxOperationsPerSocket;
 
-  // ── connection state ──────────────────────────────────────────────────────
-  bool _acknowledged = false;
   bool _disposed = false;
-
-  // ── operations ────────────────────────────────────────────────────────────
-  // Keyed by op id. Subscription state lives in Rust; this map exists only
-  // to hold the Dart StreamController handles.
-  final Map<String, _OperationHandler> _ops = {};
+  final List<_Socket> _sockets = [];
   int _nextOpId = 0;
-
-  // ── transport handles ─────────────────────────────────────────────────────
-  StreamController<JsonObject>? _msgController;
-  MessageSender? _sender;
-  StreamSubscription<void>? _msgSub;
-
-  // ── timers ────────────────────────────────────────────────────────────────
-  Timer? _initTimer;
-  Timer? _reconnectTimer;
 
   WebSocketLink({
     required this.transport,
@@ -57,11 +50,145 @@ class WebSocketLink extends GraphQLLink {
     this.autoReconnect = true,
     this.connectionInitTimeout = const Duration(seconds: 10),
     this.reconnectTimeout = const Duration(seconds: 5),
-  }) : connectionParamsJson = connectionParams != null
-           ? json.encode(connectionParams)
-           : null {
-    _connect();
+    this.heartbeatInterval = const Duration(seconds: 5),
+    this.heartbeatTimeout = const Duration(seconds: 3),
+    this.maxOperationsPerSocket,
+  }) : connectionParamsValue = connectionParams == null
+           ? null
+           : shalomJsonValue(connectionParams) {
+    _sockets.add(_createSocket());
   }
+
+  // ── pool management ───────────────────────────────────────────────────────
+
+  _Socket _createSocket() {
+    final socket = _Socket(
+      transport: transport,
+      url: url,
+      headers: headers,
+      connectionParamsValue: connectionParamsValue,
+      autoReconnect: autoReconnect,
+      connectionInitTimeout: connectionInitTimeout,
+      reconnectTimeout: reconnectTimeout,
+      heartbeatInterval: heartbeatInterval,
+      heartbeatTimeout: heartbeatTimeout,
+      onIdle: _onSocketIdle,
+    );
+    socket.connect();
+    return socket;
+  }
+
+  /// Picks a socket with spare capacity, or opens a new one if all existing
+  /// sockets are full (or none exist yet).
+  _Socket _pickSocket() {
+    final max = maxOperationsPerSocket;
+    for (final socket in _sockets) {
+      if (max == null || socket.activeOpCount < max) return socket;
+    }
+    final socket = _createSocket();
+    _sockets.add(socket);
+    return socket;
+  }
+
+  /// Called by a [_Socket] once it has no active operations left. Unlimited
+  /// pools never close their single socket; bounded pools close and drop
+  /// idle sockets, keeping exactly one warm connection alive.
+  void _onSocketIdle(_Socket socket) {
+    if (_disposed) return;
+    if (maxOperationsPerSocket == null) return;
+    if (_sockets.length <= 1) return;
+    _sockets.remove(socket);
+    unawaited(socket.dispose());
+  }
+
+  // ── operations ────────────────────────────────────────────────────────────
+
+  @override
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
+    required Request request,
+    HeadersType? headers,
+  }) {
+    final opId = (_nextOpId++).toString();
+    return _pickSocket().subscribe(opId, request);
+  }
+
+  // ── public API ────────────────────────────────────────────────────────────
+
+  Future<void> reconnect() async {
+    for (final socket in List<_Socket>.of(_sockets)) {
+      await socket.reconnect();
+    }
+  }
+
+  Future<void> dispose() async {
+    if (_disposed) return;
+    _disposed = true;
+    for (final socket in _sockets) {
+      await socket.dispose();
+    }
+    _sockets.clear();
+  }
+}
+
+/// Owns a single physical WebSocket connection and its `graphql-transport-ws`
+/// protocol state. Dart owns the socket (via [WebSocketTransport]); Rust owns
+/// the protocol state. On each received frame [wsOnMessage] is called
+/// synchronously — no Future overhead on the hot path.
+///
+/// [_ops] holds only the Dart [StreamController] handles — Rust's internal
+/// `operations` map is the authoritative record of which ops are subscribed
+/// on this connection.
+class _Socket {
+  final WebSocketTransport transport;
+  final String url;
+  final HeadersType? headers;
+  final ShalomJsonValue? connectionParamsValue;
+  final bool autoReconnect;
+  final Duration connectionInitTimeout;
+  final Duration reconnectTimeout;
+  final Duration heartbeatInterval;
+  final Duration heartbeatTimeout;
+
+  /// Invoked whenever this socket's active operation count drops to zero.
+  final void Function(_Socket socket) onIdle;
+
+  // ── sans-IO state machine ─────────────────────────────────────────────────
+  WsSansIo? _sansio;
+
+  // ── connection state ──────────────────────────────────────────────────────
+  bool _acknowledged = false;
+  bool _disposed = false;
+
+  // ── operations ────────────────────────────────────────────────────────────
+  final Map<String, _OperationHandler> _ops = {};
+
+  // ── transport handles ─────────────────────────────────────────────────────
+  StreamController<String>? _msgController;
+  MessageSender? _sender;
+  StreamSubscription<void>? _msgSub;
+
+  // ── timers ────────────────────────────────────────────────────────────────
+  Timer? _initTimer;
+  Timer? _reconnectTimer;
+  Timer? _heartbeatTimer;
+  Timer? _pongTimeoutTimer;
+
+  _Socket({
+    required this.transport,
+    required this.url,
+    required this.headers,
+    required this.connectionParamsValue,
+    required this.autoReconnect,
+    required this.connectionInitTimeout,
+    required this.reconnectTimeout,
+    required this.heartbeatInterval,
+    required this.heartbeatTimeout,
+    required this.onIdle,
+  });
+
+  int get activeOpCount => _ops.length;
+
+  void connect() => unawaited(_connect());
 
   // ── connection lifecycle ──────────────────────────────────────────────────
 
@@ -69,7 +196,7 @@ class WebSocketLink extends GraphQLLink {
     if (_disposed) return;
 
     if (_sansio == null) {
-      _sansio = createWsSansIo(connectionParamsJson: connectionParamsJson);
+      _sansio = createWsSansIo(connectionParams: connectionParamsValue);
     } else {
       // Resets to AwaitingAck while preserving the operations map so
       // wsActiveOperationIds() still returns prior op ids after reset.
@@ -116,6 +243,7 @@ class WebSocketLink extends GraphQLLink {
   void _onDisconnected() {
     _acknowledged = false;
     _initTimer?.cancel();
+    _stopHeartbeat();
     _msgSub?.cancel();
     _msgController = null;
     _sender = null;
@@ -126,12 +254,39 @@ class WebSocketLink extends GraphQLLink {
     }
   }
 
+  // ── heartbeat (client-initiated liveness ping/pong) ──────────────────────
+
+  void _startHeartbeat() {
+    _stopHeartbeat();
+    _heartbeatTimer = Timer.periodic(heartbeatInterval, (_) => _sendPing());
+  }
+
+  void _stopHeartbeat() {
+    _heartbeatTimer?.cancel();
+    _heartbeatTimer = null;
+    _pongTimeoutTimer?.cancel();
+    _pongTimeoutTimer = null;
+  }
+
+  Future<void> _sendPing() async {
+    final heartbeatTimerAtSend = _heartbeatTimer;
+    await _sendRaw(wsPingFrame());
+    // If the heartbeat was stopped (disconnect/dispose/reconnect) while the
+    // send was in flight, don't arm a timeout for a heartbeat cycle that no
+    // longer applies.
+    if (!identical(_heartbeatTimer, heartbeatTimerAtSend)) return;
+    _pongTimeoutTimer?.cancel();
+    _pongTimeoutTimer = Timer(heartbeatTimeout, () {
+      _closeTransport(4408, 'Heartbeat pong timeout');
+    });
+  }
+
   // ── message handling ──────────────────────────────────────────────────────
 
-  Future<void> _handleMessage(JsonObject message) async {
+  Future<void> _handleMessage(String message) async {
     final List<WsLinkEvent> events;
     try {
-      events = wsOnMessage(sansio: _sansio!, raw: json.encode(message));
+      events = wsOnMessage(sansio: _sansio!, raw: message);
     } catch (e) {
       _closeTransport(4400, e.toString());
       return;
@@ -154,39 +309,23 @@ class WebSocketLink extends GraphQLLink {
             alreadyInRust: rustKnownSet.contains(entry.key),
           );
         }
+        _startHeartbeat();
 
-      case WsLinkEvent_PingReceived(:final payloadJson):
-        await _sendRaw(wsPongFrame(sansio: _sansio!, payloadJson: payloadJson));
+      case WsLinkEvent_PingReceived(:final payload):
+        await _sendRaw(wsPongFrame(sansio: _sansio!, payload: payload));
 
-      case WsLinkEvent_OperationResponse(
-        :final opId,
-        :final dataJson,
-        :final errorsJson,
-        :final extensionsJson,
-      ):
+      case WsLinkEvent_PongReceived():
+        _pongTimeoutTimer?.cancel();
+
+      case WsLinkEvent_OperationResponse(:final opId, :final response):
         final handler = _ops[opId];
         if (handler == null) {
           log('WebSocketLink: unknown op $opId');
           return;
         }
-        final data = dataJson != null
-            ? json.decode(dataJson) as JsonObject
-            : null;
-        final errors = errorsJson != null
-            ? (json.decode(errorsJson) as List).cast<JsonObject>()
-            : null;
-        final extensions = extensionsJson != null
-            ? json.decode(extensionsJson) as JsonObject
-            : null;
-        if (data != null) {
-          handler.controller.add(
-            GraphQLData(data: data, errors: errors, extensions: extensions),
-          );
-        } else if (errors != null) {
-          handler.controller.add(
-            GraphQLError(errors: errors, extensions: extensions),
-          );
-        }
+        handler.controller.add(
+          GraphQLData(data: ParsedGraphQLLinkPayload(response: response)),
+        );
 
       case WsLinkEvent_OperationComplete(:final opId):
         _completeOp(opId);
@@ -198,13 +337,11 @@ class WebSocketLink extends GraphQLLink {
 
   // ── operations ────────────────────────────────────────────────────────────
 
-  @override
-  Stream<GraphQLResponse<JsonObject>> request({
-    required Request request,
-    HeadersType? headers,
-  }) {
-    final opId = (_nextOpId++).toString();
-    final controller = StreamController<GraphQLResponse<JsonObject>>();
+  Stream<GraphQLResponse<GraphQLLinkPayload>> subscribe(
+    String opId,
+    Request request,
+  ) {
+    final controller = StreamController<GraphQLResponse<GraphQLLinkPayload>>();
     final handler = _OperationHandler(
       id: opId,
       request: request,
@@ -232,8 +369,8 @@ class WebSocketLink extends GraphQLLink {
         sansio: _sansio!,
         opId: opId,
         query: req.query,
-        variablesJson: req.variables.isNotEmpty
-            ? json.encode(req.variables)
+        variables: req.variables.isNotEmpty
+            ? shalomJsonValue(req.variables)
             : null,
         operationName: req.opName,
       ),
@@ -251,6 +388,7 @@ class WebSocketLink extends GraphQLLink {
     }
 
     if (!handler.controller.isClosed) handler.controller.close();
+    _checkIdle();
   }
 
   void _completeOp(String opId) {
@@ -258,6 +396,11 @@ class WebSocketLink extends GraphQLLink {
     if (handler != null && !handler.controller.isClosed) {
       handler.controller.close();
     }
+    _checkIdle();
+  }
+
+  void _checkIdle() {
+    if (!_disposed && _ops.isEmpty) onIdle(this);
   }
 
   // ── helpers ───────────────────────────────────────────────────────────────
@@ -265,7 +408,7 @@ class WebSocketLink extends GraphQLLink {
   Future<void> _sendRaw(String frame) async {
     if (_sender == null) return;
     try {
-      await _sender!.send(json.decode(frame) as JsonObject);
+      await _sender!.send(frame);
     } catch (_) {}
   }
 
@@ -322,6 +465,7 @@ class WebSocketLink extends GraphQLLink {
 
     _initTimer?.cancel();
     _reconnectTimer?.cancel();
+    _stopHeartbeat();
 
     for (final h in _ops.values) {
       if (!h.controller.isClosed) h.controller.close();
@@ -338,7 +482,7 @@ class WebSocketLink extends GraphQLLink {
 class _OperationHandler {
   final String id;
   final Request request;
-  final StreamController<GraphQLResponse<JsonObject>> controller;
+  final StreamController<GraphQLResponse<GraphQLLinkPayload>> controller;
 
   const _OperationHandler({
     required this.id,

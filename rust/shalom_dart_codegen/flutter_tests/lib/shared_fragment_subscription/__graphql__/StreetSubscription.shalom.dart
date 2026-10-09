@@ -11,8 +11,8 @@ import 'package:collection/collection.dart';
 import 'DogFrag.shalom.dart';
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class StreetSubscriptionResponse {
+class StreetSubscriptionData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "subscription";
 
   /// class members
@@ -22,29 +22,65 @@ class StreetSubscriptionResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  StreetSubscriptionResponse({required this.streetAnimals});
+  StreetSubscriptionData({required this.streetAnimals});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is StreetSubscriptionResponse &&
+        (other is StreetSubscriptionData &&
             streetAnimals == other.streetAnimals);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([streetAnimals, StreetSubscriptionResponse.G__typename]);
+      Object.hashAll([streetAnimals, StreetSubscriptionData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'streetAnimals': this.streetAnimals.toJson()};
   }
 
-  static StreetSubscriptionResponse fromJson(shalom_core.JsonObject data) {
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'streetAnimals': this.streetAnimals!.toShalomValue(),
+  });
+
+  static StreetSubscriptionData fromJson(shalom_core.JsonObject data) {
     final StreetSubscription_streetAnimals streetAnimals$value =
         StreetSubscription_streetAnimals.fromJson(
           data['streetAnimals'] as shalom_core.JsonObject,
         );
-    return StreetSubscriptionResponse(streetAnimals: streetAnimals$value);
+    return StreetSubscriptionData(streetAnimals: streetAnimals$value);
+  }
+
+  static StreetSubscriptionData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? streetAnimals$raw = data.field(
+      'streetAnimals',
+    );
+    final StreetSubscription_streetAnimals streetAnimals$value =
+        StreetSubscription_streetAnimals.fromShalomValue(streetAnimals$raw!);
+    return StreetSubscriptionData(streetAnimals: streetAnimals$value);
+  }
+
+  @override
+  String operation$Name() => 'StreetSubscription';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [StreetSubscriptionData]. Returns `null` when absent or incomplete.
+  static Future<StreetSubscriptionData?> readFrom(
+    shalom_core.CacheProxy cache,
+  ) async {
+    return await cache.readOperation<StreetSubscriptionData>(
+      name: 'StreetSubscription',
+      decoder: fromShalomValue,
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
+    return cache.evictOperation(name: 'StreetSubscription');
   }
 }
 
@@ -63,6 +99,7 @@ sealed class StreetSubscription_streetAnimals {
   const StreetSubscription_streetAnimals();
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 
   static StreetSubscription_streetAnimals fromJson(
     shalom_core.JsonObject data,
@@ -73,6 +110,21 @@ sealed class StreetSubscription_streetAnimals {
         return StreetSubscription_streetAnimals__Cat.fromJson(data);
       case 'Dog':
         return StreetSubscription_streetAnimals__Dog.fromJson(data);
+
+      default:
+        throw Exception("Unknown typename $typename");
+    }
+  }
+
+  static StreetSubscription_streetAnimals fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final typename = data.field('__typename')!.stringValue;
+    switch (typename) {
+      case 'Cat':
+        return StreetSubscription_streetAnimals__Cat.fromShalomValue(data);
+      case 'Dog':
+        return StreetSubscription_streetAnimals__Dog.fromShalomValue(data);
 
       default:
         throw Exception("Unknown typename $typename");
@@ -112,10 +164,26 @@ class StreetSubscription_streetAnimals__Cat
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      StreetSubscription_streetAnimals__Cat.G__typename,
+    ),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
+
   static StreetSubscription_streetAnimals__Cat fromJson(
     shalom_core.JsonObject data,
   ) {
     final String id$value = data['id'] as String;
+    return StreetSubscription_streetAnimals__Cat(id: id$value);
+  }
+
+  static StreetSubscription_streetAnimals__Cat fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
     return StreetSubscription_streetAnimals__Cat(id: id$value);
   }
 }
@@ -177,6 +245,18 @@ class StreetSubscription_streetAnimals__Dog
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      StreetSubscription_streetAnimals__Dog.G__typename,
+    ),
+
+    'breed': shalom_core.shalomJsonValue(this.breed!),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static StreetSubscription_streetAnimals__Dog fromJson(
     shalom_core.JsonObject data,
   ) {
@@ -191,6 +271,22 @@ class StreetSubscription_streetAnimals__Dog
       name: name$value,
     );
   }
+
+  static StreetSubscription_streetAnimals__Dog fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+    final String breed$value = breed$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
+    return StreetSubscription_streetAnimals__Dog(
+      breed: breed$value,
+      id: id$value,
+      name: name$value,
+    );
+  }
 }
 
 // ------------ END INTERFACE DEFINITIONS -------------
@@ -201,41 +297,15 @@ class StreetSubscription_streetAnimals__Dog
 
 // ------------ widget API -------------
 
-final class StreetSubscriptionData implements shalom_core.OperationInterface {
-  final StreetSubscription_streetAnimals streetAnimals;
-
-  const StreetSubscriptionData({required this.streetAnimals});
-
-  @override
-  String operation$Name() => 'StreetSubscription';
-
-  static StreetSubscriptionData fromCache(shalom_core.JsonObject data) {
-    final StreetSubscription_streetAnimals streetAnimals$value =
-        StreetSubscription_streetAnimals.fromJson(
-          data['streetAnimals'] as shalom_core.JsonObject,
-        );
-    return StreetSubscriptionData(streetAnimals: streetAnimals$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [StreetSubscriptionData]. Returns `null` when absent or incomplete.
-  static StreetSubscriptionData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readQuery<StreetSubscriptionData>(
-      name: 'StreetSubscription',
-      decoder: fromCache,
-    );
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {'streetAnimals': this.streetAnimals.toJson()};
-  }
-}
-
 final class StreetSubscriptionObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   const StreetSubscriptionObservable({
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'StreetSubscription';
@@ -246,8 +316,10 @@ final class StreetSubscriptionObservable {
     return client.request<StreetSubscriptionData>(
       name: operation$Name(),
 
-      decoder: StreetSubscriptionData.fromCache,
+      decoder: StreetSubscriptionData.fromShalomValue,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }

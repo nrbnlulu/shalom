@@ -1,6 +1,7 @@
 type Query {
   user(id: ID!): User
   pet(id: ID!): Pet
+  petUnwrapped(id: ID!): Pet
   animal(id: ID!): Animal
   animals: [Animal!]!
   zoo(id: ID!): Zoo

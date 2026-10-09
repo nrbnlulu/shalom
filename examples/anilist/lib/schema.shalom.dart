@@ -1,6 +1,7 @@
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, camel_case_types
 
-import 'package:shalom_core/shalom_core.dart' as shalom_core;
+import 'package:shalom/shalom.dart' as shalom_core;
+import 'package:collection/collection.dart';
 
 // ------------ Enum DEFINITIONS -------------
 
@@ -2019,10 +2020,45 @@ class AiringScheduleInput {
     return data;
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    if (airingAt.isSome()) {
+      final $value = this.airingAt.some();
+      $data["airingAt"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (episode.isSome()) {
+      final $value = this.episode.some();
+      $data["episode"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (timeUntilAiring.isSome()) {
+      final $value = this.timeUntilAiring.some();
+      $data["timeUntilAiring"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    return shalom_core.shalomJsonObject($data);
+  }
+
   @override
   String toString() {
     return toJson().toString();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AiringScheduleInput &&
+            this.airingAt == other.airingAt &&
+            this.episode == other.episode &&
+            this.timeUntilAiring == other.timeUntilAiring);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([airingAt, episode, timeUntilAiring]);
 
   AiringScheduleInput updateWith({
     shalom_core.Maybe<shalom_core.Maybe<int?>> airingAt =
@@ -2087,10 +2123,38 @@ class AniChartHighlightInput {
     return data;
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    if (highlight.isSome()) {
+      final $value = this.highlight.some();
+      $data["highlight"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (mediaId.isSome()) {
+      final $value = this.mediaId.some();
+      $data["mediaId"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    return shalom_core.shalomJsonObject($data);
+  }
+
   @override
   String toString() {
     return toJson().toString();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is AniChartHighlightInput &&
+            this.highlight == other.highlight &&
+            this.mediaId == other.mediaId);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([highlight, mediaId]);
 
   AniChartHighlightInput updateWith({
     shalom_core.Maybe<shalom_core.Maybe<String?>> highlight =
@@ -2173,10 +2237,96 @@ class CharacterNameInput {
     return data;
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    if (alternative.isSome()) {
+      final $value = this.alternative.some();
+      $data["alternative"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonArray(
+              $value!.map(
+                (e) => e == null
+                    ? shalom_core.shalomJsonValue(null)
+                    : shalom_core.shalomJsonValue(e!),
+              ),
+            );
+    }
+    if (alternativeSpoiler.isSome()) {
+      final $value = this.alternativeSpoiler.some();
+      $data["alternativeSpoiler"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonArray(
+              $value!.map(
+                (e) => e == null
+                    ? shalom_core.shalomJsonValue(null)
+                    : shalom_core.shalomJsonValue(e!),
+              ),
+            );
+    }
+    if (first.isSome()) {
+      final $value = this.first.some();
+      $data["first"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (last.isSome()) {
+      final $value = this.last.some();
+      $data["last"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (middle.isSome()) {
+      final $value = this.middle.some();
+      $data["middle"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (native.isSome()) {
+      final $value = this.native.some();
+      $data["native"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    return shalom_core.shalomJsonObject($data);
+  }
+
   @override
   String toString() {
     return toJson().toString();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is CharacterNameInput &&
+            const DeepCollectionEquality().equals(
+              this.alternative,
+              other.alternative,
+            ) &&
+            const DeepCollectionEquality().equals(
+              this.alternativeSpoiler,
+              other.alternativeSpoiler,
+            ) &&
+            this.first == other.first &&
+            this.last == other.last &&
+            this.middle == other.middle &&
+            this.native == other.native);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    const DeepCollectionEquality().hash(alternative),
+
+    const DeepCollectionEquality().hash(alternativeSpoiler),
+
+    first,
+
+    last,
+
+    middle,
+
+    native,
+  ]);
 
   CharacterNameInput updateWith({
     shalom_core.Maybe<shalom_core.Maybe<List<String?>?>> alternative =
@@ -2282,10 +2432,45 @@ class FuzzyDateInput {
     return data;
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    if (day.isSome()) {
+      final $value = this.day.some();
+      $data["day"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (month.isSome()) {
+      final $value = this.month.some();
+      $data["month"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (year.isSome()) {
+      final $value = this.year.some();
+      $data["year"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    return shalom_core.shalomJsonObject($data);
+  }
+
   @override
   String toString() {
     return toJson().toString();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is FuzzyDateInput &&
+            this.day == other.day &&
+            this.month == other.month &&
+            this.year == other.year);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([day, month, year]);
 
   FuzzyDateInput updateWith({
     shalom_core.Maybe<shalom_core.Maybe<int?>> day = const shalom_core.None(),
@@ -2347,10 +2532,38 @@ class ListActivityOptionInput {
     return data;
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    if (disabled.isSome()) {
+      final $value = this.disabled.some();
+      $data["disabled"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (type.isSome()) {
+      final $value = this.type.some();
+      $data["type"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!.name);
+    }
+    return shalom_core.shalomJsonObject($data);
+  }
+
   @override
   String toString() {
     return toJson().toString();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ListActivityOptionInput &&
+            this.disabled == other.disabled &&
+            this.type == other.type);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([disabled, type]);
 
   ListActivityOptionInput updateWith({
     shalom_core.Maybe<shalom_core.Maybe<bool?>> disabled =
@@ -2403,10 +2616,30 @@ class MediaExternalLinkInput {
     return data;
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    $data["id"] = shalom_core.shalomJsonValue(this.id!);
+    $data["site"] = shalom_core.shalomJsonValue(this.site!);
+    $data["url"] = shalom_core.shalomJsonValue(this.url!);
+    return shalom_core.shalomJsonObject($data);
+  }
+
   @override
   String toString() {
     return toJson().toString();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is MediaExternalLinkInput &&
+            this.id == other.id &&
+            this.site == other.site &&
+            this.url == other.url);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([id, site, url]);
 
   MediaExternalLinkInput updateWith({int? id, String? site, String? url}) {
     final id$next = id ?? this.id;
@@ -2472,10 +2705,106 @@ class MediaListOptionsInput {
     return data;
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    if (advancedScoring.isSome()) {
+      final $value = this.advancedScoring.some();
+      $data["advancedScoring"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonArray(
+              $value!.map(
+                (e) => e == null
+                    ? shalom_core.shalomJsonValue(null)
+                    : shalom_core.shalomJsonValue(e!),
+              ),
+            );
+    }
+    if (advancedScoringEnabled.isSome()) {
+      final $value = this.advancedScoringEnabled.some();
+      $data["advancedScoringEnabled"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (customLists.isSome()) {
+      final $value = this.customLists.some();
+      $data["customLists"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonArray(
+              $value!.map(
+                (e) => e == null
+                    ? shalom_core.shalomJsonValue(null)
+                    : shalom_core.shalomJsonValue(e!),
+              ),
+            );
+    }
+    if (sectionOrder.isSome()) {
+      final $value = this.sectionOrder.some();
+      $data["sectionOrder"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonArray(
+              $value!.map(
+                (e) => e == null
+                    ? shalom_core.shalomJsonValue(null)
+                    : shalom_core.shalomJsonValue(e!),
+              ),
+            );
+    }
+    if (splitCompletedSectionByFormat.isSome()) {
+      final $value = this.splitCompletedSectionByFormat.some();
+      $data["splitCompletedSectionByFormat"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (theme.isSome()) {
+      final $value = this.theme.some();
+      $data["theme"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    return shalom_core.shalomJsonObject($data);
+  }
+
   @override
   String toString() {
     return toJson().toString();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is MediaListOptionsInput &&
+            const DeepCollectionEquality().equals(
+              this.advancedScoring,
+              other.advancedScoring,
+            ) &&
+            this.advancedScoringEnabled == other.advancedScoringEnabled &&
+            const DeepCollectionEquality().equals(
+              this.customLists,
+              other.customLists,
+            ) &&
+            const DeepCollectionEquality().equals(
+              this.sectionOrder,
+              other.sectionOrder,
+            ) &&
+            this.splitCompletedSectionByFormat ==
+                other.splitCompletedSectionByFormat &&
+            this.theme == other.theme);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    const DeepCollectionEquality().hash(advancedScoring),
+
+    advancedScoringEnabled,
+
+    const DeepCollectionEquality().hash(customLists),
+
+    const DeepCollectionEquality().hash(sectionOrder),
+
+    splitCompletedSectionByFormat,
+
+    theme,
+  ]);
 
   MediaListOptionsInput updateWith({
     shalom_core.Maybe<shalom_core.Maybe<List<String?>?>> advancedScoring =
@@ -2582,10 +2911,45 @@ class MediaTitleInput {
     return data;
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    if (english.isSome()) {
+      final $value = this.english.some();
+      $data["english"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (native.isSome()) {
+      final $value = this.native.some();
+      $data["native"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (romaji.isSome()) {
+      final $value = this.romaji.some();
+      $data["romaji"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    return shalom_core.shalomJsonObject($data);
+  }
+
   @override
   String toString() {
     return toJson().toString();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is MediaTitleInput &&
+            this.english == other.english &&
+            this.native == other.native &&
+            this.romaji == other.romaji);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([english, native, romaji]);
 
   MediaTitleInput updateWith({
     shalom_core.Maybe<shalom_core.Maybe<String?>> english =
@@ -2651,10 +3015,38 @@ class NotificationOptionInput {
     return data;
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    if (enabled.isSome()) {
+      final $value = this.enabled.some();
+      $data["enabled"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (type.isSome()) {
+      final $value = this.type.some();
+      $data["type"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!.name);
+    }
+    return shalom_core.shalomJsonObject($data);
+  }
+
   @override
   String toString() {
     return toJson().toString();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is NotificationOptionInput &&
+            this.enabled == other.enabled &&
+            this.type == other.type);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([enabled, type]);
 
   NotificationOptionInput updateWith({
     shalom_core.Maybe<shalom_core.Maybe<bool?>> enabled =
@@ -2730,10 +3122,78 @@ class StaffNameInput {
     return data;
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    if (alternative.isSome()) {
+      final $value = this.alternative.some();
+      $data["alternative"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonArray(
+              $value!.map(
+                (e) => e == null
+                    ? shalom_core.shalomJsonValue(null)
+                    : shalom_core.shalomJsonValue(e!),
+              ),
+            );
+    }
+    if (first.isSome()) {
+      final $value = this.first.some();
+      $data["first"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (last.isSome()) {
+      final $value = this.last.some();
+      $data["last"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (middle.isSome()) {
+      final $value = this.middle.some();
+      $data["middle"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    if (native.isSome()) {
+      final $value = this.native.some();
+      $data["native"] = $value == null
+          ? shalom_core.shalomJsonValue(null)
+          : shalom_core.shalomJsonValue($value!);
+    }
+    return shalom_core.shalomJsonObject($data);
+  }
+
   @override
   String toString() {
     return toJson().toString();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is StaffNameInput &&
+            const DeepCollectionEquality().equals(
+              this.alternative,
+              other.alternative,
+            ) &&
+            this.first == other.first &&
+            this.last == other.last &&
+            this.middle == other.middle &&
+            this.native == other.native);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    const DeepCollectionEquality().hash(alternative),
+
+    first,
+
+    last,
+
+    middle,
+
+    native,
+  ]);
 
   StaffNameInput updateWith({
     shalom_core.Maybe<shalom_core.Maybe<List<String?>?>> alternative =

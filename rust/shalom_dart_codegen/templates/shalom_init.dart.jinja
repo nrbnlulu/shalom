@@ -22,16 +22,16 @@ void registerShalomDefinitions(ShalomRuntimeClient client) {
 ''');
 {% endfor %}
 {% for w in fragments %}  client.registerFragment(document: r'''
-fragment {{ w.class_name }} {{ w.document }}
+{{ w.document }}
 ''');
 {% endfor %}{% for w in queries %}  client.registerOperation(document: r'''
-query {{ w.class_name }} {{ w.document }}
+{{ w.document }}
 ''');
 {% endfor %}{% for w in mutations %}  client.registerOperation(document: r'''
-mutation {{ w.class_name }} {{ w.document }}
+{{ w.document }}
 ''');
 {% endfor %}{% for w in subscriptions %}  client.registerOperation(document: r'''
-subscription {{ w.class_name }} {{ w.document }}
+{{ w.document }}
 ''');
 {% endfor %}}
 

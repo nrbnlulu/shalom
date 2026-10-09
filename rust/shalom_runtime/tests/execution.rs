@@ -55,7 +55,8 @@ async fn request_stream_normalizes_each_response() {
         type Query { value: Int }
     "#;
     let link = HostLink::new();
-    let runtime = ShalomRuntime::init(schema, Vec::new(), RuntimeConfig).expect("runtime init");
+    let runtime =
+        ShalomRuntime::init(schema, Vec::new(), RuntimeConfig::default()).expect("runtime init");
     let mut outgoing = link.take_request_stream().expect("request stream missing");
 
     let mut responses = make_request_stream(

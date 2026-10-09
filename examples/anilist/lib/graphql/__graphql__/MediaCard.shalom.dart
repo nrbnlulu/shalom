@@ -3,19 +3,168 @@
 // Fragment: MediaCard
 
 import "../../schema.shalom.dart";
-import 'package:shalom_core/shalom_core.dart' as shalom_core;
+import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
-import 'package:meta/meta.dart' show experimental;
 
 // Generate abstract fragment class
 abstract class MediaCard {
-  MediaCard_title? get title;
   MediaCard_coverImage? get coverImage;
+  int? get episodes;
   MediaFormat? get format;
   int get id;
-  int? get episodes;
+  MediaCard_title? get title;
 
   Map<String, dynamic> toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
+}
+
+class MediaCardImpl implements MediaCard {
+  static String G__typename = "Media";
+
+  /// class members
+  final MediaCard_coverImage? coverImage;
+
+  final int? episodes;
+
+  final MediaFormat? format;
+
+  final int id;
+
+  final MediaCard_title? title;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
+  // keywordargs constructor
+  MediaCardImpl({
+    this.coverImage,
+
+    this.episodes,
+
+    this.format,
+
+    required this.id,
+
+    this.title,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is MediaCardImpl &&
+            coverImage == other.coverImage &&
+            episodes == other.episodes &&
+            format == other.format &&
+            id == other.id &&
+            title == other.title);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    coverImage,
+
+    episodes,
+
+    format,
+
+    id,
+
+    title,
+
+    MediaCardImpl.G__typename,
+  ]);
+
+  shalom_core.JsonObject toJson() {
+    return {
+      'coverImage': this.coverImage?.toJson(),
+
+      'episodes': this.episodes,
+
+      'format': this.format?.name,
+
+      'id': this.id,
+
+      'title': this.title?.toJson(),
+    };
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'coverImage': this.coverImage == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.coverImage!.toShalomValue(),
+
+    'episodes': this.episodes == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.episodes!),
+
+    'format': this.format == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.format!.name),
+
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'title': this.title == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.title!.toShalomValue(),
+  });
+
+  static MediaCardImpl fromJson(shalom_core.JsonObject data) {
+    final MediaCard_coverImage? coverImage$value = data['coverImage'] == null
+        ? null
+        : MediaCard_coverImage.fromJson(
+            data['coverImage'] as shalom_core.JsonObject,
+          );
+    final int? episodes$value = data['episodes'] as int?;
+    final MediaFormat? format$value = data['format'] == null
+        ? null
+        : MediaFormat.fromString(data['format']);
+    final int id$value = data['id'] as int;
+    final MediaCard_title? title$value = data['title'] == null
+        ? null
+        : MediaCard_title.fromJson(data['title'] as shalom_core.JsonObject);
+    return MediaCardImpl(
+      coverImage: coverImage$value,
+
+      episodes: episodes$value,
+
+      format: format$value,
+
+      id: id$value,
+
+      title: title$value,
+    );
+  }
+
+  static MediaCardImpl fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? coverImage$raw = data.field(
+      'coverImage',
+    );
+    final MediaCard_coverImage? coverImage$value =
+        coverImage$raw == null || coverImage$raw!.isNull
+        ? null
+        : MediaCard_coverImage.fromShalomValue(coverImage$raw!);
+    final shalom_core.ShalomJsonValue? episodes$raw = data.field('episodes');
+    final int? episodes$value = episodes$raw == null || episodes$raw!.isNull
+        ? null
+        : episodes$raw!.intValue;
+    final shalom_core.ShalomJsonValue? format$raw = data.field('format');
+    final MediaFormat? format$value = format$raw == null || format$raw!.isNull
+        ? null
+        : MediaFormat.fromString(format$raw!.stringValue);
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final int id$value = id$raw!.intValue;
+    final shalom_core.ShalomJsonValue? title$raw = data.field('title');
+    final MediaCard_title? title$value = title$raw == null || title$raw!.isNull
+        ? null
+        : MediaCard_title.fromShalomValue(title$raw!);
+    return MediaCardImpl(
+      coverImage: coverImage$value,
+      episodes: episodes$value,
+      format: format$value,
+      id: id$value,
+      title: title$value,
+    );
+  }
 }
 
 // ------------ START OBJECT DEFINITIONS -------------
@@ -25,78 +174,11 @@ class MediaCard_coverImage {
   /// class members
   final String? large;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
   MediaCard_coverImage({this.large});
-
-  static void normalize$inCache(
-    shalom_core.JsonObject data,
-    shalom_core.CacheUpdateContext ctx, {
-
-    /// can be just the selection name but also may include serialized arguments.
-    required shalom_core.RecordID this$fieldName,
-    required shalom_core.JsonObject? this$cached,
-    required shalom_core.JsonObject parent$record,
-    required shalom_core.RecordID parent$normalizedID,
-  }) {
-    String this$normalizedID;
-    shalom_core.JsonObject this$NormalizedRecord;
-
-    final shalom_core.RecordID? this$normalizedID_temp =
-        data["id"] as shalom_core.RecordID?;
-    if (this$normalizedID_temp == null) {
-      this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-
-      this$NormalizedRecord = shalom_core.getOrCreateObject(
-        parent$record,
-        this$fieldName,
-      );
-    } else {
-      final normalized$objRecord = shalom_core.NormalizedObjectRecord(
-        typename: "MediaCoverImage",
-        id: this$normalizedID_temp!,
-      );
-      if (this$cached != null &&
-          this$cached is shalom_core.NormalizedObjectRecord &&
-          this$cached as shalom_core.NormalizedObjectRecord !=
-              normalized$objRecord) {
-        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-      }
-      parent$record[this$fieldName] = normalized$objRecord;
-      this$normalizedID = normalized$objRecord.normalizedID();
-      this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(
-        this$normalizedID,
-      );
-      ctx.addDependantRecord(this$normalizedID);
-    }
-    final largeNormalized$Key = "large";
-    final large$normalizedID = "${this$normalizedID}.${largeNormalized$Key}";
-    ctx.addDependantRecords({large$normalizedID});
-    final large$cached = this$NormalizedRecord[largeNormalized$Key];
-    final large$raw = data["large"];
-    if (large$raw != null) {
-      if (large$cached != large$raw) {
-        ctx.addChangedRecord(large$normalizedID);
-      }
-      this$NormalizedRecord[largeNormalized$Key] = large$raw;
-    } else if (data.containsKey("large") && large$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[largeNormalized$Key] = null;
-      ctx.addChangedRecord(large$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[largeNormalized$Key] = null;
-    }
-  }
-
-  static MediaCard_coverImage fromCached(
-    shalom_core.NormalizedRecordData data,
-    shalom_core.ShalomCtx ctx,
-  ) {
-    final large$raw = data["large"];
-    final String? large$value = large$raw as String?;
-    return MediaCard_coverImage(large: large$value);
-  }
 
   @override
   bool operator ==(Object other) {
@@ -111,9 +193,24 @@ class MediaCard_coverImage {
     return {'large': this.large};
   }
 
-  @experimental
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'large': this.large == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.large!),
+  });
+
   static MediaCard_coverImage fromJson(shalom_core.JsonObject data) {
     final String? large$value = data['large'] as String?;
+    return MediaCard_coverImage(large: large$value);
+  }
+
+  static MediaCard_coverImage fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? large$raw = data.field('large');
+    final String? large$value = large$raw == null || large$raw!.isNull
+        ? null
+        : large$raw!.stringValue;
     return MediaCard_coverImage(large: large$value);
   }
 }
@@ -126,99 +223,11 @@ class MediaCard_title {
 
   final String? romaji;
 
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
   // keywordargs constructor
   MediaCard_title({this.english, this.romaji});
-
-  static void normalize$inCache(
-    shalom_core.JsonObject data,
-    shalom_core.CacheUpdateContext ctx, {
-
-    /// can be just the selection name but also may include serialized arguments.
-    required shalom_core.RecordID this$fieldName,
-    required shalom_core.JsonObject? this$cached,
-    required shalom_core.JsonObject parent$record,
-    required shalom_core.RecordID parent$normalizedID,
-  }) {
-    String this$normalizedID;
-    shalom_core.JsonObject this$NormalizedRecord;
-
-    final shalom_core.RecordID? this$normalizedID_temp =
-        data["id"] as shalom_core.RecordID?;
-    if (this$normalizedID_temp == null) {
-      this$normalizedID = "${parent$normalizedID}.${this$fieldName}";
-
-      this$NormalizedRecord = shalom_core.getOrCreateObject(
-        parent$record,
-        this$fieldName,
-      );
-    } else {
-      final normalized$objRecord = shalom_core.NormalizedObjectRecord(
-        typename: "MediaTitle",
-        id: this$normalizedID_temp!,
-      );
-      if (this$cached != null &&
-          this$cached is shalom_core.NormalizedObjectRecord &&
-          this$cached as shalom_core.NormalizedObjectRecord !=
-              normalized$objRecord) {
-        ctx.addChangedRecord("${parent$normalizedID}.${this$fieldName}");
-      }
-      parent$record[this$fieldName] = normalized$objRecord;
-      this$normalizedID = normalized$objRecord.normalizedID();
-      this$NormalizedRecord = ctx.getOrCreateCachedObjectRecord(
-        this$normalizedID,
-      );
-      ctx.addDependantRecord(this$normalizedID);
-    }
-    final englishNormalized$Key = "english";
-    final english$normalizedID =
-        "${this$normalizedID}.${englishNormalized$Key}";
-    final romajiNormalized$Key = "romaji";
-    final romaji$normalizedID = "${this$normalizedID}.${romajiNormalized$Key}";
-    ctx.addDependantRecords({english$normalizedID, romaji$normalizedID});
-    final english$cached = this$NormalizedRecord[englishNormalized$Key];
-    final english$raw = data["english"];
-    if (english$raw != null) {
-      if (english$cached != english$raw) {
-        ctx.addChangedRecord(english$normalizedID);
-      }
-      this$NormalizedRecord[englishNormalized$Key] = english$raw;
-    } else if (data.containsKey("english") && english$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[englishNormalized$Key] = null;
-      ctx.addChangedRecord(english$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[englishNormalized$Key] = null;
-    }
-    final romaji$cached = this$NormalizedRecord[romajiNormalized$Key];
-    final romaji$raw = data["romaji"];
-    if (romaji$raw != null) {
-      if (romaji$cached != romaji$raw) {
-        ctx.addChangedRecord(romaji$normalizedID);
-      }
-      this$NormalizedRecord[romajiNormalized$Key] = romaji$raw;
-    } else if (data.containsKey("romaji") && romaji$cached != null) {
-      // if this field was null in the response and key exists clear the cache.
-
-      this$NormalizedRecord[romajiNormalized$Key] = null;
-      ctx.addChangedRecord(romaji$normalizedID);
-    } else {
-      // data is null and cache is null, do nothing.
-      this$NormalizedRecord[romajiNormalized$Key] = null;
-    }
-  }
-
-  static MediaCard_title fromCached(
-    shalom_core.NormalizedRecordData data,
-    shalom_core.ShalomCtx ctx,
-  ) {
-    final english$raw = data["english"];
-    final String? english$value = english$raw as String?;
-    final romaji$raw = data["romaji"];
-    final String? romaji$value = romaji$raw as String?;
-    return MediaCard_title(english: english$value, romaji: romaji$value);
-  }
 
   @override
   bool operator ==(Object other) {
@@ -236,10 +245,31 @@ class MediaCard_title {
     return {'english': this.english, 'romaji': this.romaji};
   }
 
-  @experimental
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'english': this.english == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.english!),
+
+    'romaji': this.romaji == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.romaji!),
+  });
+
   static MediaCard_title fromJson(shalom_core.JsonObject data) {
     final String? english$value = data['english'] as String?;
     final String? romaji$value = data['romaji'] as String?;
+    return MediaCard_title(english: english$value, romaji: romaji$value);
+  }
+
+  static MediaCard_title fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? english$raw = data.field('english');
+    final String? english$value = english$raw == null || english$raw!.isNull
+        ? null
+        : english$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? romaji$raw = data.field('romaji');
+    final String? romaji$value = romaji$raw == null || romaji$raw!.isNull
+        ? null
+        : romaji$raw!.stringValue;
     return MediaCard_title(english: english$value, romaji: romaji$value);
   }
 }

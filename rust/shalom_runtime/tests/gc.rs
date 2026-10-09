@@ -1,12 +1,13 @@
 use std::collections::HashSet;
 use std::path::PathBuf;
+use std::time::Duration;
 
 use serde_json::json;
 use shalom_core::context::ShalomGlobalContext;
 use shalom_core::entrypoint::{parse_document, parse_schema, register_fragments_from_document};
 use shalom_core::operation::context::SharedOpCtx;
 use shalom_core::shalom_config::ShalomConfig;
-use shalom_runtime::cache::{CacheRecord, CacheValue, NormalizedCache};
+use shalom_runtime::cache::{CacheLocator, CacheRecord, CacheValue, NormalizedCache};
 use shalom_runtime::gc::{SubscriptionTracker, collect_garbage};
 use shalom_runtime::{ExecutionPolicy, ShalomRuntime};
 
@@ -65,6 +66,40 @@ fn gc_keeps_referenced_entity_for_root_subscription() {
 }
 
 #[test]
+fn gc_keeps_every_cached_prefix_of_a_legacy_watched_key() {
+    let mut cache = NormalizedCache::new();
+    cache.insert("User".to_string(), make_entity("User"));
+    cache.insert("User_Profile:1".to_string(), make_entity("User_Profile:1"));
+
+    let active = HashSet::from(["User_Profile:1_name".to_string()]);
+    let evicted = collect_garbage(&mut cache, &active);
+
+    assert!(evicted.is_empty());
+    assert!(cache.get("User").is_some());
+    assert!(cache.get("User_Profile:1").is_some());
+}
+
+#[test]
+fn gc_removes_path_refs_whose_value_was_evicted() {
+    let mut cache = NormalizedCache::new();
+    let mut root = CacheRecord::new();
+    root.insert(
+        "orphan".to_string(),
+        CacheValue::Object(make_entity("inline-orphan")),
+    );
+    cache.insert("ROOT_QUERY".to_string(), root);
+    cache.record_ref(
+        "ROOT_QUERY.orphan".to_string(),
+        CacheLocator::root("ROOT_QUERY".to_string()).child_field("orphan".to_string()),
+    );
+
+    collect_garbage(&mut cache, &HashSet::new());
+
+    assert!(cache.get("ROOT_QUERY").is_some());
+    assert!(cache.ref_locator("ROOT_QUERY.orphan").is_none());
+}
+
+#[test]
 fn gc_evicts_unsubscribed_root_field_and_its_entity() {
     let mut cache = NormalizedCache::new();
     let mut root = CacheRecord::new();
@@ -92,7 +127,7 @@ fn gc_evicts_unsubscribed_root_field_and_its_entity() {
 
 #[test]
 fn subscription_tracker_counts_refs() {
-    let mut tracker = SubscriptionTracker::new();
+    let mut tracker = SubscriptionTracker::new(Duration::ZERO);
     tracker.subscribe(["User:1".to_string(), "User:1_name".to_string()]);
     tracker.subscribe(["User:1".to_string()]);
     tracker.unsubscribe(["User:1".to_string()]);
@@ -105,6 +140,33 @@ fn subscription_tracker_counts_refs() {
     let active = tracker.active_keys();
     assert!(!active.contains("User:1"));
     assert!(active.contains("User:1_name"));
+}
+
+#[test]
+fn subscription_tracker_retention_grace_delays_eviction() {
+    let mut tracker = SubscriptionTracker::new(Duration::from_millis(50));
+    tracker.subscribe(["User:1".to_string()]);
+    tracker.unsubscribe(["User:1".to_string()]);
+
+    // Still within the grace window — key stays "active" via the fake subscriber.
+    assert!(tracker.active_keys().contains("User:1"));
+
+    std::thread::sleep(Duration::from_millis(80));
+    assert!(!tracker.active_keys().contains("User:1"));
+}
+
+#[test]
+fn subscription_tracker_resubscribe_cancels_grace() {
+    let mut tracker = SubscriptionTracker::new(Duration::from_millis(50));
+    tracker.subscribe(["User:1".to_string()]);
+    tracker.unsubscribe(["User:1".to_string()]);
+    assert!(tracker.active_keys().contains("User:1"));
+
+    // Re-subscribing before the grace period elapses should cancel eviction
+    // entirely, not just delay it.
+    tracker.subscribe(["User:1".to_string()]);
+    std::thread::sleep(Duration::from_millis(80));
+    assert!(tracker.active_keys().contains("User:1"));
 }
 
 #[test]

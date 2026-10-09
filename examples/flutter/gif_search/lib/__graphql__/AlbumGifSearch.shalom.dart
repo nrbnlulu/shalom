@@ -10,8 +10,8 @@ import 'package:collection/collection.dart';
 // Fragment imports
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class AlbumGifSearchResponse {
+class AlbumGifSearchData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members
@@ -21,28 +21,72 @@ class AlbumGifSearchResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  AlbumGifSearchResponse({required this.searchGifs});
+  AlbumGifSearchData({required this.searchGifs});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is AlbumGifSearchResponse && searchGifs == other.searchGifs);
+        (other is AlbumGifSearchData && searchGifs == other.searchGifs);
   }
 
   @override
   int get hashCode =>
-      Object.hashAll([searchGifs, AlbumGifSearchResponse.G__typename]);
+      Object.hashAll([searchGifs, AlbumGifSearchData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'searchGifs': this.searchGifs.toJson()};
   }
 
-  static AlbumGifSearchResponse fromJson(shalom_core.JsonObject data) {
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'searchGifs': this.searchGifs!.toShalomValue(),
+  });
+
+  static AlbumGifSearchData fromJson(shalom_core.JsonObject data) {
     final AlbumGifSearch_searchGifs searchGifs$value =
         AlbumGifSearch_searchGifs.fromJson(
           data['searchGifs'] as shalom_core.JsonObject,
         );
-    return AlbumGifSearchResponse(searchGifs: searchGifs$value);
+    return AlbumGifSearchData(searchGifs: searchGifs$value);
+  }
+
+  static AlbumGifSearchData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? searchGifs$raw = data.field(
+      'searchGifs',
+    );
+    final AlbumGifSearch_searchGifs searchGifs$value =
+        AlbumGifSearch_searchGifs.fromShalomValue(searchGifs$raw!);
+    return AlbumGifSearchData(searchGifs: searchGifs$value);
+  }
+
+  @override
+  String operation$Name() => 'AlbumGifSearch';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [AlbumGifSearchData]. Returns `null` when absent or incomplete.
+  static Future<AlbumGifSearchData?> readFrom(
+    shalom_core.CacheProxy cache, {
+    AlbumGifSearchVariables? variables,
+  }) async {
+    return await cache.readOperation<AlbumGifSearchData>(
+      name: 'AlbumGifSearch',
+      decoder: fromShalomValue,
+
+      variables: variables?.toShalomValue(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    AlbumGifSearchVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'AlbumGifSearch',
+
+      variables: variables?.toShalomValue(),
+    );
   }
 }
 
@@ -85,6 +129,14 @@ class AlbumGifSearch_searchGifs {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'hasNextPage': shalom_core.shalomJsonValue(this.hasNextPage!),
+
+    'items': shalom_core.shalomJsonArray(
+      this.items!.map((e) => e!.toShalomValue()),
+    ),
+  });
+
   static AlbumGifSearch_searchGifs fromJson(shalom_core.JsonObject data) {
     final bool hasNextPage$value = data['hasNextPage'] as bool;
     final List<AlbumGifSearch_searchGifs_items> items$value =
@@ -98,6 +150,24 @@ class AlbumGifSearch_searchGifs {
     return AlbumGifSearch_searchGifs(
       hasNextPage: hasNextPage$value,
 
+      items: items$value,
+    );
+  }
+
+  static AlbumGifSearch_searchGifs fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? hasNextPage$raw = data.field(
+      'hasNextPage',
+    );
+    final bool hasNextPage$value = hasNextPage$raw!.boolValue;
+    final shalom_core.ShalomJsonValue? items$raw = data.field('items');
+    final List<AlbumGifSearch_searchGifs_items> items$value = items$raw!
+        .listValue
+        .map((e) => AlbumGifSearch_searchGifs_items.fromShalomValue(e!))
+        .toList();
+    return AlbumGifSearch_searchGifs(
+      hasNextPage: hasNextPage$value,
       items: items$value,
     );
   }
@@ -155,6 +225,16 @@ class AlbumGifSearch_searchGifs_items {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'previewUrl': this.previewUrl == null
+        ? shalom_core.shalomJsonValue(null)
+        : shalom_core.shalomJsonValue(this.previewUrl!),
+
+    'title': shalom_core.shalomJsonValue(this.title!),
+
+    'url': shalom_core.shalomJsonValue(this.url!),
+  });
+
   static AlbumGifSearch_searchGifs_items fromJson(shalom_core.JsonObject data) {
     final String? previewUrl$value = data['previewUrl'] as String?;
     final String title$value = data['title'] as String;
@@ -164,6 +244,27 @@ class AlbumGifSearch_searchGifs_items {
 
       title: title$value,
 
+      url: url$value,
+    );
+  }
+
+  static AlbumGifSearch_searchGifs_items fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? previewUrl$raw = data.field(
+      'previewUrl',
+    );
+    final String? previewUrl$value =
+        previewUrl$raw == null || previewUrl$raw!.isNull
+        ? null
+        : previewUrl$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? title$raw = data.field('title');
+    final String title$value = title$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? url$raw = data.field('url');
+    final String url$value = url$raw!.stringValue;
+    return AlbumGifSearch_searchGifs_items(
+      previewUrl: previewUrl$value,
+      title: title$value,
       url: url$value,
     );
   }
@@ -185,43 +286,10 @@ class AlbumGifSearch_searchGifs_items {
 
 // ------------ widget API -------------
 
-final class AlbumGifSearchData implements shalom_core.OperationInterface {
-  final AlbumGifSearch_searchGifs searchGifs;
-
-  const AlbumGifSearchData({required this.searchGifs});
-
-  @override
-  String operation$Name() => 'AlbumGifSearch';
-
-  static AlbumGifSearchData fromCache(shalom_core.JsonObject data) {
-    final AlbumGifSearch_searchGifs searchGifs$value =
-        AlbumGifSearch_searchGifs.fromJson(
-          data['searchGifs'] as shalom_core.JsonObject,
-        );
-    return AlbumGifSearchData(searchGifs: searchGifs$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [AlbumGifSearchData]. Returns `null` when absent or incomplete.
-  static AlbumGifSearchData? readFrom(
-    shalom_core.CacheProxy cache, {
-    AlbumGifSearchVariables? variables,
-  }) {
-    return cache.readQuery<AlbumGifSearchData>(
-      name: 'AlbumGifSearch',
-      decoder: fromCache,
-
-      variables: variables?.toJson(),
-    );
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {'searchGifs': this.searchGifs.toJson()};
-  }
-}
-
 final class AlbumGifSearchObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final AlbumGifSearchVariables variables;
 
@@ -229,6 +297,8 @@ final class AlbumGifSearchObservable {
     required this.variables,
 
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'AlbumGifSearch';
@@ -239,10 +309,12 @@ final class AlbumGifSearchObservable {
     return client.request<AlbumGifSearchData>(
       name: operation$Name(),
 
-      variables: variables.toJson(),
+      variables: variables.toShalomValue(),
 
-      decoder: AlbumGifSearchData.fromCache,
+      decoder: AlbumGifSearchData.fromShalomValue,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }
@@ -270,6 +342,14 @@ final class AlbumGifSearchVariables {
     data["query"] = this.query;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    $data["limit"] = shalom_core.shalomJsonValue(this.limit!);
+    $data["offset"] = shalom_core.shalomJsonValue(this.offset!);
+    $data["query"] = shalom_core.shalomJsonValue(this.query!);
+    return shalom_core.shalomJsonObject($data);
   }
 
   @override

@@ -1,5 +1,5 @@
 import 'package:shalom/src/shalom_core_base.dart'
-    show FragmentInterface, JsonObject, OperationInterface;
+    show FragmentInterface, OperationInterface, ShalomJsonValue;
 import 'runtime_client.dart' show ShalomRuntimeClient;
 
 /// A focused cache interface passed to mutation `update` callbacks.
@@ -15,26 +15,36 @@ class CacheProxy {
   /// Read the current cache for operation [name].
   ///
   /// Returns `null` when the data is absent or incomplete (missing refs).
-  T? readQuery<T>({
+  Future<T?> readOperation<T>({
     required String name,
-    required T Function(JsonObject) decoder,
-    Map<String, dynamic>? variables,
-  }) => _client.readQuery(name: name, decoder: decoder, variables: variables);
+    required T Function(ShalomJsonValue) decoder,
+    ShalomJsonValue? variables,
+  }) =>
+      _client.readOperation(name: name, decoder: decoder, variables: variables);
 
   /// Write [data] to the cache for its generated operation, normalizing it
   /// and notifying any active subscribers.
-  void writeQuery<T extends OperationInterface>({
+  Future<void> writeOperation<T extends OperationInterface>({
     required T data,
-    Map<String, dynamic>? variables,
-  }) => _client.writeQuery(data: data, variables: variables);
+    ShalomJsonValue? variables,
+  }) => _client.writeOperation(data: data, variables: variables);
+
+  /// Evict operation [name]'s cached root field(s) (matched by [variables])
+  /// and notify any active subscribers.
+  ///
+  /// Returns `false` if no matching cache entry existed.
+  Future<bool> evictOperation({
+    required String name,
+    ShalomJsonValue? variables,
+  }) => _client.evictOperation(name: name, variables: variables);
 
   /// Read an entity from the cache through the fragment's selection set.
   ///
   /// Returns `null` when the entity is absent or has missing refs.
-  T? readFragment<T>({
+  Future<T?> readFragment<T>({
     required String fragmentName,
     required String entityKey,
-    required T Function(JsonObject) decoder,
+    required T Function(ShalomJsonValue) decoder,
   }) => _client.readFragment(
     fragmentName: fragmentName,
     entityKey: entityKey,
@@ -46,6 +56,6 @@ class CacheProxy {
   ///
   /// The target entity is derived from [data]'s `entity$Type()`/`entity$Id()`
   /// — no separate `entityKey` is needed.
-  void writeFragment<T extends FragmentInterface>({required T data}) =>
+  Future<void> writeFragment<T extends FragmentInterface>({required T data}) =>
       _client.writeFragment(data: data);
 }
