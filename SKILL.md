@@ -427,6 +427,23 @@ Important details:
 - `executeOptimistic` does not run an `executeWithCacheUpdate` list callback. For optimistic list membership, prefer a mutation response that includes the parent/list field, or implement a manual rollback path for the extra list write.
 - `OptimisticMutationResponse.rollback()` is async; await it when manually rolling back `GraphQLError` or `LinkExceptionResponse` results.
 
+## Invalidating Operations After Mutations
+
+When a mutation does not modify the normalized cache directly or when you want observing widgets to refetch from the network instead of manually updating the cache, pass `invalidateOperations` to `execute`:
+
+```dart
+final response = await CreatePimaForceMutation(client).execute(
+  input: input,
+  invalidateOperations: [
+    $EditorUnitSystemsQuery.operation$Name(),
+  ],
+);
+```
+
+- Each entry in `invalidateOperations` is matched against active operation subscriptions in `shalom_runtime`.
+- Matching subscriptions complete their streams, causing their Flutter widgets (`ShalomObservingState`) to resubscribe and refetch from the network.
+- Query widget classes expose `static String operation$Name()` (e.g. `$EditorUnitSystemsQuery.operation$Name()` or `EditorUnitSystemsQuery.operation$Name()`), so operation names do not have to be hard-coded as string literals.
+
 ## Updating Lists After Mutations
 
 Use `executeWithCacheUpdate` when a mutation creates, deletes, adds, removes, or reorders items and the server response does not refetch the parent list. The mutation response is normalized before the callback runs.

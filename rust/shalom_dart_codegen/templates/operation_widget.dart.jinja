@@ -19,6 +19,8 @@ import '{{ import_path }}';
 {% endfor -%}
 
 abstract class ${{ operation_name }} extends StatefulWidget {
+    /// Returns the GraphQL operation name for this query/subscription.
+    /// Can be passed to mutation `execute(invalidateOperations: [...])` or `client.invalidateOperation(...)`.
     static String operation$Name() => '{{ operation_name }}';
 
     final shalom_core.ExecutionPolicyInput executionPolicy;

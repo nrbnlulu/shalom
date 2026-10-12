@@ -25,6 +25,18 @@ abstract class ${{ operation_name }} {
     ///
     /// [invalidateOperations], if provided, invalidates active subscriptions of
     /// the specified operations upon success, causing their observing widgets to resubscribe.
+    /// Operation names can be supplied via the static helper on the query widget class:
+    /// e.g. `$MyQuery.operation$Name()` (or `MyQuery.operation$Name()`).
+    ///
+    /// Example:
+    /// ```dart
+    /// await addPost.execute(
+    ///   input: AddPostInput(title: 'Hello'),
+    ///   invalidateOperations: [
+    ///     $GetPostsQuery.operation$Name(),
+    ///   ],
+    /// );
+    /// ```
     Future<shalom_core.GraphQLResponse<{{ operation_name }}Data>> execute({
         {%- if op_variables_exist %}
         {% for name, field in op_variables | items -%}
