@@ -774,10 +774,11 @@ pub async fn invalidate_operation(
     variables: Option<ShalomJsonValue>,
 ) -> anyhow::Result<()> {
     let variables = parse_variables(variables)?;
-    handle.runtime.invalidate_operation(&name, variables.as_ref());
+    handle
+        .runtime
+        .invalidate_operation(&name, variables.as_ref());
     Ok(())
 }
-
 
 /// Read an entity from the cache through a fragment's selection set.
 ///

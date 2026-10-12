@@ -1155,11 +1155,7 @@ impl ShalomRuntime {
     /// Unsubscribes matching subscriptions, dropping their stream channel. This
     /// signals `onDone` to the Dart/Flutter subscriber, triggering it to resubscribe
     /// and perform a fresh fetch.
-    pub fn invalidate_operation(
-        &self,
-        op_name: &str,
-        variables: Option<&Map<String, Value>>,
-    ) {
+    pub fn invalidate_operation(&self, op_name: &str, variables: Option<&Map<String, Value>>) {
         let matching_ids: Vec<SubscriptionId> = {
             let manager = self.subscriptions.lock();
             manager

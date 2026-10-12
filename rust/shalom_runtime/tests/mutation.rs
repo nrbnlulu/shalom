@@ -455,4 +455,3 @@ async fn invalidate_operation_closes_matching_subscription_stream() {
     assert!(next.is_none(), "stream must close on invalidate_operation");
     assert!(!runtime.subscription_exists(&sub_id));
 }
-
