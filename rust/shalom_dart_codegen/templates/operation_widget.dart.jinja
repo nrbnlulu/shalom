@@ -19,7 +19,7 @@ import '{{ import_path }}';
 {% endfor -%}
 
 abstract class ${{ operation_name }} extends StatefulWidget {
-    String operation$Name() => '{{ operation_name }}';
+    static String operation$Name() => '{{ operation_name }}';
 
     final shalom_core.ExecutionPolicyInput executionPolicy;
     final shalom_core.RetryDelay retryDelay;

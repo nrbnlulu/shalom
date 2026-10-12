@@ -14,7 +14,7 @@ import 'package:shalom/shalom.dart' show OptimisticMutationResponse, CacheProxy;
 import '{{ operation_name }}.shalom.dart';
 
 abstract class ${{ operation_name }} {
-    String operation$Name() => '{{ operation_name }}';
+    static String operation$Name() => '{{ operation_name }}';
 
     final shalom_core.ShalomRuntimeClient _client;
     const ${{ operation_name }}(this._client);
