@@ -1146,10 +1146,20 @@ impl ShalomRuntime {
         if changed.is_empty() {
             return Ok(false);
         }
+        self.notify_subscribers(&changed)?;
+        Ok(true)
+    }
 
-        // Close and unsubscribe matching subscriptions for this evicted operation.
-        // Unsubscribing drops their sender channel, which emits onDone in Dart/Flutter,
-        // triggering resubscribe() and a fresh network fetch.
+    /// Invalidate active subscriptions for `op_name` (optionally filtered by `variables`).
+    ///
+    /// Unsubscribes matching subscriptions, dropping their stream channel. This
+    /// signals `onDone` to the Dart/Flutter subscriber, triggering it to resubscribe
+    /// and perform a fresh fetch.
+    pub fn invalidate_operation(
+        &self,
+        op_name: &str,
+        variables: Option<&Map<String, Value>>,
+    ) {
         let matching_ids: Vec<SubscriptionId> = {
             let manager = self.subscriptions.lock();
             manager
@@ -1158,7 +1168,7 @@ impl ShalomRuntime {
                 .filter_map(|(id, state)| {
                     if let SubscriptionTarget::Operation(ctx) = &state.target
                         && ctx.get_operation_name() == op_name
-                        && state.variables.as_ref() == variables
+                        && (variables.is_none() || state.variables.as_ref() == variables)
                     {
                         Some(*id)
                     } else {
@@ -1171,8 +1181,6 @@ impl ShalomRuntime {
         for id in matching_ids {
             self.unsubscribe(&id);
         }
-
-        Ok(true)
     }
 
     /// Look up a pre-registered (or remembered) operation by name.

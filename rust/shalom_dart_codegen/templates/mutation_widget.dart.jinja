@@ -22,23 +22,35 @@ abstract class ${{ operation_name }} {
     /// Execute the mutation and return the normalised response.
     /// The response is written into the shared entity cache, triggering reactive
     /// updates on any query subscriptions watching the same entities.
-    Future<shalom_core.GraphQLResponse<{{ operation_name }}Data>> execute(
-        {%- if op_variables_exist %}{
+    ///
+    /// [invalidateOperations], if provided, invalidates active subscriptions of
+    /// the specified operations upon success, causing their observing widgets to resubscribe.
+    Future<shalom_core.GraphQLResponse<{{ operation_name }}Data>> execute({
+        {%- if op_variables_exist %}
         {% for name, field in op_variables | items -%}
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
-        }{% endif %}
-    ) => _client.mutate<{{ operation_name }}Data>(
-        name: operation$Name(),
-        {% if op_variables_exist %}
-        variables: {{ operation_name }}Variables(
-            {% for name, _field in op_variables | items -%}
-                {{ name }}: {{ name }},
-            {% endfor -%}
-        ).toShalomValue(),
         {% endif %}
-        decoder: {{ operation_name }}Data.fromShalomValue,
-    );
+        List<String>? invalidateOperations,
+    }) async {
+        final response = await _client.mutate<{{ operation_name }}Data>(
+            name: operation$Name(),
+            {% if op_variables_exist %}
+            variables: {{ operation_name }}Variables(
+                {% for name, _field in op_variables | items -%}
+                    {{ name }}: {{ name }},
+                {% endfor -%}
+            ).toShalomValue(),
+            {% endif %}
+            decoder: {{ operation_name }}Data.fromShalomValue,
+        );
+        if (invalidateOperations != null && response is shalom_core.GraphQLData) {
+            for (final op in invalidateOperations) {
+                await _client.invalidateOperation(name: op);
+            }
+        }
+        return response;
+    }
 
     /// Execute the mutation and update the cache via [update].
     ///
