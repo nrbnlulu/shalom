@@ -46,17 +46,23 @@ The codegen scans your Dart/Flutter source tree for classes annotated with
 GraphQL schema file for validation and type generation. A common layout is:
 
 ```text
-./lib/graphql/schema.graphql
-./lib/**/*.dart          # annotated widget/mutation/fragment classes
-./shalom.yml             # optional
+my_flutter_app/
+├── lib/
+│   ├── graphql/
+│   │   └── schema.graphql      # GraphQL schema
+│   ├── albums_page.dart        # @Query widget
+│   ├── album_widget.dart       # @Fragment widget
+│   └── __graphql__/            # Generated code (auto-created)
+├── shalom.yml                  # Optional config (custom scalars, etc.)
+└── pubspec.yaml
 ```
 
-Generated files are written next to their source file under a `__graphql__`
-subdirectory (for example `lib/album_widget/__graphql__/AlbumWidget.shalom.dart`).
+Generated files are written next to their source files under a `__graphql__`
+directory (for example `lib/__graphql__/albums_page.widget.shalom.dart`).
 Do not edit files under `__graphql__` directly.
 
-The `shalom.yml` file is optional unless you need custom scalar mappings or
-want to change output paths.
+The `shalom.yml` configuration is optional unless you need custom scalar mappings or
+custom output options.
 
 ## CLI usage
 

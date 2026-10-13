@@ -24,16 +24,7 @@ type Gif {
 }
 ```
 
-## 2. (Optional) Add `shalom.yml`
-
-```yml
-custom_scalars: {}
-```
-
-Add custom scalar mappings or an output directory override here when needed
-(see `custom-scalars.md`).
-
-## 3. Annotate widgets, fragments, and mutations
+## 2. Annotate widgets, fragments, and mutations
 
 Unlike v1, there are no separate `.graphql` operation files. You annotate the
 Dart/Flutter classes that need data directly, and the codegen generates a
@@ -107,7 +98,7 @@ final client = ShalomScope.of(context);
 final response = await CreateAlbumMutation(client).execute(name: 'Favorites');
 ```
 
-## 4. Run codegen
+## 3. Run codegen
 
 ```bash
 shalom generate --path examples/flutter/gif_search
@@ -119,7 +110,7 @@ and `lib/__graphql__/AlbumWidget.shalom.dart`). It also emits a single
 registration file next to your schema under `lib/graphql/__graphql__/shalom_init.shalom.dart`,
 exporting `kSchemaSdl`, `registerShalomDefinitions(client)`, and the app-scoped `ShalomProvider`.
 
-## 5. Create the client and register definitions
+## 4. Create the client and register definitions
 
 ```dart
 import 'package:flutter/material.dart';
@@ -144,7 +135,7 @@ void main() async {
 `ShalomProvider` puts the client above your widget tree so generated
 query/subscription/fragment widgets and `ShalomScope.of(context)` can find it.
 
-## 6. Mount the generated widget
+## 5. Mount the generated widget
 
 There is no manual `request`/subscribe call for reads. Just place the
 annotated widget in the tree:
@@ -157,7 +148,7 @@ home: const AlbumsPage(),
 rebuilds whenever a watched cache entry changes — including changes written
 by other operations or mutations.
 
-## 7. Handle loading, error, and data states
+## 6. Handle loading, error, and data states
 
 For `@Query` and `@Subscription` widgets, `buildLoading`, `buildError`, and `buildData` are all abstract methods that must be implemented:
 
@@ -179,7 +170,30 @@ Widget buildError(BuildContext context, Object error) =>
 
 *(Tip: In real apps, you can use a mixin like `QueryWidgetMixin` to reuse consistent loading and error widgets across your screens).*
 
+## 7. (Optional) Configure `shalom.yml`
+
+A `shalom.yml` configuration file in your project root is optional, but lets you configure custom scalar mappings or override output directories:
+
+```yml
+custom_scalars: {}
+```
+
+See the [Custom Scalars](custom-scalars.md) guide for details on mapping custom GraphQL types to Dart classes.
+
 ## 8. Run the example app
+
+The example app includes a local mock GraphQL server in `examples/flutter/gif_search/server`.
+
+Start the mock server (in one terminal):
+
+```bash
+cd examples/flutter/gif_search/server
+uv run python main.py
+```
+
+The server runs on `http://127.0.0.1:7000/graphql` and includes a GraphiQL playground.
+
+Then, start the Flutter app (in another terminal):
 
 ```bash
 cd examples/flutter/gif_search

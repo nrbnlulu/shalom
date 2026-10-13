@@ -123,12 +123,14 @@ final result = await RenameAlbumMutation(client).executeOptimistic(
 ## Garbage collection
 
 The runtime only keeps a root operation field (and entities reachable through
-it) alive while some active subscription still references it. A one-shot
-imperative read (`client.request(...).first`) never registers as an active
-subscriber, so its data becomes eligible for eviction the moment any other
-cache activity triggers GC. For a one-off read that should stay live for as
-long as the UI cares about it, mount the generated `@Query` widget
-conditionally instead of using a one-shot imperative request.
+it) alive while some active subscription still references it.
+
+!!! note "One-shot imperative reads"
+    A one-shot imperative read (`client.request(...).first`) never registers as an active
+    subscriber, so its data becomes eligible for eviction the moment any other
+    cache activity triggers GC. For a one-off read that should stay live for as
+    long as the UI cares about it, mount the generated `@Query` widget
+    conditionally instead of using a one-shot imperative request.
 
 ## Debugging the cache
 
