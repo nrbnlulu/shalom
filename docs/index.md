@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/shalom_banner.png" alt="Shalom Banner" width="100%">
+</p>
+
 # Shalom
 
 Shalom is a declarative GraphQL client for Dart and Flutter, backed by a Rust

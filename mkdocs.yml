@@ -5,6 +5,8 @@ repo_name: nrbnlulu/shalom
 
 theme:
     name: material
+    logo: assets/shalom_logo_with_text.jpeg
+    favicon: assets/favicon.ico
     language: en
     font:
         text: JetBrains Mono

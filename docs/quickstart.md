@@ -167,8 +167,23 @@ Widget buildLoading(BuildContext context) =>
 Widget buildError(BuildContext context, Object error) =>
     Center(child: Text('Error: $error'));
 ```
+!!! note "Reusing loading and error states"
+    In real applications, you can define a mixin (like `QueryWidgetMixin`) to avoid repeating `buildLoading` and `buildError` implementations across your screens:
 
-*(Tip: In real apps, you can use a mixin like `QueryWidgetMixin` to reuse consistent loading and error widgets across your screens).*
+    ```dart
+    mixin QueryWidgetMixin {
+      Widget buildLoading(BuildContext context) =>
+          const Center(child: CircularProgressIndicator());
+
+      Widget buildError(BuildContext context, Object error) =>
+          Center(child: Text('Error: $error'));
+    }
+
+    class MyQueryScreen extends $MyQueryScreen with QueryWidgetMixin {
+      @override
+      Widget buildData(BuildContext context, MyQueryData data) => ...;
+    }
+    ```
 
 ## 7. (Optional) Configure `shalom.yml`
 
