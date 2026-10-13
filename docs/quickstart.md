@@ -186,11 +186,8 @@ cd examples/flutter/gif_search
 flutter run
 ```
 
-## 9. Why a normalized cache?
+## 9. Next: Normalized Cache
 
-Shalom normalizes response data into typed entity records, so a change from
-one operation (a mutation, another query, a subscription) can update every
-widget that reads the same entity — no manual refetching or prop drilling.
-See `normalized-cache.md` for details, and `SKILL.md` for the full API
-reference including mutations, optimistic updates, and updating lists after
-mutations.
+Shalom normalizes response data into typed entity records (e.g. `Album:<id>`), so a change from one operation (a mutation, another query, or a subscription) immediately updates every widget that reads the same entity — with zero prop drilling or manual refetching.
+
+Head over to the [Normalized Cache](normalized-cache.md) guide!

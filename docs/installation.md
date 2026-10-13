@@ -21,18 +21,15 @@ The command installs the `shalom` binary on your PATH.
 
 ```yaml
 dependencies:
-  shalom:
-    git:
-      url: https://github.com/nrbnlulu/shalom.git
-      path: dart/shalom
-  shalom_flutter:
-    git:
-      url: https://github.com/nrbnlulu/shalom.git
-      path: dart/shalom_flutter
-  shalom_annotations:
-    git:
-      url: https://github.com/nrbnlulu/shalom.git
-      path: dart/shalom_annotations
+  shalom: ^0.1.5
+  shalom_flutter: ^0.1.5
+  shalom_annotations: ^0.1.5
+```
+
+Or add them via the Flutter CLI:
+
+```bash
+flutter pub add shalom shalom_flutter shalom_annotations
 ```
 
 - `package:shalom` exposes `ShalomRuntimeClient`, links (`HttpLink`,
