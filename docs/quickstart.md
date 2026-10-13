@@ -40,6 +40,7 @@ Dart/Flutter classes that need data directly, and the codegen generates a
 `$ClassName` base class alongside them:
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:shalom_annotations/shalom_annotations.dart';
 import 'package:gif_search/__graphql__/AlbumsPage.widget.shalom.dart';
 import 'package:gif_search/__graphql__/AlbumWidget.shalom.dart';
@@ -80,6 +81,32 @@ class AlbumWidget extends $AlbumWidget {
 }
 ```
 
+You can also annotate mutation classes to generate type-safe mutation executors:
+
+```dart
+import 'package:gif_search/__graphql__/CreateAlbumMutation.mutation.shalom.dart';
+
+@Mutation(r"""
+  ($name: String!) {
+    createAlbum(name: $name) {
+      id
+      name
+      tag
+    }
+  }
+""")
+class CreateAlbumMutation extends $CreateAlbumMutation {
+  const CreateAlbumMutation(super.client);
+}
+```
+
+Mutations are executed imperatively with generated executor classes:
+
+```dart
+final client = ShalomScope.of(context);
+final response = await CreateAlbumMutation(client).execute(name: 'Favorites');
+```
+
 ## 4. Run codegen
 
 ```bash
@@ -87,18 +114,18 @@ shalom generate --path examples/flutter/gif_search
 ```
 
 Shalom emits Dart files under a `__graphql__` directory next to each
-annotated file, for example
-`lib/graphql/__graphql__/AlbumsPage.widget.shalom.dart` and
-`lib/graphql/__graphql__/AlbumWidget.shalom.dart`. It also emits a single
-registration file, `__graphql__/shalom_init.shalom.dart`, exporting
-`kSchemaSdl` and `registerShalomDefinitions(client)`.
+annotated file (for example `lib/__graphql__/AlbumsPage.widget.shalom.dart`
+and `lib/__graphql__/AlbumWidget.shalom.dart`). It also emits a single
+registration file next to your schema under `lib/graphql/__graphql__/shalom_init.shalom.dart`,
+exporting `kSchemaSdl`, `registerShalomDefinitions(client)`, and the app-scoped `ShalomProvider`.
 
 ## 5. Create the client and register definitions
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:shalom/shalom.dart';
 import 'package:gif_search/graphql/__graphql__/shalom_init.shalom.dart'
-    show kSchemaSdl, registerShalomDefinitions;
+    show kSchemaSdl, registerShalomDefinitions, ShalomProvider;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -132,16 +159,25 @@ by other operations or mutations.
 
 ## 7. Handle loading, error, and data states
 
-Every generated query/subscription/fragment widget requires `buildData` and
-lets you override `buildLoading` and `buildError`:
+For `@Query` and `@Subscription` widgets, `buildLoading`, `buildError`, and `buildData` are all abstract methods that must be implemented:
+
+- **`buildLoading(BuildContext context)`**: Displayed while the query or subscription is in flight and no cached data is available.
+- **`buildError(BuildContext context, Object error)`**: Displayed when a request fails with an error and no cached fallback exists.
+- **`buildData(BuildContext context, T data)`**: Called whenever data is ready or updated from the normalized cache.
+
+For `@Fragment` widgets, `buildLoading` (defaults to `SizedBox.shrink()`) and `buildError` (defaults to `ErrorWidget`) have default implementations, while `buildData` is required. You can override them as needed:
 
 ```dart
 @override
-Widget buildLoading(BuildContext context) => const CircularProgressIndicator();
+Widget buildLoading(BuildContext context) =>
+    const Center(child: CircularProgressIndicator());
 
 @override
-Widget buildError(BuildContext context, Object error) => Text('$error');
+Widget buildError(BuildContext context, Object error) =>
+    Center(child: Text('Error: $error'));
 ```
+
+*(Tip: In real apps, you can use a mixin like `QueryWidgetMixin` to reuse consistent loading and error widgets across your screens).*
 
 ## 8. Run the example app
 

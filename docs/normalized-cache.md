@@ -32,6 +32,27 @@ parent objects down to them.
    updates the shared cache entry, so both `AlbumsPage`'s list item and any
    standalone `AlbumWidgetScope` showing that album re-render immediately.
 
+```dart
+// Mounting a fragment reactively via its Scope:
+AlbumWidgetScope(
+  ref: AlbumWidgetRef.fromId(albumId),
+  builder: (context, album) => Text(album.name),
+)
+
+// Reading or updating a cached fragment directly in a mutation callback:
+final album = await AlbumWidgetRef.fromId(albumId).readFrom(cache);
+if (album != null) {
+  await cache.writeFragment(
+    data: AlbumWidgetData(
+      id: album.id,
+      name: 'Updated Name',
+      tag: album.tag,
+      gifs: album.gifs,
+    ),
+  );
+}
+```
+
 ## When to rely on it
 
 Use the normalized cache implicitly by default: mount generated `@Query` /

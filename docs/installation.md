@@ -48,7 +48,7 @@ The codegen scans your Dart/Flutter source tree for classes annotated with
 `@Query` / `@Mutation` / `@Subscription` / `@Fragment`. You still need a
 GraphQL schema file for validation and type generation. A common layout is:
 
-```
+```text
 ./lib/graphql/schema.graphql
 ./lib/**/*.dart          # annotated widget/mutation/fragment classes
 ./shalom.yml             # optional
