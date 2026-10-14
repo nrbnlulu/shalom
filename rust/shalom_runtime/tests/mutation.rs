@@ -378,8 +378,8 @@ fn evict_operation_removes_matching_root_field_only() {
     );
 }
 
-#[test]
-fn evict_operation_updates_subscriber_tracked_refs() {
+#[tokio::test]
+async fn evict_operation_unsubscribes_matching_subscriptions() {
     let runtime = make_runtime();
     let query_op = runtime.operation_by_name("GetUser").unwrap();
     let query_vars = vars(&[("id", json!("1"))]);
@@ -394,11 +394,13 @@ fn evict_operation_updates_subscriber_tracked_refs() {
     let sub_id = runtime.create_operation_subscription(
         query_op.clone(),
         Some(query_vars.clone()),
-        ExecutionPolicy::NetworkFirst,
+        ExecutionPolicy::CacheFirst,
     );
 
-    // Eviction leaves the read incomplete, so — like GC and optimistic
-    // rollback — the subscriber gets no spurious "empty" push here.
+    let mut stream = runtime.subscription_stream(&sub_id).expect("stream");
+    let initial = stream.next().await.expect("initial value").expect("ok");
+    assert_eq!(initial.data["user"]["name"], json!("Alice"));
+
     let evicted = runtime
         .evict_operation("GetUser", Some(&query_vars))
         .unwrap();
@@ -410,17 +412,10 @@ fn evict_operation_updates_subscriber_tracked_refs() {
             .is_none()
     );
 
-    // A subsequent write for the same key is still delivered, proving the
-    // subscriber's tracked refs survived the eviction correctly.
-    runtime
-        .normalize(
-            &query_op,
-            json!({ "user": { "id": "1", "name": "Carol" } }),
-            Some(&query_vars),
-        )
-        .expect("re-seed");
-    let update = yield_update_sync(&runtime, sub_id);
-    assert_eq!(update["user"]["name"], json!("Carol"));
+    // Eviction closes the stream (EOF) so that Dart's onDone triggers resubscribe()
+    let next = stream.next().await;
+    assert!(next.is_none(), "stream must close on evict_operation");
+    assert!(!runtime.subscription_exists(&sub_id));
 }
 
 #[tokio::test]

@@ -1109,6 +1109,13 @@ impl ShalomRuntime {
     /// operation's root entry(ies) — entities it referenced are reclaimed by
     /// the next GC sweep if nothing else keeps them reachable.
     ///
+    /// Evict operation [op_name]'s root field(s) (matched with [variables])
+    /// from the cache, notify affected subscribers, and unsubscribe matching
+    /// active subscriptions.
+    ///
+    /// Unsubscribing drops their stream channel so Dart/Flutter's `onDone`
+    /// triggers a resubscribe to fetch fresh data.
+    /// 
     /// Returns `false` (and does nothing) if no matching cache entry exists.
     pub fn evict_operation(
         &self,
@@ -1143,19 +1150,8 @@ impl ShalomRuntime {
             }
         }
 
-        if changed.is_empty() {
-            return Ok(false);
-        }
-        self.notify_subscribers(&changed)?;
-        Ok(true)
-    }
-
-    /// Invalidate active subscriptions for `op_name` (optionally filtered by `variables`).
-    ///
-    /// Unsubscribes matching subscriptions, dropping their stream channel. This
-    /// signals `onDone` to the Dart/Flutter subscriber, triggering it to resubscribe
-    /// and perform a fresh fetch.
-    pub fn invalidate_operation(&self, op_name: &str, variables: Option<&Map<String, Value>>) {
+        // Unsubscribe matching active subscriptions so their stream ends (firing onDone
+        // in Dart to trigger resubscribe and refetch from network).
         let matching_ids: Vec<SubscriptionId> = {
             let manager = self.subscriptions.lock();
             manager
@@ -1177,6 +1173,21 @@ impl ShalomRuntime {
         for id in matching_ids {
             self.unsubscribe(&id);
         }
+
+        if changed.is_empty() {
+            return Ok(false);
+        }
+        self.notify_subscribers(&changed)?;
+        Ok(true)
+    }
+
+    /// Invalidate operation `op_name` (optionally filtered by `variables`) by
+    /// evicting its cache entry and closing matching active subscription streams.
+    ///
+    /// This signals `onDone` to the Dart/Flutter subscriber, triggering it to resubscribe
+    /// and perform a fresh fetch from the network.
+    pub fn invalidate_operation(&self, op_name: &str, variables: Option<&Map<String, Value>>) {
+        let _ = self.evict_operation(op_name, variables);
     }
 
     /// Look up a pre-registered (or remembered) operation by name.
