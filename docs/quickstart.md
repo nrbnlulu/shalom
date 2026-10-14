@@ -1,7 +1,7 @@
 # Quickstart
 
 This walkthrough is a hands-on tutorial for the GIF search Flutter example in
-`examples/flutter/gif_search`. The same approach works for any Flutter app
+[`examples/flutter/gif_search`](https://github.com/nrbnlulu/shalom/tree/main/examples/flutter/gif_search). The same approach works for any Flutter app
 using Shalom's declarative annotation API.
 
 ## 1. Add your schema
@@ -26,7 +26,7 @@ type Gif {
 
 ## 2. Annotate widgets, fragments, and mutations
 
-Unlike v1, there are no separate `.graphql` operation files. You annotate the
+There are no separate `.graphql` operation files. You annotate the
 Dart/Flutter classes that need data directly, and the codegen generates a
 `$ClassName` base class alongside them:
 
@@ -137,7 +137,7 @@ query/subscription/fragment widgets and `ShalomScope.of(context)` can find it.
 
 ## 5. Mount the generated widget
 
-There is no manual `request`/subscribe call for reads. Just place the
+There is no manual `request`/`subscribe` call for reads. Just place the
 annotated widget in the tree:
 
 ```dart

@@ -43,7 +43,7 @@ flutter pub add shalom shalom_flutter shalom_annotations
 
 The codegen scans your Dart/Flutter source tree for classes annotated with
 `@Query` / `@Mutation` / `@Subscription` / `@Fragment`. You still need a
-GraphQL schema file for validation and type generation. A common layout is:
+GraphQL schema file `schema.graphql` for validation and type generation. A common layout is:
 
 ```text
 my_flutter_app/
@@ -61,8 +61,8 @@ Generated files are written next to their source files under a `__graphql__`
 directory (for example `lib/__graphql__/albums_page.widget.shalom.dart`).
 Do not edit files under `__graphql__` directly.
 
-The `shalom.yml` configuration is optional unless you need custom scalar mappings or
-custom output options.
+!!! note "optional `shalom.yml`"
+    The `shalom.yml` configuration is optional unless you need [custom scalars](custom-scalars.md) mappings or custom output options.
 
 ## CLI usage
 

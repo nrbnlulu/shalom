@@ -19,7 +19,7 @@ parent objects down to them.
 - List membership (adding/removing/reordering items) is not inferred from a
   mutation response alone. If a mutation creates, deletes, or reorders items
   and the response doesn't include the parent list field, update the cached
-  query or fragment yourself with `executeWithCacheUpdate` (see below).
+  query or fragment yourself with `executeWithCacheUpdate` [(see below)](#updating-lists-after-mutations).
 
 ## Example flow
 
@@ -30,7 +30,7 @@ parent objects down to them.
    `Album:<id>` entity.
 3. A mutation that returns fields on that `Album` (for example renaming it)
    updates the shared cache entry, so both `AlbumsPage`'s list item and any
-   standalone `AlbumWidgetScope` showing that album re-render immediately.
+   standalone `AlbumWidgetScope` showing that album re-ruender immediately.
 
 ```dart
 // Mounting a fragment reactively via its Scope:
