@@ -1,36 +1,37 @@
-<p align="center">
-  <img src="assets/shalom_banner.png" alt="Shalom Banner" width="100%">
-</p>
+---
+title: Shalom - Declarative GraphQL Client for Flutter & Dart
+hide:
+  - navigation
+  - toc
+  - footer
+---
 
-# Shalom
+<div class="hero-container">
+  <img src="assets/shalom_banner.png" alt="Shalom Banner" class="hero-logo" />
+  <h1 class="hero-title">Declarative GraphQL for Flutter & Dart</h1>
+  <p class="hero-subtitle">
+    Backed by a high-performance Rust runtime with normalized caching, optimistic updates, and reactive entity-level subscriptions.
+  </p>
+  <div class="hero-cta">
+    <a href="overview/" class="hero-btn hero-btn-primary">Get Started &rarr;</a>
+    <a href="quickstart/" class="hero-btn hero-btn-secondary">View Quickstart</a>
+  </div>
+</div>
 
-Shalom is a declarative GraphQL client for Dart and Flutter, backed by a Rust
-runtime (normalized cache, links, execution, cache subscriptions).
-
-## Paradigm
-
-Shalom is declarative: as a rule of thumb you don't need services or state
-management solutions for GraphQL data. You annotate widget classes with
-`@Query`, `@Mutation`, `@Subscription`, or `@Fragment`, and the codegen wires
-them to a normalized cache that keeps every widget observing it in sync.
-
-- Every widget should request only what it needs.
-- Prefer server-side work (sorting, filtering, pagination) over UI-side work,
-  since list items are usually fragments and aren't declaratively readable by
-  a list builder.
-- Reads are declarative (generated widgets/scopes); mutations are imperative
-  (generated mutation classes called from event handlers).
-
-## Highlights
-
-- Rust runtime with a normalized cache, so the same entity read by different
-  operations stays in sync everywhere it's rendered.
-- Annotation-driven codegen: `@Query` / `@Mutation` / `@Subscription` / `@Fragment`
-  on plain Dart/Flutter classes, no separate `.graphql` operation files.
-- Generated fragment `Ref`/`Scope` types for reactive, entity-scoped widgets.
-- Cache-aware mutation helpers: `execute`, `executeWithCacheUpdate`,
-  `executeOptimistic`.
-- Custom scalar support via a small Dart glue layer.
-- A Flutter debug panel for inspecting the live normalized cache.
-
-To get started, check out the [Installation](installation.md) guide and the [Quickstart](quickstart.md) walkthrough. You can also explore [`examples/flutter/gif_search`](https://github.com/nrbnlulu/shalom/tree/main/examples/flutter/gif_search) in the repository for a complete working app.
+<div class="features-grid">
+  <div class="feature-card">
+    <div class="feature-icon">⚡</div>
+    <h3>Rust-Powered Core</h3>
+    <p>A full-fledged GraphQL runtime written in Rust handles normalized caching, link execution, GC, and optimistic mutations with zero UI-thread overhead.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">🪄</div>
+    <h3>Declarative Codegen</h3>
+    <p>Annotate your Flutter widgets with <code>@Query</code>, <code>@Mutation</code>, and <code>@Fragment</code>. No manual glue, no separate <code>.graphql</code> operation files.</p>
+  </div>
+  <div class="feature-card">
+    <div class="feature-icon">🎯</div>
+    <h3>Reactive Scopes</h3>
+    <p>Generated fragment <code>Ref</code> and <code>Scope</code> types keep individual list items and widgets in sync without global state management solutions.</p>
+  </div>
+</div>

@@ -44,7 +44,9 @@ markdown_extensions:
 
 nav:
     - Home: index.md
+    - Overview: overview.md
     - Installation: installation.md
     - Quickstart: quickstart.md
     - Normalized Cache: normalized-cache.md
     - Custom Scalars: custom-scalars.md
+    - Examples: https://github.com/nrbnlulu/shalom/tree/main/examples
