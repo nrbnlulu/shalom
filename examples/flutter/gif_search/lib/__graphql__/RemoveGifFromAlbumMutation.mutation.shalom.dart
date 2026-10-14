@@ -3,6 +3,7 @@
 // Re-export all generated types so importers only need this file.
 export 'RemoveGifFromAlbumMutation.shalom.dart';
 
+import 'dart:async' show FutureOr;
 import "../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom/shalom.dart' show OptimisticMutationResponse, CacheProxy;
@@ -26,16 +27,16 @@ abstract class $RemoveGifFromAlbumMutation {
     variables: RemoveGifFromAlbumMutationVariables(
       albumId: albumId,
       gifId: gifId,
-    ).toJson(),
+    ).toShalomValue(),
 
-    decoder: RemoveGifFromAlbumMutationData.fromCache,
+    decoder: RemoveGifFromAlbumMutationData.fromShalomValue,
   );
 
   /// Execute the mutation and update the cache via [update].
   ///
   /// [update] receives a [CacheProxy] and the typed mutation response data.
   /// It's only called if the mutation returns successful data.
-  /// Use [CacheProxy.readQuery] / [CacheProxy.writeQuery] to read the current
+  /// Use [CacheProxy.readOperation] / [CacheProxy.writeOperation] to read the current
   /// cached value of any query and write back a modified version — the typical
   /// pattern for keeping lists in sync after an add / remove / reorder mutation.
   ///
@@ -43,13 +44,13 @@ abstract class $RemoveGifFromAlbumMutation {
   /// ```dart
   /// await addTodo.executeWithCacheUpdate(
   ///   input: AddTodoInput(title: 'Buy milk'),
-  ///   update: (cache, data) {
-  ///     final current = cache.readQuery(
+  ///   update: (cache, data) async {
+  ///     final current = await cache.readOperation(
   ///       name: 'GetTodos',
-  ///       decoder: GetTodosData.fromCache,
+  ///       decoder: GetTodosData.fromShalomValue,
   ///     );
   ///     if (current != null) {
-  ///       cache.writeQuery(
+  ///       await cache.writeOperation(
   ///         data: GetTodosData(todos: [...current.todos, data.addTodo!]),
   ///       );
   ///     }
@@ -60,7 +61,7 @@ abstract class $RemoveGifFromAlbumMutation {
   executeWithCacheUpdate({
     required String albumId,
     required String gifId,
-    required void Function(
+    required FutureOr<void> Function(
       CacheProxy cache,
       RemoveGifFromAlbumMutationData data,
     )
@@ -74,12 +75,12 @@ abstract class $RemoveGifFromAlbumMutation {
     final response = await _client.mutate<RemoveGifFromAlbumMutationData>(
       name: operation$Name(),
 
-      variables: vars.toJson(),
+      variables: vars.toShalomValue(),
 
-      decoder: RemoveGifFromAlbumMutationData.fromCache,
+      decoder: RemoveGifFromAlbumMutationData.fromShalomValue,
     );
     if (response case shalom_core.GraphQLData(data: final data)) {
-      update(CacheProxy(_client), data);
+      await update(CacheProxy(_client), data);
     }
     return response;
   }
@@ -99,7 +100,7 @@ abstract class $RemoveGifFromAlbumMutation {
   /// The returned [OptimisticMutationResponse] exposes:
   /// - [OptimisticMutationResponse.response] — the typed server response
   /// - [OptimisticMutationResponse.wasRolledBack] — whether auto-rollback fired
-  /// - [OptimisticMutationResponse.rollback()] — imperative rollback (idempotent)
+  /// - [OptimisticMutationResponse.rollback()] — async rollback (idempotent)
   Future<OptimisticMutationResponse<RemoveGifFromAlbumMutationData>>
   executeOptimistic(
     RemoveGifFromAlbumMutationData Function(
@@ -116,14 +117,14 @@ abstract class $RemoveGifFromAlbumMutation {
     );
     final writeId = await _client.writeOptimistic(
       name: operation$Name(),
-      data: optimisticFactory(vars).toJson(),
+      data: optimisticFactory(vars),
     );
 
     var rolledBack = false;
-    void doRollback() {
+    Future<void> doRollback() async {
       if (rolledBack) return;
       rolledBack = true;
-      _client.rollbackOptimistic(writeId);
+      await _client.rollbackOptimistic(writeId);
     }
 
     try {
@@ -131,14 +132,14 @@ abstract class $RemoveGifFromAlbumMutation {
           .mutate<RemoveGifFromAlbumMutationData>(
             name: operation$Name(),
 
-            variables: vars.toJson(),
+            variables: vars.toShalomValue(),
 
-            decoder: RemoveGifFromAlbumMutationData.fromCache,
+            decoder: RemoveGifFromAlbumMutationData.fromShalomValue,
           );
       if (graphqlResponse case shalom_core.GraphQLData(
         data: final responseData,
       )) {
-        if (rollbackWhen?.call(responseData) ?? false) doRollback();
+        if (rollbackWhen?.call(responseData) ?? false) await doRollback();
       }
       return OptimisticMutationResponse(
         response: graphqlResponse,
@@ -147,7 +148,7 @@ abstract class $RemoveGifFromAlbumMutation {
         writeId: writeId,
       );
     } catch (e) {
-      doRollback();
+      await doRollback();
       rethrow;
     }
   }

@@ -22,10 +22,7 @@ void main() {
 
     test('toJson roundtrip', () {
       final data = UpdateUserNameData(
-        updateUserName: UpdateUserName_updateUserName(
-          id: '42',
-          name: 'Bob',
-        ),
+        updateUserName: UpdateUserName_updateUserName(id: '42', name: 'Bob'),
       );
       final json = data.toJson();
       expect(json['updateUserName'], isA<Map>());

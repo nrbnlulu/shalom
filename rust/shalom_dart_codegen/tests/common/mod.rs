@@ -1,9 +1,16 @@
 use shalom_dart_codegen::{CodegenOptions, get_dart_command, get_flutter_command};
 use std::path::{Path, PathBuf};
+use std::sync::Mutex;
 
 use log::info;
 
 use glob::glob;
+
+/// `flutter test` invocations for different usecases all run against the same
+/// `flutter_tests` package (shared `.dart_tool/` build cache, VM service ports,
+/// frontend-server kernel cache). Running them concurrently causes flaky,
+/// hard-to-reproduce failures, so serialize them here.
+static FLUTTER_TEST_RUN_LOCK: Mutex<()> = Mutex::new(());
 
 fn tests_path(tests_dir_name: &str) -> PathBuf {
     let mut current_dir = PathBuf::from(file!());
@@ -165,9 +172,13 @@ pub fn run_dart_tests_for_usecase(usecase: &str) {
         .arg(format!("test/{usecase}/test.dart"));
     info!("Running command: {dart_test:?} inside {dart_test_root:?}");
     let output = dart_test.output().unwrap();
+    let err = String::from_utf8_lossy(&output.stderr);
     let out_std = String::from_utf8_lossy(&output.stdout);
 
-    assert!(output.status.success(), "❌ Dart tests failed\n {out_std}");
+    assert!(
+        output.status.success(),
+        "❌ Dart tests failed\n {out_std}\n{err}"
+    );
     info!("✔️ Dart tests passed\n {out_std}");
 }
 
@@ -178,18 +189,13 @@ pub fn run_flutter_tests(usecase: &str) {
         Err(e) => eprintln!("Error initializing logger: {e}"),
     }
     let tests_dir = tests_path("flutter_tests");
-    let dart = match get_dart_command() {
-        Ok(cmd) => cmd,
-        Err(e) => {
-            panic!("⚠️  {e}. install dart");
-        }
-    };
     let root_dir = &tests_dir.parent().unwrap();
 
-    let dart_parts: Vec<&str> = dart.split_whitespace().collect();
     FLUTTER_TESTS_CODEGEN.call_once(|| {
         ensure_native_lib_built(root_dir);
         run_codegen(root_dir, true);
+        let dart = get_dart_command().unwrap_or_else(|e| panic!("⚠️  {e}. install dart"));
+        let dart_parts: Vec<&str> = dart.split_whitespace().collect();
         let mut dart_fmt = if dart_parts.len() > 1 {
             let mut cmd = std::process::Command::new(dart_parts[0]);
             for part in &dart_parts[1..] {
@@ -229,12 +235,16 @@ pub fn run_flutter_tests(usecase: &str) {
         .arg("test")
         .arg(format!("test/{usecase}"));
     info!("Running command: {flutter_test:?} for usecase: {usecase}");
+    let _guard = FLUTTER_TEST_RUN_LOCK
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
     let output = flutter_test.output().unwrap();
     let out_std = String::from_utf8_lossy(&output.stdout);
+    let out_err = String::from_utf8_lossy(&output.stderr);
 
     assert!(
         output.status.success(),
-        "❌ Flutter tests failed\n {out_std}"
+        "❌ Flutter tests failed\n {out_std}\n{out_err}"
     );
     info!("✔️ Flutter tests passed\n {out_std}");
 }

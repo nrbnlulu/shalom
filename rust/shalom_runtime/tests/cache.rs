@@ -586,6 +586,48 @@ mod unions {
         assert_eq!(search.get("__typename"), Some(&json!("Admin")));
         assert_eq!(search.get("level"), Some(&json!(7)));
     }
+
+    /// An inline fragment keyed by an interface shared by every union member must
+    /// still contribute its fields when resolving/reading each concrete member.
+    #[test]
+    fn test_interface_typed_inline_fragment_inside_union() {
+        let schema = r#"
+            interface ErrorInterface { id: ID!, message: String! }
+            type DoesNotExistErr implements ErrorInterface { id: ID!, message: String! }
+            type AlreadyExistsErr implements ErrorInterface { id: ID!, message: String! }
+            union MutationError = DoesNotExistErr | AlreadyExistsErr
+            type Query { search: MutationError }
+        "#;
+        let operation = r#"
+            query TestOp {
+                search {
+                    __typename
+                    ... on ErrorInterface { id message }
+                }
+            }
+        "#;
+        let (global_ctx, op_ctx) = build_ctx(schema, operation);
+
+        let result = normalize(
+            &global_ctx,
+            &op_ctx,
+            json!({ "search": { "__typename": "DoesNotExistErr", "id": "e1", "message": "not found" } }),
+            None,
+        );
+        assert!(result.used_refs.contains("ROOT_QUERY.search"));
+
+        let not_found = record(&global_ctx, "DoesNotExistErr:e1");
+        expect_scalar(&not_found, "message", json!("not found"));
+
+        normalize(
+            &global_ctx,
+            &op_ctx,
+            json!({ "search": { "__typename": "AlreadyExistsErr", "id": "e2", "message": "already there" } }),
+            None,
+        );
+        let already_exists = record(&global_ctx, "AlreadyExistsErr:e2");
+        expect_scalar(&already_exists, "message", json!("already there"));
+    }
 }
 
 mod interfaces {
@@ -684,6 +726,43 @@ mod interfaces {
             .and_then(|value| value.as_object())
             .expect("node missing");
         assert_eq!(node.get("name"), Some(&json!("Grace")));
+    }
+
+    /// An inline fragment keyed by a union name (rather than an interface) must
+    /// still recurse into its nested type conditions for members that belong to
+    /// that union, e.g. `... on Pet { ... on Cat { color } }` inside an
+    /// interface selection.
+    #[test]
+    fn test_nested_union_typed_inline_fragment() {
+        let schema = r#"
+            interface Node { id: ID! }
+            type Cat implements Node { id: ID!, color: String! }
+            type Dog implements Node { id: ID! }
+            union Pet = Cat | Dog
+            type Query { node: Node }
+        "#;
+        let operation = r#"
+            query TestOp {
+                node {
+                    __typename
+                    id
+                    ... on Pet {
+                        __typename
+                        ... on Cat { color }
+                    }
+                }
+            }
+        "#;
+        let (global_ctx, op_ctx) = build_ctx(schema, operation);
+        normalize(
+            &global_ctx,
+            &op_ctx,
+            json!({ "node": { "__typename": "Cat", "id": "c1", "color": "orange" } }),
+            None,
+        );
+
+        let cat = record(&global_ctx, "Cat:c1");
+        expect_scalar(&cat, "color", json!("orange"));
     }
 }
 
@@ -1936,8 +2015,8 @@ mod fragment_subscriptions {
     #[test]
     fn test_updates_across_different_operations() {
         let schema = r#"
-            type Query { 
-                sharedValue: Int 
+            type Query {
+                sharedValue: Int
                 otherValue: String
             }
         "#;
@@ -2124,4 +2203,130 @@ mod incomplete_cache_emissions {
 
         runtime.unsubscribe(&sub_id);
     }
+}
+
+#[test]
+fn subscriber_index_notifies_only_the_changed_operation() {
+    let schema = r#"
+        type Query { a: Int, b: Int }
+    "#;
+    let operations = r#"
+        query A { a }
+        query B { b }
+    "#;
+
+    let schema_ctx = parse_schema(schema).unwrap();
+    let global_ctx = ShalomGlobalContext::new(
+        schema_ctx,
+        ShalomConfig::default(),
+        std::path::PathBuf::from("schema.graphql"),
+    );
+    let ops = parse_document(
+        &global_ctx,
+        operations,
+        &std::path::PathBuf::from("ops.graphql"),
+    )
+    .unwrap();
+    let op_a = ops.get("A").unwrap().clone();
+    let op_b = ops.get("B").unwrap().clone();
+    let runtime = ShalomRuntime::new(global_ctx);
+
+    normalize(&runtime, &op_a, json!({ "a": 1 }), None);
+    normalize(&runtime, &op_b, json!({ "b": 1 }), None);
+    let sub_a =
+        runtime.create_operation_subscription(op_a.clone(), None, ExecutionPolicy::CacheFirst);
+    let sub_b = runtime.create_operation_subscription(op_b, None, ExecutionPolicy::CacheFirst);
+    let mut updates_a = runtime.subscription_stream(&sub_a).unwrap();
+    let mut updates_b = runtime.subscription_stream(&sub_b).unwrap();
+
+    normalize(&runtime, &op_a, json!({ "a": 2 }), None);
+
+    let tokio_rt = Builder::new_current_thread().enable_all().build().unwrap();
+    tokio_rt.block_on(async {
+        updates_a.next().await.unwrap().unwrap();
+        updates_b.next().await.unwrap().unwrap();
+        let update_a = updates_a.next().await.unwrap().unwrap();
+        assert_eq!(update_a.data["a"], json!(2));
+        assert!(
+            tokio::time::timeout(Duration::from_millis(20), updates_b.next())
+                .await
+                .is_err(),
+            "the unchanged operation must not be notified"
+        );
+    });
+
+    assert_eq!(runtime.key_subscribers("ROOT_QUERY.a").len(), 1);
+    assert_eq!(runtime.key_subscribers("ROOT_QUERY.b").len(), 1);
+    runtime.unsubscribe(&sub_a);
+    runtime.unsubscribe(&sub_b);
+    assert!(runtime.key_subscribers("ROOT_QUERY.a").is_empty());
+    assert!(runtime.key_subscribers("ROOT_QUERY.b").is_empty());
+}
+
+#[test]
+fn invalid_nested_response_preserves_existing_cache_records() {
+    let schema = r#"
+        type Query { user: User }
+        type User {
+            id: ID!
+            name: String!
+            friends: [User!]!
+        }
+    "#;
+    let operation = r#"
+        query GetUser {
+            user {
+                id
+                name
+                friends { id name }
+            }
+        }
+    "#;
+    let (runtime, op_ctx) = build_ctx(schema, operation);
+    normalize(
+        &runtime,
+        &op_ctx,
+        json!({
+            "user": {
+                "id": "1",
+                "name": "Ada",
+                "friends": [{ "id": "2", "name": "Grace" }]
+            }
+        }),
+        None,
+    );
+    let root_before = record(&runtime, "ROOT_QUERY");
+    let user_before = record(&runtime, "User:1");
+
+    let error = runtime
+        .normalize(
+            &op_ctx,
+            json!({
+                "user": {
+                    "id": "1",
+                    "name": "corrupt",
+                    "friends": { "id": "not-a-list" }
+                }
+            }),
+            None,
+        )
+        .expect_err("invalid nested data must fail normalization");
+
+    assert!(
+        error
+            .to_string()
+            .contains("expected list for field friends")
+    );
+    assert_eq!(record(&runtime, "ROOT_QUERY"), root_before);
+    assert_eq!(record(&runtime, "User:1"), user_before);
+    assert_eq!(
+        runtime.read_from_cache(&op_ctx, None).unwrap().data,
+        json!({
+            "user": {
+                "id": "1",
+                "name": "Ada",
+                "friends": [{ "id": "2", "name": "Grace" }]
+            }
+        })
+    );
 }

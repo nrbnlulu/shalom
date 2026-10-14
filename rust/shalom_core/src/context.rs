@@ -38,7 +38,7 @@ impl ShalomGlobalContext {
     pub fn register_operations(&self, operations_update: HashMap<String, SharedOpCtx>) {
         let mut operations = self.operations.lock();
         let fragments = self.fragments.lock();
-        for (name, _) in operations_update.iter() {
+        for name in operations_update.keys() {
             if fragments.contains_key(name) {
                 panic!(
                     "Operation name {} conflicts with existing fragment name",
@@ -92,7 +92,7 @@ impl ShalomGlobalContext {
     ) -> anyhow::Result<()> {
         let mut fragments = self.fragments.lock();
         let operations = self.operations.lock();
-        for (name, _) in fragments_update.iter() {
+        for name in fragments_update.keys() {
             if fragments.contains_key(name) {
                 if allow_dups {
                     continue;

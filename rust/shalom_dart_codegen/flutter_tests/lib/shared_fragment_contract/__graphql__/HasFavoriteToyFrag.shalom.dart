@@ -36,14 +36,20 @@ extension type HasFavoriteToyFragRef.fromInput(
       'anchor': _inner.anchor,
     },
   };
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    '__shalom_observed_ref': shalom_core.shalomJsonObject({
+      'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
+      'anchor': shalom_core.shalomJsonValue(_inner.anchor),
+    }),
+  });
 
   /// Reads the entity this ref points to through [cache], decoding it as
   /// [HasFavoriteToyFragData]. Returns `null` when absent or incomplete.
-  HasFavoriteToyFragData? readFrom(shalom_core.CacheProxy cache) {
-    return cache.readFragment<HasFavoriteToyFragData>(
+  Future<HasFavoriteToyFragData?> readFrom(shalom_core.CacheProxy cache) async {
+    return await cache.readFragment<HasFavoriteToyFragData>(
       fragmentName: fragmentName,
       entityKey: anchor,
-      decoder: HasFavoriteToyFragData.fromCache,
+      decoder: HasFavoriteToyFragData.fromShalomValue,
     );
   }
 
@@ -52,7 +58,7 @@ extension type HasFavoriteToyFragRef.fromInput(
   ) {
     return client.subscribeToFragment<HasFavoriteToyFragData>(
       ref: _inner,
-      decoder: HasFavoriteToyFragData.fromCache,
+      decoder: HasFavoriteToyFragData.fromShalomValue,
     );
   }
 }
@@ -61,9 +67,11 @@ abstract class HasFavoriteToyFrag {
   HasFavoriteToyFrag_favoriteToy get favoriteToy;
 
   shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
-sealed class HasFavoriteToyFragData implements HasFavoriteToyFrag {
+sealed class HasFavoriteToyFragData
+    implements HasFavoriteToyFrag, shalom_core.StreamCompat {
   const HasFavoriteToyFragData();
 
   HasFavoriteToyFrag_favoriteToy get favoriteToy;
@@ -73,6 +81,19 @@ sealed class HasFavoriteToyFragData implements HasFavoriteToyFrag {
     switch (typename) {
       case 'Dog':
         return HasFavoriteToyFragData$Dog.fromJson(data);
+
+      default:
+        return const HasFavoriteToyFragData$Unknown();
+    }
+  }
+
+  static HasFavoriteToyFragData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final typename = data.field('__typename')?.stringValue;
+    switch (typename) {
+      case 'Dog':
+        return HasFavoriteToyFragData$Dog.fromShalomValue(data);
 
       default:
         return const HasFavoriteToyFragData$Unknown();
@@ -112,11 +133,30 @@ final class HasFavoriteToyFragData$Dog extends HasFavoriteToyFragData {
     };
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      HasFavoriteToyFragData$Dog.G__typename,
+    ),
+
+    'favoriteToy': this.favoriteToy!.toShalomValue(),
+  });
+
   static HasFavoriteToyFragData$Dog fromJson(shalom_core.JsonObject data) {
     final HasFavoriteToyFrag_favoriteToy favoriteToy$value =
         HasFavoriteToyFrag_favoriteToy.fromJson(
           data['favoriteToy'] as shalom_core.JsonObject,
         );
+    return HasFavoriteToyFragData$Dog(favoriteToy: favoriteToy$value);
+  }
+
+  static HasFavoriteToyFragData$Dog fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? favoriteToy$raw = data.field(
+      'favoriteToy',
+    );
+    final HasFavoriteToyFrag_favoriteToy favoriteToy$value =
+        HasFavoriteToyFrag_favoriteToy.fromShalomValue(favoriteToy$raw!);
     return HasFavoriteToyFragData$Dog(favoriteToy: favoriteToy$value);
   }
 }
@@ -129,6 +169,9 @@ final class HasFavoriteToyFragData$Unknown extends HasFavoriteToyFragData {
 
   @override
   shalom_core.JsonObject toJson() => throw UnimplementedError();
+
+  @override
+  shalom_core.ShalomJsonValue toShalomValue() => throw UnimplementedError();
 }
 
 class HasFavoriteToyFrag_favoriteToy implements ToyFrag {
@@ -161,9 +204,25 @@ class HasFavoriteToyFrag_favoriteToy implements ToyFrag {
     return {'id': this.id, 'label': this.label};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'label': shalom_core.shalomJsonValue(this.label!),
+  });
+
   static HasFavoriteToyFrag_favoriteToy fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String label$value = data['label'] as String;
+    return HasFavoriteToyFrag_favoriteToy(id: id$value, label: label$value);
+  }
+
+  static HasFavoriteToyFrag_favoriteToy fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? label$raw = data.field('label');
+    final String label$value = label$raw!.stringValue;
     return HasFavoriteToyFrag_favoriteToy(id: id$value, label: label$value);
   }
 }

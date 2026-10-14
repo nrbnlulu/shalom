@@ -28,13 +28,51 @@ import '{{ import_path }}';
 {% include "selection_macros" %}
 
 // ------------ OBJECT DEFINITIONS -------------
-{% set response_class_name = operation_name ~ "Response" %}
-class {{ response_class_name }} {% if not is_observe %}{{ implements_used_fragments(context.operation.root_type.used_fragments) }}{% endif %}  {
-    {{ selection_object_impl(response_class_name, context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name, shared_selections=context.operation.root_type.selections) }}
+class {{ operation_name }}Data implements shalom_core.OperationInterface{% if is_observe -%}, shalom_core.StreamCompat{% endif %}{% for frag_name in (implementable_fragments(context.operation.root_type.used_fragments, context.operation.root_type.unwrapped_fragments) if is_observe else context.operation.root_type.used_fragments) -%}, {{ frag_name }}{% endfor %}  {
+    {{ selection_object_impl(operation_name ~ "Data", context.operation.root_type, is_root_selection=true, full_name=context.operation.root_type.path_name, shared_selections=context.operation.root_type.selections, use_observe=is_observe) }}
+
+    @override
+    String operation$Name() => '{{ operation_name }}';
+
+    {% if is_observe -%}
+    /// Reads this operation's current cache entry through [cache], decoding
+    /// it as [{{ operation_name }}Data]. Returns `null` when absent or incomplete.
+    static Future<{{ operation_name }}Data?> readFrom(
+        shalom_core.CacheProxy cache
+        {%- if op_variables_exist %}, {
+        {{ operation_name }}Variables? variables,
+        }{% endif %}
+    ) async {
+        return await cache.readOperation<{{ operation_name }}Data>(
+            name: '{{ operation_name }}',
+            decoder: fromShalomValue,
+            {% if op_variables_exist %}
+            variables: variables?.toShalomValue(),
+            {% endif %}
+        );
+    }
+
+    /// Evicts this operation's cached entry (matched by [variables]) through
+    /// [cache], notifying any active subscribers. Returns `false` if no
+    /// matching cache entry existed.
+    static Future<bool> evictFrom(
+        shalom_core.CacheProxy cache
+        {%- if op_variables_exist %}, {
+        {{ operation_name }}Variables? variables,
+        }{% endif %}
+    ) {
+        return cache.evictOperation(
+            name: '{{ operation_name }}',
+            {% if op_variables_exist %}
+            variables: variables?.toShalomValue(),
+            {% endif %}
+        );
+    }
+    {% endif %}
 }
 
 {% for name, obj in typedefs.objects | items %}
-    {{ selection_object_definition(obj, implement_fragments=not is_observe) }}
+    {{ selection_object_definition(obj, use_observe=is_observe) }}
 {% endfor %}
 
 // ------------ END OBJECT DEFINITIONS -------------
@@ -46,7 +84,7 @@ class {{ response_class_name }} {% if not is_observe %}{{ implements_used_fragme
 {% for union_full_name, union_selection in union_types | items %}
     {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
     {# generate sealed classes #}
-    {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
+    {{ multi_type_selection_definition(union_full_name, union_selection, concretes, use_observe=is_observe) }}
 
     {# generate subsets #}
     {% for concrete_subset in concretes -%}
@@ -63,7 +101,7 @@ class {{ response_class_name }} {% if not is_observe %}{{ implements_used_fragme
 {% for iface_path_name, iface_selection in typedefs.interfaces | items %}
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
     {# generate sealed classes #}
-    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
+    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes, use_observe=is_observe) }}
 
     {# generate subsets #}
     {% for concrete_subset in concretes -%}
@@ -80,73 +118,10 @@ class {{ response_class_name }} {% if not is_observe %}{{ implements_used_fragme
 {% if is_observe %}
 // ------------ widget API -------------
 
-final class {{ operation_name }}Data implements shalom_core.OperationInterface {
-    {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
-        final {{ type_name_for_selection_with_observe(selection) }} {{ selection.name }};
-    {% endfor %}
-
-    const {{ operation_name }}Data({
-        {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
-            required this.{{ selection.name }},
-        {% endfor %}
-    });
-
-    @override
-    String operation$Name() => '{{ operation_name }}';
-
-    static {{ operation_name }}Data fromCache(shalom_core.JsonObject data) {
-        {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
-            {% set raw_value_symbol = "data['" + selection.name + "']" -%}
-            final {{type_name_for_selection_with_observe(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_json_macro(raw_value_symbol, selection, selection.is_optional) }};
-        {% endfor -%}
-        return {{ operation_name }}Data(
-            {% for selection in context.operation.root_type.selections -%}
-                {% if selection.name != "__typename" %}
-                    {{selection.name}}: {{selection.name}}$value,
-                {% endif %}
-            {% endfor -%}
-        );
-    }
-
-    /// Reads this operation's current cache entry through [cache], decoding
-    /// it as [{{ operation_name }}Data]. Returns `null` when absent or incomplete.
-    static {{ operation_name }}Data? readFrom(
-        shalom_core.CacheProxy cache
-        {%- if op_variables_exist %}, {
-        {{ operation_name }}Variables? variables,
-        }{% endif %}
-    ) {
-        return cache.readQuery<{{ operation_name }}Data>(
-            name: '{{ operation_name }}',
-            decoder: fromCache,
-            {% if op_variables_exist %}
-            variables: variables?.toJson(),
-            {% endif %}
-        );
-    }
-
-    shalom_core.JsonObject toJson() {
-        return {
-            {% for selection in context.operation.root_type.selections %}
-                {% set selection_name = selection.name %}
-                {% if selection_name == "__typename" %}
-                    "__typename": {{ response_class_name }}.G__typename,
-                {% else %}
-                    '{{ selection_name }}':
-                        {% if selection.is_optional %}
-                            {{ _serialize_selection_value_macro("this." + selection_name, selection, true) }}
-                        {% else %}
-                            {{ _serialize_selection_value_macro("this." + selection_name, selection, false) }}
-                        {% endif %}
-                    ,
-                {% endif %}
-            {% endfor %}
-        };
-    }
-}
-
 final class {{ operation_name }}Observable {
     final shalom_core.ExecutionPolicyInput executionPolicy;
+    final shalom_core.RetryDelay retryDelay;
+    final Duration? autoRefetch;
     {% if op_variables_exist %}
     final {{ operation_name }}Variables variables;
     {% endif %}
@@ -156,6 +131,8 @@ final class {{ operation_name }}Observable {
         required this.variables,
         {% endif %}
         this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+        this.retryDelay = const shalom_core.RetryDelay.inherit(),
+        this.autoRefetch,
     });
 
     String operation$Name() => '{{ operation_name }}';
@@ -164,10 +141,12 @@ final class {{ operation_name }}Observable {
         return client.request<{{ operation_name }}Data>(
             name: operation$Name(),
             {% if op_variables_exist %}
-            variables: variables.toJson(),
+            variables: variables.toShalomValue(),
             {% endif %}
-            decoder: {{ operation_name }}Data.fromCache,
+            decoder: {{ operation_name }}Data.fromShalomValue,
             executionPolicy: executionPolicy,
+            retryDelay: retryDelay,
+            autoRefetch: autoRefetch,
         );
     }
 }
@@ -199,6 +178,10 @@ final class {{ operation_name }}Variables {
         return data;
     }
 
+    shalom_core.ShalomJsonValue toShalomValue() {
+        {{ toShalomValue_macro(op_variables) }}
+    }
+
     @override
     bool operator ==(Object other) {
         return identical(this, other) || (other is {{ typename }}
@@ -223,7 +206,7 @@ final class {{ operation_name }}Variables {
 
 // ------------ END widget API -------------
 {% else %}
-class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_name}}Response>{
+class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_name}}Data>{
     {% if op_variables_exist %}
     final {{ operation_name }}Variables variables;
     {% endif %}
@@ -236,7 +219,7 @@ class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_na
         {% endif %}
     );
     @override
-    shalom_core.RequestMeta<{{operation_name}}Response> getRequestMeta(){
+    shalom_core.RequestMeta<{{operation_name}}Data> getRequestMeta(){
         shalom_core.JsonObject variablesJson = {% if op_variables_exist %} variables.toJson() {% else %} {}  {% endif %};
         final request = shalom_core.Request(
             query: r"""
@@ -248,7 +231,7 @@ class Request{{ operation_name }} extends shalom_core.Requestable<{{operation_na
         );
         return shalom_core.RequestMeta(
             request: request,
-            parseFn: (shalom_core.JsonObject data) => {{operation_name}}Response.fromJson(data),
+            parseFn: (shalom_core.JsonObject data) => {{operation_name}}Data.fromJson(data),
         );
     }
 }

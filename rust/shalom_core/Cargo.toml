@@ -1,7 +1,13 @@
 [package]
 name = "shalom_core"
-version = "0.1.0"
+version = "0.1.2"
 edition = "2024"
+description = "GraphQL parsing, validation and core types for the Shalom GraphQL client."
+license = "MIT"
+repository = "https://github.com/nrbnlulu/shalom"
+
+[lib]
+name = "shalom_core"
 
 [dependencies]
 anyhow = {workspace = true}

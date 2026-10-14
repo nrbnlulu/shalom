@@ -1,6 +1,6 @@
 ---
 name: shalom
-description: Use when building or modifying Dart/Flutter apps that use the Shalom GraphQL client: annotated @Query/@Mutation/@Subscription/@Fragment classes, ShalomRuntimeClient setup, network links, normalized cache reads/writes, optimistic mutation updates, and mutation-driven list updates without refetching.
+description: "Use when building or modifying Dart/Flutter apps that use the Shalom GraphQL client: annotated @Query/@Mutation/@Subscription/@Fragment classes, ShalomRuntimeClient setup, network links, normalized cache reads/writes, optimistic mutation updates, and mutation-driven list updates without refetching."
 ---
 
 # Shalom
@@ -8,9 +8,9 @@ description: Use when building or modifying Dart/Flutter apps that use the Shalo
 Use this skill when acting as an app developer consuming Shalom. Prefer Shalom's generated Dart/Flutter APIs over hand-written GraphQL plumbing. Do not edit generated `__graphql__` files directly; change annotations/schema/config and regenerate.
 ## Paradigm
 shalom contains a "smart" runtime that automagically updates widgets if you use it correctly
-shalom is declerative meaning that as a rule of thumb we don't need services nor state management solutions for graphql stuff.
+shalom is declarative meaning that as a rule of thumb we don't need services nor state management solutions for graphql stuff.
 in shalom every widget should request only what it needs.
-in shalom we do less on the ui and more on the server. so if so far you have done sorting on the ui, you should (mostly) now delegate that to the server because usually list nodes would use fragments which are not readable (decleratively) by the list view builder.
+in shalom we do less on the ui and more on the server. so if so far you have done sorting on the ui, you should (mostly) now delegate that to the server because usually list nodes would use fragments which are not readable (declaratively) by the list view builder.
 if you still need to do sorting on the ui, make sure your lists are not huge an you'd prob better off without @Fragment widgets.
 
 
@@ -49,6 +49,8 @@ void main() async {
   runApp(ShalomProvider(client: client, child: const MyApp()));
 }
 ```
+
+Runtime cache APIs are async because they cross the Flutter/Rust bridge. In generated mutation update callbacks, mark the callback `async` and `await` generated `readFrom`, `cache.readOperation`, `cache.writeOperation`, `cache.evictOperation`, `ref.readFrom`, `cache.readFragment`, and `cache.writeFragment` calls.
 
 ## Normalized Cache
 
@@ -110,8 +112,9 @@ Generated query/subscription APIs usually include:
 - `$ClassName`, a widget base with `buildLoading`, `buildError`, and `buildData`.
 - `ClassNameData`, nested result classes, and `ClassNameVariables` when variables exist.
 - `ClassNameObservable.observe(client)` for lower-level observation.
-- `ClassNameData.readFrom(cache)` for mutation update callbacks.
+- `ClassNameData.readFrom(cache)` and `ClassNameData.evictFrom(cache, {variables})` for mutation update callbacks.
 - `executionPolicy`, defaulting to `ExecutionPolicyInput.cacheFirst`.
+- `retryDelay` and `autoRefetch` for resilience — see [Retry And Auto-Refetch](#retry-and-auto-refetch).
 
 ## Execution Policy
 
@@ -143,6 +146,21 @@ The widget keeps an active observer for as long as it's in the tree, so GC won't
 
 `@Subscription` uses the same widget shape as `@Query`; the link must support streaming operation results.
 
+## Retry And Auto-Refetch
+
+Generated query/subscription widgets (and `ShalomRuntimeClient.request`) accept two independent, orthogonal knobs for resilience:
+
+- `retryDelay` (a `RetryDelay`) — if the link reports a transport error (e.g. a dropped connection), the error is always emitted on the stream immediately, and if `retryDelay` resolves to a delay, the whole operation is re-issued after it. Defaults to `RetryDelay.inherit()`, which uses the runtime's global default (`runtimeConfig(defaultRetryDelay: ...)`); `RetryDelay.disabled()` turns it off for one call; `RetryDelay.after(duration)` overrides the delay per call. A GraphQL-level error is terminal and never retried — only transport errors are. `ShalomRuntimeClient.mutate` defaults to `RetryDelay.disabled()` since blindly re-sending a mutation after a network blip can duplicate a side effect; opt in explicitly if the mutation is known to be idempotent.
+- `autoRefetch` (a `Duration?`) — independent of any error, re-issues the operation on a plain timer as long as it's still observed. Only meaningful for queries (subscriptions stay open on their own; polling a mutation on a timer doesn't make sense). `null` (the default) means no polling.
+
+```dart
+AlbumsPage(
+  retryDelay: RetryDelay.after(const Duration(seconds: 2)),
+  autoRefetch: const Duration(seconds: 30),
+)
+```
+
+Both stop as soon as the widget/stream is disposed/cancelled — cancellation is checked before each retry/refetch fires, so there's no risk of a stray request landing after the caller stopped listening.
 
 ## Naming Rules
 
@@ -178,11 +196,11 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
       title: gif.title,
       url: gif.url,
       previewUrl: gif.previewUrl != null ? Some(gif.previewUrl) : const None(),
-      update: (cache, data) {
-        final current = AlbumWidgetRef.fromId(widget.albumId).readFrom(cache);
+      update: (cache, data) async {
+        final current = await AlbumWidgetRef.fromId(widget.albumId).readFrom(cache);
         if (current == null) return;
 
-        cache.writeFragment(
+        await cache.writeFragment(
           data: AlbumWidgetData(
             id: current.id,
             name: current.name,
@@ -258,7 +276,7 @@ class CreateAlbumMutation extends $CreateAlbumMutation {
 Generated mutation APIs include:
 
 - `execute(...)`: run the mutation and normalize the response.
-- `executeWithCacheUpdate(..., update: (CacheProxy cache, Data data) { ... })`: run the mutation, then call `update` only for successful `GraphQLData`.
+- `executeWithCacheUpdate(..., update: (CacheProxy cache, Data data) async { ... })`: run the mutation, then await `update` only for successful `GraphQLData`.
 - `executeOptimistic(optimisticFactory, rollbackWhen: ..., ...)`: write a predicted mutation payload before the network response, then return an `OptimisticMutationResponse`.
 
 Mutation selection rules:
@@ -351,10 +369,10 @@ Use the ref shortcuts inside cache update callbacks:
 
 ```dart
 final ref = AlbumWidgetRef.fromId(albumId);
-final current = ref.readFrom(cache);
+final current = await ref.readFrom(cache);
 if (current == null) return;
 
-cache.writeFragment(
+await cache.writeFragment(
   data: AlbumWidgetData(
     id: current.id,
     name: current.name,
@@ -404,9 +422,10 @@ Important details:
 
 - The optimistic payload must exactly match the mutation response shape.
 - Include ids and any fields watched by active fragments/widgets.
-- `GraphQLError` and `LinkExceptionResponse` are response values, not thrown exceptions. Call `result.rollback()` yourself when those should undo the optimistic write.
+- `GraphQLError` and `LinkExceptionResponse` are response values, not thrown exceptions. Call `await result.rollback()` yourself when those should undo the optimistic write.
 - Thrown exceptions during the mutation path are rolled back by the generated helper.
 - `executeOptimistic` does not run an `executeWithCacheUpdate` list callback. For optimistic list membership, prefer a mutation response that includes the parent/list field, or implement a manual rollback path for the extra list write.
+- `OptimisticMutationResponse.rollback()` is async; await it when manually rolling back `GraphQLError` or `LinkExceptionResponse` results.
 
 ## Updating Lists After Mutations
 
@@ -417,11 +436,11 @@ Root query list add:
 ```dart
 await CreateAlbumMutation(client).executeWithCacheUpdate(
   name: name,
-  update: (cache, data) {
-    final current = AlbumsPageData.readFrom(cache);
+  update: (cache, data) async {
+    final current = await AlbumsPageData.readFrom(cache);
     if (current == null) return;
 
-    cache.writeQuery(
+    await cache.writeOperation(
       data: AlbumsPageData(
         albums: [
           ...current.albums,
@@ -441,12 +460,12 @@ await AddGifToAlbumMutation(client).executeWithCacheUpdate(
   title: gif.title,
   url: gif.url,
   previewUrl: gif.previewUrl != null ? Some(gif.previewUrl) : const None(),
-  update: (cache, data) {
-    final current = AlbumWidgetRef.fromId(albumId).readFrom(cache);
+  update: (cache, data) async {
+    final current = await AlbumWidgetRef.fromId(albumId).readFrom(cache);
     if (current == null) return;
     if (current.gifs.any((g) => g.url == data.addGifToAlbum.url)) return;
 
-    cache.writeFragment(
+    await cache.writeFragment(
       data: AlbumWidgetData(
         id: current.id,
         name: current.name,
@@ -471,17 +490,17 @@ Entity child list remove:
 await RemoveGifFromAlbumMutation(client).executeWithCacheUpdate(
   albumId: albumId,
   gifId: gifId,
-  update: (cache, data) {
+  update: (cache, data) async {
     if (data.removeGifFromAlbum != null) return;
 
-    final current = cache.readFragment<AlbumWidgetData>(
+    final current = await cache.readFragment<AlbumWidgetData>(
       fragmentName: 'AlbumWidget',
       entityKey: AlbumWidgetData.entityKey(albumId),
       decoder: AlbumWidgetData.fromCache,
     );
     if (current == null) return;
 
-    cache.writeFragment(
+    await cache.writeFragment(
       data: AlbumWidgetData(
         id: current.id,
         name: current.name,
@@ -495,10 +514,11 @@ await RemoveGifFromAlbumMutation(client).executeWithCacheUpdate(
 
 List update rules:
 
-- Use `cache.writeQuery` for root operation data.
+- Use `cache.writeOperation` for root operation data.
 - Use `cache.writeFragment` for one normalized entity's fragment data.
 - Preserve all required fields from the existing cached value when constructing replacement data.
-- `readFrom`, `readQuery`, and `readFragment` can return `null` when data is absent or incomplete.
+- `readFrom`, `readOperation`, and `readFragment` can return `null` when data is absent or incomplete.
 - Guard duplicate inserts with stable ids or unique fields.
 - Only write generated refs such as `AlbumWidgetRef.fromId(id)` after the mutation response includes enough fields to satisfy that fragment.
-- For queries with variables, pass the same variables to `readQuery`/`writeQuery`; argument values are part of the normalized field key.
+- For queries with variables, pass the same variables to `readOperation`/`writeOperation`/`evictOperation`; argument values are part of the normalized field key.
+- Use `cache.evictOperation(name: ..., variables: ...)` (or the generated `ClassNameData.evictFrom(cache, variables: ...)` shortcut) to drop a cached operation's root entry entirely instead of overwriting it — for example when a mutation invalidates a query rather than producing data to merge. It only unlinks the operation's root field(s); referenced entities are reclaimed by the next GC sweep if nothing else keeps them reachable, and it's a no-op (`false`) when nothing matched.

@@ -1,17 +1,17 @@
 name: shalom_flutter
 description: "Flutter widgets for the Shalom GraphQL client."
 version: 0.0.1
-homepage:
+homepage: https://github.com/nrbnlulu/shalom
+repository: https://github.com/nrbnlulu/shalom
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.3.0 <4.0.0'
   flutter: ">=1.17.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  shalom:
-    path: ../shalom
+  shalom: ^0.1.0
 
 dev_dependencies:
   flutter_test:

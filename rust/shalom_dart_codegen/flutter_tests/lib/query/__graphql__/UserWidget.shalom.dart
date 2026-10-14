@@ -10,8 +10,8 @@ import 'package:collection/collection.dart';
 // Fragment imports
 
 // ------------ OBJECT DEFINITIONS -------------
-
-class UserWidgetResponse {
+class UserWidgetData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
   static String G__typename = "query";
 
   /// class members
@@ -21,26 +21,71 @@ class UserWidgetResponse {
   String get $__typename => G__typename;
 
   // keywordargs constructor
-  UserWidgetResponse({this.user});
+  UserWidgetData({this.user});
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
-        (other is UserWidgetResponse && user == other.user);
+        (other is UserWidgetData && user == other.user);
   }
 
   @override
-  int get hashCode => Object.hashAll([user, UserWidgetResponse.G__typename]);
+  int get hashCode => Object.hashAll([user, UserWidgetData.G__typename]);
 
   shalom_core.JsonObject toJson() {
     return {'user': this.user?.toJson()};
   }
 
-  static UserWidgetResponse fromJson(shalom_core.JsonObject data) {
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'user': this.user == null
+        ? shalom_core.shalomJsonValue(null)
+        : this.user!.toShalomValue(),
+  });
+
+  static UserWidgetData fromJson(shalom_core.JsonObject data) {
     final UserWidget_user? user$value = data['user'] == null
         ? null
         : UserWidget_user.fromJson(data['user'] as shalom_core.JsonObject);
-    return UserWidgetResponse(user: user$value);
+    return UserWidgetData(user: user$value);
+  }
+
+  static UserWidgetData fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? user$raw = data.field('user');
+    final UserWidget_user? user$value = user$raw == null || user$raw!.isNull
+        ? null
+        : UserWidget_user.fromShalomValue(user$raw!);
+    return UserWidgetData(user: user$value);
+  }
+
+  @override
+  String operation$Name() => 'UserWidget';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [UserWidgetData]. Returns `null` when absent or incomplete.
+  static Future<UserWidgetData?> readFrom(
+    shalom_core.CacheProxy cache, {
+    UserWidgetVariables? variables,
+  }) async {
+    return await cache.readOperation<UserWidgetData>(
+      name: 'UserWidget',
+      decoder: fromShalomValue,
+
+      variables: variables?.toShalomValue(),
+    );
+  }
+
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(
+    shalom_core.CacheProxy cache, {
+    UserWidgetVariables? variables,
+  }) {
+    return cache.evictOperation(
+      name: 'UserWidget',
+
+      variables: variables?.toShalomValue(),
+    );
   }
 }
 
@@ -71,9 +116,23 @@ class UserWidget_user {
     return {'id': this.id, 'name': this.name};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static UserWidget_user fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    return UserWidget_user(id: id$value, name: name$value);
+  }
+
+  static UserWidget_user fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
     return UserWidget_user(id: id$value, name: name$value);
   }
 }
@@ -94,42 +153,10 @@ class UserWidget_user {
 
 // ------------ widget API -------------
 
-final class UserWidgetData implements shalom_core.OperationInterface {
-  final UserWidget_user? user;
-
-  const UserWidgetData({required this.user});
-
-  @override
-  String operation$Name() => 'UserWidget';
-
-  static UserWidgetData fromCache(shalom_core.JsonObject data) {
-    final UserWidget_user? user$value = data['user'] == null
-        ? null
-        : UserWidget_user.fromJson(data['user'] as shalom_core.JsonObject);
-    return UserWidgetData(user: user$value);
-  }
-
-  /// Reads this operation's current cache entry through [cache], decoding
-  /// it as [UserWidgetData]. Returns `null` when absent or incomplete.
-  static UserWidgetData? readFrom(
-    shalom_core.CacheProxy cache, {
-    UserWidgetVariables? variables,
-  }) {
-    return cache.readQuery<UserWidgetData>(
-      name: 'UserWidget',
-      decoder: fromCache,
-
-      variables: variables?.toJson(),
-    );
-  }
-
-  shalom_core.JsonObject toJson() {
-    return {'user': this.user?.toJson()};
-  }
-}
-
 final class UserWidgetObservable {
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final UserWidgetVariables variables;
 
@@ -137,6 +164,8 @@ final class UserWidgetObservable {
     required this.variables,
 
     this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
   });
 
   String operation$Name() => 'UserWidget';
@@ -147,10 +176,12 @@ final class UserWidgetObservable {
     return client.request<UserWidgetData>(
       name: operation$Name(),
 
-      variables: variables.toJson(),
+      variables: variables.toShalomValue(),
 
-      decoder: UserWidgetData.fromCache,
+      decoder: UserWidgetData.fromShalomValue,
       executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
     );
   }
 }
@@ -166,6 +197,12 @@ final class UserWidgetVariables {
     data["id"] = this.id;
 
     return data;
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() {
+    final $data = <String, shalom_core.ShalomJsonValue>{};
+    $data["id"] = shalom_core.shalomJsonValue(this.id!);
+    return shalom_core.shalomJsonObject($data);
   }
 
   @override

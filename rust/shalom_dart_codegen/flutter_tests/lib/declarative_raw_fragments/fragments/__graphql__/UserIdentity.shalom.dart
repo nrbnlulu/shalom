@@ -12,6 +12,7 @@ abstract class UserIdentity {
   String get name;
 
   Map<String, dynamic> toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 }
 
 class UserIdentityImpl implements UserIdentity {
@@ -41,9 +42,23 @@ class UserIdentityImpl implements UserIdentity {
     return {'id': this.id, 'name': this.name};
   }
 
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'name': shalom_core.shalomJsonValue(this.name!),
+  });
+
   static UserIdentityImpl fromJson(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;
     final String name$value = data['name'] as String;
+    return UserIdentityImpl(id: id$value, name: name$value);
+  }
+
+  static UserIdentityImpl fromShalomValue(shalom_core.ShalomJsonValue data) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? name$raw = data.field('name');
+    final String name$value = name$raw!.stringValue;
     return UserIdentityImpl(id: id$value, name: name$value);
   }
 }

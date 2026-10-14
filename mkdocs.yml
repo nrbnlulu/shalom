@@ -5,6 +5,8 @@ repo_name: nrbnlulu/shalom
 
 theme:
     name: material
+    logo: assets/shalom_logo_with_text.jpeg
+    favicon: assets/favicon.ico
     language: en
     font:
         text: JetBrains Mono
@@ -13,6 +15,7 @@ theme:
         - navigation.instant
         - navigation.sections
         - navigation.top
+        - navigation.footer
         - content.code.copy
     palette:
         - scheme: slate
@@ -41,7 +44,9 @@ markdown_extensions:
 
 nav:
     - Home: index.md
+    - Overview: overview.md
     - Installation: installation.md
     - Quickstart: quickstart.md
     - Normalized Cache: normalized-cache.md
     - Custom Scalars: custom-scalars.md
+    - Examples: https://github.com/nrbnlulu/shalom/tree/main/examples

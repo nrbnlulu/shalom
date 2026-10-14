@@ -3,7 +3,6 @@
 // Re-export all generated types so importers only need this file.
 export 'AnimalQuery.shalom.dart';
 
-import 'dart:async' show StreamSubscription;
 import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:shalom_flutter/shalom_flutter.dart';
@@ -14,12 +13,16 @@ abstract class $AnimalQuery extends StatefulWidget {
   String operation$Name() => 'AnimalQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
   final AnimalQueryVariables variables;
   const $AnimalQuery({
     super.key,
     required this.variables,
     this.executionPolicy = .cacheFirst,
+    this.retryDelay = const .inherit(),
+    this.autoRefetch,
   });
 
   Widget buildLoading(BuildContext context);
@@ -30,8 +33,8 @@ abstract class $AnimalQuery extends StatefulWidget {
   State<$AnimalQuery> createState() => _$AnimalQueryState();
 }
 
-class _$AnimalQueryState extends State<$AnimalQuery> {
-  StreamSubscription<shalom_core.GraphQLResponse<AnimalQueryData>>? _sub;
+class _$AnimalQueryState extends State<$AnimalQuery>
+    with ShalomObservingState<AnimalQueryData, $AnimalQuery> {
   AnimalQueryData? _data;
   Object? _error;
 
@@ -45,53 +48,38 @@ class _$AnimalQueryState extends State<$AnimalQuery> {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _subscribe();
-  }
-
-  @override
   void didUpdateWidget(covariant $AnimalQuery oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.executionPolicy != oldWidget.executionPolicy ||
+        widget.retryDelay != oldWidget.retryDelay ||
+        widget.autoRefetch != oldWidget.autoRefetch ||
         widget.variables != oldWidget.variables) {
-      _subscribe();
+      resubscribe();
     }
   }
 
-  void _subscribe() {
-    _sub?.cancel();
-    final client = ShalomScope.of(context);
-    _sub =
-        AnimalQueryObservable(
-              variables: widget.variables,
+  @override
+  Stream<shalom_core.GraphQLResponse<AnimalQueryData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) => AnimalQueryObservable(
+    variables: widget.variables,
 
-              executionPolicy: widget.executionPolicy,
-            )
-            .observe(client)
-            .listen(
-              (response) {
-                setState(() {
-                  switch (response) {
-                    case shalom_core.GraphQLData(data: final data):
-                      _data = data;
-                      _error = null;
-                    case shalom_core.GraphQLError() ||
-                        shalom_core.LinkExceptionResponse():
-                      _error = response;
-                  }
-                });
-              },
-              onDone: () {
-                if (mounted) _subscribe();
-              },
-            );
-  }
+    executionPolicy: widget.executionPolicy,
+    retryDelay: widget.retryDelay,
+    autoRefetch: widget.autoRefetch,
+  ).observe(client);
 
   @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
+  void onResponse(shalom_core.GraphQLResponse<AnimalQueryData> response) {
+    setState(() {
+      switch (response) {
+        case shalom_core.GraphQLData(data: final data):
+          _data = data;
+          _error = null;
+        case shalom_core.GraphQLError() || shalom_core.LinkExceptionResponse():
+          _error = response;
+      }
+    });
   }
 
   @override

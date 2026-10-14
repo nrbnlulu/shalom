@@ -164,6 +164,13 @@ pub struct OperationContext {
     operation_name: String,
     pub file_path: PathBuf,
     pub query: String,
+    /// Self-contained, network-safe operation text (`query Name(...) { ... }`),
+    /// with `__typename`/`id` auto-injection applied and `@unwrap` stripped, but
+    /// without any prepended fragment SDLs and without `@observe`. Use this (not
+    /// `query`, which is prefixed with fragment SDLs and would duplicate fragment
+    /// definitions already emitted elsewhere) when re-registering the operation
+    /// document, e.g. for the runtime's `registerOperation` call.
+    pub op_sdl: String,
     variables: HashMap<String, OperationVariable>,
     pub typedefs: TypeDefs,
     root_type: Option<ObjectLikeCommon>,
@@ -179,6 +186,7 @@ impl OperationContext {
         schema: SharedSchemaContext,
         operation_name: String,
         query: String,
+        op_sdl: String,
         file_path: PathBuf,
         op_ty: OperationType,
         observe: bool,
@@ -188,6 +196,7 @@ impl OperationContext {
             operation_name,
             file_path,
             query,
+            op_sdl,
             variables: HashMap::new(),
             typedefs: TypeDefs::new(),
             root_type: None,

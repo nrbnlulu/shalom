@@ -19,7 +19,7 @@ parent objects down to them.
 - List membership (adding/removing/reordering items) is not inferred from a
   mutation response alone. If a mutation creates, deletes, or reorders items
   and the response doesn't include the parent list field, update the cached
-  query or fragment yourself with `executeWithCacheUpdate` (see `SKILL.md`).
+  query or fragment yourself with `executeWithCacheUpdate` [(see below)](#updating-lists-after-mutations).
 
 ## Example flow
 
@@ -30,7 +30,15 @@ parent objects down to them.
    `Album:<id>` entity.
 3. A mutation that returns fields on that `Album` (for example renaming it)
    updates the shared cache entry, so both `AlbumsPage`'s list item and any
-   standalone `AlbumWidgetScope` showing that album re-render immediately.
+   standalone `AlbumWidgetScope` showing that album re-ruender immediately.
+
+```dart
+// Mounting a fragment reactively via its Scope:
+AlbumWidgetScope(
+  ref: AlbumWidgetRef.fromId(albumId),
+  builder: (context, album) => Text(album.name),
+)
+```
 
 ## When to rely on it
 
@@ -41,16 +49,88 @@ for reactive, entity-scoped UI. Because reads are cache-first by default
 data changes, even if that change came from a different operation or a
 mutation elsewhere in the app.
 
+## Updating lists after mutations
+
+When a mutation creates, deletes, adds, or removes items, the mutation response normalizes the target entity automatically, but GraphQL servers typically don't return the entire parent list.
+
+Use `executeWithCacheUpdate` to read the cached query or fragment, modify the list, and write it back:
+
+### 1. Adding an item to a root query list
+
+```dart
+await CreateAlbumMutation(client).executeWithCacheUpdate(
+  name: name,
+  update: (cache, data) async {
+    final current = await AlbumsPageData.readFrom(cache);
+    if (current == null) return;
+
+    final newRef = AlbumWidgetRef.fromId(data.createAlbum.id);
+    await cache.writeOperation(
+      data: AlbumsPageData(
+        albums: [...current.albums, newRef],
+      ),
+    );
+  },
+);
+```
+
+### 2. Updating or removing items from a nested entity list
+
+```dart
+await RemoveGifFromAlbumMutation(client).executeWithCacheUpdate(
+  albumId: albumId,
+  gifId: gifId,
+  update: (cache, data) async {
+    if (data.removeGifFromAlbum != null) return;
+
+    final current = await AlbumWidgetRef.fromId(albumId).readFrom(cache);
+    if (current == null) return;
+
+    await cache.writeFragment(
+      data: AlbumWidgetData(
+        id: current.id,
+        name: current.name,
+        tag: current.tag,
+        gifs: current.gifs.where((g) => g.id != gifId).toList(),
+      ),
+    );
+  },
+);
+```
+
+## Optimistic updates
+
+Use generated `executeOptimistic` when you want instant UI feedback before the network responds:
+
+```dart
+final result = await RenameAlbumMutation(client).executeOptimistic(
+  (vars) => RenameAlbumMutationData(
+    renameAlbum: RenameAlbumMutation_renameAlbum(
+      id: vars.id,
+      name: vars.name,
+    ),
+  ),
+  id: albumId,
+  name: nextName,
+  rollbackWhen: (data) => data.renameAlbum == null,
+);
+```
+
+- Normalizes the predicted payload immediately and notifies any widget or fragment observing that entity record.
+- Automatically rolls back if the network call throws or if `rollbackWhen` evaluates to `true`.
+- Returns an `OptimisticMutationResponse` with `response` and an async `rollback()` method.
+
 ## Garbage collection
 
 The runtime only keeps a root operation field (and entities reachable through
-it) alive while some active subscription still references it. A one-shot
-imperative read (`client.request(...).first`) never registers as an active
-subscriber, so its data becomes eligible for eviction the moment any other
-cache activity triggers GC. For a one-off read that should stay live for as
-long as the UI cares about it, mount the generated `@Query` widget
-conditionally instead of using a one-shot imperative request. See "Execution
-Policy" in `SKILL.md` for details.
+it) alive while some active subscription still references it.
+
+!!! note "One-shot imperative reads"
+    A one-shot imperative read (`client.request(...).first`) never registers as an active
+    subscriber, so its data becomes eligible for eviction the moment any other
+    cache activity triggers GC. For a one-off read that should stay live for as
+    long as the UI cares about it, mount the generated `@Query` widget
+    conditionally instead of using a one-shot imperative request.
 
 ## Debugging the cache
 

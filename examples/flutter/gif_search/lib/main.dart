@@ -1,3 +1,5 @@
+import 'dart:async' show FutureOr;
+
 import 'package:flutter/material.dart';
 import 'package:gif_search/__graphql__/AddGifToAlbumMutation.mutation.shalom.dart'
     show $AddGifToAlbumMutation;
@@ -42,8 +44,7 @@ import 'package:shalom_flutter/widgets/debug_panel.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await shalom.ShalomRuntimeClient.initFlutterRustBridge();
-  final client = createShalomClient();
-  runApp(ShalomProvider(client: client, child: const MyApp()));
+  runApp(MyApp(client: createShalomClient()));
 }
 
 mixin QueryWidgetMixin {
@@ -65,17 +66,22 @@ mixin QueryWidgetMixin {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final shalom.ShalomRuntimeClient client;
+
+  const MyApp({super.key, required this.client});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'GIF Search',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
+    return ShalomProvider(
+      client: client,
+      child: MaterialApp(
+        title: 'GIF Search',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+          useMaterial3: true,
+        ),
+        home: const _AppWithDebugPanel(),
       ),
-      home: const _AppWithDebugPanel(),
     );
   }
 }
@@ -125,7 +131,7 @@ class _AppWithDebugPanel extends StatelessWidget {
   }
 """)
 class AlbumsPage extends $AlbumsPage with QueryWidgetMixin {
-  const AlbumsPage({super.key});
+  const AlbumsPage({super.key, super.autoRefetch = const Duration(seconds: 5)});
 
   @override
   Widget buildData(BuildContext context, AlbumsPageData data) {
@@ -148,11 +154,11 @@ class AlbumsPage extends $AlbumsPage with QueryWidgetMixin {
     showDialog<void>(
       context: context,
       builder: (_) => _CreateAlbumDialog(
-        onCreated: (cache, data) {
-          final current = AlbumsPageData.readFrom(cache);
+        onCreated: (cache, data) async {
+          final current = await AlbumsPageData.readFrom(cache);
           if (current == null) return;
           final newRef = AlbumWidgetRef.fromId(data.createAlbum.id);
-          cache.writeQuery(
+          await cache.writeOperation(
             data: AlbumsPageData(albums: [...current.albums, newRef]),
           );
         },
@@ -225,7 +231,10 @@ class AlbumWidget extends $AlbumWidget with QueryWidgetMixin {
     );
   }
 
-  Future<void> _confirmDelete(BuildContext context, AlbumWidgetData album) async {
+  Future<void> _confirmDelete(
+    BuildContext context,
+    AlbumWidgetData album,
+  ) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
@@ -248,12 +257,12 @@ class AlbumWidget extends $AlbumWidget with QueryWidgetMixin {
     final client = ShalomScope.of(context);
     final response = await DeleteAlbumMutation(client).executeWithCacheUpdate(
       id: album.id,
-      update: (shalom.CacheProxy cache, DeleteAlbumMutationData data) {
+      update: (shalom.CacheProxy cache, DeleteAlbumMutationData data) async {
         if (data.deleteAlbum != null) return;
-        final current = AlbumsPageData.readFrom(cache);
+        final current = await AlbumsPageData.readFrom(cache);
         if (current == null) return;
         final deletedAnchor = AlbumWidgetData.entityKey(album.id);
-        cache.writeQuery(
+        await cache.writeOperation(
           data: AlbumsPageData(
             albums: current.albums
                 .where((a) => a.anchor != deletedAnchor)
@@ -315,7 +324,7 @@ class DeleteAlbumMutation extends $DeleteAlbumMutation {
 @Mutation(r"""
   ($name: String!) {
     createAlbum(name: $name) {
-      id 
+      id
       name
       tag
       gifs {
@@ -422,7 +431,10 @@ class AlbumGifSearch extends $AlbumGifSearch with QueryWidgetMixin {
 // ─── Dialog Widgets ───────────────────────────────────────────────────────────
 
 class _CreateAlbumDialog extends StatefulWidget {
-  final void Function(shalom.CacheProxy cache, CreateAlbumMutationData data)
+  final FutureOr<void> Function(
+    shalom.CacheProxy cache,
+    CreateAlbumMutationData data,
+  )
   onCreated;
 
   const _CreateAlbumDialog({required this.onCreated});
@@ -551,39 +563,46 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
   Future<void> _addGif(AlbumGifSearch_searchGifs_items gif) async {
     final client = ShalomScope.of(context);
     try {
-      final response = await AddGifToAlbumMutation(client).executeWithCacheUpdate(
-        albumId: widget.albumId,
-        title: gif.title,
-        url: gif.url,
-        previewUrl: gif.previewUrl != null
-            ? shalom.Some(gif.previewUrl)
-            : const shalom.None(),
-        update: (shalom.CacheProxy cache, AddGifToAlbumMutationData data) {
-          final current = AlbumWidgetRef.fromId(widget.albumId).readFrom(cache);
-          if (current == null) return;
-          if (current.gifs.any((g) => g.url == gif.url)) return;
-          cache.writeFragment(
-            data: AlbumWidgetData(
-              id: current.id,
-              name: current.name,
-              tag: current.tag,
-              gifs: [
-                ...current.gifs,
-                AlbumWidget_gifs(
-                  id: data.addGifToAlbum.id,
-                  title: data.addGifToAlbum.title,
-                  url: data.addGifToAlbum.url,
-                ),
-              ],
-            ),
+      final response = await AddGifToAlbumMutation(client)
+          .executeWithCacheUpdate(
+            albumId: widget.albumId,
+            title: gif.title,
+            url: gif.url,
+            previewUrl: gif.previewUrl != null
+                ? shalom.Some(gif.previewUrl)
+                : const shalom.None(),
+            update:
+                (
+                  shalom.CacheProxy cache,
+                  AddGifToAlbumMutationData data,
+                ) async {
+                  final current = await AlbumWidgetRef.fromId(
+                    widget.albumId,
+                  ).readFrom(cache);
+                  if (current == null) return;
+                  if (current.gifs.any((g) => g.url == gif.url)) return;
+                  await cache.writeFragment(
+                    data: AlbumWidgetData(
+                      id: current.id,
+                      name: current.name,
+                      tag: current.tag,
+                      gifs: [
+                        ...current.gifs,
+                        AlbumWidget_gifs(
+                          id: data.addGifToAlbum.id,
+                          title: data.addGifToAlbum.title,
+                          url: data.addGifToAlbum.url,
+                        ),
+                      ],
+                    ),
+                  );
+                },
           );
-        },
-      );
       if (response is! shalom.GraphQLData) {
         if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to add GIF')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to add GIF')));
       }
     } catch (e) {
       if (!mounted) return;
@@ -600,15 +619,13 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
           .executeWithCacheUpdate(
             albumId: widget.albumId,
             gifId: gifId,
-            update: (shalom.CacheProxy cache, data) {
+            update: (shalom.CacheProxy cache, data) async {
               if (data.removeGifFromAlbum != null) return;
-              final current = cache.readFragment<AlbumWidgetData>(
-                fragmentName: 'AlbumWidget',
-                entityKey: AlbumWidgetData.entityKey(widget.albumId),
-                decoder: AlbumWidgetData.fromCache,
-              );
+              final current = await AlbumWidgetRef.fromId(
+                widget.albumId,
+              ).readFrom(cache);
               if (current == null) return;
-              cache.writeFragment(
+              await cache.writeFragment(
                 data: AlbumWidgetData(
                   id: current.id,
                   name: current.name,
@@ -623,7 +640,9 @@ class _AlbumDetailPageState extends State<_AlbumDetailPage> {
         case shalom.GraphQLData(data: final data):
           final error = data.removeGifFromAlbum;
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(error == null ? 'GIF removed' : error.message)),
+            SnackBar(
+              content: Text(error == null ? 'GIF removed' : error.message),
+            ),
           );
         case shalom.GraphQLError():
           ScaffoldMessenger.of(context).showSnackBar(

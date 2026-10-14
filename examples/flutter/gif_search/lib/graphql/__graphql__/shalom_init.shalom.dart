@@ -83,88 +83,92 @@ void registerShalomDefinitions(ShalomRuntimeClient client) {
   client.registerFragment(
     document: r'''
 fragment AlbumGif on Gif @observe {
-    id
-    title
-    url
-  }
+  id
+  title
+  url
+}
 ''',
   );
   client.registerFragment(
     document: r'''
 fragment AlbumWidget on Album @observe {
+  id
+  name
+  tag
+  gifs {
+    ...AlbumGif
     id
-    name
-    tag
-    gifs {
-      ...AlbumGif
-    }
   }
+}
 ''',
   );
   client.registerOperation(
     document: r'''
 query AlbumsPage @observe {
-    albums {
-      ...AlbumWidget
-    }
+  albums {
+    ...AlbumWidget
+    id
   }
+}
 ''',
   );
   client.registerOperation(
     document: r'''
-query AlbumGifSearch ($query: String!, $offset: Int!, $limit: Int!) @observe {
-    searchGifs(query: $query, offset: $offset, limit: $limit) {
-      items {
-        title
-        url
-        previewUrl
-      }
-      hasNextPage
+query AlbumGifSearch($query: String!, $offset: Int!, $limit: Int!) @observe {
+  searchGifs(query: $query, offset: $offset, limit: $limit) {
+    items {
+      title
+      url
+      previewUrl
     }
+    hasNextPage
   }
+}
 ''',
   );
   client.registerOperation(
     document: r'''
-mutation DeleteAlbumMutation ($id: String!) {
-    deleteAlbum(id: $id) {
-      code
-      message
-    }
+mutation DeleteAlbumMutation($id: String!) {
+  deleteAlbum(id: $id) {
+    code
+    message
   }
+}
 ''',
   );
   client.registerOperation(
     document: r'''
-mutation CreateAlbumMutation ($name: String!) {
-    createAlbum(name: $name) {
-      id 
-      name
-      tag
-      gifs {
-        ...AlbumGif
-      }
-    }
-  }
-''',
-  );
-  client.registerOperation(
-    document: r'''
-mutation AddGifToAlbumMutation ($albumId: String!, $title: String!, $url: String!, $previewUrl: String) {
-    addGifToAlbum(albumId: $albumId, title: $title, url: $url, previewUrl: $previewUrl) {
+mutation CreateAlbumMutation($name: String!) {
+  createAlbum(name: $name) {
+    id
+    name
+    tag
+    gifs {
       ...AlbumGif
+      id
     }
   }
+}
 ''',
   );
   client.registerOperation(
     document: r'''
-mutation RemoveGifFromAlbumMutation ($albumId: String!, $gifId: String!) {
-    removeGifFromAlbum(albumId: $albumId, gifId: $gifId) {
-      code
-      message
-    }
+mutation AddGifToAlbumMutation($albumId: String!, $title: String!, $url: String!, $previewUrl: String) {
+  addGifToAlbum(albumId: $albumId, title: $title, url: $url, previewUrl: $previewUrl) {
+    ...AlbumGif
+    id
   }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+mutation RemoveGifFromAlbumMutation($albumId: String!, $gifId: String!) {
+  removeGifFromAlbum(albumId: $albumId, gifId: $gifId) {
+    code
+    message
+  }
+}
 ''',
   );
 }

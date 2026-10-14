@@ -19,26 +19,26 @@ void main() {
 
   group('Test object selection with __typename - Required', () {
     test('objectRequired - deserialize', () {
-      final result = GetProductResponse.fromJson(productData);
+      final result = GetProductData.fromJson(productData);
       expect(result.product.id, "prod-123");
       expect(result.product.name, "Laptop");
       expect(result.product.price, 999);
     });
 
     test('objectRequired - serialize (toJson)', () {
-      final initial = GetProductResponse.fromJson(productData);
+      final initial = GetProductData.fromJson(productData);
       final json = initial.toJson();
       expect(json, productData);
     });
 
     test('objectRequired - equals', () {
-      final result1 = GetProductResponse.fromJson(productData);
-      final result2 = GetProductResponse.fromJson(productData);
+      final result1 = GetProductData.fromJson(productData);
+      final result2 = GetProductData.fromJson(productData);
       expect(result1, equals(result2));
     });
 
     test('objectRequired - without price field', () {
-      final result = GetProductNoPriceResponse.fromJson(productDataNoPrice);
+      final result = GetProductNoPriceData.fromJson(productDataNoPrice);
       expect(result.product.id, "prod-123");
       expect(result.product.name, "Laptop");
     });
@@ -58,41 +58,41 @@ void main() {
   group('Test object selection with __typename - Optional', () {
     group('objectOptional - deserialize', () {
       test('with value', () {
-        final result = GetProductOptResponse.fromJson(productOptSome);
+        final result = GetProductOptData.fromJson(productOptSome);
         expect(result.productOpt?.id, "prod-456");
         expect(result.productOpt?.name, "Mouse");
         expect(result.productOpt?.price, 25);
       });
 
       test('null value', () {
-        final result = GetProductOptResponse.fromJson(productOptNull);
+        final result = GetProductOptData.fromJson(productOptNull);
         expect(result.productOpt, null);
       });
     });
 
     group('objectOptional - serialize (toJson)', () {
       test('with value', () {
-        final initial = GetProductOptResponse.fromJson(productOptSome);
+        final initial = GetProductOptData.fromJson(productOptSome);
         final json = initial.toJson();
         expect(json, productOptSome);
       });
 
       test('null value', () {
-        final initial = GetProductOptResponse.fromJson(productOptNull);
+        final initial = GetProductOptData.fromJson(productOptNull);
         final json = initial.toJson();
         expect(json, productOptNull);
       });
     });
 
     test('objectOptional - equals with value', () {
-      final result1 = GetProductOptResponse.fromJson(productOptSome);
-      final result2 = GetProductOptResponse.fromJson(productOptSome);
+      final result1 = GetProductOptData.fromJson(productOptSome);
+      final result2 = GetProductOptData.fromJson(productOptSome);
       expect(result1, equals(result2));
     });
 
     test('objectOptional - equals with null', () {
-      final result1 = GetProductOptResponse.fromJson(productOptNull);
-      final result2 = GetProductOptResponse.fromJson(productOptNull);
+      final result1 = GetProductOptData.fromJson(productOptNull);
+      final result2 = GetProductOptData.fromJson(productOptNull);
       expect(result1, equals(result2));
     });
   });
@@ -117,8 +117,8 @@ void main() {
         },
       };
 
-      final result1 = GetProductResponse.fromJson(data1);
-      final result2 = GetProductResponse.fromJson(data2);
+      final result1 = GetProductData.fromJson(data1);
+      final result2 = GetProductData.fromJson(data2);
       expect(result1, equals(result2));
     });
 
@@ -141,27 +141,27 @@ void main() {
         },
       };
 
-      final result1 = GetProductResponse.fromJson(data1);
-      final result2 = GetProductResponse.fromJson(data2);
+      final result1 = GetProductData.fromJson(data1);
+      final result2 = GetProductData.fromJson(data2);
       expect(result1, equals(result2));
     });
   });
 
   group('Test __typename is included in toJson', () {
     test('toJson includes __typename', () {
-      final result = GetProductResponse.fromJson(productData);
+      final result = GetProductData.fromJson(productData);
       final json = result.toJson();
       expect(json["product"]["__typename"], "Product");
     });
 
     test('toJson with optional includes __typename when present', () {
-      final result = GetProductOptResponse.fromJson(productOptSome);
+      final result = GetProductOptData.fromJson(productOptSome);
       final json = result.toJson();
       expect(json["productOpt"]["__typename"], "Product");
     });
 
     test('toJson with null optional does not include __typename', () {
-      final result = GetProductOptResponse.fromJson(productOptNull);
+      final result = GetProductOptData.fromJson(productOptNull);
       final json = result.toJson();
       expect(json["productOpt"], null);
     });

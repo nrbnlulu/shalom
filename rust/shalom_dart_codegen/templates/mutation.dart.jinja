@@ -24,7 +24,7 @@ import '{{ import_path }}';
 
 // ------------ OBJECT DEFINITIONS -------------
 {% for name, obj in typedefs.objects | items %}
-    {{ selection_object_definition(obj) }}
+    {{ selection_object_definition(obj, use_observe=false) }}
 {% endfor %}
 // ------------ END OBJECT DEFINITIONS -------------
 
@@ -32,7 +32,7 @@ import '{{ import_path }}';
 {% set union_types = typedefs.unions %}
 {% for union_full_name, union_selection in union_types | items %}
     {% set concretes = multitype_selection_resolved_concretes(union_full_name) -%}
-    {{ multi_type_selection_definition(union_full_name, union_selection, concretes) }}
+    {{ multi_type_selection_definition(union_full_name, union_selection, concretes, use_observe=false) }}
     {% for concrete_subset in concretes -%}
         class {{ concrete_subset.path_name }} extends {{ union_full_name }} {{implements_used_fragments(concrete_subset.used_fragments)}} {
             {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections) }}
@@ -44,7 +44,7 @@ import '{{ import_path }}';
 // ------------ INTERFACE DEFINITIONS -------------
 {% for iface_path_name, iface_selection in typedefs.interfaces | items %}
     {% set concretes = multitype_selection_resolved_concretes(iface_path_name) -%}
-    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes) }}
+    {{ multi_type_selection_definition(iface_path_name, iface_selection, concretes, use_observe=false) }}
     {% for concrete_subset in concretes -%}
         class {{ concrete_subset.path_name }} extends {{ iface_path_name }} {{implements_used_fragments(concrete_subset.used_fragments)}}  {
             {{ selection_object_impl(concrete_subset.path_name, concrete_subset, is_root_selection=false, full_name=concrete_subset.path_name, is_multi_type_member=true, shared_selections=concrete_subset.selections) }}
@@ -57,7 +57,7 @@ import '{{ import_path }}';
 
 // ------------ MUTATION DATA + VARIABLES -------------
 
-final class {{ operation_name }}Data implements shalom_core.OperationInterface {
+final class {{ operation_name }}Data implements shalom_core.MutationInterface {
     {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
         final {{ type_name_for_selection(selection) }} {{ selection.name }};
     {% endfor %}
@@ -85,6 +85,19 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface {
         );
     }
 
+    static {{ operation_name }}Data fromShalomValue(shalom_core.ShalomJsonValue data) {
+        {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
+            final shalom_core.ShalomJsonValue? {{selection.name}}$raw = data.field('{{selection.name}}');
+            {% set raw_value_symbol = selection.name + "$raw" -%}
+            final {{type_name_for_selection(selection)}} {{selection.name}}$value = {{ _deserialize_selection_from_shalom_macro(raw_value_symbol, selection, selection.is_optional, false) }};
+        {% endfor -%}
+        return {{ operation_name }}Data(
+            {% for selection in context.operation.root_type.selections if selection.name != "__typename" -%}
+                {{selection.name}}: {{selection.name}}$value,
+            {% endfor -%}
+        );
+    }
+
     shalom_core.JsonObject toJson() {
         return {
             {% for selection in context.operation.root_type.selections %}
@@ -101,6 +114,13 @@ final class {{ operation_name }}Data implements shalom_core.OperationInterface {
             {% endfor %}
         };
     }
+
+    @override
+    shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+        {% for selection in context.operation.root_type.selections if selection.name != "__typename" %}
+            '{{ selection.name }}': {{ _serialize_selection_to_shalom_macro("this." + selection.name, selection, selection.is_optional, false) }},
+        {% endfor %}
+    });
 }
 
 {% if op_variables_exist %}
@@ -128,6 +148,10 @@ final class {{ operation_name }}Variables {
         shalom_core.JsonObject data = {};
         {{ toJson_macro(op_variables) }}
         return data;
+    }
+
+    shalom_core.ShalomJsonValue toShalomValue() {
+        {{ toShalomValue_macro(op_variables) }}
     }
 
     @override

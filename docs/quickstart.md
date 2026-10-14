@@ -1,7 +1,7 @@
 # Quickstart
 
 This walkthrough is a hands-on tutorial for the GIF search Flutter example in
-`examples/flutter/gif_search`. The same approach works for any Flutter app
+[`examples/flutter/gif_search`](https://github.com/nrbnlulu/shalom/tree/main/examples/flutter/gif_search). The same approach works for any Flutter app
 using Shalom's declarative annotation API.
 
 ## 1. Add your schema
@@ -24,22 +24,14 @@ type Gif {
 }
 ```
 
-## 2. (Optional) Add `shalom.yml`
+## 2. Annotate widgets, fragments, and mutations
 
-```yml
-custom_scalars: {}
-```
-
-Add custom scalar mappings or an output directory override here when needed
-(see `custom-scalars.md`).
-
-## 3. Annotate widgets, fragments, and mutations
-
-Unlike v1, there are no separate `.graphql` operation files. You annotate the
+There are no separate `.graphql` operation files. You annotate the
 Dart/Flutter classes that need data directly, and the codegen generates a
 `$ClassName` base class alongside them:
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:shalom_annotations/shalom_annotations.dart';
 import 'package:gif_search/__graphql__/AlbumsPage.widget.shalom.dart';
 import 'package:gif_search/__graphql__/AlbumWidget.shalom.dart';
@@ -80,25 +72,51 @@ class AlbumWidget extends $AlbumWidget {
 }
 ```
 
-## 4. Run codegen
+You can also annotate mutation classes to generate type-safe mutation executors:
+
+```dart
+import 'package:gif_search/__graphql__/CreateAlbumMutation.mutation.shalom.dart';
+
+@Mutation(r"""
+  ($name: String!) {
+    createAlbum(name: $name) {
+      id
+      name
+      tag
+    }
+  }
+""")
+class CreateAlbumMutation extends $CreateAlbumMutation {
+  const CreateAlbumMutation(super.client);
+}
+```
+
+Mutations are executed imperatively with generated executor classes:
+
+```dart
+final client = ShalomScope.of(context);
+final response = await CreateAlbumMutation(client).execute(name: 'Favorites');
+```
+
+## 3. Run codegen
 
 ```bash
 shalom generate --path examples/flutter/gif_search
 ```
 
 Shalom emits Dart files under a `__graphql__` directory next to each
-annotated file, for example
-`lib/graphql/__graphql__/AlbumsPage.widget.shalom.dart` and
-`lib/graphql/__graphql__/AlbumWidget.shalom.dart`. It also emits a single
-registration file, `__graphql__/shalom_init.shalom.dart`, exporting
-`kSchemaSdl` and `registerShalomDefinitions(client)`.
+annotated file (for example `lib/__graphql__/AlbumsPage.widget.shalom.dart`
+and `lib/__graphql__/AlbumWidget.shalom.dart`). It also emits a single
+registration file next to your schema under `lib/graphql/__graphql__/shalom_init.shalom.dart`,
+exporting `kSchemaSdl`, `registerShalomDefinitions(client)`, and the app-scoped `ShalomProvider`.
 
-## 5. Create the client and register definitions
+## 4. Create the client and register definitions
 
 ```dart
+import 'package:flutter/material.dart';
 import 'package:shalom/shalom.dart';
 import 'package:gif_search/graphql/__graphql__/shalom_init.shalom.dart'
-    show kSchemaSdl, registerShalomDefinitions;
+    show kSchemaSdl, registerShalomDefinitions, ShalomProvider;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -117,9 +135,9 @@ void main() async {
 `ShalomProvider` puts the client above your widget tree so generated
 query/subscription/fragment widgets and `ShalomScope.of(context)` can find it.
 
-## 6. Mount the generated widget
+## 5. Mount the generated widget
 
-There is no manual `request`/subscribe call for reads. Just place the
+There is no manual `request`/`subscribe` call for reads. Just place the
 annotated widget in the tree:
 
 ```dart
@@ -130,31 +148,75 @@ home: const AlbumsPage(),
 rebuilds whenever a watched cache entry changes — including changes written
 by other operations or mutations.
 
-## 7. Handle loading, error, and data states
+## 6. Handle loading, error, and data states
 
-Every generated query/subscription/fragment widget requires `buildData` and
-lets you override `buildLoading` and `buildError`:
+For `@Query` and `@Subscription` widgets, `buildLoading`, `buildError`, and `buildData` are all abstract methods that must be implemented:
+
+- **`buildLoading(BuildContext context)`**: Displayed while the query or subscription is in flight and no cached data is available.
+- **`buildError(BuildContext context, Object error)`**: Displayed when a request fails with an error and no cached fallback exists.
+- **`buildData(BuildContext context, T data)`**: Called whenever data is ready or updated from the normalized cache.
+
+For `@Fragment` widgets, `buildLoading` (defaults to `SizedBox.shrink()`) and `buildError` (defaults to `ErrorWidget`) have default implementations, while `buildData` is required. You can override them as needed:
 
 ```dart
 @override
-Widget buildLoading(BuildContext context) => const CircularProgressIndicator();
+Widget buildLoading(BuildContext context) =>
+    const Center(child: CircularProgressIndicator());
 
 @override
-Widget buildError(BuildContext context, Object error) => Text('$error');
+Widget buildError(BuildContext context, Object error) =>
+    Center(child: Text('Error: $error'));
+```
+!!! note "Reusing loading and error states"
+    In real applications, you can define a mixin (like `QueryWidgetMixin`) to avoid repeating `buildLoading` and `buildError` implementations across your screens:
+
+    ```dart
+    mixin QueryWidgetMixin {
+      Widget buildLoading(BuildContext context) =>
+          const Center(child: CircularProgressIndicator());
+
+      Widget buildError(BuildContext context, Object error) =>
+          Center(child: Text('Error: $error'));
+    }
+
+    class MyQueryScreen extends $MyQueryScreen with QueryWidgetMixin {
+      @override
+      Widget buildData(BuildContext context, MyQueryData data) => ...;
+    }
+    ```
+
+## 7. (Optional) Configure `shalom.yml`
+
+A `shalom.yml` configuration file in your project root is optional, but lets you configure custom scalar mappings or override output directories:
+
+```yml
+custom_scalars: {}
 ```
 
+See the [Custom Scalars](custom-scalars.md) guide for details on mapping custom GraphQL types to Dart classes.
+
 ## 8. Run the example app
+
+The example app includes a local mock GraphQL server in `examples/flutter/gif_search/server`.
+
+Start the mock server (in one terminal):
+
+```bash
+cd examples/flutter/gif_search/server
+uv run python main.py
+```
+
+The server runs on `http://127.0.0.1:7000/graphql` and includes a GraphiQL playground.
+
+Then, start the Flutter app (in another terminal):
 
 ```bash
 cd examples/flutter/gif_search
 flutter run
 ```
 
-## 9. Why a normalized cache?
+## 9. Next: Normalized Cache
 
-Shalom normalizes response data into typed entity records, so a change from
-one operation (a mutation, another query, a subscription) can update every
-widget that reads the same entity — no manual refetching or prop drilling.
-See `normalized-cache.md` for details, and `SKILL.md` for the full API
-reference including mutations, optimistic updates, and updating lists after
-mutations.
+Shalom normalizes response data into typed entity records (e.g. `Album:<id>`), so a change from one operation (a mutation, another query, or a subscription) immediately updates every widget that reads the same entity — with zero prop drilling or manual refetching.
+
+Head over to the [Normalized Cache](normalized-cache.md) guide!
