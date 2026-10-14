@@ -94,6 +94,7 @@ abstract class ${{ operation_name }} {
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
         required FutureOr<void> Function(CacheProxy cache, {{ operation_name }}Data data) update,
+        List<String>? invalidateOperations,
     }) async {
         {% if op_variables_exist %}
         final vars = {{ operation_name }}Variables(
@@ -111,6 +112,11 @@ abstract class ${{ operation_name }} {
         );
         if (response case shalom_core.GraphQLData(data: final data)) {
           await update(CacheProxy(_client), data);
+          if (invalidateOperations != null) {
+            for (final op in invalidateOperations) {
+              await _client.invalidateOperation(name: op);
+            }
+          }
         }
         return response;
     }
@@ -137,6 +143,7 @@ abstract class ${{ operation_name }} {
         {% for name, field in op_variables | items -%}
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
+        List<String>? invalidateOperations,
     }) async {
         {% if op_variables_exist %}
         final vars = {{ operation_name }}Variables(
@@ -169,7 +176,13 @@ abstract class ${{ operation_name }} {
                 decoder: {{ operation_name }}Data.fromShalomValue,
             );
             if (graphqlResponse case shalom_core.GraphQLData(data: final responseData)) {
-              if (rollbackWhen?.call(responseData) ?? false) await doRollback();
+              if (rollbackWhen?.call(responseData) ?? false) {
+                await doRollback();
+              } else if (invalidateOperations != null) {
+                for (final op in invalidateOperations) {
+                  await _client.invalidateOperation(name: op);
+                }
+              }
             }
             return OptimisticMutationResponse(
                 response: graphqlResponse,
