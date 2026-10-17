@@ -427,6 +427,31 @@ Important details:
 - `executeOptimistic` does not run an `executeWithCacheUpdate` list callback. For optimistic list membership, prefer a mutation response that includes the parent/list field, or implement a manual rollback path for the extra list write.
 - `OptimisticMutationResponse.rollback()` is async; await it when manually rolling back `GraphQLError` or `LinkExceptionResponse` results.
 
+## Invalidating Operations After Mutations
+
+When a mutation does not modify the normalized cache directly or when you want observing widgets to refetch from the network instead of manually updating the cache, pass `invalidateOperations` to `execute`:
+
+```dart
+final response = await AddPostMutation(client).execute(
+  input: input,
+  invalidateOperations: [
+    // Invalidate all subscriptions of an operation:
+    InvalidateTarget(
+      operationName: $GetPostsQuery.operation$Name(),
+    ),
+    // Or fine-grained invalidation matching specific parameters:
+    InvalidateTarget(
+      operationName: $GetPostQuery.operation$Name(),
+      variables: GetPostQueryVariables(id: postId).toShalomValue(),
+    ),
+  ],
+);
+```
+
+- Each entry in `invalidateOperations` is an `InvalidateTarget` matched against active operation subscriptions in `shalom_runtime`.
+- Matching subscriptions complete their streams, causing their Flutter widgets (`ShalomObservingState`) to resubscribe and refetch from the network.
+- When `variables` is provided, only subscriptions with matching variables are invalidated, and only the corresponding cache root fields are evicted. When omitted or `null`, all active subscriptions of that operation name are invalidated.
+
 ## Updating Lists After Mutations
 
 Use `executeWithCacheUpdate` when a mutation creates, deletes, adds, removes, or reorders items and the server response does not refetch the parent list. The mutation response is normalized before the callback runs.

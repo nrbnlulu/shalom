@@ -763,6 +763,23 @@ pub async fn evict_operation(
     handle.runtime.evict_operation(&name, variables.as_ref())
 }
 
+/// Invalidate active subscriptions for [name] (optionally filtered by [variables]).
+///
+/// Unsubscribes matching subscriptions, causing their stream to complete (`onDone`),
+/// which triggers Dart/Flutter's `ShalomObservingState` to resubscribe and refetch.
+#[frb]
+pub async fn invalidate_operation(
+    handle: &RuntimeHandle,
+    name: String,
+    variables: Option<ShalomJsonValue>,
+) -> anyhow::Result<()> {
+    let variables = parse_variables(variables)?;
+    handle
+        .runtime
+        .invalidate_operation(&name, variables.as_ref());
+    Ok(())
+}
+
 /// Read an entity from the cache through a fragment's selection set.
 ///
 /// Returns `null` when the entity is absent or has missing refs.

@@ -6,6 +6,7 @@
 
 // Re-export all generated types so importers only need this file.
 export '{{ operation_name }}.shalom.dart';
+export 'package:shalom/shalom.dart' show InvalidateTarget;
 
 import 'dart:async' show FutureOr;
 import "{{ context.schema_import_path }}";
@@ -14,7 +15,7 @@ import 'package:shalom/shalom.dart' show OptimisticMutationResponse, CacheProxy;
 import '{{ operation_name }}.shalom.dart';
 
 abstract class ${{ operation_name }} {
-    String operation$Name() => '{{ operation_name }}';
+    static String operation$Name() => '{{ operation_name }}';
 
     final shalom_core.ShalomRuntimeClient _client;
     const ${{ operation_name }}(this._client);
@@ -22,23 +23,55 @@ abstract class ${{ operation_name }} {
     /// Execute the mutation and return the normalised response.
     /// The response is written into the shared entity cache, triggering reactive
     /// updates on any query subscriptions watching the same entities.
-    Future<shalom_core.GraphQLResponse<{{ operation_name }}Data>> execute(
-        {%- if op_variables_exist %}{
+    ///
+    /// [invalidateOperations], if provided, invalidates active subscriptions of
+    /// the specified operations upon success, causing their observing widgets to resubscribe.
+    ///
+    /// Example:
+    /// ```dart
+    /// await addPost.execute(
+    ///   input: AddPostInput(title: 'Hello'),
+    ///   invalidateOperations: [
+    ///     InvalidateTarget(
+    ///       operationName: $GetPostsQuery.operation$Name(),
+    ///     ),
+    ///     // Fine-grained with variables:
+    ///     InvalidateTarget(
+    ///       operationName: $GetPostQuery.operation$Name(),
+    ///       variables: GetPostQueryVariables(id: '123').toShalomValue(),
+    ///     ),
+    ///   ],
+    /// );
+    /// ```
+    Future<shalom_core.GraphQLResponse<{{ operation_name }}Data>> execute({
+        {%- if op_variables_exist %}
         {% for name, field in op_variables | items -%}
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
-        }{% endif %}
-    ) => _client.mutate<{{ operation_name }}Data>(
-        name: operation$Name(),
-        {% if op_variables_exist %}
-        variables: {{ operation_name }}Variables(
-            {% for name, _field in op_variables | items -%}
-                {{ name }}: {{ name }},
-            {% endfor -%}
-        ).toShalomValue(),
         {% endif %}
-        decoder: {{ operation_name }}Data.fromShalomValue,
-    );
+        List<shalom_core.InvalidateTarget>? invalidateOperations,
+    }) async {
+        final response = await _client.mutate<{{ operation_name }}Data>(
+            name: operation$Name(),
+            {% if op_variables_exist %}
+            variables: {{ operation_name }}Variables(
+                {% for name, _field in op_variables | items -%}
+                    {{ name }}: {{ name }},
+                {% endfor -%}
+            ).toShalomValue(),
+            {% endif %}
+            decoder: {{ operation_name }}Data.fromShalomValue,
+        );
+        if (invalidateOperations != null && response is shalom_core.GraphQLData) {
+            for (final op in invalidateOperations) {
+                await _client.invalidateOperation(
+                    name: op.operationName,
+                    variables: op.variables,
+                );
+            }
+        }
+        return response;
+    }
 
     /// Execute the mutation and update the cache via [update].
     ///
@@ -70,6 +103,7 @@ abstract class ${{ operation_name }} {
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
         required FutureOr<void> Function(CacheProxy cache, {{ operation_name }}Data data) update,
+        List<shalom_core.InvalidateTarget>? invalidateOperations,
     }) async {
         {% if op_variables_exist %}
         final vars = {{ operation_name }}Variables(
@@ -87,6 +121,14 @@ abstract class ${{ operation_name }} {
         );
         if (response case shalom_core.GraphQLData(data: final data)) {
           await update(CacheProxy(_client), data);
+          if (invalidateOperations != null) {
+            for (final op in invalidateOperations) {
+              await _client.invalidateOperation(
+                  name: op.operationName,
+                  variables: op.variables,
+              );
+            }
+          }
         }
         return response;
     }
@@ -113,6 +155,7 @@ abstract class ${{ operation_name }} {
         {% for name, field in op_variables | items -%}
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
+        List<shalom_core.InvalidateTarget>? invalidateOperations,
     }) async {
         {% if op_variables_exist %}
         final vars = {{ operation_name }}Variables(
@@ -145,7 +188,16 @@ abstract class ${{ operation_name }} {
                 decoder: {{ operation_name }}Data.fromShalomValue,
             );
             if (graphqlResponse case shalom_core.GraphQLData(data: final responseData)) {
-              if (rollbackWhen?.call(responseData) ?? false) await doRollback();
+              if (rollbackWhen?.call(responseData) ?? false) {
+                await doRollback();
+              } else if (invalidateOperations != null) {
+                for (final op in invalidateOperations) {
+                  await _client.invalidateOperation(
+                      name: op.operationName,
+                      variables: op.variables,
+                  );
+                }
+              }
             }
             return OptimisticMutationResponse(
                 response: graphqlResponse,
