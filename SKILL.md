@@ -432,17 +432,25 @@ Important details:
 When a mutation does not modify the normalized cache directly or when you want observing widgets to refetch from the network instead of manually updating the cache, pass `invalidateOperations` to `execute`:
 
 ```dart
-final response = await CreatePimaForceMutation(client).execute(
+final response = await AddPostMutation(client).execute(
   input: input,
   invalidateOperations: [
-    $EditorUnitSystemsQuery.operation$Name(),
+    // Invalidate all subscriptions of an operation:
+    InvalidateTarget(
+      operationName: $GetPostsQuery.operation$Name(),
+    ),
+    // Or fine-grained invalidation matching specific parameters:
+    InvalidateTarget(
+      operationName: $GetPostQuery.operation$Name(),
+      variables: GetPostQueryVariables(id: postId).toShalomValue(),
+    ),
   ],
 );
 ```
 
-- Each entry in `invalidateOperations` is matched against active operation subscriptions in `shalom_runtime`.
+- Each entry in `invalidateOperations` is an `InvalidateTarget` matched against active operation subscriptions in `shalom_runtime`.
 - Matching subscriptions complete their streams, causing their Flutter widgets (`ShalomObservingState`) to resubscribe and refetch from the network.
-- Query widget classes expose `static String operation$Name()` (e.g. `$EditorUnitSystemsQuery.operation$Name()` or `EditorUnitSystemsQuery.operation$Name()`), so operation names do not have to be hard-coded as string literals.
+- When `variables` is provided, only subscriptions with matching variables are invalidated, and only the corresponding cache root fields are evicted. When omitted or `null`, all active subscriptions of that operation name are invalidated.
 
 ## Updating Lists After Mutations
 

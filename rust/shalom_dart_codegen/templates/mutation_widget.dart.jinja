@@ -6,6 +6,7 @@
 
 // Re-export all generated types so importers only need this file.
 export '{{ operation_name }}.shalom.dart';
+export 'package:shalom/shalom.dart' show InvalidateTarget;
 
 import 'dart:async' show FutureOr;
 import "{{ context.schema_import_path }}";
@@ -25,15 +26,20 @@ abstract class ${{ operation_name }} {
     ///
     /// [invalidateOperations], if provided, invalidates active subscriptions of
     /// the specified operations upon success, causing their observing widgets to resubscribe.
-    /// Operation names can be supplied via the static helper on the query widget class:
-    /// e.g. `$MyQuery.operation$Name()` (or `MyQuery.operation$Name()`).
     ///
     /// Example:
     /// ```dart
     /// await addPost.execute(
     ///   input: AddPostInput(title: 'Hello'),
     ///   invalidateOperations: [
-    ///     $GetPostsQuery.operation$Name(),
+    ///     InvalidateTarget(
+    ///       operationName: $GetPostsQuery.operation$Name(),
+    ///     ),
+    ///     // Fine-grained with variables:
+    ///     InvalidateTarget(
+    ///       operationName: $GetPostQuery.operation$Name(),
+    ///       variables: GetPostQueryVariables(id: '123').toShalomValue(),
+    ///     ),
     ///   ],
     /// );
     /// ```
@@ -43,7 +49,7 @@ abstract class ${{ operation_name }} {
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
         {% endif %}
-        List<String>? invalidateOperations,
+        List<shalom_core.InvalidateTarget>? invalidateOperations,
     }) async {
         final response = await _client.mutate<{{ operation_name }}Data>(
             name: operation$Name(),
@@ -58,7 +64,10 @@ abstract class ${{ operation_name }} {
         );
         if (invalidateOperations != null && response is shalom_core.GraphQLData) {
             for (final op in invalidateOperations) {
-                await _client.invalidateOperation(name: op);
+                await _client.invalidateOperation(
+                    name: op.operationName,
+                    variables: op.variables,
+                );
             }
         }
         return response;
@@ -94,7 +103,7 @@ abstract class ${{ operation_name }} {
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
         required FutureOr<void> Function(CacheProxy cache, {{ operation_name }}Data data) update,
-        List<String>? invalidateOperations,
+        List<shalom_core.InvalidateTarget>? invalidateOperations,
     }) async {
         {% if op_variables_exist %}
         final vars = {{ operation_name }}Variables(
@@ -114,7 +123,10 @@ abstract class ${{ operation_name }} {
           await update(CacheProxy(_client), data);
           if (invalidateOperations != null) {
             for (final op in invalidateOperations) {
-              await _client.invalidateOperation(name: op);
+              await _client.invalidateOperation(
+                  name: op.operationName,
+                  variables: op.variables,
+              );
             }
           }
         }
@@ -143,7 +155,7 @@ abstract class ${{ operation_name }} {
         {% for name, field in op_variables | items -%}
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
-        List<String>? invalidateOperations,
+        List<shalom_core.InvalidateTarget>? invalidateOperations,
     }) async {
         {% if op_variables_exist %}
         final vars = {{ operation_name }}Variables(
@@ -180,7 +192,10 @@ abstract class ${{ operation_name }} {
                 await doRollback();
               } else if (invalidateOperations != null) {
                 for (final op in invalidateOperations) {
-                  await _client.invalidateOperation(name: op);
+                  await _client.invalidateOperation(
+                      name: op.operationName,
+                      variables: op.variables,
+                  );
                 }
               }
             }

@@ -90,6 +90,14 @@ abstract interface class OperationInterface {
   ShalomJsonValue toShalomValue();
 }
 
+/// Target operation for cache invalidation.
+class InvalidateTarget {
+  final String operationName;
+  final ShalomJsonValue? variables;
+
+  const InvalidateTarget({required this.operationName, this.variables});
+}
+
 /// Marker for operation/fragment data types that can be safely observed
 /// through a long-lived reactive [Stream] subscription ([ShalomRuntimeClient.request],
 /// [ShalomRuntimeClient.subscribeToFragment]).
