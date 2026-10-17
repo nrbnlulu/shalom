@@ -1115,7 +1115,7 @@ impl ShalomRuntime {
     ///
     /// Unsubscribing drops their stream channel so Dart/Flutter's `onDone`
     /// triggers a resubscribe to fetch fresh data.
-    /// 
+    ///
     /// Returns `false` (and does nothing) if no matching cache entry exists.
     pub fn evict_operation(
         &self,
