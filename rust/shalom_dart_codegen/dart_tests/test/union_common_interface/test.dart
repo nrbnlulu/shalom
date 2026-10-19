@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import "__graphql__/GetErrorResult.shalom.dart";
 import "__graphql__/GetMixedResult.shalom.dart";
 

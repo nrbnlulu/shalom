@@ -1,5 +1,6 @@
 import "package:shalom/shalom.dart";
 import 'package:test/test.dart';
+
 import "__graphql__/OptionalArguments.shalom.dart";
 import "__graphql__/RequiredArguments.shalom.dart";
 import "__graphql__/OptionalWithSomeDefault.shalom.dart";

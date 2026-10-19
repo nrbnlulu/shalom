@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:shalom/shalom.dart';
 
 /// GraphQL WebSocket protocol message types
