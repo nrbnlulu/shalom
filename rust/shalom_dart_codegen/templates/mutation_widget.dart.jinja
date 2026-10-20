@@ -179,6 +179,7 @@ abstract class ${{ operation_name }} {
             rolledBack = true;
             await _client.rollbackOptimistic(writeId);
         }
+        final shalom_core.GraphQLResponse<{{ operation_name }}Data> mutationResponse;
         try {
             final graphqlResponse = await _client.mutate<{{ operation_name }}Data>(
                 name: operation$Name(),
@@ -190,24 +191,31 @@ abstract class ${{ operation_name }} {
             if (graphqlResponse case shalom_core.GraphQLData(data: final responseData)) {
               if (rollbackWhen?.call(responseData) ?? false) {
                 await doRollback();
-              } else if (invalidateOperations != null) {
-                for (final op in invalidateOperations) {
-                  await _client.invalidateOperation(
-                      name: op.operationName,
-                      variables: op.variables,
-                  );
-                }
               }
             }
-            return OptimisticMutationResponse(
-                response: graphqlResponse,
-                wasRolledBack: rolledBack,
-                client: _client,
-                writeId: writeId,
-            );
+            mutationResponse = graphqlResponse;
         } catch (e) {
             await doRollback();
             rethrow;
         }
+        // Post-success invalidation runs outside the try/catch so its failures
+        // (e.g. invalid OperationRef variables) never roll back a mutation
+        // that already succeeded.
+        if (invalidateOperations != null &&
+            !rolledBack &&
+            mutationResponse is shalom_core.GraphQLData) {
+          for (final op in invalidateOperations) {
+            await _client.invalidateOperation(
+                name: op.operationName,
+                variables: op.variables,
+            );
+          }
+        }
+        return OptimisticMutationResponse(
+            response: mutationResponse,
+            wasRolledBack: rolledBack,
+            client: _client,
+            writeId: writeId,
+        );
     }
 }
