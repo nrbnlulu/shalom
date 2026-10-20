@@ -98,6 +98,35 @@ await RemoveGifFromAlbumMutation(client).executeWithCacheUpdate(
 );
 ```
 
+## Invalidating operations
+
+When patching the cache by hand isn't practical (e.g. server-side sorting,
+pagination, or computed fields), invalidate the affected operations instead.
+Invalidation evicts the operation's root cache entry and closes its matching
+active subscriptions, so any mounted `@Query` widget resubscribes and refetches fresh data
+from the network.
+
+### After a mutation
+
+Every generated mutation `execute` (as well as `executeWithCacheUpdate` and
+`executeOptimistic`) accepts `invalidateOperations`. They only run once the
+mutation succeeds:
+
+```dart
+await AddPostMutation(client).execute(
+  input: AddPostInput(title: 'Hello'),
+  invalidateOperations: [
+    // Every active instance of GetPosts, regardless of variables:
+    OperationRef(operationName: $GetPostsQuery.operation$Name()),
+    // Only the instance matching these variables:
+    OperationRef(
+      operationName: $GetPostQuery.operation$Name(),
+      variables: GetPostQueryVariables(id: '123').toShalomValue(),
+    ),
+  ],
+);
+```
+
 ## Optimistic updates
 
 Use generated `executeOptimistic` when you want instant UI feedback before the network responds:
