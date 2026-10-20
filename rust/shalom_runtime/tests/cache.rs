@@ -1888,6 +1888,71 @@ mod fragment_subscriptions {
         runtime.unsubscribe(&pet_id);
     }
 
+    #[tokio::test(flavor = "current_thread")]
+    async fn parent_keeps_watching_a_field_also_read_by_a_nested_observed_fragment() {
+        let schema = r#"
+            type Query { item: Item! }
+            type Item { id: ID!, aObserved: Pet!, zDirect: Pet! }
+            type Pet { id: ID!, name: String! }
+        "#;
+        let operation = r#"
+            fragment PetFields on Pet @observe { id name }
+            fragment ItemFields on Item @observe {
+                id
+                aObserved { ...PetFields }
+                zDirect { id name }
+            }
+            query Item { item { ...ItemFields } }
+        "#;
+        let (runtime, op_ctx) = build_ctx(schema, operation);
+        let data = |name: &str| {
+            json!({
+                "item": {
+                    "id": "1",
+                    "aObserved": { "id": "1", "name": name },
+                    "zDirect": { "id": "1", "name": name }
+                }
+            })
+        };
+        normalize(&runtime, &op_ctx, data("Milo"), None);
+        let item_id = runtime
+            .observe_fragment(ObservedRef {
+                observable_id: "ItemFields".into(),
+                anchor: "Item:1".into(),
+            })
+            .unwrap();
+        let pet_id = runtime
+            .observe_fragment(ObservedRef {
+                observable_id: "PetFields".into(),
+                anchor: "Pet:1".into(),
+            })
+            .unwrap();
+        let mut item_stream = runtime.subscription_stream(&item_id).unwrap();
+        let mut pet_stream = runtime.subscription_stream(&pet_id).unwrap();
+        item_stream.next().await.unwrap().unwrap();
+        pet_stream.next().await.unwrap().unwrap();
+
+        let observers = runtime.all_observers();
+        let item = observers.iter().find(|o| o.name == "ItemFields").unwrap();
+        assert!(item.watched_keys.contains(&"Pet:1.name".into()));
+
+        normalize(&runtime, &op_ctx, data("Luna"), None);
+        let item_update = tokio::time::timeout(Duration::from_secs(1), item_stream.next())
+            .await
+            .expect("parent should invalidate on its shared field")
+            .unwrap()
+            .unwrap();
+        assert_eq!(item_update.data["zDirect"]["name"], "Luna");
+        let pet_update = tokio::time::timeout(Duration::from_secs(1), pet_stream.next())
+            .await
+            .expect("nested fragment should still invalidate")
+            .unwrap()
+            .unwrap();
+        assert_eq!(pet_update.data["name"], "Luna");
+        runtime.unsubscribe(&item_id);
+        runtime.unsubscribe(&pet_id);
+    }
+
     #[test]
     fn test_fragment_subscription_by_id() {
         let schema = r#"
