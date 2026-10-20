@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import '__graphql__/UserInfoFrag.shalom.dart';
 import '__graphql__/GetUser.shalom.dart';
 import '__graphql__/GetPost.shalom.dart';

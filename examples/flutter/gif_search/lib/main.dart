@@ -44,8 +44,7 @@ import 'package:shalom_flutter/widgets/debug_panel.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await shalom.ShalomRuntimeClient.initFlutterRustBridge();
-  final client = createShalomClient();
-  runApp(ShalomProvider(client: client, child: const MyApp()));
+  runApp(MyApp(client: createShalomClient()));
 }
 
 mixin QueryWidgetMixin {
@@ -67,17 +66,22 @@ mixin QueryWidgetMixin {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final shalom.ShalomRuntimeClient client;
+
+  const MyApp({super.key, required this.client});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'GIF Search',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
-        useMaterial3: true,
+    return ShalomProvider(
+      client: client,
+      child: MaterialApp(
+        title: 'GIF Search',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
+          useMaterial3: true,
+        ),
+        home: const _AppWithDebugPanel(),
       ),
-      home: const _AppWithDebugPanel(),
     );
   }
 }

@@ -2330,3 +2330,186 @@ fn invalid_nested_response_preserves_existing_cache_records() {
         })
     );
 }
+
+#[test]
+fn partial_query_does_not_drop_unselected_fields_from_existing_entity() {
+    let schema = r#"
+        type User {
+            id: ID!
+            name: String!
+            description: String
+        }
+        type Company {
+            id: ID!
+            employees: [User!]!
+        }
+        type Query {
+            users: [User!]!
+            company: Company!
+        }
+    "#;
+    let ops = r#"
+        query GetUsers {
+            users {
+                id
+                name
+                description
+            }
+        }
+        query GetCompany {
+            company {
+                id
+                employees {
+                    id
+                }
+            }
+        }
+    "#;
+    let schema_ctx = parse_schema(schema).expect("schema parse failed");
+    let global_ctx = ShalomGlobalContext::new(
+        schema_ctx,
+        ShalomConfig::default(),
+        PathBuf::from("schema.graphql"),
+    );
+    let parsed_ops = parse_document(&global_ctx, ops, &PathBuf::from("ops.graphql")).unwrap();
+    let runtime = ShalomRuntime::new(global_ctx);
+    runtime.register_operation(ops).unwrap();
+
+    let get_users_op = parsed_ops.get("GetUsers").unwrap();
+    let get_company_op = parsed_ops.get("GetCompany").unwrap();
+
+    // 1. First query normalizes User:1 with all fields
+    runtime
+        .normalize(
+            get_users_op,
+            json!({
+                "users": [
+                    { "id": "1", "name": "Ada", "description": "Mathematician" }
+                ]
+            }),
+            None,
+        )
+        .expect("normalize users");
+
+    let user_record_initial = record(&runtime, "User:1");
+    expect_scalar(&user_record_initial, "name", json!("Ada"));
+    expect_scalar(&user_record_initial, "description", json!("Mathematician"));
+
+    // 2. Second query reaches User:1 under company.employees with ONLY `id`
+    runtime
+        .normalize(
+            get_company_op,
+            json!({
+                "company": {
+                    "id": "100",
+                    "employees": [
+                        { "id": "1" }
+                    ]
+                }
+            }),
+            None,
+        )
+        .expect("normalize company");
+
+    // 3. User:1 must still have `name` and `description`!
+    let user_record_after = record(&runtime, "User:1");
+    expect_scalar(&user_record_after, "name", json!("Ada"));
+    expect_scalar(&user_record_after, "description", json!("Mathematician"));
+
+    // 4. Reading GetUsers from cache must succeed with zero missing refs
+    let cached_users = runtime
+        .try_read_operation("GetUsers", None)
+        .expect("try_read_operation")
+        .expect("cache hit");
+
+    assert_eq!(
+        cached_users,
+        json!({
+            "users": [
+                { "id": "1", "name": "Ada", "description": "Mathematician" }
+            ]
+        })
+    );
+}
+
+#[test]
+fn test_keyed_entity_replaces_inline_object_without_field_leak() {
+    let schema = r#"
+        schema { query: Query }
+        type Query {
+            currentProfile: Profile
+        }
+        type Profile {
+            id: ID
+            name: String
+            bio: String
+        }
+    "#;
+
+    let op1 = r#"
+        query GetFullProfile {
+            currentProfile {
+                name
+                bio
+            }
+        }
+    "#;
+    let op2 = r#"
+        query GetPartialProfile {
+            currentProfile {
+                id
+                name
+            }
+        }
+    "#;
+
+    let ops = format!("{}\n{}", op1, op2);
+    let schema_ctx = parse_schema(schema).expect("schema parse failed");
+    let global_ctx = ShalomGlobalContext::new(
+        schema_ctx,
+        ShalomConfig::default(),
+        PathBuf::from("schema.graphql"),
+    );
+    let parsed_ops = parse_document(&global_ctx, &ops, &PathBuf::from("ops.graphql")).unwrap();
+    let runtime = ShalomRuntime::new(global_ctx);
+    runtime.register_operation(&ops).unwrap();
+
+    let get_full_op = parsed_ops.get("GetFullProfile").unwrap();
+    let get_partial_op = parsed_ops.get("GetPartialProfile").unwrap();
+
+    // 1. Initial response has an inline profile without an id
+    runtime
+        .normalize(
+            get_full_op,
+            json!({
+                "currentProfile": {
+                    "name": "Anonymous Guest",
+                    "bio": "Visiting the site"
+                }
+            }),
+            None,
+        )
+        .expect("normalize full profile");
+
+    // 2. Next response replaces it with a new entity that has an ID, using a query that only selects id and name
+    runtime
+        .normalize(
+            get_partial_op,
+            json!({
+                "currentProfile": {
+                    "id": "user-42",
+                    "name": "Alice"
+                }
+            }),
+            None,
+        )
+        .expect("normalize partial profile");
+
+    // 3. The newly keyed entity Profile:user-42 must NOT have inherited "bio" from the inline object
+    let profile_record = record(&runtime, "Profile:user-42");
+    expect_scalar(&profile_record, "name", json!("Alice"));
+    assert!(
+        profile_record.get("bio").is_none(),
+        "Fields from unkeyed inline object must not leak into newly keyed entity"
+    );
+}

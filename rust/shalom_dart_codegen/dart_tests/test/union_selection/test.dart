@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import "__graphql__/GetSearchResult.shalom.dart";
 import "__graphql__/GetSearchResultOpt.shalom.dart";
 import "__graphql__/GetSearchResultWithoutTopTypename.shalom.dart";

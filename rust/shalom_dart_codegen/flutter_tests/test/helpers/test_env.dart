@@ -1,15 +1,11 @@
-import 'dart:io' show File, Platform;
+import 'dart:io' show File;
 import 'package:shalom/shalom.dart' show ShalomRuntimeClient;
-
-String _nativeLibPath() {
-  if (Platform.isLinux) return '.dart_tool/lib/libshalom_ffi.so';
-  if (Platform.isMacOS) return '.dart_tool/lib/libshalom_ffi.dylib';
-  if (Platform.isWindows) return '.dart_tool/lib/shalom_ffi.dll';
-  throw UnsupportedError('Unsupported platform: ${Platform.operatingSystem}');
-}
+import 'package:shalom/testing.dart' show resolveNativeLibPath;
 
 Future<void> initTestEnv() =>
-    ShalomRuntimeClient.initFlutterRustBridge(nativeLibPath: _nativeLibPath());
+    ShalomRuntimeClient.initFlutterRustBridge(
+  nativeLibPath: resolveNativeLibPath(),
+);
 
 String loadSchemaSdl() {
   return File('lib/graphql/schema.graphql').readAsStringSync();

@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import "__graphql__/AnimalBasicInfo.shalom.dart";
 import "__graphql__/GetAnimal.shalom.dart";
 import "__graphql__/GetAnimalOpt.shalom.dart";

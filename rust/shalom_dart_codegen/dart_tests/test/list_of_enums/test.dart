@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import "__graphql__/schema.shalom.dart";
 import "__graphql__/GetStatusesRequired.shalom.dart";
 import "__graphql__/GetStatusesOptional.shalom.dart";
