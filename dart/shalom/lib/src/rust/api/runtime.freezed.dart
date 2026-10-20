@@ -181,7 +181,7 @@ return transportError(_that.message,_that.code,_that.details);case _:
 
 
 class GraphQlResponseInput_Data extends GraphQlResponseInput {
-  const GraphQlResponseInput_Data({required this.data, final  List<ShalomJsonValue>? errors, this.extensions}): _errors = errors,super._();
+  const GraphQlResponseInput_Data({required this.data,  List<ShalomJsonValue>? errors, this.extensions}): _errors = errors,super._();
   
 
  final  ShalomJsonValue data;
@@ -280,7 +280,7 @@ $ShalomJsonValueCopyWith<$Res>? get extensions {
 
 
 class GraphQlResponseInput_Error extends GraphQlResponseInput {
-  const GraphQlResponseInput_Error({required final  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
+  const GraphQlResponseInput_Error({required  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
   
 
  final  List<ShalomJsonValue> _errors;
@@ -985,7 +985,7 @@ $ShalomJsonValueCopyWith<$Res> get data {
 
 
 class SubscriptionEvent_GraphQlError extends SubscriptionEvent {
-  const SubscriptionEvent_GraphQlError({required final  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
+  const SubscriptionEvent_GraphQlError({required  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
   
 
  final  List<ShalomJsonValue> _errors;
