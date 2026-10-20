@@ -159,6 +159,22 @@ pub enum GraphQlResponseInput {
     },
 }
 
+/// A parsed transport response kept in Rust while Dart routes it to a request.
+/// Passing it to `push_buffered_response` transfers ownership without encoding
+/// the response tree through Dart.
+#[frb(opaque)]
+pub struct BufferedGraphQlResponse {
+    pub(crate) inner: GraphQLResponse,
+}
+
+impl BufferedGraphQlResponse {
+    /// Materialize a copy only when a link consumer needs to inspect the payload.
+    #[frb(sync)]
+    pub fn materialize(&self) -> GraphQlResponseInput {
+        self.inner.clone().into()
+    }
+}
+
 impl From<GraphQLResponse> for GraphQlResponseInput {
     fn from(response: GraphQLResponse) -> Self {
         match response {
@@ -584,6 +600,15 @@ pub async fn push_response_value(
 }
 
 #[frb]
+pub async fn push_buffered_response(
+    handle: &RuntimeHandle,
+    request_id: u64,
+    response: BufferedGraphQlResponse,
+) -> anyhow::Result<()> {
+    handle.link.send_response(request_id, response.inner)
+}
+
+#[frb]
 pub async fn push_graphql_error(
     handle: &RuntimeHandle,
     request_id: u64,
@@ -642,12 +667,12 @@ fn parse_variables(
 
 fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse> {
     let value: Value = serde_json::from_str(response_json)?;
-    let obj = value
-        .as_object()
-        .ok_or_else(|| anyhow::anyhow!("graphql response must be a JSON object"))?;
+    let Value::Object(mut obj) = value else {
+        return Err(anyhow::anyhow!("graphql response must be a JSON object"));
+    };
 
-    let data = match obj.get("data") {
-        Some(Value::Object(map)) => Some(map.clone()),
+    let data = match obj.remove("data") {
+        Some(Value::Object(map)) => Some(map),
         Some(Value::Null) | None => None,
         Some(_) => {
             return Err(anyhow::anyhow!(
@@ -656,12 +681,12 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
         }
     };
 
-    let errors = match obj.get("errors") {
+    let errors = match obj.remove("errors") {
         Some(Value::Array(list)) => {
             let mut parsed = Vec::with_capacity(list.len());
             for item in list {
                 match item {
-                    Value::Object(map) => parsed.push(map.clone()),
+                    Value::Object(map) => parsed.push(map),
                     _ => {
                         return Err(anyhow::anyhow!(
                             "graphql response errors must contain objects"
@@ -679,8 +704,8 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
         }
     };
 
-    let extensions = match obj.get("extensions") {
-        Some(Value::Object(map)) => Some(map.clone()),
+    let extensions = match obj.remove("extensions") {
+        Some(Value::Object(map)) => Some(map),
         Some(Value::Null) | None => None,
         Some(_) => {
             return Err(anyhow::anyhow!(
@@ -701,6 +726,41 @@ fn parse_graphql_response(response_json: &str) -> anyhow::Result<GraphQLResponse
         Err(anyhow::anyhow!(
             "graphql response must include data or errors"
         ))
+    }
+}
+
+#[cfg(test)]
+mod response_parsing_tests {
+    use super::*;
+    use serde_json::json;
+
+    #[test]
+    fn keeps_nested_data_errors_and_extensions() {
+        let response = parse_graphql_response(
+            r#"{"data":{"items":[{"id":"1","name":"Ada"}]},"errors":[{"message":"partial"}],"extensions":{"trace":{"id":7}}}"#,
+        )
+        .unwrap();
+
+        let GraphQLResponse::Data {
+            data,
+            errors,
+            extensions,
+        } = response
+        else {
+            panic!("expected data response");
+        };
+        assert_eq!(data["items"], json!([{"id": "1", "name": "Ada"}]));
+        assert_eq!(errors.unwrap()[0]["message"], "partial");
+        assert_eq!(extensions.unwrap()["trace"]["id"], 7);
+    }
+
+    #[test]
+    fn accepts_errors_without_data() {
+        let response =
+            parse_graphql_response(r#"{"data":null,"errors":[{"message":"failed"}]}"#).unwrap();
+        assert!(
+            matches!(response, GraphQLResponse::Error { errors, .. } if errors[0]["message"] == "failed")
+        );
     }
 }
 

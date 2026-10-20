@@ -1,3 +1,9 @@
+## 0.1.6
+
+- Parse GraphQL responses without cloning their fields, and hand WebSocket payloads to the runtime as a buffered response that is only materialized into Dart objects when a link inspects it. Reduces per-message overhead on large responses.
+- Fix `@observe` ref tracking so a parent scope keeps re-registering a shared dependency that a nested observed fragment already claimed. The parent now still invalidates when that shared field changes.
+- Update the native runtime to `shalom_runtime` 0.1.4.
+
 ## 0.1.5
 
 - Persist `__typename` on every normalized entity that has an id, even when the selection that wrote it didn't request `__typename` (e.g. a plain object field). Fixes "union selection missing `__typename`" normalization errors when the same entity is later read through a union/interface selection elsewhere in the app.

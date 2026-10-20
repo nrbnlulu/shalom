@@ -6,806 +6,458 @@
 import 'api/json.dart';
 import 'api/runtime.dart';
 import 'api/ws.dart';
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ffi' as ffi;
-
 import 'frb_generated.dart';
-
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated_io.dart';
 
-abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
-  RustLibApiImplPlatform({
-    required super.handler,
-    required super.wire,
-    required super.generalizedFrbRustBinding,
-    required super.portManager,
-  });
-
-  CrossPlatformFinalizerArg
-  get rust_arc_decrement_strong_count_RuntimeHandlePtr => wire
-      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr;
-
-  CrossPlatformFinalizerArg
-  get rust_arc_decrement_strong_count_WsSansIoPtr => wire
-      ._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr;
-
-  @protected
-  AnyhowException dco_decode_AnyhowException(dynamic raw);
-
-  @protected
-  RuntimeHandle
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    dynamic raw,
-  );
-
-  @protected
-  WsSansIo
-  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    dynamic raw,
-  );
-
-  @protected
-  WsSansIo
-  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    dynamic raw,
-  );
-
-  @protected
-  RuntimeHandle
-  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    dynamic raw,
-  );
-
-  @protected
-  WsSansIo
-  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    dynamic raw,
-  );
 
-  @protected
-  Map<String, ShalomJsonValue> dco_decode_Map_String_shalom_json_value_None(
-    dynamic raw,
-  );
 
-  @protected
-  Map<String, int> dco_decode_Map_String_u_32_None(dynamic raw);
 
-  @protected
-  RuntimeHandle
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    dynamic raw,
-  );
+                abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
+                  RustLibApiImplPlatform({
+                    required super.handler,
+                    required super.wire,
+                    required super.generalizedFrbRustBinding,
+                    required super.portManager,
+                  });
 
-  @protected
-  WsSansIo
-  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    dynamic raw,
-  );
+                  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_BufferedGraphQlResponsePtr => wire._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponsePtr;
 
-  @protected
-  RustStreamSink<RequestEnvelopeInput>
-  dco_decode_StreamSink_request_envelope_input_Sse(dynamic raw);
+CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_RuntimeHandlePtr => wire._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr;
 
-  @protected
-  RustStreamSink<SubscriptionEvent>
-  dco_decode_StreamSink_subscription_event_Sse(dynamic raw);
+CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_WsSansIoPtr => wire._rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr;
 
-  @protected
-  String dco_decode_String(dynamic raw);
 
-  @protected
-  bool dco_decode_bool(dynamic raw);
 
-  @protected
-  GraphQlResponseInput dco_decode_box_autoadd_graph_ql_response_input(
-    dynamic raw,
-  );
+                  @protected AnyhowException dco_decode_AnyhowException(dynamic raw);
 
-  @protected
-  ObservedRefInput dco_decode_box_autoadd_observed_ref_input(dynamic raw);
+@protected BufferedGraphQlResponse dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(dynamic raw);
 
-  @protected
-  RetryDelayInput dco_decode_box_autoadd_retry_delay_input(dynamic raw);
+@protected RuntimeHandle dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(dynamic raw);
 
-  @protected
-  RuntimeConfigInput dco_decode_box_autoadd_runtime_config_input(dynamic raw);
+@protected WsSansIo dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw);
 
-  @protected
-  ShalomJsonValue dco_decode_box_autoadd_shalom_json_value(dynamic raw);
+@protected WsSansIo dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw);
 
-  @protected
-  BigInt dco_decode_box_autoadd_u_64(dynamic raw);
+@protected BufferedGraphQlResponse dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(dynamic raw);
 
-  @protected
-  ExecutionPolicyInput dco_decode_execution_policy_input(dynamic raw);
+@protected RuntimeHandle dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(dynamic raw);
 
-  @protected
-  double dco_decode_f_64(dynamic raw);
+@protected WsSansIo dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw);
 
-  @protected
-  GraphQlResponseInput dco_decode_graph_ql_response_input(dynamic raw);
+@protected Map<String, ShalomJsonValue> dco_decode_Map_String_shalom_json_value_None(dynamic raw);
 
-  @protected
-  int dco_decode_i_32(dynamic raw);
+@protected Map<String, int> dco_decode_Map_String_u_32_None(dynamic raw);
 
-  @protected
-  PlatformInt64 dco_decode_i_64(dynamic raw);
+@protected BufferedGraphQlResponse dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(dynamic raw);
 
-  @protected
-  List<String> dco_decode_list_String(dynamic raw);
+@protected RuntimeHandle dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(dynamic raw);
 
-  @protected
-  List<ObserverInfo> dco_decode_list_observer_info(dynamic raw);
+@protected WsSansIo dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw);
 
-  @protected
-  Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
+@protected RustStreamSink<RequestEnvelopeInput> dco_decode_StreamSink_request_envelope_input_Sse(dynamic raw);
 
-  @protected
-  List<(String, ShalomJsonValue)>
-  dco_decode_list_record_string_shalom_json_value(dynamic raw);
+@protected RustStreamSink<SubscriptionEvent> dco_decode_StreamSink_subscription_event_Sse(dynamic raw);
 
-  @protected
-  List<(String, int)> dco_decode_list_record_string_u_32(dynamic raw);
+@protected String dco_decode_String(dynamic raw);
 
-  @protected
-  List<ShalomJsonValue> dco_decode_list_shalom_json_value(dynamic raw);
+@protected bool dco_decode_bool(dynamic raw);
 
-  @protected
-  List<WsLinkEvent> dco_decode_list_ws_link_event(dynamic raw);
+@protected GraphQlResponseInput dco_decode_box_autoadd_graph_ql_response_input(dynamic raw);
 
-  @protected
-  LogLevel dco_decode_log_level(dynamic raw);
+@protected ObservedRefInput dco_decode_box_autoadd_observed_ref_input(dynamic raw);
 
-  @protected
-  ObservedRefInput dco_decode_observed_ref_input(dynamic raw);
+@protected RetryDelayInput dco_decode_box_autoadd_retry_delay_input(dynamic raw);
 
-  @protected
-  ObserverInfo dco_decode_observer_info(dynamic raw);
+@protected RuntimeConfigInput dco_decode_box_autoadd_runtime_config_input(dynamic raw);
 
-  @protected
-  String? dco_decode_opt_String(dynamic raw);
+@protected ShalomJsonValue dco_decode_box_autoadd_shalom_json_value(dynamic raw);
 
-  @protected
-  RuntimeConfigInput? dco_decode_opt_box_autoadd_runtime_config_input(
-    dynamic raw,
-  );
+@protected BigInt dco_decode_box_autoadd_u_64(dynamic raw);
 
-  @protected
-  ShalomJsonValue? dco_decode_opt_box_autoadd_shalom_json_value(dynamic raw);
+@protected ExecutionPolicyInput dco_decode_execution_policy_input(dynamic raw);
 
-  @protected
-  BigInt? dco_decode_opt_box_autoadd_u_64(dynamic raw);
+@protected double dco_decode_f_64(dynamic raw);
 
-  @protected
-  List<ShalomJsonValue>? dco_decode_opt_list_shalom_json_value(dynamic raw);
+@protected GraphQlResponseInput dco_decode_graph_ql_response_input(dynamic raw);
 
-  @protected
-  (String, ShalomJsonValue) dco_decode_record_string_shalom_json_value(
-    dynamic raw,
-  );
+@protected int dco_decode_i_32(dynamic raw);
 
-  @protected
-  (String, int) dco_decode_record_string_u_32(dynamic raw);
+@protected PlatformInt64 dco_decode_i_64(dynamic raw);
 
-  @protected
-  RequestEnvelopeInput dco_decode_request_envelope_input(dynamic raw);
+@protected List<String> dco_decode_list_String(dynamic raw);
 
-  @protected
-  RetryDelayInput dco_decode_retry_delay_input(dynamic raw);
+@protected List<ObserverInfo> dco_decode_list_observer_info(dynamic raw);
 
-  @protected
-  RuntimeConfigInput dco_decode_runtime_config_input(dynamic raw);
+@protected Uint8List dco_decode_list_prim_u_8_strict(dynamic raw);
 
-  @protected
-  ShalomJsonValue dco_decode_shalom_json_value(dynamic raw);
+@protected List<(String,ShalomJsonValue)> dco_decode_list_record_string_shalom_json_value(dynamic raw);
 
-  @protected
-  SubscriptionEvent dco_decode_subscription_event(dynamic raw);
+@protected List<(String,int)> dco_decode_list_record_string_u_32(dynamic raw);
 
-  @protected
-  int dco_decode_u_16(dynamic raw);
+@protected List<ShalomJsonValue> dco_decode_list_shalom_json_value(dynamic raw);
 
-  @protected
-  int dco_decode_u_32(dynamic raw);
+@protected List<WsLinkEvent> dco_decode_list_ws_link_event(dynamic raw);
 
-  @protected
-  BigInt dco_decode_u_64(dynamic raw);
+@protected LogLevel dco_decode_log_level(dynamic raw);
 
-  @protected
-  int dco_decode_u_8(dynamic raw);
+@protected ObservedRefInput dco_decode_observed_ref_input(dynamic raw);
 
-  @protected
-  void dco_decode_unit(dynamic raw);
+@protected ObserverInfo dco_decode_observer_info(dynamic raw);
 
-  @protected
-  BigInt dco_decode_usize(dynamic raw);
+@protected String? dco_decode_opt_String(dynamic raw);
 
-  @protected
-  WsLinkEvent dco_decode_ws_link_event(dynamic raw);
+@protected RuntimeConfigInput? dco_decode_opt_box_autoadd_runtime_config_input(dynamic raw);
 
-  @protected
-  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
+@protected ShalomJsonValue? dco_decode_opt_box_autoadd_shalom_json_value(dynamic raw);
 
-  @protected
-  RuntimeHandle
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    SseDeserializer deserializer,
-  );
+@protected BigInt? dco_decode_opt_box_autoadd_u_64(dynamic raw);
 
-  @protected
-  WsSansIo
-  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    SseDeserializer deserializer,
-  );
+@protected List<ShalomJsonValue>? dco_decode_opt_list_shalom_json_value(dynamic raw);
 
-  @protected
-  WsSansIo
-  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    SseDeserializer deserializer,
-  );
+@protected (String,ShalomJsonValue) dco_decode_record_string_shalom_json_value(dynamic raw);
 
-  @protected
-  RuntimeHandle
-  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    SseDeserializer deserializer,
-  );
+@protected (String,int) dco_decode_record_string_u_32(dynamic raw);
 
-  @protected
-  WsSansIo
-  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    SseDeserializer deserializer,
-  );
+@protected RequestEnvelopeInput dco_decode_request_envelope_input(dynamic raw);
 
-  @protected
-  Map<String, ShalomJsonValue> sse_decode_Map_String_shalom_json_value_None(
-    SseDeserializer deserializer,
-  );
+@protected RetryDelayInput dco_decode_retry_delay_input(dynamic raw);
 
-  @protected
-  Map<String, int> sse_decode_Map_String_u_32_None(
-    SseDeserializer deserializer,
-  );
+@protected RuntimeConfigInput dco_decode_runtime_config_input(dynamic raw);
 
-  @protected
-  RuntimeHandle
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    SseDeserializer deserializer,
-  );
+@protected ShalomJsonValue dco_decode_shalom_json_value(dynamic raw);
 
-  @protected
-  WsSansIo
-  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    SseDeserializer deserializer,
-  );
+@protected SubscriptionEvent dco_decode_subscription_event(dynamic raw);
 
-  @protected
-  RustStreamSink<RequestEnvelopeInput>
-  sse_decode_StreamSink_request_envelope_input_Sse(
-    SseDeserializer deserializer,
-  );
+@protected int dco_decode_u_16(dynamic raw);
 
-  @protected
-  RustStreamSink<SubscriptionEvent>
-  sse_decode_StreamSink_subscription_event_Sse(SseDeserializer deserializer);
+@protected int dco_decode_u_32(dynamic raw);
 
-  @protected
-  String sse_decode_String(SseDeserializer deserializer);
+@protected BigInt dco_decode_u_64(dynamic raw);
 
-  @protected
-  bool sse_decode_bool(SseDeserializer deserializer);
+@protected int dco_decode_u_8(dynamic raw);
 
-  @protected
-  GraphQlResponseInput sse_decode_box_autoadd_graph_ql_response_input(
-    SseDeserializer deserializer,
-  );
+@protected void dco_decode_unit(dynamic raw);
 
-  @protected
-  ObservedRefInput sse_decode_box_autoadd_observed_ref_input(
-    SseDeserializer deserializer,
-  );
+@protected BigInt dco_decode_usize(dynamic raw);
 
-  @protected
-  RetryDelayInput sse_decode_box_autoadd_retry_delay_input(
-    SseDeserializer deserializer,
-  );
+@protected WsLinkEvent dco_decode_ws_link_event(dynamic raw);
 
-  @protected
-  RuntimeConfigInput sse_decode_box_autoadd_runtime_config_input(
-    SseDeserializer deserializer,
-  );
+@protected AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
-  @protected
-  ShalomJsonValue sse_decode_box_autoadd_shalom_json_value(
-    SseDeserializer deserializer,
-  );
+@protected BufferedGraphQlResponse sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(SseDeserializer deserializer);
 
-  @protected
-  BigInt sse_decode_box_autoadd_u_64(SseDeserializer deserializer);
+@protected RuntimeHandle sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(SseDeserializer deserializer);
 
-  @protected
-  ExecutionPolicyInput sse_decode_execution_policy_input(
-    SseDeserializer deserializer,
-  );
+@protected WsSansIo sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer);
 
-  @protected
-  double sse_decode_f_64(SseDeserializer deserializer);
+@protected WsSansIo sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer);
 
-  @protected
-  GraphQlResponseInput sse_decode_graph_ql_response_input(
-    SseDeserializer deserializer,
-  );
+@protected BufferedGraphQlResponse sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(SseDeserializer deserializer);
 
-  @protected
-  int sse_decode_i_32(SseDeserializer deserializer);
+@protected RuntimeHandle sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(SseDeserializer deserializer);
 
-  @protected
-  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+@protected WsSansIo sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer);
 
-  @protected
-  List<String> sse_decode_list_String(SseDeserializer deserializer);
+@protected Map<String, ShalomJsonValue> sse_decode_Map_String_shalom_json_value_None(SseDeserializer deserializer);
 
-  @protected
-  List<ObserverInfo> sse_decode_list_observer_info(
-    SseDeserializer deserializer,
-  );
+@protected Map<String, int> sse_decode_Map_String_u_32_None(SseDeserializer deserializer);
 
-  @protected
-  Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+@protected BufferedGraphQlResponse sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(SseDeserializer deserializer);
 
-  @protected
-  List<(String, ShalomJsonValue)>
-  sse_decode_list_record_string_shalom_json_value(SseDeserializer deserializer);
+@protected RuntimeHandle sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(SseDeserializer deserializer);
 
-  @protected
-  List<(String, int)> sse_decode_list_record_string_u_32(
-    SseDeserializer deserializer,
-  );
+@protected WsSansIo sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer);
 
-  @protected
-  List<ShalomJsonValue> sse_decode_list_shalom_json_value(
-    SseDeserializer deserializer,
-  );
+@protected RustStreamSink<RequestEnvelopeInput> sse_decode_StreamSink_request_envelope_input_Sse(SseDeserializer deserializer);
 
-  @protected
-  List<WsLinkEvent> sse_decode_list_ws_link_event(SseDeserializer deserializer);
+@protected RustStreamSink<SubscriptionEvent> sse_decode_StreamSink_subscription_event_Sse(SseDeserializer deserializer);
 
-  @protected
-  LogLevel sse_decode_log_level(SseDeserializer deserializer);
+@protected String sse_decode_String(SseDeserializer deserializer);
 
-  @protected
-  ObservedRefInput sse_decode_observed_ref_input(SseDeserializer deserializer);
+@protected bool sse_decode_bool(SseDeserializer deserializer);
 
-  @protected
-  ObserverInfo sse_decode_observer_info(SseDeserializer deserializer);
+@protected GraphQlResponseInput sse_decode_box_autoadd_graph_ql_response_input(SseDeserializer deserializer);
 
-  @protected
-  String? sse_decode_opt_String(SseDeserializer deserializer);
+@protected ObservedRefInput sse_decode_box_autoadd_observed_ref_input(SseDeserializer deserializer);
 
-  @protected
-  RuntimeConfigInput? sse_decode_opt_box_autoadd_runtime_config_input(
-    SseDeserializer deserializer,
-  );
+@protected RetryDelayInput sse_decode_box_autoadd_retry_delay_input(SseDeserializer deserializer);
 
-  @protected
-  ShalomJsonValue? sse_decode_opt_box_autoadd_shalom_json_value(
-    SseDeserializer deserializer,
-  );
+@protected RuntimeConfigInput sse_decode_box_autoadd_runtime_config_input(SseDeserializer deserializer);
 
-  @protected
-  BigInt? sse_decode_opt_box_autoadd_u_64(SseDeserializer deserializer);
+@protected ShalomJsonValue sse_decode_box_autoadd_shalom_json_value(SseDeserializer deserializer);
 
-  @protected
-  List<ShalomJsonValue>? sse_decode_opt_list_shalom_json_value(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  (String, ShalomJsonValue) sse_decode_record_string_shalom_json_value(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  (String, int) sse_decode_record_string_u_32(SseDeserializer deserializer);
-
-  @protected
-  RequestEnvelopeInput sse_decode_request_envelope_input(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  RetryDelayInput sse_decode_retry_delay_input(SseDeserializer deserializer);
-
-  @protected
-  RuntimeConfigInput sse_decode_runtime_config_input(
-    SseDeserializer deserializer,
-  );
-
-  @protected
-  ShalomJsonValue sse_decode_shalom_json_value(SseDeserializer deserializer);
-
-  @protected
-  SubscriptionEvent sse_decode_subscription_event(SseDeserializer deserializer);
-
-  @protected
-  int sse_decode_u_16(SseDeserializer deserializer);
-
-  @protected
-  int sse_decode_u_32(SseDeserializer deserializer);
-
-  @protected
-  BigInt sse_decode_u_64(SseDeserializer deserializer);
-
-  @protected
-  int sse_decode_u_8(SseDeserializer deserializer);
-
-  @protected
-  void sse_decode_unit(SseDeserializer deserializer);
-
-  @protected
-  BigInt sse_decode_usize(SseDeserializer deserializer);
-
-  @protected
-  WsLinkEvent sse_decode_ws_link_event(SseDeserializer deserializer);
-
-  @protected
-  void sse_encode_AnyhowException(
-    AnyhowException self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    RuntimeHandle self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    WsSansIo self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    WsSansIo self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    RuntimeHandle self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    WsSansIo self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_Map_String_shalom_json_value_None(
-    Map<String, ShalomJsonValue> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_Map_String_u_32_None(
-    Map<String, int> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    RuntimeHandle self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void
-  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    WsSansIo self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_StreamSink_request_envelope_input_Sse(
-    RustStreamSink<RequestEnvelopeInput> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_StreamSink_subscription_event_Sse(
-    RustStreamSink<SubscriptionEvent> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_String(String self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_bool(bool self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_box_autoadd_graph_ql_response_input(
-    GraphQlResponseInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_box_autoadd_observed_ref_input(
-    ObservedRefInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_box_autoadd_retry_delay_input(
-    RetryDelayInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_box_autoadd_runtime_config_input(
-    RuntimeConfigInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_box_autoadd_shalom_json_value(
-    ShalomJsonValue self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_box_autoadd_u_64(BigInt self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_execution_policy_input(
-    ExecutionPolicyInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_f_64(double self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_graph_ql_response_input(
-    GraphQlResponseInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_i_32(int self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_list_String(List<String> self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_list_observer_info(
-    List<ObserverInfo> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_list_prim_u_8_strict(
-    Uint8List self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_list_record_string_shalom_json_value(
-    List<(String, ShalomJsonValue)> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_list_record_string_u_32(
-    List<(String, int)> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_list_shalom_json_value(
-    List<ShalomJsonValue> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_list_ws_link_event(
-    List<WsLinkEvent> self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_log_level(LogLevel self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_observed_ref_input(
-    ObservedRefInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_observer_info(ObserverInfo self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_opt_String(String? self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_opt_box_autoadd_runtime_config_input(
-    RuntimeConfigInput? self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_opt_box_autoadd_shalom_json_value(
-    ShalomJsonValue? self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_opt_box_autoadd_u_64(BigInt? self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_opt_list_shalom_json_value(
-    List<ShalomJsonValue>? self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_record_string_shalom_json_value(
-    (String, ShalomJsonValue) self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_record_string_u_32(
-    (String, int) self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_request_envelope_input(
-    RequestEnvelopeInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_retry_delay_input(
-    RetryDelayInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_runtime_config_input(
-    RuntimeConfigInput self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_shalom_json_value(
-    ShalomJsonValue self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_subscription_event(
-    SubscriptionEvent self,
-    SseSerializer serializer,
-  );
-
-  @protected
-  void sse_encode_u_16(int self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_u_32(int self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_u_64(BigInt self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_u_8(int self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_unit(void self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_usize(BigInt self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_ws_link_event(WsLinkEvent self, SseSerializer serializer);
-}
+@protected BigInt sse_decode_box_autoadd_u_64(SseDeserializer deserializer);
+
+@protected ExecutionPolicyInput sse_decode_execution_policy_input(SseDeserializer deserializer);
+
+@protected double sse_decode_f_64(SseDeserializer deserializer);
+
+@protected GraphQlResponseInput sse_decode_graph_ql_response_input(SseDeserializer deserializer);
+
+@protected int sse_decode_i_32(SseDeserializer deserializer);
+
+@protected PlatformInt64 sse_decode_i_64(SseDeserializer deserializer);
+
+@protected List<String> sse_decode_list_String(SseDeserializer deserializer);
+
+@protected List<ObserverInfo> sse_decode_list_observer_info(SseDeserializer deserializer);
+
+@protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer);
+
+@protected List<(String,ShalomJsonValue)> sse_decode_list_record_string_shalom_json_value(SseDeserializer deserializer);
+
+@protected List<(String,int)> sse_decode_list_record_string_u_32(SseDeserializer deserializer);
+
+@protected List<ShalomJsonValue> sse_decode_list_shalom_json_value(SseDeserializer deserializer);
+
+@protected List<WsLinkEvent> sse_decode_list_ws_link_event(SseDeserializer deserializer);
+
+@protected LogLevel sse_decode_log_level(SseDeserializer deserializer);
+
+@protected ObservedRefInput sse_decode_observed_ref_input(SseDeserializer deserializer);
+
+@protected ObserverInfo sse_decode_observer_info(SseDeserializer deserializer);
+
+@protected String? sse_decode_opt_String(SseDeserializer deserializer);
+
+@protected RuntimeConfigInput? sse_decode_opt_box_autoadd_runtime_config_input(SseDeserializer deserializer);
+
+@protected ShalomJsonValue? sse_decode_opt_box_autoadd_shalom_json_value(SseDeserializer deserializer);
+
+@protected BigInt? sse_decode_opt_box_autoadd_u_64(SseDeserializer deserializer);
+
+@protected List<ShalomJsonValue>? sse_decode_opt_list_shalom_json_value(SseDeserializer deserializer);
+
+@protected (String,ShalomJsonValue) sse_decode_record_string_shalom_json_value(SseDeserializer deserializer);
+
+@protected (String,int) sse_decode_record_string_u_32(SseDeserializer deserializer);
+
+@protected RequestEnvelopeInput sse_decode_request_envelope_input(SseDeserializer deserializer);
+
+@protected RetryDelayInput sse_decode_retry_delay_input(SseDeserializer deserializer);
+
+@protected RuntimeConfigInput sse_decode_runtime_config_input(SseDeserializer deserializer);
+
+@protected ShalomJsonValue sse_decode_shalom_json_value(SseDeserializer deserializer);
+
+@protected SubscriptionEvent sse_decode_subscription_event(SseDeserializer deserializer);
+
+@protected int sse_decode_u_16(SseDeserializer deserializer);
+
+@protected int sse_decode_u_32(SseDeserializer deserializer);
+
+@protected BigInt sse_decode_u_64(SseDeserializer deserializer);
+
+@protected int sse_decode_u_8(SseDeserializer deserializer);
+
+@protected void sse_decode_unit(SseDeserializer deserializer);
+
+@protected BigInt sse_decode_usize(SseDeserializer deserializer);
+
+@protected WsLinkEvent sse_decode_ws_link_event(SseDeserializer deserializer);
+
+@protected void sse_encode_AnyhowException(AnyhowException self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(BufferedGraphQlResponse self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(RuntimeHandle self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(BufferedGraphQlResponse self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(RuntimeHandle self, SseSerializer serializer);
+
+@protected void sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer);
+
+@protected void sse_encode_Map_String_shalom_json_value_None(Map<String, ShalomJsonValue> self, SseSerializer serializer);
+
+@protected void sse_encode_Map_String_u_32_None(Map<String, int> self, SseSerializer serializer);
+
+@protected void sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(BufferedGraphQlResponse self, SseSerializer serializer);
+
+@protected void sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(RuntimeHandle self, SseSerializer serializer);
+
+@protected void sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer);
+
+@protected void sse_encode_StreamSink_request_envelope_input_Sse(RustStreamSink<RequestEnvelopeInput> self, SseSerializer serializer);
+
+@protected void sse_encode_StreamSink_subscription_event_Sse(RustStreamSink<SubscriptionEvent> self, SseSerializer serializer);
+
+@protected void sse_encode_String(String self, SseSerializer serializer);
+
+@protected void sse_encode_bool(bool self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_graph_ql_response_input(GraphQlResponseInput self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_observed_ref_input(ObservedRefInput self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_retry_delay_input(RetryDelayInput self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_runtime_config_input(RuntimeConfigInput self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_shalom_json_value(ShalomJsonValue self, SseSerializer serializer);
+
+@protected void sse_encode_box_autoadd_u_64(BigInt self, SseSerializer serializer);
+
+@protected void sse_encode_execution_policy_input(ExecutionPolicyInput self, SseSerializer serializer);
+
+@protected void sse_encode_f_64(double self, SseSerializer serializer);
+
+@protected void sse_encode_graph_ql_response_input(GraphQlResponseInput self, SseSerializer serializer);
+
+@protected void sse_encode_i_32(int self, SseSerializer serializer);
+
+@protected void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer);
+
+@protected void sse_encode_list_String(List<String> self, SseSerializer serializer);
+
+@protected void sse_encode_list_observer_info(List<ObserverInfo> self, SseSerializer serializer);
+
+@protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer);
+
+@protected void sse_encode_list_record_string_shalom_json_value(List<(String,ShalomJsonValue)> self, SseSerializer serializer);
+
+@protected void sse_encode_list_record_string_u_32(List<(String,int)> self, SseSerializer serializer);
+
+@protected void sse_encode_list_shalom_json_value(List<ShalomJsonValue> self, SseSerializer serializer);
+
+@protected void sse_encode_list_ws_link_event(List<WsLinkEvent> self, SseSerializer serializer);
+
+@protected void sse_encode_log_level(LogLevel self, SseSerializer serializer);
+
+@protected void sse_encode_observed_ref_input(ObservedRefInput self, SseSerializer serializer);
+
+@protected void sse_encode_observer_info(ObserverInfo self, SseSerializer serializer);
+
+@protected void sse_encode_opt_String(String? self, SseSerializer serializer);
+
+@protected void sse_encode_opt_box_autoadd_runtime_config_input(RuntimeConfigInput? self, SseSerializer serializer);
+
+@protected void sse_encode_opt_box_autoadd_shalom_json_value(ShalomJsonValue? self, SseSerializer serializer);
+
+@protected void sse_encode_opt_box_autoadd_u_64(BigInt? self, SseSerializer serializer);
+
+@protected void sse_encode_opt_list_shalom_json_value(List<ShalomJsonValue>? self, SseSerializer serializer);
+
+@protected void sse_encode_record_string_shalom_json_value((String,ShalomJsonValue) self, SseSerializer serializer);
+
+@protected void sse_encode_record_string_u_32((String,int) self, SseSerializer serializer);
+
+@protected void sse_encode_request_envelope_input(RequestEnvelopeInput self, SseSerializer serializer);
+
+@protected void sse_encode_retry_delay_input(RetryDelayInput self, SseSerializer serializer);
+
+@protected void sse_encode_runtime_config_input(RuntimeConfigInput self, SseSerializer serializer);
+
+@protected void sse_encode_shalom_json_value(ShalomJsonValue self, SseSerializer serializer);
+
+@protected void sse_encode_subscription_event(SubscriptionEvent self, SseSerializer serializer);
+
+@protected void sse_encode_u_16(int self, SseSerializer serializer);
+
+@protected void sse_encode_u_32(int self, SseSerializer serializer);
+
+@protected void sse_encode_u_64(BigInt self, SseSerializer serializer);
+
+@protected void sse_encode_u_8(int self, SseSerializer serializer);
+
+@protected void sse_encode_unit(void self, SseSerializer serializer);
+
+@protected void sse_encode_usize(BigInt self, SseSerializer serializer);
+
+@protected void sse_encode_ws_link_event(WsLinkEvent self, SseSerializer serializer);
+                }
+                
+
 
 // Section: wire_class
 
-class RustLibWire implements BaseWire {
-  factory RustLibWire.fromExternalLibrary(ExternalLibrary lib) =>
-      RustLibWire(lib.ffiDynamicLibrary);
 
-  /// Holds the symbol lookup function.
-  final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
-  _lookup;
+        class RustLibWire implements BaseWire {
 
-  /// The symbols are looked up in [dynamicLibrary].
-  RustLibWire(ffi.DynamicLibrary dynamicLibrary)
-    : _lookup = dynamicLibrary.lookup;
+            factory RustLibWire.fromExternalLibrary(ExternalLibrary lib) =>
+              RustLibWire(lib.ffiDynamicLibrary);
+        
+            /// Holds the symbol lookup function.
+            final ffi.Pointer<T> Function<T extends ffi.NativeType>(String symbolName)
+                _lookup;
+  
+            /// The symbols are looked up in [dynamicLibrary].
+            RustLibWire(ffi.DynamicLibrary dynamicLibrary)
+                : _lookup = dynamicLibrary.lookup;
 
-  void
-  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-      ptr,
-    );
-  }
+            
+            void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+              ffi.Pointer<ffi.Void> ptr,
+            ) {
+              return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+                ptr,
+              );
+            }
 
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_shalom_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle',
-      );
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle =
-      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponsePtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>('frbgen_shalom_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse');
+            late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse = _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponsePtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            
+            void rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+              ffi.Pointer<ffi.Void> ptr,
+            ) {
+              return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+                ptr,
+              );
+            }
 
-  void
-  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
-      ptr,
-    );
-  }
+            late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponsePtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>('frbgen_shalom_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse');
+            late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse = _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponsePtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            
+            void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+              ffi.Pointer<ffi.Void> ptr,
+            ) {
+              return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+                ptr,
+              );
+            }
 
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_shalom_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle',
-      );
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle =
-      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>('frbgen_shalom_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle');
+            late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle = _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            
+            void rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+              ffi.Pointer<ffi.Void> ptr,
+            ) {
+              return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+                ptr,
+              );
+            }
 
-  void
-  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-      ptr,
-    );
-  }
+            late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>('frbgen_shalom_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle');
+            late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle = _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandlePtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            
+            void rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+              ffi.Pointer<ffi.Void> ptr,
+            ) {
+              return _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+                ptr,
+              );
+            }
 
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_shalom_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo',
-      );
-  late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo =
-      _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>('frbgen_shalom_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo');
+            late final _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo = _rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            
+            void rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+              ffi.Pointer<ffi.Void> ptr,
+            ) {
+              return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+                ptr,
+              );
+            }
 
-  void
-  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-    ffi.Pointer<ffi.Void> ptr,
-  ) {
-    return _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
-      ptr,
-    );
-  }
-
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr =
-      _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>(
-        'frbgen_shalom_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo',
-      );
-  late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo =
-      _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr
-          .asFunction<void Function(ffi.Pointer<ffi.Void>)>();
-}
+            late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr = _lookup<ffi.NativeFunction<ffi.Void Function(ffi.Pointer<ffi.Void>)>>('frbgen_shalom_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo');
+            late final _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo = _rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIoPtr.asFunction<void Function(ffi.Pointer<ffi.Void>)>();
+            
+        }
+        

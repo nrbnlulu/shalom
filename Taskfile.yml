@@ -32,7 +32,7 @@ tasks:
 
     fmt:
         cmds:
-            - cd rust && cargo fmt
+            - cd rust && cargo fmt --all
             - cd rust/shalom_dart_codegen/dart_tests && {{.DART_BIN}} format ./test ./lib
             - "{{.DART_BIN}} format ./dart"
 

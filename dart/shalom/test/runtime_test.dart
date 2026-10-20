@@ -52,6 +52,45 @@ class _NeverLink extends GraphQLLink {
   }
 }
 
+class _ResponseWebSocketTransport implements WebSocketTransport {
+  final Object payload;
+  final String responseType;
+
+  _ResponseWebSocketTransport({
+    required this.payload,
+    this.responseType = 'next',
+  });
+
+  @override
+  Future<(StreamController<String>, MessageSender)> connect({
+    required String url,
+    required List<String> protocols,
+    HeadersType? headers,
+  }) async {
+    final incoming = StreamController<String>();
+    return (
+      incoming,
+      MessageSender((message) async {
+        final frame = jsonDecode(message) as JsonObject;
+        if (frame['type'] == 'connection_init') {
+          incoming.add('{"type":"connection_ack"}');
+        } else if (frame['type'] == 'subscribe') {
+          incoming.add(
+            jsonEncode({
+              'type': responseType,
+              'id': frame['id'],
+              'payload': payload,
+            }),
+          );
+          if (responseType == 'next') {
+            incoming.add(jsonEncode({'type': 'complete', 'id': frame['id']}));
+          }
+        }
+      }),
+    );
+  }
+}
+
 class _TypedMockLink extends GraphQLLink {
   final Queue<GraphQLResponse<GraphQLLinkPayload>> _queue;
 
@@ -281,8 +320,107 @@ void main() {
     );
 
     final event = events.single as rs_ws.WsLinkEvent_OperationResponse;
-    final response = event.response as rs_runtime.GraphQlResponseInput_Data;
+    final response =
+        event.response.materialize() as rs_runtime.GraphQlResponseInput_Data;
+    event.response.dispose();
     expect(response.data.toJsonValue(), {'version': 'v1'});
+    sansio.dispose();
+  });
+
+  test('WebSocketLink transfers buffered data before completion', () async {
+    const version = 'v1\u0000שלום😀';
+    final link = WebSocketLink(
+      transport: _ResponseWebSocketTransport(
+        payload: {
+          'data': {'version': version},
+        },
+      ),
+      url: 'ws://test',
+      autoReconnect: false,
+    );
+    final client = ShalomRuntimeClient.create(
+      schemaSdl: _schemaSdl,
+      link: link,
+    );
+    addTearDown(() async {
+      await client.dispose();
+      await link.dispose();
+    });
+    client.registerOperation(document: 'query GetVersion { version }');
+    final response = await client
+        .request<_TestData>(name: 'GetVersion', decoder: _tdJson)
+        .first
+        .timeout(const Duration(seconds: 5));
+    expect(_expectData(response)['version'], version);
+  });
+
+  test('WebSocketLink transfers buffered GraphQL errors', () async {
+    final link = WebSocketLink(
+      transport: _ResponseWebSocketTransport(
+        responseType: 'error',
+        payload: [
+          {
+            'message': 'failed',
+            'extensions': {'code': 'TEST'},
+          },
+        ],
+      ),
+      url: 'ws://test',
+      autoReconnect: false,
+    );
+    final client = ShalomRuntimeClient.create(
+      schemaSdl: _schemaSdl,
+      link: link,
+    );
+    addTearDown(() async {
+      await client.dispose();
+      await link.dispose();
+    });
+    client.registerOperation(document: 'query GetVersion { version }');
+    final response = await client
+        .request<_TestData>(name: 'GetVersion', decoder: _tdJson)
+        .first
+        .timeout(const Duration(seconds: 5));
+    expect(response, isA<GraphQLError<_TestData>>());
+    expect((response as GraphQLError).errors.single['extensions'], {
+      'code': 'TEST',
+    });
+  });
+
+  test('buffered payload can be inspected before runtime transfer', () async {
+    final socket = rs_ws.createWsSansIo();
+    addTearDown(socket.dispose);
+    rs_ws.wsOnMessage(sansio: socket, raw: '{"type":"connection_ack"}');
+    rs_ws.wsSubscribeFrame(
+      sansio: socket,
+      opId: 'inspect',
+      query: 'query GetVersion { version }',
+    );
+    final event =
+        rs_ws
+                .wsOnMessage(
+                  sansio: socket,
+                  raw: '{"id":"inspect","type":"next","payload":{"data":{"version":"v2"},"errors":[{"message":"partial"}],"extensions":{"trace":7}}}',
+                )
+                .single
+            as rs_ws.WsLinkEvent_OperationResponse;
+    final payload = ParsedGraphQLLinkPayload.buffered(response: event.response);
+    final inspected = payload.response as rs_runtime.GraphQlResponseInput_Data;
+    expect(inspected.data.toJsonValue(), {'version': 'v2'});
+    expect(inspected.errors!.single.toJsonValue(), {'message': 'partial'});
+    expect(inspected.extensions!.toJsonValue(), {'trace': 7});
+
+    final client = ShalomRuntimeClient.create(
+      schemaSdl: _schemaSdl,
+      link: _TypedMockLink([GraphQLData(data: payload)]),
+    );
+    addTearDown(client.dispose);
+    client.registerOperation(document: 'query GetVersion { version }');
+    final response = await client
+        .request<_TestData>(name: 'GetVersion', decoder: _tdJson)
+        .first
+        .timeout(const Duration(seconds: 5));
+    expect(_expectData(response)['version'], 'v2');
   });
 
   // -------------------------------------------------------------------------
