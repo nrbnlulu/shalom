@@ -6,2200 +6,3877 @@
 import 'api/json.dart';
 import 'api/runtime.dart';
 import 'api/ws.dart';
+
 import 'dart:async';
 import 'dart:convert';
+
 import 'frb_generated.dart';
-import 'frb_generated.io.dart' if (dart.library.js_interop) 'frb_generated.web.dart';
+import 'frb_generated.io.dart'
+    if (dart.library.js_interop) 'frb_generated.web.dart';
+
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-
-                /// Main entrypoint of the Rust API
-                class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
-                  @internal
-                  static final instance = RustLib._();
-
-                  RustLib._();
-
-                  /// Initialize flutter_rust_bridge
-                  static Future<void> init({
-                    RustLibApi? api,
-                    BaseHandler? handler,
-                    ExternalLibrary? externalLibrary,
-                    bool forceSameCodegenVersion = true,
-                  }) async {
-                    await instance.initImpl(
-                      api: api,
-                      handler: handler,
-                      externalLibrary: externalLibrary,
-                      forceSameCodegenVersion: forceSameCodegenVersion,
-                    );
-                  }
-
-                  /// Initialize flutter_rust_bridge in mock mode.
-                  /// No libraries for FFI are loaded.
-                  static void initMock({
-                    required RustLibApi api,
-                  }) {
-                    instance.initMockImpl(
-                      api: api,
-                    );
-                  }
-
-                  /// Dispose flutter_rust_bridge
-                  ///
-                  /// The call to this function is optional, since flutter_rust_bridge (and everything else)
-                  /// is automatically disposed when the app stops.
-                  static void dispose() => instance.disposeImpl();
-
-                  @override
-                  ApiImplConstructor<RustLibApiImpl, RustLibWire> get apiImplConstructor => RustLibApiImpl.new;
-
-                  @override
-                  WireConstructor<RustLibWire> get wireConstructor => RustLibWire.fromExternalLibrary;
-
-                  @override
-                  Future<void> executeRustInitializers() async {
-                    await api.crateApiRuntimeInitApp();
-
-                    
-                  }
-
-                  @override
-                  ExternalLibraryLoaderConfig get defaultExternalLibraryLoaderConfig => kDefaultExternalLibraryLoaderConfig;
-
-                  @override
-                  String get codegenVersion => '2.13.0';
-
-                  @override
-                  int get rustContentHash => -1587352435;
-
-                  static const kDefaultExternalLibraryLoaderConfig = ExternalLibraryLoaderConfig(
-                    stem: 'shalom_ffi',
-                    ioDirectory: 'rust/target/release/',
-                    webPrefix: 'pkg/',
-                    wasmBindgenName: 'wasm_bindgen',
-                  );
-                }
-                
-
-                abstract class RustLibApi extends BaseApi {
-                  GraphQlResponseInput crateApiRuntimeBufferedGraphQlResponseMaterialize({required BufferedGraphQlResponse that });
-
-Future<void> crateApiRuntimeCompleteTransport({required RuntimeHandle handle , required BigInt requestId });
-
-WsSansIo crateApiWsCreateWsSansIo({ShalomJsonValue? connectionParams });
-
-Future<bool> crateApiRuntimeEvictOperation({required RuntimeHandle handle , required String name , ShalomJsonValue? variables });
-
-Future<List<ObserverInfo>> crateApiRuntimeGetAllObservers({required RuntimeHandle handle });
-
-Future<String?> crateApiRuntimeGetCacheEntry({required RuntimeHandle handle , required String key });
-
-Future<List<String>> crateApiRuntimeGetCacheKeys({required RuntimeHandle handle });
-
-Future<List<ObserverInfo>> crateApiRuntimeGetKeyObservers({required RuntimeHandle handle , required String key });
-
-Future<Map<String, int>> crateApiRuntimeGetObserverCounts({required RuntimeHandle handle });
-
-Future<void> crateApiRuntimeInitApp();
-
-RuntimeHandle crateApiRuntimeInitRuntime({required String schemaSdl , RuntimeConfigInput? config });
-
-Future<void> crateApiRuntimeInvalidateOperation({required RuntimeHandle handle , required String name , ShalomJsonValue? variables });
-
-Stream<RequestEnvelopeInput> crateApiRuntimeListenRequests({required RuntimeHandle handle });
-
-Stream<SubscriptionEvent> crateApiRuntimeListenSubscription({required RuntimeHandle handle , required BigInt subscriptionId });
-
-Future<SubscriptionEvent> crateApiRuntimeMutate({required RuntimeHandle handle , required String name , ShalomJsonValue? variables , required RetryDelayInput retryDelay });
-
-Future<BigInt> crateApiRuntimeObserveFragment({required RuntimeHandle handle , required ObservedRefInput refInput });
-
-Future<void> crateApiRuntimePushBufferedResponse({required RuntimeHandle handle , required BigInt requestId , required BufferedGraphQlResponse response });
-
-Future<void> crateApiRuntimePushGraphqlError({required RuntimeHandle handle , required BigInt requestId , required List<ShalomJsonValue> errors , ShalomJsonValue? extensions });
-
-Future<void> crateApiRuntimePushResponse({required RuntimeHandle handle , required BigInt requestId , required String responseJson });
-
-Future<void> crateApiRuntimePushResponseValue({required RuntimeHandle handle , required BigInt requestId , required GraphQlResponseInput response });
-
-Future<void> crateApiRuntimePushTransportError({required RuntimeHandle handle , required BigInt requestId , required String message , required String code , ShalomJsonValue? details });
-
-Future<ShalomJsonValue?> crateApiRuntimeReadFragment({required RuntimeHandle handle , required String fragmentName , required String entityKey });
-
-Future<ShalomJsonValue?> crateApiRuntimeReadOperation({required RuntimeHandle handle , required String name , ShalomJsonValue? variables });
-
-Future<BigInt> crateApiRuntimeRebindSubscription({required RuntimeHandle handle , required BigInt subscriptionId , required ObservedRefInput newRef });
-
-void crateApiRuntimeRegisterFragment({required RuntimeHandle handle , required String document });
-
-void crateApiRuntimeRegisterOperation({required RuntimeHandle handle , required String document });
-
-void crateApiRuntimeReloadSchema({required RuntimeHandle handle , required String schemaSdl });
-
-Future<BigInt> crateApiRuntimeRequest({required RuntimeHandle handle , required String name , ShalomJsonValue? variables , required ExecutionPolicyInput executionPolicy , required RetryDelayInput retryDelay , BigInt? refetchIntervalMs });
-
-Future<void> crateApiRuntimeRollbackOptimistic({required RuntimeHandle handle , required BigInt writeId });
-
-void crateApiRuntimeSetLogLevel({required LogLevel level });
-
-Future<void> crateApiRuntimeUnsubscribe({required RuntimeHandle handle , required BigInt subscriptionId });
-
-Future<void> crateApiRuntimeWriteFragment({required RuntimeHandle handle , required String fragmentName , required String entityKey , required ShalomJsonValue data });
-
-Future<void> crateApiRuntimeWriteOperation({required RuntimeHandle handle , required String name , required ShalomJsonValue data , ShalomJsonValue? variables });
-
-Future<BigInt> crateApiRuntimeWriteOptimistic({required RuntimeHandle handle , required String opName , required ShalomJsonValue data });
-
-List<String> crateApiWsWsActiveOperationIds({required WsSansIo sansio });
-
-String crateApiWsWsCompleteFrame({required WsSansIo sansio , required String opId });
-
-String crateApiWsWsConnectionInitFrame({required WsSansIo sansio });
-
-bool crateApiWsWsIsConnected({required WsSansIo sansio });
-
-List<WsLinkEvent> crateApiWsWsOnMessage({required WsSansIo sansio , required String raw });
-
-String crateApiWsWsPingFrame();
-
-String crateApiWsWsPongFrame({required WsSansIo sansio , ShalomJsonValue? payload });
-
-void crateApiWsWsReset({required WsSansIo sansio });
-
-String crateApiWsWsSubscribeFrame({required WsSansIo sansio , required String opId , required String query , ShalomJsonValue? variables , String? operationName });
-
-RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_BufferedGraphQlResponse;
-
-RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_BufferedGraphQlResponse;
-
-CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_BufferedGraphQlResponsePtr;
-
-RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_RuntimeHandle;
-
-RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_RuntimeHandle;
-
-CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_RuntimeHandlePtr;
-
-RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_WsSansIo;
-
-RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_WsSansIo;
-
-CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_WsSansIoPtr;
-
-
-                }
-                
-
-                class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
-                  RustLibApiImpl({
-                    required super.handler,
-                    required super.wire,
-                    required super.generalizedFrbRustBinding,
-                    required super.portManager,
-                  });
-
-                  @override GraphQlResponseInput crateApiRuntimeBufferedGraphQlResponseMaterialize({required BufferedGraphQlResponse that })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(that, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
-            
-            },
-            codec: 
-        SseCodec(
+/// Main entrypoint of the Rust API
+class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
+  @internal
+  static final instance = RustLib._();
+
+  RustLib._();
+
+  /// Initialize flutter_rust_bridge
+  static Future<void> init({
+    RustLibApi? api,
+    BaseHandler? handler,
+    ExternalLibrary? externalLibrary,
+    bool forceSameCodegenVersion = true,
+  }) async {
+    await instance.initImpl(
+      api: api,
+      handler: handler,
+      externalLibrary: externalLibrary,
+      forceSameCodegenVersion: forceSameCodegenVersion,
+    );
+  }
+
+  /// Initialize flutter_rust_bridge in mock mode.
+  /// No libraries for FFI are loaded.
+  static void initMock({required RustLibApi api}) {
+    instance.initMockImpl(api: api);
+  }
+
+  /// Dispose flutter_rust_bridge
+  ///
+  /// The call to this function is optional, since flutter_rust_bridge (and everything else)
+  /// is automatically disposed when the app stops.
+  static void dispose() => instance.disposeImpl();
+
+  @override
+  ApiImplConstructor<RustLibApiImpl, RustLibWire> get apiImplConstructor =>
+      RustLibApiImpl.new;
+
+  @override
+  WireConstructor<RustLibWire> get wireConstructor =>
+      RustLibWire.fromExternalLibrary;
+
+  @override
+  Future<void> executeRustInitializers() async {
+    await api.crateApiRuntimeInitApp();
+  }
+
+  @override
+  ExternalLibraryLoaderConfig get defaultExternalLibraryLoaderConfig =>
+      kDefaultExternalLibraryLoaderConfig;
+
+  @override
+  String get codegenVersion => '2.13.0';
+
+  @override
+  int get rustContentHash => -1587352435;
+
+  static const kDefaultExternalLibraryLoaderConfig =
+      ExternalLibraryLoaderConfig(
+        stem: 'shalom_ffi',
+        ioDirectory: 'rust/target/release/',
+        webPrefix: 'pkg/',
+        wasmBindgenName: 'wasm_bindgen',
+      );
+}
+
+abstract class RustLibApi extends BaseApi {
+  GraphQlResponseInput crateApiRuntimeBufferedGraphQlResponseMaterialize({
+    required BufferedGraphQlResponse that,
+  });
+
+  Future<void> crateApiRuntimeCompleteTransport({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+  });
+
+  WsSansIo crateApiWsCreateWsSansIo({ShalomJsonValue? connectionParams});
+
+  Future<bool> crateApiRuntimeEvictOperation({
+    required RuntimeHandle handle,
+    required String name,
+    ShalomJsonValue? variables,
+  });
+
+  Future<List<ObserverInfo>> crateApiRuntimeGetAllObservers({
+    required RuntimeHandle handle,
+  });
+
+  Future<String?> crateApiRuntimeGetCacheEntry({
+    required RuntimeHandle handle,
+    required String key,
+  });
+
+  Future<List<String>> crateApiRuntimeGetCacheKeys({
+    required RuntimeHandle handle,
+  });
+
+  Future<List<ObserverInfo>> crateApiRuntimeGetKeyObservers({
+    required RuntimeHandle handle,
+    required String key,
+  });
+
+  Future<Map<String, int>> crateApiRuntimeGetObserverCounts({
+    required RuntimeHandle handle,
+  });
+
+  Future<void> crateApiRuntimeInitApp();
+
+  RuntimeHandle crateApiRuntimeInitRuntime({
+    required String schemaSdl,
+    RuntimeConfigInput? config,
+  });
+
+  Future<void> crateApiRuntimeInvalidateOperation({
+    required RuntimeHandle handle,
+    required String name,
+    ShalomJsonValue? variables,
+  });
+
+  Stream<RequestEnvelopeInput> crateApiRuntimeListenRequests({
+    required RuntimeHandle handle,
+  });
+
+  Stream<SubscriptionEvent> crateApiRuntimeListenSubscription({
+    required RuntimeHandle handle,
+    required BigInt subscriptionId,
+  });
+
+  Future<SubscriptionEvent> crateApiRuntimeMutate({
+    required RuntimeHandle handle,
+    required String name,
+    ShalomJsonValue? variables,
+    required RetryDelayInput retryDelay,
+  });
+
+  Future<BigInt> crateApiRuntimeObserveFragment({
+    required RuntimeHandle handle,
+    required ObservedRefInput refInput,
+  });
+
+  Future<void> crateApiRuntimePushBufferedResponse({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required BufferedGraphQlResponse response,
+  });
+
+  Future<void> crateApiRuntimePushGraphqlError({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required List<ShalomJsonValue> errors,
+    ShalomJsonValue? extensions,
+  });
+
+  Future<void> crateApiRuntimePushResponse({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required String responseJson,
+  });
+
+  Future<void> crateApiRuntimePushResponseValue({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required GraphQlResponseInput response,
+  });
+
+  Future<void> crateApiRuntimePushTransportError({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required String message,
+    required String code,
+    ShalomJsonValue? details,
+  });
+
+  Future<ShalomJsonValue?> crateApiRuntimeReadFragment({
+    required RuntimeHandle handle,
+    required String fragmentName,
+    required String entityKey,
+  });
+
+  Future<ShalomJsonValue?> crateApiRuntimeReadOperation({
+    required RuntimeHandle handle,
+    required String name,
+    ShalomJsonValue? variables,
+  });
+
+  Future<BigInt> crateApiRuntimeRebindSubscription({
+    required RuntimeHandle handle,
+    required BigInt subscriptionId,
+    required ObservedRefInput newRef,
+  });
+
+  void crateApiRuntimeRegisterFragment({
+    required RuntimeHandle handle,
+    required String document,
+  });
+
+  void crateApiRuntimeRegisterOperation({
+    required RuntimeHandle handle,
+    required String document,
+  });
+
+  void crateApiRuntimeReloadSchema({
+    required RuntimeHandle handle,
+    required String schemaSdl,
+  });
+
+  Future<BigInt> crateApiRuntimeRequest({
+    required RuntimeHandle handle,
+    required String name,
+    ShalomJsonValue? variables,
+    required ExecutionPolicyInput executionPolicy,
+    required RetryDelayInput retryDelay,
+    BigInt? refetchIntervalMs,
+  });
+
+  Future<void> crateApiRuntimeRollbackOptimistic({
+    required RuntimeHandle handle,
+    required BigInt writeId,
+  });
+
+  void crateApiRuntimeSetLogLevel({required LogLevel level});
+
+  Future<void> crateApiRuntimeUnsubscribe({
+    required RuntimeHandle handle,
+    required BigInt subscriptionId,
+  });
+
+  Future<void> crateApiRuntimeWriteFragment({
+    required RuntimeHandle handle,
+    required String fragmentName,
+    required String entityKey,
+    required ShalomJsonValue data,
+  });
+
+  Future<void> crateApiRuntimeWriteOperation({
+    required RuntimeHandle handle,
+    required String name,
+    required ShalomJsonValue data,
+    ShalomJsonValue? variables,
+  });
+
+  Future<BigInt> crateApiRuntimeWriteOptimistic({
+    required RuntimeHandle handle,
+    required String opName,
+    required ShalomJsonValue data,
+  });
+
+  List<String> crateApiWsWsActiveOperationIds({required WsSansIo sansio});
+
+  String crateApiWsWsCompleteFrame({
+    required WsSansIo sansio,
+    required String opId,
+  });
+
+  String crateApiWsWsConnectionInitFrame({required WsSansIo sansio});
+
+  bool crateApiWsWsIsConnected({required WsSansIo sansio});
+
+  List<WsLinkEvent> crateApiWsWsOnMessage({
+    required WsSansIo sansio,
+    required String raw,
+  });
+
+  String crateApiWsWsPingFrame();
+
+  String crateApiWsWsPongFrame({
+    required WsSansIo sansio,
+    ShalomJsonValue? payload,
+  });
+
+  void crateApiWsWsReset({required WsSansIo sansio});
+
+  String crateApiWsWsSubscribeFrame({
+    required WsSansIo sansio,
+    required String opId,
+    required String query,
+    ShalomJsonValue? variables,
+    String? operationName,
+  });
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_BufferedGraphQlResponse;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_BufferedGraphQlResponse;
+
+  CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_BufferedGraphQlResponsePtr;
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_RuntimeHandle;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_RuntimeHandle;
+
+  CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_RuntimeHandlePtr;
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_WsSansIo;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_WsSansIo;
+
+  CrossPlatformFinalizerArg get rust_arc_decrement_strong_count_WsSansIoPtr;
+}
+
+class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
+  RustLibApiImpl({
+    required super.handler,
+    required super.wire,
+    required super.generalizedFrbRustBinding,
+    required super.portManager,
+  });
+
+  @override
+  GraphQlResponseInput crateApiRuntimeBufferedGraphQlResponseMaterialize({
+    required BufferedGraphQlResponse that,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+            that,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 1)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_graph_ql_response_input,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiRuntimeBufferedGraphQlResponseMaterializeConstMeta,
-            argValues: [that],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeBufferedGraphQlResponseMaterializeConstMeta,
+        argValues: [that],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta
+  get kCrateApiRuntimeBufferedGraphQlResponseMaterializeConstMeta =>
+      const TaskConstMeta(
+        debugName: "BufferedGraphQlResponse_materialize",
+        argNames: ["that"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeBufferedGraphQlResponseMaterializeConstMeta => const TaskConstMeta(
-            debugName: "BufferedGraphQlResponse_materialize",
-            argNames: ["that"],
-        );
-        
-
-@override Future<void> crateApiRuntimeCompleteTransport({required RuntimeHandle handle , required BigInt requestId })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_u_64(requestId, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimeCompleteTransport({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_u_64(requestId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 2,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiRuntimeCompleteTransportConstMeta,
-            argValues: [handle, requestId],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeCompleteTransportConstMeta,
+        argValues: [handle, requestId],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeCompleteTransportConstMeta =>
+      const TaskConstMeta(
+        debugName: "complete_transport",
+        argNames: ["handle", "requestId"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeCompleteTransportConstMeta => const TaskConstMeta(
-            debugName: "complete_transport",
-            argNames: ["handle", "requestId"],
-        );
-        
-
-@override WsSansIo crateApiWsCreateWsSansIo({ShalomJsonValue? connectionParams })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_opt_box_autoadd_shalom_json_value(connectionParams, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
-            
-            },
-            codec: 
-        SseCodec(
-          decodeSuccessData: sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo,
+  @override
+  WsSansIo crateApiWsCreateWsSansIo({ShalomJsonValue? connectionParams}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_opt_box_autoadd_shalom_json_value(
+            connectionParams,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiWsCreateWsSansIoConstMeta,
-            argValues: [connectionParams],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiWsCreateWsSansIoConstMeta,
+        argValues: [connectionParams],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiWsCreateWsSansIoConstMeta => const TaskConstMeta(
+    debugName: "create_ws_sans_io",
+    argNames: ["connectionParams"],
+  );
 
-        TaskConstMeta get kCrateApiWsCreateWsSansIoConstMeta => const TaskConstMeta(
-            debugName: "create_ws_sans_io",
-            argNames: ["connectionParams"],
-        );
-        
-
-@override Future<bool> crateApiRuntimeEvictOperation({required RuntimeHandle handle , required String name , ShalomJsonValue? variables })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(name, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 4, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<bool> crateApiRuntimeEvictOperation({
+    required RuntimeHandle handle,
+    required String name,
+    ShalomJsonValue? variables,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(name, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 4,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_bool,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeEvictOperationConstMeta,
-            argValues: [handle, name, variables],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeEvictOperationConstMeta,
+        argValues: [handle, name, variables],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeEvictOperationConstMeta =>
+      const TaskConstMeta(
+        debugName: "evict_operation",
+        argNames: ["handle", "name", "variables"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeEvictOperationConstMeta => const TaskConstMeta(
-            debugName: "evict_operation",
-            argNames: ["handle", "name", "variables"],
-        );
-        
-
-@override Future<List<ObserverInfo>> crateApiRuntimeGetAllObservers({required RuntimeHandle handle })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 5, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<List<ObserverInfo>> crateApiRuntimeGetAllObservers({
+    required RuntimeHandle handle,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 5,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_list_observer_info,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiRuntimeGetAllObserversConstMeta,
-            argValues: [handle],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeGetAllObserversConstMeta,
+        argValues: [handle],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeGetAllObserversConstMeta =>
+      const TaskConstMeta(debugName: "get_all_observers", argNames: ["handle"]);
 
-        TaskConstMeta get kCrateApiRuntimeGetAllObserversConstMeta => const TaskConstMeta(
-            debugName: "get_all_observers",
-            argNames: ["handle"],
-        );
-        
-
-@override Future<String?> crateApiRuntimeGetCacheEntry({required RuntimeHandle handle , required String key })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(key, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 6, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<String?> crateApiRuntimeGetCacheEntry({
+    required RuntimeHandle handle,
+    required String key,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(key, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 6,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_opt_String,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiRuntimeGetCacheEntryConstMeta,
-            argValues: [handle, key],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeGetCacheEntryConstMeta,
+        argValues: [handle, key],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeGetCacheEntryConstMeta =>
+      const TaskConstMeta(
+        debugName: "get_cache_entry",
+        argNames: ["handle", "key"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeGetCacheEntryConstMeta => const TaskConstMeta(
-            debugName: "get_cache_entry",
-            argNames: ["handle", "key"],
-        );
-        
-
-@override Future<List<String>> crateApiRuntimeGetCacheKeys({required RuntimeHandle handle })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 7, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<List<String>> crateApiRuntimeGetCacheKeys({
+    required RuntimeHandle handle,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 7,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_list_String,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiRuntimeGetCacheKeysConstMeta,
-            argValues: [handle],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeGetCacheKeysConstMeta,
+        argValues: [handle],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeGetCacheKeysConstMeta =>
+      const TaskConstMeta(debugName: "get_cache_keys", argNames: ["handle"]);
 
-        TaskConstMeta get kCrateApiRuntimeGetCacheKeysConstMeta => const TaskConstMeta(
-            debugName: "get_cache_keys",
-            argNames: ["handle"],
-        );
-        
-
-@override Future<List<ObserverInfo>> crateApiRuntimeGetKeyObservers({required RuntimeHandle handle , required String key })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(key, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 8, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<List<ObserverInfo>> crateApiRuntimeGetKeyObservers({
+    required RuntimeHandle handle,
+    required String key,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(key, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 8,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_list_observer_info,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiRuntimeGetKeyObserversConstMeta,
-            argValues: [handle, key],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeGetKeyObserversConstMeta,
+        argValues: [handle, key],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeGetKeyObserversConstMeta =>
+      const TaskConstMeta(
+        debugName: "get_key_observers",
+        argNames: ["handle", "key"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeGetKeyObserversConstMeta => const TaskConstMeta(
-            debugName: "get_key_observers",
-            argNames: ["handle", "key"],
-        );
-        
-
-@override Future<Map<String, int>> crateApiRuntimeGetObserverCounts({required RuntimeHandle handle })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 9, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<Map<String, int>> crateApiRuntimeGetObserverCounts({
+    required RuntimeHandle handle,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 9,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_Map_String_u_32_None,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiRuntimeGetObserverCountsConstMeta,
-            argValues: [handle],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeGetObserverCountsConstMeta,
+        argValues: [handle],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeGetObserverCountsConstMeta =>
+      const TaskConstMeta(
+        debugName: "get_observer_counts",
+        argNames: ["handle"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeGetObserverCountsConstMeta => const TaskConstMeta(
-            debugName: "get_observer_counts",
-            argNames: ["handle"],
-        );
-        
-
-@override Future<void> crateApiRuntimeInitApp()  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 10, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimeInitApp() {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 10,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiRuntimeInitAppConstMeta,
-            argValues: [],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeInitAppConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeInitAppConstMeta =>
+      const TaskConstMeta(debugName: "init_app", argNames: []);
 
-        TaskConstMeta get kCrateApiRuntimeInitAppConstMeta => const TaskConstMeta(
-            debugName: "init_app",
-            argNames: [],
-        );
-        
-
-@override RuntimeHandle crateApiRuntimeInitRuntime({required String schemaSdl , RuntimeConfigInput? config })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_String(schemaSdl, serializer);
-sse_encode_opt_box_autoadd_runtime_config_input(config, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
-            
-            },
-            codec: 
-        SseCodec(
-          decodeSuccessData: sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle,
+  @override
+  RuntimeHandle crateApiRuntimeInitRuntime({
+    required String schemaSdl,
+    RuntimeConfigInput? config,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_String(schemaSdl, serializer);
+          sse_encode_opt_box_autoadd_runtime_config_input(config, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
+        },
+        codec: SseCodec(
+          decodeSuccessData:
+              sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeInitRuntimeConstMeta,
-            argValues: [schemaSdl, config],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeInitRuntimeConstMeta,
+        argValues: [schemaSdl, config],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeInitRuntimeConstMeta => const TaskConstMeta(
+    debugName: "init_runtime",
+    argNames: ["schemaSdl", "config"],
+  );
 
-        TaskConstMeta get kCrateApiRuntimeInitRuntimeConstMeta => const TaskConstMeta(
-            debugName: "init_runtime",
-            argNames: ["schemaSdl", "config"],
-        );
-        
-
-@override Future<void> crateApiRuntimeInvalidateOperation({required RuntimeHandle handle , required String name , ShalomJsonValue? variables })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(name, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 12, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimeInvalidateOperation({
+    required RuntimeHandle handle,
+    required String name,
+    ShalomJsonValue? variables,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(name, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 12,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeInvalidateOperationConstMeta,
-            argValues: [handle, name, variables],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeInvalidateOperationConstMeta,
+        argValues: [handle, name, variables],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeInvalidateOperationConstMeta =>
+      const TaskConstMeta(
+        debugName: "invalidate_operation",
+        argNames: ["handle", "name", "variables"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeInvalidateOperationConstMeta => const TaskConstMeta(
-            debugName: "invalidate_operation",
-            argNames: ["handle", "name", "variables"],
-        );
-        
+  @override
+  Stream<RequestEnvelopeInput> crateApiRuntimeListenRequests({
+    required RuntimeHandle handle,
+  }) {
+    final sink = RustStreamSink<RequestEnvelopeInput>();
+    unawaited(
+      handler.executeNormal(
+        NormalTask(
+          callFfi: (port_) {
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+              handle,
+              serializer,
+            );
+            sse_encode_StreamSink_request_envelope_input_Sse(sink, serializer);
+            pdeCallFfi(
+              generalizedFrbRustBinding,
+              serializer,
+              funcId: 13,
+              port: port_,
+            );
+          },
+          codec: SseCodec(
+            decodeSuccessData: sse_decode_unit,
+            decodeErrorData: sse_decode_AnyhowException,
+          ),
+          constMeta: kCrateApiRuntimeListenRequestsConstMeta,
+          argValues: [handle, sink],
+          apiImpl: this,
+        ),
+      ),
+    );
+    return sink.stream;
+  }
 
-@override Stream<RequestEnvelopeInput> crateApiRuntimeListenRequests({required RuntimeHandle handle })  { 
-            final sink = RustStreamSink<RequestEnvelopeInput>();
-            unawaited(handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_StreamSink_request_envelope_input_Sse(sink, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 13, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeListenRequestsConstMeta,
-            argValues: [handle, sink],
-            apiImpl: this,
-        )));
-            return sink.stream;
-             }
+  TaskConstMeta get kCrateApiRuntimeListenRequestsConstMeta =>
+      const TaskConstMeta(
+        debugName: "listen_requests",
+        argNames: ["handle", "sink"],
+      );
 
+  @override
+  Stream<SubscriptionEvent> crateApiRuntimeListenSubscription({
+    required RuntimeHandle handle,
+    required BigInt subscriptionId,
+  }) {
+    final sink = RustStreamSink<SubscriptionEvent>();
+    unawaited(
+      handler.executeNormal(
+        NormalTask(
+          callFfi: (port_) {
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+              handle,
+              serializer,
+            );
+            sse_encode_u_64(subscriptionId, serializer);
+            sse_encode_StreamSink_subscription_event_Sse(sink, serializer);
+            pdeCallFfi(
+              generalizedFrbRustBinding,
+              serializer,
+              funcId: 14,
+              port: port_,
+            );
+          },
+          codec: SseCodec(
+            decodeSuccessData: sse_decode_unit,
+            decodeErrorData: sse_decode_AnyhowException,
+          ),
+          constMeta: kCrateApiRuntimeListenSubscriptionConstMeta,
+          argValues: [handle, subscriptionId, sink],
+          apiImpl: this,
+        ),
+      ),
+    );
+    return sink.stream;
+  }
 
-        TaskConstMeta get kCrateApiRuntimeListenRequestsConstMeta => const TaskConstMeta(
-            debugName: "listen_requests",
-            argNames: ["handle", "sink"],
-        );
-        
+  TaskConstMeta get kCrateApiRuntimeListenSubscriptionConstMeta =>
+      const TaskConstMeta(
+        debugName: "listen_subscription",
+        argNames: ["handle", "subscriptionId", "sink"],
+      );
 
-@override Stream<SubscriptionEvent> crateApiRuntimeListenSubscription({required RuntimeHandle handle , required BigInt subscriptionId })  { 
-            final sink = RustStreamSink<SubscriptionEvent>();
-            unawaited(handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_u_64(subscriptionId, serializer);
-sse_encode_StreamSink_subscription_event_Sse(sink, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 14, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
-          decodeSuccessData: sse_decode_unit,
-          decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeListenSubscriptionConstMeta,
-            argValues: [handle, subscriptionId, sink],
-            apiImpl: this,
-        )));
-            return sink.stream;
-             }
-
-
-        TaskConstMeta get kCrateApiRuntimeListenSubscriptionConstMeta => const TaskConstMeta(
-            debugName: "listen_subscription",
-            argNames: ["handle", "subscriptionId", "sink"],
-        );
-        
-
-@override Future<SubscriptionEvent> crateApiRuntimeMutate({required RuntimeHandle handle , required String name , ShalomJsonValue? variables , required RetryDelayInput retryDelay })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(name, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
-sse_encode_box_autoadd_retry_delay_input(retryDelay, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 15, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<SubscriptionEvent> crateApiRuntimeMutate({
+    required RuntimeHandle handle,
+    required String name,
+    ShalomJsonValue? variables,
+    required RetryDelayInput retryDelay,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(name, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
+          sse_encode_box_autoadd_retry_delay_input(retryDelay, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 15,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_subscription_event,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeMutateConstMeta,
-            argValues: [handle, name, variables, retryDelay],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeMutateConstMeta,
+        argValues: [handle, name, variables, retryDelay],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeMutateConstMeta => const TaskConstMeta(
+    debugName: "mutate",
+    argNames: ["handle", "name", "variables", "retryDelay"],
+  );
 
-        TaskConstMeta get kCrateApiRuntimeMutateConstMeta => const TaskConstMeta(
-            debugName: "mutate",
-            argNames: ["handle", "name", "variables", "retryDelay"],
-        );
-        
-
-@override Future<BigInt> crateApiRuntimeObserveFragment({required RuntimeHandle handle , required ObservedRefInput refInput })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_box_autoadd_observed_ref_input(refInput, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 16, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<BigInt> crateApiRuntimeObserveFragment({
+    required RuntimeHandle handle,
+    required ObservedRefInput refInput,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_box_autoadd_observed_ref_input(refInput, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 16,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_u_64,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeObserveFragmentConstMeta,
-            argValues: [handle, refInput],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeObserveFragmentConstMeta,
+        argValues: [handle, refInput],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeObserveFragmentConstMeta =>
+      const TaskConstMeta(
+        debugName: "observe_fragment",
+        argNames: ["handle", "refInput"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeObserveFragmentConstMeta => const TaskConstMeta(
-            debugName: "observe_fragment",
-            argNames: ["handle", "refInput"],
-        );
-        
-
-@override Future<void> crateApiRuntimePushBufferedResponse({required RuntimeHandle handle , required BigInt requestId , required BufferedGraphQlResponse response })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_u_64(requestId, serializer);
-sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(response, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 17, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimePushBufferedResponse({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required BufferedGraphQlResponse response,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_u_64(requestId, serializer);
+          sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+            response,
+            serializer,
+          );
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 17,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimePushBufferedResponseConstMeta,
-            argValues: [handle, requestId, response],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimePushBufferedResponseConstMeta,
+        argValues: [handle, requestId, response],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimePushBufferedResponseConstMeta =>
+      const TaskConstMeta(
+        debugName: "push_buffered_response",
+        argNames: ["handle", "requestId", "response"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimePushBufferedResponseConstMeta => const TaskConstMeta(
-            debugName: "push_buffered_response",
-            argNames: ["handle", "requestId", "response"],
-        );
-        
-
-@override Future<void> crateApiRuntimePushGraphqlError({required RuntimeHandle handle , required BigInt requestId , required List<ShalomJsonValue> errors , ShalomJsonValue? extensions })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_u_64(requestId, serializer);
-sse_encode_list_shalom_json_value(errors, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(extensions, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 18, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimePushGraphqlError({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required List<ShalomJsonValue> errors,
+    ShalomJsonValue? extensions,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_u_64(requestId, serializer);
+          sse_encode_list_shalom_json_value(errors, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(extensions, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 18,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimePushGraphqlErrorConstMeta,
-            argValues: [handle, requestId, errors, extensions],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimePushGraphqlErrorConstMeta,
+        argValues: [handle, requestId, errors, extensions],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimePushGraphqlErrorConstMeta =>
+      const TaskConstMeta(
+        debugName: "push_graphql_error",
+        argNames: ["handle", "requestId", "errors", "extensions"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimePushGraphqlErrorConstMeta => const TaskConstMeta(
-            debugName: "push_graphql_error",
-            argNames: ["handle", "requestId", "errors", "extensions"],
-        );
-        
-
-@override Future<void> crateApiRuntimePushResponse({required RuntimeHandle handle , required BigInt requestId , required String responseJson })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_u_64(requestId, serializer);
-sse_encode_String(responseJson, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 19, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimePushResponse({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required String responseJson,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_u_64(requestId, serializer);
+          sse_encode_String(responseJson, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 19,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimePushResponseConstMeta,
-            argValues: [handle, requestId, responseJson],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimePushResponseConstMeta,
+        argValues: [handle, requestId, responseJson],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimePushResponseConstMeta =>
+      const TaskConstMeta(
+        debugName: "push_response",
+        argNames: ["handle", "requestId", "responseJson"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimePushResponseConstMeta => const TaskConstMeta(
-            debugName: "push_response",
-            argNames: ["handle", "requestId", "responseJson"],
-        );
-        
-
-@override Future<void> crateApiRuntimePushResponseValue({required RuntimeHandle handle , required BigInt requestId , required GraphQlResponseInput response })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_u_64(requestId, serializer);
-sse_encode_box_autoadd_graph_ql_response_input(response, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 20, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimePushResponseValue({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required GraphQlResponseInput response,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_u_64(requestId, serializer);
+          sse_encode_box_autoadd_graph_ql_response_input(response, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 20,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimePushResponseValueConstMeta,
-            argValues: [handle, requestId, response],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimePushResponseValueConstMeta,
+        argValues: [handle, requestId, response],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimePushResponseValueConstMeta =>
+      const TaskConstMeta(
+        debugName: "push_response_value",
+        argNames: ["handle", "requestId", "response"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimePushResponseValueConstMeta => const TaskConstMeta(
-            debugName: "push_response_value",
-            argNames: ["handle", "requestId", "response"],
-        );
-        
-
-@override Future<void> crateApiRuntimePushTransportError({required RuntimeHandle handle , required BigInt requestId , required String message , required String code , ShalomJsonValue? details })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_u_64(requestId, serializer);
-sse_encode_String(message, serializer);
-sse_encode_String(code, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(details, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 21, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimePushTransportError({
+    required RuntimeHandle handle,
+    required BigInt requestId,
+    required String message,
+    required String code,
+    ShalomJsonValue? details,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_u_64(requestId, serializer);
+          sse_encode_String(message, serializer);
+          sse_encode_String(code, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(details, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 21,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimePushTransportErrorConstMeta,
-            argValues: [handle, requestId, message, code, details],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimePushTransportErrorConstMeta,
+        argValues: [handle, requestId, message, code, details],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimePushTransportErrorConstMeta =>
+      const TaskConstMeta(
+        debugName: "push_transport_error",
+        argNames: ["handle", "requestId", "message", "code", "details"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimePushTransportErrorConstMeta => const TaskConstMeta(
-            debugName: "push_transport_error",
-            argNames: ["handle", "requestId", "message", "code", "details"],
-        );
-        
-
-@override Future<ShalomJsonValue?> crateApiRuntimeReadFragment({required RuntimeHandle handle , required String fragmentName , required String entityKey })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(fragmentName, serializer);
-sse_encode_String(entityKey, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 22, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<ShalomJsonValue?> crateApiRuntimeReadFragment({
+    required RuntimeHandle handle,
+    required String fragmentName,
+    required String entityKey,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(fragmentName, serializer);
+          sse_encode_String(entityKey, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 22,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_opt_box_autoadd_shalom_json_value,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeReadFragmentConstMeta,
-            argValues: [handle, fragmentName, entityKey],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeReadFragmentConstMeta,
+        argValues: [handle, fragmentName, entityKey],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeReadFragmentConstMeta =>
+      const TaskConstMeta(
+        debugName: "read_fragment",
+        argNames: ["handle", "fragmentName", "entityKey"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeReadFragmentConstMeta => const TaskConstMeta(
-            debugName: "read_fragment",
-            argNames: ["handle", "fragmentName", "entityKey"],
-        );
-        
-
-@override Future<ShalomJsonValue?> crateApiRuntimeReadOperation({required RuntimeHandle handle , required String name , ShalomJsonValue? variables })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(name, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 23, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<ShalomJsonValue?> crateApiRuntimeReadOperation({
+    required RuntimeHandle handle,
+    required String name,
+    ShalomJsonValue? variables,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(name, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 23,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_opt_box_autoadd_shalom_json_value,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeReadOperationConstMeta,
-            argValues: [handle, name, variables],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeReadOperationConstMeta,
+        argValues: [handle, name, variables],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeReadOperationConstMeta =>
+      const TaskConstMeta(
+        debugName: "read_operation",
+        argNames: ["handle", "name", "variables"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeReadOperationConstMeta => const TaskConstMeta(
-            debugName: "read_operation",
-            argNames: ["handle", "name", "variables"],
-        );
-        
-
-@override Future<BigInt> crateApiRuntimeRebindSubscription({required RuntimeHandle handle , required BigInt subscriptionId , required ObservedRefInput newRef })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_u_64(subscriptionId, serializer);
-sse_encode_box_autoadd_observed_ref_input(newRef, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 24, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<BigInt> crateApiRuntimeRebindSubscription({
+    required RuntimeHandle handle,
+    required BigInt subscriptionId,
+    required ObservedRefInput newRef,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_u_64(subscriptionId, serializer);
+          sse_encode_box_autoadd_observed_ref_input(newRef, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 24,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_u_64,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeRebindSubscriptionConstMeta,
-            argValues: [handle, subscriptionId, newRef],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeRebindSubscriptionConstMeta,
+        argValues: [handle, subscriptionId, newRef],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeRebindSubscriptionConstMeta =>
+      const TaskConstMeta(
+        debugName: "rebind_subscription",
+        argNames: ["handle", "subscriptionId", "newRef"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeRebindSubscriptionConstMeta => const TaskConstMeta(
-            debugName: "rebind_subscription",
-            argNames: ["handle", "subscriptionId", "newRef"],
-        );
-        
-
-@override void crateApiRuntimeRegisterFragment({required RuntimeHandle handle , required String document })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(document, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 25)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  void crateApiRuntimeRegisterFragment({
+    required RuntimeHandle handle,
+    required String document,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(document, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 25)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeRegisterFragmentConstMeta,
-            argValues: [handle, document],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeRegisterFragmentConstMeta,
+        argValues: [handle, document],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeRegisterFragmentConstMeta =>
+      const TaskConstMeta(
+        debugName: "register_fragment",
+        argNames: ["handle", "document"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeRegisterFragmentConstMeta => const TaskConstMeta(
-            debugName: "register_fragment",
-            argNames: ["handle", "document"],
-        );
-        
-
-@override void crateApiRuntimeRegisterOperation({required RuntimeHandle handle , required String document })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(document, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 26)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  void crateApiRuntimeRegisterOperation({
+    required RuntimeHandle handle,
+    required String document,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(document, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 26)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeRegisterOperationConstMeta,
-            argValues: [handle, document],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeRegisterOperationConstMeta,
+        argValues: [handle, document],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeRegisterOperationConstMeta =>
+      const TaskConstMeta(
+        debugName: "register_operation",
+        argNames: ["handle", "document"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeRegisterOperationConstMeta => const TaskConstMeta(
-            debugName: "register_operation",
-            argNames: ["handle", "document"],
-        );
-        
-
-@override void crateApiRuntimeReloadSchema({required RuntimeHandle handle , required String schemaSdl })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(schemaSdl, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 27)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  void crateApiRuntimeReloadSchema({
+    required RuntimeHandle handle,
+    required String schemaSdl,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(schemaSdl, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 27)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeReloadSchemaConstMeta,
-            argValues: [handle, schemaSdl],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeReloadSchemaConstMeta,
+        argValues: [handle, schemaSdl],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeReloadSchemaConstMeta =>
+      const TaskConstMeta(
+        debugName: "reload_schema",
+        argNames: ["handle", "schemaSdl"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeReloadSchemaConstMeta => const TaskConstMeta(
-            debugName: "reload_schema",
-            argNames: ["handle", "schemaSdl"],
-        );
-        
-
-@override Future<BigInt> crateApiRuntimeRequest({required RuntimeHandle handle , required String name , ShalomJsonValue? variables , required ExecutionPolicyInput executionPolicy , required RetryDelayInput retryDelay , BigInt? refetchIntervalMs })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(name, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
-sse_encode_execution_policy_input(executionPolicy, serializer);
-sse_encode_box_autoadd_retry_delay_input(retryDelay, serializer);
-sse_encode_opt_box_autoadd_u_64(refetchIntervalMs, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 28, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<BigInt> crateApiRuntimeRequest({
+    required RuntimeHandle handle,
+    required String name,
+    ShalomJsonValue? variables,
+    required ExecutionPolicyInput executionPolicy,
+    required RetryDelayInput retryDelay,
+    BigInt? refetchIntervalMs,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(name, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
+          sse_encode_execution_policy_input(executionPolicy, serializer);
+          sse_encode_box_autoadd_retry_delay_input(retryDelay, serializer);
+          sse_encode_opt_box_autoadd_u_64(refetchIntervalMs, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 28,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_u_64,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeRequestConstMeta,
-            argValues: [handle, name, variables, executionPolicy, retryDelay, refetchIntervalMs],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeRequestConstMeta,
+        argValues: [
+          handle,
+          name,
+          variables,
+          executionPolicy,
+          retryDelay,
+          refetchIntervalMs,
+        ],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeRequestConstMeta => const TaskConstMeta(
+    debugName: "request",
+    argNames: [
+      "handle",
+      "name",
+      "variables",
+      "executionPolicy",
+      "retryDelay",
+      "refetchIntervalMs",
+    ],
+  );
 
-        TaskConstMeta get kCrateApiRuntimeRequestConstMeta => const TaskConstMeta(
-            debugName: "request",
-            argNames: ["handle", "name", "variables", "executionPolicy", "retryDelay", "refetchIntervalMs"],
-        );
-        
-
-@override Future<void> crateApiRuntimeRollbackOptimistic({required RuntimeHandle handle , required BigInt writeId })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_u_64(writeId, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 29, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimeRollbackOptimistic({
+    required RuntimeHandle handle,
+    required BigInt writeId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_u_64(writeId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 29,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeRollbackOptimisticConstMeta,
-            argValues: [handle, writeId],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeRollbackOptimisticConstMeta,
+        argValues: [handle, writeId],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeRollbackOptimisticConstMeta =>
+      const TaskConstMeta(
+        debugName: "rollback_optimistic",
+        argNames: ["handle", "writeId"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeRollbackOptimisticConstMeta => const TaskConstMeta(
-            debugName: "rollback_optimistic",
-            argNames: ["handle", "writeId"],
-        );
-        
-
-@override void crateApiRuntimeSetLogLevel({required LogLevel level })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_log_level(level, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 30)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  void crateApiRuntimeSetLogLevel({required LogLevel level}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_log_level(level, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 30)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiRuntimeSetLogLevelConstMeta,
-            argValues: [level],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeSetLogLevelConstMeta,
+        argValues: [level],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeSetLogLevelConstMeta =>
+      const TaskConstMeta(debugName: "set_log_level", argNames: ["level"]);
 
-        TaskConstMeta get kCrateApiRuntimeSetLogLevelConstMeta => const TaskConstMeta(
-            debugName: "set_log_level",
-            argNames: ["level"],
-        );
-        
-
-@override Future<void> crateApiRuntimeUnsubscribe({required RuntimeHandle handle , required BigInt subscriptionId })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_u_64(subscriptionId, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 31, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimeUnsubscribe({
+    required RuntimeHandle handle,
+    required BigInt subscriptionId,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_u_64(subscriptionId, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 31,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiRuntimeUnsubscribeConstMeta,
-            argValues: [handle, subscriptionId],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeUnsubscribeConstMeta,
+        argValues: [handle, subscriptionId],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeUnsubscribeConstMeta => const TaskConstMeta(
+    debugName: "unsubscribe",
+    argNames: ["handle", "subscriptionId"],
+  );
 
-        TaskConstMeta get kCrateApiRuntimeUnsubscribeConstMeta => const TaskConstMeta(
-            debugName: "unsubscribe",
-            argNames: ["handle", "subscriptionId"],
-        );
-        
-
-@override Future<void> crateApiRuntimeWriteFragment({required RuntimeHandle handle , required String fragmentName , required String entityKey , required ShalomJsonValue data })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(fragmentName, serializer);
-sse_encode_String(entityKey, serializer);
-sse_encode_box_autoadd_shalom_json_value(data, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 32, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimeWriteFragment({
+    required RuntimeHandle handle,
+    required String fragmentName,
+    required String entityKey,
+    required ShalomJsonValue data,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(fragmentName, serializer);
+          sse_encode_String(entityKey, serializer);
+          sse_encode_box_autoadd_shalom_json_value(data, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 32,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeWriteFragmentConstMeta,
-            argValues: [handle, fragmentName, entityKey, data],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeWriteFragmentConstMeta,
+        argValues: [handle, fragmentName, entityKey, data],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeWriteFragmentConstMeta =>
+      const TaskConstMeta(
+        debugName: "write_fragment",
+        argNames: ["handle", "fragmentName", "entityKey", "data"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeWriteFragmentConstMeta => const TaskConstMeta(
-            debugName: "write_fragment",
-            argNames: ["handle", "fragmentName", "entityKey", "data"],
-        );
-        
-
-@override Future<void> crateApiRuntimeWriteOperation({required RuntimeHandle handle , required String name , required ShalomJsonValue data , ShalomJsonValue? variables })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(name, serializer);
-sse_encode_box_autoadd_shalom_json_value(data, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 33, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<void> crateApiRuntimeWriteOperation({
+    required RuntimeHandle handle,
+    required String name,
+    required ShalomJsonValue data,
+    ShalomJsonValue? variables,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(name, serializer);
+          sse_encode_box_autoadd_shalom_json_value(data, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 33,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeWriteOperationConstMeta,
-            argValues: [handle, name, data, variables],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeWriteOperationConstMeta,
+        argValues: [handle, name, data, variables],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeWriteOperationConstMeta =>
+      const TaskConstMeta(
+        debugName: "write_operation",
+        argNames: ["handle", "name", "data", "variables"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeWriteOperationConstMeta => const TaskConstMeta(
-            debugName: "write_operation",
-            argNames: ["handle", "name", "data", "variables"],
-        );
-        
-
-@override Future<BigInt> crateApiRuntimeWriteOptimistic({required RuntimeHandle handle , required String opName , required ShalomJsonValue data })  { return handler.executeNormal(NormalTask(
-            callFfi: (port_) {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(handle, serializer);
-sse_encode_String(opName, serializer);
-sse_encode_box_autoadd_shalom_json_value(data, serializer);
-            pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 34, port: port_);
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  Future<BigInt> crateApiRuntimeWriteOptimistic({
+    required RuntimeHandle handle,
+    required String opName,
+    required ShalomJsonValue data,
+  }) {
+    return handler.executeNormal(
+      NormalTask(
+        callFfi: (port_) {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+            handle,
+            serializer,
+          );
+          sse_encode_String(opName, serializer);
+          sse_encode_box_autoadd_shalom_json_value(data, serializer);
+          pdeCallFfi(
+            generalizedFrbRustBinding,
+            serializer,
+            funcId: 34,
+            port: port_,
+          );
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_u_64,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiRuntimeWriteOptimisticConstMeta,
-            argValues: [handle, opName, data],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiRuntimeWriteOptimisticConstMeta,
+        argValues: [handle, opName, data],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiRuntimeWriteOptimisticConstMeta =>
+      const TaskConstMeta(
+        debugName: "write_optimistic",
+        argNames: ["handle", "opName", "data"],
+      );
 
-        TaskConstMeta get kCrateApiRuntimeWriteOptimisticConstMeta => const TaskConstMeta(
-            debugName: "write_optimistic",
-            argNames: ["handle", "opName", "data"],
-        );
-        
-
-@override List<String> crateApiWsWsActiveOperationIds({required WsSansIo sansio })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(sansio, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 35)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  List<String> crateApiWsWsActiveOperationIds({required WsSansIo sansio}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+            sansio,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 35)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_list_String,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiWsWsActiveOperationIdsConstMeta,
-            argValues: [sansio],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiWsWsActiveOperationIdsConstMeta,
+        argValues: [sansio],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiWsWsActiveOperationIdsConstMeta =>
+      const TaskConstMeta(
+        debugName: "ws_active_operation_ids",
+        argNames: ["sansio"],
+      );
 
-        TaskConstMeta get kCrateApiWsWsActiveOperationIdsConstMeta => const TaskConstMeta(
-            debugName: "ws_active_operation_ids",
-            argNames: ["sansio"],
-        );
-        
-
-@override String crateApiWsWsCompleteFrame({required WsSansIo sansio , required String opId })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(sansio, serializer);
-sse_encode_String(opId, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 36)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  String crateApiWsWsCompleteFrame({
+    required WsSansIo sansio,
+    required String opId,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+            sansio,
+            serializer,
+          );
+          sse_encode_String(opId, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 36)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_String,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiWsWsCompleteFrameConstMeta,
-            argValues: [sansio, opId],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiWsWsCompleteFrameConstMeta,
+        argValues: [sansio, opId],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiWsWsCompleteFrameConstMeta => const TaskConstMeta(
+    debugName: "ws_complete_frame",
+    argNames: ["sansio", "opId"],
+  );
 
-        TaskConstMeta get kCrateApiWsWsCompleteFrameConstMeta => const TaskConstMeta(
-            debugName: "ws_complete_frame",
-            argNames: ["sansio", "opId"],
-        );
-        
-
-@override String crateApiWsWsConnectionInitFrame({required WsSansIo sansio })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(sansio, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 37)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  String crateApiWsWsConnectionInitFrame({required WsSansIo sansio}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+            sansio,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 37)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_String,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiWsWsConnectionInitFrameConstMeta,
-            argValues: [sansio],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiWsWsConnectionInitFrameConstMeta,
+        argValues: [sansio],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiWsWsConnectionInitFrameConstMeta =>
+      const TaskConstMeta(
+        debugName: "ws_connection_init_frame",
+        argNames: ["sansio"],
+      );
 
-        TaskConstMeta get kCrateApiWsWsConnectionInitFrameConstMeta => const TaskConstMeta(
-            debugName: "ws_connection_init_frame",
-            argNames: ["sansio"],
-        );
-        
-
-@override bool crateApiWsWsIsConnected({required WsSansIo sansio })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(sansio, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 38)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  bool crateApiWsWsIsConnected({required WsSansIo sansio}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+            sansio,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 38)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_bool,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiWsWsIsConnectedConstMeta,
-            argValues: [sansio],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiWsWsIsConnectedConstMeta,
+        argValues: [sansio],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiWsWsIsConnectedConstMeta =>
+      const TaskConstMeta(debugName: "ws_is_connected", argNames: ["sansio"]);
 
-        TaskConstMeta get kCrateApiWsWsIsConnectedConstMeta => const TaskConstMeta(
-            debugName: "ws_is_connected",
-            argNames: ["sansio"],
-        );
-        
-
-@override List<WsLinkEvent> crateApiWsWsOnMessage({required WsSansIo sansio , required String raw })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(sansio, serializer);
-sse_encode_String(raw, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 39)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  List<WsLinkEvent> crateApiWsWsOnMessage({
+    required WsSansIo sansio,
+    required String raw,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+            sansio,
+            serializer,
+          );
+          sse_encode_String(raw, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 39)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_list_ws_link_event,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiWsWsOnMessageConstMeta,
-            argValues: [sansio, raw],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiWsWsOnMessageConstMeta,
+        argValues: [sansio, raw],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiWsWsOnMessageConstMeta => const TaskConstMeta(
+    debugName: "ws_on_message",
+    argNames: ["sansio", "raw"],
+  );
 
-        TaskConstMeta get kCrateApiWsWsOnMessageConstMeta => const TaskConstMeta(
-            debugName: "ws_on_message",
-            argNames: ["sansio", "raw"],
-        );
-        
-
-@override String crateApiWsWsPingFrame()  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 40)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  String crateApiWsWsPingFrame() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 40)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_String,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiWsWsPingFrameConstMeta,
-            argValues: [],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiWsWsPingFrameConstMeta,
+        argValues: [],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiWsWsPingFrameConstMeta =>
+      const TaskConstMeta(debugName: "ws_ping_frame", argNames: []);
 
-        TaskConstMeta get kCrateApiWsWsPingFrameConstMeta => const TaskConstMeta(
-            debugName: "ws_ping_frame",
-            argNames: [],
-        );
-        
-
-@override String crateApiWsWsPongFrame({required WsSansIo sansio , ShalomJsonValue? payload })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(sansio, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(payload, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 41)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  String crateApiWsWsPongFrame({
+    required WsSansIo sansio,
+    ShalomJsonValue? payload,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+            sansio,
+            serializer,
+          );
+          sse_encode_opt_box_autoadd_shalom_json_value(payload, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 41)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiWsWsPongFrameConstMeta,
-            argValues: [sansio, payload],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiWsWsPongFrameConstMeta,
+        argValues: [sansio, payload],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiWsWsPongFrameConstMeta => const TaskConstMeta(
+    debugName: "ws_pong_frame",
+    argNames: ["sansio", "payload"],
+  );
 
-        TaskConstMeta get kCrateApiWsWsPongFrameConstMeta => const TaskConstMeta(
-            debugName: "ws_pong_frame",
-            argNames: ["sansio", "payload"],
-        );
-        
-
-@override void crateApiWsWsReset({required WsSansIo sansio })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(sansio, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 42)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  void crateApiWsWsReset({required WsSansIo sansio}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+            sansio,
+            serializer,
+          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 42)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: null,
-        )
-        ,
-            constMeta: kCrateApiWsWsResetConstMeta,
-            argValues: [sansio],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiWsWsResetConstMeta,
+        argValues: [sansio],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiWsWsResetConstMeta =>
+      const TaskConstMeta(debugName: "ws_reset", argNames: ["sansio"]);
 
-        TaskConstMeta get kCrateApiWsWsResetConstMeta => const TaskConstMeta(
-            debugName: "ws_reset",
-            argNames: ["sansio"],
-        );
-        
-
-@override String crateApiWsWsSubscribeFrame({required WsSansIo sansio , required String opId , required String query , ShalomJsonValue? variables , String? operationName })  { return handler.executeSync(SyncTask(
-            callFfi: () {
-              
-            final serializer = SseSerializer(generalizedFrbRustBinding);sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(sansio, serializer);
-sse_encode_String(opId, serializer);
-sse_encode_String(query, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
-sse_encode_opt_String(operationName, serializer);
-            return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 43)!;
-            
-            },
-            codec: 
-        SseCodec(
+  @override
+  String crateApiWsWsSubscribeFrame({
+    required WsSansIo sansio,
+    required String opId,
+    required String query,
+    ShalomJsonValue? variables,
+    String? operationName,
+  }) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
+          final serializer = SseSerializer(generalizedFrbRustBinding);
+          sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+            sansio,
+            serializer,
+          );
+          sse_encode_String(opId, serializer);
+          sse_encode_String(query, serializer);
+          sse_encode_opt_box_autoadd_shalom_json_value(variables, serializer);
+          sse_encode_opt_String(operationName, serializer);
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 43)!;
+        },
+        codec: SseCodec(
           decodeSuccessData: sse_decode_String,
           decodeErrorData: sse_decode_AnyhowException,
-        )
-        ,
-            constMeta: kCrateApiWsWsSubscribeFrameConstMeta,
-            argValues: [sansio, opId, query, variables, operationName],
-            apiImpl: this,
-        )); }
+        ),
+        constMeta: kCrateApiWsWsSubscribeFrameConstMeta,
+        argValues: [sansio, opId, query, variables, operationName],
+        apiImpl: this,
+      ),
+    );
+  }
 
+  TaskConstMeta get kCrateApiWsWsSubscribeFrameConstMeta => const TaskConstMeta(
+    debugName: "ws_subscribe_frame",
+    argNames: ["sansio", "opId", "query", "variables", "operationName"],
+  );
 
-        TaskConstMeta get kCrateApiWsWsSubscribeFrameConstMeta => const TaskConstMeta(
-            debugName: "ws_subscribe_frame",
-            argNames: ["sansio", "opId", "query", "variables", "operationName"],
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_BufferedGraphQlResponse => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_BufferedGraphQlResponse => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse;
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_RuntimeHandle => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_RuntimeHandle => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle;
+
+  RustArcIncrementStrongCountFnType
+  get rust_arc_increment_strong_count_WsSansIo => wire
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo;
+
+  RustArcDecrementStrongCountFnType
+  get rust_arc_decrement_strong_count_WsSansIo => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo;
+
+  @protected
+  AnyhowException dco_decode_AnyhowException(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return AnyhowException(raw as String);
+  }
+
+  @protected
+  BufferedGraphQlResponse
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return BufferedGraphQlResponseImpl.frbInternalDcoDecode(
+      raw as List<dynamic>,
+    );
+  }
+
+  @protected
+  RuntimeHandle
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return RuntimeHandleImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  WsSansIo
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return WsSansIoImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  WsSansIo
+  dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return WsSansIoImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  BufferedGraphQlResponse
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return BufferedGraphQlResponseImpl.frbInternalDcoDecode(
+      raw as List<dynamic>,
+    );
+  }
+
+  @protected
+  RuntimeHandle
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return RuntimeHandleImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  WsSansIo
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return WsSansIoImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  Map<String, ShalomJsonValue> dco_decode_Map_String_shalom_json_value_None(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return Map.fromEntries(
+      dco_decode_list_record_string_shalom_json_value(raw)
+          .map((e) => MapEntry(e.$1, e.$2)),
+    );
+  }
+
+  @protected
+  Map<String, int> dco_decode_Map_String_u_32_None(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return Map.fromEntries(
+      dco_decode_list_record_string_u_32(raw).map((e) => MapEntry(e.$1, e.$2)),
+    );
+  }
+
+  @protected
+  BufferedGraphQlResponse
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return BufferedGraphQlResponseImpl.frbInternalDcoDecode(
+      raw as List<dynamic>,
+    );
+  }
+
+  @protected
+  RuntimeHandle
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return RuntimeHandleImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  WsSansIo
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return WsSansIoImpl.frbInternalDcoDecode(raw as List<dynamic>);
+  }
+
+  @protected
+  RustStreamSink<RequestEnvelopeInput>
+  dco_decode_StreamSink_request_envelope_input_Sse(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
+  RustStreamSink<SubscriptionEvent>
+  dco_decode_StreamSink_subscription_event_Sse(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
+  String dco_decode_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as String;
+  }
+
+  @protected
+  bool dco_decode_bool(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as bool;
+  }
+
+  @protected
+  GraphQlResponseInput dco_decode_box_autoadd_graph_ql_response_input(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_graph_ql_response_input(raw);
+  }
+
+  @protected
+  ObservedRefInput dco_decode_box_autoadd_observed_ref_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_observed_ref_input(raw);
+  }
+
+  @protected
+  RetryDelayInput dco_decode_box_autoadd_retry_delay_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_retry_delay_input(raw);
+  }
+
+  @protected
+  RuntimeConfigInput dco_decode_box_autoadd_runtime_config_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_runtime_config_input(raw);
+  }
+
+  @protected
+  ShalomJsonValue dco_decode_box_autoadd_shalom_json_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_shalom_json_value(raw);
+  }
+
+  @protected
+  BigInt dco_decode_box_autoadd_u_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dco_decode_u_64(raw);
+  }
+
+  @protected
+  ExecutionPolicyInput dco_decode_execution_policy_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return ExecutionPolicyInput.values[raw as int];
+  }
+
+  @protected
+  double dco_decode_f_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as double;
+  }
+
+  @protected
+  GraphQlResponseInput dco_decode_graph_ql_response_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return GraphQlResponseInput_Data(
+          data: dco_decode_box_autoadd_shalom_json_value(raw[1]),
+          errors: dco_decode_opt_list_shalom_json_value(raw[2]),
+          extensions: dco_decode_opt_box_autoadd_shalom_json_value(raw[3]),
         );
-        
-
-RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_BufferedGraphQlResponse => wire.rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse;
-
-RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_BufferedGraphQlResponse => wire.rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse;
-
-RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_RuntimeHandle => wire.rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle;
-
-RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_RuntimeHandle => wire.rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle;
-
-RustArcIncrementStrongCountFnType get rust_arc_increment_strong_count_WsSansIo => wire.rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo;
-
-RustArcDecrementStrongCountFnType get rust_arc_decrement_strong_count_WsSansIo => wire.rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo;
-
-
-
-                  @protected AnyhowException dco_decode_AnyhowException(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return AnyhowException(raw as String); }
-
-@protected BufferedGraphQlResponse dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return BufferedGraphQlResponseImpl.frbInternalDcoDecode(raw as List<dynamic>); }
-
-@protected RuntimeHandle dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return RuntimeHandleImpl.frbInternalDcoDecode(raw as List<dynamic>); }
-
-@protected WsSansIo dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return WsSansIoImpl.frbInternalDcoDecode(raw as List<dynamic>); }
-
-@protected WsSansIo dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return WsSansIoImpl.frbInternalDcoDecode(raw as List<dynamic>); }
-
-@protected BufferedGraphQlResponse dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return BufferedGraphQlResponseImpl.frbInternalDcoDecode(raw as List<dynamic>); }
-
-@protected RuntimeHandle dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return RuntimeHandleImpl.frbInternalDcoDecode(raw as List<dynamic>); }
-
-@protected WsSansIo dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return WsSansIoImpl.frbInternalDcoDecode(raw as List<dynamic>); }
-
-@protected Map<String, ShalomJsonValue> dco_decode_Map_String_shalom_json_value_None(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return Map.fromEntries(dco_decode_list_record_string_shalom_json_value(raw).map((e) => MapEntry(e.$1, e.$2))); }
-
-@protected Map<String, int> dco_decode_Map_String_u_32_None(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return Map.fromEntries(dco_decode_list_record_string_u_32(raw).map((e) => MapEntry(e.$1, e.$2))); }
-
-@protected BufferedGraphQlResponse dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return BufferedGraphQlResponseImpl.frbInternalDcoDecode(raw as List<dynamic>); }
-
-@protected RuntimeHandle dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return RuntimeHandleImpl.frbInternalDcoDecode(raw as List<dynamic>); }
-
-@protected WsSansIo dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return WsSansIoImpl.frbInternalDcoDecode(raw as List<dynamic>); }
-
-@protected RustStreamSink<RequestEnvelopeInput> dco_decode_StreamSink_request_envelope_input_Sse(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-throw UnimplementedError(); }
-
-@protected RustStreamSink<SubscriptionEvent> dco_decode_StreamSink_subscription_event_Sse(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-throw UnimplementedError(); }
-
-@protected String dco_decode_String(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as String; }
-
-@protected bool dco_decode_bool(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as bool; }
-
-@protected GraphQlResponseInput dco_decode_box_autoadd_graph_ql_response_input(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return dco_decode_graph_ql_response_input(raw); }
-
-@protected ObservedRefInput dco_decode_box_autoadd_observed_ref_input(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return dco_decode_observed_ref_input(raw); }
-
-@protected RetryDelayInput dco_decode_box_autoadd_retry_delay_input(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return dco_decode_retry_delay_input(raw); }
-
-@protected RuntimeConfigInput dco_decode_box_autoadd_runtime_config_input(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return dco_decode_runtime_config_input(raw); }
-
-@protected ShalomJsonValue dco_decode_box_autoadd_shalom_json_value(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return dco_decode_shalom_json_value(raw); }
-
-@protected BigInt dco_decode_box_autoadd_u_64(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return dco_decode_u_64(raw); }
-
-@protected ExecutionPolicyInput dco_decode_execution_policy_input(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return ExecutionPolicyInput.values[raw as int]; }
-
-@protected double dco_decode_f_64(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as double; }
-
-@protected GraphQlResponseInput dco_decode_graph_ql_response_input(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-switch (raw[0]) {
-                case 0: return GraphQlResponseInput_Data(data: dco_decode_box_autoadd_shalom_json_value(raw[1]),errors: dco_decode_opt_list_shalom_json_value(raw[2]),extensions: dco_decode_opt_box_autoadd_shalom_json_value(raw[3]),);
-case 1: return GraphQlResponseInput_Error(errors: dco_decode_list_shalom_json_value(raw[1]),extensions: dco_decode_opt_box_autoadd_shalom_json_value(raw[2]),);
-case 2: return GraphQlResponseInput_TransportError(message: dco_decode_String(raw[1]),code: dco_decode_String(raw[2]),details: dco_decode_opt_box_autoadd_shalom_json_value(raw[3]),);
-                default: throw Exception("unreachable");
-            } }
-
-@protected int dco_decode_i_32(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as int; }
-
-@protected PlatformInt64 dco_decode_i_64(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return dcoDecodeI64(raw); }
-
-@protected List<String> dco_decode_list_String(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return (raw as List<dynamic>).map(dco_decode_String).toList(); }
-
-@protected List<ObserverInfo> dco_decode_list_observer_info(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return (raw as List<dynamic>).map(dco_decode_observer_info).toList(); }
-
-@protected Uint8List dco_decode_list_prim_u_8_strict(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as Uint8List; }
-
-@protected List<(String,ShalomJsonValue)> dco_decode_list_record_string_shalom_json_value(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return (raw as List<dynamic>).map(dco_decode_record_string_shalom_json_value).toList(); }
-
-@protected List<(String,int)> dco_decode_list_record_string_u_32(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return (raw as List<dynamic>).map(dco_decode_record_string_u_32).toList(); }
-
-@protected List<ShalomJsonValue> dco_decode_list_shalom_json_value(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return (raw as List<dynamic>).map(dco_decode_shalom_json_value).toList(); }
-
-@protected List<WsLinkEvent> dco_decode_list_ws_link_event(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return (raw as List<dynamic>).map(dco_decode_ws_link_event).toList(); }
-
-@protected LogLevel dco_decode_log_level(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return LogLevel.values[raw as int]; }
-
-@protected ObservedRefInput dco_decode_observed_ref_input(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-final arr = raw as List<dynamic>;
-                if (arr.length != 2) throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
-                return ObservedRefInput(observableId: dco_decode_String(arr[0]),
-anchor: dco_decode_String(arr[1]),); }
-
-@protected ObserverInfo dco_decode_observer_info(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-final arr = raw as List<dynamic>;
-                if (arr.length != 7) throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
-                return ObserverInfo(id: dco_decode_u_64(arr[0]),
-kind: dco_decode_String(arr[1]),
-name: dco_decode_String(arr[2]),
-opType: dco_decode_opt_String(arr[3]),
-anchor: dco_decode_opt_String(arr[4]),
-variablesJson: dco_decode_opt_String(arr[5]),
-watchedKeys: dco_decode_list_String(arr[6]),); }
-
-@protected String? dco_decode_opt_String(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw == null ? null : dco_decode_String(raw); }
-
-@protected RuntimeConfigInput? dco_decode_opt_box_autoadd_runtime_config_input(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw == null ? null : dco_decode_box_autoadd_runtime_config_input(raw); }
-
-@protected ShalomJsonValue? dco_decode_opt_box_autoadd_shalom_json_value(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw == null ? null : dco_decode_box_autoadd_shalom_json_value(raw); }
-
-@protected BigInt? dco_decode_opt_box_autoadd_u_64(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw == null ? null : dco_decode_box_autoadd_u_64(raw); }
-
-@protected List<ShalomJsonValue>? dco_decode_opt_list_shalom_json_value(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw == null ? null : dco_decode_list_shalom_json_value(raw); }
-
-@protected (String,ShalomJsonValue) dco_decode_record_string_shalom_json_value(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-final arr = raw as List<dynamic>;
-            if (arr.length != 2) {
-                throw Exception('Expected 2 elements, got ${arr.length}');
-            }
-            return (dco_decode_String(arr[0]),dco_decode_shalom_json_value(arr[1]),); }
-
-@protected (String,int) dco_decode_record_string_u_32(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-final arr = raw as List<dynamic>;
-            if (arr.length != 2) {
-                throw Exception('Expected 2 elements, got ${arr.length}');
-            }
-            return (dco_decode_String(arr[0]),dco_decode_u_32(arr[1]),); }
-
-@protected RequestEnvelopeInput dco_decode_request_envelope_input(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-final arr = raw as List<dynamic>;
-                if (arr.length != 5) throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
-                return RequestEnvelopeInput(id: dco_decode_u_64(arr[0]),
-query: dco_decode_String(arr[1]),
-variables: dco_decode_shalom_json_value(arr[2]),
-operationName: dco_decode_String(arr[3]),
-operationType: dco_decode_String(arr[4]),); }
-
-@protected RetryDelayInput dco_decode_retry_delay_input(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-switch (raw[0]) {
-                case 0: return RetryDelayInput_Inherit();
-case 1: return RetryDelayInput_Disabled();
-case 2: return RetryDelayInput_Millis(dco_decode_u_64(raw[1]),);
-                default: throw Exception("unreachable");
-            } }
-
-@protected RuntimeConfigInput dco_decode_runtime_config_input(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-final arr = raw as List<dynamic>;
-                if (arr.length != 3) throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
-                return RuntimeConfigInput(gcIntervalMs: dco_decode_opt_box_autoadd_u_64(arr[0]),
-retentionGraceMs: dco_decode_opt_box_autoadd_u_64(arr[1]),
-defaultRetryDelayMs: dco_decode_opt_box_autoadd_u_64(arr[2]),); }
-
-@protected ShalomJsonValue dco_decode_shalom_json_value(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-switch (raw[0]) {
-                case 0: return ShalomJsonValue_Null();
-case 1: return ShalomJsonValue_Boolean(dco_decode_bool(raw[1]),);
-case 2: return ShalomJsonValue_Integer(dco_decode_i_64(raw[1]),);
-case 3: return ShalomJsonValue_Float(dco_decode_f_64(raw[1]),);
-case 4: return ShalomJsonValue_String(dco_decode_String(raw[1]),);
-case 5: return ShalomJsonValue_Array(dco_decode_list_shalom_json_value(raw[1]),);
-case 6: return ShalomJsonValue_Object(dco_decode_Map_String_shalom_json_value_None(raw[1]),);
-                default: throw Exception("unreachable");
-            } }
-
-@protected SubscriptionEvent dco_decode_subscription_event(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-switch (raw[0]) {
-                case 0: return SubscriptionEvent_Data(data: dco_decode_box_autoadd_shalom_json_value(raw[1]),);
-case 1: return SubscriptionEvent_GraphQlError(errors: dco_decode_list_shalom_json_value(raw[1]),extensions: dco_decode_opt_box_autoadd_shalom_json_value(raw[2]),);
-case 2: return SubscriptionEvent_TransportError(code: dco_decode_String(raw[1]),message: dco_decode_String(raw[2]),details: dco_decode_opt_box_autoadd_shalom_json_value(raw[3]),);
-                default: throw Exception("unreachable");
-            } }
-
-@protected int dco_decode_u_16(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as int; }
-
-@protected int dco_decode_u_32(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as int; }
-
-@protected BigInt dco_decode_u_64(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return dcoDecodeU64(raw); }
-
-@protected int dco_decode_u_8(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return raw as int; }
-
-@protected void dco_decode_unit(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return; }
-
-@protected BigInt dco_decode_usize(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-return dcoDecodeU64(raw); }
-
-@protected WsLinkEvent dco_decode_ws_link_event(dynamic raw){ // Codec=Dco (DartCObject based), see doc to use other codecs
-switch (raw[0]) {
-                case 0: return WsLinkEvent_Connected();
-case 1: return WsLinkEvent_PingReceived(payload: dco_decode_opt_box_autoadd_shalom_json_value(raw[1]),);
-case 2: return WsLinkEvent_PongReceived(payload: dco_decode_opt_box_autoadd_shalom_json_value(raw[1]),);
-case 3: return WsLinkEvent_OperationResponse(opId: dco_decode_String(raw[1]),response: dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(raw[2]),);
-case 4: return WsLinkEvent_OperationComplete(opId: dco_decode_String(raw[1]),);
-case 5: return WsLinkEvent_ProtocolError(code: dco_decode_u_16(raw[1]),reason: dco_decode_String(raw[2]),);
-                default: throw Exception("unreachable");
-            } }
-
-@protected AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var inner = sse_decode_String(deserializer);
-        return AnyhowException(inner); }
-
-@protected BufferedGraphQlResponse sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return BufferedGraphQlResponseImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
-
-@protected RuntimeHandle sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return RuntimeHandleImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
-
-@protected WsSansIo sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return WsSansIoImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
-
-@protected WsSansIo sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return WsSansIoImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
-
-@protected BufferedGraphQlResponse sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return BufferedGraphQlResponseImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
-
-@protected RuntimeHandle sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return RuntimeHandleImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
-
-@protected WsSansIo sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return WsSansIoImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
-
-@protected Map<String, ShalomJsonValue> sse_decode_Map_String_shalom_json_value_None(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var inner = sse_decode_list_record_string_shalom_json_value(deserializer);
-        return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2))); }
-
-@protected Map<String, int> sse_decode_Map_String_u_32_None(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var inner = sse_decode_list_record_string_u_32(deserializer);
-        return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2))); }
-
-@protected BufferedGraphQlResponse sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return BufferedGraphQlResponseImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
-
-@protected RuntimeHandle sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return RuntimeHandleImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
-
-@protected WsSansIo sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return WsSansIoImpl.frbInternalSseDecode(sse_decode_usize(deserializer), sse_decode_i_32(deserializer)); }
-
-@protected RustStreamSink<RequestEnvelopeInput> sse_decode_StreamSink_request_envelope_input_Sse(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-throw UnimplementedError('Unreachable ()'); }
-
-@protected RustStreamSink<SubscriptionEvent> sse_decode_StreamSink_subscription_event_Sse(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-throw UnimplementedError('Unreachable ()'); }
-
-@protected String sse_decode_String(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var inner = sse_decode_list_prim_u_8_strict(deserializer);
-        return utf8.decoder.convert(inner); }
-
-@protected bool sse_decode_bool(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getUint8() != 0; }
-
-@protected GraphQlResponseInput sse_decode_box_autoadd_graph_ql_response_input(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return (sse_decode_graph_ql_response_input(deserializer)); }
-
-@protected ObservedRefInput sse_decode_box_autoadd_observed_ref_input(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return (sse_decode_observed_ref_input(deserializer)); }
-
-@protected RetryDelayInput sse_decode_box_autoadd_retry_delay_input(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return (sse_decode_retry_delay_input(deserializer)); }
-
-@protected RuntimeConfigInput sse_decode_box_autoadd_runtime_config_input(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return (sse_decode_runtime_config_input(deserializer)); }
-
-@protected ShalomJsonValue sse_decode_box_autoadd_shalom_json_value(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return (sse_decode_shalom_json_value(deserializer)); }
-
-@protected BigInt sse_decode_box_autoadd_u_64(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return (sse_decode_u_64(deserializer)); }
-
-@protected ExecutionPolicyInput sse_decode_execution_policy_input(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var inner = sse_decode_i_32(deserializer);
-        return ExecutionPolicyInput.values[inner]; }
-
-@protected double sse_decode_f_64(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getFloat64(); }
-
-@protected GraphQlResponseInput sse_decode_graph_ql_response_input(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-            var tag_ = sse_decode_i_32(deserializer);
-            switch (tag_) { case 0: var var_data = sse_decode_box_autoadd_shalom_json_value(deserializer);
-var var_errors = sse_decode_opt_list_shalom_json_value(deserializer);
-var var_extensions = sse_decode_opt_box_autoadd_shalom_json_value(deserializer);
-return GraphQlResponseInput_Data(data: var_data, errors: var_errors, extensions: var_extensions);case 1: var var_errors = sse_decode_list_shalom_json_value(deserializer);
-var var_extensions = sse_decode_opt_box_autoadd_shalom_json_value(deserializer);
-return GraphQlResponseInput_Error(errors: var_errors, extensions: var_extensions);case 2: var var_message = sse_decode_String(deserializer);
-var var_code = sse_decode_String(deserializer);
-var var_details = sse_decode_opt_box_autoadd_shalom_json_value(deserializer);
-return GraphQlResponseInput_TransportError(message: var_message, code: var_code, details: var_details); default: throw UnimplementedError(''); }
-             }
-
-@protected int sse_decode_i_32(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getInt32(); }
-
-@protected PlatformInt64 sse_decode_i_64(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getPlatformInt64(); }
-
-@protected List<String> sse_decode_list_String(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-        var len_ = sse_decode_i_32(deserializer);
-        var ans_ = <String>[];
-        for (var idx_ = 0; idx_ < len_; ++idx_) { ans_.add(sse_decode_String(deserializer)); }
-        return ans_;
-         }
-
-@protected List<ObserverInfo> sse_decode_list_observer_info(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-        var len_ = sse_decode_i_32(deserializer);
-        var ans_ = <ObserverInfo>[];
-        for (var idx_ = 0; idx_ < len_; ++idx_) { ans_.add(sse_decode_observer_info(deserializer)); }
-        return ans_;
-         }
-
-@protected Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var len_ = sse_decode_i_32(deserializer);
-                return deserializer.buffer.getUint8List(len_); }
-
-@protected List<(String,ShalomJsonValue)> sse_decode_list_record_string_shalom_json_value(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-        var len_ = sse_decode_i_32(deserializer);
-        var ans_ = <(String,ShalomJsonValue)>[];
-        for (var idx_ = 0; idx_ < len_; ++idx_) { ans_.add(sse_decode_record_string_shalom_json_value(deserializer)); }
-        return ans_;
-         }
-
-@protected List<(String,int)> sse_decode_list_record_string_u_32(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-        var len_ = sse_decode_i_32(deserializer);
-        var ans_ = <(String,int)>[];
-        for (var idx_ = 0; idx_ < len_; ++idx_) { ans_.add(sse_decode_record_string_u_32(deserializer)); }
-        return ans_;
-         }
-
-@protected List<ShalomJsonValue> sse_decode_list_shalom_json_value(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-        var len_ = sse_decode_i_32(deserializer);
-        var ans_ = <ShalomJsonValue>[];
-        for (var idx_ = 0; idx_ < len_; ++idx_) { ans_.add(sse_decode_shalom_json_value(deserializer)); }
-        return ans_;
-         }
-
-@protected List<WsLinkEvent> sse_decode_list_ws_link_event(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-        var len_ = sse_decode_i_32(deserializer);
-        var ans_ = <WsLinkEvent>[];
-        for (var idx_ = 0; idx_ < len_; ++idx_) { ans_.add(sse_decode_ws_link_event(deserializer)); }
-        return ans_;
-         }
-
-@protected LogLevel sse_decode_log_level(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var inner = sse_decode_i_32(deserializer);
-        return LogLevel.values[inner]; }
-
-@protected ObservedRefInput sse_decode_observed_ref_input(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var var_observableId = sse_decode_String(deserializer);
-var var_anchor = sse_decode_String(deserializer);
-return ObservedRefInput(observableId: var_observableId, anchor: var_anchor); }
-
-@protected ObserverInfo sse_decode_observer_info(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var var_id = sse_decode_u_64(deserializer);
-var var_kind = sse_decode_String(deserializer);
-var var_name = sse_decode_String(deserializer);
-var var_opType = sse_decode_opt_String(deserializer);
-var var_anchor = sse_decode_opt_String(deserializer);
-var var_variablesJson = sse_decode_opt_String(deserializer);
-var var_watchedKeys = sse_decode_list_String(deserializer);
-return ObserverInfo(id: var_id, kind: var_kind, name: var_name, opType: var_opType, anchor: var_anchor, variablesJson: var_variablesJson, watchedKeys: var_watchedKeys); }
-
-@protected String? sse_decode_opt_String(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-            if (sse_decode_bool(deserializer)) {
-                return (sse_decode_String(deserializer));
-            } else {
-                return null;
-            }
-             }
-
-@protected RuntimeConfigInput? sse_decode_opt_box_autoadd_runtime_config_input(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-            if (sse_decode_bool(deserializer)) {
-                return (sse_decode_box_autoadd_runtime_config_input(deserializer));
-            } else {
-                return null;
-            }
-             }
-
-@protected ShalomJsonValue? sse_decode_opt_box_autoadd_shalom_json_value(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-            if (sse_decode_bool(deserializer)) {
-                return (sse_decode_box_autoadd_shalom_json_value(deserializer));
-            } else {
-                return null;
-            }
-             }
-
-@protected BigInt? sse_decode_opt_box_autoadd_u_64(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-            if (sse_decode_bool(deserializer)) {
-                return (sse_decode_box_autoadd_u_64(deserializer));
-            } else {
-                return null;
-            }
-             }
-
-@protected List<ShalomJsonValue>? sse_decode_opt_list_shalom_json_value(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-            if (sse_decode_bool(deserializer)) {
-                return (sse_decode_list_shalom_json_value(deserializer));
-            } else {
-                return null;
-            }
-             }
-
-@protected (String,ShalomJsonValue) sse_decode_record_string_shalom_json_value(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var var_field0 = sse_decode_String(deserializer);
-var var_field1 = sse_decode_shalom_json_value(deserializer);
-return (var_field0, var_field1); }
-
-@protected (String,int) sse_decode_record_string_u_32(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var var_field0 = sse_decode_String(deserializer);
-var var_field1 = sse_decode_u_32(deserializer);
-return (var_field0, var_field1); }
-
-@protected RequestEnvelopeInput sse_decode_request_envelope_input(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var var_id = sse_decode_u_64(deserializer);
-var var_query = sse_decode_String(deserializer);
-var var_variables = sse_decode_shalom_json_value(deserializer);
-var var_operationName = sse_decode_String(deserializer);
-var var_operationType = sse_decode_String(deserializer);
-return RequestEnvelopeInput(id: var_id, query: var_query, variables: var_variables, operationName: var_operationName, operationType: var_operationType); }
-
-@protected RetryDelayInput sse_decode_retry_delay_input(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-            var tag_ = sse_decode_i_32(deserializer);
-            switch (tag_) { case 0: return RetryDelayInput_Inherit();case 1: return RetryDelayInput_Disabled();case 2: var var_field0 = sse_decode_u_64(deserializer);
-return RetryDelayInput_Millis(var_field0); default: throw UnimplementedError(''); }
-             }
-
-@protected RuntimeConfigInput sse_decode_runtime_config_input(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-var var_gcIntervalMs = sse_decode_opt_box_autoadd_u_64(deserializer);
-var var_retentionGraceMs = sse_decode_opt_box_autoadd_u_64(deserializer);
-var var_defaultRetryDelayMs = sse_decode_opt_box_autoadd_u_64(deserializer);
-return RuntimeConfigInput(gcIntervalMs: var_gcIntervalMs, retentionGraceMs: var_retentionGraceMs, defaultRetryDelayMs: var_defaultRetryDelayMs); }
-
-@protected ShalomJsonValue sse_decode_shalom_json_value(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-            var tag_ = sse_decode_i_32(deserializer);
-            switch (tag_) { case 0: return ShalomJsonValue_Null();case 1: var var_field0 = sse_decode_bool(deserializer);
-return ShalomJsonValue_Boolean(var_field0);case 2: var var_field0 = sse_decode_i_64(deserializer);
-return ShalomJsonValue_Integer(var_field0);case 3: var var_field0 = sse_decode_f_64(deserializer);
-return ShalomJsonValue_Float(var_field0);case 4: var var_field0 = sse_decode_String(deserializer);
-return ShalomJsonValue_String(var_field0);case 5: var var_field0 = sse_decode_list_shalom_json_value(deserializer);
-return ShalomJsonValue_Array(var_field0);case 6: var var_field0 = sse_decode_Map_String_shalom_json_value_None(deserializer);
-return ShalomJsonValue_Object(var_field0); default: throw UnimplementedError(''); }
-             }
-
-@protected SubscriptionEvent sse_decode_subscription_event(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-            var tag_ = sse_decode_i_32(deserializer);
-            switch (tag_) { case 0: var var_data = sse_decode_box_autoadd_shalom_json_value(deserializer);
-return SubscriptionEvent_Data(data: var_data);case 1: var var_errors = sse_decode_list_shalom_json_value(deserializer);
-var var_extensions = sse_decode_opt_box_autoadd_shalom_json_value(deserializer);
-return SubscriptionEvent_GraphQlError(errors: var_errors, extensions: var_extensions);case 2: var var_code = sse_decode_String(deserializer);
-var var_message = sse_decode_String(deserializer);
-var var_details = sse_decode_opt_box_autoadd_shalom_json_value(deserializer);
-return SubscriptionEvent_TransportError(code: var_code, message: var_message, details: var_details); default: throw UnimplementedError(''); }
-             }
-
-@protected int sse_decode_u_16(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getUint16(); }
-
-@protected int sse_decode_u_32(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getUint32(); }
-
-@protected BigInt sse_decode_u_64(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getBigUint64(); }
-
-@protected int sse_decode_u_8(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getUint8(); }
-
-@protected void sse_decode_unit(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
- }
-
-@protected BigInt sse_decode_usize(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-return deserializer.buffer.getBigUint64(); }
-
-@protected WsLinkEvent sse_decode_ws_link_event(SseDeserializer deserializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-            var tag_ = sse_decode_i_32(deserializer);
-            switch (tag_) { case 0: return WsLinkEvent_Connected();case 1: var var_payload = sse_decode_opt_box_autoadd_shalom_json_value(deserializer);
-return WsLinkEvent_PingReceived(payload: var_payload);case 2: var var_payload = sse_decode_opt_box_autoadd_shalom_json_value(deserializer);
-return WsLinkEvent_PongReceived(payload: var_payload);case 3: var var_opId = sse_decode_String(deserializer);
-var var_response = sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(deserializer);
-return WsLinkEvent_OperationResponse(opId: var_opId, response: var_response);case 4: var var_opId = sse_decode_String(deserializer);
-return WsLinkEvent_OperationComplete(opId: var_opId);case 5: var var_code = sse_decode_u_16(deserializer);
-var var_reason = sse_decode_String(deserializer);
-return WsLinkEvent_ProtocolError(code: var_code, reason: var_reason); default: throw UnimplementedError(''); }
-             }
-
-@protected void sse_encode_AnyhowException(AnyhowException self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_String(self.message, serializer); }
-
-@protected void sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(BufferedGraphQlResponse self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as BufferedGraphQlResponseImpl).frbInternalSseEncode(move: true), serializer); }
-
-@protected void sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(RuntimeHandle self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as RuntimeHandleImpl).frbInternalSseEncode(move: true), serializer); }
-
-@protected void sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as WsSansIoImpl).frbInternalSseEncode(move: true), serializer); }
-
-@protected void sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as WsSansIoImpl).frbInternalSseEncode(move: false), serializer); }
-
-@protected void sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(BufferedGraphQlResponse self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as BufferedGraphQlResponseImpl).frbInternalSseEncode(move: false), serializer); }
-
-@protected void sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(RuntimeHandle self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as RuntimeHandleImpl).frbInternalSseEncode(move: false), serializer); }
-
-@protected void sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as WsSansIoImpl).frbInternalSseEncode(move: false), serializer); }
-
-@protected void sse_encode_Map_String_shalom_json_value_None(Map<String, ShalomJsonValue> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_list_record_string_shalom_json_value(self.entries.map((e) => (e.key, e.value)).toList(), serializer); }
-
-@protected void sse_encode_Map_String_u_32_None(Map<String, int> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_list_record_string_u_32(self.entries.map((e) => (e.key, e.value)).toList(), serializer); }
-
-@protected void sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(BufferedGraphQlResponse self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as BufferedGraphQlResponseImpl).frbInternalSseEncode(move: null), serializer); }
-
-@protected void sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(RuntimeHandle self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as RuntimeHandleImpl).frbInternalSseEncode(move: null), serializer); }
-
-@protected void sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(WsSansIo self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_usize((self as WsSansIoImpl).frbInternalSseEncode(move: null), serializer); }
-
-@protected void sse_encode_StreamSink_request_envelope_input_Sse(RustStreamSink<RequestEnvelopeInput> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_String(self.setupAndSerialize(codec: SseCodec(
-            decodeSuccessData: sse_decode_request_envelope_input,
-            decodeErrorData: sse_decode_AnyhowException,
-        )), serializer); }
-
-@protected void sse_encode_StreamSink_subscription_event_Sse(RustStreamSink<SubscriptionEvent> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_String(self.setupAndSerialize(codec: SseCodec(
-            decodeSuccessData: sse_decode_subscription_event,
-            decodeErrorData: sse_decode_AnyhowException,
-        )), serializer); }
-
-@protected void sse_encode_String(String self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer); }
-
-@protected void sse_encode_bool(bool self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putUint8(self ? 1 : 0); }
-
-@protected void sse_encode_box_autoadd_graph_ql_response_input(GraphQlResponseInput self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_graph_ql_response_input(self, serializer); }
-
-@protected void sse_encode_box_autoadd_observed_ref_input(ObservedRefInput self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_observed_ref_input(self, serializer); }
-
-@protected void sse_encode_box_autoadd_retry_delay_input(RetryDelayInput self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_retry_delay_input(self, serializer); }
-
-@protected void sse_encode_box_autoadd_runtime_config_input(RuntimeConfigInput self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_runtime_config_input(self, serializer); }
-
-@protected void sse_encode_box_autoadd_shalom_json_value(ShalomJsonValue self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_shalom_json_value(self, serializer); }
-
-@protected void sse_encode_box_autoadd_u_64(BigInt self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_u_64(self, serializer); }
-
-@protected void sse_encode_execution_policy_input(ExecutionPolicyInput self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_i_32(self.index, serializer); }
-
-@protected void sse_encode_f_64(double self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putFloat64(self); }
-
-@protected void sse_encode_graph_ql_response_input(GraphQlResponseInput self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-switch (self) { case GraphQlResponseInput_Data(data: final data,errors: final errors,extensions: final extensions): sse_encode_i_32(0, serializer); sse_encode_box_autoadd_shalom_json_value(data, serializer);
-sse_encode_opt_list_shalom_json_value(errors, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(extensions, serializer);
-case GraphQlResponseInput_Error(errors: final errors,extensions: final extensions): sse_encode_i_32(1, serializer); sse_encode_list_shalom_json_value(errors, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(extensions, serializer);
-case GraphQlResponseInput_TransportError(message: final message,code: final code,details: final details): sse_encode_i_32(2, serializer); sse_encode_String(message, serializer);
-sse_encode_String(code, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(details, serializer);
-  } }
-
-@protected void sse_encode_i_32(int self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putInt32(self); }
-
-@protected void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putPlatformInt64(self); }
-
-@protected void sse_encode_list_String(List<String> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_i_32(self.length, serializer);
-        for (final item in self) { sse_encode_String(item, serializer); } }
-
-@protected void sse_encode_list_observer_info(List<ObserverInfo> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_i_32(self.length, serializer);
-        for (final item in self) { sse_encode_observer_info(item, serializer); } }
-
-@protected void sse_encode_list_prim_u_8_strict(Uint8List self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_i_32(self.length, serializer);
-                    serializer.buffer.putUint8List(self); }
-
-@protected void sse_encode_list_record_string_shalom_json_value(List<(String,ShalomJsonValue)> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_i_32(self.length, serializer);
-        for (final item in self) { sse_encode_record_string_shalom_json_value(item, serializer); } }
-
-@protected void sse_encode_list_record_string_u_32(List<(String,int)> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_i_32(self.length, serializer);
-        for (final item in self) { sse_encode_record_string_u_32(item, serializer); } }
-
-@protected void sse_encode_list_shalom_json_value(List<ShalomJsonValue> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_i_32(self.length, serializer);
-        for (final item in self) { sse_encode_shalom_json_value(item, serializer); } }
-
-@protected void sse_encode_list_ws_link_event(List<WsLinkEvent> self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_i_32(self.length, serializer);
-        for (final item in self) { sse_encode_ws_link_event(item, serializer); } }
-
-@protected void sse_encode_log_level(LogLevel self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_i_32(self.index, serializer); }
-
-@protected void sse_encode_observed_ref_input(ObservedRefInput self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_String(self.observableId, serializer);
-sse_encode_String(self.anchor, serializer);
- }
-
-@protected void sse_encode_observer_info(ObserverInfo self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_u_64(self.id, serializer);
-sse_encode_String(self.kind, serializer);
-sse_encode_String(self.name, serializer);
-sse_encode_opt_String(self.opType, serializer);
-sse_encode_opt_String(self.anchor, serializer);
-sse_encode_opt_String(self.variablesJson, serializer);
-sse_encode_list_String(self.watchedKeys, serializer);
- }
-
-@protected void sse_encode_opt_String(String? self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-                sse_encode_bool(self != null, serializer);
-                if (self != null) {
-                    sse_encode_String(self, serializer);
-                }
-                 }
-
-@protected void sse_encode_opt_box_autoadd_runtime_config_input(RuntimeConfigInput? self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-                sse_encode_bool(self != null, serializer);
-                if (self != null) {
-                    sse_encode_box_autoadd_runtime_config_input(self, serializer);
-                }
-                 }
-
-@protected void sse_encode_opt_box_autoadd_shalom_json_value(ShalomJsonValue? self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-                sse_encode_bool(self != null, serializer);
-                if (self != null) {
-                    sse_encode_box_autoadd_shalom_json_value(self, serializer);
-                }
-                 }
-
-@protected void sse_encode_opt_box_autoadd_u_64(BigInt? self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-                sse_encode_bool(self != null, serializer);
-                if (self != null) {
-                    sse_encode_box_autoadd_u_64(self, serializer);
-                }
-                 }
-
-@protected void sse_encode_opt_list_shalom_json_value(List<ShalomJsonValue>? self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-
-                sse_encode_bool(self != null, serializer);
-                if (self != null) {
-                    sse_encode_list_shalom_json_value(self, serializer);
-                }
-                 }
-
-@protected void sse_encode_record_string_shalom_json_value((String,ShalomJsonValue) self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_String(self.$1, serializer);
-sse_encode_shalom_json_value(self.$2, serializer);
- }
-
-@protected void sse_encode_record_string_u_32((String,int) self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_String(self.$1, serializer);
-sse_encode_u_32(self.$2, serializer);
- }
-
-@protected void sse_encode_request_envelope_input(RequestEnvelopeInput self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_u_64(self.id, serializer);
-sse_encode_String(self.query, serializer);
-sse_encode_shalom_json_value(self.variables, serializer);
-sse_encode_String(self.operationName, serializer);
-sse_encode_String(self.operationType, serializer);
- }
-
-@protected void sse_encode_retry_delay_input(RetryDelayInput self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-switch (self) { case RetryDelayInput_Inherit(): sse_encode_i_32(0, serializer); case RetryDelayInput_Disabled(): sse_encode_i_32(1, serializer); case RetryDelayInput_Millis(field0: final field0): sse_encode_i_32(2, serializer); sse_encode_u_64(field0, serializer);
-  } }
-
-@protected void sse_encode_runtime_config_input(RuntimeConfigInput self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-sse_encode_opt_box_autoadd_u_64(self.gcIntervalMs, serializer);
-sse_encode_opt_box_autoadd_u_64(self.retentionGraceMs, serializer);
-sse_encode_opt_box_autoadd_u_64(self.defaultRetryDelayMs, serializer);
- }
-
-@protected void sse_encode_shalom_json_value(ShalomJsonValue self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-switch (self) { case ShalomJsonValue_Null(): sse_encode_i_32(0, serializer); case ShalomJsonValue_Boolean(field0: final field0): sse_encode_i_32(1, serializer); sse_encode_bool(field0, serializer);
-case ShalomJsonValue_Integer(field0: final field0): sse_encode_i_32(2, serializer); sse_encode_i_64(field0, serializer);
-case ShalomJsonValue_Float(field0: final field0): sse_encode_i_32(3, serializer); sse_encode_f_64(field0, serializer);
-case ShalomJsonValue_String(field0: final field0): sse_encode_i_32(4, serializer); sse_encode_String(field0, serializer);
-case ShalomJsonValue_Array(field0: final field0): sse_encode_i_32(5, serializer); sse_encode_list_shalom_json_value(field0, serializer);
-case ShalomJsonValue_Object(field0: final field0): sse_encode_i_32(6, serializer); sse_encode_Map_String_shalom_json_value_None(field0, serializer);
-  } }
-
-@protected void sse_encode_subscription_event(SubscriptionEvent self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-switch (self) { case SubscriptionEvent_Data(data: final data): sse_encode_i_32(0, serializer); sse_encode_box_autoadd_shalom_json_value(data, serializer);
-case SubscriptionEvent_GraphQlError(errors: final errors,extensions: final extensions): sse_encode_i_32(1, serializer); sse_encode_list_shalom_json_value(errors, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(extensions, serializer);
-case SubscriptionEvent_TransportError(code: final code,message: final message,details: final details): sse_encode_i_32(2, serializer); sse_encode_String(code, serializer);
-sse_encode_String(message, serializer);
-sse_encode_opt_box_autoadd_shalom_json_value(details, serializer);
-  } }
-
-@protected void sse_encode_u_16(int self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putUint16(self); }
-
-@protected void sse_encode_u_32(int self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putUint32(self); }
-
-@protected void sse_encode_u_64(BigInt self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putBigUint64(self); }
-
-@protected void sse_encode_u_8(int self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putUint8(self); }
-
-@protected void sse_encode_unit(void self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
- }
-
-@protected void sse_encode_usize(BigInt self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-serializer.buffer.putBigUint64(self); }
-
-@protected void sse_encode_ws_link_event(WsLinkEvent self, SseSerializer serializer){ // Codec=Sse (Serialization based), see doc to use other codecs
-switch (self) { case WsLinkEvent_Connected(): sse_encode_i_32(0, serializer); case WsLinkEvent_PingReceived(payload: final payload): sse_encode_i_32(1, serializer); sse_encode_opt_box_autoadd_shalom_json_value(payload, serializer);
-case WsLinkEvent_PongReceived(payload: final payload): sse_encode_i_32(2, serializer); sse_encode_opt_box_autoadd_shalom_json_value(payload, serializer);
-case WsLinkEvent_OperationResponse(opId: final opId,response: final response): sse_encode_i_32(3, serializer); sse_encode_String(opId, serializer);
-sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(response, serializer);
-case WsLinkEvent_OperationComplete(opId: final opId): sse_encode_i_32(4, serializer); sse_encode_String(opId, serializer);
-case WsLinkEvent_ProtocolError(code: final code,reason: final reason): sse_encode_i_32(5, serializer); sse_encode_u_16(code, serializer);
-sse_encode_String(reason, serializer);
-  } }
-                }
-                
-
-            @sealed class BufferedGraphQlResponseImpl extends RustOpaque implements BufferedGraphQlResponse {
-                // Not to be used by end users
-                BufferedGraphQlResponseImpl.frbInternalDcoDecode(List<dynamic> wire):
-                    super.frbInternalDcoDecode(wire, _kStaticData);
-
-                // Not to be used by end users
-                BufferedGraphQlResponseImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative):
-                    super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
-
-                static final _kStaticData = RustArcStaticData(
-                    rustArcIncrementStrongCount: RustLib.instance.api.rust_arc_increment_strong_count_BufferedGraphQlResponse,
-                    rustArcDecrementStrongCount: RustLib.instance.api.rust_arc_decrement_strong_count_BufferedGraphQlResponse,
-                    rustArcDecrementStrongCountPtr: RustLib.instance.api.rust_arc_decrement_strong_count_BufferedGraphQlResponsePtr,
-                );
-
-                /// Materialize a copy only when a link consumer needs to inspect the payload.
- GraphQlResponseInput  materialize()=>RustLib.instance.api.crateApiRuntimeBufferedGraphQlResponseMaterialize(that: this, );
-
-
-            }
-            @sealed class RuntimeHandleImpl extends RustOpaque implements RuntimeHandle {
-                // Not to be used by end users
-                RuntimeHandleImpl.frbInternalDcoDecode(List<dynamic> wire):
-                    super.frbInternalDcoDecode(wire, _kStaticData);
-
-                // Not to be used by end users
-                RuntimeHandleImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative):
-                    super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
-
-                static final _kStaticData = RustArcStaticData(
-                    rustArcIncrementStrongCount: RustLib.instance.api.rust_arc_increment_strong_count_RuntimeHandle,
-                    rustArcDecrementStrongCount: RustLib.instance.api.rust_arc_decrement_strong_count_RuntimeHandle,
-                    rustArcDecrementStrongCountPtr: RustLib.instance.api.rust_arc_decrement_strong_count_RuntimeHandlePtr,
-                );
-
-                
-            }
-            @sealed class WsSansIoImpl extends RustOpaque implements WsSansIo {
-                // Not to be used by end users
-                WsSansIoImpl.frbInternalDcoDecode(List<dynamic> wire):
-                    super.frbInternalDcoDecode(wire, _kStaticData);
-
-                // Not to be used by end users
-                WsSansIoImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative):
-                    super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
-
-                static final _kStaticData = RustArcStaticData(
-                    rustArcIncrementStrongCount: RustLib.instance.api.rust_arc_increment_strong_count_WsSansIo,
-                    rustArcDecrementStrongCount: RustLib.instance.api.rust_arc_decrement_strong_count_WsSansIo,
-                    rustArcDecrementStrongCountPtr: RustLib.instance.api.rust_arc_decrement_strong_count_WsSansIoPtr,
-                );
-
-                
-            }
+      case 1:
+        return GraphQlResponseInput_Error(
+          errors: dco_decode_list_shalom_json_value(raw[1]),
+          extensions: dco_decode_opt_box_autoadd_shalom_json_value(raw[2]),
+        );
+      case 2:
+        return GraphQlResponseInput_TransportError(
+          message: dco_decode_String(raw[1]),
+          code: dco_decode_String(raw[2]),
+          details: dco_decode_opt_box_autoadd_shalom_json_value(raw[3]),
+        );
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  int dco_decode_i_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
+  PlatformInt64 dco_decode_i_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeI64(raw);
+  }
+
+  @protected
+  List<String> dco_decode_list_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_String).toList();
+  }
+
+  @protected
+  List<ObserverInfo> dco_decode_list_observer_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_observer_info).toList();
+  }
+
+  @protected
+  Uint8List dco_decode_list_prim_u_8_strict(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as Uint8List;
+  }
+
+  @protected
+  List<(String, ShalomJsonValue)>
+  dco_decode_list_record_string_shalom_json_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>)
+        .map(dco_decode_record_string_shalom_json_value)
+        .toList();
+  }
+
+  @protected
+  List<(String, int)> dco_decode_list_record_string_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_record_string_u_32).toList();
+  }
+
+  @protected
+  List<ShalomJsonValue> dco_decode_list_shalom_json_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_shalom_json_value).toList();
+  }
+
+  @protected
+  List<WsLinkEvent> dco_decode_list_ws_link_event(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return (raw as List<dynamic>).map(dco_decode_ws_link_event).toList();
+  }
+
+  @protected
+  LogLevel dco_decode_log_level(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return LogLevel.values[raw as int];
+  }
+
+  @protected
+  ObservedRefInput dco_decode_observed_ref_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2)
+      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
+    return ObservedRefInput(
+      observableId: dco_decode_String(arr[0]),
+      anchor: dco_decode_String(arr[1]),
+    );
+  }
+
+  @protected
+  ObserverInfo dco_decode_observer_info(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
+    return ObserverInfo(
+      id: dco_decode_u_64(arr[0]),
+      kind: dco_decode_String(arr[1]),
+      name: dco_decode_String(arr[2]),
+      opType: dco_decode_opt_String(arr[3]),
+      anchor: dco_decode_opt_String(arr[4]),
+      variablesJson: dco_decode_opt_String(arr[5]),
+      watchedKeys: dco_decode_list_String(arr[6]),
+    );
+  }
+
+  @protected
+  String? dco_decode_opt_String(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_String(raw);
+  }
+
+  @protected
+  RuntimeConfigInput? dco_decode_opt_box_autoadd_runtime_config_input(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null
+        ? null
+        : dco_decode_box_autoadd_runtime_config_input(raw);
+  }
+
+  @protected
+  ShalomJsonValue? dco_decode_opt_box_autoadd_shalom_json_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_shalom_json_value(raw);
+  }
+
+  @protected
+  BigInt? dco_decode_opt_box_autoadd_u_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_box_autoadd_u_64(raw);
+  }
+
+  @protected
+  List<ShalomJsonValue>? dco_decode_opt_list_shalom_json_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw == null ? null : dco_decode_list_shalom_json_value(raw);
+  }
+
+  @protected
+  (String, ShalomJsonValue) dco_decode_record_string_shalom_json_value(
+    dynamic raw,
+  ) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2) {
+      throw Exception('Expected 2 elements, got ${arr.length}');
+    }
+    return (dco_decode_String(arr[0]), dco_decode_shalom_json_value(arr[1]));
+  }
+
+  @protected
+  (String, int) dco_decode_record_string_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 2) {
+      throw Exception('Expected 2 elements, got ${arr.length}');
+    }
+    return (dco_decode_String(arr[0]), dco_decode_u_32(arr[1]));
+  }
+
+  @protected
+  RequestEnvelopeInput dco_decode_request_envelope_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 5)
+      throw Exception('unexpected arr length: expect 5 but see ${arr.length}');
+    return RequestEnvelopeInput(
+      id: dco_decode_u_64(arr[0]),
+      query: dco_decode_String(arr[1]),
+      variables: dco_decode_shalom_json_value(arr[2]),
+      operationName: dco_decode_String(arr[3]),
+      operationType: dco_decode_String(arr[4]),
+    );
+  }
+
+  @protected
+  RetryDelayInput dco_decode_retry_delay_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return RetryDelayInput_Inherit();
+      case 1:
+        return RetryDelayInput_Disabled();
+      case 2:
+        return RetryDelayInput_Millis(dco_decode_u_64(raw[1]));
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  RuntimeConfigInput dco_decode_runtime_config_input(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    final arr = raw as List<dynamic>;
+    if (arr.length != 3)
+      throw Exception('unexpected arr length: expect 3 but see ${arr.length}');
+    return RuntimeConfigInput(
+      gcIntervalMs: dco_decode_opt_box_autoadd_u_64(arr[0]),
+      retentionGraceMs: dco_decode_opt_box_autoadd_u_64(arr[1]),
+      defaultRetryDelayMs: dco_decode_opt_box_autoadd_u_64(arr[2]),
+    );
+  }
+
+  @protected
+  ShalomJsonValue dco_decode_shalom_json_value(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return ShalomJsonValue_Null();
+      case 1:
+        return ShalomJsonValue_Boolean(dco_decode_bool(raw[1]));
+      case 2:
+        return ShalomJsonValue_Integer(dco_decode_i_64(raw[1]));
+      case 3:
+        return ShalomJsonValue_Float(dco_decode_f_64(raw[1]));
+      case 4:
+        return ShalomJsonValue_String(dco_decode_String(raw[1]));
+      case 5:
+        return ShalomJsonValue_Array(dco_decode_list_shalom_json_value(raw[1]));
+      case 6:
+        return ShalomJsonValue_Object(
+          dco_decode_Map_String_shalom_json_value_None(raw[1]),
+        );
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  SubscriptionEvent dco_decode_subscription_event(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return SubscriptionEvent_Data(
+          data: dco_decode_box_autoadd_shalom_json_value(raw[1]),
+        );
+      case 1:
+        return SubscriptionEvent_GraphQlError(
+          errors: dco_decode_list_shalom_json_value(raw[1]),
+          extensions: dco_decode_opt_box_autoadd_shalom_json_value(raw[2]),
+        );
+      case 2:
+        return SubscriptionEvent_TransportError(
+          code: dco_decode_String(raw[1]),
+          message: dco_decode_String(raw[2]),
+          details: dco_decode_opt_box_autoadd_shalom_json_value(raw[3]),
+        );
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  int dco_decode_u_16(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
+  int dco_decode_u_32(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
+  BigInt dco_decode_u_64(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeU64(raw);
+  }
+
+  @protected
+  int dco_decode_u_8(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return raw as int;
+  }
+
+  @protected
+  void dco_decode_unit(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return;
+  }
+
+  @protected
+  BigInt dco_decode_usize(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    return dcoDecodeU64(raw);
+  }
+
+  @protected
+  WsLinkEvent dco_decode_ws_link_event(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    switch (raw[0]) {
+      case 0:
+        return WsLinkEvent_Connected();
+      case 1:
+        return WsLinkEvent_PingReceived(
+          payload: dco_decode_opt_box_autoadd_shalom_json_value(raw[1]),
+        );
+      case 2:
+        return WsLinkEvent_PongReceived(
+          payload: dco_decode_opt_box_autoadd_shalom_json_value(raw[1]),
+        );
+      case 3:
+        return WsLinkEvent_OperationResponse(
+          opId: dco_decode_String(raw[1]),
+          response:
+              dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+                raw[2],
+              ),
+        );
+      case 4:
+        return WsLinkEvent_OperationComplete(opId: dco_decode_String(raw[1]));
+      case 5:
+        return WsLinkEvent_ProtocolError(
+          code: dco_decode_u_16(raw[1]),
+          reason: dco_decode_String(raw[2]),
+        );
+      default:
+        throw Exception("unreachable");
+    }
+  }
+
+  @protected
+  AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_String(deserializer);
+    return AnyhowException(inner);
+  }
+
+  @protected
+  BufferedGraphQlResponse
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return BufferedGraphQlResponseImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  RuntimeHandle
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return RuntimeHandleImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  WsSansIo
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return WsSansIoImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  WsSansIo
+  sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return WsSansIoImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  BufferedGraphQlResponse
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return BufferedGraphQlResponseImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  RuntimeHandle
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return RuntimeHandleImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  WsSansIo
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return WsSansIoImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  Map<String, ShalomJsonValue> sse_decode_Map_String_shalom_json_value_None(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_list_record_string_shalom_json_value(deserializer);
+    return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
+  }
+
+  @protected
+  Map<String, int> sse_decode_Map_String_u_32_None(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_list_record_string_u_32(deserializer);
+    return Map.fromEntries(inner.map((e) => MapEntry(e.$1, e.$2)));
+  }
+
+  @protected
+  BufferedGraphQlResponse
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return BufferedGraphQlResponseImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  RuntimeHandle
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return RuntimeHandleImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  WsSansIo
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return WsSansIoImpl.frbInternalSseDecode(
+      sse_decode_usize(deserializer),
+      sse_decode_i_32(deserializer),
+    );
+  }
+
+  @protected
+  RustStreamSink<RequestEnvelopeInput>
+  sse_decode_StreamSink_request_envelope_input_Sse(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    throw UnimplementedError('Unreachable ()');
+  }
+
+  @protected
+  RustStreamSink<SubscriptionEvent>
+  sse_decode_StreamSink_subscription_event_Sse(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    throw UnimplementedError('Unreachable ()');
+  }
+
+  @protected
+  String sse_decode_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_list_prim_u_8_strict(deserializer);
+    return utf8.decoder.convert(inner);
+  }
+
+  @protected
+  bool sse_decode_bool(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint8() != 0;
+  }
+
+  @protected
+  GraphQlResponseInput sse_decode_box_autoadd_graph_ql_response_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_graph_ql_response_input(deserializer));
+  }
+
+  @protected
+  ObservedRefInput sse_decode_box_autoadd_observed_ref_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_observed_ref_input(deserializer));
+  }
+
+  @protected
+  RetryDelayInput sse_decode_box_autoadd_retry_delay_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_retry_delay_input(deserializer));
+  }
+
+  @protected
+  RuntimeConfigInput sse_decode_box_autoadd_runtime_config_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_runtime_config_input(deserializer));
+  }
+
+  @protected
+  ShalomJsonValue sse_decode_box_autoadd_shalom_json_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_shalom_json_value(deserializer));
+  }
+
+  @protected
+  BigInt sse_decode_box_autoadd_u_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return (sse_decode_u_64(deserializer));
+  }
+
+  @protected
+  ExecutionPolicyInput sse_decode_execution_policy_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return ExecutionPolicyInput.values[inner];
+  }
+
+  @protected
+  double sse_decode_f_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getFloat64();
+  }
+
+  @protected
+  GraphQlResponseInput sse_decode_graph_ql_response_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        var var_data = sse_decode_box_autoadd_shalom_json_value(deserializer);
+        var var_errors = sse_decode_opt_list_shalom_json_value(deserializer);
+        var var_extensions = sse_decode_opt_box_autoadd_shalom_json_value(
+          deserializer,
+        );
+        return GraphQlResponseInput_Data(
+          data: var_data,
+          errors: var_errors,
+          extensions: var_extensions,
+        );
+      case 1:
+        var var_errors = sse_decode_list_shalom_json_value(deserializer);
+        var var_extensions = sse_decode_opt_box_autoadd_shalom_json_value(
+          deserializer,
+        );
+        return GraphQlResponseInput_Error(
+          errors: var_errors,
+          extensions: var_extensions,
+        );
+      case 2:
+        var var_message = sse_decode_String(deserializer);
+        var var_code = sse_decode_String(deserializer);
+        var var_details = sse_decode_opt_box_autoadd_shalom_json_value(
+          deserializer,
+        );
+        return GraphQlResponseInput_TransportError(
+          message: var_message,
+          code: var_code,
+          details: var_details,
+        );
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  int sse_decode_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getInt32();
+  }
+
+  @protected
+  PlatformInt64 sse_decode_i_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getPlatformInt64();
+  }
+
+  @protected
+  List<String> sse_decode_list_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <String>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_String(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ObserverInfo> sse_decode_list_observer_info(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ObserverInfo>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_observer_info(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  Uint8List sse_decode_list_prim_u_8_strict(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var len_ = sse_decode_i_32(deserializer);
+    return deserializer.buffer.getUint8List(len_);
+  }
+
+  @protected
+  List<(String, ShalomJsonValue)>
+  sse_decode_list_record_string_shalom_json_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <(String, ShalomJsonValue)>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_record_string_shalom_json_value(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<(String, int)> sse_decode_list_record_string_u_32(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <(String, int)>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_record_string_u_32(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<ShalomJsonValue> sse_decode_list_shalom_json_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <ShalomJsonValue>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_shalom_json_value(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  List<WsLinkEvent> sse_decode_list_ws_link_event(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var len_ = sse_decode_i_32(deserializer);
+    var ans_ = <WsLinkEvent>[];
+    for (var idx_ = 0; idx_ < len_; ++idx_) {
+      ans_.add(sse_decode_ws_link_event(deserializer));
+    }
+    return ans_;
+  }
+
+  @protected
+  LogLevel sse_decode_log_level(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var inner = sse_decode_i_32(deserializer);
+    return LogLevel.values[inner];
+  }
+
+  @protected
+  ObservedRefInput sse_decode_observed_ref_input(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_observableId = sse_decode_String(deserializer);
+    var var_anchor = sse_decode_String(deserializer);
+    return ObservedRefInput(observableId: var_observableId, anchor: var_anchor);
+  }
+
+  @protected
+  ObserverInfo sse_decode_observer_info(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_u_64(deserializer);
+    var var_kind = sse_decode_String(deserializer);
+    var var_name = sse_decode_String(deserializer);
+    var var_opType = sse_decode_opt_String(deserializer);
+    var var_anchor = sse_decode_opt_String(deserializer);
+    var var_variablesJson = sse_decode_opt_String(deserializer);
+    var var_watchedKeys = sse_decode_list_String(deserializer);
+    return ObserverInfo(
+      id: var_id,
+      kind: var_kind,
+      name: var_name,
+      opType: var_opType,
+      anchor: var_anchor,
+      variablesJson: var_variablesJson,
+      watchedKeys: var_watchedKeys,
+    );
+  }
+
+  @protected
+  String? sse_decode_opt_String(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_String(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  RuntimeConfigInput? sse_decode_opt_box_autoadd_runtime_config_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_runtime_config_input(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  ShalomJsonValue? sse_decode_opt_box_autoadd_shalom_json_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_shalom_json_value(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  BigInt? sse_decode_opt_box_autoadd_u_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_box_autoadd_u_64(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  List<ShalomJsonValue>? sse_decode_opt_list_shalom_json_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    if (sse_decode_bool(deserializer)) {
+      return (sse_decode_list_shalom_json_value(deserializer));
+    } else {
+      return null;
+    }
+  }
+
+  @protected
+  (String, ShalomJsonValue) sse_decode_record_string_shalom_json_value(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_field0 = sse_decode_String(deserializer);
+    var var_field1 = sse_decode_shalom_json_value(deserializer);
+    return (var_field0, var_field1);
+  }
+
+  @protected
+  (String, int) sse_decode_record_string_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_field0 = sse_decode_String(deserializer);
+    var var_field1 = sse_decode_u_32(deserializer);
+    return (var_field0, var_field1);
+  }
+
+  @protected
+  RequestEnvelopeInput sse_decode_request_envelope_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_id = sse_decode_u_64(deserializer);
+    var var_query = sse_decode_String(deserializer);
+    var var_variables = sse_decode_shalom_json_value(deserializer);
+    var var_operationName = sse_decode_String(deserializer);
+    var var_operationType = sse_decode_String(deserializer);
+    return RequestEnvelopeInput(
+      id: var_id,
+      query: var_query,
+      variables: var_variables,
+      operationName: var_operationName,
+      operationType: var_operationType,
+    );
+  }
+
+  @protected
+  RetryDelayInput sse_decode_retry_delay_input(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        return RetryDelayInput_Inherit();
+      case 1:
+        return RetryDelayInput_Disabled();
+      case 2:
+        var var_field0 = sse_decode_u_64(deserializer);
+        return RetryDelayInput_Millis(var_field0);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  RuntimeConfigInput sse_decode_runtime_config_input(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    var var_gcIntervalMs = sse_decode_opt_box_autoadd_u_64(deserializer);
+    var var_retentionGraceMs = sse_decode_opt_box_autoadd_u_64(deserializer);
+    var var_defaultRetryDelayMs = sse_decode_opt_box_autoadd_u_64(deserializer);
+    return RuntimeConfigInput(
+      gcIntervalMs: var_gcIntervalMs,
+      retentionGraceMs: var_retentionGraceMs,
+      defaultRetryDelayMs: var_defaultRetryDelayMs,
+    );
+  }
+
+  @protected
+  ShalomJsonValue sse_decode_shalom_json_value(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        return ShalomJsonValue_Null();
+      case 1:
+        var var_field0 = sse_decode_bool(deserializer);
+        return ShalomJsonValue_Boolean(var_field0);
+      case 2:
+        var var_field0 = sse_decode_i_64(deserializer);
+        return ShalomJsonValue_Integer(var_field0);
+      case 3:
+        var var_field0 = sse_decode_f_64(deserializer);
+        return ShalomJsonValue_Float(var_field0);
+      case 4:
+        var var_field0 = sse_decode_String(deserializer);
+        return ShalomJsonValue_String(var_field0);
+      case 5:
+        var var_field0 = sse_decode_list_shalom_json_value(deserializer);
+        return ShalomJsonValue_Array(var_field0);
+      case 6:
+        var var_field0 = sse_decode_Map_String_shalom_json_value_None(
+          deserializer,
+        );
+        return ShalomJsonValue_Object(var_field0);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  SubscriptionEvent sse_decode_subscription_event(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        var var_data = sse_decode_box_autoadd_shalom_json_value(deserializer);
+        return SubscriptionEvent_Data(data: var_data);
+      case 1:
+        var var_errors = sse_decode_list_shalom_json_value(deserializer);
+        var var_extensions = sse_decode_opt_box_autoadd_shalom_json_value(
+          deserializer,
+        );
+        return SubscriptionEvent_GraphQlError(
+          errors: var_errors,
+          extensions: var_extensions,
+        );
+      case 2:
+        var var_code = sse_decode_String(deserializer);
+        var var_message = sse_decode_String(deserializer);
+        var var_details = sse_decode_opt_box_autoadd_shalom_json_value(
+          deserializer,
+        );
+        return SubscriptionEvent_TransportError(
+          code: var_code,
+          message: var_message,
+          details: var_details,
+        );
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  int sse_decode_u_16(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint16();
+  }
+
+  @protected
+  int sse_decode_u_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint32();
+  }
+
+  @protected
+  BigInt sse_decode_u_64(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getBigUint64();
+  }
+
+  @protected
+  int sse_decode_u_8(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getUint8();
+  }
+
+  @protected
+  void sse_decode_unit(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+  }
+
+  @protected
+  BigInt sse_decode_usize(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getBigUint64();
+  }
+
+  @protected
+  WsLinkEvent sse_decode_ws_link_event(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    var tag_ = sse_decode_i_32(deserializer);
+    switch (tag_) {
+      case 0:
+        return WsLinkEvent_Connected();
+      case 1:
+        var var_payload = sse_decode_opt_box_autoadd_shalom_json_value(
+          deserializer,
+        );
+        return WsLinkEvent_PingReceived(payload: var_payload);
+      case 2:
+        var var_payload = sse_decode_opt_box_autoadd_shalom_json_value(
+          deserializer,
+        );
+        return WsLinkEvent_PongReceived(payload: var_payload);
+      case 3:
+        var var_opId = sse_decode_String(deserializer);
+        var var_response =
+            sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+              deserializer,
+            );
+        return WsLinkEvent_OperationResponse(
+          opId: var_opId,
+          response: var_response,
+        );
+      case 4:
+        var var_opId = sse_decode_String(deserializer);
+        return WsLinkEvent_OperationComplete(opId: var_opId);
+      case 5:
+        var var_code = sse_decode_u_16(deserializer);
+        var var_reason = sse_decode_String(deserializer);
+        return WsLinkEvent_ProtocolError(code: var_code, reason: var_reason);
+      default:
+        throw UnimplementedError('');
+    }
+  }
+
+  @protected
+  void sse_encode_AnyhowException(
+    AnyhowException self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.message, serializer);
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    BufferedGraphQlResponse self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as BufferedGraphQlResponseImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+    RuntimeHandle self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as RuntimeHandleImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    WsSansIo self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as WsSansIoImpl).frbInternalSseEncode(move: true),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    WsSansIo self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as WsSansIoImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    BufferedGraphQlResponse self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as BufferedGraphQlResponseImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+    RuntimeHandle self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as RuntimeHandleImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    WsSansIo self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as WsSansIoImpl).frbInternalSseEncode(move: false),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_Map_String_shalom_json_value_None(
+    Map<String, ShalomJsonValue> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_record_string_shalom_json_value(
+      self.entries.map((e) => (e.key, e.value)).toList(),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_Map_String_u_32_None(
+    Map<String, int> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_record_string_u_32(
+      self.entries.map((e) => (e.key, e.value)).toList(),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    BufferedGraphQlResponse self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as BufferedGraphQlResponseImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
+    RuntimeHandle self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as RuntimeHandleImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    WsSansIo self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_usize(
+      (self as WsSansIoImpl).frbInternalSseEncode(move: null),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_StreamSink_request_envelope_input_Sse(
+    RustStreamSink<RequestEnvelopeInput> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(
+      self.setupAndSerialize(
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_request_envelope_input,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+      ),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_StreamSink_subscription_event_Sse(
+    RustStreamSink<SubscriptionEvent> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(
+      self.setupAndSerialize(
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_subscription_event,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+      ),
+      serializer,
+    );
+  }
+
+  @protected
+  void sse_encode_String(String self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
+  }
+
+  @protected
+  void sse_encode_bool(bool self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint8(self ? 1 : 0);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_graph_ql_response_input(
+    GraphQlResponseInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_graph_ql_response_input(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_observed_ref_input(
+    ObservedRefInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_observed_ref_input(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_retry_delay_input(
+    RetryDelayInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_retry_delay_input(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_runtime_config_input(
+    RuntimeConfigInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_runtime_config_input(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_shalom_json_value(
+    ShalomJsonValue self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_shalom_json_value(self, serializer);
+  }
+
+  @protected
+  void sse_encode_box_autoadd_u_64(BigInt self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_64(self, serializer);
+  }
+
+  @protected
+  void sse_encode_execution_policy_input(
+    ExecutionPolicyInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_f_64(double self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putFloat64(self);
+  }
+
+  @protected
+  void sse_encode_graph_ql_response_input(
+    GraphQlResponseInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case GraphQlResponseInput_Data(
+        data: final data,
+        errors: final errors,
+        extensions: final extensions,
+      ):
+        sse_encode_i_32(0, serializer);
+        sse_encode_box_autoadd_shalom_json_value(data, serializer);
+        sse_encode_opt_list_shalom_json_value(errors, serializer);
+        sse_encode_opt_box_autoadd_shalom_json_value(extensions, serializer);
+      case GraphQlResponseInput_Error(
+        errors: final errors,
+        extensions: final extensions,
+      ):
+        sse_encode_i_32(1, serializer);
+        sse_encode_list_shalom_json_value(errors, serializer);
+        sse_encode_opt_box_autoadd_shalom_json_value(extensions, serializer);
+      case GraphQlResponseInput_TransportError(
+        message: final message,
+        code: final code,
+        details: final details,
+      ):
+        sse_encode_i_32(2, serializer);
+        sse_encode_String(message, serializer);
+        sse_encode_String(code, serializer);
+        sse_encode_opt_box_autoadd_shalom_json_value(details, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putInt32(self);
+  }
+
+  @protected
+  void sse_encode_i_64(PlatformInt64 self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putPlatformInt64(self);
+  }
+
+  @protected
+  void sse_encode_list_String(List<String> self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_String(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_observer_info(
+    List<ObserverInfo> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_observer_info(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_prim_u_8_strict(
+    Uint8List self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    serializer.buffer.putUint8List(self);
+  }
+
+  @protected
+  void sse_encode_list_record_string_shalom_json_value(
+    List<(String, ShalomJsonValue)> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_record_string_shalom_json_value(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_record_string_u_32(
+    List<(String, int)> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_record_string_u_32(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_shalom_json_value(
+    List<ShalomJsonValue> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_shalom_json_value(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_list_ws_link_event(
+    List<WsLinkEvent> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.length, serializer);
+    for (final item in self) {
+      sse_encode_ws_link_event(item, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_log_level(LogLevel self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_i_32(self.index, serializer);
+  }
+
+  @protected
+  void sse_encode_observed_ref_input(
+    ObservedRefInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.observableId, serializer);
+    sse_encode_String(self.anchor, serializer);
+  }
+
+  @protected
+  void sse_encode_observer_info(ObserverInfo self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_64(self.id, serializer);
+    sse_encode_String(self.kind, serializer);
+    sse_encode_String(self.name, serializer);
+    sse_encode_opt_String(self.opType, serializer);
+    sse_encode_opt_String(self.anchor, serializer);
+    sse_encode_opt_String(self.variablesJson, serializer);
+    sse_encode_list_String(self.watchedKeys, serializer);
+  }
+
+  @protected
+  void sse_encode_opt_String(String? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_String(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_runtime_config_input(
+    RuntimeConfigInput? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_runtime_config_input(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_shalom_json_value(
+    ShalomJsonValue? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_shalom_json_value(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_box_autoadd_u_64(BigInt? self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_box_autoadd_u_64(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_opt_list_shalom_json_value(
+    List<ShalomJsonValue>? self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+
+    sse_encode_bool(self != null, serializer);
+    if (self != null) {
+      sse_encode_list_shalom_json_value(self, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_record_string_shalom_json_value(
+    (String, ShalomJsonValue) self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.$1, serializer);
+    sse_encode_shalom_json_value(self.$2, serializer);
+  }
+
+  @protected
+  void sse_encode_record_string_u_32(
+    (String, int) self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(self.$1, serializer);
+    sse_encode_u_32(self.$2, serializer);
+  }
+
+  @protected
+  void sse_encode_request_envelope_input(
+    RequestEnvelopeInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_u_64(self.id, serializer);
+    sse_encode_String(self.query, serializer);
+    sse_encode_shalom_json_value(self.variables, serializer);
+    sse_encode_String(self.operationName, serializer);
+    sse_encode_String(self.operationType, serializer);
+  }
+
+  @protected
+  void sse_encode_retry_delay_input(
+    RetryDelayInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case RetryDelayInput_Inherit():
+        sse_encode_i_32(0, serializer);
+      case RetryDelayInput_Disabled():
+        sse_encode_i_32(1, serializer);
+      case RetryDelayInput_Millis(field0: final field0):
+        sse_encode_i_32(2, serializer);
+        sse_encode_u_64(field0, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_runtime_config_input(
+    RuntimeConfigInput self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_opt_box_autoadd_u_64(self.gcIntervalMs, serializer);
+    sse_encode_opt_box_autoadd_u_64(self.retentionGraceMs, serializer);
+    sse_encode_opt_box_autoadd_u_64(self.defaultRetryDelayMs, serializer);
+  }
+
+  @protected
+  void sse_encode_shalom_json_value(
+    ShalomJsonValue self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case ShalomJsonValue_Null():
+        sse_encode_i_32(0, serializer);
+      case ShalomJsonValue_Boolean(field0: final field0):
+        sse_encode_i_32(1, serializer);
+        sse_encode_bool(field0, serializer);
+      case ShalomJsonValue_Integer(field0: final field0):
+        sse_encode_i_32(2, serializer);
+        sse_encode_i_64(field0, serializer);
+      case ShalomJsonValue_Float(field0: final field0):
+        sse_encode_i_32(3, serializer);
+        sse_encode_f_64(field0, serializer);
+      case ShalomJsonValue_String(field0: final field0):
+        sse_encode_i_32(4, serializer);
+        sse_encode_String(field0, serializer);
+      case ShalomJsonValue_Array(field0: final field0):
+        sse_encode_i_32(5, serializer);
+        sse_encode_list_shalom_json_value(field0, serializer);
+      case ShalomJsonValue_Object(field0: final field0):
+        sse_encode_i_32(6, serializer);
+        sse_encode_Map_String_shalom_json_value_None(field0, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_subscription_event(
+    SubscriptionEvent self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case SubscriptionEvent_Data(data: final data):
+        sse_encode_i_32(0, serializer);
+        sse_encode_box_autoadd_shalom_json_value(data, serializer);
+      case SubscriptionEvent_GraphQlError(
+        errors: final errors,
+        extensions: final extensions,
+      ):
+        sse_encode_i_32(1, serializer);
+        sse_encode_list_shalom_json_value(errors, serializer);
+        sse_encode_opt_box_autoadd_shalom_json_value(extensions, serializer);
+      case SubscriptionEvent_TransportError(
+        code: final code,
+        message: final message,
+        details: final details,
+      ):
+        sse_encode_i_32(2, serializer);
+        sse_encode_String(code, serializer);
+        sse_encode_String(message, serializer);
+        sse_encode_opt_box_autoadd_shalom_json_value(details, serializer);
+    }
+  }
+
+  @protected
+  void sse_encode_u_16(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint16(self);
+  }
+
+  @protected
+  void sse_encode_u_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint32(self);
+  }
+
+  @protected
+  void sse_encode_u_64(BigInt self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putBigUint64(self);
+  }
+
+  @protected
+  void sse_encode_u_8(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putUint8(self);
+  }
+
+  @protected
+  void sse_encode_unit(void self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+  }
+
+  @protected
+  void sse_encode_usize(BigInt self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putBigUint64(self);
+  }
+
+  @protected
+  void sse_encode_ws_link_event(WsLinkEvent self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    switch (self) {
+      case WsLinkEvent_Connected():
+        sse_encode_i_32(0, serializer);
+      case WsLinkEvent_PingReceived(payload: final payload):
+        sse_encode_i_32(1, serializer);
+        sse_encode_opt_box_autoadd_shalom_json_value(payload, serializer);
+      case WsLinkEvent_PongReceived(payload: final payload):
+        sse_encode_i_32(2, serializer);
+        sse_encode_opt_box_autoadd_shalom_json_value(payload, serializer);
+      case WsLinkEvent_OperationResponse(
+        opId: final opId,
+        response: final response,
+      ):
+        sse_encode_i_32(3, serializer);
+        sse_encode_String(opId, serializer);
+        sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+          response,
+          serializer,
+        );
+      case WsLinkEvent_OperationComplete(opId: final opId):
+        sse_encode_i_32(4, serializer);
+        sse_encode_String(opId, serializer);
+      case WsLinkEvent_ProtocolError(code: final code, reason: final reason):
+        sse_encode_i_32(5, serializer);
+        sse_encode_u_16(code, serializer);
+        sse_encode_String(reason, serializer);
+    }
+  }
+}
+
+@sealed
+class BufferedGraphQlResponseImpl extends RustOpaque
+    implements BufferedGraphQlResponse {
+  // Not to be used by end users
+  BufferedGraphQlResponseImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  BufferedGraphQlResponseImpl.frbInternalSseDecode(
+    BigInt ptr,
+    int externalSizeOnNative,
+  ) : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount: RustLib
+        .instance
+        .api
+        .rust_arc_increment_strong_count_BufferedGraphQlResponse,
+    rustArcDecrementStrongCount: RustLib
+        .instance
+        .api
+        .rust_arc_decrement_strong_count_BufferedGraphQlResponse,
+    rustArcDecrementStrongCountPtr: RustLib
+        .instance
+        .api
+        .rust_arc_decrement_strong_count_BufferedGraphQlResponsePtr,
+  );
+
+  /// Materialize a copy only when a link consumer needs to inspect the payload.
+  GraphQlResponseInput materialize() => RustLib.instance.api
+      .crateApiRuntimeBufferedGraphQlResponseMaterialize(that: this);
+}
+
+@sealed
+class RuntimeHandleImpl extends RustOpaque implements RuntimeHandle {
+  // Not to be used by end users
+  RuntimeHandleImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  RuntimeHandleImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_RuntimeHandle,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_RuntimeHandle,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_RuntimeHandlePtr,
+  );
+}
+
+@sealed
+class WsSansIoImpl extends RustOpaque implements WsSansIo {
+  // Not to be used by end users
+  WsSansIoImpl.frbInternalDcoDecode(List<dynamic> wire)
+    : super.frbInternalDcoDecode(wire, _kStaticData);
+
+  // Not to be used by end users
+  WsSansIoImpl.frbInternalSseDecode(BigInt ptr, int externalSizeOnNative)
+    : super.frbInternalSseDecode(ptr, externalSizeOnNative, _kStaticData);
+
+  static final _kStaticData = RustArcStaticData(
+    rustArcIncrementStrongCount:
+        RustLib.instance.api.rust_arc_increment_strong_count_WsSansIo,
+    rustArcDecrementStrongCount:
+        RustLib.instance.api.rust_arc_decrement_strong_count_WsSansIo,
+    rustArcDecrementStrongCountPtr:
+        RustLib.instance.api.rust_arc_decrement_strong_count_WsSansIoPtr,
+  );
+}
