@@ -183,3 +183,40 @@ fn subscriber_dispatch_does_not_scan_unrelated_observers() {
         "subscriber dispatch regressed to {elapsed:?}; changed keys should use the reverse index"
     );
 }
+
+#[test]
+#[ignore = "performance test: run in release mode with --ignored"]
+fn observed_fragment_lists_scale_with_response_size() {
+    const ITEMS: usize = 4_000;
+    let runtime = runtime(
+        "type Query { items: [Item!]! } type Item { id: ID! name: String! value: Int! }",
+        "fragment ItemFields on Item @observe { id name value } query Items { items { ...ItemFields } }",
+    );
+    let operation = runtime.operation_by_name("Items").unwrap();
+    let data = json!({
+        "items": (0..ITEMS)
+            .map(|id| json!({"id": id.to_string(), "name": format!("Item {id}"), "value": id}))
+            .collect::<Vec<Value>>()
+    });
+
+    let started = Instant::now();
+    let result = runtime.normalize(&operation, data, None).unwrap();
+    let normalize_elapsed = started.elapsed();
+    assert_eq!(result.data["items"].as_array().unwrap().len(), ITEMS);
+
+    let started = Instant::now();
+    let read = runtime.try_read_operation("Items", None).unwrap().unwrap();
+    let read_elapsed = started.elapsed();
+    assert_eq!(read["items"].as_array().unwrap().len(), ITEMS);
+
+    report("normalizing 4k observed items", normalize_elapsed);
+    report("reading 4k observed items", read_elapsed);
+    assert!(
+        normalize_elapsed < Duration::from_millis(250),
+        "observed list normalization regressed to {normalize_elapsed:?}"
+    );
+    assert!(
+        read_elapsed < Duration::from_millis(250),
+        "observed list read regressed to {read_elapsed:?}"
+    );
+}

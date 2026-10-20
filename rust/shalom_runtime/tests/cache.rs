@@ -1827,6 +1827,68 @@ mod fragment_subscriptions {
     }
 
     #[test]
+    fn nested_observed_fragments_keep_dependencies_with_their_owners() {
+        let schema = r#"
+            type Query { items: [Item!]! }
+            type Item { id: ID!, name: String!, pet: Pet! }
+            type Pet { name: String! }
+        "#;
+        let operation = r#"
+            fragment PetFields on Pet @observe { name }
+            fragment ItemFields on Item @observe { id name pet { ...PetFields } }
+            query Items { items { ...ItemFields } }
+        "#;
+        let (runtime, op_ctx) = build_ctx(schema, operation);
+        let initial = normalize(
+            &runtime,
+            &op_ctx,
+            json!({ "items": [{ "id": "1", "name": "Ada", "pet": { "name": "Milo" } }] }),
+            None,
+        );
+        let item = initial.data["items"][0].as_object().unwrap();
+        let item_anchor = anchor_from_observed_ref(item, "ItemFields");
+        let pet_anchor =
+            anchor_from_observed_ref(item["pet"].as_object().expect("pet object"), "PetFields");
+
+        let operation_id =
+            runtime.create_operation_subscription(op_ctx, None, ExecutionPolicy::CacheFirst);
+        let item_id = runtime
+            .observe_fragment(ObservedRef {
+                observable_id: "ItemFields".to_string(),
+                anchor: item_anchor.to_string(),
+            })
+            .unwrap();
+        let pet_id = runtime
+            .observe_fragment(ObservedRef {
+                observable_id: "PetFields".to_string(),
+                anchor: pet_anchor.to_string(),
+            })
+            .unwrap();
+
+        let observers = runtime.all_observers();
+        let operation = observers
+            .iter()
+            .find(|observer| observer.name == "Items")
+            .unwrap();
+        assert_eq!(operation.watched_keys, ["ROOT_QUERY.items"]);
+        let item = observers
+            .iter()
+            .find(|observer| observer.name == "ItemFields")
+            .unwrap();
+        assert!(item.watched_keys.contains(&"Item:1.name".to_string()));
+        assert!(!item.watched_keys.contains(&"Item:1.pet.name".to_string()));
+        let pet = observers
+            .iter()
+            .find(|observer| observer.name == "PetFields")
+            .unwrap();
+        assert!(pet.watched_keys.contains(&"Item:1.pet.name".to_string()));
+
+        runtime.unsubscribe(&operation_id);
+        runtime.unsubscribe(&item_id);
+        runtime.unsubscribe(&pet_id);
+    }
+
+    #[test]
     fn test_fragment_subscription_by_id() {
         let schema = r#"
             type Query { person: Person }
