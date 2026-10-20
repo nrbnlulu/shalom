@@ -436,11 +436,11 @@ final response = await AddPostMutation(client).execute(
   input: input,
   invalidateOperations: [
     // Invalidate all subscriptions of an operation:
-    InvalidateTarget(
+    OperationRef(
       operationName: $GetPostsQuery.operation$Name(),
     ),
     // Or fine-grained invalidation matching specific parameters:
-    InvalidateTarget(
+    OperationRef(
       operationName: $GetPostQuery.operation$Name(),
       variables: GetPostQueryVariables(id: postId).toShalomValue(),
     ),
@@ -448,7 +448,7 @@ final response = await AddPostMutation(client).execute(
 );
 ```
 
-- Each entry in `invalidateOperations` is an `InvalidateTarget` matched against active operation subscriptions in `shalom_runtime`.
+- Each entry in `invalidateOperations` is an `OperationRef` matched against active operation subscriptions in `shalom_runtime`.
 - Matching subscriptions complete their streams, causing their Flutter widgets (`ShalomObservingState`) to resubscribe and refetch from the network.
 - When `variables` is provided, only subscriptions with matching variables are invalidated, and only the corresponding cache root fields are evicted. When omitted or `null`, all active subscriptions of that operation name are invalidated.
 

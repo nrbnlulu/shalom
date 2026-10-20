@@ -90,12 +90,13 @@ abstract interface class OperationInterface {
   ShalomJsonValue toShalomValue();
 }
 
-/// Target operation for cache invalidation.
-class InvalidateTarget {
+/// Reference to an operation (with optional variables) for targeting operations,
+/// such as cache invalidation.
+class OperationRef {
   final String operationName;
   final ShalomJsonValue? variables;
 
-  const InvalidateTarget({required this.operationName, this.variables});
+  const OperationRef({required this.operationName, this.variables});
 }
 
 /// Marker for operation/fragment data types that can be safely observed

@@ -6,7 +6,7 @@
 
 // Re-export all generated types so importers only need this file.
 export '{{ operation_name }}.shalom.dart';
-export 'package:shalom/shalom.dart' show InvalidateTarget;
+export 'package:shalom/shalom.dart' show OperationRef;
 
 import 'dart:async' show FutureOr;
 import "{{ context.schema_import_path }}";
@@ -32,11 +32,11 @@ abstract class ${{ operation_name }} {
     /// await addPost.execute(
     ///   input: AddPostInput(title: 'Hello'),
     ///   invalidateOperations: [
-    ///     InvalidateTarget(
+    ///     OperationRef(
     ///       operationName: $GetPostsQuery.operation$Name(),
     ///     ),
     ///     // Fine-grained with variables:
-    ///     InvalidateTarget(
+    ///     OperationRef(
     ///       operationName: $GetPostQuery.operation$Name(),
     ///       variables: GetPostQueryVariables(id: '123').toShalomValue(),
     ///     ),
@@ -49,7 +49,7 @@ abstract class ${{ operation_name }} {
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
         {% endif %}
-        List<shalom_core.InvalidateTarget>? invalidateOperations,
+        List<shalom_core.OperationRef>? invalidateOperations,
     }) async {
         final response = await _client.mutate<{{ operation_name }}Data>(
             name: operation$Name(),
@@ -103,7 +103,7 @@ abstract class ${{ operation_name }} {
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
         required FutureOr<void> Function(CacheProxy cache, {{ operation_name }}Data data) update,
-        List<shalom_core.InvalidateTarget>? invalidateOperations,
+        List<shalom_core.OperationRef>? invalidateOperations,
     }) async {
         {% if op_variables_exist %}
         final vars = {{ operation_name }}Variables(
@@ -155,7 +155,7 @@ abstract class ${{ operation_name }} {
         {% for name, field in op_variables | items -%}
             required {{ type_name_for_input_field(field) }} {{ name }},
         {% endfor -%}
-        List<shalom_core.InvalidateTarget>? invalidateOperations,
+        List<shalom_core.OperationRef>? invalidateOperations,
     }) async {
         {% if op_variables_exist %}
         final vars = {{ operation_name }}Variables(
