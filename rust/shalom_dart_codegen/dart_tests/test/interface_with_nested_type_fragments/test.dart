@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import "__graphql__/NodeGlobalFrag.shalom.dart";
 import "__graphql__/NodeGlobalQuery.shalom.dart";
 import "__graphql__/NodeGlobalQueryOpt.shalom.dart";

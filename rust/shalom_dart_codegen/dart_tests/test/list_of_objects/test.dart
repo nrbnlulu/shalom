@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import "__graphql__/GetUsersRequired.shalom.dart";
 import "__graphql__/GetUsersOptional.shalom.dart";
 import "__graphql__/GetOptionalUsers.shalom.dart";

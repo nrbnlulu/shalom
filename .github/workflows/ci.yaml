@@ -22,7 +22,6 @@ jobs:
               uses: actions-rust-lang/setup-rust-toolchain@v1
               with:
                   toolchain: stable
-                  override: true
 
             - name: Run cache performance regression tests
               run: cargo test -p shalom_runtime --release --test perf -- --ignored --nocapture --test-threads=1
@@ -36,10 +35,10 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Set up Rust
-              uses: actions-rust-lang/setup-rust-toolchain@v1
+              uses: dtolnay/rust-toolchain@v1
               with:
                   toolchain: stable
                   override: true
@@ -56,15 +55,15 @@ jobs:
                   version: 3.x
                   repo-token: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: Install flutter packages
+            - name: Install dart test packages
               run: |
                   cd rust/shalom_dart_codegen/dart_tests/
-                  flutter packages get
+                  dart pub get
 
             - name: Install flutter test packages
               run: |
                   cd rust/shalom_dart_codegen/flutter_tests/
-                  flutter packages get
+                  flutter pub get
 
             - name: Test
               env:
@@ -80,3 +79,33 @@ jobs:
             - name: Lint
               if: runner.os == 'Linux'
               run: task lint
+
+    gif-search-example:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Rust
+              uses: dtolnay/rust-toolchain@v1
+              with:
+                  toolchain: 1.89.0
+                  override: true
+
+            - name: Setup Flutter SDK
+              uses: flutter-actions/setup-flutter@v4
+              with:
+                  channel: stable
+
+            - name: Build shalom_ffi
+              run: cargo build -p shalom_ffi
+
+            - name: Install GIF search dependencies
+              run: |
+                  cd examples/flutter/gif_search
+                  flutter pub get
+
+            - name: Test GIF search example
+              run: |
+                  cd examples/flutter/gif_search
+                  flutter test

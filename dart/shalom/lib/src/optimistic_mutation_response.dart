@@ -1,4 +1,5 @@
 import 'package:shalom/shalom.dart' show GraphQLResponse;
+
 import 'runtime_client.dart' show ShalomRuntimeClient;
 
 /// Returned by `$<MutationName>.executeOptimistic()`.
@@ -10,11 +11,9 @@ class OptimisticMutationResponse<T> {
   OptimisticMutationResponse({
     required this.response,
     required this.wasRolledBack,
-    required ShalomRuntimeClient client,
-    required BigInt writeId,
-  }) : _client = client,
-       _writeId = writeId,
-       _rolledBack = wasRolledBack;
+    required this._client,
+    required this._writeId,
+  }) : _rolledBack = wasRolledBack;
 
   /// The GraphQL server response (success, GraphQL error, or transport error).
   final GraphQLResponse<T> response;

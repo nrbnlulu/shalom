@@ -501,7 +501,7 @@ as String,
 
 
 class ShalomJsonValue_Array extends ShalomJsonValue {
-  const ShalomJsonValue_Array(final  List<ShalomJsonValue> field0): _field0 = field0,super._();
+  const ShalomJsonValue_Array( List<ShalomJsonValue> field0): _field0 = field0,super._();
   
 
  final  List<ShalomJsonValue> _field0;
@@ -573,7 +573,7 @@ as List<ShalomJsonValue>,
 
 
 class ShalomJsonValue_Object extends ShalomJsonValue {
-  const ShalomJsonValue_Object(final  Map<String, ShalomJsonValue> field0): _field0 = field0,super._();
+  const ShalomJsonValue_Object( Map<String, ShalomJsonValue> field0): _field0 = field0,super._();
   
 
  final  Map<String, ShalomJsonValue> _field0;

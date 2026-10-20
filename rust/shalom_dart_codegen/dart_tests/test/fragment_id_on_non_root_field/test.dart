@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
 import 'package:shalom/shalom.dart' show Some, None;
+
 import "__graphql__/schema.shalom.dart";
 import "__graphql__/UpdateUser.shalom.dart";
 import "__graphql__/GetUser.shalom.dart";

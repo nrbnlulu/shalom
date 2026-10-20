@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import "__graphql__/GetNotificationPartial.shalom.dart";
 import "__graphql__/GetNotificationPartialOpt.shalom.dart";
 import "__graphql__/GetNotificationPartialNoTopTypename.shalom.dart";

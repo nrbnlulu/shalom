@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
 import 'package:shalom/shalom.dart';
+
 import '__graphql__/schema.shalom.dart';
 import '__graphql__/InputListOfRequiredObjectsMutation.shalom.dart';
 import '__graphql__/InputListObjectsMaybeMutation.shalom.dart';

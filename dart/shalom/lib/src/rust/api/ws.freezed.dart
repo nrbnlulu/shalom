@@ -200,7 +200,7 @@ return protocolError(_that.code,_that.reason);case _:
 
 class WsLinkEvent_Connected extends WsLinkEvent {
   const WsLinkEvent_Connected(): super._();
-
+  
 
 
 
@@ -232,7 +232,7 @@ String toString() {
 
 class WsLinkEvent_PingReceived extends WsLinkEvent {
   const WsLinkEvent_PingReceived({this.payload}): super._();
-
+  
 
  final  ShalomJsonValue? payload;
 
@@ -310,7 +310,7 @@ $ShalomJsonValueCopyWith<$Res>? get payload {
 
 class WsLinkEvent_PongReceived extends WsLinkEvent {
   const WsLinkEvent_PongReceived({this.payload}): super._();
-
+  
 
  final  ShalomJsonValue? payload;
 
@@ -388,7 +388,7 @@ $ShalomJsonValueCopyWith<$Res>? get payload {
 
 class WsLinkEvent_OperationResponse extends WsLinkEvent {
   const WsLinkEvent_OperationResponse({required this.opId, required this.response}): super._();
-
+  
 
  final  String opId;
  final  GraphQlResponseInput response;
@@ -453,7 +453,7 @@ as GraphQlResponseInput,
 @override
 @pragma('vm:prefer-inline')
 $GraphQlResponseInputCopyWith<$Res> get response {
-
+  
   return $GraphQlResponseInputCopyWith<$Res>(_self.response, (value) {
     return _then(_self.copyWith(response: value));
   });
@@ -465,7 +465,7 @@ $GraphQlResponseInputCopyWith<$Res> get response {
 
 class WsLinkEvent_OperationComplete extends WsLinkEvent {
   const WsLinkEvent_OperationComplete({required this.opId}): super._();
-
+  
 
  final  String opId;
 
@@ -531,7 +531,7 @@ as String,
 
 class WsLinkEvent_ProtocolError extends WsLinkEvent {
   const WsLinkEvent_ProtocolError({required this.code, required this.reason}): super._();
-
+  
 
  final  int code;
  final  String reason;

@@ -1,0 +1,107 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+    
+        {
+            "name": "shalom",
+            "cwd": "dart/shalom",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "shalom_annotations",
+            "cwd": "dart/shalom_annotations",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "shalom_flutter",
+            "cwd": "dart/shalom_flutter",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "shalom_flutter (profile mode)",
+            "cwd": "dart/shalom_flutter",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "shalom_flutter (release mode)",
+            "cwd": "dart/shalom_flutter",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "anilist",
+            "cwd": "examples/anilist",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "anilist (profile mode)",
+            "cwd": "examples/anilist",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "anilist (release mode)",
+            "cwd": "examples/anilist",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "gif_search",
+            "cwd": "examples/flutter/gif_search",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "gif_search (profile mode)",
+            "cwd": "examples/flutter/gif_search",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "gif_search (release mode)",
+            "cwd": "examples/flutter/gif_search",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "dart_tests",
+            "cwd": "rust/shalom_dart_codegen/dart_tests",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "flutter_tests",
+            "cwd": "rust/shalom_dart_codegen/flutter_tests",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "flutter_tests (profile mode)",
+            "cwd": "rust/shalom_dart_codegen/flutter_tests",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "flutter_tests (release mode)",
+            "cwd": "rust/shalom_dart_codegen/flutter_tests",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}

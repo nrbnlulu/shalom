@@ -1,5 +1,6 @@
 import 'package:shalom/src/shalom_core_base.dart'
     show FragmentInterface, OperationInterface, ShalomJsonValue;
+
 import 'runtime_client.dart' show ShalomRuntimeClient;
 
 /// A focused cache interface passed to mutation `update` callbacks.

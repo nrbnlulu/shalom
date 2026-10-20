@@ -1,5 +1,6 @@
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:test/test.dart';
+
 import "__graphql__/GetBoolean.shalom.dart";
 import "__graphql__/GetBooleanOptional.shalom.dart";
 import "__graphql__/GetFloat.shalom.dart";

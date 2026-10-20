@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
 import 'package:shalom/shalom.dart';
+
 import "__graphql__/EnumRequired.shalom.dart";
 import "__graphql__/EnumOptional.shalom.dart";
 import "__graphql__/EnumInputObjectOptional.shalom.dart";

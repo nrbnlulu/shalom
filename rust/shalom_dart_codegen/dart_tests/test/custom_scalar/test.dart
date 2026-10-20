@@ -1,5 +1,7 @@
 import 'package:test/test.dart';
+
 import '__graphql__/GetLocation.shalom.dart';
+
 import 'package:dart_tests/point.dart';
 
 void main() {

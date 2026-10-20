@@ -1,30 +1,57 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+import 'dart:ui' show Size;
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:gif_search/graphql/__graphql__/shalom_init.shalom.dart';
 import 'package:gif_search/main.dart';
+import 'package:shalom/shalom.dart';
+import 'package:shalom/testing.dart';
+
+class _DummyLink extends GraphQLLink {
+  _DummyLink();
+
+  @override
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
+    required Request request,
+    HeadersType? headers,
+  }) {
+    return const Stream.empty();
+  }
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  setUpAll(() async {
+    await ShalomRuntimeClient.initFlutterRustBridge(
+      nativeLibPath: resolveNativeLibPath(),
+    );
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  late ShalomRuntimeClient client;
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+  setUp(() {
+    client = ShalomRuntimeClient.create(
+      schemaSdl: kSchemaSdl,
+      link: _DummyLink(),
+    );
+    registerShalomDefinitions(client);
+  });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+  tearDown(() async {
+    await client.dispose();
+  });
+
+  testWidgets('renders main app widget', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.runAsync(() async {
+      await tester.pumpWidget(MyApp(client: client));
+    });
+
+    expect(find.byType(MyApp), findsOneWidget);
   });
 }
+

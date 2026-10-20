@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import "__graphql__/GetSearchResultsRequired.shalom.dart";
 import "__graphql__/GetSearchResultsOptional.shalom.dart";
 import "__graphql__/GetOptionalSearchResults.shalom.dart";

@@ -181,8 +181,8 @@ return transportError(_that.message,_that.code,_that.details);case _:
 
 
 class GraphQlResponseInput_Data extends GraphQlResponseInput {
-  const GraphQlResponseInput_Data({required this.data, final  List<ShalomJsonValue>? errors, this.extensions}): _errors = errors,super._();
-
+  const GraphQlResponseInput_Data({required this.data,  List<ShalomJsonValue>? errors, this.extensions}): _errors = errors,super._();
+  
 
  final  ShalomJsonValue data;
  final  List<ShalomJsonValue>? _errors;
@@ -257,7 +257,7 @@ as ShalomJsonValue?,
 @override
 @pragma('vm:prefer-inline')
 $ShalomJsonValueCopyWith<$Res> get data {
-
+  
   return $ShalomJsonValueCopyWith<$Res>(_self.data, (value) {
     return _then(_self.copyWith(data: value));
   });
@@ -280,8 +280,8 @@ $ShalomJsonValueCopyWith<$Res>? get extensions {
 
 
 class GraphQlResponseInput_Error extends GraphQlResponseInput {
-  const GraphQlResponseInput_Error({required final  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
-
+  const GraphQlResponseInput_Error({required  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
+  
 
  final  List<ShalomJsonValue> _errors;
  List<ShalomJsonValue> get errors {
@@ -367,7 +367,7 @@ $ShalomJsonValueCopyWith<$Res>? get extensions {
 
 class GraphQlResponseInput_TransportError extends GraphQlResponseInput {
   const GraphQlResponseInput_TransportError({required this.message, required this.code, this.details}): super._();
-
+  
 
  final  String message;
  final  String code;
@@ -615,7 +615,7 @@ return millis(_that.field0);case _:
 
 class RetryDelayInput_Inherit extends RetryDelayInput {
   const RetryDelayInput_Inherit(): super._();
-
+  
 
 
 
@@ -647,7 +647,7 @@ String toString() {
 
 class RetryDelayInput_Disabled extends RetryDelayInput {
   const RetryDelayInput_Disabled(): super._();
-
+  
 
 
 
@@ -679,7 +679,7 @@ String toString() {
 
 class RetryDelayInput_Millis extends RetryDelayInput {
   const RetryDelayInput_Millis(this.field0): super._();
-
+  
 
  final  BigInt field0;
 
@@ -911,7 +911,7 @@ return transportError(_that.code,_that.message,_that.details);case _:
 
 class SubscriptionEvent_Data extends SubscriptionEvent {
   const SubscriptionEvent_Data({required this.data}): super._();
-
+  
 
  final  ShalomJsonValue data;
 
@@ -974,7 +974,7 @@ as ShalomJsonValue,
 @override
 @pragma('vm:prefer-inline')
 $ShalomJsonValueCopyWith<$Res> get data {
-
+  
   return $ShalomJsonValueCopyWith<$Res>(_self.data, (value) {
     return _then(_self.copyWith(data: value));
   });
@@ -985,8 +985,8 @@ $ShalomJsonValueCopyWith<$Res> get data {
 
 
 class SubscriptionEvent_GraphQlError extends SubscriptionEvent {
-  const SubscriptionEvent_GraphQlError({required final  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
-
+  const SubscriptionEvent_GraphQlError({required  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
+  
 
  final  List<ShalomJsonValue> _errors;
  List<ShalomJsonValue> get errors {
@@ -1072,7 +1072,7 @@ $ShalomJsonValueCopyWith<$Res>? get extensions {
 
 class SubscriptionEvent_TransportError extends SubscriptionEvent {
   const SubscriptionEvent_TransportError({required this.code, required this.message, this.details}): super._();
-
+  
 
  final  String code;
  final  String message;

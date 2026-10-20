@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import '__graphql__/GetProduct.shalom.dart';
 import '__graphql__/GetProductOpt.shalom.dart';
 import '__graphql__/GetProductNoPrice.shalom.dart';
