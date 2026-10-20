@@ -190,6 +190,16 @@ Future<void> pushResponseValue({
   response: response,
 );
 
+Future<void> pushBufferedResponse({
+  required RuntimeHandle handle,
+  required BigInt requestId,
+  required BufferedGraphQlResponse response,
+}) => RustLib.instance.api.crateApiRuntimePushBufferedResponse(
+  handle: handle,
+  requestId: requestId,
+  response: response,
+);
+
 Future<void> pushGraphqlError({
   required RuntimeHandle handle,
   required BigInt requestId,
@@ -332,6 +342,12 @@ Future<String?> getCacheEntry({
   required String key,
 }) =>
     RustLib.instance.api.crateApiRuntimeGetCacheEntry(handle: handle, key: key);
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BufferedGraphQlResponse>>
+abstract class BufferedGraphQlResponse implements RustOpaqueInterface {
+  /// Materialize a copy only when a link consumer needs to inspect the payload.
+  GraphQlResponseInput materialize();
+}
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>>
 abstract class RuntimeHandle implements RustOpaqueInterface {}

@@ -102,10 +102,11 @@ sealed class WsLinkEvent with _$WsLinkEvent {
       WsLinkEvent_PongReceived;
 
   /// A data / error payload arrived for `op_id`, already parsed by the
-  /// `graphql-transport-ws` state machine.
+  /// `graphql-transport-ws` state machine. The payload remains in Rust until
+  /// the runtime consumes it.
   const factory WsLinkEvent.operationResponse({
     required String opId,
-    required GraphQlResponseInput response,
+    required BufferedGraphQlResponse response,
   }) = WsLinkEvent_OperationResponse;
 
   /// The server has finished sending data for `op_id`.

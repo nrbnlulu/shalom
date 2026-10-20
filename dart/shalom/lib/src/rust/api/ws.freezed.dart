@@ -131,7 +131,7 @@ return protocolError(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  connected,TResult Function( ShalomJsonValue? payload)?  pingReceived,TResult Function( ShalomJsonValue? payload)?  pongReceived,TResult Function( String opId,  GraphQlResponseInput response)?  operationResponse,TResult Function( String opId)?  operationComplete,TResult Function( int code,  String reason)?  protocolError,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  connected,TResult Function( ShalomJsonValue? payload)?  pingReceived,TResult Function( ShalomJsonValue? payload)?  pongReceived,TResult Function( String opId,  BufferedGraphQlResponse response)?  operationResponse,TResult Function( String opId)?  operationComplete,TResult Function( int code,  String reason)?  protocolError,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected() when connected != null:
 return connected();case WsLinkEvent_PingReceived() when pingReceived != null:
@@ -157,7 +157,7 @@ return protocolError(_that.code,_that.reason);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  connected,required TResult Function( ShalomJsonValue? payload)  pingReceived,required TResult Function( ShalomJsonValue? payload)  pongReceived,required TResult Function( String opId,  GraphQlResponseInput response)  operationResponse,required TResult Function( String opId)  operationComplete,required TResult Function( int code,  String reason)  protocolError,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  connected,required TResult Function( ShalomJsonValue? payload)  pingReceived,required TResult Function( ShalomJsonValue? payload)  pongReceived,required TResult Function( String opId,  BufferedGraphQlResponse response)  operationResponse,required TResult Function( String opId)  operationComplete,required TResult Function( int code,  String reason)  protocolError,}) {final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected():
 return connected();case WsLinkEvent_PingReceived():
@@ -179,7 +179,7 @@ return protocolError(_that.code,_that.reason);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  connected,TResult? Function( ShalomJsonValue? payload)?  pingReceived,TResult? Function( ShalomJsonValue? payload)?  pongReceived,TResult? Function( String opId,  GraphQlResponseInput response)?  operationResponse,TResult? Function( String opId)?  operationComplete,TResult? Function( int code,  String reason)?  protocolError,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  connected,TResult? Function( ShalomJsonValue? payload)?  pingReceived,TResult? Function( ShalomJsonValue? payload)?  pongReceived,TResult? Function( String opId,  BufferedGraphQlResponse response)?  operationResponse,TResult? Function( String opId)?  operationComplete,TResult? Function( int code,  String reason)?  protocolError,}) {final _that = this;
 switch (_that) {
 case WsLinkEvent_Connected() when connected != null:
 return connected();case WsLinkEvent_PingReceived() when pingReceived != null:
@@ -200,7 +200,7 @@ return protocolError(_that.code,_that.reason);case _:
 
 class WsLinkEvent_Connected extends WsLinkEvent {
   const WsLinkEvent_Connected(): super._();
-  
+
 
 
 
@@ -232,7 +232,7 @@ String toString() {
 
 class WsLinkEvent_PingReceived extends WsLinkEvent {
   const WsLinkEvent_PingReceived({this.payload}): super._();
-  
+
 
  final  ShalomJsonValue? payload;
 
@@ -310,7 +310,7 @@ $ShalomJsonValueCopyWith<$Res>? get payload {
 
 class WsLinkEvent_PongReceived extends WsLinkEvent {
   const WsLinkEvent_PongReceived({this.payload}): super._();
-  
+
 
  final  ShalomJsonValue? payload;
 
@@ -388,10 +388,10 @@ $ShalomJsonValueCopyWith<$Res>? get payload {
 
 class WsLinkEvent_OperationResponse extends WsLinkEvent {
   const WsLinkEvent_OperationResponse({required this.opId, required this.response}): super._();
-  
+
 
  final  String opId;
- final  GraphQlResponseInput response;
+ final  BufferedGraphQlResponse response;
 
 /// Create a copy of WsLinkEvent
 /// with the given fields replaced by the non-null parameter values.
@@ -423,11 +423,11 @@ abstract mixin class $WsLinkEvent_OperationResponseCopyWith<$Res> implements $Ws
   factory $WsLinkEvent_OperationResponseCopyWith(WsLinkEvent_OperationResponse value, $Res Function(WsLinkEvent_OperationResponse) _then) = _$WsLinkEvent_OperationResponseCopyWithImpl;
 @useResult
 $Res call({
- String opId, GraphQlResponseInput response
+ String opId, BufferedGraphQlResponse response
 });
 
 
-$GraphQlResponseInputCopyWith<$Res> get response;
+
 
 }
 /// @nodoc
@@ -444,20 +444,11 @@ class _$WsLinkEvent_OperationResponseCopyWithImpl<$Res>
   return _then(WsLinkEvent_OperationResponse(
 opId: null == opId ? _self.opId : opId // ignore: cast_nullable_to_non_nullable
 as String,response: null == response ? _self.response : response // ignore: cast_nullable_to_non_nullable
-as GraphQlResponseInput,
+as BufferedGraphQlResponse,
   ));
 }
 
-/// Create a copy of WsLinkEvent
-/// with the given fields replaced by the non-null parameter values.
-@override
-@pragma('vm:prefer-inline')
-$GraphQlResponseInputCopyWith<$Res> get response {
-  
-  return $GraphQlResponseInputCopyWith<$Res>(_self.response, (value) {
-    return _then(_self.copyWith(response: value));
-  });
-}
+
 }
 
 /// @nodoc
@@ -465,7 +456,7 @@ $GraphQlResponseInputCopyWith<$Res> get response {
 
 class WsLinkEvent_OperationComplete extends WsLinkEvent {
   const WsLinkEvent_OperationComplete({required this.opId}): super._();
-  
+
 
  final  String opId;
 
@@ -531,7 +522,7 @@ as String,
 
 class WsLinkEvent_ProtocolError extends WsLinkEvent {
   const WsLinkEvent_ProtocolError({required this.code, required this.reason}): super._();
-  
+
 
  final  int code;
  final  String reason;

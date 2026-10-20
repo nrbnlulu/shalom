@@ -159,6 +159,22 @@ pub enum GraphQlResponseInput {
     },
 }
 
+/// A parsed transport response kept in Rust while Dart routes it to a request.
+/// Passing it to `push_buffered_response` transfers ownership without encoding
+/// the response tree through Dart.
+#[frb(opaque)]
+pub struct BufferedGraphQlResponse {
+    pub(crate) inner: GraphQLResponse,
+}
+
+impl BufferedGraphQlResponse {
+    /// Materialize a copy only when a link consumer needs to inspect the payload.
+    #[frb(sync)]
+    pub fn materialize(&self) -> GraphQlResponseInput {
+        self.inner.clone().into()
+    }
+}
+
 impl From<GraphQLResponse> for GraphQlResponseInput {
     fn from(response: GraphQLResponse) -> Self {
         match response {
@@ -581,6 +597,15 @@ pub async fn push_response_value(
     response: GraphQlResponseInput,
 ) -> anyhow::Result<()> {
     handle.link.send_response(request_id, response.try_into()?)
+}
+
+#[frb]
+pub async fn push_buffered_response(
+    handle: &RuntimeHandle,
+    request_id: u64,
+    response: BufferedGraphQlResponse,
+) -> anyhow::Result<()> {
+    handle.link.send_response(request_id, response.inner)
 }
 
 #[frb]
