@@ -320,11 +320,13 @@ class _Socket {
       case WsLinkEvent_OperationResponse(:final opId, :final response):
         final handler = _ops[opId];
         if (handler == null) {
-          log('WebSocketLink: unknown op $opId');
+          response.dispose();
           return;
         }
         handler.controller.add(
-          GraphQLData(data: ParsedGraphQLLinkPayload(response: response)),
+          GraphQLData(
+            data: ParsedGraphQLLinkPayload.buffered(response: response),
+          ),
         );
 
       case WsLinkEvent_OperationComplete(:final opId):

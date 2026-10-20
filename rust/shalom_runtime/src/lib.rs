@@ -3,6 +3,7 @@ pub mod execution;
 pub mod gc;
 pub mod normalization;
 pub mod read;
+mod ref_tracking;
 pub mod runtime;
 pub mod sansio_protocols;
 pub mod selection;

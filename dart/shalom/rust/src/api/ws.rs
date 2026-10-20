@@ -1,5 +1,5 @@
 use crate::api::json::ShalomJsonValue;
-use crate::api::runtime::GraphQlResponseInput;
+use crate::api::runtime::BufferedGraphQlResponse;
 use flutter_rust_bridge::frb;
 use serde_json::Value;
 
@@ -19,7 +19,7 @@ pub struct WsSansIo {
 // exhaustive pattern matching without any JSON string parsing at dispatch time.
 //
 /// Events emitted by the sans-IO WebSocket state machine.
-#[frb(sync)]
+#[frb(sync, non_opaque)]
 pub enum WsLinkEvent {
     /// Connection acknowledged — safe to flush pending operations.
     Connected,
@@ -30,10 +30,11 @@ pub enum WsLinkEvent {
     /// pong-timeout timer.
     PongReceived { payload: Option<ShalomJsonValue> },
     /// A data / error payload arrived for `op_id`, already parsed by the
-    /// `graphql-transport-ws` state machine.
+    /// `graphql-transport-ws` state machine. The payload remains in Rust until
+    /// the runtime consumes it.
     OperationResponse {
         op_id: String,
-        response: GraphQlResponseInput,
+        response: BufferedGraphQlResponse,
     },
     /// The server has finished sending data for `op_id`.
     OperationComplete { op_id: String },
@@ -56,7 +57,7 @@ impl WsLinkEvent {
             },
             WsEvent::OperationResponse { op_id, response } => Self::OperationResponse {
                 op_id,
-                response: response.into(),
+                response: BufferedGraphQlResponse { inner: response },
             },
             WsEvent::OperationComplete { op_id } => Self::OperationComplete { op_id },
             WsEvent::ProtocolError { code, reason } => Self::ProtocolError { code, reason },
