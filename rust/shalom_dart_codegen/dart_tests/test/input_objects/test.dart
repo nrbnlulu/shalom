@@ -1,5 +1,6 @@
 import 'package:test/test.dart';
 import 'package:shalom/shalom.dart';
+
 import "__graphql__/OptOrderRequest.shalom.dart";
 import "__graphql__/OrderOptRequest.shalom.dart";
 import "__graphql__/OrderOptWithNullDefaultsRequest.shalom.dart";

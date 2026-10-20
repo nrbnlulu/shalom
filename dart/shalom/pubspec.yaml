@@ -5,7 +5,7 @@ homepage: https://github.com/nrbnlulu/shalom
 repository: https://github.com/nrbnlulu/shalom
 
 environment:
-    sdk: ^3.11.4
+    sdk: ^3.13.0
 
 dependencies:
     flutter_rust_bridge: ^2.13.0

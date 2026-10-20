@@ -7,17 +7,10 @@ vars:
     TEST_THREADS: '{{default "2" .SHALOM_TEST_THREADS}}'
     DART_BIN:
         sh: |
-            if command -v fvm > /dev/null 2>&1; then
+            if command -v fvm &> /dev/null; then
               echo "fvm dart"
             else
               echo "dart"
-            fi
-    FLUTTER_BIN:
-        sh: |
-            if command -v fvm > /dev/null 2>&1; then
-              echo "fvm flutter"
-            else
-              echo "flutter"
             fi
 
 tasks:
@@ -26,19 +19,15 @@ tasks:
             - echo "{{.GREETING}}"
         silent: true
 
-    generate_rust_bindings:
-        cmds:
-            - cd dart/shalom && flutter_rust_bridge_codegen generate
-
     fmt:
         cmds:
-            - cargo fmt --all
+            - cd rust && cargo fmt
             - cd rust/shalom_dart_codegen/dart_tests && {{.DART_BIN}} format ./test ./lib
             - "{{.DART_BIN}} format ./dart"
 
     fix:
         cmds:
-            - cd rust && cargo fmt
+            - cd rust && cargo fmt --all
             - cd rust && cargo clippy --fix --allow-dirty
 
     lint:
@@ -52,5 +41,11 @@ tasks:
 
     test:
         cmds:
-            - cd rust && cargo test -- --test-threads={{.TEST_THREADS}}
+            - cd rust && cargo test -- --test-threads=2
             - cd dart/shalom && {{.DART_BIN}} test
+
+    docs:serve:
+        desc: Serve MkDocs locally with uv
+        cmds:
+            - uv sync
+            - uv run -- mkdocs serve --dev-addr 0.0.0.0:8080

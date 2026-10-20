@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [lib]
+name = "shalom_ffi"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]

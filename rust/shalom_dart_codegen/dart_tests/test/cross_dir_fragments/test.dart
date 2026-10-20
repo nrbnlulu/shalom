@@ -1,5 +1,7 @@
 import 'dart:io';
+
 import 'package:test/test.dart';
+
 import 'queries/__graphql__/GetUser.shalom.dart';
 import 'queries/__graphql__/GetPost.shalom.dart';
 import 'nested_queries/__graphql__/GetAuthor.shalom.dart';

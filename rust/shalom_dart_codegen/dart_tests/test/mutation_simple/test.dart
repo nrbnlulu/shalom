@@ -1,4 +1,5 @@
 import 'package:test/test.dart';
+
 import '__graphql__/ProfileCard.shalom.dart';
 import '__graphql__/UpdateUserName.shalom.dart';
 import '__graphql__/UpdateUserProfile.mutation.shalom.dart';

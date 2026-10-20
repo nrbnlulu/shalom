@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_tests/graphql/__graphql__/shalom_init.shalom.dart';
 import 'package:shalom/shalom.dart';
-import '../lib/graphql/__graphql__/shalom_init.shalom.dart';
 import 'package:flutter_tests/union_fragment/animal_query.dart';
 import 'package:flutter_tests/union_fragment/__graphql__/AnimalQuery.shalom.dart';
 import 'helpers/mock_link.dart';
