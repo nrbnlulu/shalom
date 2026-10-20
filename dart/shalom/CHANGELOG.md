@@ -1,3 +1,9 @@
+## 0.1.7
+
+- Add `ShalomRuntimeClient.invalidateOperation` to evict an operation's cached root data and close its active subscriptions, so observers resubscribe and refetch from the network. Mutation widgets accept an `invalidateOperations` parameter to trigger this after a mutation.
+- Drop responses that arrive for a subscription after it was cancelled instead of normalizing stale data into the cache, and keep cancellation signals that fire before the task is waiting on them.
+- Update the native runtime to `shalom_runtime` 0.1.5.
+
 ## 0.1.6
 
 - Parse GraphQL responses without cloning their fields, and hand WebSocket payloads to the runtime as a buffered response that is only materialized into Dart objects when a link inspects it. Reduces per-message overhead on large responses.
