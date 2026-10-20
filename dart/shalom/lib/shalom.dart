@@ -20,3 +20,4 @@ export 'src/transport/ws_transport.dart' show WebSocketTransport, MessageSender;
 export 'src/transport/web_socket_transport.dart' show WebSocketPackageTransport;
 export 'src/rust/api/ws.dart' show WsSansIo;
 export 'src/rust/api/runtime.dart' show LogLevel;
+export 'src/shalom_core_base.dart' show OperationRef;
