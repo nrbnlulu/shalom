@@ -34,7 +34,6 @@ pub struct Normalizer<'a> {
     variables: Option<&'a Map<String, Value>>,
     changed: HashSet<CacheKey>,
     used_refs: HashSet<CacheKey>,
-    claimed_refs: HashSet<CacheKey>,
     capture_snapshot: bool,
     snapshot: HashMap<CacheKey, Option<CacheRecord>>,
 }
@@ -51,7 +50,6 @@ impl<'a> Normalizer<'a> {
             variables,
             changed: HashSet::new(),
             used_refs: HashSet::new(),
-            claimed_refs: HashSet::new(),
             capture_snapshot: false,
             snapshot: HashMap::new(),
         }
@@ -220,7 +218,7 @@ impl<'a> Normalizer<'a> {
 
         for selection in selections {
             let field_name = selection.self_selection_name().clone();
-            let raw_value = raw_obj.get(&field_name).cloned().unwrap_or(Value::Null);
+            let raw_value = raw_obj.get(&field_name).unwrap_or(&Value::Null);
             let field_cache_key =
                 field_cache_key(&field_name, &selection.arguments, self.variables);
             let field_segment =
@@ -234,7 +232,7 @@ impl<'a> Normalizer<'a> {
 
             let normalized = self.normalize_field(
                 &selection,
-                &raw_value,
+                raw_value,
                 cached_value,
                 &mut next_root,
                 &root_key,
@@ -281,7 +279,7 @@ impl<'a> Normalizer<'a> {
 
         for selection in selections {
             let field_name = selection.self_selection_name().clone();
-            let raw_value = raw_obj.get(&field_name).cloned().unwrap_or(Value::Null);
+            let raw_value = raw_obj.get(&field_name).unwrap_or(&Value::Null);
             let field_cache_key =
                 field_cache_key(&field_name, &selection.arguments, self.variables);
             let field_segment =
@@ -295,7 +293,7 @@ impl<'a> Normalizer<'a> {
 
             let normalized = self.normalize_field(
                 &selection,
-                &raw_value,
+                raw_value,
                 cached_value,
                 &mut next_root,
                 entity_key,
@@ -611,11 +609,6 @@ impl<'a> Normalizer<'a> {
             entity_key.clone().unwrap_or(path_key.clone())
         };
         let observed_frags = selection_get_observed_fragments(selection, &self.global_ctx);
-        let before_refs = if !observed_frags.is_empty() {
-            Some(self.used_refs.clone())
-        } else {
-            None
-        };
         self.used_refs.insert(object_ref_key.clone());
 
         if is_union_interface || entity_key.is_none() {
@@ -657,7 +650,7 @@ impl<'a> Normalizer<'a> {
 
         for selection in selections {
             let field_name = selection.self_selection_name().clone();
-            let raw_value = raw_obj.get(&field_name).cloned().unwrap_or(Value::Null);
+            let raw_value = raw_obj.get(&field_name).unwrap_or(&Value::Null);
             let field_cache_key =
                 field_cache_key(&field_name, &selection.arguments, self.variables);
             let field_segment =
@@ -671,7 +664,7 @@ impl<'a> Normalizer<'a> {
 
             let normalized = self.normalize_field(
                 &selection,
-                &raw_value,
+                raw_value,
                 cached_value,
                 &mut next_record,
                 &object_ref_key,
@@ -686,23 +679,16 @@ impl<'a> Normalizer<'a> {
         }
 
         // Inject $FragmentName refs for each directly-used @observe fragment.
-        // used_refs for the fragment are claimed so the parent won't double-track them.
-        if let Some(before_refs) = before_refs {
-            let raw_diff: HashSet<_> = self.used_refs.difference(&before_refs).cloned().collect();
-            let object_refs: HashSet<_> =
-                raw_diff.difference(&self.claimed_refs).cloned().collect();
-            self.claimed_refs.extend(object_refs.iter().cloned());
-            for frag_name in &observed_frags {
-                output.insert(
-                    format!("${frag_name}"),
-                    json!({
-                        "__shalom_observed_ref": {
-                            "observable_id": frag_name,
-                            "anchor": object_ref_key,
-                        }
-                    }),
-                );
-            }
+        for frag_name in &observed_frags {
+            output.insert(
+                format!("${frag_name}"),
+                json!({
+                    "__shalom_observed_ref": {
+                        "observable_id": frag_name,
+                        "anchor": object_ref_key,
+                    }
+                }),
+            );
         }
 
         let cache_value = if let Some(entity_key) = entity_key.clone() {

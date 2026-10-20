@@ -28,8 +28,22 @@ final class RawGraphQLLinkPayload extends GraphQLLinkPayload {
 
 /// A response parsed by Rust's WebSocket protocol state machine.
 final class ParsedGraphQLLinkPayload extends GraphQLLinkPayload {
-  final rs_runtime.GraphQlResponseInput response;
-  const ParsedGraphQLLinkPayload({required this.response});
+  final rs_runtime.GraphQlResponseInput? _response;
+  final rs_runtime.BufferedGraphQlResponse? bufferedResponse;
+
+  const ParsedGraphQLLinkPayload({
+    required rs_runtime.GraphQlResponseInput this._response,
+  }) : bufferedResponse = null;
+
+  const ParsedGraphQLLinkPayload.buffered({
+    required rs_runtime.BufferedGraphQlResponse response,
+  }) : _response = null,
+       bufferedResponse = response;
+
+  /// Inspect the parsed payload. Buffered responses are copied to Dart on demand.
+  /// Inspect before handing the payload to the runtime, which consumes the buffer.
+  rs_runtime.GraphQlResponseInput get response =>
+      _response ?? bufferedResponse!.materialize();
 }
 
 abstract class GraphQLLink {

@@ -26,6 +26,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   });
 
   CrossPlatformFinalizerArg
+  get rust_arc_decrement_strong_count_BufferedGraphQlResponsePtr => wire
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse;
+
+  CrossPlatformFinalizerArg
   get rust_arc_decrement_strong_count_RuntimeHandlePtr => wire
       .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle;
 
@@ -35,6 +39,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   AnyhowException dco_decode_AnyhowException(dynamic raw);
+
+  @protected
+  BufferedGraphQlResponse
+  dco_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    dynamic raw,
+  );
 
   @protected
   RuntimeHandle
@@ -51,6 +61,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   WsSansIo
   dco_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    dynamic raw,
+  );
+
+  @protected
+  BufferedGraphQlResponse
+  dco_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
     dynamic raw,
   );
 
@@ -73,6 +89,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Map<String, int> dco_decode_Map_String_u_32_None(dynamic raw);
+
+  @protected
+  BufferedGraphQlResponse
+  dco_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    dynamic raw,
+  );
 
   @protected
   RuntimeHandle
@@ -231,6 +253,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   AnyhowException sse_decode_AnyhowException(SseDeserializer deserializer);
 
   @protected
+  BufferedGraphQlResponse
+  sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   RuntimeHandle
   sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
     SseDeserializer deserializer,
@@ -245,6 +273,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   WsSansIo
   sse_decode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BufferedGraphQlResponse
+  sse_decode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
     SseDeserializer deserializer,
   );
 
@@ -267,6 +301,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Map<String, int> sse_decode_Map_String_u_32_None(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  BufferedGraphQlResponse
+  sse_decode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
     SseDeserializer deserializer,
   );
 
@@ -459,6 +499,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void
+  sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    BufferedGraphQlResponse self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
   sse_encode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
     RuntimeHandle self,
     SseSerializer serializer,
@@ -475,6 +522,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void
   sse_encode_Auto_RefMut_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerWsSansIo(
     WsSansIo self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    BufferedGraphQlResponse self,
     SseSerializer serializer,
   );
 
@@ -501,6 +555,13 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_Map_String_u_32_None(
     Map<String, int> self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void
+  sse_encode_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    BufferedGraphQlResponse self,
     SseSerializer serializer,
   );
 
@@ -735,6 +796,22 @@ class RustLibWire implements BaseWire {
   RustLibWire.fromExternalLibrary(ExternalLibrary lib);
 
   void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    int ptr,
+  ) => wasmModule
+      .rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+        ptr,
+      );
+
+  void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    int ptr,
+  ) => wasmModule
+      .rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+        ptr,
+      );
+
+  void
   rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
     int ptr,
   ) => wasmModule
@@ -773,6 +850,16 @@ external RustLibWasmModule get wasmModule;
 @JS()
 @anonymous
 extension type RustLibWasmModule._(JSObject _) implements JSObject {
+  external void
+  rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    int ptr,
+  );
+
+  external void
+  rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerBufferedGraphQlResponse(
+    int ptr,
+  );
+
   external void
   rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerRuntimeHandle(
     int ptr,

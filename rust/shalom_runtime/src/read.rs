@@ -10,6 +10,7 @@ use shalom_core::operation::types::{FieldSelection, SelectionKind};
 use shalom_core::schema::types::GraphQLAny;
 
 use crate::cache::{CacheRecord, CacheValue, NormalizedCache};
+use crate::ref_tracking::RefTracker;
 use crate::selection::{
     field_cache_key, field_path_segment, resolve_multitype_selections, resolve_object_selections,
     selection_get_observed_fragments,
@@ -42,19 +43,12 @@ impl<'a> CacheReader<'a> {
     }
 
     pub fn read_operation(&self, op_ctx: &SharedOpCtx) -> anyhow::Result<ReadResult> {
-        let mut used_refs = HashSet::new();
-        let mut claimed_refs = HashSet::new();
+        let mut refs = RefTracker::default();
         let mut missing_refs = HashSet::new();
-        let data = self.read_operation_value(
-            op_ctx,
-            &mut used_refs,
-            &mut claimed_refs,
-            &mut missing_refs,
-        )?;
-        let root_refs: HashSet<_> = used_refs.difference(&claimed_refs).cloned().collect();
+        let data = self.read_operation_value(op_ctx, &mut refs, &mut missing_refs)?;
         Ok(ReadResult {
             data,
-            used_refs: root_refs,
+            used_refs: refs.into_unclaimed(),
             missing_refs,
         })
     }
@@ -62,8 +56,7 @@ impl<'a> CacheReader<'a> {
     fn read_operation_value(
         &self,
         op_ctx: &SharedOpCtx,
-        used_refs: &mut HashSet<String>,
-        claimed_refs: &mut HashSet<String>,
+        refs: &mut RefTracker,
         missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let root_key = match op_ctx.op_type() {
@@ -86,7 +79,7 @@ impl<'a> CacheReader<'a> {
             let cached_value = root_record.and_then(|record| record.get(&cache_key));
 
             if field_name != "__typename" {
-                used_refs.insert(field_ref_key);
+                refs.insert(field_ref_key);
             }
 
             let value = self.read_field(
@@ -94,8 +87,7 @@ impl<'a> CacheReader<'a> {
                 cached_value,
                 &root_key,
                 &field_segment,
-                used_refs,
-                claimed_refs,
+                refs,
                 missing_refs,
             )?;
 
@@ -110,20 +102,12 @@ impl<'a> CacheReader<'a> {
         fragment: &SharedFragmentContext,
         root_ref: &str,
     ) -> anyhow::Result<ReadResult> {
-        let mut used_refs = HashSet::new();
-        let mut claimed_refs = HashSet::new();
+        let mut refs = RefTracker::default();
         let mut missing_refs = HashSet::new();
-        let data = self.read_fragment_value(
-            fragment,
-            root_ref,
-            &mut used_refs,
-            &mut claimed_refs,
-            &mut missing_refs,
-        )?;
-        let fragment_refs: HashSet<_> = used_refs.difference(&claimed_refs).cloned().collect();
+        let data = self.read_fragment_value(fragment, root_ref, &mut refs, &mut missing_refs)?;
         Ok(ReadResult {
             data,
-            used_refs: fragment_refs,
+            used_refs: refs.into_unclaimed(),
             missing_refs,
         })
     }
@@ -132,8 +116,7 @@ impl<'a> CacheReader<'a> {
         &self,
         fragment: &SharedFragmentContext,
         root_ref: &str,
-        used_refs: &mut HashSet<String>,
-        claimed_refs: &mut HashSet<String>,
+        refs: &mut RefTracker,
         missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let cached_value: Cow<'_, CacheValue> =
@@ -156,8 +139,7 @@ impl<'a> CacheReader<'a> {
             fragment,
             cached_value.as_ref(),
             root_ref,
-            used_refs,
-            claimed_refs,
+            refs,
             missing_refs,
         )
     }
@@ -169,8 +151,7 @@ impl<'a> CacheReader<'a> {
         cached_value: Option<&CacheValue>,
         parent_ref_key: &str,
         field_segment: &str,
-        used_refs: &mut HashSet<String>,
-        claimed_refs: &mut HashSet<String>,
+        refs: &mut RefTracker,
         missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let field_ref_key = format!("{}.{}", parent_ref_key, field_segment);
@@ -196,8 +177,7 @@ impl<'a> CacheReader<'a> {
                         parent_ref_key,
                         field_segment,
                         &list_ref_key,
-                        used_refs,
-                        claimed_refs,
+                        refs,
                         missing_refs,
                     )
                 }
@@ -218,8 +198,7 @@ impl<'a> CacheReader<'a> {
                         cached_value.expect("cache value checked"),
                         parent_ref_key,
                         field_segment,
-                        used_refs,
-                        claimed_refs,
+                        refs,
                         missing_refs,
                     ),
                     Some(_) => Err(anyhow::anyhow!(
@@ -242,8 +221,7 @@ impl<'a> CacheReader<'a> {
         cached_value: &CacheValue,
         parent_ref_key: &str,
         field_segment: &str,
-        used_refs: &mut HashSet<String>,
-        claimed_refs: &mut HashSet<String>,
+        refs: &mut RefTracker,
         missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let (record, entity_key) = match cached_value {
@@ -304,12 +282,8 @@ impl<'a> CacheReader<'a> {
             entity_key.unwrap_or(&path_key).to_string()
         };
         let observed_frags = selection_get_observed_fragments(selection, &self.global_ctx);
-        let before_refs = if !observed_frags.is_empty() {
-            Some(used_refs.clone())
-        } else {
-            None
-        };
-        used_refs.insert(object_ref_key.clone());
+        let scope_start = (!observed_frags.is_empty()).then(|| refs.begin_scope());
+        refs.insert(object_ref_key.clone());
 
         let mut output = Map::new();
 
@@ -322,25 +296,22 @@ impl<'a> CacheReader<'a> {
             let cached_value = record.get(&cache_key);
 
             if field_name != "__typename" {
-                used_refs.insert(field_ref_key);
+                refs.insert(field_ref_key);
             }
             let value = self.read_field(
                 &selection,
                 cached_value,
                 &object_ref_key,
                 &field_segment,
-                used_refs,
-                claimed_refs,
+                refs,
                 missing_refs,
             )?;
 
             output.insert(field_name.clone(), value);
         }
 
-        if let Some(before_refs) = before_refs {
-            let raw_diff: HashSet<_> = used_refs.difference(&before_refs).cloned().collect();
-            let object_refs: HashSet<_> = raw_diff.difference(claimed_refs).cloned().collect();
-            claimed_refs.extend(object_refs.iter().cloned());
+        if let Some(scope_start) = scope_start {
+            refs.claim_since(scope_start);
             for frag_name in &observed_frags {
                 output.insert(
                     format!("${frag_name}"),
@@ -365,8 +336,7 @@ impl<'a> CacheReader<'a> {
         parent_ref_key: &str,
         field_segment: &str,
         list_ref_key: &str,
-        used_refs: &mut HashSet<String>,
-        claimed_refs: &mut HashSet<String>,
+        refs: &mut RefTracker,
         missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let mut output = Vec::with_capacity(cached_items.len());
@@ -390,8 +360,7 @@ impl<'a> CacheReader<'a> {
                         cached_item,
                         parent_ref_key,
                         &item_segment,
-                        used_refs,
-                        claimed_refs,
+                        refs,
                         missing_refs,
                     )?,
                     _ => return Err(anyhow::anyhow!("expected object list item at {idx}")),
@@ -400,15 +369,14 @@ impl<'a> CacheReader<'a> {
                     CacheValue::Scalar(value) if value.is_null() => Value::Null,
                     CacheValue::List(inner_items) => {
                         let item_ref_key = format!("{list_ref_key}[{idx}]");
-                        used_refs.insert(item_ref_key.clone());
+                        refs.insert(item_ref_key.clone());
                         self.read_list(
                             inner_list,
                             inner_items,
                             parent_ref_key,
                             &item_segment,
                             &item_ref_key,
-                            used_refs,
-                            claimed_refs,
+                            refs,
                             missing_refs,
                         )?
                     }
@@ -425,8 +393,7 @@ impl<'a> CacheReader<'a> {
         fragment: &SharedFragmentContext,
         cached_value: &CacheValue,
         object_ref_key: &str,
-        used_refs: &mut HashSet<String>,
-        claimed_refs: &mut HashSet<String>,
+        refs: &mut RefTracker,
         missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let (record, _entity_key) = match cached_value {
@@ -478,7 +445,7 @@ impl<'a> CacheReader<'a> {
         };
 
         let mut output = Map::new();
-        used_refs.insert(object_ref_key.to_string());
+        refs.insert(object_ref_key.to_string());
 
         for selection in selections {
             let field_name = selection.self_selection_name().clone();
@@ -489,15 +456,14 @@ impl<'a> CacheReader<'a> {
             let cached_value = record.get(&cache_key);
 
             if field_name != "__typename" {
-                used_refs.insert(field_ref_key);
+                refs.insert(field_ref_key);
             }
             let value = self.read_field(
                 &selection,
                 cached_value,
                 object_ref_key,
                 &field_segment,
-                used_refs,
-                claimed_refs,
+                refs,
                 missing_refs,
             )?;
 

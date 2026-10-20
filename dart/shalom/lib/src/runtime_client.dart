@@ -548,6 +548,13 @@ class ShalomRuntimeClient {
       case GraphQLData(:final data):
         return switch (data) {
           RawGraphQLLinkPayload(:final json) => _pushResponse(requestId, json),
+          ParsedGraphQLLinkPayload(:final bufferedResponse)
+              when bufferedResponse != null =>
+            rs_runtime.pushBufferedResponse(
+              handle: _handle,
+              requestId: BigInt.from(requestId),
+              response: bufferedResponse,
+            ),
           ParsedGraphQLLinkPayload(:final response) =>
             rs_runtime.pushResponseValue(
               handle: _handle,
