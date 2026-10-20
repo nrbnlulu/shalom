@@ -526,6 +526,10 @@ impl ShalomRuntime {
             };
 
             loop {
+                // Don't dispatch a request for an already-unsubscribed subscription.
+                if !runtime.subscription_exists(&sub_id) {
+                    return;
+                }
                 let mut stream = link.execute(request.clone());
                 let mut transport_failed = false;
 
@@ -539,6 +543,11 @@ impl ShalomRuntime {
                         },
                     };
 
+                    // Cancelled while the response was in flight: drop it rather
+                    // than normalizing stale data into the cache.
+                    if !runtime.subscription_exists(&sub_id) {
+                        return;
+                    }
                     match response {
                         GraphQLResponse::Data { data, .. } => {
                             if let Err(e) =
@@ -946,8 +955,9 @@ impl ShalomRuntime {
         if let Some(state) = removed {
             // Wake any in-flight network request driving this subscription
             // (see `execute_operation`) so it aborts immediately instead of
-            // waiting on the next stream item.
-            state.cancel.notify_waiters();
+            // waiting on the next stream item. `notify_one` stores a permit if
+            // the task isn't waiting yet, so the cancellation isn't lost.
+            state.cancel.notify_one();
             self.subscription_tracker.lock().unsubscribe(state.keys);
         }
     }
@@ -1109,6 +1119,13 @@ impl ShalomRuntime {
     /// operation's root entry(ies) — entities it referenced are reclaimed by
     /// the next GC sweep if nothing else keeps them reachable.
     ///
+    /// Evict operation [op_name]'s root field(s) (matched with [variables])
+    /// from the cache, notify affected subscribers, and unsubscribe matching
+    /// active subscriptions.
+    ///
+    /// Unsubscribing drops their stream channel so Dart/Flutter's `onDone`
+    /// triggers a resubscribe to fetch fresh data.
+    ///
     /// Returns `false` (and does nothing) if no matching cache entry exists.
     pub fn evict_operation(
         &self,
@@ -1123,24 +1140,64 @@ impl ShalomRuntime {
         };
         let selections = resolve_object_selections(op_ctx.get_root(), &self.engine.global_ctx());
 
+        // Matching active subscriptions, with the variables each was created with.
+        let matching: Vec<(SubscriptionId, Option<Map<String, Value>>)> = {
+            let manager = self.subscriptions.lock();
+            manager
+                .subscriptions
+                .iter()
+                .filter_map(|(id, state)| {
+                    if let SubscriptionTarget::Operation(ctx) = &state.target
+                        && ctx.get_operation_name() == op_name
+                        && (variables.is_none() || state.variables.as_ref() == variables)
+                    {
+                        Some((*id, state.variables.clone()))
+                    } else {
+                        None
+                    }
+                })
+                .collect()
+        };
+
+        // The variable sets whose root entries get evicted. A broad invalidation
+        // (`variables == None`) must also evict the entry of every matched
+        // subscription's own variable set, not just the `None` key.
+        let mut variable_sets: Vec<Option<Map<String, Value>>> = vec![variables.cloned()];
+        if variables.is_none() {
+            for (_, vars) in &matching {
+                if !variable_sets.contains(vars) {
+                    variable_sets.push(vars.clone());
+                }
+            }
+        }
+
         let mut changed = HashSet::new();
         {
             let cache = self.cache();
             let mut cache = cache.lock();
             if let Some(record) = cache.get_mut(root_key) {
-                for selection in &selections {
-                    let field_name = selection.self_selection_name();
-                    if field_name == "__typename" {
-                        continue;
-                    }
-                    let cache_key = field_cache_key(field_name, &selection.arguments, variables);
-                    let field_segment =
-                        field_path_segment(field_name, &selection.arguments, variables);
-                    if record.remove(&cache_key).is_some() {
-                        changed.insert(format!("{root_key}.{field_segment}"));
+                for vars in &variable_sets {
+                    for selection in &selections {
+                        let field_name = selection.self_selection_name();
+                        if field_name == "__typename" {
+                            continue;
+                        }
+                        let cache_key =
+                            field_cache_key(field_name, &selection.arguments, vars.as_ref());
+                        let field_segment =
+                            field_path_segment(field_name, &selection.arguments, vars.as_ref());
+                        if record.remove(&cache_key).is_some() {
+                            changed.insert(format!("{root_key}.{field_segment}"));
+                        }
                     }
                 }
             }
+        }
+
+        // Unsubscribe matching active subscriptions so their stream ends (firing onDone
+        // in Dart to trigger resubscribe and refetch from network).
+        for (id, _) in matching {
+            self.unsubscribe(&id);
         }
 
         if changed.is_empty() {
@@ -1148,6 +1205,15 @@ impl ShalomRuntime {
         }
         self.notify_subscribers(&changed)?;
         Ok(true)
+    }
+
+    /// Invalidate operation `op_name` (optionally filtered by `variables`) by
+    /// evicting its cache entry and closing matching active subscription streams.
+    ///
+    /// This signals `onDone` to the Dart/Flutter subscriber, triggering it to resubscribe
+    /// and perform a fresh fetch from the network.
+    pub fn invalidate_operation(&self, op_name: &str, variables: Option<&Map<String, Value>>) {
+        let _ = self.evict_operation(op_name, variables);
     }
 
     /// Look up a pre-registered (or remembered) operation by name.
@@ -1253,7 +1319,7 @@ impl ShalomRuntime {
             }
             Err(_) => {
                 if let Some(state) = manager.remove(&id) {
-                    state.cancel.notify_waiters();
+                    state.cancel.notify_one();
                     self.subscription_tracker.lock().unsubscribe(state.keys);
                 }
             }

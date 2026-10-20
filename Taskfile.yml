@@ -12,12 +12,23 @@ vars:
             else
               echo "dart"
             fi
+    FLUTTER_BIN:
+        sh: |
+            if command -v fvm > /dev/null 2>&1; then
+              echo "fvm flutter"
+            else
+              echo "flutter"
+            fi
 
 tasks:
     default:
         cmds:
             - echo "{{.GREETING}}"
         silent: true
+
+    generate_rust_bindings:
+        cmds:
+            - cd dart/shalom && flutter_rust_bridge_codegen generate
 
     fmt:
         cmds:
