@@ -1,79 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: ToyFrag
@@ -82,16 +6,9 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
-
-
-
-
 import 'dart:async' show Stream;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart';
-
-
-
 
 // ------------ fragment widget API -------------
 
@@ -107,13 +24,17 @@ extension type ToyFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
-  
-  static ToyFragRef fromId(String id) => fromEntityKey(ToyFragData.entityKey(id));
+  static ToyFragRef fromId(String id) =>
+      fromEntityKey(ToyFragData.entityKey(id));
 
-  
   shalom_core.ObservedRefInput get toInput => _inner;
   String get anchor => _inner.anchor;
-  shalom_core.JsonObject toJson() => {'__shalom_observed_ref': {'observable_id': _inner.observableId, 'anchor': _inner.anchor}};
+  shalom_core.JsonObject toJson() => {
+    '__shalom_observed_ref': {
+      'observable_id': _inner.observableId,
+      'anchor': _inner.anchor,
+    },
+  };
   shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
     '__shalom_observed_ref': shalom_core.shalomJsonObject({
       'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
@@ -131,7 +52,9 @@ extension type ToyFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
-  Stream<shalom_core.GraphQLResponse<ToyFragData>> observe(shalom_core.ShalomRuntimeClient client) {
+  Stream<shalom_core.GraphQLResponse<ToyFragData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
     return client.subscribeToFragment<ToyFragData>(
       ref: _inner,
       decoder: ToyFragData.fromShalomValue,
@@ -142,59 +65,24 @@ extension type ToyFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
 abstract class ToyFrag {
   String get id;
   String get label;
-  
 
   shalom_core.JsonObject toJson();
   shalom_core.ShalomJsonValue toShalomValue();
 }
 
-
-
-
-
-
-
-
-
-
-
-
 final class ToyFragData implements ToyFrag, shalom_core.FragmentInterface {
   final String id;
   final String label;
-  
 
-  const ToyFragData({
-    required this.id,
-    required this.label,
-    
-  });
+  const ToyFragData({required this.id, required this.label});
 
   @override
-  bool operator ==(Object other) => identical(this, other) || (other is ToyFragData
-    && 
-    
-        
-            id == other.id
-        
-    
-
-    && 
-    
-        
-            label == other.label
-        
-    
-
-    
-  );
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is ToyFragData && id == other.id && label == other.label);
 
   @override
-  int get hashCode => Object.hashAll([
-    id,
-    label,
-    
-  ]);
+  int get hashCode => Object.hashAll([id, label]);
 
   @override
   String fragment$Name() => 'ToyFrag';
@@ -210,101 +98,30 @@ final class ToyFragData implements ToyFrag, shalom_core.FragmentInterface {
   static String entityKey(String id) => 'Toy:$id';
 
   static ToyFragData fromCache(shalom_core.JsonObject data) {
-    final String id$value = 
-    
-        
-            
-                data['id'] as String
-            
-        
-    
-;
-    final String label$value = 
-    
-        
-            
-                data['label'] as String
-            
-        
-    
-;
-    return ToyFragData(
-      
-          id: id$value,
-        
-      
-          label: label$value,
-        
-      );
+    final String id$value = data['id'] as String;
+    final String label$value = data['label'] as String;
+    return ToyFragData(id: id$value, label: label$value);
   }
 
   static ToyFragData fromShalomValue(shalom_core.ShalomJsonValue data) {
     final shalom_core.ShalomJsonValue? id$raw = data.field('id');
-      final String id$value = 
-    
-        
-            id$raw!.stringValue
-        
-    
-;
+    final String id$value = id$raw!.stringValue;
     final shalom_core.ShalomJsonValue? label$raw = data.field('label');
-      final String label$value = 
-    
-        
-            label$raw!.stringValue
-        
-    
-;
-    return ToyFragData(
-      id: id$value,
-      label: label$value,
-      );
+    final String label$value = label$raw!.stringValue;
+    return ToyFragData(id: id$value, label: label$value);
   }
 
   shalom_core.JsonObject toJson() {
-    return {
-      
-        'id': 
-    
-        
-            this.id
-        
-    
-,
-      
-        'label': 
-    
-        
-            this.label
-        
-    
-,
-      
-    };
+    return {'id': this.id, 'label': this.label};
   }
 
   @override
   shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    
-      'id': 
-    
-        
-            shalom_core.shalomJsonValue(this.id!)
-        
-    
-,
-    
-      'label': 
-    
-        
-            shalom_core.shalomJsonValue(this.label!)
-        
-    
-,
-    
+    'id': shalom_core.shalomJsonValue(this.id!),
+
+    'label': shalom_core.shalomJsonValue(this.label!),
   });
 }
-
 
 abstract class $ToyFrag extends StatelessWidget {
   final ToyFragRef ref;
@@ -350,6 +167,5 @@ class ToyFragScope extends StatelessWidget {
     );
   }
 }
-
 
 // ------------ END fragment widget API -------------

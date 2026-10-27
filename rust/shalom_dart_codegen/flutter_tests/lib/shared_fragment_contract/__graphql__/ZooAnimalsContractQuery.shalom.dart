@@ -1,41 +1,6 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
 import "../../graphql/__graphql__/schema.shalom.dart";
-
-
-
-
-
 
 import 'dart:async' show Stream;
 
@@ -49,748 +14,349 @@ import 'DogWithFavoriteToyFrag.shalom.dart';
 import 'HasFavoriteToyFrag.shalom.dart';
 import 'ToyFrag.shalom.dart';
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ------------ OBJECT DEFINITIONS -------------
-class ZooAnimalsContractQueryData implements shalom_core.OperationInterface, shalom_core.StreamCompat  {
-    
-    static String G__typename = "query";
-    
-    
-    /// class members
-    final 
-        
-    
-        
-            List<CommonAnimalFragRef>
-        
-    
-     animals;
-        
-    
+class ZooAnimalsContractQueryData
+    implements shalom_core.OperationInterface, shalom_core.StreamCompat {
+  static String G__typename = "query";
 
-    // Getter for typename (public accessor for static __typename field)
-    String get $__typename => G__typename;
+  /// class members
+  final List<CommonAnimalFragRef> animals;
 
-    // keywordargs constructor
-     ZooAnimalsContractQueryData(
-        {
-                required this.animals,
-        }
-        
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
+  // keywordargs constructor
+  ZooAnimalsContractQueryData({required this.animals});
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ZooAnimalsContractQueryData &&
+            const ListEquality().equals(animals, other.animals));
+  }
+
+  @override
+  int get hashCode =>
+      Object.hashAll([animals, ZooAnimalsContractQueryData.G__typename]);
+
+  shalom_core.JsonObject toJson() {
+    return {'animals': this.animals.map((e) => e.toJson()).toList()};
+  }
+
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    'animals': shalom_core.shalomJsonArray(
+      this.animals!.map((e) => e!.toShalomValue()),
+    ),
+  });
+
+  static ZooAnimalsContractQueryData fromJson(shalom_core.JsonObject data) {
+    final List<CommonAnimalFragRef> animals$value =
+        (data['animals'] as List<dynamic>)
+            .map(
+              (e) => CommonAnimalFragRef.fromInput(
+                shalom_core.observedRefInputFromJson(
+                  (e as shalom_core.JsonObject)[r'$CommonAnimalFrag']
+                      as shalom_core.JsonObject,
+                ),
+              ),
+            )
+            .toList();
+    return ZooAnimalsContractQueryData(animals: animals$value);
+  }
+
+  static ZooAnimalsContractQueryData fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? animals$raw = data.field('animals');
+    final List<CommonAnimalFragRef> animals$value = animals$raw!.listValue
+        .map(
+          (e) => CommonAnimalFragRef.fromInput(
+            shalom_core.observedRefInputFromShalomValue(
+              e!.field(r'$CommonAnimalFrag')!,
+            ),
+          ),
+        )
+        .toList();
+    return ZooAnimalsContractQueryData(animals: animals$value);
+  }
+
+  @override
+  String operation$Name() => 'ZooAnimalsContractQuery';
+
+  /// Reads this operation's current cache entry through [cache], decoding
+  /// it as [ZooAnimalsContractQueryData]. Returns `null` when absent or incomplete.
+  static Future<ZooAnimalsContractQueryData?> readFrom(
+    shalom_core.CacheProxy cache,
+  ) async {
+    return await cache.readOperation<ZooAnimalsContractQueryData>(
+      name: 'ZooAnimalsContractQuery',
+      decoder: fromShalomValue,
     );
+  }
 
-    @override
-    bool operator ==(Object other) {
-        return identical(this, other) ||
-            
-            (other is ZooAnimalsContractQueryData &&
-                    
-    
-        const ListEquality().equals(animals, other.animals)
-    
- 
-                    );
-            
-    }
-
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-                animals,
-        
-        ZooAnimalsContractQueryData.G__typename
-        ]);
-    
-
-    shalom_core.JsonObject toJson() {
-    return {
-    
-        
-        
-        'animals':
-            
-                
-    
-        
-        
-            this.animals.map((e) => 
-    
-        
-            e.toJson()
-        
-    
-).toList()
-        
-    
-
-            
-        ,
-        
-    
-    };
-    }
-
-    shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    
-        
-        'animals': 
-    
-        
-            shalom_core.shalomJsonArray(this.animals!.map((e) => 
-    
-        
-            e!.toShalomValue()
-        
-    
-))
-        
-    
-,
-        
-    
-    });
-
-    static ZooAnimalsContractQueryData fromJson(shalom_core.JsonObject data) {
-        final 
-        
-    
-        
-            List<CommonAnimalFragRef>
-        
-    
-     animals$value = 
-    
-        
-        
-            
-            
-            (data['animals'] as List<dynamic>).map((e) => 
-    
-        
-        
-            CommonAnimalFragRef.fromInput(shalom_core.observedRefInputFromJson((e as shalom_core.JsonObject)[r'$CommonAnimalFrag'] as shalom_core.JsonObject))
-        
-    
-).toList()
-        
-    
-;
-        return ZooAnimalsContractQueryData(
-            
-                    animals: animals$value,
-                
-            );
-    }
-
-    static ZooAnimalsContractQueryData fromShalomValue(shalom_core.ShalomJsonValue data) {
-        final shalom_core.ShalomJsonValue? animals$raw = data.field('animals');
-            final 
-        
-    
-        
-            List<CommonAnimalFragRef>
-        
-    
-     animals$value = 
-    
-        
-            animals$raw!.listValue.map((e) => 
-    
-        
-            CommonAnimalFragRef.fromInput(shalom_core.observedRefInputFromShalomValue(e!.field(r'$CommonAnimalFrag')!))
-        
-    
-).toList()
-        
-    
-;
-        return ZooAnimalsContractQueryData(
-            animals: animals$value,
-            );
-    }
-
-
-    @override
-    String operation$Name() => 'ZooAnimalsContractQuery';
-
-    /// Reads this operation's current cache entry through [cache], decoding
-    /// it as [ZooAnimalsContractQueryData]. Returns `null` when absent or incomplete.
-    static Future<ZooAnimalsContractQueryData?> readFrom(
-        shalom_core.CacheProxy cache
-    ) async {
-        return await cache.readOperation<ZooAnimalsContractQueryData>(
-            name: 'ZooAnimalsContractQuery',
-            decoder: fromShalomValue,
-            
-        );
-    }
-
-    /// Evicts this operation's cached entry (matched by [variables]) through
-    /// [cache], notifying any active subscribers. Returns `false` if no
-    /// matching cache entry existed.
-    static Future<bool> evictFrom(
-        shalom_core.CacheProxy cache
-    ) {
-        return cache.evictOperation(
-            name: 'ZooAnimalsContractQuery',
-            
-        );
-    }
-    
+  /// Evicts this operation's cached entry (matched by [variables]) through
+  /// [cache], notifying any active subscribers. Returns `false` if no
+  /// matching cache entry existed.
+  static Future<bool> evictFrom(shalom_core.CacheProxy cache) {
+    return cache.evictOperation(name: 'ZooAnimalsContractQuery');
+  }
 }
-
-
 
 // ------------ END OBJECT DEFINITIONS -------------
 
-
 // ------------ UNION DEFINITIONS -------------
-
-
-
 
 // ------------ END UNION DEFINITIONS -------------
 
 // ------------ INTERFACE DEFINITIONS -------------
 
+sealed class ZooAnimalsContractQuery_animals {
+  String get id;
 
-    
-    sealed class ZooAnimalsContractQuery_animals {
+  String get $__typename;
+  const ZooAnimalsContractQuery_animals();
 
+  shalom_core.JsonObject toJson();
+  shalom_core.ShalomJsonValue toShalomValue();
 
-        String get id;
-        
-        String get $__typename;
-        const ZooAnimalsContractQuery_animals();
+  static ZooAnimalsContractQuery_animals fromJson(shalom_core.JsonObject data) {
+    final typename = data['__typename'] as String;
+    switch (typename) {
+      case 'Cat':
+        return ZooAnimalsContractQuery_animals__Cat.fromJson(data);
+      case 'Dog':
+        return ZooAnimalsContractQuery_animals__Dog.fromJson(data);
 
-        shalom_core.JsonObject toJson();
-        shalom_core.ShalomJsonValue toShalomValue();
-
-        static ZooAnimalsContractQuery_animals fromJson(shalom_core.JsonObject data) {
-            final typename = data['__typename'] as String;
-            switch(typename) {
-                case 'Cat':
-                        return ZooAnimalsContractQuery_animals__Cat.fromJson(data);
-                case 'Dog':
-                        return ZooAnimalsContractQuery_animals__Dog.fromJson(data);
-                
-                default:
-                    throw Exception("Unknown typename $typename");
-            }
-        }
-
-        static ZooAnimalsContractQuery_animals fromShalomValue(shalom_core.ShalomJsonValue data) {
-            final typename = data.field('__typename')!.stringValue;
-            switch(typename) {
-                case 'Cat':
-                        return ZooAnimalsContractQuery_animals__Cat.fromShalomValue(data);
-                case 'Dog':
-                        return ZooAnimalsContractQuery_animals__Dog.fromShalomValue(data);
-                
-                default:
-                    throw Exception("Unknown typename $typename");
-            }
-        }
+      default:
+        throw Exception("Unknown typename $typename");
     }
+  }
 
+  static ZooAnimalsContractQuery_animals fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final typename = data.field('__typename')!.stringValue;
+    switch (typename) {
+      case 'Cat':
+        return ZooAnimalsContractQuery_animals__Cat.fromShalomValue(data);
+      case 'Dog':
+        return ZooAnimalsContractQuery_animals__Dog.fromShalomValue(data);
 
-    
-    class ZooAnimalsContractQuery_animals__Cat extends ZooAnimalsContractQuery_animals   {
-            
-    static String G__typename = "Cat";
-    
-    
-    /// class members
-    
-    final 
-        String
-     id;
-        
-    
-
-    // Getter for typename (public accessor for static __typename field)
-    String get $__typename => G__typename;
-
-    // keywordargs constructor
-    const ZooAnimalsContractQuery_animals__Cat(
-        {
-                required this.id,
-        }
-        
-    );
-
-    @override
-    bool operator ==(Object other) {
-        return identical(this, other) ||
-            
-            (other is ZooAnimalsContractQuery_animals__Cat &&
-                    
-    
-        
-            id == other.id
-        
-    
- 
-                    );
-            
+      default:
+        throw Exception("Unknown typename $typename");
     }
+  }
+}
 
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-                id,
-        
-        ZooAnimalsContractQuery_animals__Cat.G__typename
-        ]);
-    
+class ZooAnimalsContractQuery_animals__Cat
+    extends ZooAnimalsContractQuery_animals {
+  static String G__typename = "Cat";
 
-    shalom_core.JsonObject toJson() {
+  /// class members
+
+  final String id;
+
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
+
+  // keywordargs constructor
+  const ZooAnimalsContractQuery_animals__Cat({required this.id});
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ZooAnimalsContractQuery_animals__Cat && id == other.id);
+  }
+
+  @override
+  int get hashCode =>
+      Object.hashAll([id, ZooAnimalsContractQuery_animals__Cat.G__typename]);
+
+  shalom_core.JsonObject toJson() {
     return {
-    
-        
-        
-        "__typename": ZooAnimalsContractQuery_animals__Cat.G__typename,
-        
-    
-        
-        
-        'id':
-            
-                
-    
-        
-            this.id
-        
-    
+      "__typename": ZooAnimalsContractQuery_animals__Cat.G__typename,
 
-            
-        ,
-        
-    
+      'id': this.id,
     };
-    }
+  }
 
-    shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    
-        
-        "__typename": shalom_core.shalomJsonValue(ZooAnimalsContractQuery_animals__Cat.G__typename),
-        
-    
-        
-        'id': 
-    
-        
-            shalom_core.shalomJsonValue(this.id!)
-        
-    
-,
-        
-    
-    });
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      ZooAnimalsContractQuery_animals__Cat.G__typename,
+    ),
 
-    static ZooAnimalsContractQuery_animals__Cat fromJson(shalom_core.JsonObject data) {
-        final 
-        String
-     id$value = 
-    
-        
-            
-                data['id'] as String
-            
-        
-    
-;
-        return ZooAnimalsContractQuery_animals__Cat(
-            
-            
-                    id: id$value,
-                
-            );
-    }
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
 
-    static ZooAnimalsContractQuery_animals__Cat fromShalomValue(shalom_core.ShalomJsonValue data) {
-        final shalom_core.ShalomJsonValue? id$raw = data.field('id');
-            final 
-        String
-     id$value = 
-    
-        
-            id$raw!.stringValue
-        
-    
-;
-        return ZooAnimalsContractQuery_animals__Cat(
-            id: id$value,
-            );
-    }
+  static ZooAnimalsContractQuery_animals__Cat fromJson(
+    shalom_core.JsonObject data,
+  ) {
+    final String id$value = data['id'] as String;
+    return ZooAnimalsContractQuery_animals__Cat(id: id$value);
+  }
 
-        }
-    class ZooAnimalsContractQuery_animals__Dog extends ZooAnimalsContractQuery_animals  implements
+  static ZooAnimalsContractQuery_animals__Cat fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    return ZooAnimalsContractQuery_animals__Cat(id: id$value);
+  }
+}
 
-    DogFavoriteFrag
-    , 
+class ZooAnimalsContractQuery_animals__Dog
+    extends ZooAnimalsContractQuery_animals
+    implements DogFavoriteFrag, DogWithFavoriteToyFrag {
+  static String G__typename = "Dog";
 
-    DogWithFavoriteToyFrag
-    
-  {
-            
-    static String G__typename = "Dog";
-    
-    
-    /// class members
-    
-    final 
-        String
-     breed;
-        
-    final 
-        HasFavoriteToyFrag_favoriteToy
-     favoriteToy;
-        
-    final 
-        String
-     id;
-        
-    
+  /// class members
 
-    // Getter for typename (public accessor for static __typename field)
-    String get $__typename => G__typename;
+  final String breed;
 
-    // keywordargs constructor
-    const ZooAnimalsContractQuery_animals__Dog(
-        {
-                required this.breed,
-        
-        
-                required this.favoriteToy,
-        
-        
-                required this.id,
-        }
-        
-    );
+  final HasFavoriteToyFrag_favoriteToy favoriteToy;
 
-    @override
-    bool operator ==(Object other) {
-        return identical(this, other) ||
-            
-            (other is ZooAnimalsContractQuery_animals__Dog &&
-                    
-    
-        
-            breed == other.breed
-        
-    
- &&
-                    
-    
-        
-            favoriteToy == other.favoriteToy
-        
-    
- &&
-                    
-    
-        
-            id == other.id
-        
-    
- 
-                    );
-            
-    }
+  final String id;
 
-    @override
-    int get hashCode =>
-    
-        Object.hashAll([
-        
-                breed,
-        
-                favoriteToy,
-        
-                id,
-        
-        ZooAnimalsContractQuery_animals__Dog.G__typename
-        ]);
-    
+  // Getter for typename (public accessor for static __typename field)
+  String get $__typename => G__typename;
 
-    shalom_core.JsonObject toJson() {
+  // keywordargs constructor
+  const ZooAnimalsContractQuery_animals__Dog({
+    required this.breed,
+
+    required this.favoriteToy,
+
+    required this.id,
+  });
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other is ZooAnimalsContractQuery_animals__Dog &&
+            breed == other.breed &&
+            favoriteToy == other.favoriteToy &&
+            id == other.id);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([
+    breed,
+
+    favoriteToy,
+
+    id,
+
+    ZooAnimalsContractQuery_animals__Dog.G__typename,
+  ]);
+
+  shalom_core.JsonObject toJson() {
     return {
-    
-        
-        
-        "__typename": ZooAnimalsContractQuery_animals__Dog.G__typename,
-        
-    
-        
-        
-        'breed':
-            
-                
-    
-        
-            this.breed
-        
-    
+      "__typename": ZooAnimalsContractQuery_animals__Dog.G__typename,
 
-            
-        ,
-        
-    
-        
-        
-        'favoriteToy':
-            
-                
-    
-        
-            this.favoriteToy.toJson()
-        
-    
+      'breed': this.breed,
 
-            
-        ,
-        
-    
-        
-        
-        'id':
-            
-                
-    
-        
-            this.id
-        
-    
+      'favoriteToy': this.favoriteToy.toJson(),
 
-            
-        ,
-        
-    
+      'id': this.id,
     };
-    }
+  }
 
-    shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    
-        
-        "__typename": shalom_core.shalomJsonValue(ZooAnimalsContractQuery_animals__Dog.G__typename),
-        
-    
-        
-        'breed': 
-    
-        
-            shalom_core.shalomJsonValue(this.breed!)
-        
-    
-,
-        
-    
-        
-        'favoriteToy': 
-    
-        this.favoriteToy!.toShalomValue()
-    
-,
-        
-    
-        
-        'id': 
-    
-        
-            shalom_core.shalomJsonValue(this.id!)
-        
-    
-,
-        
-    
-    });
+  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    "__typename": shalom_core.shalomJsonValue(
+      ZooAnimalsContractQuery_animals__Dog.G__typename,
+    ),
 
-    static ZooAnimalsContractQuery_animals__Dog fromJson(shalom_core.JsonObject data) {
-        final 
-        String
-     breed$value = 
-    
-        
-            
-                data['breed'] as String
-            
-        
-    
-;
-        final 
-        HasFavoriteToyFrag_favoriteToy
-     favoriteToy$value = 
-    
-        HasFavoriteToyFrag_favoriteToy.fromJson(data['favoriteToy'] as shalom_core.JsonObject)
-    
-;
-        final 
-        String
-     id$value = 
-    
-        
-            
-                data['id'] as String
-            
-        
-    
-;
-        return ZooAnimalsContractQuery_animals__Dog(
-            
-            
-                    breed: breed$value,
-                
-            
-                    favoriteToy: favoriteToy$value,
-                
-            
-                    id: id$value,
-                
-            );
-    }
+    'breed': shalom_core.shalomJsonValue(this.breed!),
 
-    static ZooAnimalsContractQuery_animals__Dog fromShalomValue(shalom_core.ShalomJsonValue data) {
-        final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
-            final 
-        String
-     breed$value = 
-    
-        
-            breed$raw!.stringValue
-        
-    
-;
-        final shalom_core.ShalomJsonValue? favoriteToy$raw = data.field('favoriteToy');
-            final 
-        HasFavoriteToyFrag_favoriteToy
-     favoriteToy$value = 
-    
-        HasFavoriteToyFrag_favoriteToy.fromShalomValue(favoriteToy$raw!)
-    
-;
-        final shalom_core.ShalomJsonValue? id$raw = data.field('id');
-            final 
-        String
-     id$value = 
-    
-        
-            id$raw!.stringValue
-        
-    
-;
-        return ZooAnimalsContractQuery_animals__Dog(
-            breed: breed$value,
-            favoriteToy: favoriteToy$value,
-            id: id$value,
-            );
-    }
+    'favoriteToy': this.favoriteToy!.toShalomValue(),
 
-        }
-    
+    'id': shalom_core.shalomJsonValue(this.id!),
+  });
 
+  static ZooAnimalsContractQuery_animals__Dog fromJson(
+    shalom_core.JsonObject data,
+  ) {
+    final String breed$value = data['breed'] as String;
+    final HasFavoriteToyFrag_favoriteToy favoriteToy$value =
+        HasFavoriteToyFrag_favoriteToy.fromJson(
+          data['favoriteToy'] as shalom_core.JsonObject,
+        );
+    final String id$value = data['id'] as String;
+    return ZooAnimalsContractQuery_animals__Dog(
+      breed: breed$value,
+
+      favoriteToy: favoriteToy$value,
+
+      id: id$value,
+    );
+  }
+
+  static ZooAnimalsContractQuery_animals__Dog fromShalomValue(
+    shalom_core.ShalomJsonValue data,
+  ) {
+    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+    final String breed$value = breed$raw!.stringValue;
+    final shalom_core.ShalomJsonValue? favoriteToy$raw = data.field(
+      'favoriteToy',
+    );
+    final HasFavoriteToyFrag_favoriteToy favoriteToy$value =
+        HasFavoriteToyFrag_favoriteToy.fromShalomValue(favoriteToy$raw!);
+    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+    final String id$value = id$raw!.stringValue;
+    return ZooAnimalsContractQuery_animals__Dog(
+      breed: breed$value,
+      favoriteToy: favoriteToy$value,
+      id: id$value,
+    );
+  }
+}
 
 // ------------ END INTERFACE DEFINITIONS -------------
 
 // ------------ MULTI-TYPE LIST EXTENSIONS -------------
 
-    
-    
-    extension ZooAnimalsContractQuery_animals$WhereTypeExt on List<ZooAnimalsContractQuery_animals> {
-        // Extension to filter list to only Cat types
-                Iterable<ZooAnimalsContractQuery_animals__Cat> get cats {
-                    return whereType<ZooAnimalsContractQuery_animals__Cat>();
-                }
-    // Extension to filter list to only Dog types
-                Iterable<ZooAnimalsContractQuery_animals__Dog> get dogs {
-                    return whereType<ZooAnimalsContractQuery_animals__Dog>();
-                }
-    
-    }
+extension ZooAnimalsContractQuery_animals$WhereTypeExt
+    on List<ZooAnimalsContractQuery_animals> {
+  // Extension to filter list to only Cat types
+  Iterable<ZooAnimalsContractQuery_animals__Cat> get cats {
+    return whereType<ZooAnimalsContractQuery_animals__Cat>();
+  }
+
+  // Extension to filter list to only Dog types
+  Iterable<ZooAnimalsContractQuery_animals__Dog> get dogs {
+    return whereType<ZooAnimalsContractQuery_animals__Dog>();
+  }
+}
 
 // ------------ END MULTI-TYPE LIST EXTENSIONS -------------
-
-
 
 // ------------ widget API -------------
 
 final class ZooAnimalsContractQueryObservable {
-    final shalom_core.ExecutionPolicyInput executionPolicy;
-    final shalom_core.RetryDelay retryDelay;
-    final Duration? autoRefetch;
-    
+  final shalom_core.ExecutionPolicyInput executionPolicy;
+  final shalom_core.RetryDelay retryDelay;
+  final Duration? autoRefetch;
 
-    const ZooAnimalsContractQueryObservable({
-        
-        this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
-        this.retryDelay = const shalom_core.RetryDelay.inherit(),
-        this.autoRefetch,
-    });
+  const ZooAnimalsContractQueryObservable({
+    this.executionPolicy = shalom_core.ExecutionPolicyInput.cacheFirst,
+    this.retryDelay = const shalom_core.RetryDelay.inherit(),
+    this.autoRefetch,
+  });
 
-    String operation$Name() => 'ZooAnimalsContractQuery';
+  String operation$Name() => 'ZooAnimalsContractQuery';
 
-    Stream<shalom_core.GraphQLResponse<ZooAnimalsContractQueryData>> observe(shalom_core.ShalomRuntimeClient client) {
-        return client.request<ZooAnimalsContractQueryData>(
-            name: operation$Name(),
-            
-            decoder: ZooAnimalsContractQueryData.fromShalomValue,
-            executionPolicy: executionPolicy,
-            retryDelay: retryDelay,
-            autoRefetch: autoRefetch,
-        );
-    }
+  Stream<shalom_core.GraphQLResponse<ZooAnimalsContractQueryData>> observe(
+    shalom_core.ShalomRuntimeClient client,
+  ) {
+    return client.request<ZooAnimalsContractQueryData>(
+      name: operation$Name(),
+
+      decoder: ZooAnimalsContractQueryData.fromShalomValue,
+      executionPolicy: executionPolicy,
+      retryDelay: retryDelay,
+      autoRefetch: autoRefetch,
+    );
+  }
 }
-
-
 
 // ------------ END widget API -------------
