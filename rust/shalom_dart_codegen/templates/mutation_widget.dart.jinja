@@ -63,10 +63,10 @@ abstract class ${{ operation_name }} {
             decoder: {{ operation_name }}Data.fromShalomValue,
         );
         if (invalidateOperations != null && response is shalom_core.GraphQLData) {
-            for (final op in invalidateOperations) {
+            for (final op$ in invalidateOperations) {
                 await _client.evictOperation(
-                    name: op.operationName,
-                    variables: op.variables,
+                    name: op$.operationName,
+                    variables: op$.variables,
                 );
             }
         }
@@ -122,10 +122,10 @@ abstract class ${{ operation_name }} {
         if (response case shalom_core.GraphQLData(data: final data)) {
           await update(CacheProxy(_client), data);
           if (invalidateOperations != null) {
-            for (final op in invalidateOperations) {
+            for (final op$ in invalidateOperations) {
               await _client.evictOperation(
-                  name: op.operationName,
-                  variables: op.variables,
+                  name: op$.operationName,
+                  variables: op$.variables,
               );
             }
           }
@@ -204,10 +204,10 @@ abstract class ${{ operation_name }} {
         if (invalidateOperations != null &&
             !rolledBack &&
             mutationResponse is shalom_core.GraphQLData) {
-          for (final op in invalidateOperations) {
+          for (final op$ in invalidateOperations) {
             await _client.evictOperation(
-                name: op.operationName,
-                variables: op.variables,
+                name: op$.operationName,
+                variables: op$.variables,
             );
           }
         }
