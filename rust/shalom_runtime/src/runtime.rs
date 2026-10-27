@@ -538,6 +538,7 @@ impl ShalomRuntime {
                 }
                 let mut stream = link.execute(request.clone());
                 let mut transport_failed = false;
+                let mut terminal_error = false;
 
                 loop {
                     let response = tokio::select! {
@@ -567,7 +568,8 @@ impl ShalomRuntime {
                                         details: None,
                                     },
                                 );
-                                return;
+                                terminal_error = true;
+                                break;
                             }
                         }
                         GraphQLResponse::Error { errors, extensions } => {
@@ -575,7 +577,8 @@ impl ShalomRuntime {
                                 sub_id,
                                 SubscriptionError::GraphQL { errors, extensions },
                             );
-                            return;
+                            terminal_error = true;
+                            break;
                         }
                         GraphQLResponse::TransportError(err) => {
                             runtime.push_subscription_error(
@@ -598,18 +601,20 @@ impl ShalomRuntime {
 
                 let delay = if transport_failed {
                     retry_delay
+                } else if terminal_error {
+                    None
                 } else {
                     refetch_interval
                 };
 
-                // Exit if there is no timer to wait on and we shouldn't stay subscribed
-                // (e.g. transport failed without retry, or a non-query completed).
+                // Exit if there is no timer to wait on and this isn't a query (e.g. a
+                // completed subscription/mutation). Queries stay parked on `refetch`
+                // even after an error, so `evict_operation` can still re-issue them.
                 if delay.is_none()
-                    && (transport_failed
-                        || !matches!(
-                            op_ctx.op_type(),
-                            shalom_core::operation::types::OperationType::Query
-                        ))
+                    && !matches!(
+                        op_ctx.op_type(),
+                        shalom_core::operation::types::OperationType::Query
+                    )
                 {
                     return;
                 }
