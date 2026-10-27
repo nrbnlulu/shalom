@@ -1,3 +1,7 @@
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 
 // Re-export all generated types so importers only need this file.
@@ -11,196 +15,195 @@ import 'package:shalom/shalom.dart' show OptimisticMutationResponse, CacheProxy;
 import 'UpdateUserMutation.shalom.dart';
 
 abstract class $UpdateUserMutation {
-  static String operation$Name() => 'UpdateUserMutation';
+    static String operation$Name() => 'UpdateUserMutation';
 
-  final shalom_core.ShalomRuntimeClient _client;
-  const $UpdateUserMutation(this._client);
+    final shalom_core.ShalomRuntimeClient _client;
+    const $UpdateUserMutation(this._client);
 
-  /// Execute the mutation and return the normalised response.
-  /// The response is written into the shared entity cache, triggering reactive
-  /// updates on any query subscriptions watching the same entities.
-  ///
-  /// [invalidateOperations], if provided, invalidates active subscriptions of
-  /// the specified operations upon success, causing them to refetch fresh data from the network.
-  ///
-  /// Example:
-  /// ```dart
-  /// await addPost.execute(
-  ///   input: AddPostInput(title: 'Hello'),
-  ///   invalidateOperations: [
-  ///     OperationRef(
-  ///       operationName: $GetPostsQuery.operation$Name(),
-  ///     ),
-  ///     // Fine-grained with variables:
-  ///     OperationRef(
-  ///       operationName: $GetPostQuery.operation$Name(),
-  ///       variables: GetPostQueryVariables(id: '123').toShalomValue(),
-  ///     ),
-  ///   ],
-  /// );
-  /// ```
-  Future<shalom_core.GraphQLResponse<UpdateUserMutationData>> execute({
-    required String id,
-    required String name,
-
-    List<shalom_core.OperationRef>? invalidateOperations,
-  }) async {
-    final response = await _client.mutate<UpdateUserMutationData>(
-      name: operation$Name(),
-
-      variables: UpdateUserMutationVariables(
-        id: id,
-        name: name,
-      ).toShalomValue(),
-
-      decoder: UpdateUserMutationData.fromShalomValue,
-    );
-    if (invalidateOperations != null && response is shalom_core.GraphQLData) {
-      for (final op in invalidateOperations) {
-        await _client.evictOperation(
-          name: op.operationName,
-          variables: op.variables,
+    /// Execute the mutation and return the normalised response.
+    /// The response is written into the shared entity cache, triggering reactive
+    /// updates on any query subscriptions watching the same entities.
+    ///
+    /// [invalidateOperations], if provided, invalidates active subscriptions of
+    /// the specified operations upon success, causing them to refetch fresh data from the network.
+    ///
+    /// Example:
+    /// ```dart
+    /// await addPost.execute(
+    ///   input: AddPostInput(title: 'Hello'),
+    ///   invalidateOperations: [
+    ///     OperationRef(
+    ///       operationName: $GetPostsQuery.operation$Name(),
+    ///     ),
+    ///     // Fine-grained with variables:
+    ///     OperationRef(
+    ///       operationName: $GetPostQuery.operation$Name(),
+    ///       variables: GetPostQueryVariables(id: '123').toShalomValue(),
+    ///     ),
+    ///   ],
+    /// );
+    /// ```
+    Future<shalom_core.GraphQLResponse<UpdateUserMutationData>> execute({
+        required String id,
+        required String name,
+        
+        List<shalom_core.OperationRef>? invalidateOperations,
+    }) async {
+        final response = await _client.mutate<UpdateUserMutationData>(
+            name: operation$Name(),
+            
+            variables: UpdateUserMutationVariables(
+                id: id,
+                name: name,
+                ).toShalomValue(),
+            
+            decoder: UpdateUserMutationData.fromShalomValue,
         );
-      }
-    }
-    return response;
-  }
-
-  /// Execute the mutation and update the cache via [update].
-  ///
-  /// [update] receives a [CacheProxy] and the typed mutation response data.
-  /// It's only called if the mutation returns successful data.
-  /// Use [CacheProxy.readOperation] / [CacheProxy.writeOperation] to read the current
-  /// cached value of any query and write back a modified version — the typical
-  /// pattern for keeping lists in sync after an add / remove / reorder mutation.
-  ///
-  /// Example:
-  /// ```dart
-  /// await addTodo.executeWithCacheUpdate(
-  ///   input: AddTodoInput(title: 'Buy milk'),
-  ///   update: (cache, data) async {
-  ///     final current = await cache.readOperation(
-  ///       name: 'GetTodos',
-  ///       decoder: GetTodosData.fromShalomValue,
-  ///     );
-  ///     if (current != null) {
-  ///       await cache.writeOperation(
-  ///         data: GetTodosData(todos: [...current.todos, data.addTodo!]),
-  ///       );
-  ///     }
-  ///   },
-  /// );
-  /// ```
-  Future<shalom_core.GraphQLResponse<UpdateUserMutationData>>
-  executeWithCacheUpdate({
-    required String id,
-    required String name,
-    required FutureOr<void> Function(
-      CacheProxy cache,
-      UpdateUserMutationData data,
-    )
-    update,
-    List<shalom_core.OperationRef>? invalidateOperations,
-  }) async {
-    final vars = UpdateUserMutationVariables(id: id, name: name);
-
-    final response = await _client.mutate<UpdateUserMutationData>(
-      name: operation$Name(),
-
-      variables: vars.toShalomValue(),
-
-      decoder: UpdateUserMutationData.fromShalomValue,
-    );
-    if (response case shalom_core.GraphQLData(data: final data)) {
-      await update(CacheProxy(_client), data);
-      if (invalidateOperations != null) {
-        for (final op in invalidateOperations) {
-          await _client.evictOperation(
-            name: op.operationName,
-            variables: op.variables,
-          );
+        if (invalidateOperations != null && response is shalom_core.GraphQLData) {
+            for (final op$ in invalidateOperations) {
+                await _client.evictOperation(
+                    name: op$.operationName,
+                    variables: op$.variables,
+                );
+            }
         }
-      }
-    }
-    return response;
-  }
-
-  /// Execute the mutation with an optimistic cache write applied immediately,
-  /// before the network response arrives.
-  ///
-  /// [optimisticFactory] receives the mutation variables and must return a
-  /// predicted [UpdateUserMutationData]. This is written to the cache so that
-  /// query subscriptions watching the same entities update instantly.
-  ///
-  /// [rollbackWhen] is called with the real server response data. Return `true` to
-  /// automatically undo the optimistic write (e.g. when the server signals an
-  /// error via the data payload). Defaults to no auto-rollback. Only called if
-  /// the response is successful [GraphQLData].
-  ///
-  /// The returned [OptimisticMutationResponse] exposes:
-  /// - [OptimisticMutationResponse.response] — the typed server response
-  /// - [OptimisticMutationResponse.wasRolledBack] — whether auto-rollback fired
-  /// - [OptimisticMutationResponse.rollback()] — async rollback (idempotent)
-  Future<OptimisticMutationResponse<UpdateUserMutationData>> executeOptimistic(
-    UpdateUserMutationData Function(UpdateUserMutationVariables vars)
-    optimisticFactory, {
-    bool Function(UpdateUserMutationData response)? rollbackWhen,
-    required String id,
-    required String name,
-    List<shalom_core.OperationRef>? invalidateOperations,
-  }) async {
-    final vars = UpdateUserMutationVariables(id: id, name: name);
-    final writeId = await _client.writeOptimistic(
-      name: operation$Name(),
-      data: optimisticFactory(vars),
-    );
-
-    var rolledBack = false;
-    Future<void> doRollback() async {
-      if (rolledBack) return;
-      rolledBack = true;
-      await _client.rollbackOptimistic(writeId);
+        return response;
     }
 
-    final shalom_core.GraphQLResponse<UpdateUserMutationData> mutationResponse;
-    try {
-      final graphqlResponse = await _client.mutate<UpdateUserMutationData>(
-        name: operation$Name(),
-
-        variables: vars.toShalomValue(),
-
-        decoder: UpdateUserMutationData.fromShalomValue,
-      );
-      if (graphqlResponse case shalom_core.GraphQLData(
-        data: final responseData,
-      )) {
-        if (rollbackWhen?.call(responseData) ?? false) {
-          await doRollback();
-        }
-      }
-      mutationResponse = graphqlResponse;
-    } catch (e) {
-      await doRollback();
-      rethrow;
-    }
-    // Post-success invalidation runs outside the try/catch so its failures
-    // (e.g. invalid OperationRef variables) never roll back a mutation
-    // that already succeeded.
-    if (invalidateOperations != null &&
-        !rolledBack &&
-        mutationResponse is shalom_core.GraphQLData) {
-      for (final op in invalidateOperations) {
-        await _client.evictOperation(
-          name: op.operationName,
-          variables: op.variables,
+    /// Execute the mutation and update the cache via [update].
+    ///
+    /// [update] receives a [CacheProxy] and the typed mutation response data.
+    /// It's only called if the mutation returns successful data.
+    /// Use [CacheProxy.readOperation] / [CacheProxy.writeOperation] to read the current
+    /// cached value of any query and write back a modified version — the typical
+    /// pattern for keeping lists in sync after an add / remove / reorder mutation.
+    ///
+    /// Example:
+    /// ```dart
+    /// await addTodo.executeWithCacheUpdate(
+    ///   input: AddTodoInput(title: 'Buy milk'),
+    ///   update: (cache, data) async {
+    ///     final current = await cache.readOperation(
+    ///       name: 'GetTodos',
+    ///       decoder: GetTodosData.fromShalomValue,
+    ///     );
+    ///     if (current != null) {
+    ///       await cache.writeOperation(
+    ///         data: GetTodosData(todos: [...current.todos, data.addTodo!]),
+    ///       );
+    ///     }
+    ///   },
+    /// );
+    /// ```
+    Future<shalom_core.GraphQLResponse<UpdateUserMutationData>> executeWithCacheUpdate({
+        required String id,
+        required String name,
+        required FutureOr<void> Function(CacheProxy cache, UpdateUserMutationData data) update,
+        List<shalom_core.OperationRef>? invalidateOperations,
+    }) async {
+        
+        final vars = UpdateUserMutationVariables(
+            id: id,
+            name: name,
+            );
+        
+        final response = await _client.mutate<UpdateUserMutationData>(
+            name: operation$Name(),
+            
+            variables: vars.toShalomValue(),
+            
+            decoder: UpdateUserMutationData.fromShalomValue,
         );
-      }
+        if (response case shalom_core.GraphQLData(data: final data)) {
+          await update(CacheProxy(_client), data);
+          if (invalidateOperations != null) {
+            for (final op$ in invalidateOperations) {
+              await _client.evictOperation(
+                  name: op$.operationName,
+                  variables: op$.variables,
+              );
+            }
+          }
+        }
+        return response;
     }
-    return OptimisticMutationResponse(
-      response: mutationResponse,
-      wasRolledBack: rolledBack,
-      client: _client,
-      writeId: writeId,
-    );
-  }
+
+    /// Execute the mutation with an optimistic cache write applied immediately,
+    /// before the network response arrives.
+    ///
+    /// [optimisticFactory] receives the mutation variables and must return a
+    /// predicted [UpdateUserMutationData]. This is written to the cache so that
+    /// query subscriptions watching the same entities update instantly.
+    ///
+    /// [rollbackWhen] is called with the real server response data. Return `true` to
+    /// automatically undo the optimistic write (e.g. when the server signals an
+    /// error via the data payload). Defaults to no auto-rollback. Only called if
+    /// the response is successful [GraphQLData].
+    ///
+    /// The returned [OptimisticMutationResponse] exposes:
+    /// - [OptimisticMutationResponse.response] — the typed server response
+    /// - [OptimisticMutationResponse.wasRolledBack] — whether auto-rollback fired
+    /// - [OptimisticMutationResponse.rollback()] — async rollback (idempotent)
+    Future<OptimisticMutationResponse<UpdateUserMutationData>> executeOptimistic(
+        UpdateUserMutationData Function(UpdateUserMutationVariables vars) optimisticFactory, {
+        bool Function(UpdateUserMutationData response)? rollbackWhen,
+        required String id,
+        required String name,
+        List<shalom_core.OperationRef>? invalidateOperations,
+    }) async {
+        
+        final vars = UpdateUserMutationVariables(
+            id: id,
+            name: name,
+            );
+        final writeId = await _client.writeOptimistic(
+            name: operation$Name(),
+            data: optimisticFactory(vars),
+        );
+        
+        var rolledBack = false;
+        Future<void> doRollback() async {
+            if (rolledBack) return;
+            rolledBack = true;
+            await _client.rollbackOptimistic(writeId);
+        }
+        final shalom_core.GraphQLResponse<UpdateUserMutationData> mutationResponse;
+        try {
+            final graphqlResponse = await _client.mutate<UpdateUserMutationData>(
+                name: operation$Name(),
+                
+                variables: vars.toShalomValue(),
+                
+                decoder: UpdateUserMutationData.fromShalomValue,
+            );
+            if (graphqlResponse case shalom_core.GraphQLData(data: final responseData)) {
+              if (rollbackWhen?.call(responseData) ?? false) {
+                await doRollback();
+              }
+            }
+            mutationResponse = graphqlResponse;
+        } catch (e) {
+            await doRollback();
+            rethrow;
+        }
+        // Post-success invalidation runs outside the try/catch so its failures
+        // (e.g. invalid OperationRef variables) never roll back a mutation
+        // that already succeeded.
+        if (invalidateOperations != null &&
+            !rolledBack &&
+            mutationResponse is shalom_core.GraphQLData) {
+          for (final op$ in invalidateOperations) {
+            await _client.evictOperation(
+                name: op$.operationName,
+                variables: op$.variables,
+            );
+          }
+        }
+        return OptimisticMutationResponse(
+            response: mutationResponse,
+            wasRolledBack: rolledBack,
+            client: _client,
+            writeId: writeId,
+        );
+    }
 }

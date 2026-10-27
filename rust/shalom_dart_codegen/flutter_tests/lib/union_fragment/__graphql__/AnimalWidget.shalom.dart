@@ -1,3 +1,79 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: AnimalWidget
@@ -6,9 +82,16 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
+
+
+
+
 import 'dart:async' show Stream;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart';
+
+
+
 
 // ------------ fragment widget API -------------
 
@@ -24,14 +107,10 @@ extension type AnimalWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
+  
   shalom_core.ObservedRefInput get toInput => _inner;
   String get anchor => _inner.anchor;
-  shalom_core.JsonObject toJson() => {
-    '__shalom_observed_ref': {
-      'observable_id': _inner.observableId,
-      'anchor': _inner.anchor,
-    },
-  };
+  shalom_core.JsonObject toJson() => {'__shalom_observed_ref': {'observable_id': _inner.observableId, 'anchor': _inner.anchor}};
   shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
     '__shalom_observed_ref': shalom_core.shalomJsonObject({
       'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
@@ -49,9 +128,7 @@ extension type AnimalWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
-  Stream<shalom_core.GraphQLResponse<AnimalWidgetData>> observe(
-    shalom_core.ShalomRuntimeClient client,
-  ) {
+  Stream<shalom_core.GraphQLResponse<AnimalWidgetData>> observe(shalom_core.ShalomRuntimeClient client) {
     return client.subscribeToFragment<AnimalWidgetData>(
       ref: _inner,
       decoder: AnimalWidgetData.fromShalomValue,
@@ -61,25 +138,28 @@ extension type AnimalWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
 
 abstract class AnimalWidget {
   String get id;
+  
 
   shalom_core.JsonObject toJson();
   shalom_core.ShalomJsonValue toShalomValue();
 }
 
-sealed class AnimalWidgetData
-    implements AnimalWidget, shalom_core.StreamCompat {
+
+
+sealed class AnimalWidgetData implements AnimalWidget, shalom_core.StreamCompat {
   const AnimalWidgetData();
 
   String get id;
+  
 
   static AnimalWidgetData fromCache(shalom_core.JsonObject data) {
     final typename = data['__typename'] as String?;
-    switch (typename) {
+    switch(typename) {
       case 'Cat':
         return AnimalWidgetData$Cat.fromJson(data);
       case 'Dog':
         return AnimalWidgetData$Dog.fromJson(data);
-
+      
       default:
         return const AnimalWidgetData$Unknown();
     }
@@ -87,12 +167,12 @@ sealed class AnimalWidgetData
 
   static AnimalWidgetData fromShalomValue(shalom_core.ShalomJsonValue data) {
     final typename = data.field('__typename')?.stringValue;
-    switch (typename) {
+    switch(typename) {
       case 'Cat':
         return AnimalWidgetData$Cat.fromShalomValue(data);
       case 'Dog':
         return AnimalWidgetData$Dog.fromShalomValue(data);
-
+      
       default:
         return const AnimalWidgetData$Unknown();
     }
@@ -100,134 +180,409 @@ sealed class AnimalWidgetData
 }
 
 final class AnimalWidgetData$Cat extends AnimalWidgetData {
-  static String G__typename = "Cat";
+  
+    static String G__typename = "Cat";
+    
+    
+    /// class members
+    
+    final 
+        String
+     color;
+        
+    final 
+        String
+     id;
+        
+    
 
-  /// class members
+    // Getter for typename (public accessor for static __typename field)
+    String get $__typename => G__typename;
 
-  final String color;
+    // keywordargs constructor
+    const AnimalWidgetData$Cat(
+        {
+                required this.color,
+        
+        
+                required this.id,
+        }
+        
+    );
 
-  final String id;
+    @override
+    bool operator ==(Object other) {
+        return identical(this, other) ||
+            
+            (other is AnimalWidgetData$Cat &&
+                    
+    
+        
+            color == other.color
+        
+    
+ &&
+                    
+    
+        
+            id == other.id
+        
+    
+ 
+                    );
+            
+    }
 
-  // Getter for typename (public accessor for static __typename field)
-  String get $__typename => G__typename;
+    @override
+    int get hashCode =>
+    
+        Object.hashAll([
+        
+                color,
+        
+                id,
+        
+        AnimalWidgetData$Cat.G__typename
+        ]);
+    
 
-  // keywordargs constructor
-  const AnimalWidgetData$Cat({required this.color, required this.id});
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is AnimalWidgetData$Cat &&
-            color == other.color &&
-            id == other.id);
-  }
-
-  @override
-  int get hashCode =>
-      Object.hashAll([color, id, AnimalWidgetData$Cat.G__typename]);
-
-  shalom_core.JsonObject toJson() {
+    shalom_core.JsonObject toJson() {
     return {
-      "__typename": AnimalWidgetData$Cat.G__typename,
+    
+        
+        
+        "__typename": AnimalWidgetData$Cat.G__typename,
+        
+    
+        
+        
+        'color':
+            
+                
+    
+        
+            this.color
+        
+    
 
-      'color': this.color,
+            
+        ,
+        
+    
+        
+        
+        'id':
+            
+                
+    
+        
+            this.id
+        
+    
 
-      'id': this.id,
+            
+        ,
+        
+    
     };
-  }
+    }
 
-  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    "__typename": shalom_core.shalomJsonValue(AnimalWidgetData$Cat.G__typename),
+    shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    
+        
+        "__typename": shalom_core.shalomJsonValue(AnimalWidgetData$Cat.G__typename),
+        
+    
+        
+        'color': 
+    
+        
+            shalom_core.shalomJsonValue(this.color!)
+        
+    
+,
+        
+    
+        
+        'id': 
+    
+        
+            shalom_core.shalomJsonValue(this.id!)
+        
+    
+,
+        
+    
+    });
 
-    'color': shalom_core.shalomJsonValue(this.color!),
+    static AnimalWidgetData$Cat fromJson(shalom_core.JsonObject data) {
+        final 
+        String
+     color$value = 
+    
+        
+            
+                data['color'] as String
+            
+        
+    
+;
+        final 
+        String
+     id$value = 
+    
+        
+            
+                data['id'] as String
+            
+        
+    
+;
+        return AnimalWidgetData$Cat(
+            
+            
+                    color: color$value,
+                
+            
+                    id: id$value,
+                
+            );
+    }
 
-    'id': shalom_core.shalomJsonValue(this.id!),
-  });
+    static AnimalWidgetData$Cat fromShalomValue(shalom_core.ShalomJsonValue data) {
+        final shalom_core.ShalomJsonValue? color$raw = data.field('color');
+            final 
+        String
+     color$value = 
+    
+        
+            color$raw!.stringValue
+        
+    
+;
+        final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+            final 
+        String
+     id$value = 
+    
+        
+            id$raw!.stringValue
+        
+    
+;
+        return AnimalWidgetData$Cat(
+            color: color$value,
+            id: id$value,
+            );
+    }
 
-  static AnimalWidgetData$Cat fromJson(shalom_core.JsonObject data) {
-    final String color$value = data['color'] as String;
-    final String id$value = data['id'] as String;
-    return AnimalWidgetData$Cat(color: color$value, id: id$value);
-  }
-
-  static AnimalWidgetData$Cat fromShalomValue(
-    shalom_core.ShalomJsonValue data,
-  ) {
-    final shalom_core.ShalomJsonValue? color$raw = data.field('color');
-    final String color$value = color$raw!.stringValue;
-    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
-    final String id$value = id$raw!.stringValue;
-    return AnimalWidgetData$Cat(color: color$value, id: id$value);
-  }
 }
-
 final class AnimalWidgetData$Dog extends AnimalWidgetData {
-  static String G__typename = "Dog";
+  
+    static String G__typename = "Dog";
+    
+    
+    /// class members
+    
+    final 
+        String
+     breed;
+        
+    final 
+        String
+     id;
+        
+    
 
-  /// class members
+    // Getter for typename (public accessor for static __typename field)
+    String get $__typename => G__typename;
 
-  final String breed;
+    // keywordargs constructor
+    const AnimalWidgetData$Dog(
+        {
+                required this.breed,
+        
+        
+                required this.id,
+        }
+        
+    );
 
-  final String id;
+    @override
+    bool operator ==(Object other) {
+        return identical(this, other) ||
+            
+            (other is AnimalWidgetData$Dog &&
+                    
+    
+        
+            breed == other.breed
+        
+    
+ &&
+                    
+    
+        
+            id == other.id
+        
+    
+ 
+                    );
+            
+    }
 
-  // Getter for typename (public accessor for static __typename field)
-  String get $__typename => G__typename;
+    @override
+    int get hashCode =>
+    
+        Object.hashAll([
+        
+                breed,
+        
+                id,
+        
+        AnimalWidgetData$Dog.G__typename
+        ]);
+    
 
-  // keywordargs constructor
-  const AnimalWidgetData$Dog({required this.breed, required this.id});
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other is AnimalWidgetData$Dog &&
-            breed == other.breed &&
-            id == other.id);
-  }
-
-  @override
-  int get hashCode =>
-      Object.hashAll([breed, id, AnimalWidgetData$Dog.G__typename]);
-
-  shalom_core.JsonObject toJson() {
+    shalom_core.JsonObject toJson() {
     return {
-      "__typename": AnimalWidgetData$Dog.G__typename,
+    
+        
+        
+        "__typename": AnimalWidgetData$Dog.G__typename,
+        
+    
+        
+        
+        'breed':
+            
+                
+    
+        
+            this.breed
+        
+    
 
-      'breed': this.breed,
+            
+        ,
+        
+    
+        
+        
+        'id':
+            
+                
+    
+        
+            this.id
+        
+    
 
-      'id': this.id,
+            
+        ,
+        
+    
     };
-  }
+    }
 
-  shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    "__typename": shalom_core.shalomJsonValue(AnimalWidgetData$Dog.G__typename),
+    shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
+    
+        
+        "__typename": shalom_core.shalomJsonValue(AnimalWidgetData$Dog.G__typename),
+        
+    
+        
+        'breed': 
+    
+        
+            shalom_core.shalomJsonValue(this.breed!)
+        
+    
+,
+        
+    
+        
+        'id': 
+    
+        
+            shalom_core.shalomJsonValue(this.id!)
+        
+    
+,
+        
+    
+    });
 
-    'breed': shalom_core.shalomJsonValue(this.breed!),
+    static AnimalWidgetData$Dog fromJson(shalom_core.JsonObject data) {
+        final 
+        String
+     breed$value = 
+    
+        
+            
+                data['breed'] as String
+            
+        
+    
+;
+        final 
+        String
+     id$value = 
+    
+        
+            
+                data['id'] as String
+            
+        
+    
+;
+        return AnimalWidgetData$Dog(
+            
+            
+                    breed: breed$value,
+                
+            
+                    id: id$value,
+                
+            );
+    }
 
-    'id': shalom_core.shalomJsonValue(this.id!),
-  });
+    static AnimalWidgetData$Dog fromShalomValue(shalom_core.ShalomJsonValue data) {
+        final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
+            final 
+        String
+     breed$value = 
+    
+        
+            breed$raw!.stringValue
+        
+    
+;
+        final shalom_core.ShalomJsonValue? id$raw = data.field('id');
+            final 
+        String
+     id$value = 
+    
+        
+            id$raw!.stringValue
+        
+    
+;
+        return AnimalWidgetData$Dog(
+            breed: breed$value,
+            id: id$value,
+            );
+    }
 
-  static AnimalWidgetData$Dog fromJson(shalom_core.JsonObject data) {
-    final String breed$value = data['breed'] as String;
-    final String id$value = data['id'] as String;
-    return AnimalWidgetData$Dog(breed: breed$value, id: id$value);
-  }
-
-  static AnimalWidgetData$Dog fromShalomValue(
-    shalom_core.ShalomJsonValue data,
-  ) {
-    final shalom_core.ShalomJsonValue? breed$raw = data.field('breed');
-    final String breed$value = breed$raw!.stringValue;
-    final shalom_core.ShalomJsonValue? id$raw = data.field('id');
-    final String id$value = id$raw!.stringValue;
-    return AnimalWidgetData$Dog(breed: breed$value, id: id$value);
-  }
 }
+
 
 final class AnimalWidgetData$Unknown extends AnimalWidgetData {
   const AnimalWidgetData$Unknown();
 
   @override
-  String get id => throw UnimplementedError();
+    String get id => throw UnimplementedError();
+  
 
   @override
   shalom_core.JsonObject toJson() => throw UnimplementedError();
@@ -235,6 +590,19 @@ final class AnimalWidgetData$Unknown extends AnimalWidgetData {
   @override
   shalom_core.ShalomJsonValue toShalomValue() => throw UnimplementedError();
 }
+
+
+
+
+
+
+
+
+
+  
+
+
+
 
 abstract class $AnimalWidget extends StatelessWidget {
   final AnimalWidgetRef ref;
@@ -280,5 +648,6 @@ class AnimalWidgetScope extends StatelessWidget {
     );
   }
 }
+
 
 // ------------ END fragment widget API -------------

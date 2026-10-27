@@ -1,3 +1,79 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // ignore_for_file: constant_identifier_names, non_constant_identifier_names, unused_import, camel_case_types, unnecessary_this, unnecessary_non_null_assertion, depend_on_referenced_packages, empty_statements, annotate_overrides, no_leading_underscores_for_local_identifiers, unnecessary_cast, camel_case_extensions
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // Fragment: PetWidget
@@ -6,9 +82,16 @@ import "../../graphql/__graphql__/schema.shalom.dart";
 import 'package:shalom/shalom.dart' as shalom_core;
 import 'package:collection/collection.dart';
 
+
+
+
+
 import 'dart:async' show Stream;
 import 'package:flutter/widgets.dart';
 import 'package:shalom_flutter/shalom_flutter.dart';
+
+
+
 
 // ------------ fragment widget API -------------
 
@@ -24,17 +107,13 @@ extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
-  static PetWidgetRef fromId(String id) =>
-      fromEntityKey(PetWidgetData.entityKey(id));
+  
+  static PetWidgetRef fromId(String id) => fromEntityKey(PetWidgetData.entityKey(id));
 
+  
   shalom_core.ObservedRefInput get toInput => _inner;
   String get anchor => _inner.anchor;
-  shalom_core.JsonObject toJson() => {
-    '__shalom_observed_ref': {
-      'observable_id': _inner.observableId,
-      'anchor': _inner.anchor,
-    },
-  };
+  shalom_core.JsonObject toJson() => {'__shalom_observed_ref': {'observable_id': _inner.observableId, 'anchor': _inner.anchor}};
   shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
     '__shalom_observed_ref': shalom_core.shalomJsonObject({
       'observable_id': shalom_core.shalomJsonValue(_inner.observableId),
@@ -52,9 +131,7 @@ extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
-  Stream<shalom_core.GraphQLResponse<PetWidgetData>> observe(
-    shalom_core.ShalomRuntimeClient client,
-  ) {
+  Stream<shalom_core.GraphQLResponse<PetWidgetData>> observe(shalom_core.ShalomRuntimeClient client) {
     return client.subscribeToFragment<PetWidgetData>(
       ref: _inner,
       decoder: PetWidgetData.fromShalomValue,
@@ -65,24 +142,59 @@ extension type PetWidgetRef.fromInput(shalom_core.ObservedRefInput _inner) {
 abstract class PetWidget {
   String get id;
   String get name;
+  
 
   shalom_core.JsonObject toJson();
   shalom_core.ShalomJsonValue toShalomValue();
 }
 
+
+
+
+
+
+
+
+
+
+
+
 final class PetWidgetData implements PetWidget, shalom_core.FragmentInterface {
   final String id;
   final String name;
+  
 
-  const PetWidgetData({required this.id, required this.name});
+  const PetWidgetData({
+    required this.id,
+    required this.name,
+    
+  });
 
   @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is PetWidgetData && id == other.id && name == other.name);
+  bool operator ==(Object other) => identical(this, other) || (other is PetWidgetData
+    && 
+    
+        
+            id == other.id
+        
+    
+
+    && 
+    
+        
+            name == other.name
+        
+    
+
+    
+  );
 
   @override
-  int get hashCode => Object.hashAll([id, name]);
+  int get hashCode => Object.hashAll([
+    id,
+    name,
+    
+  ]);
 
   @override
   String fragment$Name() => 'PetWidget';
@@ -98,30 +210,101 @@ final class PetWidgetData implements PetWidget, shalom_core.FragmentInterface {
   static String entityKey(String id) => 'Pet:$id';
 
   static PetWidgetData fromCache(shalom_core.JsonObject data) {
-    final String id$value = data['id'] as String;
-    final String name$value = data['name'] as String;
-    return PetWidgetData(id: id$value, name: name$value);
+    final String id$value = 
+    
+        
+            
+                data['id'] as String
+            
+        
+    
+;
+    final String name$value = 
+    
+        
+            
+                data['name'] as String
+            
+        
+    
+;
+    return PetWidgetData(
+      
+          id: id$value,
+        
+      
+          name: name$value,
+        
+      );
   }
 
   static PetWidgetData fromShalomValue(shalom_core.ShalomJsonValue data) {
     final shalom_core.ShalomJsonValue? id$raw = data.field('id');
-    final String id$value = id$raw!.stringValue;
+      final String id$value = 
+    
+        
+            id$raw!.stringValue
+        
+    
+;
     final shalom_core.ShalomJsonValue? name$raw = data.field('name');
-    final String name$value = name$raw!.stringValue;
-    return PetWidgetData(id: id$value, name: name$value);
+      final String name$value = 
+    
+        
+            name$raw!.stringValue
+        
+    
+;
+    return PetWidgetData(
+      id: id$value,
+      name: name$value,
+      );
   }
 
   shalom_core.JsonObject toJson() {
-    return {'id': this.id, 'name': this.name};
+    return {
+      
+        'id': 
+    
+        
+            this.id
+        
+    
+,
+      
+        'name': 
+    
+        
+            this.name
+        
+    
+,
+      
+    };
   }
 
   @override
   shalom_core.ShalomJsonValue toShalomValue() => shalom_core.shalomJsonObject({
-    'id': shalom_core.shalomJsonValue(this.id!),
-
-    'name': shalom_core.shalomJsonValue(this.name!),
+    
+      'id': 
+    
+        
+            shalom_core.shalomJsonValue(this.id!)
+        
+    
+,
+    
+      'name': 
+    
+        
+            shalom_core.shalomJsonValue(this.name!)
+        
+    
+,
+    
   });
 }
+
 
 abstract class $PetWidget extends StatelessWidget {
   final PetWidgetRef ref;
@@ -167,5 +350,6 @@ class PetWidgetScope extends StatelessWidget {
     );
   }
 }
+
 
 // ------------ END fragment widget API -------------

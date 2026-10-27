@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:shalom/shalom.dart';
 import 'package:shalom_flutter/shalom_flutter.dart' show ShalomInheritedWidget;
 
+
 /// The GraphQL schema SDL inlined at code-generation time.
 ///
 /// Use this to create the [ShalomRuntimeClient] — no async asset loading needed:
@@ -85,35 +86,28 @@ type Cat implements Animal {
 
 /// Register all @Query, @Fragment, @Mutation, and @Subscription operations with the Shalom client.
 void registerShalomDefinitions(ShalomRuntimeClient client) {
-  client.registerFragment(
-    document: r'''
+  client.registerFragment(document: r'''
 fragment UserIdentity on User {
   id
   name
 }
-''',
-  );
-  client.registerFragment(
-    document: r'''
+''');
+  client.registerFragment(document: r'''
 fragment UserCard on User {
   ...UserIdentity
   email
   id
 }
-''',
-  );
+''');
 
-  client.registerFragment(
-    document: r'''
+  client.registerFragment(document: r'''
 fragment DogFrag on Dog @observe {
   name
   breed
   id
 }
-''',
-  );
-  client.registerFragment(
-    document: r'''
+''');
+  client.registerFragment(document: r'''
 fragment ZooWidget on Zoo @observe {
   id
   name
@@ -122,10 +116,8 @@ fragment ZooWidget on Zoo @observe {
     name
   }
 }
-''',
-  );
-  client.registerFragment(
-    document: r'''
+''');
+  client.registerFragment(document: r'''
 fragment AnimalWithOwnerWidget on Animal @observe {
   id
   ... on Dog {
@@ -142,10 +134,8 @@ fragment AnimalWithOwnerWidget on Animal @observe {
   }
   __typename
 }
-''',
-  );
-  client.registerFragment(
-    document: r'''
+''');
+  client.registerFragment(document: r'''
 fragment ZooAnimalsWidget on Zoo @observe {
   id
   name
@@ -162,18 +152,14 @@ fragment ZooAnimalsWidget on Zoo @observe {
     __typename
   }
 }
-''',
-  );
-  client.registerFragment(
-    document: r'''
+''');
+  client.registerFragment(document: r'''
 fragment ToyFrag on Toy @observe {
   id
   label
 }
-''',
-  );
-  client.registerFragment(
-    document: r'''
+''');
+  client.registerFragment(document: r'''
 fragment HasFavoriteToyFrag on HasFavoriteToy @observe {
   favoriteToy {
     ...ToyFrag
@@ -181,38 +167,30 @@ fragment HasFavoriteToyFrag on HasFavoriteToy @observe {
   }
   __typename
 }
-''',
-  );
-  client.registerFragment(
-    document: r'''
+''');
+  client.registerFragment(document: r'''
 fragment CommonAnimalFrag on Animal @observe {
   __typename
   id
 }
-''',
-  );
-  client.registerFragment(
-    document: r'''
+''');
+  client.registerFragment(document: r'''
 fragment DogFavoriteFrag on Dog @observe {
   ...CommonAnimalFrag
   breed
   ...HasFavoriteToyFrag
   id
 }
-''',
-  );
-  client.registerFragment(
-    document: r'''
+''');
+  client.registerFragment(document: r'''
 fragment DogWithFavoriteToyFrag on Dog @observe {
   ...CommonAnimalFrag
   breed
   ...HasFavoriteToyFrag
   id
 }
-''',
-  );
-  client.registerFragment(
-    document: r'''
+''');
+  client.registerFragment(document: r'''
 fragment AnimalWidget on Animal @observe {
   id
   ... on Dog {
@@ -225,48 +203,38 @@ fragment AnimalWidget on Animal @observe {
   }
   __typename
 }
-''',
-  );
-  client.registerFragment(
-    document: r'''
+''');
+  client.registerFragment(document: r'''
 fragment PetWidget on Pet @observe {
   id
   name
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 query UserCardQuery($id: ID!) @observe {
   user(id: $id) {
     ...UserCard
     id
   }
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 query ZooQuery($id: ID!) @observe {
   zoo(id: $id) {
     ...ZooWidget
     id
   }
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 query UserWidget($id: ID!) @observe {
   user(id: $id) {
     id
     name
   }
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 query AnimalWithOwnerQuery($id: ID!) @observe {
   animal(id: $id) {
     ...AnimalWithOwnerWidget
@@ -274,20 +242,16 @@ query AnimalWithOwnerQuery($id: ID!) @observe {
     id
   }
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 query ZooAnimalsQuery($id: ID!) @observe {
   zoo(id: $id) {
     ...ZooAnimalsWidget
     id
   }
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 query ZooAnimalsContractQuery @observe {
   animals {
     __typename
@@ -297,10 +261,8 @@ query ZooAnimalsContractQuery @observe {
     id
   }
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 query UnwrapQuery($id: ID!) @observe {
   pet(id: $id) {
     ...PetWidget
@@ -311,10 +273,8 @@ query UnwrapQuery($id: ID!) @observe {
     id
   }
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 query AnimalQuery($id: ID!) @observe {
   animal(id: $id) {
     ...AnimalWidget
@@ -322,30 +282,24 @@ query AnimalQuery($id: ID!) @observe {
     id
   }
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 query PetQuery($id: ID!) @observe {
   pet(id: $id) {
     ...PetWidget
     id
   }
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 mutation UpdateUserMutation($id: ID!, $name: String!) {
   updateUser(id: $id, name: $name) {
     id
     name
   }
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 subscription ShelterSubscription @observe {
   shelterAnimals {
     ...DogFrag
@@ -353,10 +307,8 @@ subscription ShelterSubscription @observe {
     id
   }
 }
-''',
-  );
-  client.registerOperation(
-    document: r'''
+''');
+  client.registerOperation(document: r'''
 subscription StreetSubscription @observe {
   streetAnimals {
     ...DogFrag
@@ -364,8 +316,7 @@ subscription StreetSubscription @observe {
     id
   }
 }
-''',
-  );
+''');
 }
 
 /// Generated [ShalomProvider] for this app.
