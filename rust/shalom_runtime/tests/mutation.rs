@@ -417,36 +417,3 @@ async fn evict_operation_unsubscribes_matching_subscriptions() {
     assert!(next.is_none(), "stream must close on evict_operation");
     assert!(!runtime.subscription_exists(&sub_id));
 }
-
-#[tokio::test]
-async fn invalidate_operation_closes_matching_subscription_stream() {
-    let runtime = make_runtime();
-    let query_op = runtime.operation_by_name("GetUser").unwrap();
-    let query_vars = vars(&[("id", json!("1"))]);
-
-    runtime
-        .normalize(
-            &query_op,
-            json!({ "user": { "id": "1", "name": "Alice" } }),
-            Some(&query_vars),
-        )
-        .expect("seed");
-
-    let sub_id = runtime.create_operation_subscription(
-        query_op.clone(),
-        Some(query_vars.clone()),
-        ExecutionPolicy::CacheFirst,
-    );
-
-    let mut stream = runtime.subscription_stream(&sub_id).expect("stream");
-    let initial = stream.next().await.expect("initial value").expect("ok");
-    assert_eq!(initial.data["user"]["name"], json!("Alice"));
-
-    // Invalidate the operation
-    runtime.invalidate_operation("GetUser", Some(&query_vars));
-
-    // The subscription stream completes (EOF) so that Dart's onDone triggers resubscribe()
-    let next = stream.next().await;
-    assert!(next.is_none(), "stream must close on invalidate_operation");
-    assert!(!runtime.subscription_exists(&sub_id));
-}

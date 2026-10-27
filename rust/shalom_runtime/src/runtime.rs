@@ -1207,15 +1207,6 @@ impl ShalomRuntime {
         Ok(true)
     }
 
-    /// Invalidate operation `op_name` (optionally filtered by `variables`) by
-    /// evicting its cache entry and closing matching active subscription streams.
-    ///
-    /// This signals `onDone` to the Dart/Flutter subscriber, triggering it to resubscribe
-    /// and perform a fresh fetch from the network.
-    pub fn invalidate_operation(&self, op_name: &str, variables: Option<&Map<String, Value>>) {
-        let _ = self.evict_operation(op_name, variables);
-    }
-
     /// Look up a pre-registered (or remembered) operation by name.
     pub fn operation_by_name(&self, name: &str) -> anyhow::Result<SharedOpCtx> {
         self.engine.global_ctx().get_operation(name).ok_or_else(|| {

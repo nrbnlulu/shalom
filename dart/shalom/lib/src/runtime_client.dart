@@ -653,21 +653,6 @@ class ShalomRuntimeClient {
     );
   }
 
-  /// Invalidate active subscriptions for [name].
-  ///
-  /// Unsubscribes matching subscriptions, causing their stream to complete (`onDone`),
-  /// which triggers Dart/Flutter's `ShalomObservingState` to resubscribe and refetch.
-  Future<void> invalidateOperation({
-    required String name,
-    ShalomJsonValue? variables,
-  }) {
-    return rs_runtime.invalidateOperation(
-      handle: _handle,
-      name: name,
-      variables: variables,
-    );
-  }
-
   /// Read an entity from the cache through [fragment_name]'s selection set.
   ///
   /// Returns `null` when the entity is absent or has missing refs.

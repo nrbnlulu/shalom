@@ -10,7 +10,7 @@ import 'AnimalWithOwnerQuery.shalom.dart';
 import 'AnimalWithOwnerWidget.shalom.dart';
 
 abstract class $AnimalWithOwnerQuery extends StatefulWidget {
-  String operation$Name() => 'AnimalWithOwnerQuery';
+  static String operation$Name() => 'AnimalWithOwnerQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
   final shalom_core.RetryDelay retryDelay;

@@ -283,20 +283,6 @@ Future<bool> evictOperation({
   variables: variables,
 );
 
-/// Invalidate active subscriptions for [name] (optionally filtered by [variables]).
-///
-/// Unsubscribes matching subscriptions, causing their stream to complete (`onDone`),
-/// which triggers Dart/Flutter's `ShalomObservingState` to resubscribe and refetch.
-Future<void> invalidateOperation({
-  required RuntimeHandle handle,
-  required String name,
-  ShalomJsonValue? variables,
-}) => RustLib.instance.api.crateApiRuntimeInvalidateOperation(
-  handle: handle,
-  name: name,
-  variables: variables,
-);
-
 /// Read an entity from the cache through a fragment's selection set.
 ///
 /// Returns `null` when the entity is absent or has missing refs.

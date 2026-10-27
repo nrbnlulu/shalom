@@ -1,3 +1,7 @@
+## 0.1.8
+
+- Remove direct `ShalomRuntimeClient.invalidateOperation` API in favor of `evictOperation`. Mutation widgets continue to accept `invalidateOperations` to evict cached operation root data and trigger observers to resubscribe.
+
 ## 0.1.7
 
 - Add `ShalomRuntimeClient.invalidateOperation` to evict an operation's cached root data and close its active subscriptions, so observers resubscribe and refetch from the network. Mutation widgets accept an `invalidateOperations` parameter to trigger this after a mutation.

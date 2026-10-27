@@ -64,7 +64,7 @@ abstract class ${{ operation_name }} {
         );
         if (invalidateOperations != null && response is shalom_core.GraphQLData) {
             for (final op in invalidateOperations) {
-                await _client.invalidateOperation(
+                await _client.evictOperation(
                     name: op.operationName,
                     variables: op.variables,
                 );
@@ -123,7 +123,7 @@ abstract class ${{ operation_name }} {
           await update(CacheProxy(_client), data);
           if (invalidateOperations != null) {
             for (final op in invalidateOperations) {
-              await _client.invalidateOperation(
+              await _client.evictOperation(
                   name: op.operationName,
                   variables: op.variables,
               );
@@ -205,7 +205,7 @@ abstract class ${{ operation_name }} {
             !rolledBack &&
             mutationResponse is shalom_core.GraphQLData) {
           for (final op in invalidateOperations) {
-            await _client.invalidateOperation(
+            await _client.evictOperation(
                 name: op.operationName,
                 variables: op.variables,
             );
