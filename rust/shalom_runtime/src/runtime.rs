@@ -474,6 +474,9 @@ impl ShalomRuntime {
             manager.clear()
         };
         self.subscription_tracker.lock().clear();
+        for state in &removed {
+            state.cancel.notify_one();
+        }
         drop(removed);
     }
 
