@@ -1,6 +1,8 @@
 ## 0.1.8
 
-- Remove direct `ShalomRuntimeClient.invalidateOperation` API in favor of `evictOperation`. Mutation widgets continue to accept `invalidateOperations` to evict cached operation root data and trigger observers to resubscribe.
+- Keep active query subscriptions alive even when no polling interval is configured, allowing them to await refetch signals instead of exiting after the initial network response.
+- Cache eviction (via `evictOperation` and mutation widget `invalidateOperations`) now automatically refetches fresh data from the network over existing subscription streams instead of terminating them. Both declarative Flutter widgets and imperative observables (`observe()`) receive the latest data seamlessly without needing manual resubscription.
+- Remove redundant direct `ShalomRuntimeClient.invalidateOperation` API in favor of `evictOperation`.
 
 ## 0.1.7
 

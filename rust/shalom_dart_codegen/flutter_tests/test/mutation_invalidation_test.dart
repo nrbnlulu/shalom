@@ -23,14 +23,22 @@ void main() {
       client = ShalomRuntimeClient.create(
         schemaSdl: loadSchemaSdl(),
         link: MockGraphQLLink([
+          // 1. Initial query fetch
           GraphQLData(
             data: {
               'user': {'id': '1', 'name': 'Alice'},
             },
           ),
+          // 2. Mutation execution
           GraphQLData(
             data: {
               'updateUser': {'id': '1', 'name': 'Alice Updated'},
+            },
+          ),
+          // 3. Re-fetched query after cache invalidation
+          GraphQLData(
+            data: {
+              'user': {'id': '1', 'name': 'Alice Refetched'},
             },
           ),
         ]),
@@ -43,24 +51,30 @@ void main() {
     });
 
     test(
-      'completes matching active subscription stream (fires onDone)',
+      'refetches fresh data on active subscription stream without closing',
       () async {
         final stream = UserWidgetObservable(
           variables: const UserWidgetVariables(id: '1'),
         ).observe(client);
 
-        final streamDone = Completer<void>();
+        final received = <String>[];
+        var streamCompleted = false;
         final sub = stream.listen(
-          (_) {},
+          (response) {
+            if (response case GraphQLData(data: final data)) {
+              received.add(data.user!.name);
+            }
+          },
           onDone: () {
-            streamDone.complete();
+            streamCompleted = true;
           },
         );
 
         // Wait for the initial response to arrive so subscription is active
         await Future<void>.delayed(const Duration(milliseconds: 200));
 
-        expect(streamDone.isCompleted, isFalse);
+        expect(received, ['Alice']);
+        expect(streamCompleted, isFalse);
 
         // Execute mutation with invalidateOperations targeting UserWidget
         final mutation = UpdateUserMutation(client);
@@ -77,11 +91,13 @@ void main() {
 
         expect(response, isA<GraphQLData>());
 
-        // Subscription stream must complete (fire onDone)
-        await expectLater(
-          streamDone.future.timeout(const Duration(seconds: 2)),
-          completes,
-        );
+        // Allow refetched data to arrive on the active subscription
+        await Future<void>.delayed(const Duration(milliseconds: 200));
+
+        // Subscription stream must stay open and receive both the normalized mutation
+        // update and the fresh refetched data from the network
+        expect(streamCompleted, isFalse);
+        expect(received, ['Alice', 'Alice Updated', 'Alice Refetched']);
 
         await sub.cancel();
       },
@@ -122,49 +138,48 @@ void main() {
       await client.dispose();
     });
 
-    testWidgets(
-      'causes mounted widget to resubscribe and refetch updated data',
-      (tester) async {
-        await tester.runAsync(
-          () => tester.pumpWidget(
-            ShalomProvider(
-              client: client,
-              child: const Directionality(
-                textDirection: TextDirection.ltr,
-                child: UserWidget(variables: UserWidgetVariables(id: '1')),
-              ),
+    testWidgets('causes mounted widget to resubscribe and refetch updated data', (
+      tester,
+    ) async {
+      await tester.runAsync(
+        () => tester.pumpWidget(
+          ShalomProvider(
+            client: client,
+            child: const Directionality(
+              textDirection: TextDirection.ltr,
+              child: UserWidget(variables: UserWidgetVariables(id: '1')),
             ),
           ),
-        );
+        ),
+      );
 
-        expect(find.text('loading'), findsOneWidget);
+      expect(find.text('loading'), findsOneWidget);
 
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 500)),
-        );
-        await tester.pump();
-        expect(find.text('name: Alice'), findsOneWidget);
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 500)),
+      );
+      await tester.pump();
+      expect(find.text('name: Alice'), findsOneWidget);
 
-        // Fire mutation ref with invalidateOperations
-        final mutation = UpdateUserMutation(client);
-        await tester.runAsync(
-          () => mutation.execute(
-            id: '1',
-            name: 'Bob',
-            invalidateOperations: [
-              OperationRef(operationName: $UserWidget.operation$Name()),
-            ],
-          ),
-        );
+      // Fire mutation ref with invalidateOperations
+      final mutation = UpdateUserMutation(client);
+      await tester.runAsync(
+        () => mutation.execute(
+          id: '1',
+          name: 'Bob',
+          invalidateOperations: [
+            OperationRef(operationName: $UserWidget.operation$Name()),
+          ],
+        ),
+      );
 
-        // Allow widget's onDone to trigger resubscribe and network refetch
-        await tester.runAsync(
-          () => Future<void>.delayed(const Duration(milliseconds: 500)),
-        );
-        await tester.pump();
+      // Allow active subscription to refetch from the network and emit updated data
+      await tester.runAsync(
+        () => Future<void>.delayed(const Duration(milliseconds: 500)),
+      );
+      await tester.pump();
 
-        expect(find.text('name: Bob'), findsOneWidget);
-      },
-    );
+      expect(find.text('name: Bob'), findsOneWidget);
+    });
   });
 }

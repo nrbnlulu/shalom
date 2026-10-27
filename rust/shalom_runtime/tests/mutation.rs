@@ -379,7 +379,7 @@ fn evict_operation_removes_matching_root_field_only() {
 }
 
 #[tokio::test]
-async fn evict_operation_unsubscribes_matching_subscriptions() {
+async fn evict_operation_keeps_matching_subscriptions_alive() {
     let runtime = make_runtime();
     let query_op = runtime.operation_by_name("GetUser").unwrap();
     let query_vars = vars(&[("id", json!("1"))]);
@@ -412,8 +412,6 @@ async fn evict_operation_unsubscribes_matching_subscriptions() {
             .is_none()
     );
 
-    // Eviction closes the stream (EOF) so that Dart's onDone triggers resubscribe()
-    let next = stream.next().await;
-    assert!(next.is_none(), "stream must close on evict_operation");
-    assert!(!runtime.subscription_exists(&sub_id));
+    // Eviction keeps the subscription alive so it can receive refetched data
+    assert!(runtime.subscription_exists(&sub_id));
 }

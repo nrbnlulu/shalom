@@ -21,7 +21,7 @@ abstract class $UpdateUserMutation {
   /// updates on any query subscriptions watching the same entities.
   ///
   /// [invalidateOperations], if provided, invalidates active subscriptions of
-  /// the specified operations upon success, causing their observing widgets to resubscribe.
+  /// the specified operations upon success, causing them to refetch fresh data from the network.
   ///
   /// Example:
   /// ```dart

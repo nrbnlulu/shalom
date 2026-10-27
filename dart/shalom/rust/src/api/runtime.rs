@@ -808,11 +808,12 @@ pub async fn write_operation(
 }
 
 /// Evict a pre-registered operation's cached root field(s) (matched by
-/// `variables`) and notify any active subscribers.
+/// `variables`) and signal active subscriptions to refetch fresh data from the network.
 ///
 /// Only unlinks the operation's own root entry — entities it referenced are
 /// reclaimed by the next GC sweep if nothing else keeps them reachable.
-/// Returns `false` if no matching cache entry existed.
+/// Subscriptions remain open and receive the fresh network response on their
+/// existing streams. Returns `false` if no matching cache entry existed.
 #[frb]
 pub async fn evict_operation(
     handle: &RuntimeHandle,

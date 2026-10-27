@@ -449,7 +449,7 @@ final response = await AddPostMutation(client).execute(
 ```
 
 - Each entry in `invalidateOperations` is an `OperationRef` matched against active operation subscriptions in `shalom_runtime`.
-- Matching subscriptions complete their streams, causing their Flutter widgets (`ShalomObservingState`) to resubscribe and refetch from the network.
+- Matching subscriptions stay open and automatically refetch fresh data from the network, delivering the new response down the existing stream to both Flutter widgets and imperative observables.
 - When `variables` is provided, only subscriptions with matching variables are invalidated, and only the corresponding cache root fields are evicted. When omitted or `null`, all active subscriptions of that operation name are invalidated.
 
 ## Updating Lists After Mutations
