@@ -10,7 +10,7 @@ import 'PetQuery.shalom.dart';
 import 'PetWidget.shalom.dart';
 
 abstract class $PetQuery extends StatefulWidget {
-  String operation$Name() => 'PetQuery';
+  static String operation$Name() => 'PetQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
   final shalom_core.RetryDelay retryDelay;

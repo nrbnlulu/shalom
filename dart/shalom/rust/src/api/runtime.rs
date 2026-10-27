@@ -808,11 +808,12 @@ pub async fn write_operation(
 }
 
 /// Evict a pre-registered operation's cached root field(s) (matched by
-/// `variables`) and notify any active subscribers.
+/// `variables`) and signal active subscriptions to refetch fresh data from the network.
 ///
 /// Only unlinks the operation's own root entry — entities it referenced are
 /// reclaimed by the next GC sweep if nothing else keeps them reachable.
-/// Returns `false` if no matching cache entry existed.
+/// Subscriptions remain open and receive the fresh network response on their
+/// existing streams. Returns `false` if no matching cache entry existed.
 #[frb]
 pub async fn evict_operation(
     handle: &RuntimeHandle,
@@ -821,23 +822,6 @@ pub async fn evict_operation(
 ) -> anyhow::Result<bool> {
     let variables = parse_variables(variables)?;
     handle.runtime.evict_operation(&name, variables.as_ref())
-}
-
-/// Invalidate active subscriptions for [name] (optionally filtered by [variables]).
-///
-/// Unsubscribes matching subscriptions, causing their stream to complete (`onDone`),
-/// which triggers Dart/Flutter's `ShalomObservingState` to resubscribe and refetch.
-#[frb]
-pub async fn invalidate_operation(
-    handle: &RuntimeHandle,
-    name: String,
-    variables: Option<ShalomJsonValue>,
-) -> anyhow::Result<()> {
-    let variables = parse_variables(variables)?;
-    handle
-        .runtime
-        .invalidate_operation(&name, variables.as_ref());
-    Ok(())
 }
 
 /// Read an entity from the cache through a fragment's selection set.

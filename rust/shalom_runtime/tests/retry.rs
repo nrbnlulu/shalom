@@ -368,3 +368,81 @@ async fn unsubscribing_aborts_in_flight_stream_promptly() {
         "stream should be aborted promptly after unsubscribe"
     );
 }
+
+/// When an operation's cache entry is evicted, active subscriptions for that
+/// operation are re-issued via `link.execute` and receive the fresh response
+/// on their existing stream.
+#[tokio::test]
+async fn evict_operation_refetches_active_subscription() {
+    let link = Arc::new(HostLink::new());
+    let mut outgoing = link.take_request_stream().expect("request stream missing");
+    let runtime =
+        ShalomRuntime::init(SCHEMA, Vec::new(), RuntimeConfig::default()).expect("runtime init");
+    let op_ctx = runtime
+        .register_operation("query TestOp @observe { value }")
+        .expect("register operation");
+
+    let sub_id = runtime.execute_operation(
+        op_ctx,
+        None,
+        ExecutionPolicy::NetworkFirst,
+        link.clone() as Arc<dyn GraphQLLink>,
+        None,
+        None,
+    );
+    let mut responses = runtime
+        .subscription_stream(&sub_id)
+        .expect("subscription stream");
+
+    // 1. Initial request from query execution
+    let first_envelope = outgoing.next().await.expect("initial request missing");
+    assert_eq!(first_envelope.request.operation_name, "TestOp");
+    link.send_response(
+        first_envelope.id,
+        GraphQLResponse::Data {
+            data: json!({ "value": 10 }).as_object().unwrap().clone(),
+            errors: None,
+            extensions: None,
+        },
+    )
+    .expect("send data");
+    link.complete(first_envelope.id);
+
+    let first = responses
+        .next()
+        .await
+        .expect("missing response")
+        .expect("ok");
+    assert_eq!(first.data.get("value"), Some(&json!(10)));
+
+    // 2. Evict the operation from the cache
+    let evicted = runtime.evict_operation("TestOp", None).expect("evict");
+    assert!(evicted);
+
+    // 3. The background task is triggered by `refetch` and sends a new network request
+    let refetch_envelope = outgoing.next().await.expect("refetch request missing");
+    assert_ne!(refetch_envelope.id, first_envelope.id);
+    assert_eq!(refetch_envelope.request.operation_name, "TestOp");
+
+    link.send_response(
+        refetch_envelope.id,
+        GraphQLResponse::Data {
+            data: json!({ "value": 20 }).as_object().unwrap().clone(),
+            errors: None,
+            extensions: None,
+        },
+    )
+    .expect("send refetch data");
+    link.complete(refetch_envelope.id);
+
+    // 4. Fresh data arrives on the SAME open subscription stream!
+    let second = responses
+        .next()
+        .await
+        .expect("missing response")
+        .expect("ok");
+    assert_eq!(second.data.get("value"), Some(&json!(20)));
+
+    // 5. Subscription is still alive
+    assert!(runtime.subscription_exists(&sub_id));
+}

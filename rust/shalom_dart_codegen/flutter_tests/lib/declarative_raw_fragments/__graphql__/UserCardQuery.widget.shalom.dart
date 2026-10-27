@@ -11,7 +11,7 @@ import '../fragments/__graphql__/UserIdentity.shalom.dart';
 import '../more_fragments/__graphql__/UserCard.shalom.dart';
 
 abstract class $UserCardQuery extends StatefulWidget {
-  String operation$Name() => 'UserCardQuery';
+  static String operation$Name() => 'UserCardQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
   final shalom_core.RetryDelay retryDelay;

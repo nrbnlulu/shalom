@@ -41,7 +41,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.13.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1587352435;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1011194608;
 
 // Section: executor
 
@@ -622,71 +622,6 @@ fn wire__crate__api__runtime__init_runtime_impl(
                     std::result::Result::Ok(output_ok)
                 })(),
             )
-        },
-    )
-}
-fn wire__crate__api__runtime__invalidate_operation_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "invalidate_operation",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_handle = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RuntimeHandle>,
-            >>::sse_decode(&mut deserializer);
-            let api_name = <String>::sse_decode(&mut deserializer);
-            let api_variables =
-                <Option<crate::api::json::ShalomJsonValue>>::sse_decode(&mut deserializer);
-            deserializer.end();
-            move |context| async move {
-                transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
-                    (move || async move {
-                        let mut api_handle_guard = None;
-                        let decode_indices_ =
-                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
-                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                                    &api_handle,
-                                    0,
-                                    false,
-                                )],
-                            );
-                        for i in decode_indices_ {
-                            match i {
-                                0 => {
-                                    api_handle_guard =
-                                        Some(api_handle.lockable_decode_async_ref().await)
-                                }
-                                _ => unreachable!(),
-                            }
-                        }
-                        let api_handle_guard = api_handle_guard.unwrap();
-                        let output_ok = crate::api::runtime::invalidate_operation(
-                            &*api_handle_guard,
-                            api_name,
-                            api_variables,
-                        )
-                        .await?;
-                        std::result::Result::Ok(output_ok)
-                    })()
-                    .await,
-                )
-            }
         },
     )
 }
@@ -3179,42 +3114,39 @@ fn pde_ffi_dispatcher_primary_impl(
         8 => wire__crate__api__runtime__get_key_observers_impl(port, ptr, rust_vec_len, data_len),
         9 => wire__crate__api__runtime__get_observer_counts_impl(port, ptr, rust_vec_len, data_len),
         10 => wire__crate__api__runtime__init_app_impl(port, ptr, rust_vec_len, data_len),
-        12 => {
-            wire__crate__api__runtime__invalidate_operation_impl(port, ptr, rust_vec_len, data_len)
-        }
-        13 => wire__crate__api__runtime__listen_requests_impl(port, ptr, rust_vec_len, data_len),
-        14 => {
+        12 => wire__crate__api__runtime__listen_requests_impl(port, ptr, rust_vec_len, data_len),
+        13 => {
             wire__crate__api__runtime__listen_subscription_impl(port, ptr, rust_vec_len, data_len)
         }
-        15 => wire__crate__api__runtime__mutate_impl(port, ptr, rust_vec_len, data_len),
-        16 => wire__crate__api__runtime__observe_fragment_impl(port, ptr, rust_vec_len, data_len),
-        17 => wire__crate__api__runtime__push_buffered_response_impl(
+        14 => wire__crate__api__runtime__mutate_impl(port, ptr, rust_vec_len, data_len),
+        15 => wire__crate__api__runtime__observe_fragment_impl(port, ptr, rust_vec_len, data_len),
+        16 => wire__crate__api__runtime__push_buffered_response_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => wire__crate__api__runtime__push_graphql_error_impl(port, ptr, rust_vec_len, data_len),
-        19 => wire__crate__api__runtime__push_response_impl(port, ptr, rust_vec_len, data_len),
-        20 => {
+        17 => wire__crate__api__runtime__push_graphql_error_impl(port, ptr, rust_vec_len, data_len),
+        18 => wire__crate__api__runtime__push_response_impl(port, ptr, rust_vec_len, data_len),
+        19 => {
             wire__crate__api__runtime__push_response_value_impl(port, ptr, rust_vec_len, data_len)
         }
-        21 => {
+        20 => {
             wire__crate__api__runtime__push_transport_error_impl(port, ptr, rust_vec_len, data_len)
         }
-        22 => wire__crate__api__runtime__read_fragment_impl(port, ptr, rust_vec_len, data_len),
-        23 => wire__crate__api__runtime__read_operation_impl(port, ptr, rust_vec_len, data_len),
-        24 => {
+        21 => wire__crate__api__runtime__read_fragment_impl(port, ptr, rust_vec_len, data_len),
+        22 => wire__crate__api__runtime__read_operation_impl(port, ptr, rust_vec_len, data_len),
+        23 => {
             wire__crate__api__runtime__rebind_subscription_impl(port, ptr, rust_vec_len, data_len)
         }
-        28 => wire__crate__api__runtime__request_impl(port, ptr, rust_vec_len, data_len),
-        29 => {
+        27 => wire__crate__api__runtime__request_impl(port, ptr, rust_vec_len, data_len),
+        28 => {
             wire__crate__api__runtime__rollback_optimistic_impl(port, ptr, rust_vec_len, data_len)
         }
-        31 => wire__crate__api__runtime__unsubscribe_impl(port, ptr, rust_vec_len, data_len),
-        32 => wire__crate__api__runtime__write_fragment_impl(port, ptr, rust_vec_len, data_len),
-        33 => wire__crate__api__runtime__write_operation_impl(port, ptr, rust_vec_len, data_len),
-        34 => wire__crate__api__runtime__write_optimistic_impl(port, ptr, rust_vec_len, data_len),
+        30 => wire__crate__api__runtime__unsubscribe_impl(port, ptr, rust_vec_len, data_len),
+        31 => wire__crate__api__runtime__write_fragment_impl(port, ptr, rust_vec_len, data_len),
+        32 => wire__crate__api__runtime__write_operation_impl(port, ptr, rust_vec_len, data_len),
+        33 => wire__crate__api__runtime__write_optimistic_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -3234,19 +3166,19 @@ fn pde_ffi_dispatcher_sync_impl(
         ),
         3 => wire__crate__api__ws__create_ws_sans_io_impl(ptr, rust_vec_len, data_len),
         11 => wire__crate__api__runtime__init_runtime_impl(ptr, rust_vec_len, data_len),
-        25 => wire__crate__api__runtime__register_fragment_impl(ptr, rust_vec_len, data_len),
-        26 => wire__crate__api__runtime__register_operation_impl(ptr, rust_vec_len, data_len),
-        27 => wire__crate__api__runtime__reload_schema_impl(ptr, rust_vec_len, data_len),
-        30 => wire__crate__api__runtime__set_log_level_impl(ptr, rust_vec_len, data_len),
-        35 => wire__crate__api__ws__ws_active_operation_ids_impl(ptr, rust_vec_len, data_len),
-        36 => wire__crate__api__ws__ws_complete_frame_impl(ptr, rust_vec_len, data_len),
-        37 => wire__crate__api__ws__ws_connection_init_frame_impl(ptr, rust_vec_len, data_len),
-        38 => wire__crate__api__ws__ws_is_connected_impl(ptr, rust_vec_len, data_len),
-        39 => wire__crate__api__ws__ws_on_message_impl(ptr, rust_vec_len, data_len),
-        40 => wire__crate__api__ws__ws_ping_frame_impl(ptr, rust_vec_len, data_len),
-        41 => wire__crate__api__ws__ws_pong_frame_impl(ptr, rust_vec_len, data_len),
-        42 => wire__crate__api__ws__ws_reset_impl(ptr, rust_vec_len, data_len),
-        43 => wire__crate__api__ws__ws_subscribe_frame_impl(ptr, rust_vec_len, data_len),
+        24 => wire__crate__api__runtime__register_fragment_impl(ptr, rust_vec_len, data_len),
+        25 => wire__crate__api__runtime__register_operation_impl(ptr, rust_vec_len, data_len),
+        26 => wire__crate__api__runtime__reload_schema_impl(ptr, rust_vec_len, data_len),
+        29 => wire__crate__api__runtime__set_log_level_impl(ptr, rust_vec_len, data_len),
+        34 => wire__crate__api__ws__ws_active_operation_ids_impl(ptr, rust_vec_len, data_len),
+        35 => wire__crate__api__ws__ws_complete_frame_impl(ptr, rust_vec_len, data_len),
+        36 => wire__crate__api__ws__ws_connection_init_frame_impl(ptr, rust_vec_len, data_len),
+        37 => wire__crate__api__ws__ws_is_connected_impl(ptr, rust_vec_len, data_len),
+        38 => wire__crate__api__ws__ws_on_message_impl(ptr, rust_vec_len, data_len),
+        39 => wire__crate__api__ws__ws_ping_frame_impl(ptr, rust_vec_len, data_len),
+        40 => wire__crate__api__ws__ws_pong_frame_impl(ptr, rust_vec_len, data_len),
+        41 => wire__crate__api__ws__ws_reset_impl(ptr, rust_vec_len, data_len),
+        42 => wire__crate__api__ws__ws_subscribe_frame_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }

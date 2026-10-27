@@ -10,7 +10,7 @@ import 'ZooQuery.shalom.dart';
 import 'ZooWidget.shalom.dart';
 
 abstract class $ZooQuery extends StatefulWidget {
-  String operation$Name() => 'ZooQuery';
+  static String operation$Name() => 'ZooQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
   final shalom_core.RetryDelay retryDelay;

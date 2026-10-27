@@ -10,7 +10,7 @@ import 'ShelterSubscription.shalom.dart';
 import 'DogFrag.shalom.dart';
 
 abstract class $ShelterSubscription extends StatefulWidget {
-  String operation$Name() => 'ShelterSubscription';
+  static String operation$Name() => 'ShelterSubscription';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
   final shalom_core.RetryDelay retryDelay;

@@ -10,7 +10,7 @@ import 'UnwrapQuery.shalom.dart';
 import '../../fragment/__graphql__/PetWidget.shalom.dart';
 
 abstract class $UnwrapQuery extends StatefulWidget {
-  String operation$Name() => 'UnwrapQuery';
+  static String operation$Name() => 'UnwrapQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
   final shalom_core.RetryDelay retryDelay;

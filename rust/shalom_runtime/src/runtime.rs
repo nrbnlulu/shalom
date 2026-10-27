@@ -187,6 +187,9 @@ struct SubscriptionState {
     /// request driving it (see [`ShalomRuntime::execute_operation`]) can abort
     /// immediately instead of waiting on the next stream item.
     cancel: Arc<Notify>,
+    /// Fired when this subscription's operation is evicted or requested to refetch,
+    /// so the background network task can re-issue the request.
+    refetch: Arc<Notify>,
     /// Whether this subscription has ever had a response pushed to it.
     ///
     /// Until the first emission, [`ShalomRuntime::notify_subscribers`] always
@@ -471,6 +474,9 @@ impl ShalomRuntime {
             manager.clear()
         };
         self.subscription_tracker.lock().clear();
+        for state in &removed {
+            state.cancel.notify_one();
+        }
         drop(removed);
     }
 
@@ -514,6 +520,9 @@ impl ShalomRuntime {
             // Already unsubscribed before the task even got a chance to run.
             return sub_id;
         };
+        let Some(refetch) = self.subscription_refetch_signal(&sub_id) else {
+            return sub_id;
+        };
 
         let runtime = self.clone();
         tokio::spawn(async move {
@@ -532,6 +541,7 @@ impl ShalomRuntime {
                 }
                 let mut stream = link.execute(request.clone());
                 let mut transport_failed = false;
+                let mut terminal_error = false;
 
                 loop {
                     let response = tokio::select! {
@@ -561,7 +571,8 @@ impl ShalomRuntime {
                                         details: None,
                                     },
                                 );
-                                return;
+                                terminal_error = true;
+                                break;
                             }
                         }
                         GraphQLResponse::Error { errors, extensions } => {
@@ -569,7 +580,8 @@ impl ShalomRuntime {
                                 sub_id,
                                 SubscriptionError::GraphQL { errors, extensions },
                             );
-                            return;
+                            terminal_error = true;
+                            break;
                         }
                         GraphQLResponse::TransportError(err) => {
                             runtime.push_subscription_error(
@@ -586,29 +598,45 @@ impl ShalomRuntime {
                     }
                 }
 
-                let wait = if transport_failed {
-                    retry_delay
-                } else {
-                    // Stream ended cleanly (link signalled completion) — only
-                    // re-issue if a polling refetch interval was requested.
-                    refetch_interval
-                };
-                let Some(wait) = wait else {
-                    return;
-                };
-                // `cancel.notified()` only wakes a task that's already awaiting
-                // it — if `unsubscribe` fired between the inner loop ending and
-                // here, that notification is lost and a freshly created
-                // `notified()` future below would never resolve. Check first so
-                // an already-cancelled subscription doesn't sleep needlessly.
                 if !runtime.subscription_exists(&sub_id) {
                     return;
                 }
-                tokio::select! {
-                    biased;
-                    _ = cancel.notified() => return,
-                    _ = tokio::time::sleep(wait) => {}
+
+                let delay = if transport_failed {
+                    retry_delay
+                } else if terminal_error {
+                    None
+                } else {
+                    refetch_interval
+                };
+
+                // Exit if there is no timer to wait on and this isn't a query (e.g. a
+                // completed subscription/mutation). Queries stay parked on `refetch`
+                // even after an error, so `evict_operation` can still re-issue them.
+                if delay.is_none()
+                    && !matches!(
+                        op_ctx.op_type(),
+                        shalom_core::operation::types::OperationType::Query
+                    )
+                {
+                    return;
                 }
+
+                if let Some(d) = delay {
+                    tokio::select! {
+                        biased;
+                        _ = cancel.notified() => return,
+                        _ = refetch.notified() => {}
+                        _ = tokio::time::sleep(d) => {}
+                    }
+                } else {
+                    tokio::select! {
+                        biased;
+                        _ = cancel.notified() => return,
+                        _ = refetch.notified() => {}
+                    }
+                }
+
                 if !runtime.subscription_exists(&sub_id) {
                     return;
                 }
@@ -1115,16 +1143,12 @@ impl ShalomRuntime {
     }
 
     /// Evict operation [op_name]'s root field(s) (matched with [variables])
-    /// from the cache and notify affected subscribers. This only unlinks the
-    /// operation's root entry(ies) — entities it referenced are reclaimed by
-    /// the next GC sweep if nothing else keeps them reachable.
+    /// from the cache, notify affected subscribers, and signal active
+    /// subscriptions to refetch fresh data from the network.
     ///
-    /// Evict operation [op_name]'s root field(s) (matched with [variables])
-    /// from the cache, notify affected subscribers, and unsubscribe matching
-    /// active subscriptions.
-    ///
-    /// Unsubscribing drops their stream channel so Dart/Flutter's `onDone`
-    /// triggers a resubscribe to fetch fresh data.
+    /// This only unlinks the operation's root entry(ies) — entities it referenced
+    /// are reclaimed by the next GC sweep if nothing else keeps them reachable.
+    /// Subscriptions remain active so their streams receive the new network data.
     ///
     /// Returns `false` (and does nothing) if no matching cache entry exists.
     pub fn evict_operation(
@@ -1140,33 +1164,23 @@ impl ShalomRuntime {
         };
         let selections = resolve_object_selections(op_ctx.get_root(), &self.engine.global_ctx());
 
-        // Matching active subscriptions, with the variables each was created with.
-        let matching: Vec<(SubscriptionId, Option<Map<String, Value>>)> = {
-            let manager = self.subscriptions.lock();
-            manager
-                .subscriptions
-                .iter()
-                .filter_map(|(id, state)| {
-                    if let SubscriptionTarget::Operation(ctx) = &state.target
-                        && ctx.get_operation_name() == op_name
-                        && (variables.is_none() || state.variables.as_ref() == variables)
-                    {
-                        Some((*id, state.variables.clone()))
-                    } else {
-                        None
-                    }
-                })
-                .collect()
-        };
-
         // The variable sets whose root entries get evicted. A broad invalidation
         // (`variables == None`) must also evict the entry of every matched
         // subscription's own variable set, not just the `None` key.
         let mut variable_sets: Vec<Option<Map<String, Value>>> = vec![variables.cloned()];
-        if variables.is_none() {
-            for (_, vars) in &matching {
-                if !variable_sets.contains(vars) {
-                    variable_sets.push(vars.clone());
+        let mut refetches: Vec<Arc<Notify>> = Vec::new();
+
+        {
+            let manager = self.subscriptions.lock();
+            for state in manager.subscriptions.values() {
+                if let SubscriptionTarget::Operation(ctx) = &state.target
+                    && ctx.get_operation_name() == op_name
+                    && (variables.is_none() || state.variables.as_ref() == variables)
+                {
+                    refetches.push(state.refetch.clone());
+                    if variables.is_none() && !variable_sets.contains(&state.variables) {
+                        variable_sets.push(state.variables.clone());
+                    }
                 }
             }
         }
@@ -1194,10 +1208,10 @@ impl ShalomRuntime {
             }
         }
 
-        // Unsubscribe matching active subscriptions so their stream ends (firing onDone
-        // in Dart to trigger resubscribe and refetch from network).
-        for (id, _) in matching {
-            self.unsubscribe(&id);
+        // Trigger refetch for matching active subscriptions so they fetch fresh data
+        // from the network without closing their stream.
+        for refetch in &refetches {
+            refetch.notify_one();
         }
 
         if changed.is_empty() {
@@ -1205,15 +1219,6 @@ impl ShalomRuntime {
         }
         self.notify_subscribers(&changed)?;
         Ok(true)
-    }
-
-    /// Invalidate operation `op_name` (optionally filtered by `variables`) by
-    /// evicting its cache entry and closing matching active subscription streams.
-    ///
-    /// This signals `onDone` to the Dart/Flutter subscriber, triggering it to resubscribe
-    /// and perform a fresh fetch from the network.
-    pub fn invalidate_operation(&self, op_name: &str, variables: Option<&Map<String, Value>>) {
-        let _ = self.evict_operation(op_name, variables);
     }
 
     /// Look up a pre-registered (or remembered) operation by name.
@@ -1288,6 +1293,7 @@ impl ShalomRuntime {
                 sender,
                 receiver: Some(receiver),
                 cancel: Arc::new(Notify::new()),
+                refetch: Arc::new(Notify::new()),
                 has_emitted: false,
             },
         );
@@ -1335,6 +1341,17 @@ impl ShalomRuntime {
             .subscriptions
             .get(id)
             .map(|state| state.cancel.clone())
+    }
+
+    /// The refetch signal for a subscription, fired when its operation's cache
+    /// is evicted. Used by [`Self::execute_operation`] to re-issue the network
+    /// request on the same active subscription.
+    fn subscription_refetch_signal(&self, id: &SubscriptionId) -> Option<Arc<Notify>> {
+        self.subscriptions
+            .lock()
+            .subscriptions
+            .get(id)
+            .map(|state| state.refetch.clone())
     }
 
     fn notify_subscribers(&self, changed: &HashSet<String>) -> anyhow::Result<()> {

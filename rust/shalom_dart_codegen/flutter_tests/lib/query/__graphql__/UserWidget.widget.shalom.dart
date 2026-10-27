@@ -9,7 +9,7 @@ import 'package:shalom_flutter/shalom_flutter.dart';
 import 'UserWidget.shalom.dart';
 
 abstract class $UserWidget extends StatefulWidget {
-  String operation$Name() => 'UserWidget';
+  static String operation$Name() => 'UserWidget';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
   final shalom_core.RetryDelay retryDelay;

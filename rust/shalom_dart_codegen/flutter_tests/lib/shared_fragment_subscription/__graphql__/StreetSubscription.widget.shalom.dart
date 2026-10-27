@@ -10,7 +10,7 @@ import 'StreetSubscription.shalom.dart';
 import 'DogFrag.shalom.dart';
 
 abstract class $StreetSubscription extends StatefulWidget {
-  String operation$Name() => 'StreetSubscription';
+  static String operation$Name() => 'StreetSubscription';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
   final shalom_core.RetryDelay retryDelay;

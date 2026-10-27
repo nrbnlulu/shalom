@@ -23,6 +23,10 @@ type Subscription {
   streetAnimals: Animal!
 }
 
+type Mutation {
+  updateUser(id: ID!, name: String!): User
+}
+
 type Zoo {
   id: ID!
   name: String!
@@ -326,6 +330,16 @@ query PetQuery($id: ID!) @observe {
   pet(id: $id) {
     ...PetWidget
     id
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+mutation UpdateUserMutation($id: ID!, $name: String!) {
+  updateUser(id: $id, name: $name) {
+    id
+    name
   }
 }
 ''',
