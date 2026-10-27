@@ -379,7 +379,7 @@ fn evict_operation_removes_matching_root_field_only() {
 }
 
 #[tokio::test]
-async fn evict_operation_unsubscribes_matching_subscriptions() {
+async fn evict_operation_keeps_matching_subscriptions_alive() {
     let runtime = make_runtime();
     let query_op = runtime.operation_by_name("GetUser").unwrap();
     let query_vars = vars(&[("id", json!("1"))]);
@@ -412,41 +412,6 @@ async fn evict_operation_unsubscribes_matching_subscriptions() {
             .is_none()
     );
 
-    // Eviction closes the stream (EOF) so that Dart's onDone triggers resubscribe()
-    let next = stream.next().await;
-    assert!(next.is_none(), "stream must close on evict_operation");
-    assert!(!runtime.subscription_exists(&sub_id));
-}
-
-#[tokio::test]
-async fn invalidate_operation_closes_matching_subscription_stream() {
-    let runtime = make_runtime();
-    let query_op = runtime.operation_by_name("GetUser").unwrap();
-    let query_vars = vars(&[("id", json!("1"))]);
-
-    runtime
-        .normalize(
-            &query_op,
-            json!({ "user": { "id": "1", "name": "Alice" } }),
-            Some(&query_vars),
-        )
-        .expect("seed");
-
-    let sub_id = runtime.create_operation_subscription(
-        query_op.clone(),
-        Some(query_vars.clone()),
-        ExecutionPolicy::CacheFirst,
-    );
-
-    let mut stream = runtime.subscription_stream(&sub_id).expect("stream");
-    let initial = stream.next().await.expect("initial value").expect("ok");
-    assert_eq!(initial.data["user"]["name"], json!("Alice"));
-
-    // Invalidate the operation
-    runtime.invalidate_operation("GetUser", Some(&query_vars));
-
-    // The subscription stream completes (EOF) so that Dart's onDone triggers resubscribe()
-    let next = stream.next().await;
-    assert!(next.is_none(), "stream must close on invalidate_operation");
-    assert!(!runtime.subscription_exists(&sub_id));
+    // Eviction keeps the subscription alive so it can receive refetched data
+    assert!(runtime.subscription_exists(&sub_id));
 }

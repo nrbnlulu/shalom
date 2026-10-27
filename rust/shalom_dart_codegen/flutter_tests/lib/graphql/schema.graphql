@@ -12,6 +12,10 @@ type Subscription {
   streetAnimals: Animal!
 }
 
+type Mutation {
+  updateUser(id: ID!, name: String!): User
+}
+
 type Zoo {
   id: ID!
   name: String!

@@ -102,9 +102,8 @@ await RemoveGifFromAlbumMutation(client).executeWithCacheUpdate(
 
 When patching the cache by hand isn't practical (e.g. server-side sorting,
 pagination, or computed fields), invalidate the affected operations instead.
-Invalidation evicts the operation's root cache entry and closes its matching
-active subscriptions, so any mounted `@Query` widget resubscribes and refetches fresh data
-from the network.
+Invalidation evicts the operation's root cache entry and signals its matching
+active subscriptions to refetch fresh data from the network on their existing streams.
 
 ### After a mutation
 

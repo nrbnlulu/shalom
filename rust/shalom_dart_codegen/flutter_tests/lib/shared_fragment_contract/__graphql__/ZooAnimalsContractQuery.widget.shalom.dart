@@ -14,7 +14,7 @@ import 'HasFavoriteToyFrag.shalom.dart';
 import 'ToyFrag.shalom.dart';
 
 abstract class $ZooAnimalsContractQuery extends StatefulWidget {
-  String operation$Name() => 'ZooAnimalsContractQuery';
+  static String operation$Name() => 'ZooAnimalsContractQuery';
 
   final shalom_core.ExecutionPolicyInput executionPolicy;
   final shalom_core.RetryDelay retryDelay;

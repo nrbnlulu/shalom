@@ -637,31 +637,18 @@ class ShalomRuntimeClient {
   }
 
   /// Evict operation [name]'s cached root field(s) (matched by [variables])
-  /// and notify any active subscribers.
+  /// and signal active subscriptions to refetch fresh data from the network.
   ///
   /// Only unlinks the operation's own root entry — entities it referenced
   /// are reclaimed by the next GC sweep if nothing else keeps them
-  /// reachable. Returns `false` if no matching cache entry existed.
+  /// reachable. Active subscriptions remain open and receive the fresh
+  /// response on their existing streams. Returns `false` if no matching
+  /// cache entry existed.
   Future<bool> evictOperation({
     required String name,
     ShalomJsonValue? variables,
   }) {
     return rs_runtime.evictOperation(
-      handle: _handle,
-      name: name,
-      variables: variables,
-    );
-  }
-
-  /// Invalidate active subscriptions for [name].
-  ///
-  /// Unsubscribes matching subscriptions, causing their stream to complete (`onDone`),
-  /// which triggers Dart/Flutter's `ShalomObservingState` to resubscribe and refetch.
-  Future<void> invalidateOperation({
-    required String name,
-    ShalomJsonValue? variables,
-  }) {
-    return rs_runtime.invalidateOperation(
       handle: _handle,
       name: name,
       variables: variables,

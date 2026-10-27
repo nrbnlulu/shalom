@@ -210,6 +210,11 @@ fn test_flutter_unwrap_fragment() {
 }
 
 #[test]
+fn test_flutter_mutation_invalidation() {
+    common::run_flutter_tests("mutation_invalidation_test.dart");
+}
+
+#[test]
 fn test_mutation_simple_dart() {
     run_dart_tests_for_usecase("mutation_simple");
 }
