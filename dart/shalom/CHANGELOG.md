@@ -3,6 +3,7 @@
 - Keep active query subscriptions alive even when no polling interval is configured, allowing them to await refetch signals instead of exiting after the initial network response.
 - Cache eviction (via `evictOperation` and mutation widget `invalidateOperations`) now automatically refetches fresh data from the network over existing subscription streams instead of terminating them. Both declarative Flutter widgets and imperative observables (`observe()`) receive the latest data seamlessly without needing manual resubscription.
 - Remove redundant direct `ShalomRuntimeClient.invalidateOperation` API in favor of `evictOperation`.
+- Update the native runtime to `shalom_runtime` 0.1.6.
 
 ## 0.1.7
 
