@@ -11,8 +11,8 @@ class OptimisticMutationResponse<T> {
   OptimisticMutationResponse({
     required this.response,
     required this.wasRolledBack,
-    required this._client,
-    required this._writeId,
+    required this.client,
+    required this.writeId,
   }) : _rolledBack = wasRolledBack;
 
   /// The GraphQL server response (success, GraphQL error, or transport error).
@@ -22,8 +22,8 @@ class OptimisticMutationResponse<T> {
   /// already undone before this object was returned to the caller.
   final bool wasRolledBack;
 
-  final ShalomRuntimeClient _client;
-  final BigInt _writeId;
+  final ShalomRuntimeClient client;
+  final BigInt writeId;
   bool _rolledBack;
 
   /// Undo the optimistic cache write, restoring the pre-write state and
@@ -35,7 +35,7 @@ class OptimisticMutationResponse<T> {
     if (_rolledBack) return;
     _rolledBack = true;
     try {
-      await _client.rollbackOptimistic(_writeId);
+      await client.rollbackOptimistic(writeId);
     } catch (_) {
       _rolledBack = false;
       rethrow;

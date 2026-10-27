@@ -408,7 +408,11 @@ async fn evict_operation_refetches_active_subscription() {
     .expect("send data");
     link.complete(first_envelope.id);
 
-    let first = responses.next().await.expect("missing response").expect("ok");
+    let first = responses
+        .next()
+        .await
+        .expect("missing response")
+        .expect("ok");
     assert_eq!(first.data.get("value"), Some(&json!(10)));
 
     // 2. Evict the operation from the cache
@@ -432,10 +436,13 @@ async fn evict_operation_refetches_active_subscription() {
     link.complete(refetch_envelope.id);
 
     // 4. Fresh data arrives on the SAME open subscription stream!
-    let second = responses.next().await.expect("missing response").expect("ok");
+    let second = responses
+        .next()
+        .await
+        .expect("missing response")
+        .expect("ok");
     assert_eq!(second.data.get("value"), Some(&json!(20)));
 
     // 5. Subscription is still alive
     assert!(runtime.subscription_exists(&sub_id));
 }
-

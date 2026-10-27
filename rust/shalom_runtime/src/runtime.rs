@@ -1156,33 +1156,23 @@ impl ShalomRuntime {
         };
         let selections = resolve_object_selections(op_ctx.get_root(), &self.engine.global_ctx());
 
-        // Matching active subscriptions, with the variables and refetch trigger of each.
-        let matching: Vec<(SubscriptionId, Option<Map<String, Value>>, Arc<Notify>)> = {
-            let manager = self.subscriptions.lock();
-            manager
-                .subscriptions
-                .iter()
-                .filter_map(|(id, state)| {
-                    if let SubscriptionTarget::Operation(ctx) = &state.target
-                        && ctx.get_operation_name() == op_name
-                        && (variables.is_none() || state.variables.as_ref() == variables)
-                    {
-                        Some((*id, state.variables.clone(), state.refetch.clone()))
-                    } else {
-                        None
-                    }
-                })
-                .collect()
-        };
-
         // The variable sets whose root entries get evicted. A broad invalidation
         // (`variables == None`) must also evict the entry of every matched
         // subscription's own variable set, not just the `None` key.
         let mut variable_sets: Vec<Option<Map<String, Value>>> = vec![variables.cloned()];
-        if variables.is_none() {
-            for (_, vars, _) in &matching {
-                if !variable_sets.contains(vars) {
-                    variable_sets.push(vars.clone());
+        let mut refetches: Vec<Arc<Notify>> = Vec::new();
+
+        {
+            let manager = self.subscriptions.lock();
+            for state in manager.subscriptions.values() {
+                if let SubscriptionTarget::Operation(ctx) = &state.target
+                    && ctx.get_operation_name() == op_name
+                    && (variables.is_none() || state.variables.as_ref() == variables)
+                {
+                    refetches.push(state.refetch.clone());
+                    if variables.is_none() && !variable_sets.contains(&state.variables) {
+                        variable_sets.push(state.variables.clone());
+                    }
                 }
             }
         }
@@ -1212,7 +1202,7 @@ impl ShalomRuntime {
 
         // Trigger refetch for matching active subscriptions so they fetch fresh data
         // from the network without closing their stream.
-        for (_, _, refetch) in &matching {
+        for refetch in &refetches {
             refetch.notify_one();
         }
 
