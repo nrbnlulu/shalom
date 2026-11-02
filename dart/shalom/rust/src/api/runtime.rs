@@ -824,6 +824,18 @@ pub async fn evict_operation(
     handle.runtime.evict_operation(&name, variables.as_ref())
 }
 
+/// Delete a normalized entity record from the cache by its full entity key [id] (e.g. `"Unit:123"`).
+///
+/// Removes the record from the cache, unlinks any references to it across other
+/// cached records and lists, and notifies all affected subscribers.
+///
+/// Returns `true` if an entity with the given key was present and removed,
+/// or `false` if it was not found in the cache.
+#[frb]
+pub async fn delete(handle: &RuntimeHandle, id: String) -> anyhow::Result<bool> {
+    handle.runtime.delete(&id)
+}
+
 /// Read an entity from the cache through a fragment's selection set.
 ///
 /// Returns `null` when the entity is absent or has missing refs.

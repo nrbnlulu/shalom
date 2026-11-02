@@ -98,6 +98,34 @@ await RemoveGifFromAlbumMutation(client).executeWithCacheUpdate(
 );
 ```
 
+### 3. Deleting an entity directly
+
+When a backend emits a deletion event (e.g. via GraphQL subscription or Relay global ID), or after a deletion mutation, remove the normalized record directly from the cache using `delete`:
+
+```dart
+// Delete by normalized entity key (e.g. Relay global ID or "Typename:id"):
+await client.delete("Album:$albumId");
+
+// Inside mutation update callbacks via CacheProxy:
+await DeleteAlbumMutation(client).executeWithCacheUpdate(
+  id: albumId,
+  update: (cache, data) async {
+    await cache.delete("Album:$albumId");
+  },
+);
+
+// Or via generated fragment shortcuts (which format the entity key automatically):
+await AlbumWidgetData.deleteFrom(cache, albumId);
+// Or on an observed ref:
+await albumRef.deleteFrom(cache);
+```
+
+Deleting an entity:
+- Removes the normalized record from the cache in O(1).
+- Unlinks references to it across other cached records and lists (automatically removing it from lists and setting single references to `null`).
+- Notifies matching observers (such as queries watching affected lists) immediately without refetching from the network.
+- Returns `true` if an entity with the given key was present and deleted, or `false` if it was not found in the cache.
+
 ## Invalidating operations
 
 When patching the cache by hand isn't practical (e.g. server-side sorting,

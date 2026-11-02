@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use serde_json::Value;
 
@@ -130,6 +130,79 @@ impl NormalizedCache {
         let entries = &self.entries;
         self.ref_index
             .retain(|_, locator| resolve_locator(entries, locator).is_some());
+    }
+
+    /// Deletes an entity record by its full entity key (e.g. `"Unit:123"`),
+    /// unlinking all references to it across other records in the cache (removing it from lists,
+    /// setting single references to null) and returns the set of changed cache ref paths.
+    pub fn delete(&mut self, entity_key: &str) -> Option<HashSet<String>> {
+        let removed_record = self.entries.remove(entity_key)?;
+
+        let mut changed = HashSet::new();
+        changed.insert(entity_key.to_string());
+        for field_key in removed_record.keys() {
+            changed.insert(format!("{entity_key}.{field_key}"));
+        }
+        self.ref_index.remove(entity_key);
+        self.prune_ref_index();
+
+        for (record_key, record) in self.entries.iter_mut() {
+            for (field_key, value) in record.iter_mut() {
+                let path = format!("{record_key}.{field_key}");
+                prune_cache_value(value, entity_key, &path, &mut changed);
+            }
+        }
+
+        Some(changed)
+    }
+}
+
+fn prune_cache_value(
+    value: &mut CacheValue,
+    target: &str,
+    current_path: &str,
+    changed: &mut HashSet<String>,
+) -> bool {
+    match value {
+        CacheValue::Ref(k) if k == target => {
+            *value = CacheValue::Scalar(Value::Null);
+            changed.insert(current_path.to_string());
+            true
+        }
+        CacheValue::List(items) => {
+            let mut modified = false;
+            let mut i = 0;
+            while i < items.len() {
+                if matches!(&items[i], CacheValue::Ref(k) if k == target) {
+                    items.remove(i);
+                    modified = true;
+                } else {
+                    let item_path = format!("{current_path}[{i}]");
+                    if prune_cache_value(&mut items[i], target, &item_path, changed) {
+                        modified = true;
+                    }
+                    i += 1;
+                }
+            }
+            if modified {
+                changed.insert(current_path.to_string());
+            }
+            modified
+        }
+        CacheValue::Object(record) => {
+            let mut modified = false;
+            for (field_key, val) in record.iter_mut() {
+                let field_path = format!("{current_path}.{field_key}");
+                if prune_cache_value(val, target, &field_path, changed) {
+                    modified = true;
+                }
+            }
+            if modified {
+                changed.insert(current_path.to_string());
+            }
+            modified
+        }
+        _ => false,
     }
 }
 

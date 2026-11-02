@@ -415,3 +415,95 @@ async fn evict_operation_keeps_matching_subscriptions_alive() {
     // Eviction keeps the subscription alive so it can receive refetched data
     assert!(runtime.subscription_exists(&sub_id));
 }
+
+// ---------------------------------------------------------------------------
+// delete — manual entity deletion from normalized cache
+// ---------------------------------------------------------------------------
+
+#[tokio::test]
+async fn delete_removes_entity_and_notifies_list_observers() {
+    let schema = r#"
+        type Query { users: [User!]! }
+        type User { id: ID!, name: String! }
+    "#;
+    let operation = r#"
+        query GetUsers @observe {
+            users { id name }
+        }
+    "#;
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_operation(operation).unwrap();
+
+    let query_op = runtime.operation_by_name("GetUsers").unwrap();
+    runtime
+        .normalize(
+            &query_op,
+            json!({
+                "users": [
+                    { "id": "1", "name": "Alice" },
+                    { "id": "2", "name": "Bob" }
+                ]
+            }),
+            None,
+        )
+        .unwrap();
+
+    let sub_id =
+        runtime.create_operation_subscription(query_op.clone(), None, ExecutionPolicy::CacheFirst);
+
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["users"].as_array().unwrap().len(), 2);
+
+    assert!(!runtime.delete("User:999").unwrap());
+    assert!(runtime.delete("User:1").unwrap());
+
+    let update = stream.next().await.unwrap().unwrap();
+    let remaining_users = update.data["users"].as_array().unwrap();
+    assert_eq!(remaining_users.len(), 1);
+    assert_eq!(remaining_users[0]["id"], "2");
+    assert_eq!(remaining_users[0]["name"], "Bob");
+
+    let cache = runtime.cache();
+    let cache = cache.lock();
+    assert!(cache.get("User:1").is_none());
+    assert!(cache.get("User:2").is_some());
+    drop(cache);
+
+    assert!(!runtime.delete("User:1").unwrap());
+}
+
+#[tokio::test]
+async fn delete_removes_entity_and_notifies_single_item_observers() {
+    let runtime = make_runtime();
+    let query_op = runtime.operation_by_name("GetUser").unwrap();
+    let query_vars = vars(&[("id", json!("1"))]);
+
+    runtime
+        .normalize(
+            &query_op,
+            json!({ "user": { "id": "1", "name": "Alice" } }),
+            Some(&query_vars),
+        )
+        .unwrap();
+
+    let sub_id = runtime.create_operation_subscription(
+        query_op.clone(),
+        Some(query_vars.clone()),
+        ExecutionPolicy::CacheFirst,
+    );
+
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["user"]["name"], "Alice");
+
+    assert!(!runtime.delete("1").unwrap());
+    assert!(runtime.delete("User:1").unwrap());
+
+    let update = stream.next().await.unwrap().unwrap();
+    assert!(update.data["user"].is_null());
+
+    let cache = runtime.cache();
+    let cache = cache.lock();
+    assert!(cache.get("User:1").is_none());
+}

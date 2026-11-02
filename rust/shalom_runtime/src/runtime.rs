@@ -1221,6 +1221,28 @@ impl ShalomRuntime {
         Ok(true)
     }
 
+    /// Deletes an entity record by its full [entity_key] (e.g. `"Unit:123"`).
+    ///
+    /// Removes the record from the cache, unlinks any references to it across other
+    /// cached records and lists (removing it from lists, setting single references to null),
+    /// and notifies all affected subscribers.
+    ///
+    /// Returns `true` if an entity with the given key was present and removed,
+    /// or `false` if no matching entity existed in the cache.
+    pub fn delete(&self, entity_key: &str) -> anyhow::Result<bool> {
+        let changed = {
+            let cache = self.cache();
+            let mut cache = cache.lock();
+            match cache.delete(entity_key) {
+                Some(changed) => changed,
+                None => return Ok(false),
+            }
+        };
+
+        self.notify_subscribers(&changed)?;
+        Ok(true)
+    }
+
     /// Look up a pre-registered (or remembered) operation by name.
     pub fn operation_by_name(&self, name: &str) -> anyhow::Result<SharedOpCtx> {
         self.engine.global_ctx().get_operation(name).ok_or_else(|| {

@@ -68,6 +68,11 @@ extension type {{ fragment_name }}Ref.fromInput(shalom_core.ObservedRefInput _in
     );
   }
 
+  /// Deletes the entity this ref points to from [cache].
+  Future<bool> deleteFrom(shalom_core.CacheProxy cache) async {
+    return await cache.delete(anchor);
+  }
+
   Stream<shalom_core.GraphQLResponse<{{ fragment_name }}Data>> observe(shalom_core.ShalomRuntimeClient client) {
     return client.subscribeToFragment<{{ fragment_name }}Data>(
       ref: _inner,
@@ -305,6 +310,11 @@ final class {{ fragment_name }}Data implements {{ fragment_name }}, shalom_core.
   /// The normalized cache key for the entity identified by [id], e.g.
   /// `'{{ context.fragment.root_type.schema_typename }}:123'`.
   static String entityKey(String id) => '{{ context.fragment.root_type.schema_typename }}:$id';
+
+  /// Deletes the entity identified by [id] from [cache].
+  static Future<bool> deleteFrom(shalom_core.CacheProxy cache, String id) {
+    return cache.delete(entityKey(id));
+  }
 
   static {{ fragment_name }}Data fromCache(shalom_core.JsonObject data) {
     {% for selection in fragment_data_selections if selection.name != "__typename" -%}
