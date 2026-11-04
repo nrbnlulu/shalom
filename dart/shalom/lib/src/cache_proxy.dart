@@ -39,12 +39,12 @@ class CacheProxy {
     ShalomJsonValue? variables,
   }) => _client.evictOperation(name: name, variables: variables);
 
-  /// Delete an entity record directly from the normalized cache by its full entity key [id] (e.g. 'Unit:123').
+  /// Delete an entity record directly from the normalized cache by its [id].
   ///
   /// Removes the normalized record, unlinks references to it from other
   /// cached records and lists, and notifies matching observers.
   ///
-  /// Returns `true` if an entity with the given key was present and removed,
+  /// Returns `true` if an entity with the given id was present and removed,
   /// or `false` if it was not found in the cache.
   Future<bool> delete(String id) => _client.delete(id);
 

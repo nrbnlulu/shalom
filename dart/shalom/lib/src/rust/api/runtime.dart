@@ -284,12 +284,12 @@ Future<bool> evictOperation({
   variables: variables,
 );
 
-/// Delete a normalized entity record from the cache by its full entity key [id] (e.g. `"Unit:123"`).
+/// Delete a normalized entity record from the cache by its [id].
 ///
 /// Removes the record from the cache, unlinks any references to it across other
 /// cached records and lists, and notifies all affected subscribers.
 ///
-/// Returns `true` if an entity with the given key was present and removed,
+/// Returns `true` if an entity with the given id was present and removed,
 /// or `false` if it was not found in the cache.
 Future<bool> delete({required RuntimeHandle handle, required String id}) =>
     RustLib.instance.api.crateApiRuntimeDelete(handle: handle, id: id);

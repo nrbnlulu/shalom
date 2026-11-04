@@ -655,12 +655,12 @@ class ShalomRuntimeClient {
     );
   }
 
-  /// Delete a normalized entity record from the cache by its full entity key [id] (e.g. 'Unit:123').
+  /// Delete a normalized entity record from the cache by its [id].
   ///
   /// Removes the record from the cache, unlinks any references to it across other
   /// cached records and lists, and notifies all affected subscribers.
   ///
-  /// Returns `true` if an entity with the given key was present and removed,
+  /// Returns `true` if an entity with the given id was present and removed,
   /// or `false` if it was not found in the cache.
   Future<bool> delete(String id) => rs_runtime.delete(handle: _handle, id: id);
 
