@@ -908,4 +908,81 @@ void main() {
     await sub.cancel();
     await client.dispose();
   });
+
+  // -------------------------------------------------------------------------
+  // 10. subscribeToFragment emits GraphQLError when entity is deleted.
+  // -------------------------------------------------------------------------
+  test(
+    "subscribeToFragment emits GraphQLError when entity is deleted",
+    () async {
+      const petFragDef = """
+        fragment PetFrag on Pet @observe {
+          id
+          name
+        }
+      """;
+      const getUserQuery = """
+        $petFragDef
+        query GetUser @observe {
+          user(id: "1") {
+            id
+            name
+            pet { ...PetFrag }
+          }
+        }
+      """;
+
+      final client = _makeClient([
+        GraphQLData(
+          data: {
+            "user": {
+              "id": "1",
+              "name": "Alice",
+              "pet": {"id": "14", "name": "Rex"},
+            },
+          },
+        ),
+      ]);
+
+      client.registerFragment(document: petFragDef);
+      client.registerOperation(document: getUserQuery);
+
+      await client
+          .request<_TestData>(name: "GetUser", decoder: _tdJson)
+          .first
+          .timeout(const Duration(seconds: 5));
+
+      final petUpdates = client.subscribeToFragment<_TestData>(
+        ref: ObservedRefInput(observableId: "PetFrag", anchor: "Pet:14"),
+        decoder: _tdJson,
+      );
+
+      final events = <GraphQLResponse<_TestData>>[];
+      final completer = Completer<void>();
+      final sub = petUpdates.listen((event) {
+        events.add(event);
+        if (events.length == 2) {
+          completer.complete();
+        }
+      });
+
+      while (events.isEmpty) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      expect(_expectData(events.first)["name"], "Rex");
+
+      expect(await client.delete("Pet:14"), isTrue);
+
+      await completer.future.timeout(const Duration(seconds: 5));
+      expect(events.length, 2);
+      expect(events[1], isA<GraphQLError<_TestData>>());
+      final err = events[1] as GraphQLError<_TestData>;
+      expect(err.errors.first["message"], "entity deleted: Pet:14");
+      expect(err.extensions?["code"], "ENTITY_DELETED");
+
+      await sub.cancel();
+
+      await client.dispose();
+    },
+  );
 }

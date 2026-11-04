@@ -2,7 +2,9 @@ use serde_json::{Map, Value, json};
 use tokio::runtime::Builder;
 use tokio_stream::StreamExt;
 
-use shalom_runtime::{ExecutionPolicy, ShalomRuntime, SubscriptionId};
+use shalom_runtime::{
+    ExecutionPolicy, ObservedRef, ShalomRuntime, SubscriptionError, SubscriptionId,
+};
 
 // ---------------------------------------------------------------------------
 // Test schema + SDL helpers
@@ -636,4 +638,58 @@ async fn delete_non_null_reference_suppresses_broken_emission() {
         timeout.is_err(),
         "broken non-null emission must be suppressed"
     );
+}
+
+#[tokio::test]
+async fn delete_entity_notifies_fragment_observer_with_deleted_error() {
+    let schema = r#"
+        type Query { user(id: ID!): User }
+        type User { id: ID! name: String! }
+    "#;
+    let fragment = r#"
+        fragment UserFields on User @observe {
+            id
+            name
+        }
+    "#;
+    let runtime =
+        ShalomRuntime::init(schema, vec![fragment.to_string()], Default::default()).unwrap();
+    let query_op = runtime
+        .register_operation("query GetUser($id: ID!) { user(id: $id) { id name } }")
+        .unwrap();
+    let query_vars = vars(&[("id", json!("7"))]);
+    runtime
+        .normalize(
+            &query_op,
+            json!({
+                "user": { "id": "7", "name": "Alice" }
+            }),
+            Some(&query_vars),
+        )
+        .unwrap();
+
+    let sub_id = runtime
+        .observe_fragment(ObservedRef {
+            observable_id: "UserFields".to_string(),
+            anchor: "User:7".to_string(),
+        })
+        .unwrap();
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["name"], "Alice");
+
+    assert!(runtime.delete("User:7").unwrap());
+
+    let next = stream.next().await.unwrap();
+    match next {
+        Err(SubscriptionError::GraphQL { errors, extensions }) => {
+            assert_eq!(errors[0]["message"], "entity deleted: User:7");
+            assert_eq!(extensions.unwrap()["code"], "ENTITY_DELETED");
+        }
+        other => panic!("expected GraphQL error, got {other:?}"),
+    }
+
+    assert!(stream.next().await.is_none());
+    assert!(!runtime.subscription_exists(&sub_id));
 }

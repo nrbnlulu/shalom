@@ -6,7 +6,7 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::Duration;
 
 use parking_lot::Mutex;
-use serde_json::{Map, Value};
+use serde_json::{Map, Value, json};
 use tokio::sync::{Notify, mpsc};
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use tokio_stream::{Stream, StreamExt};
@@ -98,6 +98,21 @@ impl std::fmt::Display for SubscriptionError {
 }
 
 impl std::error::Error for SubscriptionError {}
+
+impl SubscriptionError {
+    pub fn entity_deleted(anchor: &str) -> Self {
+        let Value::Object(err) = json!({ "message": format!("entity deleted: {anchor}") }) else {
+            unreachable!()
+        };
+        let Value::Object(ext) = json!({ "code": "ENTITY_DELETED" }) else {
+            unreachable!()
+        };
+        Self::GraphQL {
+            errors: vec![err],
+            extensions: Some(ext),
+        }
+    }
+}
 
 /// An observed reference — identifies a fragment subscription by fragment name
 /// and cache anchor (e.g. `"User:1"`).
@@ -1224,8 +1239,7 @@ impl ShalomRuntime {
     /// Deletes an entity record by its full [entity_key] (e.g. `"Unit:123"`).
     ///
     /// Removes the record from the cache, unlinks any references to it across other
-    /// cached records and lists (removing it from lists, setting single references to null),
-    /// and notifies all affected subscribers.
+    /// cached records and lists, and notifies all affected subscribers.
     ///
     /// Returns `true` if an entity with the given key was present and removed,
     /// or `false` if no matching entity existed in the cache.
@@ -1418,6 +1432,13 @@ impl ShalomRuntime {
                                 removed = true;
                             }
                         }
+                    } else if let SubscriptionTarget::Fragment { anchor, .. } = &target
+                        && result.missing_refs.contains(anchor)
+                    {
+                        let _ = state
+                            .sender
+                            .send(Err(SubscriptionError::entity_deleted(anchor)));
+                        removed = true;
                     } else if !result.missing_refs.is_empty() {
                         state.refetch.notify_one();
                     }
