@@ -149,18 +149,24 @@ impl NormalizedCache {
             .retain(|_, locator| resolve_locator(entries, locator).is_some());
     }
 
-    /// Deletes an entity record by its full entity key (e.g. `"Unit:123"`),
+    /// Deletes an entity record by its [id],
     /// unlinking all references to it across other records in the cache (removing it from lists,
     /// setting single references to null) and returns the set of changed cache ref paths.
-    pub fn delete(&mut self, entity_key: &str) -> Option<HashSet<String>> {
-        let removed_record = self.entries.remove(entity_key)?;
+    pub fn delete(&mut self, id: &str) -> Option<HashSet<String>> {
+        let entity_key = self
+            .entries
+            .keys()
+            .find(|k| k.split_once(':').map(|(_, item_id)| item_id) == Some(id))?
+            .clone();
+
+        let removed_record = self.entries.remove(&entity_key)?;
 
         let mut changed = HashSet::new();
-        changed.insert(entity_key.to_string());
+        changed.insert(entity_key.clone());
         for field_key in removed_record.keys() {
             changed.insert(format!("{entity_key}.{field_key}"));
         }
-        self.ref_index.remove(entity_key);
+        self.ref_index.remove(&entity_key);
 
         let mut ref_index = std::mem::take(&mut self.ref_index);
 
@@ -170,7 +176,7 @@ impl NormalizedCache {
                 let mut locator_path = vec![LocatorSegment::Field(field_key.clone())];
                 prune_cache_value(
                     value,
-                    entity_key,
+                    &entity_key,
                     &path,
                     record_key,
                     &mut locator_path,

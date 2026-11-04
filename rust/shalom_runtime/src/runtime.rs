@@ -1236,18 +1236,18 @@ impl ShalomRuntime {
         Ok(true)
     }
 
-    /// Deletes an entity record by its full [entity_key] (e.g. `"Unit:123"`).
+    /// Deletes an entity record by its [id].
     ///
     /// Removes the record from the cache, unlinks any references to it across other
     /// cached records and lists, and notifies all affected subscribers.
     ///
-    /// Returns `true` if an entity with the given key was present and removed,
+    /// Returns `true` if an entity with the given id was present and removed,
     /// or `false` if no matching entity existed in the cache.
-    pub fn delete(&self, entity_key: &str) -> anyhow::Result<bool> {
+    pub fn delete(&self, id: &str) -> anyhow::Result<bool> {
         let changed = {
             let cache = self.cache();
             let mut cache = cache.lock();
-            match cache.delete(entity_key) {
+            match cache.delete(id) {
                 Some(changed) => changed,
                 None => return Ok(false),
             }

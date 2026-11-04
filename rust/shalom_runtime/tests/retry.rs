@@ -501,7 +501,7 @@ async fn delete_non_null_reference_refetches_active_subscription() {
         .expect("ok");
     assert_eq!(first.data["post"]["author"]["name"], "Alice");
 
-    assert!(runtime.delete("User:7").unwrap());
+    assert!(runtime.delete("7").unwrap());
 
     let refetch_envelope = outgoing.next().await.expect("refetch request missing");
     assert_ne!(refetch_envelope.id, first_envelope.id);

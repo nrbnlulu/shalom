@@ -457,8 +457,8 @@ async fn delete_removes_entity_and_notifies_list_observers() {
     let initial = stream.next().await.unwrap().unwrap();
     assert_eq!(initial.data["users"].as_array().unwrap().len(), 2);
 
-    assert!(!runtime.delete("User:999").unwrap());
-    assert!(runtime.delete("User:1").unwrap());
+    assert!(!runtime.delete("999").unwrap());
+    assert!(runtime.delete("1").unwrap());
 
     let update = stream.next().await.unwrap().unwrap();
     let remaining_users = update.data["users"].as_array().unwrap();
@@ -472,7 +472,7 @@ async fn delete_removes_entity_and_notifies_list_observers() {
     assert!(cache.get("User:2").is_some());
     drop(cache);
 
-    assert!(!runtime.delete("User:1").unwrap());
+    assert!(!runtime.delete("1").unwrap());
 }
 
 #[tokio::test]
@@ -499,8 +499,8 @@ async fn delete_removes_entity_and_notifies_single_item_observers() {
     let initial = stream.next().await.unwrap().unwrap();
     assert_eq!(initial.data["user"]["name"], "Alice");
 
+    assert!(runtime.delete("1").unwrap());
     assert!(!runtime.delete("1").unwrap());
-    assert!(runtime.delete("User:1").unwrap());
 
     let update = stream.next().await.unwrap().unwrap();
     assert!(update.data["user"].is_null());
@@ -559,7 +559,7 @@ async fn delete_shifts_subsequent_list_path_locators() {
         );
     }
 
-    assert!(runtime.delete("User:1").unwrap());
+    assert!(runtime.delete("1").unwrap());
 
     {
         let cache_guard = cache.lock();
@@ -630,7 +630,7 @@ async fn delete_non_null_reference_suppresses_broken_emission() {
     let initial = stream.next().await.unwrap().unwrap();
     assert_eq!(initial.data["post"]["author"]["name"], "Alice");
 
-    assert!(runtime.delete("User:7").unwrap());
+    assert!(runtime.delete("7").unwrap());
 
     // Subscription must not emit an illegal payload where author is null.
     let timeout = tokio::time::timeout(std::time::Duration::from_millis(50), stream.next()).await;
@@ -679,7 +679,7 @@ async fn delete_entity_notifies_fragment_observer_with_deleted_error() {
     let initial = stream.next().await.unwrap().unwrap();
     assert_eq!(initial.data["name"], "Alice");
 
-    assert!(runtime.delete("User:7").unwrap());
+    assert!(runtime.delete("7").unwrap());
 
     let next = stream.next().await.unwrap();
     match next {
@@ -748,7 +748,7 @@ async fn rollback_optimistic_after_delete_safely_suppresses_dangling_emission() 
     let opt_emission = stream.next().await.unwrap().unwrap();
     assert_eq!(opt_emission.data["post"]["title"], "Optimistic");
 
-    assert!(runtime.delete("User:1").unwrap());
+    assert!(runtime.delete("1").unwrap());
 
     runtime.rollback_optimistic(write_id).unwrap();
 

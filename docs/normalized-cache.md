@@ -103,14 +103,14 @@ await RemoveGifFromAlbumMutation(client).executeWithCacheUpdate(
 When a backend emits a deletion event (e.g. via GraphQL subscription or Relay global ID), or after a deletion mutation, remove the normalized record directly from the cache using `delete`:
 
 ```dart
-// Delete by normalized entity key (e.g. Relay global ID or "Typename:id"):
-await client.delete("Album:$albumId");
+// Delete by entity ID (e.g. Relay global ID or database ID):
+await client.delete(albumId);
 
 // Inside mutation update callbacks via CacheProxy:
 await DeleteAlbumMutation(client).executeWithCacheUpdate(
   id: albumId,
   update: (cache, data) async {
-    await cache.delete("Album:$albumId");
+    await cache.delete(albumId);
   },
 );
 

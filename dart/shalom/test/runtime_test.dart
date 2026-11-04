@@ -803,9 +803,9 @@ void main() {
       await firstReceived.future.timeout(const Duration(seconds: 5));
       expect(updates.first.length, 2);
 
-      expect(await client.delete('User:999'), isFalse);
+      expect(await client.delete('999'), isFalse);
+      expect(await client.delete('1'), isTrue);
       expect(await client.delete('1'), isFalse);
-      expect(await client.delete('User:1'), isTrue);
 
       await secondReceived.future.timeout(const Duration(seconds: 5));
       expect(updates.length, 2);
@@ -817,7 +817,7 @@ void main() {
       expect(keys.contains('User:1'), isFalse);
       expect(keys.contains('User:2'), isTrue);
 
-      expect(await client.delete('User:1'), isFalse);
+      expect(await client.delete('1'), isFalse);
 
       await sub.cancel();
       await client.dispose();
@@ -890,7 +890,7 @@ void main() {
     expect(petBefore, isNotNull);
     expect(petBefore!['name'], 'Rex');
 
-    expect(await cache.delete('Pet:14'), isTrue);
+    expect(await cache.delete('14'), isTrue);
 
     final petAfter = await cache.readFragment<_TestData>(
       fragmentName: 'PetFrag',
@@ -903,7 +903,7 @@ void main() {
     expect(updates.length, 2);
     expect((updates[1] as Map)['pet'], isNull);
 
-    expect(await cache.delete('Pet:14'), isFalse);
+    expect(await cache.delete('14'), isFalse);
 
     await sub.cancel();
     await client.dispose();
@@ -971,7 +971,7 @@ void main() {
       }
       expect(_expectData(events.first)["name"], "Rex");
 
-      expect(await client.delete("Pet:14"), isTrue);
+      expect(await client.delete("14"), isTrue);
 
       await completer.future.timeout(const Duration(seconds: 5));
       expect(events.length, 2);
