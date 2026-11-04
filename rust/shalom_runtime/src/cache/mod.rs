@@ -155,8 +155,9 @@ impl NormalizedCache {
 
     /// Deletes an entity record by its [id],
     /// unlinking all references to it across other records in the cache (removing it from lists,
-    /// setting single references to null) and returns the set of changed cache ref paths.
-    pub fn delete(&mut self, id: &str) -> Option<HashSet<String>> {
+    /// setting single references to null) and returns the set of changed cache ref paths along
+    /// with the concrete entity key that was deleted.
+    pub fn delete(&mut self, id: &str) -> Option<(HashSet<String>, CacheKey)> {
         let entity_key = self
             .entries
             .keys()
@@ -193,7 +194,31 @@ impl NormalizedCache {
         self.ref_index = ref_index;
         self.prune_ref_index();
 
-        Some(changed)
+        Some((changed, entity_key))
+    }
+}
+
+pub fn unlink_record_target(record: &mut CacheRecord, target: &str) {
+    for value in record.values_mut() {
+        unlink_cache_value_target(value, target);
+    }
+}
+
+pub fn unlink_cache_value_target(value: &mut CacheValue, target: &str) {
+    match value {
+        CacheValue::Ref(k) if k == target => {
+            *value = CacheValue::Scalar(Value::Null);
+        }
+        CacheValue::List(items) => {
+            items.retain(|item| !matches!(item, CacheValue::Ref(k) if k == target));
+            for item in items.iter_mut() {
+                unlink_cache_value_target(item, target);
+            }
+        }
+        CacheValue::Object(record) => {
+            unlink_record_target(record, target);
+        }
+        _ => {}
     }
 }
 

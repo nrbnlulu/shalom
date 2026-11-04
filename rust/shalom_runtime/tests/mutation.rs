@@ -482,3 +482,47 @@ async fn rollback_optimistic_after_delete_safely_suppresses_dangling_emission() 
         .unwrap();
     assert!(read.is_none());
 }
+
+
+#[tokio::test]
+async fn rollback_optimistic_does_not_resurrect_deleted_entity() {
+    let schema = r#"
+        type Query { user(id: ID!): User }
+        type Mutation { updateUser(id: ID!, name: String!): User }
+        type User { id: ID! name: String! }
+    "#;
+    let query_op = "query GetUser($id: ID!) @observe { user(id: $id) { id name } }";
+    let mutation_op = r#"mutation UpdateUser($id: ID!, $name: String!) { updateUser(id: $id, name: $name) { id name } }"#;
+
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    let op_ctx = runtime.register_operation(query_op).unwrap();
+    runtime.register_operation(mutation_op).unwrap();
+
+    let query_vars = vars(&[("id", json!("1"))]);
+    runtime
+        .normalize(
+            &op_ctx,
+            json!({
+                "user": { "id": "1", "name": "Alice" }
+            }),
+            Some(&query_vars),
+        )
+        .unwrap();
+
+    let write_id = runtime
+        .write_optimistic(
+            "UpdateUser",
+            json!({
+                "updateUser": { "id": "1", "name": "Alicia" }
+            }),
+        )
+        .unwrap();
+
+    assert!(runtime.delete("1").unwrap());
+
+    runtime.rollback_optimistic(write_id).unwrap();
+
+    let cache = runtime.cache();
+    let cache = cache.lock();
+    assert!(cache.get("User:1").is_none());
+}
