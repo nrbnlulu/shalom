@@ -1,4 +1,5 @@
 use std::collections::{HashMap, HashSet};
+use std::fmt::Write;
 
 use serde_json::Value;
 
@@ -64,6 +65,22 @@ impl CacheLocator {
             base: self.base.clone(),
             path,
         }
+    }
+
+    pub fn to_path_key(&self) -> String {
+        let mut key = self.base.clone();
+        for segment in &self.path {
+            match segment {
+                LocatorSegment::Field(f) => {
+                    key.push('.');
+                    key.push_str(f);
+                }
+                LocatorSegment::Index(i) => {
+                    let _ = write!(key, "[{i}]");
+                }
+            }
+        }
+        key
     }
 }
 
@@ -144,14 +161,27 @@ impl NormalizedCache {
             changed.insert(format!("{entity_key}.{field_key}"));
         }
         self.ref_index.remove(entity_key);
-        self.prune_ref_index();
+
+        let mut ref_index = std::mem::take(&mut self.ref_index);
 
         for (record_key, record) in self.entries.iter_mut() {
             for (field_key, value) in record.iter_mut() {
                 let path = format!("{record_key}.{field_key}");
-                prune_cache_value(value, entity_key, &path, &mut changed);
+                let mut locator_path = vec![LocatorSegment::Field(field_key.clone())];
+                prune_cache_value(
+                    value,
+                    entity_key,
+                    &path,
+                    record_key,
+                    &mut locator_path,
+                    &mut ref_index,
+                    &mut changed,
+                );
             }
         }
+
+        self.ref_index = ref_index;
+        self.prune_ref_index();
 
         Some(changed)
     }
@@ -161,6 +191,9 @@ fn prune_cache_value(
     value: &mut CacheValue,
     target: &str,
     current_path: &str,
+    base_key: &str,
+    locator_path: &mut Vec<LocatorSegment>,
+    ref_index: &mut HashMap<CacheKey, CacheLocator>,
     changed: &mut HashSet<String>,
 ) -> bool {
     match value {
@@ -176,11 +209,22 @@ fn prune_cache_value(
                 if matches!(&items[i], CacheValue::Ref(k) if k == target) {
                     items.remove(i);
                     modified = true;
+                    shift_list_locators(ref_index, base_key, locator_path, i, changed);
                 } else {
                     let item_path = format!("{current_path}[{i}]");
-                    if prune_cache_value(&mut items[i], target, &item_path, changed) {
+                    locator_path.push(LocatorSegment::Index(i));
+                    if prune_cache_value(
+                        &mut items[i],
+                        target,
+                        &item_path,
+                        base_key,
+                        locator_path,
+                        ref_index,
+                        changed,
+                    ) {
                         modified = true;
                     }
+                    locator_path.pop();
                     i += 1;
                 }
             }
@@ -193,9 +237,19 @@ fn prune_cache_value(
             let mut modified = false;
             for (field_key, val) in record.iter_mut() {
                 let field_path = format!("{current_path}.{field_key}");
-                if prune_cache_value(val, target, &field_path, changed) {
+                locator_path.push(LocatorSegment::Field(field_key.clone()));
+                if prune_cache_value(
+                    val,
+                    target,
+                    &field_path,
+                    base_key,
+                    locator_path,
+                    ref_index,
+                    changed,
+                ) {
                     modified = true;
                 }
+                locator_path.pop();
             }
             if modified {
                 changed.insert(current_path.to_string());
@@ -203,6 +257,49 @@ fn prune_cache_value(
             modified
         }
         _ => false,
+    }
+}
+
+fn shift_list_locators(
+    ref_index: &mut HashMap<CacheKey, CacheLocator>,
+    base_key: &str,
+    list_path: &[LocatorSegment],
+    removed_idx: usize,
+    changed: &mut HashSet<String>,
+) {
+    if ref_index.is_empty() {
+        return;
+    }
+
+    let prefix_len = list_path.len();
+    let mut to_remove = Vec::new();
+    let mut to_insert = Vec::new();
+
+    for (key, locator) in ref_index.iter() {
+        if locator.base == base_key
+            && locator.path.len() > prefix_len
+            && locator.path[..prefix_len] == *list_path
+            && let LocatorSegment::Index(idx) = locator.path[prefix_len]
+        {
+            if idx == removed_idx {
+                to_remove.push(key.clone());
+            } else if idx > removed_idx {
+                let mut new_locator = locator.clone();
+                new_locator.path[prefix_len] = LocatorSegment::Index(idx - 1);
+                let new_key = new_locator.to_path_key();
+                to_remove.push(key.clone());
+                to_insert.push((new_key, new_locator));
+            }
+        }
+    }
+
+    for k in to_remove {
+        ref_index.remove(&k);
+        changed.insert(k);
+    }
+    for (k, loc) in to_insert {
+        changed.insert(k.clone());
+        ref_index.insert(k, loc);
     }
 }
 

@@ -507,3 +507,81 @@ async fn delete_removes_entity_and_notifies_single_item_observers() {
     let cache = cache.lock();
     assert!(cache.get("User:1").is_none());
 }
+
+#[tokio::test]
+async fn delete_shifts_subsequent_list_path_locators() {
+    let schema = r#"
+        type Query { nodes: [Node!]! }
+        union Node = User | Note
+        type User { id: ID!, name: String! }
+        type Note { text: String! }
+    "#;
+    let operation = r#"
+        query GetNodes @observe {
+            nodes {
+                __typename
+                ... on User { id name }
+                ... on Note { text }
+            }
+        }
+    "#;
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_operation(operation).unwrap();
+
+    let query_op = runtime.operation_by_name("GetNodes").unwrap();
+    runtime
+        .normalize(
+            &query_op,
+            json!({
+                "nodes": [
+                    { "__typename": "User", "id": "1", "name": "Alice" },
+                    { "__typename": "Note", "text": "Hello" }
+                ]
+            }),
+            None,
+        )
+        .unwrap();
+
+    let cache = runtime.cache();
+    {
+        let cache_guard = cache.lock();
+        let loc = cache_guard
+            .ref_locator("ROOT_QUERY.nodes[1]")
+            .expect("locator for index 1");
+        assert_eq!(
+            loc.path,
+            vec![
+                shalom_runtime::cache::LocatorSegment::Field("nodes".into()),
+                shalom_runtime::cache::LocatorSegment::Index(1),
+            ]
+        );
+    }
+
+    assert!(runtime.delete("User:1").unwrap());
+
+    {
+        let cache_guard = cache.lock();
+        assert!(cache_guard.ref_locator("ROOT_QUERY.nodes[1]").is_none());
+        let shifted_loc = cache_guard
+            .ref_locator("ROOT_QUERY.nodes[0]")
+            .expect("shifted locator for index 0");
+        assert_eq!(
+            shifted_loc.path,
+            vec![
+                shalom_runtime::cache::LocatorSegment::Field("nodes".into()),
+                shalom_runtime::cache::LocatorSegment::Index(0),
+            ]
+        );
+        let resolved = cache_guard
+            .resolve_locator_ref(shifted_loc)
+            .expect("resolved value");
+        if let shalom_runtime::cache::CacheValue::Object(map) = resolved {
+            assert_eq!(
+                map.get("text"),
+                Some(&shalom_runtime::cache::CacheValue::Scalar(json!("Hello")))
+            );
+        } else {
+            panic!("expected Object");
+        }
+    }
+}
