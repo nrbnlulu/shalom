@@ -105,42 +105,9 @@ fragment UserCard on User {
 
   client.registerFragment(
     document: r'''
-fragment DogFrag on Dog @observe {
-  name
-  breed
-  id
-}
-''',
-  );
-  client.registerFragment(
-    document: r'''
-fragment ZooWidget on Zoo @observe {
+fragment PetWidget on Pet @observe {
   id
   name
-  cages {
-    id
-    name
-  }
-}
-''',
-  );
-  client.registerFragment(
-    document: r'''
-fragment AnimalWithOwnerWidget on Animal @observe {
-  id
-  ... on Dog {
-    breed
-    owner {
-      name
-      id
-    }
-    id
-  }
-  ... on Cat {
-    color
-    id
-  }
-  __typename
 }
 ''',
   );
@@ -160,6 +127,18 @@ fragment ZooAnimalsWidget on Zoo @observe {
       id
     }
     __typename
+  }
+}
+''',
+  );
+  client.registerFragment(
+    document: r'''
+fragment ZooWidget on Zoo @observe {
+  id
+  name
+  cages {
+    id
+    name
   }
 }
 ''',
@@ -213,6 +192,15 @@ fragment DogWithFavoriteToyFrag on Dog @observe {
   );
   client.registerFragment(
     document: r'''
+fragment DogFrag on Dog @observe {
+  name
+  breed
+  id
+}
+''',
+  );
+  client.registerFragment(
+    document: r'''
 fragment AnimalWidget on Animal @observe {
   id
   ... on Dog {
@@ -229,9 +217,21 @@ fragment AnimalWidget on Animal @observe {
   );
   client.registerFragment(
     document: r'''
-fragment PetWidget on Pet @observe {
+fragment AnimalWithOwnerWidget on Animal @observe {
   id
-  name
+  ... on Dog {
+    breed
+    owner {
+      name
+      id
+    }
+    id
+  }
+  ... on Cat {
+    color
+    id
+  }
+  __typename
 }
 ''',
   );
@@ -240,6 +240,26 @@ fragment PetWidget on Pet @observe {
 query UserCardQuery($id: ID!) @observe {
   user(id: $id) {
     ...UserCard
+    id
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query PetQuery($id: ID!) @observe {
+  pet(id: $id) {
+    ...PetWidget
+    id
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query ZooAnimalsQuery($id: ID!) @observe {
+  zoo(id: $id) {
+    ...ZooAnimalsWidget
     id
   }
 }
@@ -267,47 +287,12 @@ query UserWidget($id: ID!) @observe {
   );
   client.registerOperation(
     document: r'''
-query AnimalWithOwnerQuery($id: ID!) @observe {
-  animal(id: $id) {
-    ...AnimalWithOwnerWidget
-    __typename
-    id
-  }
-}
-''',
-  );
-  client.registerOperation(
-    document: r'''
-query ZooAnimalsQuery($id: ID!) @observe {
-  zoo(id: $id) {
-    ...ZooAnimalsWidget
-    id
-  }
-}
-''',
-  );
-  client.registerOperation(
-    document: r'''
 query ZooAnimalsContractQuery @observe {
   animals {
     __typename
     ...CommonAnimalFrag
     ...DogFavoriteFrag
     ...DogWithFavoriteToyFrag
-    id
-  }
-}
-''',
-  );
-  client.registerOperation(
-    document: r'''
-query UnwrapQuery($id: ID!) @observe {
-  pet(id: $id) {
-    ...PetWidget
-    id
-  }
-  petUnwrapped(id: $id) {
-    ...PetWidget
     id
   }
 }
@@ -326,8 +311,23 @@ query AnimalQuery($id: ID!) @observe {
   );
   client.registerOperation(
     document: r'''
-query PetQuery($id: ID!) @observe {
+query AnimalWithOwnerQuery($id: ID!) @observe {
+  animal(id: $id) {
+    ...AnimalWithOwnerWidget
+    __typename
+    id
+  }
+}
+''',
+  );
+  client.registerOperation(
+    document: r'''
+query UnwrapQuery($id: ID!) @observe {
   pet(id: $id) {
+    ...PetWidget
+    id
+  }
+  petUnwrapped(id: $id) {
     ...PetWidget
     id
   }
