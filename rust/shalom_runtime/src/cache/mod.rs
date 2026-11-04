@@ -68,20 +68,24 @@ impl CacheLocator {
     }
 
     pub fn to_path_key(&self) -> String {
-        let mut key = self.base.clone();
-        for segment in &self.path {
-            match segment {
-                LocatorSegment::Field(f) => {
-                    key.push('.');
-                    key.push_str(f);
-                }
-                LocatorSegment::Index(i) => {
-                    let _ = write!(key, "[{i}]");
-                }
+        format_path(&self.base, &self.path)
+    }
+}
+
+fn format_path(base: &str, path: &[LocatorSegment]) -> String {
+    let mut key = base.to_string();
+    for segment in path {
+        match segment {
+            LocatorSegment::Field(f) => {
+                key.push('.');
+                key.push_str(f);
+            }
+            LocatorSegment::Index(i) => {
+                let _ = write!(key, "[{i}]");
             }
         }
-        key
     }
+    key
 }
 
 #[derive(Debug, Default)]
@@ -166,18 +170,18 @@ impl NormalizedCache {
         for field_key in removed_record.keys() {
             changed.insert(format!("{entity_key}.{field_key}"));
         }
-        self.ref_index.remove(&entity_key);
 
         let mut ref_index = std::mem::take(&mut self.ref_index);
 
         for (record_key, record) in self.entries.iter_mut() {
             for (field_key, value) in record.iter_mut() {
-                let path = format!("{record_key}.{field_key}");
+                if matches!(value, CacheValue::Scalar(_)) {
+                    continue;
+                }
                 let mut locator_path = vec![LocatorSegment::Field(field_key.clone())];
                 prune_cache_value(
                     value,
                     &entity_key,
-                    &path,
                     record_key,
                     &mut locator_path,
                     &mut ref_index,
@@ -196,7 +200,6 @@ impl NormalizedCache {
 fn prune_cache_value(
     value: &mut CacheValue,
     target: &str,
-    current_path: &str,
     base_key: &str,
     locator_path: &mut Vec<LocatorSegment>,
     ref_index: &mut HashMap<CacheKey, CacheLocator>,
@@ -205,60 +208,51 @@ fn prune_cache_value(
     match value {
         CacheValue::Ref(k) if k == target => {
             *value = CacheValue::Scalar(Value::Null);
-            changed.insert(current_path.to_string());
+            changed.insert(format_path(base_key, locator_path));
             true
         }
         CacheValue::List(items) => {
             let mut modified = false;
-            let mut i = 0;
-            while i < items.len() {
-                if matches!(&items[i], CacheValue::Ref(k) if k == target) {
-                    items.remove(i);
-                    modified = true;
-                    shift_list_locators(ref_index, base_key, locator_path, i, changed);
-                } else {
-                    let item_path = format!("{current_path}[{i}]");
-                    locator_path.push(LocatorSegment::Index(i));
-                    if prune_cache_value(
-                        &mut items[i],
-                        target,
-                        &item_path,
-                        base_key,
-                        locator_path,
-                        ref_index,
-                        changed,
-                    ) {
-                        modified = true;
-                    }
-                    locator_path.pop();
-                    i += 1;
+            let mut removed_indices = Vec::new();
+
+            for (orig_idx, item) in items.iter_mut().enumerate() {
+                if matches!(item, CacheValue::Ref(k) if k == target) {
+                    removed_indices.push(orig_idx);
                 }
             }
+
+            if !removed_indices.is_empty() {
+                modified = true;
+                items.retain(|item| !matches!(item, CacheValue::Ref(k) if k == target));
+                for &idx in removed_indices.iter().rev() {
+                    shift_list_locators(ref_index, base_key, locator_path, idx, changed);
+                }
+            }
+
+            for (new_idx, item) in items.iter_mut().enumerate() {
+                locator_path.push(LocatorSegment::Index(new_idx));
+                if prune_cache_value(item, target, base_key, locator_path, ref_index, changed) {
+                    modified = true;
+                }
+                locator_path.pop();
+            }
+
             if modified {
-                changed.insert(current_path.to_string());
+                changed.insert(format_path(base_key, locator_path));
             }
             modified
         }
         CacheValue::Object(record) => {
             let mut modified = false;
             for (field_key, val) in record.iter_mut() {
-                let field_path = format!("{current_path}.{field_key}");
                 locator_path.push(LocatorSegment::Field(field_key.clone()));
-                if prune_cache_value(
-                    val,
-                    target,
-                    &field_path,
-                    base_key,
-                    locator_path,
-                    ref_index,
-                    changed,
-                ) {
+                if prune_cache_value(val, target, base_key, locator_path, ref_index, changed) {
                     modified = true;
                 }
                 locator_path.pop();
             }
             if modified {
-                changed.insert(current_path.to_string());
+                changed.insert(format_path(base_key, locator_path));
             }
             modified
         }
