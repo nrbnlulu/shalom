@@ -585,3 +585,55 @@ async fn delete_shifts_subsequent_list_path_locators() {
         }
     }
 }
+
+#[tokio::test]
+async fn delete_non_null_reference_suppresses_broken_emission() {
+    let schema = r#"
+        type Query { post(id: ID!): Post }
+        type Post { id: ID! author: User! }
+        type User { id: ID! name: String! }
+    "#;
+    let operation = r#"
+        query GetPost($id: ID!) @observe {
+            post(id: $id) {
+                id
+                author { id name }
+            }
+        }
+    "#;
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_operation(operation).unwrap();
+
+    let query_op = runtime.operation_by_name("GetPost").unwrap();
+    let query_vars = vars(&[("id", json!("1"))]);
+    runtime
+        .normalize(
+            &query_op,
+            json!({
+                "post": {
+                    "id": "1",
+                    "author": { "id": "7", "name": "Alice" }
+                }
+            }),
+            Some(&query_vars),
+        )
+        .unwrap();
+
+    let sub_id = runtime.create_operation_subscription(
+        query_op.clone(),
+        Some(query_vars.clone()),
+        ExecutionPolicy::CacheFirst,
+    );
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["post"]["author"]["name"], "Alice");
+
+    assert!(runtime.delete("User:7").unwrap());
+
+    // Subscription must not emit an illegal payload where author is null.
+    let timeout = tokio::time::timeout(std::time::Duration::from_millis(50), stream.next()).await;
+    assert!(
+        timeout.is_err(),
+        "broken non-null emission must be suppressed"
+    );
+}

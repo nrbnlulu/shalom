@@ -1418,6 +1418,8 @@ impl ShalomRuntime {
                                 removed = true;
                             }
                         }
+                    } else if !result.missing_refs.is_empty() {
+                        state.refetch.notify_one();
                     }
                 }
                 if let Some(old_keys) = &old_keys {
