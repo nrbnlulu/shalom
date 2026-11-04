@@ -754,6 +754,7 @@ void main() {
       await client.dispose();
     },
   );
+
   // -------------------------------------------------------------------------
   // 8. ShalomRuntimeClient.delete removes record and notifies observers.
   // -------------------------------------------------------------------------
@@ -783,7 +784,8 @@ void main() {
       client.registerOperation(document: opDoc);
 
       final updates = <List<dynamic>>[];
-      final completer = Completer<void>();
+      final firstReceived = Completer<void>();
+      final secondReceived = Completer<void>();
 
       final sub = client
           .request<_TestData>(name: 'GetUsers', decoder: _tdJson)
@@ -791,21 +793,21 @@ void main() {
             final data = _expectData(response);
             final users = data['users'] as List<dynamic>;
             updates.add(users);
-            if (updates.length == 2 && !completer.isCompleted) {
-              completer.complete();
+            if (updates.length == 1 && !firstReceived.isCompleted) {
+              firstReceived.complete();
+            } else if (updates.length == 2 && !secondReceived.isCompleted) {
+              secondReceived.complete();
             }
           });
 
-      while (updates.isEmpty) {
-        await Future<void>.delayed(const Duration(milliseconds: 10));
-      }
+      await firstReceived.future.timeout(const Duration(seconds: 5));
       expect(updates.first.length, 2);
 
       expect(await client.delete('User:999'), isFalse);
       expect(await client.delete('1'), isFalse);
       expect(await client.delete('User:1'), isTrue);
 
-      await completer.future.timeout(const Duration(seconds: 5));
+      await secondReceived.future.timeout(const Duration(seconds: 5));
       expect(updates.length, 2);
       expect(updates[1].length, 1);
       expect((updates[1][0] as Map)['id'], '2');
@@ -860,21 +862,22 @@ void main() {
     client.registerOperation(document: getUserQuery);
 
     final updates = <dynamic>[];
-    final completer = Completer<void>();
+    final firstReceived = Completer<void>();
+    final secondReceived = Completer<void>();
 
     final sub = client
         .request<_TestData>(name: 'GetUserPet', decoder: _tdJson)
         .listen((response) {
           final data = _expectData(response);
           updates.add(data['user']);
-          if (updates.length == 2 && !completer.isCompleted) {
-            completer.complete();
+          if (updates.length == 1 && !firstReceived.isCompleted) {
+            firstReceived.complete();
+          } else if (updates.length == 2 && !secondReceived.isCompleted) {
+            secondReceived.complete();
           }
         });
 
-    while (updates.isEmpty) {
-      await Future<void>.delayed(const Duration(milliseconds: 10));
-    }
+    await firstReceived.future.timeout(const Duration(seconds: 5));
     expect((updates.first as Map)['pet'], isNotNull);
 
     final cache = CacheProxy(client);
@@ -896,7 +899,7 @@ void main() {
     );
     expect(petAfter, isNull);
 
-    await completer.future.timeout(const Duration(seconds: 5));
+    await secondReceived.future.timeout(const Duration(seconds: 5));
     expect(updates.length, 2);
     expect((updates[1] as Map)['pet'], isNull);
 
