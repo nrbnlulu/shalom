@@ -693,3 +693,70 @@ async fn delete_entity_notifies_fragment_observer_with_deleted_error() {
     assert!(stream.next().await.is_none());
     assert!(!runtime.subscription_exists(&sub_id));
 }
+
+#[tokio::test]
+async fn rollback_optimistic_after_delete_safely_suppresses_dangling_emission() {
+    let schema = r#"
+        type Query { post(id: ID!): Post }
+        type Mutation { updatePost(id: ID!, title: String!): Post }
+        type Post { id: ID! title: String! author: User! }
+        type User { id: ID! name: String! }
+    "#;
+    let query_op =
+        "query GetPost($id: ID!) @observe { post(id: $id) { id title author { id name } } }";
+    let mutation_op = r#"mutation UpdatePost($id: ID!, $title: String!) { updatePost(id: $id, title: $title) { id title } }"#;
+
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    let op_ctx = runtime.register_operation(query_op).unwrap();
+    runtime.register_operation(mutation_op).unwrap();
+
+    let query_vars = vars(&[("id", json!("10"))]);
+
+    runtime
+        .normalize(
+            &op_ctx,
+            json!({
+                "post": {
+                    "id": "10",
+                    "title": "Original",
+                    "author": { "id": "1", "name": "Alice" }
+                }
+            }),
+            Some(&query_vars),
+        )
+        .unwrap();
+
+    let sub_id = runtime.create_operation_subscription(
+        op_ctx.clone(),
+        Some(query_vars.clone()),
+        ExecutionPolicy::CacheFirst,
+    );
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["post"]["title"], "Original");
+    assert_eq!(initial.data["post"]["author"]["name"], "Alice");
+
+    let write_id = runtime
+        .write_optimistic(
+            "UpdatePost",
+            json!({
+                "updatePost": { "id": "10", "title": "Optimistic" }
+            }),
+        )
+        .unwrap();
+
+    let opt_emission = stream.next().await.unwrap().unwrap();
+    assert_eq!(opt_emission.data["post"]["title"], "Optimistic");
+
+    assert!(runtime.delete("User:1").unwrap());
+
+    runtime.rollback_optimistic(write_id).unwrap();
+
+    let timeout = tokio::time::timeout(std::time::Duration::from_millis(50), stream.next()).await;
+    assert!(timeout.is_err());
+
+    let read = runtime
+        .try_read_operation("GetPost", Some(&query_vars))
+        .unwrap();
+    assert!(read.is_none());
+}

@@ -126,6 +126,9 @@ Deleting an entity:
 - Notifies matching observers (such as queries watching affected lists) immediately without refetching from the network.
 - Returns `true` if an entity with the given key was present and deleted, or `false` if it was not found in the cache.
 
+!!! note "Permanent deletion & optimistic updates"
+    `delete` performs an immediate, permanent deletion across the cache and does not take rollback snapshots. It should be used after a mutation succeeds (e.g. inside `executeWithCacheUpdate`) or in response to real-time events, rather than inside `executeOptimistic`. If an earlier optimistic mutation on the same field subsequently rolls back, the runtime detects missing references and automatically refetches fresh data from the network.
+
 ## Invalidating operations
 
 When patching the cache by hand isn't practical (e.g. server-side sorting,
