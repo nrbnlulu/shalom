@@ -57,9 +57,9 @@ def main():
         else:
             ratio = e.get("comparison_ratio", val / old) - 1
             delta = f"{ratio:+.1%}"
-            thr = THRESHOLDS.get(unit, float("inf"))
-            mark = "🔴 regression" if ratio > thr else ("🟢 improvement" if ratio < -thr else "")
-            regression = ratio > thr
+            threshold = THRESHOLDS.get(unit, float("inf"))
+            mark = "🔴 regression" if ratio > threshold else ("🟢 improvement" if ratio < -threshold else "")
+            regression = ratio > threshold
         if unit == "rss":
             mark = "informational"
         row = f"| {name} | {fmt(old, unit)} | {fmt(val, unit)} | {delta} | {mark} |"
