@@ -1,0 +1,96 @@
+name: Benchmarks
+
+# main: store the latest results as an artifact (the baseline).
+# pull requests: run the benchmarks, diff against the baseline and comment on the PR.
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+permissions:
+    contents: read
+    actions: read
+    pull-requests: write
+
+jobs:
+    benchmarks:
+        runs-on: ubuntu-latest
+        env:
+            CARGO_BUILD_JOBS: 2
+            BENCH_OUTPUT: ${{ github.workspace }}/rust-results.json
+            GH_TOKEN: ${{ github.token }}
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up Rust
+              uses: actions-rust-lang/setup-rust-toolchain@v1
+              with:
+                  toolchain: stable
+
+            - name: Run benchmarks
+              run: cargo bench -p shalom_runtime --bench runtime_bench
+
+            - name: Build native library (release)
+              run: cargo build --release -p shalom_ffi
+
+            - name: Setup Flutter SDK
+              uses: flutter-actions/setup-flutter@v4
+              with:
+                  channel: stable
+
+            - name: Run Dart <-> Rust subscriber benchmarks
+              run: |
+                  cd dart/shalom
+                  dart pub get
+                  dart run benchmark/subscribers.dart "$GITHUB_WORKSPACE/target/release/libshalom_ffi.so" "$GITHUB_WORKSPACE/dart-results.json"
+
+            - name: Merge results
+              run: jq -s 'add' rust-results.json dart-results.json > bench-results.json
+
+            - name: Save baseline (main)
+              if: github.event_name == 'push'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: benchmark-baseline
+                  path: bench-results.json
+                  overwrite: true
+                  retention-days: 90
+
+            - name: Download baseline from main
+              if: github.event_name == 'pull_request'
+              continue-on-error: true
+              run: |
+                  run_id=$(gh run list --workflow benchmarks.yml --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+                  if [ -n "$run_id" ]; then
+                      gh run download "$run_id" --name benchmark-baseline --dir baseline
+                  fi
+
+            - name: Compare
+              if: github.event_name == 'pull_request'
+              run: |
+                  if [ -f baseline/bench-results.json ]; then
+                      python3 scripts/bench_compare.py bench-results.json baseline/bench-results.json > bench-report.md
+                  else
+                      python3 scripts/bench_compare.py bench-results.json > bench-report.md
+                  fi
+                  cat bench-report.md >> "$GITHUB_STEP_SUMMARY"
+
+            - name: Comment on PR
+              if: github.event_name == 'pull_request'
+              # fork PRs get a read-only token; the report is still in the job summary
+              continue-on-error: true
+              run: |
+                  pr=${{ github.event.pull_request.number }}
+                  existing=$(gh api "repos/${{ github.repository }}/issues/$pr/comments" --paginate \
+                      --jq '[.[] | select(.body | contains("<!-- shalom-benchmarks -->"))][0].id')
+                  if [ -n "$existing" ]; then
+                      gh api -X PATCH "repos/${{ github.repository }}/issues/comments/$existing" -F body=@bench-report.md
+                  else
+                      gh pr comment "$pr" --body-file bench-report.md
+                  fi

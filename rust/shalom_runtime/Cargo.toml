@@ -22,3 +22,7 @@ async-trait = "0.1.89"
 async-stream = "0.3.6"
 dashmap = "6"
 parking_lot = { workspace = true }
+
+[[bench]]
+name = "runtime_bench"
+harness = false
