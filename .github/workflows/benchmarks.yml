@@ -1,5 +1,6 @@
 name: Benchmarks
 
+# Runs untrusted PR code: read-only permissions, no comment here.
 # main: store the latest results as an artifact (the baseline).
 # pull requests: run the benchmarks, diff against the baseline and comment on the PR.
 
@@ -14,7 +15,6 @@ on:
 permissions:
     contents: read
     actions: read
-    pull-requests: write
 
 jobs:
     benchmarks:
@@ -81,16 +81,18 @@ jobs:
                   fi
                   cat bench-report.md >> "$GITHUB_STEP_SUMMARY"
 
-            - name: Comment on PR
+            # Fork PRs only get a read-only token, so commenting happens in
+            # benchmarks-comment.yml (workflow_run, base-repo context).
+            - name: Save report for the comment workflow
               if: github.event_name == 'pull_request'
-              # fork PRs get a read-only token; the report is still in the job summary
-              continue-on-error: true
               run: |
-                  pr=${{ github.event.pull_request.number }}
-                  existing=$(gh api "repos/${{ github.repository }}/issues/$pr/comments" --paginate \
-                      --jq '[.[] | select(.body | contains("<!-- shalom-benchmarks -->"))][0].id')
-                  if [ -n "$existing" ]; then
-                      gh api -X PATCH "repos/${{ github.repository }}/issues/comments/$existing" -F body=@bench-report.md
-                  else
-                      gh pr comment "$pr" --body-file bench-report.md
-                  fi
+                  mkdir -p bench-report
+                  cp bench-report.md bench-report/report.md
+                  echo "${{ github.event.pull_request.number }}" > bench-report/pr-number
+
+            - name: Upload report
+              if: github.event_name == 'pull_request'
+              uses: actions/upload-artifact@v4
+              with:
+                  name: benchmark-report
+                  path: bench-report/
