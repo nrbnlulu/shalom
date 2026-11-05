@@ -1443,6 +1443,7 @@ impl ShalomRuntime {
                             }
                         }
                     } else if let SubscriptionTarget::Fragment { anchor, .. } = &target
+                        && state.has_emitted
                         && result.missing_refs.contains(anchor)
                     {
                         let _ = state

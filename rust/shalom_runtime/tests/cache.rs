@@ -2876,6 +2876,57 @@ async fn delete_non_null_reference_suppresses_broken_emission() {
 }
 
 #[tokio::test]
+async fn absent_fragment_survives_unrelated_normalization() {
+    let schema = r#"
+        type Query { user(id: ID!): User }
+        type User { id: ID! name: String! }
+    "#;
+    let fragment = "fragment UserFields on User @observe { id name }";
+    let runtime =
+        ShalomRuntime::init(schema, vec![fragment.to_string()], Default::default()).unwrap();
+    let query_op = runtime
+        .register_operation("query GetUser($id: ID!) { user(id: $id) { id name } }")
+        .unwrap();
+    let sub_id = runtime
+        .observe_fragment(ObservedRef {
+            observable_id: "UserFields".to_string(),
+            anchor: "User:7".to_string(),
+        })
+        .unwrap();
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+
+    runtime
+        .normalize(
+            &query_op,
+            json!({ "user": { "id": "8", "name": "Bob" } }),
+            Some(&vars(&[("id", json!("8"))])),
+        )
+        .unwrap();
+
+    assert!(
+        tokio::time::timeout(std::time::Duration::from_millis(50), stream.next())
+            .await
+            .is_err(),
+        "an absent fragment must keep waiting without emitting an error or closing"
+    );
+    assert!(runtime.subscription_exists(&sub_id));
+
+    runtime
+        .normalize(
+            &query_op,
+            json!({ "user": { "id": "7", "name": "Alice" } }),
+            Some(&vars(&[("id", json!("7"))])),
+        )
+        .unwrap();
+    let response = tokio::time::timeout(std::time::Duration::from_millis(50), stream.next())
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+    assert_eq!(response.data["name"], "Alice");
+}
+
+#[tokio::test]
 async fn delete_entity_notifies_fragment_observer_with_deleted_error() {
     let schema = r#"
         type Query { user(id: ID!): User }
