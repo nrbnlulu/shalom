@@ -11,7 +11,9 @@ use shalom_core::operation::context::SharedOpCtx;
 use shalom_core::shalom_config::ShalomConfig;
 use shalom_runtime::cache::{CacheRecord, CacheValue};
 use shalom_runtime::normalization::NormalizationResult;
-use shalom_runtime::{ExecutionPolicy, ObservedRef, ShalomRuntime, SubscriptionId};
+use shalom_runtime::{
+    ExecutionPolicy, ObservedRef, ShalomRuntime, SubscriptionError, SubscriptionId,
+};
 
 fn build_ctx(schema: &str, operation: &str) -> (ShalomRuntime, SharedOpCtx) {
     let schema_ctx = parse_schema(schema).expect("schema parse failed");
@@ -2639,4 +2641,471 @@ fn test_keyed_entity_replaces_inline_object_without_field_leak() {
         profile_record.get("bio").is_none(),
         "Fields from unkeyed inline object must not leak into newly keyed entity"
     );
+}
+
+// ---------------------------------------------------------------------------
+// delete — entity deletion from normalized cache
+// ---------------------------------------------------------------------------
+
+#[tokio::test]
+async fn delete_removes_entity_and_notifies_list_observers() {
+    let schema = r#"
+        type Query { users: [User!]! }
+        type User { id: ID!, name: String! }
+    "#;
+    let operation = r#"
+        query GetUsers @observe {
+            users { id name }
+        }
+    "#;
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_operation(operation).unwrap();
+
+    let query_op = runtime.operation_by_name("GetUsers").unwrap();
+    runtime
+        .normalize(
+            &query_op,
+            json!({
+                "users": [
+                    { "id": "1", "name": "Alice" },
+                    { "id": "2", "name": "Bob" }
+                ]
+            }),
+            None,
+        )
+        .unwrap();
+
+    let sub_id =
+        runtime.create_operation_subscription(query_op.clone(), None, ExecutionPolicy::CacheFirst);
+
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["users"].as_array().unwrap().len(), 2);
+
+    assert!(!runtime.delete("999").unwrap());
+    assert!(runtime.delete("1").unwrap());
+
+    let update = stream.next().await.unwrap().unwrap();
+    let remaining_users = update.data["users"].as_array().unwrap();
+    assert_eq!(remaining_users.len(), 1);
+    assert_eq!(remaining_users[0]["id"], "2");
+    assert_eq!(remaining_users[0]["name"], "Bob");
+
+    let cache = runtime.cache();
+    let cache = cache.lock();
+    assert!(cache.get("User:1").is_none());
+    assert!(cache.get("User:2").is_some());
+    drop(cache);
+
+    assert!(!runtime.delete("1").unwrap());
+}
+
+#[tokio::test]
+async fn delete_removes_entity_and_notifies_single_item_observers() {
+    let schema = r#"
+        type Query { user(id: ID!): User }
+        type User { id: ID! name: String! }
+    "#;
+    let query_op = r#"
+        query GetUser($id: ID!) @observe {
+            user(id: $id) { id name }
+        }
+    "#;
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_operation(query_op).unwrap();
+    let query_op = runtime.operation_by_name("GetUser").unwrap();
+    let query_vars = vars(&[("id", json!("1"))]);
+
+    runtime
+        .normalize(
+            &query_op,
+            json!({ "user": { "id": "1", "name": "Alice" } }),
+            Some(&query_vars),
+        )
+        .unwrap();
+
+    let sub_id = runtime.create_operation_subscription(
+        query_op.clone(),
+        Some(query_vars.clone()),
+        ExecutionPolicy::CacheFirst,
+    );
+
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["user"]["name"], "Alice");
+
+    assert!(runtime.delete("1").unwrap());
+    assert!(!runtime.delete("1").unwrap());
+
+    let update = stream.next().await.unwrap().unwrap();
+    assert!(update.data["user"].is_null());
+
+    let cache = runtime.cache();
+    let cache = cache.lock();
+    assert!(cache.get("User:1").is_none());
+}
+
+#[tokio::test]
+async fn delete_shifts_subsequent_list_path_locators() {
+    let schema = r#"
+        type Query { nodes: [Node!]! }
+        union Node = User | Note
+        type User { id: ID!, name: String! }
+        type Note { text: String! }
+    "#;
+    let operation = r#"
+        query GetNodes @observe {
+            nodes {
+                __typename
+                ... on User { id name }
+                ... on Note { text }
+            }
+        }
+    "#;
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_operation(operation).unwrap();
+
+    let query_op = runtime.operation_by_name("GetNodes").unwrap();
+    runtime
+        .normalize(
+            &query_op,
+            json!({
+                "nodes": [
+                    { "__typename": "User", "id": "1", "name": "Alice" },
+                    { "__typename": "Note", "text": "Hello" }
+                ]
+            }),
+            None,
+        )
+        .unwrap();
+
+    let cache = runtime.cache();
+    {
+        let cache_guard = cache.lock();
+        let loc = cache_guard
+            .ref_locator("ROOT_QUERY.nodes[1]")
+            .expect("locator for index 1");
+        assert_eq!(
+            loc.path,
+            vec![
+                shalom_runtime::cache::LocatorSegment::Field("nodes".into()),
+                shalom_runtime::cache::LocatorSegment::Index(1),
+            ]
+        );
+    }
+
+    assert!(runtime.delete("1").unwrap());
+
+    {
+        let cache_guard = cache.lock();
+        assert!(cache_guard.ref_locator("ROOT_QUERY.nodes[1]").is_none());
+        let shifted_loc = cache_guard
+            .ref_locator("ROOT_QUERY.nodes[0]")
+            .expect("shifted locator for index 0");
+        assert_eq!(
+            shifted_loc.path,
+            vec![
+                shalom_runtime::cache::LocatorSegment::Field("nodes".into()),
+                shalom_runtime::cache::LocatorSegment::Index(0),
+            ]
+        );
+        let resolved = cache_guard
+            .resolve_locator_ref(shifted_loc)
+            .expect("resolved value");
+        if let shalom_runtime::cache::CacheValue::Object(map) = resolved {
+            assert_eq!(
+                map.get("text"),
+                Some(&shalom_runtime::cache::CacheValue::Scalar(json!("Hello")))
+            );
+        } else {
+            panic!("expected Object");
+        }
+    }
+}
+
+#[tokio::test]
+async fn delete_non_null_reference_suppresses_broken_emission() {
+    let schema = r#"
+        type Query { post(id: ID!): Post }
+        type Post { id: ID! author: User! }
+        type User { id: ID! name: String! }
+    "#;
+    let operation = r#"
+        query GetPost($id: ID!) @observe {
+            post(id: $id) {
+                id
+                author { id name }
+            }
+        }
+    "#;
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_operation(operation).unwrap();
+
+    let query_op = runtime.operation_by_name("GetPost").unwrap();
+    let query_vars = vars(&[("id", json!("1"))]);
+    runtime
+        .normalize(
+            &query_op,
+            json!({
+                "post": {
+                    "id": "1",
+                    "author": { "id": "7", "name": "Alice" }
+                }
+            }),
+            Some(&query_vars),
+        )
+        .unwrap();
+
+    let sub_id = runtime.create_operation_subscription(
+        query_op.clone(),
+        Some(query_vars.clone()),
+        ExecutionPolicy::CacheFirst,
+    );
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["post"]["author"]["name"], "Alice");
+
+    assert!(runtime.delete("7").unwrap());
+
+    // Subscription must not emit an illegal payload where author is null.
+    let timeout = tokio::time::timeout(std::time::Duration::from_millis(50), stream.next()).await;
+    assert!(
+        timeout.is_err(),
+        "broken non-null emission must be suppressed"
+    );
+}
+
+#[tokio::test]
+async fn absent_fragment_survives_unrelated_normalization() {
+    let schema = r#"
+        type Query { user(id: ID!): User }
+        type User { id: ID! name: String! }
+    "#;
+    let fragment = "fragment UserFields on User @observe { id name }";
+    let runtime =
+        ShalomRuntime::init(schema, vec![fragment.to_string()], Default::default()).unwrap();
+    let query_op = runtime
+        .register_operation("query GetUser($id: ID!) { user(id: $id) { id name } }")
+        .unwrap();
+    let sub_id = runtime
+        .observe_fragment(ObservedRef {
+            observable_id: "UserFields".to_string(),
+            anchor: "User:7".to_string(),
+        })
+        .unwrap();
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+
+    runtime
+        .normalize(
+            &query_op,
+            json!({ "user": { "id": "8", "name": "Bob" } }),
+            Some(&vars(&[("id", json!("8"))])),
+        )
+        .unwrap();
+
+    assert!(
+        tokio::time::timeout(std::time::Duration::from_millis(50), stream.next())
+            .await
+            .is_err(),
+        "an absent fragment must keep waiting without emitting an error or closing"
+    );
+    assert!(runtime.subscription_exists(&sub_id));
+
+    runtime
+        .normalize(
+            &query_op,
+            json!({ "user": { "id": "7", "name": "Alice" } }),
+            Some(&vars(&[("id", json!("7"))])),
+        )
+        .unwrap();
+    let response = tokio::time::timeout(std::time::Duration::from_millis(50), stream.next())
+        .await
+        .unwrap()
+        .unwrap()
+        .unwrap();
+    assert_eq!(response.data["name"], "Alice");
+}
+
+#[tokio::test]
+async fn delete_entity_notifies_fragment_observer_with_deleted_error() {
+    let schema = r#"
+        type Query { user(id: ID!): User }
+        type User { id: ID! name: String! }
+    "#;
+    let fragment = r#"
+        fragment UserFields on User @observe {
+            id
+            name
+        }
+    "#;
+    let runtime =
+        ShalomRuntime::init(schema, vec![fragment.to_string()], Default::default()).unwrap();
+    let query_op = runtime
+        .register_operation("query GetUser($id: ID!) { user(id: $id) { id name } }")
+        .unwrap();
+    let query_vars = vars(&[("id", json!("7"))]);
+    runtime
+        .normalize(
+            &query_op,
+            json!({
+                "user": { "id": "7", "name": "Alice" }
+            }),
+            Some(&query_vars),
+        )
+        .unwrap();
+
+    let sub_id = runtime
+        .observe_fragment(ObservedRef {
+            observable_id: "UserFields".to_string(),
+            anchor: "User:7".to_string(),
+        })
+        .unwrap();
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["name"], "Alice");
+
+    assert!(runtime.delete("7").unwrap());
+
+    let next = stream.next().await.unwrap();
+    match next {
+        Err(SubscriptionError::GraphQL { errors, extensions }) => {
+            assert_eq!(errors[0]["message"], "entity deleted: User:7");
+            assert_eq!(extensions.unwrap()["code"], "ENTITY_DELETED");
+        }
+        other => panic!("expected GraphQL error, got {other:?}"),
+    }
+
+    assert!(stream.next().await.is_none());
+    assert!(!runtime.subscription_exists(&sub_id));
+}
+
+#[tokio::test]
+async fn delete_unlinks_nested_references_inside_embedded_objects_and_lists() {
+    let schema = r#"
+        type Query { post: Post }
+        type Post {
+            id: ID!
+            title: String!
+            metadata: PostMetadata!
+        }
+        type PostMetadata {
+            leadAuthor: User
+            coauthors: [User!]!
+        }
+        type User { id: ID! name: String! }
+    "#;
+    let operation = r#"
+        query GetPost @observe {
+            post {
+                id
+                title
+                metadata {
+                    leadAuthor { id name }
+                    coauthors { id name }
+                }
+            }
+        }
+    "#;
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_operation(operation).unwrap();
+    let query_op = runtime.operation_by_name("GetPost").unwrap();
+
+    runtime
+        .normalize(
+            &query_op,
+            json!({
+                "post": {
+                    "id": "100",
+                    "title": "Nested Entities",
+                    "metadata": {
+                        "leadAuthor": { "id": "1", "name": "Alice" },
+                        "coauthors": [
+                            { "id": "1", "name": "Alice" },
+                            { "id": "2", "name": "Bob" }
+                        ]
+                    }
+                }
+            }),
+            None,
+        )
+        .unwrap();
+
+    let sub_id =
+        runtime.create_operation_subscription(query_op.clone(), None, ExecutionPolicy::CacheFirst);
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(
+        initial.data["post"]["metadata"]["leadAuthor"]["name"],
+        "Alice"
+    );
+    assert_eq!(
+        initial.data["post"]["metadata"]["coauthors"]
+            .as_array()
+            .unwrap()
+            .len(),
+        2
+    );
+
+    assert!(runtime.delete("1").unwrap());
+
+    let update = stream.next().await.unwrap().unwrap();
+    assert!(update.data["post"]["metadata"]["leadAuthor"].is_null());
+    let coauthors = update.data["post"]["metadata"]["coauthors"]
+        .as_array()
+        .unwrap();
+    assert_eq!(coauthors.len(), 1);
+    assert_eq!(coauthors[0]["id"], "2");
+    assert_eq!(coauthors[0]["name"], "Bob");
+}
+
+#[tokio::test]
+async fn delete_removes_polymorphic_entity_from_interface_list() {
+    let schema = r#"
+        type Query { search: [SearchResult!]! }
+        interface SearchResult { id: ID! }
+        type User implements SearchResult { id: ID! name: String! }
+        type Post implements SearchResult { id: ID! title: String! }
+    "#;
+    let operation = r#"
+        query GetSearch @observe {
+            search {
+                id
+                __typename
+                ... on User { name }
+                ... on Post { title }
+            }
+        }
+    "#;
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_operation(operation).unwrap();
+    let query_op = runtime.operation_by_name("GetSearch").unwrap();
+
+    runtime
+        .normalize(
+            &query_op,
+            json!({
+                "search": [
+                    { "__typename": "User", "id": "1", "name": "Alice" },
+                    { "__typename": "Post", "id": "2", "title": "GraphQL" }
+                ]
+            }),
+            None,
+        )
+        .unwrap();
+
+    let sub_id =
+        runtime.create_operation_subscription(query_op.clone(), None, ExecutionPolicy::CacheFirst);
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["search"].as_array().unwrap().len(), 2);
+
+    assert!(runtime.delete("1").unwrap());
+
+    let update = stream.next().await.unwrap().unwrap();
+    let remaining = update.data["search"].as_array().unwrap();
+    assert_eq!(remaining.len(), 1);
+    assert_eq!(remaining[0]["id"], "2");
+    assert_eq!(remaining[0]["__typename"], "Post");
+    assert_eq!(remaining[0]["title"], "GraphQL");
 }

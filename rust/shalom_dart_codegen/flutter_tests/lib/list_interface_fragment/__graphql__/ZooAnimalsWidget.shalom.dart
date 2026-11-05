@@ -54,6 +54,11 @@ extension type ZooAnimalsWidgetRef.fromInput(
     );
   }
 
+  /// Deletes the entity this ref points to from [cache].
+  Future<bool> deleteFrom(shalom_core.CacheProxy cache) => cache.delete(
+    anchor.contains(':') ? anchor.substring(anchor.indexOf(':') + 1) : anchor,
+  );
+
   Stream<shalom_core.GraphQLResponse<ZooAnimalsWidgetData>> observe(
     shalom_core.ShalomRuntimeClient client,
   ) {
@@ -274,6 +279,11 @@ final class ZooAnimalsWidgetData
   /// The normalized cache key for the entity identified by [id], e.g.
   /// `'Zoo:123'`.
   static String entityKey(String id) => 'Zoo:$id';
+
+  /// Deletes the entity identified by [id] from [cache].
+  static Future<bool> deleteFrom(shalom_core.CacheProxy cache, String id) {
+    return cache.delete(id);
+  }
 
   static ZooAnimalsWidgetData fromCache(shalom_core.JsonObject data) {
     final List<ZooAnimalsWidget_animals> animals$value =

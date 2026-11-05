@@ -60,6 +60,11 @@ extension type DogWithFavoriteToyFragRef.fromInput(
     );
   }
 
+  /// Deletes the entity this ref points to from [cache].
+  Future<bool> deleteFrom(shalom_core.CacheProxy cache) => cache.delete(
+    anchor.contains(':') ? anchor.substring(anchor.indexOf(':') + 1) : anchor,
+  );
+
   Stream<shalom_core.GraphQLResponse<DogWithFavoriteToyFragData>> observe(
     shalom_core.ShalomRuntimeClient client,
   ) {
@@ -115,6 +120,11 @@ final class DogWithFavoriteToyFragData
   /// The normalized cache key for the entity identified by [id], e.g.
   /// `'Dog:123'`.
   static String entityKey(String id) => 'Dog:$id';
+
+  /// Deletes the entity identified by [id] from [cache].
+  static Future<bool> deleteFrom(shalom_core.CacheProxy cache, String id) {
+    return cache.delete(id);
+  }
 
   static DogWithFavoriteToyFragData fromCache(shalom_core.JsonObject data) {
     final String breed$value = data['breed'] as String;

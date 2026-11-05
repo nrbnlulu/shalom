@@ -415,3 +415,113 @@ async fn evict_operation_keeps_matching_subscriptions_alive() {
     // Eviction keeps the subscription alive so it can receive refetched data
     assert!(runtime.subscription_exists(&sub_id));
 }
+
+#[tokio::test]
+async fn rollback_optimistic_after_delete_safely_suppresses_dangling_emission() {
+    let schema = r#"
+        type Query { post(id: ID!): Post }
+        type Mutation { updatePost(id: ID!, title: String!): Post }
+        type Post { id: ID! title: String! author: User! }
+        type User { id: ID! name: String! }
+    "#;
+    let query_op =
+        "query GetPost($id: ID!) @observe { post(id: $id) { id title author { id name } } }";
+    let mutation_op = r#"mutation UpdatePost($id: ID!, $title: String!) { updatePost(id: $id, title: $title) { id title } }"#;
+
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    let op_ctx = runtime.register_operation(query_op).unwrap();
+    runtime.register_operation(mutation_op).unwrap();
+
+    let query_vars = vars(&[("id", json!("10"))]);
+
+    runtime
+        .normalize(
+            &op_ctx,
+            json!({
+                "post": {
+                    "id": "10",
+                    "title": "Original",
+                    "author": { "id": "1", "name": "Alice" }
+                }
+            }),
+            Some(&query_vars),
+        )
+        .unwrap();
+
+    let sub_id = runtime.create_operation_subscription(
+        op_ctx.clone(),
+        Some(query_vars.clone()),
+        ExecutionPolicy::CacheFirst,
+    );
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["post"]["title"], "Original");
+    assert_eq!(initial.data["post"]["author"]["name"], "Alice");
+
+    let write_id = runtime
+        .write_optimistic(
+            "UpdatePost",
+            json!({
+                "updatePost": { "id": "10", "title": "Optimistic" }
+            }),
+        )
+        .unwrap();
+
+    let opt_emission = stream.next().await.unwrap().unwrap();
+    assert_eq!(opt_emission.data["post"]["title"], "Optimistic");
+
+    assert!(runtime.delete("1").unwrap());
+
+    runtime.rollback_optimistic(write_id).unwrap();
+
+    let timeout = tokio::time::timeout(std::time::Duration::from_millis(50), stream.next()).await;
+    assert!(timeout.is_err());
+
+    let read = runtime
+        .try_read_operation("GetPost", Some(&query_vars))
+        .unwrap();
+    assert!(read.is_none());
+}
+
+#[tokio::test]
+async fn rollback_optimistic_does_not_resurrect_deleted_entity() {
+    let schema = r#"
+        type Query { user(id: ID!): User }
+        type Mutation { updateUser(id: ID!, name: String!): User }
+        type User { id: ID! name: String! }
+    "#;
+    let query_op = "query GetUser($id: ID!) @observe { user(id: $id) { id name } }";
+    let mutation_op = r#"mutation UpdateUser($id: ID!, $name: String!) { updateUser(id: $id, name: $name) { id name } }"#;
+
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    let op_ctx = runtime.register_operation(query_op).unwrap();
+    runtime.register_operation(mutation_op).unwrap();
+
+    let query_vars = vars(&[("id", json!("1"))]);
+    runtime
+        .normalize(
+            &op_ctx,
+            json!({
+                "user": { "id": "1", "name": "Alice" }
+            }),
+            Some(&query_vars),
+        )
+        .unwrap();
+
+    let write_id = runtime
+        .write_optimistic(
+            "UpdateUser",
+            json!({
+                "updateUser": { "id": "1", "name": "Alicia" }
+            }),
+        )
+        .unwrap();
+
+    assert!(runtime.delete("1").unwrap());
+
+    runtime.rollback_optimistic(write_id).unwrap();
+
+    let cache = runtime.cache();
+    let cache = cache.lock();
+    assert!(cache.get("User:1").is_none());
+}

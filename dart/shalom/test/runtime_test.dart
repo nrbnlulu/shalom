@@ -148,6 +148,7 @@ T _expectData<T>(GraphQLResponse<T> response) {
 const _schemaSdl = '''
 type Query {
   user(id: ID!): User
+  users: [User!]!
   post(id: ID!): Post
   version: String!
 }
@@ -749,6 +750,238 @@ void main() {
         await sub15.first.timeout(const Duration(seconds: 5)),
       );
       expect(pet15['name'], 'Fido');
+
+      await client.dispose();
+    },
+  );
+
+  // -------------------------------------------------------------------------
+  // 8. ShalomRuntimeClient.delete removes record and notifies observers.
+  // -------------------------------------------------------------------------
+  test(
+    'ShalomRuntimeClient delete removes entity and notifies matching observers',
+    () async {
+      const opDoc = '''
+        query GetUsers @observe {
+          users {
+            id
+            name
+          }
+        }
+      ''';
+
+      final client = _makeClient([
+        GraphQLData(
+          data: {
+            'users': [
+              {'id': '1', 'name': 'Alice'},
+              {'id': '2', 'name': 'Bob'},
+            ],
+          },
+        ),
+      ]);
+
+      client.registerOperation(document: opDoc);
+
+      final updates = <List<dynamic>>[];
+      final firstReceived = Completer<void>();
+      final secondReceived = Completer<void>();
+
+      final sub = client
+          .request<_TestData>(name: 'GetUsers', decoder: _tdJson)
+          .listen((response) {
+            final data = _expectData(response);
+            final users = data['users'] as List<dynamic>;
+            updates.add(users);
+            if (updates.length == 1 && !firstReceived.isCompleted) {
+              firstReceived.complete();
+            } else if (updates.length == 2 && !secondReceived.isCompleted) {
+              secondReceived.complete();
+            }
+          });
+
+      await firstReceived.future.timeout(const Duration(seconds: 5));
+      expect(updates.first.length, 2);
+
+      expect(await client.delete('999'), isFalse);
+      expect(await client.delete('1'), isTrue);
+      expect(await client.delete('1'), isFalse);
+
+      await secondReceived.future.timeout(const Duration(seconds: 5));
+      expect(updates.length, 2);
+      expect(updates[1].length, 1);
+      expect((updates[1][0] as Map)['id'], '2');
+      expect((updates[1][0] as Map)['name'], 'Bob');
+
+      final keys = await client.getCacheKeys();
+      expect(keys.contains('User:1'), isFalse);
+      expect(keys.contains('User:2'), isTrue);
+
+      expect(await client.delete('1'), isFalse);
+
+      await sub.cancel();
+      await client.dispose();
+    },
+  );
+
+  // -------------------------------------------------------------------------
+  // 9. CacheProxy.delete removes entity and notifies observers.
+  // -------------------------------------------------------------------------
+  test('CacheProxy delete works through CacheProxy interface', () async {
+    const petFragDef = '''
+        fragment PetFrag on Pet @observe {
+          id
+          name
+        }
+      ''';
+    const getUserQuery =
+        '''
+        $petFragDef
+        query GetUserPet @observe {
+          user(id: "1") {
+            id
+            name
+            pet { ...PetFrag }
+          }
+        }
+      ''';
+
+    final client = _makeClient([
+      GraphQLData(
+        data: {
+          'user': {
+            'id': '1',
+            'name': 'Alice',
+            'pet': {'id': '14', 'name': 'Rex'},
+          },
+        },
+      ),
+    ]);
+
+    client.registerFragment(document: petFragDef);
+    client.registerOperation(document: getUserQuery);
+
+    final updates = <dynamic>[];
+    final firstReceived = Completer<void>();
+    final secondReceived = Completer<void>();
+
+    final sub = client
+        .request<_TestData>(name: 'GetUserPet', decoder: _tdJson)
+        .listen((response) {
+          final data = _expectData(response);
+          updates.add(data['user']);
+          if (updates.length == 1 && !firstReceived.isCompleted) {
+            firstReceived.complete();
+          } else if (updates.length == 2 && !secondReceived.isCompleted) {
+            secondReceived.complete();
+          }
+        });
+
+    await firstReceived.future.timeout(const Duration(seconds: 5));
+    expect((updates.first as Map)['pet'], isNotNull);
+
+    final cache = CacheProxy(client);
+
+    final petBefore = await cache.readFragment<_TestData>(
+      fragmentName: 'PetFrag',
+      entityKey: 'Pet:14',
+      decoder: _tdJson,
+    );
+    expect(petBefore, isNotNull);
+    expect(petBefore!['name'], 'Rex');
+
+    expect(await cache.delete('14'), isTrue);
+
+    final petAfter = await cache.readFragment<_TestData>(
+      fragmentName: 'PetFrag',
+      entityKey: 'Pet:14',
+      decoder: _tdJson,
+    );
+    expect(petAfter, isNull);
+
+    await secondReceived.future.timeout(const Duration(seconds: 5));
+    expect(updates.length, 2);
+    expect((updates[1] as Map)['pet'], isNull);
+
+    expect(await cache.delete('14'), isFalse);
+
+    await sub.cancel();
+    await client.dispose();
+  });
+
+  // -------------------------------------------------------------------------
+  // 10. subscribeToFragment emits GraphQLError when entity is deleted.
+  // -------------------------------------------------------------------------
+  test(
+    "subscribeToFragment emits GraphQLError when entity is deleted",
+    () async {
+      const petFragDef = """
+        fragment PetFrag on Pet @observe {
+          id
+          name
+        }
+      """;
+      const getUserQuery =
+          """
+        $petFragDef
+        query GetUser @observe {
+          user(id: "1") {
+            id
+            name
+            pet { ...PetFrag }
+          }
+        }
+      """;
+
+      final client = _makeClient([
+        GraphQLData(
+          data: {
+            "user": {
+              "id": "1",
+              "name": "Alice",
+              "pet": {"id": "14", "name": "Rex"},
+            },
+          },
+        ),
+      ]);
+
+      client.registerFragment(document: petFragDef);
+      client.registerOperation(document: getUserQuery);
+
+      await client
+          .request<_TestData>(name: "GetUser", decoder: _tdJson)
+          .first
+          .timeout(const Duration(seconds: 5));
+
+      final petUpdates = client.subscribeToFragment<_TestData>(
+        ref: ObservedRefInput(observableId: "PetFrag", anchor: "Pet:14"),
+        decoder: _tdJson,
+      );
+
+      final events = <GraphQLResponse<_TestData>>[];
+      final completer = Completer<void>();
+      final sub = petUpdates.listen((event) {
+        events.add(event);
+        if (events.length == 2) {
+          completer.complete();
+        }
+      });
+
+      while (events.isEmpty) {
+        await Future<void>.delayed(const Duration(milliseconds: 10));
+      }
+      expect(_expectData(events.first)["name"], "Rex");
+
+      expect(await client.delete("14"), isTrue);
+
+      await completer.future.timeout(const Duration(seconds: 5));
+      expect(events.length, 2);
+      expect(events[1], isA<GraphQLError<_TestData>>());
+      final err = events[1] as GraphQLError<_TestData>;
+      expect(err.errors.first["message"], "entity deleted: Pet:14");
+      expect(err.extensions?["code"], "ENTITY_DELETED");
+
+      await sub.cancel();
 
       await client.dispose();
     },

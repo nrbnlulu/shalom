@@ -6,7 +6,7 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::Duration;
 
 use parking_lot::Mutex;
-use serde_json::{Map, Value};
+use serde_json::{Map, Value, json};
 use tokio::sync::{Notify, mpsc};
 use tokio_stream::wrappers::UnboundedReceiverStream;
 use tokio_stream::{Stream, StreamExt};
@@ -17,7 +17,7 @@ use shalom_core::operation::context::{ExecutableContext, SharedOpCtx};
 use shalom_core::operation::fragments::SharedFragmentContext;
 use shalom_core::shalom_config::ShalomConfig;
 
-use crate::cache::{CacheRecord, NormalizedCache};
+use crate::cache::{CacheRecord, NormalizedCache, unlink_record_target};
 use crate::execution::ExecutionEngine;
 use crate::gc::{SubscriptionTracker, collect_garbage};
 use crate::normalization::NormalizationResult;
@@ -98,6 +98,21 @@ impl std::fmt::Display for SubscriptionError {
 }
 
 impl std::error::Error for SubscriptionError {}
+
+impl SubscriptionError {
+    pub fn entity_deleted(anchor: &str) -> Self {
+        let Value::Object(err) = json!({ "message": format!("entity deleted: {anchor}") }) else {
+            unreachable!()
+        };
+        let Value::Object(ext) = json!({ "code": "ENTITY_DELETED" }) else {
+            unreachable!()
+        };
+        Self::GraphQL {
+            errors: vec![err],
+            extensions: Some(ext),
+        }
+    }
+}
 
 /// An observed reference — identifies a fragment subscription by fragment name
 /// and cache anchor (e.g. `"User:1"`).
@@ -1221,6 +1236,37 @@ impl ShalomRuntime {
         Ok(true)
     }
 
+    /// Deletes an entity record by its [id].
+    ///
+    /// Removes the record from the cache, unlinks any references to it across other
+    /// cached records and lists, and notifies all affected subscribers.
+    ///
+    /// Returns `true` if an entity with the given id was present and removed,
+    /// or `false` if no matching entity existed in the cache.
+    pub fn delete(&self, id: &str) -> anyhow::Result<bool> {
+        let (changed, entity_key) = {
+            let cache = self.cache();
+            let mut cache = cache.lock();
+            match cache.delete(id) {
+                Some((changed, entity_key)) => (changed, entity_key),
+                None => return Ok(false),
+            }
+        };
+
+        {
+            let mut optimistic_writes = self.optimistic_writes.lock();
+            for write in optimistic_writes.values_mut() {
+                write.snapshot.remove(&entity_key);
+                for record in write.snapshot.values_mut().flatten() {
+                    unlink_record_target(record, &entity_key);
+                }
+            }
+        }
+
+        self.notify_subscribers(&changed)?;
+        Ok(true)
+    }
+
     /// Look up a pre-registered (or remembered) operation by name.
     pub fn operation_by_name(&self, name: &str) -> anyhow::Result<SharedOpCtx> {
         self.engine.global_ctx().get_operation(name).ok_or_else(|| {
@@ -1396,6 +1442,14 @@ impl ShalomRuntime {
                                 removed = true;
                             }
                         }
+                    } else if let SubscriptionTarget::Fragment { anchor, .. } = &target
+                        && state.has_emitted
+                        && result.missing_refs.contains(anchor)
+                    {
+                        let _ = state
+                            .sender
+                            .send(Err(SubscriptionError::entity_deleted(anchor)));
+                        removed = true;
                     }
                 }
                 if let Some(old_keys) = &old_keys {

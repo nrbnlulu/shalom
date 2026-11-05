@@ -52,6 +52,11 @@ extension type ToyFragRef.fromInput(shalom_core.ObservedRefInput _inner) {
     );
   }
 
+  /// Deletes the entity this ref points to from [cache].
+  Future<bool> deleteFrom(shalom_core.CacheProxy cache) => cache.delete(
+    anchor.contains(':') ? anchor.substring(anchor.indexOf(':') + 1) : anchor,
+  );
+
   Stream<shalom_core.GraphQLResponse<ToyFragData>> observe(
     shalom_core.ShalomRuntimeClient client,
   ) {
@@ -96,6 +101,11 @@ final class ToyFragData implements ToyFrag, shalom_core.FragmentInterface {
   /// The normalized cache key for the entity identified by [id], e.g.
   /// `'Toy:123'`.
   static String entityKey(String id) => 'Toy:$id';
+
+  /// Deletes the entity identified by [id] from [cache].
+  static Future<bool> deleteFrom(shalom_core.CacheProxy cache, String id) {
+    return cache.delete(id);
+  }
 
   static ToyFragData fromCache(shalom_core.JsonObject data) {
     final String id$value = data['id'] as String;

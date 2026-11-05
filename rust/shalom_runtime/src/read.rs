@@ -155,21 +155,31 @@ impl<'a> CacheReader<'a> {
         missing_refs: &mut HashSet<String>,
     ) -> anyhow::Result<Value> {
         let field_ref_key = format!("{}.{}", parent_ref_key, field_segment);
+
+        let Some(cached_value) = cached_value else {
+            missing_refs.insert(field_ref_key);
+            return Ok(Value::Null);
+        };
+
+        if let CacheValue::Scalar(v) = cached_value
+            && v.is_null()
+        {
+            if !selection.kind.is_optional() {
+                missing_refs.insert(field_ref_key);
+            }
+            return Ok(Value::Null);
+        }
+
         match &selection.kind {
             SelectionKind::Scalar(_) | SelectionKind::Enum(_) => match cached_value {
-                Some(CacheValue::Scalar(value)) => Ok(value.clone()),
-                Some(_) => Err(anyhow::anyhow!(
+                CacheValue::Scalar(value) => Ok(value.clone()),
+                _ => Err(anyhow::anyhow!(
                     "expected scalar for field {}",
                     selection.self_selection_name()
                 )),
-                None => {
-                    missing_refs.insert(field_ref_key);
-                    Ok(Value::Null)
-                }
             },
             SelectionKind::List(list_sel) => match cached_value {
-                Some(CacheValue::Scalar(value)) if value.is_null() => Ok(Value::Null),
-                Some(CacheValue::List(items)) => {
+                CacheValue::List(items) => {
                     let list_ref_key = format!("{}.{}", parent_ref_key, field_segment);
                     self.read_list(
                         list_sel,
@@ -181,34 +191,25 @@ impl<'a> CacheReader<'a> {
                         missing_refs,
                     )
                 }
-                Some(_) => Err(anyhow::anyhow!(
+                _ => Err(anyhow::anyhow!(
                     "expected list for field {}",
                     selection.self_selection_name()
                 )),
-                None => {
-                    missing_refs.insert(field_ref_key);
-                    Ok(Value::Null)
-                }
             },
             SelectionKind::Object(_) | SelectionKind::Union(_) | SelectionKind::Interface(_) => {
                 match cached_value {
-                    Some(CacheValue::Scalar(value)) if value.is_null() => Ok(Value::Null),
-                    Some(CacheValue::Ref(_) | CacheValue::Object(_)) => self.read_object(
+                    CacheValue::Ref(_) | CacheValue::Object(_) => self.read_object(
                         selection,
-                        cached_value.expect("cache value checked"),
+                        cached_value,
                         parent_ref_key,
                         field_segment,
                         refs,
                         missing_refs,
                     ),
-                    Some(_) => Err(anyhow::anyhow!(
+                    _ => Err(anyhow::anyhow!(
                         "expected object for field {}",
                         selection.self_selection_name()
                     )),
-                    None => {
-                        missing_refs.insert(field_ref_key);
-                        Ok(Value::Null)
-                    }
                 }
             }
         }
@@ -233,9 +234,6 @@ impl<'a> CacheReader<'a> {
                 }
             },
             CacheValue::Object(record) => (record, None),
-            CacheValue::Scalar(value) if value.is_null() => {
-                return Ok(Value::Null);
-            }
             _ => {
                 return Err(anyhow::anyhow!(
                     "unexpected cache value for {}",
@@ -342,6 +340,18 @@ impl<'a> CacheReader<'a> {
         let mut output = Vec::with_capacity(cached_items.len());
         for (idx, cached_item) in cached_items.iter().enumerate() {
             let item_segment = format!("{}[{}]", field_segment, idx);
+            let item_ref_key = format!("{}[{}]", list_ref_key, idx);
+
+            if let CacheValue::Scalar(v) = cached_item
+                && v.is_null()
+            {
+                if !list_sel.of_kind.is_optional() {
+                    missing_refs.insert(item_ref_key);
+                }
+                output.push(Value::Null);
+                continue;
+            }
+
             let value = match &list_sel.of_kind {
                 SelectionKind::Scalar(_) | SelectionKind::Enum(_) => match cached_item {
                     CacheValue::Scalar(value) => value.clone(),
@@ -350,7 +360,6 @@ impl<'a> CacheReader<'a> {
                 SelectionKind::Object(_)
                 | SelectionKind::Union(_)
                 | SelectionKind::Interface(_) => match cached_item {
-                    CacheValue::Scalar(value) if value.is_null() => Value::Null,
                     CacheValue::Ref(_) | CacheValue::Object(_) => self.read_object(
                         &FieldSelection::new(
                             selection_common_for_list_item(),
@@ -366,9 +375,7 @@ impl<'a> CacheReader<'a> {
                     _ => return Err(anyhow::anyhow!("expected object list item at {idx}")),
                 },
                 SelectionKind::List(inner_list) => match cached_item {
-                    CacheValue::Scalar(value) if value.is_null() => Value::Null,
                     CacheValue::List(inner_items) => {
-                        let item_ref_key = format!("{list_ref_key}[{idx}]");
                         refs.insert(item_ref_key.clone());
                         self.read_list(
                             inner_list,
@@ -405,9 +412,6 @@ impl<'a> CacheReader<'a> {
                 }
             },
             CacheValue::Object(record) => (record, None),
-            CacheValue::Scalar(value) if value.is_null() => {
-                return Ok(Value::Null);
-            }
             _ => {
                 return Err(anyhow::anyhow!(
                     "unexpected cache value for fragment {}",

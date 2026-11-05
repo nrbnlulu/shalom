@@ -167,6 +167,17 @@ impl SelectionKind {
             of_kind,
         }))
     }
+
+    pub fn is_optional(&self) -> bool {
+        match self {
+            SelectionKind::Scalar(s) => s.is_optional,
+            SelectionKind::Object(o) => o.is_optional,
+            SelectionKind::Enum(e) => e.is_optional,
+            SelectionKind::List(l) => l.is_optional,
+            SelectionKind::Union(u) => u.common.is_optional,
+            SelectionKind::Interface(i) => i.common.is_optional,
+        }
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
