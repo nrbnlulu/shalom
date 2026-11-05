@@ -921,7 +921,8 @@ void main() {
           name
         }
       """;
-      const getUserQuery = """
+      const getUserQuery =
+          """
         $petFragDef
         query GetUser @observe {
           user(id: "1") {
