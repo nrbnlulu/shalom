@@ -37,7 +37,7 @@ def main():
     out = [MARKER, "## Benchmark results", ""]
     if not base:
         out += ["_No baseline from `main` found; showing current results only._", ""]
-    out += ["| Benchmark | main | PR | Δ | |", "|---|---:|---:|---:|---|"]
+    out += ["Metrics use three runs (median; counts use maximum). Timing and RSS comparisons across shared runners are advisory.", "", "<details>", "<summary>Full benchmark results</summary>", "", "| Benchmark | main | PR | Δ | |", "|---|---:|---:|---:|---|"]
     regressions = 0
     for name, e in cur.items():
         unit, val = e["unit"], e["value"]
@@ -57,6 +57,7 @@ def main():
             regressions += ratio > thr
         out.append(f"| {name} | {fmt(old, unit)} | {fmt(val, unit)} | {delta} | {mark} |")
     out += ["", f"Regression thresholds: time +{THRESHOLDS['ns']:.0%} (noisy shared runner), allocated memory +{THRESHOLDS['bytes']:.0%}, process RSS +{THRESHOLDS['rss']:.0%}, counts any increase."]
+    out += ["", "</details>"]
     if regressions:
         out.append(f"\n**{regressions} possible regression(s).**")
     print("\n".join(out))
