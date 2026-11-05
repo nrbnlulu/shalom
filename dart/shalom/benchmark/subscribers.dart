@@ -80,7 +80,9 @@ class Subscribers {
         ) {
           if (e is runtime.SubscriptionEvent_Data) {
             events++;
-            if (events >= _target) _waiter?.complete();
+            if (events >= _target && _waiter != null && !_waiter!.isCompleted) {
+              _waiter!.complete();
+            }
           }
         }),
       );
@@ -110,7 +112,7 @@ class Subscribers {
       await runtime.unsubscribe(handle: handle, subscriptionId: id);
     }
     for (final s in streams) {
-      unawaited(s.cancel());
+      await s.cancel();
     }
   }
 }

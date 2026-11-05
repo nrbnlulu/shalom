@@ -74,6 +74,8 @@ impl Results {
         mut setup: impl FnMut() -> S,
         mut run: impl FnMut(&mut S) -> R,
     ) {
+        // Warm caches and lazy initialization without contaminating measured state.
+        black_box(run(&mut setup()));
         let mut samples = Vec::with_capacity(SAMPLES);
         for _ in 0..SAMPLES {
             let mut state = setup();
