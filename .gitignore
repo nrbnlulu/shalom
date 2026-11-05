@@ -13,6 +13,8 @@
 *.rej
 *.rs.bk
 Cargo.lock
+# Pin workspace dependencies for reproducible CI and benchmarks.
+!/Cargo.lock
 target/
 debug/
 release/
