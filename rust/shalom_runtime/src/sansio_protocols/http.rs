@@ -15,6 +15,7 @@ pub enum HttpMethod {
     Post,
 }
 
+#[allow(clippy::double_must_use)]
 #[async_trait]
 pub trait HttpTransport: Send + Sync {
     async fn request(
