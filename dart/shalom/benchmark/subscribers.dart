@@ -7,7 +7,8 @@ import 'package:shalom/src/rust/api/runtime.dart' as runtime;
 
 // Big query + N subscribers, against an empty and a full cache.
 //
-//   dart run benchmark/subscribers.dart <native-lib-path> [results.json]
+//   dart compile exe benchmark/subscribers.dart -o /tmp/subscribers-bench
+//   /tmp/subscribers-bench <native-lib-path> [results.json]
 //
 // Results are written in the same `{name, unit, value}` (smaller is better)
 // format as the Rust bench so CI can diff them.
