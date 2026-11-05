@@ -8,7 +8,7 @@ gets a looser threshold than (deterministic) memory.
 import json
 import sys
 
-THRESHOLDS = {"ns": 0.25, "bytes": 0.05, "rss": 0.15, "count": 0.0}
+THRESHOLDS = {"ns": 0.25, "bytes": 0.05, "count": 0.0}
 MARKER = "<!-- shalom-benchmarks -->"
 
 
@@ -36,31 +36,47 @@ def main():
     base = load(sys.argv[2]) if len(sys.argv) > 2 else {}
     out = [MARKER, "## Benchmark results", ""]
     if not base:
-        out += ["_No baseline from `main` found; showing current results only._", ""]
-    out += ["Metrics use three runs (median; counts use maximum). Timing and RSS comparisons across shared runners are advisory.", "", "<details>", "<summary>Full benchmark results</summary>", "", "| Benchmark | main | PR | Δ | |", "|---|---:|---:|---:|---|"]
-    regressions = 0
+        out += ["_Showing current results only._", ""]
+    if base:
+        out += ["Base and PR ran on the same runner in three alternating rounds. "
+                "Time Δ is the median of paired ratios; values are medians "
+                "(counts use maximum). RSS is informational.", ""]
+    rows = []
+    flagged = []
+    header = ["| Benchmark | Base | PR | Δ | |", "|---|---:|---:|---:|---|"]
     for name, e in cur.items():
         unit, val = e["unit"], e["value"]
         b = base.get(name)
-        if b is None:
-            out.append(f"| {name} | – | {fmt(val, unit)} | – | |")
+        if b is None or b["unit"] != unit:
+            rows.append(f"| {name} | – | {fmt(val, unit)} | – | |")
             continue
         old = b["value"]
         if old == 0:
             delta, mark = ("0%" if val == 0 else "new"), ("" if val == 0 else "⚠️")
-            regressions += val != 0
+            regression = val != 0 and unit in THRESHOLDS
         else:
-            ratio = (val - old) / old
+            ratio = e.get("comparison_ratio", val / old) - 1
             delta = f"{ratio:+.1%}"
-            thr = THRESHOLDS.get(unit, 0.1)
+            thr = THRESHOLDS.get(unit, float("inf"))
             mark = "🔴 regression" if ratio > thr else ("🟢 improvement" if ratio < -thr else "")
-            regressions += ratio > thr
-        out.append(f"| {name} | {fmt(old, unit)} | {fmt(val, unit)} | {delta} | {mark} |")
-    out += ["", f"Regression thresholds: time +{THRESHOLDS['ns']:.0%} (noisy shared runner), allocated memory +{THRESHOLDS['bytes']:.0%}, process RSS +{THRESHOLDS['rss']:.0%}, counts any increase."]
-    out += ["", "</details>"]
-    if regressions:
-        out.append(f"\n**{regressions} possible regression(s).**")
+            regression = ratio > thr
+        if unit == "rss":
+            mark = "informational"
+        row = f"| {name} | {fmt(old, unit)} | {fmt(val, unit)} | {delta} | {mark} |"
+        rows.append(row)
+        if regression:
+            flagged.append(row)
+    if flagged:
+        out += [f"**{len(flagged)} possible regression(s).**", "", *header, *flagged, ""]
+    elif base:
+        out += ["No suspected regressions.", ""]
+    out += ["<details>", "<summary>Full benchmark results</summary>", "",
+            *header, *rows, "",
+            f"Regression thresholds: time +{THRESHOLDS['ns']:.0%}, "
+            f"allocated memory +{THRESHOLDS['bytes']:.0%}, counts any increase. "
+            "RSS does not trigger regression flags.", "", "</details>"]
     print("\n".join(out))
 
 
-main()
+if __name__ == "__main__":
+    main()
