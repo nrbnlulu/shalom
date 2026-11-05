@@ -45,11 +45,14 @@ jobs:
               with:
                   channel: stable
 
-            - name: Run Dart <-> Rust subscriber benchmarks
+            - name: Compile Dart subscriber benchmarks (AOT)
               run: |
                   cd dart/shalom
                   dart pub get
-                  python3 ../../scripts/bench_repeat.py "$GITHUB_WORKSPACE/dart-results.json" dart run benchmark/subscribers.dart "$GITHUB_WORKSPACE/target/release/libshalom_ffi.so" "$GITHUB_WORKSPACE/dart-results.json"
+                  dart compile exe benchmark/subscribers.dart -o "$RUNNER_TEMP/subscribers-bench"
+
+            - name: Run Dart <-> Rust subscriber benchmarks (AOT)
+              run: python3 scripts/bench_repeat.py "$GITHUB_WORKSPACE/dart-results.json" "$RUNNER_TEMP/subscribers-bench" "$GITHUB_WORKSPACE/target/release/libshalom_ffi.so" "$GITHUB_WORKSPACE/dart-results.json"
 
             - name: Merge results
               run: jq -s 'add' rust-results.json dart-results.json > bench-results.json
@@ -58,7 +61,7 @@ jobs:
               if: github.event_name == 'push'
               uses: actions/upload-artifact@v4
               with:
-                  name: benchmark-baseline
+                  name: benchmark-baseline-aot-v1
                   path: bench-results.json
                   overwrite: true
                   retention-days: 90
@@ -69,7 +72,7 @@ jobs:
               run: |
                   run_id=$(gh run list --workflow benchmarks.yml --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
                   if [ -n "$run_id" ]; then
-                      gh run download "$run_id" --name benchmark-baseline --dir baseline
+                      gh run download "$run_id" --name benchmark-baseline-aot-v1 --dir baseline
                   fi
 
             - name: Compare
