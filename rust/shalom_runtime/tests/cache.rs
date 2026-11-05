@@ -11,7 +11,9 @@ use shalom_core::operation::context::SharedOpCtx;
 use shalom_core::shalom_config::ShalomConfig;
 use shalom_runtime::cache::{CacheRecord, CacheValue};
 use shalom_runtime::normalization::NormalizationResult;
-use shalom_runtime::{ExecutionPolicy, ObservedRef, ShalomRuntime, SubscriptionError, SubscriptionId};
+use shalom_runtime::{
+    ExecutionPolicy, ObservedRef, ShalomRuntime, SubscriptionError, SubscriptionId,
+};
 
 fn build_ctx(schema: &str, operation: &str) -> (ShalomRuntime, SharedOpCtx) {
     let schema_ctx = parse_schema(schema).expect("schema parse failed");

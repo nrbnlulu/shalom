@@ -483,7 +483,6 @@ async fn rollback_optimistic_after_delete_safely_suppresses_dangling_emission() 
     assert!(read.is_none());
 }
 
-
 #[tokio::test]
 async fn rollback_optimistic_does_not_resurrect_deleted_entity() {
     let schema = r#"
