@@ -1,8 +1,8 @@
 name: Benchmarks
 
 # Runs untrusted PR code: read-only permissions, no comment here.
-# main: store the latest results as an artifact (the baseline).
-# pull requests: run the benchmarks, diff against the baseline and comment on the PR.
+# PRs compare against their exact base commit on the same runner.
+# Documentation-only PRs also run benchmarks.
 
 on:
     push:
@@ -19,11 +19,9 @@ permissions:
 jobs:
     benchmarks:
         runs-on: ubuntu-24.04
-        timeout-minutes: 45
+        timeout-minutes: 60
         env:
             CARGO_BUILD_JOBS: 2
-            BENCH_OUTPUT: ${{ github.workspace }}/rust-results.json
-            GH_TOKEN: ${{ github.token }}
 
         steps:
             - name: Checkout repository
@@ -34,54 +32,39 @@ jobs:
               with:
                   toolchain: stable
 
-            - name: Run benchmarks
-              run: python3 scripts/bench_repeat.py "$BENCH_OUTPUT" cargo bench --locked -p shalom_runtime --bench runtime_bench
-
-            - name: Build native library (release)
-              run: cargo build --locked --release -p shalom_ffi
+            - name: Checkout exact PR base
+              if: github.event_name == 'pull_request'
+              uses: actions/checkout@v4
+              with:
+                  ref: ${{ github.event.pull_request.base.sha }}
+                  path: benchmark-base
 
             - name: Setup Flutter SDK
               uses: flutter-actions/setup-flutter@v4
               with:
                   channel: stable
 
-            - name: Compile Dart subscriber benchmarks (AOT)
+            - name: Run paired benchmarks
+              env:
+                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
               run: |
-                  cd dart/shalom
-                  dart pub get
-                  dart compile exe benchmark/subscribers.dart -o "$RUNNER_TEMP/subscribers-bench"
-
-            - name: Run Dart <-> Rust subscriber benchmarks (AOT)
-              run: python3 scripts/bench_repeat.py "$GITHUB_WORKSPACE/dart-results.json" "$RUNNER_TEMP/subscribers-bench" "$GITHUB_WORKSPACE/target/release/libshalom_ffi.so" "$GITHUB_WORKSPACE/dart-results.json"
-
-            - name: Merge results
-              run: jq -s 'add' rust-results.json dart-results.json > bench-results.json
-
-            - name: Save baseline (main)
-              if: github.event_name == 'push'
-              uses: actions/upload-artifact@v4
-              with:
-                  name: benchmark-baseline-aot-v1
-                  path: bench-results.json
-                  overwrite: true
-                  retention-days: 90
-
-            - name: Download baseline from main
-              if: github.event_name == 'pull_request'
-              continue-on-error: true
-              run: |
-                  run_id=$(gh run list --workflow benchmarks.yml --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
-                  if [ -n "$run_id" ]; then
-                      gh run download "$run_id" --name benchmark-baseline-aot-v1 --dir baseline
+                  args=("$GITHUB_WORKSPACE" "$RUNNER_TEMP/benchmark-results")
+                  if [ -n "$BASE_SHA" ]; then
+                      args+=("$GITHUB_WORKSPACE/benchmark-base")
                   fi
+                  python3 scripts/bench_ci.py "${args[@]}"
 
             - name: Compare
-              if: github.event_name == 'pull_request'
+              env:
+                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
               run: |
-                  if [ -f baseline/bench-results.json ]; then
-                      python3 scripts/bench_compare.py bench-results.json baseline/bench-results.json > bench-report.md
-                  else
-                      python3 scripts/bench_compare.py bench-results.json > bench-report.md
+                  args=("$RUNNER_TEMP/benchmark-results/pr-results.json")
+                  if [ -n "$BASE_SHA" ]; then
+                      args+=("$RUNNER_TEMP/benchmark-results/base-results.json")
+                  fi
+                  python3 scripts/bench_compare.py "${args[@]}" > bench-report.md
+                  if [ -n "$BASE_SHA" ]; then
+                      echo "Compared base \`$BASE_SHA\` with PR merge \`$GITHUB_SHA\`." >> bench-report.md
                   fi
                   cat bench-report.md >> "$GITHUB_STEP_SUMMARY"
 
@@ -107,6 +90,6 @@ jobs:
               with:
                   name: benchmark-diagnostics
                   path: |
-                      *-results*.json
-                      *-results.run-*.log
+                      ${{ runner.temp }}/benchmark-results/*.json
+                      ${{ runner.temp }}/benchmark-results/*.log
                   retention-days: 14
