@@ -1,15 +1,11 @@
-//! Time + memory benchmarks for the runtime cache.
+//! Runtime cache benchmarks measured by CodSpeed (CPU and memory).
 //!
-//! Run: `cargo bench -p shalom_runtime --bench runtime_bench`
-//! Results are printed and written as JSON to `$BENCH_OUTPUT` (default `bench-results.json`)
-//! as a list of `{ "name", "unit", "value" }` entries where smaller is better.
+//! Local timings: `cargo bench -j 2 -p shalom_runtime --bench runtime_bench`
 
-use std::alloc::{GlobalAlloc, Layout, System};
+use criterion::{BatchSize, Criterion, criterion_group, criterion_main};
 use std::collections::HashSet;
 use std::hint::black_box;
 use std::path::PathBuf;
-use std::sync::atomic::{AtomicUsize, Ordering::Relaxed};
-use std::time::Instant;
 
 use serde_json::{Map, Value, json};
 use shalom_core::context::ShalomGlobalContext;
@@ -19,88 +15,17 @@ use shalom_runtime::cache::{CacheRecord, CacheValue, NormalizedCache};
 use shalom_runtime::gc::collect_garbage;
 use shalom_runtime::{ExecutionPolicy, ShalomRuntime};
 
-/// Allocator wrapper tracking live bytes and the peak since the last reset.
-struct Counting;
-static LIVE: AtomicUsize = AtomicUsize::new(0);
-static PEAK: AtomicUsize = AtomicUsize::new(0);
-
-unsafe impl GlobalAlloc for Counting {
-    unsafe fn alloc(&self, l: Layout) -> *mut u8 {
-        let p = unsafe { System.alloc(l) };
-        if !p.is_null() {
-            let now = LIVE.fetch_add(l.size(), Relaxed) + l.size();
-            PEAK.fetch_max(now, Relaxed);
-        }
-        p
-    }
-    unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
-        unsafe { System.dealloc(p, l) };
-        LIVE.fetch_sub(l.size(), Relaxed);
-    }
-    unsafe fn realloc(&self, p: *mut u8, l: Layout, new: usize) -> *mut u8 {
-        let np = unsafe { System.realloc(p, l, new) };
-        if !np.is_null() {
-            if new >= l.size() {
-                let now = LIVE.fetch_add(new - l.size(), Relaxed) + (new - l.size());
-                PEAK.fetch_max(now, Relaxed);
-            } else {
-                LIVE.fetch_sub(l.size() - new, Relaxed);
-            }
-        }
-        np
-    }
-}
-
-#[global_allocator]
-static ALLOC: Counting = Counting;
-
-const SAMPLES: usize = 7;
-
-#[derive(Default)]
-struct Results(Vec<Value>);
-
-impl Results {
-    fn push(&mut self, name: &str, unit: &str, value: f64) {
-        println!("{name:<55} {value:>14.1} {unit}");
-        self.0
-            .push(json!({ "name": name, "unit": unit, "value": value }));
-    }
-
-    /// Runs `setup` then times `run(state)` `SAMPLES` times; records the median time and
-    /// the peak extra memory (over what `setup` retained) of the median-time sample.
-    fn bench<S, R>(
-        &mut self,
-        name: &str,
-        mut setup: impl FnMut() -> S,
-        mut run: impl FnMut(&mut S) -> R,
-    ) {
-        // Warm caches and lazy initialization without contaminating measured state.
-        black_box(run(&mut setup()));
-        let mut samples = Vec::with_capacity(SAMPLES);
-        for _ in 0..SAMPLES {
-            let mut state = setup();
-            let base = LIVE.load(Relaxed);
-            PEAK.store(base, Relaxed);
-            let started = Instant::now();
-            black_box(run(&mut state));
-            let elapsed = started.elapsed().as_nanos() as f64;
-            let peak = PEAK.load(Relaxed).saturating_sub(base) as f64;
-            samples.push((elapsed, peak));
-        }
-        samples.sort_by(|a, b| a.0.total_cmp(&b.0));
-        let (time, peak) = samples[SAMPLES / 2];
-        self.push(&format!("{name} / time"), "ns", time);
-        self.push(&format!("{name} / peak alloc"), "bytes", peak);
-    }
-
-    /// Records the bytes retained by whatever `build` returns.
-    fn retained<T>(&mut self, name: &str, build: impl FnOnce() -> T) {
-        let before = LIVE.load(Relaxed);
-        let value = build();
-        let after = LIVE.load(Relaxed);
-        self.push(name, "bytes", after.saturating_sub(before) as f64);
-        black_box(value);
-    }
+// Fresh state per iteration keeps mutating workloads comparable. Setup and
+// teardown are excluded; PerIteration bounds memory for the large fixtures.
+fn bench<S, R>(
+    c: &mut Criterion,
+    name: &str,
+    mut setup: impl FnMut() -> S,
+    mut run: impl FnMut(&mut S) -> R,
+) {
+    c.bench_function(name, |b| {
+        b.iter_batched_ref(&mut setup, &mut run, BatchSize::PerIteration);
+    });
 }
 
 fn runtime(schema: &str, operation: &str) -> ShalomRuntime {
@@ -145,10 +70,9 @@ const ITEMS_SCHEMA: &str =
     "type Query { items: [Item!]! } type Item { id: ID! name: String! value: Int! }";
 const ITEMS_OP: &str = "fragment ItemFields on Item @observe { id name value } query Items { items { ...ItemFields } }";
 
-fn main() {
-    let mut r = Results::default();
-
-    r.bench(
+fn runtime_benchmarks(c: &mut Criterion) {
+    bench(
+        c,
         "gc / 10k entries, 10k watched keys",
         || {
             let mut cache = NormalizedCache::new();
@@ -172,7 +96,8 @@ fn main() {
         rt
     };
 
-    r.bench(
+    bench(
+        c,
         "read / 100 reads, 50k unrelated root fields",
         root_runtime,
         |rt| {
@@ -182,7 +107,8 @@ fn main() {
         },
     );
 
-    r.bench(
+    bench(
+        c,
         "normalize / 100 updates, 50k unrelated root fields",
         root_runtime,
         |rt| {
@@ -194,7 +120,8 @@ fn main() {
     );
 
     const OBSERVERS: usize = 25_000;
-    r.bench(
+    bench(
+        c,
         "dispatch / 1k updates, 25k unrelated observers",
         || {
             let rt = runtime(
@@ -231,7 +158,8 @@ fn main() {
     );
 
     const ITEMS: usize = 4_000;
-    r.bench(
+    bench(
+        c,
         "normalize / 4k observed items",
         || (runtime(ITEMS_SCHEMA, ITEMS_OP), items_data(ITEMS)),
         |(rt, data)| {
@@ -240,7 +168,8 @@ fn main() {
         },
     );
 
-    r.bench(
+    bench(
+        c,
         "read / 4k observed items",
         || {
             let rt = runtime(ITEMS_SCHEMA, ITEMS_OP);
@@ -250,23 +179,7 @@ fn main() {
         },
         |rt| rt.try_read_operation("Items", None).unwrap().unwrap(),
     );
-
-    // Memory retained in the cache after normalizing a response.
-    let rt = runtime(ITEMS_SCHEMA, ITEMS_OP);
-    let op = rt.operation_by_name("Items").unwrap();
-    let data = items_data(ITEMS);
-    r.retained("memory / cache retained after 4k observed items", || {
-        rt.normalize(&op, data, None).unwrap();
-    });
-
-    let rt = root_runtime();
-    r.retained("memory / 100 reads on 50k-field root (leak check)", || {
-        for _ in 0..100 {
-            black_box(rt.try_read_operation("Value", None).unwrap().unwrap());
-        }
-    });
-
-    let out = std::env::var("BENCH_OUTPUT").unwrap_or_else(|_| "bench-results.json".into());
-    std::fs::write(&out, serde_json::to_string_pretty(&r.0).unwrap()).unwrap();
-    println!("wrote {out}");
 }
+
+criterion_group!(benches, runtime_benchmarks);
+criterion_main!(benches);
