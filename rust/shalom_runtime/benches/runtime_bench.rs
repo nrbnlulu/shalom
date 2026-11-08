@@ -161,10 +161,14 @@ fn runtime_benchmarks(c: &mut Criterion) {
     bench(
         c,
         "normalize / 4k observed items",
-        || (runtime(ITEMS_SCHEMA, ITEMS_OP), items_data(ITEMS)),
-        |(rt, data)| {
+        || {
+            let rt = runtime(ITEMS_SCHEMA, ITEMS_OP);
             let op = rt.operation_by_name("Items").unwrap();
-            rt.normalize(&op, data.clone(), None).unwrap()
+            (rt, op, items_data(ITEMS))
+        },
+        |(rt, op, data)| {
+            // Transfer the prepared fixture without cloning it in the measurement.
+            rt.normalize(op, std::mem::take(data), None).unwrap()
         },
     );
 
