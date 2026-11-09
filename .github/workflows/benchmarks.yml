@@ -1,9 +1,5 @@
 name: Benchmarks
 
-# Runs untrusted PR code: read-only permissions, no comment here.
-# PRs compare against their exact base commit on the same runner.
-# Documentation-only PRs also run benchmarks.
-
 on:
     push:
         branches:
@@ -11,10 +7,11 @@ on:
     pull_request:
         branches:
             - main
+    workflow_dispatch:
 
+# Public-repository uploads are tokenless, including fork PRs.
 permissions:
     contents: read
-    actions: read
 
 jobs:
     benchmarks:
@@ -27,69 +24,18 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Set up Rust
-              uses: actions-rust-lang/setup-rust-toolchain@v1
-              with:
-                  toolchain: stable
-
-            - name: Checkout exact PR base
-              if: github.event_name == 'pull_request'
-              uses: actions/checkout@v4
-              with:
-                  ref: ${{ github.event.pull_request.base.sha }}
-                  path: benchmark-base
-
-            - name: Setup Flutter SDK
-              uses: flutter-actions/setup-flutter@v4
+            - name: Set up Rust and cargo-codspeed
+              uses: moonrepo/setup-rust@v1
               with:
                   channel: stable
+                  cache-target: release
+                  bins: cargo-codspeed@6.0.0
 
-            - name: Run paired benchmarks
-              env:
-                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
-              run: |
-                  args=("$GITHUB_WORKSPACE" "$RUNNER_TEMP/benchmark-results")
-                  if [ -n "$BASE_SHA" ]; then
-                      args+=("$GITHUB_WORKSPACE/benchmark-base")
-                  fi
-                  python3 scripts/bench_ci.py "${args[@]}"
+            - name: Build benchmarks
+              run: cargo codspeed build --locked -p shalom_runtime --bench runtime_bench --measurement-mode simulation,memory
 
-            - name: Compare
-              env:
-                  BASE_SHA: ${{ github.event.pull_request.base.sha }}
-              run: |
-                  args=("$RUNNER_TEMP/benchmark-results/pr-results.json")
-                  if [ -n "$BASE_SHA" ]; then
-                      args+=("$RUNNER_TEMP/benchmark-results/base-results.json")
-                  fi
-                  python3 scripts/bench_compare.py "${args[@]}" > bench-report.md
-                  if [ -n "$BASE_SHA" ]; then
-                      echo "Compared base \`$BASE_SHA\` with PR merge \`$GITHUB_SHA\`." >> bench-report.md
-                  fi
-                  cat bench-report.md >> "$GITHUB_STEP_SUMMARY"
-
-            # Fork PRs only get a read-only token, so commenting happens in
-            # benchmarks-comment.yml (workflow_run, base-repo context).
-            - name: Save report for the comment workflow
-              if: github.event_name == 'pull_request'
-              run: |
-                  mkdir -p bench-report
-                  cp bench-report.md bench-report/report.md
-                  echo "${{ github.event.pull_request.number }}" > bench-report/pr-number
-
-            - name: Upload report
-              if: github.event_name == 'pull_request'
-              uses: actions/upload-artifact@v4
+            - name: Run benchmarks and upload to CodSpeed
+              uses: CodSpeedHQ/action@v5
               with:
-                  name: benchmark-report
-                  path: bench-report/
-
-            - name: Upload benchmark samples and logs
-              if: always()
-              uses: actions/upload-artifact@v4
-              with:
-                  name: benchmark-diagnostics
-                  path: |
-                      ${{ runner.temp }}/benchmark-results/*.json
-                      ${{ runner.temp }}/benchmark-results/*.log
-                  retention-days: 14
+                  mode: simulation,memory
+                  run: cargo codspeed run

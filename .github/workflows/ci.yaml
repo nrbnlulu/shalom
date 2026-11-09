@@ -16,15 +16,16 @@ jobs:
 
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Set up Rust
               uses: actions-rust-lang/setup-rust-toolchain@v1
               with:
                   toolchain: stable
 
+            # Keep the absolute limits enforced independently of CodSpeed reports.
             - name: Run cache performance regression tests
-              run: cargo test -p shalom_runtime --release --test perf -- --ignored --nocapture --test-threads=1
+              run: cargo test --locked -j 2 -p shalom_runtime --release --test perf -- --ignored --nocapture --test-threads=1
 
     build-and-test:
         runs-on: ${{ matrix.os }}
