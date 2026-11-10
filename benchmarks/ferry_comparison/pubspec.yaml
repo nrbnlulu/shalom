@@ -1,0 +1,14 @@
+name: ferry_comparison
+description: Shalom vs Ferry cache benchmark.
+publish_to: none
+
+environment:
+    sdk: ^3.5.0
+
+dependencies:
+    ferry_cache: ^0.10.1
+    ferry_exec: ^0.7.0
+    gql: ^1.0.1
+    gql_exec: ^1.1.1-alpha+1699813812660
+    shalom:
+        path: ../../dart/shalom
