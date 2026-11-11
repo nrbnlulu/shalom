@@ -56,3 +56,67 @@ harness. The existing normalization and read workloads cover cache allocations
 and retained memory. Dart subscriber timing/RSS diagnostics remain in
 `dart/shalom/benchmark/subscribers.dart`; these local diagnostics are not uploaded
 to CodSpeed.
+
+### File uploads
+
+`HttpLink` supports the [GraphQL multipart request specification](https://github.com/jaydenseric/graphql-multipart-request-spec).
+Map your schema's `Upload` scalar in `shalom.yml`:
+
+```yaml
+custom_scalars:
+  Upload:
+    graphql_name: Upload
+    output_type:
+      import_path: package:shalom/shalom.dart
+      symbol_name: ShalomUpload
+    impl_symbol:
+      import_path: package:shalom/shalom.dart
+      symbol_name: shalomUploadScalar
+```
+
+Pass `ShalomUpload(filename: 'photo.png', bytes: imageBytes, contentType: 'image/png')`
+to the generated mutation's upload argument. Uploads may appear inside input
+objects or lists; omitted optional inputs remain omitted and explicit nulls stay
+null. Repeated files with the same name, content type and bytes share a part.
+
+Your HTTP adapter must implement `ShalomMultipartHttpTransport` as well as its
+ordinary `request` method. For example, with `package:http`:
+
+```dart
+@override
+Future<String> requestMultipart({
+  required String url,
+  required ShalomMultipartRequest data,
+  HeadersType? headers,
+  JsonObject? extra,
+}) async {
+  final request = http.MultipartRequest('POST', Uri.parse(url));
+  for (final (name, value) in headers ?? <(String, String)>[]) {
+    request.headers[name] = value;
+  }
+  request.fields['operations'] = jsonEncode(data.operations);
+  request.fields['map'] = jsonEncode(data.fileMap);
+  for (final entry in data.files.entries) {
+    request.files.add(http.MultipartFile.fromBytes(
+      entry.key,
+      entry.value.bytes,
+      filename: entry.value.filename,
+      contentType: MediaType.parse(entry.value.contentType),
+    ));
+  }
+  final response = await http.Response.fromStream(await client.send(request));
+  return response.body;
+}
+```
+
+This example uses `dart:convert`, `package:http/http.dart` as `http`, and
+`MediaType` from `package:http_parser/http_parser.dart`. The adapter owns the
+multipart boundary. `HttpLink` removes any supplied Content-Type for uploads,
+retains other headers, and uses POST even when `useGet` is enabled. Transports
+without multipart support receive a `LinkExceptionResponse` for uploads.
+
+Files are buffered in memory and encoded as base64 only while passing through
+the Rust JSON boundary; the server receives binary multipart file parts. This
+adds memory overhead, so use direct storage uploads for large files. The
+`Upload` scalar is intended for inputs; servers should return file metadata or
+URLs. Strawberry servers must enable `multipart_uploads_enabled=True`.

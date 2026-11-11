@@ -223,3 +223,8 @@ fn test_mutation_simple_dart() {
 fn test_mutation_no_variables_dart() {
     run_dart_tests_for_usecase("mutation_no_variables");
 }
+
+#[test]
+fn test_file_upload_dart() {
+    run_dart_tests_for_usecase("file_upload");
+}
