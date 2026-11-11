@@ -9,6 +9,7 @@ import '__graphql__/schema.shalom.dart';
 void main() {
   test('generated inputs preserve optional uploads and lists', () {
     final file = ShalomUpload(filename: 'a.png', bytes: [1, 2, 3]);
+    addTearDown(file.dispose);
     final input = UploadInput(files: [file, file], caption: Some('photo'));
     final variables = UploadImageVariables(
       file: file,
@@ -38,8 +39,9 @@ void main() {
     );
   });
 
-  test('generated Upload variables survive the Rust JSON boundary', () {
+  test('generated Upload variables survive the Rust JSON boundary', () async {
     final file = ShalomUpload(filename: 'image.png', bytes: [137, 80, 78, 71]);
+    addTearDown(file.dispose);
     final variables = UploadImageVariables(file: file);
     expect(variables.toJson(), {'file': shalomUploadScalar.serialize(file)});
     final json =
@@ -56,7 +58,13 @@ void main() {
     expect(multipart.fileMap, {
       '0': ['variables.file'],
     });
-    expect(multipart.files['0']!.bytes, file.bytes);
+    expect(multipart.files['0'], same(file));
+    expect(
+      await multipart.files['0']!.openRead().expand((chunk) => chunk).toList(),
+      [137, 80, 78, 71],
+    );
+    expect((json['file'] as JsonObject).values.single, isA<String>());
+    expect(jsonEncode(json), isNot(contains('image.png')));
     expect(jsonEncode(multipart.operations), isNot(contains('base64')));
   });
 }

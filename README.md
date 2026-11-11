@@ -74,10 +74,31 @@ custom_scalars:
       symbol_name: shalomUploadScalar
 ```
 
-Pass `ShalomUpload(filename: 'photo.png', bytes: imageBytes, contentType: 'image/png')`
-to the generated mutation's upload argument. Uploads may appear inside input
-objects or lists; omitted optional inputs remain omitted and explicit nulls stay
-null. Repeated files with the same name, content type and bytes share a part.
+Use a lazy source for large files (this example uses `File` from `dart:io`):
+
+```dart
+final file = File('/path/to/photo.png');
+final upload = ShalomUpload.stream(
+  filename: 'photo.png',
+  length: await file.length(),
+  openRead: () => file.openRead(),
+  contentType: 'image/png',
+);
+try {
+  await UploadImageMutation(client).execute(file: upload);
+} finally {
+  upload.dispose();
+}
+```
+
+`UploadImageMutation` represents your generated mutation. For bytes already in
+memory, use `ShalomUpload(filename: 'photo.png', bytes: imageBytes)` instead.
+Only an opaque ID is serialized into GraphQL variables and crosses the Rust
+boundary. File contents, paths and stream factories stay in the originating
+Dart isolate. Uploads may appear inside input objects or lists; omitted inputs
+remain omitted and explicit nulls stay null. Reusing the same upload object
+shares one multipart part; distinct sources keep distinct parts without reading
+or hashing their contents.
 
 Your HTTP adapter must implement `ShalomMultipartHttpTransport` as well as its
 ordinary `request` method. For example, with `package:http`:
@@ -97,9 +118,10 @@ Future<String> requestMultipart({
   request.fields['operations'] = jsonEncode(data.operations);
   request.fields['map'] = jsonEncode(data.fileMap);
   for (final entry in data.files.entries) {
-    request.files.add(http.MultipartFile.fromBytes(
+    request.files.add(http.MultipartFile(
       entry.key,
-      entry.value.bytes,
+      entry.value.openRead(),
+      entry.value.length,
       filename: entry.value.filename,
       contentType: MediaType.parse(entry.value.contentType),
     ));
@@ -115,8 +137,14 @@ multipart boundary. `HttpLink` removes any supplied Content-Type for uploads,
 retains other headers, and uses POST even when `useGet` is enabled. Transports
 without multipart support receive a `LinkExceptionResponse` for uploads.
 
-Files are buffered in memory and encoded as base64 only while passing through
-the Rust JSON boundary; the server receives binary multipart file parts. This
-adds memory overhead, so use direct storage uploads for large files. The
-`Upload` scalar is intended for inputs; servers should return file metadata or
-URLs. Strawberry servers must enable `multipart_uploads_enabled=True`.
+The transport streams binary file parts directly from Dart. Each `openRead`
+call must return a fresh stream for retries and concurrent requests, yielding
+exactly `length` bytes. Keep the source available until every request using it
+finishes, then call `dispose()` in `finally` on success or failure. Disposal is
+idempotent, invalidates the ID and releases the registry's source reference;
+it does not close streams already opened by the transport. IDs cannot be
+persisted, transferred to another isolate, or reused after disposal. Unknown or
+disposed IDs produce a link error before any HTTP request is sent.
+
+The `Upload` scalar is intended for inputs; servers should return file metadata
+or URLs. Strawberry servers must enable `multipart_uploads_enabled=True`.

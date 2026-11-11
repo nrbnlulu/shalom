@@ -286,6 +286,69 @@ Mutation selection rules:
 - Use fragment spreads in mutation SDL when you want generated mutation result classes to implement the same fragment interface as the UI.
 - Remember that normalizing a mutation response updates matching entity records but does not automatically add/remove refs from parent lists.
 
+## File Uploads
+
+Map the schema's input-only `Upload` scalar in `shalom.yml`:
+
+```yaml
+custom_scalars:
+  Upload:
+    graphql_name: Upload
+    output_type:
+      import_path: package:shalom/shalom.dart
+      symbol_name: ShalomUpload
+    impl_symbol:
+      import_path: package:shalom/shalom.dart
+      symbol_name: shalomUploadScalar
+```
+
+Pass `ShalomUpload` to the generated mutation argument. For large native files,
+use `File` from `dart:io` with a lazy stream factory:
+
+```dart
+final file = File(path);
+final upload = ShalomUpload.stream(
+  filename: 'photo.png',
+  length: await file.length(),
+  openRead: () => file.openRead(),
+  contentType: 'image/png',
+);
+try {
+  await UploadImageMutation(client).execute(file: upload);
+} finally {
+  upload.dispose();
+}
+```
+
+`UploadImageMutation` represents the app's generated mutation. For bytes already
+in memory, `ShalomUpload(filename: 'photo.png', bytes: imageBytes)` is available.
+Use a platform-appropriate stream factory on web; keep `dart:io` out of shared
+web code. Each factory call must return a fresh stream yielding exactly `length`
+bytes so retries and concurrent requests can read independently.
+
+Only an opaque ID crosses the Rust JSON boundary. Contents, paths and stream
+factories remain in the originating Dart isolate. Reusing the same upload
+object in nested inputs or lists shares a multipart part; distinct upload
+objects stay distinct without hashing their contents. IDs are not persistable
+or transferable to another isolate. Keep the source available until every
+request using it completes, then dispose it in `finally` on success or failure.
+Disposal invalidates the ID and releases the registry's source reference; it
+cannot close streams already opened by a transport. Do not dispose a shared
+source while another request or retry still needs it.
+
+The HTTP adapter must implement `ShalomMultipartHttpTransport`. Its
+`requestMultipart` method sends JSON-encoded `data.operations`, then
+JSON-encoded `data.fileMap` as the `map` field, then binary parts from
+`data.files`. With `package:http`, construct each part as
+`http.MultipartFile(key, upload.openRead(), upload.length, filename: upload.filename,
+contentType: MediaType.parse(upload.contentType))`; do not collect the stream
+or use `MultipartFile.fromBytes` for a large file. The adapter owns the boundary;
+`HttpLink` removes supplied Content-Type headers, preserves other headers, and
+uses POST for uploads. Unsupported transports and unknown/disposed IDs return
+`LinkExceptionResponse`. Strawberry servers enable uploads with
+`multipart_uploads_enabled=True` and return file metadata or URLs rather than
+`Upload` output values.
+
 ## Fragments
 
 Use `@Fragment` for reusable UI over one normalized entity, especially child widgets that should update independently from parent queries.

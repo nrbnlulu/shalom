@@ -1,57 +1,98 @@
-import 'dart:convert';
+import 'dart:math';
 import 'dart:typed_data';
-
-import 'package:collection/collection.dart';
 
 import '../scalar.dart';
 import '../shalom_core_base.dart';
 
-/// An in-memory file for a GraphQL `Upload` input scalar.
+/// A Dart-owned source for a GraphQL `Upload` input scalar.
 ///
-/// The JSON representation carries base64 bytes across the Rust runtime boundary.
-/// `HttpLink` replaces it with a binary multipart part before sending the request.
-/// Files are buffered in memory; prefer direct storage uploads for large files.
+/// Only an opaque ID crosses the Rust boundary. Use [ShalomUpload.stream] for
+/// large files and supply a fresh stream for each request or retry. Call
+/// [dispose] after all requests using this upload have finished, usually in a
+/// `finally` block, to release the ID and its source from the registry.
 final class ShalomUpload {
   static const _marker = r'$shalom.upload';
+  static final _uploads = <String, ShalomUpload>{};
+  static final _random = Random.secure();
+  static final _session = List.generate(
+    4,
+    (_) => _random.nextInt(1 << 32).toRadixString(16).padLeft(8, '0'),
+  ).join();
+  static int _nextId = 0;
 
+  final String _id = '$_session:${_nextId++}';
   final String filename;
   final String contentType;
-  final Uint8List bytes;
+  final int length;
+  Stream<List<int>> Function()? _source;
+  bool _disposed = false;
 
-  ShalomUpload({
-    required this.filename,
+  /// Convenience constructor for files already held in memory.
+  factory ShalomUpload({
+    required String filename,
     required List<int> bytes,
-    this.contentType = 'application/octet-stream',
-  }) : bytes = Uint8List.fromList(bytes).asUnmodifiableView();
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is ShalomUpload &&
-          filename == other.filename &&
-          contentType == other.contentType &&
-          const ListEquality<int>().equals(bytes, other.bytes);
-
-  @override
-  int get hashCode =>
-      Object.hash(filename, contentType, const ListEquality<int>().hash(bytes));
-
-  JsonObject toJson() => {
-    _marker: {
-      'filename': filename,
-      'contentType': contentType,
-      'base64': base64Encode(bytes),
-    },
-  };
-
-  factory ShalomUpload.fromJson(dynamic value) {
-    final data =
-        (value as Map<String, dynamic>)[_marker] as Map<String, dynamic>;
-    return ShalomUpload(
-      filename: data['filename'] as String,
-      contentType: data['contentType'] as String,
-      bytes: base64Decode(data['base64'] as String),
+    String contentType = 'application/octet-stream',
+  }) {
+    final data = Uint8List.fromList(bytes).asUnmodifiableView();
+    return ShalomUpload.stream(
+      filename: filename,
+      length: data.length,
+      openRead: () => Stream.value(data),
+      contentType: contentType,
     );
+  }
+
+  /// Creates a lazy, repeatable source without reading or buffering the file.
+  ///
+  /// For a native `File`, pass `length: await file.length()` and
+  /// `openRead: () => file.openRead()`. The transport opens and consumes the
+  /// stream; a retry or concurrent request must receive its own fresh stream.
+  ShalomUpload.stream({
+    required this.filename,
+    required this.length,
+    required Stream<List<int>> Function() openRead,
+    this.contentType = 'application/octet-stream',
+  }) : _source = openRead {
+    if (length < 0) {
+      throw ArgumentError.value(length, 'length', 'Must be nonnegative');
+    }
+  }
+
+  Stream<List<int>> openRead() {
+    _checkNotDisposed();
+    return _source!();
+  }
+
+  JsonObject toJson() {
+    _checkNotDisposed();
+    _uploads[_id] = this;
+    return {_marker: _id};
+  }
+
+  /// Resolves an upload ID in the originating Dart isolate.
+  ///
+  /// Upload markers are process-local references, not persistable JSON data.
+  factory ShalomUpload.fromJson(dynamic value) {
+    final id = value is Map<String, dynamic> ? value[_marker] : null;
+    final upload = id is String ? _uploads[id] : null;
+    if (upload == null) {
+      throw FormatException('Unknown or disposed ShalomUpload ID');
+    }
+    return upload;
+  }
+
+  /// Invalidates the ID and releases the registered stream factory.
+  ///
+  /// Wait for all requests using this source to finish before disposing it.
+  /// Repeated disposal is safe. Streams already opened are owned by the caller.
+  void dispose() {
+    _uploads.remove(_id);
+    _source = null;
+    _disposed = true;
+  }
+
+  void _checkNotDisposed() {
+    if (_disposed) throw StateError('ShalomUpload has been disposed');
   }
 
   static bool isUpload(Object? value) =>
