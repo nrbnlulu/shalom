@@ -164,12 +164,10 @@ pub struct OperationContext {
     operation_name: String,
     pub file_path: PathBuf,
     pub query: String,
-    /// Self-contained, network-safe operation text (`query Name(...) { ... }`),
-    /// with `__typename`/`id` auto-injection applied and `@unwrap` stripped, but
-    /// without any prepended fragment SDLs and without `@observe`. Use this (not
-    /// `query`, which is prefixed with fragment SDLs and would duplicate fragment
-    /// definitions already emitted elsewhere) when re-registering the operation
-    /// document, e.g. for the runtime's `registerOperation` call.
+    /// Operation text for runtime registration, with `__typename`/`id`
+    /// auto-injection and internal spread directives such as `@unwrap` intact.
+    /// Contains no fragment definitions or root `@observe` directive.
+    /// Use `query` for transport: its operation and fragments are network-safe.
     pub op_sdl: String,
     variables: HashMap<String, OperationVariable>,
     pub typedefs: TypeDefs,
