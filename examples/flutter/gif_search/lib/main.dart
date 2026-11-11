@@ -1,6 +1,6 @@
 import 'dart:async' show FutureOr;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:gif_search/__graphql__/AddGifToAlbumMutation.mutation.shalom.dart'
     show $AddGifToAlbumMutation;
 import 'package:gif_search/__graphql__/AddGifToAlbumMutation.shalom.dart';

@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/services.dart';
 import 'package:shalom/shalom.dart';
 
@@ -30,6 +31,16 @@ const _kRefBorder = Color(0xFF2E6655);
 const _kSelectedBg = Color(0xFF0F3460);
 const _kObsBadgeBg = Color(0xFF1A2A1A);
 const _kObsBadgeColor = Color(0xFF6A9955);
+const _kDividerColor = Color(0xFF333355);
+const _kHoverBg = Color(0x14FFFFFF);
+const _kSelectionHighlight = Color(0x664EC9B0);
+const _kScrim = Color(0xDD000000);
+const _kWhite = Color(0xFFFFFFFF);
+const _kWhite70 = Color(0xB3FFFFFF);
+const _kWhite54 = Color(0x8AFFFFFF);
+const _kWhite38 = Color(0x61FFFFFF);
+const _kWhite24 = Color(0x3DFFFFFF);
+const _kTransparent = Color(0x00000000);
 
 // ---------------------------------------------------------------------------
 // Panel tab
@@ -92,6 +103,7 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
       })> _history = [];
 
   String _filter = '';
+  final TextEditingController _filterController = TextEditingController();
   Timer? _timer;
 
   @override
@@ -104,6 +116,7 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
   @override
   void dispose() {
     _timer?.cancel();
+    _filterController.dispose();
     super.dispose();
   }
 
@@ -163,6 +176,7 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
     setState(() {
       _tab = tab;
       _filter = '';
+      _filterController.clear();
     });
     _refresh();
   }
@@ -178,6 +192,7 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
       _tab = _PanelTab.cache;
       _selectedCacheKey = refKey;
       _filter = '';
+      _filterController.clear();
     });
     _refresh();
   }
@@ -191,6 +206,7 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
       _selectedMutationField = prev.mutationField;
       _selectedCacheKey = prev.cacheKey;
       _filter = '';
+      _filterController.clear();
     });
     _refresh();
   }
@@ -265,62 +281,68 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTextStyle(
-      style: const TextStyle(
-        fontFamily: 'monospace',
-        fontSize: 12,
-        height: 1.5,
-        color: _kPunctColor,
-      ),
-      child: Column(
-        children: [
-          _PanelHeader(onRefresh: _refresh),
-          _TabBar(
-            tab: _tab,
-            queryCount: _rootQueryFields.length,
-            mutationCount: _rootMutationFields.length,
-            onTabSelected: _switchTab,
-          ),
-          Expanded(
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 230,
-                  child: _LeftPane(
-                    items: _leftItems,
-                    selectedItem: _selectedItem,
-                    filter: _filter,
-                    totalCount: switch (_tab) {
-                      _PanelTab.queries => _rootQueryFields.length,
-                      _PanelTab.mutations => _rootMutationFields.length,
-                      _PanelTab.cache => _allKeys.length,
-                    },
-                    // Observer badge only makes sense per-entity (Cache tab)
-                    obsCounts: _tab == _PanelTab.cache ? _obsCounts : const {},
-                    emptyHint: switch (_tab) {
-                      _PanelTab.queries => 'No active queries',
-                      _PanelTab.mutations => 'No mutations in cache',
-                      _PanelTab.cache => 'Cache is empty',
-                    },
-                    onFilterChanged: (v) => setState(() => _filter = v),
-                    onItemSelected: _onItemSelected,
-                  ),
-                ),
-                const VerticalDivider(width: 1, color: Color(0xFF333355)),
-                Expanded(
-                  child: _RightPane(
-                    label: _selectedItem,
-                    value: _rightValue,
-                    observers: _relevantObservers,
-                    canGoBack: _history.isNotEmpty,
-                    onGoBack: _goBack,
-                    onNavigateToRef: _navigateToRef,
-                  ),
-                ),
-              ],
+    return ColoredBox(
+      color: _kBg,
+      child: DefaultTextStyle(
+        style: const TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 12,
+          height: 1.5,
+          color: _kPunctColor,
+        ),
+        child: Column(
+          children: [
+            _PanelHeader(onRefresh: _refresh),
+            _TabBar(
+              tab: _tab,
+              queryCount: _rootQueryFields.length,
+              mutationCount: _rootMutationFields.length,
+              onTabSelected: _switchTab,
             ),
-          ),
-        ],
+            Expanded(
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 230,
+                    child: _LeftPane(
+                      items: _leftItems,
+                      selectedItem: _selectedItem,
+                      filter: _filter,
+                      filterController: _filterController,
+                      totalCount: switch (_tab) {
+                        _PanelTab.queries => _rootQueryFields.length,
+                        _PanelTab.mutations => _rootMutationFields.length,
+                        _PanelTab.cache => _allKeys.length,
+                      },
+                      // Observer badge only makes sense per-entity (Cache tab)
+                      obsCounts:
+                          _tab == _PanelTab.cache ? _obsCounts : const {},
+                      emptyHint: switch (_tab) {
+                        _PanelTab.queries => 'No active queries',
+                        _PanelTab.mutations => 'No mutations in cache',
+                        _PanelTab.cache => 'Cache is empty',
+                      },
+                      onFilterChanged: (v) => setState(() => _filter = v),
+                      onItemSelected: _onItemSelected,
+                    ),
+                  ),
+                  const SizedBox(
+                      width: 1, child: ColoredBox(color: _kDividerColor)),
+                  Expanded(
+                    child: _RightPane(
+                      label: _selectedItem,
+                      value: _rightValue,
+                      observers: _relevantObservers,
+                      canGoBack: _history.isNotEmpty,
+                      onGoBack: _goBack,
+                      onNavigateToRef: _navigateToRef,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -341,23 +363,24 @@ class _PanelHeader extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Row(
         children: [
-          const Icon(Icons.storage, color: _kKeyColor, size: 16),
+          const _Glyph(_GlyphKind.database, color: _kKeyColor, size: 16),
           const SizedBox(width: 8),
           const Text(
             'Shalom Cache Inspector',
             style: TextStyle(
-              color: Colors.white,
+              color: _kWhite,
               fontWeight: FontWeight.bold,
               fontSize: 13,
             ),
           ),
           const Spacer(),
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white70, size: 16),
+          _IconButton(
+            identifier: 'shalom-inspector-refresh',
+            label: 'Refresh',
+            glyph: _GlyphKind.refresh,
+            color: _kWhite70,
+            size: 16,
             onPressed: onRefresh,
-            tooltip: 'Refresh',
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
           ),
         ],
       ),
@@ -426,11 +449,14 @@ class _TabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return _Clickable(
+      identifier: 'shalom-inspector-tab-${label.toLowerCase()}',
+      label: label,
+      selected: selected,
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
-        color: selected ? _kTabActiveBg : Colors.transparent,
+        color: selected ? _kTabActiveBg : _kTransparent,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -438,7 +464,7 @@ class _TabItem extends StatelessWidget {
             Text(
               count != null ? '$label ($count)' : label,
               style: TextStyle(
-                color: selected ? Colors.white : Colors.white54,
+                color: selected ? _kWhite : _kWhite54,
                 fontSize: 12,
                 fontWeight: selected ? FontWeight.bold : FontWeight.normal,
               ),
@@ -448,7 +474,7 @@ class _TabItem extends StatelessWidget {
               duration: const Duration(milliseconds: 150),
               height: 2,
               width: 40,
-              color: selected ? _kTabActiveIndicator : Colors.transparent,
+              color: selected ? _kTabActiveIndicator : _kTransparent,
             ),
           ],
         ),
@@ -465,6 +491,7 @@ class _LeftPane extends StatelessWidget {
   final List<String> items;
   final String? selectedItem;
   final String filter;
+  final TextEditingController filterController;
   final int totalCount;
   final Map<String, int> obsCounts;
   final String emptyHint;
@@ -475,6 +502,7 @@ class _LeftPane extends StatelessWidget {
     required this.items,
     required this.selectedItem,
     required this.filter,
+    required this.filterController,
     required this.totalCount,
     required this.obsCounts,
     required this.emptyHint,
@@ -490,24 +518,8 @@ class _LeftPane extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.all(6),
-            child: TextField(
-              decoration: const InputDecoration(
-                hintText: 'Filter…',
-                hintStyle: TextStyle(color: Colors.white38, fontSize: 11),
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 8,
-                  vertical: 6,
-                ),
-                border: OutlineInputBorder(),
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white24),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: _kKeyColor),
-                ),
-              ),
-              style: const TextStyle(color: Colors.white, fontSize: 11),
+            child: _FilterField(
+              controller: filterController,
               onChanged: onFilterChanged,
             ),
           ),
@@ -517,7 +529,7 @@ class _LeftPane extends StatelessWidget {
                     child: Text(
                       emptyHint,
                       style: const TextStyle(
-                        color: Colors.white38,
+                        color: _kWhite38,
                         fontSize: 11,
                       ),
                     ),
@@ -534,11 +546,15 @@ class _LeftPane extends StatelessWidget {
                           parenIdx == -1 ? item : item.substring(0, parenIdx);
                       final hasArgs = parenIdx != -1;
 
-                      return InkWell(
+                      return _Clickable(
+                        identifier: 'shalom-inspector-item-$item',
+                        label: item,
+                        selected: selected,
+                        hoverColor: _kHoverBg,
                         onTap: () => onItemSelected(item),
                         child: Container(
                           padding: const EdgeInsets.fromLTRB(10, 6, 8, 6),
-                          color: selected ? _kSelectedBg : Colors.transparent,
+                          color: selected ? _kSelectedBg : null,
                           child: Row(
                             children: [
                               Expanded(
@@ -548,9 +564,8 @@ class _LeftPane extends StatelessWidget {
                                     Text(
                                       displayName,
                                       style: TextStyle(
-                                        color: selected
-                                            ? _kKeyColor
-                                            : Colors.white70,
+                                        color:
+                                            selected ? _kKeyColor : _kWhite70,
                                         fontSize: 11,
                                         fontFamily: 'monospace',
                                         fontWeight: selected
@@ -590,7 +605,7 @@ class _LeftPane extends StatelessWidget {
                 filter.isEmpty
                     ? '$totalCount item${totalCount == 1 ? '' : 's'}'
                     : '${items.length} / $totalCount items',
-                style: const TextStyle(color: Colors.white38, fontSize: 10),
+                style: const TextStyle(color: _kWhite38, fontSize: 10),
               ),
             ),
           ),
@@ -617,8 +632,8 @@ class _ObsBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(
-            Icons.visibility_outlined,
+          const _Glyph(
+            _GlyphKind.eye,
             size: 9,
             color: _kObsBadgeColor,
           ),
@@ -686,7 +701,7 @@ class _RightPaneState extends State<_RightPane> {
       return const Center(
         child: Text(
           'Select an item to inspect',
-          style: TextStyle(color: Colors.white38, fontSize: 12),
+          style: TextStyle(color: _kWhite38, fontSize: 12),
         ),
       );
     }
@@ -694,7 +709,7 @@ class _RightPaneState extends State<_RightPane> {
       return Center(
         child: Text(
           '"${widget.label}" not in cache',
-          style: const TextStyle(color: Colors.white38, fontSize: 12),
+          style: const TextStyle(color: _kWhite38, fontSize: 12),
         ),
       );
     }
@@ -714,19 +729,13 @@ class _RightPaneState extends State<_RightPane> {
             child: Row(
               children: [
                 if (widget.canGoBack) ...[
-                  IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: Colors.white70,
-                      size: 14,
-                    ),
+                  _IconButton(
+                    identifier: 'shalom-inspector-back',
+                    label: 'Go back',
+                    glyph: _GlyphKind.back,
+                    color: _kWhite70,
+                    size: 14,
                     onPressed: widget.onGoBack,
-                    tooltip: 'Go back',
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 24,
-                      minHeight: 24,
-                    ),
                   ),
                   const SizedBox(width: 4),
                 ],
@@ -746,16 +755,14 @@ class _RightPaneState extends State<_RightPane> {
                   _ObsBadge(count: obsCount),
                   const SizedBox(width: 4),
                 ],
-                IconButton(
-                  icon: const Icon(Icons.copy, color: Colors.white38, size: 14),
+                _IconButton(
+                  identifier: 'shalom-inspector-copy',
+                  label: 'Copy raw JSON',
+                  glyph: _GlyphKind.copy,
+                  color: _kWhite38,
+                  size: 14,
                   onPressed: () =>
                       Clipboard.setData(ClipboardData(text: rawJson)),
-                  tooltip: 'Copy raw JSON',
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(
-                    minWidth: 24,
-                    minHeight: 24,
-                  ),
                 ),
               ],
             ),
@@ -818,14 +825,18 @@ class _SubTabItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = count != null ? '$label ($count)' : label;
-    return GestureDetector(
+    return _Clickable(
+      identifier:
+          'shalom-inspector-subtab-${label.toLowerCase().replaceAll(' ', '-')}',
+      label: label,
+      selected: selected,
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: selected ? _kTabActiveIndicator : Colors.transparent,
+              color: selected ? _kTabActiveIndicator : _kTransparent,
               width: 2,
             ),
           ),
@@ -833,7 +844,7 @@ class _SubTabItem extends StatelessWidget {
         child: Text(
           text,
           style: TextStyle(
-            color: selected ? Colors.white : Colors.white54,
+            color: selected ? _kWhite : _kWhite54,
             fontSize: 11,
             fontWeight: selected ? FontWeight.bold : FontWeight.normal,
           ),
@@ -860,15 +871,17 @@ class _ObserverList extends StatelessWidget {
         child: Text(
           'No active observers\n(entry may be GC\'d soon)',
           textAlign: TextAlign.center,
-          style: TextStyle(color: Colors.white38, fontSize: 12),
+          style: TextStyle(color: _kWhite38, fontSize: 12),
         ),
       );
     }
     return ListView.separated(
       padding: const EdgeInsets.all(10),
       itemCount: observers.length,
-      separatorBuilder: (_, __) =>
-          const Divider(color: Color(0xFF333355), height: 12),
+      separatorBuilder: (_, __) => const Padding(
+        padding: EdgeInsets.symmetric(vertical: 5.5),
+        child: SizedBox(height: 1, child: ColoredBox(color: _kDividerColor)),
+      ),
       itemBuilder: (_, i) =>
           _ObserverCard(info: observers[i], onNavigateToKey: onNavigateToKey),
     );
@@ -892,7 +905,7 @@ class _ObserverCardState extends State<_ObserverCard> {
   Widget build(BuildContext context) {
     final info = widget.info;
     final isFragment = info.kind == 'fragment';
-    final icon = isFragment ? Icons.account_tree_outlined : Icons.bolt_outlined;
+    final icon = isFragment ? _GlyphKind.tree : _GlyphKind.bolt;
     final kindColor = isFragment ? _kRefColor : const Color(0xFFDCDCAA);
     final opTypeLabel = info.opType != null ? ' · ${info.opType}' : '';
 
@@ -909,7 +922,7 @@ class _ObserverCardState extends State<_ObserverCard> {
           // Name row
           Row(
             children: [
-              Icon(icon, size: 13, color: kindColor),
+              _Glyph(icon, size: 13, color: kindColor),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
@@ -950,7 +963,8 @@ class _ObserverCardState extends State<_ObserverCard> {
                   'anchor: ',
                   style: TextStyle(color: _kMutedColor, fontSize: 11),
                 ),
-                InkWell(
+                _Clickable(
+                  label: 'Go to ${info.anchor!}',
                   onTap: () => widget.onNavigateToKey(info.anchor!),
                   child: Text(
                     info.anchor!,
@@ -970,9 +984,25 @@ class _ObserverCardState extends State<_ObserverCard> {
               info.variablesJson != 'null' &&
               info.variablesJson != '{}') ...[
             const SizedBox(height: 6),
-            const Text(
-              'variables:',
-              style: TextStyle(color: _kMutedColor, fontSize: 11),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'variables:',
+                    style: TextStyle(color: _kMutedColor, fontSize: 11),
+                  ),
+                ),
+                _IconButton(
+                  glyph: _GlyphKind.copy,
+                  color: _kMutedColor,
+                  size: 13,
+                  label: 'Copy variables',
+                  identifier: 'shalom-inspector-copy-variables-${info.id}',
+                  onPressed: () => Clipboard.setData(
+                    ClipboardData(text: info.variablesJson!),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 2),
             Container(
@@ -981,7 +1011,7 @@ class _ObserverCardState extends State<_ObserverCard> {
                 color: _kBg,
                 borderRadius: BorderRadius.circular(3),
               ),
-              child: SelectableText(
+              child: Text(
                 _prettyJson(info.variablesJson!),
                 style: const TextStyle(
                   color: _kStringColor,
@@ -993,12 +1023,14 @@ class _ObserverCardState extends State<_ObserverCard> {
           ],
           // Watched keys (collapsible)
           const SizedBox(height: 6),
-          GestureDetector(
+          _Clickable(
             onTap: () => setState(() => _keysExpanded = !_keysExpanded),
             child: Row(
               children: [
-                Icon(
-                  _keysExpanded ? Icons.expand_more : Icons.chevron_right,
+                _Glyph(
+                  _keysExpanded
+                      ? _GlyphKind.chevronDown
+                      : _GlyphKind.chevronRight,
                   size: 13,
                   color: _kMutedColor,
                 ),
@@ -1018,7 +1050,8 @@ class _ObserverCardState extends State<_ObserverCard> {
             for (final key in info.watchedKeys)
               Padding(
                 padding: const EdgeInsets.only(left: 14, top: 2),
-                child: InkWell(
+                child: _Clickable(
+                  label: 'Go to $key',
                   onTap: () => widget.onNavigateToKey(key),
                   child: Text(
                     key,
@@ -1277,12 +1310,12 @@ class _ExpandHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return _Clickable(
       onTap: onTap,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.chevron_right, size: 14, color: _kMutedColor),
+          const _Glyph(_GlyphKind.chevronRight, size: 14, color: _kMutedColor),
           Text(open, style: const TextStyle(color: _kPunctColor, fontSize: 12)),
           const SizedBox(width: 4),
           Text(
@@ -1312,12 +1345,12 @@ class _CollapseHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return _Clickable(
       onTap: onTap,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.expand_more, size: 14, color: _kMutedColor),
+          const _Glyph(_GlyphKind.chevronDown, size: 14, color: _kMutedColor),
           Text(
             bracket,
             style: const TextStyle(color: _kPunctColor, fontSize: 12),
@@ -1383,9 +1416,10 @@ class _RefChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return _Clickable(
+      identifier: 'shalom-inspector-ref-$refKey',
+      label: 'Go to cached $refKey',
       onTap: onTap,
-      borderRadius: BorderRadius.circular(4),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
         decoration: BoxDecoration(
@@ -1396,7 +1430,7 @@ class _RefChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.link, size: 11, color: _kRefColor),
+            const _Glyph(_GlyphKind.link, size: 11, color: _kRefColor),
             const SizedBox(width: 4),
             Flexible(
               child: Text(
@@ -1452,8 +1486,8 @@ class _ShalomDebugOverlayState extends State<_ShalomDebugOverlay> {
         widget.child,
         if (_open)
           Positioned.fill(
-            child: Material(
-              color: Colors.black87,
+            child: ColoredBox(
+              color: _kScrim,
               child: SafeArea(
                 child: ShalomDebugPanel(
                   client: ShalomScope.of(context),
@@ -1465,18 +1499,498 @@ class _ShalomDebugOverlayState extends State<_ShalomDebugOverlay> {
         Positioned(
           bottom: 20,
           right: 16,
-          child: FloatingActionButton.small(
-            backgroundColor: const Color(0xFF0F3460),
-            onPressed: () => setState(() => _open = !_open),
-            tooltip: 'Shalom Cache Inspector',
-            child: Icon(
-              _open ? Icons.close : Icons.bug_report,
-              color: Colors.white,
-              size: 18,
+          child: _Clickable(
+            identifier: 'shalom-inspector-toggle',
+            label: _open
+                ? 'Close Shalom Cache Inspector'
+                : 'Shalom Cache Inspector',
+            onTap: () => setState(() => _open = !_open),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: const BoxDecoration(
+                color: _kSelectedBg,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Color(0x66000000),
+                    blurRadius: 6,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              alignment: Alignment.center,
+              child: _Glyph(
+                _open ? _GlyphKind.close : _GlyphKind.database,
+                color: _kWhite,
+                size: 18,
+              ),
             ),
           ),
         ),
       ],
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Design-system-free primitives
+//
+// The inspector is built purely on `package:flutter/widgets.dart` so it does
+// not depend on `material_ui` / `cupertino_ui` and renders the same in any app.
+// ---------------------------------------------------------------------------
+
+/// A tappable region with a click cursor, optional hover highlight and
+/// button semantics (used as a replacement for `InkWell`).
+class _Clickable extends StatefulWidget {
+  final VoidCallback onTap;
+  final Widget child;
+  final String? label;
+  final String? identifier;
+  final bool selected;
+  final Color? hoverColor;
+
+  const _Clickable({
+    required this.onTap,
+    required this.child,
+    this.label,
+    this.identifier,
+    this.selected = false,
+    this.hoverColor,
+  });
+
+  @override
+  State<_Clickable> createState() => _ClickableState();
+}
+
+class _ClickableState extends State<_Clickable> {
+  bool _hovered = false;
+  bool _focused = false;
+
+  @override
+  Widget build(BuildContext context) {
+    Widget child = widget.child;
+    final hoverColor = widget.hoverColor;
+    if (hoverColor != null) {
+      child = ColoredBox(
+        color: _hovered ? hoverColor : _kTransparent,
+        child: child,
+      );
+    }
+    return Semantics(
+      identifier: widget.identifier,
+      label: widget.label,
+      button: true,
+      selected: widget.selected,
+      excludeSemantics: widget.label != null,
+      onTap: widget.onTap,
+      child: FocusableActionDetector(
+        onFocusChange: (focused) => setState(() => _focused = focused),
+        shortcuts: const <ShortcutActivator, Intent>{
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: <Type, Action<Intent>>{
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              widget.onTap();
+              return null;
+            },
+          ),
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: _focused ? Border.all(color: _kKeyColor, width: 2) : null,
+          ),
+          position: DecorationPosition.foreground,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hovered = true),
+            onExit: (_) => setState(() => _hovered = false),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.onTap,
+              child: child,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A compact square icon button (replacement for `IconButton`).
+class _IconButton extends StatelessWidget {
+  final _GlyphKind glyph;
+  final Color color;
+  final double size;
+  final String label;
+  final String identifier;
+  final VoidCallback onPressed;
+
+  const _IconButton({
+    required this.glyph,
+    required this.color,
+    required this.size,
+    required this.label,
+    required this.identifier,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return _Clickable(
+      identifier: identifier,
+      label: label,
+      hoverColor: _kHoverBg,
+      onTap: onPressed,
+      child: SizedBox(
+        width: size + 12,
+        height: size + 12,
+        child: Center(
+          child: _Glyph(glyph, color: color, size: size),
+        ),
+      ),
+    );
+  }
+}
+
+/// A bordered single-line text input built on [EditableText]
+/// (replacement for a material `TextField`).
+class _FilterField extends StatefulWidget {
+  final TextEditingController controller;
+  final ValueChanged<String> onChanged;
+
+  const _FilterField({required this.controller, required this.onChanged});
+
+  @override
+  State<_FilterField> createState() => _FilterFieldState();
+}
+
+class _FilterFieldState extends State<_FilterField>
+    implements TextSelectionGestureDetectorBuilderDelegate {
+  @override
+  final GlobalKey<EditableTextState> editableTextKey =
+      GlobalKey<EditableTextState>();
+
+  @override
+  bool get forcePressEnabled => false;
+
+  @override
+  bool get selectionEnabled => true;
+
+  late final TextSelectionGestureDetectorBuilder _selectionGestures =
+      TextSelectionGestureDetectorBuilder(delegate: this);
+  final _selectionControls = _InspectorSelectionControls();
+  final FocusNode _focusNode = FocusNode(debugLabel: 'ShalomInspectorFilter');
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode.addListener(_onFocusChanged);
+  }
+
+  @override
+  void dispose() {
+    _focusNode
+      ..removeListener(_onFocusChanged)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _onFocusChanged() => setState(() {});
+
+  Widget _buildContextMenu(EditableTextState editableText) {
+    final anchors = editableText.contextMenuAnchors;
+    return CustomSingleChildLayout(
+      delegate: TextSelectionToolbarLayoutDelegate(
+        anchorAbove: anchors.primaryAnchor,
+        anchorBelow: anchors.secondaryAnchor ?? anchors.primaryAnchor,
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: _kHeaderBg,
+          border: Border.all(color: _kWhite24),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Wrap(
+          children: [
+            for (final item in editableText.contextMenuButtonItems)
+              if (item.onPressed != null)
+                _Clickable(
+                  label: item.label ?? _contextMenuLabel(item.type),
+                  hoverColor: _kHoverBg,
+                  onTap: item.onPressed!,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Text(
+                      item.label ?? _contextMenuLabel(item.type),
+                      style: const TextStyle(color: _kWhite, fontSize: 12),
+                    ),
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _contextMenuLabel(ContextMenuButtonType type) => switch (type) {
+    ContextMenuButtonType.cut => 'Cut',
+    ContextMenuButtonType.copy => 'Copy',
+    ContextMenuButtonType.paste => 'Paste',
+    ContextMenuButtonType.selectAll => 'Select all',
+    _ => type.name,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    const style = TextStyle(
+      color: _kWhite,
+      fontSize: 11,
+      height: 1.3,
+      fontFamily: 'monospace',
+    );
+    return Semantics(
+      identifier: 'shalom-inspector-filter',
+      textField: true,
+      label: 'Filter',
+      child: _selectionGestures.buildGestureDetector(
+        behavior: HitTestBehavior.opaque,
+        child: MouseRegion(
+          cursor: SystemMouseCursors.text,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              border: Border.all(
+                color: _focusNode.hasFocus ? _kKeyColor : _kWhite24,
+              ),
+            ),
+            child: Stack(
+              children: [
+                ValueListenableBuilder<TextEditingValue>(
+                  valueListenable: widget.controller,
+                  builder: (_, value, __) => value.text.isEmpty
+                      ? const Text(
+                          'Filter…',
+                          style: TextStyle(
+                            color: _kWhite38,
+                            fontSize: 11,
+                            height: 1.3,
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+                EditableText(
+                  key: editableTextKey,
+                  rendererIgnoresPointer: true,
+                  selectionControls: _selectionControls,
+                  showSelectionHandles: switch (defaultTargetPlatform) {
+                    TargetPlatform.android ||
+                    TargetPlatform.iOS ||
+                    TargetPlatform.fuchsia => true,
+                    _ => false,
+                  },
+                  contextMenuBuilder: (context, editableText) =>
+                      _buildContextMenu(editableText),
+                  controller: widget.controller,
+                  focusNode: _focusNode,
+                  style: style,
+                  cursorColor: _kKeyColor,
+                  backgroundCursorColor: _kMutedColor,
+                  selectionColor: _kSelectionHighlight,
+                  maxLines: 1,
+                  onChanged: widget.onChanged,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Selection handles that do not require a Material or Cupertino ancestor.
+class _InspectorSelectionControls extends TextSelectionControls
+    with TextSelectionHandleControls {
+  @override
+  Size getHandleSize(double textLineHeight) => const Size(16, 16);
+
+  @override
+  Offset getHandleAnchor(TextSelectionHandleType type, double textLineHeight) =>
+      const Offset(8, 0);
+
+  @override
+  Widget buildHandle(
+    BuildContext context,
+    TextSelectionHandleType type,
+    double textLineHeight, [
+    VoidCallback? onTap,
+  ]) => GestureDetector(
+    onTap: onTap,
+    child: const SizedBox(
+      width: 16,
+      height: 16,
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: _kKeyColor, shape: BoxShape.circle),
+      ),
+    ),
+  );
+}
+
+enum _GlyphKind {
+  database,
+  refresh,
+  back,
+  copy,
+  eye,
+  tree,
+  bolt,
+  chevronRight,
+  chevronDown,
+  link,
+  close,
+}
+
+/// A tiny vector icon set drawn with [CustomPaint], so the inspector does not
+/// rely on the host app bundling the MaterialIcons / CupertinoIcons fonts.
+class _Glyph extends StatelessWidget {
+  final _GlyphKind kind;
+  final Color color;
+  final double size;
+
+  const _Glyph(this.kind, {required this.color, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: CustomPaint(
+        size: Size.square(size),
+        painter: _GlyphPainter(kind, color),
+      ),
+    );
+  }
+}
+
+class _GlyphPainter extends CustomPainter {
+  final _GlyphKind kind;
+  final Color color;
+
+  const _GlyphPainter(this.kind, this.color);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.width;
+    Offset p(double x, double y) => Offset(x * s, y * s);
+    final stroke = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = (s * 0.1).clamp(1.0, 2.0)
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final fill = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    Path poly(List<Offset> pts, {bool close = false}) {
+      final path = Path()..moveTo(pts.first.dx, pts.first.dy);
+      for (final pt in pts.skip(1)) {
+        path.lineTo(pt.dx, pt.dy);
+      }
+      if (close) path.close();
+      return path;
+    }
+
+    switch (kind) {
+      case _GlyphKind.database:
+        final top = Rect.fromLTRB(0.18 * s, 0.12 * s, 0.82 * s, 0.32 * s);
+        canvas.drawOval(top, stroke);
+        canvas.drawLine(p(0.18, 0.22), p(0.18, 0.78), stroke);
+        canvas.drawLine(p(0.82, 0.22), p(0.82, 0.78), stroke);
+        canvas.drawArc(
+            top.shift(Offset(0, 0.28 * s)), 0, 3.1416, false, stroke);
+        canvas.drawArc(
+            top.shift(Offset(0, 0.56 * s)), 0, 3.1416, false, stroke);
+      case _GlyphKind.refresh:
+        final rect = Rect.fromCircle(center: p(0.5, 0.5), radius: 0.32 * s);
+        canvas.drawArc(rect, -1.2, 5.0, false, stroke);
+        canvas.drawPath(
+          poly([p(0.62, 0.06), p(0.68, 0.22), p(0.52, 0.28)]),
+          stroke,
+        );
+      case _GlyphKind.back:
+        canvas.drawLine(p(0.82, 0.5), p(0.2, 0.5), stroke);
+        canvas.drawPath(
+            poly([p(0.45, 0.25), p(0.2, 0.5), p(0.45, 0.75)]), stroke);
+      case _GlyphKind.copy:
+        canvas.drawRRect(
+          RRect.fromLTRBR(0.32 * s, 0.32 * s, 0.86 * s, 0.86 * s,
+              Radius.circular(0.08 * s)),
+          stroke,
+        );
+        canvas.drawPath(
+          poly([
+            p(0.18, 0.66),
+            p(0.14, 0.66),
+            p(0.14, 0.14),
+            p(0.66, 0.14),
+            p(0.66, 0.18)
+          ]),
+          stroke,
+        );
+      case _GlyphKind.eye:
+        final path = Path()
+          ..moveTo(0.06 * s, 0.5 * s)
+          ..quadraticBezierTo(0.5 * s, 0.0, 0.94 * s, 0.5 * s)
+          ..quadraticBezierTo(0.5 * s, 1.0 * s, 0.06 * s, 0.5 * s)
+          ..close();
+        canvas.drawPath(path, stroke);
+        canvas.drawCircle(p(0.5, 0.5), 0.13 * s, fill);
+      case _GlyphKind.tree:
+        canvas.drawRect(
+            Rect.fromLTWH(0.1 * s, 0.1 * s, 0.26 * s, 0.26 * s), stroke);
+        canvas.drawRect(
+            Rect.fromLTWH(0.64 * s, 0.37 * s, 0.26 * s, 0.26 * s), stroke);
+        canvas.drawRect(
+            Rect.fromLTWH(0.64 * s, 0.7 * s, 0.26 * s, 0.22 * s), stroke);
+        canvas.drawPath(
+          poly([p(0.23, 0.36), p(0.23, 0.81), p(0.64, 0.81)]),
+          stroke,
+        );
+        canvas.drawLine(p(0.23, 0.5), p(0.64, 0.5), stroke);
+      case _GlyphKind.bolt:
+        canvas.drawPath(
+          poly([
+            p(0.58, 0.04),
+            p(0.2, 0.56),
+            p(0.48, 0.56),
+            p(0.4, 0.96),
+            p(0.8, 0.42),
+            p(0.52, 0.42)
+          ], close: true),
+          stroke,
+        );
+      case _GlyphKind.chevronRight:
+        canvas.drawPath(
+            poly([p(0.38, 0.22), p(0.66, 0.5), p(0.38, 0.78)]), stroke);
+      case _GlyphKind.chevronDown:
+        canvas.drawPath(
+            poly([p(0.22, 0.38), p(0.5, 0.66), p(0.78, 0.38)]), stroke);
+      case _GlyphKind.link:
+        final r = Radius.circular(0.15 * s);
+        canvas.drawRRect(
+            RRect.fromLTRBR(0.04 * s, 0.34 * s, 0.56 * s, 0.66 * s, r), stroke);
+        canvas.drawRRect(
+            RRect.fromLTRBR(0.44 * s, 0.34 * s, 0.96 * s, 0.66 * s, r), stroke);
+      case _GlyphKind.close:
+        canvas.drawLine(p(0.22, 0.22), p(0.78, 0.78), stroke);
+        canvas.drawLine(p(0.78, 0.22), p(0.22, 0.78), stroke);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_GlyphPainter old) =>
+      old.kind != kind || old.color != color;
 }
