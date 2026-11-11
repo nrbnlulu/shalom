@@ -19,6 +19,7 @@ dependencies:
     path: ../../../dart/shalom
   shalom_flutter:
     path: ../../../dart/shalom_flutter
+  material_ui: ^1.11.0
 
 dev_dependencies:
   flutter_test:
