@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
+import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform;
 import 'package:flutter/services.dart';
 import 'package:shalom/shalom.dart';
 
@@ -32,6 +33,7 @@ const _kObsBadgeBg = Color(0xFF1A2A1A);
 const _kObsBadgeColor = Color(0xFF6A9955);
 const _kDividerColor = Color(0xFF333355);
 const _kHoverBg = Color(0x14FFFFFF);
+const _kSelectionHighlight = Color(0x664EC9B0);
 const _kScrim = Color(0xDD000000);
 const _kWhite = Color(0xFFFFFFFF);
 const _kWhite70 = Color(0xB3FFFFFF);
@@ -1784,7 +1786,12 @@ class _FilterFieldState extends State<_FilterField>
                   key: editableTextKey,
                   rendererIgnoresPointer: true,
                   selectionControls: _selectionControls,
-                  showSelectionHandles: true,
+                  showSelectionHandles: switch (defaultTargetPlatform) {
+                    TargetPlatform.android ||
+                    TargetPlatform.iOS ||
+                    TargetPlatform.fuchsia => true,
+                    _ => false,
+                  },
                   contextMenuBuilder: (context, editableText) =>
                       _buildContextMenu(editableText),
                   controller: widget.controller,
@@ -1792,7 +1799,7 @@ class _FilterFieldState extends State<_FilterField>
                   style: style,
                   cursorColor: _kKeyColor,
                   backgroundCursorColor: _kMutedColor,
-                  selectionColor: _kSelectedBg,
+                  selectionColor: _kSelectionHighlight,
                   maxLines: 1,
                   onChanged: widget.onChanged,
                 ),
