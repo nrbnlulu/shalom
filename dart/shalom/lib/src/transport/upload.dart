@@ -16,7 +16,7 @@ final class ShalomUpload {
   static final _random = Random.secure();
   static final _session = List.generate(
     4,
-    (_) => _random.nextInt(1 << 32).toRadixString(16).padLeft(8, '0'),
+    (_) => _random.nextInt(0x100000000).toRadixString(16).padLeft(8, '0'),
   ).join();
   static int _nextId = 0;
 
