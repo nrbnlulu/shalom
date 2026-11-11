@@ -279,64 +279,68 @@ class _ShalomDebugPanelState extends State<ShalomDebugPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return DefaultTextStyle(
-      style: const TextStyle(
-        fontFamily: 'monospace',
-        fontSize: 12,
-        height: 1.5,
-        color: _kPunctColor,
-      ),
-      child: Column(
-        children: [
-          _PanelHeader(onRefresh: _refresh),
-          _TabBar(
-            tab: _tab,
-            queryCount: _rootQueryFields.length,
-            mutationCount: _rootMutationFields.length,
-            onTabSelected: _switchTab,
-          ),
-          Expanded(
-            child: Row(
-              children: [
-                SizedBox(
-                  width: 230,
-                  child: _LeftPane(
-                    items: _leftItems,
-                    selectedItem: _selectedItem,
-                    filter: _filter,
-                    filterController: _filterController,
-                    totalCount: switch (_tab) {
-                      _PanelTab.queries => _rootQueryFields.length,
-                      _PanelTab.mutations => _rootMutationFields.length,
-                      _PanelTab.cache => _allKeys.length,
-                    },
-                    // Observer badge only makes sense per-entity (Cache tab)
-                    obsCounts: _tab == _PanelTab.cache ? _obsCounts : const {},
-                    emptyHint: switch (_tab) {
-                      _PanelTab.queries => 'No active queries',
-                      _PanelTab.mutations => 'No mutations in cache',
-                      _PanelTab.cache => 'Cache is empty',
-                    },
-                    onFilterChanged: (v) => setState(() => _filter = v),
-                    onItemSelected: _onItemSelected,
-                  ),
-                ),
-                const SizedBox(
-                    width: 1, child: ColoredBox(color: _kDividerColor)),
-                Expanded(
-                  child: _RightPane(
-                    label: _selectedItem,
-                    value: _rightValue,
-                    observers: _relevantObservers,
-                    canGoBack: _history.isNotEmpty,
-                    onGoBack: _goBack,
-                    onNavigateToRef: _navigateToRef,
-                  ),
-                ),
-              ],
+    return ColoredBox(
+      color: _kBg,
+      child: DefaultTextStyle(
+        style: const TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 12,
+          height: 1.5,
+          color: _kPunctColor,
+        ),
+        child: Column(
+          children: [
+            _PanelHeader(onRefresh: _refresh),
+            _TabBar(
+              tab: _tab,
+              queryCount: _rootQueryFields.length,
+              mutationCount: _rootMutationFields.length,
+              onTabSelected: _switchTab,
             ),
-          ),
-        ],
+            Expanded(
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 230,
+                    child: _LeftPane(
+                      items: _leftItems,
+                      selectedItem: _selectedItem,
+                      filter: _filter,
+                      filterController: _filterController,
+                      totalCount: switch (_tab) {
+                        _PanelTab.queries => _rootQueryFields.length,
+                        _PanelTab.mutations => _rootMutationFields.length,
+                        _PanelTab.cache => _allKeys.length,
+                      },
+                      // Observer badge only makes sense per-entity (Cache tab)
+                      obsCounts:
+                          _tab == _PanelTab.cache ? _obsCounts : const {},
+                      emptyHint: switch (_tab) {
+                        _PanelTab.queries => 'No active queries',
+                        _PanelTab.mutations => 'No mutations in cache',
+                        _PanelTab.cache => 'Cache is empty',
+                      },
+                      onFilterChanged: (v) => setState(() => _filter = v),
+                      onItemSelected: _onItemSelected,
+                    ),
+                  ),
+                  const SizedBox(
+                      width: 1, child: ColoredBox(color: _kDividerColor)),
+                  Expanded(
+                    child: _RightPane(
+                      label: _selectedItem,
+                      value: _rightValue,
+                      observers: _relevantObservers,
+                      canGoBack: _history.isNotEmpty,
+                      onGoBack: _goBack,
+                      onNavigateToRef: _navigateToRef,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
