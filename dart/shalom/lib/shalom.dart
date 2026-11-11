@@ -7,7 +7,11 @@ export 'src/shalom_core_base.dart';
 export 'src/scalar.dart';
 
 export 'src/transport/http_link.dart'
-    show HttpLink, HttpMethod, ShalomHttpTransport;
+    show
+        HttpLink,
+        HttpMethod,
+        ShalomHttpTransport,
+        ShalomMultipartHttpTransport;
 export 'src/transport/link.dart'
     show
         GraphQLLink,
@@ -21,3 +25,6 @@ export 'src/transport/web_socket_transport.dart' show WebSocketPackageTransport;
 export 'src/rust/api/ws.dart' show WsSansIo;
 export 'src/rust/api/runtime.dart' show LogLevel;
 export 'src/shalom_core_base.dart' show OperationRef;
+
+export 'src/transport/upload.dart'
+    show ShalomUpload, ShalomMultipartRequest, shalomUploadScalar;

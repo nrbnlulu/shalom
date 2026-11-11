@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
+
 import 'package:shalom/src/shalom_core_base.dart';
 import 'package:shalom/src/transport/link.dart'
     show GraphQLLink, GraphQLLinkPayload, RawGraphQLLinkPayload;
+
+import 'upload.dart';
 
 enum HttpMethod {
   // ignore: constant_identifier_names
@@ -19,6 +22,19 @@ abstract class ShalomHttpTransport {
     required HttpMethod method,
     required String url,
     required JsonObject data,
+    HeadersType? headers,
+    JsonObject? extra,
+  });
+}
+
+/// An HTTP transport that can send GraphQL multipart file uploads.
+///
+/// The transport owns multipart encoding and the Content-Type boundary. It must
+/// send `operations`, `map`, then file parts (see [ShalomMultipartRequest]).
+abstract class ShalomMultipartHttpTransport implements ShalomHttpTransport {
+  Future<String> requestMultipart({
+    required String url,
+    required ShalomMultipartRequest data,
     HeadersType? headers,
     JsonObject? extra,
   });
@@ -54,6 +70,25 @@ class HttpLink extends GraphQLLink {
       // Merge default headers with request-specific headers
       var finalHeaders = [...defaultHeaders, ...?headers];
       finalHeaders = _ensureAcceptHeader(finalHeaders);
+
+      final multipart = ShalomMultipartRequest.fromRequest(request);
+      if (multipart.files.isNotEmpty) {
+        final transport = transportLayer;
+        if (transport is! ShalomMultipartHttpTransport) {
+          throw UnsupportedError(
+            'File uploads require a ShalomMultipartHttpTransport',
+          );
+        }
+        final response = await transport.requestMultipart(
+          url: url,
+          data: multipart,
+          headers: finalHeaders
+              .where((header) => header.$1.toLowerCase() != 'content-type')
+              .toList(),
+        );
+        yield GraphQLData(data: RawGraphQLLinkPayload(json: response));
+        return;
+      }
 
       final methodForThisRequest =
           useGet && request.opType == OperationType.Query
@@ -130,7 +165,9 @@ class HttpLink extends GraphQLLink {
   /// Prefers application/graphql-response+json with application/json as fallback
   HeadersType _ensureAcceptHeader(HeadersType headers) {
     // If user already specified Accept header, use it
-    final acceptHeader = headers.firstWhereOrNull((e) => e.$1 == 'Accept');
+    final acceptHeader = headers.firstWhereOrNull(
+      (e) => e.$1.toLowerCase() == 'accept',
+    );
     if (acceptHeader != null) {
       return headers;
     }

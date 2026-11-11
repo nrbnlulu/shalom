@@ -1,0 +1,9 @@
+custom_scalars:
+  Upload:
+    graphql_name: Upload
+    output_type:
+      import_path: package:shalom/shalom.dart
+      symbol_name: ShalomUpload
+    impl_symbol:
+      import_path: package:shalom/shalom.dart
+      symbol_name: shalomUploadScalar
