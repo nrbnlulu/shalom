@@ -1,3 +1,10 @@
+## 0.1.9
+
+- Add GraphQL multipart file uploads through `HttpLink` and `ShalomMultipartHttpTransport`, with nested inputs, lists, and deduplicated references to the same upload source.
+- Add `ShalomUpload.stream` for lazy file streaming. Only opaque upload IDs cross the Rust boundary; file contents remain in Dart. Dispose uploads after requests complete to release their registered sources.
+- Add `CacheProxy.delete` to delete normalized entities and unlink their references from the cache.
+- Update native dependencies to `shalom_runtime` 0.1.7 and `shalom_core` 0.1.3.
+
 ## 0.1.8
 
 - Keep active query subscriptions alive even when no polling interval is configured, allowing them to await refetch signals instead of exiting after the initial network response.
