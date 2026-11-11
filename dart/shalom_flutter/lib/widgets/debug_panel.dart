@@ -982,9 +982,25 @@ class _ObserverCardState extends State<_ObserverCard> {
               info.variablesJson != 'null' &&
               info.variablesJson != '{}') ...[
             const SizedBox(height: 6),
-            const Text(
-              'variables:',
-              style: TextStyle(color: _kMutedColor, fontSize: 11),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'variables:',
+                    style: TextStyle(color: _kMutedColor, fontSize: 11),
+                  ),
+                ),
+                _IconButton(
+                  glyph: _GlyphKind.copy,
+                  color: _kMutedColor,
+                  size: 13,
+                  label: 'Copy variables',
+                  identifier: 'shalom-inspector-copy-variables-${info.id}',
+                  onPressed: () => Clipboard.setData(
+                    ClipboardData(text: info.variablesJson!),
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 2),
             Container(
@@ -1547,6 +1563,7 @@ class _Clickable extends StatefulWidget {
 
 class _ClickableState extends State<_Clickable> {
   bool _hovered = false;
+  bool _focused = false;
 
   @override
   Widget build(BuildContext context) {
@@ -1565,14 +1582,35 @@ class _ClickableState extends State<_Clickable> {
       selected: widget.selected,
       excludeSemantics: widget.label != null,
       onTap: widget.onTap,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        onEnter: (_) => setState(() => _hovered = true),
-        onExit: (_) => setState(() => _hovered = false),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: widget.onTap,
-          child: child,
+      child: FocusableActionDetector(
+        onFocusChange: (focused) => setState(() => _focused = focused),
+        shortcuts: const <ShortcutActivator, Intent>{
+          SingleActivator(LogicalKeyboardKey.enter): ActivateIntent(),
+          SingleActivator(LogicalKeyboardKey.space): ActivateIntent(),
+        },
+        actions: <Type, Action<Intent>>{
+          ActivateIntent: CallbackAction<ActivateIntent>(
+            onInvoke: (_) {
+              widget.onTap();
+              return null;
+            },
+          ),
+        },
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: _focused ? Border.all(color: _kKeyColor, width: 2) : null,
+          ),
+          position: DecorationPosition.foreground,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            onEnter: (_) => setState(() => _hovered = true),
+            onExit: (_) => setState(() => _hovered = false),
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: widget.onTap,
+              child: child,
+            ),
+          ),
         ),
       ),
     );
@@ -1607,7 +1645,9 @@ class _IconButton extends StatelessWidget {
       child: SizedBox(
         width: size + 12,
         height: size + 12,
-        child: Center(child: _Glyph(glyph, color: color, size: size)),
+        child: Center(
+          child: _Glyph(glyph, color: color, size: size),
+        ),
       ),
     );
   }
@@ -1625,7 +1665,21 @@ class _FilterField extends StatefulWidget {
   State<_FilterField> createState() => _FilterFieldState();
 }
 
-class _FilterFieldState extends State<_FilterField> {
+class _FilterFieldState extends State<_FilterField>
+    implements TextSelectionGestureDetectorBuilderDelegate {
+  @override
+  final GlobalKey<EditableTextState> editableTextKey =
+      GlobalKey<EditableTextState>();
+
+  @override
+  bool get forcePressEnabled => false;
+
+  @override
+  bool get selectionEnabled => true;
+
+  late final TextSelectionGestureDetectorBuilder _selectionGestures =
+      TextSelectionGestureDetectorBuilder(delegate: this);
+  final _selectionControls = _InspectorSelectionControls();
   final FocusNode _focusNode = FocusNode(debugLabel: 'ShalomInspectorFilter');
 
   @override
@@ -1644,6 +1698,49 @@ class _FilterFieldState extends State<_FilterField> {
 
   void _onFocusChanged() => setState(() {});
 
+  Widget _buildContextMenu(EditableTextState editableText) {
+    final anchors = editableText.contextMenuAnchors;
+    return CustomSingleChildLayout(
+      delegate: TextSelectionToolbarLayoutDelegate(
+        anchorAbove: anchors.primaryAnchor,
+        anchorBelow: anchors.secondaryAnchor ?? anchors.primaryAnchor,
+      ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: _kHeaderBg,
+          border: Border.all(color: _kWhite24),
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Wrap(
+          children: [
+            for (final item in editableText.contextMenuButtonItems)
+              if (item.onPressed != null)
+                _Clickable(
+                  label: item.label ?? _contextMenuLabel(item.type),
+                  hoverColor: _kHoverBg,
+                  onTap: item.onPressed!,
+                  child: Padding(
+                    padding: const EdgeInsets.all(10),
+                    child: Text(
+                      item.label ?? _contextMenuLabel(item.type),
+                      style: const TextStyle(color: _kWhite, fontSize: 12),
+                    ),
+                  ),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _contextMenuLabel(ContextMenuButtonType type) => switch (type) {
+    ContextMenuButtonType.cut => 'Cut',
+    ContextMenuButtonType.copy => 'Copy',
+    ContextMenuButtonType.paste => 'Paste',
+    ContextMenuButtonType.selectAll => 'Select all',
+    _ => type.name,
+  };
+
   @override
   Widget build(BuildContext context) {
     const style = TextStyle(
@@ -1656,9 +1753,8 @@ class _FilterFieldState extends State<_FilterField> {
       identifier: 'shalom-inspector-filter',
       textField: true,
       label: 'Filter',
-      child: GestureDetector(
+      child: _selectionGestures.buildGestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: _focusNode.requestFocus,
         child: MouseRegion(
           cursor: SystemMouseCursors.text,
           child: Container(
@@ -1685,6 +1781,12 @@ class _FilterFieldState extends State<_FilterField> {
                       : const SizedBox.shrink(),
                 ),
                 EditableText(
+                  key: editableTextKey,
+                  rendererIgnoresPointer: true,
+                  selectionControls: _selectionControls,
+                  showSelectionHandles: true,
+                  contextMenuBuilder: (context, editableText) =>
+                      _buildContextMenu(editableText),
                   controller: widget.controller,
                   focusNode: _focusNode,
                   style: style,
@@ -1701,6 +1803,34 @@ class _FilterFieldState extends State<_FilterField> {
       ),
     );
   }
+}
+
+/// Selection handles that do not require a Material or Cupertino ancestor.
+class _InspectorSelectionControls extends TextSelectionControls
+    with TextSelectionHandleControls {
+  @override
+  Size getHandleSize(double textLineHeight) => const Size(16, 16);
+
+  @override
+  Offset getHandleAnchor(TextSelectionHandleType type, double textLineHeight) =>
+      const Offset(8, 0);
+
+  @override
+  Widget buildHandle(
+    BuildContext context,
+    TextSelectionHandleType type,
+    double textLineHeight, [
+    VoidCallback? onTap,
+  ]) => GestureDetector(
+    onTap: onTap,
+    child: const SizedBox(
+      width: 16,
+      height: 16,
+      child: DecoratedBox(
+        decoration: BoxDecoration(color: _kKeyColor, shape: BoxShape.circle),
+      ),
+    ),
+  );
 }
 
 enum _GlyphKind {
