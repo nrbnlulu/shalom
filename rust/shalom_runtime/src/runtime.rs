@@ -222,6 +222,8 @@ struct SubscriptionState {
     /// when the anchor changes, since the subscription hasn't delivered data
     /// for the new anchor yet.
     has_emitted: bool,
+    /// Whether the most recent response was an error rather than cached data.
+    last_result_was_error: bool,
 }
 
 #[derive(Clone)]
@@ -589,6 +591,11 @@ impl ShalomRuntime {
                                 terminal_error = true;
                                 break;
                             }
+                            runtime.recover_subscription_after_success(
+                                sub_id,
+                                &op_ctx,
+                                variables.as_ref(),
+                            );
                         }
                         GraphQLResponse::Error { errors, extensions } => {
                             runtime.push_subscription_error(
@@ -1035,6 +1042,46 @@ impl ShalomRuntime {
         self.send_or_remove(&mut manager, id, Err(err));
     }
 
+    /// Clear this operation's last error even if its successful response did
+    /// not change the cache. Healthy observers still use normal key filtering.
+    fn recover_subscription_after_success(
+        &self,
+        id: SubscriptionId,
+        op_ctx: &SharedOpCtx,
+        variables: Option<&Map<String, Value>>,
+    ) {
+        if !self
+            .subscriptions
+            .lock()
+            .subscriptions
+            .get(&id)
+            .is_some_and(|state| state.last_result_was_error)
+        {
+            return;
+        }
+        let Ok(result) = self.read_result_op(op_ctx, variables) else {
+            return;
+        };
+        if !result.missing_refs.is_empty() {
+            return;
+        }
+        let mut manager = self.subscriptions.lock();
+        if manager
+            .subscriptions
+            .get(&id)
+            .is_some_and(|state| state.last_result_was_error)
+        {
+            self.send_or_remove(
+                &mut manager,
+                id,
+                Ok(RuntimeResponse {
+                    data: result.data,
+                    operation_id: Some(op_ctx.get_operation_name().to_string()),
+                }),
+            );
+        }
+    }
+
     // -----------------------------------------------------------------------
     // Debug / inspection helpers (pub for the FRB layer)
     // -----------------------------------------------------------------------
@@ -1341,6 +1388,7 @@ impl ShalomRuntime {
                 cancel: Arc::new(Notify::new()),
                 refetch: Arc::new(Notify::new()),
                 has_emitted: false,
+                last_result_was_error: false,
             },
         );
         drop(manager);
@@ -1364,9 +1412,11 @@ impl ShalomRuntime {
             return;
         };
         let old_keys = state.keys.clone();
+        let is_error = msg.is_err();
         match state.sender.send(msg) {
             Ok(()) => {
                 state.has_emitted = true;
+                state.last_result_was_error = is_error;
                 manager.reindex(id, &old_keys);
             }
             Err(_) => {
@@ -1437,7 +1487,10 @@ impl ShalomRuntime {
                     state.keys = new_refs.clone();
                     if let Some(response) = response {
                         match state.sender.send(Ok(response)) {
-                            Ok(()) => state.has_emitted = true,
+                            Ok(()) => {
+                                state.has_emitted = true;
+                                state.last_result_was_error = false;
+                            }
                             Err(_) => {
                                 removed = true;
                             }
