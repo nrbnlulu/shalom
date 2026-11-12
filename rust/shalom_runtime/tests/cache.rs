@@ -3109,3 +3109,55 @@ async fn delete_removes_polymorphic_entity_from_interface_list() {
     assert_eq!(remaining[0]["__typename"], "Post");
     assert_eq!(remaining[0]["title"], "GraphQL");
 }
+
+#[tokio::test]
+async fn reregistered_unwrapped_operation_observes_status_changes() {
+    let schema = r#"
+        type Query { recordings: [Recording!]! }
+        type Recording { id: ID!, status: String! }
+    "#;
+    let fragment = "fragment RecordingFields on Recording @observe { id status }";
+    let source = format!(
+        "{fragment} query Recordings @observe {{ recordings {{ ...RecordingFields @unwrap }} }}"
+    );
+    let (_, parsed) = build_ctx(schema, &source);
+    // Codegen registers this parsed SDL, separately from the fragment.
+    assert!(parsed.op_sdl.contains("@unwrap"));
+    assert!(!parsed.query.contains("@unwrap"));
+    assert!(!parsed.query.contains("@observe"));
+
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    runtime.register_fragment(fragment).unwrap();
+    runtime
+        .register_operation(&parsed.op_sdl.replacen('{', "@observe {", 1))
+        .unwrap();
+    let operation = runtime.operation_by_name("Recordings").unwrap();
+    let id = runtime.create_operation_subscription(
+        operation.clone(),
+        None,
+        ExecutionPolicy::NetworkFirst,
+    );
+    let mut stream = runtime.subscription_stream(&id).unwrap();
+    normalize(
+        &runtime,
+        &operation,
+        json!({"recordings": [{"id": "1", "status": "PENDING"}]}),
+        None,
+    );
+    assert_eq!(
+        stream.next().await.unwrap().unwrap().data["recordings"][0]["status"],
+        "PENDING"
+    );
+    normalize(
+        &runtime,
+        &operation,
+        json!({"recordings": [{"id": "1", "status": "COMPLETED"}]}),
+        None,
+    );
+    let changed = tokio::time::timeout(Duration::from_secs(1), stream.next())
+        .await
+        .expect("unwrapped status update was not observed")
+        .unwrap()
+        .unwrap();
+    assert_eq!(changed.data["recordings"][0]["status"], "COMPLETED");
+}

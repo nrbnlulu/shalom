@@ -45,6 +45,10 @@ jobs:
                   override: true
                   components: rustfmt, clippy
 
+            - name: Install pinned Rust toolchain for Dart native build hook
+              run: rustup toolchain install "$(grep -oP '(?<=channel = \")[^\"]+' dart/shalom/rust/rust-toolchain.toml)" --profile minimal
+              shell: bash
+
             - name: Setup Flutter SDK
               uses: flutter-actions/setup-flutter@v4
               with:

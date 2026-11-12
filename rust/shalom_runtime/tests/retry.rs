@@ -81,6 +81,80 @@ async fn transport_error_retries_and_recovers() {
     assert_eq!(second.data.get("value"), Some(&json!(42)));
 }
 
+/// Reconnecting must clear the last error even when the server data did not change.
+#[tokio::test]
+async fn transport_retry_reemits_unchanged_data_after_error() {
+    let link = Arc::new(HostLink::new());
+    let mut outgoing = link.take_request_stream().expect("request stream missing");
+    let runtime =
+        ShalomRuntime::init(SCHEMA, Vec::new(), RuntimeConfig::default()).expect("runtime init");
+    let op_ctx = runtime
+        .register_operation("query TestOp @observe { value }")
+        .expect("register operation");
+    let sub_id = runtime.execute_operation(
+        op_ctx.clone(),
+        None,
+        ExecutionPolicy::NetworkFirst,
+        link.clone() as Arc<dyn GraphQLLink>,
+        Some(Duration::from_millis(20)),
+        None,
+    );
+    let mut responses = runtime
+        .subscription_stream(&sub_id)
+        .expect("subscription stream");
+    let first = outgoing.next().await.expect("initial request");
+    let data = || GraphQLResponse::Data {
+        data: json!({ "value": 42 }).as_object().unwrap().clone(),
+        errors: None,
+        extensions: None,
+    };
+    link.send_response(first.id, data()).expect("initial data");
+    assert_eq!(
+        responses.next().await.unwrap().unwrap().data.get("value"),
+        Some(&json!(42))
+    );
+    let healthy_id =
+        runtime.create_operation_subscription(op_ctx, None, ExecutionPolicy::CacheFirst);
+    let mut healthy = runtime
+        .subscription_stream(&healthy_id)
+        .expect("healthy observer");
+    assert_eq!(
+        healthy.next().await.unwrap().unwrap().data.get("value"),
+        Some(&json!(42))
+    );
+    link.send_response(
+        first.id,
+        GraphQLResponse::TransportError(TransportError {
+            message: "connection lost".into(),
+            code: "NETWORK_ERROR".into(),
+            details: None,
+        }),
+    )
+    .expect("transport error");
+    assert!(responses.next().await.unwrap().is_err());
+    let retry = outgoing.next().await.expect("retry request");
+    link.send_response(retry.id, data())
+        .expect("unchanged retry data");
+    let recovered = tokio::time::timeout(Duration::from_millis(500), responses.next())
+        .await
+        .expect("successful retry must clear the error even for unchanged data")
+        .expect("recovery response")
+        .expect("recovery must succeed");
+    assert_eq!(recovered.data.get("value"), Some(&json!(42)));
+    assert!(
+        tokio::time::timeout(Duration::from_millis(50), healthy.next())
+            .await
+            .is_err()
+    );
+    link.send_response(retry.id, data())
+        .expect("healthy unchanged response");
+    assert!(
+        tokio::time::timeout(Duration::from_millis(50), responses.next())
+            .await
+            .is_err()
+    );
+}
+
 /// A `refetch_interval` re-issues a query on a timer once its stream ends
 /// cleanly (no transport error) — a plain polling refetch.
 #[tokio::test]

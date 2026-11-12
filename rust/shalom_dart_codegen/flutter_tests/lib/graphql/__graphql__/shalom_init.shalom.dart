@@ -328,7 +328,7 @@ query UnwrapQuery($id: ID!) @observe {
     id
   }
   petUnwrapped(id: $id) {
-    ...PetWidget
+    ...PetWidget @unwrap
     id
   }
 }

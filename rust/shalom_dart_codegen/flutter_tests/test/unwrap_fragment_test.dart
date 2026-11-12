@@ -62,6 +62,18 @@ void main() {
       expect(find.text('pet: Rex'), findsOneWidget);
       // petUnwrapped is flattened directly onto UnwrapQueryData, no ref needed.
       expect(find.text('inline: Rex'), findsOneWidget);
+
+      // The parent must observe fields flattened by @unwrap after registration,
+      // even when list/entity identity has not changed.
+      await tester.runAsync(() async {
+        await CacheProxy(_client).writeFragment(
+          data: PetWidgetData(id: '2', name: 'Bella'),
+        );
+        await Future<void>.delayed(const Duration(milliseconds: 100));
+        await tester.pump();
+      });
+      expect(find.text('pet: Bella'), findsOneWidget);
+      expect(find.text('inline: Bella'), findsOneWidget);
     },
   );
 

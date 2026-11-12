@@ -11,7 +11,7 @@ import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'runtime.freezed.dart';
 
 // These functions are ignored because they are not marked as `pub`: `cache_value_to_json`, `parse_graphql_response`, `parse_variables`, `to_observer_info`
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`, `from`, `try_from`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`, `from`, `from`, `try_from`
 
 /// Set the global log level filter for all Rust-side logging.
 void setLogLevel({required LogLevel level}) =>
@@ -167,6 +167,11 @@ Stream<SubscriptionEvent> listenSubscription({
 /// Stream of request envelopes that Dart must execute and respond to.
 Stream<RequestEnvelopeInput> listenRequests({required RuntimeHandle handle}) =>
     RustLib.instance.api.crateApiRuntimeListenRequests(handle: handle);
+
+/// Stream lifecycle actions in order so cancellation cannot overtake dispatch.
+Stream<TransportEventInput> listenTransportEvents({
+  required RuntimeHandle handle,
+}) => RustLib.instance.api.crateApiRuntimeListenTransportEvents(handle: handle);
 
 Future<void> pushResponse({
   required RuntimeHandle handle,
@@ -565,4 +570,15 @@ sealed class SubscriptionEvent with _$SubscriptionEvent {
     required String message,
     ShalomJsonValue? details,
   }) = SubscriptionEvent_TransportError;
+}
+
+@freezed
+sealed class TransportEventInput with _$TransportEventInput {
+  const TransportEventInput._();
+
+  const factory TransportEventInput.request({
+    required RequestEnvelopeInput envelope,
+  }) = TransportEventInput_Request;
+  const factory TransportEventInput.cancel({required BigInt requestId}) =
+      TransportEventInput_Cancel;
 }

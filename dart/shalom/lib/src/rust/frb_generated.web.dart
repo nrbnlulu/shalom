@@ -117,6 +117,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   dco_decode_StreamSink_subscription_event_Sse(dynamic raw);
 
   @protected
+  RustStreamSink<TransportEventInput>
+  dco_decode_StreamSink_transport_event_input_Sse(dynamic raw);
+
+  @protected
   String dco_decode_String(dynamic raw);
 
   @protected
@@ -129,6 +133,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ObservedRefInput dco_decode_box_autoadd_observed_ref_input(dynamic raw);
+
+  @protected
+  RequestEnvelopeInput dco_decode_box_autoadd_request_envelope_input(
+    dynamic raw,
+  );
 
   @protected
   RetryDelayInput dco_decode_box_autoadd_retry_delay_input(dynamic raw);
@@ -227,6 +236,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   SubscriptionEvent dco_decode_subscription_event(dynamic raw);
+
+  @protected
+  TransportEventInput dco_decode_transport_event_input(dynamic raw);
 
   @protected
   int dco_decode_u_16(dynamic raw);
@@ -333,6 +345,10 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   sse_decode_StreamSink_subscription_event_Sse(SseDeserializer deserializer);
 
   @protected
+  RustStreamSink<TransportEventInput>
+  sse_decode_StreamSink_transport_event_input_Sse(SseDeserializer deserializer);
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
@@ -345,6 +361,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   ObservedRefInput sse_decode_box_autoadd_observed_ref_input(
+    SseDeserializer deserializer,
+  );
+
+  @protected
+  RequestEnvelopeInput sse_decode_box_autoadd_request_envelope_input(
     SseDeserializer deserializer,
   );
 
@@ -471,6 +492,11 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   SubscriptionEvent sse_decode_subscription_event(SseDeserializer deserializer);
 
   @protected
+  TransportEventInput sse_decode_transport_event_input(
+    SseDeserializer deserializer,
+  );
+
+  @protected
   int sse_decode_u_16(SseDeserializer deserializer);
 
   @protected
@@ -592,6 +618,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   );
 
   @protected
+  void sse_encode_StreamSink_transport_event_input_Sse(
+    RustStreamSink<TransportEventInput> self,
+    SseSerializer serializer,
+  );
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
@@ -606,6 +638,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_box_autoadd_observed_ref_input(
     ObservedRefInput self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_box_autoadd_request_envelope_input(
+    RequestEnvelopeInput self,
     SseSerializer serializer,
   );
 
@@ -765,6 +803,12 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   @protected
   void sse_encode_subscription_event(
     SubscriptionEvent self,
+    SseSerializer serializer,
+  );
+
+  @protected
+  void sse_encode_transport_event_input(
+    TransportEventInput self,
     SseSerializer serializer,
   );
 

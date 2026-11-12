@@ -1149,4 +1149,296 @@ $ShalomJsonValueCopyWith<$Res>? get details {
 }
 }
 
+/// @nodoc
+mixin _$TransportEventInput {
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransportEventInput);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'TransportEventInput()';
+}
+
+
+}
+
+/// @nodoc
+class $TransportEventInputCopyWith<$Res>  {
+$TransportEventInputCopyWith(TransportEventInput _, $Res Function(TransportEventInput) __);
+}
+
+
+/// Adds pattern-matching-related methods to [TransportEventInput].
+extension TransportEventInputPatterns on TransportEventInput {
+/// A variant of `map` that fallback to returning `orElse`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( TransportEventInput_Request value)?  request,TResult Function( TransportEventInput_Cancel value)?  cancel,required TResult orElse(),}){
+final _that = this;
+switch (_that) {
+case TransportEventInput_Request() when request != null:
+return request(_that);case TransportEventInput_Cancel() when cancel != null:
+return cancel(_that);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// Callbacks receives the raw object, upcasted.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case final Subclass2 value:
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( TransportEventInput_Request value)  request,required TResult Function( TransportEventInput_Cancel value)  cancel,}){
+final _that = this;
+switch (_that) {
+case TransportEventInput_Request():
+return request(_that);case TransportEventInput_Cancel():
+return cancel(_that);}
+}
+/// A variant of `map` that fallback to returning `null`.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case final Subclass value:
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( TransportEventInput_Request value)?  request,TResult? Function( TransportEventInput_Cancel value)?  cancel,}){
+final _that = this;
+switch (_that) {
+case TransportEventInput_Request() when request != null:
+return request(_that);case TransportEventInput_Cancel() when cancel != null:
+return cancel(_that);case _:
+  return null;
+
+}
+}
+/// A variant of `when` that fallback to an `orElse` callback.
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return orElse();
+/// }
+/// ```
+
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( RequestEnvelopeInput envelope)?  request,TResult Function( BigInt requestId)?  cancel,required TResult orElse(),}) {final _that = this;
+switch (_that) {
+case TransportEventInput_Request() when request != null:
+return request(_that.envelope);case TransportEventInput_Cancel() when cancel != null:
+return cancel(_that.requestId);case _:
+  return orElse();
+
+}
+}
+/// A `switch`-like method, using callbacks.
+///
+/// As opposed to `map`, this offers destructuring.
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case Subclass2(:final field2):
+///     return ...;
+/// }
+/// ```
+
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( RequestEnvelopeInput envelope)  request,required TResult Function( BigInt requestId)  cancel,}) {final _that = this;
+switch (_that) {
+case TransportEventInput_Request():
+return request(_that.envelope);case TransportEventInput_Cancel():
+return cancel(_that.requestId);}
+}
+/// A variant of `when` that fallback to returning `null`
+///
+/// It is equivalent to doing:
+/// ```dart
+/// switch (sealedClass) {
+///   case Subclass(:final field):
+///     return ...;
+///   case _:
+///     return null;
+/// }
+/// ```
+
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( RequestEnvelopeInput envelope)?  request,TResult? Function( BigInt requestId)?  cancel,}) {final _that = this;
+switch (_that) {
+case TransportEventInput_Request() when request != null:
+return request(_that.envelope);case TransportEventInput_Cancel() when cancel != null:
+return cancel(_that.requestId);case _:
+  return null;
+
+}
+}
+
+}
+
+/// @nodoc
+
+
+class TransportEventInput_Request extends TransportEventInput {
+  const TransportEventInput_Request({required this.envelope}): super._();
+  
+
+ final  RequestEnvelopeInput envelope;
+
+/// Create a copy of TransportEventInput
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$TransportEventInput_RequestCopyWith<TransportEventInput_Request> get copyWith => _$TransportEventInput_RequestCopyWithImpl<TransportEventInput_Request>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransportEventInput_Request&&(identical(other.envelope, envelope) || other.envelope == envelope));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,envelope);
+
+@override
+String toString() {
+  return 'TransportEventInput.request(envelope: $envelope)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $TransportEventInput_RequestCopyWith<$Res> implements $TransportEventInputCopyWith<$Res> {
+  factory $TransportEventInput_RequestCopyWith(TransportEventInput_Request value, $Res Function(TransportEventInput_Request) _then) = _$TransportEventInput_RequestCopyWithImpl;
+@useResult
+$Res call({
+ RequestEnvelopeInput envelope
+});
+
+
+
+
+}
+/// @nodoc
+class _$TransportEventInput_RequestCopyWithImpl<$Res>
+    implements $TransportEventInput_RequestCopyWith<$Res> {
+  _$TransportEventInput_RequestCopyWithImpl(this._self, this._then);
+
+  final TransportEventInput_Request _self;
+  final $Res Function(TransportEventInput_Request) _then;
+
+/// Create a copy of TransportEventInput
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? envelope = null,}) {
+  return _then(TransportEventInput_Request(
+envelope: null == envelope ? _self.envelope : envelope // ignore: cast_nullable_to_non_nullable
+as RequestEnvelopeInput,
+  ));
+}
+
+
+}
+
+/// @nodoc
+
+
+class TransportEventInput_Cancel extends TransportEventInput {
+  const TransportEventInput_Cancel({required this.requestId}): super._();
+  
+
+ final  BigInt requestId;
+
+/// Create a copy of TransportEventInput
+/// with the given fields replaced by the non-null parameter values.
+@JsonKey(includeFromJson: false, includeToJson: false)
+@pragma('vm:prefer-inline')
+$TransportEventInput_CancelCopyWith<TransportEventInput_Cancel> get copyWith => _$TransportEventInput_CancelCopyWithImpl<TransportEventInput_Cancel>(this, _$identity);
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransportEventInput_Cancel&&(identical(other.requestId, requestId) || other.requestId == requestId));
+}
+
+
+@override
+int get hashCode => Object.hash(runtimeType,requestId);
+
+@override
+String toString() {
+  return 'TransportEventInput.cancel(requestId: $requestId)';
+}
+
+
+}
+
+/// @nodoc
+abstract mixin class $TransportEventInput_CancelCopyWith<$Res> implements $TransportEventInputCopyWith<$Res> {
+  factory $TransportEventInput_CancelCopyWith(TransportEventInput_Cancel value, $Res Function(TransportEventInput_Cancel) _then) = _$TransportEventInput_CancelCopyWithImpl;
+@useResult
+$Res call({
+ BigInt requestId
+});
+
+
+
+
+}
+/// @nodoc
+class _$TransportEventInput_CancelCopyWithImpl<$Res>
+    implements $TransportEventInput_CancelCopyWith<$Res> {
+  _$TransportEventInput_CancelCopyWithImpl(this._self, this._then);
+
+  final TransportEventInput_Cancel _self;
+  final $Res Function(TransportEventInput_Cancel) _then;
+
+/// Create a copy of TransportEventInput
+/// with the given fields replaced by the non-null parameter values.
+@pragma('vm:prefer-inline') $Res call({Object? requestId = null,}) {
+  return _then(TransportEventInput_Cancel(
+requestId: null == requestId ? _self.requestId : requestId // ignore: cast_nullable_to_non_nullable
+as BigInt,
+  ));
+}
+
+
+}
+
 // dart format on

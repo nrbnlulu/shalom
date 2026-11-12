@@ -6,7 +6,7 @@ use flutter_rust_bridge::frb;
 use tokio_stream::StreamExt;
 
 use shalom_runtime::sansio_protocols::GraphQLResponse;
-use shalom_runtime::sansio_protocols::host::HostLink;
+use shalom_runtime::sansio_protocols::host::{HostLink, HostLinkEvent, RequestEnvelope};
 use shalom_runtime::{
     ExecutionPolicy, ObservedRef, OptimisticWriteId, RuntimeConfig, ShalomRuntime,
     SubscriptionError, SubscriptionId,
@@ -265,6 +265,31 @@ pub struct RequestEnvelopeInput {
     pub variables: ShalomJsonValue,
     pub operation_name: String,
     pub operation_type: String,
+}
+
+/// Ordered request and cancellation events for the Dart transport owner.
+#[frb]
+pub enum TransportEventInput {
+    Request { envelope: RequestEnvelopeInput },
+    Cancel { request_id: u64 },
+}
+
+impl From<RequestEnvelope> for RequestEnvelopeInput {
+    fn from(envelope: RequestEnvelope) -> Self {
+        let request = envelope.request;
+        Self {
+            id: envelope.id,
+            query: request.query,
+            variables: ShalomJsonValue::from(Value::Object(request.variables)),
+            operation_name: request.operation_name,
+            operation_type: match request.operation_type {
+                shalom_runtime::sansio_protocols::OperationType::Query => "Query",
+                shalom_runtime::sansio_protocols::OperationType::Mutation => "Mutation",
+                shalom_runtime::sansio_protocols::OperationType::Subscription => "Subscription",
+            }
+            .to_string(),
+        }
+    }
 }
 
 impl From<ObservedRefInput> for ObservedRef {
@@ -558,18 +583,29 @@ pub async fn listen_requests(
         return Err(anyhow::anyhow!("request stream already taken"));
     };
     while let Some(envelope) = stream.next().await {
-        let request = envelope.request;
-        let payload = RequestEnvelopeInput {
-            id: envelope.id,
-            query: request.query,
-            variables: ShalomJsonValue::from(Value::Object(request.variables)),
-            operation_name: request.operation_name,
-            operation_type: match request.operation_type {
-                shalom_runtime::sansio_protocols::OperationType::Query => "Query",
-                shalom_runtime::sansio_protocols::OperationType::Mutation => "Mutation",
-                shalom_runtime::sansio_protocols::OperationType::Subscription => "Subscription",
-            }
-            .to_string(),
+        let payload = RequestEnvelopeInput::from(envelope);
+        if sink.add(payload).is_err() {
+            break;
+        }
+    }
+    Ok(())
+}
+
+/// Stream lifecycle actions in order so cancellation cannot overtake dispatch.
+#[frb]
+pub async fn listen_transport_events(
+    handle: &RuntimeHandle,
+    sink: StreamSink<TransportEventInput>,
+) -> anyhow::Result<()> {
+    let Some(mut stream) = handle.link.take_transport_stream() else {
+        return Err(anyhow::anyhow!("transport stream already taken"));
+    };
+    while let Some(event) = stream.next().await {
+        let payload = match event {
+            HostLinkEvent::Request(envelope) => TransportEventInput::Request {
+                envelope: envelope.into(),
+            },
+            HostLinkEvent::Cancel { request_id } => TransportEventInput::Cancel { request_id },
         };
         if sink.add(payload).is_err() {
             break;

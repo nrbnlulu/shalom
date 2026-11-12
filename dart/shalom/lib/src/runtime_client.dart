@@ -124,7 +124,7 @@ class ShalomRuntimeClient {
   final GraphQLLink _link;
   final Map<int, StreamSubscription<GraphQLResponse<GraphQLLinkPayload>>>
   _activeRequests = {};
-  StreamSubscription<rs_runtime.RequestEnvelopeInput>? _requestStream;
+  StreamSubscription<rs_runtime.TransportEventInput>? _requestStream;
   bool _disposed = false;
 
   ShalomRuntimeClient._(this._handle, this._link);
@@ -488,8 +488,30 @@ class ShalomRuntimeClient {
   // -------------------------------------------------------------------------
 
   void _bindRequests() {
-    final stream = rs_runtime.listenRequests(handle: _handle);
-    _requestStream = stream.listen(_handleRequestEnvelope, onError: (_) {});
+    final stream = rs_runtime.listenTransportEvents(handle: _handle);
+    _requestStream = stream.listen((event) {
+      switch (event) {
+        case rs_runtime.TransportEventInput_Request(:final envelope):
+          // Runs synchronously up to link subscription, so a following
+          // cancel event always finds the registered subscription.
+          unawaited(_handleRequestEnvelope(envelope).catchError((_) {}));
+        case rs_runtime.TransportEventInput_Cancel(:final requestId):
+          unawaited(_cancelTransportRequest(requestId.toInt()));
+      }
+    }, onError: (_) {});
+  }
+
+  Future<void> _cancelTransportRequest(int requestId) async {
+    final subscription = _activeRequests.remove(requestId);
+    if (subscription == null) return;
+    try {
+      await subscription.cancel();
+    } catch (_) {
+      // Keep the handle so client disposal retries the cleanup.
+      if (!_disposed) {
+        _activeRequests.putIfAbsent(requestId, () => subscription);
+      }
+    }
   }
 
   Future<void> _handleRequestEnvelope(
@@ -499,7 +521,9 @@ class ShalomRuntimeClient {
     final requestId = envelope.id.toInt();
     final previous = _activeRequests.remove(requestId);
     if (previous != null) {
-      await previous.cancel();
+      // Do not await: request setup must not yield before registering the
+      // new subscription, otherwise a queued cancel event would miss it.
+      unawaited(previous.cancel().catchError((_) {}));
     }
     final request = Request(
       query: envelope.query,
