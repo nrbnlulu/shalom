@@ -603,15 +603,14 @@ impl<'a> Normalizer<'a> {
         let id_value = raw_obj.get("id").and_then(coerce_id);
         let entity_key = id_value.map(|id| format!("{typename}:{id}"));
         let path_key = format!("{}.{}", parent_ref_key, field_segment);
-        let object_ref_key = if is_union_interface || entity_key.is_none() {
-            path_key.clone()
-        } else {
-            entity_key.clone().unwrap_or(path_key.clone())
+        let object_ref_key = match &entity_key {
+            Some(key) => key.clone(),
+            None => path_key.clone(),
         };
         let observed_frags = selection_get_observed_fragments(selection, &self.global_ctx);
         self.used_refs.insert(object_ref_key.clone());
 
-        if is_union_interface || entity_key.is_none() {
+        if entity_key.is_none() {
             self.cache
                 .record_ref(object_ref_key.clone(), object_locator.clone());
         }

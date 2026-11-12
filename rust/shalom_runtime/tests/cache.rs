@@ -3161,3 +3161,142 @@ async fn reregistered_unwrapped_operation_observes_status_changes() {
         .unwrap();
     assert_eq!(changed.data["recordings"][0]["status"], "COMPLETED");
 }
+
+#[tokio::test]
+async fn polymorphic_interface_query_receives_normalized_entity_updates() {
+    let schema = r#"
+        type Query {
+            item: Item
+        }
+        interface Item {
+            id: ID!
+        }
+        type ReporteeGroup implements Item {
+            id: ID!
+            name: String!
+        }
+        type Mutation {
+            rename(id: ID!, name: String!): ReporteeGroup!
+        }
+    "#;
+    let fragment = "fragment ReporteeGroupFrag on ReporteeGroup @observe { id name }";
+    let query_doc = r#"
+        query ComplexQuery @observe {
+            item {
+                ... on ReporteeGroup {
+                    ...ReporteeGroupFrag @unwrap
+                }
+            }
+        }
+    "#;
+    let mutation_doc = "mutation RenameGroup($id: ID!, $name: String!) { rename(id: $id, name: $name) { id name } }";
+
+    let runtime = ShalomRuntime::init(schema, vec![fragment.to_string()], Default::default()).unwrap();
+    let query_op = runtime.register_operation(query_doc).unwrap();
+    let mutation_op = runtime.register_operation(mutation_doc).unwrap();
+
+    normalize(
+        &runtime,
+        &query_op,
+        json!({
+            "item": { "__typename": "ReporteeGroup", "id": "g1", "name": "before" }
+        }),
+        None,
+    );
+
+    let sub_id = runtime.create_operation_subscription(
+        query_op.clone(),
+        None,
+        ExecutionPolicy::CacheFirst,
+    );
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["item"]["name"], "before");
+
+    let mut vars = Map::new();
+    vars.insert("id".to_string(), json!("g1"));
+    vars.insert("name".to_string(), json!("after"));
+    normalize(
+        &runtime,
+        &mutation_op,
+        json!({
+            "rename": { "id": "g1", "name": "after" }
+        }),
+        Some(vars),
+    );
+
+    let update = stream.next().await.unwrap().unwrap();
+    assert_eq!(update.data["item"]["name"], "after");
+}
+
+#[tokio::test]
+async fn polymorphic_union_query_receives_normalized_entity_updates() {
+    let schema = r#"
+        type Query {
+            search: SearchResult
+        }
+        union SearchResult = ReporteeGroup | Other
+        type ReporteeGroup {
+            id: ID!
+            name: String!
+        }
+        type Other {
+            id: ID!
+            title: String!
+        }
+        type Mutation {
+            rename(id: ID!, name: String!): ReporteeGroup!
+        }
+    "#;
+    let query_doc = r#"
+        query SearchQuery @observe {
+            search {
+                __typename
+                ... on ReporteeGroup {
+                    id
+                    name
+                }
+            }
+        }
+    "#;
+    let mutation_doc = "mutation RenameGroup($id: ID!, $name: String!) { rename(id: $id, name: $name) { id name } }";
+
+    let runtime = ShalomRuntime::init(schema, vec![], Default::default()).unwrap();
+    let query_op = runtime.register_operation(query_doc).unwrap();
+    let mutation_op = runtime.register_operation(mutation_doc).unwrap();
+
+    normalize(
+        &runtime,
+        &query_op,
+        json!({
+            "search": { "__typename": "ReporteeGroup", "id": "g1", "name": "before" }
+        }),
+        None,
+    );
+
+    let sub_id = runtime.create_operation_subscription(
+        query_op.clone(),
+        None,
+        ExecutionPolicy::CacheFirst,
+    );
+    let mut stream = runtime.subscription_stream(&sub_id).unwrap();
+
+    let initial = stream.next().await.unwrap().unwrap();
+    assert_eq!(initial.data["search"]["name"], "before");
+
+    let mut vars = Map::new();
+    vars.insert("id".to_string(), json!("g1"));
+    vars.insert("name".to_string(), json!("after"));
+    normalize(
+        &runtime,
+        &mutation_op,
+        json!({
+            "rename": { "id": "g1", "name": "after" }
+        }),
+        Some(vars),
+    );
+
+    let update = stream.next().await.unwrap().unwrap();
+    assert_eq!(update.data["search"]["name"], "after");
+}
