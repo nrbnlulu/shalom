@@ -1,3 +1,10 @@
+## 0.1.10
+
+- Fix generated `@unwrap` operations going stale after cache updates by preserving internal spread directives when registering operations, while keeping transport documents network-safe.
+- Fix subscriptions continuing to show a transport error after reconnecting with unchanged data; an unchanged successful response is now re-emitted to observers whose latest result is an error.
+- Fix canceled runtime observers leaving their Dart transport stream alive until client disposal. Cancellation is now forwarded to Dart in order with request dispatch.
+- Update the native runtime to `shalom_runtime` 0.1.8 and `shalom_core` 0.1.4.
+
 ## 0.1.9
 
 - Add GraphQL multipart file uploads through `HttpLink` and `ShalomMultipartHttpTransport`, with nested inputs, lists, and deduplicated references to the same upload source.
