@@ -124,7 +124,7 @@ class ShalomRuntimeClient {
   final GraphQLLink _link;
   final Map<int, StreamSubscription<GraphQLResponse<GraphQLLinkPayload>>>
   _activeRequests = {};
-  StreamSubscription<rs_runtime.RequestEnvelopeInput>? _requestStream;
+  StreamSubscription<rs_runtime.TransportEventInput>? _requestStream;
   bool _disposed = false;
 
   ShalomRuntimeClient._(this._handle, this._link);
@@ -488,8 +488,19 @@ class ShalomRuntimeClient {
   // -------------------------------------------------------------------------
 
   void _bindRequests() {
-    final stream = rs_runtime.listenRequests(handle: _handle);
-    _requestStream = stream.listen(_handleRequestEnvelope, onError: (_) {});
+    final stream = rs_runtime.listenTransportEvents(handle: _handle);
+    _requestStream = stream.listen((event) {
+      switch (event) {
+        case rs_runtime.TransportEventInput_Request(:final field0):
+          unawaited(_handleRequestEnvelope(field0));
+        case rs_runtime.TransportEventInput_Cancel(:final requestId):
+          unawaited(_cancelTransportRequest(requestId.toInt()));
+      }
+    }, onError: (_) {});
+  }
+
+  Future<void> _cancelTransportRequest(int requestId) async {
+    await _activeRequests.remove(requestId)?.cancel();
   }
 
   Future<void> _handleRequestEnvelope(

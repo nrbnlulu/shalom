@@ -52,6 +52,38 @@ class _NeverLink extends GraphQLLink {
   }
 }
 
+class _CancellationTrackingLink extends GraphQLLink {
+  final bool emitData;
+  final Completer<void> started = Completer<void>();
+  final Completer<void> canceled = Completer<void>();
+  int startCount = 0;
+  int cancelCount = 0;
+
+  _CancellationTrackingLink({this.emitData = true});
+
+  @override
+  Stream<GraphQLResponse<GraphQLLinkPayload>> request({
+    required Request request,
+    HeadersType? headers,
+  }) {
+    late final StreamController<GraphQLResponse<GraphQLLinkPayload>> controller;
+    controller = StreamController(
+      onListen: () {
+        startCount++;
+        if (!started.isCompleted) started.complete();
+        if (emitData) {
+          controller.add(_rawResponse(GraphQLData(data: {'version': 'ready'})));
+        }
+      },
+      onCancel: () {
+        cancelCount++;
+        if (!canceled.isCompleted) canceled.complete();
+      },
+    );
+    return controller.stream;
+  }
+}
+
 class _ResponseWebSocketTransport implements WebSocketTransport {
   final Object payload;
   final String responseType;
@@ -222,6 +254,65 @@ void main() {
       await client.dispose();
     },
   );
+
+  test('canceling an active observer releases its transport', () async {
+    final link = _CancellationTrackingLink();
+    final client = ShalomRuntimeClient.create(
+      schemaSdl: _schemaSdl,
+      link: link,
+    );
+    addTearDown(client.dispose);
+    client.registerOperation(document: 'query Version @observe { version }');
+    final received = Completer<void>();
+    final sub = client
+        .request<_TestData>(name: 'Version', decoder: _tdJson)
+        .listen((_) {
+          if (!received.isCompleted) received.complete();
+        });
+    await received.future.timeout(const Duration(seconds: 3));
+    await sub.cancel();
+    await link.canceled.future.timeout(const Duration(seconds: 3));
+    expect(link.startCount, 1);
+    expect(link.cancelCount, 1);
+    expect(await client.getAllObservers(), isEmpty);
+  });
+
+  test(
+    'canceling before a response releases the in-flight transport',
+    () async {
+      final link = _CancellationTrackingLink(emitData: false);
+      final client = ShalomRuntimeClient.create(
+        schemaSdl: _schemaSdl,
+        link: link,
+      );
+      addTearDown(client.dispose);
+      client.registerOperation(document: 'query Version @observe { version }');
+      final sub = client
+          .request<_TestData>(name: 'Version', decoder: _tdJson)
+          .listen((_) {});
+      await link.started.future.timeout(const Duration(seconds: 3));
+      await sub.cancel();
+      await link.canceled.future.timeout(const Duration(seconds: 3));
+      expect(link.cancelCount, 1);
+      expect(await client.getAllObservers(), isEmpty);
+    },
+  );
+
+  test('taking the first result releases the persistent transport', () async {
+    final link = _CancellationTrackingLink();
+    final client = ShalomRuntimeClient.create(
+      schemaSdl: _schemaSdl,
+      link: link,
+    );
+    addTearDown(client.dispose);
+    client.registerOperation(document: 'query Version @observe { version }');
+    final response = await client
+        .request<_TestData>(name: 'Version', decoder: _tdJson)
+        .first;
+    expect(response, isA<GraphQLData<_TestData>>());
+    await link.canceled.future.timeout(const Duration(seconds: 3));
+    expect(link.cancelCount, 1);
+  });
 
   test('one-shot responses are pushed before transport completion', () async {
     final client = _makeClient([
