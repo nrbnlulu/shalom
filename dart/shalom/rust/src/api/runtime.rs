@@ -270,7 +270,7 @@ pub struct RequestEnvelopeInput {
 /// Ordered request and cancellation events for the Dart transport owner.
 #[frb]
 pub enum TransportEventInput {
-    Request(RequestEnvelopeInput),
+    Request { envelope: RequestEnvelopeInput },
     Cancel { request_id: u64 },
 }
 
@@ -602,7 +602,9 @@ pub async fn listen_transport_events(
     };
     while let Some(event) = stream.next().await {
         let payload = match event {
-            HostLinkEvent::Request(envelope) => TransportEventInput::Request(envelope.into()),
+            HostLinkEvent::Request(envelope) => TransportEventInput::Request {
+                envelope: envelope.into(),
+            },
             HostLinkEvent::Cancel { request_id } => TransportEventInput::Cancel { request_id },
         };
         if sink.add(payload).is_err() {

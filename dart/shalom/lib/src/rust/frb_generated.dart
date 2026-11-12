@@ -2430,7 +2430,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     switch (raw[0]) {
       case 0:
         return TransportEventInput_Request(
-          dco_decode_box_autoadd_request_envelope_input(raw[1]),
+          envelope: dco_decode_box_autoadd_request_envelope_input(raw[1]),
         );
       case 1:
         return TransportEventInput_Cancel(requestId: dco_decode_u_64(raw[1]));
@@ -3152,10 +3152,10 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var tag_ = sse_decode_i_32(deserializer);
     switch (tag_) {
       case 0:
-        var var_field0 = sse_decode_box_autoadd_request_envelope_input(
+        var var_envelope = sse_decode_box_autoadd_request_envelope_input(
           deserializer,
         );
-        return TransportEventInput_Request(var_field0);
+        return TransportEventInput_Request(envelope: var_envelope);
       case 1:
         var var_requestId = sse_decode_u_64(deserializer);
         return TransportEventInput_Cancel(requestId: var_requestId);
@@ -3880,9 +3880,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     switch (self) {
-      case TransportEventInput_Request(field0: final field0):
+      case TransportEventInput_Request(envelope: final envelope):
         sse_encode_i_32(0, serializer);
-        sse_encode_box_autoadd_request_envelope_input(field0, serializer);
+        sse_encode_box_autoadd_request_envelope_input(envelope, serializer);
       case TransportEventInput_Cancel(requestId: final requestId):
         sse_encode_i_32(1, serializer);
         sse_encode_u_64(requestId, serializer);

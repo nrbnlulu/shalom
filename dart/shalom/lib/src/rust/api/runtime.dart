@@ -576,8 +576,9 @@ sealed class SubscriptionEvent with _$SubscriptionEvent {
 sealed class TransportEventInput with _$TransportEventInput {
   const TransportEventInput._();
 
-  const factory TransportEventInput.request(RequestEnvelopeInput field0) =
-      TransportEventInput_Request;
+  const factory TransportEventInput.request({
+    required RequestEnvelopeInput envelope,
+  }) = TransportEventInput_Request;
   const factory TransportEventInput.cancel({required BigInt requestId}) =
       TransportEventInput_Cancel;
 }

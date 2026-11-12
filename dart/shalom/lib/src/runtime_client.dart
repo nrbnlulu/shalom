@@ -491,8 +491,10 @@ class ShalomRuntimeClient {
     final stream = rs_runtime.listenTransportEvents(handle: _handle);
     _requestStream = stream.listen((event) {
       switch (event) {
-        case rs_runtime.TransportEventInput_Request(:final field0):
-          unawaited(_handleRequestEnvelope(field0));
+        case rs_runtime.TransportEventInput_Request(:final envelope):
+          // Runs synchronously up to link subscription, so a following
+          // cancel event always finds the registered subscription.
+          unawaited(_handleRequestEnvelope(envelope).catchError((_) {}));
         case rs_runtime.TransportEventInput_Cancel(:final requestId):
           unawaited(_cancelTransportRequest(requestId.toInt()));
       }
@@ -500,7 +502,16 @@ class ShalomRuntimeClient {
   }
 
   Future<void> _cancelTransportRequest(int requestId) async {
-    await _activeRequests.remove(requestId)?.cancel();
+    final subscription = _activeRequests.remove(requestId);
+    if (subscription == null) return;
+    try {
+      await subscription.cancel();
+    } catch (_) {
+      // Keep the handle so client disposal retries the cleanup.
+      if (!_disposed) {
+        _activeRequests.putIfAbsent(requestId, () => subscription);
+      }
+    }
   }
 
   Future<void> _handleRequestEnvelope(
@@ -510,7 +521,9 @@ class ShalomRuntimeClient {
     final requestId = envelope.id.toInt();
     final previous = _activeRequests.remove(requestId);
     if (previous != null) {
-      await previous.cancel();
+      // Do not await: request setup must not yield before registering the
+      // new subscription, otherwise a queued cancel event would miss it.
+      unawaited(previous.cancel().catchError((_) {}));
     }
     final request = Request(
       query: envelope.query,

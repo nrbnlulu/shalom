@@ -3151,9 +3151,11 @@ impl SseDecode for crate::api::runtime::TransportEventInput {
         let mut tag_ = <i32>::sse_decode(deserializer);
         match tag_ {
             0 => {
-                let mut var_field0 =
+                let mut var_envelope =
                     <crate::api::runtime::RequestEnvelopeInput>::sse_decode(deserializer);
-                return crate::api::runtime::TransportEventInput::Request(var_field0);
+                return crate::api::runtime::TransportEventInput::Request {
+                    envelope: var_envelope,
+                };
             }
             1 => {
                 let mut var_requestId = <u64>::sse_decode(deserializer);
@@ -3699,8 +3701,8 @@ impl flutter_rust_bridge::IntoIntoDart<crate::api::runtime::SubscriptionEvent>
 impl flutter_rust_bridge::IntoDart for crate::api::runtime::TransportEventInput {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
-            crate::api::runtime::TransportEventInput::Request(field0) => {
-                [0.into_dart(), field0.into_into_dart().into_dart()].into_dart()
+            crate::api::runtime::TransportEventInput::Request { envelope } => {
+                [0.into_dart(), envelope.into_into_dart().into_dart()].into_dart()
             }
             crate::api::runtime::TransportEventInput::Cancel { request_id } => {
                 [1.into_dart(), request_id.into_into_dart().into_dart()].into_dart()
@@ -4262,9 +4264,9 @@ impl SseEncode for crate::api::runtime::TransportEventInput {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         match self {
-            crate::api::runtime::TransportEventInput::Request(field0) => {
+            crate::api::runtime::TransportEventInput::Request { envelope } => {
                 <i32>::sse_encode(0, serializer);
-                <crate::api::runtime::RequestEnvelopeInput>::sse_encode(field0, serializer);
+                <crate::api::runtime::RequestEnvelopeInput>::sse_encode(envelope, serializer);
             }
             crate::api::runtime::TransportEventInput::Cancel { request_id } => {
                 <i32>::sse_encode(1, serializer);

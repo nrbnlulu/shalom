@@ -101,6 +101,10 @@ impl HostLink {
 
     /// Take the request stream once — called by the `listen_requests` FRB fn.
     ///
+    /// Request-only view: cancellations are dropped, so hosts using it cannot
+    /// release canceled transports. Persistent-network hosts must use
+    /// [`Self::take_transport_stream`] instead.
+    ///
     /// Returns `None` if the stream has already been taken (i.e. another
     /// `listen_requests` call is already running).
     pub fn take_request_stream(&self) -> Option<impl tokio_stream::Stream<Item = RequestEnvelope>> {

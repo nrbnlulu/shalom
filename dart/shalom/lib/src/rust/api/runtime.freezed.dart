@@ -182,7 +182,7 @@ return transportError(_that.message,_that.code,_that.details);case _:
 
 class GraphQlResponseInput_Data extends GraphQlResponseInput {
   const GraphQlResponseInput_Data({required this.data,  List<ShalomJsonValue>? errors, this.extensions}): _errors = errors,super._();
-
+  
 
  final  ShalomJsonValue data;
  final  List<ShalomJsonValue>? _errors;
@@ -257,7 +257,7 @@ as ShalomJsonValue?,
 @override
 @pragma('vm:prefer-inline')
 $ShalomJsonValueCopyWith<$Res> get data {
-
+  
   return $ShalomJsonValueCopyWith<$Res>(_self.data, (value) {
     return _then(_self.copyWith(data: value));
   });
@@ -281,7 +281,7 @@ $ShalomJsonValueCopyWith<$Res>? get extensions {
 
 class GraphQlResponseInput_Error extends GraphQlResponseInput {
   const GraphQlResponseInput_Error({required  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
-
+  
 
  final  List<ShalomJsonValue> _errors;
  List<ShalomJsonValue> get errors {
@@ -367,7 +367,7 @@ $ShalomJsonValueCopyWith<$Res>? get extensions {
 
 class GraphQlResponseInput_TransportError extends GraphQlResponseInput {
   const GraphQlResponseInput_TransportError({required this.message, required this.code, this.details}): super._();
-
+  
 
  final  String message;
  final  String code;
@@ -615,7 +615,7 @@ return millis(_that.field0);case _:
 
 class RetryDelayInput_Inherit extends RetryDelayInput {
   const RetryDelayInput_Inherit(): super._();
-
+  
 
 
 
@@ -647,7 +647,7 @@ String toString() {
 
 class RetryDelayInput_Disabled extends RetryDelayInput {
   const RetryDelayInput_Disabled(): super._();
-
+  
 
 
 
@@ -679,7 +679,7 @@ String toString() {
 
 class RetryDelayInput_Millis extends RetryDelayInput {
   const RetryDelayInput_Millis(this.field0): super._();
-
+  
 
  final  BigInt field0;
 
@@ -911,7 +911,7 @@ return transportError(_that.code,_that.message,_that.details);case _:
 
 class SubscriptionEvent_Data extends SubscriptionEvent {
   const SubscriptionEvent_Data({required this.data}): super._();
-
+  
 
  final  ShalomJsonValue data;
 
@@ -974,7 +974,7 @@ as ShalomJsonValue,
 @override
 @pragma('vm:prefer-inline')
 $ShalomJsonValueCopyWith<$Res> get data {
-
+  
   return $ShalomJsonValueCopyWith<$Res>(_self.data, (value) {
     return _then(_self.copyWith(data: value));
   });
@@ -986,7 +986,7 @@ $ShalomJsonValueCopyWith<$Res> get data {
 
 class SubscriptionEvent_GraphQlError extends SubscriptionEvent {
   const SubscriptionEvent_GraphQlError({required  List<ShalomJsonValue> errors, this.extensions}): _errors = errors,super._();
-
+  
 
  final  List<ShalomJsonValue> _errors;
  List<ShalomJsonValue> get errors {
@@ -1072,7 +1072,7 @@ $ShalomJsonValueCopyWith<$Res>? get extensions {
 
 class SubscriptionEvent_TransportError extends SubscriptionEvent {
   const SubscriptionEvent_TransportError({required this.code, required this.message, this.details}): super._();
-
+  
 
  final  String code;
  final  String message;
@@ -1257,10 +1257,10 @@ return cancel(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( RequestEnvelopeInput field0)?  request,TResult Function( BigInt requestId)?  cancel,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function( RequestEnvelopeInput envelope)?  request,TResult Function( BigInt requestId)?  cancel,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case TransportEventInput_Request() when request != null:
-return request(_that.field0);case TransportEventInput_Cancel() when cancel != null:
+return request(_that.envelope);case TransportEventInput_Cancel() when cancel != null:
 return cancel(_that.requestId);case _:
   return orElse();
 
@@ -1279,10 +1279,10 @@ return cancel(_that.requestId);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( RequestEnvelopeInput field0)  request,required TResult Function( BigInt requestId)  cancel,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function( RequestEnvelopeInput envelope)  request,required TResult Function( BigInt requestId)  cancel,}) {final _that = this;
 switch (_that) {
 case TransportEventInput_Request():
-return request(_that.field0);case TransportEventInput_Cancel():
+return request(_that.envelope);case TransportEventInput_Cancel():
 return cancel(_that.requestId);}
 }
 /// A variant of `when` that fallback to returning `null`
@@ -1297,10 +1297,10 @@ return cancel(_that.requestId);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( RequestEnvelopeInput field0)?  request,TResult? Function( BigInt requestId)?  cancel,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function( RequestEnvelopeInput envelope)?  request,TResult? Function( BigInt requestId)?  cancel,}) {final _that = this;
 switch (_that) {
 case TransportEventInput_Request() when request != null:
-return request(_that.field0);case TransportEventInput_Cancel() when cancel != null:
+return request(_that.envelope);case TransportEventInput_Cancel() when cancel != null:
 return cancel(_that.requestId);case _:
   return null;
 
@@ -1313,10 +1313,10 @@ return cancel(_that.requestId);case _:
 
 
 class TransportEventInput_Request extends TransportEventInput {
-  const TransportEventInput_Request(this.field0): super._();
+  const TransportEventInput_Request({required this.envelope}): super._();
+  
 
-
- final  RequestEnvelopeInput field0;
+ final  RequestEnvelopeInput envelope;
 
 /// Create a copy of TransportEventInput
 /// with the given fields replaced by the non-null parameter values.
@@ -1328,16 +1328,16 @@ $TransportEventInput_RequestCopyWith<TransportEventInput_Request> get copyWith =
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransportEventInput_Request&&(identical(other.field0, field0) || other.field0 == field0));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is TransportEventInput_Request&&(identical(other.envelope, envelope) || other.envelope == envelope));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,field0);
+int get hashCode => Object.hash(runtimeType,envelope);
 
 @override
 String toString() {
-  return 'TransportEventInput.request(field0: $field0)';
+  return 'TransportEventInput.request(envelope: $envelope)';
 }
 
 
@@ -1348,7 +1348,7 @@ abstract mixin class $TransportEventInput_RequestCopyWith<$Res> implements $Tran
   factory $TransportEventInput_RequestCopyWith(TransportEventInput_Request value, $Res Function(TransportEventInput_Request) _then) = _$TransportEventInput_RequestCopyWithImpl;
 @useResult
 $Res call({
- RequestEnvelopeInput field0
+ RequestEnvelopeInput envelope
 });
 
 
@@ -1365,9 +1365,9 @@ class _$TransportEventInput_RequestCopyWithImpl<$Res>
 
 /// Create a copy of TransportEventInput
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? field0 = null,}) {
+@pragma('vm:prefer-inline') $Res call({Object? envelope = null,}) {
   return _then(TransportEventInput_Request(
-null == field0 ? _self.field0 : field0 // ignore: cast_nullable_to_non_nullable
+envelope: null == envelope ? _self.envelope : envelope // ignore: cast_nullable_to_non_nullable
 as RequestEnvelopeInput,
   ));
 }
@@ -1380,7 +1380,7 @@ as RequestEnvelopeInput,
 
 class TransportEventInput_Cancel extends TransportEventInput {
   const TransportEventInput_Cancel({required this.requestId}): super._();
-
+  
 
  final  BigInt requestId;
 
