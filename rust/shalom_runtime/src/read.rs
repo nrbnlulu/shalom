@@ -242,7 +242,7 @@ impl<'a> CacheReader<'a> {
             }
         };
 
-        let (_typename, selections, is_union_interface) = match &selection.kind {
+        let (_typename, selections, _is_union_interface) = match &selection.kind {
             SelectionKind::Object(obj) => (
                 obj.common.schema_typename.clone(),
                 resolve_object_selections(&obj.common, &self.global_ctx),
@@ -274,10 +274,9 @@ impl<'a> CacheReader<'a> {
         };
 
         let path_key = format!("{}.{}", parent_ref_key, field_segment);
-        let object_ref_key = if is_union_interface || entity_key.is_none() {
-            path_key.clone()
-        } else {
-            entity_key.unwrap_or(&path_key).to_string()
+        let object_ref_key = match entity_key {
+            Some(key) => key.to_string(),
+            None => path_key,
         };
         let observed_frags = selection_get_observed_fragments(selection, &self.global_ctx);
         let scope_start = (!observed_frags.is_empty()).then(|| refs.begin_scope());
