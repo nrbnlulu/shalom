@@ -8,7 +8,11 @@ environment:
     sdk: ^3.13.0
 
 dependencies:
-    flutter_rust_bridge: ^2.13.0
+    flutter_rust_bridge:
+        git:
+            url: https://github.com/shri-acha/flutter_rust_bridge
+            ref: d1c1957a045825434c86ef6bc936c3299431c5fb
+            path: frb_dart
     code_assets: ^1.2.1
     hooks: ^2.0.2
     plugin_platform_interface: ^2.0.2

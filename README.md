@@ -29,6 +29,41 @@ dart pub add shalom_flutter
 dart pub add shalom_annotations
 ```
 
+### Native bridge regeneration
+
+This compatibility branch pins both the Dart and Rust Flutter Rust Bridge
+runtime to `shri-acha/flutter_rust_bridge` commit
+`d1c1957a045825434c86ef6bc936c3299431c5fb` (`2.14.0-beta.2`, upstream
+[PR #3527](https://github.com/fzyzcjy/flutter_rust_bridge/pull/3527)).
+Other FRB packages in the same application must use the same Dart Git URL,
+revision and `frb_dart` path; hosted FRB 2.13 is not compatible with this bridge.
+Rebuild the native library together with the generated Dart bindings.
+
+From the repository root, with the package's required Dart SDK on `PATH`:
+
+```bash
+cargo install --git https://github.com/shri-acha/flutter_rust_bridge \
+  --rev d1c1957a045825434c86ef6bc936c3299431c5fb \
+  flutter_rust_bridge_codegen --locked --root target/frb-codegen -j 2
+cd dart/shalom
+dart pub get
+../../target/frb-codegen/bin/flutter_rust_bridge_codegen generate
+```
+
+`flutter_rust_bridge.yaml` sets `native_symbol_prefix: shalom_runtime_` for
+Shalom's four package-specific native exports. It disables dependency
+**auto-upgrades** (which would replace the Rust Git pin with a registry version)
+and the generator's hosted-only dependency check. Runtime codegen-version and
+content-hash checks remain enabled. The generator may still warn about the Git
+dependency version; do not enable auto-upgrades to silence that warning.
+Regeneration should produce no diff when repeated with the same generator.
+
+For Linux bridge tests, run `cargo build --locked -p shalom_ffi` from the
+repository root, then run `dart test --concurrency=2` in `dart/shalom` with
+`LD_LIBRARY_PATH` pointing to the absolute workspace `target/debug` directory.
+The existing default loader does not discover the workspace build automatically.
+No GraphQL/cache API or handwritten runtime behavior is changed by this alignment.
+
 ### Benchmarks
 
 Rust cache benchmarks run on [CodSpeed](https://app.codspeed.io/) for pushes to
