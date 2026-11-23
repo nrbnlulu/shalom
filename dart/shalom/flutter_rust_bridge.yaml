@@ -1,3 +1,7 @@
 rust_input: crate::api
 rust_root: rust/
 dart_output: lib/src/rust
+native_symbol_prefix: shalom_runtime_
+auto_upgrade_dependency: false
+# The codegen dependency checker only understands hosted Dart dependencies.
+deps_check: false

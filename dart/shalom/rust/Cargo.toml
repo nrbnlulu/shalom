@@ -8,7 +8,7 @@ name = "shalom_ffi"
 crate-type = ["cdylib", "staticlib"]
 
 [dependencies]
-flutter_rust_bridge = "=2.13.0"
+flutter_rust_bridge = { git = "https://github.com/shri-acha/flutter_rust_bridge", rev = "d1c1957a045825434c86ef6bc936c3299431c5fb" }
 shalom_runtime = "0.1.8"
 shalom_core = "0.1.4"
 serde = { version = "1.0", features = ["derive"] }
