@@ -311,7 +311,9 @@ pub struct RuntimeHandle {
 // Init
 // ---------------------------------------------------------------------------
 
-#[flutter_rust_bridge::frb(init)]
+// Synchronous because other calls run on worker threads, which browsers only
+// allow on cross-origin isolated pages.
+#[flutter_rust_bridge::frb(init, sync)]
 pub fn init_app() {
     flutter_rust_bridge::setup_default_user_utils();
 }

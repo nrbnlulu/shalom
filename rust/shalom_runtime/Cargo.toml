@@ -23,6 +23,11 @@ async-stream = "0.3.6"
 dashmap = "6"
 parking_lot = { workspace = true }
 
+[target.'cfg(target_family = "wasm")'.dependencies]
+gloo-timers = { version = "0.3", features = ["futures"] }
+wasm-bindgen-futures = "0.4"
+web-time = "1"
+
 [[bench]]
 name = "runtime_bench"
 harness = false

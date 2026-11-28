@@ -1,7 +1,8 @@
 use std::collections::{HashMap, HashSet, VecDeque};
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use crate::cache::{CacheRecord, CacheValue, NormalizedCache};
+use crate::platform::Instant;
 
 #[derive(Debug)]
 pub struct SubscriptionTracker {

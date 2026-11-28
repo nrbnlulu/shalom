@@ -60,7 +60,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 
   @override
   Future<void> executeRustInitializers() async {
-    await api.crateApiRuntimeInitApp();
+    api.crateApiRuntimeInitApp();
   }
 
   @override
@@ -130,7 +130,7 @@ abstract class RustLibApi extends BaseApi {
     required RuntimeHandle handle,
   });
 
-  Future<void> crateApiRuntimeInitApp();
+  void crateApiRuntimeInitApp();
 
   RuntimeHandle crateApiRuntimeInitRuntime({
     required String schemaSdl,
@@ -740,17 +740,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<void> crateApiRuntimeInitApp() {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+  void crateApiRuntimeInitApp() {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 11,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 11)!;
         },
         codec: SseCodec(
           decodeSuccessData: sse_decode_unit,

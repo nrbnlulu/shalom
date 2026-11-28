@@ -374,18 +374,14 @@ impl ShalomRuntime {
         let cache = Arc::new(Mutex::new(NormalizedCache::new()));
         let runtime = Self::with_cache_and_config(global_ctx, cache, &config);
 
-        // Background GC sweep on a plain OS thread so it runs regardless of
-        // whether a Tokio runtime is active (e.g. during synchronous FRB init).
+        // Background GC sweep, independent of any caller.
         let runtime_gc = runtime.clone();
-        let gc_interval = config.gc_interval;
-        std::thread::spawn(move || {
-            loop {
-                std::thread::sleep(gc_interval);
-                if runtime_gc.shutdown.load(Ordering::Relaxed) {
-                    break;
-                }
-                runtime_gc.collect_garbage();
+        crate::platform::repeat(config.gc_interval, move || {
+            if runtime_gc.shutdown.load(Ordering::Relaxed) {
+                return false;
             }
+            runtime_gc.collect_garbage();
+            true
         });
 
         Ok(runtime)
@@ -542,7 +538,7 @@ impl ShalomRuntime {
         };
 
         let runtime = self.clone();
-        tokio::spawn(async move {
+        crate::platform::spawn(async move {
             let request = Request {
                 query: op_ctx.query.clone(),
                 variables: variables.clone().unwrap_or_default(),
@@ -649,7 +645,7 @@ impl ShalomRuntime {
                         biased;
                         _ = cancel.notified() => return,
                         _ = refetch.notified() => {}
-                        _ = tokio::time::sleep(d) => {}
+                        _ = crate::platform::sleep(d) => {}
                     }
                 } else {
                     tokio::select! {
@@ -724,7 +720,7 @@ impl ShalomRuntime {
                             details: err.details,
                         });
                     };
-                    tokio::time::sleep(wait).await;
+                    crate::platform::sleep(wait).await;
                     continue;
                 }
                 None => {
