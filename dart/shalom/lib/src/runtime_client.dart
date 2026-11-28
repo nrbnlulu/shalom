@@ -1,9 +1,8 @@
 import 'dart:async';
 
-import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart'
-    show ExternalLibrary;
 import 'package:shalom/shalom.dart';
 
+import 'native_library.dart';
 import 'rust/api/runtime.dart' as rs_runtime;
 
 export 'rust/api/runtime.dart'
@@ -145,11 +144,7 @@ class ShalomRuntimeClient {
     String? nativeLibPath,
     rs_runtime.LogLevel? logLevel,
   }) async {
-    await RustLib.init(
-      externalLibrary: nativeLibPath != null
-          ? ExternalLibrary.open(nativeLibPath)
-          : null,
-    );
+    await RustLib.init(externalLibrary: openNativeLibrary(nativeLibPath));
     if (logLevel != null) {
       rs_runtime.setLogLevel(level: logLevel);
     }

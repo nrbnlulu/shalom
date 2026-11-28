@@ -21,3 +21,9 @@ serde_json = {workspace = true}
 indexmap = { version = "2", features = ["serde"] }
 serde_yaml = "0.9"
 parking_lot = { workspace = true }
+
+# `apollo-compiler` and `kash` need randomness, which browsers provide through
+# JavaScript.
+[target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dependencies]
+getrandom = { version = "0.3", features = ["wasm_js"] }
+uuid = { version = "1", features = ["js"] }

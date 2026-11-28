@@ -617,16 +617,15 @@ fn wire__crate__api__runtime__get_observer_counts_impl(
     )
 }
 fn wire__crate__api__runtime__init_app_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_normal::<flutter_rust_bridge::for_generated::SseCodec, _, _>(
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
             debug_name: "init_app",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
         move || {
             let message = unsafe {
@@ -639,14 +638,12 @@ fn wire__crate__api__runtime__init_app_impl(
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
             deserializer.end();
-            move |context| {
-                transform_result_sse::<_, ()>((move || {
-                    let output_ok = Ok::<_, ()>({
-                        crate::api::runtime::init_app();
-                    })?;
-                    std::result::Result::Ok(output_ok)
-                })())
-            }
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Ok::<_, ()>({
+                    crate::api::runtime::init_app();
+                })?;
+                std::result::Result::Ok(output_ok)
+            })())
         },
     )
 }
@@ -3278,7 +3275,6 @@ fn pde_ffi_dispatcher_primary_impl(
         10 => {
             wire__crate__api__runtime__get_observer_counts_impl(port, ptr, rust_vec_len, data_len)
         }
-        11 => wire__crate__api__runtime__init_app_impl(port, ptr, rust_vec_len, data_len),
         13 => wire__crate__api__runtime__listen_requests_impl(port, ptr, rust_vec_len, data_len),
         14 => {
             wire__crate__api__runtime__listen_subscription_impl(port, ptr, rust_vec_len, data_len)
@@ -3336,6 +3332,7 @@ fn pde_ffi_dispatcher_sync_impl(
             data_len,
         ),
         3 => wire__crate__api__ws__create_ws_sans_io_impl(ptr, rust_vec_len, data_len),
+        11 => wire__crate__api__runtime__init_app_impl(ptr, rust_vec_len, data_len),
         12 => wire__crate__api__runtime__init_runtime_impl(ptr, rust_vec_len, data_len),
         26 => wire__crate__api__runtime__register_fragment_impl(ptr, rust_vec_len, data_len),
         27 => wire__crate__api__runtime__register_operation_impl(ptr, rust_vec_len, data_len),

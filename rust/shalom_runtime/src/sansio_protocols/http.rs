@@ -163,7 +163,7 @@ impl GraphQLLink for HttpLink {
         };
 
         let (tx, rx) = mpsc::unbounded_channel();
-        tokio::spawn(async move {
+        crate::platform::spawn(async move {
             let message = match transport.request(method, &url, body, final_headers).await {
                 Ok(response) => Self::parse_response(response),
                 Err(err) => GraphQLResponse::TransportError(err),

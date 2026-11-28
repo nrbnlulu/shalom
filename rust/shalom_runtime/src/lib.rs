@@ -2,6 +2,7 @@ pub mod cache;
 pub mod execution;
 pub mod gc;
 pub mod normalization;
+mod platform;
 pub mod read;
 mod ref_tracking;
 pub mod runtime;

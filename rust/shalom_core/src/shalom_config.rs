@@ -33,9 +33,20 @@ impl Default for ShalomConfig {
         Self {
             custom_scalars: HashMap::new(),
             schema_output_path: None,
-            project_root: current_dir().unwrap(),
+            project_root: default_project_root(),
         }
     }
+}
+
+#[cfg(not(target_family = "wasm"))]
+fn default_project_root() -> PathBuf {
+    current_dir().unwrap()
+}
+
+/// Browsers have no working directory, and the runtime reads no files there.
+#[cfg(target_family = "wasm")]
+fn default_project_root() -> PathBuf {
+    PathBuf::new()
 }
 fn load_config_from_yaml_str(yaml: &str, config_dir: &Path) -> anyhow::Result<ShalomConfig> {
     let mut config: ShalomConfig =

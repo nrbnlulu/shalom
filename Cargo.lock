@@ -834,9 +834,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "899def5c37c4fd7b2664648c28120ecec138e4d395b459e5ca34f9cce2dd77fd"
 dependencies = [
  "cfg-if",
+ "js-sys",
  "libc",
  "r-efi 5.3.0",
  "wasip2",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -857,6 +859,18 @@ name = "glob"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280"
+
+[[package]]
+name = "gloo-timers"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbb143cf96099802033e0d4f4963b19fd2e0b728bcf076cd9cf7f6634f092994"
+dependencies = [
+ "futures-channel",
+ "futures-core",
+ "js-sys",
+ "wasm-bindgen",
+]
 
 [[package]]
 name = "half"
@@ -1598,6 +1612,7 @@ version = "0.1.4"
 dependencies = [
  "anyhow",
  "apollo-compiler",
+ "getrandom 0.3.4",
  "glob",
  "indexmap",
  "kash",
@@ -1607,6 +1622,7 @@ dependencies = [
  "serde_json",
  "serde_yaml",
  "simple_logger",
+ "uuid",
 ]
 
 [[package]]
@@ -1654,6 +1670,7 @@ dependencies = [
  "async-trait",
  "codspeed-criterion-compat",
  "dashmap 6.1.0",
+ "gloo-timers",
  "log",
  "parking_lot",
  "serde",
@@ -1662,6 +1679,8 @@ dependencies = [
  "simple_logger",
  "tokio",
  "tokio-stream",
+ "wasm-bindgen-futures",
+ "web-time",
 ]
 
 [[package]]
@@ -2066,6 +2085,16 @@ name = "web-sys"
 version = "0.3.95"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4f2dfbb17949fa2088e5d39408c48368947b86f7834484e87b73de55bc14d97d"
+dependencies = [
+ "js-sys",
+ "wasm-bindgen",
+]
+
+[[package]]
+name = "web-time"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
